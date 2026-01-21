@@ -1,0 +1,61 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "#!/bin/bash\ninput=$(cat)\nfile_path=$(echo \"$input\" | jq -r '.tool_input.file_path // \"\"')\n\nif [[ \"$file_path\" =~ (\\.env|gradle\\.properties|secrets|apikey) ]]; then\n  echo '[Hook] BLOCKED: Fichier sensible protégé' >&2\n  exit 2\nfi\n\necho \"$input\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write(*.java)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "#!/bin/bash\ninput=$(cat)\nfile_path=$(echo \"$input\" | jq -r '.tool_input.file_path // \"\"')\n\nif [ -f \"$file_path\" ]; then\n  if ! grep -q 'DÉPENDANCES:' \"$file_path\" 2>/dev/null; then\n    echo '[Hook] ⚠️  Header de dépendances manquant dans: '$file_path >&2\n  fi\n  \n  line_count=$(wc -l < \"$file_path\")\n  if [ \"$line_count\" -gt 150 ]; then\n    echo '[Hook] ⚠️  Fichier trop long ('$line_count' lignes > 150): '$file_path >&2\n  fi\nfi\n\necho \"$input\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "#!/bin/bash\necho '' >&2\necho '[Rappel] Structure.txt à jour ? Registres mis à jour ?' >&2"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Write(./gradle.properties)",
+      "Write(./**/secrets/**)"
+    ],
+    "allowedTools": [
+      "Read",
+      "Write", 
+      "Edit",
+      "Grep",
+      "Glob",
+      "Bash(./gradlew:*)",
+      "Bash(git:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)"
+    ]
+  },
+  "env": {
+    "JAVA_HOME": "",
+    "MOD_ID": "beemancer"
+  }
+}

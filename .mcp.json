@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "mcmodding": {
+      "command": "npx",
+      "args": ["-y", "mcmodding-mcp"],
+      "env": {}
+    }
+  }
+}
