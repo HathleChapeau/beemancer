@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -167,10 +168,9 @@ public class BeeWandItem extends Item {
     }
 
     private static MagicBeeEntity findBeeByUUID(Level level, UUID id) {
-        for (Entity entity : level.getEntities().getAll()) {
-            if (entity instanceof MagicBeeEntity bee && bee.getUUID().equals(id)) {
-                return bee;
-            }
+        if (level instanceof ServerLevel serverLevel) {
+            Entity entity = serverLevel.getEntity(id);
+            if (entity instanceof MagicBeeEntity bee) return bee;
         }
         return null;
     }

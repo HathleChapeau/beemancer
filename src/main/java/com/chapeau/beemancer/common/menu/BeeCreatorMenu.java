@@ -57,7 +57,7 @@ public class BeeCreatorMenu extends AbstractContainerMenu {
         this.categories.sort(Comparator.comparingInt(GeneCategory::getDisplayOrder));
 
         // Bee slot (centered at top)
-        this.addSlot(new BeeSlot(container, 0, 80, 20));
+        this.addSlot(new BeeSlot(container, 0, 80, 20, this::loadGenesFromBee));
 
         // Player inventory
         for (int row = 0; row < 3; row++) {
@@ -170,13 +170,24 @@ public class BeeCreatorMenu extends AbstractContainerMenu {
 
     // Custom slot that only accepts MagicBee
     private static class BeeSlot extends Slot {
-        public BeeSlot(Container container, int slot, int x, int y) {
+        Runnable callback;
+        public BeeSlot(Container container, int slot, int x, int y, Runnable callback) {
             super(container, slot, x, y);
+
+            this.callback = callback;
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
+
             return stack.is(BeemancerItems.MAGIC_BEE.get());
+        }
+
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            //if(stack.is(BeemancerItems.MAGIC_BEE.get()))
+                this.callback.run();
         }
 
         @Override
