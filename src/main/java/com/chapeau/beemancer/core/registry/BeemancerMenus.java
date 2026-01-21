@@ -3,24 +3,11 @@
  * [BeemancerMenus.java]
  * Description: Registre centralisé de tous les menus/containers
  * ============================================================
- * 
- * DÉPENDANCES:
- * ------------------------------------------------------------
- * | Dépendance          | Raison              | Utilisation         |
- * |---------------------|--------------------|--------------------|
- * | Beemancer           | MOD_ID             | Clé du registre    |
- * | StorageCrateMenu    | Menu à enregistrer | Création du type   |
- * ------------------------------------------------------------
- * 
- * UTILISÉ PAR:
- * - Beemancer.java (enregistrement)
- * - StorageCrateBlockEntity.java (ouverture du menu)
- * 
- * ============================================================
  */
 package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.menu.BeeCreatorMenu;
 import com.chapeau.beemancer.common.menu.StorageCrateMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
@@ -37,6 +24,10 @@ public class BeemancerMenus {
     public static final Supplier<MenuType<StorageCrateMenu>> STORAGE_CRATE = 
             MENUS.register("storage_crate",
                     () -> IMenuTypeExtension.create(StorageCrateMenu::new));
+
+    public static final Supplier<MenuType<BeeCreatorMenu>> BEE_CREATOR = 
+            MENUS.register("bee_creator",
+                    () -> IMenuTypeExtension.create(BeeCreatorMenu::new));
 
     public static void register(IEventBus eventBus) {
         MENUS.register(eventBus);

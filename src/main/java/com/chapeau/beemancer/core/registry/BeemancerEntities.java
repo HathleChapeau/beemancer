@@ -3,25 +3,11 @@
  * [BeemancerEntities.java]
  * Description: Registre centralisé de toutes les entités du mod
  * ============================================================
- * 
- * DÉPENDANCES:
- * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation         |
- * |---------------------|----------------------|---------------------|
- * | Beemancer           | MOD_ID               | Clé du registre     |
- * | DebugBeeEntity      | Entité à enregistrer | Création du type    |
- * ------------------------------------------------------------
- * 
- * UTILISÉ PAR:
- * - Beemancer.java (enregistrement)
- * - BeeDebugItem.java (spawn)
- * 
- * ============================================================
  */
 package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.common.entity.bee.DebugBeeEntity;
+import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -35,11 +21,11 @@ public class BeemancerEntities {
             DeferredRegister.create(Registries.ENTITY_TYPE, Beemancer.MOD_ID);
 
     // --- BEES ---
-    public static final Supplier<EntityType<DebugBeeEntity>> DEBUG_BEE = ENTITIES.register("debug_bee",
-            () -> EntityType.Builder.of(DebugBeeEntity::new, MobCategory.CREATURE)
-                    .sized(0.7F, 0.6F) // Même taille qu'une abeille vanilla
+    public static final Supplier<EntityType<MagicBeeEntity>> MAGIC_BEE = ENTITIES.register("magic_bee",
+            () -> EntityType.Builder.of(MagicBeeEntity::new, MobCategory.CREATURE)
+                    .sized(0.7F, 0.6F)
                     .clientTrackingRange(8)
-                    .build("debug_bee"));
+                    .build("magic_bee"));
 
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);

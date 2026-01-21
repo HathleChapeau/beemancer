@@ -27,7 +27,7 @@ Package racine: com.chapeau.beemancer
 
 Philosophie:
 - Modularité maximale (1 script = 1 responsabilité)
-- Dépendances universelles réutilisables
+- Système de gènes modulaire pour les abeilles
 - Patterns inspirés de Create et Cobblemon
 
 ================================================================================
@@ -40,101 +40,74 @@ src/main/java/com/chapeau/beemancer/
 │
 ├── core/                               # === FONDATIONS UNIVERSELLES ===
 │   ├── registry/
-│   │   ├── BeemancerItems.java         # [REGISTRY] Tous les items
-│   │   ├── BeemancerBlocks.java        # [REGISTRY] Tous les blocs
-│   │   ├── BeemancerBlockEntities.java # [REGISTRY] Tous les block entities
-│   │   ├── BeemancerEntities.java      # [REGISTRY] Toutes les entités
-│   │   ├── BeemancerMenus.java         # [REGISTRY] Tous les menus/containers
-│   │   └── BeemancerCreativeTabs.java  # [REGISTRY] Onglets créatifs
+│   │   ├── BeemancerItems.java
+│   │   ├── BeemancerBlocks.java
+│   │   ├── BeemancerBlockEntities.java
+│   │   ├── BeemancerEntities.java
+│   │   ├── BeemancerMenus.java
+│   │   └── BeemancerCreativeTabs.java
 │   │
-│   ├── config/
-│   │   └── [À COMPLÉTER]
+│   ├── gene/                           # === SYSTÈME DE GÈNES ===
+│   │   ├── Gene.java                   # Interface gène
+│   │   ├── AbstractGene.java           # Classe abstraite de base
+│   │   ├── GeneCategory.java           # Catégories de gènes
+│   │   ├── GeneRegistry.java           # Registre des gènes
+│   │   └── BeeGeneData.java            # Données gènes d'une abeille
 │   │
-│   ├── network/
-│   │   └── packets/
-│   │       └── [À COMPLÉTER]
-│   │
-│   └── util/
-│       └── [À COMPLÉTER]
+│   └── network/
+│       ├── BeemancerNetwork.java
+│       └── packets/
+│           └── BeeCreatorActionPacket.java
 │
 ├── common/                             # === LOGIQUE PARTAGÉE ===
 │   ├── block/
-│   │   └── storage/
-│   │       └── StorageCrateBlock.java  # [IMPL] Bloc avec inventaire 54 slots
+│   │   ├── storage/
+│   │   │   └── StorageCrateBlock.java
+│   │   └── beecreator/
+│   │       ├── BeeCreatorBlock.java
+│   │       └── BeeCreatorBlockEntity.java
 │   │
-│   ├── blockentity/
-│   │   └── storage/
-│   │       └── StorageCrateBlockEntity.java # [IMPL] Inventaire double coffre
+│   ├── blockentity/storage/
+│   │   └── StorageCrateBlockEntity.java
 │   │
-│   ├── item/
-│   │   └── bee/
-│   │       ├── BeeDebugItem.java       # [IMPL] Item abeille debug
-│   │       └── BeeWandItem.java        # [IMPL] Baguette de contrôle
+│   ├── item/bee/
+│   │   ├── MagicBeeItem.java           # Item abeille avec gènes
+│   │   └── BeeWandItem.java            # Baguette de contrôle
 │   │
-│   ├── entity/
-│   │   └── bee/
-│   │       └── DebugBeeEntity.java     # [IMPL] Entité abeille debug
+│   ├── entity/bee/
+│   │   └── MagicBeeEntity.java         # Entité abeille avec gènes
 │   │
 │   ├── event/
-│   │   └── BeeInteractionHandler.java  # [IMPL] Gestion interactions abeilles
+│   │   └── BeeInteractionHandler.java
 │   │
-│   ├── menu/
-│   │   └── StorageCrateMenu.java       # [IMPL] Menu pour StorageCrate
-│   │
-│   └── data/
-│       └── [À COMPLÉTER]
+│   └── menu/
+│       ├── StorageCrateMenu.java
+│       └── BeeCreatorMenu.java
 │
-├── client/                             # === CLIENT UNIQUEMENT ===
-│   ├── ClientSetup.java                # [CLIENT] Screens et renderers
-│   │
-│   ├── renderer/
-│   │   └── [À COMPLÉTER - utilise BeeRenderer vanilla]
-│   │
-│   ├── gui/
-│   │   └── screen/
-│   │       └── StorageCrateScreen.java # [IMPL] Screen du StorageCrate
-│   │
-│   └── particle/
-│       └── [À COMPLÉTER]
+├── content/                            # === CONTENU PAR FEATURE ===
+│   └── gene/                           # Implémentations des gènes
+│       ├── GeneInit.java               # Initialisation des gènes
+│       ├── species/
+│       │   ├── SpeciesGene.java
+│       │   ├── CommonSpeciesGene.java
+│       │   ├── NobleSpeciesGene.java
+│       │   └── DiligentSpeciesGene.java
+│       ├── environment/
+│       │   ├── EnvironmentGene.java
+│       │   ├── NormalEnvironmentGene.java
+│       │   ├── RobustEnvironmentGene.java
+│       │   └── NocturnalEnvironmentGene.java
+│       └── flower/
+│           ├── FlowerGene.java
+│           ├── FlowersFlowerGene.java
+│           ├── CropsFlowerGene.java
+│           └── CavePlantsFlowerGene.java
 │
-├── content/
-│   └── [À COMPLÉTER]
-│
-└── datagen/
-    └── [À COMPLÉTER]
-
---------------------------------------------------------------------------------
-src/main/resources/
-│
-├── META-INF/
-│   ├── neoforge.mods.toml
-│   └── accesstransformer.cfg
-│
-├── assets/beemancer/
-│   ├── blockstates/
-│   │   └── storage_crate.json
-│   ├── models/
-│   │   ├── block/
-│   │   │   └── storage_crate.json
-│   │   └── item/
-│   │       ├── storage_crate.json
-│   │       ├── bee_debug.json          # [IMPL]
-│   │       └── bee_wand.json           # [IMPL]
-│   ├── textures/
-│   │   ├── block/
-│   │   │   └── storage_crate.png
-│   │   ├── item/
-│   │   │   ├── bee_debug.png           # [IMPL]
-│   │   │   └── bee_wand.png            # [IMPL]
-│   │   └── gui/
-│   │       └── storage_crate.png
-│   └── lang/
-│       ├── en_us.json
-│       └── fr_fr.json
-│
-└── data/beemancer/
-    └── loot_table/blocks/
-        └── storage_crate.json
+└── client/
+    ├── ClientSetup.java
+    └── gui/screen/
+        ├── StorageCrateScreen.java
+        └── BeeCreatorScreen.java
 
 ================================================================================
 3. FICHIERS FONDAMENTAUX (CORE)
@@ -143,169 +116,158 @@ src/main/resources/
 ┌─────────────────────────────────────┬────────────────────────────────────────┐
 │ Fichier                             │ Rôle                                   │
 ├─────────────────────────────────────┼────────────────────────────────────────┤
-│ Beemancer.java                      │ Point d'entrée, enregistrement bus     │
-│ core/registry/BeemancerItems.java   │ Registre centralisé des items          │
-│ core/registry/BeemancerBlocks.java  │ Registre centralisé des blocs          │
-│ core/registry/BeemancerEntities.java│ Registre centralisé des entités        │
-│ core/registry/BeemancerBlockEntities│ Registre centralisé des block entities │
-│ core/registry/BeemancerMenus.java   │ Registre centralisé des menus          │
-│ core/registry/BeemancerCreativeTabs │ Registre des onglets créatifs          │
-│ client/ClientSetup.java             │ Init client (renderers, screens)       │
+│ Beemancer.java                      │ Point d'entrée, init des gènes         │
+│ core/gene/Gene.java                 │ Interface pour tous les gènes          │
+│ core/gene/GeneRegistry.java         │ Registre central des gènes             │
+│ core/gene/GeneCategory.java         │ Définition des catégories              │
+│ content/gene/GeneInit.java          │ Enregistrement de tous les gènes       │
+│ client/ClientSetup.java             │ Init client (screens, renderers)       │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
 4. REGISTRES
 ================================================================================
 
---------------------------------------------------------------------------------
-ITEMS ENREGISTRÉS:
---------------------------------------------------------------------------------
-| ID                | Classe            | Feature         | Statut    |
-|-------------------|-------------------|-----------------|-----------|
-| storage_crate     | BlockItem         | Storage Crate   | OK        |
-| bee_debug         | BeeDebugItem      | Debug Bee       | OK        |
-| bee_wand          | BeeWandItem       | Debug Bee       | OK        |
---------------------------------------------------------------------------------
+ITEMS:
+| ID            | Classe          | Feature      |
+|---------------|-----------------|--------------|
+| storage_crate | BlockItem       | Storage      |
+| bee_creator   | BlockItem       | Bee Creator  |
+| magic_bee     | MagicBeeItem    | Gene System  |
+| bee_wand      | BeeWandItem     | Bee Control  |
 
---------------------------------------------------------------------------------
-BLOCS ENREGISTRÉS:
---------------------------------------------------------------------------------
-| ID                | Classe            | BlockEntity? | Feature         | Statut |
-|-------------------|-------------------|--------------|-----------------|--------|
-| storage_crate     | StorageCrateBlock | Oui          | Storage Crate   | OK     |
---------------------------------------------------------------------------------
+BLOCS:
+| ID            | Classe           | BlockEntity? | Feature      |
+|---------------|------------------|--------------|--------------|
+| storage_crate | StorageCrateBlock| Oui          | Storage      |
+| bee_creator   | BeeCreatorBlock  | Oui          | Gene Editor  |
 
---------------------------------------------------------------------------------
-ENTITÉS ENREGISTRÉES:
---------------------------------------------------------------------------------
-| ID                | Classe            | Feature         | Statut    |
-|-------------------|-------------------|-----------------|-----------|
-| debug_bee         | DebugBeeEntity    | Debug Bee       | OK        |
---------------------------------------------------------------------------------
+ENTITÉS:
+| ID        | Classe          | Feature      |
+|-----------|-----------------|--------------|
+| magic_bee | MagicBeeEntity  | Gene System  |
 
---------------------------------------------------------------------------------
-BLOCK ENTITIES ENREGISTRÉES:
---------------------------------------------------------------------------------
-| ID                | Classe                  | Block associé    | Statut    |
-|-------------------|-------------------------|------------------|-----------|
-| storage_crate     | StorageCrateBlockEntity | storage_crate    | OK        |
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-MENUS ENREGISTRÉS:
---------------------------------------------------------------------------------
-| ID                | Classe            | Feature         | Statut    |
-|-------------------|-------------------|-----------------|-----------|
-| storage_crate     | StorageCrateMenu  | Storage Crate   | OK        |
---------------------------------------------------------------------------------
+MENUS:
+| ID            | Classe           | Feature      |
+|---------------|------------------|--------------|
+| storage_crate | StorageCrateMenu | Storage      |
+| bee_creator   | BeeCreatorMenu   | Gene Editor  |
 
 ================================================================================
 5. FEATURES IMPLÉMENTÉES
 ================================================================================
 
 --------------------------------------------------------------------------------
-FEATURE: Storage Crate
+FEATURE: Gene System
 --------------------------------------------------------------------------------
-Description: Bloc de stockage avec inventaire de double coffre (54 slots)
+Description: Système modulaire de gènes pour les abeilles
 Statut: COMPLÈTE
 
-Scripts créés:
-- common/block/storage/StorageCrateBlock.java
-- common/blockentity/storage/StorageCrateBlockEntity.java
-- common/menu/StorageCrateMenu.java
-- client/gui/screen/StorageCrateScreen.java
+Architecture:
+- GeneCategory: Catégorie de gènes (species, environment, flower)
+- Gene: Interface définissant un gène
+- AbstractGene: Implémentation de base
+- GeneRegistry: Registre central
+- BeeGeneData: Stockage des gènes d'une abeille
 
-Registres: +storage_crate (bloc, item, blockentity, menu)
+Catégories de gènes:
+1. SPECIES (Espèce) - Couleur: Or
+   - common: Standard
+   - noble: +production, -vitesse
+   - diligent: +vitesse, -production
+
+2. ENVIRONMENT (Environnement) - Couleur: Vert
+   - normal: Conditions standard
+   - robust: Travaille sous la pluie
+   - nocturnal: Travaille la nuit
+
+3. FLOWER (Fleur) - Couleur: Violet
+   - flowers: Fleurs standard
+   - crops: Cultures
+   - cave_plants: Plantes de caverne
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-FEATURE: Debug Bee System
+FEATURE: Magic Bee
 --------------------------------------------------------------------------------
-Description: Système d'abeille debug avec stats et contrôle via baguette
+Description: Abeille avec système de gènes
 Statut: COMPLÈTE
 
-Scripts créés:
-- common/entity/bee/DebugBeeEntity.java : Entité abeille avec stats HP/Speed/Strength
-- common/item/bee/BeeDebugItem.java : Item pour spawn/capture avec tooltip stats
-- common/item/bee/BeeWandItem.java : Baguette pour sélection et navigation
-- common/event/BeeInteractionHandler.java : Gestion shift+clic pour capture
+- MagicBeeEntity: Entité avec BeeGeneData
+- MagicBeeItem: Item avec tooltip affichant les gènes (shift)
+- Navigation contrôlée via BeeWand
+--------------------------------------------------------------------------------
 
-Fonctionnalités:
-- Stats: HP (vert), Speed (bleu), Strength (rouge) - défaut 1
-- BeeDebugItem: clic droit = spawn, shift+clic droit sur abeille = capture
-- Tooltip: "Press SHIFT for more detail" -> affiche stats colorées
-- BeeWandItem: 
-  - Clic droit sur abeille = sélection (son Ding)
-  - Clic droit sur bloc = définir destination (son Dong)
-  - Shift+clic droit air = désélectionner
-  - Tooltip affiche entité sélectionnée
-- L'abeille se déplace vers la destination définie
+--------------------------------------------------------------------------------
+FEATURE: Bee Creator
+--------------------------------------------------------------------------------
+Description: Interface GUI pour modifier les gènes des abeilles
+Statut: COMPLÈTE
 
-Registres:
-- BeemancerItems: +bee_debug, +bee_wand
-- BeemancerEntities: +debug_bee
+- BeeCreatorBlock: Bloc machine
+- BeeCreatorBlockEntity: Stockage de l'abeille
+- BeeCreatorMenu: Logique de sélection des gènes
+- BeeCreatorScreen: Interface avec flèches et bouton Edit
+- Lignes dynamiques selon le nombre de catégories
+--------------------------------------------------------------------------------
 
-Assets:
-- models/item/bee_debug.json, bee_wand.json
-- textures/item/bee_debug.png, bee_wand.png
-- lang/en_us.json, fr_fr.json (traductions complètes)
+--------------------------------------------------------------------------------
+FEATURE: Bee Wand
+--------------------------------------------------------------------------------
+Description: Baguette pour contrôler les abeilles
+Statut: COMPLÈTE
 
-Référence: Pattern Entity inspiré de Cobblemon
+- Clic droit sur abeille: Sélectionne (son Ding)
+- Clic droit sur bloc: Définit destination (son Dong)
+- Shift+clic droit air: Désélectionne
+- Tooltip affiche l'abeille sélectionnée
 --------------------------------------------------------------------------------
 
 ================================================================================
 6. FEATURES EN COURS
 ================================================================================
 
-[Aucune feature en cours]
+[Aucune]
 
 ================================================================================
 7. DÉPENDANCES UNIVERSELLES
 ================================================================================
 
-[À créer selon besoins]
+core/gene/:
+- Gene.java: Interface pour créer de nouveaux gènes
+- AbstractGene.java: Classe de base avec paramètres
+- GeneCategory.java: Pour ajouter de nouvelles catégories
+- GeneRegistry.java: Pour enregistrer et récupérer des gènes
 
 ================================================================================
 8. GUIDE D'INTÉGRATION D'UNE FEATURE
 ================================================================================
 
-ÉTAPE 1: Créer les classes dans common/ ou content/
-ÉTAPE 2: Enregistrer dans les registres appropriés
-ÉTAPE 3: Ajouter les assets (models, textures, lang)
-ÉTAPE 4: Client-side si nécessaire (ClientSetup.java)
-ÉTAPE 5: Mettre à jour Structure.txt
+Pour ajouter un nouveau gène:
+1. Créer une classe dans content/gene/[category]/
+2. Hériter de la classe de base de la catégorie (ex: SpeciesGene)
+3. Enregistrer dans GeneInit.registerAllGenes()
+4. Ajouter les traductions dans lang/*.json
+
+Pour ajouter une nouvelle catégorie de gènes:
+1. Ajouter dans GeneCategory.java
+2. Créer le package content/gene/[category]/
+3. Créer la classe de base [Category]Gene
+4. Ajouter les traductions
 
 ================================================================================
 9. CHANGELOG STRUCTURE
 ================================================================================
 
 --------------------------------------------------------------------------------
-2026-01-21 - Feature Debug Bee System
+2026-01-21 - Refonte Gene System
 --------------------------------------------------------------------------------
-Ajouts:
-- common/entity/bee/DebugBeeEntity.java
-- common/item/bee/BeeDebugItem.java
-- common/item/bee/BeeWandItem.java
-- common/event/BeeInteractionHandler.java
-- core/registry/BeemancerEntities.java
-- Assets: models/item/bee_debug.json, bee_wand.json
-- Textures: item/bee_debug.png, bee_wand.png
-- Lang: traductions Debug Bee System
-
-Modifications:
-- Beemancer.java: ajout enregistrement entités + attributs
-- BeemancerItems.java: +bee_debug, +bee_wand
-- BeemancerCreativeTabs.java: ajout nouveaux items
-- ClientSetup.java: ajout entity renderer
-- lang/*.json: nouvelles traductions
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-2026-01-21 - Setup Initial + Feature Storage Crate
---------------------------------------------------------------------------------
-Ajouts:
-- Structure de base NeoForge 1.21.1
-- Feature Storage Crate complète
+- Remplacement DebugBee par MagicBee avec système de gènes
+- Création du système de gènes modulaire (core/gene/)
+- Création des catégories: Species, Environment, Flower
+- Création du BeeCreator avec GUI
+- Mise à jour BeeWand pour MagicBee
+- 9 gènes implémentés (3 par catégorie)
 --------------------------------------------------------------------------------
 
 ################################################################################

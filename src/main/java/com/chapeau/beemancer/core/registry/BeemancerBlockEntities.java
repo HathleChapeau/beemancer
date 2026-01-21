@@ -3,25 +3,11 @@
  * [BeemancerBlockEntities.java]
  * Description: Registre centralisé de tous les BlockEntities
  * ============================================================
- * 
- * DÉPENDANCES:
- * ------------------------------------------------------------
- * | Dépendance              | Raison              | Utilisation           |
- * |-------------------------|--------------------|-----------------------|
- * | Beemancer               | MOD_ID             | Clé du registre       |
- * | BeemancerBlocks         | Blocs associés     | Liaison bloc-entity   |
- * | StorageCrateBlockEntity | Entity à register  | Création du type      |
- * ------------------------------------------------------------
- * 
- * UTILISÉ PAR:
- * - Beemancer.java (enregistrement)
- * - StorageCrateBlock.java (récupération du type)
- * 
- * ============================================================
  */
 package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageCrateBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -39,6 +25,13 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             StorageCrateBlockEntity::new,
                             BeemancerBlocks.STORAGE_CRATE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<BeeCreatorBlockEntity>> BEE_CREATOR = 
+            BLOCK_ENTITIES.register("bee_creator",
+                    () -> BlockEntityType.Builder.of(
+                            BeeCreatorBlockEntity::new,
+                            BeemancerBlocks.BEE_CREATOR.get()
                     ).build(null));
 
     public static void register(IEventBus eventBus) {

@@ -2,15 +2,15 @@
   "itemGroup.beemancer": "Beemancer",
   
   "block.beemancer.storage_crate": "Storage Crate",
+  "block.beemancer.bee_creator": "Bee Creator",
+  
   "container.beemancer.storage_crate": "Storage Crate",
+  "container.beemancer.bee_creator": "Bee Creator",
   
-  "entity.beemancer.debug_bee": "Debug Bee",
+  "entity.beemancer.magic_bee": "Magic Bee",
   
-  "item.beemancer.bee_debug": "Debug Bee",
-  "item.beemancer.bee_debug.shift_hint": "Press SHIFT for more details",
-  "item.beemancer.bee_debug.stat.hp": "HP: %s",
-  "item.beemancer.bee_debug.stat.speed": "Speed: %s",
-  "item.beemancer.bee_debug.stat.strength": "Strength: %s",
+  "item.beemancer.magic_bee": "Magic Bee",
+  "item.beemancer.magic_bee.shift_hint": "Hold SHIFT for gene details",
   
   "item.beemancer.bee_wand": "Bee Wand",
   "item.beemancer.bee_wand.has_selection": "Bee selected",
@@ -22,5 +22,32 @@
   "item.beemancer.bee_wand.no_selection": "Select a bee first!",
   "item.beemancer.bee_wand.usage1": "Right-click bee: Select",
   "item.beemancer.bee_wand.usage2": "Right-click block: Set destination",
-  "item.beemancer.bee_wand.usage3": "Shift+Right-click air: Clear selection"
+  "item.beemancer.bee_wand.usage3": "Shift+Right-click air: Clear selection",
+  
+  "gui.beemancer.bee_creator.edit": "Edit",
+  
+  "gene.category.beemancer.species": "Species",
+  "gene.category.beemancer.environment": "Environment",
+  "gene.category.beemancer.flower": "Flower",
+  
+  "gene.beemancer.species.common": "Common",
+  "gene.beemancer.species.common.desc": "A regular bee species",
+  "gene.beemancer.species.noble": "Noble",
+  "gene.beemancer.species.noble.desc": "Produces more, but slower",
+  "gene.beemancer.species.diligent": "Diligent",
+  "gene.beemancer.species.diligent.desc": "Works faster, produces less",
+  
+  "gene.beemancer.environment.normal": "Normal",
+  "gene.beemancer.environment.normal.desc": "Works in standard conditions",
+  "gene.beemancer.environment.robust": "Robust",
+  "gene.beemancer.environment.robust.desc": "Can work in rain",
+  "gene.beemancer.environment.nocturnal": "Nocturnal",
+  "gene.beemancer.environment.nocturnal.desc": "Can work at night",
+  
+  "gene.beemancer.flower.flowers": "Flowers",
+  "gene.beemancer.flower.flowers.desc": "Pollinates regular flowers",
+  "gene.beemancer.flower.crops": "Crops",
+  "gene.beemancer.flower.crops.desc": "Pollinates crop plants",
+  "gene.beemancer.flower.cave_plants": "Cave Plants",
+  "gene.beemancer.flower.cave_plants.desc": "Pollinates cave vegetation"
 }

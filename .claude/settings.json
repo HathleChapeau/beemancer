@@ -42,6 +42,10 @@
       "Write(./**/secrets/**)"
     ],
     "allow": [
+      "Read(/home/adri/beemancer/*)",
+      "Write(/home/adri/beemancer/*)",
+      "Edit(/home/adri/beemancer/*)",
+      "Bash(/home/adri/beemancer/*)",
       "Read",
       "Write",
       "Edit",

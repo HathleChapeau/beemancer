@@ -2,15 +2,15 @@
   "itemGroup.beemancer": "Beemancer",
   
   "block.beemancer.storage_crate": "Caisse de Stockage",
+  "block.beemancer.bee_creator": "Créateur d'Abeilles",
+  
   "container.beemancer.storage_crate": "Caisse de Stockage",
+  "container.beemancer.bee_creator": "Créateur d'Abeilles",
   
-  "entity.beemancer.debug_bee": "Abeille Debug",
+  "entity.beemancer.magic_bee": "Abeille Magique",
   
-  "item.beemancer.bee_debug": "Abeille Debug",
-  "item.beemancer.bee_debug.shift_hint": "Maintenir SHIFT pour plus de détails",
-  "item.beemancer.bee_debug.stat.hp": "PV: %s",
-  "item.beemancer.bee_debug.stat.speed": "Vitesse: %s",
-  "item.beemancer.bee_debug.stat.strength": "Force: %s",
+  "item.beemancer.magic_bee": "Abeille Magique",
+  "item.beemancer.magic_bee.shift_hint": "Maintenir SHIFT pour les détails des gènes",
   
   "item.beemancer.bee_wand": "Baguette d'Abeille",
   "item.beemancer.bee_wand.has_selection": "Abeille sélectionnée",
@@ -22,5 +22,32 @@
   "item.beemancer.bee_wand.no_selection": "Sélectionnez d'abord une abeille !",
   "item.beemancer.bee_wand.usage1": "Clic droit abeille: Sélectionner",
   "item.beemancer.bee_wand.usage2": "Clic droit bloc: Définir destination",
-  "item.beemancer.bee_wand.usage3": "Shift+Clic droit air: Effacer sélection"
+  "item.beemancer.bee_wand.usage3": "Shift+Clic droit air: Effacer sélection",
+  
+  "gui.beemancer.bee_creator.edit": "Modifier",
+  
+  "gene.category.beemancer.species": "Espèce",
+  "gene.category.beemancer.environment": "Environnement",
+  "gene.category.beemancer.flower": "Fleur",
+  
+  "gene.beemancer.species.common": "Commune",
+  "gene.beemancer.species.common.desc": "Une espèce d'abeille normale",
+  "gene.beemancer.species.noble": "Noble",
+  "gene.beemancer.species.noble.desc": "Produit plus, mais plus lentement",
+  "gene.beemancer.species.diligent": "Diligente",
+  "gene.beemancer.species.diligent.desc": "Travaille plus vite, produit moins",
+  
+  "gene.beemancer.environment.normal": "Normal",
+  "gene.beemancer.environment.normal.desc": "Travaille dans des conditions standard",
+  "gene.beemancer.environment.robust": "Robuste",
+  "gene.beemancer.environment.robust.desc": "Peut travailler sous la pluie",
+  "gene.beemancer.environment.nocturnal": "Nocturne",
+  "gene.beemancer.environment.nocturnal.desc": "Peut travailler la nuit",
+  
+  "gene.beemancer.flower.flowers": "Fleurs",
+  "gene.beemancer.flower.flowers.desc": "Pollinise les fleurs normales",
+  "gene.beemancer.flower.crops": "Cultures",
+  "gene.beemancer.flower.crops.desc": "Pollinise les plantes cultivées",
+  "gene.beemancer.flower.cave_plants": "Plantes de Caverne",
+  "gene.beemancer.flower.cave_plants.desc": "Pollinise la végétation souterraine"
 }

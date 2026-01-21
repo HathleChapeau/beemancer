@@ -3,20 +3,6 @@
  * [BeemancerCreativeTabs.java]
  * Description: Registre des onglets du mode créatif
  * ============================================================
- * 
- * DÉPENDANCES:
- * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation         |
- * |---------------------|----------------------|---------------------|
- * | Beemancer           | MOD_ID               | Clé du registre     |
- * | BeemancerBlocks     | Blocs à afficher     | Icône et contenu    |
- * | BeemancerItems      | Items à afficher     | Contenu de l'onglet |
- * ------------------------------------------------------------
- * 
- * UTILISÉ PAR:
- * - Beemancer.java (enregistrement)
- * 
- * ============================================================
  */
 package com.chapeau.beemancer.core.registry;
 
@@ -37,16 +23,19 @@ public class BeemancerCreativeTabs {
     public static final Supplier<CreativeModeTab> BEEMANCER_TAB = CREATIVE_TABS.register("beemancer_tab",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup." + Beemancer.MOD_ID))
-                    .icon(() -> new ItemStack(BeemancerItems.BEE_DEBUG.get()))
+                    .icon(() -> new ItemStack(BeemancerItems.MAGIC_BEE.get()))
                     .displayItems((parameters, output) -> {
-                        // Blocs
-                        output.accept(BeemancerItems.STORAGE_CRATE.get());
+                        // Bees
+                        output.accept(BeemancerItems.MAGIC_BEE.get());
                         
-                        // Abeilles
-                        output.accept(BeemancerItems.BEE_DEBUG.get());
-                        
-                        // Outils
+                        // Tools
                         output.accept(BeemancerItems.BEE_WAND.get());
+                        
+                        // Machines
+                        output.accept(BeemancerItems.BEE_CREATOR.get());
+                        
+                        // Storage
+                        output.accept(BeemancerItems.STORAGE_CRATE.get());
                     })
                     .build());
 
