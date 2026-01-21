@@ -1,5 +1,26 @@
 {
   "itemGroup.beemancer": "Beemancer",
+  
   "block.beemancer.storage_crate": "Caisse de Stockage",
-  "container.beemancer.storage_crate": "Caisse de Stockage"
+  "container.beemancer.storage_crate": "Caisse de Stockage",
+  
+  "entity.beemancer.debug_bee": "Abeille Debug",
+  
+  "item.beemancer.bee_debug": "Abeille Debug",
+  "item.beemancer.bee_debug.shift_hint": "Maintenir SHIFT pour plus de détails",
+  "item.beemancer.bee_debug.stat.hp": "PV: %s",
+  "item.beemancer.bee_debug.stat.speed": "Vitesse: %s",
+  "item.beemancer.bee_debug.stat.strength": "Force: %s",
+  
+  "item.beemancer.bee_wand": "Baguette d'Abeille",
+  "item.beemancer.bee_wand.has_selection": "Abeille sélectionnée",
+  "item.beemancer.bee_wand.no_selection_hint": "Aucune abeille sélectionnée",
+  "item.beemancer.bee_wand.selected": "Abeille sélectionnée !",
+  "item.beemancer.bee_wand.deselected": "Sélection effacée",
+  "item.beemancer.bee_wand.destination_set": "Destination définie !",
+  "item.beemancer.bee_wand.bee_lost": "L'abeille sélectionnée n'existe plus",
+  "item.beemancer.bee_wand.no_selection": "Sélectionnez d'abord une abeille !",
+  "item.beemancer.bee_wand.usage1": "Clic droit abeille: Sélectionner",
+  "item.beemancer.bee_wand.usage2": "Clic droit bloc: Définir destination",
+  "item.beemancer.bee_wand.usage3": "Shift+Clic droit air: Effacer sélection"
 }

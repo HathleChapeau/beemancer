@@ -13,6 +13,7 @@
  * | BeemancerBlockEntities   | Registre block entities | Enregistrement au bus    |
  * | BeemancerMenus           | Registre menus          | Enregistrement au bus    |
  * | BeemancerCreativeTabs    | Onglets créatifs        | Enregistrement au bus    |
+ * | BeemancerEntities        | Registre entités        | Enregistrement au bus    |
  * ------------------------------------------------------------
  * 
  * UTILISÉ PAR:
@@ -22,15 +23,20 @@
  */
 package com.chapeau.beemancer;
 
+import com.chapeau.beemancer.common.entity.bee.DebugBeeEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerCreativeTabs;
+import com.chapeau.beemancer.core.registry.BeemancerEntities;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import org.slf4j.Logger;
 
 @Mod(Beemancer.MOD_ID)
@@ -47,7 +53,16 @@ public class Beemancer {
         BeemancerBlockEntities.register(modEventBus);
         BeemancerMenus.register(modEventBus);
         BeemancerCreativeTabs.register(modEventBus);
+        BeemancerEntities.register(modEventBus);
         
         LOGGER.info("Beemancer initialized!");
+    }
+
+    @EventBusSubscriber(modid = MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+    public static class ModEvents {
+        @SubscribeEvent
+        public static void registerEntityAttributes(EntityAttributeCreationEvent event) {
+            event.put(BeemancerEntities.DEBUG_BEE.get(), DebugBeeEntity.createAttributes().build());
+        }
     }
 }

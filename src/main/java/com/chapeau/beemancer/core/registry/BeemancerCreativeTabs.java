@@ -37,10 +37,16 @@ public class BeemancerCreativeTabs {
     public static final Supplier<CreativeModeTab> BEEMANCER_TAB = CREATIVE_TABS.register("beemancer_tab",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup." + Beemancer.MOD_ID))
-                    .icon(() -> new ItemStack(BeemancerItems.STORAGE_CRATE.get()))
+                    .icon(() -> new ItemStack(BeemancerItems.BEE_DEBUG.get()))
                     .displayItems((parameters, output) -> {
-                        // Ajouter tous les items du mod ici
+                        // Blocs
                         output.accept(BeemancerItems.STORAGE_CRATE.get());
+                        
+                        // Abeilles
+                        output.accept(BeemancerItems.BEE_DEBUG.get());
+                        
+                        // Outils
+                        output.accept(BeemancerItems.BEE_WAND.get());
                     })
                     .build());
 

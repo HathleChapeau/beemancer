@@ -45,136 +45,100 @@ src/main/java/com/chapeau/beemancer/
 │   │   ├── BeemancerBlockEntities.java # [REGISTRY] Tous les block entities
 │   │   ├── BeemancerEntities.java      # [REGISTRY] Toutes les entités
 │   │   ├── BeemancerMenus.java         # [REGISTRY] Tous les menus/containers
-│   │   ├── BeemancerCreativeTabs.java  # [REGISTRY] Onglets créatifs
-│   │   └── BeemancerRegistries.java    # [REGISTRY] Registres custom (si besoin)
+│   │   └── BeemancerCreativeTabs.java  # [REGISTRY] Onglets créatifs
 │   │
 │   ├── config/
-│   │   ├── BeemancerConfig.java        # [CONFIG] Configuration principale
-│   │   ├── ServerConfig.java           # [CONFIG] Config serveur
-│   │   └── ClientConfig.java           # [CONFIG] Config client
+│   │   └── [À COMPLÉTER]
 │   │
 │   ├── network/
-│   │   ├── BeemancerNetwork.java       # [NETWORK] Setup réseau
-│   │   └── packets/                    # [NETWORK] Packets individuels
+│   │   └── packets/
 │   │       └── [À COMPLÉTER]
 │   │
-│   └── util/                           # === UTILITAIRES UNIVERSELS ===
-│       ├── BeemancerConstants.java     # [UTIL] Constantes globales
-│       ├── BeemancerTags.java          # [UTIL] Références aux tags
-│       ├── MathHelper.java             # [UTIL] Fonctions mathématiques
-│       ├── NBTHelper.java              # [UTIL] Manipulation NBT
-│       ├── InventoryHelper.java        # [UTIL] Manipulation inventaires
+│   └── util/
 │       └── [À COMPLÉTER]
 │
 ├── common/                             # === LOGIQUE PARTAGÉE ===
 │   ├── block/
-│   │   ├── base/                       # Blocs de base réutilisables
-│   │   │   └── [À COMPLÉTER]
-│   │   └── storage/                    # Blocs de stockage
+│   │   └── storage/
 │   │       └── StorageCrateBlock.java  # [IMPL] Bloc avec inventaire 54 slots
 │   │
 │   ├── blockentity/
-│   │   ├── base/                       # BlockEntities de base
-│   │   │   └── [À COMPLÉTER]
 │   │   └── storage/
 │   │       └── StorageCrateBlockEntity.java # [IMPL] Inventaire double coffre
 │   │
 │   ├── item/
-│   │   ├── base/                       # Items de base réutilisables
-│   │   │   └── [À COMPLÉTER]
-│   │   └── [feature]/
-│   │       └── [À COMPLÉTER]
+│   │   └── bee/
+│   │       ├── BeeDebugItem.java       # [IMPL] Item abeille debug
+│   │       └── BeeWandItem.java        # [IMPL] Baguette de contrôle
 │   │
 │   ├── entity/
-│   │   ├── base/                       # Entités de base
-│   │   │   └── [À COMPLÉTER]
-│   │   └── [feature]/
-│   │       └── [À COMPLÉTER]
+│   │   └── bee/
+│   │       └── DebugBeeEntity.java     # [IMPL] Entité abeille debug
 │   │
-│   ├── capability/
-│   │   └── [À COMPLÉTER]
+│   ├── event/
+│   │   └── BeeInteractionHandler.java  # [IMPL] Gestion interactions abeilles
 │   │
 │   ├── menu/
 │   │   └── StorageCrateMenu.java       # [IMPL] Menu pour StorageCrate
 │   │
-│   └── data/                           # DataComponents, Codecs
+│   └── data/
 │       └── [À COMPLÉTER]
 │
 ├── client/                             # === CLIENT UNIQUEMENT ===
-│   ├── ClientSetup.java                # [CLIENT] Initialisation client
+│   ├── ClientSetup.java                # [CLIENT] Screens et renderers
 │   │
 │   ├── renderer/
-│   │   ├── block/                      # Renderers de blocs
-│   │   │   └── [À COMPLÉTER]
-│   │   └── entity/                     # Renderers d'entités
-│   │       └── [À COMPLÉTER]
-│   │
-│   ├── model/
-│   │   └── [À COMPLÉTER]
+│   │   └── [À COMPLÉTER - utilise BeeRenderer vanilla]
 │   │
 │   ├── gui/
-│   │   ├── screen/                     # Screens
-│   │   │   └── StorageCrateScreen.java # [IMPL] Screen du StorageCrate
-│   │   └── widget/                     # Widgets réutilisables
-│   │       └── [À COMPLÉTER]
+│   │   └── screen/
+│   │       └── StorageCrateScreen.java # [IMPL] Screen du StorageCrate
 │   │
 │   └── particle/
 │       └── [À COMPLÉTER]
 │
-├── content/                            # === CONTENU PAR FEATURE ===
-│   └── [feature_name]/                 # Un package par feature majeure
-│       ├── [Feature]Manager.java       # Gestionnaire de la feature
-│       └── [sous-éléments]/
+├── content/
+│   └── [À COMPLÉTER]
 │
-└── datagen/                            # === GÉNÉRATION DE DATA ===
-    ├── BeemancerDataGenerators.java    # [DATAGEN] Point d'entrée
-    ├── loot/
-    │   └── [À COMPLÉTER]
-    ├── recipe/
-    │   └── [À COMPLÉTER]
-    ├── tag/
-    │   └── [À COMPLÉTER]
-    └── model/
-        └── [À COMPLÉTER]
+└── datagen/
+    └── [À COMPLÉTER]
 
 --------------------------------------------------------------------------------
 src/main/resources/
 │
 ├── META-INF/
-│   ├── neoforge.mods.toml              # [CONFIG] Déclaration du mod
-│   └── accesstransformer.cfg           # [CONFIG] Access transformers
+│   ├── neoforge.mods.toml
+│   └── accesstransformer.cfg
 │
 ├── assets/beemancer/
 │   ├── blockstates/
-│   │   └── storage_crate.json          # [IMPL] État du bloc StorageCrate
+│   │   └── storage_crate.json
 │   ├── models/
 │   │   ├── block/
-│   │   │   └── storage_crate.json      # [IMPL] Modèle bloc
+│   │   │   └── storage_crate.json
 │   │   └── item/
-│   │       └── storage_crate.json      # [IMPL] Modèle item
+│   │       ├── storage_crate.json
+│   │       ├── bee_debug.json          # [IMPL]
+│   │       └── bee_wand.json           # [IMPL]
 │   ├── textures/
 │   │   ├── block/
-│   │   │   └── storage_crate.png       # [IMPL] Texture bloc
+│   │   │   └── storage_crate.png
 │   │   ├── item/
-│   │   ├── entity/
+│   │   │   ├── bee_debug.png           # [IMPL]
+│   │   │   └── bee_wand.png            # [IMPL]
 │   │   └── gui/
-│   │       └── storage_crate.png       # [IMPL] Texture GUI
+│   │       └── storage_crate.png
 │   └── lang/
-│       ├── en_us.json                  # [IMPL] Traductions EN
-│       └── fr_fr.json                  # [IMPL] Traductions FR
+│       ├── en_us.json
+│       └── fr_fr.json
 │
 └── data/beemancer/
-    ├── recipe/
-    ├── loot_table/
-    │   └── blocks/
-    │       └── storage_crate.json      # [IMPL] Loot table
-    └── tag/
+    └── loot_table/blocks/
+        └── storage_crate.json
 
 ================================================================================
 3. FICHIERS FONDAMENTAUX (CORE)
 ================================================================================
-
-Ces fichiers DOIVENT exister et être maintenus:
 
 ┌─────────────────────────────────────┬────────────────────────────────────────┐
 │ Fichier                             │ Rôle                                   │
@@ -182,6 +146,7 @@ Ces fichiers DOIVENT exister et être maintenus:
 │ Beemancer.java                      │ Point d'entrée, enregistrement bus     │
 │ core/registry/BeemancerItems.java   │ Registre centralisé des items          │
 │ core/registry/BeemancerBlocks.java  │ Registre centralisé des blocs          │
+│ core/registry/BeemancerEntities.java│ Registre centralisé des entités        │
 │ core/registry/BeemancerBlockEntities│ Registre centralisé des block entities │
 │ core/registry/BeemancerMenus.java   │ Registre centralisé des menus          │
 │ core/registry/BeemancerCreativeTabs │ Registre des onglets créatifs          │
@@ -192,19 +157,14 @@ Ces fichiers DOIVENT exister et être maintenus:
 4. REGISTRES
 ================================================================================
 
-Format d'ajout aux registres:
-
-// Dans BeemancerItems.java
-// --- [CATÉGORIE] ---
-public static final DeferredItem<Item> NOM_ITEM = ITEMS.register("nom_item",
-    () -> new TypeItem(new Item.Properties()));
-
 --------------------------------------------------------------------------------
 ITEMS ENREGISTRÉS:
 --------------------------------------------------------------------------------
 | ID                | Classe            | Feature         | Statut    |
 |-------------------|-------------------|-----------------|-----------|
 | storage_crate     | BlockItem         | Storage Crate   | OK        |
+| bee_debug         | BeeDebugItem      | Debug Bee       | OK        |
+| bee_wand          | BeeWandItem       | Debug Bee       | OK        |
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -218,9 +178,9 @@ BLOCS ENREGISTRÉS:
 --------------------------------------------------------------------------------
 ENTITÉS ENREGISTRÉES:
 --------------------------------------------------------------------------------
-| ID                | Classe            | Feature      | Statut    |
-|-------------------|-------------------|--------------|-----------|
-| [À COMPLÉTER]     |                   |              |           |
+| ID                | Classe            | Feature         | Statut    |
+|-------------------|-------------------|-----------------|-----------|
+| debug_bee         | DebugBeeEntity    | Debug Bee       | OK        |
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -250,34 +210,47 @@ Description: Bloc de stockage avec inventaire de double coffre (54 slots)
 Statut: COMPLÈTE
 
 Scripts créés:
-- common/block/storage/StorageCrateBlock.java : Bloc avec interaction
-- common/blockentity/storage/StorageCrateBlockEntity.java : Inventaire 54 slots
-- common/menu/StorageCrateMenu.java : Container/Menu pour l'inventaire
-- client/gui/screen/StorageCrateScreen.java : Interface graphique
+- common/block/storage/StorageCrateBlock.java
+- common/blockentity/storage/StorageCrateBlockEntity.java
+- common/menu/StorageCrateMenu.java
+- client/gui/screen/StorageCrateScreen.java
 
-Dépendances utilisées:
-- BaseEntityBlock : Bloc avec BlockEntity
-- Container : Interface inventaire Minecraft
-- AbstractContainerMenu : Base menu Minecraft
+Registres: +storage_crate (bloc, item, blockentity, menu)
+--------------------------------------------------------------------------------
 
-Registres modifiés:
-- BeemancerBlocks: +storage_crate
-- BeemancerItems: +storage_crate (BlockItem)
-- BeemancerBlockEntities: +storage_crate
-- BeemancerMenus: +storage_crate
-- BeemancerCreativeTabs: ajouté dans l'onglet Beemancer
+--------------------------------------------------------------------------------
+FEATURE: Debug Bee System
+--------------------------------------------------------------------------------
+Description: Système d'abeille debug avec stats et contrôle via baguette
+Statut: COMPLÈTE
 
-Assets créés:
-- blockstates/storage_crate.json
-- models/block/storage_crate.json
-- models/item/storage_crate.json
-- textures/block/storage_crate.png
-- textures/gui/storage_crate.png
-- lang/en_us.json
-- lang/fr_fr.json
-- data/loot_table/blocks/storage_crate.json
+Scripts créés:
+- common/entity/bee/DebugBeeEntity.java : Entité abeille avec stats HP/Speed/Strength
+- common/item/bee/BeeDebugItem.java : Item pour spawn/capture avec tooltip stats
+- common/item/bee/BeeWandItem.java : Baguette pour sélection et navigation
+- common/event/BeeInteractionHandler.java : Gestion shift+clic pour capture
 
-Référence Create/Cobblemon: Pattern similaire à BasinBlockEntity de Create
+Fonctionnalités:
+- Stats: HP (vert), Speed (bleu), Strength (rouge) - défaut 1
+- BeeDebugItem: clic droit = spawn, shift+clic droit sur abeille = capture
+- Tooltip: "Press SHIFT for more detail" -> affiche stats colorées
+- BeeWandItem: 
+  - Clic droit sur abeille = sélection (son Ding)
+  - Clic droit sur bloc = définir destination (son Dong)
+  - Shift+clic droit air = désélectionner
+  - Tooltip affiche entité sélectionnée
+- L'abeille se déplace vers la destination définie
+
+Registres:
+- BeemancerItems: +bee_debug, +bee_wand
+- BeemancerEntities: +debug_bee
+
+Assets:
+- models/item/bee_debug.json, bee_wand.json
+- textures/item/bee_debug.png, bee_wand.png
+- lang/en_us.json, fr_fr.json (traductions complètes)
+
+Référence: Pattern Entity inspiré de Cobblemon
 --------------------------------------------------------------------------------
 
 ================================================================================
@@ -290,97 +263,49 @@ Référence Create/Cobblemon: Pattern similaire à BasinBlockEntity de Create
 7. DÉPENDANCES UNIVERSELLES
 ================================================================================
 
-Utilitaires disponibles dans core/util/:
-
-┌─────────────────────────┬──────────────────────────────────────────────────────┐
-│ Classe                  │ Méthodes principales                                 │
-├─────────────────────────┼──────────────────────────────────────────────────────┤
-│ [À CRÉER selon besoins] │                                                      │
-└─────────────────────────┴──────────────────────────────────────────────────────┘
-
-Quand ajouter un utilitaire:
-- Fonction utilisée par 2+ fichiers différents
-- Logique indépendante d'une feature spécifique
-- Pattern récurrent identifié
+[À créer selon besoins]
 
 ================================================================================
 8. GUIDE D'INTÉGRATION D'UNE FEATURE
 ================================================================================
 
-ÉTAPE 1: Créer le package feature
----------------------------------
-content/[feature_name]/
-├── [Feature]Manager.java       # Point d'entrée de la feature (optionnel)
-├── block/                      # Si blocs spécifiques
-├── item/                       # Si items spécifiques
-└── entity/                     # Si entités spécifiques
-
-ÉTAPE 2: Créer les classes dans common/ ou content/
-----------------------------------------------------
-- Blocs → common/block/[feature]/ OU content/[feature]/block/
-- Items → common/item/[feature]/ OU content/[feature]/item/
-- Entités → common/entity/[feature]/ OU content/[feature]/entity/
-
-Règle: Si réutilisable → common/. Si spécifique → content/.
-
-ÉTAPE 3: Enregistrer dans les registres appropriés
---------------------------------------------------
-// BeemancerItems.java
-// --- [FEATURE NAME] ---
-public static final DeferredItem<Item> ... = ITEMS.register(...);
-
-// Ajouter au creative tab si nécessaire
-// BeemancerCreativeTabs.java
-
-ÉTAPE 4: Ajouter les assets
----------------------------
-resources/assets/beemancer/
-├── models/item/[nom].json
-├── models/block/[nom].json (si bloc)
-├── blockstates/[nom].json (si bloc)
-├── textures/item/[nom].png
-└── textures/block/[nom].png (si bloc)
-
-resources/data/beemancer/
-├── recipe/[nom].json (si craftable)
-└── loot_table/blocks/[nom].json (si bloc)
-
-ÉTAPE 5: Client-side (si nécessaire)
-------------------------------------
-- Renderer → client/renderer/[type]/[Nom]Renderer.java
-- Screen → client/gui/screen/[Nom]Screen.java
-- Enregistrer dans ClientSetup.java
-
-ÉTAPE 6: Mettre à jour Structure.txt
-------------------------------------
-- Ajouter dans section 5 (FEATURES IMPLÉMENTÉES)
-- Mettre à jour les tableaux de registres (section 4)
-- Ajouter les nouvelles dépendances universelles (section 7)
+ÉTAPE 1: Créer les classes dans common/ ou content/
+ÉTAPE 2: Enregistrer dans les registres appropriés
+ÉTAPE 3: Ajouter les assets (models, textures, lang)
+ÉTAPE 4: Client-side si nécessaire (ClientSetup.java)
+ÉTAPE 5: Mettre à jour Structure.txt
 
 ================================================================================
 9. CHANGELOG STRUCTURE
 ================================================================================
 
 --------------------------------------------------------------------------------
+2026-01-21 - Feature Debug Bee System
+--------------------------------------------------------------------------------
+Ajouts:
+- common/entity/bee/DebugBeeEntity.java
+- common/item/bee/BeeDebugItem.java
+- common/item/bee/BeeWandItem.java
+- common/event/BeeInteractionHandler.java
+- core/registry/BeemancerEntities.java
+- Assets: models/item/bee_debug.json, bee_wand.json
+- Textures: item/bee_debug.png, bee_wand.png
+- Lang: traductions Debug Bee System
+
+Modifications:
+- Beemancer.java: ajout enregistrement entités + attributs
+- BeemancerItems.java: +bee_debug, +bee_wand
+- BeemancerCreativeTabs.java: ajout nouveaux items
+- ClientSetup.java: ajout entity renderer
+- lang/*.json: nouvelles traductions
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
 2026-01-21 - Setup Initial + Feature Storage Crate
 --------------------------------------------------------------------------------
 Ajouts:
-- Beemancer.java : Point d'entrée du mod
-- core/registry/BeemancerBlocks.java : Registre des blocs
-- core/registry/BeemancerItems.java : Registre des items
-- core/registry/BeemancerBlockEntities.java : Registre des block entities
-- core/registry/BeemancerMenus.java : Registre des menus
-- core/registry/BeemancerCreativeTabs.java : Onglet créatif Beemancer
-- common/block/storage/StorageCrateBlock.java : Bloc Storage Crate
-- common/blockentity/storage/StorageCrateBlockEntity.java : BlockEntity 54 slots
-- common/menu/StorageCrateMenu.java : Menu double coffre
-- client/ClientSetup.java : Enregistrement screens
-- client/gui/screen/StorageCrateScreen.java : Screen du Storage Crate
-- Assets: blockstates, models, textures, lang, loot_table
-
-Configuration:
-- Migration de Fabric vers NeoForge 1.21.1
-- Package: com.chapeau.beemancer
+- Structure de base NeoForge 1.21.1
+- Feature Storage Crate complète
 --------------------------------------------------------------------------------
 
 ################################################################################

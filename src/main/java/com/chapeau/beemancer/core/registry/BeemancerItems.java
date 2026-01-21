@@ -10,6 +10,8 @@
  * |---------------------|----------------------|---------------------|
  * | Beemancer           | MOD_ID               | Clé du registre     |
  * | BeemancerBlocks     | Blocs enregistrés    | Création BlockItems |
+ * | BeeDebugItem        | Item abeille debug   | Enregistrement      |
+ * | BeeWandItem         | Baguette contrôle    | Enregistrement      |
  * ------------------------------------------------------------
  * 
  * UTILISÉ PAR:
@@ -21,6 +23,8 @@
 package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.item.bee.BeeDebugItem;
+import com.chapeau.beemancer.common.item.bee.BeeWandItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
@@ -33,6 +37,14 @@ public class BeemancerItems {
     // --- BLOCK ITEMS ---
     public static final DeferredItem<BlockItem> STORAGE_CRATE = ITEMS.register("storage_crate",
             () -> new BlockItem(BeemancerBlocks.STORAGE_CRATE.get(), new Item.Properties()));
+
+    // --- BEE ITEMS ---
+    public static final DeferredItem<BeeDebugItem> BEE_DEBUG = ITEMS.register("bee_debug",
+            () -> new BeeDebugItem(new Item.Properties()));
+
+    // --- TOOLS ---
+    public static final DeferredItem<BeeWandItem> BEE_WAND = ITEMS.register("bee_wand",
+            () -> new BeeWandItem(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
