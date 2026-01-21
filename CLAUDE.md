@@ -8,6 +8,49 @@
 
 ---
 
+## Fichier Structure.txt — OBLIGATOIRE
+
+### Avant chaque tâche
+1. **Lire `Structure.txt`** pour connaître l'état actuel du projet
+2. Identifier les fichiers existants réutilisables
+3. Identifier les dépendances universelles disponibles
+4. Vérifier les features déjà implémentées (éviter doublons)
+
+### Après chaque implémentation
+**OBLIGATOIRE**: Mettre à jour `Structure.txt` avec:
+
+1. **Section 4 (Registres)** — Ajouter les nouveaux items/blocs/entités dans les tableaux
+2. **Section 5 (Features implémentées)** — Documenter la feature complète:
+   ```
+   FEATURE: [Nom]
+   Description: [...]
+   Scripts créés: [...]
+   Dépendances: [...]
+   Registres modifiés: [...]
+   Assets: [...]
+   Référence: [...]
+   ```
+3. **Section 7 (Dépendances universelles)** — Si nouveau utilitaire créé
+4. **Section 9 (Changelog)** — Entrée datée des modifications
+
+### Format de mise à jour
+```markdown
+## Mise à jour Structure.txt
+
+### Registres ajoutés
+- BeemancerItems: +[item_id]
+- BeemancerBlocks: +[block_id]
+
+### Feature documentée
+[Copier le bloc complet]
+
+### Changelog
+[DATE] - [Feature]
+Ajouts: [liste]
+```
+
+---
+
 ## Règles Absolues
 
 ### 1. Modularité
@@ -147,9 +190,32 @@ EntryPoint
 ```
 
 ### Phase 4: Implémentation
+- **Lire Structure.txt** avant de commencer
 - Créer les dépendances universelles d'abord
 - Un commit logique par script
 - Tests unitaires si applicable
+- **Mettre à jour Structure.txt** après chaque fichier créé
+
+### Phase 5: Finalisation (OBLIGATOIRE)
+Après chaque feature complétée:
+
+```markdown
+## Mise à jour Structure.txt effectuée
+
+### Section 4 — Registres
+[Items/Blocs/Entités ajoutés]
+
+### Section 5 — Feature documentée
+FEATURE: [Nom]
+Description: [...]
+Statut: [...]
+Scripts créés: [...]
+[...]
+
+### Section 9 — Changelog
+[DATE] - [Feature]
+[Modifications]
+```
 
 ---
 
@@ -230,6 +296,7 @@ Référence: Create `AllPackets`
 
 ## Checklist Avant Commit
 
+- [ ] Structure.txt lu avant implémentation
 - [ ] Bloc d'en-tête présent et complet
 - [ ] Dépendances documentées
 - [ ] Fichier < 150 lignes
@@ -237,10 +304,15 @@ Référence: Create `AllPackets`
 - [ ] Pas de code dupliqué (extraire en util si besoin)
 - [ ] Imports organisés (pas de wildcard `*`)
 - [ ] Pas de TODO non documenté
+- [ ] **Structure.txt mis à jour** (registres, features, changelog)
 
 ---
 
 ## Ressources
+
+### Fichiers projet
+- **Structure.txt**: État actuel du projet, registres, features implémentées
+- **CLAUDE.md**: Ce fichier — règles et processus
 
 ### Dépôts de référence
 - Create: `https://github.com/Creators-of-Create/Create`
@@ -254,10 +326,12 @@ Référence: Create `AllPackets`
 
 ## Notes Importantes
 
-1. **Toujours chercher dans Create/Cobblemon avant d'inventer** — Ces mods ont résolu la plupart des problèmes courants.
+1. **Structure.txt est la source de vérité** — Toujours le consulter avant d'implémenter, toujours le mettre à jour après.
 
-2. **Dépendances universelles prioritaires** — Si un helper peut servir ailleurs, le mettre dans `core/util/`.
+2. **Toujours chercher dans Create/Cobblemon avant d'inventer** — Ces mods ont résolu la plupart des problèmes courants.
 
-3. **Pas d'optimisation prématurée** — Code lisible d'abord, optimiser si profilage le justifie.
+3. **Dépendances universelles prioritaires** — Si un helper peut servir ailleurs, le mettre dans `core/util/`.
 
-4. **Demander clarification si doute** — Mieux vaut une question que du code inutile.
+4. **Pas d'optimisation prématurée** — Code lisible d'abord, optimiser si profilage le justifie.
+
+5. **Demander clarification si doute** — Mieux vaut une question que du code inutile.
