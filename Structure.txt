@@ -1,0 +1,374 @@
+################################################################################
+#                              BEEMANCER - STRUCTURE                           #
+#                         Dernière mise à jour: [DATE]                         #
+################################################################################
+
+================================================================================
+TABLE DES MATIÈRES
+================================================================================
+1. VUE D'ENSEMBLE
+2. ARBORESCENCE COMPLÈTE
+3. FICHIERS FONDAMENTAUX (CORE)
+4. REGISTRES
+5. FEATURES IMPLÉMENTÉES
+6. FEATURES EN COURS
+7. DÉPENDANCES UNIVERSELLES
+8. GUIDE D'INTÉGRATION D'UNE FEATURE
+9. CHANGELOG STRUCTURE
+
+================================================================================
+1. VUE D'ENSEMBLE
+================================================================================
+
+Mod: Beemancer
+Version MC: 1.21.1
+Loader: NeoForge
+Package racine: com.beemancer
+
+Philosophie:
+- Modularité maximale (1 script = 1 responsabilité)
+- Dépendances universelles réutilisables
+- Patterns inspirés de Create et Cobblemon
+
+================================================================================
+2. ARBORESCENCE COMPLÈTE
+================================================================================
+
+src/main/java/com/beemancer/
+│
+├── Beemancer.java                      # [CORE] Point d'entrée du mod
+│
+├── core/                               # === FONDATIONS UNIVERSELLES ===
+│   ├── registry/
+│   │   ├── BeemancerItems.java         # [REGISTRY] Tous les items
+│   │   ├── BeemancerBlocks.java        # [REGISTRY] Tous les blocs
+│   │   ├── BeemancerBlockEntities.java # [REGISTRY] Tous les block entities
+│   │   ├── BeemancerEntities.java      # [REGISTRY] Toutes les entités
+│   │   ├── BeemancerMenus.java         # [REGISTRY] Tous les menus/containers
+│   │   ├── BeemancerCreativeTabs.java  # [REGISTRY] Onglets créatifs
+│   │   └── BeemancerRegistries.java    # [REGISTRY] Registres custom (si besoin)
+│   │
+│   ├── config/
+│   │   ├── BeemancerConfig.java        # [CONFIG] Configuration principale
+│   │   ├── ServerConfig.java           # [CONFIG] Config serveur
+│   │   └── ClientConfig.java           # [CONFIG] Config client
+│   │
+│   ├── network/
+│   │   ├── BeemancerNetwork.java       # [NETWORK] Setup réseau
+│   │   └── packets/                    # [NETWORK] Packets individuels
+│   │       └── [À COMPLÉTER]
+│   │
+│   └── util/                           # === UTILITAIRES UNIVERSELS ===
+│       ├── BeemancerConstants.java     # [UTIL] Constantes globales
+│       ├── BeemancerTags.java          # [UTIL] Références aux tags
+│       ├── MathHelper.java             # [UTIL] Fonctions mathématiques
+│       ├── NBTHelper.java              # [UTIL] Manipulation NBT
+│       ├── InventoryHelper.java        # [UTIL] Manipulation inventaires
+│       └── [À COMPLÉTER]
+│
+├── common/                             # === LOGIQUE PARTAGÉE ===
+│   ├── block/
+│   │   ├── base/                       # Blocs de base réutilisables
+│   │   │   └── [À COMPLÉTER]
+│   │   └── [feature]/                  # Blocs par feature
+│   │       └── [À COMPLÉTER]
+│   │
+│   ├── blockentity/
+│   │   ├── base/                       # BlockEntities de base
+│   │   │   └── [À COMPLÉTER]
+│   │   └── [feature]/
+│   │       └── [À COMPLÉTER]
+│   │
+│   ├── item/
+│   │   ├── base/                       # Items de base réutilisables
+│   │   │   └── [À COMPLÉTER]
+│   │   └── [feature]/
+│   │       └── [À COMPLÉTER]
+│   │
+│   ├── entity/
+│   │   ├── base/                       # Entités de base
+│   │   │   └── [À COMPLÉTER]
+│   │   └── [feature]/
+│   │       └── [À COMPLÉTER]
+│   │
+│   ├── capability/
+│   │   └── [À COMPLÉTER]
+│   │
+│   ├── menu/
+│   │   └── [À COMPLÉTER]
+│   │
+│   └── data/                           # DataComponents, Codecs
+│       └── [À COMPLÉTER]
+│
+├── client/                             # === CLIENT UNIQUEMENT ===
+│   ├── ClientSetup.java                # [CLIENT] Initialisation client
+│   │
+│   ├── renderer/
+│   │   ├── block/                      # Renderers de blocs
+│   │   │   └── [À COMPLÉTER]
+│   │   └── entity/                     # Renderers d'entités
+│   │       └── [À COMPLÉTER]
+│   │
+│   ├── model/
+│   │   └── [À COMPLÉTER]
+│   │
+│   ├── gui/
+│   │   ├── screen/                     # Screens
+│   │   │   └── [À COMPLÉTER]
+│   │   └── widget/                     # Widgets réutilisables
+│   │       └── [À COMPLÉTER]
+│   │
+│   └── particle/
+│       └── [À COMPLÉTER]
+│
+├── content/                            # === CONTENU PAR FEATURE ===
+│   └── [feature_name]/                 # Un package par feature majeure
+│       ├── [Feature]Manager.java       # Gestionnaire de la feature
+│       └── [sous-éléments]/
+│
+└── datagen/                            # === GÉNÉRATION DE DATA ===
+    ├── BeemancerDataGenerators.java    # [DATAGEN] Point d'entrée
+    ├── loot/
+    │   └── [À COMPLÉTER]
+    ├── recipe/
+    │   └── [À COMPLÉTER]
+    ├── tag/
+    │   └── [À COMPLÉTER]
+    └── model/
+        └── [À COMPLÉTER]
+
+--------------------------------------------------------------------------------
+src/main/resources/
+│
+├── META-INF/
+│   └── neoforge.mods.toml              # [CONFIG] Déclaration du mod
+│
+├── assets/beemancer/
+│   ├── blockstates/                    # États des blocs
+│   ├── models/
+│   │   ├── block/
+│   │   └── item/
+│   ├── textures/
+│   │   ├── block/
+│   │   ├── item/
+│   │   ├── entity/
+│   │   └── gui/
+│   └── lang/
+│       └── en_us.json                  # Traductions
+│
+└── data/beemancer/
+    ├── recipe/
+    ├── loot_table/
+    ├── tag/
+    └── [autres data]/
+
+================================================================================
+3. FICHIERS FONDAMENTAUX (CORE)
+================================================================================
+
+Ces fichiers DOIVENT exister et être maintenus:
+
+┌─────────────────────────────────────┬────────────────────────────────────────┐
+│ Fichier                             │ Rôle                                   │
+├─────────────────────────────────────┼────────────────────────────────────────┤
+│ Beemancer.java                      │ Point d'entrée, enregistrement bus     │
+│ core/registry/BeemancerItems.java   │ Registre centralisé des items          │
+│ core/registry/BeemancerBlocks.java  │ Registre centralisé des blocs          │
+│ core/config/BeemancerConfig.java    │ Configuration globale                  │
+│ core/network/BeemancerNetwork.java  │ Setup packets réseau                   │
+│ client/ClientSetup.java             │ Init client (renderers, etc.)          │
+└─────────────────────────────────────┴────────────────────────────────────────┘
+
+================================================================================
+4. REGISTRES
+================================================================================
+
+Format d'ajout aux registres:
+
+// Dans BeemancerItems.java
+// --- [CATÉGORIE] ---
+public static final DeferredItem<Item> NOM_ITEM = ITEMS.register("nom_item",
+    () -> new TypeItem(new Item.Properties()));
+
+--------------------------------------------------------------------------------
+ITEMS ENREGISTRÉS:
+--------------------------------------------------------------------------------
+| ID                | Classe            | Feature      | Statut    |
+|-------------------|-------------------|--------------|-----------|
+| [exemple]         | [ExempleItem]     | [feature]    | [OK/WIP]  |
+| [À COMPLÉTER]     |                   |              |           |
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+BLOCS ENREGISTRÉS:
+--------------------------------------------------------------------------------
+| ID                | Classe            | BlockEntity? | Feature      | Statut |
+|-------------------|-------------------|--------------|--------------|--------|
+| [exemple]         | [ExempleBlock]    | Oui/Non      | [feature]    | [OK]   |
+| [À COMPLÉTER]     |                   |              |              |        |
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+ENTITÉS ENREGISTRÉES:
+--------------------------------------------------------------------------------
+| ID                | Classe            | Feature      | Statut    |
+|-------------------|-------------------|--------------|-----------|
+| [À COMPLÉTER]     |                   |              |           |
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+BLOCK ENTITIES ENREGISTRÉES:
+--------------------------------------------------------------------------------
+| ID                | Classe            | Block associé    | Statut    |
+|-------------------|-------------------|------------------|-----------|
+| [À COMPLÉTER]     |                   |                  |           |
+--------------------------------------------------------------------------------
+
+================================================================================
+5. FEATURES IMPLÉMENTÉES
+================================================================================
+
+[Section à compléter au fur et à mesure]
+
+--------------------------------------------------------------------------------
+FEATURE: [Nom de la feature]
+--------------------------------------------------------------------------------
+Description: [Une ligne]
+Statut: COMPLÈTE / EN TEST / STABLE
+
+Scripts créés:
+- [path/to/File.java] : [rôle]
+- [path/to/File2.java] : [rôle]
+
+Dépendances utilisées:
+- [DépendanceX] : [pourquoi]
+
+Registres modifiés:
+- BeemancerItems: +[item1], +[item2]
+- BeemancerBlocks: +[block1]
+
+Assets créés:
+- textures/item/[nom].png
+- models/item/[nom].json
+
+Référence Create/Cobblemon: [Quelle feature a servi de modèle]
+--------------------------------------------------------------------------------
+
+================================================================================
+6. FEATURES EN COURS
+================================================================================
+
+[Section pour tracker les features en développement]
+
+--------------------------------------------------------------------------------
+FEATURE: [Nom]
+--------------------------------------------------------------------------------
+Statut: PLANIFIÉ / EN COURS / EN PAUSE
+Priorité: HAUTE / MOYENNE / BASSE
+Assigné: [date début]
+
+TODO:
+- [ ] [Tâche 1]
+- [ ] [Tâche 2]
+
+Bloqueurs:
+- [Si applicable]
+--------------------------------------------------------------------------------
+
+================================================================================
+7. DÉPENDANCES UNIVERSELLES
+================================================================================
+
+Utilitaires disponibles dans core/util/:
+
+┌─────────────────────────┬──────────────────────────────────────────────────────┐
+│ Classe                  │ Méthodes principales                                 │
+├─────────────────────────┼──────────────────────────────────────────────────────┤
+│ BeemancerConstants      │ MOD_ID, chemins ressources                           │
+│ BeemancerTags           │ Tags items/blocs/entités                             │
+│ MathHelper              │ [À COMPLÉTER selon besoins]                          │
+│ NBTHelper               │ [À COMPLÉTER selon besoins]                          │
+│ InventoryHelper         │ [À COMPLÉTER selon besoins]                          │
+└─────────────────────────┴──────────────────────────────────────────────────────┘
+
+Quand ajouter un utilitaire:
+- Fonction utilisée par 2+ fichiers différents
+- Logique indépendante d'une feature spécifique
+- Pattern récurrent identifié
+
+================================================================================
+8. GUIDE D'INTÉGRATION D'UNE FEATURE
+================================================================================
+
+ÉTAPE 1: Créer le package feature
+---------------------------------
+content/[feature_name]/
+├── [Feature]Manager.java       # Point d'entrée de la feature (optionnel)
+├── block/                      # Si blocs spécifiques
+├── item/                       # Si items spécifiques
+└── entity/                     # Si entités spécifiques
+
+ÉTAPE 2: Créer les classes dans common/ ou content/
+----------------------------------------------------
+- Blocs → common/block/[feature]/ OU content/[feature]/block/
+- Items → common/item/[feature]/ OU content/[feature]/item/
+- Entités → common/entity/[feature]/ OU content/[feature]/entity/
+
+Règle: Si réutilisable → common/. Si spécifique → content/.
+
+ÉTAPE 3: Enregistrer dans les registres appropriés
+--------------------------------------------------
+// BeemancerItems.java
+// --- [FEATURE NAME] ---
+public static final DeferredItem<Item> ... = ITEMS.register(...);
+
+// Ajouter au creative tab si nécessaire
+// BeemancerCreativeTabs.java
+
+ÉTAPE 4: Ajouter les assets
+---------------------------
+resources/assets/beemancer/
+├── models/item/[nom].json
+├── models/block/[nom].json (si bloc)
+├── blockstates/[nom].json (si bloc)
+├── textures/item/[nom].png
+└── textures/block/[nom].png (si bloc)
+
+resources/data/beemancer/
+├── recipe/[nom].json (si craftable)
+└── loot_table/blocks/[nom].json (si bloc)
+
+ÉTAPE 5: Client-side (si nécessaire)
+------------------------------------
+- Renderer → client/renderer/[type]/[Nom]Renderer.java
+- Screen → client/gui/screen/[Nom]Screen.java
+- Enregistrer dans ClientSetup.java
+
+ÉTAPE 6: Mettre à jour Structure.txt
+------------------------------------
+- Ajouter dans section 5 (FEATURES IMPLÉMENTÉES)
+- Mettre à jour les tableaux de registres (section 4)
+- Ajouter les nouvelles dépendances universelles (section 7)
+
+================================================================================
+9. CHANGELOG STRUCTURE
+================================================================================
+
+[À compléter à chaque modification majeure de la structure]
+
+--------------------------------------------------------------------------------
+[DATE] - [Version/Feature]
+--------------------------------------------------------------------------------
+Ajouts:
+- [fichier ajouté] : [raison]
+
+Modifications:
+- [fichier modifié] : [ce qui a changé]
+
+Suppressions:
+- [fichier supprimé] : [raison]
+--------------------------------------------------------------------------------
+
+################################################################################
+#                              FIN DU DOCUMENT                                  #
+################################################################################
