@@ -91,7 +91,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         
         // Reload genes when bee changes
         if (menu.hasBee()) {
-            menu.loadGenesFromBee();
+            //menu.loadGenesFromBee();
         }
     }
 
