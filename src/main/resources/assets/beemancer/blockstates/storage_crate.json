@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "beemancer:block/storage_crate"
+    }
+  }
+}
