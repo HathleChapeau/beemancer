@@ -28,7 +28,10 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -51,6 +54,17 @@ public class DebugBeeEntity extends Bee {
 
     public DebugBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
+        this.moveControl = new FlyingMoveControl(this, 20, true);
+    }
+
+    @Override
+    protected PathNavigation createNavigation(Level level) {
+        // CHANGE 2 : Utiliser la navigation aérienne (permet de calculer des chemins en 3D)
+        FlyingPathNavigation navigation = new FlyingPathNavigation(this, level);
+        navigation.setCanOpenDoors(false);
+        navigation.setCanFloat(true);
+        navigation.setCanPassDoors(true);
+        return navigation;
     }
 
     @Override
@@ -63,9 +77,26 @@ public class DebugBeeEntity extends Bee {
 
     @Override
     protected void registerGoals() {
+        // 1. OBLIGATOIRE : Initialiser les variables internes de l'abeille (pollinisation, etc.)
+        // Sans ça, le jeu crash car beePollinateGoal reste null.
+        super.registerGoals();
+
+        // 2. NETTOYAGE (Optionnel mais recommandé pour ton cas)
+        // Comme c'est une entité de Debug, tu ne veux probablement pas qu'elle aille chercher des fleurs
+        // ou qu'elle retourne à une ruche. On supprime donc toute l'IA vanilla qu'on vient de charger.
+        this.goalSelector.getAvailableGoals().removeIf(goal -> true);
+
+        // 3. Ajouter tes propres goals
+        // (Par exemple ton goal de suivi de baguette ou de vol stationnaire)
+        this.goalSelector.addGoal(1, new BeeFlyToTargetGoal(this));
+    }
+
+    /*
+    @Override
+    protected void registerGoals() {
         // On ne garde que notre goal de navigation personnalisé
         this.goalSelector.addGoal(1, new MoveToTargetGoal(this));
-    }
+    }*/
 
     public static AttributeSupplier.Builder createAttributes() {
         return Bee.createAttributes()
@@ -151,6 +182,46 @@ public class DebugBeeEntity extends Bee {
     }
 
     // --- Goal de navigation personnalisé ---
+
+    private static class BeeFlyToTargetGoal extends Goal {
+        private final DebugBeeEntity bee;
+
+        public BeeFlyToTargetGoal(DebugBeeEntity bee) {
+            this.bee = bee;
+            this.setFlags(EnumSet.of(Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            // S'active si une cible est définie et que l'abeille n'y est pas encore
+            return bee.hasTarget() && bee.distanceToSqr(Vec3.atCenterOf(bee.getTargetPos())) > 2.0;
+        }
+
+        @Override
+        public void start() {
+            if (bee.getTargetPos() != null) {
+                Vec3 target = Vec3.atCenterOf(bee.getTargetPos());
+                // On utilise le moteur de navigation de Minecraft pour un vol fluide
+                bee.getNavigation().moveTo(target.x, target.y, target.z, 1.0 + (bee.getBeeSpeed() * 0.1));
+            }
+        }
+
+        @Override
+        public void tick() {
+            if (bee.getTargetPos() != null) {
+                // Si la cible change ou pour réactualiser le chemin
+                Vec3 target = Vec3.atCenterOf(bee.getTargetPos());
+                if (bee.getNavigation().isDone()) {
+                    bee.getNavigation().moveTo(target.x, target.y, target.z, 1.0 + (bee.getBeeSpeed() * 0.1));
+                }
+            }
+        }
+
+        @Override
+        public void stop() {
+            bee.getNavigation().stop();
+        }
+    }
 
     private static class MoveToTargetGoal extends Goal {
         private final DebugBeeEntity bee;
