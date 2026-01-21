@@ -1,0 +1,70 @@
+{
+  "_comment": "Configuration des combinaisons de breeding entre especes",
+  "_format": "parent1 + parent2 -> resultats possibles avec probabilites (en %)",
+  "_note": "Les probabilites doivent totaliser 100%. 'nothing' = pas de descendant",
+  
+  "combinations": [
+    {
+      "parent1": "common",
+      "parent2": "common",
+      "results": [
+        { "species": "common", "chance": 85 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "parent1": "common",
+      "parent2": "noble",
+      "results": [
+        { "species": "common", "chance": 50 },
+        { "species": "noble", "chance": 30 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "parent1": "common",
+      "parent2": "diligent",
+      "results": [
+        { "species": "common", "chance": 50 },
+        { "species": "diligent", "chance": 30 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "parent1": "noble",
+      "parent2": "noble",
+      "results": [
+        { "species": "noble", "chance": 70 },
+        { "species": "common", "chance": 15 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "parent1": "noble",
+      "parent2": "diligent",
+      "results": [
+        { "species": "noble", "chance": 30 },
+        { "species": "diligent", "chance": 30 },
+        { "species": "common", "chance": 20 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "parent1": "diligent",
+      "parent2": "diligent",
+      "results": [
+        { "species": "diligent", "chance": 70 },
+        { "species": "common", "chance": 15 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    }
+  ],
+  
+  "defaultResult": {
+    "_comment": "Resultat par defaut si la combinaison n'est pas definie",
+    "results": [
+      { "species": "common", "chance": 40 },
+      { "species": "nothing", "chance": 60 }
+    ]
+  }
+}
