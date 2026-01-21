@@ -63,8 +63,8 @@
   "defaultResult": {
     "_comment": "Resultat par defaut si la combinaison n'est pas definie",
     "results": [
-      { "species": "common", "chance": 40 },
-      { "species": "nothing", "chance": 60 }
+      { "species": "common", "chance": 50 },
+      { "species": "nothing", "chance": 50 }
     ]
   }
 }

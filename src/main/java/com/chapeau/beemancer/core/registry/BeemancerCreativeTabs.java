@@ -33,6 +33,7 @@ public class BeemancerCreativeTabs {
                         
                         // Machines
                         output.accept(BeemancerItems.BEE_CREATOR.get());
+                        output.accept(BeemancerItems.MAGIC_HIVE.get());
                         
                         // Storage
                         output.accept(BeemancerItems.STORAGE_CRATE.get());

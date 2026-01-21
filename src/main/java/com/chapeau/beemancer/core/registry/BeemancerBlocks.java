@@ -8,6 +8,7 @@ package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlock;
+import com.chapeau.beemancer.common.block.hive.MagicHiveBlock;
 import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -29,6 +30,10 @@ public class BeemancerBlocks {
             () -> new BeeCreatorBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> MAGIC_HIVE = BLOCKS.register("magic_hive",
+            () -> new MagicHiveBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)));
 
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);

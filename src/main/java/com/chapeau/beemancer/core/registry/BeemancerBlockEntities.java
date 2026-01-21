@@ -8,6 +8,7 @@ package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlockEntity;
+import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageCrateBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -32,6 +33,13 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             BeeCreatorBlockEntity::new,
                             BeemancerBlocks.BEE_CREATOR.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<MagicHiveBlockEntity>> MAGIC_HIVE = 
+            BLOCK_ENTITIES.register("magic_hive",
+                    () -> BlockEntityType.Builder.of(
+                            MagicHiveBlockEntity::new,
+                            BeemancerBlocks.MAGIC_HIVE.get()
                     ).build(null));
 
     public static void register(IEventBus eventBus) {

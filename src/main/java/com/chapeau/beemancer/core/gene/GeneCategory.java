@@ -61,4 +61,5 @@ public class GeneCategory {
     public static final GeneCategory SPECIES = new GeneCategory("species", ChatFormatting.GOLD, 0);
     public static final GeneCategory ENVIRONMENT = new GeneCategory("environment", ChatFormatting.GREEN, 1);
     public static final GeneCategory FLOWER = new GeneCategory("flower", ChatFormatting.LIGHT_PURPLE, 2);
+    public static final GeneCategory LIFETIME = new GeneCategory("lifetime", ChatFormatting.AQUA, 3);
 }

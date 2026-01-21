@@ -8,6 +8,7 @@ package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.menu.BeeCreatorMenu;
+import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import com.chapeau.beemancer.common.menu.StorageCrateMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
@@ -28,6 +29,10 @@ public class BeemancerMenus {
     public static final Supplier<MenuType<BeeCreatorMenu>> BEE_CREATOR = 
             MENUS.register("bee_creator",
                     () -> IMenuTypeExtension.create(BeeCreatorMenu::new));
+
+    public static final Supplier<MenuType<MagicHiveMenu>> MAGIC_HIVE = 
+            MENUS.register("magic_hive",
+                    () -> IMenuTypeExtension.create(MagicHiveMenu::new));
 
     public static void register(IEventBus eventBus) {
         MENUS.register(eventBus);

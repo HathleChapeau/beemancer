@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [BeeGeneData.java]
- * Description: Stocke les gènes d'une abeille
+ * Description: Stocke les gènes d'une abeille + durée de vie
  * ============================================================
  * 
  * UTILISÉ PAR:
@@ -11,12 +11,17 @@
  */
 package com.chapeau.beemancer.core.gene;
 
+import com.chapeau.beemancer.content.gene.lifetime.LifetimeGene;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.*;
 
 public class BeeGeneData {
     private final Map<GeneCategory, Gene> genes = new HashMap<>();
+    
+    // Lifetime tracking
+    private int remainingLifetime = 24000; // Ticks restants
+    private int maxLifetime = 24000;       // Ticks maximum
 
     public BeeGeneData() {
         // Initialiser avec les gènes par défaut pour chaque catégorie
@@ -26,6 +31,57 @@ public class BeeGeneData {
                 genes.put(category, defaultGene);
             }
         }
+        // Initialiser lifetime depuis le gène
+        initializeLifetimeFromGene();
+    }
+
+    /**
+     * Initialise les valeurs de lifetime depuis le gène LIFETIME
+     */
+    public void initializeLifetimeFromGene() {
+        Gene lifetimeGene = genes.get(GeneCategory.LIFETIME);
+        if (lifetimeGene instanceof LifetimeGene lg) {
+            this.maxLifetime = lg.getMaxLifetimeTicks();
+            this.remainingLifetime = this.maxLifetime;
+        }
+    }
+
+    /**
+     * @return Ticks de vie restants
+     */
+    public int getRemainingLifetime() {
+        return remainingLifetime;
+    }
+
+    /**
+     * Définit les ticks de vie restants
+     */
+    public void setRemainingLifetime(int ticks) {
+        this.remainingLifetime = Math.max(0, ticks);
+    }
+
+    /**
+     * @return Ticks de vie maximum
+     */
+    public int getMaxLifetime() {
+        return maxLifetime;
+    }
+
+    /**
+     * @return Ratio de vie restante (0.0 à 1.0)
+     */
+    public float getLifetimeRatio() {
+        if (maxLifetime <= 0) return 1.0f;
+        return (float) remainingLifetime / maxLifetime;
+    }
+
+    /**
+     * Décrémente le lifetime de N ticks
+     * @return true si l'abeille est encore en vie
+     */
+    public boolean decrementLifetime(int ticks) {
+        remainingLifetime = Math.max(0, remainingLifetime - ticks);
+        return remainingLifetime > 0;
     }
 
     /**
@@ -52,6 +108,12 @@ public class BeeGeneData {
         }
         
         genes.put(gene.getCategory(), gene);
+        
+        // Si on change le gène de lifetime, réinitialiser
+        if (gene.getCategory() == GeneCategory.LIFETIME) {
+            initializeLifetimeFromGene();
+        }
+        
         return true;
     }
 
@@ -78,6 +140,8 @@ public class BeeGeneData {
     public void copyFrom(BeeGeneData other) {
         this.genes.clear();
         this.genes.putAll(other.genes);
+        this.remainingLifetime = other.remainingLifetime;
+        this.maxLifetime = other.maxLifetime;
     }
 
     /**
@@ -87,6 +151,8 @@ public class BeeGeneData {
         BeeGeneData copy = new BeeGeneData();
         copy.genes.clear();
         copy.genes.putAll(this.genes);
+        copy.remainingLifetime = this.remainingLifetime;
+        copy.maxLifetime = this.maxLifetime;
         return copy;
     }
 
@@ -98,6 +164,9 @@ public class BeeGeneData {
         for (Map.Entry<GeneCategory, Gene> entry : genes.entrySet()) {
             tag.putString(entry.getKey().getId(), entry.getValue().getId());
         }
+        // Sauvegarder le lifetime
+        tag.putInt("remainingLifetime", remainingLifetime);
+        tag.putInt("maxLifetime", maxLifetime);
         return tag;
     }
 
@@ -106,10 +175,13 @@ public class BeeGeneData {
      */
     public void load(CompoundTag tag) {
         genes.clear();
-        for (String categoryId : tag.getAllKeys()) {
-            GeneCategory category = GeneCategory.byId(categoryId);
+        for (String key : tag.getAllKeys()) {
+            // Ignorer les clés spéciales
+            if (key.equals("remainingLifetime") || key.equals("maxLifetime")) continue;
+            
+            GeneCategory category = GeneCategory.byId(key);
             if (category != null) {
-                String geneId = tag.getString(categoryId);
+                String geneId = tag.getString(key);
                 Gene gene = GeneRegistry.getGene(category, geneId);
                 if (gene != null) {
                     genes.put(category, gene);
@@ -126,12 +198,22 @@ public class BeeGeneData {
                 }
             }
         }
+        
+        // Charger le lifetime
+        if (tag.contains("remainingLifetime")) {
+            this.remainingLifetime = tag.getInt("remainingLifetime");
+            this.maxLifetime = tag.getInt("maxLifetime");
+        } else {
+            // Si pas de données lifetime, initialiser depuis le gène
+            initializeLifetimeFromGene();
+        }
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("BeeGeneData{");
         genes.forEach((cat, gene) -> sb.append(cat.getId()).append("=").append(gene.getId()).append(", "));
+        sb.append("lifetime=").append(remainingLifetime).append("/").append(maxLifetime);
         return sb.append("}").toString();
     }
 }

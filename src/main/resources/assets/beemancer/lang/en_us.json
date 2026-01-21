@@ -3,14 +3,17 @@
   
   "block.beemancer.storage_crate": "Storage Crate",
   "block.beemancer.bee_creator": "Bee Creator",
+  "block.beemancer.magic_hive": "Magic Hive",
   
   "container.beemancer.storage_crate": "Storage Crate",
   "container.beemancer.bee_creator": "Bee Creator",
+  "container.beemancer.magic_hive": "Magic Hive",
   
   "entity.beemancer.magic_bee": "Magic Bee",
   
   "item.beemancer.magic_bee": "Magic Bee",
   "item.beemancer.magic_bee.shift_hint": "Hold SHIFT for gene details",
+  "item.beemancer.magic_bee.assigned_hive": "Assigned Hive",
   
   "item.beemancer.bee_wand": "Bee Wand",
   "item.beemancer.bee_wand.has_selection": "Bee selected",
@@ -29,6 +32,7 @@
   "gene.category.beemancer.species": "Species",
   "gene.category.beemancer.environment": "Environment",
   "gene.category.beemancer.flower": "Flower",
+  "gene.category.beemancer.lifetime": "Lifetime",
   
   "gene.beemancer.species.common": "Common",
   "gene.beemancer.species.common.desc": "A regular bee species",
@@ -49,5 +53,12 @@
   "gene.beemancer.flower.crops": "Crops",
   "gene.beemancer.flower.crops.desc": "Pollinates crop plants",
   "gene.beemancer.flower.cave_plants": "Cave Plants",
-  "gene.beemancer.flower.cave_plants.desc": "Pollinates cave vegetation"
+  "gene.beemancer.flower.cave_plants.desc": "Pollinates cave vegetation",
+  
+  "gene.beemancer.lifetime.short": "Short",
+  "gene.beemancer.lifetime.short.desc": "Lives for about 5 minutes",
+  "gene.beemancer.lifetime.normal": "Normal",
+  "gene.beemancer.lifetime.normal.desc": "Lives for about 20 minutes",
+  "gene.beemancer.lifetime.long": "Long",
+  "gene.beemancer.lifetime.long.desc": "Lives for about 60 minutes"
 }

@@ -1,6 +1,6 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-01-21                     #
+#                         Dernière mise à jour: 2026-01-22                     #
 ################################################################################
 
 ================================================================================
@@ -52,7 +52,7 @@ src/main/java/com/chapeau/beemancer/
 │   │   ├── AbstractGene.java           # Classe abstraite de base
 │   │   ├── GeneCategory.java           # Catégories de gènes
 │   │   ├── GeneRegistry.java           # Registre des gènes
-│   │   └── BeeGeneData.java            # Données gènes d'une abeille
+│   │   └── BeeGeneData.java            # Données gènes + lifetime
 │   │
 │   └── network/
 │       ├── BeemancerNetwork.java
@@ -63,26 +63,33 @@ src/main/java/com/chapeau/beemancer/
 │   ├── block/
 │   │   ├── storage/
 │   │   │   └── StorageCrateBlock.java
-│   │   └── beecreator/
-│   │       ├── BeeCreatorBlock.java
-│   │       └── BeeCreatorBlockEntity.java
+│   │   ├── beecreator/
+│   │   │   ├── BeeCreatorBlock.java
+│   │   │   └── BeeCreatorBlockEntity.java
+│   │   └── hive/
+│   │       ├── MagicHiveBlock.java
+│   │       └── MagicHiveBlockEntity.java
 │   │
 │   ├── blockentity/storage/
 │   │   └── StorageCrateBlockEntity.java
 │   │
 │   ├── item/bee/
-│   │   ├── MagicBeeItem.java           # Item abeille avec gènes
+│   │   ├── MagicBeeItem.java           # Item abeille avec gènes + durability bar
 │   │   └── BeeWandItem.java            # Baguette de contrôle
 │   │
 │   ├── entity/bee/
-│   │   └── MagicBeeEntity.java         # Entité abeille avec gènes
+│   │   └── MagicBeeEntity.java         # Entité abeille avec gènes + lifetime
 │   │
 │   ├── event/
 │   │   └── BeeInteractionHandler.java
 │   │
 │   └── menu/
 │       ├── StorageCrateMenu.java
-│       └── BeeCreatorMenu.java
+│       ├── BeeCreatorMenu.java
+│       ├── MagicHiveMenu.java
+│       └── slot/
+│           ├── OutputOnlySlot.java     # Slot extraction uniquement
+│           └── BeeAssignmentSlot.java  # Slot pour abeilles
 │
 ├── content/                            # === CONTENU PAR FEATURE ===
 │   └── gene/                           # Implémentations des gènes
@@ -97,17 +104,23 @@ src/main/java/com/chapeau/beemancer/
 │       │   ├── NormalEnvironmentGene.java
 │       │   ├── RobustEnvironmentGene.java
 │       │   └── NocturnalEnvironmentGene.java
-│       └── flower/
-│           ├── FlowerGene.java
-│           ├── FlowersFlowerGene.java
-│           ├── CropsFlowerGene.java
-│           └── CavePlantsFlowerGene.java
+│       ├── flower/
+│       │   ├── FlowerGene.java
+│       │   ├── FlowersFlowerGene.java
+│       │   ├── CropsFlowerGene.java
+│       │   └── CavePlantsFlowerGene.java
+│       └── lifetime/
+│           ├── LifetimeGene.java
+│           ├── ShortLifetimeGene.java
+│           ├── NormalLifetimeGene.java
+│           └── LongLifetimeGene.java
 │
 └── client/
     ├── ClientSetup.java
     └── gui/screen/
         ├── StorageCrateScreen.java
-        └── BeeCreatorScreen.java
+        ├── BeeCreatorScreen.java
+        └── MagicHiveScreen.java
 
 ================================================================================
 3. FICHIERS FONDAMENTAUX (CORE)
@@ -120,6 +133,7 @@ src/main/java/com/chapeau/beemancer/
 │ core/gene/Gene.java                 │ Interface pour tous les gènes          │
 │ core/gene/GeneRegistry.java         │ Registre central des gènes             │
 │ core/gene/GeneCategory.java         │ Définition des catégories              │
+│ core/gene/BeeGeneData.java          │ Stockage gènes + lifetime              │
 │ content/gene/GeneInit.java          │ Enregistrement de tous les gènes       │
 │ client/ClientSetup.java             │ Init client (screens, renderers)       │
 └─────────────────────────────────────┴────────────────────────────────────────┘
@@ -133,6 +147,7 @@ ITEMS:
 |---------------|-----------------|--------------|
 | storage_crate | BlockItem       | Storage      |
 | bee_creator   | BlockItem       | Bee Creator  |
+| magic_hive    | BlockItem       | Magic Hive   |
 | magic_bee     | MagicBeeItem    | Gene System  |
 | bee_wand      | BeeWandItem     | Bee Control  |
 
@@ -141,6 +156,7 @@ BLOCS:
 |---------------|------------------|--------------|--------------|
 | storage_crate | StorageCrateBlock| Oui          | Storage      |
 | bee_creator   | BeeCreatorBlock  | Oui          | Gene Editor  |
+| magic_hive    | MagicHiveBlock   | Oui          | Bee Housing  |
 
 ENTITÉS:
 | ID        | Classe          | Feature      |
@@ -152,6 +168,7 @@ MENUS:
 |---------------|------------------|--------------|
 | storage_crate | StorageCrateMenu | Storage      |
 | bee_creator   | BeeCreatorMenu   | Gene Editor  |
+| magic_hive    | MagicHiveMenu    | Bee Housing  |
 
 ================================================================================
 5. FEATURES IMPLÉMENTÉES
@@ -164,11 +181,11 @@ Description: Système modulaire de gènes pour les abeilles
 Statut: COMPLÈTE
 
 Architecture:
-- GeneCategory: Catégorie de gènes (species, environment, flower)
+- GeneCategory: Catégorie de gènes (species, environment, flower, lifetime)
 - Gene: Interface définissant un gène
 - AbstractGene: Implémentation de base
 - GeneRegistry: Registre central
-- BeeGeneData: Stockage des gènes d'une abeille
+- BeeGeneData: Stockage des gènes + lifetime d'une abeille
 
 Catégories de gènes:
 1. SPECIES (Espèce) - Couleur: Or
@@ -185,17 +202,36 @@ Catégories de gènes:
    - flowers: Fleurs standard
    - crops: Cultures
    - cave_plants: Plantes de caverne
+
+4. LIFETIME (Durée de vie) - Couleur: Aqua
+   - short: ~5 minutes
+   - normal: ~20 minutes
+   - long: ~60 minutes
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+FEATURE: Lifetime System
+--------------------------------------------------------------------------------
+Description: Système de durée de vie pour les abeilles
+Statut: COMPLÈTE
+
+- MagicBeeEntity décrémente le lifetime chaque seconde
+- À 0, l'abeille meurt (discard)
+- MagicBeeItem affiche une barre de durabilité (vert→rouge)
+- Lifetime stocké dans BeeGeneData et synchronisé via EntityData
+- Config JSON: data/beemancer/genes/lifetime.json
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 FEATURE: Magic Bee
 --------------------------------------------------------------------------------
-Description: Abeille avec système de gènes
+Description: Abeille avec système de gènes et lifetime
 Statut: COMPLÈTE
 
-- MagicBeeEntity: Entité avec BeeGeneData
-- MagicBeeItem: Item avec tooltip affichant les gènes (shift)
+- MagicBeeEntity: Entité avec BeeGeneData, lifetime countdown
+- MagicBeeItem: Item avec tooltip gènes (shift) + barre durabilité
 - Navigation contrôlée via BeeWand
+- Support assignation ruche (hivePos, slot)
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -209,6 +245,31 @@ Statut: COMPLÈTE
 - BeeCreatorMenu: Logique de sélection des gènes
 - BeeCreatorScreen: Interface avec flèches et bouton Edit
 - Lignes dynamiques selon le nombre de catégories
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+FEATURE: Magic Hive
+--------------------------------------------------------------------------------
+Description: Ruche magique pour héberger les MagicBees
+Statut: COMPLÈTE
+
+Architecture:
+- MagicHiveBlock: Bloc avec GUI
+- MagicHiveBlockEntity: 12 slots (5 bee + 7 output), tracking états
+- MagicHiveMenu: Slots custom (BeeAssignmentSlot, OutputOnlySlot)
+- MagicHiveScreen: GUI avec layout honeycomb
+
+Système d'assignation:
+- États: EMPTY → INSIDE → OUTSIDE → INSIDE (cycle)
+- Assigner: Placer MagicBeeItem dans slot
+- Abeille dehors: Slot devient "ghost", UUID trackée
+- Retrait ghost: Abeille dehors despawn
+- Mort abeille: Slot se libère
+- Retour ruche: Bee capturée, état INSIDE
+
+Slots:
+- 0-4: BeeAssignmentSlot (5 emplacements abeilles)
+- 5-11: OutputOnlySlot (7 slots honeycomb, extraction seulement)
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -238,6 +299,11 @@ core/gene/:
 - AbstractGene.java: Classe de base avec paramètres
 - GeneCategory.java: Pour ajouter de nouvelles catégories
 - GeneRegistry.java: Pour enregistrer et récupérer des gènes
+- BeeGeneData.java: Stockage gènes + lifetime
+
+common/menu/slot/:
+- OutputOnlySlot.java: Slot extraction uniquement (pattern Create)
+- BeeAssignmentSlot.java: Slot acceptant uniquement MagicBeeItem
 
 ================================================================================
 8. GUIDE D'INTÉGRATION D'UNE FEATURE
@@ -247,17 +313,32 @@ Pour ajouter un nouveau gène:
 1. Créer une classe dans content/gene/[category]/
 2. Hériter de la classe de base de la catégorie (ex: SpeciesGene)
 3. Enregistrer dans GeneInit.registerAllGenes()
-4. Ajouter les traductions dans lang/*.json
+4. Ajouter la config dans data/beemancer/genes/[category].json
+5. Ajouter les traductions dans lang/*.json
 
 Pour ajouter une nouvelle catégorie de gènes:
 1. Ajouter dans GeneCategory.java
 2. Créer le package content/gene/[category]/
 3. Créer la classe de base [Category]Gene
-4. Ajouter les traductions
+4. Ajouter la config JSON
+5. Ajouter les traductions
 
 ================================================================================
 9. CHANGELOG STRUCTURE
 ================================================================================
+
+--------------------------------------------------------------------------------
+2026-01-22 - Lifetime System + Magic Hive
+--------------------------------------------------------------------------------
+- Ajout catégorie LIFETIME aux gènes (short, normal, long)
+- MagicBeeEntity: countdown lifetime, mort automatique à 0
+- MagicBeeItem: barre de durabilité (lifetime)
+- Création MagicHiveBlock avec système d'assignation
+- 5 slots bee + 7 slots output honeycomb
+- États de tracking: EMPTY, INSIDE, OUTSIDE
+- Notification ruche quand abeille meurt
+- Slots custom: OutputOnlySlot, BeeAssignmentSlot
+--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 2026-01-21 - Refonte Gene System

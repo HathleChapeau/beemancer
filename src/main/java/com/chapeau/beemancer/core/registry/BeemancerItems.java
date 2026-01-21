@@ -25,6 +25,9 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> BEE_CREATOR = ITEMS.register("bee_creator",
             () -> new BlockItem(BeemancerBlocks.BEE_CREATOR.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> MAGIC_HIVE = ITEMS.register("magic_hive",
+            () -> new BlockItem(BeemancerBlocks.MAGIC_HIVE.get(), new Item.Properties()));
+
     // --- BEE ITEMS ---
     public static final DeferredItem<MagicBeeItem> MAGIC_BEE = ITEMS.register("magic_bee",
             () -> new MagicBeeItem(new Item.Properties()));
