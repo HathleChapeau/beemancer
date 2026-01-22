@@ -16,11 +16,14 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class MagicHiveMenu extends AbstractContainerMenu {
     private final Container container;
+    private final ContainerData data;
     
     // Honeycomb layout offsets (center + 6 surrounding)
     private static final int[][] HONEYCOMB_OFFSETS = {
@@ -35,13 +38,17 @@ public class MagicHiveMenu extends AbstractContainerMenu {
 
     // Client constructor
     public MagicHiveMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buf) {
-        this(containerId, playerInventory, new SimpleContainer(MagicHiveBlockEntity.TOTAL_SLOTS));
+        this(containerId, playerInventory, new SimpleContainer(MagicHiveBlockEntity.TOTAL_SLOTS), new SimpleContainerData(1));
     }
 
     // Server constructor
-    public MagicHiveMenu(int containerId, Inventory playerInventory, Container container) {
+    public MagicHiveMenu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
         super(BeemancerMenus.MAGIC_HIVE.get(), containerId);
         this.container = container;
+        this.data = data;
+        
+        // Track data for client sync
+        addDataSlots(data);
         
         // Bee assignment slots (5 slots in a row at top)
         int beeSlotY = 20;
@@ -77,6 +84,13 @@ public class MagicHiveMenu extends AbstractContainerMenu {
         for (int col = 0; col < 9; col++) {
             addSlot(new Slot(playerInventory, col, x + col * 18, y));
         }
+    }
+
+    /**
+     * @return true if breeding mode is active (crystal above hive)
+     */
+    public boolean isBreedingMode() {
+        return data.get(0) != 0;
     }
 
     @Override

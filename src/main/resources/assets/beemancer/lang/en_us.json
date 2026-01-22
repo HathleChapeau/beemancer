@@ -4,16 +4,22 @@
   "block.beemancer.storage_crate": "Storage Crate",
   "block.beemancer.bee_creator": "Bee Creator",
   "block.beemancer.magic_hive": "Magic Hive",
+  "block.beemancer.breeding_crystal": "Magic Breeding Crystal",
+  "block.beemancer.incubator": "Incubator",
   
   "container.beemancer.storage_crate": "Storage Crate",
   "container.beemancer.bee_creator": "Bee Creator",
   "container.beemancer.magic_hive": "Magic Hive",
+  "container.beemancer.incubator": "Incubator",
   
   "entity.beemancer.magic_bee": "Magic Bee",
   
   "item.beemancer.magic_bee": "Magic Bee",
   "item.beemancer.magic_bee.shift_hint": "Hold SHIFT for gene details",
   "item.beemancer.magic_bee.assigned_hive": "Assigned Hive",
+  
+  "item.beemancer.bee_larva": "Bee Larva",
+  "item.beemancer.bee_larva.shift_hint": "Hold SHIFT for gene details",
   
   "item.beemancer.bee_wand": "Bee Wand",
   "item.beemancer.bee_wand.has_selection": "Bee selected",
@@ -28,6 +34,7 @@
   "item.beemancer.bee_wand.usage3": "Shift+Right-click air: Clear selection",
   
   "gui.beemancer.bee_creator.edit": "Edit",
+  "gui.beemancer.magic_hive.breeding_mode": "Breeding Mode Active",
   
   "gene.category.beemancer.species": "Species",
   "gene.category.beemancer.environment": "Environment",

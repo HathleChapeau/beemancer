@@ -8,6 +8,7 @@ package com.chapeau.beemancer.client;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
+import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
 import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
 import com.chapeau.beemancer.core.registry.BeemancerEntities;
@@ -31,6 +32,7 @@ public class ClientSetup {
         event.register(BeemancerMenus.STORAGE_CRATE.get(), StorageCrateScreen::new);
         event.register(BeemancerMenus.BEE_CREATOR.get(), BeeCreatorScreen::new);
         event.register(BeemancerMenus.MAGIC_HIVE.get(), MagicHiveScreen::new);
+        event.register(BeemancerMenus.INCUBATOR.get(), IncubatorScreen::new);
     }
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {

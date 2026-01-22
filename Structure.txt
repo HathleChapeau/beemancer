@@ -54,6 +54,9 @@ src/main/java/com/chapeau/beemancer/
 │   │   ├── GeneRegistry.java           # Registre des gènes
 │   │   └── BeeGeneData.java            # Données gènes + lifetime
 │   │
+│   ├── breeding/                       # === SYSTÈME DE BREEDING ===
+│   │   └── BreedingManager.java        # Logique breeding + config
+│   │
 │   └── network/
 │       ├── BeemancerNetwork.java
 │       └── packets/
@@ -66,15 +69,21 @@ src/main/java/com/chapeau/beemancer/
 │   │   ├── beecreator/
 │   │   │   ├── BeeCreatorBlock.java
 │   │   │   └── BeeCreatorBlockEntity.java
-│   │   └── hive/
-│   │       ├── MagicHiveBlock.java
-│   │       └── MagicHiveBlockEntity.java
+│   │   ├── hive/
+│   │   │   ├── MagicHiveBlock.java
+│   │   │   └── MagicHiveBlockEntity.java
+│   │   ├── crystal/
+│   │   │   └── MagicBreedingCrystalBlock.java
+│   │   └── incubator/
+│   │       ├── IncubatorBlock.java
+│   │       └── IncubatorBlockEntity.java
 │   │
 │   ├── blockentity/storage/
 │   │   └── StorageCrateBlockEntity.java
 │   │
 │   ├── item/bee/
 │   │   ├── MagicBeeItem.java           # Item abeille avec gènes + durability bar
+│   │   ├── BeeLarvaItem.java           # Item larve avec gènes hérités
 │   │   └── BeeWandItem.java            # Baguette de contrôle
 │   │
 │   ├── entity/bee/
@@ -87,9 +96,11 @@ src/main/java/com/chapeau/beemancer/
 │       ├── StorageCrateMenu.java
 │       ├── BeeCreatorMenu.java
 │       ├── MagicHiveMenu.java
+│       ├── IncubatorMenu.java
 │       └── slot/
 │           ├── OutputOnlySlot.java     # Slot extraction uniquement
-│           └── BeeAssignmentSlot.java  # Slot pour abeilles
+│           ├── BeeAssignmentSlot.java  # Slot pour abeilles
+│           └── LarvaSlot.java          # Slot pour larves uniquement
 │
 ├── content/                            # === CONTENU PAR FEATURE ===
 │   └── gene/                           # Implémentations des gènes
@@ -120,7 +131,8 @@ src/main/java/com/chapeau/beemancer/
     └── gui/screen/
         ├── StorageCrateScreen.java
         ├── BeeCreatorScreen.java
-        └── MagicHiveScreen.java
+        ├── MagicHiveScreen.java
+        └── IncubatorScreen.java
 
 ================================================================================
 3. FICHIERS FONDAMENTAUX (CORE)
@@ -134,6 +146,7 @@ src/main/java/com/chapeau/beemancer/
 │ core/gene/GeneRegistry.java         │ Registre central des gènes             │
 │ core/gene/GeneCategory.java         │ Définition des catégories              │
 │ core/gene/BeeGeneData.java          │ Stockage gènes + lifetime              │
+│ core/breeding/BreedingManager.java  │ Logique breeding + héritage            │
 │ content/gene/GeneInit.java          │ Enregistrement de tous les gènes       │
 │ client/ClientSetup.java             │ Init client (screens, renderers)       │
 └─────────────────────────────────────┴────────────────────────────────────────┘
@@ -143,20 +156,25 @@ src/main/java/com/chapeau/beemancer/
 ================================================================================
 
 ITEMS:
-| ID            | Classe          | Feature      |
-|---------------|-----------------|--------------|
-| storage_crate | BlockItem       | Storage      |
-| bee_creator   | BlockItem       | Bee Creator  |
-| magic_hive    | BlockItem       | Magic Hive   |
-| magic_bee     | MagicBeeItem    | Gene System  |
-| bee_wand      | BeeWandItem     | Bee Control  |
+| ID               | Classe          | Feature      |
+|------------------|-----------------|--------------|
+| storage_crate    | BlockItem       | Storage      |
+| bee_creator      | BlockItem       | Bee Creator  |
+| magic_hive       | BlockItem       | Magic Hive   |
+| breeding_crystal | BlockItem       | Breeding     |
+| incubator        | BlockItem       | Incubator    |
+| magic_bee        | MagicBeeItem    | Gene System  |
+| bee_larva        | BeeLarvaItem    | Breeding     |
+| bee_wand         | BeeWandItem     | Bee Control  |
 
 BLOCS:
-| ID            | Classe           | BlockEntity? | Feature      |
-|---------------|------------------|--------------|--------------|
-| storage_crate | StorageCrateBlock| Oui          | Storage      |
-| bee_creator   | BeeCreatorBlock  | Oui          | Gene Editor  |
-| magic_hive    | MagicHiveBlock   | Oui          | Bee Housing  |
+| ID               | Classe                    | BlockEntity? | Feature      |
+|------------------|---------------------------|--------------|--------------|
+| storage_crate    | StorageCrateBlock         | Oui          | Storage      |
+| bee_creator      | BeeCreatorBlock           | Oui          | Gene Editor  |
+| magic_hive       | MagicHiveBlock            | Oui          | Bee Housing  |
+| breeding_crystal | MagicBreedingCrystalBlock | Non          | Breeding     |
+| incubator        | IncubatorBlock            | Oui          | Incubator    |
 
 ENTITÉS:
 | ID        | Classe          | Feature      |
@@ -169,6 +187,7 @@ MENUS:
 | storage_crate | StorageCrateMenu | Storage      |
 | bee_creator   | BeeCreatorMenu   | Gene Editor  |
 | magic_hive    | MagicHiveMenu    | Bee Housing  |
+| incubator     | IncubatorMenu    | Incubator    |
 
 ================================================================================
 5. FEATURES IMPLÉMENTÉES
@@ -255,9 +274,9 @@ Statut: COMPLÈTE
 
 Architecture:
 - MagicHiveBlock: Bloc avec GUI
-- MagicHiveBlockEntity: 12 slots (5 bee + 7 output), tracking états
+- MagicHiveBlockEntity: 12 slots (5 bee + 7 output), tracking états, breeding
 - MagicHiveMenu: Slots custom (BeeAssignmentSlot, OutputOnlySlot)
-- MagicHiveScreen: GUI avec layout honeycomb
+- MagicHiveScreen: GUI avec layout honeycomb + indicateur breeding
 
 Système d'assignation:
 - États: EMPTY → INSIDE → OUTSIDE → INSIDE (cycle)
@@ -284,6 +303,40 @@ Statut: COMPLÈTE
 - Tooltip affiche l'abeille sélectionnée
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+FEATURE: Breeding System
+--------------------------------------------------------------------------------
+Description: Système de reproduction des abeilles avec cristal et incubateur
+Statut: COMPLÈTE
+
+Architecture:
+- MagicBreedingCrystalBlock: Active le mode breeding quand au-dessus d'une ruche
+- BreedingManager: Logique de breeding et d'héritage des gènes
+- BeeLarvaItem: Item larve avec gènes hérités
+- IncubatorBlock/BlockEntity: Transforme larve en abeille
+
+Fonctionnement:
+1. Placer cristal au-dessus de la ruche → mode breeding activé
+2. Minimum 2 abeilles INSIDE + 1 slot output vide
+3. Tentative de breeding: 5% par seconde
+4. Une abeille perd 10% de son lifetime max par tentative
+5. Résolution espèce: species_combinations.json
+6. Si "nothing" → pas de larve créée
+7. Sinon → BeeLarvaItem créée avec gènes hérités
+
+Règles d'héritage:
+- Parents espèces différentes → traits par défaut pour offspring
+- Même espèce mais résultat différent → traits par défaut
+- Même espèce ET même résultat → chaque trait hérité aléatoirement d'un parent
+
+Incubation:
+- Slot unique acceptant BeeLarvaItem
+- Timer: 600 ticks (30 secondes)
+- Transforme larve en MagicBeeItem avec mêmes gènes
+
+Config: data/beemancer/breeding/species_combinations.json
+--------------------------------------------------------------------------------
+
 ================================================================================
 6. FEATURES EN COURS
 ================================================================================
@@ -301,9 +354,13 @@ core/gene/:
 - GeneRegistry.java: Pour enregistrer et récupérer des gènes
 - BeeGeneData.java: Stockage gènes + lifetime
 
+core/breeding/:
+- BreedingManager.java: Logique breeding, héritage, config loading
+
 common/menu/slot/:
 - OutputOnlySlot.java: Slot extraction uniquement (pattern Create)
 - BeeAssignmentSlot.java: Slot acceptant uniquement MagicBeeItem
+- LarvaSlot.java: Slot acceptant uniquement BeeLarvaItem
 
 ================================================================================
 8. GUIDE D'INTÉGRATION D'UNE FEATURE
@@ -323,9 +380,29 @@ Pour ajouter une nouvelle catégorie de gènes:
 4. Ajouter la config JSON
 5. Ajouter les traductions
 
+Pour ajouter une nouvelle combinaison de breeding:
+1. Modifier data/beemancer/breeding/species_combinations.json
+2. Ajouter un bloc { "parent1": "...", "parent2": "...", "results": [...] }
+3. Les probabilités doivent totaliser 100%
+4. "nothing" = pas de descendant
+
 ================================================================================
 9. CHANGELOG STRUCTURE
 ================================================================================
+
+--------------------------------------------------------------------------------
+2026-01-22 - Breeding System
+--------------------------------------------------------------------------------
+- Ajout MagicBreedingCrystalBlock (active breeding au-dessus d'une ruche)
+- Ajout BeeLarvaItem (item larve avec gènes)
+- Ajout LarvaSlot (slot acceptant uniquement larves)
+- Ajout BreedingManager (logique breeding + héritage gènes)
+- Ajout IncubatorBlock/BlockEntity/Menu/Screen (machine incubation)
+- Modification MagicHiveBlockEntity (logique breeding intégrée)
+- Modification MagicHiveMenu (ContainerData pour sync breeding mode)
+- Modification MagicHiveScreen (indicateur mode breeding)
+- Config breeding: data/beemancer/breeding/species_combinations.json
+--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 2026-01-22 - Lifetime System + Magic Hive

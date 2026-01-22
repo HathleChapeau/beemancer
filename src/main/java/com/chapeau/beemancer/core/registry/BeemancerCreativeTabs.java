@@ -27,6 +27,7 @@ public class BeemancerCreativeTabs {
                     .displayItems((parameters, output) -> {
                         // Bees
                         output.accept(BeemancerItems.MAGIC_BEE.get());
+                        output.accept(BeemancerItems.BEE_LARVA.get());
                         
                         // Tools
                         output.accept(BeemancerItems.BEE_WAND.get());
@@ -34,6 +35,8 @@ public class BeemancerCreativeTabs {
                         // Machines
                         output.accept(BeemancerItems.BEE_CREATOR.get());
                         output.accept(BeemancerItems.MAGIC_HIVE.get());
+                        output.accept(BeemancerItems.INCUBATOR.get());
+                        output.accept(BeemancerItems.BREEDING_CRYSTAL.get());
                         
                         // Storage
                         output.accept(BeemancerItems.STORAGE_CRATE.get());

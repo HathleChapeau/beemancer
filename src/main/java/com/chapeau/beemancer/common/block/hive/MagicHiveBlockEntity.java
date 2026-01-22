@@ -1,15 +1,21 @@
 /**
  * ============================================================
  * [MagicHiveBlockEntity.java]
- * Description: BlockEntity ruche magique avec tracking des abeilles
+ * Description: BlockEntity ruche magique avec tracking des abeilles et breeding
  * ============================================================
  */
 package com.chapeau.beemancer.common.block.hive;
 
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
+import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
+import com.chapeau.beemancer.core.breeding.BreedingManager;
+import com.chapeau.beemancer.core.gene.BeeGeneData;
+import com.chapeau.beemancer.core.gene.Gene;
+import com.chapeau.beemancer.core.gene.GeneCategory;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
+import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -19,6 +25,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
@@ -26,6 +33,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -46,6 +54,31 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     public enum BeeState { EMPTY, INSIDE, OUTSIDE }
     private final BeeState[] beeStates = new BeeState[BEE_SLOTS];
     private final UUID[] beeUUIDs = new UUID[BEE_SLOTS];
+    
+    // Breeding
+    private boolean breedingMode = false;
+    private int breedingCooldown = 0;
+    
+    // ContainerData for GUI sync
+    public final ContainerData containerData = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> breedingMode ? 1 : 0;
+                default -> 0;
+            };
+        }
+        
+        @Override
+        public void set(int index, int value) {
+            if (index == 0) breedingMode = value != 0;
+        }
+        
+        @Override
+        public int getCount() {
+            return 1;
+        }
+    };
     
     public MagicHiveBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.MAGIC_HIVE.get(), pos, state);
@@ -245,9 +278,115 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         beeUUIDs[slot] = null;
     }
 
+    // --- Breeding ---
+    
+    public boolean isBreedingMode() {
+        return breedingMode;
+    }
+
+    /**
+     * Count bees with INSIDE state
+     */
+    private int countInsideBees() {
+        int count = 0;
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            if (beeStates[i] == BeeState.INSIDE && !items.get(i).isEmpty()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Get indices of bees with INSIDE state
+     */
+    private List<Integer> getInsideBeeIndices() {
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            if (beeStates[i] == BeeState.INSIDE && !items.get(i).isEmpty()) {
+                indices.add(i);
+            }
+        }
+        return indices;
+    }
+
+    /**
+     * Find first empty output slot
+     */
+    private int findEmptyOutputSlot() {
+        for (int i = BEE_SLOTS; i < TOTAL_SLOTS; i++) {
+            if (items.get(i).isEmpty()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Attempt breeding
+     */
+    private void attemptBreeding(RandomSource random) {
+        List<Integer> insideBees = getInsideBeeIndices();
+        if (insideBees.size() < 2) return;
+        
+        int outputSlot = findEmptyOutputSlot();
+        if (outputSlot < 0) return;
+        
+        // Select two random bees
+        int idx1 = random.nextInt(insideBees.size());
+        int idx2;
+        do {
+            idx2 = random.nextInt(insideBees.size());
+        } while (idx2 == idx1);
+        
+        int slot1 = insideBees.get(idx1);
+        int slot2 = insideBees.get(idx2);
+        
+        ItemStack bee1Stack = items.get(slot1);
+        ItemStack bee2Stack = items.get(slot2);
+        
+        BeeGeneData parent1 = MagicBeeItem.getGeneData(bee1Stack);
+        BeeGeneData parent2 = MagicBeeItem.getGeneData(bee2Stack);
+        
+        Gene species1 = parent1.getGene(GeneCategory.SPECIES);
+        Gene species2 = parent2.getGene(GeneCategory.SPECIES);
+        
+        if (species1 == null || species2 == null) return;
+        
+        // Resolve offspring species
+        String offspringSpecies = BreedingManager.resolveOffspringSpecies(
+                species1.getId(), species2.getId(), random);
+        
+        // Apply lifetime cost to one parent (randomly chosen)
+        int costParentSlot = random.nextBoolean() ? slot1 : slot2;
+        ItemStack costBeeStack = items.get(costParentSlot);
+        BeeGeneData costBeeData = MagicBeeItem.getGeneData(costBeeStack);
+        int lifetimeCost = (int) (costBeeData.getMaxLifetime() * BreedingManager.LIFETIME_COST_RATIO);
+        costBeeData.setRemainingLifetime(costBeeData.getRemainingLifetime() - lifetimeCost);
+        MagicBeeItem.saveGeneData(costBeeStack, costBeeData);
+        
+        // If "nothing", no larva produced
+        if ("nothing".equals(offspringSpecies)) {
+            return;
+        }
+        
+        // Create offspring gene data
+        BeeGeneData offspringData = BreedingManager.createOffspringGeneData(
+                parent1, parent2, offspringSpecies, random);
+        
+        // Create larva item
+        ItemStack larva = BeeLarvaItem.createWithGenes(offspringData);
+        items.set(outputSlot, larva);
+        setChanged();
+    }
+
     // --- Tick ---
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MagicHiveBlockEntity hive) {
+        // Check breeding mode (crystal above)
+        BlockState above = level.getBlockState(pos.above());
+        hive.breedingMode = above.is(BeemancerBlocks.BREEDING_CRYSTAL.get());
+        
         // Check for returning bees
         AABB searchBox = new AABB(pos).inflate(2);
         List<MagicBeeEntity> nearbyBees = level.getEntitiesOfClass(MagicBeeEntity.class, searchBox,
@@ -258,6 +397,20 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 hive.addBee(bee);
                 bee.discard();
             }
+        }
+        
+        // Breeding logic (once per second)
+        if (hive.breedingMode && hive.breedingCooldown <= 0) {
+            RandomSource random = level.getRandom();
+            // 5% chance per second
+            if (random.nextDouble() < BreedingManager.BREEDING_CHANCE_PER_SECOND) {
+                hive.attemptBreeding(random);
+            }
+            hive.breedingCooldown = 20; // Reset cooldown (1 second)
+        }
+        
+        if (hive.breedingCooldown > 0) {
+            hive.breedingCooldown--;
         }
         
         // TODO: Production logic - add items to output slots
@@ -311,7 +464,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new MagicHiveMenu(containerId, playerInventory, this);
+        return new MagicHiveMenu(containerId, playerInventory, this, containerData);
     }
 
     // --- Drop Contents ---

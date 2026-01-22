@@ -7,6 +7,7 @@
 package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.BeeWandItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import net.minecraft.world.item.BlockItem;
@@ -28,9 +29,18 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> MAGIC_HIVE = ITEMS.register("magic_hive",
             () -> new BlockItem(BeemancerBlocks.MAGIC_HIVE.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> INCUBATOR = ITEMS.register("incubator",
+            () -> new BlockItem(BeemancerBlocks.INCUBATOR.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> BREEDING_CRYSTAL = ITEMS.register("breeding_crystal",
+            () -> new BlockItem(BeemancerBlocks.BREEDING_CRYSTAL.get(), new Item.Properties()));
+
     // --- BEE ITEMS ---
     public static final DeferredItem<MagicBeeItem> MAGIC_BEE = ITEMS.register("magic_bee",
             () -> new MagicBeeItem(new Item.Properties()));
+
+    public static final DeferredItem<BeeLarvaItem> BEE_LARVA = ITEMS.register("bee_larva",
+            () -> new BeeLarvaItem(new Item.Properties()));
 
     // --- TOOLS ---
     public static final DeferredItem<BeeWandItem> BEE_WAND = ITEMS.register("bee_wand",
