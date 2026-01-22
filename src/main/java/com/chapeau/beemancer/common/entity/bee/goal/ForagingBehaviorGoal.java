@@ -110,6 +110,7 @@ public class ForagingBehaviorGoal extends Goal {
             if (targetFlower == null) {
                 // Pas de fleur trouvée, retourner à la ruche
                 state = BeeActivityState.RETURNING;
+                bee.setReturning(true);
                 return;
             }
         }
@@ -151,6 +152,7 @@ public class ForagingBehaviorGoal extends Goal {
             // Travail terminé, marquer comme pollinisée et retourner
             bee.setPollinated(true);
             state = BeeActivityState.RETURNING;
+                bee.setReturning(true);
         }
     }
     

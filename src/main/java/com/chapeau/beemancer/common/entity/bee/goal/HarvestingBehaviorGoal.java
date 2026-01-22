@@ -107,12 +107,14 @@ public class HarvestingBehaviorGoal extends Goal {
         // Check if should return due to inventory threshold
         if (bee.shouldReturnDueToInventory()) {
             state = BeeActivityState.RETURNING;
+                bee.setReturning(true);
         }
         
         // Check if inventory is full
         BeeInventory inventory = bee.getInventory();
         if (inventory != null && inventory.isFull()) {
             state = BeeActivityState.RETURNING;
+                bee.setReturning(true);
         }
         
         switch (state) {
@@ -130,6 +132,7 @@ public class HarvestingBehaviorGoal extends Goal {
             if (targetFlower == null) {
                 // Pas de fleur trouvée, retourner à la ruche
                 state = BeeActivityState.RETURNING;
+                bee.setReturning(true);
                 return;
             }
         }

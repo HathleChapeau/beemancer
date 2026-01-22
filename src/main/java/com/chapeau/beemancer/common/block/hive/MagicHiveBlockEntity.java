@@ -431,6 +431,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         bee.setAssignedHive(worldPosition, slot);
         bee.setPollinated(false);
         bee.setEnraged(false);
+        bee.setReturning(false);
         
         boolean added = serverLevel.addFreshEntity(bee);
         System.out.println("[DEBUG-HIVE] addFreshEntity result: " + added + ", UUID=" + bee.getUUID());
@@ -491,6 +492,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         // Reset états
         bee.setPollinated(false);
         bee.setEnraged(false);
+        bee.setReturning(false);
         
         // Rescan flowers after return
         scanFlowersForSlot(slot);
@@ -768,7 +770,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 bee -> bee.hasAssignedHive() && pos.equals(bee.getAssignedHivePos()));
         
         for (MagicBeeEntity bee : nearbyBees) {
-            if (hive.canBeeEnter(bee) && bee.position().distanceTo(pos.getCenter()) < 1.5) {
+            if (hive.canBeeEnter(bee) && bee.isReturning() && bee.position().distanceTo(pos.getCenter()) < 1.5) {
                 hive.addBee(bee);
                 bee.discard();
             }

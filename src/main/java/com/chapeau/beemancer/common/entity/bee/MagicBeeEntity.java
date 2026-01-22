@@ -75,6 +75,8 @@ public class MagicBeeEntity extends Bee {
             MagicBeeEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_ENRAGED = SynchedEntityData.defineId(
             MagicBeeEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_RETURNING = SynchedEntityData.defineId(
+            MagicBeeEntity.class, EntityDataSerializers.BOOLEAN);
 
     // --- Gene Data ---
     private final BeeGeneData geneData = new BeeGeneData();
@@ -112,6 +114,7 @@ public class MagicBeeEntity extends Bee {
         builder.define(DATA_REMAINING_LIFETIME, 24000);
         builder.define(DATA_POLLINATED, false);
         builder.define(DATA_ENRAGED, false);
+        builder.define(DATA_RETURNING, false);
     }
 
     @Override
@@ -209,6 +212,16 @@ public class MagicBeeEntity extends Bee {
 
     public void setEnraged(boolean enraged) {
         entityData.set(DATA_ENRAGED, enraged);
+    }
+
+    // --- Returning State ---
+
+    public boolean isReturning() {
+        return entityData.get(DATA_RETURNING);
+    }
+
+    public void setReturning(boolean returning) {
+        entityData.set(DATA_RETURNING, returning);
     }
 
     /**
