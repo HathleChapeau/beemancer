@@ -1,0 +1,16 @@
+################################################################################
+#                           REGISTRE: ITEMS                                    #
+################################################################################
+
+| ID               | Classe          | Feature      |
+|------------------|-----------------|--------------|
+| storage_crate    | BlockItem       | Storage      |
+| bee_creator      | BlockItem       | Bee Creator  |
+| magic_hive       | BlockItem       | Magic Hive   |
+| breeding_crystal | BlockItem       | Breeding     |
+| incubator        | BlockItem       | Incubator    |
+| magic_bee        | MagicBeeItem    | Gene System  |
+| bee_larva        | BeeLarvaItem    | Breeding     |
+| bee_wand         | BeeWandItem     | Bee Control  |
+
+################################################################################

@@ -1,0 +1,62 @@
+################################################################################
+#                        FEATURE: Magic Hive                                   #
+################################################################################
+
+Description: Ruche magique pour héberger les MagicBees avec gestion automatique
+Statut: COMPLÈTE
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+- MagicHiveBlock: Bloc avec GUI
+- MagicHiveBlockEntity: 12 slots (5 bee + 7 output), tracking états, breeding, cooldowns
+- MagicHiveMenu: Slots custom (BeeAssignmentSlot, OutputOnlySlot)
+- MagicHiveScreen: GUI avec layout honeycomb + indicateur breeding
+
+================================================================================
+SYSTÈME D'ASSIGNATION
+================================================================================
+
+- États: EMPTY → INSIDE → OUTSIDE → INSIDE (cycle)
+- Assigner: Placer MagicBeeItem dans slot
+- Abeille dehors: Slot devient "ghost", UUID trackée
+- Retrait ghost: Abeille dehors despawn
+- Mort abeille: Slot se libère
+- Retour ruche: Bee capturée, état INSIDE, loot déposé
+
+================================================================================
+DÉTECTION DE FLEURS
+================================================================================
+
+- Scan périodique (toutes les 5 secondes) des fleurs pour chaque abeille
+- Utilise le FlowerGene de l'abeille et l'areaOfEffect de sa config
+- Fournit une liste de fleurs à chaque abeille
+- getAndAssignFlower(): Récupère et assigne une fleur à l'abeille
+- returnFlower(): L'abeille retourne une fleur non visitée
+
+================================================================================
+DÉPÔT D'INVENTAIRE RÉCOLTEUSE
+================================================================================
+
+- Quand une récolteuse rentre, dépose tout son inventaire dans les slots output
+
+================================================================================
+SLOTS
+================================================================================
+
+- 0-4: BeeAssignmentSlot (5 emplacements abeilles)
+- 5-11: OutputOnlySlot (7 slots honeycomb, extraction seulement)
+
+================================================================================
+FICHIERS LIÉS
+================================================================================
+
+- common/block/hive/MagicHiveBlock.java
+- common/block/hive/MagicHiveBlockEntity.java
+- common/menu/MagicHiveMenu.java
+- common/menu/slot/BeeAssignmentSlot.java
+- common/menu/slot/OutputOnlySlot.java
+- client/gui/screen/MagicHiveScreen.java
+
+################################################################################

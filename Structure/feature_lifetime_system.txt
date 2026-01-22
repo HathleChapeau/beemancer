@@ -1,0 +1,27 @@
+################################################################################
+#                      FEATURE: Lifetime System                                #
+################################################################################
+
+Description: Système de durée de vie pour les abeilles
+Statut: COMPLÈTE
+
+================================================================================
+FONCTIONNEMENT
+================================================================================
+
+- MagicBeeEntity décrémente le lifetime chaque seconde
+- À 0, l'abeille meurt (discard)
+- MagicBeeItem affiche une barre de durabilité (vert→rouge)
+- Lifetime stocké dans BeeGeneData et synchronisé via EntityData
+- Config JSON: data/beemancer/genes/lifetime.json
+
+================================================================================
+FICHIERS LIÉS
+================================================================================
+
+- core/gene/BeeGeneData.java
+- common/entity/bee/MagicBeeEntity.java
+- common/item/bee/MagicBeeItem.java
+- content/gene/lifetime/*.java
+
+################################################################################

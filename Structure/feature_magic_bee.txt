@@ -1,0 +1,34 @@
+################################################################################
+#                         FEATURE: Magic Bee                                   #
+################################################################################
+
+Description: Abeille avec système de gènes, lifetime et comportements automatiques
+Statut: COMPLÈTE
+
+================================================================================
+COMPOSANTS
+================================================================================
+
+- MagicBeeEntity: Entité avec BeeGeneData, lifetime countdown, goals AI, BeeInventory
+- MagicBeeItem: Item avec tooltip gènes (shift) + barre durabilité + santé stockée
+
+================================================================================
+FONCTIONNALITÉS
+================================================================================
+
+- Navigation contrôlée via BeeWand ou automatique via goals
+- Support assignation ruche (hivePos, slot)
+- États: pollinated, enraged
+- Méthodes: shouldFlee(), getHealthPercentage(), getBehaviorConfig(), getInventory()
+- getEffectiveFlyingSpeed(): Vitesse tenant compte du poids de l'inventaire
+- shouldReturnDueToInventory(): Vérifie si seuil de retour atteint
+
+================================================================================
+FICHIERS LIÉS
+================================================================================
+
+- common/entity/bee/MagicBeeEntity.java
+- common/item/bee/MagicBeeItem.java
+- common/entity/bee/BeeInventory.java
+
+################################################################################

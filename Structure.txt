@@ -48,25 +48,25 @@ src/main/java/com/chapeau/beemancer/
 │   │   └── BeemancerCreativeTabs.java
 │   │
 │   ├── gene/                           # === SYSTÈME DE GÈNES ===
-│   │   ├── Gene.java                   # Interface gène
-│   │   ├── AbstractGene.java           # Classe abstraite de base
-│   │   ├── GeneCategory.java           # Catégories de gènes
-│   │   ├── GeneRegistry.java           # Registre des gènes
-│   │   └── BeeGeneData.java            # Données gènes + lifetime
+│   │   ├── Gene.java
+│   │   ├── AbstractGene.java
+│   │   ├── GeneCategory.java
+│   │   ├── GeneRegistry.java
+│   │   └── BeeGeneData.java
 │   │
 │   ├── behavior/                       # === SYSTÈME DE COMPORTEMENT ===
-│   │   ├── BeeBehaviorType.java        # Enum FORAGER/HARVESTER
-│   │   ├── BeeBehaviorConfig.java      # Config par espèce
-│   │   ├── BeeBehaviorManager.java     # Chargement JSON
-│   │   ├── LootEntry.java              # Record loot pollinisation
-│   │   └── SpeedThreshold.java         # Record seuil vitesse (NOUVEAU)
+│   │   ├── BeeBehaviorType.java
+│   │   ├── BeeBehaviorConfig.java
+│   │   ├── BeeBehaviorManager.java
+│   │   ├── LootEntry.java
+│   │   └── SpeedThreshold.java
 │   │
-│   ├── breeding/                       # === SYSTÈME DE BREEDING ===
-│   │   └── BreedingManager.java        # Logique breeding + config
+│   ├── breeding/
+│   │   └── BreedingManager.java
 │   │
-│   ├── util/                           # === UTILITAIRES ===
-│   │   ├── FlowerSearchHelper.java     # Recherche de fleurs (NOUVEAU)
-│   │   └── HarvestHelper.java          # Logique récolte par type (NOUVEAU)
+│   ├── util/
+│   │   ├── FlowerSearchHelper.java
+│   │   └── HarvestHelper.java
 │   │
 │   └── network/
 │       ├── BeemancerNetwork.java
@@ -76,96 +76,38 @@ src/main/java/com/chapeau/beemancer/
 ├── common/                             # === LOGIQUE PARTAGÉE ===
 │   ├── block/
 │   │   ├── storage/
-│   │   │   └── StorageCrateBlock.java
 │   │   ├── beecreator/
-│   │   │   ├── BeeCreatorBlock.java
-│   │   │   └── BeeCreatorBlockEntity.java
 │   │   ├── hive/
-│   │   │   ├── MagicHiveBlock.java
-│   │   │   └── MagicHiveBlockEntity.java
 │   │   ├── crystal/
-│   │   │   └── MagicBreedingCrystalBlock.java
 │   │   └── incubator/
-│   │       ├── IncubatorBlock.java
-│   │       └── IncubatorBlockEntity.java
-│   │
-│   ├── blockentity/storage/
-│   │   └── StorageCrateBlockEntity.java
 │   │
 │   ├── item/bee/
-│   │   ├── MagicBeeItem.java           # Item abeille avec gènes + durability bar
-│   │   ├── BeeLarvaItem.java           # Item larve avec gènes hérités
-│   │   └── BeeWandItem.java            # Baguette de contrôle
+│   │   ├── MagicBeeItem.java
+│   │   ├── BeeLarvaItem.java
+│   │   └── BeeWandItem.java
 │   │
 │   ├── entity/bee/
-│   │   ├── MagicBeeEntity.java         # Entité abeille avec gènes, lifetime, comportements
-│   │   ├── BeeActivityState.java       # Enum états d'activité
-│   │   ├── BeeInventory.java           # Inventaire interne récolteuses (NOUVEAU)
-│   │   └── goal/                       # === GOALS AI ===
-│   │       ├── ReturnToHiveWhenLowHealthGoal.java  # Fuite si vie < 30%
-│   │       ├── BeeRevengeGoal.java                 # Attaque si blessée
-│   │       ├── ForagingBehaviorGoal.java           # Cycle butineuse complet
-│   │       └── HarvestingBehaviorGoal.java         # Cycle récolteuse complet (NOUVEAU)
-│   │
-│   ├── event/
-│   │   └── BeeInteractionHandler.java
+│   │   ├── MagicBeeEntity.java
+│   │   ├── BeeActivityState.java
+│   │   ├── BeeInventory.java
+│   │   └── goal/
 │   │
 │   └── menu/
-│       ├── StorageCrateMenu.java
-│       ├── BeeCreatorMenu.java
-│       ├── MagicHiveMenu.java
-│       ├── IncubatorMenu.java
 │       └── slot/
-│           ├── OutputOnlySlot.java     # Slot extraction uniquement
-│           ├── BeeAssignmentSlot.java  # Slot pour abeilles
-│           └── LarvaSlot.java          # Slot pour larves uniquement
 │
-├── content/                            # === CONTENU PAR FEATURE ===
-│   └── gene/                           # Implémentations des gènes
-│       ├── GeneInit.java               # Initialisation des gènes
-│       ├── species/
-│       │   ├── SpeciesGene.java
-│       │   ├── CommonSpeciesGene.java
-│       │   ├── NobleSpeciesGene.java
-│       │   └── DiligentSpeciesGene.java
-│       ├── environment/
-│       │   ├── EnvironmentGene.java
-│       │   ├── NormalEnvironmentGene.java
-│       │   ├── RobustEnvironmentGene.java
-│       │   └── NocturnalEnvironmentGene.java
-│       ├── flower/
-│       │   ├── FlowerGene.java
-│       │   ├── FlowersFlowerGene.java
-│       │   ├── CropsFlowerGene.java
-│       │   ├── CavePlantsFlowerGene.java
-│       │   ├── TreesFlowerGene.java
-│       │   ├── MushroomsFlowerGene.java
-│       │   ├── CrystalsFlowerGene.java
-│       │   └── NetherWartFlowerGene.java
-│       └── lifetime/
-│           ├── LifetimeGene.java
-│           ├── ShortLifetimeGene.java
-│           ├── NormalLifetimeGene.java
-│           └── LongLifetimeGene.java
+├── content/gene/                       # === CONTENU PAR FEATURE ===
+│   ├── GeneInit.java
+│   ├── species/
+│   ├── environment/
+│   ├── flower/
+│   └── lifetime/
 │
 └── client/
     ├── ClientSetup.java
-    └── gui/screen/
-        ├── StorageCrateScreen.java
-        ├── BeeCreatorScreen.java
-        ├── MagicHiveScreen.java
-        └── IncubatorScreen.java
-
-src/main/resources/data/beemancer/
-├── behavior/
-│   └── species_behaviors.json          # Config comportements par espèce
-├── breeding/
-│   └── species_combinations.json       # Config breeding
-└── tags/blocks/
-    ├── bee_flowers_trees.json          # Tag arbres
-    ├── bee_flowers_mushrooms.json      # Tag champignons
-    ├── bee_flowers_crystals.json       # Tag cristaux
-    └── bee_flowers_nether_wart.json    # Tag nether wart
+    └── gui/
+        ├── screen/
+        └── hud/                        # === HUD OVERLAYS ===
+            └── WandOverlayRenderer.java
 
 ================================================================================
 3. FICHIERS FONDAMENTAUX (CORE)
@@ -191,312 +133,86 @@ src/main/resources/data/beemancer/
 4. REGISTRES
 ================================================================================
 
-ITEMS:
-| ID               | Classe          | Feature      |
-|------------------|-----------------|--------------|
-| storage_crate    | BlockItem       | Storage      |
-| bee_creator      | BlockItem       | Bee Creator  |
-| magic_hive       | BlockItem       | Magic Hive   |
-| breeding_crystal | BlockItem       | Breeding     |
-| incubator        | BlockItem       | Incubator    |
-| magic_bee        | MagicBeeItem    | Gene System  |
-| bee_larva        | BeeLarvaItem    | Breeding     |
-| bee_wand         | BeeWandItem     | Bee Control  |
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FICHIER DE DÉTAIL: Structure/registries_items.txt                           │
+│ POUR AJOUTER: Éditer BeemancerItems.java puis mettre à jour le fichier      │
+└─────────────────────────────────────────────────────────────────────────────┘
+→ Voir: Structure/registries_items.txt
 
-BLOCS:
-| ID               | Classe                    | BlockEntity? | Feature      |
-|------------------|---------------------------|--------------|--------------|
-| storage_crate    | StorageCrateBlock         | Oui          | Storage      |
-| bee_creator      | BeeCreatorBlock           | Oui          | Gene Editor  |
-| magic_hive       | MagicHiveBlock            | Oui          | Bee Housing  |
-| breeding_crystal | MagicBreedingCrystalBlock | Non          | Breeding     |
-| incubator        | IncubatorBlock            | Oui          | Incubator    |
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FICHIER DE DÉTAIL: Structure/registries_blocks.txt                          │
+│ POUR AJOUTER: Éditer BeemancerBlocks.java puis mettre à jour le fichier     │
+└─────────────────────────────────────────────────────────────────────────────┘
+→ Voir: Structure/registries_blocks.txt
 
-ENTITÉS:
-| ID        | Classe          | Feature      |
-|-----------|-----------------|--------------|
-| magic_bee | MagicBeeEntity  | Gene System  |
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FICHIER DE DÉTAIL: Structure/registries_entities.txt                        │
+│ POUR AJOUTER: Éditer BeemancerEntities.java puis mettre à jour le fichier   │
+└─────────────────────────────────────────────────────────────────────────────┘
+→ Voir: Structure/registries_entities.txt
 
-MENUS:
-| ID            | Classe           | Feature      |
-|---------------|------------------|--------------|
-| storage_crate | StorageCrateMenu | Storage      |
-| bee_creator   | BeeCreatorMenu   | Gene Editor  |
-| magic_hive    | MagicHiveMenu    | Bee Housing  |
-| incubator     | IncubatorMenu    | Incubator    |
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FICHIER DE DÉTAIL: Structure/registries_menus.txt                           │
+│ POUR AJOUTER: Éditer BeemancerMenus.java puis mettre à jour le fichier      │
+└─────────────────────────────────────────────────────────────────────────────┘
+→ Voir: Structure/registries_menus.txt
 
-GÈNES FLEUR:
-| ID          | Classe                 | Tag cible                        |
-|-------------|------------------------|----------------------------------|
-| flowers     | FlowersFlowerGene      | minecraft:flowers                |
-| crops       | CropsFlowerGene        | minecraft:crops                  |
-| cave_plants | CavePlantsFlowerGene   | minecraft:cave_vines             |
-| trees       | TreesFlowerGene        | beemancer:bee_flowers_trees      |
-| mushrooms   | MushroomsFlowerGene    | beemancer:bee_flowers_mushrooms  |
-| crystals    | CrystalsFlowerGene     | beemancer:bee_flowers_crystals   |
-| nether_wart | NetherWartFlowerGene   | beemancer:bee_flowers_nether_wart|
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FICHIER DE DÉTAIL: Structure/registries_flower_genes.txt                    │
+│ POUR AJOUTER: Créer FlowerGene + tag puis mettre à jour le fichier          │
+└─────────────────────────────────────────────────────────────────────────────┘
+→ Voir: Structure/registries_flower_genes.txt
 
 ================================================================================
 5. FEATURES IMPLÉMENTÉES
 ================================================================================
 
---------------------------------------------------------------------------------
-FEATURE: Harvester Behavior System
---------------------------------------------------------------------------------
-Description: Système de récolte automatique pour les abeilles récolteuses
-Statut: COMPLÈTE
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ POUR AJOUTER UNE FEATURE:                                                   │
+│ 1. Créer un fichier Structure/feature_[nom].txt                             │
+│ 2. Documenter architecture, fonctionnement, fichiers liés                   │
+│ 3. Ajouter la référence ci-dessous                                          │
+│ 4. Mettre à jour Structure/changelog.txt                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
 
-Architecture:
-- BeeInventory: Inventaire interne invisible (détruit si abeille meurt)
-- HarvestingBehaviorGoal: Cycle complet de récolte
-- HarvestHelper: Logique de récolte par type de bloc
-- FlowerSearchHelper: Recherche de fleurs dans un rayon
-- SpeedThreshold: Seuils de vitesse basés sur l'inventaire
-
-Types de récolte:
-1. CROP: Récolte si mature, replante automatiquement (wheat, carrots, potatoes, etc.)
-2. NETHER_WART: Récolte si mature (âge 3), replante automatiquement
-3. MUSHROOM: Casse et récupère les drops
-4. CRYSTAL: Casse et récupère les drops (améthyste)
-5. FLOWER: Casse et récupère les drops
-6. TREE: Non supporté (skip)
-
-Paramètres configurables (récolteuses):
-- areaOfEffect: Rayon de détection des fleurs (commun à toutes les abeilles)
-- inventorySize: Taille de l'inventaire interne
-- returnThreshold: Nombre d'items avant retour automatique
-- speedThresholds: Liste de seuils (itemCount → speedMultiplier)
-- harvestingDuration: Durée du travail sur une fleur
-
-Fonctionnement:
-1. Ruche détecte les fleurs dans le rayon (basé sur FlowerGene de l'abeille)
-2. Abeille récupère une fleur depuis la liste de la ruche
-3. Se déplace vers la fleur (vitesse affectée par le poids de l'inventaire)
-4. Attend que la fleur soit mature (pour crops/nether wart)
-5. Récolte et stocke dans BeeInventory
-6. Répète jusqu'à returnThreshold atteint ou inventaire plein
-7. Retourne à la ruche et dépose tous les items
-8. Cooldown puis recommence
-
-Exemple config (industrious):
-```json
-{
-  "behaviorType": "HARVESTER",
-  "areaOfEffect": 24,
-  "inventorySize": 54,
-  "returnThreshold": 96,
-  "harvestingDuration": 80,
-  "speedThresholds": [
-    { "itemCount": 16, "speedMultiplier": 0.95 },
-    { "itemCount": 64, "speedMultiplier": 0.7 }
-  ]
-}
-```
+LISTE DES FEATURES:
 --------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
-FEATURE: Bee Behavior System
---------------------------------------------------------------------------------
-Description: Système de comportement automatique des abeilles (butinage, combat, fuite)
-Statut: COMPLÈTE
+→ Harvester Behavior System
+  Fichier: Structure/feature_harvester_behavior.txt
+  Description: Système de récolte automatique pour les abeilles récolteuses
 
-Architecture:
-- BeeBehaviorType: Enum FORAGER/HARVESTER
-- BeeBehaviorConfig: Configuration par espèce (vitesse, vie, loot, etc.)
-- BeeBehaviorManager: Chargement depuis JSON, lazy loading
-- BeeActivityState: États de la machine à états (IDLE, SEEKING_FLOWER, WORKING, RETURNING)
-- Goals AI: ReturnToHiveWhenLowHealthGoal, BeeRevengeGoal, ForagingBehaviorGoal, HarvestingBehaviorGoal
+→ Bee Behavior System  
+  Fichier: Structure/feature_bee_behavior.txt
+  Description: Système de comportement automatique des abeilles
 
-Cycle de vie butineuse:
-1. Ruche détecte les fleurs dans le rayon de l'abeille
-2. Abeille sort de la ruche (après cooldown)
-3. Récupère une fleur depuis la liste de la ruche
-4. Se pose sur la fleur et travaille (foragingDuration ticks)
-5. Devient pollinisée (pollinated=true)
-6. Retourne à la ruche
-7. Dépose le loot dans les slots output
-8. Cooldown aléatoire (restCooldownMin à restCooldownMax)
-9. Régénération si blessée (cooldown ne démarre qu'à vie pleine)
+→ Gene System
+  Fichier: Structure/feature_gene_system.txt
+  Description: Système modulaire de gènes pour les abeilles
 
-Combat:
-- Si attaquée → devient enragée (vitesse augmentée)
-- Attaque l'agresseur (BeeRevengeGoal)
-- Si vie < 30% → fuite immédiate vers ruche (ReturnToHiveWhenLowHealthGoal)
+→ Lifetime System
+  Fichier: Structure/feature_lifetime_system.txt
+  Description: Système de durée de vie pour les abeilles
 
-Paramètres configurables (par espèce):
-- Communs: flyingSpeed, enragedFlyingSpeed, health, attackDamage, regenerationRate
-- Agressivité: aggressiveToPlayers, aggressiveToPassiveMobs, aggressiveToHostileMobs
-- Cooldown: restCooldownMin, restCooldownMax
-- Rayon: areaOfEffect
-- Butineuse: foragingDuration
-- Récolteuse: harvestingDuration, inventorySize, returnThreshold, speedThresholds
-- Loot: pollinationLoot (item, minQty, maxQty, chance)
+→ Magic Bee
+  Fichier: Structure/feature_magic_bee.txt
+  Description: Abeille avec système de gènes et comportements
 
-Config: data/beemancer/behavior/species_behaviors.json
-Tags: data/beemancer/tags/blocks/bee_flowers_*.json
---------------------------------------------------------------------------------
+→ Bee Creator
+  Fichier: Structure/feature_bee_creator.txt
+  Description: Interface GUI pour modifier les gènes des abeilles
 
---------------------------------------------------------------------------------
-FEATURE: Gene System
---------------------------------------------------------------------------------
-Description: Système modulaire de gènes pour les abeilles
-Statut: COMPLÈTE
+→ Magic Hive
+  Fichier: Structure/feature_magic_hive.txt
+  Description: Ruche magique pour héberger les MagicBees
 
-Architecture:
-- GeneCategory: Catégorie de gènes (species, environment, flower, lifetime)
-- Gene: Interface définissant un gène
-- AbstractGene: Implémentation de base
-- GeneRegistry: Registre central
-- BeeGeneData: Stockage des gènes + lifetime d'une abeille
+→ Bee Wand
+  Fichier: Structure/feature_bee_wand.txt
+  Description: Baguette pour observer et contrôler les entités
 
-Catégories de gènes:
-1. SPECIES (Espèce) - Couleur: Or
-   - common: Standard
-   - noble: +production, -vitesse
-   - diligent: +vitesse, -production
-
-2. ENVIRONMENT (Environnement) - Couleur: Vert
-   - normal: Conditions standard
-   - robust: Travaille sous la pluie
-   - nocturnal: Travaille la nuit
-
-3. FLOWER (Fleur) - Couleur: Violet
-   - flowers: Fleurs standard
-   - crops: Cultures
-   - cave_plants: Plantes de caverne
-   - trees: Arbres (logs + feuilles)
-   - mushrooms: Champignons
-   - crystals: Améthyste
-   - nether_wart: Verrues du Nether
-
-4. LIFETIME (Durée de vie) - Couleur: Aqua
-   - short: ~5 minutes
-   - normal: ~20 minutes
-   - long: ~60 minutes
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-FEATURE: Lifetime System
---------------------------------------------------------------------------------
-Description: Système de durée de vie pour les abeilles
-Statut: COMPLÈTE
-
-- MagicBeeEntity décrémente le lifetime chaque seconde
-- À 0, l'abeille meurt (discard)
-- MagicBeeItem affiche une barre de durabilité (vert→rouge)
-- Lifetime stocké dans BeeGeneData et synchronisé via EntityData
-- Config JSON: data/beemancer/genes/lifetime.json
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-FEATURE: Magic Bee
---------------------------------------------------------------------------------
-Description: Abeille avec système de gènes, lifetime et comportements automatiques
-Statut: COMPLÈTE
-
-- MagicBeeEntity: Entité avec BeeGeneData, lifetime countdown, goals AI, BeeInventory
-- MagicBeeItem: Item avec tooltip gènes (shift) + barre durabilité + santé stockée
-- Navigation contrôlée via BeeWand ou automatique via goals
-- Support assignation ruche (hivePos, slot)
-- États: pollinated, enraged
-- Méthodes: shouldFlee(), getHealthPercentage(), getBehaviorConfig(), getInventory()
-- getEffectiveFlyingSpeed(): Vitesse tenant compte du poids de l'inventaire
-- shouldReturnDueToInventory(): Vérifie si seuil de retour atteint
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-FEATURE: Bee Creator
---------------------------------------------------------------------------------
-Description: Interface GUI pour modifier les gènes des abeilles
-Statut: COMPLÈTE
-
-- BeeCreatorBlock: Bloc machine
-- BeeCreatorBlockEntity: Stockage de l'abeille
-- BeeCreatorMenu: Logique de sélection des gènes
-- BeeCreatorScreen: Interface avec flèches et bouton Edit
-- Lignes dynamiques selon le nombre de catégories
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-FEATURE: Magic Hive
---------------------------------------------------------------------------------
-Description: Ruche magique pour héberger les MagicBees avec gestion automatique
-Statut: COMPLÈTE
-
-Architecture:
-- MagicHiveBlock: Bloc avec GUI
-- MagicHiveBlockEntity: 12 slots (5 bee + 7 output), tracking états, breeding, cooldowns
-- MagicHiveMenu: Slots custom (BeeAssignmentSlot, OutputOnlySlot)
-- MagicHiveScreen: GUI avec layout honeycomb + indicateur breeding
-
-Système d'assignation:
-- États: EMPTY → INSIDE → OUTSIDE → INSIDE (cycle)
-- Assigner: Placer MagicBeeItem dans slot
-- Abeille dehors: Slot devient "ghost", UUID trackée
-- Retrait ghost: Abeille dehors despawn
-- Mort abeille: Slot se libère
-- Retour ruche: Bee capturée, état INSIDE, loot déposé
-
-Détection de fleurs (NOUVEAU):
-- Scan périodique (toutes les 5 secondes) des fleurs pour chaque abeille
-- Utilise le FlowerGene de l'abeille et l'areaOfEffect de sa config
-- Fournit une liste de fleurs à chaque abeille
-- getAndAssignFlower(): Récupère et assigne une fleur à l'abeille
-- returnFlower(): L'abeille retourne une fleur non visitée
-
-Dépôt d'inventaire récolteuse (NOUVEAU):
-- Quand une récolteuse rentre, dépose tout son inventaire dans les slots output
-
-Slots:
-- 0-4: BeeAssignmentSlot (5 emplacements abeilles)
-- 5-11: OutputOnlySlot (7 slots honeycomb, extraction seulement)
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-FEATURE: Bee Wand
---------------------------------------------------------------------------------
-Description: Baguette pour contrôler les abeilles
-Statut: COMPLÈTE
-
-- Clic droit sur abeille: Sélectionne (son Ding)
-- Clic droit sur bloc: Définit destination (son Dong)
-- Shift+clic droit air: Désélectionne
-- Tooltip affiche l'abeille sélectionnée
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-FEATURE: Breeding System
---------------------------------------------------------------------------------
-Description: Système de reproduction des abeilles avec cristal et incubateur
-Statut: COMPLÈTE
-
-Architecture:
-- MagicBreedingCrystalBlock: Active le mode breeding quand au-dessus d'une ruche
-- BreedingManager: Logique de breeding et d'héritage des gènes
-- BeeLarvaItem: Item larve avec gènes hérités
-- IncubatorBlock/BlockEntity: Transforme larve en abeille
-
-Fonctionnement:
-1. Placer cristal au-dessus de la ruche → mode breeding activé
-2. Minimum 2 abeilles INSIDE + 1 slot output vide
-3. Tentative de breeding: 5% par seconde
-4. Une abeille perd 10% de son lifetime max par tentative
-5. Résolution espèce: species_combinations.json
-6. Si "nothing" → pas de larve créée
-7. Sinon → BeeLarvaItem créée avec gènes hérités
-
-Règles d'héritage:
-- Parents espèces différentes → traits par défaut pour offspring
-- Même espèce mais résultat différent → traits par défaut
-- Même espèce ET même résultat → chaque trait hérité aléatoirement d'un parent
-
-Incubation:
-- Slot unique acceptant BeeLarvaItem
-- Timer: 600 ticks (30 secondes)
-- Transforme larve en MagicBeeItem avec mêmes gènes
-
-Config: data/beemancer/breeding/species_combinations.json
---------------------------------------------------------------------------------
+→ Breeding System
+  Fichier: Structure/feature_breeding_system.txt
+  Description: Système de reproduction des abeilles
 
 ================================================================================
 6. FEATURES EN COURS
@@ -508,178 +224,31 @@ Config: data/beemancer/breeding/species_combinations.json
 7. DÉPENDANCES UNIVERSELLES
 ================================================================================
 
-core/gene/:
-- Gene.java: Interface pour créer de nouveaux gènes
-- AbstractGene.java: Classe de base avec paramètres
-- GeneCategory.java: Pour ajouter de nouvelles catégories
-- GeneRegistry.java: Pour enregistrer et récupérer des gènes
-- BeeGeneData.java: Stockage gènes + lifetime
-
-core/behavior/:
-- BeeBehaviorType.java: Types de comportement (FORAGER, HARVESTER)
-- BeeBehaviorConfig.java: Configuration complète par espèce
-- BeeBehaviorManager.java: Chargement et accès aux configs
-- LootEntry.java: Entrée de loot configurable
-- SpeedThreshold.java: Seuil de vitesse par nombre d'items
-
-core/util/:
-- FlowerSearchHelper.java: Recherche de fleurs dans un rayon
-- HarvestHelper.java: Logique de récolte par type de bloc (CROP, NETHER_WART, MUSHROOM, CRYSTAL, FLOWER, TREE)
-
-core/breeding/:
-- BreedingManager.java: Logique breeding, héritage, config loading
-
-common/menu/slot/:
-- OutputOnlySlot.java: Slot extraction uniquement (pattern Create)
-- BeeAssignmentSlot.java: Slot acceptant uniquement MagicBeeItem
-- LarvaSlot.java: Slot acceptant uniquement BeeLarvaItem
-
-common/entity/bee/:
-- BeeInventory.java: Inventaire interne pour récolteuses
-
-common/entity/bee/goal/:
-- ReturnToHiveWhenLowHealthGoal.java: Fuite si vie < 30%
-- BeeRevengeGoal.java: Attaque si blessée
-- ForagingBehaviorGoal.java: Cycle complet butineuse
-- HarvestingBehaviorGoal.java: Cycle complet récolteuse
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FICHIER DE DÉTAIL: Structure/dependencies.txt                               │
+│ POUR AJOUTER: Créer la dépendance puis mettre à jour le fichier             │
+└─────────────────────────────────────────────────────────────────────────────┘
+→ Voir: Structure/dependencies.txt
 
 ================================================================================
 8. GUIDE D'INTÉGRATION D'UNE FEATURE
 ================================================================================
 
-Pour ajouter un nouveau gène:
-1. Créer une classe dans content/gene/[category]/
-2. Hériter de la classe de base de la catégorie (ex: SpeciesGene)
-3. Enregistrer dans GeneInit.registerAllGenes()
-4. Ajouter la config dans data/beemancer/genes/[category].json
-5. Ajouter les traductions dans lang/*.json
-
-Pour ajouter un nouveau FlowerGene:
-1. Créer une classe dans content/gene/flower/
-2. Hériter de FlowerGene
-3. Définir le TagKey<Block> pour les blocs cibles
-4. Enregistrer dans GeneInit.registerAllGenes()
-5. Créer le tag dans data/beemancer/tags/blocks/
-6. Ajouter les traductions
-
-Pour ajouter une nouvelle catégorie de gènes:
-1. Ajouter dans GeneCategory.java
-2. Créer le package content/gene/[category]/
-3. Créer la classe de base [Category]Gene
-4. Ajouter la config JSON
-5. Ajouter les traductions
-
-Pour ajouter une nouvelle combinaison de breeding:
-1. Modifier data/beemancer/breeding/species_combinations.json
-2. Ajouter un bloc { "parent1": "...", "parent2": "...", "results": [...] }
-3. Les probabilités doivent totaliser 100%
-4. "nothing" = pas de descendant
-
-Pour configurer une nouvelle espèce:
-1. Modifier data/beemancer/behavior/species_behaviors.json
-2. Ajouter un bloc dans "species" avec l'ID de l'espèce
-3. Définir behaviorType (FORAGER ou HARVESTER)
-4. Configurer les paramètres (vitesse, vie, loot, etc.)
-5. Pour HARVESTER: configurer inventorySize, returnThreshold, speedThresholds
-
-Pour ajouter un nouveau type de récolte:
-1. Modifier HarvestHelper.java
-2. Ajouter le type dans l'enum HarvestType
-3. Implémenter la détection dans getHarvestType()
-4. Implémenter isReadyToHarvest() pour le nouveau type
-5. Implémenter la logique de récolte dans harvest()
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FICHIER DE DÉTAIL: Structure/integration_guide.txt                          │
+│ POUR MODIFIER: Éditer directement le fichier                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+→ Voir: Structure/integration_guide.txt
 
 ================================================================================
 9. CHANGELOG STRUCTURE
 ================================================================================
 
---------------------------------------------------------------------------------
-2026-01-22 - Harvester Behavior System (Complete)
---------------------------------------------------------------------------------
-AJOUTS:
-- core/behavior/SpeedThreshold.java (record seuil vitesse)
-- core/util/FlowerSearchHelper.java (recherche fleurs dans rayon)
-- core/util/HarvestHelper.java (logique récolte par type bloc)
-- common/entity/bee/BeeInventory.java (inventaire interne récolteuses)
-
-MODIFICATIONS:
-- BeeBehaviorConfig.java: +areaOfEffect, +returnThreshold, +speedThresholds, +getEffectiveSpeedMultiplier()
-- BeeBehaviorManager.java: +parsing nouveaux paramètres JSON
-- MagicBeeEntity.java: +BeeInventory, +getInventory(), +getEffectiveFlyingSpeed(), +shouldReturnDueToInventory()
-- MagicHiveBlockEntity.java: +détection fleurs par abeille, +getAndAssignFlower(), +returnFlower(), +dépôt inventaire récolteuse
-- HarvestingBehaviorGoal.java: Implémentation complète (state machine, récolte par type, inventaire)
-- ForagingBehaviorGoal.java: Utilisation de la liste de fleurs de la ruche
-- species_behaviors.json: +areaOfEffect, +speedThresholds, +returnThreshold, +espèce industrious
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-2026-01-22 - Bee Behavior System
---------------------------------------------------------------------------------
-AJOUTS:
-- core/behavior/BeeBehaviorType.java (enum FORAGER/HARVESTER)
-- core/behavior/BeeBehaviorConfig.java (configuration par espèce)
-- core/behavior/BeeBehaviorManager.java (chargement JSON)
-- core/behavior/LootEntry.java (record pour loot)
-- common/entity/bee/BeeActivityState.java (enum états)
-- common/entity/bee/goal/ReturnToHiveWhenLowHealthGoal.java
-- common/entity/bee/goal/BeeRevengeGoal.java
-- common/entity/bee/goal/ForagingBehaviorGoal.java
-- common/entity/bee/goal/HarvestingBehaviorGoal.java
-- content/gene/flower/TreesFlowerGene.java
-- content/gene/flower/MushroomsFlowerGene.java
-- content/gene/flower/CrystalsFlowerGene.java
-- content/gene/flower/NetherWartFlowerGene.java
-- data/beemancer/behavior/species_behaviors.json
-- data/beemancer/tags/blocks/bee_flowers_trees.json
-- data/beemancer/tags/blocks/bee_flowers_mushrooms.json
-- data/beemancer/tags/blocks/bee_flowers_crystals.json
-- data/beemancer/tags/blocks/bee_flowers_nether_wart.json
-
-MODIFICATIONS:
-- MagicBeeEntity.java: +goals AI, +états (pollinated, enraged), +hurt(), +shouldFlee()
-- MagicHiveBlockEntity.java: +cooldowns, +régénération, +dépôt loot, +auto-release
-- MagicBeeItem.java: +storedHealth
-- GeneInit.java: +4 nouveaux FlowerGenes
-- Beemancer.java: +chargement BeeBehaviorManager au démarrage serveur
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-2026-01-22 - Breeding System
---------------------------------------------------------------------------------
-- Ajout MagicBreedingCrystalBlock (active breeding au-dessus d'une ruche)
-- Ajout BeeLarvaItem (item larve avec gènes)
-- Ajout LarvaSlot (slot acceptant uniquement larves)
-- Ajout BreedingManager (logique breeding + héritage gènes)
-- Ajout IncubatorBlock/BlockEntity/Menu/Screen (machine incubation)
-- Modification MagicHiveBlockEntity (logique breeding intégrée)
-- Modification MagicHiveMenu (ContainerData pour sync breeding mode)
-- Modification MagicHiveScreen (indicateur mode breeding)
-- Config breeding: data/beemancer/breeding/species_combinations.json
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-2026-01-22 - Lifetime System + Magic Hive
---------------------------------------------------------------------------------
-- Ajout catégorie LIFETIME aux gènes (short, normal, long)
-- MagicBeeEntity: countdown lifetime, mort automatique à 0
-- MagicBeeItem: barre de durabilité (lifetime)
-- Création MagicHiveBlock avec système d'assignation
-- 5 slots bee + 7 slots output honeycomb
-- États de tracking: EMPTY, INSIDE, OUTSIDE
-- Notification ruche quand abeille meurt
-- Slots custom: OutputOnlySlot, BeeAssignmentSlot
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
-2026-01-21 - Refonte Gene System
---------------------------------------------------------------------------------
-- Remplacement DebugBee par MagicBee avec système de gènes
-- Création du système de gènes modulaire (core/gene/)
-- Création des catégories: Species, Environment, Flower
-- Création du BeeCreator avec GUI
-- Mise à jour BeeWand pour MagicBee
-- 9 gènes implémentés (3 par catégorie)
---------------------------------------------------------------------------------
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FICHIER DE DÉTAIL: Structure/changelog.txt                                  │
+│ POUR AJOUTER: Éditer directement le fichier avec nouvelle entrée en haut    │
+└─────────────────────────────────────────────────────────────────────────────┘
+→ Voir: Structure/changelog.txt
 
 ################################################################################
 #                              FIN DU DOCUMENT                                  #

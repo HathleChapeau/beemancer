@@ -1,0 +1,15 @@
+################################################################################
+#                        REGISTRE: GÈNES FLEUR                                 #
+################################################################################
+
+| ID          | Classe                 | Tag cible                        |
+|-------------|------------------------|----------------------------------|
+| flowers     | FlowersFlowerGene      | minecraft:flowers                |
+| crops       | CropsFlowerGene        | minecraft:crops                  |
+| cave_plants | CavePlantsFlowerGene   | minecraft:cave_vines             |
+| trees       | TreesFlowerGene        | beemancer:bee_flowers_trees      |
+| mushrooms   | MushroomsFlowerGene    | beemancer:bee_flowers_mushrooms  |
+| crystals    | CrystalsFlowerGene     | beemancer:bee_flowers_crystals   |
+| nether_wart | NetherWartFlowerGene   | beemancer:bee_flowers_nether_wart|
+
+################################################################################

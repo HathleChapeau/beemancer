@@ -1,0 +1,61 @@
+################################################################################
+#                       DÉPENDANCES UNIVERSELLES                               #
+################################################################################
+
+================================================================================
+core/gene/
+================================================================================
+
+- Gene.java: Interface pour créer de nouveaux gènes
+- AbstractGene.java: Classe de base avec paramètres
+- GeneCategory.java: Pour ajouter de nouvelles catégories
+- GeneRegistry.java: Pour enregistrer et récupérer des gènes
+- BeeGeneData.java: Stockage gènes + lifetime
+
+================================================================================
+core/behavior/
+================================================================================
+
+- BeeBehaviorType.java: Types de comportement (FORAGER, HARVESTER)
+- BeeBehaviorConfig.java: Configuration complète par espèce
+- BeeBehaviorManager.java: Chargement et accès aux configs
+- LootEntry.java: Entrée de loot configurable
+- SpeedThreshold.java: Seuil de vitesse par nombre d'items
+
+================================================================================
+core/util/
+================================================================================
+
+- FlowerSearchHelper.java: Recherche de fleurs dans un rayon
+- HarvestHelper.java: Logique de récolte par type de bloc (CROP, NETHER_WART, MUSHROOM, CRYSTAL, FLOWER, TREE)
+
+================================================================================
+core/breeding/
+================================================================================
+
+- BreedingManager.java: Logique breeding, héritage, config loading
+
+================================================================================
+common/menu/slot/
+================================================================================
+
+- OutputOnlySlot.java: Slot extraction uniquement (pattern Create)
+- BeeAssignmentSlot.java: Slot acceptant uniquement MagicBeeItem
+- LarvaSlot.java: Slot acceptant uniquement BeeLarvaItem
+
+================================================================================
+common/entity/bee/
+================================================================================
+
+- BeeInventory.java: Inventaire interne pour récolteuses
+
+================================================================================
+common/entity/bee/goal/
+================================================================================
+
+- ReturnToHiveWhenLowHealthGoal.java: Fuite si vie < 30%
+- BeeRevengeGoal.java: Attaque si blessée
+- ForagingBehaviorGoal.java: Cycle complet butineuse
+- HarvestingBehaviorGoal.java: Cycle complet récolteuse
+
+################################################################################

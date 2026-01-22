@@ -1,0 +1,27 @@
+################################################################################
+#                       FEATURE: Bee Creator                                   #
+################################################################################
+
+Description: Interface GUI pour modifier les gènes des abeilles
+Statut: COMPLÈTE
+
+================================================================================
+COMPOSANTS
+================================================================================
+
+- BeeCreatorBlock: Bloc machine
+- BeeCreatorBlockEntity: Stockage de l'abeille
+- BeeCreatorMenu: Logique de sélection des gènes
+- BeeCreatorScreen: Interface avec flèches et bouton Edit
+- Lignes dynamiques selon le nombre de catégories
+
+================================================================================
+FICHIERS LIÉS
+================================================================================
+
+- common/block/beecreator/BeeCreatorBlock.java
+- common/block/beecreator/BeeCreatorBlockEntity.java
+- common/menu/BeeCreatorMenu.java
+- client/gui/screen/BeeCreatorScreen.java
+
+################################################################################

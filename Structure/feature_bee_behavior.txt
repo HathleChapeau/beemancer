@@ -1,0 +1,70 @@
+################################################################################
+#                      FEATURE: Bee Behavior System                            #
+################################################################################
+
+Description: Système de comportement automatique des abeilles (butinage, combat, fuite)
+Statut: COMPLÈTE
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+- BeeBehaviorType: Enum FORAGER/HARVESTER
+- BeeBehaviorConfig: Configuration par espèce (vitesse, vie, loot, etc.)
+- BeeBehaviorManager: Chargement depuis JSON, lazy loading
+- BeeActivityState: États de la machine à états (IDLE, SEEKING_FLOWER, WORKING, RETURNING)
+- Goals AI: ReturnToHiveWhenLowHealthGoal, BeeRevengeGoal, ForagingBehaviorGoal, HarvestingBehaviorGoal
+
+================================================================================
+CYCLE DE VIE BUTINEUSE
+================================================================================
+
+1. Ruche détecte les fleurs dans le rayon de l'abeille
+2. Abeille sort de la ruche (après cooldown)
+3. Récupère une fleur depuis la liste de la ruche
+4. Se pose sur la fleur et travaille (foragingDuration ticks)
+5. Devient pollinisée (pollinated=true)
+6. Retourne à la ruche
+7. Dépose le loot dans les slots output
+8. Cooldown aléatoire (restCooldownMin à restCooldownMax)
+9. Régénération si blessée (cooldown ne démarre qu'à vie pleine)
+
+================================================================================
+COMBAT
+================================================================================
+
+- Si attaquée → devient enragée (vitesse augmentée)
+- Attaque l'agresseur (BeeRevengeGoal)
+- Si vie < 30% → fuite immédiate vers ruche (ReturnToHiveWhenLowHealthGoal)
+
+================================================================================
+PARAMÈTRES CONFIGURABLES (par espèce)
+================================================================================
+
+- Communs: flyingSpeed, enragedFlyingSpeed, health, attackDamage, regenerationRate
+- Agressivité: aggressiveToPlayers, aggressiveToPassiveMobs, aggressiveToHostileMobs
+- Cooldown: restCooldownMin, restCooldownMax
+- Rayon: areaOfEffect
+- Butineuse: foragingDuration
+- Récolteuse: harvestingDuration, inventorySize, returnThreshold, speedThresholds
+- Loot: pollinationLoot (item, minQty, maxQty, chance)
+
+================================================================================
+FICHIERS DE CONFIG
+================================================================================
+
+- Config: data/beemancer/behavior/species_behaviors.json
+- Tags: data/beemancer/tags/blocks/bee_flowers_*.json
+
+================================================================================
+FICHIERS LIÉS
+================================================================================
+
+- core/behavior/BeeBehaviorType.java
+- core/behavior/BeeBehaviorConfig.java
+- core/behavior/BeeBehaviorManager.java
+- core/behavior/LootEntry.java
+- common/entity/bee/BeeActivityState.java
+- common/entity/bee/goal/*.java
+
+################################################################################

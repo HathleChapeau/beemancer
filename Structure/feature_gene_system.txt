@@ -1,0 +1,61 @@
+################################################################################
+#                        FEATURE: Gene System                                  #
+################################################################################
+
+Description: Système modulaire de gènes pour les abeilles
+Statut: COMPLÈTE
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+- GeneCategory: Catégorie de gènes (species, environment, flower, lifetime)
+- Gene: Interface définissant un gène
+- AbstractGene: Implémentation de base
+- GeneRegistry: Registre central
+- BeeGeneData: Stockage des gènes + lifetime d'une abeille
+
+================================================================================
+CATÉGORIES DE GÈNES
+================================================================================
+
+1. SPECIES (Espèce) - Couleur: Or
+   - common: Standard
+   - noble: +production, -vitesse
+   - diligent: +vitesse, -production
+
+2. ENVIRONMENT (Environnement) - Couleur: Vert
+   - normal: Conditions standard
+   - robust: Travaille sous la pluie
+   - nocturnal: Travaille la nuit
+
+3. FLOWER (Fleur) - Couleur: Violet
+   - flowers: Fleurs standard
+   - crops: Cultures
+   - cave_plants: Plantes de caverne
+   - trees: Arbres (logs + feuilles)
+   - mushrooms: Champignons
+   - crystals: Améthyste
+   - nether_wart: Verrues du Nether
+
+4. LIFETIME (Durée de vie) - Couleur: Aqua
+   - short: ~5 minutes
+   - normal: ~20 minutes
+   - long: ~60 minutes
+
+================================================================================
+FICHIERS LIÉS
+================================================================================
+
+- core/gene/Gene.java
+- core/gene/AbstractGene.java
+- core/gene/GeneCategory.java
+- core/gene/GeneRegistry.java
+- core/gene/BeeGeneData.java
+- content/gene/GeneInit.java
+- content/gene/species/*.java
+- content/gene/environment/*.java
+- content/gene/flower/*.java
+- content/gene/lifetime/*.java
+
+################################################################################

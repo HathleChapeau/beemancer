@@ -1,0 +1,64 @@
+################################################################################
+#                      FEATURE: Breeding System                                #
+################################################################################
+
+Description: Système de reproduction des abeilles avec cristal et incubateur
+Statut: COMPLÈTE
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+- MagicBreedingCrystalBlock: Active le mode breeding quand au-dessus d'une ruche
+- BreedingManager: Logique de breeding et d'héritage des gènes
+- BeeLarvaItem: Item larve avec gènes hérités
+- IncubatorBlock/BlockEntity: Transforme larve en abeille
+
+================================================================================
+FONCTIONNEMENT
+================================================================================
+
+1. Placer cristal au-dessus de la ruche → mode breeding activé
+2. Minimum 2 abeilles INSIDE + 1 slot output vide
+3. Tentative de breeding: 5% par seconde
+4. Une abeille perd 10% de son lifetime max par tentative
+5. Résolution espèce: species_combinations.json
+6. Si "nothing" → pas de larve créée
+7. Sinon → BeeLarvaItem créée avec gènes hérités
+
+================================================================================
+RÈGLES D'HÉRITAGE
+================================================================================
+
+- Parents espèces différentes → traits par défaut pour offspring
+- Même espèce mais résultat différent → traits par défaut
+- Même espèce ET même résultat → chaque trait hérité aléatoirement d'un parent
+
+================================================================================
+INCUBATION
+================================================================================
+
+- Slot unique acceptant BeeLarvaItem
+- Timer: 600 ticks (30 secondes)
+- Transforme larve en MagicBeeItem avec mêmes gènes
+
+================================================================================
+CONFIG
+================================================================================
+
+- data/beemancer/breeding/species_combinations.json
+
+================================================================================
+FICHIERS LIÉS
+================================================================================
+
+- common/block/crystal/MagicBreedingCrystalBlock.java
+- common/item/bee/BeeLarvaItem.java
+- common/menu/slot/LarvaSlot.java
+- core/breeding/BreedingManager.java
+- common/block/incubator/IncubatorBlock.java
+- common/block/incubator/IncubatorBlockEntity.java
+- common/menu/IncubatorMenu.java
+- client/gui/screen/IncubatorScreen.java
+
+################################################################################

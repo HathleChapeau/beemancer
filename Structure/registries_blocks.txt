@@ -1,0 +1,13 @@
+################################################################################
+#                           REGISTRE: BLOCKS                                   #
+################################################################################
+
+| ID               | Classe                    | BlockEntity? | Feature      |
+|------------------|---------------------------|--------------|--------------|
+| storage_crate    | StorageCrateBlock         | Oui          | Storage      |
+| bee_creator      | BeeCreatorBlock           | Oui          | Gene Editor  |
+| magic_hive       | MagicHiveBlock            | Oui          | Bee Housing  |
+| breeding_crystal | MagicBreedingCrystalBlock | Non          | Breeding     |
+| incubator        | IncubatorBlock            | Oui          | Incubator    |
+
+################################################################################

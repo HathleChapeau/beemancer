@@ -1,0 +1,92 @@
+################################################################################
+#                    GUIDE D'INTÉGRATION DES FEATURES                          #
+################################################################################
+
+================================================================================
+POUR AJOUTER UN NOUVEAU GÈNE
+================================================================================
+
+1. Créer une classe dans content/gene/[category]/
+2. Hériter de la classe de base de la catégorie (ex: SpeciesGene)
+3. Enregistrer dans GeneInit.registerAllGenes()
+4. Ajouter la config dans data/beemancer/genes/[category].json
+5. Ajouter les traductions dans lang/*.json
+
+================================================================================
+POUR AJOUTER UN NOUVEAU FLOWERGENE
+================================================================================
+
+1. Créer une classe dans content/gene/flower/
+2. Hériter de FlowerGene
+3. Définir le TagKey<Block> pour les blocs cibles
+4. Enregistrer dans GeneInit.registerAllGenes()
+5. Créer le tag dans data/beemancer/tags/blocks/
+6. Ajouter les traductions
+7. Mettre à jour Structure/registries_flower_genes.txt
+
+================================================================================
+POUR AJOUTER UNE NOUVELLE CATÉGORIE DE GÈNES
+================================================================================
+
+1. Ajouter dans GeneCategory.java
+2. Créer le package content/gene/[category]/
+3. Créer la classe de base [Category]Gene
+4. Ajouter la config JSON
+5. Ajouter les traductions
+
+================================================================================
+POUR AJOUTER UNE NOUVELLE COMBINAISON DE BREEDING
+================================================================================
+
+1. Modifier data/beemancer/breeding/species_combinations.json
+2. Ajouter un bloc { "parent1": "...", "parent2": "...", "results": [...] }
+3. Les probabilités doivent totaliser 100%
+4. "nothing" = pas de descendant
+
+================================================================================
+POUR CONFIGURER UNE NOUVELLE ESPÈCE
+================================================================================
+
+1. Modifier data/beemancer/behavior/species_behaviors.json
+2. Ajouter un bloc dans "species" avec l'ID de l'espèce
+3. Définir behaviorType (FORAGER ou HARVESTER)
+4. Configurer les paramètres (vitesse, vie, loot, etc.)
+5. Pour HARVESTER: configurer inventorySize, returnThreshold, speedThresholds
+
+================================================================================
+POUR AJOUTER UN NOUVEAU TYPE DE RÉCOLTE
+================================================================================
+
+1. Modifier HarvestHelper.java
+2. Ajouter le type dans l'enum HarvestType
+3. Implémenter la détection dans getHarvestType()
+4. Implémenter isReadyToHarvest() pour le nouveau type
+5. Implémenter la logique de récolte dans harvest()
+
+================================================================================
+POUR AJOUTER UN NOUVEL ITEM AU REGISTRE
+================================================================================
+
+1. Ajouter l'item dans core/registry/BeemancerItems.java
+2. Créer la classe de l'item si custom
+3. Mettre à jour Structure/registries_items.txt
+
+================================================================================
+POUR AJOUTER UN NOUVEAU BLOC AU REGISTRE
+================================================================================
+
+1. Ajouter le bloc dans core/registry/BeemancerBlocks.java
+2. Créer la classe du bloc
+3. Si BlockEntity: créer la classe BlockEntity et l'enregistrer dans BeemancerBlockEntities.java
+4. Mettre à jour Structure/registries_blocks.txt
+
+================================================================================
+POUR AJOUTER UNE NOUVELLE FEATURE
+================================================================================
+
+1. Créer un nouveau fichier Structure/feature_[nom].txt
+2. Documenter l'architecture, fonctionnement, fichiers liés
+3. Ajouter la référence dans Structure.txt section "FEATURES IMPLÉMENTÉES"
+4. Mettre à jour le changelog
+
+################################################################################

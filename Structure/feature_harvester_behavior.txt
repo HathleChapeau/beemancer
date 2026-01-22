@@ -1,0 +1,80 @@
+################################################################################
+#                    FEATURE: Harvester Behavior System                        #
+################################################################################
+
+Description: Système de récolte automatique pour les abeilles récolteuses
+Statut: COMPLÈTE
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+- BeeInventory: Inventaire interne invisible (détruit si abeille meurt)
+- HarvestingBehaviorGoal: Cycle complet de récolte
+- HarvestHelper: Logique de récolte par type de bloc
+- FlowerSearchHelper: Recherche de fleurs dans un rayon
+- SpeedThreshold: Seuils de vitesse basés sur l'inventaire
+
+================================================================================
+TYPES DE RÉCOLTE
+================================================================================
+
+1. CROP: Récolte si mature, replante automatiquement (wheat, carrots, potatoes, etc.)
+2. NETHER_WART: Récolte si mature (âge 3), replante automatiquement
+3. MUSHROOM: Casse et récupère les drops
+4. CRYSTAL: Casse et récupère les drops (améthyste)
+5. FLOWER: Casse et récupère les drops
+6. TREE: Non supporté (skip)
+
+================================================================================
+PARAMÈTRES CONFIGURABLES (RÉCOLTEUSES)
+================================================================================
+
+- areaOfEffect: Rayon de détection des fleurs (commun à toutes les abeilles)
+- inventorySize: Taille de l'inventaire interne
+- returnThreshold: Nombre d'items avant retour automatique
+- speedThresholds: Liste de seuils (itemCount → speedMultiplier)
+- harvestingDuration: Durée du travail sur une fleur
+
+================================================================================
+FONCTIONNEMENT
+================================================================================
+
+1. Ruche détecte les fleurs dans le rayon (basé sur FlowerGene de l'abeille)
+2. Abeille récupère une fleur depuis la liste de la ruche
+3. Se déplace vers la fleur (vitesse affectée par le poids de l'inventaire)
+4. Attend que la fleur soit mature (pour crops/nether wart)
+5. Récolte et stocke dans BeeInventory
+6. Répète jusqu'à returnThreshold atteint ou inventaire plein
+7. Retourne à la ruche et dépose tous les items
+8. Cooldown puis recommence
+
+================================================================================
+EXEMPLE CONFIG (industrious)
+================================================================================
+
+```json
+{
+  "behaviorType": "HARVESTER",
+  "areaOfEffect": 24,
+  "inventorySize": 54,
+  "returnThreshold": 96,
+  "harvestingDuration": 80,
+  "speedThresholds": [
+    { "itemCount": 16, "speedMultiplier": 0.95 },
+    { "itemCount": 64, "speedMultiplier": 0.7 }
+  ]
+}
+```
+
+================================================================================
+FICHIERS LIÉS
+================================================================================
+
+- core/behavior/SpeedThreshold.java
+- core/util/FlowerSearchHelper.java
+- core/util/HarvestHelper.java
+- common/entity/bee/BeeInventory.java
+- common/entity/bee/goal/HarvestingBehaviorGoal.java
+
+################################################################################

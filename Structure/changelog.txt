@@ -1,0 +1,134 @@
+################################################################################
+#                            CHANGELOG                                         #
+################################################################################
+
+================================================================================
+2026-01-22 - Bee Wand Refonte (Complete)
+================================================================================
+
+AJOUTS:
+- common/item/bee/WandTrackedData.java (définition donnée trackée)
+- common/item/bee/WandClassTracker.java (configuration tracking par classe)
+- client/gui/hud/WandOverlayRenderer.java (renderer HUD overlay)
+
+MODIFICATIONS:
+- BeeWandItem.java: Refonte complète avec système de tracking générique
+  - Configuration des classes trackées dans bloc static {}
+  - Tracking MagicBeeEntity (9 données: Species, Health, Lifetime, etc.)
+  - Tracking MagicHiveBlockEntity (4 données: Breeding Mode, Bees Inside/Outside, Empty Slots)
+  - Sélection par clic, désélection par Shift+clic droit
+- ClientSetup.java: +enregistrement WandOverlayRenderer sur NeoForge.EVENT_BUS
+
+NOUVELLE ARCHITECTURE:
+- Système de tracking générique extensible via WandClassTracker<T>
+- HUD overlay en haut à gauche quand baguette tenue
+- Affichage dynamique des valeurs tick par tick
+
+================================================================================
+2026-01-22 - Structure Documentation Refonte
+================================================================================
+
+AJOUTS:
+- Structure/ (dossier à la racine)
+- Structure/registries_items.txt
+- Structure/registries_blocks.txt
+- Structure/registries_entities.txt
+- Structure/registries_menus.txt
+- Structure/registries_flower_genes.txt
+- Structure/feature_*.txt (1 fichier par feature)
+- Structure/dependencies.txt
+- Structure/integration_guide.txt
+- Structure/changelog.txt
+
+MODIFICATIONS:
+- Structure.txt: Références aux fichiers de détail avec instructions d'extension
+
+================================================================================
+2026-01-22 - Harvester Behavior System (Complete)
+================================================================================
+
+AJOUTS:
+- core/behavior/SpeedThreshold.java (record seuil vitesse)
+- core/util/FlowerSearchHelper.java (recherche fleurs dans rayon)
+- core/util/HarvestHelper.java (logique récolte par type bloc)
+- common/entity/bee/BeeInventory.java (inventaire interne récolteuses)
+
+MODIFICATIONS:
+- BeeBehaviorConfig.java: +areaOfEffect, +returnThreshold, +speedThresholds, +getEffectiveSpeedMultiplier()
+- BeeBehaviorManager.java: +parsing nouveaux paramètres JSON
+- MagicBeeEntity.java: +BeeInventory, +getInventory(), +getEffectiveFlyingSpeed(), +shouldReturnDueToInventory()
+- MagicHiveBlockEntity.java: +détection fleurs par abeille, +getAndAssignFlower(), +returnFlower(), +dépôt inventaire récolteuse
+- HarvestingBehaviorGoal.java: Implémentation complète (state machine, récolte par type, inventaire)
+- ForagingBehaviorGoal.java: Utilisation de la liste de fleurs de la ruche
+- species_behaviors.json: +areaOfEffect, +speedThresholds, +returnThreshold, +espèce industrious
+
+================================================================================
+2026-01-22 - Bee Behavior System
+================================================================================
+
+AJOUTS:
+- core/behavior/BeeBehaviorType.java (enum FORAGER/HARVESTER)
+- core/behavior/BeeBehaviorConfig.java (configuration par espèce)
+- core/behavior/BeeBehaviorManager.java (chargement JSON)
+- core/behavior/LootEntry.java (record pour loot)
+- common/entity/bee/BeeActivityState.java (enum états)
+- common/entity/bee/goal/ReturnToHiveWhenLowHealthGoal.java
+- common/entity/bee/goal/BeeRevengeGoal.java
+- common/entity/bee/goal/ForagingBehaviorGoal.java
+- common/entity/bee/goal/HarvestingBehaviorGoal.java
+- content/gene/flower/TreesFlowerGene.java
+- content/gene/flower/MushroomsFlowerGene.java
+- content/gene/flower/CrystalsFlowerGene.java
+- content/gene/flower/NetherWartFlowerGene.java
+- data/beemancer/behavior/species_behaviors.json
+- data/beemancer/tags/blocks/bee_flowers_trees.json
+- data/beemancer/tags/blocks/bee_flowers_mushrooms.json
+- data/beemancer/tags/blocks/bee_flowers_crystals.json
+- data/beemancer/tags/blocks/bee_flowers_nether_wart.json
+
+MODIFICATIONS:
+- MagicBeeEntity.java: +goals AI, +états (pollinated, enraged), +hurt(), +shouldFlee()
+- MagicHiveBlockEntity.java: +cooldowns, +régénération, +dépôt loot, +auto-release
+- MagicBeeItem.java: +storedHealth
+- GeneInit.java: +4 nouveaux FlowerGenes
+- Beemancer.java: +chargement BeeBehaviorManager au démarrage serveur
+
+================================================================================
+2026-01-22 - Breeding System
+================================================================================
+
+- Ajout MagicBreedingCrystalBlock (active breeding au-dessus d'une ruche)
+- Ajout BeeLarvaItem (item larve avec gènes)
+- Ajout LarvaSlot (slot acceptant uniquement larves)
+- Ajout BreedingManager (logique breeding + héritage gènes)
+- Ajout IncubatorBlock/BlockEntity/Menu/Screen (machine incubation)
+- Modification MagicHiveBlockEntity (logique breeding intégrée)
+- Modification MagicHiveMenu (ContainerData pour sync breeding mode)
+- Modification MagicHiveScreen (indicateur mode breeding)
+- Config breeding: data/beemancer/breeding/species_combinations.json
+
+================================================================================
+2026-01-22 - Lifetime System + Magic Hive
+================================================================================
+
+- Ajout catégorie LIFETIME aux gènes (short, normal, long)
+- MagicBeeEntity: countdown lifetime, mort automatique à 0
+- MagicBeeItem: barre de durabilité (lifetime)
+- Création MagicHiveBlock avec système d'assignation
+- 5 slots bee + 7 slots output honeycomb
+- États de tracking: EMPTY, INSIDE, OUTSIDE
+- Notification ruche quand abeille meurt
+- Slots custom: OutputOnlySlot, BeeAssignmentSlot
+
+================================================================================
+2026-01-21 - Refonte Gene System
+================================================================================
+
+- Remplacement DebugBee par MagicBee avec système de gènes
+- Création du système de gènes modulaire (core/gene/)
+- Création des catégories: Species, Environment, Flower
+- Création du BeeCreator avec GUI
+- Mise à jour BeeWand pour MagicBee
+- 9 gènes implémentés (3 par catégorie)
+
+################################################################################

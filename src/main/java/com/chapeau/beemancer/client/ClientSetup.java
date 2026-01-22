@@ -3,10 +3,25 @@
  * [ClientSetup.java]
  * Description: Configuration client (pattern Create)
  * ============================================================
+ *
+ * DÉPENDANCES:
+ * ------------------------------------------------------------
+ * | Dépendance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | BeemancerMenus      | Registres menus      | Enregistrement screens         |
+ * | BeemancerEntities   | Registres entités    | Enregistrement renderers       |
+ * | WandOverlayRenderer | HUD baguette         | Enregistrement overlay         |
+ * ------------------------------------------------------------
+ *
+ * UTILISÉ PAR:
+ * - Beemancer.java: Initialisation côté client
+ *
+ * ============================================================
  */
 package com.chapeau.beemancer.client;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.gui.hud.WandOverlayRenderer;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
 import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
@@ -17,6 +32,7 @@ import net.minecraft.client.renderer.entity.BeeRenderer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 public class ClientSetup {
 
@@ -26,6 +42,9 @@ public class ClientSetup {
     public static void register(IEventBus modEventBus) {
         modEventBus.addListener(ClientSetup::registerScreens);
         modEventBus.addListener(ClientSetup::registerEntityRenderers);
+        
+        // Enregistrer les overlays HUD sur le bus d'événements du jeu
+        NeoForge.EVENT_BUS.register(WandOverlayRenderer.class);
     }
 
     private static void registerScreens(final RegisterMenuScreensEvent event) {
