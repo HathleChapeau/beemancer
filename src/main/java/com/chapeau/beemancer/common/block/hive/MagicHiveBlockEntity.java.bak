@@ -151,29 +151,13 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     }
 
     @Override
-    @Override
     public ItemStack removeItem(int slot, int amount) {
-        // If removing a bee item while bee is outside, sync data first
-        if (slot < BEE_SLOTS && beeStates[slot] == BeeState.OUTSIDE) {
-            MagicBeeEntity bee = findBeeEntity(slot);
-            if (bee != null) {
-                // Sync entity data to item BEFORE removing
-                syncEntityToItem(slot, bee);
-                // Now despawn the entity (won't sync again since item will be gone)
-                bee.markAsEnteredHive();
-                bee.discard();
-            }
-            // Clear tracking state
-            beeStates[slot] = BeeState.EMPTY;
-            beeUUIDs[slot] = null;
-            beeCooldowns[slot] = 0;
-            beeNeedsHealing[slot] = false;
-            beeFlowers[slot].clear();
-        }
-        
         ItemStack result = ContainerHelper.removeItem(items, slot, amount);
         if (!result.isEmpty()) {
             setChanged();
+            if (slot < BEE_SLOTS && beeStates[slot] == BeeState.OUTSIDE) {
+                despawnOutsideBee(slot);
+            }
         }
         return result;
     }
@@ -543,75 +527,25 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         }
     }
 
-    /**
-     * Synchronise les données d'une entité vers l'item dans le slot.
-     * Met à jour: lifetime, santé. (Inventaire sync au retour seulement)
-     *
-     * @param slot Le slot de la bee
-     * @param bee L'entité à synchroniser (peut être null si morte/introuvable)
-     * @return true si sync réussie, false sinon
-     */
-    private boolean syncEntityToItem(int slot, @Nullable MagicBeeEntity bee) {
-        if (slot < 0 || slot >= BEE_SLOTS) return false;
-
-        ItemStack beeItem = items.get(slot);
-        if (beeItem.isEmpty() || !beeItem.is(BeemancerItems.MAGIC_BEE.get())) return false;
-
-        if (bee == null) return false;
-
-        // Sync gene data (includes lifetime)
-        BeeGeneData entityGeneData = bee.getGeneData();
-        MagicBeeItem.saveGeneData(beeItem, entityGeneData);
-
-        // Sync health
-        MagicBeeItem.setStoredHealth(beeItem, bee.getHealth());
-        beeCurrentHealth[slot] = bee.getHealth();
-        beeMaxHealth[slot] = bee.getMaxHealth();
-        beeNeedsHealing[slot] = bee.getHealth() < bee.getMaxHealth();
-
-        setChanged();
-        return true;
-    }
-
-    /**
-     * Trouve l'entité bee associée à un slot (si elle est dehors).
-     */
-    @Nullable
-    private MagicBeeEntity findBeeEntity(int slot) {
-        if (!(level instanceof ServerLevel serverLevel)) return null;
-        if (slot < 0 || slot >= BEE_SLOTS) return null;
-        if (beeStates[slot] != BeeState.OUTSIDE) return null;
-
-        UUID uuid = beeUUIDs[slot];
-        if (uuid == null) return null;
-
-        Entity entity = serverLevel.getEntity(uuid);
-        if (entity instanceof MagicBeeEntity bee) {
-            return bee;
-        }
-        return null;
-    }
-
     private void despawnOutsideBee(int slot) {
         if (!(level instanceof ServerLevel serverLevel)) return;
-
+        
         UUID uuid = beeUUIDs[slot];
         if (uuid == null) return;
-
+        
         Entity entity = serverLevel.getEntity(uuid);
         if (entity instanceof MagicBeeEntity bee) {
-            // Sync data from entity to item before despawn
-            syncEntityToItem(slot, bee);
             bee.markAsEnteredHive();
             bee.discard();
         }
-
+        
         beeStates[slot] = BeeState.EMPTY;
         beeUUIDs[slot] = null;
         beeCooldowns[slot] = 0;
         beeNeedsHealing[slot] = false;
         beeFlowers[slot].clear();
     }
+
     // --- Breeding ---
     
     public boolean isBreedingMode() {
