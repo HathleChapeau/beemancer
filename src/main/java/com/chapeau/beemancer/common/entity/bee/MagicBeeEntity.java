@@ -13,6 +13,7 @@
  * | BeeBehaviorConfig   | Configuration        | Paramètres de comportement     |
  * | BeeBehaviorManager  | Gestionnaire config  | Récupération config par espèce |
  * | MagicHiveBlockEntity| Ruche                | Notification et interaction    |
+ * | BeeInventory        | Inventaire interne   | Stockage pour récolteuses      |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -31,6 +32,7 @@ import com.chapeau.beemancer.common.entity.bee.goal.HarvestingBehaviorGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.ReturnToHiveWhenLowHealthGoal;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
+import com.chapeau.beemancer.core.behavior.BeeBehaviorType;
 import com.chapeau.beemancer.core.gene.BeeGeneData;
 import com.chapeau.beemancer.core.gene.Gene;
 import com.chapeau.beemancer.core.gene.GeneCategory;
@@ -91,6 +93,10 @@ public class MagicBeeEntity extends Bee {
     
     // --- Health tracking for items ---
     private float storedHealth = -1; // -1 = use max health
+    
+    // --- Inventory for harvesters ---
+    @Nullable
+    private BeeInventory inventory = null;
 
     public MagicBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
@@ -233,6 +239,64 @@ public class MagicBeeEntity extends Bee {
         
         return hurt;
     }
+    
+    // --- Inventory for Harvesters ---
+    
+    /**
+     * Récupère l'inventaire de l'abeille (créé à la demande pour les récolteuses).
+     * Retourne null si l'abeille n'est pas une récolteuse.
+     */
+    @Nullable
+    public BeeInventory getInventory() {
+        BeeBehaviorConfig config = getBehaviorConfig();
+        if (config.getBehaviorType() != BeeBehaviorType.HARVESTER) {
+            return null;
+        }
+        
+        if (inventory == null) {
+            inventory = new BeeInventory(config.getInventorySize());
+        }
+        return inventory;
+    }
+    
+    /**
+     * Vérifie si l'abeille a un inventaire.
+     */
+    public boolean hasInventory() {
+        return inventory != null;
+    }
+    
+    /**
+     * Calcule la vitesse effective en tenant compte du contenu de l'inventaire.
+     */
+    public double getEffectiveFlyingSpeed() {
+        BeeBehaviorConfig config = getBehaviorConfig();
+        double baseSpeed = config.getFlyingSpeed();
+        
+        if (isEnraged()) {
+            baseSpeed = config.getEnragedFlyingSpeed();
+        }
+        
+        // Apply inventory weight penalty for harvesters
+        if (inventory != null && config.getBehaviorType() == BeeBehaviorType.HARVESTER) {
+            int itemCount = inventory.getTotalItemCount();
+            double multiplier = config.getEffectiveSpeedMultiplier(itemCount);
+            baseSpeed *= multiplier;
+        }
+        
+        return baseSpeed;
+    }
+    
+    /**
+     * Vérifie si l'abeille doit retourner à la ruche (seuil d'inventaire atteint).
+     */
+    public boolean shouldReturnDueToInventory() {
+        if (inventory == null) return false;
+        
+        BeeBehaviorConfig config = getBehaviorConfig();
+        int itemCount = inventory.getTotalItemCount();
+        return itemCount >= config.getReturnThreshold();
+    }
 
     // --- Lifetime System ---
 
@@ -288,6 +352,11 @@ public class MagicBeeEntity extends Bee {
 
     @Override
     public void remove(Entity.RemovalReason reason) {
+        // Clear inventory on death (not when entering hive)
+        if (reason == RemovalReason.KILLED && inventory != null) {
+            inventory.clear(); // Items are destroyed
+        }
+        
         if (!level().isClientSide() && hasAssignedHive() && !notifiedHiveOfRemoval) {
             notifiedHiveOfRemoval = true;
             notifyHiveOfDeath();
@@ -375,6 +444,11 @@ public class MagicBeeEntity extends Bee {
         tag.putBoolean("Pollinated", isPollinated());
         tag.putBoolean("Enraged", isEnraged());
         tag.putFloat("StoredHealth", getHealth());
+        
+        // Sauvegarder l'inventaire
+        if (inventory != null && !inventory.isEmpty()) {
+            tag.put("BeeInventory", inventory.save());
+        }
     }
 
     @Override
@@ -406,6 +480,15 @@ public class MagicBeeEntity extends Bee {
         }
         if (tag.contains("StoredHealth")) {
             storedHealth = tag.getFloat("StoredHealth");
+        }
+        
+        // Charger l'inventaire
+        if (tag.contains("BeeInventory")) {
+            BeeBehaviorConfig config = getBehaviorConfig();
+            if (config.getBehaviorType() == BeeBehaviorType.HARVESTER) {
+                inventory = new BeeInventory(config.getInventorySize());
+                inventory.load(tag.getCompound("BeeInventory"));
+            }
         }
     }
 

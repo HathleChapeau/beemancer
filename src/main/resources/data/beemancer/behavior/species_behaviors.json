@@ -1,0 +1,113 @@
+{
+  "_comment": "Configuration des comportements par espèce d'abeille",
+  
+  "defaults": {
+    "flyingSpeed": 0.6,
+    "enragedFlyingSpeed": 0.9,
+    "health": 10.0,
+    "attackDamage": 2.0,
+    "regenerationRate": 1,
+    "aggressiveToPlayers": false,
+    "aggressiveToPassiveMobs": false,
+    "aggressiveToHostileMobs": false,
+    "restCooldownMin": 200,
+    "restCooldownMax": 600,
+    "areaOfEffect": 16,
+    "foragingDuration": 100,
+    "harvestingDuration": 200,
+    "inventorySize": 27,
+    "returnThreshold": 64
+  },
+  
+  "harvesterDefaults": {
+    "harvestingDuration": 100,
+    "inventorySize": 54,
+    "returnThreshold": 128,
+    "speedThresholds": [
+      { "itemCount": 16, "speedMultiplier": 0.9 },
+      { "itemCount": 32, "speedMultiplier": 0.8 },
+      { "itemCount": 64, "speedMultiplier": 0.7 },
+      { "itemCount": 128, "speedMultiplier": 0.5 }
+    ]
+  },
+  
+  "species": {
+    "common": {
+      "behaviorType": "FORAGER",
+      "flyingSpeed": 0.6,
+      "enragedFlyingSpeed": 0.9,
+      "health": 10.0,
+      "attackDamage": 2.0,
+      "regenerationRate": 1,
+      "aggressiveToPlayers": false,
+      "aggressiveToPassiveMobs": false,
+      "aggressiveToHostileMobs": false,
+      "areaOfEffect": 16,
+      "foragingDuration": 100,
+      "pollinationLoot": [
+        { "item": "minecraft:honeycomb", "minQty": 1, "maxQty": 1, "chance": 80 },
+        { "item": "minecraft:honey_bottle", "minQty": 1, "maxQty": 1, "chance": 20 }
+      ]
+    },
+    "noble": {
+      "behaviorType": "FORAGER",
+      "flyingSpeed": 0.5,
+      "enragedFlyingSpeed": 0.8,
+      "health": 12.0,
+      "attackDamage": 3.0,
+      "regenerationRate": 2,
+      "aggressiveToPlayers": false,
+      "aggressiveToPassiveMobs": false,
+      "aggressiveToHostileMobs": true,
+      "areaOfEffect": 20,
+      "foragingDuration": 150,
+      "pollinationLoot": [
+        { "item": "minecraft:honeycomb", "minQty": 1, "maxQty": 2, "chance": 70 },
+        { "item": "minecraft:honey_bottle", "minQty": 1, "maxQty": 1, "chance": 40 },
+        { "item": "minecraft:gold_nugget", "minQty": 1, "maxQty": 1, "chance": 10 }
+      ]
+    },
+    "diligent": {
+      "behaviorType": "FORAGER",
+      "flyingSpeed": 0.75,
+      "enragedFlyingSpeed": 1.0,
+      "health": 8.0,
+      "attackDamage": 1.5,
+      "regenerationRate": 1,
+      "aggressiveToPlayers": false,
+      "aggressiveToPassiveMobs": false,
+      "aggressiveToHostileMobs": false,
+      "areaOfEffect": 12,
+      "foragingDuration": 60,
+      "pollinationLoot": [
+        { "item": "minecraft:honeycomb", "minQty": 1, "maxQty": 1, "chance": 90 },
+        { "item": "minecraft:honey_bottle", "minQty": 1, "maxQty": 1, "chance": 30 }
+      ]
+    },
+    "industrious": {
+      "_comment": "Exemple d'abeille récolteuse",
+      "behaviorType": "HARVESTER",
+      "flyingSpeed": 0.55,
+      "enragedFlyingSpeed": 0.85,
+      "health": 10.0,
+      "attackDamage": 2.0,
+      "regenerationRate": 1,
+      "aggressiveToPlayers": false,
+      "aggressiveToPassiveMobs": false,
+      "aggressiveToHostileMobs": false,
+      "areaOfEffect": 24,
+      "harvestingDuration": 80,
+      "inventorySize": 54,
+      "returnThreshold": 96,
+      "speedThresholds": [
+        { "itemCount": 16, "speedMultiplier": 0.95 },
+        { "itemCount": 32, "speedMultiplier": 0.85 },
+        { "itemCount": 64, "speedMultiplier": 0.7 },
+        { "itemCount": 96, "speedMultiplier": 0.5 }
+      ],
+      "pollinationLoot": [
+        { "item": "minecraft:honeycomb", "minQty": 1, "maxQty": 2, "chance": 60 }
+      ]
+    }
+  }
+}

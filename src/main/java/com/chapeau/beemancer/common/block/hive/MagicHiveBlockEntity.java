@@ -13,6 +13,7 @@
  * | BeeLarvaItem        | Item larve           | Breeding output                |
  * | BreedingManager     | Logique breeding     | Calcul offspring               |
  * | BeeBehaviorManager  | Config comportement  | Cooldowns et paramètres        |
+ * | FlowerSearchHelper  | Recherche fleurs     | Détection fleurs par rayon     |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -24,10 +25,12 @@
  */
 package com.chapeau.beemancer.common.block.hive;
 
+import com.chapeau.beemancer.common.entity.bee.BeeInventory;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
+import com.chapeau.beemancer.content.gene.flower.FlowerGene;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
 import com.chapeau.beemancer.core.breeding.BreedingManager;
@@ -37,6 +40,7 @@ import com.chapeau.beemancer.core.gene.GeneCategory;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
+import com.chapeau.beemancer.core.util.FlowerSearchHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -45,6 +49,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
@@ -56,6 +61,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -80,6 +86,12 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     private final boolean[] beeNeedsHealing = new boolean[BEE_SLOTS];
     private final float[] beeCurrentHealth = new float[BEE_SLOTS];
     private final float[] beeMaxHealth = new float[BEE_SLOTS];
+    
+    // Flower detection: list of flower positions per bee slot
+    @SuppressWarnings("unchecked")
+    private final List<BlockPos>[] beeFlowers = new List[BEE_SLOTS];
+    private int flowerScanCooldown = 0;
+    private static final int FLOWER_SCAN_INTERVAL = 100; // Scan every 5 seconds
     
     // Breeding
     private boolean breedingMode = false;
@@ -113,6 +125,9 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         Arrays.fill(beeNeedsHealing, false);
         Arrays.fill(beeCurrentHealth, 0);
         Arrays.fill(beeMaxHealth, 10);
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            beeFlowers[i] = new ArrayList<>();
+        }
     }
 
     // --- Container Implementation ---
@@ -172,11 +187,15 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 beeMaxHealth[slot] = (float) config.getHealth();
                 beeCurrentHealth[slot] = MagicBeeItem.getStoredHealth(stack, beeMaxHealth[slot]);
                 beeNeedsHealing[slot] = beeCurrentHealth[slot] < beeMaxHealth[slot];
+                
+                // Scan for flowers for this bee
+                scanFlowersForSlot(slot);
             } else {
                 beeStates[slot] = BeeState.EMPTY;
                 beeUUIDs[slot] = null;
                 beeCooldowns[slot] = 0;
                 beeNeedsHealing[slot] = false;
+                beeFlowers[slot].clear();
             }
         }
         
@@ -196,6 +215,121 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         Arrays.fill(beeUUIDs, null);
         Arrays.fill(beeCooldowns, 0);
         Arrays.fill(beeNeedsHealing, false);
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            beeFlowers[i].clear();
+        }
+    }
+
+    // --- Flower Detection ---
+    
+    /**
+     * Scans for flowers for a specific bee slot based on its FlowerGene and areaOfEffect.
+     */
+    private void scanFlowersForSlot(int slot) {
+        if (level == null || slot < 0 || slot >= BEE_SLOTS) return;
+        
+        ItemStack beeItem = items.get(slot);
+        if (beeItem.isEmpty() || !beeItem.is(BeemancerItems.MAGIC_BEE.get())) {
+            beeFlowers[slot].clear();
+            return;
+        }
+        
+        BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
+        Gene flowerGene = geneData.getGene(GeneCategory.FLOWER);
+        
+        if (!(flowerGene instanceof FlowerGene flower)) {
+            beeFlowers[slot].clear();
+            return;
+        }
+        
+        TagKey<Block> flowerTag = flower.getFlowerTag();
+        if (flowerTag == null) {
+            beeFlowers[slot].clear();
+            return;
+        }
+        
+        // Get area of effect from config
+        String speciesId = geneData.getGene(GeneCategory.SPECIES) != null 
+                ? geneData.getGene(GeneCategory.SPECIES).getId() : "common";
+        BeeBehaviorConfig config = BeeBehaviorManager.getConfig(speciesId);
+        int radius = config.getAreaOfEffect();
+        
+        // Find all flowers
+        List<BlockPos> flowers = FlowerSearchHelper.findAllFlowers(level, worldPosition, radius, flowerTag);
+        beeFlowers[slot].clear();
+        beeFlowers[slot].addAll(flowers);
+    }
+    
+    /**
+     * Scans for flowers for all bees periodically.
+     */
+    private void scanAllFlowers() {
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            if (beeStates[i] != BeeState.EMPTY) {
+                scanFlowersForSlot(i);
+            }
+        }
+    }
+    
+    /**
+     * Gets the list of flowers for a specific bee slot.
+     * Used by bees to know where to go.
+     */
+    public List<BlockPos> getFlowersForSlot(int slot) {
+        if (slot < 0 || slot >= BEE_SLOTS) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(beeFlowers[slot]);
+    }
+    
+    /**
+     * Checks if there are any flowers available for a bee slot.
+     */
+    public boolean hasFlowersForSlot(int slot) {
+        if (slot < 0 || slot >= BEE_SLOTS) return false;
+        return !beeFlowers[slot].isEmpty();
+    }
+    
+    /**
+     * Gets the next available flower for a bee (removes from list to avoid conflicts).
+     * Returns null if no flowers available.
+     */
+    @Nullable
+    public BlockPos getAndAssignFlower(int slot) {
+        if (slot < 0 || slot >= BEE_SLOTS || beeFlowers[slot].isEmpty()) {
+            return null;
+        }
+        
+        // Get first available flower and remove it from the list
+        BlockPos flower = beeFlowers[slot].remove(0);
+        
+        // Verify it's still valid
+        if (level != null) {
+            ItemStack beeItem = items.get(slot);
+            if (!beeItem.isEmpty()) {
+                BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
+                Gene flowerGene = geneData.getGene(GeneCategory.FLOWER);
+                if (flowerGene instanceof FlowerGene fg) {
+                    TagKey<Block> flowerTag = fg.getFlowerTag();
+                    if (FlowerSearchHelper.isValidFlower(level, flower, flowerTag)) {
+                        return flower;
+                    }
+                }
+            }
+        }
+        
+        // If not valid, try next one
+        return getAndAssignFlower(slot);
+    }
+    
+    /**
+     * Returns a flower to the available list (if bee couldn't reach it).
+     */
+    public void returnFlower(int slot, BlockPos flower) {
+        if (slot >= 0 && slot < BEE_SLOTS && flower != null) {
+            // Add to end of list
+            beeFlowers[slot].add(flower);
+        }
     }
 
     // --- Bee Management ---
@@ -235,6 +369,12 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         
         ItemStack beeItem = items.get(slot);
         if (beeItem.isEmpty() || !beeItem.is(BeemancerItems.MAGIC_BEE.get())) return;
+        
+        // Check if there are flowers available for this bee
+        if (!hasFlowersForSlot(slot)) {
+            // No flowers, don't release (stay in hive)
+            return;
+        }
         
         MagicBeeEntity bee = com.chapeau.beemancer.core.registry.BeemancerEntities.MAGIC_BEE.get().create(level);
         if (bee == null) return;
@@ -283,9 +423,18 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         
         bee.markAsEnteredHive();
         
-        // Déposer le loot si pollinisée
+        // Déposer le loot si pollinisée (forager)
         if (bee.isPollinated()) {
             depositPollinationLoot(bee);
+        }
+        
+        // Déposer l'inventaire si harvester
+        BeeInventory inventory = bee.getInventory();
+        if (inventory != null && !inventory.isEmpty()) {
+            List<ItemStack> items = inventory.extractAll();
+            for (ItemStack stack : items) {
+                insertIntoOutputSlots(stack);
+            }
         }
         
         // Capture bee back to item
@@ -307,6 +456,9 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         bee.setPollinated(false);
         bee.setEnraged(false);
         
+        // Rescan flowers after return
+        scanFlowersForSlot(slot);
+        
         setChanged();
     }
     
@@ -327,7 +479,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     /**
      * Insère un item dans les slots output
      */
-    private void insertIntoOutputSlots(ItemStack stack) {
+    public void insertIntoOutputSlots(ItemStack stack) {
         if (stack.isEmpty()) return;
         
         // D'abord essayer de stack avec des items existants
@@ -365,6 +517,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 beeUUIDs[i] = null;
                 beeCooldowns[i] = 0;
                 beeNeedsHealing[i] = false;
+                beeFlowers[i].clear();
                 setChanged();
                 return;
             }
@@ -387,6 +540,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         beeUUIDs[slot] = null;
         beeCooldowns[slot] = 0;
         beeNeedsHealing[slot] = false;
+        beeFlowers[slot].clear();
     }
 
     // --- Breeding ---
@@ -479,6 +633,13 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         // Check breeding mode
         BlockState above = level.getBlockState(pos.above());
         hive.breedingMode = above.is(BeemancerBlocks.BREEDING_CRYSTAL.get());
+        
+        // Periodic flower scan
+        hive.flowerScanCooldown--;
+        if (hive.flowerScanCooldown <= 0) {
+            hive.scanAllFlowers();
+            hive.flowerScanCooldown = FLOWER_SCAN_INTERVAL;
+        }
         
         // Gérer les abeilles INSIDE
         for (int i = 0; i < BEE_SLOTS; i++) {

@@ -58,10 +58,15 @@ src/main/java/com/chapeau/beemancer/
 │   │   ├── BeeBehaviorType.java        # Enum FORAGER/HARVESTER
 │   │   ├── BeeBehaviorConfig.java      # Config par espèce
 │   │   ├── BeeBehaviorManager.java     # Chargement JSON
-│   │   └── LootEntry.java              # Record loot pollinisation
+│   │   ├── LootEntry.java              # Record loot pollinisation
+│   │   └── SpeedThreshold.java         # Record seuil vitesse (NOUVEAU)
 │   │
 │   ├── breeding/                       # === SYSTÈME DE BREEDING ===
 │   │   └── BreedingManager.java        # Logique breeding + config
+│   │
+│   ├── util/                           # === UTILITAIRES ===
+│   │   ├── FlowerSearchHelper.java     # Recherche de fleurs (NOUVEAU)
+│   │   └── HarvestHelper.java          # Logique récolte par type (NOUVEAU)
 │   │
 │   └── network/
 │       ├── BeemancerNetwork.java
@@ -95,11 +100,12 @@ src/main/java/com/chapeau/beemancer/
 │   ├── entity/bee/
 │   │   ├── MagicBeeEntity.java         # Entité abeille avec gènes, lifetime, comportements
 │   │   ├── BeeActivityState.java       # Enum états d'activité
+│   │   ├── BeeInventory.java           # Inventaire interne récolteuses (NOUVEAU)
 │   │   └── goal/                       # === GOALS AI ===
 │   │       ├── ReturnToHiveWhenLowHealthGoal.java  # Fuite si vie < 30%
 │   │       ├── BeeRevengeGoal.java                 # Attaque si blessée
-│   │       ├── ForagingBehaviorGoal.java           # Cycle butineuse
-│   │       └── HarvestingBehaviorGoal.java         # Cycle récolteuse (placeholder)
+│   │       ├── ForagingBehaviorGoal.java           # Cycle butineuse complet
+│   │       └── HarvestingBehaviorGoal.java         # Cycle récolteuse complet (NOUVEAU)
 │   │
 │   ├── event/
 │   │   └── BeeInteractionHandler.java
@@ -132,10 +138,10 @@ src/main/java/com/chapeau/beemancer/
 │       │   ├── FlowersFlowerGene.java
 │       │   ├── CropsFlowerGene.java
 │       │   ├── CavePlantsFlowerGene.java
-│       │   ├── TreesFlowerGene.java        # NOUVEAU
-│       │   ├── MushroomsFlowerGene.java    # NOUVEAU
-│       │   ├── CrystalsFlowerGene.java     # NOUVEAU
-│       │   └── NetherWartFlowerGene.java   # NOUVEAU
+│       │   ├── TreesFlowerGene.java
+│       │   ├── MushroomsFlowerGene.java
+│       │   ├── CrystalsFlowerGene.java
+│       │   └── NetherWartFlowerGene.java
 │       └── lifetime/
 │           ├── LifetimeGene.java
 │           ├── ShortLifetimeGene.java
@@ -175,6 +181,8 @@ src/main/resources/data/beemancer/
 │ core/gene/BeeGeneData.java          │ Stockage gènes + lifetime              │
 │ core/behavior/BeeBehaviorManager.java│ Chargement config comportements       │
 │ core/breeding/BreedingManager.java  │ Logique breeding + héritage            │
+│ core/util/FlowerSearchHelper.java   │ Recherche de fleurs dans un rayon      │
+│ core/util/HarvestHelper.java        │ Logique récolte par type de bloc       │
 │ content/gene/GeneInit.java          │ Enregistrement de tous les gènes       │
 │ client/ClientSetup.java             │ Init client (screens, renderers)       │
 └─────────────────────────────────────┴────────────────────────────────────────┘
@@ -233,6 +241,60 @@ GÈNES FLEUR:
 ================================================================================
 
 --------------------------------------------------------------------------------
+FEATURE: Harvester Behavior System
+--------------------------------------------------------------------------------
+Description: Système de récolte automatique pour les abeilles récolteuses
+Statut: COMPLÈTE
+
+Architecture:
+- BeeInventory: Inventaire interne invisible (détruit si abeille meurt)
+- HarvestingBehaviorGoal: Cycle complet de récolte
+- HarvestHelper: Logique de récolte par type de bloc
+- FlowerSearchHelper: Recherche de fleurs dans un rayon
+- SpeedThreshold: Seuils de vitesse basés sur l'inventaire
+
+Types de récolte:
+1. CROP: Récolte si mature, replante automatiquement (wheat, carrots, potatoes, etc.)
+2. NETHER_WART: Récolte si mature (âge 3), replante automatiquement
+3. MUSHROOM: Casse et récupère les drops
+4. CRYSTAL: Casse et récupère les drops (améthyste)
+5. FLOWER: Casse et récupère les drops
+6. TREE: Non supporté (skip)
+
+Paramètres configurables (récolteuses):
+- areaOfEffect: Rayon de détection des fleurs (commun à toutes les abeilles)
+- inventorySize: Taille de l'inventaire interne
+- returnThreshold: Nombre d'items avant retour automatique
+- speedThresholds: Liste de seuils (itemCount → speedMultiplier)
+- harvestingDuration: Durée du travail sur une fleur
+
+Fonctionnement:
+1. Ruche détecte les fleurs dans le rayon (basé sur FlowerGene de l'abeille)
+2. Abeille récupère une fleur depuis la liste de la ruche
+3. Se déplace vers la fleur (vitesse affectée par le poids de l'inventaire)
+4. Attend que la fleur soit mature (pour crops/nether wart)
+5. Récolte et stocke dans BeeInventory
+6. Répète jusqu'à returnThreshold atteint ou inventaire plein
+7. Retourne à la ruche et dépose tous les items
+8. Cooldown puis recommence
+
+Exemple config (industrious):
+```json
+{
+  "behaviorType": "HARVESTER",
+  "areaOfEffect": 24,
+  "inventorySize": 54,
+  "returnThreshold": 96,
+  "harvestingDuration": 80,
+  "speedThresholds": [
+    { "itemCount": 16, "speedMultiplier": 0.95 },
+    { "itemCount": 64, "speedMultiplier": 0.7 }
+  ]
+}
+```
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
 FEATURE: Bee Behavior System
 --------------------------------------------------------------------------------
 Description: Système de comportement automatique des abeilles (butinage, combat, fuite)
@@ -246,14 +308,15 @@ Architecture:
 - Goals AI: ReturnToHiveWhenLowHealthGoal, BeeRevengeGoal, ForagingBehaviorGoal, HarvestingBehaviorGoal
 
 Cycle de vie butineuse:
-1. Abeille sort de la ruche (après cooldown)
-2. Cherche une fleur du type défini par FlowerGene
-3. Se pose sur la fleur et travaille (foragingDuration ticks)
-4. Devient pollinisée (pollinated=true)
-5. Retourne à la ruche
-6. Dépose le loot dans les slots output
-7. Cooldown aléatoire (restCooldownMin à restCooldownMax)
-8. Régénération si blessée (cooldown ne démarre qu'à vie pleine)
+1. Ruche détecte les fleurs dans le rayon de l'abeille
+2. Abeille sort de la ruche (après cooldown)
+3. Récupère une fleur depuis la liste de la ruche
+4. Se pose sur la fleur et travaille (foragingDuration ticks)
+5. Devient pollinisée (pollinated=true)
+6. Retourne à la ruche
+7. Dépose le loot dans les slots output
+8. Cooldown aléatoire (restCooldownMin à restCooldownMax)
+9. Régénération si blessée (cooldown ne démarre qu'à vie pleine)
 
 Combat:
 - Si attaquée → devient enragée (vitesse augmentée)
@@ -264,15 +327,10 @@ Paramètres configurables (par espèce):
 - Communs: flyingSpeed, enragedFlyingSpeed, health, attackDamage, regenerationRate
 - Agressivité: aggressiveToPlayers, aggressiveToPassiveMobs, aggressiveToHostileMobs
 - Cooldown: restCooldownMin, restCooldownMax
+- Rayon: areaOfEffect
 - Butineuse: foragingDuration
-- Récolteuse: harvestingDuration, inventorySize
+- Récolteuse: harvestingDuration, inventorySize, returnThreshold, speedThresholds
 - Loot: pollinationLoot (item, minQty, maxQty, chance)
-
-Nouveaux FlowerGenes:
-- trees: Arbres (logs + leaves)
-- mushrooms: Champignons
-- crystals: Améthyste et cristaux
-- nether_wart: Verrues du Nether
 
 Config: data/beemancer/behavior/species_behaviors.json
 Tags: data/beemancer/tags/blocks/bee_flowers_*.json
@@ -336,12 +394,14 @@ FEATURE: Magic Bee
 Description: Abeille avec système de gènes, lifetime et comportements automatiques
 Statut: COMPLÈTE
 
-- MagicBeeEntity: Entité avec BeeGeneData, lifetime countdown, goals AI
+- MagicBeeEntity: Entité avec BeeGeneData, lifetime countdown, goals AI, BeeInventory
 - MagicBeeItem: Item avec tooltip gènes (shift) + barre durabilité + santé stockée
 - Navigation contrôlée via BeeWand ou automatique via goals
 - Support assignation ruche (hivePos, slot)
 - États: pollinated, enraged
-- Méthodes: shouldFlee(), getHealthPercentage(), getBehaviorConfig()
+- Méthodes: shouldFlee(), getHealthPercentage(), getBehaviorConfig(), getInventory()
+- getEffectiveFlyingSpeed(): Vitesse tenant compte du poids de l'inventaire
+- shouldReturnDueToInventory(): Vérifie si seuil de retour atteint
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -377,11 +437,15 @@ Système d'assignation:
 - Mort abeille: Slot se libère
 - Retour ruche: Bee capturée, état INSIDE, loot déposé
 
-Nouveautés:
-- Cooldowns par slot (beeCooldowns[])
-- Régénération automatique des abeilles blessées (beeNeedsHealing[])
-- Dépôt automatique du loot de pollinisation
-- Auto-release quand cooldown terminé et vie pleine
+Détection de fleurs (NOUVEAU):
+- Scan périodique (toutes les 5 secondes) des fleurs pour chaque abeille
+- Utilise le FlowerGene de l'abeille et l'areaOfEffect de sa config
+- Fournit une liste de fleurs à chaque abeille
+- getAndAssignFlower(): Récupère et assigne une fleur à l'abeille
+- returnFlower(): L'abeille retourne une fleur non visitée
+
+Dépôt d'inventaire récolteuse (NOUVEAU):
+- Quand une récolteuse rentre, dépose tout son inventaire dans les slots output
 
 Slots:
 - 0-4: BeeAssignmentSlot (5 emplacements abeilles)
@@ -456,6 +520,11 @@ core/behavior/:
 - BeeBehaviorConfig.java: Configuration complète par espèce
 - BeeBehaviorManager.java: Chargement et accès aux configs
 - LootEntry.java: Entrée de loot configurable
+- SpeedThreshold.java: Seuil de vitesse par nombre d'items
+
+core/util/:
+- FlowerSearchHelper.java: Recherche de fleurs dans un rayon
+- HarvestHelper.java: Logique de récolte par type de bloc (CROP, NETHER_WART, MUSHROOM, CRYSTAL, FLOWER, TREE)
 
 core/breeding/:
 - BreedingManager.java: Logique breeding, héritage, config loading
@@ -465,11 +534,14 @@ common/menu/slot/:
 - BeeAssignmentSlot.java: Slot acceptant uniquement MagicBeeItem
 - LarvaSlot.java: Slot acceptant uniquement BeeLarvaItem
 
+common/entity/bee/:
+- BeeInventory.java: Inventaire interne pour récolteuses
+
 common/entity/bee/goal/:
 - ReturnToHiveWhenLowHealthGoal.java: Fuite si vie < 30%
 - BeeRevengeGoal.java: Attaque si blessée
 - ForagingBehaviorGoal.java: Cycle complet butineuse
-- HarvestingBehaviorGoal.java: Cycle récolteuse (placeholder)
+- HarvestingBehaviorGoal.java: Cycle complet récolteuse
 
 ================================================================================
 8. GUIDE D'INTÉGRATION D'UNE FEATURE
@@ -508,10 +580,37 @@ Pour configurer une nouvelle espèce:
 2. Ajouter un bloc dans "species" avec l'ID de l'espèce
 3. Définir behaviorType (FORAGER ou HARVESTER)
 4. Configurer les paramètres (vitesse, vie, loot, etc.)
+5. Pour HARVESTER: configurer inventorySize, returnThreshold, speedThresholds
+
+Pour ajouter un nouveau type de récolte:
+1. Modifier HarvestHelper.java
+2. Ajouter le type dans l'enum HarvestType
+3. Implémenter la détection dans getHarvestType()
+4. Implémenter isReadyToHarvest() pour le nouveau type
+5. Implémenter la logique de récolte dans harvest()
 
 ================================================================================
 9. CHANGELOG STRUCTURE
 ================================================================================
+
+--------------------------------------------------------------------------------
+2026-01-22 - Harvester Behavior System (Complete)
+--------------------------------------------------------------------------------
+AJOUTS:
+- core/behavior/SpeedThreshold.java (record seuil vitesse)
+- core/util/FlowerSearchHelper.java (recherche fleurs dans rayon)
+- core/util/HarvestHelper.java (logique récolte par type bloc)
+- common/entity/bee/BeeInventory.java (inventaire interne récolteuses)
+
+MODIFICATIONS:
+- BeeBehaviorConfig.java: +areaOfEffect, +returnThreshold, +speedThresholds, +getEffectiveSpeedMultiplier()
+- BeeBehaviorManager.java: +parsing nouveaux paramètres JSON
+- MagicBeeEntity.java: +BeeInventory, +getInventory(), +getEffectiveFlyingSpeed(), +shouldReturnDueToInventory()
+- MagicHiveBlockEntity.java: +détection fleurs par abeille, +getAndAssignFlower(), +returnFlower(), +dépôt inventaire récolteuse
+- HarvestingBehaviorGoal.java: Implémentation complète (state machine, récolte par type, inventaire)
+- ForagingBehaviorGoal.java: Utilisation de la liste de fleurs de la ruche
+- species_behaviors.json: +areaOfEffect, +speedThresholds, +returnThreshold, +espèce industrious
+--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 2026-01-22 - Bee Behavior System

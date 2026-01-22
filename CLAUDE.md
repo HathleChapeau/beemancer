@@ -193,7 +193,6 @@ EntryPoint
 - **Lire Structure.txt** avant de commencer
 - Créer les dépendances universelles d'abord
 - Un commit logique par script
-- Tests unitaires si applicable
 - **Mettre à jour Structure.txt** après chaque fichier créé
 
 ### Phase 5: Finalisation (OBLIGATOIRE)
@@ -304,6 +303,8 @@ Référence: Create `AllPackets`
 - [ ] Pas de code dupliqué (extraire en util si besoin)
 - [ ] Imports organisés (pas de wildcard `*`)
 - [ ] Pas de TODO non documenté
+- [ ] Pas de TODO, code complet uniquement
+- [ ] Si espace vide demandé, mettre PLACEHOLDER
 - [ ] **Structure.txt mis à jour** (registres, features, changelog)
 
 ---
