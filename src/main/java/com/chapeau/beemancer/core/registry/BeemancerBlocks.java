@@ -51,6 +51,7 @@ public class BeemancerBlocks {
                     .lightLevel(state -> 7)
                     .noOcclusion()));
 
+
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
     }

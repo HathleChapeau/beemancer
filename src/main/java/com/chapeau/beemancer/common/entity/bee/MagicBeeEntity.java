@@ -57,7 +57,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.EnumSet;
 
 public class MagicBeeEntity extends Bee {
-    
+
     // --- Entity Data Accessors ---
     private static final EntityDataAccessor<String> DATA_SPECIES = SynchedEntityData.defineId(
             MagicBeeEntity.class, EntityDataSerializers.STRING);
@@ -69,31 +69,31 @@ public class MagicBeeEntity extends Bee {
             MagicBeeEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Integer> DATA_REMAINING_LIFETIME = SynchedEntityData.defineId(
             MagicBeeEntity.class, EntityDataSerializers.INT);
-    
+
     // Nouveaux EntityData pour le comportement
     private static final EntityDataAccessor<Boolean> DATA_POLLINATED = SynchedEntityData.defineId(
             MagicBeeEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_ENRAGED = SynchedEntityData.defineId(
             MagicBeeEntity.class, EntityDataSerializers.BOOLEAN);
-    
+
     // --- Gene Data ---
     private final BeeGeneData geneData = new BeeGeneData();
-    
+
     // --- Navigation ---
     @Nullable
     private BlockPos targetPos = null;
-    
+
     // --- Hive Assignment ---
     @Nullable
     private BlockPos assignedHivePos = null;
     private int assignedSlot = -1;
-    
+
     // --- State Flags ---
     private boolean notifiedHiveOfRemoval = false;
-    
+
     // --- Health tracking for items ---
     private float storedHealth = -1; // -1 = use max health
-    
+
     // --- Inventory for harvesters ---
     @Nullable
     private BeeInventory inventory = null;
@@ -118,14 +118,14 @@ public class MagicBeeEntity extends Bee {
     protected void registerGoals() {
         // Priorité 1: Fuite si vie < 30%
         this.goalSelector.addGoal(1, new ReturnToHiveWhenLowHealthGoal(this));
-        
+
         // Priorité 2: Vengeance si attaqué
         this.targetSelector.addGoal(2, new BeeRevengeGoal(this));
-        
+
         // Priorité 3: Comportement de travail (butinage ou récolte)
         this.goalSelector.addGoal(3, new ForagingBehaviorGoal(this));
         this.goalSelector.addGoal(3, new HarvestingBehaviorGoal(this));
-        
+
         // Priorité 4: Navigation manuelle (BeeWand)
         this.goalSelector.addGoal(4, new MoveToTargetGoal(this));
     }
@@ -168,13 +168,13 @@ public class MagicBeeEntity extends Bee {
         Gene environment = GeneRegistry.getGene(GeneCategory.ENVIRONMENT, entityData.get(DATA_ENVIRONMENT));
         Gene flower = GeneRegistry.getGene(GeneCategory.FLOWER, entityData.get(DATA_FLOWER));
         Gene lifetime = GeneRegistry.getGene(GeneCategory.LIFETIME, entityData.get(DATA_LIFETIME_GENE));
-        
+
         if (species != null) geneData.setGene(species);
         if (environment != null) geneData.setGene(environment);
         if (flower != null) geneData.setGene(flower);
         if (lifetime != null) geneData.setGene(lifetime);
     }
-    
+
     /**
      * Récupère l'ID de l'espèce actuelle.
      */
@@ -183,7 +183,7 @@ public class MagicBeeEntity extends Bee {
     }
 
     // --- Behavior Config ---
-    
+
     /**
      * Récupère la configuration de comportement pour cette espèce.
      */
@@ -192,43 +192,43 @@ public class MagicBeeEntity extends Bee {
     }
 
     // --- Pollination State ---
-    
+
     public boolean isPollinated() {
         return entityData.get(DATA_POLLINATED);
     }
-    
+
     public void setPollinated(boolean pollinated) {
         entityData.set(DATA_POLLINATED, pollinated);
     }
-    
+
     // --- Combat State ---
-    
+
     public boolean isEnraged() {
         return entityData.get(DATA_ENRAGED);
     }
-    
+
     public void setEnraged(boolean enraged) {
         entityData.set(DATA_ENRAGED, enraged);
     }
-    
+
     /**
      * Pourcentage de vie actuel (0.0 à 1.0).
      */
     public float getHealthPercentage() {
         return getHealth() / getMaxHealth();
     }
-    
+
     /**
      * Vérifie si l'abeille doit fuir (vie < 30%).
      */
     public boolean shouldFlee() {
         return getHealthPercentage() < 0.3f;
     }
-    
+
     @Override
     public boolean hurt(DamageSource source, float amount) {
         boolean hurt = super.hurt(source, amount);
-        
+
         if (hurt && !level().isClientSide()) {
             // Devenir enragée si attaquée par une entité vivante
             Entity attacker = source.getEntity();
@@ -236,12 +236,12 @@ public class MagicBeeEntity extends Bee {
                 setEnraged(true);
             }
         }
-        
+
         return hurt;
     }
-    
+
     // --- Inventory for Harvesters ---
-    
+
     /**
      * Récupère l'inventaire de l'abeille (créé à la demande pour les récolteuses).
      * Retourne null si l'abeille n'est pas une récolteuse.
@@ -252,47 +252,47 @@ public class MagicBeeEntity extends Bee {
         if (config.getBehaviorType() != BeeBehaviorType.HARVESTER) {
             return null;
         }
-        
+
         if (inventory == null) {
             inventory = new BeeInventory(config.getInventorySize());
         }
         return inventory;
     }
-    
+
     /**
      * Vérifie si l'abeille a un inventaire.
      */
     public boolean hasInventory() {
         return inventory != null;
     }
-    
+
     /**
      * Calcule la vitesse effective en tenant compte du contenu de l'inventaire.
      */
     public double getEffectiveFlyingSpeed() {
         BeeBehaviorConfig config = getBehaviorConfig();
         double baseSpeed = config.getFlyingSpeed();
-        
+
         if (isEnraged()) {
             baseSpeed = config.getEnragedFlyingSpeed();
         }
-        
+
         // Apply inventory weight penalty for harvesters
         if (inventory != null && config.getBehaviorType() == BeeBehaviorType.HARVESTER) {
             int itemCount = inventory.getTotalItemCount();
             double multiplier = config.getEffectiveSpeedMultiplier(itemCount);
             baseSpeed *= multiplier;
         }
-        
+
         return baseSpeed;
     }
-    
+
     /**
      * Vérifie si l'abeille doit retourner à la ruche (seuil d'inventaire atteint).
      */
     public boolean shouldReturnDueToInventory() {
         if (inventory == null) return false;
-        
+
         BeeBehaviorConfig config = getBehaviorConfig();
         int itemCount = inventory.getTotalItemCount();
         return itemCount >= config.getReturnThreshold();
@@ -303,18 +303,18 @@ public class MagicBeeEntity extends Bee {
     @Override
     public void tick() {
         super.tick();
-        
+
         if (!level().isClientSide() && tickCount % 20 == 0) {
             // Décrémente le lifetime chaque seconde
             boolean alive = geneData.decrementLifetime(20);
             entityData.set(DATA_REMAINING_LIFETIME, geneData.getRemainingLifetime());
-            
+
             if (!alive) {
                 this.discard();
                 return;
             }
         }
-        
+
         // Apply gene behaviors
         for (Gene gene : geneData.getAllGenes()) {
             gene.applyBehavior(this);
@@ -334,13 +334,13 @@ public class MagicBeeEntity extends Bee {
         if (max <= 0) return 1.0f;
         return (float) getRemainingLifetime() / max;
     }
-    
+
     // --- Stored Health (for item capture) ---
-    
+
     public float getStoredHealth() {
         return storedHealth >= 0 ? storedHealth : getHealth();
     }
-    
+
     public void setStoredHealth(float health) {
         this.storedHealth = health;
         if (health > 0 && health <= getMaxHealth()) {
@@ -356,7 +356,7 @@ public class MagicBeeEntity extends Bee {
         if (reason == RemovalReason.KILLED && inventory != null) {
             inventory.clear(); // Items are destroyed
         }
-        
+
         if (!level().isClientSide() && hasAssignedHive() && !notifiedHiveOfRemoval) {
             notifiedHiveOfRemoval = true;
             notifyHiveOfDeath();
@@ -366,7 +366,7 @@ public class MagicBeeEntity extends Bee {
 
     private void notifyHiveOfDeath() {
         if (assignedHivePos == null) return;
-        
+
         if (level().getBlockEntity(assignedHivePos) instanceof MagicHiveBlockEntity hive) {
             hive.onBeeKilled(getUUID());
         }
@@ -426,35 +426,36 @@ public class MagicBeeEntity extends Bee {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.put("GeneData", geneData.save());
-        
+
         if (targetPos != null) {
             tag.putInt("TargetX", targetPos.getX());
             tag.putInt("TargetY", targetPos.getY());
             tag.putInt("TargetZ", targetPos.getZ());
         }
-        
+
         if (assignedHivePos != null) {
             tag.putInt("HiveX", assignedHivePos.getX());
             tag.putInt("HiveY", assignedHivePos.getY());
             tag.putInt("HiveZ", assignedHivePos.getZ());
             tag.putInt("HiveSlot", assignedSlot);
         }
-        
+
         // Sauvegarder l'état de comportement
         tag.putBoolean("Pollinated", isPollinated());
         tag.putBoolean("Enraged", isEnraged());
         tag.putFloat("StoredHealth", getHealth());
-        
+
         // Sauvegarder l'inventaire
         if (inventory != null && !inventory.isEmpty()) {
-            tag.put("BeeInventory", inventory.save());
+            // UPDATED FOR 1.21: Passing registryAccess()
+            tag.put("BeeInventory", inventory.save(this.registryAccess()));
         }
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        
+
         if (tag.contains("GeneData")) {
             geneData.load(tag.getCompound("GeneData"));
             for (Gene gene : geneData.getAllGenes()) {
@@ -462,16 +463,16 @@ public class MagicBeeEntity extends Bee {
             }
             entityData.set(DATA_REMAINING_LIFETIME, geneData.getRemainingLifetime());
         }
-        
+
         if (tag.contains("TargetX")) {
             targetPos = new BlockPos(tag.getInt("TargetX"), tag.getInt("TargetY"), tag.getInt("TargetZ"));
         }
-        
+
         if (tag.contains("HiveX")) {
             assignedHivePos = new BlockPos(tag.getInt("HiveX"), tag.getInt("HiveY"), tag.getInt("HiveZ"));
             assignedSlot = tag.getInt("HiveSlot");
         }
-        
+
         if (tag.contains("Pollinated")) {
             setPollinated(tag.getBoolean("Pollinated"));
         }
@@ -481,13 +482,14 @@ public class MagicBeeEntity extends Bee {
         if (tag.contains("StoredHealth")) {
             storedHealth = tag.getFloat("StoredHealth");
         }
-        
+
         // Charger l'inventaire
         if (tag.contains("BeeInventory")) {
             BeeBehaviorConfig config = getBehaviorConfig();
             if (config.getBehaviorType() == BeeBehaviorType.HARVESTER) {
                 inventory = new BeeInventory(config.getInventorySize());
-                inventory.load(tag.getCompound("BeeInventory"));
+                // UPDATED FOR 1.21: Passing registryAccess()
+                inventory.load(this.registryAccess(), tag.getCompound("BeeInventory"));
             }
         }
     }
@@ -533,10 +535,10 @@ public class MagicBeeEntity extends Bee {
             Vec3 targetVec = Vec3.atCenterOf(target);
             Vec3 direction = targetVec.subtract(bee.position()).normalize();
             double speed = 0.08;
-            
+
             Vec3 movement = direction.scale(speed);
             bee.setDeltaMovement(movement);
-            
+
             double dx = targetVec.x - bee.getX();
             double dz = targetVec.z - bee.getZ();
             float targetYaw = (float) (Math.atan2(dz, dx) * (180.0 / Math.PI)) - 90.0F;

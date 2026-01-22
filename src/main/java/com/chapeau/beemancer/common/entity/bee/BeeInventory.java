@@ -8,7 +8,7 @@
  * ------------------------------------------------------------
  * | Dépendance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | (aucune)            |                      |                                |
+ * | HolderLookup        | Serialization 1.21   | Sauvegarde NBT des Items       |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -20,6 +20,7 @@
  */
 package com.chapeau.beemancer.common.entity.bee;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -28,22 +29,22 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Inventaire interne pour les abeilles récolteuses.
- * L'inventaire n'est pas visible par le joueur.
- * Si l'abeille meurt, l'inventaire est détruit (pas de drop).
+ * Adapté pour Minecraft 1.21+ (DataComponents).
  */
 public class BeeInventory {
-    
+
     private final NonNullList<ItemStack> items;
     private final int maxSize;
-    
+
     public BeeInventory(int maxSize) {
         this.maxSize = maxSize;
         this.items = NonNullList.withSize(maxSize, ItemStack.EMPTY);
     }
-    
+
     /**
      * Compte le nombre total d'items dans l'inventaire.
      */
@@ -56,7 +57,7 @@ public class BeeInventory {
         }
         return count;
     }
-    
+
     /**
      * Compte le nombre de stacks non vides.
      */
@@ -69,22 +70,14 @@ public class BeeInventory {
         }
         return count;
     }
-    
-    /**
-     * Vérifie si l'inventaire est vide.
-     */
+
     public boolean isEmpty() {
         for (ItemStack stack : items) {
-            if (!stack.isEmpty()) {
-                return false;
-            }
+            if (!stack.isEmpty()) return false;
         }
         return true;
     }
-    
-    /**
-     * Vérifie si l'inventaire est plein.
-     */
+
     public boolean isFull() {
         for (ItemStack stack : items) {
             if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
@@ -93,7 +86,7 @@ public class BeeInventory {
         }
         return true;
     }
-    
+
     /**
      * Tente d'ajouter un item à l'inventaire.
      * @return Le reste qui n'a pas pu être ajouté (EMPTY si tout ajouté)
@@ -102,12 +95,13 @@ public class BeeInventory {
         if (stack.isEmpty()) {
             return ItemStack.EMPTY;
         }
-        
+
         ItemStack toInsert = stack.copy();
-        
-        // D'abord essayer de stack avec des items existants
+
+        // 1. Essayer de merger avec les stacks existants
         for (int i = 0; i < maxSize && !toInsert.isEmpty(); i++) {
             ItemStack existing = items.get(i);
+            // isSameItemSameComponents est CRUCIAL en 1.21 pour vérifier les composants (ex: enchantements différents)
             if (!existing.isEmpty() && ItemStack.isSameItemSameComponents(existing, toInsert)) {
                 int space = existing.getMaxStackSize() - existing.getCount();
                 int toAdd = Math.min(space, toInsert.getCount());
@@ -117,19 +111,19 @@ public class BeeInventory {
                 }
             }
         }
-        
-        // Puis chercher des slots vides
+
+        // 2. Remplir les slots vides
         for (int i = 0; i < maxSize && !toInsert.isEmpty(); i++) {
             if (items.get(i).isEmpty()) {
-                int toAdd = Math.min(toInsert.getMaxStackSize(), toInsert.getCount());
-                items.set(i, toInsert.copyWithCount(toAdd));
-                toInsert.shrink(toAdd);
+                // On clone pour éviter les références partagées
+                items.set(i, toInsert.copy());
+                toInsert.setCount(0); // Tout a été ajouté
             }
         }
-        
+
         return toInsert;
     }
-    
+
     /**
      * Récupère tous les items et vide l'inventaire.
      */
@@ -144,12 +138,11 @@ public class BeeInventory {
         }
         return result;
     }
-    
+
     /**
-     * Récupère un item spécifique (pour replanter par exemple).
-     * @return L'item retiré ou EMPTY si non trouvé
+     * Récupère un item spécifique.
      */
-    public ItemStack extractItem(java.util.function.Predicate<ItemStack> predicate, int count) {
+    public ItemStack extractItem(Predicate<ItemStack> predicate, int count) {
         for (int i = 0; i < maxSize; i++) {
             ItemStack stack = items.get(i);
             if (!stack.isEmpty() && predicate.test(stack)) {
@@ -164,11 +157,8 @@ public class BeeInventory {
         }
         return ItemStack.EMPTY;
     }
-    
-    /**
-     * Vérifie si l'inventaire contient un item correspondant au prédicat.
-     */
-    public boolean contains(java.util.function.Predicate<ItemStack> predicate) {
+
+    public boolean contains(Predicate<ItemStack> predicate) {
         for (ItemStack stack : items) {
             if (!stack.isEmpty() && predicate.test(stack)) {
                 return true;
@@ -176,55 +166,60 @@ public class BeeInventory {
         }
         return false;
     }
-    
-    /**
-     * Vide l'inventaire (utilisé quand l'abeille meurt).
-     */
+
     public void clear() {
-        for (int i = 0; i < maxSize; i++) {
-            items.set(i, ItemStack.EMPTY);
-        }
+        items.clear(); // NonNullList supporte clear() pour remettre à EMPTY
     }
-    
+
+    // ============================================================
+    // GESTION NBT (Mise à jour 1.21)
+    // ============================================================
+
     /**
      * Sauvegarde l'inventaire en NBT.
+     * @param registries Indispensable en 1.21 pour sauvegarder les DataComponents.
      */
-    public CompoundTag save() {
+    public CompoundTag save(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
         ListTag listTag = new ListTag();
-        
+
         for (int i = 0; i < maxSize; i++) {
             ItemStack stack = items.get(i);
             if (!stack.isEmpty()) {
                 CompoundTag itemTag = new CompoundTag();
                 itemTag.putInt("Slot", i);
-                listTag.add(stack.save(itemTag));
+                // Utilisation de la méthode save avec registries
+                listTag.add(stack.save(registries, itemTag));
             }
         }
-        
+
         tag.put("Items", listTag);
         tag.putInt("MaxSize", maxSize);
         return tag;
     }
-    
+
     /**
      * Charge l'inventaire depuis NBT.
+     * @param registries Indispensable en 1.21 pour charger les DataComponents.
      */
-    public void load(CompoundTag tag) {
+    public void load(HolderLookup.Provider registries, CompoundTag tag) {
         clear();
-        
+
         if (tag.contains("Items")) {
             ListTag listTag = tag.getList("Items", Tag.TAG_COMPOUND);
             for (int i = 0; i < listTag.size(); i++) {
                 CompoundTag itemTag = listTag.getCompound(i);
                 int slot = itemTag.getInt("Slot");
+
                 if (slot >= 0 && slot < maxSize) {
-                    items.set(slot, ItemStack.parse(itemTag).orElse(ItemStack.EMPTY));
+                    // Utilisation de parseOptional pour éviter les crashs sur des items corrompus
+                    ItemStack stack = ItemStack.parseOptional(registries, itemTag);
+                    items.set(slot, stack);
                 }
             }
         }
     }
-    
+
     public int getMaxSize() {
         return maxSize;
     }

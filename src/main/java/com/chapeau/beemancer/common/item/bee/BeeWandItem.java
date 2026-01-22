@@ -45,6 +45,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BeeWandItem extends Item {
@@ -76,6 +77,10 @@ public class BeeWandItem extends Item {
                 .track("Bees Inside", hive -> countBeesInState(hive, MagicHiveBlockEntity.BeeState.INSIDE))
                 .track("Bees Outside", hive -> countBeesInState(hive, MagicHiveBlockEntity.BeeState.OUTSIDE))
                 .track("Empty Slots", hive -> countBeesInState(hive, MagicHiveBlockEntity.BeeState.EMPTY))
+                .track(" ", hive -> " ")
+                .track("Scan Cooldown", MagicHiveBlockEntity::getFlowerScanCooldown)
+                .track("Bee Cooldown", hive -> Arrays.toString( hive.getBeeCooldowns()))
+                .track("Bee Flowers", hive -> Arrays.toString( hive.getBeeFlowers()))
         );
     }
     
@@ -251,7 +256,14 @@ public class BeeWandItem extends Item {
     }
     
     // --- Utilitaires ---
-    
+
+    private static String formatArray(Arrays arrays){
+        String t = "";
+        //for (int i = 0; i < arrays.
+
+        return t;
+    }
+
     private static String formatTicks(int ticks) {
         int seconds = ticks / 20;
         int minutes = seconds / 60;

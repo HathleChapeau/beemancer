@@ -83,6 +83,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     
     // Cooldowns et régénération par slot
     private final int[] beeCooldowns = new int[BEE_SLOTS];
+    public int[] getBeeCooldowns(){ return beeCooldowns; }
     private final boolean[] beeNeedsHealing = new boolean[BEE_SLOTS];
     private final float[] beeCurrentHealth = new float[BEE_SLOTS];
     private final float[] beeMaxHealth = new float[BEE_SLOTS];
@@ -90,9 +91,11 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     // Flower detection: list of flower positions per bee slot
     @SuppressWarnings("unchecked")
     private final List<BlockPos>[] beeFlowers = new List[BEE_SLOTS];
+    public List<BlockPos>[] getBeeFlowers(){ return beeFlowers; }
     private int flowerScanCooldown = 0;
+    public int getFlowerScanCooldown(){ return flowerScanCooldown; }
     private static final int FLOWER_SCAN_INTERVAL = 100; // Scan every 5 seconds
-    
+
     // Breeding
     private boolean breedingMode = false;
     private int breedingCooldown = 0;

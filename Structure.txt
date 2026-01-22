@@ -34,80 +34,11 @@ Philosophie:
 2. ARBORESCENCE COMPLÈTE
 ================================================================================
 
-src/main/java/com/chapeau/beemancer/
-│
-├── Beemancer.java                      # [CORE] Point d'entrée du mod
-│
-├── core/                               # === FONDATIONS UNIVERSELLES ===
-│   ├── registry/
-│   │   ├── BeemancerItems.java
-│   │   ├── BeemancerBlocks.java
-│   │   ├── BeemancerBlockEntities.java
-│   │   ├── BeemancerEntities.java
-│   │   ├── BeemancerMenus.java
-│   │   └── BeemancerCreativeTabs.java
-│   │
-│   ├── gene/                           # === SYSTÈME DE GÈNES ===
-│   │   ├── Gene.java
-│   │   ├── AbstractGene.java
-│   │   ├── GeneCategory.java
-│   │   ├── GeneRegistry.java
-│   │   └── BeeGeneData.java
-│   │
-│   ├── behavior/                       # === SYSTÈME DE COMPORTEMENT ===
-│   │   ├── BeeBehaviorType.java
-│   │   ├── BeeBehaviorConfig.java
-│   │   ├── BeeBehaviorManager.java
-│   │   ├── LootEntry.java
-│   │   └── SpeedThreshold.java
-│   │
-│   ├── breeding/
-│   │   └── BreedingManager.java
-│   │
-│   ├── util/
-│   │   ├── FlowerSearchHelper.java
-│   │   └── HarvestHelper.java
-│   │
-│   └── network/
-│       ├── BeemancerNetwork.java
-│       └── packets/
-│           └── BeeCreatorActionPacket.java
-│
-├── common/                             # === LOGIQUE PARTAGÉE ===
-│   ├── block/
-│   │   ├── storage/
-│   │   ├── beecreator/
-│   │   ├── hive/
-│   │   ├── crystal/
-│   │   └── incubator/
-│   │
-│   ├── item/bee/
-│   │   ├── MagicBeeItem.java
-│   │   ├── BeeLarvaItem.java
-│   │   └── BeeWandItem.java
-│   │
-│   ├── entity/bee/
-│   │   ├── MagicBeeEntity.java
-│   │   ├── BeeActivityState.java
-│   │   ├── BeeInventory.java
-│   │   └── goal/
-│   │
-│   └── menu/
-│       └── slot/
-│
-├── content/gene/                       # === CONTENU PAR FEATURE ===
-│   ├── GeneInit.java
-│   ├── species/
-│   ├── environment/
-│   ├── flower/
-│   └── lifetime/
-│
-└── client/
-    ├── ClientSetup.java
-    └── gui/
-        ├── screen/
-        └── hud/                        # === HUD OVERLAYS ===
-            └── WandOverlayRenderer.java
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ FICHIER DE DÉTAIL: Structure/arborescence.txt                               │
+│ POUR AJOUTER: Éditer directement le fichier                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+→ Voir: Structure/arborescence.txt
 
 ================================================================================
 3. FICHIERS FONDAMENTAUX (CORE)
