@@ -185,7 +185,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     @Override
     public void setItem(int slot, ItemStack stack) {
-        System.out.println("[DEBUG-HIVE] setItem: slot=" + slot + ", stack=" + stack);
         items.set(slot, stack);
         if (stack.getCount() > getMaxStackSize()) {
             stack.setCount(getMaxStackSize());
@@ -195,7 +194,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             if (!stack.isEmpty() && stack.is(BeemancerItems.MAGIC_BEE.get())) {
                 MagicBeeItem.setAssignedHive(stack, worldPosition, slot);
                 beeStates[slot] = BeeState.INSIDE;
-                System.out.println("[DEBUG-HIVE] Bee INSIDE, cooldown=" + beeCooldowns[slot] + ", flowers=" + beeFlowers[slot].size());
                 beeUUIDs[slot] = null;
                 
                 // Initialiser le cooldown et la santé
@@ -384,7 +382,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
      * Spawn bee from slot into the world
      */
     public void releaseBee(int slot) {
-        System.out.println("[DEBUG-HIVE] releaseBee: slot=" + slot + ", state=" + (slot >= 0 && slot < BEE_SLOTS ? beeStates[slot] : "invalid") + ", flowers=" + hasFlowersForSlot(slot));
         if (slot < 0 || slot >= BEE_SLOTS) return;
         if (beeStates[slot] != BeeState.INSIDE) return;
         if (!(level instanceof ServerLevel serverLevel)) return;
@@ -463,7 +460,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         ItemStack beeItem = MagicBeeItem.captureFromEntity(bee);
         items.set(slot, beeItem);
         beeStates[slot] = BeeState.INSIDE;
-                System.out.println("[DEBUG-HIVE] Bee INSIDE, cooldown=" + beeCooldowns[slot] + ", flowers=" + beeFlowers[slot].size());
         beeUUIDs[slot] = null;
         
         // Stocker la santé actuelle
