@@ -384,48 +384,61 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
      * Spawn bee from slot into the world
      */
     public void releaseBee(int slot) {
-        System.out.println("[DEBUG-HIVE] releaseBee: slot=" + slot + ", state=" + (slot >= 0 && slot < BEE_SLOTS ? beeStates[slot] : "invalid") + ", flowers=" + hasFlowersForSlot(slot));
-        if (slot < 0 || slot >= BEE_SLOTS) return;
-        if (beeStates[slot] != BeeState.INSIDE) return;
-        if (!(level instanceof ServerLevel serverLevel)) return;
+        System.out.println("[DEBUG-HIVE] releaseBee START: slot=" + slot);
         
-        ItemStack beeItem = items.get(slot);
-        if (beeItem.isEmpty() || !beeItem.is(BeemancerItems.MAGIC_BEE.get())) return;
-        
-        // Check if there are flowers available for this bee
-        if (!hasFlowersForSlot(slot)) {
-            // No flowers, don't release (stay in hive)
+        if (slot < 0 || slot >= BEE_SLOTS) {
+            System.out.println("[DEBUG-HIVE] ABORT: invalid slot");
+            return;
+        }
+        if (beeStates[slot] != BeeState.INSIDE) {
+            System.out.println("[DEBUG-HIVE] ABORT: state=" + beeStates[slot] + " (not INSIDE)");
+            return;
+        }
+        if (!(level instanceof ServerLevel serverLevel)) {
+            System.out.println("[DEBUG-HIVE] ABORT: not ServerLevel");
             return;
         }
         
+        ItemStack beeItem = items.get(slot);
+        if (beeItem.isEmpty() || !beeItem.is(BeemancerItems.MAGIC_BEE.get())) {
+            System.out.println("[DEBUG-HIVE] ABORT: invalid item - " + beeItem);
+            return;
+        }
+        
+        if (!hasFlowersForSlot(slot)) {
+            System.out.println("[DEBUG-HIVE] ABORT: no flowers");
+            return;
+        }
+        
+        System.out.println("[DEBUG-HIVE] Creating entity...");
         MagicBeeEntity bee = com.chapeau.beemancer.core.registry.BeemancerEntities.MAGIC_BEE.get().create(level);
-        if (bee == null) return;
+        if (bee == null) {
+            System.out.println("[DEBUG-HIVE] ABORT: create() returned null");
+            return;
+        }
         
         BlockPos spawnPos = worldPosition.above();
+        System.out.println("[DEBUG-HIVE] Spawning at " + spawnPos);
         bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 0, 0);
         
-        // Load gene data
         var geneData = MagicBeeItem.getGeneData(beeItem);
         bee.getGeneData().copyFrom(geneData);
         for (var gene : geneData.getAllGenes()) {
             bee.setGene(gene);
         }
         
-        // Restore health
         bee.setStoredHealth(beeCurrentHealth[slot]);
-        
-        // Assign hive
         bee.setAssignedHive(worldPosition, slot);
-        
-        // Reset pollinated and enraged states
         bee.setPollinated(false);
         bee.setEnraged(false);
         
-        serverLevel.addFreshEntity(bee);
+        boolean added = serverLevel.addFreshEntity(bee);
+        System.out.println("[DEBUG-HIVE] addFreshEntity result: " + added + ", UUID=" + bee.getUUID());
         
         beeStates[slot] = BeeState.OUTSIDE;
         beeUUIDs[slot] = bee.getUUID();
         setChanged();
+        System.out.println("[DEBUG-HIVE] releaseBee SUCCESS!");
     }
 
     /**
