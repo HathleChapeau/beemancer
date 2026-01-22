@@ -29,6 +29,10 @@ public class GeneInit {
         GeneRegistry.register(FlowersFlowerGene.INSTANCE);
         GeneRegistry.register(CropsFlowerGene.INSTANCE);
         GeneRegistry.register(CavePlantsFlowerGene.INSTANCE);
+        GeneRegistry.register(TreesFlowerGene.INSTANCE);
+        GeneRegistry.register(MushroomsFlowerGene.INSTANCE);
+        GeneRegistry.register(CrystalsFlowerGene.INSTANCE);
+        GeneRegistry.register(NetherWartFlowerGene.INSTANCE);
 
         // Lifetime genes
         GeneRegistry.register(ShortLifetimeGene.INSTANCE);

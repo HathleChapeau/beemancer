@@ -66,6 +66,10 @@ public class MagicBeeItem extends Item {
                     bee.setAssignedHive(hivePos, slot);
                 }
                 
+                // Load stored health
+                float storedHealth = getStoredHealth(stack, bee.getMaxHealth());
+                bee.setStoredHealth(storedHealth);
+                
                 level.addFreshEntity(bee);
                 
                 if (!player.getAbilities().instabuild) {
@@ -116,6 +120,8 @@ public class MagicBeeItem extends Item {
         if (bee.hasAssignedHive()) {
             setAssignedHive(stack, bee.getAssignedHivePos(), bee.getAssignedSlot());
         }
+        // Copy current health
+        setStoredHealth(stack, bee.getHealth());
         return stack;
     }
 
@@ -184,6 +190,25 @@ public class MagicBeeItem extends Item {
 
     public static boolean hasAssignedHive(ItemStack stack) {
         return getAssignedHivePos(stack) != null && getAssignedSlot(stack) >= 0;
+    }
+
+    // --- Stored Health ---
+
+    public static void setStoredHealth(ItemStack stack, float health) {
+        CompoundTag tag = getOrCreateTag(stack);
+        tag.putFloat("StoredHealth", health);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    public static float getStoredHealth(ItemStack stack, float defaultHealth) {
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        if (customData != null) {
+            CompoundTag tag = customData.copyTag();
+            if (tag.contains("StoredHealth")) {
+                return tag.getFloat("StoredHealth");
+            }
+        }
+        return defaultHealth;
     }
 
     // --- Helpers ---

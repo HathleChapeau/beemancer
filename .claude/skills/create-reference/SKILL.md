@@ -15,31 +15,6 @@ allowed-tools: Read, Grep, Glob
 
 ---
 
-## Architecture Create
-
-```
-create/
-├── AllBlocks.java              # Registre centralisé
-├── AllBlockEntityTypes.java    # Registre BlockEntities
-├── AllItems.java               # Registre Items
-│
-├── content/                    # Contenu par feature
-│   ├── contraptions/           # Machines mobiles
-│   ├── processing/             # Machines de traitement
-│   ├── kinetics/               # Énergie rotative
-│   └── logistics/              # Transport d'items
-│
-├── foundation/                 # Base réutilisable
-│   ├── block/                  # Blocs de base
-│   ├── blockEntity/            # SmartBlockEntity
-│   ├── item/                   # Items de base
-│   └── utility/                # Helpers
-│
-└── infrastructure/             # Config, network, etc.
-```
-
----
-
 ## Pattern: SmartBlockEntity (Create)
 
 Create utilise un système de "behaviours" modulaires:

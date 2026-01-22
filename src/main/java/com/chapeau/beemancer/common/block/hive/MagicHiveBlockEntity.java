@@ -1,7 +1,25 @@
 /**
  * ============================================================
  * [MagicHiveBlockEntity.java]
- * Description: BlockEntity ruche magique avec tracking des abeilles et breeding
+ * Description: BlockEntity ruche magique avec tracking des abeilles, breeding, cooldowns et loot
+ * ============================================================
+ *
+ * DÉPENDANCES:
+ * ------------------------------------------------------------
+ * | Dépendance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | MagicBeeEntity      | Entité abeille       | Gestion spawn/capture          |
+ * | MagicBeeItem        | Item abeille         | Conversion entity<->item       |
+ * | BeeLarvaItem        | Item larve           | Breeding output                |
+ * | BreedingManager     | Logique breeding     | Calcul offspring               |
+ * | BeeBehaviorManager  | Config comportement  | Cooldowns et paramètres        |
+ * ------------------------------------------------------------
+ *
+ * UTILISÉ PAR:
+ * - MagicHiveBlock.java: Création et interaction
+ * - MagicHiveMenu.java: Interface GUI
+ * - MagicBeeEntity.java: Notifications
+ *
  * ============================================================
  */
 package com.chapeau.beemancer.common.block.hive;
@@ -10,6 +28,8 @@ import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
+import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
+import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
 import com.chapeau.beemancer.core.breeding.BreedingManager;
 import com.chapeau.beemancer.core.gene.BeeGeneData;
 import com.chapeau.beemancer.core.gene.Gene;
@@ -55,6 +75,12 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     private final BeeState[] beeStates = new BeeState[BEE_SLOTS];
     private final UUID[] beeUUIDs = new UUID[BEE_SLOTS];
     
+    // Cooldowns et régénération par slot
+    private final int[] beeCooldowns = new int[BEE_SLOTS];
+    private final boolean[] beeNeedsHealing = new boolean[BEE_SLOTS];
+    private final float[] beeCurrentHealth = new float[BEE_SLOTS];
+    private final float[] beeMaxHealth = new float[BEE_SLOTS];
+    
     // Breeding
     private boolean breedingMode = false;
     private int breedingCooldown = 0;
@@ -83,6 +109,10 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     public MagicHiveBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.MAGIC_HIVE.get(), pos, state);
         Arrays.fill(beeStates, BeeState.EMPTY);
+        Arrays.fill(beeCooldowns, 0);
+        Arrays.fill(beeNeedsHealing, false);
+        Arrays.fill(beeCurrentHealth, 0);
+        Arrays.fill(beeMaxHealth, 10);
     }
 
     // --- Container Implementation ---
@@ -107,7 +137,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         ItemStack result = ContainerHelper.removeItem(items, slot, amount);
         if (!result.isEmpty()) {
             setChanged();
-            // If removing from bee slot while bee is outside, despawn the bee
             if (slot < BEE_SLOTS && beeStates[slot] == BeeState.OUTSIDE) {
                 despawnOutsideBee(slot);
             }
@@ -127,15 +156,27 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             stack.setCount(getMaxStackSize());
         }
         
-        // If placing bee in slot, assign it to this hive
         if (slot < BEE_SLOTS) {
             if (!stack.isEmpty() && stack.is(BeemancerItems.MAGIC_BEE.get())) {
                 MagicBeeItem.setAssignedHive(stack, worldPosition, slot);
                 beeStates[slot] = BeeState.INSIDE;
                 beeUUIDs[slot] = null;
+                
+                // Initialiser le cooldown et la santé
+                BeeGeneData geneData = MagicBeeItem.getGeneData(stack);
+                String speciesId = geneData.getGene(GeneCategory.SPECIES) != null 
+                        ? geneData.getGene(GeneCategory.SPECIES).getId() : "common";
+                BeeBehaviorConfig config = BeeBehaviorManager.getConfig(speciesId);
+                
+                beeCooldowns[slot] = config.getRandomRestCooldown(level != null ? level.getRandom() : RandomSource.create());
+                beeMaxHealth[slot] = (float) config.getHealth();
+                beeCurrentHealth[slot] = MagicBeeItem.getStoredHealth(stack, beeMaxHealth[slot]);
+                beeNeedsHealing[slot] = beeCurrentHealth[slot] < beeMaxHealth[slot];
             } else {
                 beeStates[slot] = BeeState.EMPTY;
                 beeUUIDs[slot] = null;
+                beeCooldowns[slot] = 0;
+                beeNeedsHealing[slot] = false;
             }
         }
         
@@ -153,6 +194,8 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         items.clear();
         Arrays.fill(beeStates, BeeState.EMPTY);
         Arrays.fill(beeUUIDs, null);
+        Arrays.fill(beeCooldowns, 0);
+        Arrays.fill(beeNeedsHealing, false);
     }
 
     // --- Bee Management ---
@@ -193,7 +236,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         ItemStack beeItem = items.get(slot);
         if (beeItem.isEmpty() || !beeItem.is(BeemancerItems.MAGIC_BEE.get())) return;
         
-        // Create bee entity
         MagicBeeEntity bee = com.chapeau.beemancer.core.registry.BeemancerEntities.MAGIC_BEE.get().create(level);
         if (bee == null) return;
         
@@ -207,12 +249,18 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             bee.setGene(gene);
         }
         
+        // Restore health
+        bee.setStoredHealth(beeCurrentHealth[slot]);
+        
         // Assign hive
         bee.setAssignedHive(worldPosition, slot);
         
+        // Reset pollinated and enraged states
+        bee.setPollinated(false);
+        bee.setEnraged(false);
+        
         serverLevel.addFreshEntity(bee);
         
-        // Update state
         beeStates[slot] = BeeState.OUTSIDE;
         beeUUIDs[slot] = bee.getUUID();
         setChanged();
@@ -233,14 +281,76 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         int slot = bee.getAssignedSlot();
         if (slot < 0 || slot >= BEE_SLOTS) return;
         
-        // Mark bee as entering hive (prevents death notification)
         bee.markAsEnteredHive();
+        
+        // Déposer le loot si pollinisée
+        if (bee.isPollinated()) {
+            depositPollinationLoot(bee);
+        }
         
         // Capture bee back to item
         ItemStack beeItem = MagicBeeItem.captureFromEntity(bee);
         items.set(slot, beeItem);
         beeStates[slot] = BeeState.INSIDE;
         beeUUIDs[slot] = null;
+        
+        // Stocker la santé actuelle
+        beeCurrentHealth[slot] = bee.getHealth();
+        beeMaxHealth[slot] = bee.getMaxHealth();
+        beeNeedsHealing[slot] = beeCurrentHealth[slot] < beeMaxHealth[slot];
+        
+        // Initialiser le cooldown
+        BeeBehaviorConfig config = bee.getBehaviorConfig();
+        beeCooldowns[slot] = config.getRandomRestCooldown(level.getRandom());
+        
+        // Reset états
+        bee.setPollinated(false);
+        bee.setEnraged(false);
+        
+        setChanged();
+    }
+    
+    /**
+     * Dépose le loot de pollinisation dans les slots output
+     */
+    private void depositPollinationLoot(MagicBeeEntity bee) {
+        if (level == null) return;
+        
+        BeeBehaviorConfig config = bee.getBehaviorConfig();
+        List<ItemStack> loot = config.rollPollinationLoot(level.getRandom());
+        
+        for (ItemStack stack : loot) {
+            insertIntoOutputSlots(stack);
+        }
+    }
+    
+    /**
+     * Insère un item dans les slots output
+     */
+    private void insertIntoOutputSlots(ItemStack stack) {
+        if (stack.isEmpty()) return;
+        
+        // D'abord essayer de stack avec des items existants
+        for (int i = BEE_SLOTS; i < TOTAL_SLOTS && !stack.isEmpty(); i++) {
+            ItemStack existing = items.get(i);
+            if (!existing.isEmpty() && ItemStack.isSameItemSameComponents(existing, stack)) {
+                int space = existing.getMaxStackSize() - existing.getCount();
+                int toAdd = Math.min(space, stack.getCount());
+                if (toAdd > 0) {
+                    existing.grow(toAdd);
+                    stack.shrink(toAdd);
+                }
+            }
+        }
+        
+        // Ensuite chercher un slot vide
+        for (int i = BEE_SLOTS; i < TOTAL_SLOTS && !stack.isEmpty(); i++) {
+            if (items.get(i).isEmpty()) {
+                items.set(i, stack.copy());
+                stack.setCount(0);
+            }
+        }
+        
         setChanged();
     }
 
@@ -253,15 +363,14 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 items.set(i, ItemStack.EMPTY);
                 beeStates[i] = BeeState.EMPTY;
                 beeUUIDs[i] = null;
+                beeCooldowns[i] = 0;
+                beeNeedsHealing[i] = false;
                 setChanged();
                 return;
             }
         }
     }
 
-    /**
-     * Despawn outside bee when item is removed from slot
-     */
     private void despawnOutsideBee(int slot) {
         if (!(level instanceof ServerLevel serverLevel)) return;
         
@@ -270,12 +379,14 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         
         Entity entity = serverLevel.getEntity(uuid);
         if (entity instanceof MagicBeeEntity bee) {
-            bee.markAsEnteredHive(); // Prevent death notification
+            bee.markAsEnteredHive();
             bee.discard();
         }
         
         beeStates[slot] = BeeState.EMPTY;
         beeUUIDs[slot] = null;
+        beeCooldowns[slot] = 0;
+        beeNeedsHealing[slot] = false;
     }
 
     // --- Breeding ---
@@ -284,9 +395,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         return breedingMode;
     }
 
-    /**
-     * Count bees with INSIDE state
-     */
     private int countInsideBees() {
         int count = 0;
         for (int i = 0; i < BEE_SLOTS; i++) {
@@ -297,9 +405,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         return count;
     }
 
-    /**
-     * Get indices of bees with INSIDE state
-     */
     private List<Integer> getInsideBeeIndices() {
         List<Integer> indices = new ArrayList<>();
         for (int i = 0; i < BEE_SLOTS; i++) {
@@ -310,9 +415,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         return indices;
     }
 
-    /**
-     * Find first empty output slot
-     */
     private int findEmptyOutputSlot() {
         for (int i = BEE_SLOTS; i < TOTAL_SLOTS; i++) {
             if (items.get(i).isEmpty()) {
@@ -322,9 +424,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         return -1;
     }
 
-    /**
-     * Attempt breeding
-     */
     private void attemptBreeding(RandomSource random) {
         List<Integer> insideBees = getInsideBeeIndices();
         if (insideBees.size() < 2) return;
@@ -332,7 +431,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         int outputSlot = findEmptyOutputSlot();
         if (outputSlot < 0) return;
         
-        // Select two random bees
         int idx1 = random.nextInt(insideBees.size());
         int idx2;
         do {
@@ -353,11 +451,9 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         
         if (species1 == null || species2 == null) return;
         
-        // Resolve offspring species
         String offspringSpecies = BreedingManager.resolveOffspringSpecies(
                 species1.getId(), species2.getId(), random);
         
-        // Apply lifetime cost to one parent (randomly chosen)
         int costParentSlot = random.nextBoolean() ? slot1 : slot2;
         ItemStack costBeeStack = items.get(costParentSlot);
         BeeGeneData costBeeData = MagicBeeItem.getGeneData(costBeeStack);
@@ -365,16 +461,13 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         costBeeData.setRemainingLifetime(costBeeData.getRemainingLifetime() - lifetimeCost);
         MagicBeeItem.saveGeneData(costBeeStack, costBeeData);
         
-        // If "nothing", no larva produced
         if ("nothing".equals(offspringSpecies)) {
             return;
         }
         
-        // Create offspring gene data
         BeeGeneData offspringData = BreedingManager.createOffspringGeneData(
                 parent1, parent2, offspringSpecies, random);
         
-        // Create larva item
         ItemStack larva = BeeLarvaItem.createWithGenes(offspringData);
         items.set(outputSlot, larva);
         setChanged();
@@ -383,9 +476,44 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     // --- Tick ---
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MagicHiveBlockEntity hive) {
-        // Check breeding mode (crystal above)
+        // Check breeding mode
         BlockState above = level.getBlockState(pos.above());
         hive.breedingMode = above.is(BeemancerBlocks.BREEDING_CRYSTAL.get());
+        
+        // Gérer les abeilles INSIDE
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            if (hive.beeStates[i] == BeeState.INSIDE && !hive.items.get(i).isEmpty()) {
+                ItemStack beeItem = hive.items.get(i);
+                BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
+                String speciesId = geneData.getGene(GeneCategory.SPECIES) != null 
+                        ? geneData.getGene(GeneCategory.SPECIES).getId() : "common";
+                BeeBehaviorConfig config = BeeBehaviorManager.getConfig(speciesId);
+                
+                // Régénération si nécessaire
+                if (hive.beeNeedsHealing[i]) {
+                    float healAmount = config.getRegenerationRate() / 20.0f; // par tick
+                    hive.beeCurrentHealth[i] = Math.min(
+                            hive.beeCurrentHealth[i] + healAmount, 
+                            hive.beeMaxHealth[i]);
+                    
+                    if (hive.beeCurrentHealth[i] >= hive.beeMaxHealth[i]) {
+                        hive.beeNeedsHealing[i] = false;
+                        // Mettre à jour l'item
+                        MagicBeeItem.setStoredHealth(beeItem, hive.beeCurrentHealth[i]);
+                    }
+                }
+                
+                // Cooldown seulement si pas besoin de heal
+                if (!hive.beeNeedsHealing[i] && hive.beeCooldowns[i] > 0) {
+                    hive.beeCooldowns[i]--;
+                }
+                
+                // Auto-release si cooldown terminé et pas de breeding mode
+                if (hive.beeCooldowns[i] <= 0 && !hive.beeNeedsHealing[i] && !hive.breedingMode) {
+                    hive.releaseBee(i);
+                }
+            }
+        }
         
         // Check for returning bees
         AABB searchBox = new AABB(pos).inflate(2);
@@ -399,21 +527,18 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             }
         }
         
-        // Breeding logic (once per second)
+        // Breeding logic
         if (hive.breedingMode && hive.breedingCooldown <= 0) {
             RandomSource random = level.getRandom();
-            // 5% chance per second
             if (random.nextDouble() < BreedingManager.BREEDING_CHANCE_PER_SECOND) {
                 hive.attemptBreeding(random);
             }
-            hive.breedingCooldown = 20; // Reset cooldown (1 second)
+            hive.breedingCooldown = 20;
         }
         
         if (hive.breedingCooldown > 0) {
             hive.breedingCooldown--;
         }
-        
-        // TODO: Production logic - add items to output slots
     }
 
     // --- NBT ---
@@ -423,7 +548,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, items, registries);
         
-        // Save bee states
         ListTag statesTag = new ListTag();
         for (int i = 0; i < BEE_SLOTS; i++) {
             CompoundTag slotTag = new CompoundTag();
@@ -431,6 +555,10 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             if (beeUUIDs[i] != null) {
                 slotTag.putUUID("UUID", beeUUIDs[i]);
             }
+            slotTag.putInt("Cooldown", beeCooldowns[i]);
+            slotTag.putBoolean("NeedsHealing", beeNeedsHealing[i]);
+            slotTag.putFloat("CurrentHealth", beeCurrentHealth[i]);
+            slotTag.putFloat("MaxHealth", beeMaxHealth[i]);
             statesTag.add(slotTag);
         }
         tag.put("BeeStates", statesTag);
@@ -441,7 +569,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         super.loadAdditional(tag, registries);
         ContainerHelper.loadAllItems(tag, items, registries);
         
-        // Load bee states
         if (tag.contains("BeeStates")) {
             ListTag statesTag = tag.getList("BeeStates", Tag.TAG_COMPOUND);
             for (int i = 0; i < Math.min(statesTag.size(), BEE_SLOTS); i++) {
@@ -450,6 +577,10 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 if (slotTag.hasUUID("UUID")) {
                     beeUUIDs[i] = slotTag.getUUID("UUID");
                 }
+                beeCooldowns[i] = slotTag.getInt("Cooldown");
+                beeNeedsHealing[i] = slotTag.getBoolean("NeedsHealing");
+                beeCurrentHealth[i] = slotTag.getFloat("CurrentHealth");
+                beeMaxHealth[i] = slotTag.getFloat("MaxHealth");
             }
         }
     }
@@ -471,13 +602,11 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     public void dropContents() {
         if (level != null && !level.isClientSide()) {
-            // Despawn all outside bees first
             for (int i = 0; i < BEE_SLOTS; i++) {
                 if (beeStates[i] == BeeState.OUTSIDE) {
                     despawnOutsideBee(i);
                 }
             }
-            // Drop items
             Containers.dropContents(level, worldPosition, this);
         }
     }
