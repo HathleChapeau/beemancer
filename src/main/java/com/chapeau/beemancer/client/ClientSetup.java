@@ -1,21 +1,7 @@
 /**
  * ============================================================
  * [ClientSetup.java]
- * Description: Configuration client (pattern Create)
- * ============================================================
- *
- * DÉPENDANCES:
- * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | BeemancerMenus      | Registres menus      | Enregistrement screens         |
- * | BeemancerEntities   | Registres entités    | Enregistrement renderers       |
- * | WandOverlayRenderer | HUD baguette         | Enregistrement overlay         |
- * ------------------------------------------------------------
- *
- * UTILISÉ PAR:
- * - Beemancer.java: Initialisation côté client
- *
+ * Description: Configuration client (NeoForge 1.21.1)
  * ============================================================
  */
 package com.chapeau.beemancer.client;
@@ -27,23 +13,27 @@ import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
 import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
 import com.chapeau.beemancer.core.registry.BeemancerEntities;
+import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.client.renderer.entity.BeeRenderer;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.fluids.FluidType;
+
+import java.util.function.Supplier;
 
 public class ClientSetup {
 
-    /**
-     * Register client setup to mod event bus (called from main mod class)
-     */
     public static void register(IEventBus modEventBus) {
         modEventBus.addListener(ClientSetup::registerScreens);
         modEventBus.addListener(ClientSetup::registerEntityRenderers);
+        modEventBus.addListener(ClientSetup::registerClientExtensions);
         
-        // Enregistrer les overlays HUD sur le bus d'événements du jeu
         NeoForge.EVENT_BUS.register(WandOverlayRenderer.class);
     }
 
@@ -56,5 +46,50 @@ public class ClientSetup {
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(BeemancerEntities.MAGIC_BEE.get(), BeeRenderer::new);
+    }
+
+    private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {
+        // Honey
+        registerFluidExtension(event, BeemancerFluids.HONEY_FLUID_TYPE,
+            "block/fluid/honey_still", "block/fluid/honey_flow", 0xFFEB9B3B);
+        
+        // Royal Jelly
+        registerFluidExtension(event, BeemancerFluids.ROYAL_JELLY_FLUID_TYPE,
+            "block/fluid/royal_jelly_still", "block/fluid/royal_jelly_flow", 0xFFE8A0D0);
+        
+        // Nectar
+        registerFluidExtension(event, BeemancerFluids.NECTAR_FLUID_TYPE,
+            "block/fluid/nectar_still", "block/fluid/nectar_flow", 0xFFB388DD);
+        
+        // Fire Nectar
+        registerFluidExtension(event, BeemancerFluids.FIRE_NECTAR_FLUID_TYPE,
+            "block/fluid/fire_nectar_still", "block/fluid/fire_nectar_flow", 0xFFFF6600);
+        
+        // Frost Nectar
+        registerFluidExtension(event, BeemancerFluids.FROST_NECTAR_FLUID_TYPE,
+            "block/fluid/frost_nectar_still", "block/fluid/frost_nectar_flow", 0xFF88DDFF);
+        
+        // Storm Nectar
+        registerFluidExtension(event, BeemancerFluids.STORM_NECTAR_FLUID_TYPE,
+            "block/fluid/storm_nectar_still", "block/fluid/storm_nectar_flow", 0xFFFFFF00);
+    }
+
+    private static void registerFluidExtension(RegisterClientExtensionsEvent event, 
+            Supplier<FluidType> fluidType, String stillPath, String flowPath, int tintColor) {
+        event.registerFluidType(new IClientFluidTypeExtensions() {
+            private final ResourceLocation stillTexture = 
+                ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, stillPath);
+            private final ResourceLocation flowingTexture = 
+                ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, flowPath);
+
+            @Override
+            public ResourceLocation getStillTexture() { return stillTexture; }
+
+            @Override
+            public ResourceLocation getFlowingTexture() { return flowingTexture; }
+
+            @Override
+            public int getTintColor() { return tintColor; }
+        }, fluidType.get());
     }
 }
