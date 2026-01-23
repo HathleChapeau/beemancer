@@ -1,0 +1,64 @@
+{
+  "nodes": [
+    {
+      "id": "introduction",
+      "position": { "x": 0, "y": 2 },
+      "icon": "beemancer:textures/item/magic_bee.png",
+      "category": "ROOT",
+      "parent": null,
+      "hidden_until_parent_unlocked": false,
+      "unlock_condition": {},
+      "rewards": {}
+    },
+    {
+      "id": "first_bee",
+      "position": { "x": 1, "y": 1 },
+      "icon": "beemancer:textures/item/bee_larva.png",
+      "category": "NORMAL",
+      "parent": "introduction",
+      "hidden_until_parent_unlocked": false,
+      "unlock_condition": {},
+      "rewards": {}
+    },
+    {
+      "id": "bee_wand",
+      "position": { "x": 1, "y": 3 },
+      "icon": "beemancer:textures/item/bee_wand.png",
+      "category": "NORMAL",
+      "parent": "introduction",
+      "hidden_until_parent_unlocked": false,
+      "unlock_condition": {},
+      "rewards": {}
+    },
+    {
+      "id": "magic_hive",
+      "position": { "x": 2, "y": 1 },
+      "icon": "beemancer:textures/block/magic_hive.png",
+      "category": "GOAL",
+      "parent": "first_bee",
+      "hidden_until_parent_unlocked": false,
+      "unlock_condition": {},
+      "rewards": {}
+    },
+    {
+      "id": "breeding",
+      "position": { "x": 3, "y": 1 },
+      "icon": "beemancer:textures/block/breeding_crystal.png",
+      "category": "NORMAL",
+      "parent": "magic_hive",
+      "hidden_until_parent_unlocked": true,
+      "unlock_condition": {},
+      "rewards": {}
+    },
+    {
+      "id": "gene_mastery",
+      "position": { "x": 4, "y": 1 },
+      "icon": "beemancer:textures/block/bee_creator.png",
+      "category": "CHALLENGE",
+      "parent": "breeding",
+      "hidden_until_parent_unlocked": true,
+      "unlock_condition": {},
+      "rewards": {}
+    }
+  ]
+}

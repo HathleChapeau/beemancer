@@ -3,14 +3,23 @@
   
   "block.beemancer.storage_crate": "Caisse de Stockage",
   "block.beemancer.bee_creator": "Créateur d'Abeilles",
+  "block.beemancer.magic_hive": "Ruche Magique",
+  "block.beemancer.breeding_crystal": "Cristal de Reproduction",
+  "block.beemancer.incubator": "Incubateur",
   
   "container.beemancer.storage_crate": "Caisse de Stockage",
   "container.beemancer.bee_creator": "Créateur d'Abeilles",
+  "container.beemancer.magic_hive": "Ruche Magique",
+  "container.beemancer.incubator": "Incubateur",
   
   "entity.beemancer.magic_bee": "Abeille Magique",
   
   "item.beemancer.magic_bee": "Abeille Magique",
   "item.beemancer.magic_bee.shift_hint": "Maintenir SHIFT pour les détails des gènes",
+  "item.beemancer.magic_bee.assigned_hive": "Ruche assignée",
+  
+  "item.beemancer.bee_larva": "Larve d'Abeille",
+  "item.beemancer.bee_larva.shift_hint": "Maintenir SHIFT pour les détails des gènes",
   
   "item.beemancer.bee_wand": "Baguette d'Abeille",
   "item.beemancer.bee_wand.has_selection": "Abeille sélectionnée",
@@ -24,11 +33,64 @@
   "item.beemancer.bee_wand.usage2": "Clic droit bloc: Définir destination",
   "item.beemancer.bee_wand.usage3": "Shift+Clic droit air: Effacer sélection",
   
+  "item.beemancer.codex": "Codex Beemancer",
+  
   "gui.beemancer.bee_creator.edit": "Modifier",
+  "gui.beemancer.magic_hive.breeding_mode": "Mode Reproduction Actif",
+  
+  "screen.beemancer.codex": "Codex Beemancer",
+  
+  "codex.beemancer.page.bee": "Abeilles",
+  "codex.beemancer.page.alchemy": "Alchimie",
+  "codex.beemancer.page.logistics": "Logistique",
+  
+  "codex.beemancer.locked": "???",
+  "codex.beemancer.click_to_unlock": "Cliquez pour débloquer",
+  "codex.beemancer.unlock_parent_first": "Débloquez d'abord le nœud précédent",
+  
+  "codex.beemancer.bee.introduction.title": "Introduction à la Beemancy",
+  "codex.beemancer.bee.introduction.desc": "Commencez votre voyage en tant que Beemancer",
+  "codex.beemancer.bee.first_bee.title": "Votre Première Abeille",
+  "codex.beemancer.bee.first_bee.desc": "Capturez et élevez votre première abeille magique",
+  "codex.beemancer.bee.bee_wand.title": "La Baguette d'Abeille",
+  "codex.beemancer.bee.bee_wand.desc": "Apprenez à contrôler les abeilles avec la baguette",
+  "codex.beemancer.bee.magic_hive.title": "Ruche Magique",
+  "codex.beemancer.bee.magic_hive.desc": "Construisez un foyer pour vos abeilles magiques",
+  "codex.beemancer.bee.breeding.title": "Reproduction",
+  "codex.beemancer.bee.breeding.desc": "Combinez les gènes pour créer de nouvelles espèces",
+  "codex.beemancer.bee.gene_mastery.title": "Maîtrise Génétique",
+  "codex.beemancer.bee.gene_mastery.desc": "Maîtrisez l'art de la manipulation génétique",
+  
+  "codex.beemancer.alchemy.alchemy_basics.title": "Bases de l'Alchimie",
+  "codex.beemancer.alchemy.alchemy_basics.desc": "Apprenez les fondamentaux de l'alchimie apicole",
+  "codex.beemancer.alchemy.honey_extraction.title": "Extraction de Miel",
+  "codex.beemancer.alchemy.honey_extraction.desc": "Extrayez le miel magique de vos abeilles",
+  "codex.beemancer.alchemy.propolis.title": "Propolis",
+  "codex.beemancer.alchemy.propolis.desc": "Récoltez la propolis pour le craft",
+  "codex.beemancer.alchemy.royal_jelly.title": "Gelée Royale",
+  "codex.beemancer.alchemy.royal_jelly.desc": "Créez la précieuse gelée royale",
+  "codex.beemancer.alchemy.bee_essence.title": "Essence d'Abeille",
+  "codex.beemancer.alchemy.bee_essence.desc": "Distillez l'essence pure d'abeille",
+  "codex.beemancer.alchemy.transmutation.title": "Transmutation",
+  "codex.beemancer.alchemy.transmutation.desc": "Transformez les matériaux avec la magie apicole",
+  
+  "codex.beemancer.logistics.logistics_intro.title": "Introduction à la Logistique",
+  "codex.beemancer.logistics.logistics_intro.desc": "Organisez votre rucher efficacement",
+  "codex.beemancer.logistics.storage_basics.title": "Bases du Stockage",
+  "codex.beemancer.logistics.storage_basics.desc": "Stockez les produits des abeilles en sécurité",
+  "codex.beemancer.logistics.item_transport.title": "Transport d'Items",
+  "codex.beemancer.logistics.item_transport.desc": "Déplacez les items dans votre base",
+  "codex.beemancer.logistics.incubator.title": "Incubateur",
+  "codex.beemancer.logistics.incubator.desc": "Faites éclore les larves en adultes",
+  "codex.beemancer.logistics.bee_pipes.title": "Tuyaux à Abeilles",
+  "codex.beemancer.logistics.bee_pipes.desc": "Transportez les abeilles automatiquement",
+  "codex.beemancer.logistics.automation.title": "Automatisation Complète",
+  "codex.beemancer.logistics.automation.desc": "Créez un rucher entièrement automatisé",
   
   "gene.category.beemancer.species": "Espèce",
   "gene.category.beemancer.environment": "Environnement",
   "gene.category.beemancer.flower": "Fleur",
+  "gene.category.beemancer.lifetime": "Durée de Vie",
   
   "gene.beemancer.species.common": "Commune",
   "gene.beemancer.species.common.desc": "Une espèce d'abeille normale",
@@ -49,5 +111,12 @@
   "gene.beemancer.flower.crops": "Cultures",
   "gene.beemancer.flower.crops.desc": "Pollinise les plantes cultivées",
   "gene.beemancer.flower.cave_plants": "Plantes de Caverne",
-  "gene.beemancer.flower.cave_plants.desc": "Pollinise la végétation souterraine"
+  "gene.beemancer.flower.cave_plants.desc": "Pollinise la végétation souterraine",
+  
+  "gene.beemancer.lifetime.short": "Courte",
+  "gene.beemancer.lifetime.short.desc": "Vit environ 5 minutes",
+  "gene.beemancer.lifetime.normal": "Normale",
+  "gene.beemancer.lifetime.normal.desc": "Vit environ 20 minutes",
+  "gene.beemancer.lifetime.long": "Longue",
+  "gene.beemancer.lifetime.long.desc": "Vit environ 60 minutes"
 }

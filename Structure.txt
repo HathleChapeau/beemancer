@@ -1,6 +1,6 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-01-22                     #
+#                         Dernière mise à jour: 2026-01-23                     #
 ################################################################################
 
 ================================================================================
@@ -58,6 +58,7 @@ Philosophie:
 │ core/util/HarvestHelper.java        │ Logique récolte par type de bloc       │
 │ content/gene/GeneInit.java          │ Enregistrement de tous les gènes       │
 │ client/ClientSetup.java             │ Init client (screens, renderers)       │
+│ common/codex/CodexManager.java      │ Gestionnaire central du Codex          │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -108,6 +109,10 @@ Philosophie:
 
 LISTE DES FEATURES:
 --------------------------------------------------------------------------------
+
+→ Codex System
+  Fichier: Structure/feature_codex.txt
+  Description: Système de livre de connaissances avec 3 onglets et nodes de progression
 
 → Harvester Behavior System
   Fichier: Structure/feature_harvester_behavior.txt

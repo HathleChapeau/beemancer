@@ -1,0 +1,55 @@
+{
+  "codex_open": {
+    "category": "players",
+    "sounds": [
+      {
+        "name": "minecraft:item/book/open_flip1",
+        "type": "event"
+      }
+    ]
+  },
+  "codex_close": {
+    "category": "players",
+    "sounds": [
+      {
+        "name": "minecraft:item/book/close_flip1",
+        "type": "event"
+      }
+    ]
+  },
+  "codex_page_turn": {
+    "category": "players",
+    "sounds": [
+      {
+        "name": "minecraft:item/book/page_turn1",
+        "type": "event"
+      },
+      {
+        "name": "minecraft:item/book/page_turn2",
+        "type": "event"
+      },
+      {
+        "name": "minecraft:item/book/page_turn3",
+        "type": "event"
+      }
+    ]
+  },
+  "codex_node_unlock": {
+    "category": "players",
+    "sounds": [
+      {
+        "name": "minecraft:entity/experience_orb/pickup",
+        "type": "event"
+      }
+    ]
+  },
+  "codex_node_click": {
+    "category": "players",
+    "sounds": [
+      {
+        "name": "minecraft:ui/button/click",
+        "type": "event"
+      }
+    ]
+  }
+}

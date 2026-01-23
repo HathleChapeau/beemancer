@@ -25,6 +25,9 @@ public class BeemancerCreativeTabs {
                     .title(Component.translatable("itemGroup." + Beemancer.MOD_ID))
                     .icon(() -> new ItemStack(BeemancerItems.MAGIC_BEE.get()))
                     .displayItems((parameters, output) -> {
+                        // Codex
+                        output.accept(BeemancerItems.CODEX.get());
+                        
                         // Bees
                         output.accept(BeemancerItems.MAGIC_BEE.get());
                         output.accept(BeemancerItems.BEE_LARVA.get());

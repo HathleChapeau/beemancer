@@ -1,0 +1,111 @@
+================================================================================
+FEATURE: Codex System
+================================================================================
+
+Description: Système de Codex (livre de connaissances) avec 3 onglets et nodes 
+             interconnectés représentant la progression du joueur dans le mod.
+
+Statut: IMPLÉMENTÉ
+
+--------------------------------------------------------------------------------
+ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Le système est composé de:
+
+1. DONNÉES (common/codex/)
+   - CodexPage.java         : Enum des 3 pages (BEE, ALCHEMY, LOGISTICS)
+   - CodexNodeCategory.java : Enum des catégories visuelles (ROOT, NORMAL, GOAL, CHALLENGE)
+   - CodexNode.java         : Représentation d'un node avec position, parent, icône
+   - CodexPlayerData.java   : Données de progression du joueur (nodes débloqués)
+   - CodexManager.java      : Gestionnaire central, chargement JSON
+
+2. RÉSEAU (core/network/packets/)
+   - CodexUnlockPacket.java : Client → Server pour débloquer un node
+   - CodexSyncPacket.java   : Server → Client pour synchroniser les données
+
+3. GUI (client/gui/)
+   - CodexScreen.java       : Screen principal avec onglets et scroll
+   - CodexNodeWidget.java   : Widget pour afficher un node individuel
+
+4. REGISTRES (core/registry/)
+   - BeemancerAttachments.java : Attachment pour données joueur
+   - BeemancerSounds.java      : Sons du Codex
+   - BeemancerItems.java       : +CODEX item
+
+5. ITEM (common/item/codex/)
+   - CodexItem.java         : Item livre qui ouvre le CodexScreen
+
+--------------------------------------------------------------------------------
+FICHIERS JSON (data/beemancer/codex/)
+--------------------------------------------------------------------------------
+
+Structure d'un node:
+{
+  "id": "node_id",
+  "position": { "x": 0, "y": 0 },
+  "icon": "beemancer:textures/item/example.png",
+  "category": "NORMAL|ROOT|GOAL|CHALLENGE",
+  "parent": "parent_node_id" | null,
+  "hidden_until_parent_unlocked": true|false,
+  "unlock_condition": {},
+  "rewards": {}
+}
+
+Fichiers:
+- bee.json       : 6 nodes (Introduction → Gene Mastery)
+- alchemy.json   : 6 nodes (Basics → Transmutation)
+- logistics.json : 6 nodes (Intro → Automation)
+
+--------------------------------------------------------------------------------
+FONCTIONNALITÉS
+--------------------------------------------------------------------------------
+
+✓ 3 onglets avec navigation par boutons
+✓ Nodes interconnectés avec lignes de connexion
+✓ Nodes cachés jusqu'au déblocage du parent
+✓ Clic pour débloquer (si parent débloqué)
+✓ Sauvegarde par joueur via Attachment
+✓ Synchronisation client/server
+✓ Sons de navigation et déblocage
+✓ Scroll/drag dans la zone de contenu
+✓ Tooltips au survol
+✓ Catégories visuelles différentes (ROOT, NORMAL, GOAL, CHALLENGE)
+
+--------------------------------------------------------------------------------
+ASSETS
+--------------------------------------------------------------------------------
+
+Textures:
+- textures/item/codex.png           : Icône de l'item
+- textures/gui/codex_background.png : Fond tuilé
+- textures/gui/codex_window.png     : Cadre de la fenêtre
+- textures/gui/codex_widgets.png    : Frames des nodes
+
+Sons (via minecraft events):
+- codex_open, codex_close, codex_page_turn, codex_node_unlock, codex_node_click
+
+Modèle:
+- models/item/codex.json
+
+--------------------------------------------------------------------------------
+UTILISATION
+--------------------------------------------------------------------------------
+
+1. Obtenir l'item "Codex" dans l'onglet créatif Beemancer
+2. Clic droit avec l'item pour ouvrir le Codex
+3. Naviguer entre les onglets (Bees, Alchemy, Logistics)
+4. Cliquer sur les nodes pour les débloquer (si parent débloqué)
+5. Les nodes cachés apparaissent quand leur parent est débloqué
+
+--------------------------------------------------------------------------------
+EXTENSION FUTURE
+--------------------------------------------------------------------------------
+
+- unlock_condition: Ajouter des conditions de déblocage (items, advancements)
+- rewards: Ajouter des récompenses au déblocage (items, XP, recettes)
+- Plus de nodes et de contenu
+- Animations de déblocage
+- Recherche dans le Codex
+
+================================================================================

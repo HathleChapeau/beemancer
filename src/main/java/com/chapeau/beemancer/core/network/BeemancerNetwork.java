@@ -8,26 +8,41 @@ package com.chapeau.beemancer.core.network;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.core.network.packets.BeeCreatorActionPacket;
+import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
+import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class BeemancerNetwork {
-    
+
     /**
      * Called from Beemancer constructor via modEventBus.addListener()
      */
     public static void registerPayloads(final RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(Beemancer.MOD_ID);
-        
+
         // Client to Server packets
         registrar.playToServer(
                 BeeCreatorActionPacket.TYPE,
                 BeeCreatorActionPacket.STREAM_CODEC,
                 BeeCreatorActionPacket::handle
         );
+
+        registrar.playToServer(
+                CodexUnlockPacket.TYPE,
+                CodexUnlockPacket.STREAM_CODEC,
+                CodexUnlockPacket::handle
+        );
+
+        // Server to Client packets
+        registrar.playToClient(
+                CodexSyncPacket.TYPE,
+                CodexSyncPacket.STREAM_CODEC,
+                CodexSyncPacket::handle
+        );
     }
-    
+
     /**
      * Register network to mod event bus (called from main mod class)
      */

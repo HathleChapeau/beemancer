@@ -3,6 +3,50 @@
 ################################################################################
 
 ================================================================================
+2026-01-23 - Codex System (Complete)
+================================================================================
+
+AJOUTS:
+- common/codex/CodexPage.java (enum des 3 pages: BEE, ALCHEMY, LOGISTICS)
+- common/codex/CodexNodeCategory.java (enum catégories visuelles)
+- common/codex/CodexNode.java (représentation d'un node)
+- common/codex/CodexPlayerData.java (données progression joueur)
+- common/codex/CodexManager.java (gestionnaire central, chargement JSON)
+- common/item/codex/CodexItem.java (item livre ouvrant le Codex)
+- core/network/packets/CodexUnlockPacket.java (packet déblocage)
+- core/network/packets/CodexSyncPacket.java (packet synchronisation)
+- core/registry/BeemancerAttachments.java (attachment données joueur)
+- core/registry/BeemancerSounds.java (sons du mod)
+- client/gui/screen/CodexScreen.java (screen principal avec onglets)
+- client/gui/widget/CodexNodeWidget.java (widget rendu node)
+- data/beemancer/codex/bee.json (6 nodes exemple)
+- data/beemancer/codex/alchemy.json (6 nodes exemple)
+- data/beemancer/codex/logistics.json (6 nodes exemple)
+- assets/beemancer/sounds.json (définition sons)
+- assets/beemancer/models/item/codex.json
+- assets/beemancer/textures/item/codex.png
+- assets/beemancer/textures/gui/codex_*.png
+
+MODIFICATIONS:
+- BeemancerItems.java: +CODEX item
+- BeemancerCreativeTabs.java: +CODEX dans l'onglet créatif
+- BeemancerNetwork.java: +CodexUnlockPacket, +CodexSyncPacket
+- Beemancer.java: +BeemancerAttachments, +BeemancerSounds, +CodexManager.load(), +onPlayerLoggedIn()
+- en_us.json: +traductions Codex
+- fr_fr.json: +traductions Codex
+
+NOUVELLE FEATURE:
+- Système de Codex avec 3 onglets (Bees, Alchemy, Logistics)
+- Nodes interconnectés formant un arbre de progression
+- Nodes cachés jusqu'au déblocage du parent
+- Click pour débloquer si parent débloqué
+- Sauvegarde par joueur (conservé à la mort)
+- Synchronisation client/server
+- Sons de navigation et déblocage
+- Scroll/drag dans la zone de contenu
+- 4 catégories visuelles (ROOT, NORMAL, GOAL, CHALLENGE)
+
+================================================================================
 2026-01-22 - Bee Wand Refonte (Complete)
 ================================================================================
 

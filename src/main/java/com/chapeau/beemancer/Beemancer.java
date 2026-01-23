@@ -12,13 +12,17 @@
 package com.chapeau.beemancer;
 
 import com.chapeau.beemancer.client.ClientSetup;
+import com.chapeau.beemancer.common.codex.CodexManager;
+import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.content.gene.GeneInit;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
 import com.chapeau.beemancer.core.breeding.BreedingManager;
 import com.chapeau.beemancer.core.network.BeemancerNetwork;
+import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
 import com.chapeau.beemancer.core.registry.*;
 import com.mojang.logging.LogUtils;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -27,7 +31,9 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 
 @Mod(Beemancer.MOD_ID)
@@ -45,6 +51,8 @@ public class Beemancer {
         BeemancerMenus.register(modEventBus);
         BeemancerCreativeTabs.register(modEventBus);
         BeemancerEntities.register(modEventBus);
+        BeemancerAttachments.register(modEventBus);
+        BeemancerSounds.register(modEventBus);
         
         // Register network packets
         BeemancerNetwork.register(modEventBus);
@@ -55,6 +63,7 @@ public class Beemancer {
         
         // Register server events on the NeoForge event bus
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
+        NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
         
         // Client-side registration
         if (FMLEnvironment.dist == Dist.CLIENT) {
@@ -82,6 +91,16 @@ public class Beemancer {
         LOGGER.info("Loading Beemancer data configurations...");
         BreedingManager.loadCombinations(event.getServer());
         BeeBehaviorManager.load(event.getServer());
+        CodexManager.load(event.getServer());
         LOGGER.info("Beemancer data configurations loaded!");
+    }
+
+    private void onPlayerLoggedIn(final PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            // Sync codex data to client
+            CodexPlayerData data = player.getData(BeemancerAttachments.CODEX_DATA);
+            PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
+            LOGGER.debug("Synced codex data to player {}", player.getName().getString());
+        }
     }
 }

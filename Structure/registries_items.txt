@@ -12,5 +12,6 @@
 | magic_bee        | MagicBeeItem    | Gene System  |
 | bee_larva        | BeeLarvaItem    | Breeding     |
 | bee_wand         | BeeWandItem     | Bee Control  |
+| codex            | CodexItem       | Codex        |
 
 ################################################################################

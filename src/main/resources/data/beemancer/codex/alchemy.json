@@ -1,0 +1,64 @@
+{
+  "nodes": [
+    {
+      "id": "alchemy_basics",
+      "position": { "x": 0, "y": 2 },
+      "icon": "minecraft:textures/item/glass_bottle.png",
+      "category": "ROOT",
+      "parent": null,
+      "hidden_until_parent_unlocked": false,
+      "unlock_condition": {},
+      "rewards": {}
+    },
+    {
+      "id": "honey_extraction",
+      "position": { "x": 1, "y": 1 },
+      "icon": "minecraft:textures/item/honey_bottle.png",
+      "category": "NORMAL",
+      "parent": "alchemy_basics",
+      "hidden_until_parent_unlocked": false,
+      "unlock_condition": {},
+      "rewards": {}
+    },
+    {
+      "id": "propolis",
+      "position": { "x": 1, "y": 3 },
+      "icon": "minecraft:textures/item/slime_ball.png",
+      "category": "NORMAL",
+      "parent": "alchemy_basics",
+      "hidden_until_parent_unlocked": false,
+      "unlock_condition": {},
+      "rewards": {}
+    },
+    {
+      "id": "royal_jelly",
+      "position": { "x": 2, "y": 1 },
+      "icon": "minecraft:textures/item/glistering_melon_slice.png",
+      "category": "GOAL",
+      "parent": "honey_extraction",
+      "hidden_until_parent_unlocked": true,
+      "unlock_condition": {},
+      "rewards": {}
+    },
+    {
+      "id": "bee_essence",
+      "position": { "x": 2, "y": 3 },
+      "icon": "minecraft:textures/item/experience_bottle.png",
+      "category": "NORMAL",
+      "parent": "propolis",
+      "hidden_until_parent_unlocked": true,
+      "unlock_condition": {},
+      "rewards": {}
+    },
+    {
+      "id": "transmutation",
+      "position": { "x": 3, "y": 2 },
+      "icon": "minecraft:textures/item/nether_star.png",
+      "category": "CHALLENGE",
+      "parent": "royal_jelly",
+      "hidden_until_parent_unlocked": true,
+      "unlock_condition": {},
+      "rewards": {}
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.BeeWandItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
+import com.chapeau.beemancer.common.item.codex.CodexItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
@@ -45,6 +46,10 @@ public class BeemancerItems {
     // --- TOOLS ---
     public static final DeferredItem<BeeWandItem> BEE_WAND = ITEMS.register("bee_wand",
             () -> new BeeWandItem(new Item.Properties()));
+
+    // --- CODEX ---
+    public static final DeferredItem<CodexItem> CODEX = ITEMS.register("codex",
+            () -> new CodexItem(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
