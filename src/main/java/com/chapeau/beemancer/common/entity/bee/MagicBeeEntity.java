@@ -119,6 +119,8 @@ public class MagicBeeEntity extends Bee {
 
     @Override
     protected void registerGoals() {
+        super.registerGoals();
+
         // Priorité 1: Fuite si vie < 30%
         this.goalSelector.addGoal(1, new ReturnToHiveWhenLowHealthGoal(this));
 
