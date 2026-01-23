@@ -80,11 +80,11 @@ public class BeemancerBlocks {
                     .sound(SoundType.COPPER)
                     .noOcclusion()));
 
-    public static final DeferredBlock<NectarFilterBlock> NECTAR_FILTER = BLOCKS.register("nectar_filter",
-            () -> new NectarFilterBlock(BlockBehaviour.Properties.of()
-                    .strength(3.0f)
-                    .sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops()));
+    public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE = BLOCKS.register("item_pipe",
+            () -> new ItemPipeBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.COPPER)
+                    .noOcclusion()));
 
     public static final DeferredBlock<CrystallizerBlock> CRYSTALLIZER = BLOCKS.register("crystallizer",
             () -> new CrystallizerBlock(BlockBehaviour.Properties.of()
@@ -97,6 +97,12 @@ public class BeemancerBlocks {
             () -> new AlembicBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.COPPER)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<InfuserBlock> INFUSER = BLOCKS.register("infuser",
+            () -> new InfuserBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.WOOD)
                     .requiresCorrectToolForDrops()));
 
     // --- FLUID BLOCKS ---

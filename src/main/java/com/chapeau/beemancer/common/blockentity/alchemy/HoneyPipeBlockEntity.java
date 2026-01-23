@@ -3,6 +3,11 @@
  * [HoneyPipeBlockEntity.java]
  * Description: BlockEntity pour les pipes de transport de fluide
  * ============================================================
+ * 
+ * FONCTIONNEMENT:
+ * - Mode extraction (par direction): tire le fluide du bloc connecté
+ * - Mode normal: pousse le fluide vers les blocs connectés
+ * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
@@ -22,8 +27,8 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 public class HoneyPipeBlockEntity extends BlockEntity {
-    private static final int BUFFER_CAPACITY = 500; // Small buffer
-    private static final int TRANSFER_RATE = 50; // mB per tick (slow passive transfer)
+    private static final int BUFFER_CAPACITY = 500;
+    private static final int TRANSFER_RATE = 100;
 
     private final FluidTank buffer = new FluidTank(BUFFER_CAPACITY) {
         @Override
@@ -51,33 +56,36 @@ public class HoneyPipeBlockEntity extends BlockEntity {
             return;
         }
 
-        // Try to pull from connected sources
-        be.pullFromNeighbors(level, pos, state);
+        // Process extraction from neighbors marked for extraction
+        be.processExtractions(level, pos, state);
 
-        // Try to push to connected destinations
+        // Push to neighbors (not in extraction mode)
         be.pushToNeighbors(level, pos, state);
 
-        be.transferCooldown = 2; // Every 2 ticks
+        be.transferCooldown = 2;
     }
 
-    private void pullFromNeighbors(Level level, BlockPos pos, BlockState state) {
+    private void processExtractions(Level level, BlockPos pos, BlockState state) {
         if (buffer.getFluidAmount() >= buffer.getCapacity()) {
             return;
         }
 
         for (Direction dir : Direction.values()) {
-            if (!isConnected(state, dir)) continue;
+            if (!HoneyPipeBlock.isConnected(state, dir)) continue;
+            if (!HoneyPipeBlock.isExtracting(state, dir)) continue;
 
             BlockPos neighborPos = pos.relative(dir);
-            var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
             
-            if (cap != null && !(level.getBlockEntity(neighborPos) instanceof HoneyPipeBlockEntity)) {
-                // Only pull from non-pipe sources
+            // Don't extract from other pipes
+            if (level.getBlockEntity(neighborPos) instanceof HoneyPipeBlockEntity) continue;
+
+            var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
+            if (cap != null) {
                 FluidStack toDrain = cap.drain(TRANSFER_RATE, IFluidHandler.FluidAction.SIMULATE);
                 if (!toDrain.isEmpty() && buffer.isFluidValid(toDrain)) {
-                    int filled = buffer.fill(toDrain, IFluidHandler.FluidAction.SIMULATE);
-                    if (filled > 0) {
-                        FluidStack drained = cap.drain(filled, IFluidHandler.FluidAction.EXECUTE);
+                    int canFill = buffer.fill(toDrain, IFluidHandler.FluidAction.SIMULATE);
+                    if (canFill > 0) {
+                        FluidStack drained = cap.drain(canFill, IFluidHandler.FluidAction.EXECUTE);
                         buffer.fill(drained, IFluidHandler.FluidAction.EXECUTE);
                     }
                 }
@@ -91,7 +99,9 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         }
 
         for (Direction dir : Direction.values()) {
-            if (!isConnected(state, dir)) continue;
+            if (!HoneyPipeBlock.isConnected(state, dir)) continue;
+            // Don't push to directions in extraction mode
+            if (HoneyPipeBlock.isExtracting(state, dir)) continue;
 
             BlockPos neighborPos = pos.relative(dir);
             var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
@@ -108,17 +118,6 @@ public class HoneyPipeBlockEntity extends BlockEntity {
 
             if (buffer.isEmpty()) break;
         }
-    }
-
-    private boolean isConnected(BlockState state, Direction dir) {
-        return switch (dir) {
-            case NORTH -> state.getValue(HoneyPipeBlock.NORTH);
-            case SOUTH -> state.getValue(HoneyPipeBlock.SOUTH);
-            case EAST -> state.getValue(HoneyPipeBlock.EAST);
-            case WEST -> state.getValue(HoneyPipeBlock.WEST);
-            case UP -> state.getValue(HoneyPipeBlock.UP);
-            case DOWN -> state.getValue(HoneyPipeBlock.DOWN);
-        };
     }
 
     public FluidTank getBuffer() {

@@ -51,14 +51,17 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> HONEY_PIPE = ITEMS.register("honey_pipe",
             () -> new BlockItem(BeemancerBlocks.HONEY_PIPE.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> NECTAR_FILTER = ITEMS.register("nectar_filter",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_FILTER.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> ITEM_PIPE = ITEMS.register("item_pipe",
+            () -> new BlockItem(BeemancerBlocks.ITEM_PIPE.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> CRYSTALLIZER = ITEMS.register("crystallizer",
             () -> new BlockItem(BeemancerBlocks.CRYSTALLIZER.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> ALEMBIC = ITEMS.register("alembic",
             () -> new BlockItem(BeemancerBlocks.ALEMBIC.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> INFUSER = ITEMS.register("infuser",
+            () -> new BlockItem(BeemancerBlocks.INFUSER.get(), new Item.Properties()));
 
     // --- BEE ITEMS ---
     public static final DeferredItem<MagicBeeItem> MAGIC_BEE = ITEMS.register("magic_bee",
@@ -95,10 +98,26 @@ public class BeemancerItems {
     public static final DeferredItem<Item> PROPOLIS = ITEMS.register("propolis",
             () -> new Item(new Item.Properties()));
 
+    public static final DeferredItem<Item> POLLEN = ITEMS.register("pollen",
+            () -> new Item(new Item.Properties()));
+
+    public static final DeferredItem<Item> HONEYED_WOOD = ITEMS.register("honeyed_wood",
+            () -> new Item(new Item.Properties()));
+
+    // --- COMBS (par espèce) ---
+    public static final DeferredItem<Item> COMMON_COMB = ITEMS.register("common_comb",
+            () -> new Item(new Item.Properties()));
+
+    public static final DeferredItem<Item> NOBLE_COMB = ITEMS.register("noble_comb",
+            () -> new Item(new Item.Properties()));
+
+    public static final DeferredItem<Item> DILIGENT_COMB = ITEMS.register("diligent_comb",
+            () -> new Item(new Item.Properties()));
+
     public static final DeferredItem<Item> ROYAL_COMB = ITEMS.register("royal_comb",
             () -> new Item(new Item.Properties()));
 
-    // --- CRYSTAL SHARDS (for Crystallizer) ---
+    // --- CRYSTAL SHARDS ---
     public static final DeferredItem<Item> RAW_CRYSTAL_SHARD = ITEMS.register("raw_crystal_shard",
             () -> new Item(new Item.Properties()));
 
@@ -108,7 +127,7 @@ public class BeemancerItems {
     public static final DeferredItem<Item> RADIANT_CRYSTAL_SHARD = ITEMS.register("radiant_crystal_shard",
             () -> new Item(new Item.Properties()));
 
-    // --- HONEY CRYSTALS (for Crystallizer machine) ---
+    // --- HONEY CRYSTALS ---
     public static final DeferredItem<Item> HONEY_CRYSTAL = ITEMS.register("honey_crystal",
             () -> new Item(new Item.Properties()));
 
@@ -116,6 +135,9 @@ public class BeemancerItems {
             () -> new Item(new Item.Properties()));
 
     public static final DeferredItem<Item> RADIANT_HONEY_CRYSTAL = ITEMS.register("radiant_honey_crystal",
+            () -> new Item(new Item.Properties()));
+
+    public static final DeferredItem<Item> ROYAL_HONEY_CRYSTAL = ITEMS.register("royal_honey_crystal",
             () -> new Item(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {

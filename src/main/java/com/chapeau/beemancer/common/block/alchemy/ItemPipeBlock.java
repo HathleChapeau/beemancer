@@ -1,19 +1,19 @@
 /**
  * ============================================================
- * [HoneyPipeBlock.java]
- * Description: Pipe pour transporter les fluides Beemancer
+ * [ItemPipeBlock.java]
+ * Description: Pipe pour transporter les items
  * ============================================================
  * 
  * FONCTIONNEMENT:
- * - Se connecte automatiquement aux blocs avec FluidHandler
+ * - Se connecte automatiquement aux blocs avec ItemHandler
  * - Clic droit sur une face connectée = toggle mode extraction
- * - Mode extraction: tire le fluide du bloc connecté
- * - Mode normal: pousse le fluide vers les blocs connectés
+ * - Mode extraction: tire les items du bloc connecté
+ * - Mode normal: pousse les items vers les blocs connectés
  * ============================================================
  */
 package com.chapeau.beemancer.common.block.alchemy;
 
-import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
+import com.chapeau.beemancer.common.blockentity.alchemy.ItemPipeBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -36,7 +36,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -47,8 +46,8 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 
 import javax.annotation.Nullable;
 
-public class HoneyPipeBlock extends BaseEntityBlock {
-    public static final MapCodec<HoneyPipeBlock> CODEC = simpleCodec(HoneyPipeBlock::new);
+public class ItemPipeBlock extends BaseEntityBlock {
+    public static final MapCodec<ItemPipeBlock> CODEC = simpleCodec(ItemPipeBlock::new);
     
     // Connection properties
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
@@ -74,7 +73,7 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     private static final VoxelShape UP_SHAPE = Block.box(5, 11, 5, 11, 16, 11);
     private static final VoxelShape DOWN_SHAPE = Block.box(5, 0, 5, 11, 5, 11);
 
-    public HoneyPipeBlock(Properties properties) {
+    public ItemPipeBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(NORTH, false).setValue(SOUTH, false)
@@ -113,18 +112,15 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
-        // Determine which face was clicked based on hit location
         Direction clickedFace = getClickedConnectionFace(state, pos, hit);
         if (clickedFace == null) {
             return InteractionResult.PASS;
         }
 
-        // Toggle extraction mode for that direction
         BooleanProperty extractProp = getExtractProperty(clickedFace);
         boolean newValue = !state.getValue(extractProp);
         level.setBlock(pos, state.setValue(extractProp, newValue), 3);
 
-        // Feedback
         level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, newValue ? 1.2f : 0.8f);
         player.displayClientMessage(
             Component.literal(clickedFace.getName() + ": " + (newValue ? "Extraction" : "Insertion")), 
@@ -137,7 +133,6 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     private Direction getClickedConnectionFace(BlockState state, BlockPos pos, BlockHitResult hit) {
         Vec3 hitVec = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
         
-        // Check each connected direction
         for (Direction dir : Direction.values()) {
             if (!isConnected(state, dir)) continue;
             
@@ -207,7 +202,6 @@ public class HoneyPipeBlock extends BaseEntityBlock {
         for (Direction dir : Direction.values()) {
             boolean connected = canConnect(level, pos, dir);
             newState = newState.setValue(getConnectionProperty(dir), connected);
-            // Clear extraction flag if no longer connected
             if (!connected) {
                 newState = newState.setValue(getExtractProperty(dir), false);
             }
@@ -219,14 +213,14 @@ public class HoneyPipeBlock extends BaseEntityBlock {
         BlockPos neighborPos = pos.relative(direction);
         BlockState neighborState = level.getBlockState(neighborPos);
         
-        // Connect to other pipes
-        if (neighborState.getBlock() instanceof HoneyPipeBlock) {
+        // Connect to other item pipes
+        if (neighborState.getBlock() instanceof ItemPipeBlock) {
             return true;
         }
         
-        // Connect to fluid handlers
+        // Connect to item handlers
         if (level instanceof Level realLevel) {
-            var cap = realLevel.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, direction.getOpposite());
+            var cap = realLevel.getCapability(Capabilities.ItemHandler.BLOCK, neighborPos, direction.getOpposite());
             return cap != null;
         }
         
@@ -236,13 +230,13 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new HoneyPipeBlockEntity(pos, state);
+        return new ItemPipeBlockEntity(pos, state);
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
-        return createTickerHelper(type, BeemancerBlockEntities.HONEY_PIPE.get(), HoneyPipeBlockEntity::serverTick);
+        return createTickerHelper(type, BeemancerBlockEntities.ITEM_PIPE.get(), ItemPipeBlockEntity::serverTick);
     }
 }

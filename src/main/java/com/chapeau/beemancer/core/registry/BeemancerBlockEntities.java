@@ -80,11 +80,11 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.HONEY_PIPE.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<NectarFilterBlockEntity>> NECTAR_FILTER = 
-            BLOCK_ENTITIES.register("nectar_filter",
+    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE = 
+            BLOCK_ENTITIES.register("item_pipe",
                     () -> BlockEntityType.Builder.of(
-                            NectarFilterBlockEntity::new,
-                            BeemancerBlocks.NECTAR_FILTER.get()
+                            ItemPipeBlockEntity::new,
+                            BeemancerBlocks.ITEM_PIPE.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<CrystallizerBlockEntity>> CRYSTALLIZER = 
@@ -99,6 +99,13 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             AlembicBlockEntity::new,
                             BeemancerBlocks.ALEMBIC.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<InfuserBlockEntity>> INFUSER = 
+            BLOCK_ENTITIES.register("infuser",
+                    () -> BlockEntityType.Builder.of(
+                            InfuserBlockEntity::new,
+                            BeemancerBlocks.INFUSER.get()
                     ).build(null));
 
     public static void register(IEventBus eventBus) {

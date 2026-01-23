@@ -3,6 +3,12 @@
  * [ManualCentrifugeBlockEntity.java]
  * Description: BlockEntity pour la centrifugeuse manuelle
  * ============================================================
+ * 
+ * FONCTIONNEMENT:
+ * - Accepte les combs du mod (Common, Noble, Diligent, Royal)
+ * - Le joueur doit maintenir clic droit pour faire tourner
+ * - Chaque type de comb produit différents outputs
+ * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
@@ -22,6 +28,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -34,9 +41,7 @@ import javax.annotation.Nullable;
 
 public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProvider {
     private static final int MAX_COMBS = 4;
-    private static final int SPINS_REQUIRED = 5;
-    private static final int HONEY_PER_COMB = 250;
-    private static final int ROYAL_JELLY_PER_COMB = 100;
+    private static final int PROCESS_TIME = 60; // Ticks to process (3 seconds of holding)
 
     private final NonNullList<ItemStack> combStorage = NonNullList.withSize(MAX_COMBS, ItemStack.EMPTY);
     private final NonNullList<ItemStack> outputStorage = NonNullList.withSize(4, ItemStack.EMPTY);
@@ -46,25 +51,26 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
         protected void onContentsChanged() { setChanged(); }
     };
 
-    private int spinCount = 0;
-    private int spinCooldown = 0;
-    private boolean isProcessing = false;
+    private int progress = 0;
+    private int lastInteractionTick = 0;
+    private boolean isSpinning = false;
 
     protected final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0 -> spinCount;
+                case 0 -> progress;
                 case 1 -> fluidTank.getFluidAmount();
+                case 2 -> PROCESS_TIME;
                 default -> 0;
             };
         }
         @Override
         public void set(int index, int value) {
-            if (index == 0) spinCount = value;
+            if (index == 0) progress = value;
         }
         @Override
-        public int getCount() { return 2; }
+        public int getCount() { return 3; }
     };
 
     public ManualCentrifugeBlockEntity(BlockPos pos, BlockState state) {
@@ -73,20 +79,49 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ManualCentrifugeBlockEntity be) {
         boolean wasSpinning = state.getValue(ManualCentrifugeBlock.SPINNING);
-
-        if (be.spinCooldown > 0) be.spinCooldown--;
-
-        if (wasSpinning && be.spinCooldown <= 0 && !be.isProcessing) {
-            level.setBlock(pos, state.setValue(ManualCentrifugeBlock.SPINNING, false), 3);
+        
+        // Check if player stopped holding (no interaction for 5 ticks)
+        int currentTick = (int) level.getGameTime();
+        if (be.isSpinning && (currentTick - be.lastInteractionTick) > 5) {
+            be.isSpinning = false;
+            be.progress = Math.max(0, be.progress - 2); // Slowly lose progress if not holding
         }
 
-        if (be.spinCount >= SPINS_REQUIRED && be.hasCombsToProcess()) {
-            be.processCombs();
-            be.spinCount = 0;
-            be.isProcessing = false;
+        // Update block state
+        if (wasSpinning != be.isSpinning) {
+            level.setBlock(pos, state.setValue(ManualCentrifugeBlock.SPINNING, be.isSpinning), 3);
         }
 
         be.setChanged();
+    }
+
+    /**
+     * Called when player holds right-click on the centrifuge
+     * @return true if progress was made
+     */
+    public boolean onPlayerSpin(Level level) {
+        if (!hasCombsToProcess()) return false;
+
+        lastInteractionTick = (int) level.getGameTime();
+        isSpinning = true;
+        progress++;
+
+        if (progress >= PROCESS_TIME) {
+            processAllCombs();
+            progress = 0;
+            isSpinning = false;
+            return true;
+        }
+
+        return true;
+    }
+
+    public boolean isValidComb(ItemStack stack) {
+        Item item = stack.getItem();
+        return item == BeemancerItems.COMMON_COMB.get()
+            || item == BeemancerItems.NOBLE_COMB.get()
+            || item == BeemancerItems.DILIGENT_COMB.get()
+            || item == BeemancerItems.ROYAL_COMB.get();
     }
 
     public boolean canInsertComb() {
@@ -113,39 +148,46 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
         return false;
     }
 
-    public boolean canSpin() {
-        return spinCooldown <= 0 && hasCombsToProcess();
-    }
-
-    public void spin() {
-        if (canSpin()) {
-            spinCount++;
-            spinCooldown = 10;
-            isProcessing = true;
-            setChanged();
-        }
-    }
-
-    private void processCombs() {
+    private void processAllCombs() {
         for (int i = 0; i < combStorage.size(); i++) {
             ItemStack comb = combStorage.get(i);
             if (comb.isEmpty()) continue;
 
-            boolean isRoyalComb = comb.is(BeemancerItems.ROYAL_COMB.get());
-
-            if (isRoyalComb) {
-                FluidStack royalJelly = new FluidStack(BeemancerFluids.ROYAL_JELLY_SOURCE.get(), ROYAL_JELLY_PER_COMB);
-                fluidTank.fill(royalJelly, IFluidHandler.FluidAction.EXECUTE);
-                addOutput(new ItemStack(BeemancerItems.PROPOLIS.get()));
-            } else {
-                FluidStack honey = new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), HONEY_PER_COMB);
-                fluidTank.fill(honey, IFluidHandler.FluidAction.EXECUTE);
-                addOutput(new ItemStack(BeemancerItems.BEESWAX.get()));
-            }
-
+            processComb(comb);
             combStorage.set(i, ItemStack.EMPTY);
         }
         setChanged();
+    }
+
+    private void processComb(ItemStack comb) {
+        Item item = comb.getItem();
+
+        if (item == BeemancerItems.ROYAL_COMB.get()) {
+            // Royal Comb -> Royal Jelly + Propolis (no honey!)
+            FluidStack royalJelly = new FluidStack(BeemancerFluids.ROYAL_JELLY_SOURCE.get(), 250);
+            fluidTank.fill(royalJelly, IFluidHandler.FluidAction.EXECUTE);
+            addOutput(new ItemStack(BeemancerItems.PROPOLIS.get()));
+            
+        } else if (item == BeemancerItems.COMMON_COMB.get()) {
+            // Common Comb -> 250mB Honey + Pollen
+            FluidStack honey = new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), 250);
+            fluidTank.fill(honey, IFluidHandler.FluidAction.EXECUTE);
+            addOutput(new ItemStack(BeemancerItems.POLLEN.get()));
+            
+        } else if (item == BeemancerItems.NOBLE_COMB.get()) {
+            // Noble Comb -> 300mB Honey + Pollen + Beeswax
+            FluidStack honey = new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), 300);
+            fluidTank.fill(honey, IFluidHandler.FluidAction.EXECUTE);
+            addOutput(new ItemStack(BeemancerItems.POLLEN.get()));
+            addOutput(new ItemStack(BeemancerItems.BEESWAX.get()));
+            
+        } else if (item == BeemancerItems.DILIGENT_COMB.get()) {
+            // Diligent Comb -> 350mB Honey + Pollen + Propolis
+            FluidStack honey = new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), 350);
+            fluidTank.fill(honey, IFluidHandler.FluidAction.EXECUTE);
+            addOutput(new ItemStack(BeemancerItems.POLLEN.get()));
+            addOutput(new ItemStack(BeemancerItems.PROPOLIS.get()));
+        }
     }
 
     private void addOutput(ItemStack stack) {
@@ -174,6 +216,8 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
     }
 
     public FluidTank getFluidTank() { return fluidTank; }
+    public int getProgress() { return progress; }
+    public int getProcessTime() { return PROCESS_TIME; }
 
     public NonNullList<ItemStack> getDrops() {
         NonNullList<ItemStack> drops = NonNullList.create();
@@ -206,8 +250,7 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
         tag.put("Output", outputTag);
 
         tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
-        tag.putInt("SpinCount", spinCount);
-        tag.putInt("SpinCooldown", spinCooldown);
+        tag.putInt("Progress", progress);
     }
 
     @Override
@@ -223,7 +266,6 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
         if (tag.contains("Fluid")) {
             fluidTank.readFromNBT(registries, tag.getCompound("Fluid"));
         }
-        spinCount = tag.getInt("SpinCount");
-        spinCooldown = tag.getInt("SpinCooldown");
+        progress = tag.getInt("Progress");
     }
 }

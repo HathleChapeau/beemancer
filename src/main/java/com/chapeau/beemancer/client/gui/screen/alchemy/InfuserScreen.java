@@ -1,24 +1,24 @@
 /**
  * ============================================================
- * [CrystallizerScreen.java]
- * Description: GUI pour le cristalliseur
+ * [InfuserScreen.java]
+ * Description: GUI pour l'infuseur
  * ============================================================
  */
 package com.chapeau.beemancer.client.gui.screen.alchemy;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.common.menu.alchemy.CrystallizerMenu;
+import com.chapeau.beemancer.common.menu.alchemy.InfuserMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
-public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu> {
+public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/crystallizer.png");
+            Beemancer.MOD_ID, "textures/gui/infuser.png");
 
-    public CrystallizerScreen(CrystallizerMenu menu, Inventory playerInventory, Component title) {
+    public InfuserScreen(InfuserMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;
@@ -30,10 +30,10 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
         int y = (height - imageHeight) / 2;
         guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
-        // Input fluid tank (left side)
-        int fluidHeight = (int) (52 * (menu.getFluidAmount() / 4000f));
-        if (fluidHeight > 0) {
-            guiGraphics.blit(TEXTURE, x + 26, y + 17 + (52 - fluidHeight), 176, 0, 16, fluidHeight);
+        // Honey tank (left side)
+        int honeyHeight = (int) (52 * (menu.getHoneyAmount() / 4000f));
+        if (honeyHeight > 0) {
+            guiGraphics.blit(TEXTURE, x + 17, y + 17 + (52 - honeyHeight), 176, 0, 16, honeyHeight);
         }
 
         // Progress arrow
@@ -52,10 +52,10 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         renderTooltip(guiGraphics, mouseX, mouseY);
 
-        // Fluid tank tooltip
-        if (isHovering(26, 17, 16, 52, mouseX, mouseY)) {
+        // Honey tank tooltip
+        if (isHovering(17, 17, 16, 52, mouseX, mouseY)) {
             guiGraphics.renderTooltip(font, 
-                Component.literal("Fluid: " + menu.getFluidAmount() + " / 4000 mB"), 
+                Component.literal("Honey: " + menu.getHoneyAmount() + " / 4000 mB"), 
                 mouseX, mouseY);
         }
     }

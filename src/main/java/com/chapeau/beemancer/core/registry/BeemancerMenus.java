@@ -54,17 +54,26 @@ public class BeemancerMenus {
             MENUS.register("honey_tank",
                     () -> IMenuTypeExtension.create(HoneyTankMenu::new));
 
-    public static final Supplier<MenuType<NectarFilterMenu>> NECTAR_FILTER = 
-            MENUS.register("nectar_filter",
-                    () -> IMenuTypeExtension.create(NectarFilterMenu::new));
 
     public static final Supplier<MenuType<CrystallizerMenu>> CRYSTALLIZER = 
             MENUS.register("crystallizer",
                     () -> IMenuTypeExtension.create(CrystallizerMenu::new));
 
     public static final Supplier<MenuType<AlembicMenu>> ALEMBIC = 
+
+    public static final Supplier<MenuType<InfuserMenu>> INFUSER = 
+            MENUS.register("infuser",
+                    () -> IMenuTypeExtension.create(InfuserMenu::new));
             MENUS.register("alembic",
+
+    public static final Supplier<MenuType<InfuserMenu>> INFUSER = 
+            MENUS.register("infuser",
+                    () -> IMenuTypeExtension.create(InfuserMenu::new));
                     () -> IMenuTypeExtension.create(AlembicMenu::new));
+
+    public static final Supplier<MenuType<InfuserMenu>> INFUSER = 
+            MENUS.register("infuser",
+                    () -> IMenuTypeExtension.create(InfuserMenu::new));
 
     public static void register(IEventBus eventBus) {
         MENUS.register(eventBus);

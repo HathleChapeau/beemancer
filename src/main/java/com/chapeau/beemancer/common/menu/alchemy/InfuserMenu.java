@@ -1,15 +1,16 @@
 /**
  * ============================================================
- * [CrystallizerMenu.java]
- * Description: Menu pour le cristalliseur
+ * [InfuserMenu.java]
+ * Description: Menu pour l'infuseur
  * ============================================================
  */
 package com.chapeau.beemancer.common.menu.alchemy;
 
-import com.chapeau.beemancer.common.blockentity.alchemy.CrystallizerBlockEntity;
+import com.chapeau.beemancer.common.blockentity.alchemy.InfuserBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -17,32 +18,36 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
-public class CrystallizerMenu extends AbstractContainerMenu {
-    private final CrystallizerBlockEntity blockEntity;
+public class InfuserMenu extends AbstractContainerMenu {
+    private final InfuserBlockEntity blockEntity;
     private final ContainerLevelAccess access;
     private final ContainerData data;
 
     // Slot indices
-    private static final int OUTPUT_SLOT = 0;
-    private static final int PLAYER_INV_START = 1;
-    private static final int PLAYER_INV_END = 28;
-    private static final int HOTBAR_START = 28;
-    private static final int HOTBAR_END = 37;
+    private static final int INPUT_SLOT = 0;
+    private static final int OUTPUT_SLOT = 1;
+    private static final int PLAYER_INV_START = 2;
+    private static final int PLAYER_INV_END = 29;
+    private static final int HOTBAR_START = 29;
+    private static final int HOTBAR_END = 38;
 
-    public CrystallizerMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
+    public InfuserMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
         this(containerId, playerInv, playerInv.player.level().getBlockEntity(buf.readBlockPos()),
              new SimpleContainerData(3));
     }
 
-    public CrystallizerMenu(int containerId, Inventory playerInv, BlockEntity be, ContainerData data) {
-        super(BeemancerMenus.CRYSTALLIZER.get(), containerId);
-        this.blockEntity = (CrystallizerBlockEntity) be;
+    public InfuserMenu(int containerId, Inventory playerInv, BlockEntity be, ContainerData data) {
+        super(BeemancerMenus.INFUSER.get(), containerId);
+        this.blockEntity = (InfuserBlockEntity) be;
         this.access = ContainerLevelAccess.create(be.getLevel(), be.getBlockPos());
         this.data = data;
         
         addDataSlots(data);
 
-        // Output slot (centered, right side)
+        // Input slot (wood)
+        addSlot(new SlotItemHandler(blockEntity.getInputSlot(), 0, 44, 35));
+        
+        // Output slot
         addSlot(new SlotItemHandler(blockEntity.getOutputSlot(), 0, 116, 35));
 
         addPlayerInventory(playerInv, 8, 84);
@@ -63,10 +68,10 @@ public class CrystallizerMenu extends AbstractContainerMenu {
         }
     }
 
-    public CrystallizerBlockEntity getBlockEntity() { return blockEntity; }
+    public InfuserBlockEntity getBlockEntity() { return blockEntity; }
     public int getProgress() { return data.get(0); }
     public int getProcessTime() { return data.get(1); }
-    public int getFluidAmount() { return data.get(2); }
+    public int getHoneyAmount() { return data.get(2); }
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
@@ -76,20 +81,29 @@ public class CrystallizerMenu extends AbstractContainerMenu {
             ItemStack stack = slot.getItem();
             result = stack.copy();
 
-            // Moving from output slot to player inventory
-            if (index == OUTPUT_SLOT) {
+            // From machine slots to player
+            if (index == INPUT_SLOT || index == OUTPUT_SLOT) {
                 if (!moveItemStackTo(stack, PLAYER_INV_START, HOTBAR_END, true)) {
                     return ItemStack.EMPTY;
                 }
             } 
-            // Moving from player inventory to hotbar or vice versa
-            else if (index >= PLAYER_INV_START && index < PLAYER_INV_END) {
-                if (!moveItemStackTo(stack, HOTBAR_START, HOTBAR_END, false)) {
-                    return ItemStack.EMPTY;
+            // From player to machine
+            else {
+                // Try to put logs in input
+                if (stack.is(ItemTags.LOGS)) {
+                    if (!moveItemStackTo(stack, INPUT_SLOT, INPUT_SLOT + 1, false)) {
+                        return ItemStack.EMPTY;
+                    }
                 }
-            } else if (index >= HOTBAR_START && index < HOTBAR_END) {
-                if (!moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, false)) {
-                    return ItemStack.EMPTY;
+                // Move between player inventory and hotbar
+                else if (index >= PLAYER_INV_START && index < PLAYER_INV_END) {
+                    if (!moveItemStackTo(stack, HOTBAR_START, HOTBAR_END, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                } else if (index >= HOTBAR_START && index < HOTBAR_END) {
+                    if (!moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, false)) {
+                        return ItemStack.EMPTY;
+                    }
                 }
             }
 
@@ -104,6 +118,6 @@ public class CrystallizerMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, BeemancerBlocks.CRYSTALLIZER.get());
+        return stillValid(access, player, BeemancerBlocks.INFUSER.get());
     }
 }

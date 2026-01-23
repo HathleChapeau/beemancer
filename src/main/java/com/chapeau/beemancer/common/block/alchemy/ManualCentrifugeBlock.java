@@ -1,14 +1,20 @@
 /**
  * ============================================================
  * [ManualCentrifugeBlock.java]
- * Description: Centrifugeuse manuelle pour extraire le miel des rayons
+ * Description: Centrifugeuse manuelle - maintenir clic droit pour extraire
+ * ============================================================
+ * 
+ * INTERACTION:
+ * - Clic droit avec comb -> insère le comb
+ * - Maintenir clic droit (main vide) -> fait tourner
+ * - Shift + clic droit -> ouvre le GUI
+ * - Clic droit (main vide, pas de combs) -> extrait les outputs
  * ============================================================
  */
 package com.chapeau.beemancer.common.block.alchemy;
 
 import com.chapeau.beemancer.common.blockentity.alchemy.ManualCentrifugeBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
-import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -23,7 +29,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -92,18 +97,8 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
-        // Insert honeycomb
-        if (stack.is(Items.HONEYCOMB)) {
-            if (centrifuge.canInsertComb()) {
-                centrifuge.insertComb(stack.copyWithCount(1));
-                if (!player.isCreative()) stack.shrink(1);
-                level.playSound(null, pos, SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0f, 1.0f);
-                return ItemInteractionResult.SUCCESS;
-            }
-        }
-
-        // Insert royal comb
-        if (stack.is(BeemancerItems.ROYAL_COMB.get())) {
+        // Insert comb if valid
+        if (centrifuge.isValidComb(stack)) {
             if (centrifuge.canInsertComb()) {
                 centrifuge.insertComb(stack.copyWithCount(1));
                 if (!player.isCreative()) stack.shrink(1);
@@ -132,25 +127,33 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        // Manual spin
-        if (centrifuge.canSpin()) {
-            centrifuge.spin();
-            level.setBlock(pos, state.setValue(SPINNING, true), 3);
-            level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.8f, 1.2f);
+        // Try to spin (hold right click)
+        if (centrifuge.hasCombsToProcess()) {
+            boolean spun = centrifuge.onPlayerSpin(level);
+            if (spun) {
+                // Update spinning state
+                if (!state.getValue(SPINNING)) {
+                    level.setBlock(pos, state.setValue(SPINNING, true), 3);
+                }
+                
+                // Play sound occasionally
+                if (level.random.nextInt(10) == 0) {
+                    level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.5f, 1.2f);
+                }
 
-            if (level instanceof ServerLevel serverLevel) {
-                for (int i = 0; i < 5; i++) {
+                // Spawn particles
+                if (level instanceof ServerLevel serverLevel) {
                     double offsetX = level.random.nextDouble() * 0.6 - 0.3;
                     double offsetZ = level.random.nextDouble() * 0.6 - 0.3;
                     serverLevel.sendParticles(ParticleTypes.FALLING_HONEY,
                         pos.getX() + 0.5 + offsetX, pos.getY() + 0.8, pos.getZ() + 0.5 + offsetZ,
                         1, 0, 0, 0, 0);
                 }
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
         }
 
-        // Extract output
+        // Extract output if no combs to process
         ItemStack output = centrifuge.extractOutput();
         if (!output.isEmpty()) {
             player.addItem(output);

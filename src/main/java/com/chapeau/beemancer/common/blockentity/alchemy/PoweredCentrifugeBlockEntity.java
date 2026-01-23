@@ -3,6 +3,12 @@
  * [PoweredCentrifugeBlockEntity.java]
  * Description: BlockEntity pour la centrifugeuse automatique
  * ============================================================
+ * 
+ * FONCTIONNEMENT:
+ * - Consomme du miel comme carburant
+ * - Accepte les combs du mod (Common, Noble, Diligent, Royal)
+ * - Process automatique avec les mêmes outputs que la manuelle
+ * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
@@ -20,8 +26,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,10 +39,8 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import javax.annotation.Nullable;
 
 public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuProvider {
-    private static final int HONEY_CONSUMPTION = 10;
+    private static final int HONEY_CONSUMPTION = 10; // mB per tick while working
     private static final int PROCESS_TIME = 100;
-    private static final int HONEY_OUTPUT = 250;
-    private static final int ROYAL_JELLY_OUTPUT = 100;
 
     private final ItemStackHandler inputSlots = new ItemStackHandler(4) {
         @Override
@@ -44,7 +48,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            return stack.is(Items.HONEYCOMB) || stack.is(BeemancerItems.ROYAL_COMB.get());
+            return isValidComb(stack);
         }
     };
 
@@ -92,6 +96,14 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
         super(BeemancerBlockEntities.POWERED_CENTRIFUGE.get(), pos, state);
     }
 
+    private static boolean isValidComb(ItemStack stack) {
+        Item item = stack.getItem();
+        return item == BeemancerItems.COMMON_COMB.get()
+            || item == BeemancerItems.NOBLE_COMB.get()
+            || item == BeemancerItems.DILIGENT_COMB.get()
+            || item == BeemancerItems.ROYAL_COMB.get();
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, PoweredCentrifugeBlockEntity be) {
         boolean wasWorking = state.getValue(PoweredCentrifugeBlock.WORKING);
         boolean isWorking = false;
@@ -130,20 +142,40 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
             ItemStack stack = inputSlots.getStackInSlot(i);
             if (stack.isEmpty()) continue;
 
-            boolean isRoyal = stack.is(BeemancerItems.ROYAL_COMB.get());
-
-            if (isRoyal) {
-                outputTank.fill(new FluidStack(BeemancerFluids.ROYAL_JELLY_SOURCE.get(), ROYAL_JELLY_OUTPUT),
-                    IFluidHandler.FluidAction.EXECUTE);
-                addToOutput(new ItemStack(BeemancerItems.PROPOLIS.get()));
-            } else {
-                outputTank.fill(new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), HONEY_OUTPUT),
-                    IFluidHandler.FluidAction.EXECUTE);
-                addToOutput(new ItemStack(BeemancerItems.BEESWAX.get()));
-            }
-
+            processComb(stack);
             stack.shrink(1);
             break;
+        }
+    }
+
+    private void processComb(ItemStack comb) {
+        Item item = comb.getItem();
+
+        if (item == BeemancerItems.ROYAL_COMB.get()) {
+            // Royal Comb -> Royal Jelly + Propolis (no honey!)
+            outputTank.fill(new FluidStack(BeemancerFluids.ROYAL_JELLY_SOURCE.get(), 250),
+                IFluidHandler.FluidAction.EXECUTE);
+            addToOutput(new ItemStack(BeemancerItems.PROPOLIS.get()));
+            
+        } else if (item == BeemancerItems.COMMON_COMB.get()) {
+            // Common Comb -> 250mB Honey + Pollen
+            outputTank.fill(new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), 250),
+                IFluidHandler.FluidAction.EXECUTE);
+            addToOutput(new ItemStack(BeemancerItems.POLLEN.get()));
+            
+        } else if (item == BeemancerItems.NOBLE_COMB.get()) {
+            // Noble Comb -> 300mB Honey + Pollen + Beeswax
+            outputTank.fill(new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), 300),
+                IFluidHandler.FluidAction.EXECUTE);
+            addToOutput(new ItemStack(BeemancerItems.POLLEN.get()));
+            addToOutput(new ItemStack(BeemancerItems.BEESWAX.get()));
+            
+        } else if (item == BeemancerItems.DILIGENT_COMB.get()) {
+            // Diligent Comb -> 350mB Honey + Pollen + Propolis
+            outputTank.fill(new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), 350),
+                IFluidHandler.FluidAction.EXECUTE);
+            addToOutput(new ItemStack(BeemancerItems.POLLEN.get()));
+            addToOutput(new ItemStack(BeemancerItems.PROPOLIS.get()));
         }
     }
 

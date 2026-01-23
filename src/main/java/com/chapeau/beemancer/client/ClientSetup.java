@@ -49,9 +49,8 @@ public class ClientSetup {
         event.register(BeemancerMenus.MANUAL_CENTRIFUGE.get(), ManualCentrifugeScreen::new);
         event.register(BeemancerMenus.POWERED_CENTRIFUGE.get(), PoweredCentrifugeScreen::new);
         event.register(BeemancerMenus.HONEY_TANK.get(), HoneyTankScreen::new);
-        event.register(BeemancerMenus.NECTAR_FILTER.get(), NectarFilterScreen::new);
         event.register(BeemancerMenus.CRYSTALLIZER.get(), CrystallizerScreen::new);
-        event.register(BeemancerMenus.ALEMBIC.get(), AlembicScreen::new);
+        event.register(BeemancerMenus.ALEMBIC.get(), AlembicScreen::new);\n        event.register(BeemancerMenus.INFUSER.get(), InfuserScreen::new);
     }
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {

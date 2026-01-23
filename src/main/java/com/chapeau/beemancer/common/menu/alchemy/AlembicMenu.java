@@ -23,7 +23,7 @@ public class AlembicMenu extends AbstractContainerMenu {
 
     public AlembicMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
         this(containerId, playerInv, playerInv.player.level().getBlockEntity(buf.readBlockPos()),
-             new SimpleContainerData(2));
+             new SimpleContainerData(5));
     }
 
     public AlembicMenu(int containerId, Inventory playerInv, BlockEntity be, ContainerData data) {
@@ -53,8 +53,11 @@ public class AlembicMenu extends AbstractContainerMenu {
     }
 
     public AlembicBlockEntity getBlockEntity() { return blockEntity; }
-    public int getInputAmount() { return data.get(0); }
-    public int getOutputAmount() { return data.get(1); }
+    public int getProgress() { return data.get(0); }
+    public int getProcessTime() { return data.get(1); }
+    public int getHoneyAmount() { return data.get(2); }
+    public int getRoyalJellyAmount() { return data.get(3); }
+    public int getNectarAmount() { return data.get(4); }
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {

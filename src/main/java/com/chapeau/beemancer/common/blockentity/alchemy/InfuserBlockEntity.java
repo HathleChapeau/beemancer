@@ -1,19 +1,19 @@
 /**
  * ============================================================
- * [CrystallizerBlockEntity.java]
- * Description: Transforme les fluides en cristaux solides
+ * [InfuserBlockEntity.java]
+ * Description: Infuse du bois avec du miel pour créer du bois emmiélé
  * ============================================================
  * 
  * FONCTIONNEMENT:
- * - Honey (500mB) -> HONEY_CRYSTAL
- * - Royal Jelly (500mB) -> ROYAL_HONEY_CRYSTAL
- * - Process time: 100 ticks par cristal
+ * - Input: Any wood (tag #logs) + 250mB Honey
+ * - Output: HONEYED_WOOD
+ * - Process time: 200 ticks
  * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
-import com.chapeau.beemancer.common.block.alchemy.CrystallizerBlock;
-import com.chapeau.beemancer.common.menu.alchemy.CrystallizerMenu;
+import com.chapeau.beemancer.common.block.alchemy.InfuserBlock;
+import com.chapeau.beemancer.common.menu.alchemy.InfuserMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
@@ -21,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -37,23 +38,32 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 
-public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider {
-    private static final int FLUID_PER_CRYSTAL = 500; // mB
-    private static final int PROCESS_TIME = 100; // ticks
+public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
+    private static final int HONEY_CONSUMPTION = 250;
+    private static final int PROCESS_TIME = 200;
 
-    private final FluidTank inputTank = new FluidTank(4000) {
+    private final ItemStackHandler inputSlot = new ItemStackHandler(1) {
         @Override
-        public boolean isFluidValid(FluidStack stack) {
-            return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get()
-                || stack.getFluid() == BeemancerFluids.ROYAL_JELLY_SOURCE.get();
+        protected void onContentsChanged(int slot) { setChanged(); }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return stack.is(ItemTags.LOGS);
         }
-        @Override
-        protected void onContentsChanged() { setChanged(); }
     };
 
     private final ItemStackHandler outputSlot = new ItemStackHandler(1) {
         @Override
         protected void onContentsChanged(int slot) { setChanged(); }
+    };
+
+    private final FluidTank honeyTank = new FluidTank(4000) {
+        @Override
+        public boolean isFluidValid(FluidStack stack) {
+            return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get();
+        }
+        @Override
+        protected void onContentsChanged() { setChanged(); }
     };
 
     private int progress = 0;
@@ -64,7 +74,7 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
             return switch (index) {
                 case 0 -> progress;
                 case 1 -> PROCESS_TIME;
-                case 2 -> inputTank.getFluidAmount();
+                case 2 -> honeyTank.getFluidAmount();
                 default -> 0;
             };
         }
@@ -76,113 +86,100 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
         public int getCount() { return 3; }
     };
 
-    public CrystallizerBlockEntity(BlockPos pos, BlockState state) {
-        super(BeemancerBlockEntities.CRYSTALLIZER.get(), pos, state);
+    public InfuserBlockEntity(BlockPos pos, BlockState state) {
+        super(BeemancerBlockEntities.INFUSER.get(), pos, state);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, CrystallizerBlockEntity be) {
-        boolean wasActive = state.getValue(CrystallizerBlock.ACTIVE);
-        boolean isActive = false;
+    public static void serverTick(Level level, BlockPos pos, BlockState state, InfuserBlockEntity be) {
+        boolean wasWorking = state.getValue(InfuserBlock.WORKING);
+        boolean isWorking = false;
 
         if (be.canProcess()) {
             be.progress++;
-            isActive = true;
+            isWorking = true;
 
             if (be.progress >= PROCESS_TIME) {
-                be.processFluid();
+                be.processItem();
                 be.progress = 0;
             }
         } else {
             be.progress = 0;
         }
 
-        if (wasActive != isActive) {
-            level.setBlock(pos, state.setValue(CrystallizerBlock.ACTIVE, isActive), 3);
+        if (wasWorking != isWorking) {
+            level.setBlock(pos, state.setValue(InfuserBlock.WORKING, isWorking), 3);
         }
 
         be.setChanged();
     }
 
     private boolean canProcess() {
-        // Need enough fluid
-        if (inputTank.getFluidAmount() < FLUID_PER_CRYSTAL) {
+        // Check if we have wood input
+        ItemStack input = inputSlot.getStackInSlot(0);
+        if (input.isEmpty() || !input.is(ItemTags.LOGS)) {
             return false;
         }
 
-        // Need space in output
+        // Check if we have enough honey
+        if (honeyTank.getFluidAmount() < HONEY_CONSUMPTION) {
+            return false;
+        }
+
+        // Check if we have space in output
         ItemStack output = outputSlot.getStackInSlot(0);
         if (output.isEmpty()) {
             return true;
         }
-
-        // Check if output matches expected crystal type
-        ItemStack expectedOutput = getCrystalOutput();
-        if (expectedOutput.isEmpty()) {
-            return false;
-        }
-
+        
+        ItemStack expectedOutput = new ItemStack(BeemancerItems.HONEYED_WOOD.get());
         return ItemStack.isSameItemSameComponents(output, expectedOutput) 
             && output.getCount() < output.getMaxStackSize();
     }
 
-    private ItemStack getCrystalOutput() {
-        FluidStack fluid = inputTank.getFluid();
-        if (fluid.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
+    private void processItem() {
+        // Consume input
+        inputSlot.extractItem(0, 1, false);
+        honeyTank.drain(HONEY_CONSUMPTION, IFluidHandler.FluidAction.EXECUTE);
 
-        if (fluid.getFluid() == BeemancerFluids.HONEY_SOURCE.get()) {
-            return new ItemStack(BeemancerItems.HONEY_CRYSTAL.get());
-        } else if (fluid.getFluid() == BeemancerFluids.ROYAL_JELLY_SOURCE.get()) {
-            return new ItemStack(BeemancerItems.ROYAL_HONEY_CRYSTAL.get());
-        }
-
-        return ItemStack.EMPTY;
-    }
-
-    private void processFluid() {
-        ItemStack crystalOutput = getCrystalOutput();
-        if (crystalOutput.isEmpty()) return;
-
-        // Consume fluid
-        inputTank.drain(FLUID_PER_CRYSTAL, IFluidHandler.FluidAction.EXECUTE);
-
-        // Add crystal to output
-        ItemStack existing = outputSlot.getStackInSlot(0);
-        if (existing.isEmpty()) {
-            outputSlot.setStackInSlot(0, crystalOutput);
+        // Add honeyed wood to output
+        ItemStack output = outputSlot.getStackInSlot(0);
+        if (output.isEmpty()) {
+            outputSlot.setStackInSlot(0, new ItemStack(BeemancerItems.HONEYED_WOOD.get()));
         } else {
-            existing.grow(1);
+            output.grow(1);
         }
     }
 
-    public FluidTank getInputTank() { return inputTank; }
+    public FluidTank getHoneyTank() { return honeyTank; }
+    public ItemStackHandler getInputSlot() { return inputSlot; }
     public ItemStackHandler getOutputSlot() { return outputSlot; }
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("container.beemancer.crystallizer");
+        return Component.translatable("container.beemancer.infuser");
     }
 
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
-        return new CrystallizerMenu(containerId, playerInv, this, dataAccess);
+        return new InfuserMenu(containerId, playerInv, this, dataAccess);
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.put("InputTank", inputTank.writeToNBT(registries, new CompoundTag()));
+        tag.put("Input", inputSlot.serializeNBT(registries));
         tag.put("Output", outputSlot.serializeNBT(registries));
+        tag.put("HoneyTank", honeyTank.writeToNBT(registries, new CompoundTag()));
         tag.putInt("Progress", progress);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        inputTank.readFromNBT(registries, tag.getCompound("InputTank"));
+        inputSlot.deserializeNBT(registries, tag.getCompound("Input"));
         outputSlot.deserializeNBT(registries, tag.getCompound("Output"));
+        honeyTank.readFromNBT(registries, tag.getCompound("HoneyTank"));
         progress = tag.getInt("Progress");
     }
 }
