@@ -3,29 +3,17 @@
  * [ManualCentrifugeBlock.java]
  * Description: Centrifugeuse manuelle pour extraire le miel des rayons
  * ============================================================
- *
- * DÉPENDANCES:
- * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | ManualCentrifugeBE  | BlockEntity          | Logique d'extraction           |
- * | BeemancerBlockEntities| Enregistrement     | Type de BlockEntity            |
- * ------------------------------------------------------------
- *
- * UTILISÉ PAR:
- * - BeemancerBlocks (enregistrement)
- * - Joueur (interaction manuelle)
- *
- * ============================================================
  */
 package com.chapeau.beemancer.common.block.alchemy;
 
 import com.chapeau.beemancer.common.blockentity.alchemy.ManualCentrifugeBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
+import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -65,9 +53,7 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
+    protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
@@ -80,9 +66,7 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
     }
 
     @Override
-    public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.MODEL;
-    }
+    public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
 
     @Nullable
     @Override
@@ -93,9 +77,7 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide()) {
-            return null;
-        }
+        if (level.isClientSide()) return null;
         return createTickerHelper(type, BeemancerBlockEntities.MANUAL_CENTRIFUGE.get(),
             ManualCentrifugeBlockEntity::serverTick);
     }
@@ -103,9 +85,7 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                                Player player, InteractionHand hand, BlockHitResult hit) {
-        if (level.isClientSide()) {
-            return ItemInteractionResult.SUCCESS;
-        }
+        if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
 
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof ManualCentrifugeBlockEntity centrifuge)) {
@@ -113,24 +93,20 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
         }
 
         // Insert honeycomb
-        if (stack.is(Items.HONEYCOMB) || stack.is(net.minecraft.world.item.Items.HONEYCOMB)) {
+        if (stack.is(Items.HONEYCOMB)) {
             if (centrifuge.canInsertComb()) {
                 centrifuge.insertComb(stack.copyWithCount(1));
-                if (!player.isCreative()) {
-                    stack.shrink(1);
-                }
+                if (!player.isCreative()) stack.shrink(1);
                 level.playSound(null, pos, SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0f, 1.0f);
                 return ItemInteractionResult.SUCCESS;
             }
         }
 
         // Insert royal comb
-        if (stack.getItem() == com.chapeau.beemancer.core.registry.BeemancerItems.ROYAL_COMB.get()) {
+        if (stack.is(BeemancerItems.ROYAL_COMB.get())) {
             if (centrifuge.canInsertComb()) {
                 centrifuge.insertComb(stack.copyWithCount(1));
-                if (!player.isCreative()) {
-                    stack.shrink(1);
-                }
+                if (!player.isCreative()) stack.shrink(1);
                 level.playSound(null, pos, SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0f, 1.0f);
                 return ItemInteractionResult.SUCCESS;
             }
@@ -140,24 +116,28 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
-                                                BlockHitResult hit) {
-        if (level.isClientSide()) {
-            return InteractionResult.SUCCESS;
-        }
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof ManualCentrifugeBlockEntity centrifuge)) {
             return InteractionResult.PASS;
         }
 
-        // Manual spin - right click without item
+        // Shift + right click = open GUI
+        if (player.isShiftKeyDown()) {
+            if (player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.openMenu(centrifuge, pos);
+            }
+            return InteractionResult.SUCCESS;
+        }
+
+        // Manual spin
         if (centrifuge.canSpin()) {
             centrifuge.spin();
             level.setBlock(pos, state.setValue(SPINNING, true), 3);
             level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.8f, 1.2f);
 
-            // Spawn honey particles
             if (level instanceof ServerLevel serverLevel) {
                 for (int i = 0; i < 5; i++) {
                     double offsetX = level.random.nextDouble() * 0.6 - 0.3;
@@ -170,7 +150,7 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        // Extract output if no combs to process
+        // Extract output
         ItemStack output = centrifuge.extractOutput();
         if (!output.isEmpty()) {
             player.addItem(output);
@@ -195,15 +175,11 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (state.getValue(SPINNING)) {
-            // Particle effects while spinning
             double x = pos.getX() + 0.5;
             double y = pos.getY() + 0.7;
             double z = pos.getZ() + 0.5;
             level.addParticle(ParticleTypes.FALLING_HONEY,
-                x + random.nextDouble() * 0.4 - 0.2,
-                y,
-                z + random.nextDouble() * 0.4 - 0.2,
-                0, 0, 0);
+                x + random.nextDouble() * 0.4 - 0.2, y, z + random.nextDouble() * 0.4 - 0.2, 0, 0, 0);
         }
     }
 }

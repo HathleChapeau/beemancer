@@ -99,13 +99,6 @@ public class BeemancerBlocks {
                     .sound(SoundType.COPPER)
                     .requiresCorrectToolForDrops()));
 
-    public static final DeferredBlock<InfuserBlock> INFUSER = BLOCKS.register("infuser",
-            () -> new InfuserBlock(BlockBehaviour.Properties.of()
-                    .strength(3.5f)
-                    .sound(SoundType.AMETHYST)
-                    .lightLevel(state -> state.getValue(InfuserBlock.INFUSING) ? 12 : 5)
-                    .requiresCorrectToolForDrops()));
-
     // --- FLUID BLOCKS ---
     public static final DeferredBlock<LiquidBlock> HONEY_FLUID_BLOCK = BLOCKS.register("honey",
             () -> new LiquidBlock(BeemancerFluids.HONEY_SOURCE.get(), BlockBehaviour.Properties.of()
@@ -125,27 +118,6 @@ public class BeemancerBlocks {
                     .replaceable().noCollission().strength(100.0F)
                     .pushReaction(PushReaction.DESTROY).noLootTable().liquid()
                     .lightLevel(state -> 8)));
-
-    public static final DeferredBlock<LiquidBlock> FIRE_NECTAR_FLUID_BLOCK = BLOCKS.register("fire_nectar",
-            () -> new LiquidBlock(BeemancerFluids.FIRE_NECTAR_SOURCE.get(), BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_ORANGE)
-                    .replaceable().noCollission().strength(100.0F)
-                    .pushReaction(PushReaction.DESTROY).noLootTable().liquid()
-                    .lightLevel(state -> 12)));
-
-    public static final DeferredBlock<LiquidBlock> FROST_NECTAR_FLUID_BLOCK = BLOCKS.register("frost_nectar",
-            () -> new LiquidBlock(BeemancerFluids.FROST_NECTAR_SOURCE.get(), BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_LIGHT_BLUE)
-                    .replaceable().noCollission().strength(100.0F)
-                    .pushReaction(PushReaction.DESTROY).noLootTable().liquid()
-                    .lightLevel(state -> 6)));
-
-    public static final DeferredBlock<LiquidBlock> STORM_NECTAR_FLUID_BLOCK = BLOCKS.register("storm_nectar",
-            () -> new LiquidBlock(BeemancerFluids.STORM_NECTAR_SOURCE.get(), BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_YELLOW)
-                    .replaceable().noCollission().strength(100.0F)
-                    .pushReaction(PushReaction.DESTROY).noLootTable().liquid()
-                    .lightLevel(state -> 10)));
 
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);

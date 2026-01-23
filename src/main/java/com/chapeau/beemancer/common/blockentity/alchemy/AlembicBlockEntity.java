@@ -7,6 +7,7 @@
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.common.block.alchemy.AlembicBlock;
+import com.chapeau.beemancer.common.menu.alchemy.AlembicMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
@@ -14,6 +15,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,9 +31,11 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-public class AlembicBlockEntity extends BlockEntity {
-    private static final int DISTILL_RATE = 2; // mB per tick
-    private static final int RESIDUE_CHANCE = 20; // 1 in 20 chance per 100mB
+import javax.annotation.Nullable;
+
+public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
+    private static final int DISTILL_RATE = 2;
+    private static final int RESIDUE_CHANCE = 20;
 
     private final FluidTank inputTank = new FluidTank(4000) {
         @Override
@@ -49,6 +58,21 @@ public class AlembicBlockEntity extends BlockEntity {
 
     private int processedAmount = 0;
 
+    protected final ContainerData dataAccess = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> inputTank.getFluidAmount();
+                case 1 -> outputTank.getFluidAmount();
+                default -> 0;
+            };
+        }
+        @Override
+        public void set(int index, int value) {}
+        @Override
+        public int getCount() { return 2; }
+    };
+
     public AlembicBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.ALEMBIC.get(), pos, state);
     }
@@ -60,13 +84,11 @@ public class AlembicBlockEntity extends BlockEntity {
         if (be.canDistill()) {
             FluidStack drained = be.inputTank.drain(DISTILL_RATE, IFluidHandler.FluidAction.EXECUTE);
             if (!drained.isEmpty()) {
-                // Output is the same nectar (purified)
                 be.outputTank.fill(new FluidStack(BeemancerFluids.NECTAR_SOURCE.get(), drained.getAmount()),
                     IFluidHandler.FluidAction.EXECUTE);
                 be.processedAmount += drained.getAmount();
                 isDistilling = true;
 
-                // Chance to produce residue
                 if (be.processedAmount >= 100) {
                     be.processedAmount -= 100;
                     if (level.random.nextInt(RESIDUE_CHANCE) == 0) {
@@ -81,7 +103,6 @@ public class AlembicBlockEntity extends BlockEntity {
             }
         }
 
-        // Auto-output
         if (be.outputTank.getFluidAmount() > 0) {
             var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, pos.below(), Direction.UP);
             if (cap != null) {
@@ -102,6 +123,17 @@ public class AlembicBlockEntity extends BlockEntity {
 
     public FluidTank getInputTank() { return inputTank; }
     public FluidTank getOutputTank() { return outputTank; }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("container.beemancer.alembic");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
+        return new AlembicMenu(containerId, playerInv, this, dataAccess);
+    }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {

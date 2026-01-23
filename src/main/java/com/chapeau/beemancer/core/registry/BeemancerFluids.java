@@ -58,39 +58,6 @@ public class BeemancerFluids {
     public static final Supplier<FlowingFluid> NECTAR_FLOWING = FLUIDS.register("nectar_flowing",
         HoneyFluid.NectarFlowing::new);
 
-    // ==================== FIRE NECTAR ====================
-    public static final Supplier<FluidType> FIRE_NECTAR_FLUID_TYPE = FLUID_TYPES.register("fire_nectar",
-        () -> new FluidType(FluidType.Properties.create()
-            .density(1100).viscosity(2000).temperature(500).lightLevel(12)
-            .descriptionId("fluid.beemancer.fire_nectar")));
-
-    public static final Supplier<FlowingFluid> FIRE_NECTAR_SOURCE = FLUIDS.register("fire_nectar",
-        HoneyFluid.FireNectarSource::new);
-    public static final Supplier<FlowingFluid> FIRE_NECTAR_FLOWING = FLUIDS.register("fire_nectar_flowing",
-        HoneyFluid.FireNectarFlowing::new);
-
-    // ==================== FROST NECTAR ====================
-    public static final Supplier<FluidType> FROST_NECTAR_FLUID_TYPE = FLUID_TYPES.register("frost_nectar",
-        () -> new FluidType(FluidType.Properties.create()
-            .density(1300).viscosity(4000).temperature(200).lightLevel(6)
-            .descriptionId("fluid.beemancer.frost_nectar")));
-
-    public static final Supplier<FlowingFluid> FROST_NECTAR_SOURCE = FLUIDS.register("frost_nectar",
-        HoneyFluid.FrostNectarSource::new);
-    public static final Supplier<FlowingFluid> FROST_NECTAR_FLOWING = FLUIDS.register("frost_nectar_flowing",
-        HoneyFluid.FrostNectarFlowing::new);
-
-    // ==================== STORM NECTAR ====================
-    public static final Supplier<FluidType> STORM_NECTAR_FLUID_TYPE = FLUID_TYPES.register("storm_nectar",
-        () -> new FluidType(FluidType.Properties.create()
-            .density(1000).viscosity(1500).temperature(300).lightLevel(10)
-            .descriptionId("fluid.beemancer.storm_nectar")));
-
-    public static final Supplier<FlowingFluid> STORM_NECTAR_SOURCE = FLUIDS.register("storm_nectar",
-        HoneyFluid.StormNectarSource::new);
-    public static final Supplier<FlowingFluid> STORM_NECTAR_FLOWING = FLUIDS.register("storm_nectar_flowing",
-        HoneyFluid.StormNectarFlowing::new);
-
     public static void register(IEventBus modEventBus) {
         FLUID_TYPES.register(modEventBus);
         FLUIDS.register(modEventBus);

@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "infusing=false": { "model": "beemancer:block/infuser" },
-    "infusing=true": { "model": "beemancer:block/infuser_active" }
-  }
-}

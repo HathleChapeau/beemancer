@@ -101,13 +101,6 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.ALEMBIC.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<InfuserBlockEntity>> INFUSER = 
-            BLOCK_ENTITIES.register("infuser",
-                    () -> BlockEntityType.Builder.of(
-                            InfuserBlockEntity::new,
-                            BeemancerBlocks.INFUSER.get()
-                    ).build(null));
-
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);
     }

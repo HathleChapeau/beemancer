@@ -7,6 +7,7 @@
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.common.block.alchemy.CrystallizerBlock;
+import com.chapeau.beemancer.common.menu.alchemy.CrystallizerMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
@@ -15,7 +16,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -25,10 +32,12 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
-public class CrystallizerBlockEntity extends BlockEntity {
+import javax.annotation.Nullable;
+
+public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider {
     private static final int MAX_CRYSTALS = 4;
-    private static final int BASE_PROCESS_RATE = 1; // mB per tick base
-    private static final int HONEY_CONSUMPTION = 5; // mB per tick
+    private static final int BASE_PROCESS_RATE = 1;
+    private static final int HONEY_CONSUMPTION = 5;
 
     private final NonNullList<ItemStack> crystals = NonNullList.withSize(MAX_CRYSTALS, ItemStack.EMPTY);
 
@@ -55,6 +64,22 @@ public class CrystallizerBlockEntity extends BlockEntity {
         protected void onContentsChanged() { setChanged(); }
     };
 
+    protected final ContainerData dataAccess = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> royalJellyTank.getFluidAmount();
+                case 1 -> honeyTank.getFluidAmount();
+                case 2 -> nectarTank.getFluidAmount();
+                default -> 0;
+            };
+        }
+        @Override
+        public void set(int index, int value) {}
+        @Override
+        public int getCount() { return 3; }
+    };
+
     public CrystallizerBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.CRYSTALLIZER.get(), pos, state);
     }
@@ -77,7 +102,6 @@ public class CrystallizerBlockEntity extends BlockEntity {
             }
         }
 
-        // Auto-output nectar below
         if (be.nectarTank.getFluidAmount() > 0) {
             var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, pos.below(), Direction.UP);
             if (cap != null) {
@@ -120,6 +144,17 @@ public class CrystallizerBlockEntity extends BlockEntity {
     public FluidTank getRoyalJellyTank() { return royalJellyTank; }
     public FluidTank getHoneyTank() { return honeyTank; }
     public FluidTank getNectarTank() { return nectarTank; }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("container.beemancer.crystallizer");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
+        return new CrystallizerMenu(containerId, playerInv, this, dataAccess);
+    }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {

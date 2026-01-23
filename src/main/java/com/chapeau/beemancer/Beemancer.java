@@ -109,10 +109,6 @@ public class Beemancer {
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
             BeemancerBlockEntities.ALEMBIC.get(),
             (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getInputTank());
-
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.INFUSER.get(),
-            (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getNectarTank());
     }
     
     private void onServerStarting(final ServerStartingEvent event) {

@@ -60,9 +60,6 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> ALEMBIC = ITEMS.register("alembic",
             () -> new BlockItem(BeemancerBlocks.ALEMBIC.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> INFUSER = ITEMS.register("infuser",
-            () -> new BlockItem(BeemancerBlocks.INFUSER.get(), new Item.Properties()));
-
     // --- BEE ITEMS ---
     public static final DeferredItem<MagicBeeItem> MAGIC_BEE = ITEMS.register("magic_bee",
             () -> new MagicBeeItem(new Item.Properties()));
@@ -89,18 +86,6 @@ public class BeemancerItems {
 
     public static final DeferredItem<BucketItem> NECTAR_BUCKET = ITEMS.register("nectar_bucket",
             () -> new BucketItem(BeemancerFluids.NECTAR_SOURCE.get(),
-                    new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
-
-    public static final DeferredItem<BucketItem> FIRE_NECTAR_BUCKET = ITEMS.register("fire_nectar_bucket",
-            () -> new BucketItem(BeemancerFluids.FIRE_NECTAR_SOURCE.get(),
-                    new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
-
-    public static final DeferredItem<BucketItem> FROST_NECTAR_BUCKET = ITEMS.register("frost_nectar_bucket",
-            () -> new BucketItem(BeemancerFluids.FROST_NECTAR_SOURCE.get(),
-                    new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
-
-    public static final DeferredItem<BucketItem> STORM_NECTAR_BUCKET = ITEMS.register("storm_nectar_bucket",
-            () -> new BucketItem(BeemancerFluids.STORM_NECTAR_SOURCE.get(),
                     new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
 
     // --- ALCHEMY INGREDIENTS ---
@@ -131,16 +116,6 @@ public class BeemancerItems {
             () -> new Item(new Item.Properties()));
 
     public static final DeferredItem<Item> RADIANT_HONEY_CRYSTAL = ITEMS.register("radiant_honey_crystal",
-            () -> new Item(new Item.Properties()));
-
-    // --- POLLEN (for Infuser elemental nectars) ---
-    public static final DeferredItem<Item> FIRE_POLLEN = ITEMS.register("fire_pollen",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> FROST_POLLEN = ITEMS.register("frost_pollen",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> STORM_POLLEN = ITEMS.register("storm_pollen",
             () -> new Item(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {

@@ -12,6 +12,7 @@ import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
 import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
 import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
+import com.chapeau.beemancer.client.gui.screen.alchemy.*;
 import com.chapeau.beemancer.core.registry.BeemancerEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -38,10 +39,19 @@ public class ClientSetup {
     }
 
     private static void registerScreens(final RegisterMenuScreensEvent event) {
+        // Core screens
         event.register(BeemancerMenus.STORAGE_CRATE.get(), StorageCrateScreen::new);
         event.register(BeemancerMenus.BEE_CREATOR.get(), BeeCreatorScreen::new);
         event.register(BeemancerMenus.MAGIC_HIVE.get(), MagicHiveScreen::new);
         event.register(BeemancerMenus.INCUBATOR.get(), IncubatorScreen::new);
+        
+        // Alchemy screens
+        event.register(BeemancerMenus.MANUAL_CENTRIFUGE.get(), ManualCentrifugeScreen::new);
+        event.register(BeemancerMenus.POWERED_CENTRIFUGE.get(), PoweredCentrifugeScreen::new);
+        event.register(BeemancerMenus.HONEY_TANK.get(), HoneyTankScreen::new);
+        event.register(BeemancerMenus.NECTAR_FILTER.get(), NectarFilterScreen::new);
+        event.register(BeemancerMenus.CRYSTALLIZER.get(), CrystallizerScreen::new);
+        event.register(BeemancerMenus.ALEMBIC.get(), AlembicScreen::new);
     }
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
@@ -60,18 +70,6 @@ public class ClientSetup {
         // Nectar
         registerFluidExtension(event, BeemancerFluids.NECTAR_FLUID_TYPE,
             "block/fluid/nectar_still", "block/fluid/nectar_flow", 0xFFB388DD);
-        
-        // Fire Nectar
-        registerFluidExtension(event, BeemancerFluids.FIRE_NECTAR_FLUID_TYPE,
-            "block/fluid/fire_nectar_still", "block/fluid/fire_nectar_flow", 0xFFFF6600);
-        
-        // Frost Nectar
-        registerFluidExtension(event, BeemancerFluids.FROST_NECTAR_FLUID_TYPE,
-            "block/fluid/frost_nectar_still", "block/fluid/frost_nectar_flow", 0xFF88DDFF);
-        
-        // Storm Nectar
-        registerFluidExtension(event, BeemancerFluids.STORM_NECTAR_FLUID_TYPE,
-            "block/fluid/storm_nectar_still", "block/fluid/storm_nectar_flow", 0xFFFFFF00);
     }
 
     private static void registerFluidExtension(RegisterClientExtensionsEvent event, 

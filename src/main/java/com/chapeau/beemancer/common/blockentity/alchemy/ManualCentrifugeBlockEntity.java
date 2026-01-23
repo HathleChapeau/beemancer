@@ -3,23 +3,11 @@
  * [ManualCentrifugeBlockEntity.java]
  * Description: BlockEntity pour la centrifugeuse manuelle
  * ============================================================
- *
- * DÉPENDANCES:
- * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | BeemancerFluids     | Fluides produits     | Honey, Royal Jelly             |
- * | BeemancerItems      | Items produits       | Beeswax, Propolis              |
- * ------------------------------------------------------------
- *
- * UTILISÉ PAR:
- * - ManualCentrifugeBlock (création et tick)
- *
- * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.common.block.alchemy.ManualCentrifugeBlock;
+import com.chapeau.beemancer.common.menu.alchemy.ManualCentrifugeMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
@@ -27,9 +15,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,25 +30,42 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
-public class ManualCentrifugeBlockEntity extends BlockEntity {
+import javax.annotation.Nullable;
+
+public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProvider {
     private static final int MAX_COMBS = 4;
     private static final int SPINS_REQUIRED = 5;
-    private static final int HONEY_PER_COMB = 250; // mB
-    private static final int ROYAL_JELLY_PER_COMB = 100; // mB
+    private static final int HONEY_PER_COMB = 250;
+    private static final int ROYAL_JELLY_PER_COMB = 100;
 
     private final NonNullList<ItemStack> combStorage = NonNullList.withSize(MAX_COMBS, ItemStack.EMPTY);
     private final NonNullList<ItemStack> outputStorage = NonNullList.withSize(4, ItemStack.EMPTY);
     
     private final FluidTank fluidTank = new FluidTank(4000) {
         @Override
-        protected void onContentsChanged() {
-            setChanged();
-        }
+        protected void onContentsChanged() { setChanged(); }
     };
 
     private int spinCount = 0;
     private int spinCooldown = 0;
     private boolean isProcessing = false;
+
+    protected final ContainerData dataAccess = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> spinCount;
+                case 1 -> fluidTank.getFluidAmount();
+                default -> 0;
+            };
+        }
+        @Override
+        public void set(int index, int value) {
+            if (index == 0) spinCount = value;
+        }
+        @Override
+        public int getCount() { return 2; }
+    };
 
     public ManualCentrifugeBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.MANUAL_CENTRIFUGE.get(), pos, state);
@@ -64,16 +74,12 @@ public class ManualCentrifugeBlockEntity extends BlockEntity {
     public static void serverTick(Level level, BlockPos pos, BlockState state, ManualCentrifugeBlockEntity be) {
         boolean wasSpinning = state.getValue(ManualCentrifugeBlock.SPINNING);
 
-        if (be.spinCooldown > 0) {
-            be.spinCooldown--;
-        }
+        if (be.spinCooldown > 0) be.spinCooldown--;
 
-        // Check if we should stop spinning animation
         if (wasSpinning && be.spinCooldown <= 0 && !be.isProcessing) {
             level.setBlock(pos, state.setValue(ManualCentrifugeBlock.SPINNING, false), 3);
         }
 
-        // Process combs when enough spins
         if (be.spinCount >= SPINS_REQUIRED && be.hasCombsToProcess()) {
             be.processCombs();
             be.spinCount = 0;
@@ -85,9 +91,7 @@ public class ManualCentrifugeBlockEntity extends BlockEntity {
 
     public boolean canInsertComb() {
         for (ItemStack stack : combStorage) {
-            if (stack.isEmpty()) {
-                return true;
-            }
+            if (stack.isEmpty()) return true;
         }
         return false;
     }
@@ -104,9 +108,7 @@ public class ManualCentrifugeBlockEntity extends BlockEntity {
 
     public boolean hasCombsToProcess() {
         for (ItemStack stack : combStorage) {
-            if (!stack.isEmpty()) {
-                return true;
-            }
+            if (!stack.isEmpty()) return true;
         }
         return false;
     }
@@ -118,7 +120,7 @@ public class ManualCentrifugeBlockEntity extends BlockEntity {
     public void spin() {
         if (canSpin()) {
             spinCount++;
-            spinCooldown = 10; // 0.5 second cooldown between spins
+            spinCooldown = 10;
             isProcessing = true;
             setChanged();
         }
@@ -131,20 +133,16 @@ public class ManualCentrifugeBlockEntity extends BlockEntity {
 
             boolean isRoyalComb = comb.is(BeemancerItems.ROYAL_COMB.get());
 
-            // Produce fluid
             if (isRoyalComb) {
                 FluidStack royalJelly = new FluidStack(BeemancerFluids.ROYAL_JELLY_SOURCE.get(), ROYAL_JELLY_PER_COMB);
                 fluidTank.fill(royalJelly, IFluidHandler.FluidAction.EXECUTE);
-                // Produce propolis as byproduct
                 addOutput(new ItemStack(BeemancerItems.PROPOLIS.get()));
             } else {
                 FluidStack honey = new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), HONEY_PER_COMB);
                 fluidTank.fill(honey, IFluidHandler.FluidAction.EXECUTE);
-                // Produce beeswax as byproduct
                 addOutput(new ItemStack(BeemancerItems.BEESWAX.get()));
             }
 
-            // Consume the comb
             combStorage.set(i, ItemStack.EMPTY);
         }
         setChanged();
@@ -161,7 +159,6 @@ public class ManualCentrifugeBlockEntity extends BlockEntity {
                 return;
             }
         }
-        // Drop if no space (shouldn't happen with 4 slots)
     }
 
     public ItemStack extractOutput() {
@@ -176,15 +173,24 @@ public class ManualCentrifugeBlockEntity extends BlockEntity {
         return ItemStack.EMPTY;
     }
 
-    public FluidTank getFluidTank() {
-        return fluidTank;
-    }
+    public FluidTank getFluidTank() { return fluidTank; }
 
     public NonNullList<ItemStack> getDrops() {
         NonNullList<ItemStack> drops = NonNullList.create();
         drops.addAll(combStorage);
         drops.addAll(outputStorage);
         return drops;
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("container.beemancer.manual_centrifuge");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
+        return new ManualCentrifugeMenu(containerId, playerInv, this, dataAccess);
     }
 
     @Override

@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [NectarFilterBlock.java]
- * Description: Filtre pour purifier le Royal Jelly
+ * Description: Filtre à nectar
  * ============================================================
  */
 package com.chapeau.beemancer.common.block.alchemy;
@@ -10,6 +10,9 @@ import com.chapeau.beemancer.common.blockentity.alchemy.NectarFilterBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -17,6 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
 
@@ -44,5 +48,16 @@ public class NectarFilterBlock extends BaseEntityBlock {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
         return createTickerHelper(type, BeemancerBlockEntities.NECTAR_FILTER.get(), NectarFilterBlockEntity::serverTick);
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof NectarFilterBlockEntity filter) {
+                serverPlayer.openMenu(filter, pos);
+            }
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 }

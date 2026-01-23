@@ -7,15 +7,14 @@
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.common.block.alchemy.PoweredCentrifugeBlock;
+import com.chapeau.beemancer.common.menu.alchemy.PoweredCentrifugeMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -34,16 +33,14 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import javax.annotation.Nullable;
 
 public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuProvider {
-    private static final int HONEY_CONSUMPTION = 10; // mB per tick
-    private static final int PROCESS_TIME = 100; // 5 seconds
+    private static final int HONEY_CONSUMPTION = 10;
+    private static final int PROCESS_TIME = 100;
     private static final int HONEY_OUTPUT = 250;
     private static final int ROYAL_JELLY_OUTPUT = 100;
 
     private final ItemStackHandler inputSlots = new ItemStackHandler(4) {
         @Override
-        protected void onContentsChanged(int slot) {
-            setChanged();
-        }
+        protected void onContentsChanged(int slot) { setChanged(); }
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -53,9 +50,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
 
     private final ItemStackHandler outputSlots = new ItemStackHandler(4) {
         @Override
-        protected void onContentsChanged(int slot) {
-            setChanged();
-        }
+        protected void onContentsChanged(int slot) { setChanged(); }
     };
 
     private final FluidTank fuelTank = new FluidTank(8000) {
@@ -63,47 +58,34 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
         public boolean isFluidValid(FluidStack stack) {
             return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get();
         }
-
         @Override
-        protected void onContentsChanged() {
-            setChanged();
-        }
+        protected void onContentsChanged() { setChanged(); }
     };
 
     private final FluidTank outputTank = new FluidTank(8000) {
         @Override
-        protected void onContentsChanged() {
-            setChanged();
-        }
+        protected void onContentsChanged() { setChanged(); }
     };
 
     private int progress = 0;
-    private int currentProcessTime = 0;
 
     protected final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int index) {
             return switch (index) {
                 case 0 -> progress;
-                case 1 -> currentProcessTime;
+                case 1 -> PROCESS_TIME;
                 case 2 -> fuelTank.getFluidAmount();
                 case 3 -> outputTank.getFluidAmount();
                 default -> 0;
             };
         }
-
         @Override
         public void set(int index, int value) {
-            switch (index) {
-                case 0 -> progress = value;
-                case 1 -> currentProcessTime = value;
-            }
+            if (index == 0) progress = value;
         }
-
         @Override
-        public int getCount() {
-            return 4;
-        }
+        public int getCount() { return 4; }
     };
 
     public PoweredCentrifugeBlockEntity(BlockPos pos, BlockState state) {
@@ -138,10 +120,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
 
     private boolean canProcess() {
         for (int i = 0; i < inputSlots.getSlots(); i++) {
-            ItemStack stack = inputSlots.getStackInSlot(i);
-            if (!stack.isEmpty()) {
-                return true;
-            }
+            if (!inputSlots.getStackInSlot(i).isEmpty()) return true;
         }
         return false;
     }
@@ -153,7 +132,6 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
 
             boolean isRoyal = stack.is(BeemancerItems.ROYAL_COMB.get());
 
-            // Output fluid
             if (isRoyal) {
                 outputTank.fill(new FluidStack(BeemancerFluids.ROYAL_JELLY_SOURCE.get(), ROYAL_JELLY_OUTPUT),
                     IFluidHandler.FluidAction.EXECUTE);
@@ -196,8 +174,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
-        // Menu implementation would go here
-        return null;
+        return new PoweredCentrifugeMenu(containerId, playerInv, this, dataAccess);
     }
 
     @Override
