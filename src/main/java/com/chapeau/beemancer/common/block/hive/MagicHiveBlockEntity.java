@@ -151,7 +151,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     }
 
     @Override
-    @Override
     public ItemStack removeItem(int slot, int amount) {
         // If removing a bee item while bee is outside, sync data first
         if (slot < BEE_SLOTS && beeStates[slot] == BeeState.OUTSIDE) {
@@ -419,7 +418,8 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         
         BlockPos spawnPos = worldPosition.above();
         System.out.println("[DEBUG-HIVE] Spawning at " + spawnPos);
-        bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 0, 0);
+        bee.setPos(spawnPos.getX(), spawnPos.getY() + 1, spawnPos.getZ());
+        bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY() + 1, spawnPos.getZ() + 0.5, 0, 0);
         
         var geneData = MagicBeeItem.getGeneData(beeItem);
         bee.getGeneData().copyFrom(geneData);
