@@ -10,6 +10,7 @@ import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlockEntity;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlockEntity;
+import com.chapeau.beemancer.common.blockentity.alchemy.*;
 import com.chapeau.beemancer.common.blockentity.storage.StorageCrateBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -48,6 +49,63 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             IncubatorBlockEntity::new,
                             BeemancerBlocks.INCUBATOR.get()
+                    ).build(null));
+
+    // --- ALCHEMY MACHINES ---
+    public static final Supplier<BlockEntityType<ManualCentrifugeBlockEntity>> MANUAL_CENTRIFUGE = 
+            BLOCK_ENTITIES.register("manual_centrifuge",
+                    () -> BlockEntityType.Builder.of(
+                            ManualCentrifugeBlockEntity::new,
+                            BeemancerBlocks.MANUAL_CENTRIFUGE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<PoweredCentrifugeBlockEntity>> POWERED_CENTRIFUGE = 
+            BLOCK_ENTITIES.register("powered_centrifuge",
+                    () -> BlockEntityType.Builder.of(
+                            PoweredCentrifugeBlockEntity::new,
+                            BeemancerBlocks.POWERED_CENTRIFUGE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<HoneyTankBlockEntity>> HONEY_TANK = 
+            BLOCK_ENTITIES.register("honey_tank",
+                    () -> BlockEntityType.Builder.of(
+                            HoneyTankBlockEntity::new,
+                            BeemancerBlocks.HONEY_TANK.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE = 
+            BLOCK_ENTITIES.register("honey_pipe",
+                    () -> BlockEntityType.Builder.of(
+                            HoneyPipeBlockEntity::new,
+                            BeemancerBlocks.HONEY_PIPE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<NectarFilterBlockEntity>> NECTAR_FILTER = 
+            BLOCK_ENTITIES.register("nectar_filter",
+                    () -> BlockEntityType.Builder.of(
+                            NectarFilterBlockEntity::new,
+                            BeemancerBlocks.NECTAR_FILTER.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<CrystallizerBlockEntity>> CRYSTALLIZER = 
+            BLOCK_ENTITIES.register("crystallizer",
+                    () -> BlockEntityType.Builder.of(
+                            CrystallizerBlockEntity::new,
+                            BeemancerBlocks.CRYSTALLIZER.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<AlembicBlockEntity>> ALEMBIC = 
+            BLOCK_ENTITIES.register("alembic",
+                    () -> BlockEntityType.Builder.of(
+                            AlembicBlockEntity::new,
+                            BeemancerBlocks.ALEMBIC.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<InfuserBlockEntity>> INFUSER = 
+            BLOCK_ENTITIES.register("infuser",
+                    () -> BlockEntityType.Builder.of(
+                            InfuserBlockEntity::new,
+                            BeemancerBlocks.INFUSER.get()
                     ).build(null));
 
     public static void register(IEventBus eventBus) {

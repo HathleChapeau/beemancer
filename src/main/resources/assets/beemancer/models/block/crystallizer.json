@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "beemancer:block/crystallizer_top",
+    "bottom": "beemancer:block/crystallizer_bottom",
+    "side": "beemancer:block/crystallizer_side"
+  }
+}

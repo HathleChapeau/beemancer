@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "active=false": { "model": "beemancer:block/crystallizer" },
+    "active=true": { "model": "beemancer:block/crystallizer_active" }
+  }
+}

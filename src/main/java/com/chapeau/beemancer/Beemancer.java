@@ -3,11 +3,6 @@
  * [Beemancer.java]
  * Description: Point d'entrée principal du mod Beemancer
  * ============================================================
- * 
- * Pattern: Create mod style - utilise modEventBus.addListener()
- * au lieu de @EventBusSubscriber(bus = MOD) qui est deprecated
- * 
- * ============================================================
  */
 package com.chapeau.beemancer;
 
@@ -22,6 +17,7 @@ import com.chapeau.beemancer.core.network.BeemancerNetwork;
 import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
 import com.chapeau.beemancer.core.registry.*;
 import com.mojang.logging.LogUtils;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -29,6 +25,8 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -44,7 +42,6 @@ public class Beemancer {
     public Beemancer(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing Beemancer...");
         
-        // Register all deferred registers to mod event bus
         BeemancerBlocks.register(modEventBus);
         BeemancerItems.register(modEventBus);
         BeemancerBlockEntities.register(modEventBus);
@@ -53,19 +50,17 @@ public class Beemancer {
         BeemancerEntities.register(modEventBus);
         BeemancerAttachments.register(modEventBus);
         BeemancerSounds.register(modEventBus);
+        BeemancerFluids.register(modEventBus);
         
-        // Register network packets
         BeemancerNetwork.register(modEventBus);
         
-        // Add event listeners (Create pattern - no deprecated @EventBusSubscriber(bus=MOD))
         modEventBus.addListener(this::onCommonSetup);
         modEventBus.addListener(this::registerEntityAttributes);
+        modEventBus.addListener(this::registerCapabilities);
         
-        // Register server events on the NeoForge event bus
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
         
-        // Client-side registration
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ClientSetup.register(modEventBus);
         }
@@ -75,7 +70,6 @@ public class Beemancer {
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            // Initialize gene system
             GeneInit.registerAllGenes();
             LOGGER.info("Gene system initialized with {} genes", 
                     com.chapeau.beemancer.core.gene.GeneRegistry.getAllGenes().size());
@@ -85,9 +79,43 @@ public class Beemancer {
     private void registerEntityAttributes(final EntityAttributeCreationEvent event) {
         event.put(BeemancerEntities.MAGIC_BEE.get(), MagicBeeEntity.createAttributes().build());
     }
+
+    private void registerCapabilities(final RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
+            BeemancerBlockEntities.MANUAL_CENTRIFUGE.get(), (be, side) -> be.getFluidTank());
+
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
+            BeemancerBlockEntities.HONEY_TANK.get(), (be, side) -> be.getFluidTank());
+
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
+            BeemancerBlockEntities.HONEY_PIPE.get(), (be, side) -> be.getBuffer());
+
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
+            BeemancerBlockEntities.POWERED_CENTRIFUGE.get(),
+            (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getFuelTank());
+
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
+            BeemancerBlockEntities.NECTAR_FILTER.get(),
+            (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getInputTank());
+
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
+            BeemancerBlockEntities.CRYSTALLIZER.get(),
+            (be, side) -> {
+                if (side == Direction.DOWN) return be.getNectarTank();
+                if (side == Direction.UP) return be.getRoyalJellyTank();
+                return be.getHoneyTank();
+            });
+
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
+            BeemancerBlockEntities.ALEMBIC.get(),
+            (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getInputTank());
+
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
+            BeemancerBlockEntities.INFUSER.get(),
+            (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getNectarTank());
+    }
     
     private void onServerStarting(final ServerStartingEvent event) {
-        // Load data-driven configurations
         LOGGER.info("Loading Beemancer data configurations...");
         BreedingManager.loadCombinations(event.getServer());
         BeeBehaviorManager.load(event.getServer());
@@ -97,7 +125,6 @@ public class Beemancer {
 
     private void onPlayerLoggedIn(final PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            // Sync codex data to client
             CodexPlayerData data = player.getData(BeemancerAttachments.CODEX_DATA);
             PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
             LOGGER.debug("Synced codex data to player {}", player.getName().getString());

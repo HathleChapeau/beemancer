@@ -7,14 +7,18 @@
 package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.block.alchemy.*;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlock;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlock;
 import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -51,6 +55,97 @@ public class BeemancerBlocks {
                     .lightLevel(state -> 7)
                     .noOcclusion()));
 
+    // --- ALCHEMY MACHINES ---
+    public static final DeferredBlock<ManualCentrifugeBlock> MANUAL_CENTRIFUGE = BLOCKS.register("manual_centrifuge",
+            () -> new ManualCentrifugeBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.WOOD)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<PoweredCentrifugeBlock> POWERED_CENTRIFUGE = BLOCKS.register("powered_centrifuge",
+            () -> new PoweredCentrifugeBlock(BlockBehaviour.Properties.of()
+                    .strength(3.5f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<HoneyTankBlock> HONEY_TANK = BLOCKS.register("honey_tank",
+            () -> new HoneyTankBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion()));
+
+    public static final DeferredBlock<HoneyPipeBlock> HONEY_PIPE = BLOCKS.register("honey_pipe",
+            () -> new HoneyPipeBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.COPPER)
+                    .noOcclusion()));
+
+    public static final DeferredBlock<NectarFilterBlock> NECTAR_FILTER = BLOCKS.register("nectar_filter",
+            () -> new NectarFilterBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<CrystallizerBlock> CRYSTALLIZER = BLOCKS.register("crystallizer",
+            () -> new CrystallizerBlock(BlockBehaviour.Properties.of()
+                    .strength(3.5f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> state.getValue(CrystallizerBlock.ACTIVE) ? 10 : 4)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<AlembicBlock> ALEMBIC = BLOCKS.register("alembic",
+            () -> new AlembicBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.COPPER)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<InfuserBlock> INFUSER = BLOCKS.register("infuser",
+            () -> new InfuserBlock(BlockBehaviour.Properties.of()
+                    .strength(3.5f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> state.getValue(InfuserBlock.INFUSING) ? 12 : 5)
+                    .requiresCorrectToolForDrops()));
+
+    // --- FLUID BLOCKS ---
+    public static final DeferredBlock<LiquidBlock> HONEY_FLUID_BLOCK = BLOCKS.register("honey",
+            () -> new LiquidBlock(BeemancerFluids.HONEY_SOURCE.get(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_ORANGE)
+                    .replaceable().noCollission().strength(100.0F)
+                    .pushReaction(PushReaction.DESTROY).noLootTable().liquid()));
+
+    public static final DeferredBlock<LiquidBlock> ROYAL_JELLY_FLUID_BLOCK = BLOCKS.register("royal_jelly",
+            () -> new LiquidBlock(BeemancerFluids.ROYAL_JELLY_SOURCE.get(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PINK)
+                    .replaceable().noCollission().strength(100.0F)
+                    .pushReaction(PushReaction.DESTROY).noLootTable().liquid()));
+
+    public static final DeferredBlock<LiquidBlock> NECTAR_FLUID_BLOCK = BLOCKS.register("nectar",
+            () -> new LiquidBlock(BeemancerFluids.NECTAR_SOURCE.get(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE)
+                    .replaceable().noCollission().strength(100.0F)
+                    .pushReaction(PushReaction.DESTROY).noLootTable().liquid()
+                    .lightLevel(state -> 8)));
+
+    public static final DeferredBlock<LiquidBlock> FIRE_NECTAR_FLUID_BLOCK = BLOCKS.register("fire_nectar",
+            () -> new LiquidBlock(BeemancerFluids.FIRE_NECTAR_SOURCE.get(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_ORANGE)
+                    .replaceable().noCollission().strength(100.0F)
+                    .pushReaction(PushReaction.DESTROY).noLootTable().liquid()
+                    .lightLevel(state -> 12)));
+
+    public static final DeferredBlock<LiquidBlock> FROST_NECTAR_FLUID_BLOCK = BLOCKS.register("frost_nectar",
+            () -> new LiquidBlock(BeemancerFluids.FROST_NECTAR_SOURCE.get(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_LIGHT_BLUE)
+                    .replaceable().noCollission().strength(100.0F)
+                    .pushReaction(PushReaction.DESTROY).noLootTable().liquid()
+                    .lightLevel(state -> 6)));
+
+    public static final DeferredBlock<LiquidBlock> STORM_NECTAR_FLUID_BLOCK = BLOCKS.register("storm_nectar",
+            () -> new LiquidBlock(BeemancerFluids.STORM_NECTAR_SOURCE.get(), BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_YELLOW)
+                    .replaceable().noCollission().strength(100.0F)
+                    .pushReaction(PushReaction.DESTROY).noLootTable().liquid()
+                    .lightLevel(state -> 10)));
 
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
