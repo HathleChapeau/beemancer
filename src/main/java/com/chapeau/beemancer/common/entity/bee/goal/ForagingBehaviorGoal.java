@@ -65,7 +65,8 @@ public class ForagingBehaviorGoal extends Goal {
     private static final double REACH_DISTANCE = 1.5;
     private static final double REACH_DISTANCE_VERTICAL = 0.5;
     private static final double FLIGHT_SPEED_FACTOR = 0.1;
-    private static final double HOVER_HEIGHT = 1.2; // Hauteur au-dessus de la fleur pour l'approche
+    private static final double FLIGHT_ALTITUDE = 2.0; // Altitude de vol au-dessus des destinations
+    private static final double HOVER_HEIGHT = 1.2; // Hauteur au-dessus de la fleur pour l'approche finale
     private static final double FALL_SPEED = 0.02; // Vitesse de descente pendant le butinage
     private static final float FORAGING_PITCH = 30.0f; // Inclinaison vers l'avant (degrés)
     private static final Random RANDOM = new Random();
@@ -219,8 +220,8 @@ public class ForagingBehaviorGoal extends Goal {
             return;
         }
 
-        // Descendre doucement vers la fleur
-        navigateTo(targetFlower);
+        // Descendre doucement vers la fleur (pas d'altitude additionnelle)
+        navigateToExact(targetFlower);
     }
 
     private void tickWorking() {
@@ -274,14 +275,22 @@ public class ForagingBehaviorGoal extends Goal {
             return;
         }
 
-        double distance = bee.position().distanceTo(Vec3.atCenterOf(hivePos));
+        Vec3 hiveVec = Vec3.atCenterOf(hivePos);
+        double distance = bee.position().distanceTo(hiveVec);
+
         if (distance <= REACH_DISTANCE) {
             // La ruche va gérer l'entrée dans serverTick
             bee.setDeltaMovement(Vec3.ZERO);
             return;
         }
 
-        navigateWithPathfinding(hivePos);
+        // Quand proche de la ruche, descendre directement vers elle
+        if (distance <= REACH_DISTANCE * 3) {
+            navigateToExact(hivePos);
+        } else {
+            // Sinon voler en altitude
+            navigateWithPathfinding(hivePos);
+        }
     }
 
     /**
@@ -303,10 +312,24 @@ public class ForagingBehaviorGoal extends Goal {
     }
 
     /**
-     * Déplacement direct vers une position.
+     * Déplacement direct vers une position avec altitude de vol.
      */
     private void navigateTo(BlockPos pos) {
-        Vec3 targetVec = Vec3.atCenterOf(pos);
+        navigateToWithAltitude(pos, FLIGHT_ALTITUDE);
+    }
+
+    /**
+     * Déplacement direct vers une position sans altitude additionnelle.
+     */
+    private void navigateToExact(BlockPos pos) {
+        navigateToWithAltitude(pos, 0);
+    }
+
+    /**
+     * Déplacement vers une position avec une altitude spécifique ajoutée.
+     */
+    private void navigateToWithAltitude(BlockPos pos, double altitudeOffset) {
+        Vec3 targetVec = Vec3.atCenterOf(pos).add(0, altitudeOffset, 0);
         Vec3 direction = targetVec.subtract(bee.position()).normalize();
 
         BeeBehaviorConfig config = bee.getBehaviorConfig();

@@ -34,6 +34,7 @@ public class ReturnToHiveWhenLowHealthGoal extends Goal {
     private static final float FLEE_THRESHOLD = 0.3f; // 30%
     private static final double REACH_DISTANCE = 1.5;
     private static final double FLEE_SPEED = 0.12;
+    private static final double FLIGHT_ALTITUDE = 2.0; // Altitude de vol
     
     private final MagicBeeEntity bee;
     
@@ -71,13 +72,19 @@ public class ReturnToHiveWhenLowHealthGoal extends Goal {
     public void tick() {
         BlockPos hivePos = bee.getAssignedHivePos();
         if (hivePos == null) return;
-        
-        // Se diriger vers la ruche à vitesse maximale
+
         Vec3 hiveVec = Vec3.atCenterOf(hivePos);
-        Vec3 direction = hiveVec.subtract(bee.position()).normalize();
-        
+        double distance = bee.position().distanceTo(hiveVec);
+
+        // Voler en altitude sauf quand proche de la ruche (descente finale)
+        Vec3 targetVec = distance > REACH_DISTANCE * 2
+                ? hiveVec.add(0, FLIGHT_ALTITUDE, 0)
+                : hiveVec;
+
+        Vec3 direction = targetVec.subtract(bee.position()).normalize();
+
         bee.setDeltaMovement(direction.scale(FLEE_SPEED));
-        
+
         // Rotation vers la ruche
         double dx = hiveVec.x - bee.getX();
         double dz = hiveVec.z - bee.getZ();
