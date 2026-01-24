@@ -3,23 +3,6 @@
  * [BeeBehaviorManager.java]
  * Description: Gestionnaire de configuration des comportements d'abeilles
  * ============================================================
- *
- * DÉPENDANCES:
- * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | BeeBehaviorConfig   | Config comportement  | Stockage par espèce            |
- * | BeeBehaviorType     | Type comportement    | Parsing depuis JSON            |
- * | LootEntry           | Entrée loot          | Parsing loots                  |
- * | SpeedThreshold      | Seuil vitesse        | Parsing seuils                 |
- * | Beemancer           | MOD_ID               | Chemin ressources              |
- * ------------------------------------------------------------
- *
- * UTILISÉ PAR:
- * - MagicBeeEntity.java: Récupération config par espèce
- * - MagicHiveBlockEntity.java: Cooldowns et loot
- *
- * ============================================================
  */
 package com.chapeau.beemancer.core.behavior;
 
@@ -42,19 +25,18 @@ import java.util.Optional;
 
 /**
  * Gestionnaire central pour les configurations de comportement des abeilles.
- * Charge les données depuis data/beemancer/behavior/species_behaviors.json
+ * Charge les donnees depuis data/beemancer/behavior/species_behaviors.json
  */
 public class BeeBehaviorManager {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BeeBehaviorManager.class);
     private static final ResourceLocation CONFIG_PATH = ResourceLocation.fromNamespaceAndPath(
             Beemancer.MOD_ID, "behavior/species_behaviors.json");
-    
+
     private static final Map<String, BeeBehaviorConfig> configs = new HashMap<>();
     private static BeeBehaviorConfig defaultConfig = new BeeBehaviorConfig();
-    private static BeeBehaviorConfig harvesterDefaults = new BeeBehaviorConfig();
     private static boolean loaded = false;
-    
+
     /**
      * Charge les configurations depuis le serveur.
      */
@@ -66,15 +48,14 @@ public class BeeBehaviorManager {
         }
         load(server.getResourceManager());
     }
-    
+
     /**
      * Charge les configurations depuis les ressources.
      */
     public static void load(ResourceManager resourceManager) {
         configs.clear();
         defaultConfig = new BeeBehaviorConfig();
-        harvesterDefaults = new BeeBehaviorConfig();
-        
+
         try {
             Optional<Resource> resource = resourceManager.getResource(CONFIG_PATH);
             if (resource.isEmpty()) {
@@ -82,53 +63,30 @@ public class BeeBehaviorManager {
                 setupDefaults();
                 return;
             }
-            
+
             try (InputStreamReader reader = new InputStreamReader(resource.get().open())) {
                 JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
-                
+
                 // Charger les defaults
                 if (root.has("defaults")) {
                     parseConfig(root.getAsJsonObject("defaults"), defaultConfig);
                 }
-                
-                // Charger les harvester defaults
-                if (root.has("harvesterDefaults")) {
-                    parseConfig(root.getAsJsonObject("harvesterDefaults"), harvesterDefaults);
-                }
-                
-                // Charger les configs par espèce
+
+                // Charger les configs par espece
                 if (root.has("species")) {
                     JsonObject speciesObj = root.getAsJsonObject("species");
                     for (Map.Entry<String, JsonElement> entry : speciesObj.entrySet()) {
                         String speciesId = entry.getKey();
                         JsonObject speciesConfig = entry.getValue().getAsJsonObject();
-                        
+
                         BeeBehaviorConfig config = BeeBehaviorConfig.createWithDefaults(defaultConfig);
                         parseConfig(speciesConfig, config);
-                        
-                        // Si c'est un harvester, appliquer les defaults harvester
-                        if (config.getBehaviorType() == BeeBehaviorType.HARVESTER) {
-                            if (config.getHarvestingDuration() == defaultConfig.getHarvestingDuration()) {
-                                config.setHarvestingDuration(harvesterDefaults.getHarvestingDuration());
-                            }
-                            if (config.getInventorySize() == defaultConfig.getInventorySize()) {
-                                config.setInventorySize(harvesterDefaults.getInventorySize());
-                            }
-                            if (config.getReturnThreshold() == defaultConfig.getReturnThreshold()) {
-                                config.setReturnThreshold(harvesterDefaults.getReturnThreshold());
-                            }
-                            if (config.getSpeedThresholds().isEmpty() && !harvesterDefaults.getSpeedThresholds().isEmpty()) {
-                                for (SpeedThreshold threshold : harvesterDefaults.getSpeedThresholds()) {
-                                    config.addSpeedThreshold(threshold);
-                                }
-                            }
-                        }
-                        
+
                         configs.put(speciesId, config);
                         LOGGER.debug("Loaded behavior config for species: {}", speciesId);
                     }
                 }
-                
+
                 loaded = true;
                 LOGGER.info("Loaded {} bee behavior configs", configs.size());
             }
@@ -137,51 +95,40 @@ public class BeeBehaviorManager {
             setupDefaults();
         }
     }
-    
+
     /**
-     * Configure les valeurs par défaut si le fichier JSON n'est pas disponible.
+     * Configure les valeurs par defaut si le fichier JSON n'est pas disponible.
      */
     private static void setupDefaults() {
         configs.clear();
         defaultConfig = new BeeBehaviorConfig();
-        
-        // Config par défaut pour common
+
+        // Config par defaut pour common
         BeeBehaviorConfig commonConfig = new BeeBehaviorConfig();
-        commonConfig.setBehaviorType(BeeBehaviorType.FORAGER);
         commonConfig.addLootEntry(new LootEntry("minecraft:honeycomb", 1, 1, 80));
         configs.put("common", commonConfig);
-        
+
         // Config pour noble
         BeeBehaviorConfig nobleConfig = new BeeBehaviorConfig();
-        nobleConfig.setBehaviorType(BeeBehaviorType.FORAGER);
         nobleConfig.setFlyingSpeed(0.5);
         nobleConfig.setHealth(12.0);
         nobleConfig.setForagingDuration(150);
         nobleConfig.addLootEntry(new LootEntry("minecraft:honeycomb", 1, 2, 70));
         configs.put("noble", nobleConfig);
-        
+
         // Config pour diligent
         BeeBehaviorConfig diligentConfig = new BeeBehaviorConfig();
-        diligentConfig.setBehaviorType(BeeBehaviorType.FORAGER);
         diligentConfig.setFlyingSpeed(0.75);
         diligentConfig.setHealth(8.0);
         diligentConfig.setForagingDuration(60);
         diligentConfig.addLootEntry(new LootEntry("minecraft:honeycomb", 1, 1, 90));
         configs.put("diligent", diligentConfig);
-        
+
         loaded = true;
         LOGGER.info("Using default behavior configs");
     }
-    
+
     private static void parseConfig(JsonObject json, BeeBehaviorConfig config) {
-        if (json.has("behaviorType")) {
-            String type = json.get("behaviorType").getAsString();
-            try {
-                config.setBehaviorType(BeeBehaviorType.valueOf(type.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                LOGGER.warn("Unknown behavior type: {}", type);
-            }
-        }
         if (json.has("flyingSpeed")) {
             config.setFlyingSpeed(json.get("flyingSpeed").getAsDouble());
         }
@@ -218,24 +165,6 @@ public class BeeBehaviorManager {
         if (json.has("foragingDuration")) {
             config.setForagingDuration(json.get("foragingDuration").getAsInt());
         }
-        if (json.has("harvestingDuration")) {
-            config.setHarvestingDuration(json.get("harvestingDuration").getAsInt());
-        }
-        if (json.has("inventorySize")) {
-            config.setInventorySize(json.get("inventorySize").getAsInt());
-        }
-        if (json.has("returnThreshold")) {
-            config.setReturnThreshold(json.get("returnThreshold").getAsInt());
-        }
-        if (json.has("speedThresholds")) {
-            JsonArray thresholdArray = json.getAsJsonArray("speedThresholds");
-            for (JsonElement element : thresholdArray) {
-                JsonObject thresholdObj = element.getAsJsonObject();
-                int itemCount = thresholdObj.get("itemCount").getAsInt();
-                double speedMultiplier = thresholdObj.get("speedMultiplier").getAsDouble();
-                config.addSpeedThreshold(new SpeedThreshold(itemCount, speedMultiplier));
-            }
-        }
         if (json.has("pollinationLoot")) {
             JsonArray lootArray = json.getAsJsonArray("pollinationLoot");
             for (JsonElement element : lootArray) {
@@ -248,10 +177,10 @@ public class BeeBehaviorManager {
             }
         }
     }
-    
+
     /**
-     * Récupère la configuration pour une espèce donnée.
-     * Retourne la config par défaut si l'espèce n'est pas trouvée.
+     * Recupere la configuration pour une espece donnee.
+     * Retourne la config par defaut si l'espece n'est pas trouvee.
      */
     public static BeeBehaviorConfig getConfig(String speciesId) {
         if (!loaded) {
@@ -260,9 +189,9 @@ public class BeeBehaviorManager {
         }
         return configs.getOrDefault(speciesId, defaultConfig);
     }
-    
+
     /**
-     * Récupère la configuration par défaut.
+     * Recupere la configuration par defaut.
      */
     public static BeeBehaviorConfig getDefaultConfig() {
         if (!loaded) {
@@ -270,9 +199,9 @@ public class BeeBehaviorManager {
         }
         return defaultConfig;
     }
-    
+
     /**
-     * Vérifie si une configuration existe pour une espèce.
+     * Verifie si une configuration existe pour une espece.
      */
     public static boolean hasConfig(String speciesId) {
         if (!loaded) {
@@ -280,9 +209,9 @@ public class BeeBehaviorManager {
         }
         return configs.containsKey(speciesId);
     }
-    
+
     /**
-     * Vérifie si les configurations sont chargées.
+     * Verifie si les configurations sont chargees.
      */
     public static boolean isLoaded() {
         return loaded;

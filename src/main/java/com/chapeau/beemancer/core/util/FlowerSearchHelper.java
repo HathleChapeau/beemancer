@@ -12,9 +12,8 @@
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
- * - MagicHiveBlockEntity.java: Détection fleurs pour abeilles
+ * - MagicHiveBlockEntity.java: Detection fleurs pour abeilles
  * - ForagingBehaviorGoal.java: Recherche de fleurs
- * - HarvestingBehaviorGoal.java: Recherche de fleurs à récolter
  *
  * ============================================================
  */

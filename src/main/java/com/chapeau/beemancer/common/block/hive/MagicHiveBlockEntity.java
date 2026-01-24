@@ -25,7 +25,6 @@
  */
 package com.chapeau.beemancer.common.block.hive;
 
-import com.chapeau.beemancer.common.entity.bee.BeeInventory;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
@@ -459,20 +458,11 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         
         bee.markAsEnteredHive();
         
-        // Déposer le loot si pollinisée (forager)
+        // Deposer le loot si pollinisee
         if (bee.isPollinated()) {
             depositPollinationLoot(bee);
         }
-        
-        // Déposer l'inventaire si harvester
-        BeeInventory inventory = bee.getInventory();
-        if (inventory != null && !inventory.isEmpty()) {
-            List<ItemStack> items = inventory.extractAll();
-            for (ItemStack stack : items) {
-                insertIntoOutputSlots(stack);
-            }
-        }
-        
+
         // Capture bee back to item
         ItemStack beeItem = MagicBeeItem.captureFromEntity(bee);
         items.set(slot, beeItem);

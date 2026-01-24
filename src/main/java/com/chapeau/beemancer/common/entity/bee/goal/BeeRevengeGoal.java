@@ -32,13 +32,16 @@ import java.util.EnumSet;
 /**
  * Goal de priorité 2: L'abeille attaque celui qui l'a blessée.
  * Hérite de HurtByTargetGoal pour le ciblage automatique.
+ *
+ * L'état enragé utilise un timer (MagicBeeEntity.DEFAULT_ENRAGED_DURATION = 10 sec)
+ * qui est automatiquement décrémenté dans MagicBeeEntity.tick().
+ * Quand le timer expire, l'abeille retourne à son comportement normal.
  */
 public class BeeRevengeGoal extends HurtByTargetGoal {
-    
+
     private static final double ATTACK_RANGE = 1.5;
-    private static final double CHASE_SPEED = 0.1;
     private static final int ATTACK_COOLDOWN = 20; // 1 seconde entre les attaques
-    
+
     private final MagicBeeEntity bee;
     private int attackCooldown = 0;
     
@@ -80,7 +83,11 @@ public class BeeRevengeGoal extends HurtByTargetGoal {
     @Override
     public void start() {
         super.start();
-        bee.setEnraged(true);
+        // Le timer enragé est déjà activé dans MagicBeeEntity.hurt()
+        // On s'assure qu'il est bien actif pour ce goal
+        if (!bee.isEnraged()) {
+            bee.setEnraged(true);
+        }
         attackCooldown = 0;
     }
     
@@ -125,6 +132,7 @@ public class BeeRevengeGoal extends HurtByTargetGoal {
     public void stop() {
         super.stop();
         bee.setDeltaMovement(Vec3.ZERO);
-        // Ne pas reset enraged ici - il reste enragé jusqu'à retour à la ruche
+        // Le timer enragé continue de décrémenter naturellement dans MagicBeeEntity.tick()
+        // L'état enragé expire automatiquement après DEFAULT_ENRAGED_DURATION (10 sec)
     }
 }

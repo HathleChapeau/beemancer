@@ -22,10 +22,7 @@
 package com.chapeau.beemancer.common.item.bee;
 
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
-import com.chapeau.beemancer.common.entity.bee.BeeActivityState;
-import com.chapeau.beemancer.common.entity.bee.BeeInventory;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
-import com.chapeau.beemancer.core.behavior.BeeBehaviorType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -59,16 +56,10 @@ public class BeeWandItem extends Item {
                 .track("Species", bee -> bee.getSpeciesId())
                 .track("Health", bee -> String.format("%.1f/%.1f", bee.getHealth(), bee.getMaxHealth()))
                 .track("Lifetime", bee -> formatTicks(bee.getRemainingLifetime()))
-                .track("Behavior", bee -> bee.getBehaviorConfig().getBehaviorType().name())
                 .track("Pollinated", bee -> bee.isPollinated() ? "Yes" : "No")
                 .track("Enraged", bee -> bee.isEnraged() ? "Yes" : "No")
                 .track("Hive", bee -> bee.hasAssignedHive() ? formatPos(bee.getAssignedHivePos()) : "None")
                 .track("Slot", bee -> bee.hasAssignedHive() ? String.valueOf(bee.getAssignedSlot()) : "-")
-                .track("Inventory", bee -> {
-                    BeeInventory inv = bee.getInventory();
-                    if (inv == null) return "N/A";
-                    return inv.getTotalItemCount() + " items";
-                })
         );
         
         // Configuration du tracking pour MagicHiveBlockEntity

@@ -8,12 +8,11 @@
  * ------------------------------------------------------------
  * | Dépendance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | BeeGeneData         | Stockage gènes       | Gestion des gènes de l'abeille |
- * | GeneRegistry        | Registre gènes       | Lookup des gènes               |
- * | BeeBehaviorConfig   | Configuration        | Paramètres de comportement     |
- * | BeeBehaviorManager  | Gestionnaire config  | Récupération config par espèce |
+ * | BeeGeneData         | Stockage genes       | Gestion des genes de l'abeille |
+ * | GeneRegistry        | Registre genes       | Lookup des genes               |
+ * | BeeBehaviorConfig   | Configuration        | Parametres de comportement     |
+ * | BeeBehaviorManager  | Gestionnaire config  | Recuperation config par espece |
  * | MagicHiveBlockEntity| Ruche                | Notification et interaction    |
- * | BeeInventory        | Inventaire interne   | Stockage pour récolteuses      |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -28,11 +27,9 @@ package com.chapeau.beemancer.common.entity.bee;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.entity.bee.goal.BeeRevengeGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.ForagingBehaviorGoal;
-import com.chapeau.beemancer.common.entity.bee.goal.HarvestingBehaviorGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.ReturnToHiveWhenLowHealthGoal;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
-import com.chapeau.beemancer.core.behavior.BeeBehaviorType;
 import com.chapeau.beemancer.core.gene.BeeGeneData;
 import com.chapeau.beemancer.core.gene.Gene;
 import com.chapeau.beemancer.core.gene.GeneCategory;
@@ -96,9 +93,13 @@ public class MagicBeeEntity extends Bee {
     // --- Health tracking for items ---
     private float storedHealth = -1; // -1 = use max health
 
-    // --- Inventory for harvesters ---
-    @Nullable
-    private BeeInventory inventory = null;
+    // --- Cached Config ---
+    private BeeBehaviorConfig cachedConfig = null;
+    private String cachedConfigSpecies = null;
+
+    // --- Enraged Timer ---
+    public static final int DEFAULT_ENRAGED_DURATION = 200; // 10 secondes
+    private int enragedTimer = 0;
 
     public MagicBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
@@ -127,9 +128,8 @@ public class MagicBeeEntity extends Bee {
         // Priorité 2: Vengeance si attaqué
         this.targetSelector.addGoal(2, new BeeRevengeGoal(this));
 
-        // Priorité 3: Comportement de travail (butinage ou récolte)
+        // Priorité 3: Comportement de butinage
         this.goalSelector.addGoal(3, new ForagingBehaviorGoal(this));
-        this.goalSelector.addGoal(3, new HarvestingBehaviorGoal(this));
 
         // Priorité 4: Navigation manuelle (BeeWand)
         this.goalSelector.addGoal(4, new MoveToTargetGoal(this));
@@ -190,10 +190,23 @@ public class MagicBeeEntity extends Bee {
     // --- Behavior Config ---
 
     /**
-     * Récupère la configuration de comportement pour cette espèce.
+     * Récupère la configuration de comportement pour cette espèce (avec cache).
      */
     public BeeBehaviorConfig getBehaviorConfig() {
-        return BeeBehaviorManager.getConfig(getSpeciesId());
+        String currentSpecies = getSpeciesId();
+        if (cachedConfig == null || !currentSpecies.equals(cachedConfigSpecies)) {
+            cachedConfig = BeeBehaviorManager.getConfig(currentSpecies);
+            cachedConfigSpecies = currentSpecies;
+        }
+        return cachedConfig;
+    }
+
+    /**
+     * Invalide le cache de configuration.
+     */
+    public void invalidateConfigCache() {
+        cachedConfig = null;
+        cachedConfigSpecies = null;
     }
 
     // --- Pollination State ---
@@ -206,14 +219,53 @@ public class MagicBeeEntity extends Bee {
         entityData.set(DATA_POLLINATED, pollinated);
     }
 
-    // --- Combat State ---
+    // --- Combat State (Timer-based) ---
 
+    /**
+     * Vérifie si l'abeille est enragée (timer > 0).
+     */
     public boolean isEnraged() {
-        return entityData.get(DATA_ENRAGED);
+        return enragedTimer > 0;
     }
 
+    /**
+     * Active l'état enragé pour la durée par défaut.
+     */
     public void setEnraged(boolean enraged) {
-        entityData.set(DATA_ENRAGED, enraged);
+        if (enraged) {
+            enragedTimer = DEFAULT_ENRAGED_DURATION;
+            entityData.set(DATA_ENRAGED, true);
+        } else {
+            enragedTimer = 0;
+            entityData.set(DATA_ENRAGED, false);
+        }
+    }
+
+    /**
+     * Active l'état enragé pour une durée spécifique.
+     */
+    public void setEnragedFor(int ticks) {
+        enragedTimer = ticks;
+        entityData.set(DATA_ENRAGED, ticks > 0);
+    }
+
+    /**
+     * Retourne le temps restant d'enragement.
+     */
+    public int getEnragedTimer() {
+        return enragedTimer;
+    }
+
+    /**
+     * Décrémente le timer enragé et met à jour l'état.
+     */
+    private void tickEnragedTimer() {
+        if (enragedTimer > 0) {
+            enragedTimer--;
+            if (enragedTimer <= 0) {
+                entityData.set(DATA_ENRAGED, false);
+            }
+        }
     }
 
     // --- Returning State ---
@@ -255,34 +307,8 @@ public class MagicBeeEntity extends Bee {
         return hurt;
     }
 
-    // --- Inventory for Harvesters ---
-
     /**
-     * Récupère l'inventaire de l'abeille (créé à la demande pour les récolteuses).
-     * Retourne null si l'abeille n'est pas une récolteuse.
-     */
-    @Nullable
-    public BeeInventory getInventory() {
-        BeeBehaviorConfig config = getBehaviorConfig();
-        if (config.getBehaviorType() != BeeBehaviorType.HARVESTER) {
-            return null;
-        }
-
-        if (inventory == null) {
-            inventory = new BeeInventory(config.getInventorySize());
-        }
-        return inventory;
-    }
-
-    /**
-     * Vérifie si l'abeille a un inventaire.
-     */
-    public boolean hasInventory() {
-        return inventory != null;
-    }
-
-    /**
-     * Calcule la vitesse effective en tenant compte du contenu de l'inventaire.
+     * Calcule la vitesse effective de vol.
      */
     public double getEffectiveFlyingSpeed() {
         BeeBehaviorConfig config = getBehaviorConfig();
@@ -292,25 +318,7 @@ public class MagicBeeEntity extends Bee {
             baseSpeed = config.getEnragedFlyingSpeed();
         }
 
-        // Apply inventory weight penalty for harvesters
-        if (inventory != null && config.getBehaviorType() == BeeBehaviorType.HARVESTER) {
-            int itemCount = inventory.getTotalItemCount();
-            double multiplier = config.getEffectiveSpeedMultiplier(itemCount);
-            baseSpeed *= multiplier;
-        }
-
         return baseSpeed;
-    }
-
-    /**
-     * Vérifie si l'abeille doit retourner à la ruche (seuil d'inventaire atteint).
-     */
-    public boolean shouldReturnDueToInventory() {
-        if (inventory == null) return false;
-
-        BeeBehaviorConfig config = getBehaviorConfig();
-        int itemCount = inventory.getTotalItemCount();
-        return itemCount >= config.getReturnThreshold();
     }
 
     // --- Lifetime System ---
@@ -319,14 +327,19 @@ public class MagicBeeEntity extends Bee {
     public void tick() {
         super.tick();
 
-        if (!level().isClientSide() && tickCount % 20 == 0) {
-            // Décrémente le lifetime chaque seconde
-            boolean alive = geneData.decrementLifetime(20);
-            entityData.set(DATA_REMAINING_LIFETIME, geneData.getRemainingLifetime());
+        if (!level().isClientSide()) {
+            // Tick le timer enragé chaque tick
+            tickEnragedTimer();
 
-            if (!alive) {
-                this.discard();
-                return;
+            // Décrémente le lifetime chaque seconde
+            if (tickCount % 20 == 0) {
+                boolean alive = geneData.decrementLifetime(20);
+                entityData.set(DATA_REMAINING_LIFETIME, geneData.getRemainingLifetime());
+
+                if (!alive) {
+                    this.discard();
+                    return;
+                }
             }
         }
 
@@ -367,11 +380,6 @@ public class MagicBeeEntity extends Bee {
 
     @Override
     public void remove(Entity.RemovalReason reason) {
-        // Clear inventory on death (not when entering hive)
-        if (reason == RemovalReason.KILLED && inventory != null) {
-            inventory.clear(); // Items are destroyed
-        }
-
         if (!level().isClientSide() && hasAssignedHive() && !notifiedHiveOfRemoval) {
             notifiedHiveOfRemoval = true;
             notifyHiveOfDeath();
@@ -457,14 +465,8 @@ public class MagicBeeEntity extends Bee {
 
         // Sauvegarder l'état de comportement
         tag.putBoolean("Pollinated", isPollinated());
-        tag.putBoolean("Enraged", isEnraged());
+        tag.putInt("EnragedTimer", enragedTimer);
         tag.putFloat("StoredHealth", getHealth());
-
-        // Sauvegarder l'inventaire
-        if (inventory != null && !inventory.isEmpty()) {
-            // UPDATED FOR 1.21: Passing registryAccess()
-            tag.put("BeeInventory", inventory.save(this.registryAccess()));
-        }
     }
 
     @Override
@@ -491,21 +493,18 @@ public class MagicBeeEntity extends Bee {
         if (tag.contains("Pollinated")) {
             setPollinated(tag.getBoolean("Pollinated"));
         }
-        if (tag.contains("Enraged")) {
-            setEnraged(tag.getBoolean("Enraged"));
+        if (tag.contains("EnragedTimer")) {
+            enragedTimer = tag.getInt("EnragedTimer");
+            entityData.set(DATA_ENRAGED, enragedTimer > 0);
+        } else if (tag.contains("Enraged")) {
+            // Backwards compatibility with old saves
+            if (tag.getBoolean("Enraged")) {
+                enragedTimer = DEFAULT_ENRAGED_DURATION;
+                entityData.set(DATA_ENRAGED, true);
+            }
         }
         if (tag.contains("StoredHealth")) {
             storedHealth = tag.getFloat("StoredHealth");
-        }
-
-        // Charger l'inventaire
-        if (tag.contains("BeeInventory")) {
-            BeeBehaviorConfig config = getBehaviorConfig();
-            if (config.getBehaviorType() == BeeBehaviorType.HARVESTER) {
-                inventory = new BeeInventory(config.getInventorySize());
-                // UPDATED FOR 1.21: Passing registryAccess()
-                inventory.load(this.registryAccess(), tag.getCompound("BeeInventory"));
-            }
         }
     }
 

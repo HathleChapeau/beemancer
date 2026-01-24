@@ -11,10 +11,9 @@
  * | (aucune)            |                      |                                |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
- * - MagicBeeEntity.java: Tracking de l'état courant
- * - ForagingBehaviorGoal.java: Machine à états
- * - HarvestingBehaviorGoal.java: Machine à états
+ * UTILISE PAR:
+ * - MagicBeeEntity.java: Tracking de l'etat courant
+ * - ForagingBehaviorGoal.java: Machine a etats
  *
  * ============================================================
  */
