@@ -87,7 +87,12 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     private final float[] beeCurrentHealth = new float[BEE_SLOTS];
     private final float[] beeMaxHealth = new float[BEE_SLOTS];
     
-    // Flower detection: list of flower positions per bee slot
+    // Flower detection: shared pool of available flowers (not assigned to any bee)
+    private final List<BlockPos> availableFlowers = new ArrayList<>();
+    // Flowers currently assigned to each bee slot (to return if bee fails)
+    private final BlockPos[] assignedFlower = new BlockPos[BEE_SLOTS];
+    public List<BlockPos> getAvailableFlowers() { return availableFlowers; }
+    // Legacy compatibility
     @SuppressWarnings("unchecked")
     private final List<BlockPos>[] beeFlowers = new List[BEE_SLOTS];
     public List<BlockPos>[] getBeeFlowers(){ return beeFlowers; }
@@ -127,6 +132,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         Arrays.fill(beeNeedsHealing, false);
         Arrays.fill(beeCurrentHealth, 0);
         Arrays.fill(beeMaxHealth, 10);
+        Arrays.fill(assignedFlower, null);
         for (int i = 0; i < BEE_SLOTS; i++) {
             beeFlowers[i] = new ArrayList<>();
         }
@@ -161,6 +167,10 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 bee.markAsEnteredHive();
                 bee.discard();
             }
+            // Return assigned flower to pool
+            if (assignedFlower[slot] != null) {
+                returnFlower(slot, assignedFlower[slot]);
+            }
             // Clear tracking state
             beeStates[slot] = BeeState.EMPTY;
             beeUUIDs[slot] = null;
@@ -168,7 +178,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             beeNeedsHealing[slot] = false;
             beeFlowers[slot].clear();
         }
-        
+
         ItemStack result = ContainerHelper.removeItem(items, slot, amount);
         if (!result.isEmpty()) {
             setChanged();
@@ -193,7 +203,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             if (!stack.isEmpty() && stack.is(BeemancerItems.MAGIC_BEE.get())) {
                 MagicBeeItem.setAssignedHive(stack, worldPosition, slot);
                 beeStates[slot] = BeeState.INSIDE;
-                System.out.println("[DEBUG-HIVE] Bee INSIDE, cooldown=" + beeCooldowns[slot] + ", flowers=" + beeFlowers[slot].size());
+                System.out.println("[DEBUG-HIVE] Bee INSIDE, cooldown=" + beeCooldowns[slot] + ", flowers=" + availableFlowers.size());
                 beeUUIDs[slot] = null;
                 
                 // Initialiser le cooldown et la santé
@@ -234,120 +244,171 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         Arrays.fill(beeUUIDs, null);
         Arrays.fill(beeCooldowns, 0);
         Arrays.fill(beeNeedsHealing, false);
+        Arrays.fill(assignedFlower, null);
+        availableFlowers.clear();
         for (int i = 0; i < BEE_SLOTS; i++) {
             beeFlowers[i].clear();
         }
     }
 
     // --- Flower Detection ---
-    
+
     /**
-     * Scans for flowers for a specific bee slot based on its FlowerGene and areaOfEffect.
-     */
-    private void scanFlowersForSlot(int slot) {
-        if (level == null || slot < 0 || slot >= BEE_SLOTS) return;
-        
-        ItemStack beeItem = items.get(slot);
-        if (beeItem.isEmpty() || !beeItem.is(BeemancerItems.MAGIC_BEE.get())) {
-            beeFlowers[slot].clear();
-            return;
-        }
-        
-        BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
-        Gene flowerGene = geneData.getGene(GeneCategory.FLOWER);
-        
-        if (!(flowerGene instanceof FlowerGene flower)) {
-            beeFlowers[slot].clear();
-            return;
-        }
-        
-        TagKey<Block> flowerTag = flower.getFlowerTag();
-        if (flowerTag == null) {
-            beeFlowers[slot].clear();
-            return;
-        }
-        
-        // Get area of effect from config
-        String speciesId = geneData.getGene(GeneCategory.SPECIES) != null 
-                ? geneData.getGene(GeneCategory.SPECIES).getId() : "common";
-        BeeBehaviorConfig config = BeeBehaviorManager.getConfig(speciesId);
-        int radius = config.getAreaOfEffect();
-        
-        // Find all flowers
-        List<BlockPos> flowers = FlowerSearchHelper.findAllFlowers(level, worldPosition, radius, flowerTag);
-        beeFlowers[slot].clear();
-        beeFlowers[slot].addAll(flowers);
-    }
-    
-    /**
-     * Scans for flowers for all bees periodically.
+     * Scans for all available flowers around the hive.
+     * Builds a shared pool that all bees can use.
      */
     private void scanAllFlowers() {
+        if (level == null) return;
+
+        // Collect all unique flower tags from bees in the hive
+        Set<TagKey<Block>> allFlowerTags = new HashSet<>();
+        int maxRadius = 0;
+
         for (int i = 0; i < BEE_SLOTS; i++) {
-            if (beeStates[i] != BeeState.EMPTY) {
-                scanFlowersForSlot(i);
+            if (beeStates[i] == BeeState.EMPTY) continue;
+
+            ItemStack beeItem = items.get(i);
+            if (beeItem.isEmpty() || !beeItem.is(BeemancerItems.MAGIC_BEE.get())) continue;
+
+            BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
+            Gene flowerGene = geneData.getGene(GeneCategory.FLOWER);
+
+            if (flowerGene instanceof FlowerGene fg) {
+                TagKey<Block> tag = fg.getFlowerTag();
+                if (tag != null) {
+                    allFlowerTags.add(tag);
+                }
+            }
+
+            // Get max radius
+            String speciesId = geneData.getGene(GeneCategory.SPECIES) != null
+                    ? geneData.getGene(GeneCategory.SPECIES).getId() : "common";
+            BeeBehaviorConfig config = BeeBehaviorManager.getConfig(speciesId);
+            maxRadius = Math.max(maxRadius, config.getAreaOfEffect());
+        }
+
+        // Build the shared pool of available flowers
+        Set<BlockPos> newFlowers = new HashSet<>();
+        for (TagKey<Block> flowerTag : allFlowerTags) {
+            List<BlockPos> found = FlowerSearchHelper.findAllFlowers(level, worldPosition, maxRadius, flowerTag);
+            newFlowers.addAll(found);
+        }
+
+        // Remove flowers that are currently assigned to bees
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            if (assignedFlower[i] != null) {
+                newFlowers.remove(assignedFlower[i]);
             }
         }
+
+        // Update available flowers (shuffle for random distribution)
+        availableFlowers.clear();
+        availableFlowers.addAll(newFlowers);
+        Collections.shuffle(availableFlowers);
+
+        // Also update legacy beeFlowers arrays for compatibility
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            beeFlowers[i].clear();
+            beeFlowers[i].addAll(availableFlowers);
+        }
     }
-    
+
     /**
-     * Gets the list of flowers for a specific bee slot.
-     * Used by bees to know where to go.
+     * Scans for flowers for a specific bee slot (called when bee is placed).
+     */
+    private void scanFlowersForSlot(int slot) {
+        // Just trigger a full scan when a new bee is added
+        scanAllFlowers();
+    }
+
+    /**
+     * Gets the list of available flowers.
      */
     public List<BlockPos> getFlowersForSlot(int slot) {
-        if (slot < 0 || slot >= BEE_SLOTS) {
-            return Collections.emptyList();
-        }
-        return Collections.unmodifiableList(beeFlowers[slot]);
+        return Collections.unmodifiableList(availableFlowers);
     }
-    
+
     /**
-     * Checks if there are any flowers available for a bee slot.
+     * Checks if there are any flowers available.
      */
     public boolean hasFlowersForSlot(int slot) {
-        if (slot < 0 || slot >= BEE_SLOTS) return false;
-        return !beeFlowers[slot].isEmpty();
+        return !availableFlowers.isEmpty();
     }
-    
+
     /**
-     * Gets the next available flower for a bee (removes from list to avoid conflicts).
-     * Returns null if no flowers available.
+     * Gets a random available flower and assigns it to the bee.
+     * Removes it from the pool to prevent conflicts.
      */
     @Nullable
     public BlockPos getAndAssignFlower(int slot) {
-        if (slot < 0 || slot >= BEE_SLOTS || beeFlowers[slot].isEmpty()) {
+        if (slot < 0 || slot >= BEE_SLOTS || availableFlowers.isEmpty()) {
             return null;
         }
-        
-        // Get first available flower and remove it from the list
-        BlockPos flower = beeFlowers[slot].remove(0);
-        
-        // Verify it's still valid
-        if (level != null) {
-            ItemStack beeItem = items.get(slot);
-            if (!beeItem.isEmpty()) {
-                BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
-                Gene flowerGene = geneData.getGene(GeneCategory.FLOWER);
-                if (flowerGene instanceof FlowerGene fg) {
-                    TagKey<Block> flowerTag = fg.getFlowerTag();
-                    if (FlowerSearchHelper.isValidFlower(level, flower, flowerTag)) {
-                        return flower;
-                    }
-                }
+
+        // Get flower tag for this bee to validate
+        ItemStack beeItem = items.get(slot);
+        TagKey<Block> flowerTag = null;
+        if (!beeItem.isEmpty()) {
+            BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
+            Gene flowerGene = geneData.getGene(GeneCategory.FLOWER);
+            if (flowerGene instanceof FlowerGene fg) {
+                flowerTag = fg.getFlowerTag();
             }
         }
-        
-        // If not valid, try next one
-        return getAndAssignFlower(slot);
+
+        // Pick a random flower from the pool
+        RandomSource random = level != null ? level.getRandom() : RandomSource.create();
+
+        // Try up to 10 times to find a valid flower
+        for (int attempt = 0; attempt < 10 && !availableFlowers.isEmpty(); attempt++) {
+            int index = random.nextInt(availableFlowers.size());
+            BlockPos flower = availableFlowers.get(index);
+
+            // Verify it's still valid
+            if (level != null && flowerTag != null) {
+                if (FlowerSearchHelper.isValidFlower(level, flower, flowerTag)) {
+                    // Remove from pool and assign to this bee
+                    availableFlowers.remove(index);
+                    assignedFlower[slot] = flower;
+                    return flower;
+                } else {
+                    // Invalid flower, remove from pool
+                    availableFlowers.remove(index);
+                }
+            } else {
+                // Can't validate, just use it
+                availableFlowers.remove(index);
+                assignedFlower[slot] = flower;
+                return flower;
+            }
+        }
+
+        return null;
     }
-    
+
     /**
-     * Returns a flower to the available list (if bee couldn't reach it).
+     * Returns a flower to the available pool (if bee couldn't reach it).
      */
     public void returnFlower(int slot, BlockPos flower) {
-        if (slot >= 0 && slot < BEE_SLOTS && flower != null) {
-            // Add to end of list
-            beeFlowers[slot].add(flower);
+        if (flower == null) return;
+
+        // Clear assignment
+        if (slot >= 0 && slot < BEE_SLOTS) {
+            assignedFlower[slot] = null;
+        }
+
+        // Add back to pool if not already present
+        if (!availableFlowers.contains(flower)) {
+            availableFlowers.add(flower);
+        }
+    }
+
+    /**
+     * Clears the assigned flower for a slot (when bee returns or dies).
+     */
+    private void clearAssignedFlower(int slot) {
+        if (slot >= 0 && slot < BEE_SLOTS) {
+            assignedFlower[slot] = null;
         }
     }
 
@@ -455,38 +516,41 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     public void addBee(MagicBeeEntity bee) {
         int slot = bee.getAssignedSlot();
         if (slot < 0 || slot >= BEE_SLOTS) return;
-        
+
         bee.markAsEnteredHive();
-        
+
         // Deposer le loot si pollinisee
         if (bee.isPollinated()) {
             depositPollinationLoot(bee);
         }
 
+        // Clear the assigned flower (bee completed its task or gave up)
+        clearAssignedFlower(slot);
+
         // Capture bee back to item
         ItemStack beeItem = MagicBeeItem.captureFromEntity(bee);
         items.set(slot, beeItem);
         beeStates[slot] = BeeState.INSIDE;
-                System.out.println("[DEBUG-HIVE] Bee INSIDE, cooldown=" + beeCooldowns[slot] + ", flowers=" + beeFlowers[slot].size());
+        System.out.println("[DEBUG-HIVE] Bee INSIDE, cooldown=" + beeCooldowns[slot] + ", flowers=" + availableFlowers.size());
         beeUUIDs[slot] = null;
-        
+
         // Stocker la santé actuelle
         beeCurrentHealth[slot] = bee.getHealth();
         beeMaxHealth[slot] = bee.getMaxHealth();
         beeNeedsHealing[slot] = beeCurrentHealth[slot] < beeMaxHealth[slot];
-        
+
         // Initialiser le cooldown
         BeeBehaviorConfig config = bee.getBehaviorConfig();
         beeCooldowns[slot] = config.getRandomRestCooldown(level.getRandom());
-        
+
         // Reset états
         bee.setPollinated(false);
         bee.setEnraged(false);
         bee.setReturning(false);
-        
-        // Rescan flowers after return
+
+        // Rescan flowers after return (will rebuild the shared pool)
         scanFlowersForSlot(slot);
-        
+
         setChanged();
     }
     
@@ -540,6 +604,11 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     public void onBeeKilled(UUID beeUUID) {
         for (int i = 0; i < BEE_SLOTS; i++) {
             if (beeUUID.equals(beeUUIDs[i]) && beeStates[i] == BeeState.OUTSIDE) {
+                // Return assigned flower to pool
+                if (assignedFlower[i] != null) {
+                    returnFlower(i, assignedFlower[i]);
+                }
+
                 items.set(i, ItemStack.EMPTY);
                 beeStates[i] = BeeState.EMPTY;
                 beeUUIDs[i] = null;
@@ -613,6 +682,11 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             syncEntityToItem(slot, bee);
             bee.markAsEnteredHive();
             bee.discard();
+        }
+
+        // Return assigned flower to pool
+        if (assignedFlower[slot] != null) {
+            returnFlower(slot, assignedFlower[slot]);
         }
 
         beeStates[slot] = BeeState.EMPTY;

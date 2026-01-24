@@ -56,16 +56,28 @@ import java.util.Random;
  * - Timeout de 40 secondes sur SEEKING_FLOWER
  * - Sélection aléatoire des fleurs (pas par distance)
  * - Pathfinding A* pour éviter les obstacles
+ * - Approche par le haut (comme une vraie abeille)
+ * - Inclinaison vers l'avant pendant le butinage
+ * - Descente douce vers le sol si fleur en hauteur
+ * - Visuel de pollen vanilla quand pollinisée
  */
 public class ForagingBehaviorGoal extends Goal {
 
     private static final double REACH_DISTANCE = 1.5;
+    private static final double REACH_DISTANCE_VERTICAL = 0.5;
     private static final double FLIGHT_SPEED_FACTOR = 0.1;
+    private static final double HOVER_HEIGHT = 1.2; // Hauteur au-dessus de la fleur pour l'approche
+    private static final double FALL_SPEED = 0.02; // Vitesse de descente pendant le butinage
+    private static final float FORAGING_PITCH = 30.0f; // Inclinaison vers l'avant (degrés)
     private static final Random RANDOM = new Random();
 
     private final MagicBeeEntity bee;
     private final BeeAIStateMachine stateMachine;
     private BeePathfinding pathfinding;
+
+    // État d'approche
+    private boolean isApproachingFromAbove = false;
+    private float originalPitch = 0;
 
     public ForagingBehaviorGoal(MagicBeeEntity bee) {
         this.bee = bee;
@@ -103,6 +115,10 @@ public class ForagingBehaviorGoal extends Goal {
             pathfinding = new BeePathfinding(bee.level());
         }
         pathfinding.clearPath();
+
+        // Reset état d'approche
+        isApproachingFromAbove = false;
+        resetPitch();
     }
 
     @Override
@@ -159,6 +175,7 @@ public class ForagingBehaviorGoal extends Goal {
             }
             stateMachine.setTargetPos(targetFlower);
             pathfinding.clearPath();
+            isApproachingFromAbove = true;
         }
 
         // Vérifier que la fleur existe toujours
@@ -166,19 +183,45 @@ public class ForagingBehaviorGoal extends Goal {
             returnFlowerToHive(targetFlower);
             stateMachine.clearTarget();
             pathfinding.clearPath();
+            isApproachingFromAbove = false;
             return;
         }
 
-        // Naviguer vers la fleur
-        double distance = bee.position().distanceTo(Vec3.atCenterOf(targetFlower));
-        if (distance <= REACH_DISTANCE) {
+        Vec3 flowerCenter = Vec3.atCenterOf(targetFlower);
+        Vec3 beePos = bee.position();
+
+        // Phase 1: Approche par le haut
+        if (isApproachingFromAbove) {
+            Vec3 hoverPoint = flowerCenter.add(0, HOVER_HEIGHT, 0);
+            double distToHover = beePos.distanceTo(hoverPoint);
+
+            if (distToHover <= REACH_DISTANCE) {
+                // Arrivé au point de survol, passer à la descente
+                isApproachingFromAbove = false;
+            } else {
+                // Naviguer vers le point de survol
+                navigateWithPathfinding(BlockPos.containing(hoverPoint));
+                return;
+            }
+        }
+
+        // Phase 2: Descente vers la fleur
+        double horizontalDist = Math.sqrt(
+                Math.pow(beePos.x - flowerCenter.x, 2) +
+                Math.pow(beePos.z - flowerCenter.z, 2)
+        );
+        double verticalDist = Math.abs(beePos.y - flowerCenter.y);
+
+        if (horizontalDist <= REACH_DISTANCE && verticalDist <= REACH_DISTANCE_VERTICAL) {
             // Arrivé sur la fleur, commencer à travailler
+            originalPitch = bee.getXRot();
             stateMachine.setWorkTimer(bee.getBehaviorConfig().getForagingDuration());
             stateMachine.setState(BeeActivityState.WORKING);
             return;
         }
 
-        navigateWithPathfinding(targetFlower);
+        // Descendre doucement vers la fleur
+        navigateTo(targetFlower);
     }
 
     private void tickWorking() {
@@ -186,22 +229,47 @@ public class ForagingBehaviorGoal extends Goal {
 
         // Vérifier que la fleur existe toujours
         if (targetFlower == null || !isValidFlower(targetFlower)) {
+            resetPitch();
             stateMachine.clearTarget();
             stateMachine.setState(BeeActivityState.SEEKING_FLOWER);
             return;
         }
 
-        // Rester sur place
-        bee.setDeltaMovement(Vec3.ZERO);
+        // Incliner l'abeille vers l'avant pendant le butinage
+        bee.setXRot(FORAGING_PITCH);
+
+        // Vérifier si l'abeille est en l'air (fleur en hauteur)
+        // Si oui, descendre doucement vers le sol
+        BlockPos groundCheck = bee.blockPosition().below();
+        boolean hasGroundBelow = !bee.level().getBlockState(groundCheck).isAir();
+
+        if (!hasGroundBelow) {
+            // Descendre doucement
+            bee.setDeltaMovement(new Vec3(0, -FALL_SPEED, 0));
+        } else {
+            // Au sol, rester sur place
+            bee.setDeltaMovement(Vec3.ZERO);
+        }
 
         // Vérifier si le travail est terminé
         if (stateMachine.isWorkComplete()) {
-            bee.setPollinated(true);
+            bee.setPollinated(true); // Active aussi le visuel vanilla (setHasNectar)
+            resetPitch();
             stateMachine.setState(BeeActivityState.RETURNING);
         }
     }
 
+    /**
+     * Remet le pitch de l'abeille à la normale.
+     */
+    private void resetPitch() {
+        bee.setXRot(0);
+    }
+
     private void tickReturning() {
+        // S'assurer que le pitch est normal pendant le retour
+        resetPitch();
+
         BlockPos hivePos = bee.getAssignedHivePos();
         if (hivePos == null) {
             return;
@@ -339,6 +407,8 @@ public class ForagingBehaviorGoal extends Goal {
         }
 
         bee.setDeltaMovement(Vec3.ZERO);
+        resetPitch();
+        isApproachingFromAbove = false;
         stateMachine.reset();
 
         if (pathfinding != null) {

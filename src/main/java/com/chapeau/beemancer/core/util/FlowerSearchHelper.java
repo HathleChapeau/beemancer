@@ -65,9 +65,8 @@ public final class FlowerSearchHelper {
             }
         }
         
-        // Trier par distance au centre
-        flowers.sort(Comparator.comparingDouble(pos -> pos.distSqr(center)));
-        
+        // Ne pas trier - la sélection aléatoire est faite par l'appelant
+        // Cela permet une meilleure distribution des abeilles sur les fleurs
         return flowers;
     }
     
