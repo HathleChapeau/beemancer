@@ -3,20 +3,22 @@
  * [ManualCentrifugeBlockEntity.java]
  * Description: BlockEntity pour la centrifugeuse manuelle
  * ============================================================
- * 
+ *
  * FONCTIONNEMENT:
- * - Accepte les combs du mod (Common, Noble, Diligent, Royal)
+ * - Accepte les combs definis par recettes JSON
  * - Le joueur doit maintenir clic droit pour faire tourner
- * - Chaque type de comb produit différents outputs
+ * - Outputs avec probabilites definies par recette
  * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.common.block.alchemy.ManualCentrifugeBlock;
 import com.chapeau.beemancer.common.menu.alchemy.ManualCentrifugeMenu;
+import com.chapeau.beemancer.core.recipe.BeemancerRecipeTypes;
+import com.chapeau.beemancer.core.recipe.ProcessingOutput;
+import com.chapeau.beemancer.core.recipe.ProcessingRecipeInput;
+import com.chapeau.beemancer.core.recipe.type.CentrifugeRecipe;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
-import com.chapeau.beemancer.core.registry.BeemancerFluids;
-import com.chapeau.beemancer.core.registry.BeemancerItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -28,8 +30,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -38,6 +40,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProvider {
     private static final int MAX_COMBS = 4;
@@ -116,12 +119,19 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
         return true;
     }
 
+    public boolean isValidComb(ItemStack stack, Level level) {
+        if (stack.isEmpty() || level == null) return false;
+        ProcessingRecipeInput input = ProcessingRecipeInput.ofItem(stack);
+        return level.getRecipeManager().getRecipeFor(
+            BeemancerRecipeTypes.CENTRIFUGING.get(),
+            input,
+            level
+        ).isPresent();
+    }
+
     public boolean isValidComb(ItemStack stack) {
-        Item item = stack.getItem();
-        return item == BeemancerItems.COMMON_COMB.get()
-            || item == BeemancerItems.NOBLE_COMB.get()
-            || item == BeemancerItems.DILIGENT_COMB.get()
-            || item == BeemancerItems.ROYAL_COMB.get();
+        // Fallback for when level is not available
+        return !stack.isEmpty() && level != null && isValidComb(stack, level);
     }
 
     public boolean canInsertComb() {
@@ -149,6 +159,8 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
     }
 
     private void processAllCombs() {
+        if (level == null) return;
+
         for (int i = 0; i < combStorage.size(); i++) {
             ItemStack comb = combStorage.get(i);
             if (comb.isEmpty()) continue;
@@ -160,33 +172,28 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
     }
 
     private void processComb(ItemStack comb) {
-        Item item = comb.getItem();
+        if (level == null) return;
 
-        if (item == BeemancerItems.ROYAL_COMB.get()) {
-            // Royal Comb -> Royal Jelly + Propolis (no honey!)
-            FluidStack royalJelly = new FluidStack(BeemancerFluids.ROYAL_JELLY_SOURCE.get(), 250);
-            fluidTank.fill(royalJelly, IFluidHandler.FluidAction.EXECUTE);
-            addOutput(new ItemStack(BeemancerItems.PROPOLIS.get()));
-            
-        } else if (item == BeemancerItems.COMMON_COMB.get()) {
-            // Common Comb -> 250mB Honey + Pollen
-            FluidStack honey = new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), 250);
-            fluidTank.fill(honey, IFluidHandler.FluidAction.EXECUTE);
-            addOutput(new ItemStack(BeemancerItems.POLLEN.get()));
-            
-        } else if (item == BeemancerItems.NOBLE_COMB.get()) {
-            // Noble Comb -> 300mB Honey + Pollen + Beeswax
-            FluidStack honey = new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), 300);
-            fluidTank.fill(honey, IFluidHandler.FluidAction.EXECUTE);
-            addOutput(new ItemStack(BeemancerItems.POLLEN.get()));
-            addOutput(new ItemStack(BeemancerItems.BEESWAX.get()));
-            
-        } else if (item == BeemancerItems.DILIGENT_COMB.get()) {
-            // Diligent Comb -> 350mB Honey + Pollen + Propolis
-            FluidStack honey = new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), 350);
-            fluidTank.fill(honey, IFluidHandler.FluidAction.EXECUTE);
-            addOutput(new ItemStack(BeemancerItems.POLLEN.get()));
-            addOutput(new ItemStack(BeemancerItems.PROPOLIS.get()));
+        ProcessingRecipeInput input = ProcessingRecipeInput.ofItem(comb);
+        Optional<RecipeHolder<CentrifugeRecipe>> recipeHolder = level.getRecipeManager().getRecipeFor(
+            BeemancerRecipeTypes.CENTRIFUGING.get(),
+            input,
+            level
+        );
+
+        if (recipeHolder.isEmpty()) return;
+
+        CentrifugeRecipe recipe = recipeHolder.get().value();
+
+        // Produce fluid output
+        FluidStack fluidOutput = recipe.getFluidOutput();
+        if (!fluidOutput.isEmpty()) {
+            fluidTank.fill(fluidOutput, IFluidHandler.FluidAction.EXECUTE);
+        }
+
+        // Produce item outputs with probabilities
+        for (ProcessingOutput output : recipe.results()) {
+            output.roll(level.getRandom()).ifPresent(this::addOutput);
         }
     }
 

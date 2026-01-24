@@ -15,7 +15,10 @@ import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
 import com.chapeau.beemancer.core.breeding.BreedingManager;
 import com.chapeau.beemancer.core.network.BeemancerNetwork;
 import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
+import com.chapeau.beemancer.core.recipe.BeemancerRecipeSerializers;
+import com.chapeau.beemancer.core.recipe.BeemancerRecipeTypes;
 import com.chapeau.beemancer.core.registry.*;
+import net.minecraft.resources.ResourceLocation;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,6 +42,10 @@ public class Beemancer {
     public static final String MOD_ID = "beemancer";
     public static final Logger LOGGER = LogUtils.getLogger();
 
+    public static ResourceLocation modLoc(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    }
+
     public Beemancer(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing Beemancer...");
         
@@ -51,7 +58,9 @@ public class Beemancer {
         BeemancerAttachments.register(modEventBus);
         BeemancerSounds.register(modEventBus);
         BeemancerFluids.register(modEventBus);
-        
+        BeemancerRecipeTypes.register(modEventBus);
+        BeemancerRecipeSerializers.register(modEventBus);
+
         BeemancerNetwork.register(modEventBus);
         
         modEventBus.addListener(this::onCommonSetup);
@@ -95,11 +104,11 @@ public class Beemancer {
             (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getFuelTank());
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.NECTAR_FILTER.get(),
-            (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getInputTank());
+            BeemancerBlockEntities.CRYSTALLIZER.get(),
+            (be, side) -> be.getInputTank());
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.CRYSTALLIZER.get(),
+            BeemancerBlockEntities.ALEMBIC.get(),
             (be, side) -> {
                 if (side == Direction.DOWN) return be.getNectarTank();
                 if (side == Direction.UP) return be.getRoyalJellyTank();
@@ -107,8 +116,12 @@ public class Beemancer {
             });
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.ALEMBIC.get(),
-            (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getInputTank());
+            BeemancerBlockEntities.INFUSER.get(),
+            (be, side) -> be.getHoneyTank());
+
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,
+            BeemancerBlockEntities.ITEM_PIPE.get(),
+            (be, side) -> be.getBuffer());
     }
     
     private void onServerStarting(final ServerStartingEvent event) {

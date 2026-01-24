@@ -3,31 +3,33 @@
  * [InfuserBlockEntity.java]
  * Description: Infuse du bois avec du miel pour créer du bois emmiélé
  * ============================================================
- * 
+ *
  * FONCTIONNEMENT:
  * - Input: Any wood (tag #logs) + 250mB Honey
- * - Output: HONEYED_WOOD
- * - Process time: 200 ticks
+ * - Output: HONEYED_WOOD (ou selon recette JSON)
+ * - Process time: configurable via recette
  * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.common.block.alchemy.InfuserBlock;
 import com.chapeau.beemancer.common.menu.alchemy.InfuserMenu;
+import com.chapeau.beemancer.core.recipe.BeemancerRecipeTypes;
+import com.chapeau.beemancer.core.recipe.ProcessingRecipeInput;
+import com.chapeau.beemancer.core.recipe.type.InfusingRecipe;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
-import com.chapeau.beemancer.core.registry.BeemancerItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,18 +39,16 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
-    private static final int HONEY_CONSUMPTION = 250;
-    private static final int PROCESS_TIME = 200;
+    private static final int DEFAULT_PROCESS_TIME = 200;
 
     private final ItemStackHandler inputSlot = new ItemStackHandler(1) {
         @Override
-        protected void onContentsChanged(int slot) { setChanged(); }
-
-        @Override
-        public boolean isItemValid(int slot, ItemStack stack) {
-            return stack.is(ItemTags.LOGS);
+        protected void onContentsChanged(int slot) {
+            setChanged();
+            currentRecipe = null; // Invalidate cached recipe
         }
     };
 
@@ -63,17 +63,23 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
             return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get();
         }
         @Override
-        protected void onContentsChanged() { setChanged(); }
+        protected void onContentsChanged() {
+            setChanged();
+            currentRecipe = null; // Invalidate cached recipe
+        }
     };
 
     private int progress = 0;
+    private int currentProcessTime = DEFAULT_PROCESS_TIME;
+    @Nullable
+    private RecipeHolder<InfusingRecipe> currentRecipe = null;
 
     protected final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int index) {
             return switch (index) {
                 case 0 -> progress;
-                case 1 -> PROCESS_TIME;
+                case 1 -> currentProcessTime;
                 case 2 -> honeyTank.getFluidAmount();
                 default -> 0;
             };
@@ -81,6 +87,7 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         public void set(int index, int value) {
             if (index == 0) progress = value;
+            if (index == 1) currentProcessTime = value;
         }
         @Override
         public int getCount() { return 3; }
@@ -94,16 +101,26 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         boolean wasWorking = state.getValue(InfuserBlock.WORKING);
         boolean isWorking = false;
 
-        if (be.canProcess()) {
-            be.progress++;
-            isWorking = true;
+        Optional<RecipeHolder<InfusingRecipe>> recipe = be.findRecipe(level);
+        if (recipe.isPresent()) {
+            be.currentRecipe = recipe.get();
+            be.currentProcessTime = recipe.get().value().processingTime();
 
-            if (be.progress >= PROCESS_TIME) {
-                be.processItem();
+            if (be.canProcess(recipe.get().value())) {
+                be.progress++;
+                isWorking = true;
+
+                if (be.progress >= be.currentProcessTime) {
+                    be.processItem(recipe.get().value());
+                    be.progress = 0;
+                    be.currentRecipe = null;
+                }
+            } else {
                 be.progress = 0;
             }
         } else {
             be.progress = 0;
+            be.currentRecipe = null;
         }
 
         if (wasWorking != isWorking) {
@@ -113,38 +130,43 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         be.setChanged();
     }
 
-    private boolean canProcess() {
-        // Check if we have wood input
-        ItemStack input = inputSlot.getStackInSlot(0);
-        if (input.isEmpty() || !input.is(ItemTags.LOGS)) {
-            return false;
-        }
+    private Optional<RecipeHolder<InfusingRecipe>> findRecipe(Level level) {
+        ProcessingRecipeInput input = createRecipeInput();
+        return level.getRecipeManager().getRecipeFor(
+            BeemancerRecipeTypes.INFUSING.get(),
+            input,
+            level
+        );
+    }
 
-        // Check if we have enough honey
-        if (honeyTank.getFluidAmount() < HONEY_CONSUMPTION) {
-            return false;
-        }
+    private ProcessingRecipeInput createRecipeInput() {
+        return ProcessingRecipeInput.of(
+            inputSlot.getStackInSlot(0),
+            honeyTank.getFluid()
+        );
+    }
 
+    private boolean canProcess(InfusingRecipe recipe) {
         // Check if we have space in output
         ItemStack output = outputSlot.getStackInSlot(0);
         if (output.isEmpty()) {
             return true;
         }
-        
-        ItemStack expectedOutput = new ItemStack(BeemancerItems.HONEYED_WOOD.get());
-        return ItemStack.isSameItemSameComponents(output, expectedOutput) 
+
+        ItemStack expectedOutput = recipe.result();
+        return ItemStack.isSameItemSameComponents(output, expectedOutput)
             && output.getCount() < output.getMaxStackSize();
     }
 
-    private void processItem() {
+    private void processItem(InfusingRecipe recipe) {
         // Consume input
         inputSlot.extractItem(0, 1, false);
-        honeyTank.drain(HONEY_CONSUMPTION, IFluidHandler.FluidAction.EXECUTE);
+        honeyTank.drain(recipe.fluidIngredient().amount(), IFluidHandler.FluidAction.EXECUTE);
 
-        // Add honeyed wood to output
+        // Add result to output
         ItemStack output = outputSlot.getStackInSlot(0);
         if (output.isEmpty()) {
-            outputSlot.setStackInSlot(0, new ItemStack(BeemancerItems.HONEYED_WOOD.get()));
+            outputSlot.setStackInSlot(0, recipe.result().copy());
         } else {
             output.grow(1);
         }
@@ -153,6 +175,8 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
     public FluidTank getHoneyTank() { return honeyTank; }
     public ItemStackHandler getInputSlot() { return inputSlot; }
     public ItemStackHandler getOutputSlot() { return outputSlot; }
+    @Nullable
+    public RecipeHolder<InfusingRecipe> getCurrentRecipe() { return currentRecipe; }
 
     @Override
     public Component getDisplayName() {

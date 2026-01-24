@@ -46,19 +46,27 @@ public class BeemancerCreativeTabs {
                         output.accept(BeemancerItems.POWERED_CENTRIFUGE.get());
                         output.accept(BeemancerItems.HONEY_TANK.get());
                         output.accept(BeemancerItems.HONEY_PIPE.get());
-                        output.accept(BeemancerItems.NECTAR_FILTER.get());
+                        output.accept(BeemancerItems.ITEM_PIPE.get());
                         output.accept(BeemancerItems.CRYSTALLIZER.get());
                         output.accept(BeemancerItems.ALEMBIC.get());
+                        output.accept(BeemancerItems.INFUSER.get());
 
                         // Fluid Buckets
                         output.accept(BeemancerItems.HONEY_BUCKET.get());
                         output.accept(BeemancerItems.ROYAL_JELLY_BUCKET.get());
                         output.accept(BeemancerItems.NECTAR_BUCKET.get());
 
-                        // Alchemy Ingredients
+                        // Alchemy Ingredients - Combs
+                        output.accept(BeemancerItems.COMMON_COMB.get());
+                        output.accept(BeemancerItems.NOBLE_COMB.get());
+                        output.accept(BeemancerItems.DILIGENT_COMB.get());
                         output.accept(BeemancerItems.ROYAL_COMB.get());
+
+                        // Alchemy Ingredients - Other
                         output.accept(BeemancerItems.BEESWAX.get());
                         output.accept(BeemancerItems.PROPOLIS.get());
+                        output.accept(BeemancerItems.POLLEN.get());
+                        output.accept(BeemancerItems.HONEYED_WOOD.get());
 
                         // Crystal Shards
                         output.accept(BeemancerItems.RAW_CRYSTAL_SHARD.get());

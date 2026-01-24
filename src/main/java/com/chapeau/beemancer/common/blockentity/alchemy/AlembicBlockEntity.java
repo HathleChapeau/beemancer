@@ -3,18 +3,21 @@
  * [AlembicBlockEntity.java]
  * Description: Mélange Honey et Royal Jelly pour produire du Nectar
  * ============================================================
- * 
+ *
  * FONCTIONNEMENT:
  * - Input 1: Honey (500mB)
  * - Input 2: Royal Jelly (250mB)
- * - Output: Nectar (500mB)
- * - Process time: 80 ticks
+ * - Output: Nectar (500mB) (ou selon recette JSON)
+ * - Process time: configurable via recette
  * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.common.block.alchemy.AlembicBlock;
 import com.chapeau.beemancer.common.menu.alchemy.AlembicMenu;
+import com.chapeau.beemancer.core.recipe.BeemancerRecipeTypes;
+import com.chapeau.beemancer.core.recipe.ProcessingRecipeInput;
+import com.chapeau.beemancer.core.recipe.type.DistillingRecipe;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import net.minecraft.core.BlockPos;
@@ -27,6 +30,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,12 +40,11 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
-    private static final int HONEY_CONSUMPTION = 500;
-    private static final int ROYAL_JELLY_CONSUMPTION = 250;
-    private static final int NECTAR_PRODUCTION = 500;
-    private static final int PROCESS_TIME = 80;
+    private static final int DEFAULT_PROCESS_TIME = 80;
 
     private final FluidTank honeyTank = new FluidTank(4000) {
         @Override
@@ -49,7 +52,10 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
             return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get();
         }
         @Override
-        protected void onContentsChanged() { setChanged(); }
+        protected void onContentsChanged() {
+            setChanged();
+            currentRecipe = null;
+        }
     };
 
     private final FluidTank royalJellyTank = new FluidTank(4000) {
@@ -58,7 +64,10 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
             return stack.getFluid() == BeemancerFluids.ROYAL_JELLY_SOURCE.get();
         }
         @Override
-        protected void onContentsChanged() { setChanged(); }
+        protected void onContentsChanged() {
+            setChanged();
+            currentRecipe = null;
+        }
     };
 
     private final FluidTank nectarTank = new FluidTank(4000) {
@@ -67,13 +76,16 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
     };
 
     private int progress = 0;
+    private int currentProcessTime = DEFAULT_PROCESS_TIME;
+    @Nullable
+    private RecipeHolder<DistillingRecipe> currentRecipe = null;
 
     protected final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int index) {
             return switch (index) {
                 case 0 -> progress;
-                case 1 -> PROCESS_TIME;
+                case 1 -> currentProcessTime;
                 case 2 -> honeyTank.getFluidAmount();
                 case 3 -> royalJellyTank.getFluidAmount();
                 case 4 -> nectarTank.getFluidAmount();
@@ -83,6 +95,7 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         public void set(int index, int value) {
             if (index == 0) progress = value;
+            if (index == 1) currentProcessTime = value;
         }
         @Override
         public int getCount() { return 5; }
@@ -96,16 +109,26 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
         boolean wasDistilling = state.getValue(AlembicBlock.DISTILLING);
         boolean isDistilling = false;
 
-        if (be.canProcess()) {
-            be.progress++;
-            isDistilling = true;
+        Optional<RecipeHolder<DistillingRecipe>> recipe = be.findRecipe(level);
+        if (recipe.isPresent()) {
+            be.currentRecipe = recipe.get();
+            be.currentProcessTime = recipe.get().value().processingTime();
 
-            if (be.progress >= PROCESS_TIME) {
-                be.processFluids();
+            if (be.canProcess(recipe.get().value())) {
+                be.progress++;
+                isDistilling = true;
+
+                if (be.progress >= be.currentProcessTime) {
+                    be.processFluids(recipe.get().value());
+                    be.progress = 0;
+                    be.currentRecipe = null;
+                }
+            } else {
                 be.progress = 0;
             }
         } else {
             be.progress = 0;
+            be.currentRecipe = null;
         }
 
         // Auto-output nectar to block below
@@ -125,30 +148,46 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
         be.setChanged();
     }
 
-    private boolean canProcess() {
-        // Check if we have enough inputs
-        if (honeyTank.getFluidAmount() < HONEY_CONSUMPTION) return false;
-        if (royalJellyTank.getFluidAmount() < ROYAL_JELLY_CONSUMPTION) return false;
-        
-        // Check if we have space for output
-        if (nectarTank.getFluidAmount() + NECTAR_PRODUCTION > nectarTank.getCapacity()) return false;
-        
-        return true;
+    private Optional<RecipeHolder<DistillingRecipe>> findRecipe(Level level) {
+        ProcessingRecipeInput input = createRecipeInput();
+        return level.getRecipeManager().getRecipeFor(
+            BeemancerRecipeTypes.DISTILLING.get(),
+            input,
+            level
+        );
     }
 
-    private void processFluids() {
-        // Consume inputs
-        honeyTank.drain(HONEY_CONSUMPTION, IFluidHandler.FluidAction.EXECUTE);
-        royalJellyTank.drain(ROYAL_JELLY_CONSUMPTION, IFluidHandler.FluidAction.EXECUTE);
-        
-        // Produce nectar
-        nectarTank.fill(new FluidStack(BeemancerFluids.NECTAR_SOURCE.get(), NECTAR_PRODUCTION),
-            IFluidHandler.FluidAction.EXECUTE);
+    private ProcessingRecipeInput createRecipeInput() {
+        return ProcessingRecipeInput.of(
+            List.of(),
+            List.of(honeyTank.getFluid(), royalJellyTank.getFluid())
+        );
+    }
+
+    private boolean canProcess(DistillingRecipe recipe) {
+        FluidStack output = recipe.getFluidOutput();
+        // Check if we have space for output
+        return nectarTank.getFluidAmount() + output.getAmount() <= nectarTank.getCapacity();
+    }
+
+    private void processFluids(DistillingRecipe recipe) {
+        // Consume inputs based on recipe
+        if (recipe.fluidIngredients().size() >= 1) {
+            honeyTank.drain(recipe.fluidIngredients().get(0).amount(), IFluidHandler.FluidAction.EXECUTE);
+        }
+        if (recipe.fluidIngredients().size() >= 2) {
+            royalJellyTank.drain(recipe.fluidIngredients().get(1).amount(), IFluidHandler.FluidAction.EXECUTE);
+        }
+
+        // Produce output
+        nectarTank.fill(recipe.getFluidOutput(), IFluidHandler.FluidAction.EXECUTE);
     }
 
     public FluidTank getHoneyTank() { return honeyTank; }
     public FluidTank getRoyalJellyTank() { return royalJellyTank; }
     public FluidTank getNectarTank() { return nectarTank; }
+    @Nullable
+    public RecipeHolder<DistillingRecipe> getCurrentRecipe() { return currentRecipe; }
 
     @Override
     public Component getDisplayName() {

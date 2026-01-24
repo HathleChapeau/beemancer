@@ -59,19 +59,11 @@ public class BeemancerMenus {
             MENUS.register("crystallizer",
                     () -> IMenuTypeExtension.create(CrystallizerMenu::new));
 
-    public static final Supplier<MenuType<AlembicMenu>> ALEMBIC = 
-
-    public static final Supplier<MenuType<InfuserMenu>> INFUSER = 
-            MENUS.register("infuser",
-                    () -> IMenuTypeExtension.create(InfuserMenu::new));
+    public static final Supplier<MenuType<AlembicMenu>> ALEMBIC =
             MENUS.register("alembic",
-
-    public static final Supplier<MenuType<InfuserMenu>> INFUSER = 
-            MENUS.register("infuser",
-                    () -> IMenuTypeExtension.create(InfuserMenu::new));
                     () -> IMenuTypeExtension.create(AlembicMenu::new));
 
-    public static final Supplier<MenuType<InfuserMenu>> INFUSER = 
+    public static final Supplier<MenuType<InfuserMenu>> INFUSER =
             MENUS.register("infuser",
                     () -> IMenuTypeExtension.create(InfuserMenu::new));
 

@@ -3,20 +3,21 @@
  * [CrystallizerBlockEntity.java]
  * Description: Transforme les fluides en cristaux solides
  * ============================================================
- * 
+ *
  * FONCTIONNEMENT:
- * - Honey (500mB) -> HONEY_CRYSTAL
+ * - Honey (500mB) -> HONEY_CRYSTAL (ou selon recette JSON)
  * - Royal Jelly (500mB) -> ROYAL_HONEY_CRYSTAL
- * - Process time: 100 ticks par cristal
+ * - Process time: configurable via recette
  * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.common.block.alchemy.CrystallizerBlock;
 import com.chapeau.beemancer.common.menu.alchemy.CrystallizerMenu;
+import com.chapeau.beemancer.core.recipe.BeemancerRecipeTypes;
+import com.chapeau.beemancer.core.recipe.ProcessingRecipeInput;
+import com.chapeau.beemancer.core.recipe.type.CrystallizingRecipe;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
-import com.chapeau.beemancer.core.registry.BeemancerFluids;
-import com.chapeau.beemancer.core.registry.BeemancerItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -27,28 +28,26 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider {
-    private static final int FLUID_PER_CRYSTAL = 500; // mB
-    private static final int PROCESS_TIME = 100; // ticks
+    private static final int DEFAULT_PROCESS_TIME = 100;
 
     private final FluidTank inputTank = new FluidTank(4000) {
         @Override
-        public boolean isFluidValid(FluidStack stack) {
-            return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get()
-                || stack.getFluid() == BeemancerFluids.ROYAL_JELLY_SOURCE.get();
+        protected void onContentsChanged() {
+            setChanged();
+            currentRecipe = null; // Invalidate cached recipe
         }
-        @Override
-        protected void onContentsChanged() { setChanged(); }
     };
 
     private final ItemStackHandler outputSlot = new ItemStackHandler(1) {
@@ -57,13 +56,16 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
     };
 
     private int progress = 0;
+    private int currentProcessTime = DEFAULT_PROCESS_TIME;
+    @Nullable
+    private RecipeHolder<CrystallizingRecipe> currentRecipe = null;
 
     protected final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int index) {
             return switch (index) {
                 case 0 -> progress;
-                case 1 -> PROCESS_TIME;
+                case 1 -> currentProcessTime;
                 case 2 -> inputTank.getFluidAmount();
                 default -> 0;
             };
@@ -71,6 +73,7 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
         @Override
         public void set(int index, int value) {
             if (index == 0) progress = value;
+            if (index == 1) currentProcessTime = value;
         }
         @Override
         public int getCount() { return 3; }
@@ -84,16 +87,26 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
         boolean wasActive = state.getValue(CrystallizerBlock.ACTIVE);
         boolean isActive = false;
 
-        if (be.canProcess()) {
-            be.progress++;
-            isActive = true;
+        Optional<RecipeHolder<CrystallizingRecipe>> recipe = be.findRecipe(level);
+        if (recipe.isPresent()) {
+            be.currentRecipe = recipe.get();
+            be.currentProcessTime = recipe.get().value().processingTime();
 
-            if (be.progress >= PROCESS_TIME) {
-                be.processFluid();
+            if (be.canProcess(recipe.get().value())) {
+                be.progress++;
+                isActive = true;
+
+                if (be.progress >= be.currentProcessTime) {
+                    be.processFluid(recipe.get().value());
+                    be.progress = 0;
+                    be.currentRecipe = null;
+                }
+            } else {
                 be.progress = 0;
             }
         } else {
             be.progress = 0;
+            be.currentRecipe = null;
         }
 
         if (wasActive != isActive) {
@@ -103,54 +116,39 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
         be.setChanged();
     }
 
-    private boolean canProcess() {
-        // Need enough fluid
-        if (inputTank.getFluidAmount() < FLUID_PER_CRYSTAL) {
-            return false;
-        }
+    private Optional<RecipeHolder<CrystallizingRecipe>> findRecipe(Level level) {
+        ProcessingRecipeInput input = createRecipeInput();
+        return level.getRecipeManager().getRecipeFor(
+            BeemancerRecipeTypes.CRYSTALLIZING.get(),
+            input,
+            level
+        );
+    }
 
+    private ProcessingRecipeInput createRecipeInput() {
+        return ProcessingRecipeInput.ofFluid(inputTank.getFluid());
+    }
+
+    private boolean canProcess(CrystallizingRecipe recipe) {
         // Need space in output
         ItemStack output = outputSlot.getStackInSlot(0);
         if (output.isEmpty()) {
             return true;
         }
 
-        // Check if output matches expected crystal type
-        ItemStack expectedOutput = getCrystalOutput();
-        if (expectedOutput.isEmpty()) {
-            return false;
-        }
-
-        return ItemStack.isSameItemSameComponents(output, expectedOutput) 
+        ItemStack expectedOutput = recipe.result();
+        return ItemStack.isSameItemSameComponents(output, expectedOutput)
             && output.getCount() < output.getMaxStackSize();
     }
 
-    private ItemStack getCrystalOutput() {
-        FluidStack fluid = inputTank.getFluid();
-        if (fluid.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
-
-        if (fluid.getFluid() == BeemancerFluids.HONEY_SOURCE.get()) {
-            return new ItemStack(BeemancerItems.HONEY_CRYSTAL.get());
-        } else if (fluid.getFluid() == BeemancerFluids.ROYAL_JELLY_SOURCE.get()) {
-            return new ItemStack(BeemancerItems.ROYAL_HONEY_CRYSTAL.get());
-        }
-
-        return ItemStack.EMPTY;
-    }
-
-    private void processFluid() {
-        ItemStack crystalOutput = getCrystalOutput();
-        if (crystalOutput.isEmpty()) return;
-
+    private void processFluid(CrystallizingRecipe recipe) {
         // Consume fluid
-        inputTank.drain(FLUID_PER_CRYSTAL, IFluidHandler.FluidAction.EXECUTE);
+        inputTank.drain(recipe.fluidIngredient().amount(), IFluidHandler.FluidAction.EXECUTE);
 
         // Add crystal to output
         ItemStack existing = outputSlot.getStackInSlot(0);
         if (existing.isEmpty()) {
-            outputSlot.setStackInSlot(0, crystalOutput);
+            outputSlot.setStackInSlot(0, recipe.result().copy());
         } else {
             existing.grow(1);
         }
@@ -158,6 +156,8 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
 
     public FluidTank getInputTank() { return inputTank; }
     public ItemStackHandler getOutputSlot() { return outputSlot; }
+    @Nullable
+    public RecipeHolder<CrystallizingRecipe> getCurrentRecipe() { return currentRecipe; }
 
     @Override
     public Component getDisplayName() {
