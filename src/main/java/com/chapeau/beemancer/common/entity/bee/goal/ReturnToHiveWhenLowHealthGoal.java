@@ -34,7 +34,7 @@ public class ReturnToHiveWhenLowHealthGoal extends Goal {
     private static final float FLEE_THRESHOLD = 0.3f; // 30%
     private static final double REACH_DISTANCE = 1.5;
     private static final double FLEE_SPEED = 0.12;
-    private static final double FLIGHT_ALTITUDE = 2.0; // Altitude de vol
+    private static final double FLIGHT_ALTITUDE = 1.0; // Altitude de vol
     
     private final MagicBeeEntity bee;
     

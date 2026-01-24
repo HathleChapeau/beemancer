@@ -63,10 +63,10 @@ import java.util.Random;
 public class ForagingBehaviorGoal extends Goal {
 
     private static final double REACH_DISTANCE = 1.5;
-    private static final double REACH_DISTANCE_VERTICAL = 0.5;
+    private static final double REACH_DISTANCE_VERTICAL = 0.8;
     private static final double FLIGHT_SPEED_FACTOR = 0.1;
-    private static final double FLIGHT_ALTITUDE = 2.0; // Altitude de vol au-dessus des destinations
-    private static final double HOVER_HEIGHT = 1.2; // Hauteur au-dessus de la fleur pour l'approche finale
+    private static final double FLIGHT_ALTITUDE = 1.0; // Altitude de vol au-dessus des destinations
+    private static final double HOVER_HEIGHT = 0.5; // Hauteur au-dessus de la fleur pour l'approche finale
     private static final double FALL_SPEED = 0.02; // Vitesse de descente pendant le butinage
     private static final float FORAGING_PITCH = 30.0f; // Inclinaison vers l'avant (degrés)
     private static final Random RANDOM = new Random();
@@ -241,9 +241,9 @@ public class ForagingBehaviorGoal extends Goal {
         // Incliner l'abeille vers l'avant pendant le butinage
         bee.setXRot(FORAGING_PITCH);
 
-        // Rester stationnaire au-dessus de la fleur (hover)
+        // Rester stationnaire au-dessus de la fleur (hover à 0.5 bloc)
         Vec3 flowerCenter = Vec3.atCenterOf(targetFlower);
-        Vec3 hoverPos = flowerCenter.add(0, HOVER_HEIGHT * 0.5, 0); // Légèrement au-dessus
+        Vec3 hoverPos = flowerCenter.add(0, HOVER_HEIGHT, 0);
         Vec3 beePos = bee.position();
 
         // Maintenir la position au-dessus de la fleur avec un léger mouvement
