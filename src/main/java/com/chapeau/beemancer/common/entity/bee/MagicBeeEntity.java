@@ -217,8 +217,6 @@ public class MagicBeeEntity extends Bee {
 
     public void setPollinated(boolean pollinated) {
         entityData.set(DATA_POLLINATED, pollinated);
-        // Synchroniser avec le visuel vanilla (particules de pollen)
-        setHasNectar(pollinated);
     }
 
     // --- Combat State (Timer-based) ---

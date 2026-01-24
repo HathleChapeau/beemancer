@@ -59,7 +59,6 @@ import java.util.Random;
  * - Approche par le haut (comme une vraie abeille)
  * - Inclinaison vers l'avant pendant le butinage
  * - Descente douce vers le sol si fleur en hauteur
- * - Visuel de pollen vanilla quand pollinisée
  */
 public class ForagingBehaviorGoal extends Goal {
 
@@ -253,7 +252,7 @@ public class ForagingBehaviorGoal extends Goal {
 
         // Vérifier si le travail est terminé
         if (stateMachine.isWorkComplete()) {
-            bee.setPollinated(true); // Active aussi le visuel vanilla (setHasNectar)
+            bee.setPollinated(true);
             resetPitch();
             stateMachine.setState(BeeActivityState.RETURNING);
         }

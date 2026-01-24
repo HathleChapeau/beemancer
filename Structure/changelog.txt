@@ -3,6 +3,33 @@
 ################################################################################
 
 ================================================================================
+2026-01-24 - Custom Bee Renderer + AI Improvements
+================================================================================
+
+AJOUTS:
+- client/renderer/entity/MagicBeeRenderer.java (renderer custom avec textures par espèce)
+- common/entity/bee/BeeAIStateMachine.java (machine à états centralisée)
+- common/entity/bee/BeePathfinding.java (pathfinding A* pour abeilles volantes)
+- common/block/hive/HiveBeeSlot.java (encapsulation données slot abeille)
+- common/block/hive/HiveFlowerPool.java (pool partagé de fleurs)
+- assets/beemancer/textures/entity/bee/ (dossier pour textures espèces)
+
+MODIFICATIONS:
+- ClientSetup.java: Utilisation MagicBeeRenderer au lieu de BeeRenderer vanilla
+- MagicBeeEntity.java: +cache config, +timer enraged, +getSpeciesId()
+- ForagingBehaviorGoal.java: +approche par le haut, +inclinaison butinage, +descente douce
+- MagicHiveBlockEntity.java: Refactorisation vers HiveBeeSlot[] et HiveFlowerPool
+
+NOUVELLES FEATURES:
+- Renderer custom supportant textures différentes par espèce
+- Pattern: textures/entity/bee/{species}.png et {species}_nectar.png
+- Cache des textures pour performance
+- Machine à états AI centralisée avec timeouts (40 sec SEEKING_FLOWER)
+- Pathfinding A* 3D pour navigation intelligente
+- Sélection aléatoire des fleurs (évite conflits entre abeilles)
+- Comportement réaliste: approche par le haut, inclinaison pendant butinage
+
+================================================================================
 2026-01-24 - Alchemy Processing System (Complete)
 ================================================================================
 

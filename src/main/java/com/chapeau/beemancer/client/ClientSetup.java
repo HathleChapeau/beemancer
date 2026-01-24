@@ -13,10 +13,10 @@ import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
 import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
 import com.chapeau.beemancer.client.gui.screen.alchemy.*;
+import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.beemancer.core.registry.BeemancerEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
-import net.minecraft.client.renderer.entity.BeeRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -56,7 +56,7 @@ public class ClientSetup {
     }
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(BeemancerEntities.MAGIC_BEE.get(), BeeRenderer::new);
+        event.registerEntityRenderer(BeemancerEntities.MAGIC_BEE.get(), MagicBeeRenderer::new);
     }
 
     private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {
