@@ -21,6 +21,7 @@ package com.chapeau.beemancer.client.renderer.entity;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.BeeModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -28,8 +29,8 @@ import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Renderer custom pour les abeilles magiques.
@@ -43,13 +44,15 @@ import java.util.Map;
  */
 public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<MagicBeeEntity>> {
 
-    // Cache des textures pour éviter de créer des ResourceLocation à chaque frame
-    private static final Map<String, ResourceLocation> TEXTURE_CACHE = new HashMap<>();
-    private static final Map<String, ResourceLocation> TEXTURE_NECTAR_CACHE = new HashMap<>();
+    // Cache des espèces avec textures custom valides
+    private static final Set<String> VALID_SPECIES_TEXTURES = new HashSet<>();
+    private static final Set<String> CHECKED_SPECIES = new HashSet<>();
 
     // Textures vanilla fallback
-    private static final ResourceLocation VANILLA_BEE = ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
-    private static final ResourceLocation VANILLA_BEE_NECTAR = ResourceLocation.withDefaultNamespace("textures/entity/bee/bee_nectar.png");
+    private static final ResourceLocation VANILLA_BEE =
+            ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
+    private static final ResourceLocation VANILLA_BEE_NECTAR =
+            ResourceLocation.withDefaultNamespace("textures/entity/bee/bee_nectar.png");
 
     public MagicBeeRenderer(EntityRendererProvider.Context context) {
         super(context, new BeeModel<>(context.bakeLayer(ModelLayers.BEE)), 0.4f);
@@ -60,42 +63,60 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<Magic
         String speciesId = bee.getSpeciesId();
         boolean pollinated = bee.isPollinated();
 
-        // Choisir le cache approprié
-        Map<String, ResourceLocation> cache = pollinated ? TEXTURE_NECTAR_CACHE : TEXTURE_CACHE;
+        // Vérifier si cette espèce a une texture custom (avec cache)
+        if (!CHECKED_SPECIES.contains(speciesId)) {
+            checkSpeciesTexture(speciesId);
+        }
 
-        // Récupérer ou créer la texture
-        return cache.computeIfAbsent(speciesId, id -> {
+        // Si l'espèce a une texture valide, l'utiliser
+        if (VALID_SPECIES_TEXTURES.contains(speciesId)) {
             String suffix = pollinated ? "_nectar" : "";
             ResourceLocation customTexture = ResourceLocation.fromNamespaceAndPath(
                     Beemancer.MOD_ID,
-                    "textures/entity/bee/" + id + suffix + ".png"
+                    "textures/entity/bee/" + speciesId + suffix + ".png"
             );
-            // Note: On retourne toujours la texture custom, le système de Minecraft
-            // utilisera la texture par défaut si elle n'existe pas (via missing texture)
-            // Pour un fallback propre, il faudrait vérifier l'existence du fichier,
-            // mais ce n'est pas trivial côté client sans un système de préchargement
+
+            // Vérifier aussi la texture nectar si pollinated
+            if (pollinated && !resourceExists(customTexture)) {
+                // Fallback sur texture normale si nectar n'existe pas
+                customTexture = ResourceLocation.fromNamespaceAndPath(
+                        Beemancer.MOD_ID,
+                        "textures/entity/bee/" + speciesId + ".png"
+                );
+            }
+
             return customTexture;
-        });
+        }
+
+        // Fallback vers vanilla
+        return pollinated ? VANILLA_BEE_NECTAR : VANILLA_BEE;
     }
 
     /**
-     * Récupère la texture pour une espèce spécifique.
-     * Utilise le cache pour éviter les allocations répétées.
-     *
-     * @param speciesId ID de l'espèce
-     * @param pollinated Si l'abeille porte du pollen
-     * @return ResourceLocation de la texture
+     * Vérifie si une espèce a une texture custom et met en cache le résultat.
      */
-    public static ResourceLocation getTextureForSpecies(String speciesId, boolean pollinated) {
-        Map<String, ResourceLocation> cache = pollinated ? TEXTURE_NECTAR_CACHE : TEXTURE_CACHE;
-        String suffix = pollinated ? "_nectar" : "";
+    private void checkSpeciesTexture(String speciesId) {
+        CHECKED_SPECIES.add(speciesId);
 
-        return cache.computeIfAbsent(speciesId, id ->
-                ResourceLocation.fromNamespaceAndPath(
-                        Beemancer.MOD_ID,
-                        "textures/entity/bee/" + id + suffix + ".png"
-                )
+        ResourceLocation textureLocation = ResourceLocation.fromNamespaceAndPath(
+                Beemancer.MOD_ID,
+                "textures/entity/bee/" + speciesId + ".png"
         );
+
+        if (resourceExists(textureLocation)) {
+            VALID_SPECIES_TEXTURES.add(speciesId);
+        }
+    }
+
+    /**
+     * Vérifie si une ressource existe.
+     */
+    private boolean resourceExists(ResourceLocation location) {
+        try {
+            return Minecraft.getInstance().getResourceManager().getResource(location).isPresent();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
@@ -109,7 +130,7 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<Magic
      * Vide le cache des textures (utile pour le rechargement des ressources).
      */
     public static void clearTextureCache() {
-        TEXTURE_CACHE.clear();
-        TEXTURE_NECTAR_CACHE.clear();
+        VALID_SPECIES_TEXTURES.clear();
+        CHECKED_SPECIES.clear();
     }
 }

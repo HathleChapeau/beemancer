@@ -149,6 +149,7 @@ public class ForagingBehaviorGoal extends Goal {
                 if (stateMachine.hasTarget()) {
                     returnFlowerToHive(stateMachine.getTargetPos());
                 }
+                bee.setReturning(true);
                 stateMachine.setState(BeeActivityState.RETURNING);
             }
             case RETURNING -> {
@@ -156,6 +157,7 @@ public class ForagingBehaviorGoal extends Goal {
                 BlockPos hivePos = bee.getAssignedHivePos();
                 if (hivePos != null) {
                     bee.setPos(Vec3.atCenterOf(hivePos).add(0, 1, 0));
+                    bee.setReturning(true);
                 }
             }
             default -> {}
@@ -170,6 +172,7 @@ public class ForagingBehaviorGoal extends Goal {
             targetFlower = findNextFlower();
             if (targetFlower == null) {
                 // Pas de fleur trouvée, retourner à la ruche
+                bee.setReturning(true);
                 stateMachine.setState(BeeActivityState.RETURNING);
                 return;
             }
@@ -238,22 +241,23 @@ public class ForagingBehaviorGoal extends Goal {
         // Incliner l'abeille vers l'avant pendant le butinage
         bee.setXRot(FORAGING_PITCH);
 
-        // Vérifier si l'abeille est en l'air (fleur en hauteur)
-        // Si oui, descendre doucement vers le sol
-        BlockPos groundCheck = bee.blockPosition().below();
-        boolean hasGroundBelow = !bee.level().getBlockState(groundCheck).isAir();
+        // Rester stationnaire au-dessus de la fleur (hover)
+        Vec3 flowerCenter = Vec3.atCenterOf(targetFlower);
+        Vec3 hoverPos = flowerCenter.add(0, HOVER_HEIGHT * 0.5, 0); // Légèrement au-dessus
+        Vec3 beePos = bee.position();
 
-        if (!hasGroundBelow) {
-            // Descendre doucement
-            bee.setDeltaMovement(new Vec3(0, -FALL_SPEED, 0));
-        } else {
-            // Au sol, rester sur place
-            bee.setDeltaMovement(Vec3.ZERO);
-        }
+        // Maintenir la position au-dessus de la fleur avec un léger mouvement
+        double dx = hoverPos.x - beePos.x;
+        double dy = hoverPos.y - beePos.y;
+        double dz = hoverPos.z - beePos.z;
+
+        // Mouvement de correction doux pour rester en place
+        bee.setDeltaMovement(new Vec3(dx * 0.1, dy * 0.1, dz * 0.1));
 
         // Vérifier si le travail est terminé
         if (stateMachine.isWorkComplete()) {
             bee.setPollinated(true);
+            bee.setReturning(true); // Signal pour la ruche
             resetPitch();
             stateMachine.setState(BeeActivityState.RETURNING);
         }
@@ -269,6 +273,11 @@ public class ForagingBehaviorGoal extends Goal {
     private void tickReturning() {
         // S'assurer que le pitch est normal pendant le retour
         resetPitch();
+
+        // S'assurer que le flag returning est activé
+        if (!bee.isReturning()) {
+            bee.setReturning(true);
+        }
 
         BlockPos hivePos = bee.getAssignedHivePos();
         if (hivePos == null) {

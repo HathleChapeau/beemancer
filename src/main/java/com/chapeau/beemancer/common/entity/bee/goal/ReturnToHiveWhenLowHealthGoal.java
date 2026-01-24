@@ -66,6 +66,8 @@ public class ReturnToHiveWhenLowHealthGoal extends Goal {
     public void start() {
         // Forcer le reset de la cible d'attaque quand on fuit
         bee.setTarget(null);
+        // Signaler à la ruche qu'on revient
+        bee.setReturning(true);
     }
     
     @Override

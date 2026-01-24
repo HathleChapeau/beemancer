@@ -140,6 +140,20 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     @Override
     public void setItem(int slot, ItemStack stack) {
+        // Si c'est un slot d'abeille et qu'on le vide, gérer l'entité correspondante
+        if (slot < BEE_SLOTS && (stack.isEmpty() || !stack.is(BeemancerItems.MAGIC_BEE.get()))) {
+            if (beeSlots[slot].isOutside()) {
+                // L'abeille est dehors, la supprimer
+                MagicBeeEntity bee = findBeeEntity(slot);
+                if (bee != null) {
+                    bee.markAsEnteredHive();
+                    bee.discard();
+                }
+            }
+            returnAssignedFlower(slot);
+            beeSlots[slot].clear();
+        }
+
         items.set(slot, stack);
         if (stack.getCount() > getMaxStackSize()) {
             stack.setCount(getMaxStackSize());
@@ -148,8 +162,6 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         if (slot < BEE_SLOTS) {
             if (!stack.isEmpty() && stack.is(BeemancerItems.MAGIC_BEE.get())) {
                 initializeBeeSlot(slot, stack);
-            } else {
-                beeSlots[slot].clear();
             }
         }
         setChanged();

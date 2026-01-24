@@ -43,9 +43,14 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -103,6 +108,64 @@ public class MagicBeeEntity extends Bee {
 
     public MagicBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
+        // Forcer le contrôle de vol et désactiver la gravité
+        this.moveControl = new FlyingMoveControl(this, 20, true);
+        this.setNoGravity(true);
+    }
+
+    @Override
+    protected PathNavigation createNavigation(Level level) {
+        FlyingPathNavigation navigation = new FlyingPathNavigation(this, level);
+        navigation.setCanOpenDoors(false);
+        navigation.setCanFloat(true);
+        navigation.setCanPassDoors(true);
+        return navigation;
+    }
+
+    @Override
+    public boolean onClimbable() {
+        // Les abeilles ne grimpent pas
+        return false;
+    }
+
+    @Override
+    protected void checkFallDamage(double y, boolean onGround, net.minecraft.world.level.block.state.BlockState state, BlockPos pos) {
+        // Pas de dégâts de chute pour les abeilles volantes
+    }
+
+    @Override
+    public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) {
+        // Pas de dégâts de chute
+        return false;
+    }
+
+    @Override
+    public void travel(Vec3 travelVector) {
+        // Override travel pour forcer le vol
+        if (this.isControlledByLocalInstance()) {
+            if (this.isInWater()) {
+                this.moveRelative(0.02F, travelVector);
+                this.move(MoverType.SELF, this.getDeltaMovement());
+                this.setDeltaMovement(this.getDeltaMovement().scale(0.8));
+            } else if (this.isInLava()) {
+                this.moveRelative(0.02F, travelVector);
+                this.move(MoverType.SELF, this.getDeltaMovement());
+                this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
+            } else {
+                // Vol normal - pas de friction au sol
+                float friction = 0.91F;
+                this.moveRelative(this.getSpeed(), travelVector);
+                this.move(MoverType.SELF, this.getDeltaMovement());
+                this.setDeltaMovement(this.getDeltaMovement().scale(friction));
+            }
+        }
+        this.calculateEntityAnimation(false);
+    }
+
+    @Override
+    public boolean isFlying() {
+        // Toujours considéré en vol
+        return true;
     }
 
     @Override
@@ -326,6 +389,16 @@ public class MagicBeeEntity extends Bee {
     @Override
     public void tick() {
         super.tick();
+
+        // Toujours forcer le vol (au cas où)
+        if (!this.isNoGravity()) {
+            this.setNoGravity(true);
+        }
+
+        // Empêcher de rester au sol - si sur le sol, remonter légèrement
+        if (this.onGround() && !level().isClientSide()) {
+            this.setDeltaMovement(this.getDeltaMovement().add(0, 0.05, 0));
+        }
 
         if (!level().isClientSide()) {
             // Tick le timer enragé chaque tick
