@@ -6,6 +6,7 @@
  */
 package com.chapeau.beemancer.common.menu.alchemy;
 
+import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.blockentity.alchemy.InfuserBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -16,7 +17,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class InfuserMenu extends AbstractContainerMenu {
     private final InfuserBlockEntity blockEntity;
@@ -44,11 +44,12 @@ public class InfuserMenu extends AbstractContainerMenu {
         
         addDataSlots(data);
 
-        // Input slot (wood)
-        addSlot(new SlotItemHandler(blockEntity.getInputSlot(), 0, 44, 35));
-        
-        // Output slot
-        addSlot(new SlotItemHandler(blockEntity.getOutputSlot(), 0, 116, 35));
+        // Input slot (wood) avec icone bois
+        addSlot(BeemancerSlot.woodInput(blockEntity.getInputSlot(), 0, 44, 35)
+            .withFilter(stack -> stack.is(ItemTags.LOGS)));
+
+        // Output slot (extraction seulement)
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlot(), 0, 116, 35));
 
         addPlayerInventory(playerInv, 8, 84);
         addPlayerHotbar(playerInv, 8, 142);

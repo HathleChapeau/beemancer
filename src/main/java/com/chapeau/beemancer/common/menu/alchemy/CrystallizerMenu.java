@@ -6,6 +6,7 @@
  */
 package com.chapeau.beemancer.common.menu.alchemy;
 
+import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.blockentity.alchemy.CrystallizerBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -15,7 +16,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class CrystallizerMenu extends AbstractContainerMenu {
     private final CrystallizerBlockEntity blockEntity;
@@ -42,8 +42,8 @@ public class CrystallizerMenu extends AbstractContainerMenu {
         
         addDataSlots(data);
 
-        // Output slot (centered, right side)
-        addSlot(new SlotItemHandler(blockEntity.getOutputSlot(), 0, 116, 35));
+        // Output slot (extraction seulement)
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlot(), 0, 116, 35));
 
         addPlayerInventory(playerInv, 8, 84);
         addPlayerHotbar(playerInv, 8, 142);

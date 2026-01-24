@@ -1,12 +1,13 @@
 /**
  * ============================================================
  * [CrystallizerScreen.java]
- * Description: GUI pour le cristalliseur
+ * Description: GUI pour le cristalliseur avec jauge de fluide amelioree
  * ============================================================
  */
 package com.chapeau.beemancer.client.gui.screen.alchemy;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.gui.widget.FluidGaugeWidget;
 import com.chapeau.beemancer.common.menu.alchemy.CrystallizerMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -18,10 +19,26 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Beemancer.MOD_ID, "textures/gui/crystallizer.png");
 
+    private FluidGaugeWidget inputGauge;
+
     public CrystallizerScreen(CrystallizerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+
+        // Initialiser la jauge d'input
+        inputGauge = new FluidGaugeWidget(
+            26, 17,     // Position relative au GUI
+            16, 52,     // Dimensions
+            4000,       // Capacite
+            () -> menu.getBlockEntity().getInputTank().getFluid(),
+            menu::getFluidAmount
+        );
     }
 
     @Override
@@ -30,11 +47,8 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
         int y = (height - imageHeight) / 2;
         guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
-        // Input fluid tank (left side)
-        int fluidHeight = (int) (52 * (menu.getFluidAmount() / 4000f));
-        if (fluidHeight > 0) {
-            guiGraphics.blit(TEXTURE, x + 26, y + 17 + (52 - fluidHeight), 176, 0, 16, fluidHeight);
-        }
+        // Input fluid tank avec le nouveau widget
+        inputGauge.render(guiGraphics, x, y);
 
         // Progress arrow
         int processTime = menu.getProcessTime();
@@ -52,11 +66,22 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         renderTooltip(guiGraphics, mouseX, mouseY);
 
+        int x = (width - imageWidth) / 2;
+        int y = (height - imageHeight) / 2;
+
         // Fluid tank tooltip
-        if (isHovering(26, 17, 16, 52, mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font, 
-                Component.literal("Fluid: " + menu.getFluidAmount() + " / 4000 mB"), 
-                mouseX, mouseY);
+        if (inputGauge.isMouseOver(x, y, mouseX, mouseY)) {
+            String fluidName = getFluidName();
+            guiGraphics.renderComponentTooltip(font, inputGauge.getTooltip(fluidName), mouseX, mouseY);
         }
+    }
+
+    private String getFluidName() {
+        var fluid = menu.getBlockEntity().getInputTank().getFluid();
+        if (fluid.isEmpty()) return "Empty";
+        String path = fluid.getFluid().builtInRegistryHolder().key().location().getPath();
+        if (path.contains("honey")) return "Honey";
+        if (path.contains("royal_jelly")) return "Royal Jelly";
+        return "Fluid";
     }
 }

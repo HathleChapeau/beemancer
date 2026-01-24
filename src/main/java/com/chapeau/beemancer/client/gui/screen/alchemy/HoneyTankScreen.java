@@ -1,12 +1,13 @@
 /**
  * ============================================================
  * [HoneyTankScreen.java]
- * Description: GUI simple pour le tank de miel
+ * Description: GUI simple pour le tank de miel avec jauge amelioree
  * ============================================================
  */
 package com.chapeau.beemancer.client.gui.screen.alchemy;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.gui.widget.FluidGaugeWidget;
 import com.chapeau.beemancer.common.menu.alchemy.HoneyTankMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -18,10 +19,24 @@ public class HoneyTankScreen extends AbstractContainerScreen<HoneyTankMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Beemancer.MOD_ID, "textures/gui/honey_tank.png");
 
+    private FluidGaugeWidget storageGauge;
+
     public HoneyTankScreen(HoneyTankMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+
+        // Grande jauge de stockage (centre)
+        storageGauge = new FluidGaugeWidget(
+            62, 17, 52, 52, 16000,
+            () -> menu.getBlockEntity().getTank().getFluid(),
+            menu::getFluidAmount
+        );
     }
 
     @Override
@@ -30,11 +45,8 @@ public class HoneyTankScreen extends AbstractContainerScreen<HoneyTankMenu> {
         int y = (height - imageHeight) / 2;
         guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
-        // Large tank display (center)
-        int fluidHeight = (int) (52 * (menu.getFluidAmount() / 16000f));
-        if (fluidHeight > 0) {
-            guiGraphics.blit(TEXTURE, x + 62, y + 17 + (52 - fluidHeight), 176, 0, 52, fluidHeight);
-        }
+        // Tank avec le widget
+        storageGauge.render(guiGraphics, x, y);
     }
 
     @Override
@@ -45,8 +57,9 @@ public class HoneyTankScreen extends AbstractContainerScreen<HoneyTankMenu> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        if (isHovering(62, 17, 52, 52, mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font, Component.literal("Storage: " + menu.getFluidAmount() + " / 16000 mB"), mouseX, mouseY);
+        // Tooltip pour la jauge
+        if (storageGauge.isMouseOver(x, y, mouseX, mouseY)) {
+            guiGraphics.renderComponentTooltip(font, storageGauge.getTooltip("Honey"), mouseX, mouseY);
         }
     }
 }

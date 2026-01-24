@@ -3,6 +3,59 @@
 ################################################################################
 
 ================================================================================
+2026-01-24 - Alchemy Processing System (Complete)
+================================================================================
+
+AJOUTS:
+- core/recipe/ProcessingOutput.java (output avec probabilite)
+- core/recipe/FluidIngredient.java (ingredient fluide avec codec)
+- core/recipe/ProcessingRecipeInput.java (RecipeInput combines items+fluides)
+- core/recipe/BeemancerRecipeTypes.java (registre des 4 types de recettes)
+- core/recipe/BeemancerRecipeSerializers.java (registre des serializers)
+- core/recipe/type/CentrifugeRecipe.java (recette centrifugeuse)
+- core/recipe/type/InfusingRecipe.java (recette infuseur)
+- core/recipe/type/CrystallizingRecipe.java (recette cristalliseur)
+- core/recipe/type/DistillingRecipe.java (recette alambic)
+- client/gui/widget/BeemancerSlot.java (slot personnalise avec image de fond)
+- client/gui/widget/FluidGaugeWidget.java (jauge de fluide avec rendu visuel)
+- data/beemancer/recipe/centrifuging/*.json (4 recettes combs)
+- data/beemancer/recipe/infusing/honeyed_wood.json
+- data/beemancer/recipe/crystallizing/*.json (2 recettes cristaux)
+- data/beemancer/recipe/distilling/nectar.json
+- assets/beemancer/blockstates/item_pipe.json
+- assets/beemancer/models/block/item_pipe_*.json (core, side, side_extract)
+- assets/beemancer/models/block/honey_pipe_side_extract.json
+
+MODIFICATIONS:
+- BeemancerMenus.java: Correction code corrompu lignes 62-76
+- Beemancer.java: Suppression NECTAR_FILTER, correction capabilities, ajout ItemPipe
+- BeemancerCreativeTabs.java: Suppression NECTAR_FILTER, ajout ITEM_PIPE/INFUSER
+- PoweredCentrifugeBlockEntity.java: Refactoring vers CentrifugeRecipe
+- ManualCentrifugeBlockEntity.java: Refactoring vers CentrifugeRecipe
+- InfuserBlockEntity.java: Refactoring vers InfusingRecipe
+- CrystallizerBlockEntity.java: Refactoring vers CrystallizingRecipe
+- AlembicBlockEntity.java: Refactoring vers DistillingRecipe
+- PoweredCentrifugeMenu.java: Utilisation BeemancerSlot
+- InfuserMenu.java: Utilisation BeemancerSlot
+- CrystallizerMenu.java: Utilisation BeemancerSlot
+- PoweredCentrifugeScreen.java: Utilisation FluidGaugeWidget
+- ManualCentrifugeScreen.java: Utilisation FluidGaugeWidget
+- InfuserScreen.java: Utilisation FluidGaugeWidget
+- CrystallizerScreen.java: Utilisation FluidGaugeWidget
+- AlembicScreen.java: Utilisation FluidGaugeWidget
+- HoneyTankScreen.java: Utilisation FluidGaugeWidget
+- blockstates/honey_pipe.json: Ajout modeles extraction
+
+NOUVELLE FEATURE:
+- Systeme de recettes JSON modulaire pour l'alchimie
+- 4 types de recettes: centrifuging, infusing, crystallizing, distilling
+- Support probabilites sur outputs items (CentrifugeRecipe)
+- Support inputs/outputs fluides avec FluidIngredient
+- GUI ameliorees avec jauges de fluide colorees
+- Slots personnalises avec icones de fond (comb, wood, etc.)
+- Visuels extraction pour pipes (modele elargi)
+
+================================================================================
 2026-01-23 - Codex System (Complete)
 ================================================================================
 

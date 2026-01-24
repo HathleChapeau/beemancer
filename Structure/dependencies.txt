@@ -36,12 +36,38 @@ core/breeding/
 - BreedingManager.java: Logique breeding, héritage, config loading
 
 ================================================================================
+core/recipe/
+================================================================================
+
+- ProcessingOutput.java: Output avec probabilité (0.0-1.0), méthode roll()
+- FluidIngredient.java: Ingrédient fluide avec codec, méthode test()
+- ProcessingRecipeInput.java: RecipeInput combiné items+fluides
+- BeemancerRecipeTypes.java: Registre des 4 types (CENTRIFUGING, INFUSING, CRYSTALLIZING, DISTILLING)
+- BeemancerRecipeSerializers.java: Registre des serializers de recettes
+
+================================================================================
 common/menu/slot/
 ================================================================================
 
 - OutputOnlySlot.java: Slot extraction uniquement (pattern Create)
 - BeeAssignmentSlot.java: Slot acceptant uniquement MagicBeeItem
 - LarvaSlot.java: Slot acceptant uniquement BeeLarvaItem
+
+================================================================================
+client/gui/widget/
+================================================================================
+
+- BeemancerSlot.java: Slot personnalisé avec image de fond optionnelle
+  - Constructeur base: fond Minecraft par défaut
+  - Constructeur avec image: fond personnalisé
+  - Factory: combInput(), woodInput(), output()
+  - Support filtre et mode output-only
+
+- FluidGaugeWidget.java: Jauge de fluide avec rendu visuel
+  - Couleurs: HONEY (orange), ROYAL_JELLY (crème), NECTAR (or)
+  - Graduations 25%, 50%, 75%
+  - Tooltip avec montant et pourcentage
+  - isMouseOver() pour détection survol
 
 ================================================================================
 common/entity/bee/

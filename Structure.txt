@@ -1,6 +1,6 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-01-23                     #
+#                         Dernière mise à jour: 2026-01-24                     #
 ################################################################################
 
 ================================================================================
@@ -56,6 +56,10 @@ Philosophie:
 │ core/breeding/BreedingManager.java  │ Logique breeding + héritage            │
 │ core/util/FlowerSearchHelper.java   │ Recherche de fleurs dans un rayon      │
 │ core/util/HarvestHelper.java        │ Logique récolte par type de bloc       │
+│ core/recipe/BeemancerRecipeTypes.java│ Registre des types de recettes        │
+│ core/recipe/BeemancerRecipeSerializers.java│ Registre des serializers        │
+│ core/recipe/ProcessingOutput.java   │ Output avec probabilité                │
+│ core/recipe/FluidIngredient.java    │ Ingredient fluide pour recettes        │
 │ content/gene/GeneInit.java          │ Enregistrement de tous les gènes       │
 │ client/ClientSetup.java             │ Init client (screens, renderers)       │
 │ common/codex/CodexManager.java      │ Gestionnaire central du Codex          │
@@ -94,6 +98,22 @@ Philosophie:
 │ POUR AJOUTER: Créer FlowerGene + tag puis mettre à jour le fichier          │
 └─────────────────────────────────────────────────────────────────────────────┘
 → Voir: Structure/registries_flower_genes.txt
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ REGISTRES DE RECETTES (core/recipe/)                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ BeemancerRecipeTypes:                                                        │
+│   - CENTRIFUGING (1 item → fluide + items avec probas)                       │
+│   - INFUSING (1 item + fluide → 1 item)                                      │
+│   - CRYSTALLIZING (1 fluide → 1 item)                                        │
+│   - DISTILLING (2 fluides → 1 fluide)                                        │
+│                                                                              │
+│ BeemancerRecipeSerializers:                                                  │
+│   - CENTRIFUGE_SERIALIZER                                                    │
+│   - INFUSING_SERIALIZER                                                      │
+│   - CRYSTALLIZING_SERIALIZER                                                 │
+│   - DISTILLING_SERIALIZER                                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
 
 ================================================================================
 5. FEATURES IMPLÉMENTÉES
@@ -149,6 +169,10 @@ LISTE DES FEATURES:
 → Breeding System
   Fichier: Structure/feature_breeding_system.txt
   Description: Système de reproduction des abeilles
+
+→ Alchemy Processing System
+  Fichier: Structure/feature_alchemy_system.txt
+  Description: Système de traitement alchimique modulaire basé sur recettes JSON
 
 ================================================================================
 6. FEATURES EN COURS

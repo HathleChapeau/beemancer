@@ -1,0 +1,215 @@
+################################################################################
+#                     FEATURE: ALCHEMY PROCESSING SYSTEM                        #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Systeme de traitement alchimique modulaire base sur des recettes JSON.
+Supporte les inputs/outputs d'items et de fluides avec probabilites configurables.
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           RECIPE INFRASTRUCTURE                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  core/recipe/                                                                │
+│  ├── ProcessingOutput.java        # Output avec probabilite (0.0-1.0)        │
+│  ├── FluidIngredient.java         # Ingredient fluide avec codec             │
+│  ├── ProcessingRecipeInput.java   # RecipeInput combines (items + fluides)   │
+│  ├── BeemancerRecipeTypes.java    # Registre des RecipeTypes                 │
+│  ├── BeemancerRecipeSerializers.java  # Registre des Serializers             │
+│  └── type/                                                                   │
+│      ├── CentrifugeRecipe.java    # 1 item -> fluide + items (avec probas)   │
+│      ├── InfusingRecipe.java      # 1 item + fluide -> 1 item                │
+│      ├── CrystallizingRecipe.java # 1 fluide -> 1 item                       │
+│      └── DistillingRecipe.java    # 2 fluides -> 1 fluide                    │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              MACHINES                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  CENTRIFUGE (Manual/Powered)                                                 │
+│  - Input: 1 comb (item)                                                      │
+│  - Output: fluide (honey) + items avec probabilites                          │
+│  - Recette: beemancer:centrifuging                                           │
+│                                                                              │
+│  INFUSER                                                                     │
+│  - Input: 1 item (logs) + fluide (honey)                                     │
+│  - Output: 1 item (honeyed_wood)                                             │
+│  - Recette: beemancer:infusing                                               │
+│                                                                              │
+│  CRYSTALLIZER                                                                │
+│  - Input: fluide (honey/royal_jelly)                                         │
+│  - Output: 1 item (crystal)                                                  │
+│  - Recette: beemancer:crystallizing                                          │
+│                                                                              │
+│  ALEMBIC                                                                     │
+│  - Input: 2 fluides (honey + royal_jelly)                                    │
+│  - Output: 1 fluide (nectar)                                                 │
+│  - Recette: beemancer:distilling                                             │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              GUI WIDGETS                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  client/gui/widget/                                                          │
+│  ├── BeemancerSlot.java           # Slot personnalise avec image de fond     │
+│  │   - Constructeur base: fond Minecraft par defaut                          │
+│  │   - Constructeur image: remplace le fond par une texture custom           │
+│  │   - Factory methods: combInput(), woodInput(), output()                   │
+│  │   - Support filtre et mode output-only                                    │
+│  │                                                                           │
+│  └── FluidGaugeWidget.java        # Jauge de fluide avec rendu visuel        │
+│      - Rendu colore selon le type de fluide                                  │
+│      - Graduations 25%, 50%, 75%                                             │
+│      - Tooltip avec montant et pourcentage                                   │
+│      - Couleurs: Honey (orange), Royal Jelly (creme), Nectar (or)            │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+FICHIERS
+================================================================================
+
+INFRASTRUCTURE RECETTES:
+-------------------------
+core/recipe/ProcessingOutput.java
+core/recipe/FluidIngredient.java
+core/recipe/ProcessingRecipeInput.java
+core/recipe/BeemancerRecipeTypes.java
+core/recipe/BeemancerRecipeSerializers.java
+core/recipe/type/CentrifugeRecipe.java
+core/recipe/type/InfusingRecipe.java
+core/recipe/type/CrystallizingRecipe.java
+core/recipe/type/DistillingRecipe.java
+
+BLOCKENTITIES:
+--------------
+common/blockentity/alchemy/PoweredCentrifugeBlockEntity.java
+common/blockentity/alchemy/ManualCentrifugeBlockEntity.java
+common/blockentity/alchemy/InfuserBlockEntity.java
+common/blockentity/alchemy/CrystallizerBlockEntity.java
+common/blockentity/alchemy/AlembicBlockEntity.java
+common/blockentity/alchemy/HoneyTankBlockEntity.java
+
+MENUS:
+------
+common/menu/alchemy/PoweredCentrifugeMenu.java
+common/menu/alchemy/ManualCentrifugeMenu.java
+common/menu/alchemy/InfuserMenu.java
+common/menu/alchemy/CrystallizerMenu.java
+common/menu/alchemy/AlembicMenu.java
+common/menu/alchemy/HoneyTankMenu.java
+
+SCREENS:
+--------
+client/gui/screen/alchemy/PoweredCentrifugeScreen.java
+client/gui/screen/alchemy/ManualCentrifugeScreen.java
+client/gui/screen/alchemy/InfuserScreen.java
+client/gui/screen/alchemy/CrystallizerScreen.java
+client/gui/screen/alchemy/AlembicScreen.java
+client/gui/screen/alchemy/HoneyTankScreen.java
+
+WIDGETS:
+--------
+client/gui/widget/BeemancerSlot.java
+client/gui/widget/FluidGaugeWidget.java
+
+RECETTES JSON:
+--------------
+data/beemancer/recipe/centrifuging/common_comb.json
+data/beemancer/recipe/centrifuging/noble_comb.json
+data/beemancer/recipe/centrifuging/diligent_comb.json
+data/beemancer/recipe/centrifuging/royal_comb.json
+data/beemancer/recipe/infusing/honeyed_wood.json
+data/beemancer/recipe/crystallizing/honey_crystal.json
+data/beemancer/recipe/crystallizing/royal_honey_crystal.json
+data/beemancer/recipe/distilling/nectar.json
+
+ASSETS PIPES:
+-------------
+assets/beemancer/blockstates/item_pipe.json
+assets/beemancer/models/block/item_pipe_core.json
+assets/beemancer/models/block/item_pipe_side.json
+assets/beemancer/models/block/item_pipe_side_extract.json
+assets/beemancer/models/block/honey_pipe_side_extract.json
+
+================================================================================
+FORMAT RECETTES JSON
+================================================================================
+
+CENTRIFUGING:
+```json
+{
+  "type": "beemancer:centrifuging",
+  "ingredient": { "item": "beemancer:common_comb" },
+  "results": [
+    { "item": "beemancer:pollen", "chance": 1.0 },
+    { "item": "beemancer:beeswax", "chance": 0.5 }
+  ],
+  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "processing_time": 60
+}
+```
+
+INFUSING:
+```json
+{
+  "type": "beemancer:infusing",
+  "ingredient": { "tag": "minecraft:logs" },
+  "fluid_ingredient": { "fluid": "beemancer:honey", "amount": 250 },
+  "result": { "item": "beemancer:honeyed_wood" },
+  "processing_time": 200
+}
+```
+
+CRYSTALLIZING:
+```json
+{
+  "type": "beemancer:crystallizing",
+  "fluid_ingredient": { "fluid": "beemancer:honey", "amount": 500 },
+  "result": { "item": "beemancer:honey_crystal" },
+  "processing_time": 100
+}
+```
+
+DISTILLING:
+```json
+{
+  "type": "beemancer:distilling",
+  "fluid_ingredients": [
+    { "fluid": "beemancer:honey", "amount": 500 },
+    { "fluid": "beemancer:royal_jelly", "amount": 250 }
+  ],
+  "fluid_result": { "fluid": "beemancer:nectar", "amount": 500 },
+  "processing_time": 80
+}
+```
+
+================================================================================
+UTILISATION
+================================================================================
+
+AJOUTER UNE RECETTE:
+1. Creer un fichier JSON dans data/beemancer/recipe/[type]/
+2. Suivre le format correspondant au type de recette
+3. /reload pour charger la nouvelle recette
+
+CREER UN NOUVEAU TYPE DE MACHINE:
+1. Creer Recipe (extends Recipe<ProcessingRecipeInput>)
+2. Enregistrer RecipeType dans BeemancerRecipeTypes
+3. Enregistrer Serializer dans BeemancerRecipeSerializers
+4. Creer BlockEntity utilisant le nouveau type de recette
+5. Creer Menu avec BeemancerSlot
+6. Creer Screen avec FluidGaugeWidget
+
+################################################################################

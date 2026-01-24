@@ -6,6 +6,7 @@
  */
 package com.chapeau.beemancer.common.menu.alchemy;
 
+import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.blockentity.alchemy.PoweredCentrifugeBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
@@ -18,7 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class PoweredCentrifugeMenu extends AbstractContainerMenu {
     private final PoweredCentrifugeBlockEntity blockEntity;
@@ -58,19 +58,16 @@ public class PoweredCentrifugeMenu extends AbstractContainerMenu {
                 int slotX = x + col * 18;
                 int slotY = y + row * 18;
                 if (isInput) {
-                    addSlot(new SlotItemHandler(handler, index, slotX, slotY) {
-                        @Override
-                        public boolean mayPlace(ItemStack stack) {
-                            return stack.is(Items.HONEYCOMB) || stack.is(BeemancerItems.ROYAL_COMB.get());
-                        }
-                    });
+                    // Input slots avec icone de comb et filtre
+                    addSlot(BeemancerSlot.combInput(handler, index, slotX, slotY)
+                        .withFilter(stack -> stack.is(Items.HONEYCOMB) ||
+                                            stack.is(BeemancerItems.ROYAL_COMB.get()) ||
+                                            stack.is(BeemancerItems.COMMON_COMB.get()) ||
+                                            stack.is(BeemancerItems.NOBLE_COMB.get()) ||
+                                            stack.is(BeemancerItems.DILIGENT_COMB.get())));
                 } else {
-                    addSlot(new SlotItemHandler(handler, index, slotX, slotY) {
-                        @Override
-                        public boolean mayPlace(ItemStack stack) {
-                            return false;
-                        }
-                    });
+                    // Output slots (extraction seulement)
+                    addSlot(BeemancerSlot.output(handler, index, slotX, slotY));
                 }
             }
         }
