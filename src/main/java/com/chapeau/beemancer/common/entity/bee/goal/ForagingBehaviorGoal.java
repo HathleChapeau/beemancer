@@ -303,42 +303,49 @@ public class ForagingBehaviorGoal extends Goal {
     }
 
     /**
-     * Navigation avec pathfinding A*.
+     * Navigation avec pathfinding Theta*.
+     * L'altitude est gérée par le pathfinding en 3D.
      */
     private void navigateWithPathfinding(BlockPos destination) {
-        // Calculer ou récupérer le chemin
-        pathfinding.findPath(bee.blockPosition(), destination);
+        // Ajouter une altitude de vol à la destination pour voler au-dessus
+        BlockPos flightDestination = destination.above((int) FLIGHT_ALTITUDE);
+
+        // Calculer ou récupérer le chemin avec Theta*
+        pathfinding.findPath(bee.blockPosition(), flightDestination);
+
+        // Afficher le chemin avec des particules (debug)
+        pathfinding.showPathParticles(bee.position());
 
         // Obtenir le prochain waypoint
         BlockPos nextWaypoint = pathfinding.getNextWaypoint(bee.position(), REACH_DISTANCE);
 
         if (nextWaypoint == null) {
             // Chemin terminé ou pas de chemin, aller directement vers la destination
-            nextWaypoint = destination;
+            nextWaypoint = flightDestination;
         }
 
-        navigateTo(nextWaypoint);
+        // Navigation directe vers le waypoint (le pathfinding gère l'altitude)
+        navigateToVec3(Vec3.atCenterOf(nextWaypoint));
     }
 
     /**
-     * Déplacement direct vers une position avec altitude de vol.
+     * Déplacement direct vers une position de bloc.
      */
     private void navigateTo(BlockPos pos) {
-        navigateToWithAltitude(pos, FLIGHT_ALTITUDE);
+        navigateToVec3(Vec3.atCenterOf(pos));
     }
 
     /**
-     * Déplacement direct vers une position sans altitude additionnelle.
+     * Déplacement direct vers une position exacte.
      */
     private void navigateToExact(BlockPos pos) {
-        navigateToWithAltitude(pos, 0);
+        navigateToVec3(Vec3.atCenterOf(pos));
     }
 
     /**
-     * Déplacement vers une position avec une altitude spécifique ajoutée.
+     * Déplacement vers un Vec3 précis.
      */
-    private void navigateToWithAltitude(BlockPos pos, double altitudeOffset) {
-        Vec3 targetVec = Vec3.atCenterOf(pos).add(0, altitudeOffset, 0);
+    private void navigateToVec3(Vec3 targetVec) {
         Vec3 direction = targetVec.subtract(bee.position()).normalize();
 
         BeeBehaviorConfig config = bee.getBehaviorConfig();
