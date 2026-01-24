@@ -84,6 +84,11 @@ public class ManualCentrifugeMenu extends AbstractContainerMenu {
     public int getFluidAmount() { return data.get(1); }
     public int getMaxProgress() { return data.get(2); }
 
+    /**
+     * Alias pour compatibilite avec ManualCentrifugeScreen
+     */
+    public int getSpinCount() { return data.get(0); }
+
     public float getProgressRatio() {
         int max = getMaxProgress();
         return max > 0 ? (float) getProgress() / max : 0;

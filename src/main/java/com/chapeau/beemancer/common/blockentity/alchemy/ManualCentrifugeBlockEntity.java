@@ -149,6 +149,49 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
         return !inputSlot.getStackInSlot(0).isEmpty();
     }
 
+    /**
+     * Alias pour compatibilite avec ManualCentrifugeBlock
+     */
+    public boolean hasCombsToProcess() {
+        return hasInputToProcess();
+    }
+
+    /**
+     * Verifie si on peut inserer un comb dans le slot d'entree
+     */
+    public boolean canInsertComb() {
+        ItemStack current = inputSlot.getStackInSlot(0);
+        return current.isEmpty() || current.getCount() < current.getMaxStackSize();
+    }
+
+    /**
+     * Insere un comb dans le slot d'entree
+     */
+    public void insertComb(ItemStack comb) {
+        ItemStack current = inputSlot.getStackInSlot(0);
+        if (current.isEmpty()) {
+            inputSlot.setStackInSlot(0, comb.copy());
+        } else if (ItemStack.isSameItemSameComponents(current, comb)) {
+            current.grow(comb.getCount());
+        }
+        setChanged();
+    }
+
+    /**
+     * Extrait un item de sortie
+     */
+    public ItemStack extractOutput() {
+        for (int i = 0; i < outputSlots.getSlots(); i++) {
+            ItemStack stack = outputSlots.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                ItemStack extracted = outputSlots.extractItem(i, stack.getCount(), false);
+                setChanged();
+                return extracted;
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+
     private void processInput() {
         if (level == null) return;
 
