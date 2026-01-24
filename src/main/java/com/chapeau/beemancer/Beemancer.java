@@ -97,6 +97,9 @@ public class Beemancer {
                 BeemancerBlockEntities.HONEY_TANK.get(), (be, side) -> be.getFluidTank());
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
+                BeemancerBlockEntities.CREATIVE_TANK.get(), (be, side) -> be.getFluidTank());
+
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
                 BeemancerBlockEntities.HONEY_PIPE.get(), (be, side) -> be.getBuffer());
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
