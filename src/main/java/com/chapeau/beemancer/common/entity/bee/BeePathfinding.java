@@ -79,7 +79,7 @@ public class BeePathfinding {
     @Nullable private BlockPos cachedEnd = null;
 
     // Debug
-    private boolean debugMode = true;
+    private boolean debugMode = false;
     private long lastParticleTime = 0;
     private static final long PARTICLE_INTERVAL = 500; // ms
 
