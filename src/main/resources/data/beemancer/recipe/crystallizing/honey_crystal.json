@@ -1,0 +1,6 @@
+{
+  "type": "beemancer:crystallizing",
+  "fluid_ingredient": { "fluid": "beemancer:honey", "amount": 500 },
+  "result": { "id": "beemancer:honey_crystal" },
+  "processing_time": 100
+}

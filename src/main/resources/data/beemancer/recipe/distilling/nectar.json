@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:distilling",
+  "fluid_ingredients": [
+    { "fluid": "beemancer:honey", "amount": 500 },
+    { "fluid": "beemancer:royal_jelly", "amount": 250 }
+  ],
+  "fluid_result": { "fluid": "beemancer:nectar", "amount": 500 },
+  "processing_time": 80
+}
