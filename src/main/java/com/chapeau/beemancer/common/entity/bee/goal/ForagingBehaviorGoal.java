@@ -67,6 +67,7 @@ public class ForagingBehaviorGoal extends Goal {
     private static final double FLIGHT_SPEED_FACTOR = 0.1;
     private static final double FLIGHT_ALTITUDE = 1.0; // Altitude de vol au-dessus des destinations
     private static final double HOVER_HEIGHT = 0.5; // Hauteur au-dessus de la fleur pour l'approche finale
+    private static final double APPROACH_OFFSET = 0.3; // Décalage d'approche depuis la ruche
     private static final double FALL_SPEED = 0.02; // Vitesse de descente pendant le butinage
     private static final float FORAGING_PITCH = 30.0f; // Inclinaison vers l'avant (degrés)
     private static final Random RANDOM = new Random();
@@ -193,9 +194,12 @@ public class ForagingBehaviorGoal extends Goal {
         Vec3 flowerCenter = Vec3.atCenterOf(targetFlower);
         Vec3 beePos = bee.position();
 
+        // Calculer l'offset d'approche (vecteur ruche->fleur, Y=0, inversé, magnitude 0.3)
+        Vec3 approachOffset = calculateApproachOffset(targetFlower);
+
         // Phase 1: Approche par le haut
         if (isApproachingFromAbove) {
-            Vec3 hoverPoint = flowerCenter.add(0, HOVER_HEIGHT, 0);
+            Vec3 hoverPoint = flowerCenter.add(0, HOVER_HEIGHT, 0).add(approachOffset);
             double distToHover = beePos.distanceTo(hoverPoint);
 
             if (distToHover <= REACH_DISTANCE) {
@@ -241,9 +245,10 @@ public class ForagingBehaviorGoal extends Goal {
         // Incliner l'abeille vers l'avant pendant le butinage
         bee.setXRot(FORAGING_PITCH);
 
-        // Rester stationnaire au-dessus de la fleur (hover à 0.5 bloc)
+        // Rester stationnaire au-dessus de la fleur avec l'offset d'approche
         Vec3 flowerCenter = Vec3.atCenterOf(targetFlower);
-        Vec3 hoverPos = flowerCenter.add(0, HOVER_HEIGHT, 0);
+        Vec3 approachOffset = calculateApproachOffset(targetFlower);
+        Vec3 hoverPos = flowerCenter.add(0, HOVER_HEIGHT, 0).add(approachOffset);
         Vec3 beePos = bee.position();
 
         // Maintenir la position au-dessus de la fleur avec un léger mouvement
@@ -413,6 +418,31 @@ public class ForagingBehaviorGoal extends Goal {
 
         // Sélection aléatoire
         return allFlowers.get(RANDOM.nextInt(allFlowers.size()));
+    }
+
+    /**
+     * Calcule l'offset d'approche pour que l'abeille arrive du côté de la ruche.
+     * Vecteur ruche->fleur, Y=0, normalisé, magnitude APPROACH_OFFSET, inversé.
+     */
+    private Vec3 calculateApproachOffset(BlockPos flowerPos) {
+        BlockPos hivePos = bee.getAssignedHivePos();
+        if (hivePos == null) {
+            return Vec3.ZERO;
+        }
+
+        // Vecteur ruche -> fleur
+        double dx = flowerPos.getX() - hivePos.getX();
+        double dz = flowerPos.getZ() - hivePos.getZ();
+
+        // Magnitude horizontale
+        double length = Math.sqrt(dx * dx + dz * dz);
+        if (length < 0.01) {
+            return Vec3.ZERO;
+        }
+
+        // Normaliser, appliquer magnitude, inverser (pour approcher depuis la ruche)
+        double factor = -APPROACH_OFFSET / length;
+        return new Vec3(dx * factor, 0, dz * factor);
     }
 
     private boolean isValidFlower(BlockPos pos) {
