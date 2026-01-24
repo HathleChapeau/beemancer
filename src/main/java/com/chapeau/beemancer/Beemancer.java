@@ -48,7 +48,7 @@ public class Beemancer {
 
     public Beemancer(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing Beemancer...");
-        
+
         BeemancerBlocks.register(modEventBus);
         BeemancerItems.register(modEventBus);
         BeemancerBlockEntities.register(modEventBus);
@@ -62,25 +62,25 @@ public class Beemancer {
         BeemancerRecipeSerializers.register(modEventBus);
 
         BeemancerNetwork.register(modEventBus);
-        
+
         modEventBus.addListener(this::onCommonSetup);
         modEventBus.addListener(this::registerEntityAttributes);
         modEventBus.addListener(this::registerCapabilities);
-        
+
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
-        
+
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ClientSetup.register(modEventBus);
         }
-        
+
         LOGGER.info("Beemancer initialized!");
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             GeneInit.registerAllGenes();
-            LOGGER.info("Gene system initialized with {} genes", 
+            LOGGER.info("Gene system initialized with {} genes",
                     com.chapeau.beemancer.core.gene.GeneRegistry.getAllGenes().size());
         });
     }
@@ -91,39 +91,39 @@ public class Beemancer {
 
     private void registerCapabilities(final RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.MANUAL_CENTRIFUGE.get(), (be, side) -> be.getFluidTank());
+                BeemancerBlockEntities.MANUAL_CENTRIFUGE.get(), (be, side) -> be.getFluidTank());
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.HONEY_TANK.get(), (be, side) -> be.getFluidTank());
+                BeemancerBlockEntities.HONEY_TANK.get(), (be, side) -> be.getFluidTank());
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.HONEY_PIPE.get(), (be, side) -> be.getBuffer());
+                BeemancerBlockEntities.HONEY_PIPE.get(), (be, side) -> be.getBuffer());
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.POWERED_CENTRIFUGE.get(),
-            (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getFuelTank());
+                BeemancerBlockEntities.POWERED_CENTRIFUGE.get(),
+                (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getFuelTank());
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.CRYSTALLIZER.get(),
-            (be, side) -> be.getInputTank());
+                BeemancerBlockEntities.CRYSTALLIZER.get(),
+                (be, side) -> be.getInputTank());
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.ALEMBIC.get(),
-            (be, side) -> {
-                if (side == Direction.DOWN) return be.getNectarTank();
-                if (side == Direction.UP) return be.getRoyalJellyTank();
-                return be.getHoneyTank();
-            });
+                BeemancerBlockEntities.ALEMBIC.get(),
+                (be, side) -> {
+                    if (side == Direction.DOWN) return be.getNectarTank();
+                    if (side == Direction.UP) return be.getRoyalJellyTank();
+                    return be.getHoneyTank();
+                });
 
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
-            BeemancerBlockEntities.INFUSER.get(),
-            (be, side) -> be.getHoneyTank());
+                BeemancerBlockEntities.INFUSER.get(),
+                (be, side) -> be.getHoneyTank());
 
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,
-            BeemancerBlockEntities.ITEM_PIPE.get(),
-            (be, side) -> be.getBuffer());
+                BeemancerBlockEntities.ITEM_PIPE.get(),
+                (be, side) -> be.getBuffer());
     }
-    
+
     private void onServerStarting(final ServerStartingEvent event) {
         LOGGER.info("Loading Beemancer data configurations...");
         BreedingManager.loadCombinations(event.getServer());

@@ -34,7 +34,7 @@ public class ManualCentrifugeScreen extends AbstractContainerScreen<ManualCentri
         // Jauge de fluide (droite)
         fluidGauge = new FluidGaugeWidget(
             134, 17, 16, 52, 4000,
-            () -> menu.getBlockEntity().getOutputTank().getFluid(),
+            () -> menu.getBlockEntity().getFluidTank().getFluid(),
             menu::getFluidAmount
         );
     }

@@ -80,11 +80,12 @@ public class CrystallizerBlock extends BaseEntityBlock {
         if (stack.is(BeemancerItems.HONEY_CRYSTAL.get()) || 
             stack.is(BeemancerItems.ENRICHED_HONEY_CRYSTAL.get()) ||
             stack.is(BeemancerItems.RADIANT_HONEY_CRYSTAL.get())) {
+            /*
             if (crystallizer.insertCrystal(stack.copyWithCount(1))) {
                 if (!player.isCreative()) stack.shrink(1);
                 level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_PLACE, SoundSource.BLOCKS, 1.0f, 1.2f);
                 return ItemInteractionResult.SUCCESS;
-            }
+            }*/
         }
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;

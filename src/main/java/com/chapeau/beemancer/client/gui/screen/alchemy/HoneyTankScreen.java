@@ -33,9 +33,9 @@ public class HoneyTankScreen extends AbstractContainerScreen<HoneyTankMenu> {
 
         // Grande jauge de stockage (centre)
         storageGauge = new FluidGaugeWidget(
-            62, 17, 52, 52, 16000,
-            () -> menu.getBlockEntity().getTank().getFluid(),
-            menu::getFluidAmount
+                62, 17, 52, 52, 16000,
+                () -> menu.getBlockEntity().getFluid(),
+                menu::getFluidAmount
         );
     }
 
