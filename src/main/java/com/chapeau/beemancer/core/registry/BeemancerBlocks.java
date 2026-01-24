@@ -74,6 +74,12 @@ public class BeemancerBlocks {
                     .sound(SoundType.GLASS)
                     .noOcclusion()));
 
+    public static final DeferredBlock<CreativeTankBlock> CREATIVE_TANK = BLOCKS.register("creative_tank",
+            () -> new CreativeTankBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion()));
+
     public static final DeferredBlock<HoneyPipeBlock> HONEY_PIPE = BLOCKS.register("honey_pipe",
             () -> new HoneyPipeBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f)

@@ -5,7 +5,7 @@
  * ============================================================
  *
  * FONCTIONNEMENT:
- * - Accepte les combs definis par recettes JSON
+ * - 1 slot d'entree + 4 slots de sortie
  * - Le joueur doit maintenir clic droit pour faire tourner
  * - Outputs avec probabilites definies par recette
  * ============================================================
@@ -24,7 +24,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -38,17 +37,30 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProvider {
-    private static final int MAX_COMBS = 4;
     private static final int PROCESS_TIME = 60; // Ticks to process (3 seconds of holding)
 
-    private final NonNullList<ItemStack> combStorage = NonNullList.withSize(MAX_COMBS, ItemStack.EMPTY);
-    private final NonNullList<ItemStack> outputStorage = NonNullList.withSize(4, ItemStack.EMPTY);
-    
+    // 1 slot d'entree
+    private final ItemStackHandler inputSlot = new ItemStackHandler(1) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+        }
+    };
+
+    // 4 slots de sortie
+    private final ItemStackHandler outputSlots = new ItemStackHandler(4) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+        }
+    };
+
     private final FluidTank fluidTank = new FluidTank(4000) {
         @Override
         protected void onContentsChanged() { setChanged(); }
@@ -82,7 +94,7 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ManualCentrifugeBlockEntity be) {
         boolean wasSpinning = state.getValue(ManualCentrifugeBlock.SPINNING);
-        
+
         // Check if player stopped holding (no interaction for 5 ticks)
         int currentTick = (int) level.getGameTime();
         if (be.isSpinning && (currentTick - be.lastInteractionTick) > 5) {
@@ -103,14 +115,14 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
      * @return true if progress was made
      */
     public boolean onPlayerSpin(Level level) {
-        if (!hasCombsToProcess()) return false;
+        if (!hasInputToProcess()) return false;
 
         lastInteractionTick = (int) level.getGameTime();
         isSpinning = true;
         progress++;
 
         if (progress >= PROCESS_TIME) {
-            processAllCombs();
+            processInput();
             progress = 0;
             isSpinning = false;
             return true;
@@ -130,60 +142,32 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
     }
 
     public boolean isValidComb(ItemStack stack) {
-        // Fallback for when level is not available
         return !stack.isEmpty() && level != null && isValidComb(stack, level);
     }
 
-    public boolean canInsertComb() {
-        for (ItemStack stack : combStorage) {
-            if (stack.isEmpty()) return true;
-        }
-        return false;
+    public boolean hasInputToProcess() {
+        return !inputSlot.getStackInSlot(0).isEmpty();
     }
 
-    public void insertComb(ItemStack comb) {
-        for (int i = 0; i < combStorage.size(); i++) {
-            if (combStorage.get(i).isEmpty()) {
-                combStorage.set(i, comb);
-                setChanged();
-                return;
-            }
-        }
-    }
-
-    public boolean hasCombsToProcess() {
-        for (ItemStack stack : combStorage) {
-            if (!stack.isEmpty()) return true;
-        }
-        return false;
-    }
-
-    private void processAllCombs() {
+    private void processInput() {
         if (level == null) return;
 
-        for (int i = 0; i < combStorage.size(); i++) {
-            ItemStack comb = combStorage.get(i);
-            if (comb.isEmpty()) continue;
+        ItemStack input = inputSlot.getStackInSlot(0);
+        if (input.isEmpty()) return;
 
-            processComb(comb);
-            combStorage.set(i, ItemStack.EMPTY);
-        }
-        setChanged();
-    }
-
-    private void processComb(ItemStack comb) {
-        if (level == null) return;
-
-        ProcessingRecipeInput input = ProcessingRecipeInput.ofItem(comb);
+        ProcessingRecipeInput recipeInput = ProcessingRecipeInput.ofItem(input);
         Optional<RecipeHolder<CentrifugeRecipe>> recipeHolder = level.getRecipeManager().getRecipeFor(
             BeemancerRecipeTypes.CENTRIFUGING.get(),
-            input,
+            recipeInput,
             level
         );
 
         if (recipeHolder.isEmpty()) return;
 
         CentrifugeRecipe recipe = recipeHolder.get().value();
+
+        // Consume 1 input item
+        inputSlot.extractItem(0, 1, false);
 
         // Produce fluid output
         FluidStack fluidOutput = recipe.getFluidOutput();
@@ -195,41 +179,39 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
         for (ProcessingOutput output : recipe.results()) {
             output.roll(level.getRandom()).ifPresent(this::addOutput);
         }
+
+        setChanged();
     }
 
     private void addOutput(ItemStack stack) {
-        for (int i = 0; i < outputStorage.size(); i++) {
-            ItemStack existing = outputStorage.get(i);
+        for (int i = 0; i < outputSlots.getSlots(); i++) {
+            ItemStack existing = outputSlots.getStackInSlot(i);
             if (existing.isEmpty()) {
-                outputStorage.set(i, stack);
+                outputSlots.setStackInSlot(i, stack.copy());
                 return;
-            } else if (ItemStack.isSameItemSameComponents(existing, stack) && existing.getCount() < existing.getMaxStackSize()) {
-                existing.grow(1);
+            } else if (ItemStack.isSameItemSameComponents(existing, stack) &&
+                       existing.getCount() < existing.getMaxStackSize()) {
+                int toAdd = Math.min(stack.getCount(), existing.getMaxStackSize() - existing.getCount());
+                existing.grow(toAdd);
                 return;
             }
         }
     }
 
-    public ItemStack extractOutput() {
-        for (int i = 0; i < outputStorage.size(); i++) {
-            ItemStack stack = outputStorage.get(i);
-            if (!stack.isEmpty()) {
-                outputStorage.set(i, ItemStack.EMPTY);
-                setChanged();
-                return stack;
-            }
-        }
-        return ItemStack.EMPTY;
-    }
-
+    public ItemStackHandler getInputSlot() { return inputSlot; }
+    public ItemStackHandler getOutputSlots() { return outputSlots; }
     public FluidTank getFluidTank() { return fluidTank; }
     public int getProgress() { return progress; }
     public int getProcessTime() { return PROCESS_TIME; }
 
     public NonNullList<ItemStack> getDrops() {
         NonNullList<ItemStack> drops = NonNullList.create();
-        drops.addAll(combStorage);
-        drops.addAll(outputStorage);
+        ItemStack input = inputSlot.getStackInSlot(0);
+        if (!input.isEmpty()) drops.add(input);
+        for (int i = 0; i < outputSlots.getSlots(); i++) {
+            ItemStack output = outputSlots.getStackInSlot(i);
+            if (!output.isEmpty()) drops.add(output);
+        }
         return drops;
     }
 
@@ -247,15 +229,8 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        
-        CompoundTag combsTag = new CompoundTag();
-        ContainerHelper.saveAllItems(combsTag, combStorage, registries);
-        tag.put("Combs", combsTag);
-
-        CompoundTag outputTag = new CompoundTag();
-        ContainerHelper.saveAllItems(outputTag, outputStorage, registries);
-        tag.put("Output", outputTag);
-
+        tag.put("Input", inputSlot.serializeNBT(registries));
+        tag.put("Output", outputSlots.serializeNBT(registries));
         tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
         tag.putInt("Progress", progress);
     }
@@ -263,12 +238,11 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        
-        if (tag.contains("Combs")) {
-            ContainerHelper.loadAllItems(tag.getCompound("Combs"), combStorage, registries);
+        if (tag.contains("Input")) {
+            inputSlot.deserializeNBT(registries, tag.getCompound("Input"));
         }
         if (tag.contains("Output")) {
-            ContainerHelper.loadAllItems(tag.getCompound("Output"), outputStorage, registries);
+            outputSlots.deserializeNBT(registries, tag.getCompound("Output"));
         }
         if (tag.contains("Fluid")) {
             fluidTank.readFromNBT(registries, tag.getCompound("Fluid"));

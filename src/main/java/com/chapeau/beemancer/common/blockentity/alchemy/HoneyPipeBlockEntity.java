@@ -3,10 +3,12 @@
  * [HoneyPipeBlockEntity.java]
  * Description: BlockEntity pour les pipes de transport de fluide
  * ============================================================
- * 
+ *
  * FONCTIONNEMENT:
- * - Mode extraction (par direction): tire le fluide du bloc connecté
- * - Mode normal: pousse le fluide vers les blocs connectés
+ * - Mode extraction (par direction): tire le fluide du bloc connecte
+ * - Mode normal: pousse le fluide vers les pipes connectees
+ * - Round-robin entre les pipes disponibles
+ * - Evite les va-et-vient en trackant l'origine du fluide
  * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
@@ -18,6 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,6 +28,10 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HoneyPipeBlockEntity extends BlockEntity {
     private static final int BUFFER_CAPACITY = 500;
@@ -45,6 +52,11 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     };
 
     private int transferCooldown = 0;
+    private int roundRobinIndex = 0;
+
+    // Position de la pipe d'ou vient le fluide actuel (pour eviter les va-et-vient)
+    @Nullable
+    private BlockPos sourcePos = null;
 
     public HoneyPipeBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.HONEY_PIPE.get(), pos, state);
@@ -54,6 +66,11 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         if (be.transferCooldown > 0) {
             be.transferCooldown--;
             return;
+        }
+
+        // Reset source tracking si buffer est vide
+        if (be.buffer.isEmpty()) {
+            be.sourcePos = null;
         }
 
         // Process extraction from neighbors marked for extraction
@@ -75,7 +92,7 @@ public class HoneyPipeBlockEntity extends BlockEntity {
             if (!HoneyPipeBlock.isExtracting(state, dir)) continue;
 
             BlockPos neighborPos = pos.relative(dir);
-            
+
             // Don't extract from other pipes
             if (level.getBlockEntity(neighborPos) instanceof HoneyPipeBlockEntity) continue;
 
@@ -87,6 +104,8 @@ public class HoneyPipeBlockEntity extends BlockEntity {
                     if (canFill > 0) {
                         FluidStack drained = cap.drain(canFill, IFluidHandler.FluidAction.EXECUTE);
                         buffer.fill(drained, IFluidHandler.FluidAction.EXECUTE);
+                        // Mark source as non-pipe (null = from machine)
+                        sourcePos = null;
                     }
                 }
             }
@@ -98,14 +117,65 @@ public class HoneyPipeBlockEntity extends BlockEntity {
             return;
         }
 
+        // Construire la liste des destinations disponibles
+        List<PipeDestination> availableDestinations = new ArrayList<>();
+
         for (Direction dir : Direction.values()) {
             if (!HoneyPipeBlock.isConnected(state, dir)) continue;
-            // Don't push to directions in extraction mode
             if (HoneyPipeBlock.isExtracting(state, dir)) continue;
 
             BlockPos neighborPos = pos.relative(dir);
-            var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
-            
+
+            // Skip si c'est la source (evite va-et-vient)
+            if (neighborPos.equals(sourcePos)) continue;
+
+            // Check si c'est une pipe
+            BlockEntity neighborBe = level.getBlockEntity(neighborPos);
+            if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe) {
+                // Skip si la pipe voisine est pleine
+                if (neighborPipe.buffer.getFluidAmount() >= neighborPipe.buffer.getCapacity()) continue;
+                // Skip si le fluide n'est pas compatible
+                if (!neighborPipe.buffer.isEmpty() && !neighborPipe.buffer.getFluid().getFluid().isSame(buffer.getFluid().getFluid())) continue;
+
+                availableDestinations.add(new PipeDestination(dir, neighborPos, true));
+            } else {
+                // C'est un bloc normal avec capacite fluide
+                var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
+                if (cap != null) {
+                    FluidStack toTransfer = buffer.drain(TRANSFER_RATE, IFluidHandler.FluidAction.SIMULATE);
+                    if (!toTransfer.isEmpty()) {
+                        int canFill = cap.fill(toTransfer, IFluidHandler.FluidAction.SIMULATE);
+                        if (canFill > 0) {
+                            availableDestinations.add(new PipeDestination(dir, neighborPos, false));
+                        }
+                    }
+                }
+            }
+        }
+
+        if (availableDestinations.isEmpty()) return;
+
+        // Round-robin: choisir la prochaine destination
+        roundRobinIndex = roundRobinIndex % availableDestinations.size();
+        PipeDestination dest = availableDestinations.get(roundRobinIndex);
+        roundRobinIndex++;
+
+        // Transferer vers la destination choisie
+        if (dest.isPipe) {
+            BlockEntity neighborBe = level.getBlockEntity(dest.pos);
+            if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe) {
+                FluidStack toTransfer = buffer.drain(TRANSFER_RATE, IFluidHandler.FluidAction.SIMULATE);
+                if (!toTransfer.isEmpty()) {
+                    int filled = neighborPipe.buffer.fill(toTransfer, IFluidHandler.FluidAction.EXECUTE);
+                    if (filled > 0) {
+                        buffer.drain(filled, IFluidHandler.FluidAction.EXECUTE);
+                        // Marquer notre position comme source pour la pipe voisine
+                        neighborPipe.sourcePos = pos;
+                    }
+                }
+            }
+        } else {
+            var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, dest.pos, dest.direction.getOpposite());
             if (cap != null) {
                 FluidStack toTransfer = buffer.drain(TRANSFER_RATE, IFluidHandler.FluidAction.SIMULATE);
                 if (!toTransfer.isEmpty()) {
@@ -115,9 +185,21 @@ public class HoneyPipeBlockEntity extends BlockEntity {
                     }
                 }
             }
-
-            if (buffer.isEmpty()) break;
         }
+    }
+
+    /**
+     * Recoit du fluide d'une autre pipe
+     */
+    public int receiveFluid(FluidStack fluid, BlockPos fromPos) {
+        if (buffer.getFluidAmount() >= buffer.getCapacity()) return 0;
+        if (!buffer.isFluidValid(fluid)) return 0;
+
+        int filled = buffer.fill(fluid, IFluidHandler.FluidAction.EXECUTE);
+        if (filled > 0) {
+            sourcePos = fromPos;
+        }
+        return filled;
     }
 
     public FluidTank getBuffer() {
@@ -128,6 +210,10 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Buffer", buffer.writeToNBT(registries, new CompoundTag()));
+        tag.putInt("RoundRobin", roundRobinIndex);
+        if (sourcePos != null) {
+            tag.put("SourcePos", NbtUtils.writeBlockPos(sourcePos));
+        }
     }
 
     @Override
@@ -136,5 +222,11 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         if (tag.contains("Buffer")) {
             buffer.readFromNBT(registries, tag.getCompound("Buffer"));
         }
+        roundRobinIndex = tag.getInt("RoundRobin");
+        if (tag.contains("SourcePos")) {
+            sourcePos = NbtUtils.readBlockPos(tag, "SourcePos").orElse(null);
+        }
     }
+
+    private record PipeDestination(Direction direction, BlockPos pos, boolean isPipe) {}
 }

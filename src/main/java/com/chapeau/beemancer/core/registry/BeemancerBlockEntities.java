@@ -66,11 +66,18 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.POWERED_CENTRIFUGE.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<HoneyTankBlockEntity>> HONEY_TANK = 
+    public static final Supplier<BlockEntityType<HoneyTankBlockEntity>> HONEY_TANK =
             BLOCK_ENTITIES.register("honey_tank",
                     () -> BlockEntityType.Builder.of(
                             HoneyTankBlockEntity::new,
                             BeemancerBlocks.HONEY_TANK.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<CreativeTankBlockEntity>> CREATIVE_TANK =
+            BLOCK_ENTITIES.register("creative_tank",
+                    () -> BlockEntityType.Builder.of(
+                            CreativeTankBlockEntity::new,
+                            BeemancerBlocks.CREATIVE_TANK.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE = 

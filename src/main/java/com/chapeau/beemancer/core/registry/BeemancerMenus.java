@@ -50,10 +50,13 @@ public class BeemancerMenus {
             MENUS.register("powered_centrifuge",
                     () -> IMenuTypeExtension.create(PoweredCentrifugeMenu::new));
 
-    public static final Supplier<MenuType<HoneyTankMenu>> HONEY_TANK = 
+    public static final Supplier<MenuType<HoneyTankMenu>> HONEY_TANK =
             MENUS.register("honey_tank",
                     () -> IMenuTypeExtension.create(HoneyTankMenu::new));
 
+    public static final Supplier<MenuType<CreativeTankMenu>> CREATIVE_TANK =
+            MENUS.register("creative_tank",
+                    () -> IMenuTypeExtension.create(CreativeTankMenu::new));
 
     public static final Supplier<MenuType<CrystallizerMenu>> CRYSTALLIZER = 
             MENUS.register("crystallizer",

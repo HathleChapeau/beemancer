@@ -3,6 +3,13 @@
  * [PoweredCentrifugeMenu.java]
  * Description: Menu pour la centrifugeuse automatique
  * ============================================================
+ *
+ * SLOTS:
+ * - 1 slot entree (index 0)
+ * - 4 slots sortie (index 1-4)
+ * - 27 slots inventaire (index 5-31)
+ * - 9 slots hotbar (index 32-40)
+ * ============================================================
  */
 package com.chapeau.beemancer.common.menu.alchemy;
 
@@ -18,16 +25,24 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.items.IItemHandler;
 
 public class PoweredCentrifugeMenu extends AbstractContainerMenu {
     private final PoweredCentrifugeBlockEntity blockEntity;
     private final ContainerData data;
     private final ContainerLevelAccess access;
 
+    // Slot indices
+    private static final int INPUT_SLOT = 0;
+    private static final int OUTPUT_START = 1;
+    private static final int OUTPUT_END = 5;
+    private static final int PLAYER_INV_START = 5;
+    private static final int PLAYER_INV_END = 32;
+    private static final int HOTBAR_START = 32;
+    private static final int HOTBAR_END = 41;
+
     // Client constructor
     public PoweredCentrifugeMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
-        this(containerId, playerInv, playerInv.player.level().getBlockEntity(buf.readBlockPos()), 
+        this(containerId, playerInv, playerInv.player.level().getBlockEntity(buf.readBlockPos()),
              new SimpleContainerData(4));
     }
 
@@ -40,37 +55,23 @@ public class PoweredCentrifugeMenu extends AbstractContainerMenu {
 
         addDataSlots(data);
 
-        // Input slots (left side)
-        addSlotBox(blockEntity.getInputSlots(), 0, 26, 17, 2, 2, true);
-        
-        // Output slots (right side)
-        addSlotBox(blockEntity.getOutputSlots(), 0, 116, 17, 2, 2, false);
+        // Input slot (gauche)
+        addSlot(BeemancerSlot.combInput(blockEntity.getInputSlot(), 0, 44, 35)
+            .withFilter(stack -> stack.is(Items.HONEYCOMB) ||
+                                stack.is(BeemancerItems.ROYAL_COMB.get()) ||
+                                stack.is(BeemancerItems.COMMON_COMB.get()) ||
+                                stack.is(BeemancerItems.NOBLE_COMB.get()) ||
+                                stack.is(BeemancerItems.DILIGENT_COMB.get())));
+
+        // Output slots (droite, 2x2)
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 0, 107, 26));
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 1, 125, 26));
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 2, 107, 44));
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 3, 125, 44));
 
         // Player inventory
         addPlayerInventory(playerInv, 8, 84);
         addPlayerHotbar(playerInv, 8, 142);
-    }
-
-    private void addSlotBox(IItemHandler handler, int startIndex, int x, int y, int cols, int rows, boolean isInput) {
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                int index = startIndex + col + row * cols;
-                int slotX = x + col * 18;
-                int slotY = y + row * 18;
-                if (isInput) {
-                    // Input slots avec icone de comb et filtre
-                    addSlot(BeemancerSlot.combInput(handler, index, slotX, slotY)
-                        .withFilter(stack -> stack.is(Items.HONEYCOMB) ||
-                                            stack.is(BeemancerItems.ROYAL_COMB.get()) ||
-                                            stack.is(BeemancerItems.COMMON_COMB.get()) ||
-                                            stack.is(BeemancerItems.NOBLE_COMB.get()) ||
-                                            stack.is(BeemancerItems.DILIGENT_COMB.get())));
-                } else {
-                    // Output slots (extraction seulement)
-                    addSlot(BeemancerSlot.output(handler, index, slotX, slotY));
-                }
-            }
-        }
     }
 
     private void addPlayerInventory(Inventory playerInv, int x, int y) {
@@ -88,12 +89,13 @@ public class PoweredCentrifugeMenu extends AbstractContainerMenu {
     }
 
     public int getProgress() { return data.get(0); }
-    public int getMaxProgress() { return 100; }
+    public int getMaxProgress() { return data.get(1); }
     public int getFuelAmount() { return data.get(2); }
     public int getOutputAmount() { return data.get(3); }
-    
+
     public float getProgressRatio() {
-        return getMaxProgress() > 0 ? (float) getProgress() / getMaxProgress() : 0;
+        int max = getMaxProgress();
+        return max > 0 ? (float) getProgress() / max : 0;
     }
 
     public PoweredCentrifugeBlockEntity getBlockEntity() { return blockEntity; }
@@ -107,17 +109,35 @@ public class PoweredCentrifugeMenu extends AbstractContainerMenu {
             ItemStack stack = slot.getItem();
             result = stack.copy();
 
-            // Slots: 0-3 input, 4-7 output, 8-34 inv, 35-43 hotbar
-            if (index < 4) {
-                // From input to player
-                if (!moveItemStackTo(stack, 8, 44, true)) return ItemStack.EMPTY;
-            } else if (index < 8) {
-                // From output to player
-                if (!moveItemStackTo(stack, 8, 44, true)) return ItemStack.EMPTY;
-            } else {
-                // From player to input
-                if (stack.is(Items.HONEYCOMB) || stack.is(BeemancerItems.ROYAL_COMB.get())) {
-                    if (!moveItemStackTo(stack, 0, 4, false)) return ItemStack.EMPTY;
+            // From input slot to player
+            if (index == INPUT_SLOT) {
+                if (!moveItemStackTo(stack, PLAYER_INV_START, HOTBAR_END, true)) {
+                    return ItemStack.EMPTY;
+                }
+            }
+            // From output slots to player
+            else if (index >= OUTPUT_START && index < OUTPUT_END) {
+                if (!moveItemStackTo(stack, PLAYER_INV_START, HOTBAR_END, true)) {
+                    return ItemStack.EMPTY;
+                }
+            }
+            // From player inventory
+            else {
+                // Try to move to input slot if valid comb
+                if (isValidComb(stack)) {
+                    if (!moveItemStackTo(stack, INPUT_SLOT, INPUT_SLOT + 1, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                }
+                // Move between inventory and hotbar
+                else if (index >= PLAYER_INV_START && index < PLAYER_INV_END) {
+                    if (!moveItemStackTo(stack, HOTBAR_START, HOTBAR_END, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                } else if (index >= HOTBAR_START && index < HOTBAR_END) {
+                    if (!moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, false)) {
+                        return ItemStack.EMPTY;
+                    }
                 }
             }
 
@@ -125,6 +145,14 @@ public class PoweredCentrifugeMenu extends AbstractContainerMenu {
             else slot.setChanged();
         }
         return result;
+    }
+
+    private boolean isValidComb(ItemStack stack) {
+        return stack.is(Items.HONEYCOMB) ||
+               stack.is(BeemancerItems.ROYAL_COMB.get()) ||
+               stack.is(BeemancerItems.COMMON_COMB.get()) ||
+               stack.is(BeemancerItems.NOBLE_COMB.get()) ||
+               stack.is(BeemancerItems.DILIGENT_COMB.get());
     }
 
     @Override

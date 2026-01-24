@@ -19,19 +19,25 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 
 public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
     public static final int CAPACITY = 16000;
 
-    private final FluidTank fluidTank = new FluidTank(CAPACITY) {
+    protected final FluidTank fluidTank = new FluidTank(CAPACITY) {
         @Override
         public boolean isFluidValid(FluidStack stack) {
             return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get()
@@ -45,6 +51,20 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
             if (level != null && !level.isClientSide()) {
                 level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
             }
+        }
+    };
+
+    // Slot pour bucket
+    protected final ItemStackHandler bucketSlot = new ItemStackHandler(1) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            // Accept buckets with fluid
+            return isBucketWithFluid(stack);
         }
     };
 
@@ -63,7 +83,15 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
         super(BeemancerBlockEntities.HONEY_TANK.get(), pos, state);
     }
 
+    protected HoneyTankBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, HoneyTankBlockEntity be) {
+        // Process bucket slot
+        be.processBucketSlot();
+
+        // Transfer to block below
         if (be.fluidTank.getFluidAmount() > 0) {
             BlockEntity below = level.getBlockEntity(pos.below());
             if (below != null) {
@@ -83,9 +111,45 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
+    protected void processBucketSlot() {
+        ItemStack bucket = bucketSlot.getStackInSlot(0);
+        if (bucket.isEmpty()) return;
+
+        // Check if bucket has fluid we can accept
+        FluidStack contained = getFluidFromBucket(bucket);
+        if (contained.isEmpty() || !fluidTank.isFluidValid(contained)) return;
+
+        // Try to fill the tank
+        int canFill = fluidTank.fill(contained, IFluidHandler.FluidAction.SIMULATE);
+        if (canFill >= FluidType.BUCKET_VOLUME) {
+            fluidTank.fill(new FluidStack(contained.getFluid(), FluidType.BUCKET_VOLUME), IFluidHandler.FluidAction.EXECUTE);
+            bucketSlot.setStackInSlot(0, new ItemStack(Items.BUCKET));
+        }
+    }
+
+    protected boolean isBucketWithFluid(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        FluidStack fluid = getFluidFromBucket(stack);
+        return !fluid.isEmpty() && fluidTank.isFluidValid(fluid);
+    }
+
+    protected FluidStack getFluidFromBucket(ItemStack bucket) {
+        if (bucket.isEmpty()) return FluidStack.EMPTY;
+
+        // Check using capability
+        var cap = bucket.getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.ITEM);
+        if (cap != null) {
+            FluidStack drained = cap.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.SIMULATE);
+            if (!drained.isEmpty()) return drained;
+        }
+
+        return FluidStack.EMPTY;
+    }
+
     public FluidTank getFluidTank() { return fluidTank; }
     public int getFluidAmount() { return fluidTank.getFluidAmount(); }
     public FluidStack getFluid() { return fluidTank.getFluid(); }
+    public ItemStackHandler getBucketSlot() { return bucketSlot; }
 
     @Override
     public Component getDisplayName() {
@@ -102,6 +166,7 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
+        tag.put("Bucket", bucketSlot.serializeNBT(registries));
     }
 
     @Override
@@ -109,6 +174,9 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
         super.loadAdditional(tag, registries);
         if (tag.contains("Fluid")) {
             fluidTank.readFromNBT(registries, tag.getCompound("Fluid"));
+        }
+        if (tag.contains("Bucket")) {
+            bucketSlot.deserializeNBT(registries, tag.getCompound("Bucket"));
         }
     }
 

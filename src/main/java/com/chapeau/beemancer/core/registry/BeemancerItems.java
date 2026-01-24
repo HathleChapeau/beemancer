@@ -48,6 +48,9 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> HONEY_TANK = ITEMS.register("honey_tank",
             () -> new BlockItem(BeemancerBlocks.HONEY_TANK.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> CREATIVE_TANK = ITEMS.register("creative_tank",
+            () -> new BlockItem(BeemancerBlocks.CREATIVE_TANK.get(), new Item.Properties()));
+
     public static final DeferredItem<BlockItem> HONEY_PIPE = ITEMS.register("honey_pipe",
             () -> new BlockItem(BeemancerBlocks.HONEY_PIPE.get(), new Item.Properties()));
 

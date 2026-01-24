@@ -5,8 +5,8 @@
  * ============================================================
  *
  * FONCTIONNEMENT:
+ * - 1 slot d'entree + 4 slots de sortie
  * - Consomme du miel comme carburant
- * - Accepte les combs definis par recettes JSON
  * - Process automatique avec outputs probabilistes
  * ============================================================
  */
@@ -47,7 +47,8 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
     private static final int HONEY_CONSUMPTION = 10; // mB per tick while working
     private static final int DEFAULT_PROCESS_TIME = 100;
 
-    private final ItemStackHandler inputSlots = new ItemStackHandler(4) {
+    // 1 slot d'entree
+    private final ItemStackHandler inputSlot = new ItemStackHandler(1) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
@@ -55,6 +56,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
         }
     };
 
+    // 4 slots de sortie
     private final ItemStackHandler outputSlots = new ItemStackHandler(4) {
         @Override
         protected void onContentsChanged(int slot) { setChanged(); }
@@ -76,7 +78,6 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
 
     private int progress = 0;
     private int currentProcessTime = DEFAULT_PROCESS_TIME;
-    private int currentProcessingSlot = -1;
     @Nullable
     private RecipeHolder<CentrifugeRecipe> currentRecipe = null;
 
@@ -108,12 +109,12 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
         boolean wasWorking = state.getValue(PoweredCentrifugeBlock.WORKING);
         boolean isWorking = false;
 
-        // Find a slot with a valid recipe if we don't have one
-        if (be.currentRecipe == null || be.currentProcessingSlot == -1) {
+        // Find a valid recipe if we don't have one
+        if (be.currentRecipe == null) {
             be.findValidRecipe(level);
         }
 
-        if (be.currentRecipe != null && be.currentProcessingSlot >= 0) {
+        if (be.currentRecipe != null) {
             if (be.fuelTank.getFluidAmount() >= HONEY_CONSUMPTION) {
                 be.fuelTank.drain(HONEY_CONSUMPTION, IFluidHandler.FluidAction.EXECUTE);
                 be.progress++;
@@ -123,7 +124,6 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
                     be.processItem(level.getRandom());
                     be.progress = 0;
                     be.currentRecipe = null;
-                    be.currentProcessingSlot = -1;
                 }
             }
         } else {
@@ -138,35 +138,34 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
     }
 
     private void findValidRecipe(Level level) {
-        for (int i = 0; i < inputSlots.getSlots(); i++) {
-            ItemStack stack = inputSlots.getStackInSlot(i);
-            if (stack.isEmpty()) continue;
-
-            ProcessingRecipeInput input = ProcessingRecipeInput.ofItem(stack);
-            Optional<RecipeHolder<CentrifugeRecipe>> recipe = level.getRecipeManager().getRecipeFor(
-                BeemancerRecipeTypes.CENTRIFUGING.get(),
-                input,
-                level
-            );
-
-            if (recipe.isPresent()) {
-                currentRecipe = recipe.get();
-                currentProcessTime = recipe.get().value().processingTime();
-                currentProcessingSlot = i;
-                return;
-            }
+        ItemStack stack = inputSlot.getStackInSlot(0);
+        if (stack.isEmpty()) {
+            currentRecipe = null;
+            return;
         }
-        currentRecipe = null;
-        currentProcessingSlot = -1;
+
+        ProcessingRecipeInput input = ProcessingRecipeInput.ofItem(stack);
+        Optional<RecipeHolder<CentrifugeRecipe>> recipe = level.getRecipeManager().getRecipeFor(
+            BeemancerRecipeTypes.CENTRIFUGING.get(),
+            input,
+            level
+        );
+
+        if (recipe.isPresent()) {
+            currentRecipe = recipe.get();
+            currentProcessTime = recipe.get().value().processingTime();
+        } else {
+            currentRecipe = null;
+        }
     }
 
     private void processItem(RandomSource random) {
-        if (currentRecipe == null || currentProcessingSlot < 0) return;
+        if (currentRecipe == null) return;
 
         CentrifugeRecipe recipe = currentRecipe.value();
 
         // Consume input
-        inputSlots.extractItem(currentProcessingSlot, 1, false);
+        inputSlot.extractItem(0, 1, false);
 
         // Produce fluid output
         FluidStack fluidOutput = recipe.getFluidOutput();
@@ -184,11 +183,12 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
         for (int i = 0; i < outputSlots.getSlots(); i++) {
             ItemStack existing = outputSlots.getStackInSlot(i);
             if (existing.isEmpty()) {
-                outputSlots.setStackInSlot(i, stack);
+                outputSlots.setStackInSlot(i, stack.copy());
                 return;
-            } else if (ItemStack.isSameItemSameComponents(existing, stack) && 
+            } else if (ItemStack.isSameItemSameComponents(existing, stack) &&
                        existing.getCount() < existing.getMaxStackSize()) {
-                existing.grow(1);
+                int toAdd = Math.min(stack.getCount(), existing.getMaxStackSize() - existing.getCount());
+                existing.grow(toAdd);
                 return;
             }
         }
@@ -196,7 +196,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
 
     public FluidTank getFuelTank() { return fuelTank; }
     public FluidTank getOutputTank() { return outputTank; }
-    public ItemStackHandler getInputSlots() { return inputSlots; }
+    public ItemStackHandler getInputSlot() { return inputSlot; }
     public ItemStackHandler getOutputSlots() { return outputSlots; }
     @Nullable
     public RecipeHolder<CentrifugeRecipe> getCurrentRecipe() { return currentRecipe; }
@@ -215,7 +215,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.put("Input", inputSlots.serializeNBT(registries));
+        tag.put("Input", inputSlot.serializeNBT(registries));
         tag.put("Output", outputSlots.serializeNBT(registries));
         tag.put("FuelTank", fuelTank.writeToNBT(registries, new CompoundTag()));
         tag.put("OutputTank", outputTank.writeToNBT(registries, new CompoundTag()));
@@ -225,7 +225,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        inputSlots.deserializeNBT(registries, tag.getCompound("Input"));
+        inputSlot.deserializeNBT(registries, tag.getCompound("Input"));
         outputSlots.deserializeNBT(registries, tag.getCompound("Output"));
         fuelTank.readFromNBT(registries, tag.getCompound("FuelTank"));
         outputTank.readFromNBT(registries, tag.getCompound("OutputTank"));
