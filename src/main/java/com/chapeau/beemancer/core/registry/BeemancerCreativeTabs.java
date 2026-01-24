@@ -45,6 +45,7 @@ public class BeemancerCreativeTabs {
                         output.accept(BeemancerItems.MANUAL_CENTRIFUGE.get());
                         output.accept(BeemancerItems.POWERED_CENTRIFUGE.get());
                         output.accept(BeemancerItems.HONEY_TANK.get());
+                        output.accept(BeemancerItems.CREATIVE_TANK.get());
                         output.accept(BeemancerItems.HONEY_PIPE.get());
                         output.accept(BeemancerItems.ITEM_PIPE.get());
                         output.accept(BeemancerItems.CRYSTALLIZER.get());
