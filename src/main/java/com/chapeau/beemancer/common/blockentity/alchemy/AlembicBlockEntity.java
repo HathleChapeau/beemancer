@@ -46,6 +46,9 @@ import java.util.Optional;
 public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
     private static final int DEFAULT_PROCESS_TIME = 80;
 
+    // Flag pour eviter l'invalidation de la recette quand la machine drain elle-meme
+    private boolean isProcessingDrain = false;
+
     private final FluidTank honeyTank = new FluidTank(4000) {
         @Override
         public boolean isFluidValid(FluidStack stack) {
@@ -54,7 +57,9 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged() {
             setChanged();
-            currentRecipe = null;
+            if (!isProcessingDrain) {
+                currentRecipe = null;
+            }
         }
     };
 
@@ -66,7 +71,9 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged() {
             setChanged();
-            currentRecipe = null;
+            if (!isProcessingDrain) {
+                currentRecipe = null;
+            }
         }
     };
 
@@ -131,13 +138,18 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
             be.currentRecipe = null;
         }
 
-        // Auto-output nectar to block below
+        // Auto-output nectar to block below (pattern atomique)
         if (be.nectarTank.getFluidAmount() > 0) {
             var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, pos.below(), Direction.UP);
-            if (cap != null) {
-                FluidStack toTransfer = be.nectarTank.drain(100, IFluidHandler.FluidAction.SIMULATE);
-                int filled = cap.fill(toTransfer, IFluidHandler.FluidAction.EXECUTE);
-                if (filled > 0) be.nectarTank.drain(filled, IFluidHandler.FluidAction.EXECUTE);
+            if (cap != null && !be.nectarTank.isEmpty()) {
+                int toTransferAmount = Math.min(100, be.nectarTank.getFluidAmount());
+                FluidStack toTransfer = new FluidStack(be.nectarTank.getFluid().getFluid(), toTransferAmount);
+                int canFill = cap.fill(toTransfer, IFluidHandler.FluidAction.SIMULATE);
+                if (canFill > 0) {
+                    FluidStack actualTransfer = new FluidStack(be.nectarTank.getFluid().getFluid(), canFill);
+                    int filled = cap.fill(actualTransfer, IFluidHandler.FluidAction.EXECUTE);
+                    if (filled > 0) be.nectarTank.drain(filled, IFluidHandler.FluidAction.EXECUTE);
+                }
             }
         }
 
@@ -149,6 +161,10 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private Optional<RecipeHolder<DistillingRecipe>> findRecipe(Level level) {
+        // Eviter les lookups inutiles si les tanks sont vides
+        if (honeyTank.isEmpty() && royalJellyTank.isEmpty()) {
+            return Optional.empty();
+        }
         ProcessingRecipeInput input = createRecipeInput();
         return level.getRecipeManager().getRecipeFor(
             BeemancerRecipeTypes.DISTILLING.get(),
@@ -171,13 +187,15 @@ public class AlembicBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private void processFluids(DistillingRecipe recipe) {
-        // Consume inputs based on recipe
+        // Consume inputs based on recipe (drain interne - ne pas invalider la recette)
+        isProcessingDrain = true;
         if (recipe.fluidIngredients().size() >= 1) {
             honeyTank.drain(recipe.fluidIngredients().get(0).amount(), IFluidHandler.FluidAction.EXECUTE);
         }
         if (recipe.fluidIngredients().size() >= 2) {
             royalJellyTank.drain(recipe.fluidIngredients().get(1).amount(), IFluidHandler.FluidAction.EXECUTE);
         }
+        isProcessingDrain = false;
 
         // Produce output
         nectarTank.fill(recipe.getFluidOutput(), IFluidHandler.FluidAction.EXECUTE);

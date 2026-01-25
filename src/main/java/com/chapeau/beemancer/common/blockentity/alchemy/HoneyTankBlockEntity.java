@@ -108,17 +108,24 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
         // Process bucket slot
         be.processBucketSlot();
 
-        // Transfer to block below
+        // Transfer to block below (pattern atomique)
         if (be.fluidTank.getFluidAmount() > 0) {
             BlockEntity below = level.getBlockEntity(pos.below());
             if (below != null) {
                 var cap = level.getCapability(
                     net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,
                     pos.below(), Direction.UP);
-                if (cap != null) {
-                    FluidStack toTransfer = be.fluidTank.drain(100, IFluidHandler.FluidAction.SIMULATE);
-                    if (!toTransfer.isEmpty()) {
-                        int filled = cap.fill(toTransfer, IFluidHandler.FluidAction.EXECUTE);
+                if (cap != null && !be.fluidTank.isEmpty()) {
+                    // Calculer le transfert max possible
+                    int toTransferAmount = Math.min(100, be.fluidTank.getFluidAmount());
+                    FluidStack toTransfer = new FluidStack(be.fluidTank.getFluid().getFluid(), toTransferAmount);
+
+                    // Simuler d'abord pour connaitre la quantite acceptee
+                    int canFill = cap.fill(toTransfer, IFluidHandler.FluidAction.SIMULATE);
+                    if (canFill > 0) {
+                        // Transferer exactement ce qui sera accepte
+                        FluidStack actualTransfer = new FluidStack(be.fluidTank.getFluid().getFluid(), canFill);
+                        int filled = cap.fill(actualTransfer, IFluidHandler.FluidAction.EXECUTE);
                         if (filled > 0) {
                             be.fluidTank.drain(filled, IFluidHandler.FluidAction.EXECUTE);
                         }

@@ -42,11 +42,17 @@ import java.util.Optional;
 public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider {
     private static final int DEFAULT_PROCESS_TIME = 100;
 
+    // Flag pour eviter l'invalidation de la recette quand la machine drain elle-meme
+    private boolean isProcessingDrain = false;
+
     private final FluidTank inputTank = new FluidTank(4000) {
         @Override
         protected void onContentsChanged() {
             setChanged();
-            currentRecipe = null; // Invalidate cached recipe
+            // Invalider seulement si ce n'est pas un drain interne
+            if (!isProcessingDrain) {
+                currentRecipe = null;
+            }
         }
     };
 
@@ -117,6 +123,10 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
     }
 
     private Optional<RecipeHolder<CrystallizingRecipe>> findRecipe(Level level) {
+        // Eviter les lookups inutiles si le tank est vide
+        if (inputTank.isEmpty()) {
+            return Optional.empty();
+        }
         ProcessingRecipeInput input = createRecipeInput();
         return level.getRecipeManager().getRecipeFor(
             BeemancerRecipeTypes.CRYSTALLIZING.get(),
@@ -142,8 +152,10 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
     }
 
     private void processFluid(CrystallizingRecipe recipe) {
-        // Consume fluid
+        // Consume fluid (drain interne - ne pas invalider la recette)
+        isProcessingDrain = true;
         inputTank.drain(recipe.fluidIngredient().amount(), IFluidHandler.FluidAction.EXECUTE);
+        isProcessingDrain = false;
 
         // Add crystal to output
         ItemStack existing = outputSlot.getStackInSlot(0);

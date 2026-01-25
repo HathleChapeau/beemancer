@@ -36,7 +36,7 @@ public class CreativeTankBlockEntity extends HoneyTankBlockEntity {
     private FluidStack infiniteFluid = FluidStack.EMPTY;
 
     public CreativeTankBlockEntity(BlockPos pos, BlockState state) {
-        super(BeemancerBlockEntities.CREATIVE_TANK.get(), pos, state);
+        super(BeemancerBlockEntities.CREATIVE_TANK.get(), pos, state, TIER1_CAPACITY);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, CreativeTankBlockEntity be) {
@@ -45,7 +45,7 @@ public class CreativeTankBlockEntity extends HoneyTankBlockEntity {
 
         // Si on a un fluide infini, remplir au max
         if (!be.infiniteFluid.isEmpty()) {
-            be.fluidTank.setFluid(new FluidStack(be.infiniteFluid.getFluid(), CAPACITY));
+            be.fluidTank.setFluid(new FluidStack(be.infiniteFluid.getFluid(), be.getCapacity()));
         }
 
         // Appeler le tick parent pour le transfert vers le bas
@@ -67,7 +67,7 @@ public class CreativeTankBlockEntity extends HoneyTankBlockEntity {
         bucketSlot.setStackInSlot(0, new ItemStack(Items.BUCKET));
 
         // Fill tank immediately
-        fluidTank.setFluid(new FluidStack(contained.getFluid(), CAPACITY));
+        fluidTank.setFluid(new FluidStack(contained.getFluid(), getCapacity()));
 
         setChanged();
     }

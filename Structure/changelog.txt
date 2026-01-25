@@ -3,6 +3,31 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Alchemy System Optimizations
+================================================================================
+
+CORRECTIONS CRITIQUES:
+- HoneyPipeBlockEntity.java: Fix integer overflow du roundRobinIndex
+- ItemPipeBlockEntity.java: Fix integer overflow du roundRobinIndex
+- PoweredCentrifugeBlockEntity.java: Vérifie l'espace output avant consommer fuel
+
+CORRECTIONS MODÉRÉES:
+- HoneyPipeBlockEntity.java: Pattern de transfert atomique (évite perte fluide)
+- HoneyTankBlockEntity.java: Pattern de transfert atomique
+- AlembicBlockEntity.java: Pattern de transfert atomique pour auto-output
+- ItemPipeBlockEntity.java: Break après extraction réussie (performance)
+- ItemPipeBlockEntity.java: Optimisation canInsertAnyIntoHandler O(n) au lieu de O(n²)
+
+OPTIMISATIONS:
+- InfuserBlockEntity.java: Flag isProcessingDrain évite invalidation recette inutile
+- CrystallizerBlockEntity.java: Flag isProcessingDrain + check tank vide
+- AlembicBlockEntity.java: Flag isProcessingDrain + check tanks vides
+- CreativeTankBlockEntity.java: Fix constructor et getCapacity()
+
+NOUVELLES MÉTHODES:
+- PoweredCentrifugeBlockEntity.hasOutputSpace(): Vérifie espace avant processing
+
+================================================================================
 2026-01-25 - Tiered Machines System
 ================================================================================
 

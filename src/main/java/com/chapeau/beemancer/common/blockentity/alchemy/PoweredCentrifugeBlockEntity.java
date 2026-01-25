@@ -82,7 +82,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
     private final FluidTank outputTank;
 
     private int progress = 0;
-    private int currentProcessTime = DEFAULT_PROCESS_TIME;
+    private int currentProcessTime = TIER1_PROCESS_TIME;
     @Nullable
     private RecipeHolder<CentrifugeRecipe> currentRecipe = null;
 
@@ -157,7 +157,8 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
         }
 
         if (be.currentRecipe != null) {
-            if (be.fuelTank.getFluidAmount() >= be.honeyConsumption) {
+            // Verifier qu'on a de l'espace pour les outputs AVANT de consommer du fuel
+            if (be.fuelTank.getFluidAmount() >= be.honeyConsumption && be.hasOutputSpace()) {
                 be.fuelTank.drain(be.honeyConsumption, IFluidHandler.FluidAction.EXECUTE);
                 be.progress++;
                 isWorking = true;
@@ -234,6 +235,31 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
                 return;
             }
         }
+    }
+
+    /**
+     * Verifie s'il y a au moins un slot de sortie disponible pour eviter de perdre des items
+     */
+    private boolean hasOutputSpace() {
+        // Verifier l'espace pour les fluides
+        if (currentRecipe != null) {
+            FluidStack fluidOutput = currentRecipe.value().getFluidOutput();
+            if (!fluidOutput.isEmpty()) {
+                int spaceInTank = outputTank.getCapacity() - outputTank.getFluidAmount();
+                if (spaceInTank < fluidOutput.getAmount()) {
+                    return false;
+                }
+            }
+        }
+
+        // Verifier l'espace pour les items (au moins un slot vide ou non-plein)
+        for (int i = 0; i < outputSlots.getSlots(); i++) {
+            ItemStack existing = outputSlots.getStackInSlot(i);
+            if (existing.isEmpty() || existing.getCount() < existing.getMaxStackSize()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public FluidTank getFuelTank() { return fuelTank; }

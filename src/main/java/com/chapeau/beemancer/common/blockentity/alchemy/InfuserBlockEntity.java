@@ -57,6 +57,9 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         protected void onContentsChanged(int slot) { setChanged(); }
     };
 
+    // Flag pour eviter l'invalidation de la recette quand la machine drain elle-meme
+    private boolean isProcessingDrain = false;
+
     private final FluidTank honeyTank = new FluidTank(4000) {
         @Override
         public boolean isFluidValid(FluidStack stack) {
@@ -65,7 +68,10 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         protected void onContentsChanged() {
             setChanged();
-            currentRecipe = null; // Invalidate cached recipe
+            // Invalider seulement si ce n'est pas un drain interne
+            if (!isProcessingDrain) {
+                currentRecipe = null;
+            }
         }
     };
 
@@ -131,6 +137,10 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private Optional<RecipeHolder<InfusingRecipe>> findRecipe(Level level) {
+        // Eviter les lookups inutiles si les inputs sont vides
+        if (inputSlot.getStackInSlot(0).isEmpty() || honeyTank.isEmpty()) {
+            return Optional.empty();
+        }
         ProcessingRecipeInput input = createRecipeInput();
         return level.getRecipeManager().getRecipeFor(
             BeemancerRecipeTypes.INFUSING.get(),
@@ -161,7 +171,11 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
     private void processItem(InfusingRecipe recipe) {
         // Consume input
         inputSlot.extractItem(0, 1, false);
+
+        // Drain interne - ne pas invalider la recette
+        isProcessingDrain = true;
         honeyTank.drain(recipe.fluidIngredient().amount(), IFluidHandler.FluidAction.EXECUTE);
+        isProcessingDrain = false;
 
         // Add result to output
         ItemStack output = outputSlot.getStackInSlot(0);

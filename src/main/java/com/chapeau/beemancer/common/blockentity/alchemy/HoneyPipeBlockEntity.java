@@ -190,31 +190,40 @@ public class HoneyPipeBlockEntity extends BlockEntity {
 
         if (availableDestinations.isEmpty()) return;
 
-        // Round-robin: choisir la prochaine destination
+        // Round-robin: choisir la prochaine destination (avec protection overflow)
         roundRobinIndex = roundRobinIndex % availableDestinations.size();
         PipeDestination dest = availableDestinations.get(roundRobinIndex);
-        roundRobinIndex++;
+        roundRobinIndex = (roundRobinIndex + 1) % 1000000; // Reset periodique pour eviter overflow
 
-        // Transferer vers la destination choisie
+        // Transferer vers la destination choisie (pattern atomique: calcul puis execute)
         if (dest.isPipe) {
             BlockEntity neighborBe = level.getBlockEntity(dest.pos);
             if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe) {
-                FluidStack toTransfer = buffer.drain(transferRate, IFluidHandler.FluidAction.SIMULATE);
-                if (!toTransfer.isEmpty()) {
+                // Calculer le maximum transferable
+                int availableInBuffer = buffer.getFluidAmount();
+                int spaceInNeighbor = neighborPipe.buffer.getCapacity() - neighborPipe.buffer.getFluidAmount();
+                int toTransferAmount = Math.min(Math.min(transferRate, availableInBuffer), spaceInNeighbor);
+
+                if (toTransferAmount > 0 && !buffer.isEmpty()) {
+                    FluidStack toTransfer = new FluidStack(buffer.getFluid().getFluid(), toTransferAmount);
+                    // Execute directement - les calculs garantissent que ca marchera
                     int filled = neighborPipe.buffer.fill(toTransfer, IFluidHandler.FluidAction.EXECUTE);
                     if (filled > 0) {
                         buffer.drain(filled, IFluidHandler.FluidAction.EXECUTE);
-                        // Marquer notre position comme source pour la pipe voisine
                         neighborPipe.sourcePos = pos;
                     }
                 }
             }
         } else {
             var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, dest.pos, dest.direction.getOpposite());
-            if (cap != null) {
-                FluidStack toTransfer = buffer.drain(transferRate, IFluidHandler.FluidAction.SIMULATE);
-                if (!toTransfer.isEmpty()) {
-                    int filled = cap.fill(toTransfer, IFluidHandler.FluidAction.EXECUTE);
+            if (cap != null && !buffer.isEmpty()) {
+                // Pour les non-pipes, on doit quand meme simuler car on ne connait pas leur implementation
+                int toTransferAmount = Math.min(transferRate, buffer.getFluidAmount());
+                FluidStack toTransfer = new FluidStack(buffer.getFluid().getFluid(), toTransferAmount);
+                int canFill = cap.fill(toTransfer, IFluidHandler.FluidAction.SIMULATE);
+                if (canFill > 0) {
+                    FluidStack actualTransfer = new FluidStack(buffer.getFluid().getFluid(), canFill);
+                    int filled = cap.fill(actualTransfer, IFluidHandler.FluidAction.EXECUTE);
                     if (filled > 0) {
                         buffer.drain(filled, IFluidHandler.FluidAction.EXECUTE);
                     }
