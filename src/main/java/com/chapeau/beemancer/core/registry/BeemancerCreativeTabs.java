@@ -81,6 +81,8 @@ public class BeemancerCreativeTabs {
 
                         // Storage
                         output.accept(BeemancerItems.STORAGE_CRATE.get());
+                        output.accept(BeemancerItems.STORAGE_CONTROLLER.get());
+                        output.accept(BeemancerItems.STORAGE_TERMINAL.get());
                     })
                     .build());
 
