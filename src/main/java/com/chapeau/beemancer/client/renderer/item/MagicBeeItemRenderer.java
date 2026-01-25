@@ -79,12 +79,12 @@ public class MagicBeeItemRenderer extends BlockEntityWithoutLevelRenderer {
         // Ajuster la position et l'échelle selon le contexte d'affichage
         switch (displayContext) {
             case GUI -> {
-                // Dans l'inventaire/GUI - centré, style bloc diagonal
-                poseStack.translate(0.5, 0.5, 0.5);
+                // Dans l'inventaire/GUI - centré, style bloc diagonal, pointe vers le bas
+                poseStack.translate(0.5, 1.1, 0.5);
                 poseStack.scale(-1.0f, -1.0f, 1.0f); // Flip model
-                poseStack.mulPose(Axis.XP.rotationDegrees(30));   // Inclinaison avant
+                poseStack.mulPose(Axis.XP.rotationDegrees(-30));  // Pointe vers le bas
                 poseStack.mulPose(Axis.YP.rotationDegrees(225));  // Diagonal comme bloc
-                poseStack.scale(1.1f, 1.1f, 1.1f);
+                poseStack.scale(1.4f, 1.4f, 1.4f);
             }
             case FIXED -> {
                 // Item frame - centré diagonal
