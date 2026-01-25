@@ -135,20 +135,14 @@ public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTank
 
     private void renderStatusInfo(GuiGraphics graphics, int x, int y) {
         int blockCount = menu.getBlockCount();
-        boolean valid = menu.isValidCuboid();
 
         // Block count text
         String blockText = blockCount + " blocks";
         graphics.drawString(font, blockText, x + 120, y + 20, 0x404040, false);
 
-        // Validity indicator
-        String validText = valid ? "Valid" : "Invalid";
-        int validColor = valid ? 0x40AA40 : 0xAA4040;
-        graphics.drawString(font, validText, x + 120, y + 32, validColor, false);
-
         // Capacity info
         String capacityText = (menu.getCapacity() / 1000) + "B";
-        graphics.drawString(font, capacityText, x + 120, y + 44, 0x404040, false);
+        graphics.drawString(font, capacityText, x + 120, y + 32, 0x404040, false);
     }
 
     @Override

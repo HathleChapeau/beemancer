@@ -80,11 +80,13 @@ public class MultiblockTankBlock extends BaseEntityBlock {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof MultiblockTankBlockEntity tank) {
-                // Open menu - will delegate to master automatically
-                serverPlayer.openMenu(tank, buf -> {
-                    // Write the clicked position, menu will find master
-                    buf.writeBlockPos(pos);
-                });
+                // Only open menu if structure is valid
+                if (tank.isValidCuboid()) {
+                    serverPlayer.openMenu(tank, buf -> {
+                        buf.writeBlockPos(pos);
+                    });
+                }
+                // If invalid, do nothing (no GUI access)
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
