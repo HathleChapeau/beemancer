@@ -16,22 +16,23 @@
  */
 package com.chapeau.beemancer.content.gene;
 
+import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.content.gene.environment.*;
 import com.chapeau.beemancer.content.gene.flower.*;
 import com.chapeau.beemancer.content.gene.lifetime.*;
 import com.chapeau.beemancer.content.gene.species.*;
 import com.chapeau.beemancer.core.gene.GeneRegistry;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class GeneInit {
 
     /**
      * Liste de toutes les especes d'abeilles du mod.
      * Correspond aux IDs dans bee_species.json
+     * Utilise LinkedHashSet pour garantir l'ordre et eviter les doublons.
      */
-    private static final List<String> ALL_SPECIES = Arrays.asList(
+    private static final Set<String> ALL_SPECIES = new LinkedHashSet<>(Arrays.asList(
             // Tier I - Base species (found in wild)
             "meadow", "forest", "rocky", "river", "dune", "nether", "end",
 
@@ -70,17 +71,24 @@ public class GeneInit {
             "demonic", "paladin", "chorus", "ancient", "void",
 
             // Tier X
-            "draconic", "stellar",
+            "draconic", "stellar"
+    ));
 
-            // Legacy species (for compatibility)
-            "common", "noble", "diligent"
-    );
+    private static boolean initialized = false;
 
     public static void registerAllGenes() {
+        if (initialized) {
+            Beemancer.LOGGER.warn("GeneInit.registerAllGenes() called multiple times");
+            return;
+        }
+
         registerSpeciesGenes();
         registerEnvironmentGenes();
         registerFlowerGenes();
         registerLifetimeGenes();
+
+        initialized = true;
+        Beemancer.LOGGER.info("Registered {} species genes", ALL_SPECIES.size());
     }
 
     // =========================================================================
@@ -88,7 +96,6 @@ public class GeneInit {
     // =========================================================================
 
     private static void registerSpeciesGenes() {
-        // Register all species as data-driven genes
         for (String speciesId : ALL_SPECIES) {
             GeneRegistry.register(new DataDrivenSpeciesGene(speciesId));
         }
@@ -129,9 +136,23 @@ public class GeneInit {
     }
 
     /**
-     * @return Liste de tous les IDs d'especes
+     * @return Liste immuable de tous les IDs d'especes
      */
     public static List<String> getAllSpeciesIds() {
-        return ALL_SPECIES;
+        return List.copyOf(ALL_SPECIES);
+    }
+
+    /**
+     * Verifie si une espece est enregistree.
+     */
+    public static boolean hasSpecies(String speciesId) {
+        return ALL_SPECIES.contains(speciesId);
+    }
+
+    /**
+     * @return Nombre total d'especes enregistrees
+     */
+    public static int getSpeciesCount() {
+        return ALL_SPECIES.size();
     }
 }

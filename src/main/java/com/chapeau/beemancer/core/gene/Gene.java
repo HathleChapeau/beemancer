@@ -21,7 +21,7 @@ import java.util.Map;
 public interface Gene {
     
     /**
-     * @return L'identifiant unique du gène (ex: "common", "forest", "rose")
+     * @return L'identifiant unique du gène (ex: "meadow", "forest", "royal")
      */
     String getId();
 

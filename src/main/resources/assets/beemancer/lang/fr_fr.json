@@ -256,14 +256,7 @@
   "gene.category.beemancer.environment": "Environnement",
   "gene.category.beemancer.flower": "Fleur",
   "gene.category.beemancer.lifetime": "Durée de Vie",
-  
-  "gene.beemancer.species.common": "Commune",
-  "gene.beemancer.species.common.desc": "Une espèce d'abeille normale",
-  "gene.beemancer.species.noble": "Noble",
-  "gene.beemancer.species.noble.desc": "Produit plus, mais plus lentement",
-  "gene.beemancer.species.diligent": "Diligente",
-  "gene.beemancer.species.diligent.desc": "Travaille plus vite, produit moins",
-  
+
   "gene.beemancer.environment.normal": "Normal",
   "gene.beemancer.environment.normal.desc": "Travaille dans des conditions standard",
   "gene.beemancer.environment.robust": "Robuste",
@@ -382,9 +375,6 @@
   "species.beemancer.void": "Abeille du Vide",
   "species.beemancer.draconic": "Abeille Draconique",
   "species.beemancer.stellar": "Abeille Stellaire",
-  "species.beemancer.common": "Abeille Commune",
-  "species.beemancer.noble": "Abeille Noble",
-  "species.beemancer.diligent": "Abeille Diligente",
 
   "message.beemancer.storage_controller.edit_mode_on": "Mode édition activé - Cliquez sur les coffres pour les enregistrer",
   "message.beemancer.storage_controller.edit_mode_off": "Mode édition désactivé",

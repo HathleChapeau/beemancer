@@ -537,7 +537,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     private String getSpeciesId(BeeGeneData geneData) {
         Gene species = geneData.getGene(GeneCategory.SPECIES);
-        return species != null ? species.getId() : "common";
+        return species != null ? species.getId() : "meadow";
     }
 
     @Nullable

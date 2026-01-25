@@ -113,7 +113,7 @@ public class BreedingManager {
     
     private static void setupDefaults() {
         defaultResults = List.of(
-                new BreedingResult("common", 50),
+                new BreedingResult("meadow", 50),
                 new BreedingResult("nothing", 50)
         );
         loaded = true;

@@ -681,7 +681,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
     private String getSpeciesId(BeeGeneData geneData) {
         Gene species = geneData.getGene(GeneCategory.SPECIES);
-        return species != null ? species.getId() : "common";
+        return species != null ? species.getId() : "meadow";
     }
 
     @Nullable

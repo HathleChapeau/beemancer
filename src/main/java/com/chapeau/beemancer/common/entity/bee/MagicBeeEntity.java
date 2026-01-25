@@ -171,7 +171,7 @@ public class MagicBeeEntity extends Bee {
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(DATA_SPECIES, "common");
+        builder.define(DATA_SPECIES, "meadow");
         builder.define(DATA_ENVIRONMENT, "normal");
         builder.define(DATA_FLOWER, "flowers");
         builder.define(DATA_LIFETIME_GENE, "normal");

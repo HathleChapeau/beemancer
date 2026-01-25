@@ -256,13 +256,6 @@
   "gene.category.beemancer.environment": "Environment",
   "gene.category.beemancer.flower": "Flower",
   "gene.category.beemancer.lifetime": "Lifetime",
-  
-  "gene.beemancer.species.common": "Common",
-  "gene.beemancer.species.common.desc": "A regular bee species",
-  "gene.beemancer.species.noble": "Noble",
-  "gene.beemancer.species.noble.desc": "Produces more, but slower",
-  "gene.beemancer.species.diligent": "Diligent",
-  "gene.beemancer.species.diligent.desc": "Works faster, produces less",
 
   "species.beemancer.meadow": "Meadow Bee",
   "species.beemancer.forest": "Forest Bee",
@@ -361,10 +354,7 @@
   "species.beemancer.void": "Void Bee",
   "species.beemancer.draconic": "Draconic Bee",
   "species.beemancer.stellar": "Stellar Bee",
-  "species.beemancer.common": "Common Bee",
-  "species.beemancer.noble": "Noble Bee",
-  "species.beemancer.diligent": "Diligent Bee",
-  
+
   "gene.beemancer.environment.normal": "Normal",
   "gene.beemancer.environment.normal.desc": "Works in standard conditions",
   "gene.beemancer.environment.robust": "Robust",

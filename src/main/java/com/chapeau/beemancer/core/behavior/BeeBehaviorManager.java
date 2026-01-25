@@ -102,27 +102,12 @@ public class BeeBehaviorManager {
     private static void setupDefaults() {
         configs.clear();
         defaultConfig = new BeeBehaviorConfig();
+        defaultConfig.addLootEntry(new LootEntry("minecraft:honeycomb", 1, 1, 80));
 
-        // Config par defaut pour common
-        BeeBehaviorConfig commonConfig = new BeeBehaviorConfig();
-        commonConfig.addLootEntry(new LootEntry("minecraft:honeycomb", 1, 1, 80));
-        configs.put("common", commonConfig);
-
-        // Config pour noble
-        BeeBehaviorConfig nobleConfig = new BeeBehaviorConfig();
-        nobleConfig.setFlyingSpeed(0.5);
-        nobleConfig.setHealth(12.0);
-        nobleConfig.setForagingDuration(150);
-        nobleConfig.addLootEntry(new LootEntry("minecraft:honeycomb", 1, 2, 70));
-        configs.put("noble", nobleConfig);
-
-        // Config pour diligent
-        BeeBehaviorConfig diligentConfig = new BeeBehaviorConfig();
-        diligentConfig.setFlyingSpeed(0.75);
-        diligentConfig.setHealth(8.0);
-        diligentConfig.setForagingDuration(60);
-        diligentConfig.addLootEntry(new LootEntry("minecraft:honeycomb", 1, 1, 90));
-        configs.put("diligent", diligentConfig);
+        // Config par defaut pour meadow (Tier I de base)
+        BeeBehaviorConfig meadowConfig = new BeeBehaviorConfig();
+        meadowConfig.addLootEntry(new LootEntry("minecraft:honeycomb", 1, 1, 80));
+        configs.put("meadow", meadowConfig);
 
         loaded = true;
         LOGGER.info("Using default behavior configs");

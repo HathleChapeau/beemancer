@@ -25,14 +25,20 @@ import com.chapeau.beemancer.core.gene.AbstractGene;
 import com.chapeau.beemancer.core.gene.GeneCategory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.animal.Bee;
+import org.jetbrains.annotations.Nullable;
 
 public class DataDrivenSpeciesGene extends AbstractGene {
 
     private final String tier;
     private final String texture;
 
+    // Cache pour eviter les lookups repetes
+    @Nullable
+    private transient BeeSpeciesManager.BeeSpeciesData cachedData = null;
+    private transient boolean cacheChecked = false;
+
     public DataDrivenSpeciesGene(String speciesId) {
-        this(speciesId, "I", speciesId);
+        this(speciesId, "I", capitalizeFirst(speciesId) + "_Bee");
     }
 
     public DataDrivenSpeciesGene(String speciesId, String tier, String texture) {
@@ -40,38 +46,44 @@ public class DataDrivenSpeciesGene extends AbstractGene {
         this.tier = tier;
         this.texture = texture;
 
-        // Default parameters - will be updated when species data is loaded
         setParameter("speedModifier", 1.0);
         setParameter("productionModifier", 1.0);
         setParameter("tier", tier);
         setParameter("texture", texture);
     }
 
+    private static String capitalizeFirst(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
     @Override
     public Component getDisplayName() {
-        // Use species-specific translation key
         return Component.translatable("species.beemancer." + id);
     }
 
     @Override
     public Component getDescription() {
-        return Component.translatable("species.beemancer." + id + ".desc");
+        // Utilise le nom d'affichage car les descriptions individuelles ne sont pas definies
+        return getDisplayName();
     }
 
     public String getTier() {
-        return tier;
+        // Priorite aux donnees chargees depuis JSON
+        BeeSpeciesManager.BeeSpeciesData data = getCachedData();
+        return data != null ? data.tier : tier;
     }
 
     public String getTexture() {
-        return texture;
+        BeeSpeciesManager.BeeSpeciesData data = getCachedData();
+        return data != null ? data.texture : texture;
     }
 
     /**
      * @return Multiplicateur de vitesse de l'abeille
      */
     public double getSpeedModifier() {
-        // Try to get from BeeSpeciesManager if loaded
-        BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(id);
+        BeeSpeciesManager.BeeSpeciesData data = getCachedData();
         if (data != null) {
             return BeeSpeciesManager.getLevelModifier(data.flyingSpeedLevel);
         }
@@ -82,26 +94,41 @@ public class DataDrivenSpeciesGene extends AbstractGene {
      * @return Multiplicateur de production
      */
     public double getProductionModifier() {
-        // Try to get from BeeSpeciesManager if loaded
-        BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(id);
+        BeeSpeciesManager.BeeSpeciesData data = getCachedData();
         if (data != null) {
             return BeeSpeciesManager.getLevelModifier(data.dropLevel);
         }
         return getParameter("productionModifier", 1.0);
     }
 
-    @Override
-    public void applyBehavior(Bee bee) {
-        // Behavior is applied via BeeSpeciesManager stats
-        // No direct behavior modification needed here
+    /**
+     * Recupere les donnees de l'espece avec cache.
+     * Le cache est invalide si BeeSpeciesManager est recharge.
+     */
+    @Nullable
+    private BeeSpeciesManager.BeeSpeciesData getCachedData() {
+        // Verifie si le manager est charge et si le cache doit etre actualise
+        if (!BeeSpeciesManager.isLoaded()) {
+            return null;
+        }
+
+        if (!cacheChecked) {
+            cachedData = BeeSpeciesManager.getSpecies(id);
+            cacheChecked = true;
+        }
+        return cachedData;
     }
 
     /**
-     * Creates a DataDrivenSpeciesGene from BeeSpeciesManager data.
+     * Invalide le cache (appele apres rechargement des donnees).
      */
-    public static DataDrivenSpeciesGene fromSpeciesData(String speciesId, BeeSpeciesManager.BeeSpeciesData data) {
-        String tier = data.tier != null ? data.tier : "I";
-        String texture = data.texture != null ? data.texture : speciesId;
-        return new DataDrivenSpeciesGene(speciesId, tier, texture);
+    public void invalidateCache() {
+        cachedData = null;
+        cacheChecked = false;
+    }
+
+    @Override
+    public void applyBehavior(Bee bee) {
+        // Comportement applique via BeeSpeciesManager/BeeBehaviorManager
     }
 }

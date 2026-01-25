@@ -78,7 +78,30 @@ public class BeeSpeciesManager {
         loadSpecies(resourceManager);
 
         loaded = true;
+
+        // Invalider les caches des genes d'especes
+        invalidateGeneCaches();
+
         LOGGER.info("Loaded {} bee species with {} level modifiers", species.size(), levelModifiers.size());
+    }
+
+    /**
+     * Invalide les caches des DataDrivenSpeciesGene apres rechargement.
+     */
+    private static void invalidateGeneCaches() {
+        try {
+            var allGenes = com.chapeau.beemancer.core.gene.GeneRegistry.getAllGenes();
+            int invalidated = 0;
+            for (var gene : allGenes) {
+                if (gene instanceof com.chapeau.beemancer.content.gene.species.DataDrivenSpeciesGene ddGene) {
+                    ddGene.invalidateCache();
+                    invalidated++;
+                }
+            }
+            LOGGER.debug("Invalidated {} species gene caches", invalidated);
+        } catch (Exception e) {
+            LOGGER.debug("Could not invalidate gene caches: {}", e.getMessage());
+        }
     }
 
     private static void loadStats(ResourceManager resourceManager) {
