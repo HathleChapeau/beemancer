@@ -86,15 +86,17 @@ public class DebugPanelRenderer {
 
     private static void renderPanel(GuiGraphics graphics, Font font) {
         String title = "Debug Panel";
-        String hint1 = "[Numpad 1-9 / ↑↓] Select";
-        String hint2 = "[←→] ±0.1 | [Shift] ±1.0";
-        String hint3 = "[Shift+R] Reset";
+        String hint1 = "[Num 1-9 / ↑↓] Select";
+        String hint2 = "[←→] ±0.1";
+        String hint3 = "[Shift + ←→] ±1.0";
+        String hint4 = "[Shift+R] Reset";
 
         // Calculer dimensions
         int maxWidth = font.width(title);
         maxWidth = Math.max(maxWidth, font.width(hint1));
         maxWidth = Math.max(maxWidth, font.width(hint2));
         maxWidth = Math.max(maxWidth, font.width(hint3));
+        maxWidth = Math.max(maxWidth, font.width(hint4));
 
         for (int i = 1; i <= 9; i++) {
             String line = "Value " + i + ": " + formatValue(DebugWandItem.getValue(i));
@@ -160,6 +162,8 @@ public class DebugPanelRenderer {
         graphics.drawString(font, hint2, textX, textY, HINT_COLOR, false);
         textY += LINE_HEIGHT;
         graphics.drawString(font, hint3, textX, textY, HINT_COLOR, false);
+        textY += LINE_HEIGHT;
+        graphics.drawString(font, hint4, textX, textY, HINT_COLOR, false);
     }
 
     private static void drawBorder(GuiGraphics graphics, int x, int y, int width, int height, int color) {
