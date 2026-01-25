@@ -373,6 +373,7 @@ public class StorageControllerBlockEntity extends BlockEntity {
 
     /**
      * Dépose un item dans le réseau de stockage.
+     * Priorise les coffres qui contiennent déjà l'item (fusion puis slots vides du même coffre).
      *
      * @return le reste non déposé (vide si tout a été déposé)
      */
@@ -381,29 +382,53 @@ public class StorageControllerBlockEntity extends BlockEntity {
 
         ItemStack remaining = stack.copy();
 
-        // D'abord essayer de fusionner avec des stacks existants
+        // Phase 1: Coffres qui contiennent déjà l'item (fusion + slots vides du même coffre)
         for (BlockPos chestPos : registeredChests) {
             if (remaining.isEmpty()) break;
 
             BlockEntity be = level.getBlockEntity(chestPos);
             if (be instanceof Container container) {
+                // Vérifier si ce coffre contient déjà l'item
+                boolean hasItem = false;
                 for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack existing = container.getItem(i);
-                    if (ItemStack.isSameItemSameComponents(existing, remaining)) {
-                        int space = existing.getMaxStackSize() - existing.getCount();
-                        int toTransfer = Math.min(space, remaining.getCount());
-                        if (toTransfer > 0) {
-                            existing.grow(toTransfer);
+                    if (ItemStack.isSameItemSameComponents(container.getItem(i), remaining)) {
+                        hasItem = true;
+                        break;
+                    }
+                }
+
+                if (hasItem) {
+                    // D'abord fusionner avec les stacks existants
+                    for (int i = 0; i < container.getContainerSize(); i++) {
+                        ItemStack existing = container.getItem(i);
+                        if (ItemStack.isSameItemSameComponents(existing, remaining)) {
+                            int space = existing.getMaxStackSize() - existing.getCount();
+                            int toTransfer = Math.min(space, remaining.getCount());
+                            if (toTransfer > 0) {
+                                existing.grow(toTransfer);
+                                remaining.shrink(toTransfer);
+                                container.setChanged();
+                            }
+                        }
+                        if (remaining.isEmpty()) break;
+                    }
+
+                    // Puis utiliser les slots vides du même coffre
+                    for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
+                        if (container.getItem(i).isEmpty()) {
+                            int toTransfer = Math.min(remaining.getMaxStackSize(), remaining.getCount());
+                            ItemStack toPlace = remaining.copy();
+                            toPlace.setCount(toTransfer);
+                            container.setItem(i, toPlace);
                             remaining.shrink(toTransfer);
                             container.setChanged();
                         }
                     }
-                    if (remaining.isEmpty()) break;
                 }
             }
         }
 
-        // Ensuite essayer les slots vides
+        // Phase 2: Si reste des items, chercher un slot vide dans n'importe quel coffre
         for (BlockPos chestPos : registeredChests) {
             if (remaining.isEmpty()) break;
 
@@ -531,17 +556,21 @@ public class StorageControllerBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
 
-        // Coffres enregistrés
+        // Coffres enregistrés - utilise une clé pour chaque position
         ListTag chestsTag = new ListTag();
         for (BlockPos pos : registeredChests) {
-            chestsTag.add(NbtUtils.writeBlockPos(pos));
+            CompoundTag posTag = new CompoundTag();
+            posTag.put("Pos", NbtUtils.writeBlockPos(pos));
+            chestsTag.add(posTag);
         }
         tag.put("RegisteredChests", chestsTag);
 
         // Terminaux liés
         ListTag terminalsTag = new ListTag();
         for (BlockPos pos : linkedTerminals) {
-            terminalsTag.add(NbtUtils.writeBlockPos(pos));
+            CompoundTag posTag = new CompoundTag();
+            posTag.put("Pos", NbtUtils.writeBlockPos(pos));
+            terminalsTag.add(posTag);
         }
         tag.put("LinkedTerminals", terminalsTag);
 
@@ -560,14 +589,14 @@ public class StorageControllerBlockEntity extends BlockEntity {
         registeredChests.clear();
         ListTag chestsTag = tag.getList("RegisteredChests", Tag.TAG_COMPOUND);
         for (int i = 0; i < chestsTag.size(); i++) {
-            NbtUtils.readBlockPos(chestsTag.getCompound(i), "").ifPresent(registeredChests::add);
+            NbtUtils.readBlockPos(chestsTag.getCompound(i), "Pos").ifPresent(registeredChests::add);
         }
 
         // Terminaux liés
         linkedTerminals.clear();
         ListTag terminalsTag = tag.getList("LinkedTerminals", Tag.TAG_COMPOUND);
         for (int i = 0; i < terminalsTag.size(); i++) {
-            NbtUtils.readBlockPos(terminalsTag.getCompound(i), "").ifPresent(linkedTerminals::add);
+            NbtUtils.readBlockPos(terminalsTag.getCompound(i), "Pos").ifPresent(linkedTerminals::add);
         }
 
         // Mode édition

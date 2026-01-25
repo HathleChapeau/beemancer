@@ -3,6 +3,48 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Storage Network System Fixes & Improvements
+================================================================================
+
+AJOUTS:
+- core/network/packets/StorageItemsSyncPacket.java (sync items agrégés vers client)
+- core/util/StorageHelper.java (utilitaire vérification conteneurs stockage)
+
+CORRECTIONS:
+- StorageControllerBlockEntity.java:
+  - +handleUpdateTag() pour sync correcte vers client (fix contour bleu invisible)
+  - Fix ConcurrentModificationException dans refreshAggregatedItems()
+  - Mode édition auto-exit si joueur déconnecté ou trop loin
+  - Nettoyage automatique des viewers déconnectés
+  - addViewer() prend maintenant terminalPos pour sync ciblée
+
+- StorageTerminalBlockEntity.java:
+  - +handleUpdateTag() pour sync correcte vers client
+  - +flag isDepositing pour éviter récursion lors du dépôt automatique
+
+- StorageEvents.java:
+  - +onServerStopping() pour nettoyer StorageEditModeHandler
+  - Utilisation StorageHelper au lieu de vérification redondante
+
+- StorageControllerBlock.java:
+  - Utilisation StorageHelper au lieu de vérification redondante
+
+- StorageRequestPacket.java:
+  - Validation count (clamp 1-3456) contre exploits
+
+- StorageControllerRenderer.java:
+  - Optimisation: buffer obtenu une seule fois et réutilisé
+
+MODIFICATIONS:
+- BeemancerNetwork.java: +StorageItemsSyncPacket (playToClient)
+
+FIXES:
+- Les items agrégés sont maintenant envoyés au client via packet dédié
+- Les contours bleus autour des coffres enregistrés s'affichent correctement
+- La sauvegarde/chargement des coffres enregistrés fonctionne correctement
+- Plus de fuite mémoire dans StorageEditModeHandler au quit/reload monde
+
+================================================================================
 2026-01-25 - Storage Network System (Complete)
 ================================================================================
 

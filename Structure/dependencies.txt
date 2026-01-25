@@ -28,6 +28,7 @@ core/util/
 
 - FlowerSearchHelper.java: Recherche de fleurs dans un rayon
 - HarvestHelper.java: Logique de récolte par type de bloc (CROP, NETHER_WART, MUSHROOM, CRYSTAL, FLOWER, TREE)
+- StorageHelper.java: Vérification des conteneurs de stockage supportés (Chest, Trapped Chest, Barrel)
 
 ================================================================================
 core/breeding/

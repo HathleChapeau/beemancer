@@ -50,7 +50,11 @@ MENU & GUI:
 - client/gui/screen/storage/StorageTerminalScreen.java
 
 RÉSEAU:
-- core/network/packets/StorageRequestPacket.java
+- core/network/packets/StorageRequestPacket.java (client → serveur: demande items)
+- core/network/packets/StorageItemsSyncPacket.java (serveur → client: sync items agrégés)
+
+UTILITAIRES:
+- core/util/StorageHelper.java (vérification conteneurs supportés)
 
 RENDERING:
 - client/renderer/block/StorageControllerRenderer.java
@@ -112,7 +116,8 @@ BeemancerMenus.java:
 - +STORAGE_TERMINAL
 
 BeemancerNetwork.java:
-- +StorageRequestPacket
+- +StorageRequestPacket (playToServer)
+- +StorageItemsSyncPacket (playToClient)
 
 ClientSetup.java:
 - +StorageTerminalScreen
@@ -155,5 +160,35 @@ FR:
 - block.beemancer.storage_controller: Contrôleur de Stockage
 - block.beemancer.storage_terminal: Terminal de Stockage
 - (+ toutes les traductions correspondantes)
+
+================================================================================
+NOTES TECHNIQUES
+================================================================================
+
+SYNCHRONISATION CLIENT:
+- StorageControllerBlockEntity et StorageTerminalBlockEntity implémentent handleUpdateTag()
+- Les coffres enregistrés sont synchronisés via getUpdateTag()/handleUpdateTag()
+- Les items agrégés sont envoyés via StorageItemsSyncPacket quand:
+  - Un joueur ouvre le terminal (addViewer)
+  - Le controller refresh les items (syncItemsToViewers)
+
+MODE ÉDITION:
+- StorageEditModeHandler est une map statique UUID → BlockPos
+- Nettoyé automatiquement quand:
+  - Le joueur se déconnecte (PlayerLoggedOutEvent)
+  - Le serveur s'arrête (ServerStoppingEvent)
+  - Le joueur s'éloigne trop (serverTick)
+
+RENDU (StorageControllerRenderer):
+- Affiche uniquement pour le joueur qui édite
+- Outline rouge: autour du controller
+- Lignes vertes: du controller vers chaque coffre
+- Outline bleu: autour de chaque coffre enregistré
+- shouldRenderOffScreen() retourne true pour les lignes longues
+
+PROTECTION CONTRE BUGS:
+- Flag isDepositing évite récursion lors du dépôt automatique
+- ConcurrentModification évitée avec liste temporaire dans refreshAggregatedItems()
+- Validation count dans StorageRequestPacket (clamp 1-3456)
 
 ################################################################################

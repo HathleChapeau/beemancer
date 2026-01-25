@@ -34,12 +34,15 @@ src/main/java/com/chapeau/beemancer/
 │   │
 │   ├── util/
 │   │   ├── FlowerSearchHelper.java
-│   │   └── HarvestHelper.java
+│   │   ├── HarvestHelper.java
+│   │   └── StorageHelper.java
 │   │
 │   └── network/
 │       ├── BeemancerNetwork.java
 │       └── packets/
-│           └── BeeCreatorActionPacket.java
+│           ├── BeeCreatorActionPacket.java
+│           ├── StorageRequestPacket.java
+│           └── StorageItemsSyncPacket.java
 │
 ├── common/                             # === LOGIQUE PARTAGÉE ===
 │   ├── block/
