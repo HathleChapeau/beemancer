@@ -34,6 +34,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -44,8 +45,23 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuProvider {
-    private static final int HONEY_CONSUMPTION = 10; // mB per tick while working
-    private static final int DEFAULT_PROCESS_TIME = 100;
+    // --- TIER CONFIG ---
+    public static final int TIER1_HONEY_CONSUMPTION = 10;
+    public static final int TIER1_PROCESS_TIME = 100;
+    public static final int TIER1_TANK_CAPACITY = 8000;
+
+    public static final int TIER2_HONEY_CONSUMPTION = 15;
+    public static final int TIER2_PROCESS_TIME = 60;
+    public static final int TIER2_TANK_CAPACITY = 16000;
+
+    public static final int TIER3_HONEY_CONSUMPTION = 25;
+    public static final int TIER3_PROCESS_TIME = 30;
+    public static final int TIER3_TANK_CAPACITY = 32000;
+
+    private final int honeyConsumption;
+    private final int baseFuelCapacity;
+    private final int baseOutputCapacity;
+    private final float processTimeMultiplier;
 
     // 1 slot d'entree
     private final ItemStackHandler inputSlot = new ItemStackHandler(1) {
@@ -62,19 +78,8 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
         protected void onContentsChanged(int slot) { setChanged(); }
     };
 
-    private final FluidTank fuelTank = new FluidTank(8000) {
-        @Override
-        public boolean isFluidValid(FluidStack stack) {
-            return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get();
-        }
-        @Override
-        protected void onContentsChanged() { setChanged(); }
-    };
-
-    private final FluidTank outputTank = new FluidTank(8000) {
-        @Override
-        protected void onContentsChanged() { setChanged(); }
-    };
+    private final FluidTank fuelTank;
+    private final FluidTank outputTank;
 
     private int progress = 0;
     private int currentProcessTime = DEFAULT_PROCESS_TIME;
@@ -102,7 +107,44 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
     };
 
     public PoweredCentrifugeBlockEntity(BlockPos pos, BlockState state) {
-        super(BeemancerBlockEntities.POWERED_CENTRIFUGE.get(), pos, state);
+        this(BeemancerBlockEntities.POWERED_CENTRIFUGE.get(), pos, state,
+            TIER1_HONEY_CONSUMPTION, TIER1_TANK_CAPACITY, 1.0f);
+    }
+
+    public PoweredCentrifugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                                        int honeyConsumption, int tankCapacity, float processTimeMultiplier) {
+        super(type, pos, state);
+        this.honeyConsumption = honeyConsumption;
+        this.baseFuelCapacity = tankCapacity;
+        this.baseOutputCapacity = tankCapacity;
+        this.processTimeMultiplier = processTimeMultiplier;
+
+        this.fuelTank = new FluidTank(tankCapacity) {
+            @Override
+            public boolean isFluidValid(FluidStack stack) {
+                return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get();
+            }
+            @Override
+            protected void onContentsChanged() { setChanged(); }
+        };
+
+        this.outputTank = new FluidTank(tankCapacity) {
+            @Override
+            protected void onContentsChanged() { setChanged(); }
+        };
+    }
+
+    // Factory methods for tiered versions
+    public static PoweredCentrifugeBlockEntity createTier2(BlockPos pos, BlockState state) {
+        return new PoweredCentrifugeBlockEntity(
+            BeemancerBlockEntities.POWERED_CENTRIFUGE_TIER2.get(), pos, state,
+            TIER2_HONEY_CONSUMPTION, TIER2_TANK_CAPACITY, 0.6f);
+    }
+
+    public static PoweredCentrifugeBlockEntity createTier3(BlockPos pos, BlockState state) {
+        return new PoweredCentrifugeBlockEntity(
+            BeemancerBlockEntities.POWERED_CENTRIFUGE_TIER3.get(), pos, state,
+            TIER3_HONEY_CONSUMPTION, TIER3_TANK_CAPACITY, 0.3f);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, PoweredCentrifugeBlockEntity be) {
@@ -115,8 +157,8 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
         }
 
         if (be.currentRecipe != null) {
-            if (be.fuelTank.getFluidAmount() >= HONEY_CONSUMPTION) {
-                be.fuelTank.drain(HONEY_CONSUMPTION, IFluidHandler.FluidAction.EXECUTE);
+            if (be.fuelTank.getFluidAmount() >= be.honeyConsumption) {
+                be.fuelTank.drain(be.honeyConsumption, IFluidHandler.FluidAction.EXECUTE);
                 be.progress++;
                 isWorking = true;
 
@@ -153,7 +195,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
 
         if (recipe.isPresent()) {
             currentRecipe = recipe.get();
-            currentProcessTime = recipe.get().value().processingTime();
+            currentProcessTime = Math.max(1, (int)(recipe.get().value().processingTime() * processTimeMultiplier));
         } else {
             currentRecipe = null;
         }

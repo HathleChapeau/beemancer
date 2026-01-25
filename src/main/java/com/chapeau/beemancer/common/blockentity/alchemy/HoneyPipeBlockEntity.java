@@ -23,6 +23,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -34,22 +35,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HoneyPipeBlockEntity extends BlockEntity {
-    private static final int BUFFER_CAPACITY = 500;
-    private static final int TRANSFER_RATE = 100;
+    // --- TIER CONFIG ---
+    public static final int TIER1_BUFFER = 500;
+    public static final int TIER1_TRANSFER = 100;
 
-    private final FluidTank buffer = new FluidTank(BUFFER_CAPACITY) {
-        @Override
-        public boolean isFluidValid(FluidStack stack) {
-            return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get()
-                || stack.getFluid() == BeemancerFluids.ROYAL_JELLY_SOURCE.get()
-                || stack.getFluid() == BeemancerFluids.NECTAR_SOURCE.get();
-        }
+    public static final int TIER2_BUFFER = 1000;
+    public static final int TIER2_TRANSFER = 250;
 
-        @Override
-        protected void onContentsChanged() {
-            setChanged();
-        }
-    };
+    public static final int TIER3_BUFFER = 2000;
+    public static final int TIER3_TRANSFER = 500;
+
+    public static final int TIER4_BUFFER = 4000;
+    public static final int TIER4_TRANSFER = 1000;
+
+    private final int transferRate;
+    private final FluidTank buffer;
 
     private int transferCooldown = 0;
     private int roundRobinIndex = 0;
@@ -59,7 +59,42 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     private BlockPos sourcePos = null;
 
     public HoneyPipeBlockEntity(BlockPos pos, BlockState state) {
-        super(BeemancerBlockEntities.HONEY_PIPE.get(), pos, state);
+        this(BeemancerBlockEntities.HONEY_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
+    }
+
+    public HoneyPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                                int bufferCapacity, int transferRate) {
+        super(type, pos, state);
+        this.transferRate = transferRate;
+        this.buffer = new FluidTank(bufferCapacity) {
+            @Override
+            public boolean isFluidValid(FluidStack stack) {
+                return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get()
+                    || stack.getFluid() == BeemancerFluids.ROYAL_JELLY_SOURCE.get()
+                    || stack.getFluid() == BeemancerFluids.NECTAR_SOURCE.get();
+            }
+
+            @Override
+            protected void onContentsChanged() {
+                setChanged();
+            }
+        };
+    }
+
+    // Factory methods for tiered versions
+    public static HoneyPipeBlockEntity createTier2(BlockPos pos, BlockState state) {
+        return new HoneyPipeBlockEntity(BeemancerBlockEntities.HONEY_PIPE_TIER2.get(), pos, state,
+            TIER2_BUFFER, TIER2_TRANSFER);
+    }
+
+    public static HoneyPipeBlockEntity createTier3(BlockPos pos, BlockState state) {
+        return new HoneyPipeBlockEntity(BeemancerBlockEntities.HONEY_PIPE_TIER3.get(), pos, state,
+            TIER3_BUFFER, TIER3_TRANSFER);
+    }
+
+    public static HoneyPipeBlockEntity createTier4(BlockPos pos, BlockState state) {
+        return new HoneyPipeBlockEntity(BeemancerBlockEntities.HONEY_PIPE_TIER4.get(), pos, state,
+            TIER4_BUFFER, TIER4_TRANSFER);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HoneyPipeBlockEntity be) {
@@ -98,7 +133,7 @@ public class HoneyPipeBlockEntity extends BlockEntity {
 
             var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
             if (cap != null) {
-                FluidStack toDrain = cap.drain(TRANSFER_RATE, IFluidHandler.FluidAction.SIMULATE);
+                FluidStack toDrain = cap.drain(transferRate, IFluidHandler.FluidAction.SIMULATE);
                 if (!toDrain.isEmpty() && buffer.isFluidValid(toDrain)) {
                     int canFill = buffer.fill(toDrain, IFluidHandler.FluidAction.SIMULATE);
                     if (canFill > 0) {
@@ -142,7 +177,7 @@ public class HoneyPipeBlockEntity extends BlockEntity {
                 // C'est un bloc normal avec capacite fluide
                 var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
                 if (cap != null) {
-                    FluidStack toTransfer = buffer.drain(TRANSFER_RATE, IFluidHandler.FluidAction.SIMULATE);
+                    FluidStack toTransfer = buffer.drain(transferRate, IFluidHandler.FluidAction.SIMULATE);
                     if (!toTransfer.isEmpty()) {
                         int canFill = cap.fill(toTransfer, IFluidHandler.FluidAction.SIMULATE);
                         if (canFill > 0) {
@@ -164,7 +199,7 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         if (dest.isPipe) {
             BlockEntity neighborBe = level.getBlockEntity(dest.pos);
             if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe) {
-                FluidStack toTransfer = buffer.drain(TRANSFER_RATE, IFluidHandler.FluidAction.SIMULATE);
+                FluidStack toTransfer = buffer.drain(transferRate, IFluidHandler.FluidAction.SIMULATE);
                 if (!toTransfer.isEmpty()) {
                     int filled = neighborPipe.buffer.fill(toTransfer, IFluidHandler.FluidAction.EXECUTE);
                     if (filled > 0) {
@@ -177,7 +212,7 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         } else {
             var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, dest.pos, dest.direction.getOpposite());
             if (cap != null) {
-                FluidStack toTransfer = buffer.drain(TRANSFER_RATE, IFluidHandler.FluidAction.SIMULATE);
+                FluidStack toTransfer = buffer.drain(transferRate, IFluidHandler.FluidAction.SIMULATE);
                 if (!toTransfer.isEmpty()) {
                     int filled = cap.fill(toTransfer, IFluidHandler.FluidAction.EXECUTE);
                     if (filled > 0) {

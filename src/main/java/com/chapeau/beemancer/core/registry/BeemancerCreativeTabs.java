@@ -45,10 +45,20 @@ public class BeemancerCreativeTabs {
                         // Alchemy Machines
                         output.accept(BeemancerItems.MANUAL_CENTRIFUGE.get());
                         output.accept(BeemancerItems.POWERED_CENTRIFUGE.get());
+                        output.accept(BeemancerItems.POWERED_CENTRIFUGE_TIER2.get());
+                        output.accept(BeemancerItems.POWERED_CENTRIFUGE_TIER3.get());
                         output.accept(BeemancerItems.HONEY_TANK.get());
+                        output.accept(BeemancerItems.HONEY_TANK_TIER2.get());
+                        output.accept(BeemancerItems.HONEY_TANK_TIER3.get());
                         output.accept(BeemancerItems.CREATIVE_TANK.get());
                         output.accept(BeemancerItems.HONEY_PIPE.get());
+                        output.accept(BeemancerItems.HONEY_PIPE_TIER2.get());
+                        output.accept(BeemancerItems.HONEY_PIPE_TIER3.get());
+                        output.accept(BeemancerItems.HONEY_PIPE_TIER4.get());
                         output.accept(BeemancerItems.ITEM_PIPE.get());
+                        output.accept(BeemancerItems.ITEM_PIPE_TIER2.get());
+                        output.accept(BeemancerItems.ITEM_PIPE_TIER3.get());
+                        output.accept(BeemancerItems.ITEM_PIPE_TIER4.get());
                         output.accept(BeemancerItems.CRYSTALLIZER.get());
                         output.accept(BeemancerItems.ALEMBIC.get());
                         output.accept(BeemancerItems.INFUSER.get());

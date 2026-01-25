@@ -52,8 +52,20 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> POWERED_CENTRIFUGE = ITEMS.register("powered_centrifuge",
             () -> new BlockItem(BeemancerBlocks.POWERED_CENTRIFUGE.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> POWERED_CENTRIFUGE_TIER2 = ITEMS.register("powered_centrifuge_tier2",
+            () -> new BlockItem(BeemancerBlocks.POWERED_CENTRIFUGE_TIER2.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> POWERED_CENTRIFUGE_TIER3 = ITEMS.register("powered_centrifuge_tier3",
+            () -> new BlockItem(BeemancerBlocks.POWERED_CENTRIFUGE_TIER3.get(), new Item.Properties()));
+
     public static final DeferredItem<BlockItem> HONEY_TANK = ITEMS.register("honey_tank",
             () -> new BlockItem(BeemancerBlocks.HONEY_TANK.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> HONEY_TANK_TIER2 = ITEMS.register("honey_tank_tier2",
+            () -> new BlockItem(BeemancerBlocks.HONEY_TANK_TIER2.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> HONEY_TANK_TIER3 = ITEMS.register("honey_tank_tier3",
+            () -> new BlockItem(BeemancerBlocks.HONEY_TANK_TIER3.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> CREATIVE_TANK = ITEMS.register("creative_tank",
             () -> new BlockItem(BeemancerBlocks.CREATIVE_TANK.get(), new Item.Properties()));
@@ -61,8 +73,26 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> HONEY_PIPE = ITEMS.register("honey_pipe",
             () -> new BlockItem(BeemancerBlocks.HONEY_PIPE.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> HONEY_PIPE_TIER2 = ITEMS.register("honey_pipe_tier2",
+            () -> new BlockItem(BeemancerBlocks.HONEY_PIPE_TIER2.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> HONEY_PIPE_TIER3 = ITEMS.register("honey_pipe_tier3",
+            () -> new BlockItem(BeemancerBlocks.HONEY_PIPE_TIER3.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> HONEY_PIPE_TIER4 = ITEMS.register("honey_pipe_tier4",
+            () -> new BlockItem(BeemancerBlocks.HONEY_PIPE_TIER4.get(), new Item.Properties()));
+
     public static final DeferredItem<BlockItem> ITEM_PIPE = ITEMS.register("item_pipe",
             () -> new BlockItem(BeemancerBlocks.ITEM_PIPE.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> ITEM_PIPE_TIER2 = ITEMS.register("item_pipe_tier2",
+            () -> new BlockItem(BeemancerBlocks.ITEM_PIPE_TIER2.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> ITEM_PIPE_TIER3 = ITEMS.register("item_pipe_tier3",
+            () -> new BlockItem(BeemancerBlocks.ITEM_PIPE_TIER3.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> ITEM_PIPE_TIER4 = ITEMS.register("item_pipe_tier4",
+            () -> new BlockItem(BeemancerBlocks.ITEM_PIPE_TIER4.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> CRYSTALLIZER = ITEMS.register("crystallizer",
             () -> new BlockItem(BeemancerBlocks.CRYSTALLIZER.get(), new Item.Properties()));

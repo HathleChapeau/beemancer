@@ -23,6 +23,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -33,15 +34,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemPipeBlockEntity extends BlockEntity {
-    private static final int BUFFER_SIZE = 4;
-    private static final int TRANSFER_AMOUNT = 4;
+    // --- TIER CONFIG ---
+    public static final int TIER1_BUFFER = 4;
+    public static final int TIER1_TRANSFER = 4;
 
-    private final ItemStackHandler buffer = new ItemStackHandler(BUFFER_SIZE) {
-        @Override
-        protected void onContentsChanged(int slot) {
-            setChanged();
-        }
-    };
+    public static final int TIER2_BUFFER = 8;
+    public static final int TIER2_TRANSFER = 8;
+
+    public static final int TIER3_BUFFER = 16;
+    public static final int TIER3_TRANSFER = 16;
+
+    public static final int TIER4_BUFFER = 32;
+    public static final int TIER4_TRANSFER = 32;
+
+    private final int transferAmount;
+    private final ItemStackHandler buffer;
 
     private int transferCooldown = 0;
     private int roundRobinIndex = 0;
@@ -51,7 +58,35 @@ public class ItemPipeBlockEntity extends BlockEntity {
     private BlockPos sourcePos = null;
 
     public ItemPipeBlockEntity(BlockPos pos, BlockState state) {
-        super(BeemancerBlockEntities.ITEM_PIPE.get(), pos, state);
+        this(BeemancerBlockEntities.ITEM_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
+    }
+
+    public ItemPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                               int bufferSize, int transferAmount) {
+        super(type, pos, state);
+        this.transferAmount = transferAmount;
+        this.buffer = new ItemStackHandler(bufferSize) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                setChanged();
+            }
+        };
+    }
+
+    // Factory methods for tiered versions
+    public static ItemPipeBlockEntity createTier2(BlockPos pos, BlockState state) {
+        return new ItemPipeBlockEntity(BeemancerBlockEntities.ITEM_PIPE_TIER2.get(), pos, state,
+            TIER2_BUFFER, TIER2_TRANSFER);
+    }
+
+    public static ItemPipeBlockEntity createTier3(BlockPos pos, BlockState state) {
+        return new ItemPipeBlockEntity(BeemancerBlockEntities.ITEM_PIPE_TIER3.get(), pos, state,
+            TIER3_BUFFER, TIER3_TRANSFER);
+    }
+
+    public static ItemPipeBlockEntity createTier4(BlockPos pos, BlockState state) {
+        return new ItemPipeBlockEntity(BeemancerBlockEntities.ITEM_PIPE_TIER4.get(), pos, state,
+            TIER4_BUFFER, TIER4_TRANSFER);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ItemPipeBlockEntity be) {
@@ -99,7 +134,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
 
     private void extractFromHandler(IItemHandler handler) {
         for (int i = 0; i < handler.getSlots() && !isBufferFull(); i++) {
-            ItemStack extracted = handler.extractItem(i, TRANSFER_AMOUNT, true);
+            ItemStack extracted = handler.extractItem(i, transferAmount, true);
             if (!extracted.isEmpty()) {
                 ItemStack remaining = insertIntoBuffer(extracted, true);
                 int toExtract = extracted.getCount() - remaining.getCount();
@@ -173,7 +208,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
             ItemStack stack = buffer.getStackInSlot(bufferSlot);
             if (stack.isEmpty()) continue;
 
-            ItemStack toInsert = stack.copyWithCount(Math.min(stack.getCount(), TRANSFER_AMOUNT));
+            ItemStack toInsert = stack.copyWithCount(Math.min(stack.getCount(), transferAmount));
             ItemStack remaining = neighborPipe.insertIntoBuffer(toInsert, false);
 
             int inserted = toInsert.getCount() - remaining.getCount();
@@ -191,7 +226,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
             ItemStack stack = buffer.getStackInSlot(bufferSlot);
             if (stack.isEmpty()) continue;
 
-            ItemStack toInsert = stack.copyWithCount(Math.min(stack.getCount(), TRANSFER_AMOUNT));
+            ItemStack toInsert = stack.copyWithCount(Math.min(stack.getCount(), transferAmount));
             ItemStack remaining = insertIntoHandler(handler, toInsert);
 
             int inserted = toInsert.getCount() - remaining.getCount();

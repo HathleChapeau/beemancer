@@ -1,0 +1,17 @@
+{
+  "multipart": [
+    { "apply": { "model": "beemancer:block/item_pipe_core" } },
+    { "when": { "north": true, "extract_north": false }, "apply": { "model": "beemancer:block/item_pipe_side", "y": 0 } },
+    { "when": { "south": true, "extract_south": false }, "apply": { "model": "beemancer:block/item_pipe_side", "y": 180 } },
+    { "when": { "east": true, "extract_east": false }, "apply": { "model": "beemancer:block/item_pipe_side", "y": 90 } },
+    { "when": { "west": true, "extract_west": false }, "apply": { "model": "beemancer:block/item_pipe_side", "y": 270 } },
+    { "when": { "up": true, "extract_up": false }, "apply": { "model": "beemancer:block/item_pipe_side", "x": 270 } },
+    { "when": { "down": true, "extract_down": false }, "apply": { "model": "beemancer:block/item_pipe_side", "x": 90 } },
+    { "when": { "north": true, "extract_north": true }, "apply": { "model": "beemancer:block/item_pipe_side_extract", "y": 0 } },
+    { "when": { "south": true, "extract_south": true }, "apply": { "model": "beemancer:block/item_pipe_side_extract", "y": 180 } },
+    { "when": { "east": true, "extract_east": true }, "apply": { "model": "beemancer:block/item_pipe_side_extract", "y": 90 } },
+    { "when": { "west": true, "extract_west": true }, "apply": { "model": "beemancer:block/item_pipe_side_extract", "y": 270 } },
+    { "when": { "up": true, "extract_up": true }, "apply": { "model": "beemancer:block/item_pipe_side_extract", "x": 270 } },
+    { "when": { "down": true, "extract_down": true }, "apply": { "model": "beemancer:block/item_pipe_side_extract", "x": 90 } }
+  ]
+}

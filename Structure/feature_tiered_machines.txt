@@ -1,0 +1,235 @@
+################################################################################
+#                         FEATURE: TIERED MACHINES                              #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Système de tiers pour les machines d'alchimie et de logistique.
+Chaque tier améliore les performances (capacité, vitesse, débit).
+
+================================================================================
+MACHINES TIERED
+================================================================================
+
+POWERED CENTRIFUGE (Tier 1-3):
+--------------------------------------------------------------------------------
+| Tier | Honey/tick | Process Time | Tank Capacity |
+|------|------------|--------------|---------------|
+| 1    | 10 mB      | x1.0         | 8,000 mB      |
+| 2    | 15 mB      | x0.6         | 16,000 mB     |
+| 3    | 25 mB      | x0.3         | 32,000 mB     |
+
+HONEY TANK (Tier 1-3):
+--------------------------------------------------------------------------------
+| Tier | Capacity     |
+|------|--------------|
+| 1    | 16,000 mB    |
+| 2    | 64,000 mB    |
+| 3    | 256,000 mB   |
+
+HONEY PIPE (Tier 1-4):
+--------------------------------------------------------------------------------
+| Tier | Buffer    | Transfer Rate |
+|------|-----------|---------------|
+| 1    | 500 mB    | 100 mB        |
+| 2    | 1,000 mB  | 250 mB        |
+| 3    | 2,000 mB  | 500 mB        |
+| 4    | 4,000 mB  | 1,000 mB      |
+
+ITEM PIPE (Tier 1-4):
+--------------------------------------------------------------------------------
+| Tier | Buffer Slots | Transfer Amount |
+|------|--------------|-----------------|
+| 1    | 4            | 4 items         |
+| 2    | 8            | 8 items         |
+| 3    | 16           | 16 items        |
+| 4    | 32           | 32 items        |
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+APPROCHE: Paramètres exposés, pas de nouvelles classes.
+
+Les BlockEntity existants ont été modifiés pour accepter des paramètres de tier:
+- Constructeur avec paramètres (capacity, transferRate, etc.)
+- Factory methods statiques pour chaque tier (createTier2, createTier3...)
+- Constantes statiques pour les valeurs de chaque tier
+
+Les Block existants stockent le tier et délèguent au bon BlockEntity:
+- Champ `private final int tier`
+- newBlockEntity() retourne le bon tier via factory method
+- getTicker() retourne le bon BlockEntityType selon le tier
+
+================================================================================
+FICHIERS MODIFIÉS
+================================================================================
+
+BLOCK ENTITIES:
+- common/blockentity/alchemy/PoweredCentrifugeBlockEntity.java
+  - +TIER1/2/3_HONEY_CONSUMPTION, TIER1/2/3_PROCESS_TIME, TIER1/2/3_TANK_CAPACITY
+  - +constructeur avec paramètres (type, pos, state, honeyConsumption, tankCapacity, processTimeMultiplier)
+  - +createTier2(), createTier3() factory methods
+  - Champs instance: honeyConsumption, processTimeMultiplier
+
+- common/blockentity/alchemy/HoneyTankBlockEntity.java
+  - +TIER1/2/3_CAPACITY
+  - +constructeur avec paramètres (type, pos, state, capacity)
+  - +createTier2(), createTier3() factory methods
+
+- common/blockentity/alchemy/HoneyPipeBlockEntity.java
+  - +TIER1/2/3/4_BUFFER, TIER1/2/3/4_TRANSFER
+  - +constructeur avec paramètres (type, pos, state, bufferCapacity, transferRate)
+  - +createTier2(), createTier3(), createTier4() factory methods
+
+- common/blockentity/alchemy/ItemPipeBlockEntity.java
+  - +TIER1/2/3/4_BUFFER, TIER1/2/3/4_TRANSFER
+  - +constructeur avec paramètres (type, pos, state, bufferSize, transferAmount)
+  - +createTier2(), createTier3(), createTier4() factory methods
+
+BLOCKS:
+- common/block/alchemy/PoweredCentrifugeBlock.java
+  - +champ tier, constructeur avec tier
+  - newBlockEntity() et getTicker() délèguent selon tier
+
+- common/block/alchemy/HoneyTankBlock.java
+  - +champ tier, constructeur avec tier
+  - newBlockEntity() et getTicker() délèguent selon tier
+
+- common/block/alchemy/HoneyPipeBlock.java
+  - +champ tier, constructeur avec tier
+  - newBlockEntity() et getTicker() délèguent selon tier
+
+- common/block/alchemy/ItemPipeBlock.java
+  - +champ tier, constructeur avec tier
+  - newBlockEntity() et getTicker() délèguent selon tier
+
+================================================================================
+REGISTRES MODIFIÉS
+================================================================================
+
+BeemancerBlocks.java:
+- +POWERED_CENTRIFUGE_TIER2
+- +POWERED_CENTRIFUGE_TIER3
+- +HONEY_TANK_TIER2
+- +HONEY_TANK_TIER3
+- +HONEY_PIPE_TIER2
+- +HONEY_PIPE_TIER3
+- +HONEY_PIPE_TIER4
+- +ITEM_PIPE_TIER2
+- +ITEM_PIPE_TIER3
+- +ITEM_PIPE_TIER4
+
+BeemancerBlockEntities.java:
+- +POWERED_CENTRIFUGE_TIER2
+- +POWERED_CENTRIFUGE_TIER3
+- +HONEY_TANK_TIER2
+- +HONEY_TANK_TIER3
+- +HONEY_PIPE_TIER2
+- +HONEY_PIPE_TIER3
+- +HONEY_PIPE_TIER4
+- +ITEM_PIPE_TIER2
+- +ITEM_PIPE_TIER3
+- +ITEM_PIPE_TIER4
+
+BeemancerItems.java:
+- +POWERED_CENTRIFUGE_TIER2 (BlockItem)
+- +POWERED_CENTRIFUGE_TIER3 (BlockItem)
+- +HONEY_TANK_TIER2 (BlockItem)
+- +HONEY_TANK_TIER3 (BlockItem)
+- +HONEY_PIPE_TIER2 (BlockItem)
+- +HONEY_PIPE_TIER3 (BlockItem)
+- +HONEY_PIPE_TIER4 (BlockItem)
+- +ITEM_PIPE_TIER2 (BlockItem)
+- +ITEM_PIPE_TIER3 (BlockItem)
+- +ITEM_PIPE_TIER4 (BlockItem)
+
+BeemancerCreativeTabs.java:
+- Ajout des items tiered dans l'onglet Alchemy Machines
+
+================================================================================
+ASSETS
+================================================================================
+
+BLOCKSTATES (assets/beemancer/blockstates/):
+- powered_centrifuge_tier2.json
+- powered_centrifuge_tier3.json
+- honey_tank_tier2.json
+- honey_tank_tier3.json
+- honey_pipe_tier2.json
+- honey_pipe_tier3.json
+- honey_pipe_tier4.json
+- item_pipe_tier2.json
+- item_pipe_tier3.json
+- item_pipe_tier4.json
+
+BLOCK MODELS (assets/beemancer/models/block/):
+- powered_centrifuge_tier2.json
+- powered_centrifuge_tier2_working.json
+- powered_centrifuge_tier3.json
+- powered_centrifuge_tier3_working.json
+- honey_tank_tier2.json
+- honey_tank_tier3.json
+
+ITEM MODELS (assets/beemancer/models/item/):
+- powered_centrifuge_tier2.json
+- powered_centrifuge_tier3.json
+- honey_tank_tier2.json
+- honey_tank_tier3.json
+- honey_pipe_tier2.json
+- honey_pipe_tier3.json
+- honey_pipe_tier4.json
+- item_pipe_tier2.json
+- item_pipe_tier3.json
+- item_pipe_tier4.json
+
+TEXTURES (assets/beemancer/textures/block/):
+- alchemy/powered_centrifuge_tier2_*.png (placeholders)
+- alchemy/powered_centrifuge_tier3_*.png (placeholders)
+- alchemy/honey_tank_tier2_*.png (placeholders)
+- alchemy/honey_tank_tier3_*.png (placeholders)
+- honey_pipe_tier2.png (placeholder)
+- honey_pipe_tier3.png (placeholder)
+- honey_pipe_tier4.png (placeholder)
+
+================================================================================
+TRADUCTIONS
+================================================================================
+
+EN (en_us.json):
+- block.beemancer.powered_centrifuge_tier2: Powered Centrifuge Tier 2
+- block.beemancer.powered_centrifuge_tier3: Powered Centrifuge Tier 3
+- block.beemancer.honey_tank_tier2: Honey Tank Tier 2
+- block.beemancer.honey_tank_tier3: Honey Tank Tier 3
+- block.beemancer.honey_pipe_tier2: Honey Pipe Tier 2
+- block.beemancer.honey_pipe_tier3: Honey Pipe Tier 3
+- block.beemancer.honey_pipe_tier4: Honey Pipe Tier 4
+- block.beemancer.item_pipe_tier2: Item Pipe Tier 2
+- block.beemancer.item_pipe_tier3: Item Pipe Tier 3
+- block.beemancer.item_pipe_tier4: Item Pipe Tier 4
+
+FR (fr_fr.json):
+- block.beemancer.powered_centrifuge_tier2: Centrifugeuse Automatique Tier 2
+- block.beemancer.powered_centrifuge_tier3: Centrifugeuse Automatique Tier 3
+- block.beemancer.honey_tank_tier2: Réservoir de Miel Tier 2
+- block.beemancer.honey_tank_tier3: Réservoir de Miel Tier 3
+- block.beemancer.honey_pipe_tier2: Tuyau de Miel Tier 2
+- block.beemancer.honey_pipe_tier3: Tuyau de Miel Tier 3
+- block.beemancer.honey_pipe_tier4: Tuyau de Miel Tier 4
+- block.beemancer.item_pipe_tier2: Tuyau d'Items Tier 2
+- block.beemancer.item_pipe_tier3: Tuyau d'Items Tier 3
+- block.beemancer.item_pipe_tier4: Tuyau d'Items Tier 4
+
+================================================================================
+AMÉLIORATIONS FUTURES
+================================================================================
+
+- Textures distinctes par tier (couleur, brillance, détails)
+- Recettes de craft pour upgrader les tiers
+- Tooltips affichant les stats du tier
+- Particles ou effets visuels par tier
+- Sons différents selon le tier
+
+################################################################################

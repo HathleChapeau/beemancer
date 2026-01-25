@@ -3,6 +3,51 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Tiered Machines System
+================================================================================
+
+AJOUTS:
+- Structure/feature_tiered_machines.txt (documentation feature)
+
+MODIFICATIONS:
+- common/blockentity/alchemy/PoweredCentrifugeBlockEntity.java:
+  - +TIER1/2/3 constants, +constructeur avec paramètres, +createTier2/3()
+- common/blockentity/alchemy/HoneyTankBlockEntity.java:
+  - +TIER1/2/3_CAPACITY, +constructeur avec paramètres, +createTier2/3()
+- common/blockentity/alchemy/HoneyPipeBlockEntity.java:
+  - +TIER1/2/3/4 constants, +constructeur avec paramètres, +createTier2/3/4()
+- common/blockentity/alchemy/ItemPipeBlockEntity.java:
+  - +TIER1/2/3/4 constants, +constructeur avec paramètres, +createTier2/3/4()
+- common/block/alchemy/PoweredCentrifugeBlock.java: +tier field, +tier constructor
+- common/block/alchemy/HoneyTankBlock.java: +tier field, +tier constructor
+- common/block/alchemy/HoneyPipeBlock.java: +tier field, +tier constructor
+- common/block/alchemy/ItemPipeBlock.java: +tier field, +tier constructor
+
+REGISTRES:
+- BeemancerBlocks.java: +10 blocs tiered
+- BeemancerBlockEntities.java: +10 block entities tiered
+- BeemancerItems.java: +10 BlockItems tiered
+- BeemancerCreativeTabs.java: +tiered items dans section Alchemy Machines
+
+ASSETS:
+- blockstates/: +10 fichiers tiered
+- models/block/: +6 fichiers tiered (centrifuge + tank)
+- models/item/: +10 fichiers tiered
+- textures/block/alchemy/: +10 textures tiered (placeholders)
+- textures/block/: +3 textures honey_pipe tiered (placeholders)
+
+TRADUCTIONS:
+- en_us.json: +14 traductions blocs tiered
+- fr_fr.json: +14 traductions blocs tiered
+
+NOUVELLE FEATURE:
+- Système de tiers pour machines d'alchimie
+- Powered Centrifuge: 3 tiers (vitesse x1.0/x0.6/x0.3, tanks 8/16/32K)
+- Honey Tank: 3 tiers (capacité 16K/64K/256K mB)
+- Honey Pipe: 4 tiers (buffer 500-4000 mB, transfer 100-1000 mB)
+- Item Pipe: 4 tiers (buffer 4-32 slots, transfer 4-32 items)
+
+================================================================================
 2026-01-25 - Multiblock System (Refactoring)
 ================================================================================
 

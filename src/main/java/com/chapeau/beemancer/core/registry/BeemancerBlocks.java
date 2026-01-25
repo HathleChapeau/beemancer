@@ -83,11 +83,35 @@ public class BeemancerBlocks {
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<PoweredCentrifugeBlock> POWERED_CENTRIFUGE_TIER2 = BLOCKS.register("powered_centrifuge_tier2",
+            () -> new PoweredCentrifugeBlock(BlockBehaviour.Properties.of()
+                    .strength(4.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops(), 2));
+
+    public static final DeferredBlock<PoweredCentrifugeBlock> POWERED_CENTRIFUGE_TIER3 = BLOCKS.register("powered_centrifuge_tier3",
+            () -> new PoweredCentrifugeBlock(BlockBehaviour.Properties.of()
+                    .strength(4.5f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops(), 3));
+
     public static final DeferredBlock<HoneyTankBlock> HONEY_TANK = BLOCKS.register("honey_tank",
             () -> new HoneyTankBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.GLASS)
                     .noOcclusion()));
+
+    public static final DeferredBlock<HoneyTankBlock> HONEY_TANK_TIER2 = BLOCKS.register("honey_tank_tier2",
+            () -> new HoneyTankBlock(BlockBehaviour.Properties.of()
+                    .strength(2.5f)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion(), 2));
+
+    public static final DeferredBlock<HoneyTankBlock> HONEY_TANK_TIER3 = BLOCKS.register("honey_tank_tier3",
+            () -> new HoneyTankBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion(), 3));
 
     public static final DeferredBlock<CreativeTankBlock> CREATIVE_TANK = BLOCKS.register("creative_tank",
             () -> new CreativeTankBlock(BlockBehaviour.Properties.of()
@@ -101,11 +125,47 @@ public class BeemancerBlocks {
                     .sound(SoundType.COPPER)
                     .noOcclusion()));
 
+    public static final DeferredBlock<HoneyPipeBlock> HONEY_PIPE_TIER2 = BLOCKS.register("honey_pipe_tier2",
+            () -> new HoneyPipeBlock(BlockBehaviour.Properties.of()
+                    .strength(1.8f)
+                    .sound(SoundType.COPPER)
+                    .noOcclusion(), 2));
+
+    public static final DeferredBlock<HoneyPipeBlock> HONEY_PIPE_TIER3 = BLOCKS.register("honey_pipe_tier3",
+            () -> new HoneyPipeBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.COPPER)
+                    .noOcclusion(), 3));
+
+    public static final DeferredBlock<HoneyPipeBlock> HONEY_PIPE_TIER4 = BLOCKS.register("honey_pipe_tier4",
+            () -> new HoneyPipeBlock(BlockBehaviour.Properties.of()
+                    .strength(2.5f)
+                    .sound(SoundType.COPPER)
+                    .noOcclusion(), 4));
+
     public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE = BLOCKS.register("item_pipe",
             () -> new ItemPipeBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f)
                     .sound(SoundType.COPPER)
                     .noOcclusion()));
+
+    public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE_TIER2 = BLOCKS.register("item_pipe_tier2",
+            () -> new ItemPipeBlock(BlockBehaviour.Properties.of()
+                    .strength(1.8f)
+                    .sound(SoundType.COPPER)
+                    .noOcclusion(), 2));
+
+    public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE_TIER3 = BLOCKS.register("item_pipe_tier3",
+            () -> new ItemPipeBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.COPPER)
+                    .noOcclusion(), 3));
+
+    public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE_TIER4 = BLOCKS.register("item_pipe_tier4",
+            () -> new ItemPipeBlock(BlockBehaviour.Properties.of()
+                    .strength(2.5f)
+                    .sound(SoundType.COPPER)
+                    .noOcclusion(), 4));
 
     public static final DeferredBlock<CrystallizerBlock> CRYSTALLIZER = BLOCKS.register("crystallizer",
             () -> new CrystallizerBlock(BlockBehaviour.Properties.of()
@@ -135,7 +195,7 @@ public class BeemancerBlocks {
 
     public static final DeferredBlock<HoneyedStoneStairBlock> HONEYED_STONE_STAIR = BLOCKS.register("honeyed_stone_stair",
             () -> new HoneyedStoneStairBlock(
-                    () -> HONEYED_STONE.get().defaultBlockState(),
+                    HONEYED_STONE.get().defaultBlockState(),
                     BlockBehaviour.Properties.of()
                             .strength(1.5f)
                             .sound(SoundType.STONE)

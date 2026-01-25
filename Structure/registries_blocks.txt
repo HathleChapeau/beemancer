@@ -2,19 +2,47 @@
 #                           REGISTRE: BLOCKS                                   #
 ################################################################################
 
-| ID               | Classe                    | BlockEntity? | Feature      |
-|------------------|---------------------------|--------------|--------------|
-| storage_crate      | StorageCrateBlock         | Oui          | Storage        |
-| storage_controller | StorageControllerBlock    | Oui          | Storage Network|
-| storage_terminal   | StorageTerminalBlock      | Oui          | Storage Network|
-| bee_creator        | BeeCreatorBlock           | Oui          | Gene Editor    |
-| magic_hive       | MagicHiveBlock            | Oui          | Bee Housing  |
-| breeding_crystal | MagicBreedingCrystalBlock | Non          | Breeding     |
-| incubator        | IncubatorBlock            | Oui          | Incubator    |
-| honeyed_stone    | HoneyedStoneBlock         | Non          | Honey Altar  |
-| honeyed_stone_stair | HoneyedStoneStairBlock | Non          | Honey Altar  |
-| honey_pedestal   | HoneyPedestalBlock        | Non          | Honey Altar  |
-| honey_crystal_conduit | HoneyCrystalConduitBlock | Non       | Honey Altar  |
-| honey_crystal    | HoneyCrystalBlock         | Oui          | Honey Altar  |
+| ID                     | Classe                    | BlockEntity? | Feature         |
+|------------------------|---------------------------|--------------|-----------------|
+| storage_crate          | StorageCrateBlock         | Oui          | Storage         |
+| storage_controller     | StorageControllerBlock    | Oui          | Storage Network |
+| storage_terminal       | StorageTerminalBlock      | Oui          | Storage Network |
+| bee_creator            | BeeCreatorBlock           | Oui          | Gene Editor     |
+| magic_hive             | MagicHiveBlock            | Oui          | Bee Housing     |
+| breeding_crystal       | MagicBreedingCrystalBlock | Non          | Breeding        |
+| incubator              | IncubatorBlock            | Oui          | Incubator       |
+
+--- ALCHEMY MACHINES ---
+| manual_centrifuge      | ManualCentrifugeBlock     | Oui          | Alchemy         |
+| powered_centrifuge     | PoweredCentrifugeBlock    | Oui          | Alchemy         |
+| powered_centrifuge_tier2 | PoweredCentrifugeBlock  | Oui          | Tiered Machines |
+| powered_centrifuge_tier3 | PoweredCentrifugeBlock  | Oui          | Tiered Machines |
+| honey_tank             | HoneyTankBlock            | Oui          | Alchemy         |
+| honey_tank_tier2       | HoneyTankBlock            | Oui          | Tiered Machines |
+| honey_tank_tier3       | HoneyTankBlock            | Oui          | Tiered Machines |
+| creative_tank          | CreativeTankBlock         | Oui          | Alchemy         |
+| honey_pipe             | HoneyPipeBlock            | Oui          | Alchemy         |
+| honey_pipe_tier2       | HoneyPipeBlock            | Oui          | Tiered Machines |
+| honey_pipe_tier3       | HoneyPipeBlock            | Oui          | Tiered Machines |
+| honey_pipe_tier4       | HoneyPipeBlock            | Oui          | Tiered Machines |
+| item_pipe              | ItemPipeBlock             | Oui          | Alchemy         |
+| item_pipe_tier2        | ItemPipeBlock             | Oui          | Tiered Machines |
+| item_pipe_tier3        | ItemPipeBlock             | Oui          | Tiered Machines |
+| item_pipe_tier4        | ItemPipeBlock             | Oui          | Tiered Machines |
+| crystallizer           | CrystallizerBlock         | Oui          | Alchemy         |
+| alembic                | AlembicBlock              | Oui          | Alchemy         |
+| infuser                | InfuserBlock              | Oui          | Alchemy         |
+
+--- HONEY ALTAR ---
+| honeyed_stone          | HoneyedStoneBlock         | Non          | Honey Altar     |
+| honeyed_stone_stair    | HoneyedStoneStairBlock    | Non          | Honey Altar     |
+| honey_pedestal         | HoneyPedestalBlock        | Non          | Honey Altar     |
+| honey_crystal_conduit  | HoneyCrystalConduitBlock  | Non          | Honey Altar     |
+| honey_crystal          | HoneyCrystalBlock         | Oui          | Honey Altar     |
+
+--- FLUID BLOCKS ---
+| honey                  | LiquidBlock               | Non          | Fluids          |
+| royal_jelly            | LiquidBlock               | Non          | Fluids          |
+| nectar                 | LiquidBlock               | Non          | Fluids          |
 
 ################################################################################

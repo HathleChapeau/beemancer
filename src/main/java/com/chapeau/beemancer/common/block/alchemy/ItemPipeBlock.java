@@ -48,6 +48,8 @@ import javax.annotation.Nullable;
 
 public class ItemPipeBlock extends BaseEntityBlock {
     public static final MapCodec<ItemPipeBlock> CODEC = simpleCodec(ItemPipeBlock::new);
+
+    private final int tier;
     
     // Connection properties
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
@@ -74,7 +76,12 @@ public class ItemPipeBlock extends BaseEntityBlock {
     private static final VoxelShape DOWN_SHAPE = Block.box(5, 0, 5, 11, 5, 11);
 
     public ItemPipeBlock(Properties properties) {
+        this(properties, 1);
+    }
+
+    public ItemPipeBlock(Properties properties, int tier) {
         super(properties);
+        this.tier = tier;
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(NORTH, false).setValue(SOUTH, false)
             .setValue(EAST, false).setValue(WEST, false)
@@ -83,6 +90,8 @@ public class ItemPipeBlock extends BaseEntityBlock {
             .setValue(EXTRACT_EAST, false).setValue(EXTRACT_WEST, false)
             .setValue(EXTRACT_UP, false).setValue(EXTRACT_DOWN, false));
     }
+
+    public int getTier() { return tier; }
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
@@ -230,13 +239,25 @@ public class ItemPipeBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new ItemPipeBlockEntity(pos, state);
+        return switch (tier) {
+            case 2 -> ItemPipeBlockEntity.createTier2(pos, state);
+            case 3 -> ItemPipeBlockEntity.createTier3(pos, state);
+            case 4 -> ItemPipeBlockEntity.createTier4(pos, state);
+            default -> new ItemPipeBlockEntity(pos, state);
+        };
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
-        return createTickerHelper(type, BeemancerBlockEntities.ITEM_PIPE.get(), ItemPipeBlockEntity::serverTick);
+        BlockEntityType<?> expectedType = switch (tier) {
+            case 2 -> BeemancerBlockEntities.ITEM_PIPE_TIER2.get();
+            case 3 -> BeemancerBlockEntities.ITEM_PIPE_TIER3.get();
+            case 4 -> BeemancerBlockEntities.ITEM_PIPE_TIER4.get();
+            default -> BeemancerBlockEntities.ITEM_PIPE.get();
+        };
+        return createTickerHelper(type, (BlockEntityType<ItemPipeBlockEntity>) expectedType,
+            ItemPipeBlockEntity::serverTick);
     }
 }

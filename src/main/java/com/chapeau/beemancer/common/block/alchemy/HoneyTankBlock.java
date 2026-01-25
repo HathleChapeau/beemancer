@@ -27,9 +27,18 @@ import javax.annotation.Nullable;
 public class HoneyTankBlock extends BaseEntityBlock {
     public static final MapCodec<HoneyTankBlock> CODEC = simpleCodec(HoneyTankBlock::new);
 
+    private final int tier;
+
     public HoneyTankBlock(Properties properties) {
-        super(properties);
+        this(properties, 1);
     }
+
+    public HoneyTankBlock(Properties properties, int tier) {
+        super(properties);
+        this.tier = tier;
+    }
+
+    public int getTier() { return tier; }
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
@@ -40,14 +49,24 @@ public class HoneyTankBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new HoneyTankBlockEntity(pos, state);
+        return switch (tier) {
+            case 2 -> HoneyTankBlockEntity.createTier2(pos, state);
+            case 3 -> HoneyTankBlockEntity.createTier3(pos, state);
+            default -> new HoneyTankBlockEntity(pos, state);
+        };
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
-        return createTickerHelper(type, BeemancerBlockEntities.HONEY_TANK.get(), HoneyTankBlockEntity::serverTick);
+        BlockEntityType<?> expectedType = switch (tier) {
+            case 2 -> BeemancerBlockEntities.HONEY_TANK_TIER2.get();
+            case 3 -> BeemancerBlockEntities.HONEY_TANK_TIER3.get();
+            default -> BeemancerBlockEntities.HONEY_TANK.get();
+        };
+        return createTickerHelper(type, (BlockEntityType<HoneyTankBlockEntity>) expectedType,
+            HoneyTankBlockEntity::serverTick);
     }
 
     @Override

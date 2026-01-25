@@ -49,6 +49,8 @@ import javax.annotation.Nullable;
 
 public class HoneyPipeBlock extends BaseEntityBlock {
     public static final MapCodec<HoneyPipeBlock> CODEC = simpleCodec(HoneyPipeBlock::new);
+
+    private final int tier;
     
     // Connection properties
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
@@ -75,7 +77,12 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     private static final VoxelShape DOWN_SHAPE = Block.box(5, 0, 5, 11, 5, 11);
 
     public HoneyPipeBlock(Properties properties) {
+        this(properties, 1);
+    }
+
+    public HoneyPipeBlock(Properties properties, int tier) {
         super(properties);
+        this.tier = tier;
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(NORTH, false).setValue(SOUTH, false)
             .setValue(EAST, false).setValue(WEST, false)
@@ -84,6 +91,8 @@ public class HoneyPipeBlock extends BaseEntityBlock {
             .setValue(EXTRACT_EAST, false).setValue(EXTRACT_WEST, false)
             .setValue(EXTRACT_UP, false).setValue(EXTRACT_DOWN, false));
     }
+
+    public int getTier() { return tier; }
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
@@ -236,13 +245,25 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new HoneyPipeBlockEntity(pos, state);
+        return switch (tier) {
+            case 2 -> HoneyPipeBlockEntity.createTier2(pos, state);
+            case 3 -> HoneyPipeBlockEntity.createTier3(pos, state);
+            case 4 -> HoneyPipeBlockEntity.createTier4(pos, state);
+            default -> new HoneyPipeBlockEntity(pos, state);
+        };
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
-        return createTickerHelper(type, BeemancerBlockEntities.HONEY_PIPE.get(), HoneyPipeBlockEntity::serverTick);
+        BlockEntityType<?> expectedType = switch (tier) {
+            case 2 -> BeemancerBlockEntities.HONEY_PIPE_TIER2.get();
+            case 3 -> BeemancerBlockEntities.HONEY_PIPE_TIER3.get();
+            case 4 -> BeemancerBlockEntities.HONEY_PIPE_TIER4.get();
+            default -> BeemancerBlockEntities.HONEY_PIPE.get();
+        };
+        return createTickerHelper(type, (BlockEntityType<HoneyPipeBlockEntity>) expectedType,
+            HoneyPipeBlockEntity::serverTick);
     }
 }

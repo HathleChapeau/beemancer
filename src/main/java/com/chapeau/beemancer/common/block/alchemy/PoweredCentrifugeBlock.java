@@ -31,10 +31,19 @@ public class PoweredCentrifugeBlock extends BaseEntityBlock {
     public static final MapCodec<PoweredCentrifugeBlock> CODEC = simpleCodec(PoweredCentrifugeBlock::new);
     public static final BooleanProperty WORKING = BooleanProperty.create("working");
 
+    private final int tier;
+
     public PoweredCentrifugeBlock(Properties properties) {
+        this(properties, 1);
+    }
+
+    public PoweredCentrifugeBlock(Properties properties, int tier) {
         super(properties);
+        this.tier = tier;
         this.registerDefaultState(this.stateDefinition.any().setValue(WORKING, false));
     }
+
+    public int getTier() { return tier; }
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
@@ -54,14 +63,23 @@ public class PoweredCentrifugeBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new PoweredCentrifugeBlockEntity(pos, state);
+        return switch (tier) {
+            case 2 -> PoweredCentrifugeBlockEntity.createTier2(pos, state);
+            case 3 -> PoweredCentrifugeBlockEntity.createTier3(pos, state);
+            default -> new PoweredCentrifugeBlockEntity(pos, state);
+        };
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
-        return createTickerHelper(type, BeemancerBlockEntities.POWERED_CENTRIFUGE.get(),
+        BlockEntityType<?> expectedType = switch (tier) {
+            case 2 -> BeemancerBlockEntities.POWERED_CENTRIFUGE_TIER2.get();
+            case 3 -> BeemancerBlockEntities.POWERED_CENTRIFUGE_TIER3.get();
+            default -> BeemancerBlockEntities.POWERED_CENTRIFUGE.get();
+        };
+        return createTickerHelper(type, (BlockEntityType<PoweredCentrifugeBlockEntity>) expectedType,
             PoweredCentrifugeBlockEntity::serverTick);
     }
 

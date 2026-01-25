@@ -76,11 +76,25 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.MANUAL_CENTRIFUGE.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<PoweredCentrifugeBlockEntity>> POWERED_CENTRIFUGE = 
+    public static final Supplier<BlockEntityType<PoweredCentrifugeBlockEntity>> POWERED_CENTRIFUGE =
             BLOCK_ENTITIES.register("powered_centrifuge",
                     () -> BlockEntityType.Builder.of(
                             PoweredCentrifugeBlockEntity::new,
                             BeemancerBlocks.POWERED_CENTRIFUGE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<PoweredCentrifugeBlockEntity>> POWERED_CENTRIFUGE_TIER2 =
+            BLOCK_ENTITIES.register("powered_centrifuge_tier2",
+                    () -> BlockEntityType.Builder.of(
+                            PoweredCentrifugeBlockEntity::createTier2,
+                            BeemancerBlocks.POWERED_CENTRIFUGE_TIER2.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<PoweredCentrifugeBlockEntity>> POWERED_CENTRIFUGE_TIER3 =
+            BLOCK_ENTITIES.register("powered_centrifuge_tier3",
+                    () -> BlockEntityType.Builder.of(
+                            PoweredCentrifugeBlockEntity::createTier3,
+                            BeemancerBlocks.POWERED_CENTRIFUGE_TIER3.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<HoneyTankBlockEntity>> HONEY_TANK =
@@ -90,6 +104,20 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.HONEY_TANK.get()
                     ).build(null));
 
+    public static final Supplier<BlockEntityType<HoneyTankBlockEntity>> HONEY_TANK_TIER2 =
+            BLOCK_ENTITIES.register("honey_tank_tier2",
+                    () -> BlockEntityType.Builder.of(
+                            HoneyTankBlockEntity::createTier2,
+                            BeemancerBlocks.HONEY_TANK_TIER2.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<HoneyTankBlockEntity>> HONEY_TANK_TIER3 =
+            BLOCK_ENTITIES.register("honey_tank_tier3",
+                    () -> BlockEntityType.Builder.of(
+                            HoneyTankBlockEntity::createTier3,
+                            BeemancerBlocks.HONEY_TANK_TIER3.get()
+                    ).build(null));
+
     public static final Supplier<BlockEntityType<CreativeTankBlockEntity>> CREATIVE_TANK =
             BLOCK_ENTITIES.register("creative_tank",
                     () -> BlockEntityType.Builder.of(
@@ -97,18 +125,60 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.CREATIVE_TANK.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE = 
+    public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE =
             BLOCK_ENTITIES.register("honey_pipe",
                     () -> BlockEntityType.Builder.of(
                             HoneyPipeBlockEntity::new,
                             BeemancerBlocks.HONEY_PIPE.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE = 
+    public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE_TIER2 =
+            BLOCK_ENTITIES.register("honey_pipe_tier2",
+                    () -> BlockEntityType.Builder.of(
+                            HoneyPipeBlockEntity::createTier2,
+                            BeemancerBlocks.HONEY_PIPE_TIER2.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE_TIER3 =
+            BLOCK_ENTITIES.register("honey_pipe_tier3",
+                    () -> BlockEntityType.Builder.of(
+                            HoneyPipeBlockEntity::createTier3,
+                            BeemancerBlocks.HONEY_PIPE_TIER3.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE_TIER4 =
+            BLOCK_ENTITIES.register("honey_pipe_tier4",
+                    () -> BlockEntityType.Builder.of(
+                            HoneyPipeBlockEntity::createTier4,
+                            BeemancerBlocks.HONEY_PIPE_TIER4.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE =
             BLOCK_ENTITIES.register("item_pipe",
                     () -> BlockEntityType.Builder.of(
                             ItemPipeBlockEntity::new,
                             BeemancerBlocks.ITEM_PIPE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE_TIER2 =
+            BLOCK_ENTITIES.register("item_pipe_tier2",
+                    () -> BlockEntityType.Builder.of(
+                            ItemPipeBlockEntity::createTier2,
+                            BeemancerBlocks.ITEM_PIPE_TIER2.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE_TIER3 =
+            BLOCK_ENTITIES.register("item_pipe_tier3",
+                    () -> BlockEntityType.Builder.of(
+                            ItemPipeBlockEntity::createTier3,
+                            BeemancerBlocks.ITEM_PIPE_TIER3.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE_TIER4 =
+            BLOCK_ENTITIES.register("item_pipe_tier4",
+                    () -> BlockEntityType.Builder.of(
+                            ItemPipeBlockEntity::createTier4,
+                            BeemancerBlocks.ITEM_PIPE_TIER4.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<CrystallizerBlockEntity>> CRYSTALLIZER = 

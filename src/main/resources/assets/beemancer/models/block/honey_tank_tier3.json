@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "beemancer:block/alchemy/honey_tank_tier3_top",
+    "side": "beemancer:block/alchemy/honey_tank_tier3_side"
+  }
+}

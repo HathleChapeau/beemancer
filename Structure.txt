@@ -1,6 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-01-25                     #
+#                         (Tiered Machines)                                    #
 ################################################################################
 
 ================================================================================
@@ -189,6 +190,10 @@ LISTE DES FEATURES:
 → Multiblock System
   Fichier: Structure/feature_multiblock_system.txt
   Description: Système modulaire et réutilisable pour créer des structures multiblocs
+
+→ Tiered Machines
+  Fichier: Structure/feature_tiered_machines.txt
+  Description: Système de tiers pour machines d'alchimie (centrifuge, tanks, pipes)
 
 ================================================================================
 6. FEATURES EN COURS

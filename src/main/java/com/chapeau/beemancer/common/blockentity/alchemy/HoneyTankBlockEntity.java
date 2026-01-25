@@ -35,24 +35,13 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import javax.annotation.Nullable;
 
 public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
-    public static final int CAPACITY = 16000;
+    // --- TIER CONFIG ---
+    public static final int TIER1_CAPACITY = 16000;
+    public static final int TIER2_CAPACITY = 64000;
+    public static final int TIER3_CAPACITY = 256000;
 
-    protected final FluidTank fluidTank = new FluidTank(CAPACITY) {
-        @Override
-        public boolean isFluidValid(FluidStack stack) {
-            return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get()
-                || stack.getFluid() == BeemancerFluids.ROYAL_JELLY_SOURCE.get()
-                || stack.getFluid() == BeemancerFluids.NECTAR_SOURCE.get();
-        }
-
-        @Override
-        protected void onContentsChanged() {
-            setChanged();
-            if (level != null && !level.isClientSide()) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
-        }
-    };
+    private final int capacity;
+    protected final FluidTank fluidTank;
 
     // Slot pour bucket
     protected final ItemStackHandler bucketSlot = new ItemStackHandler(1) {
@@ -80,12 +69,40 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
     };
 
     public HoneyTankBlockEntity(BlockPos pos, BlockState state) {
-        super(BeemancerBlockEntities.HONEY_TANK.get(), pos, state);
+        this(BeemancerBlockEntities.HONEY_TANK.get(), pos, state, TIER1_CAPACITY);
     }
 
-    protected HoneyTankBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    public HoneyTankBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int capacity) {
         super(type, pos, state);
+        this.capacity = capacity;
+        this.fluidTank = new FluidTank(capacity) {
+            @Override
+            public boolean isFluidValid(FluidStack stack) {
+                return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get()
+                    || stack.getFluid() == BeemancerFluids.ROYAL_JELLY_SOURCE.get()
+                    || stack.getFluid() == BeemancerFluids.NECTAR_SOURCE.get();
+            }
+
+            @Override
+            protected void onContentsChanged() {
+                setChanged();
+                if (level != null && !level.isClientSide()) {
+                    level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                }
+            }
+        };
     }
+
+    // Factory methods for tiered versions
+    public static HoneyTankBlockEntity createTier2(BlockPos pos, BlockState state) {
+        return new HoneyTankBlockEntity(BeemancerBlockEntities.HONEY_TANK_TIER2.get(), pos, state, TIER2_CAPACITY);
+    }
+
+    public static HoneyTankBlockEntity createTier3(BlockPos pos, BlockState state) {
+        return new HoneyTankBlockEntity(BeemancerBlockEntities.HONEY_TANK_TIER3.get(), pos, state, TIER3_CAPACITY);
+    }
+
+    public int getCapacity() { return capacity; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HoneyTankBlockEntity be) {
         // Process bucket slot

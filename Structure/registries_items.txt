@@ -2,24 +2,81 @@
 #                           REGISTRE: ITEMS                                    #
 ################################################################################
 
-| ID               | Classe          | Feature      |
-|------------------|-----------------|--------------|
-| storage_crate      | BlockItem       | Storage        |
-| storage_controller | BlockItem       | Storage Network|
-| storage_terminal   | BlockItem       | Storage Network|
-| bee_creator        | BlockItem       | Bee Creator    |
-| magic_hive       | BlockItem       | Magic Hive   |
-| breeding_crystal | BlockItem       | Breeding     |
-| incubator        | BlockItem       | Incubator    |
-| magic_bee        | MagicBeeItem    | Gene System  |
-| bee_larva        | BeeLarvaItem    | Breeding     |
-| bee_wand         | BeeWandItem     | Bee Control  |
-| building_wand    | BuildingWandItem| Building Tool|
-| codex            | CodexItem       | Codex        |
-| honeyed_stone    | BlockItem       | Honey Altar  |
-| honeyed_stone_stair | BlockItem    | Honey Altar  |
-| honey_pedestal   | BlockItem       | Honey Altar  |
-| honey_crystal_conduit | BlockItem  | Honey Altar  |
-| honey_crystal    | BlockItem       | Honey Altar  |
+| ID                       | Classe           | Feature         |
+|--------------------------|------------------|-----------------|
+--- BLOCK ITEMS ---
+| storage_crate            | BlockItem        | Storage         |
+| storage_controller       | BlockItem        | Storage Network |
+| storage_terminal         | BlockItem        | Storage Network |
+| bee_creator              | BlockItem        | Bee Creator     |
+| magic_hive               | BlockItem        | Magic Hive      |
+| breeding_crystal         | BlockItem        | Breeding        |
+| incubator                | BlockItem        | Incubator       |
+
+--- ALCHEMY MACHINES ---
+| manual_centrifuge        | BlockItem        | Alchemy         |
+| powered_centrifuge       | BlockItem        | Alchemy         |
+| powered_centrifuge_tier2 | BlockItem        | Tiered Machines |
+| powered_centrifuge_tier3 | BlockItem        | Tiered Machines |
+| honey_tank               | BlockItem        | Alchemy         |
+| honey_tank_tier2         | BlockItem        | Tiered Machines |
+| honey_tank_tier3         | BlockItem        | Tiered Machines |
+| creative_tank            | BlockItem        | Alchemy         |
+| honey_pipe               | BlockItem        | Alchemy         |
+| honey_pipe_tier2         | BlockItem        | Tiered Machines |
+| honey_pipe_tier3         | BlockItem        | Tiered Machines |
+| honey_pipe_tier4         | BlockItem        | Tiered Machines |
+| item_pipe                | BlockItem        | Alchemy         |
+| item_pipe_tier2          | BlockItem        | Tiered Machines |
+| item_pipe_tier3          | BlockItem        | Tiered Machines |
+| item_pipe_tier4          | BlockItem        | Tiered Machines |
+| crystallizer             | BlockItem        | Alchemy         |
+| alembic                  | BlockItem        | Alchemy         |
+| infuser                  | BlockItem        | Alchemy         |
+
+--- HONEY ALTAR ---
+| honeyed_stone            | BlockItem        | Honey Altar     |
+| honeyed_stone_stair      | BlockItem        | Honey Altar     |
+| honey_pedestal           | BlockItem        | Honey Altar     |
+| honey_crystal_conduit    | BlockItem        | Honey Altar     |
+| honey_crystal            | BlockItem        | Honey Altar     |
+
+--- BEE ITEMS ---
+| magic_bee                | MagicBeeItem     | Gene System     |
+| bee_larva                | BeeLarvaItem     | Breeding        |
+
+--- TOOLS ---
+| bee_wand                 | BeeWandItem      | Bee Control     |
+| building_wand            | BuildingWandItem | Building Tool   |
+
+--- CODEX ---
+| codex                    | CodexItem        | Codex           |
+
+--- FLUID BUCKETS ---
+| honey_bucket             | BucketItem       | Fluids          |
+| royal_jelly_bucket       | BucketItem       | Fluids          |
+| nectar_bucket            | BucketItem       | Fluids          |
+
+--- ALCHEMY INGREDIENTS ---
+| beeswax                  | Item             | Alchemy         |
+| propolis                 | Item             | Alchemy         |
+| pollen                   | Item             | Alchemy         |
+| honeyed_wood             | Item             | Alchemy         |
+
+--- COMBS ---
+| common_comb              | Item             | Alchemy         |
+| noble_comb               | Item             | Alchemy         |
+| diligent_comb            | Item             | Alchemy         |
+| royal_comb               | Item             | Alchemy         |
+
+--- CRYSTAL SHARDS ---
+| raw_crystal_shard        | Item             | Alchemy         |
+| enriched_crystal_shard   | Item             | Alchemy         |
+| radiant_crystal_shard    | Item             | Alchemy         |
+
+--- HONEY CRYSTALS (item only) ---
+| enriched_honey_crystal   | Item             | Alchemy         |
+| radiant_honey_crystal    | Item             | Alchemy         |
+| royal_honey_crystal      | Item             | Alchemy         |
 
 ################################################################################
