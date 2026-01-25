@@ -5,8 +5,7 @@
  * ============================================================
  *
  * Onglets:
- * - MAIN_TAB: Machines, outils, stockage, blocs décoratifs
- * - BEES_TAB: Abeilles et larves
+ * - MAIN_TAB: Abeilles, machines, outils, stockage, blocs décoratifs
  * - COMBS_TAB: Combs, pollens, fragments, shards, dusts
  *
  * ============================================================
@@ -38,6 +37,7 @@ public class BeemancerCreativeTabs {
                     .icon(() -> new ItemStack(BeemancerItems.MAGIC_HIVE.get()))
                     .displayItems((parameters, output) -> {
                         addCodexAndTools(output);
+                        addBees(output);
                         addBeeMachines(output);
                         addAlchemyMachines(output);
                         addPipesAndTanks(output);
@@ -48,19 +48,6 @@ public class BeemancerCreativeTabs {
                     })
                     .build());
 
-    // =========================================================================
-    // BEES TAB - Bees and Larvae
-    // =========================================================================
-
-    public static final Supplier<CreativeModeTab> BEES_TAB = CREATIVE_TABS.register("bees_tab",
-            () -> CreativeModeTab.builder()
-                    .title(Component.translatable("itemGroup." + Beemancer.MOD_ID + ".bees"))
-                    .icon(() -> new ItemStack(BeemancerItems.MAGIC_BEE.get()))
-                    .displayItems((parameters, output) -> {
-                        output.accept(BeemancerItems.MAGIC_BEE.get());
-                        output.accept(BeemancerItems.BEE_LARVA.get());
-                    })
-                    .build());
 
     // =========================================================================
     // COMBS TAB - Combs, Pollens, Fragments, Shards, Dusts
@@ -90,6 +77,11 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.CODEX.get());
         output.accept(BeemancerItems.BEE_WAND.get());
         output.accept(BeemancerItems.BUILDING_WAND.get());
+    }
+
+    private static void addBees(CreativeModeTab.Output output) {
+        output.accept(BeemancerItems.MAGIC_BEE.get());
+        output.accept(BeemancerItems.BEE_LARVA.get());
     }
 
     private static void addBeeMachines(CreativeModeTab.Output output) {
