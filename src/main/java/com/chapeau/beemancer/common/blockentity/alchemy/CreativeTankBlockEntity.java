@@ -36,7 +36,7 @@ public class CreativeTankBlockEntity extends HoneyTankBlockEntity {
     private FluidStack infiniteFluid = FluidStack.EMPTY;
 
     public CreativeTankBlockEntity(BlockPos pos, BlockState state) {
-        super(BeemancerBlockEntities.CREATIVE_TANK.get(), pos, state, TIER1_CAPACITY);
+        super(BeemancerBlockEntities.CREATIVE_TANK.get(), pos, state, CAPACITY);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, CreativeTankBlockEntity be) {

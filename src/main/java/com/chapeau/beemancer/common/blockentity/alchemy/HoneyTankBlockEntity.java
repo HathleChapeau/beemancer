@@ -65,8 +65,13 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
     };
 
     public HoneyTankBlockEntity(BlockPos pos, BlockState state) {
-        super(BeemancerBlockEntities.HONEY_TANK.get(), pos, state);
-        this.fluidTank = new FluidTank(CAPACITY) {
+        this(BeemancerBlockEntities.HONEY_TANK.get(), pos, state, CAPACITY);
+    }
+
+    // Protected constructor for subclasses (e.g., CreativeTankBlockEntity)
+    protected HoneyTankBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int capacity) {
+        super(type, pos, state);
+        this.fluidTank = new FluidTank(capacity) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
                 return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get()
@@ -84,7 +89,7 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
         };
     }
 
-    public int getCapacity() { return CAPACITY; }
+    public int getCapacity() { return fluidTank.getCapacity(); }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HoneyTankBlockEntity be) {
         // Process bucket slot
