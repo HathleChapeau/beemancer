@@ -29,14 +29,11 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 
@@ -85,23 +82,8 @@ public class BuildingWandItem extends Item {
                 // Vérifier que l'espace est libre
                 if (!level.getBlockState(pos).canBeReplaced()) continue;
 
-                // Créer le contexte de placement pour obtenir le bon état
-                BlockHitResult hitResult = new BlockHitResult(
-                    Vec3.atCenterOf(pos), face.getOpposite(), pos, false
-                );
-                BlockPlaceContext placeContext = new BlockPlaceContext(
-                    level, player, context.getHand(),
-                    new ItemStack(sourceBlock), hitResult
-                );
-
-                // Obtenir l'état avec la bonne orientation
-                BlockState stateToPlace = sourceBlock.getStateForPlacement(placeContext);
-                if (stateToPlace == null) {
-                    stateToPlace = sourceState;
-                }
-
-                // Placer le bloc
-                level.setBlock(pos, stateToPlace, 3);
+                // Placer le bloc avec la même orientation que le bloc source
+                level.setBlock(pos, sourceState, 3);
                 placed++;
 
                 // Consommer l'item (sauf créatif)
