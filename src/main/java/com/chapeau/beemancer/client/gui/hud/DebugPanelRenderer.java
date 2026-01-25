@@ -86,11 +86,15 @@ public class DebugPanelRenderer {
 
     private static void renderPanel(GuiGraphics graphics, Font font) {
         String title = "Debug Panel";
-        String hint = "[Numpad 1-9 / ↑↓] Select | [←→] ±0.1 | [Shift] ±1.0";
+        String hint1 = "[Numpad 1-9 / ↑↓] Select";
+        String hint2 = "[←→] ±0.1 | [Shift] ±1.0";
+        String hint3 = "[Shift+R] Reset";
 
         // Calculer dimensions
         int maxWidth = font.width(title);
-        maxWidth = Math.max(maxWidth, font.width(hint));
+        maxWidth = Math.max(maxWidth, font.width(hint1));
+        maxWidth = Math.max(maxWidth, font.width(hint2));
+        maxWidth = Math.max(maxWidth, font.width(hint3));
 
         for (int i = 1; i <= 9; i++) {
             String line = "Value " + i + ": " + formatValue(DebugWandItem.getValue(i));
@@ -100,7 +104,7 @@ public class DebugPanelRenderer {
         int boxWidth = maxWidth + PADDING * 2;
         int boxHeight = PADDING * 2 + LINE_HEIGHT // Titre
                 + LINE_HEIGHT * 9 + PADDING       // 9 valeurs
-                + LINE_HEIGHT + PADDING;          // Hint en bas
+                + LINE_HEIGHT * 3 + PADDING;      // 3 lignes de hints
 
         int x = BOX_MARGIN;
         int y = BOX_MARGIN;
@@ -150,8 +154,12 @@ public class DebugPanelRenderer {
         graphics.fill(x + 2, textY - 1, x + boxWidth - 2, textY, BORDER_COLOR);
         textY += 3;
 
-        // Hint
-        graphics.drawString(font, hint, textX, textY, HINT_COLOR, false);
+        // Hints (3 lignes)
+        graphics.drawString(font, hint1, textX, textY, HINT_COLOR, false);
+        textY += LINE_HEIGHT;
+        graphics.drawString(font, hint2, textX, textY, HINT_COLOR, false);
+        textY += LINE_HEIGHT;
+        graphics.drawString(font, hint3, textX, textY, HINT_COLOR, false);
     }
 
     private static void drawBorder(GuiGraphics graphics, int x, int y, int width, int height, int color) {

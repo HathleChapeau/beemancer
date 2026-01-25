@@ -3,6 +3,38 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Debug Wand System
+================================================================================
+
+AJOUTS:
+- common/item/debug/DebugWandItem.java (baguette avec 9 valeurs statiques)
+- client/gui/hud/DebugPanelRenderer.java (HUD overlay affichant les valeurs)
+- client/input/DebugKeyHandler.java (gestionnaire touches debug)
+- assets/beemancer/models/item/debug_wand.json
+- assets/beemancer/textures/item/debug_wand.png
+
+MODIFICATIONS:
+- BeemancerItems.java: +DEBUG_WAND
+- BeemancerCreativeTabs.java: +DEBUG_WAND dans section Tools
+- ClientSetup.java: +DebugPanelRenderer et +DebugKeyHandler event registration
+- en_us.json/fr_fr.json: +traductions Debug Wand
+
+NOUVELLE FEATURE:
+- Baguette de debug avec 9 valeurs float ajustables en temps réel
+- HUD Panel affiché quand la baguette est tenue (main principale ou secondaire)
+- Contrôles:
+  - Numpad 1-9: Sélectionner une valeur directement
+  - Flèches ↑/↓: Naviguer entre les valeurs (avec boucle 1↔9)
+  - Flèches ←/→: Ajuster de ±0.1
+  - Shift + ←/→: Ajuster de ±1.0
+  - Shift + R: Reset toutes les valeurs aux défauts
+- Valeurs par défaut configurées pour MagicBeeItemRenderer:
+  - value1-3: Position X,Y,Z (0.5, 1.1, 0.5)
+  - value4-5: Rotation X,Y (-30°, 225°)
+  - value7: Scale (1.4)
+- Utilisé pour ajuster le rendu des abeilles dans l'inventaire
+
+================================================================================
 2026-01-25 - Texture System Refactoring + Magic Bee Item Renderer
 ================================================================================
 

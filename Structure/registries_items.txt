@@ -49,6 +49,7 @@
 --- TOOLS ---
 | bee_wand                 | BeeWandItem      | Bee Control     |
 | building_wand            | BuildingWandItem | Building Tool   |
+| debug_wand               | DebugWandItem    | Debug Tools     |
 
 --- CODEX ---
 | codex                    | CodexItem        | Codex           |

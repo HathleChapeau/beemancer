@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-01-25                     #
-#                    (Texture Refactoring + Bee Item Renderer)                 #
+#                    (Debug Wand System)                                       #
 ################################################################################
 
 ================================================================================
@@ -64,6 +64,9 @@ Philosophie:
 │ content/gene/GeneInit.java          │ Enregistrement de tous les gènes       │
 │ client/ClientSetup.java             │ Init client (screens, renderers)       │
 │ client/renderer/item/MagicBeeItemRenderer│ BEWLR rendu 3D abeille en inventaire│
+│ common/item/debug/DebugWandItem       │ Baguette debug avec 9 valeurs        │
+│ client/gui/hud/DebugPanelRenderer     │ HUD panneau debug valeurs            │
+│ client/input/DebugKeyHandler          │ Gestion touches debug panel          │
 │ client/renderer/entity/MagicBeeRenderer│ Renderer entité avec texture espèce  │
 │ common/codex/CodexManager.java      │ Gestionnaire central du Codex          │
 └─────────────────────────────────────┴────────────────────────────────────────┘
@@ -204,6 +207,10 @@ LISTE DES FEATURES:
 → Hive Multiblock
   Fichier: Structure/feature_hive_multiblock.txt
   Description: Ruche multibloc 3x3x3 + slabs, fonctionne comme MagicHive
+
+→ Debug Wand
+  Fichier: Structure/feature_debug_wand.txt
+  Description: Baguette de debug avec 9 valeurs ajustables en temps réel via HUD
 
 ================================================================================
 6. FEATURES EN COURS

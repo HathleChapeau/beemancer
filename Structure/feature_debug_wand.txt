@@ -1,0 +1,99 @@
+################################################################################
+#                         FEATURE: DEBUG WAND                                  #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Baguette de debug permettant d'ajuster 9 valeurs float en temps réel via un HUD.
+Utile pour calibrer des paramètres visuels (positions, rotations, scales) sans
+recompiler le mod.
+
+================================================================================
+SCRIPTS
+================================================================================
+
+| Fichier                               | Rôle                                  |
+|---------------------------------------|---------------------------------------|
+| common/item/debug/DebugWandItem.java  | Item + 9 valeurs statiques            |
+| client/gui/hud/DebugPanelRenderer.java| HUD overlay affichant toutes valeurs  |
+| client/input/DebugKeyHandler.java     | Gestion touches clavier               |
+
+================================================================================
+FONCTIONNEMENT
+================================================================================
+
+1. AFFICHAGE HUD
+   - Le panneau s'affiche quand le joueur tient la debug wand
+   - Position: coin supérieur gauche (10px margin)
+   - Affiche les 9 valeurs avec indicateur de sélection (>)
+   - La valeur sélectionnée est surlignée en vert
+
+2. SÉLECTION DE VALEUR
+   - Numpad 1-9: Sélection directe
+   - Flèche haut (↑): Valeur précédente (5→4), boucle 1→9
+   - Flèche bas (↓): Valeur suivante (5→6), boucle 9→1
+
+3. AJUSTEMENT DE VALEUR
+   - Flèche gauche (←): -0.1
+   - Flèche droite (→): +0.1
+   - Shift + ←: -1.0
+   - Shift + →: +1.0
+   - Shift + R: Reset toutes les valeurs aux défauts
+
+4. VALEURS PAR DÉFAUT
+   - value1: 0.5f   (Pos X)
+   - value2: 1.1f   (Pos Y)
+   - value3: 0.5f   (Pos Z)
+   - value4: -30.0f (Rot X)
+   - value5: 225.0f (Rot Y)
+   - value6: 0.0f
+   - value7: 1.4f   (Scale)
+   - value8: 0.0f
+   - value9: 0.0f
+
+================================================================================
+UTILISATION
+================================================================================
+
+Exemple dans MagicBeeItemRenderer.java:
+```java
+// Position
+poseStack.translate(
+    DebugWandItem.value1,  // X
+    DebugWandItem.value2,  // Y
+    DebugWandItem.value3   // Z
+);
+
+// Rotation
+poseStack.mulPose(Axis.XP.rotationDegrees(DebugWandItem.value4));
+poseStack.mulPose(Axis.YP.rotationDegrees(DebugWandItem.value5));
+
+// Scale
+float scale = DebugWandItem.value7;
+poseStack.scale(scale, scale, scale);
+```
+
+================================================================================
+ASSETS
+================================================================================
+
+- models/item/debug_wand.json (parent: minecraft:item/handheld)
+- textures/item/debug_wand.png
+
+================================================================================
+REGISTRES
+================================================================================
+
+- BeemancerItems.DEBUG_WAND
+- BeemancerCreativeTabs: Section Tools
+
+================================================================================
+TRADUCTIONS
+================================================================================
+
+- en_us: "Debug Wand"
+- fr_fr: "Baguette de Debug"
+
+################################################################################
