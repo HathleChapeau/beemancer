@@ -17,15 +17,19 @@ import com.chapeau.beemancer.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.beemancer.client.renderer.BuildingWandPreviewRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
+import com.chapeau.beemancer.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
+import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -71,14 +75,29 @@ public class ClientSetup {
     }
 
     private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {
+        // --- Item Extensions ---
+        // MagicBee item - render 3D bee model in inventory
+        event.registerItem(new IClientItemExtensions() {
+            private MagicBeeItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new MagicBeeItemRenderer();
+                }
+                return renderer;
+            }
+        }, BeemancerItems.MAGIC_BEE.get());
+
+        // --- Fluid Extensions ---
         // Honey
         registerFluidExtension(event, BeemancerFluids.HONEY_FLUID_TYPE,
             "block/fluid/honey_still", "block/fluid/honey_flow", 0xFFEB9B3B);
-        
+
         // Royal Jelly
         registerFluidExtension(event, BeemancerFluids.ROYAL_JELLY_FLUID_TYPE,
             "block/fluid/royal_jelly_still", "block/fluid/royal_jelly_flow", 0xFFE8A0D0);
-        
+
         // Nectar
         registerFluidExtension(event, BeemancerFluids.NECTAR_FLUID_TYPE,
             "block/fluid/nectar_still", "block/fluid/nectar_flow", 0xFFB388DD);

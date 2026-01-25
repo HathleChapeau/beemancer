@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "beemancer:item/magic_bee"
-  }
+  "parent": "minecraft:builtin/entity"
 }
