@@ -82,8 +82,12 @@ public class BuildingWandItem extends Item {
                 // Vérifier que l'espace est libre
                 if (!level.getBlockState(pos).canBeReplaced()) continue;
 
-                // Placer le bloc avec la même orientation que le bloc source
-                level.setBlock(pos, sourceState, 3);
+                // Récupérer l'état du bloc directement derrière (pour copier son orientation)
+                BlockPos behindPos = pos.relative(face.getOpposite());
+                BlockState behindState = level.getBlockState(behindPos);
+
+                // Placer le bloc avec la même orientation que le bloc derrière
+                level.setBlock(pos, behindState, 3);
                 placed++;
 
                 // Consommer l'item (sauf créatif)
