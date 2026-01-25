@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/cube_column",
   "textures": {
-    "end": "beemancer:block/honey_tank_top",
-    "side": "beemancer:block/honey_tank_side"
+    "end": "beemancer:block/alchemy/honey_tank_top",
+    "side": "beemancer:block/alchemy/honey_tank_side"
   }
 }

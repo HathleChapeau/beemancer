@@ -64,12 +64,12 @@ public class ForagingBehaviorGoal extends Goal {
 
     private static final double REACH_DISTANCE = 1.5;
     private static final double REACH_DISTANCE_VERTICAL = 0.8;
-    private static final double FLIGHT_SPEED_FACTOR = 0.1;
+    private static final double FLIGHT_SPEED_FACTOR = 0.2;
     private static final double FLIGHT_ALTITUDE = 1.0; // Altitude de vol au-dessus des destinations
-    private static final double HOVER_HEIGHT = 0.5; // Hauteur au-dessus de la fleur pour l'approche finale
-    private static final double APPROACH_OFFSET = 0.3; // Décalage d'approche depuis la ruche
+    private static final double HOVER_HEIGHT = 0.4; // Hauteur au-dessus de la fleur pour l'approche finale
+    private static final double APPROACH_OFFSET = 0.2; // Décalage d'approche depuis la ruche
     private static final double FALL_SPEED = 0.02; // Vitesse de descente pendant le butinage
-    private static final float FORAGING_PITCH = 30.0f; // Inclinaison vers l'avant (degrés)
+    private static final float FORAGING_PITCH = 40.0f; // Inclinaison vers l'avant (degrés)
     private static final Random RANDOM = new Random();
 
     private final MagicBeeEntity bee;

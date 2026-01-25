@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "beemancer:block/storage_controller"
+    "all": "beemancer:block/logistic/storage_controller"
   }
 }

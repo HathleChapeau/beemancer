@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:block/cube_bottom_top",
   "textures": {
-    "top": "beemancer:block/manual_centrifuge_top",
-    "bottom": "beemancer:block/manual_centrifuge_bottom",
-    "side": "beemancer:block/manual_centrifuge_side"
+    "top": "beemancer:block/alchemy/manual_centrifuge_top",
+    "bottom": "beemancer:block/alchemy/manual_centrifuge_bottom",
+    "side": "beemancer:block/alchemy/manual_centrifuge_side"
   }
 }
