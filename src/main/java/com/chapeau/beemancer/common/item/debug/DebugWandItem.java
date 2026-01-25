@@ -26,14 +26,29 @@ import net.minecraft.world.item.Item;
  */
 public class DebugWandItem extends Item {
 
-    // Valeurs par défaut (pour reset)
-    // 0-2: Position X, Y, Z | 3-4: Rotation X, Y | 5: (libre) | 6: Scale | 7-8: (libre)
-    private static final float[] DEFAULTS = {0.5f, 1.1f, 0.5f, -30.0f, 225.0f, 0.0f, 1.4f, 0.0f, 0.0f};
+    // Valeurs par défaut
+    private static final float DEFAULT_1 = 0.5f;   // Pos X
+    private static final float DEFAULT_2 = 1.1f;   // Pos Y
+    private static final float DEFAULT_3 = 0.5f;   // Pos Z
+    private static final float DEFAULT_4 = -30.0f; // Rot X
+    private static final float DEFAULT_5 = 225.0f; // Rot Y
+    private static final float DEFAULT_6 = 0.0f;
+    private static final float DEFAULT_7 = 1.4f;   // Scale
+    private static final float DEFAULT_8 = 0.0f;
+    private static final float DEFAULT_9 = 0.0f;
 
-    // Les 9 valeurs ajustables (index 0-8, affichées comme 1-9)
-    public static final float[] values = {0.5f, 1.1f, 0.5f, -30.0f, 225.0f, 0.0f, 1.4f, 0.0f, 0.0f};
+    // Les 9 valeurs ajustables
+    public static float value1 = DEFAULT_1;
+    public static float value2 = DEFAULT_2;
+    public static float value3 = DEFAULT_3;
+    public static float value4 = DEFAULT_4;
+    public static float value5 = DEFAULT_5;
+    public static float value6 = DEFAULT_6;
+    public static float value7 = DEFAULT_7;
+    public static float value8 = DEFAULT_8;
+    public static float value9 = DEFAULT_9;
 
-    // Index de la valeur sélectionnée (1-9 pour l'affichage, 0-8 en interne)
+    // Index de la valeur sélectionnée (1-9)
     public static int selectedIndex = 1;
 
     public DebugWandItem(Properties properties) {
@@ -44,18 +59,34 @@ public class DebugWandItem extends Item {
      * Récupère la valeur à l'index donné (1-9)
      */
     public static float getValue(int index) {
-        if (index >= 1 && index <= 9) {
-            return values[index - 1];
-        }
-        return 0f;
+        return switch (index) {
+            case 1 -> value1;
+            case 2 -> value2;
+            case 3 -> value3;
+            case 4 -> value4;
+            case 5 -> value5;
+            case 6 -> value6;
+            case 7 -> value7;
+            case 8 -> value8;
+            case 9 -> value9;
+            default -> 0f;
+        };
     }
 
     /**
      * Définit la valeur à l'index donné (1-9)
      */
     public static void setValue(int index, float value) {
-        if (index >= 1 && index <= 9) {
-            values[index - 1] = value;
+        switch (index) {
+            case 1 -> value1 = value;
+            case 2 -> value2 = value;
+            case 3 -> value3 = value;
+            case 4 -> value4 = value;
+            case 5 -> value5 = value;
+            case 6 -> value6 = value;
+            case 7 -> value7 = value;
+            case 8 -> value8 = value;
+            case 9 -> value9 = value;
         }
     }
 
@@ -81,6 +112,14 @@ public class DebugWandItem extends Item {
      * Remet toutes les valeurs aux valeurs par défaut
      */
     public static void resetAll() {
-        System.arraycopy(DEFAULTS, 0, values, 0, 9);
+        value1 = DEFAULT_1;
+        value2 = DEFAULT_2;
+        value3 = DEFAULT_3;
+        value4 = DEFAULT_4;
+        value5 = DEFAULT_5;
+        value6 = DEFAULT_6;
+        value7 = DEFAULT_7;
+        value8 = DEFAULT_8;
+        value9 = DEFAULT_9;
     }
 }

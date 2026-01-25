@@ -81,13 +81,13 @@ public class MagicBeeItemRenderer extends BlockEntityWithoutLevelRenderer {
         switch (displayContext) {
             case GUI -> {
                 // Dans l'inventaire/GUI - utilise les valeurs de debug pour ajustement
-                // values[0-2]: Position X, Y, Z | values[3-4]: Rotation X, Y | values[6]: Scale
-                float posX = DebugWandItem.values[0];
-                float posY = DebugWandItem.values[1];
-                float posZ = DebugWandItem.values[2];
-                float rotX = DebugWandItem.values[3];
-                float rotY = DebugWandItem.values[4];
-                float scale = DebugWandItem.values[6] != 0 ? DebugWandItem.values[6] : 1.4f;
+                // value1-3: Position X, Y, Z | value4-5: Rotation X, Y | value7: Scale
+                float posX = DebugWandItem.value1;
+                float posY = DebugWandItem.value2;
+                float posZ = DebugWandItem.value3;
+                float rotX = DebugWandItem.value4;
+                float rotY = DebugWandItem.value5;
+                float scale = DebugWandItem.value7 != 0 ? DebugWandItem.value7 : 1.4f;
 
                 poseStack.translate(posX, posY, posZ);
                 poseStack.scale(-1.0f, -1.0f, 1.0f); // Flip model
