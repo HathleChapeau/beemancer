@@ -126,6 +126,17 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     }
 
     @Override
+    public BlockPos getControllerPos() {
+        return worldPosition;
+    }
+
+    @Override
+    public void onMultiblockFormed() {
+        // Called by external systems when multiblock is formed
+        // Formation logic is handled in formMultiblock()
+    }
+
+    @Override
     public void onMultiblockBroken() {
         if (isController && formed) {
             dropContents();
