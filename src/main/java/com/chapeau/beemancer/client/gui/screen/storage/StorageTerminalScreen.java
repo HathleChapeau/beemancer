@@ -127,9 +127,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     @Override
     public void containerTick() {
         super.containerTick();
-        if (this.searchBox != null) {
-            this.searchBox.tick();
-        }
         // Refresh items periodically
         refreshDisplayedItems();
     }

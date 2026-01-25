@@ -550,9 +550,11 @@ public class StorageControllerBlockEntity extends BlockEntity {
     /**
      * Clé pour identifier des ItemStacks identiques (même item, mêmes composants).
      */
-    private record ItemStackKey(ItemStack template) {
+    private static final class ItemStackKey {
+        private final ItemStack template;
+
         ItemStackKey(ItemStack stack) {
-            this(stack.copyWithCount(1));
+            this.template = stack.copyWithCount(1);
         }
 
         ItemStack toStack() {
