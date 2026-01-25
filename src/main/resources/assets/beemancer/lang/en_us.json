@@ -187,6 +187,7 @@
   
   "item.beemancer.bee_wand": "Bee Wand",
   "item.beemancer.building_wand": "Building Wand",
+  "item.beemancer.debug_wand": "Debug Wand",
   "item.beemancer.bee_wand.has_selection": "Bee selected",
   "item.beemancer.bee_wand.no_selection_hint": "No bee selected",
   "item.beemancer.bee_wand.selected": "Bee selected!",

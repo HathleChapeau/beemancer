@@ -21,6 +21,7 @@ package com.chapeau.beemancer.client.renderer.item;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.core.gene.BeeGeneData;
 import com.chapeau.beemancer.core.gene.Gene;
 import com.chapeau.beemancer.core.gene.GeneCategory;
@@ -79,12 +80,20 @@ public class MagicBeeItemRenderer extends BlockEntityWithoutLevelRenderer {
         // Ajuster la position et l'échelle selon le contexte d'affichage
         switch (displayContext) {
             case GUI -> {
-                // Dans l'inventaire/GUI - centré, style bloc diagonal, pointe vers le bas
-                poseStack.translate(0.5, 1.1, 0.5);
+                // Dans l'inventaire/GUI - utilise les valeurs de debug pour ajustement
+                // values[0-2]: Position X, Y, Z | values[3-4]: Rotation X, Y | values[6]: Scale
+                float posX = DebugWandItem.values[0];
+                float posY = DebugWandItem.values[1];
+                float posZ = DebugWandItem.values[2];
+                float rotX = DebugWandItem.values[3];
+                float rotY = DebugWandItem.values[4];
+                float scale = DebugWandItem.values[6] != 0 ? DebugWandItem.values[6] : 1.4f;
+
+                poseStack.translate(posX, posY, posZ);
                 poseStack.scale(-1.0f, -1.0f, 1.0f); // Flip model
-                poseStack.mulPose(Axis.XP.rotationDegrees(-30));  // Pointe vers le bas
-                poseStack.mulPose(Axis.YP.rotationDegrees(225));  // Diagonal comme bloc
-                poseStack.scale(1.4f, 1.4f, 1.4f);
+                poseStack.mulPose(Axis.XP.rotationDegrees(rotX));
+                poseStack.mulPose(Axis.YP.rotationDegrees(rotY));
+                poseStack.scale(scale, scale, scale);
             }
             case FIXED -> {
                 // Item frame - centré diagonal

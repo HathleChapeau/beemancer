@@ -77,6 +77,7 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.CODEX.get());
         output.accept(BeemancerItems.BEE_WAND.get());
         output.accept(BeemancerItems.BUILDING_WAND.get());
+        output.accept(BeemancerItems.DEBUG_WAND.get());
     }
 
     private static void addBees(CreativeModeTab.Output output) {

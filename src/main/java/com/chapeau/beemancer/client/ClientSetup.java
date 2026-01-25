@@ -7,8 +7,10 @@
 package com.chapeau.beemancer.client;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.beemancer.client.gui.hud.WandOverlayRenderer;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
+import com.chapeau.beemancer.client.input.DebugKeyHandler;
 import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
 import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
@@ -45,6 +47,8 @@ public class ClientSetup {
         
         NeoForge.EVENT_BUS.register(WandOverlayRenderer.class);
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
+        NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
+        NeoForge.EVENT_BUS.register(DebugKeyHandler.class);
     }
 
     private static void registerScreens(final RegisterMenuScreensEvent event) {

@@ -187,6 +187,7 @@
   
   "item.beemancer.bee_wand": "Baguette d'Abeille",
   "item.beemancer.building_wand": "Baguette de Construction",
+  "item.beemancer.debug_wand": "Baguette de Debug",
   "item.beemancer.bee_wand.has_selection": "Abeille sélectionnée",
   "item.beemancer.bee_wand.no_selection_hint": "Aucune abeille sélectionnée",
   "item.beemancer.bee_wand.selected": "Abeille sélectionnée !",
