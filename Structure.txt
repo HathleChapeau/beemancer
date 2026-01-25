@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-01-25                     #
-#                         (Hive Multiblock Bug Fixes)                          #
+#                    (Texture Refactoring + Bee Item Renderer)                 #
 ################################################################################
 
 ================================================================================
@@ -63,6 +63,8 @@ Philosophie:
 │ core/recipe/FluidIngredient.java    │ Ingredient fluide pour recettes        │
 │ content/gene/GeneInit.java          │ Enregistrement de tous les gènes       │
 │ client/ClientSetup.java             │ Init client (screens, renderers)       │
+│ client/renderer/item/MagicBeeItemRenderer│ BEWLR rendu 3D abeille en inventaire│
+│ client/renderer/entity/MagicBeeRenderer│ Renderer entité avec texture espèce  │
 │ common/codex/CodexManager.java      │ Gestionnaire central du Codex          │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 

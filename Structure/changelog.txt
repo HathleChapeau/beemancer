@@ -3,6 +3,40 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Texture System Refactoring + Magic Bee Item Renderer
+================================================================================
+
+RESTRUCTURATION TEXTURES:
+- Déplacement textures/bees/*.png → textures/entity/bee/*.png (97 fichiers)
+- Déplacement textures/combs/*.png → textures/item/combs/*.png (97 fichiers)
+- Renommage PascalCase → lowercase (Meadow_Bee.png → meadow_bee.png)
+- Suppression anciens dossiers vides
+
+CORRECTIONS:
+- MagicBeeRenderer.java: Chemin corrigé textures/entity/bee/{speciesid}_bee.png
+- BeeSpeciesManager.java: Default texture en lowercase (id + "_bee")
+- 97 modèles *_comb.json: Chemin corrigé beemancer:item/combs/{name}
+
+AJOUTS:
+- client/renderer/item/MagicBeeItemRenderer.java (BEWLR pour rendu 3D abeille)
+  - Rend le modèle vanilla BeeModel avec texture par espèce
+  - Ajustements position/échelle par contexte (GUI, main, sol, frame)
+  - Cache des textures pour performance
+
+MODIFICATIONS:
+- ClientSetup.java: +IClientItemExtensions pour MagicBeeItem
+- models/item/magic_bee.json: parent changé en "minecraft:builtin/entity"
+
+NOUVELLE FEATURE:
+- Les MagicBee items affichent maintenant le modèle 3D de l'abeille dans l'inventaire
+- La texture correspond à l'espèce stockée dans l'item
+- Fonctionne dans: inventaire, main, sol, item frame
+
+TEXTURES PLACEHOLDER CRÉÉES:
+- cultural_bee.png (copie de meadow_bee)
+- cultural_comb.png (copie de meadow_comb)
+
+================================================================================
 2026-01-25 - Hive Multiblock Bug Fixes
 ================================================================================
 

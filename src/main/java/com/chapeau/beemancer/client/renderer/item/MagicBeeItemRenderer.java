@@ -79,41 +79,47 @@ public class MagicBeeItemRenderer extends BlockEntityWithoutLevelRenderer {
         // Ajuster la position et l'échelle selon le contexte d'affichage
         switch (displayContext) {
             case GUI -> {
-                // Dans l'inventaire/GUI
-                poseStack.translate(0.5, 0.1, 0.5);
-                poseStack.scale(0.9f, 0.9f, 0.9f);
-                poseStack.mulPose(Axis.XP.rotationDegrees(-30));
-                poseStack.mulPose(Axis.YP.rotationDegrees(45));
+                // Dans l'inventaire/GUI - centré, style bloc diagonal
+                poseStack.translate(0.5, 0.5, 0.5);
+                poseStack.scale(-1.0f, -1.0f, 1.0f); // Flip model
+                poseStack.mulPose(Axis.XP.rotationDegrees(30));   // Inclinaison avant
+                poseStack.mulPose(Axis.YP.rotationDegrees(225));  // Diagonal comme bloc
+                poseStack.scale(1.1f, 1.1f, 1.1f);
             }
             case FIXED -> {
-                // Item frame
-                poseStack.translate(0.5, 0.3, 0.5);
-                poseStack.scale(0.8f, 0.8f, 0.8f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(180));
+                // Item frame - centré diagonal
+                poseStack.translate(0.5, 0.5, 0.5);
+                poseStack.scale(-1.0f, -1.0f, 1.0f);
+                poseStack.mulPose(Axis.YP.rotationDegrees(225));
+                poseStack.scale(0.9f, 0.9f, 0.9f);
             }
             case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
                 // En main première personne
-                poseStack.translate(0.5, 0.4, 0.5);
-                poseStack.scale(0.6f, 0.6f, 0.6f);
+                poseStack.translate(0.5, 0.5, 0.5);
+                poseStack.scale(-1.0f, -1.0f, 1.0f);
+                poseStack.mulPose(Axis.YP.rotationDegrees(180));
+                poseStack.scale(0.7f, 0.7f, 0.7f);
             }
             case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND -> {
                 // En main troisième personne
-                poseStack.translate(0.5, 0.3, 0.5);
-                poseStack.scale(0.5f, 0.5f, 0.5f);
+                poseStack.translate(0.5, 0.4, 0.5);
+                poseStack.scale(-1.0f, -1.0f, 1.0f);
+                poseStack.mulPose(Axis.YP.rotationDegrees(180));
+                poseStack.scale(0.6f, 0.6f, 0.6f);
             }
             case GROUND -> {
                 // Au sol
-                poseStack.translate(0.5, 0.2, 0.5);
-                poseStack.scale(0.5f, 0.5f, 0.5f);
-            }
-            default -> {
                 poseStack.translate(0.5, 0.3, 0.5);
+                poseStack.scale(-1.0f, -1.0f, 1.0f);
+                poseStack.mulPose(Axis.YP.rotationDegrees(225));
                 poseStack.scale(0.6f, 0.6f, 0.6f);
             }
+            default -> {
+                poseStack.translate(0.5, 0.5, 0.5);
+                poseStack.scale(-1.0f, -1.0f, 1.0f);
+                poseStack.scale(0.7f, 0.7f, 0.7f);
+            }
         }
-
-        // Flip pour correspondre à l'orientation du modèle
-        poseStack.scale(-1.0f, -1.0f, 1.0f);
 
         // Rendre le modèle
         BeeModel<?> model = getOrCreateModel();
