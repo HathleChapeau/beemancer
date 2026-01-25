@@ -10,6 +10,8 @@
  * |--------------------------|------------------------|--------------------------------|
  * | BeemancerBlockEntities   | Type du BlockEntity    | Constructeur                   |
  * | Level                    | Accès monde            | Flood fill, vérification coffres|
+ * | StorageHelper            | Vérification coffres   | isStorageContainer             |
+ * | StorageItemsSyncPacket   | Sync vers client       | Envoi items agrégés            |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -22,7 +24,9 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.StorageEditModeHandler;
+import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
+import com.chapeau.beemancer.core.util.StorageHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -33,12 +37,12 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -72,8 +76,8 @@ public class StorageControllerBlockEntity extends BlockEntity {
     private int syncTimer = 0;
     private boolean needsSync = true;
 
-    // Joueurs avec GUI ouverte
-    private final Set<UUID> playersViewing = new HashSet<>();
+    // Joueurs avec GUI ouverte (UUID -> terminal pos)
+    private final Map<UUID, BlockPos> playersViewing = new HashMap<>();
 
     public StorageControllerBlockEntity(BlockPos pos, BlockState blockState) {
         super(BeemancerBlockEntities.STORAGE_CONTROLLER.get(), pos, blockState);
@@ -210,10 +214,7 @@ public class StorageControllerBlockEntity extends BlockEntity {
     private boolean isChest(BlockPos pos) {
         if (level == null) return false;
         BlockState state = level.getBlockState(pos);
-        return state.getBlock() instanceof ChestBlock ||
-               state.is(Blocks.CHEST) ||
-               state.is(Blocks.TRAPPED_CHEST) ||
-               state.is(Blocks.BARREL);
+        return StorageHelper.isStorageContainer(state);
     }
 
     /**
@@ -246,6 +247,8 @@ public class StorageControllerBlockEntity extends BlockEntity {
      */
     public void unlinkTerminal(BlockPos terminalPos) {
         linkedTerminals.remove(terminalPos);
+        // Retirer aussi des viewers
+        playersViewing.entrySet().removeIf(entry -> entry.getValue().equals(terminalPos));
         setChanged();
     }
 
@@ -271,8 +274,18 @@ public class StorageControllerBlockEntity extends BlockEntity {
 
         Map<ItemStackKey, Integer> itemCounts = new HashMap<>();
 
-        // Nettoyer les coffres invalides
-        registeredChests.removeIf(pos -> !isChest(pos));
+        // Nettoyer les coffres invalides (copie pour éviter ConcurrentModification)
+        List<BlockPos> toRemove = new ArrayList<>();
+        for (BlockPos pos : registeredChests) {
+            if (!isChest(pos)) {
+                toRemove.add(pos);
+            }
+        }
+        if (!toRemove.isEmpty()) {
+            registeredChests.removeAll(toRemove);
+            setChanged();
+            syncToClient();
+        }
 
         // Parcourir tous les coffres
         for (BlockPos chestPos : registeredChests) {
@@ -300,6 +313,24 @@ public class StorageControllerBlockEntity extends BlockEntity {
         aggregatedItems.sort(Comparator.comparing(
             stack -> stack.getHoverName().getString()
         ));
+
+        // Envoyer aux clients qui regardent
+        syncItemsToViewers();
+    }
+
+    /**
+     * Envoie la liste des items agrégés aux joueurs qui ont le terminal ouvert.
+     */
+    private void syncItemsToViewers() {
+        if (level == null || level.isClientSide()) return;
+
+        for (Map.Entry<UUID, BlockPos> entry : playersViewing.entrySet()) {
+            ServerPlayer player = level.getServer().getPlayerList().getPlayer(entry.getKey());
+            if (player != null) {
+                PacketDistributor.sendToPlayer(player,
+                    new StorageItemsSyncPacket(entry.getValue(), aggregatedItems));
+            }
+        }
     }
 
     /**
@@ -450,20 +481,44 @@ public class StorageControllerBlockEntity extends BlockEntity {
             be.needsSync = false;
         }
 
-        // Vérifier la distance du joueur en mode édition
+        // Vérifier le mode édition
         if (be.editMode && be.editingPlayer != null && be.level != null) {
-            var player = be.level.getServer().getPlayerList().getPlayer(be.editingPlayer);
-            if (player == null || player.distanceToSqr(
-                    be.worldPosition.getX() + 0.5,
-                    be.worldPosition.getY() + 0.5,
-                    be.worldPosition.getZ() + 0.5) > MAX_RANGE * MAX_RANGE) {
-                be.exitEditMode();
+            var server = be.level.getServer();
+            if (server != null) {
+                var player = server.getPlayerList().getPlayer(be.editingPlayer);
+                // Quitter le mode édition si le joueur n'est plus là ou trop loin
+                if (player == null) {
+                    be.exitEditMode();
+                } else {
+                    double distSqr = player.distanceToSqr(
+                        be.worldPosition.getX() + 0.5,
+                        be.worldPosition.getY() + 0.5,
+                        be.worldPosition.getZ() + 0.5);
+                    if (distSqr > MAX_RANGE * MAX_RANGE) {
+                        be.exitEditMode();
+                    }
+                }
             }
+        }
+
+        // Nettoyer les viewers déconnectés
+        if (be.level != null && be.level.getServer() != null) {
+            be.playersViewing.keySet().removeIf(uuid ->
+                be.level.getServer().getPlayerList().getPlayer(uuid) == null);
         }
     }
 
-    public void addViewer(UUID playerId) {
-        playersViewing.add(playerId);
+    public void addViewer(UUID playerId, BlockPos terminalPos) {
+        playersViewing.put(playerId, terminalPos);
+        // Envoyer les items immédiatement
+        if (level != null && !level.isClientSide()) {
+            ServerPlayer player = level.getServer().getPlayerList().getPlayer(playerId);
+            if (player != null) {
+                refreshAggregatedItems();
+                PacketDistributor.sendToPlayer(player,
+                    new StorageItemsSyncPacket(terminalPos, aggregatedItems));
+            }
+        }
     }
 
     public void removeViewer(UUID playerId) {
@@ -537,6 +592,11 @@ public class StorageControllerBlockEntity extends BlockEntity {
         CompoundTag tag = new CompoundTag();
         saveAdditional(tag, registries);
         return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        loadAdditional(tag, registries);
     }
 
     @Nullable

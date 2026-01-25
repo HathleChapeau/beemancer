@@ -64,13 +64,18 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     @Nullable
     private BlockPos controllerPos = null;
 
+    // Flag pour éviter la récursion lors du dépôt
+    private boolean isDepositing = false;
+
     // Slots internes
     private final ItemStackHandler depositSlots = new ItemStackHandler(DEPOSIT_SLOTS) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            // Transférer automatiquement vers le réseau
-            tryDepositToNetwork(slot);
+            // Transférer automatiquement vers le réseau (éviter récursion)
+            if (!isDepositing) {
+                tryDepositToNetwork(slot);
+            }
         }
     };
 
@@ -199,8 +204,14 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         ItemStack stack = depositSlots.getStackInSlot(slot);
         if (stack.isEmpty()) return;
 
-        ItemStack remaining = controller.depositItem(stack);
-        depositSlots.setStackInSlot(slot, remaining);
+        // Flag pour éviter la récursion
+        isDepositing = true;
+        try {
+            ItemStack remaining = controller.depositItem(stack);
+            depositSlots.setStackInSlot(slot, remaining);
+        } finally {
+            isDepositing = false;
+        }
     }
 
     // === Slots Handlers ===
@@ -310,7 +321,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         // Ajouter le joueur aux viewers du controller
         StorageControllerBlockEntity controller = getController();
         if (controller != null) {
-            controller.addViewer(player.getUUID());
+            controller.addViewer(player.getUUID(), worldPosition);
         }
         return new StorageTerminalMenu(containerId, playerInventory, this, worldPosition);
     }
@@ -370,6 +381,11 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         CompoundTag tag = new CompoundTag();
         saveAdditional(tag, registries);
         return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        loadAdditional(tag, registries);
     }
 
     @Nullable

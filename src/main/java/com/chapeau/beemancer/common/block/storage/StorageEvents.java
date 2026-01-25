@@ -10,6 +10,7 @@
  * |---------------------------------|------------------------|-----------------------|
  * | StorageEditModeHandler          | État édition           | Vérification mode     |
  * | StorageControllerBlock          | Logique coffres        | Délégation clic       |
+ * | StorageHelper                   | Vérification coffres   | isStorageContainer    |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -21,17 +22,17 @@ package com.chapeau.beemancer.common.block.storage;
 
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
+import com.chapeau.beemancer.core.util.StorageHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 /**
  * Gère les événements liés au système de stockage.
@@ -67,7 +68,7 @@ public class StorageEvents {
             BlockEntity be = level.getBlockEntity(clickedPos);
             if (be instanceof StorageTerminalBlockEntity terminal) {
                 BlockEntity controllerBe = level.getBlockEntity(controllerPos);
-                if (controllerBe instanceof StorageControllerBlockEntity controller) {
+                if (controllerBe instanceof StorageControllerBlockEntity) {
                     terminal.linkToController(controllerPos);
                     player.displayClientMessage(
                         Component.translatable("message.beemancer.storage_terminal.linked_manually"),
@@ -80,11 +81,8 @@ public class StorageEvents {
             }
         }
 
-        // Vérifier si c'est un coffre ou barrel
-        if (!(clickedState.getBlock() instanceof ChestBlock) &&
-            !clickedState.is(Blocks.CHEST) &&
-            !clickedState.is(Blocks.TRAPPED_CHEST) &&
-            !clickedState.is(Blocks.BARREL)) {
+        // Vérifier si c'est un conteneur de stockage supporté
+        if (!StorageHelper.isStorageContainer(clickedState)) {
             return;
         }
 
@@ -106,5 +104,13 @@ public class StorageEvents {
     @SubscribeEvent
     public static void onPlayerLogout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
         StorageEditModeHandler.stopEditing(event.getEntity().getUUID());
+    }
+
+    /**
+     * Nettoie tous les modes édition quand le serveur s'arrête.
+     */
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event) {
+        StorageEditModeHandler.clearAll();
     }
 }

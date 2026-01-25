@@ -29,6 +29,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -77,8 +78,9 @@ public record StorageRequestPacket(
             // Vérifier que le terminal est lié
             if (!terminal.isLinked()) return;
 
-            // Exécuter la requête
-            terminal.requestItem(packet.requestedItem, packet.count);
+            // Valider et exécuter la requête (max d'un coffre double = 54 stacks)
+            int safeCount = Mth.clamp(packet.count, 1, 64 * 54);
+            terminal.requestItem(packet.requestedItem, safeCount);
         });
     }
 }

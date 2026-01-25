@@ -28,7 +28,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 import java.util.Set;
@@ -39,6 +38,7 @@ import java.util.Set;
  * Affiche:
  * - Outline rouge autour du controller
  * - Lignes vertes vers chaque coffre enregistré
+ * - Outlines bleus autour des coffres enregistrés
  */
 public class StorageControllerRenderer implements BlockEntityRenderer<StorageControllerBlockEntity> {
 
@@ -62,17 +62,22 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
             return;
         }
 
+        // Obtenir le buffer une seule fois pour toutes les lignes
+        VertexConsumer lineBuffer = bufferSource.getBuffer(RenderType.lines());
+
         poseStack.pushPose();
 
-        // Outline rouge autour du controller
-        renderControllerOutline(poseStack, bufferSource);
+        Matrix4f matrix = poseStack.last().pose();
 
-        // Lignes vers les coffres
+        // Outline rouge autour du controller
+        renderControllerOutline(lineBuffer, matrix);
+
+        // Lignes et outlines pour les coffres
         BlockPos controllerPos = blockEntity.getBlockPos();
         Set<BlockPos> chests = blockEntity.getRegisteredChests();
 
         for (BlockPos chestPos : chests) {
-            renderLineToChest(poseStack, bufferSource, controllerPos, chestPos);
+            renderLineToChest(lineBuffer, matrix, controllerPos, chestPos);
         }
 
         poseStack.popPose();
@@ -81,10 +86,7 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
     /**
      * Dessine un outline rouge autour du controller.
      */
-    private void renderControllerOutline(PoseStack poseStack, MultiBufferSource bufferSource) {
-        VertexConsumer buffer = bufferSource.getBuffer(RenderType.lines());
-        Matrix4f matrix = poseStack.last().pose();
-
+    private void renderControllerOutline(VertexConsumer buffer, Matrix4f matrix) {
         float r = 1.0f, g = 0.2f, b = 0.2f, a = 1.0f;
         float min = -0.01f;
         float max = 1.01f;
@@ -110,20 +112,17 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
     }
 
     /**
-     * Dessine une ligne verte du controller vers un coffre et une surbrillance bleue.
+     * Dessine une ligne verte du controller vers un coffre et un outline bleu autour du coffre.
      */
-    private void renderLineToChest(PoseStack poseStack, MultiBufferSource bufferSource,
+    private void renderLineToChest(VertexConsumer buffer, Matrix4f matrix,
                                     BlockPos controllerPos, BlockPos chestPos) {
-        VertexConsumer lineBuffer = bufferSource.getBuffer(RenderType.lines());
-        Matrix4f matrix = poseStack.last().pose();
-
         // Position relative du coffre
         float dx = chestPos.getX() - controllerPos.getX();
         float dy = chestPos.getY() - controllerPos.getY();
         float dz = chestPos.getZ() - controllerPos.getZ();
 
         // Ligne verte du centre du controller au centre du coffre
-        drawLine(lineBuffer, matrix, 0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f, 0.2f, 1.0f, 0.2f, 1.0f);
+        drawLine(buffer, matrix, 0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f, 0.2f, 1.0f, 0.2f, 1.0f);
 
         // Outline bleu autour du coffre
         float r = 0.2f, g = 0.6f, b = 1.0f, a = 1.0f;
@@ -131,22 +130,22 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         float max = 1.02f;
 
         // Bottom face
-        drawLine(lineBuffer, matrix, dx + min, dy + min, dz + min, dx + max, dy + min, dz + min, r, g, b, a);
-        drawLine(lineBuffer, matrix, dx + max, dy + min, dz + min, dx + max, dy + min, dz + max, r, g, b, a);
-        drawLine(lineBuffer, matrix, dx + max, dy + min, dz + max, dx + min, dy + min, dz + max, r, g, b, a);
-        drawLine(lineBuffer, matrix, dx + min, dy + min, dz + max, dx + min, dy + min, dz + min, r, g, b, a);
+        drawLine(buffer, matrix, dx + min, dy + min, dz + min, dx + max, dy + min, dz + min, r, g, b, a);
+        drawLine(buffer, matrix, dx + max, dy + min, dz + min, dx + max, dy + min, dz + max, r, g, b, a);
+        drawLine(buffer, matrix, dx + max, dy + min, dz + max, dx + min, dy + min, dz + max, r, g, b, a);
+        drawLine(buffer, matrix, dx + min, dy + min, dz + max, dx + min, dy + min, dz + min, r, g, b, a);
 
         // Top face
-        drawLine(lineBuffer, matrix, dx + min, dy + max, dz + min, dx + max, dy + max, dz + min, r, g, b, a);
-        drawLine(lineBuffer, matrix, dx + max, dy + max, dz + min, dx + max, dy + max, dz + max, r, g, b, a);
-        drawLine(lineBuffer, matrix, dx + max, dy + max, dz + max, dx + min, dy + max, dz + max, r, g, b, a);
-        drawLine(lineBuffer, matrix, dx + min, dy + max, dz + max, dx + min, dy + max, dz + min, r, g, b, a);
+        drawLine(buffer, matrix, dx + min, dy + max, dz + min, dx + max, dy + max, dz + min, r, g, b, a);
+        drawLine(buffer, matrix, dx + max, dy + max, dz + min, dx + max, dy + max, dz + max, r, g, b, a);
+        drawLine(buffer, matrix, dx + max, dy + max, dz + max, dx + min, dy + max, dz + max, r, g, b, a);
+        drawLine(buffer, matrix, dx + min, dy + max, dz + max, dx + min, dy + max, dz + min, r, g, b, a);
 
         // Vertical edges
-        drawLine(lineBuffer, matrix, dx + min, dy + min, dz + min, dx + min, dy + max, dz + min, r, g, b, a);
-        drawLine(lineBuffer, matrix, dx + max, dy + min, dz + min, dx + max, dy + max, dz + min, r, g, b, a);
-        drawLine(lineBuffer, matrix, dx + max, dy + min, dz + max, dx + max, dy + max, dz + max, r, g, b, a);
-        drawLine(lineBuffer, matrix, dx + min, dy + min, dz + max, dx + min, dy + max, dz + max, r, g, b, a);
+        drawLine(buffer, matrix, dx + min, dy + min, dz + min, dx + min, dy + max, dz + min, r, g, b, a);
+        drawLine(buffer, matrix, dx + max, dy + min, dz + min, dx + max, dy + max, dz + min, r, g, b, a);
+        drawLine(buffer, matrix, dx + max, dy + min, dz + max, dx + max, dy + max, dz + max, r, g, b, a);
+        drawLine(buffer, matrix, dx + min, dy + min, dz + max, dx + min, dy + max, dz + max, r, g, b, a);
     }
 
     /**

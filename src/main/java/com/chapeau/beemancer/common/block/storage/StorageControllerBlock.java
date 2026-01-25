@@ -21,21 +21,15 @@ package com.chapeau.beemancer.common.block.storage;
 
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
+import com.chapeau.beemancer.core.util.StorageHelper;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -146,12 +140,9 @@ public class StorageControllerBlock extends BaseEntityBlock {
             return false;
         }
 
-        // Vérifier si c'est un coffre
+        // Vérifier si c'est un conteneur de stockage supporté
         BlockState clickedState = level.getBlockState(clickedPos);
-        if (!(clickedState.getBlock() instanceof ChestBlock) &&
-            !clickedState.is(Blocks.CHEST) &&
-            !clickedState.is(Blocks.TRAPPED_CHEST) &&
-            !clickedState.is(Blocks.BARREL)) {
+        if (!StorageHelper.isStorageContainer(clickedState)) {
             return false;
         }
 
