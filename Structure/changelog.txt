@@ -3,6 +3,28 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Multiblock Tank Bug Fixes
+================================================================================
+
+CORRECTIONS:
+- MultiblockTankBlockEntity.java:
+  - +getUpdatePacket() et handleUpdateTag() pour sync client correcte
+  - Fix perte fluide lors de fusion multiblocks (capacité calculée AVANT transfert)
+  - Optimisation recalculateStructure() (resize tank seulement si nécessaire)
+  - Séparation mergeBlocksInto() et logique fluide (plus propre)
+
+COMPORTEMENT INVALIDE AMÉLIORÉ:
+- Shape invalide = pas de capability fluide (pipes déconnectent)
+- Shape invalide = pas d'accès GUI (click droit ignoré)
+- Compléter la shape → tank redevient fonctionnel automatiquement
+
+DOCUMENTATION:
+- Structure/feature_multiblock_tank.txt mis à jour avec:
+  - Section "COMPORTEMENT INVALIDE"
+  - Section "FUSION DE MULTIBLOCS"
+  - Exemples corrigés
+
+================================================================================
 2026-01-25 - Infuser Tiers + Multiblock Tank
 ================================================================================
 

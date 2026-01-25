@@ -33,10 +33,12 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+
 import javax.annotation.Nullable;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Set;
 
 public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvider {
@@ -184,38 +186,61 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             this.masterPos = primaryMaster.worldPosition;
             primaryMaster.connectedBlocks.add(worldPosition);
 
-            // Merge other masters into primary
+            // First: collect all blocks and calculate total capacity BEFORE merging fluids
+            int totalBlocks = primaryMaster.connectedBlocks.size();
+            FluidStack totalFluid = primaryMaster.fluidTank != null && !primaryMaster.fluidTank.isEmpty()
+                ? primaryMaster.fluidTank.getFluid().copy()
+                : FluidStack.EMPTY;
+
             for (MultiblockTankBlockEntity otherMaster : adjacentMasters) {
                 if (otherMaster != primaryMaster) {
-                    mergeInto(otherMaster, primaryMaster);
+                    // Count blocks
+                    totalBlocks += otherMaster.connectedBlocks.size();
+                    // Accumulate fluid
+                    if (otherMaster.fluidTank != null && !otherMaster.fluidTank.isEmpty()) {
+                        FluidStack otherFluid = otherMaster.fluidTank.getFluid();
+                        if (totalFluid.isEmpty()) {
+                            totalFluid = otherFluid.copy();
+                        } else if (totalFluid.getFluid() == otherFluid.getFluid()) {
+                            totalFluid.grow(otherFluid.getAmount());
+                        }
+                        // Incompatible fluids: keep primary's fluid
+                    }
                 }
             }
 
-            // Recalculate structure
+            // Update primary master's tank with new capacity BEFORE transferring blocks
+            int newCapacity = totalBlocks * CAPACITY_PER_BLOCK;
+            primaryMaster.fluidTank = primaryMaster.createFluidTank(newCapacity);
+            if (!totalFluid.isEmpty()) {
+                // Truncate if over capacity (shouldn't happen normally)
+                int toFill = Math.min(totalFluid.getAmount(), newCapacity);
+                primaryMaster.fluidTank.fill(new FluidStack(totalFluid.getFluid(), toFill), IFluidHandler.FluidAction.EXECUTE);
+            }
+
+            // Now merge blocks (fluid already handled)
+            for (MultiblockTankBlockEntity otherMaster : adjacentMasters) {
+                if (otherMaster != primaryMaster) {
+                    mergeBlocksInto(otherMaster, primaryMaster);
+                }
+            }
+
+            // Recalculate structure (validates cuboid shape)
             primaryMaster.recalculateStructure();
         }
 
         setChanged();
     }
 
-    private void mergeInto(MultiblockTankBlockEntity source, MultiblockTankBlockEntity target) {
+    private void mergeBlocksInto(MultiblockTankBlockEntity source, MultiblockTankBlockEntity target) {
         if (level == null) return;
 
-        // Transfer all blocks from source to target
+        // Transfer all blocks from source to target (fluid already handled in onPlaced)
         for (BlockPos pos : source.connectedBlocks) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof MultiblockTankBlockEntity tank && tank != target) {
                 tank.masterPos = target.worldPosition;
                 target.connectedBlocks.add(pos);
-            }
-        }
-
-        // Merge fluid (destroy source's fluid - as per spec, breaking destroys fluid)
-        // Actually for merge during placement, we should keep fluid if compatible
-        if (source.fluidTank != null && !source.fluidTank.isEmpty()) {
-            if (target.fluidTank.isEmpty() ||
-                target.fluidTank.getFluid().getFluid() == source.fluidTank.getFluid().getFluid()) {
-                int filled = target.fluidTank.fill(source.fluidTank.getFluid(), IFluidHandler.FluidAction.EXECUTE);
             }
         }
 
@@ -295,9 +320,11 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     private void recalculateStructure() {
         if (!isMaster()) return;
 
-        // Update tank capacity
+        // Update tank capacity only if needed
         int newCapacity = getTotalCapacity();
-        if (fluidTank != null) {
+        if (fluidTank == null) {
+            fluidTank = createFluidTank(newCapacity);
+        } else if (fluidTank.getCapacity() != newCapacity) {
             FluidStack currentFluid = fluidTank.getFluid().copy();
             fluidTank = createFluidTank(newCapacity);
             if (!currentFluid.isEmpty()) {
@@ -305,8 +332,6 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                 int toFill = Math.min(currentFluid.getAmount(), newCapacity);
                 fluidTank.fill(new FluidStack(currentFluid.getFluid(), toFill), IFluidHandler.FluidAction.EXECUTE);
             }
-        } else {
-            fluidTank = createFluidTank(newCapacity);
         }
 
         // Validate cuboid shape
@@ -498,5 +523,16 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         }
 
         return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        loadAdditional(tag, registries);
     }
 }

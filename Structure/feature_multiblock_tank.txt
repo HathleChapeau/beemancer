@@ -113,10 +113,33 @@ UTILISATION
 1. Placer un bloc → devient tank standalone (8000 mB)
 2. Placer blocs adjacents → se connectent automatiquement
 3. Capacité = 8000 mB × nombre de blocs
-4. Cliquer sur n'importe quel bloc → ouvre GUI du master
-5. GUI affiche: jauge fluide, nombre blocs, validité
-6. Si forme invalide (L, etc.): "Invalid" affiché, pas de stockage
+4. Cliquer sur n'importe quel bloc → ouvre GUI du master (si valide)
+5. GUI affiche: jauge fluide, nombre blocs, capacité totale
+6. Si forme invalide (L, etc.):
+   - Pas d'accès GUI (click droit ignoré)
+   - Pas de capability fluide (pipes ne connectent pas)
+   - Le fluide existant reste mais inaccessible
 7. Si bloc cassé: TOUT le fluide est perdu
+
+================================================================================
+COMPORTEMENT INVALIDE
+================================================================================
+
+Quand la forme n'est pas un cuboïde plein:
+- isValidCuboid() retourne false
+- getFluidTank() retourne null pour les capabilities
+- Les pipes ne peuvent pas se connecter
+- Le click droit n'ouvre pas la GUI
+- Compléter la forme (ajouter les blocs manquants) rend le tank valide
+
+================================================================================
+FUSION DE MULTIBLOCS
+================================================================================
+
+Quand un bloc connecte deux multiblocs existants:
+1. Les fluides sont fusionnés (si compatibles)
+2. La capacité est calculée AVANT de transférer les fluides (évite perte)
+3. Les fluides incompatibles: le primaire est conservé
 
 ================================================================================
 EXEMPLES
@@ -125,7 +148,7 @@ EXEMPLES
 1 bloc:        8000 mB   | Valid
 2×2×2 (8):    64000 mB   | Valid
 3×3×3 (27):  216000 mB   | Valid
-Forme en L:        0 mB   | Invalid (affiche "Invalid")
+Forme en L:   capacité mais inaccessible | Invalid
 2×1×3 (6):    48000 mB   | Valid
 
 ################################################################################
