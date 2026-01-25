@@ -16,5 +16,10 @@
 | bee_wand         | BeeWandItem     | Bee Control  |
 | building_wand    | BuildingWandItem| Building Tool|
 | codex            | CodexItem       | Codex        |
+| honeyed_stone    | BlockItem       | Honey Altar  |
+| honeyed_stone_stair | BlockItem    | Honey Altar  |
+| honey_pedestal   | BlockItem       | Honey Altar  |
+| honey_crystal_conduit | BlockItem  | Honey Altar  |
+| honey_crystal    | BlockItem       | Honey Altar  |
 
 ################################################################################

@@ -178,5 +178,15 @@
   "gui.beemancer.storage_terminal.pending_count": "%d items waiting",
   "gui.beemancer.storage_terminal.pending_types": "%d different types",
   "gui.beemancer.cancel": "Cancel",
-  "gui.beemancer.request": "Request"
+  "gui.beemancer.request": "Request",
+
+  "block.beemancer.honeyed_stone": "Honeyed Stone",
+  "block.beemancer.honeyed_stone_stair": "Honeyed Stone Stairs",
+  "block.beemancer.honey_pedestal": "Honey Pedestal",
+  "block.beemancer.honey_crystal_conduit": "Honey Crystal Conduit",
+  "block.beemancer.honey_crystal": "Honey Crystal",
+
+  "message.beemancer.honey_altar.formed": "The Honey Altar has been formed!",
+  "message.beemancer.honey_altar.already_formed": "The Honey Altar is already active",
+  "message.beemancer.honey_altar.invalid_structure": "Invalid structure - check the altar pattern"
 }

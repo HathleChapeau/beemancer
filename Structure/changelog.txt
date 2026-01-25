@@ -3,6 +3,64 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Multiblock System (Refactoring)
+================================================================================
+
+AJOUTS:
+- core/multiblock/BlockMatcher.java (predicates réutilisables)
+- core/multiblock/MultiblockPattern.java (définition déclarative patterns)
+- core/multiblock/MultiblockPatterns.java (registre central)
+- core/multiblock/MultiblockValidator.java (validation générique)
+- core/multiblock/MultiblockController.java (interface contrôleurs)
+- core/multiblock/MultiblockEvents.java (détection destruction blocs)
+
+MODIFICATIONS:
+- HoneyCrystalBlockEntity.java: Implémente MultiblockController, utilise système modulaire
+- HoneyAltarMultiblock.java: Déprécié, délègue au nouveau système
+- Beemancer.java: +MultiblockEvents, +onServerStopping pour cleanup
+
+NOUVELLE FEATURE:
+- Système modulaire pour créer n'importe quel multibloc
+- Patterns définis de manière déclarative avec Builder
+- Détection automatique de destruction de blocs
+- Matchers réutilisables: air(), block(), stairFacing(), any(), or(), and()
+- Interface MultiblockController pour les BlockEntities
+
+CONTRAINTE TEXTURES:
+- Ajout règle: copier template_*.png pour chaque nouveau bloc/item/gui
+- Templates disponibles: template_texture.png, template_item.png, template_gui.png
+
+================================================================================
+2026-01-25 - Honey Altar Multibloc
+================================================================================
+
+AJOUTS:
+- common/block/altar/HoneyedStoneBlock.java (bloc simple)
+- common/block/altar/HoneyedStoneStairBlock.java (escalier)
+- common/block/altar/HoneyPedestalBlock.java (piédestal)
+- common/block/altar/HoneyCrystalConduitBlock.java (conduit)
+- common/block/altar/HoneyCrystalBlock.java (contrôleur multibloc)
+- common/block/altar/HoneyAltarMultiblock.java (validation pattern)
+- common/blockentity/altar/HoneyCrystalBlockEntity.java (état formé)
+- Assets: blockstates, models/block, models/item pour les 5 blocs
+
+MODIFICATIONS:
+- BeemancerBlocks.java: +5 blocs (HONEYED_STONE, HONEYED_STONE_STAIR,
+  HONEY_PEDESTAL, HONEY_CRYSTAL_CONDUIT, HONEY_CRYSTAL)
+- BeemancerBlockEntities.java: +HONEY_CRYSTAL
+- BeemancerItems.java: HONEY_CRYSTAL changé de Item → BlockItem, +4 BlockItems
+- BeemancerCreativeTabs.java: +section "Honey Altar"
+- en_us.json/fr_fr.json: +traductions blocs et messages altar
+
+NOUVELLE FEATURE:
+- Multibloc 3x3x5 avec validation de pattern
+- Structure: Pedestal + Stairs (étage 1), vide (étage 2), Crystal contrôleur
+  (étage 3), Stone + Conduits (étage 4), Stone en croix (étage 5)
+- Stairs doivent pointer vers le centre (validation orientation)
+- Clic droit sur Crystal pour activer
+- Reset complet si bloc cassé
+
+================================================================================
 2026-01-25 - Building Wand
 ================================================================================
 

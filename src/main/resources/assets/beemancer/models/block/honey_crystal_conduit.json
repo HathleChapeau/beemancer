@@ -1,0 +1,22 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "conduit": "beemancer:block/honey_crystal_conduit",
+    "particle": "beemancer:block/honey_crystal_conduit"
+  },
+  "elements": [
+    {
+      "name": "Conduit",
+      "from": [4, 0, 4],
+      "to": [12, 16, 12],
+      "faces": {
+        "north": {"texture": "#conduit", "uv": [4, 0, 12, 16]},
+        "east": {"texture": "#conduit", "uv": [4, 0, 12, 16]},
+        "south": {"texture": "#conduit", "uv": [4, 0, 12, 16]},
+        "west": {"texture": "#conduit", "uv": [4, 0, 12, 16]},
+        "up": {"texture": "#conduit", "uv": [4, 4, 12, 12]},
+        "down": {"texture": "#conduit", "uv": [4, 4, 12, 12], "cullface": "down"}
+      }
+    }
+  ]
+}

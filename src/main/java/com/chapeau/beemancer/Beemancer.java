@@ -70,7 +70,9 @@ public class Beemancer {
 
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(this::onServerStopping);
         NeoForge.EVENT_BUS.register(StorageEvents.class);
+        NeoForge.EVENT_BUS.register(com.chapeau.beemancer.core.multiblock.MultiblockEvents.class);
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ClientSetup.register(modEventBus);
@@ -143,5 +145,11 @@ public class Beemancer {
             PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
             LOGGER.debug("Synced codex data to player {}", player.getName().getString());
         }
+    }
+
+    private void onServerStopping(final net.neoforged.neoforge.event.server.ServerStoppingEvent event) {
+        // Nettoyer les caches statiques
+        com.chapeau.beemancer.core.multiblock.MultiblockEvents.clearAll();
+        LOGGER.info("Beemancer server caches cleared");
     }
 }

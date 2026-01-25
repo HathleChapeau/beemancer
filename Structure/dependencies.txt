@@ -71,6 +71,17 @@ client/gui/widget/
   - isMouseOver() pour détection survol
 
 ================================================================================
+core/multiblock/
+================================================================================
+
+- BlockMatcher.java: Predicates réutilisables (air, block, stairFacing, any, or, and)
+- MultiblockPattern.java: Définition déclarative de patterns avec Builder
+- MultiblockPatterns.java: Registre central (HONEY_ALTAR, etc.)
+- MultiblockValidator.java: Validation et utilitaires (validate, getAbsolutePositions, isPartOfMultiblock)
+- MultiblockController.java: Interface pour BlockEntities contrôleurs
+- MultiblockEvents.java: Détection destruction de blocs, cache contrôleurs actifs
+
+================================================================================
 common/entity/bee/
 ================================================================================
 

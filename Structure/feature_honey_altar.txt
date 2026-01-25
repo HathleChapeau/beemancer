@@ -1,0 +1,170 @@
+################################################################################
+#                         FEATURE: HONEY ALTAR                                 #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Multibloc 3x3x5 servant d'autel magique pour le Beemancer.
+Le Honey Crystal au centre (étage 3) est le contrôleur qui valide la structure.
+
+================================================================================
+STRUCTURE
+================================================================================
+
+VUE DE DESSUS PAR ÉTAGE:
+
+Étage 5 (Y+4):          Étage 4 (Y+3):          Étage 3 (Y+2):
+    [S]                     [C]
+ [S][S][S]               [C][S][C]                  [X]
+    [S]                     [C]
+
+Étage 2 (Y+1):          Étage 1 (Y+0) - Base:
+                            [T]
+   (vide)                [T][P][T]
+                            [T]
+
+LÉGENDE:
+- P = Honey Pedestal (centre de la base)
+- T = Honeyed Stone Stair (pointant vers le centre)
+- S = Honeyed Stone
+- X = Honey Crystal (contrôleur)
+- C = Honey Crystal Conduit
+
+================================================================================
+FICHIERS CRÉÉS
+================================================================================
+
+BLOCS:
+- common/block/altar/HoneyedStoneBlock.java (bloc simple)
+- common/block/altar/HoneyedStoneStairBlock.java (escalier)
+- common/block/altar/HoneyPedestalBlock.java (piédestal avec forme custom)
+- common/block/altar/HoneyCrystalConduitBlock.java (conduit avec forme custom)
+- common/block/altar/HoneyCrystalBlock.java (contrôleur, EntityBlock)
+
+BLOCK ENTITY:
+- common/blockentity/altar/HoneyCrystalBlockEntity.java
+  - Implémente MultiblockController
+  - Utilise MultiblockPatterns.HONEY_ALTAR
+  - Gère état formé et détection destruction
+
+MULTIBLOC (système modulaire):
+- Pattern défini dans core/multiblock/MultiblockPatterns.HONEY_ALTAR
+- common/block/altar/HoneyAltarMultiblock.java (DEPRECATED, délègue au nouveau système)
+
+ASSETS:
+- blockstates/*.json (5 fichiers)
+- models/block/*.json (8 fichiers dont stairs variants)
+- models/item/*.json (5 fichiers)
+
+TEXTURES REQUISES:
+- textures/block/honeyed_stone.png
+- textures/block/honey_pedestal_base.png
+- textures/block/honey_pedestal_column.png
+- textures/block/honey_pedestal_top.png
+- textures/block/honey_crystal_conduit.png
+- textures/block/honey_crystal.png
+- textures/block/honey_crystal_formed.png
+
+================================================================================
+FONCTIONNEMENT
+================================================================================
+
+1. CONSTRUCTION
+   - Le joueur construit la structure selon le pattern
+   - Les stairs doivent pointer vers le centre (validation obligatoire)
+   - Les coins du 3x3 doivent être vides
+
+2. ACTIVATION
+   - Clic droit sur le Honey Crystal
+   - Si pattern valide → état FORMED = true
+   - Message de succès affiché
+
+3. DÉSACTIVATION
+   - Si un bloc du multibloc est cassé → reset complet
+   - L'altar doit être reconstruit et réactivé
+
+4. FONCTIONNALITÉ
+   - Actuellement: aucune (placeholder)
+   - À implémenter: GUI, processing, effets visuels
+
+================================================================================
+REGISTRES MODIFIÉS
+================================================================================
+
+BeemancerBlocks.java:
+- +HONEYED_STONE
+- +HONEYED_STONE_STAIR
+- +HONEY_PEDESTAL
+- +HONEY_CRYSTAL_CONDUIT
+- +HONEY_CRYSTAL (bloc, remplace l'item)
+
+BeemancerBlockEntities.java:
+- +HONEY_CRYSTAL
+
+BeemancerItems.java:
+- +HONEYED_STONE (BlockItem)
+- +HONEYED_STONE_STAIR (BlockItem)
+- +HONEY_PEDESTAL (BlockItem)
+- +HONEY_CRYSTAL_CONDUIT (BlockItem)
+- HONEY_CRYSTAL changé de Item → BlockItem
+
+BeemancerCreativeTabs.java:
+- Section "Honey Altar" ajoutée
+
+================================================================================
+TRADUCTIONS
+================================================================================
+
+EN:
+- block.beemancer.honeyed_stone: Honeyed Stone
+- block.beemancer.honeyed_stone_stair: Honeyed Stone Stairs
+- block.beemancer.honey_pedestal: Honey Pedestal
+- block.beemancer.honey_crystal_conduit: Honey Crystal Conduit
+- block.beemancer.honey_crystal: Honey Crystal
+- message.beemancer.honey_altar.formed: The Honey Altar has been formed!
+- message.beemancer.honey_altar.already_formed: The Honey Altar is already active
+- message.beemancer.honey_altar.invalid_structure: Invalid structure...
+
+FR:
+- block.beemancer.honeyed_stone: Pierre Miellée
+- block.beemancer.honeyed_stone_stair: Escalier en Pierre Miellée
+- block.beemancer.honey_pedestal: Piédestal de Miel
+- block.beemancer.honey_crystal_conduit: Conduit de Cristal de Miel
+- block.beemancer.honey_crystal: Cristal de Miel
+- message.beemancer.honey_altar.formed: L'Autel de Miel a été formé !
+- etc.
+
+================================================================================
+VALIDATION DU PATTERN
+================================================================================
+
+Le pattern est défini dans MultiblockPatterns.HONEY_ALTAR:
+
+```java
+MultiblockPattern.builder("honey_altar")
+    // Étage 1 (Y-2): Pedestal + Stairs
+    .add(0, -2, 0, block(HONEY_PEDESTAL))
+    .add(0, -2, -1, stairFacing(HONEYED_STONE_STAIR, Direction.SOUTH))
+    // ... etc
+    .build()
+```
+
+Validation via: MultiblockValidator.validate(pattern, level, controllerPos)
+
+Vérification des stairs:
+- Matcher: stairFacing(blockSupplier, Direction)
+- Vérifie: type, facing, half=BOTTOM
+
+================================================================================
+AMÉLIORATIONS FUTURES
+================================================================================
+
+- GUI pour l'altar formé
+- Recettes de processing spéciales
+- Effets visuels (particules, glow)
+- Sons de formation/activation
+- Renderer custom pour l'altar formé
+
+################################################################################

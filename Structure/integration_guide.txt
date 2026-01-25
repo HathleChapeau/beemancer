@@ -69,7 +69,9 @@ POUR AJOUTER UN NOUVEL ITEM AU REGISTRE
 
 1. Ajouter l'item dans core/registry/BeemancerItems.java
 2. Créer la classe de l'item si custom
-3. Mettre à jour Structure/registries_items.txt
+3. Créer le modèle JSON dans models/item/
+4. OBLIGATOIRE: Copier template_item.png → textures/item/[nom].png
+5. Mettre à jour Structure/registries_items.txt
 
 ================================================================================
 POUR AJOUTER UN NOUVEAU BLOC AU REGISTRE
@@ -78,7 +80,45 @@ POUR AJOUTER UN NOUVEAU BLOC AU REGISTRE
 1. Ajouter le bloc dans core/registry/BeemancerBlocks.java
 2. Créer la classe du bloc
 3. Si BlockEntity: créer la classe BlockEntity et l'enregistrer dans BeemancerBlockEntities.java
-4. Mettre à jour Structure/registries_blocks.txt
+4. Créer blockstate JSON et modèle(s) block/item
+5. OBLIGATOIRE: Copier template_texture.png → textures/block/[nom].png
+6. Mettre à jour Structure/registries_blocks.txt
+
+================================================================================
+POUR AJOUTER UNE NOUVELLE GUI/SCREEN
+================================================================================
+
+1. Créer le Menu dans common/menu/
+2. Créer le Screen dans client/gui/screen/
+3. Enregistrer le menu dans BeemancerMenus.java
+4. Enregistrer le screen dans ClientSetup.java
+5. OBLIGATOIRE: Copier template_gui.png → textures/gui/[nom].png
+   (Redimensionner si nécessaire selon la taille de la GUI)
+
+================================================================================
+TEMPLATES DE TEXTURES
+================================================================================
+
+Fichiers templates disponibles dans textures/:
+- template_texture.png : Pour les blocs (16x16)
+- template_item.png    : Pour les items (16x16)
+- template_gui.png     : Pour les GUI (redimensionner selon besoin)
+
+RÈGLE: Chaque nouveau bloc, item ou GUI DOIT avoir une texture placeholder
+créée à partir du template correspondant.
+
+================================================================================
+POUR AJOUTER UN NOUVEAU MULTIBLOC
+================================================================================
+
+1. Créer les blocs composants dans common/block/[feature]/
+2. Créer le contrôleur (bloc avec BlockEntity) qui gère l'état "formed"
+3. Créer la définition du pattern dans core/multiblock/patterns/
+   - Hériter de MultiblockPattern
+   - Définir getPatternDefinition() avec les positions relatives
+4. Enregistrer le pattern dans MultiblockPatterns.java
+5. Le contrôleur utilise MultiblockValidator.validate(pattern, level, pos)
+6. Mettre à jour Structure/feature_[nom].txt
 
 ================================================================================
 POUR AJOUTER UNE NOUVELLE FEATURE

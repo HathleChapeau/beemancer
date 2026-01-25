@@ -73,6 +73,22 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> INFUSER = ITEMS.register("infuser",
             () -> new BlockItem(BeemancerBlocks.INFUSER.get(), new Item.Properties()));
 
+    // --- HONEY ALTAR ---
+    public static final DeferredItem<BlockItem> HONEYED_STONE = ITEMS.register("honeyed_stone",
+            () -> new BlockItem(BeemancerBlocks.HONEYED_STONE.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> HONEYED_STONE_STAIR = ITEMS.register("honeyed_stone_stair",
+            () -> new BlockItem(BeemancerBlocks.HONEYED_STONE_STAIR.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> HONEY_PEDESTAL = ITEMS.register("honey_pedestal",
+            () -> new BlockItem(BeemancerBlocks.HONEY_PEDESTAL.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> HONEY_CRYSTAL_CONDUIT = ITEMS.register("honey_crystal_conduit",
+            () -> new BlockItem(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> HONEY_CRYSTAL = ITEMS.register("honey_crystal",
+            () -> new BlockItem(BeemancerBlocks.HONEY_CRYSTAL.get(), new Item.Properties()));
+
     // --- BEE ITEMS ---
     public static final DeferredItem<MagicBeeItem> MAGIC_BEE = ITEMS.register("magic_bee",
             () -> new MagicBeeItem(new Item.Properties()));
@@ -140,10 +156,7 @@ public class BeemancerItems {
     public static final DeferredItem<Item> RADIANT_CRYSTAL_SHARD = ITEMS.register("radiant_crystal_shard",
             () -> new Item(new Item.Properties()));
 
-    // --- HONEY CRYSTALS ---
-    public static final DeferredItem<Item> HONEY_CRYSTAL = ITEMS.register("honey_crystal",
-            () -> new Item(new Item.Properties()));
-
+    // --- HONEY CRYSTALS (higher tiers, item only) ---
     public static final DeferredItem<Item> ENRICHED_HONEY_CRYSTAL = ITEMS.register("enriched_honey_crystal",
             () -> new Item(new Item.Properties()));
 

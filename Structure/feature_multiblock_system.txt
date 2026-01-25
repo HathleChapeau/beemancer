@@ -1,0 +1,149 @@
+################################################################################
+#                      FEATURE: MULTIBLOCK SYSTEM                              #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Système modulaire et réutilisable pour créer des structures multiblocs.
+Permet de définir des patterns de manière déclarative et de les valider
+automatiquement, avec détection de destruction.
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          MULTIBLOCK SYSTEM                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   BlockMatcher          Predicates réutilisables (air, block, stairFacing)  │
+│        ↓                                                                     │
+│   MultiblockPattern     Définition déclarative d'un pattern                  │
+│        ↓                                                                     │
+│   MultiblockPatterns    Registre central de tous les patterns                │
+│        ↓                                                                     │
+│   MultiblockValidator   Validation générique de n'importe quel pattern       │
+│        ↓                                                                     │
+│   MultiblockController  Interface pour les BlockEntity contrôleurs           │
+│        ↓                                                                     │
+│   MultiblockEvents      Détection destruction de blocs                       │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+FICHIERS
+================================================================================
+
+core/multiblock/
+├── BlockMatcher.java         # Predicates: air(), block(), stairFacing(), any()
+├── MultiblockPattern.java    # Définition pattern avec Builder
+├── MultiblockPatterns.java   # Registre central (HONEY_ALTAR, etc.)
+├── MultiblockValidator.java  # Validation et utilitaires
+├── MultiblockController.java # Interface pour contrôleurs
+└── MultiblockEvents.java     # Event listener pour destruction
+
+================================================================================
+UTILISATION
+================================================================================
+
+1. DÉFINIR UN PATTERN (dans MultiblockPatterns.java):
+
+```java
+public static final MultiblockPattern MY_MULTIBLOCK = register(
+    MultiblockPattern.builder("my_multiblock")
+        // Position relative au contrôleur (0,0,0)
+        .add(0, -1, 0, block(BeemancerBlocks.MY_BASE))
+        .add(0, 1, 0, block(BeemancerBlocks.MY_TOP))
+        .add(1, 0, 0, air())  // Position doit être vide
+        .add(-1, 0, 0, stairFacing(BeemancerBlocks.MY_STAIR, Direction.EAST))
+        .build()
+);
+```
+
+2. IMPLÉMENTER LE CONTRÔLEUR (BlockEntity):
+
+```java
+public class MyControllerBlockEntity extends BlockEntity
+        implements MultiblockController {
+
+    private boolean formed = false;
+
+    @Override
+    public MultiblockPattern getPattern() {
+        return MultiblockPatterns.MY_MULTIBLOCK;
+    }
+
+    @Override
+    public boolean isFormed() { return formed; }
+
+    @Override
+    public BlockPos getControllerPos() { return worldPosition; }
+
+    @Override
+    public void onMultiblockFormed() {
+        formed = true;
+        MultiblockEvents.registerActiveController(level, worldPosition);
+        // Mettre à jour l'état visuel...
+    }
+
+    @Override
+    public void onMultiblockBroken() {
+        formed = false;
+        MultiblockEvents.unregisterController(worldPosition);
+        // Réinitialiser...
+    }
+
+    public boolean tryForm() {
+        if (MultiblockValidator.validate(getPattern(), level, worldPosition)) {
+            onMultiblockFormed();
+            return true;
+        }
+        return false;
+    }
+}
+```
+
+3. Les événements sont automatiquement gérés par MultiblockEvents.
+
+================================================================================
+MATCHERS DISPONIBLES
+================================================================================
+
+| Matcher                          | Description                              |
+|----------------------------------|------------------------------------------|
+| air()                            | Air ou bloc remplaçable                  |
+| block(supplier)                  | Bloc spécifique                          |
+| stairFacing(supplier, direction) | Escalier avec orientation                |
+| any()                            | N'importe quel bloc (skip validation)    |
+| or(matcher1, matcher2, ...)      | Au moins un matcher valide               |
+| and(matcher1, matcher2, ...)     | Tous les matchers valides                |
+
+================================================================================
+MULTIBLOCS ENREGISTRÉS
+================================================================================
+
+| ID          | Contrôleur            | Taille | Description                  |
+|-------------|-----------------------|--------|------------------------------|
+| honey_altar | HoneyCrystalBlockEntity | 3x3x5  | Autel de miel magique        |
+
+================================================================================
+NOTES TECHNIQUES
+================================================================================
+
+DÉTECTION DESTRUCTION:
+- MultiblockEvents écoute BlockEvent.BreakEvent
+- Vérifie si le bloc cassé fait partie d'un multibloc formé
+- Appelle onMultiblockBroken() sur le contrôleur
+
+CACHE DES CONTRÔLEURS:
+- activeControllers stocke les positions des contrôleurs formés
+- Nettoyé au ServerStopping
+- Réenregistré au onLoad() du BlockEntity
+
+VALIDATION:
+- validate() retourne un boolean simple
+- validateDetailed() retourne ValidationResult avec position/raison d'échec
+
+################################################################################

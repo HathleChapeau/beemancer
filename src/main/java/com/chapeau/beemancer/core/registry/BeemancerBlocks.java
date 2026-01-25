@@ -8,6 +8,7 @@ package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.*;
+import com.chapeau.beemancer.common.block.altar.*;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlock;
@@ -123,6 +124,44 @@ public class BeemancerBlocks {
             () -> new InfuserBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.WOOD)
+                    .requiresCorrectToolForDrops()));
+
+    // --- HONEY ALTAR ---
+    public static final DeferredBlock<HoneyedStoneBlock> HONEYED_STONE = BLOCKS.register("honeyed_stone",
+            () -> new HoneyedStoneBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<HoneyedStoneStairBlock> HONEYED_STONE_STAIR = BLOCKS.register("honeyed_stone_stair",
+            () -> new HoneyedStoneStairBlock(
+                    () -> HONEYED_STONE.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .strength(1.5f)
+                            .sound(SoundType.STONE)
+                            .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<HoneyPedestalBlock> HONEY_PEDESTAL = BLOCKS.register("honey_pedestal",
+            () -> new HoneyPedestalBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.STONE)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<HoneyCrystalConduitBlock> HONEY_CRYSTAL_CONDUIT = BLOCKS.register("honey_crystal_conduit",
+            () -> new HoneyCrystalConduitBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 8)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<HoneyCrystalBlock> HONEY_CRYSTAL = BLOCKS.register("honey_crystal",
+            () -> new HoneyCrystalBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> state.getValue(HoneyCrystalBlock.FORMED) ? 15 : 10)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
     // --- FLUID BLOCKS ---

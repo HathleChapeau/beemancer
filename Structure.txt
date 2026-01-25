@@ -182,6 +182,14 @@ LISTE DES FEATURES:
   Fichier: Structure/feature_building_wand.txt
   Description: Baguette de construction avec prévisualisation flood fill 2D
 
+→ Honey Altar
+  Fichier: Structure/feature_honey_altar.txt
+  Description: Multibloc 3x3x5 servant d'autel magique pour le Beemancer
+
+→ Multiblock System
+  Fichier: Structure/feature_multiblock_system.txt
+  Description: Système modulaire et réutilisable pour créer des structures multiblocs
+
 ================================================================================
 6. FEATURES EN COURS
 ================================================================================

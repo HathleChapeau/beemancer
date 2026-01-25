@@ -11,5 +11,10 @@
 | magic_hive       | MagicHiveBlock            | Oui          | Bee Housing  |
 | breeding_crystal | MagicBreedingCrystalBlock | Non          | Breeding     |
 | incubator        | IncubatorBlock            | Oui          | Incubator    |
+| honeyed_stone    | HoneyedStoneBlock         | Non          | Honey Altar  |
+| honeyed_stone_stair | HoneyedStoneStairBlock | Non          | Honey Altar  |
+| honey_pedestal   | HoneyPedestalBlock        | Non          | Honey Altar  |
+| honey_crystal_conduit | HoneyCrystalConduitBlock | Non       | Honey Altar  |
+| honey_crystal    | HoneyCrystalBlock         | Oui          | Honey Altar  |
 
 ################################################################################

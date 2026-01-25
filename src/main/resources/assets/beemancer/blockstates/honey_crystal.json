@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "beemancer:block/honey_crystal"
+    },
+    "formed=true": {
+      "model": "beemancer:block/honey_crystal_formed"
+    }
+  }
+}

@@ -75,8 +75,7 @@ public class BeemancerCreativeTabs {
                         output.accept(BeemancerItems.ENRICHED_CRYSTAL_SHARD.get());
                         output.accept(BeemancerItems.RADIANT_CRYSTAL_SHARD.get());
 
-                        // Honey Crystals
-                        output.accept(BeemancerItems.HONEY_CRYSTAL.get());
+                        // Honey Crystals (higher tiers)
                         output.accept(BeemancerItems.ENRICHED_HONEY_CRYSTAL.get());
                         output.accept(BeemancerItems.RADIANT_HONEY_CRYSTAL.get());
 
@@ -84,6 +83,13 @@ public class BeemancerCreativeTabs {
                         output.accept(BeemancerItems.STORAGE_CRATE.get());
                         output.accept(BeemancerItems.STORAGE_CONTROLLER.get());
                         output.accept(BeemancerItems.STORAGE_TERMINAL.get());
+
+                        // Honey Altar
+                        output.accept(BeemancerItems.HONEYED_STONE.get());
+                        output.accept(BeemancerItems.HONEYED_STONE_STAIR.get());
+                        output.accept(BeemancerItems.HONEY_PEDESTAL.get());
+                        output.accept(BeemancerItems.HONEY_CRYSTAL_CONDUIT.get());
+                        output.accept(BeemancerItems.HONEY_CRYSTAL.get());
                     })
                     .build());
 
