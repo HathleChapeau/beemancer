@@ -135,7 +135,7 @@ public class BeemancerBlocks {
 
     public static final DeferredBlock<HoneyedStoneStairBlock> HONEYED_STONE_STAIR = BLOCKS.register("honeyed_stone_stair",
             () -> new HoneyedStoneStairBlock(
-                    () -> HONEYED_STONE.get().defaultBlockState(),
+                    HONEYED_STONE.get().defaultBlockState(),
                     BlockBehaviour.Properties.of()
                             .strength(1.5f)
                             .sound(SoundType.STONE)
