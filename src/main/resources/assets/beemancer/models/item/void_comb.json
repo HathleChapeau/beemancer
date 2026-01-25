@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:combs/void_comb"
+    "layer0": "beemancer:item/combs/void_comb"
   }
 }

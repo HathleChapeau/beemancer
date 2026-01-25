@@ -37,8 +37,8 @@ import java.util.Set;
  * Utilise le modele vanilla de l'abeille avec des textures par espece.
  *
  * Structure des textures (tout en minuscules):
- * - textures/bees/{speciesid}_bee.png - Texture normale
- * - textures/bees/{speciesid}_bee_nectar.png - Texture avec pollen (optionnel)
+ * - textures/entity/bee/{speciesid}_bee.png - Texture normale
+ * - textures/entity/bee/{speciesid}_bee_nectar.png - Texture avec pollen (optionnel)
  *
  * Si la texture d'espece n'existe pas, utilise la texture vanilla.
  */
@@ -71,7 +71,7 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<Magic
         // Si l'espece a une texture valide, l'utiliser
         if (VALID_SPECIES_TEXTURES.contains(speciesId)) {
             // ResourceLocation requiert des minuscules uniquement
-            String texturePath = "textures/bees/" + speciesId + "_bee";
+            String texturePath = "textures/entity/bee/" + speciesId + "_bee";
 
             // Essayer d'abord la texture nectar si pollinisee
             if (pollinated) {
@@ -104,7 +104,7 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<Magic
         // ResourceLocation requiert des minuscules uniquement
         ResourceLocation textureLocation = ResourceLocation.fromNamespaceAndPath(
                 Beemancer.MOD_ID,
-                "textures/bees/" + speciesId + "_bee.png"
+                "textures/entity/bee/" + speciesId + "_bee.png"
         );
 
         if (resourceExists(textureLocation)) {
