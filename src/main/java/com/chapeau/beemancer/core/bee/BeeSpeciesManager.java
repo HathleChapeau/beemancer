@@ -180,7 +180,7 @@ public class BeeSpeciesManager {
         data.environment = json.has("environment") ? json.get("environment").getAsInt() : 0;
         data.flowerType = json.has("flower_type") ? json.get("flower_type").getAsString() : "flower";
         data.dayNight = json.has("day_night") ? json.get("day_night").getAsString() : "day";
-        data.texture = json.has("texture") ? json.get("texture").getAsString() : id + "_Bee";
+        data.texture = json.has("texture") ? json.get("texture").getAsString().toLowerCase() : id + "_bee";
         data.pollen = json.has("pollen") && !json.get("pollen").isJsonNull()
                 ? json.get("pollen").getAsString() : null;
 
@@ -382,7 +382,7 @@ public class BeeSpeciesManager {
 
         public BeeSpeciesData(String id) {
             this.id = id;
-            this.texture = id.substring(0, 1).toUpperCase() + id.substring(1) + "_Bee";
+            this.texture = id + "_bee";
         }
 
         public int getStatLevel(StatType statType) {

@@ -36,9 +36,9 @@ import java.util.Set;
  * Renderer custom pour les abeilles magiques.
  * Utilise le modele vanilla de l'abeille avec des textures par espece.
  *
- * Structure des textures:
- * - textures/bees/{Species}_Bee.png - Texture normale
- * - textures/bees/{Species}_Bee_Nectar.png - Texture avec pollen (optionnel)
+ * Structure des textures (tout en minuscules):
+ * - textures/bees/{speciesid}_bee.png - Texture normale
+ * - textures/bees/{speciesid}_bee_nectar.png - Texture avec pollen (optionnel)
  *
  * Si la texture d'espece n'existe pas, utilise la texture vanilla.
  */
@@ -70,13 +70,14 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<Magic
 
         // Si l'espece a une texture valide, l'utiliser
         if (VALID_SPECIES_TEXTURES.contains(speciesId)) {
-            String textureName = capitalizeSpeciesId(speciesId) + "_Bee";
+            // ResourceLocation requiert des minuscules uniquement
+            String texturePath = "textures/bees/" + speciesId + "_bee";
 
             // Essayer d'abord la texture nectar si pollinisee
             if (pollinated) {
                 ResourceLocation nectarTexture = ResourceLocation.fromNamespaceAndPath(
                         Beemancer.MOD_ID,
-                        "textures/bees/" + textureName + "_Nectar.png"
+                        texturePath + "_nectar.png"
                 );
                 if (resourceExists(nectarTexture)) {
                     return nectarTexture;
@@ -86,7 +87,7 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<Magic
             // Texture normale
             return ResourceLocation.fromNamespaceAndPath(
                     Beemancer.MOD_ID,
-                    "textures/bees/" + textureName + ".png"
+                    texturePath + ".png"
             );
         }
 
@@ -95,35 +96,15 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<Magic
     }
 
     /**
-     * Convertit un speciesId en nom de texture (ex: "meadow" -> "Meadow", "rose_stone" -> "Rose_Stone")
-     */
-    private String capitalizeSpeciesId(String speciesId) {
-        StringBuilder result = new StringBuilder();
-        boolean capitalizeNext = true;
-        for (char c : speciesId.toCharArray()) {
-            if (c == '_') {
-                result.append('_');
-                capitalizeNext = true;
-            } else if (capitalizeNext) {
-                result.append(Character.toUpperCase(c));
-                capitalizeNext = false;
-            } else {
-                result.append(c);
-            }
-        }
-        return result.toString();
-    }
-
-    /**
      * Verifie si une espece a une texture custom et met en cache le resultat.
      */
     private void checkSpeciesTexture(String speciesId) {
         CHECKED_SPECIES.add(speciesId);
 
-        String textureName = capitalizeSpeciesId(speciesId) + "_Bee";
+        // ResourceLocation requiert des minuscules uniquement
         ResourceLocation textureLocation = ResourceLocation.fromNamespaceAndPath(
                 Beemancer.MOD_ID,
-                "textures/bees/" + textureName + ".png"
+                "textures/bees/" + speciesId + "_bee.png"
         );
 
         if (resourceExists(textureLocation)) {
