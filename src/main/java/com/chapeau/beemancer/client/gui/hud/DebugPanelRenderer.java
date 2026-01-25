@@ -154,6 +154,18 @@ public class DebugPanelRenderer {
             textY += LINE_HEIGHT;
         }
 
+        // Display Debug
+        String label = "Display Debug: ";
+        String value = "" + DebugWandItem.displayDebug;
+
+        int labelColor = LABEL_COLOR;
+        int valueColor = DebugWandItem.displayDebug ? SELECTED_COLOR : VALUE_COLOR;
+
+        graphics.drawString(font, label, textX, textY, labelColor, false);
+        graphics.drawString(font, value, textX + font.width(label), textY, valueColor, false);
+
+        textY += LINE_HEIGHT;
+
         // Ligne séparatrice
         textY += 2;
         graphics.fill(x + 2, textY - 1, x + boxWidth - 2, textY, BORDER_COLOR);
