@@ -65,7 +65,10 @@ public class DebugPanelRenderer {
         if (player == null) return;
 
         // Vérifier si le joueur tient la debug wand
-        if (!isHoldingDebugWand(player)) return;
+        if (!isHoldingDebugWand(player)) {
+            DebugWandItem.onNotHolding();
+            return;
+        }
 
         GuiGraphics graphics = event.getGuiGraphics();
         Font font = mc.font;
@@ -106,7 +109,7 @@ public class DebugPanelRenderer {
         int boxWidth = maxWidth + PADDING * 2;
         int boxHeight = PADDING * 2 + LINE_HEIGHT // Titre
                 + LINE_HEIGHT * 9 + PADDING       // 9 valeurs
-                + LINE_HEIGHT * 3 + PADDING;      // 3 lignes de hints
+                + LINE_HEIGHT * 4 + PADDING;      // 4 lignes de hints
 
         int x = BOX_MARGIN;
         int y = BOX_MARGIN;

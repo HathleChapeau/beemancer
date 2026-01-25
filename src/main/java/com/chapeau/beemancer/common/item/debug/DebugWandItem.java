@@ -13,7 +13,12 @@
  */
 package com.chapeau.beemancer.common.item.debug;
 
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 /**
  * Baguette de debug permettant d'ajuster 9 valeurs en temps réel.
@@ -51,8 +56,29 @@ public class DebugWandItem extends Item {
     // Index de la valeur sélectionnée (1-9)
     public static int selectedIndex = 1;
 
+    // Mode d'affichage debug (toggle avec clic droit)
+    public static boolean displayDebug = false;
+
     public DebugWandItem(Properties properties) {
         super(properties.stacksTo(1));
+    }
+
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        if (level.isClientSide()) {
+            displayDebug = !displayDebug;
+        }
+        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
+    }
+
+    /**
+     * Reset displayDebug quand la baguette n'est plus tenue.
+     * Appelé par DebugPanelRenderer.
+     */
+    public static void onNotHolding() {
+        if (displayDebug) {
+            displayDebug = false;
+        }
     }
 
     /**
