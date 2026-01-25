@@ -34,17 +34,17 @@ import java.util.Set;
 
 /**
  * Renderer custom pour les abeilles magiques.
- * Supporte des textures différentes par espèce et état (pollinisé/non pollinisé).
+ * Utilise le modele vanilla de l'abeille avec des textures par espece.
  *
  * Structure des textures:
- * - textures/entity/bee/{species}.png - Texture normale
- * - textures/entity/bee/{species}_nectar.png - Texture avec pollen
+ * - textures/bees/{Species}_Bee.png - Texture normale
+ * - textures/bees/{Species}_Bee_Nectar.png - Texture avec pollen (optionnel)
  *
- * Si la texture d'espèce n'existe pas, utilise la texture vanilla.
+ * Si la texture d'espece n'existe pas, utilise la texture vanilla.
  */
 public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<MagicBeeEntity>> {
 
-    // Cache des espèces avec textures custom valides
+    // Cache des especes avec textures custom valides
     private static final Set<String> VALID_SPECIES_TEXTURES = new HashSet<>();
     private static final Set<String> CHECKED_SPECIES = new HashSet<>();
 
@@ -63,29 +63,31 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<Magic
         String speciesId = bee.getSpeciesId();
         boolean pollinated = bee.isPollinated();
 
-        // Vérifier si cette espèce a une texture custom (avec cache)
+        // Verifier si cette espece a une texture custom (avec cache)
         if (!CHECKED_SPECIES.contains(speciesId)) {
             checkSpeciesTexture(speciesId);
         }
 
-        // Si l'espèce a une texture valide, l'utiliser
+        // Si l'espece a une texture valide, l'utiliser
         if (VALID_SPECIES_TEXTURES.contains(speciesId)) {
-            String suffix = pollinated ? "_nectar" : "";
-            ResourceLocation customTexture = ResourceLocation.fromNamespaceAndPath(
-                    Beemancer.MOD_ID,
-                    "textures/entity/bee/" + speciesId + suffix + ".png"
-            );
+            String textureName = capitalizeSpeciesId(speciesId) + "_Bee";
 
-            // Vérifier aussi la texture nectar si pollinated
-            if (pollinated && !resourceExists(customTexture)) {
-                // Fallback sur texture normale si nectar n'existe pas
-                customTexture = ResourceLocation.fromNamespaceAndPath(
+            // Essayer d'abord la texture nectar si pollinisee
+            if (pollinated) {
+                ResourceLocation nectarTexture = ResourceLocation.fromNamespaceAndPath(
                         Beemancer.MOD_ID,
-                        "textures/entity/bee/" + speciesId + ".png"
+                        "textures/bees/" + textureName + "_Nectar.png"
                 );
+                if (resourceExists(nectarTexture)) {
+                    return nectarTexture;
+                }
             }
 
-            return customTexture;
+            // Texture normale
+            return ResourceLocation.fromNamespaceAndPath(
+                    Beemancer.MOD_ID,
+                    "textures/bees/" + textureName + ".png"
+            );
         }
 
         // Fallback vers vanilla
@@ -93,14 +95,35 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, BeeModel<Magic
     }
 
     /**
-     * Vérifie si une espèce a une texture custom et met en cache le résultat.
+     * Convertit un speciesId en nom de texture (ex: "meadow" -> "Meadow", "rose_stone" -> "Rose_Stone")
+     */
+    private String capitalizeSpeciesId(String speciesId) {
+        StringBuilder result = new StringBuilder();
+        boolean capitalizeNext = true;
+        for (char c : speciesId.toCharArray()) {
+            if (c == '_') {
+                result.append('_');
+                capitalizeNext = true;
+            } else if (capitalizeNext) {
+                result.append(Character.toUpperCase(c));
+                capitalizeNext = false;
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Verifie si une espece a une texture custom et met en cache le resultat.
      */
     private void checkSpeciesTexture(String speciesId) {
         CHECKED_SPECIES.add(speciesId);
 
+        String textureName = capitalizeSpeciesId(speciesId) + "_Bee";
         ResourceLocation textureLocation = ResourceLocation.fromNamespaceAndPath(
                 Beemancer.MOD_ID,
-                "textures/entity/bee/" + speciesId + ".png"
+                "textures/bees/" + textureName + ".png"
         );
 
         if (resourceExists(textureLocation)) {
