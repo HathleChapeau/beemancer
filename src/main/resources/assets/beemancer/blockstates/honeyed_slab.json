@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "beemancer:block/honeyed_slab"
+    },
+    "type=top": {
+      "model": "beemancer:block/honeyed_slab_top"
+    },
+    "type=double": {
+      "model": "beemancer:block/honeyed_stone"
+    }
+  }
+}

@@ -197,8 +197,13 @@
   "block.beemancer.honey_pedestal": "Honey Pedestal",
   "block.beemancer.honey_crystal_conduit": "Honey Crystal Conduit",
   "block.beemancer.honey_crystal": "Honey Crystal",
+  "block.beemancer.honeyed_slab": "Honeyed Stone Slab",
+  "block.beemancer.hive_multiblock": "Hive Block",
 
   "message.beemancer.honey_altar.formed": "The Honey Altar has been formed!",
   "message.beemancer.honey_altar.already_formed": "The Honey Altar is already active",
-  "message.beemancer.honey_altar.invalid_structure": "Invalid structure - check the altar pattern"
+  "message.beemancer.honey_altar.invalid_structure": "Invalid structure - check the altar pattern",
+
+  "message.beemancer.hive_multiblock.formed": "The Hive Multiblock has been formed!",
+  "container.beemancer.hive_multiblock": "Hive Multiblock"
 }

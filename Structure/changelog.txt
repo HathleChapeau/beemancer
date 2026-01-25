@@ -3,6 +3,49 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Hive Multiblock Bug Fixes
+================================================================================
+
+CORRECTIONS:
+- HiveMultiblockBlockEntity.java:
+  - Skip slabs (Y>=3) dans formMultiblock() et onBroken() - slabs n'ont pas de BlockEntity
+  - +breedingCooldown dans saveAdditional() et loadAdditional() (persistance NBT)
+  - +Message de formation envoyé aux joueurs proches (rayon 16 blocs)
+
+TRADUCTIONS AJOUTÉES:
+- en_us.json: +message.beemancer.hive_multiblock.formed, +container.beemancer.hive_multiblock
+- fr_fr.json: +message.beemancer.hive_multiblock.formed, +container.beemancer.hive_multiblock
+
+================================================================================
+2026-01-25 - Hive Multiblock
+================================================================================
+
+AJOUTS:
+- common/block/hive/HiveMultiblockBlock.java (bloc de structure)
+- common/block/hive/HiveMultiblockBlockEntity.java (logique ruche)
+- common/block/altar/HoneyedSlabBlock.java (slab)
+- MultiblockPatterns.java: +HIVE_MULTIBLOCK pattern
+- BlockMatcher.java: +slab() matcher
+
+REGISTRES:
+- BeemancerBlocks.java: +HONEYED_SLAB, +HIVE_MULTIBLOCK
+- BeemancerBlockEntities.java: +HIVE_MULTIBLOCK
+- BeemancerItems.java: +HONEYED_SLAB, +HIVE_MULTIBLOCK
+- BeemancerCreativeTabs.java: +HONEYED_SLAB, +HIVE_MULTIBLOCK
+
+ASSETS:
+- blockstates/honeyed_slab.json, hive_multiblock.json
+- models/block/honeyed_slab*.json, hive_multiblock.json
+- models/item/honeyed_slab.json, hive_multiblock.json
+- textures/block/hive_multiblock.png (placeholder)
+
+NOUVELLE FEATURE:
+- Ruche multibloc: 3x3x3 blocs + 3x3 slabs sur le dessus
+- Fonctionne exactement comme MagicHive une fois formé
+- 5 slots abeilles, 7 slots output, breeding
+- Casser un bloc = drop tous les items
+
+================================================================================
 2026-01-25 - Multiblock Tank Bug Fixes
 ================================================================================
 

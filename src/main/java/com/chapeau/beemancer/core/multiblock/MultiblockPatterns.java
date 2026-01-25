@@ -115,6 +115,62 @@ public class MultiblockPatterns {
             .build()
     );
 
+    // ==================== HIVE MULTIBLOCK ====================
+    // Structure 3x3x3 + 3x3 slabs on top, contrôleur au centre Y+0
+    //
+    // Étage 3 (Y+3 relatif): 3x3 Honeyed Slabs
+    // Étage 0-2 (Y+0 à Y+2 relatif): 3x3x3 Hive Multiblock blocks
+    // Controller at (0, 0, 0) = center of bottom layer
+
+    public static final MultiblockPattern HIVE_MULTIBLOCK = register(
+        MultiblockPattern.builder("hive_multiblock")
+            // Layer 0 (Y+0): 3x3 hive blocks (center is controller, don't check it)
+            .add(-1, 0, -1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(0, 0, -1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(1, 0, -1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(-1, 0, 0, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            // (0, 0, 0) is the controller - skip
+            .add(1, 0, 0, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(-1, 0, 1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(0, 0, 1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(1, 0, 1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+
+            // Layer 1 (Y+1): 3x3 hive blocks
+            .add(-1, 1, -1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(0, 1, -1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(1, 1, -1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(-1, 1, 0, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(0, 1, 0, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(1, 1, 0, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(-1, 1, 1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(0, 1, 1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(1, 1, 1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+
+            // Layer 2 (Y+2): 3x3 hive blocks
+            .add(-1, 2, -1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(0, 2, -1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(1, 2, -1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(-1, 2, 0, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(0, 2, 0, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(1, 2, 0, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(-1, 2, 1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(0, 2, 1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+            .add(1, 2, 1, block(BeemancerBlocks.HIVE_MULTIBLOCK))
+
+            // Layer 3 (Y+3): 3x3 honeyed slabs on top
+            .add(-1, 3, -1, slab(BeemancerBlocks.HONEYED_SLAB))
+            .add(0, 3, -1, slab(BeemancerBlocks.HONEYED_SLAB))
+            .add(1, 3, -1, slab(BeemancerBlocks.HONEYED_SLAB))
+            .add(-1, 3, 0, slab(BeemancerBlocks.HONEYED_SLAB))
+            .add(0, 3, 0, slab(BeemancerBlocks.HONEYED_SLAB))
+            .add(1, 3, 0, slab(BeemancerBlocks.HONEYED_SLAB))
+            .add(-1, 3, 1, slab(BeemancerBlocks.HONEYED_SLAB))
+            .add(0, 3, 1, slab(BeemancerBlocks.HONEYED_SLAB))
+            .add(1, 3, 1, slab(BeemancerBlocks.HONEYED_SLAB))
+
+            .build()
+    );
+
     private static MultiblockPattern register(MultiblockPattern pattern) {
         PATTERNS.put(pattern.getId(), pattern);
         return pattern;

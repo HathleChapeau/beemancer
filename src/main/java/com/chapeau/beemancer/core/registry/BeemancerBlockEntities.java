@@ -8,6 +8,7 @@ package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlockEntity;
+import com.chapeau.beemancer.common.block.hive.HiveMultiblockBlockEntity;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.*;
@@ -54,11 +55,18 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.BEE_CREATOR.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<MagicHiveBlockEntity>> MAGIC_HIVE = 
+    public static final Supplier<BlockEntityType<MagicHiveBlockEntity>> MAGIC_HIVE =
             BLOCK_ENTITIES.register("magic_hive",
                     () -> BlockEntityType.Builder.of(
                             MagicHiveBlockEntity::new,
                             BeemancerBlocks.MAGIC_HIVE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<HiveMultiblockBlockEntity>> HIVE_MULTIBLOCK =
+            BLOCK_ENTITIES.register("hive_multiblock",
+                    () -> BlockEntityType.Builder.of(
+                            HiveMultiblockBlockEntity::new,
+                            BeemancerBlocks.HIVE_MULTIBLOCK.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<IncubatorBlockEntity>> INCUBATOR = 

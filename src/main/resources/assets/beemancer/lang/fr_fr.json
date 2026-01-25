@@ -197,8 +197,13 @@
   "block.beemancer.honey_pedestal": "Piédestal de Miel",
   "block.beemancer.honey_crystal_conduit": "Conduit de Cristal de Miel",
   "block.beemancer.honey_crystal": "Cristal de Miel",
+  "block.beemancer.honeyed_slab": "Dalle en Pierre Miellée",
+  "block.beemancer.hive_multiblock": "Bloc de Ruche",
 
   "message.beemancer.honey_altar.formed": "L'Autel de Miel a été formé !",
   "message.beemancer.honey_altar.already_formed": "L'Autel de Miel est déjà actif",
-  "message.beemancer.honey_altar.invalid_structure": "Structure invalide - vérifiez le pattern de l'autel"
+  "message.beemancer.honey_altar.invalid_structure": "Structure invalide - vérifiez le pattern de l'autel",
+
+  "message.beemancer.hive_multiblock.formed": "Le Multibloc de Ruche a été formé !",
+  "container.beemancer.hive_multiblock": "Multibloc de Ruche"
 }

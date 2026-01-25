@@ -116,4 +116,11 @@ public class BlockMatcher {
             return true;
         };
     }
+
+    /**
+     * Accepte une slab (top ou bottom).
+     */
+    public static Matcher slab(Supplier<? extends Block> blockSupplier) {
+        return (level, pos) -> level.getBlockState(pos).is(blockSupplier.get());
+    }
 }

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "beemancer:block/honeyed_stone",
+    "top": "beemancer:block/honeyed_stone",
+    "side": "beemancer:block/honeyed_stone"
+  }
+}

@@ -11,6 +11,7 @@ import com.chapeau.beemancer.common.block.alchemy.*;
 import com.chapeau.beemancer.common.block.altar.*;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
+import com.chapeau.beemancer.common.block.hive.HiveMultiblockBlock;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlock;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
@@ -229,6 +230,19 @@ public class BeemancerBlocks {
                     .lightLevel(state -> state.getValue(HoneyCrystalBlock.FORMED) ? 15 : 10)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<HoneyedSlabBlock> HONEYED_SLAB = BLOCKS.register("honeyed_slab",
+            () -> new HoneyedSlabBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    // --- HIVE MULTIBLOCK ---
+    public static final DeferredBlock<HiveMultiblockBlock> HIVE_MULTIBLOCK = BLOCKS.register("hive_multiblock",
+            () -> new HiveMultiblockBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion()));
 
     // --- FLUID BLOCKS ---
     public static final DeferredBlock<LiquidBlock> HONEY_FLUID_BLOCK = BLOCKS.register("honey",

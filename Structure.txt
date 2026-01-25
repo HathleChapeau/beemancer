@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-01-25                     #
-#                         (Infuser Tiers + Multiblock Tank)                    #
+#                         (Hive Multiblock Bug Fixes)                          #
 ################################################################################
 
 ================================================================================
@@ -198,6 +198,10 @@ LISTE DES FEATURES:
 → Multiblock Fluid Tank
   Fichier: Structure/feature_multiblock_tank.txt
   Description: Tank extensible par blocs adjacents avec validation cuboïde
+
+→ Hive Multiblock
+  Fichier: Structure/feature_hive_multiblock.txt
+  Description: Ruche multibloc 3x3x3 + slabs, fonctionne comme MagicHive
 
 ================================================================================
 6. FEATURES EN COURS
