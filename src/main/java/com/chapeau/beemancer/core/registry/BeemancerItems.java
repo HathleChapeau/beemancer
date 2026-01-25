@@ -11,6 +11,7 @@ import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.BeeWandItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.item.codex.CodexItem;
+import com.chapeau.beemancer.common.item.tool.BuildingWandItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
@@ -82,6 +83,9 @@ public class BeemancerItems {
     // --- TOOLS ---
     public static final DeferredItem<BeeWandItem> BEE_WAND = ITEMS.register("bee_wand",
             () -> new BeeWandItem(new Item.Properties()));
+
+    public static final DeferredItem<BuildingWandItem> BUILDING_WAND = ITEMS.register("building_wand",
+            () -> new BuildingWandItem(new Item.Properties()));
 
     // --- CODEX ---
     public static final DeferredItem<CodexItem> CODEX = ITEMS.register("codex",

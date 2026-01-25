@@ -1,0 +1,99 @@
+################################################################################
+#                         FEATURE: BUILDING WAND                               #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Baguette de construction magique permettant de placer plusieurs blocs à la fois.
+La baguette détecte automatiquement les blocs adjacents du même type et affiche
+une prévisualisation des emplacements de placement.
+
+================================================================================
+FONCTIONNEMENT
+================================================================================
+
+1. DÉTECTION
+   - Le joueur vise un bloc avec la baguette
+   - La baguette identifie la face visée et le type de bloc
+
+2. FLOOD FILL 2D
+   - Algorithme BFS sur le plan perpendiculaire à la face visée
+   - 8 directions: 4 cardinales + 4 diagonales
+   - Critères de propagation:
+     - Position doit être remplaçable (air, herbe, etc.)
+     - Le bloc "derrière" (côté source) doit être du même type
+   - Distance max: Chebyshev (diagonales = 1 pas)
+
+3. LIMITES
+   - Maximum 15 blocs par utilisation
+   - En survie: min(15, items dans inventaire)
+   - En créatif: toujours 15 max
+
+4. PRÉVISUALISATION
+   - Contours blancs autour des blocs à placer
+   - Rendu client uniquement (AFTER_TRANSLUCENT_BLOCKS)
+   - Cache intelligent: recalcule uniquement si cible/face/inventaire change
+
+5. PLACEMENT
+   - Clic droit: place tous les blocs prévisualisés
+   - Utilise getStateForPlacement pour orientation correcte
+   - Consomme les items de l'inventaire (survie)
+   - Son de placement joué une fois
+
+================================================================================
+FICHIERS
+================================================================================
+
+SCRIPTS:
+- common/item/tool/BuildingWandItem.java
+  - Logique flood fill et placement
+  - calculatePreviewPositions() (static, appelé par renderer)
+  - useOn() pour placement
+
+- client/renderer/BuildingWandPreviewRenderer.java
+  - Event listener RenderLevelStageEvent
+  - Dessine contours avec LevelRenderer.renderLineBox()
+
+ASSETS:
+- assets/beemancer/models/item/building_wand.json
+- assets/beemancer/textures/item/building_wand.png
+
+TRADUCTIONS:
+- item.beemancer.building_wand: "Building Wand" / "Baguette de Construction"
+
+================================================================================
+REGISTRES MODIFIÉS
+================================================================================
+
+- BeemancerItems.java: BUILDING_WAND
+- BeemancerCreativeTabs.java: BUILDING_WAND (Tools section)
+
+================================================================================
+AMÉLIORATIONS POSSIBLES
+================================================================================
+
+P3 - COULEUR DYNAMIQUE
+   - Problème: Pas d'indication visuelle des ressources
+   - Solution: Blanc=OK, Jaune=limité, Rouge=vide
+   - Impact: UX
+
+P3 - INDICATEUR DE COMPTE
+   - Problème: Joueur ne sait pas combien seront placés
+   - Solution: Afficher nombre au-dessus du curseur ou dans actionbar
+   - Impact: UX
+
+P4 - DISTANCE MAX RENDU
+   - Problème: Calcul même si bloc très loin
+   - Solution: Skip si distance > 64 blocs
+   - Impact: Performance
+
+================================================================================
+DÉPENDANCES
+================================================================================
+
+- ClientSetup.java: Enregistrement de l'event renderer
+- NeoForge.EVENT_BUS: RenderLevelStageEvent
+
+################################################################################

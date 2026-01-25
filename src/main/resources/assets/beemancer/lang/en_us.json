@@ -62,6 +62,7 @@
   "item.beemancer.bee_larva.shift_hint": "Hold SHIFT for gene details",
   
   "item.beemancer.bee_wand": "Bee Wand",
+  "item.beemancer.building_wand": "Building Wand",
   "item.beemancer.bee_wand.has_selection": "Bee selected",
   "item.beemancer.bee_wand.no_selection_hint": "No bee selected",
   "item.beemancer.bee_wand.selected": "Bee selected!",
@@ -173,6 +174,9 @@
 
   "gui.beemancer.storage_terminal.search": "Search...",
   "gui.beemancer.storage_terminal.request": "Request Items",
+  "gui.beemancer.storage_terminal.pending_title": "Pending Requests",
+  "gui.beemancer.storage_terminal.pending_count": "%d items waiting",
+  "gui.beemancer.storage_terminal.pending_types": "%d different types",
   "gui.beemancer.cancel": "Cancel",
   "gui.beemancer.request": "Request"
 }

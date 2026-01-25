@@ -26,7 +26,9 @@ import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -42,8 +44,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * Terminal d'accès au réseau de stockage.
@@ -52,6 +57,7 @@ import java.util.List;
  * - Liaison à un Storage Controller
  * - 9 slots de dépôt (items → réseau)
  * - 9 slots de pickup (requêtes → joueur)
+ * - File d'attente pour les requêtes quand pas assez de place
  * - Accès aux items agrégés via le controller
  */
 public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvider, Container {
@@ -59,6 +65,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     public static final int DEPOSIT_SLOTS = 9;
     public static final int PICKUP_SLOTS = 9;
     public static final int TOTAL_SLOTS = DEPOSIT_SLOTS + PICKUP_SLOTS;
+    private static final int MAX_PENDING_REQUESTS = 16;
 
     // Position du controller lié
     @Nullable
@@ -66,6 +73,9 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     // Flag pour éviter la récursion lors du dépôt
     private boolean isDepositing = false;
+
+    // File d'attente des requêtes en attente
+    private final Queue<PendingRequest> pendingRequests = new LinkedList<>();
 
     // Slots internes
     private final ItemStackHandler depositSlots = new ItemStackHandler(DEPOSIT_SLOTS) {
@@ -83,6 +93,10 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
+            // Quand un slot se libère, traiter la file d'attente
+            if (getStackInSlot(slot).isEmpty()) {
+                processPendingRequests();
+            }
         }
     };
 
@@ -121,6 +135,8 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
             }
         }
         controllerPos = null;
+        // Annuler les requêtes en attente et remettre les items dans le réseau
+        cancelAllPendingRequests();
         setChanged();
         syncToClient();
     }
@@ -168,14 +184,28 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     /**
      * Demande des items au réseau.
+     * Si pas assez de place dans les slots pickup, les items restants
+     * sont mis en file d'attente.
      *
-     * @return les items extraits, placés dans les slots pickup
+     * @return les items extraits immédiatement (peut être moins que demandé)
      */
     public ItemStack requestItem(ItemStack template, int count) {
         StorageControllerBlockEntity controller = getController();
         if (controller == null) return ItemStack.EMPTY;
 
-        ItemStack extracted = controller.extractItem(template, count);
+        // Calculer l'espace disponible dans les slots pickup
+        int availableSpace = calculateAvailableSpace(template);
+
+        if (availableSpace <= 0) {
+            // Pas de place du tout, ajouter tout à la file d'attente
+            addToPendingQueue(template.copy(), count);
+            return ItemStack.EMPTY;
+        }
+
+        // Extraire ce qu'on peut placer immédiatement
+        int toExtractNow = Math.min(count, availableSpace);
+        ItemStack extracted = controller.extractItem(template, toExtractNow);
+
         if (extracted.isEmpty()) return ItemStack.EMPTY;
 
         // Placer dans les slots pickup
@@ -184,12 +214,136 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
             remaining = pickupSlots.insertItem(i, remaining, false);
         }
 
-        // Si reste des items, les remettre dans le réseau
+        // Si reste des items (ne devrait pas arriver), les remettre dans le réseau
         if (!remaining.isEmpty()) {
             controller.depositItem(remaining);
         }
 
+        // Ajouter le reste à la file d'attente
+        int pendingCount = count - extracted.getCount();
+        if (pendingCount > 0) {
+            addToPendingQueue(template.copy(), pendingCount);
+        }
+
+        setChanged();
         return extracted;
+    }
+
+    /**
+     * Calcule l'espace disponible dans les slots pickup pour un type d'item.
+     */
+    private int calculateAvailableSpace(ItemStack template) {
+        int space = 0;
+        for (int i = 0; i < PICKUP_SLOTS; i++) {
+            ItemStack existing = pickupSlots.getStackInSlot(i);
+            if (existing.isEmpty()) {
+                space += template.getMaxStackSize();
+            } else if (ItemStack.isSameItemSameComponents(existing, template)) {
+                space += existing.getMaxStackSize() - existing.getCount();
+            }
+        }
+        return space;
+    }
+
+    /**
+     * Ajoute une requête à la file d'attente.
+     */
+    private void addToPendingQueue(ItemStack template, int count) {
+        if (count <= 0) return;
+
+        // Limiter le nombre de requêtes en attente
+        if (pendingRequests.size() >= MAX_PENDING_REQUESTS) {
+            return;
+        }
+
+        // Fusionner avec une requête existante pour le même item
+        for (PendingRequest request : pendingRequests) {
+            if (ItemStack.isSameItemSameComponents(request.item, template)) {
+                request.count += count;
+                setChanged();
+                return;
+            }
+        }
+
+        // Nouvelle requête
+        pendingRequests.add(new PendingRequest(template.copyWithCount(1), count));
+        setChanged();
+    }
+
+    /**
+     * Traite les requêtes en attente quand de la place se libère.
+     */
+    private void processPendingRequests() {
+        if (level == null || level.isClientSide()) return;
+        if (pendingRequests.isEmpty()) return;
+
+        StorageControllerBlockEntity controller = getController();
+        if (controller == null) return;
+
+        // Traiter chaque requête dans l'ordre
+        List<PendingRequest> toRemove = new ArrayList<>();
+
+        for (PendingRequest request : pendingRequests) {
+            int availableSpace = calculateAvailableSpace(request.item);
+            if (availableSpace <= 0) continue;
+
+            int toExtract = Math.min(request.count, availableSpace);
+            ItemStack extracted = controller.extractItem(request.item, toExtract);
+
+            if (!extracted.isEmpty()) {
+                // Placer dans les slots pickup
+                ItemStack remaining = extracted.copy();
+                for (int i = 0; i < PICKUP_SLOTS && !remaining.isEmpty(); i++) {
+                    remaining = pickupSlots.insertItem(i, remaining, false);
+                }
+
+                // Remettre le reste dans le réseau (ne devrait pas arriver)
+                if (!remaining.isEmpty()) {
+                    controller.depositItem(remaining);
+                    extracted.shrink(remaining.getCount());
+                }
+
+                // Mettre à jour la requête
+                request.count -= extracted.getCount();
+
+                if (request.count <= 0) {
+                    toRemove.add(request);
+                }
+            }
+        }
+
+        pendingRequests.removeAll(toRemove);
+
+        if (!toRemove.isEmpty()) {
+            setChanged();
+        }
+    }
+
+    /**
+     * Annule toutes les requêtes en attente.
+     * Les items réservés sont remis dans le réseau.
+     */
+    private void cancelAllPendingRequests() {
+        pendingRequests.clear();
+        setChanged();
+    }
+
+    /**
+     * Retourne la liste des requêtes en attente (lecture seule).
+     */
+    public List<PendingRequest> getPendingRequests() {
+        return Collections.unmodifiableList(new ArrayList<>(pendingRequests));
+    }
+
+    /**
+     * Retourne le nombre total d'items en attente.
+     */
+    public int getTotalPendingCount() {
+        int total = 0;
+        for (PendingRequest request : pendingRequests) {
+            total += request.count;
+        }
+        return total;
     }
 
     /**
@@ -211,6 +365,15 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
             depositSlots.setStackInSlot(slot, remaining);
         } finally {
             isDepositing = false;
+        }
+    }
+
+    // === Tick ===
+
+    public static void serverTick(StorageTerminalBlockEntity be) {
+        // Traiter périodiquement les requêtes en attente (chaque seconde)
+        if (be.level != null && be.level.getGameTime() % 20 == 0) {
+            be.processPendingRequests();
         }
     }
 
@@ -348,6 +511,16 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
         tag.put("DepositSlots", depositSlots.serializeNBT(registries));
         tag.put("PickupSlots", pickupSlots.serializeNBT(registries));
+
+        // Sauvegarder les requêtes en attente
+        ListTag pendingTag = new ListTag();
+        for (PendingRequest request : pendingRequests) {
+            CompoundTag requestTag = new CompoundTag();
+            requestTag.put("Item", request.item.saveOptional(registries));
+            requestTag.putInt("Count", request.count);
+            pendingTag.add(requestTag);
+        }
+        tag.put("PendingRequests", pendingTag);
     }
 
     @Override
@@ -365,6 +538,20 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         }
         if (tag.contains("PickupSlots")) {
             pickupSlots.deserializeNBT(registries, tag.getCompound("PickupSlots"));
+        }
+
+        // Charger les requêtes en attente
+        pendingRequests.clear();
+        if (tag.contains("PendingRequests")) {
+            ListTag pendingTag = tag.getList("PendingRequests", Tag.TAG_COMPOUND);
+            for (int i = 0; i < pendingTag.size(); i++) {
+                CompoundTag requestTag = pendingTag.getCompound(i);
+                ItemStack item = ItemStack.parseOptional(registries, requestTag.getCompound("Item"));
+                int count = requestTag.getInt("Count");
+                if (!item.isEmpty() && count > 0) {
+                    pendingRequests.add(new PendingRequest(item, count));
+                }
+            }
         }
     }
 
@@ -392,5 +579,20 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    // === Classes internes ===
+
+    /**
+     * Représente une requête en attente.
+     */
+    public static class PendingRequest {
+        public final ItemStack item;
+        public int count;
+
+        public PendingRequest(ItemStack item, int count) {
+            this.item = item;
+            this.count = count;
+        }
     }
 }

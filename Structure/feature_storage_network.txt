@@ -91,6 +91,14 @@ INTERFACE TERMINAL:
 - 9 slots de dépôt (items → réseau automatique)
 - 9 slots de pickup (demandes → joueur)
 - Inventaire joueur standard
+- Indicateur de requêtes en attente (badge orange)
+
+SYSTÈME DE FILE D'ATTENTE (PENDING REQUESTS):
+- Si les slots pickup sont pleins, items mis en file d'attente
+- Traitement automatique toutes les 10 ticks
+- Indicateur visuel: badge orange avec compteur
+- Tooltip: nombre d'items et types différents en attente
+- Persistance NBT (survit au restart)
 
 SYNCHRONISATION:
 - GUI ouverte: Scan chaque tick
@@ -153,6 +161,9 @@ EN:
 - message.beemancer.storage_terminal.auto_linked: Terminal linked to controller!
 - gui.beemancer.storage_terminal.search: Search...
 - gui.beemancer.storage_terminal.request: Request Items
+- gui.beemancer.storage_terminal.pending_title: Pending Requests
+- gui.beemancer.storage_terminal.pending_count: %d items waiting
+- gui.beemancer.storage_terminal.pending_types: %d different types
 - gui.beemancer.cancel: Cancel
 - gui.beemancer.request: Request
 
@@ -190,5 +201,17 @@ PROTECTION CONTRE BUGS:
 - Flag isDepositing évite récursion lors du dépôt automatique
 - ConcurrentModification évitée avec liste temporaire dans refreshAggregatedItems()
 - Validation count dans StorageRequestPacket (clamp 1-3456)
+
+DÉPÔT INTELLIGENT:
+- depositItem() priorise les coffres contenant déjà l'item
+- Phase 1: Merge dans stacks existants + slots vides du même coffre
+- Phase 2: Slots vides dans n'importe quel coffre
+- Évite dispersion des items identiques
+
+PENDING REQUESTS (StorageTerminalBlockEntity):
+- Queue<PendingRequest> persistante en NBT
+- serverTick() traite la queue toutes les 10 ticks
+- ContainerData sync le nombre d'items en attente vers client
+- StorageTerminalScreen affiche badge orange si queue non vide
 
 ################################################################################

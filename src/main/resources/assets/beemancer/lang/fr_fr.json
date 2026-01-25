@@ -62,6 +62,7 @@
   "item.beemancer.bee_larva.shift_hint": "Maintenir SHIFT pour les détails des gènes",
   
   "item.beemancer.bee_wand": "Baguette d'Abeille",
+  "item.beemancer.building_wand": "Baguette de Construction",
   "item.beemancer.bee_wand.has_selection": "Abeille sélectionnée",
   "item.beemancer.bee_wand.no_selection_hint": "Aucune abeille sélectionnée",
   "item.beemancer.bee_wand.selected": "Abeille sélectionnée !",
@@ -173,6 +174,9 @@
 
   "gui.beemancer.storage_terminal.search": "Rechercher...",
   "gui.beemancer.storage_terminal.request": "Demander des Items",
+  "gui.beemancer.storage_terminal.pending_title": "Requêtes en attente",
+  "gui.beemancer.storage_terminal.pending_count": "%d items en attente",
+  "gui.beemancer.storage_terminal.pending_types": "%d types différents",
   "gui.beemancer.cancel": "Annuler",
   "gui.beemancer.request": "Demander"
 }

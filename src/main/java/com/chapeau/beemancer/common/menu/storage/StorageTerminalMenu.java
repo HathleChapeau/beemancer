@@ -30,6 +30,8 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -54,10 +56,16 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public static final int TOTAL_TERMINAL_SLOTS = DEPOSIT_SLOTS + PICKUP_SLOTS;
     public static final int PLAYER_INVENTORY_SIZE = 36;
 
+    // ContainerData indices
+    public static final int DATA_PENDING_COUNT = 0;
+    public static final int DATA_PENDING_TYPES = 1;
+    public static final int DATA_SIZE = 2;
+
     private final Container container;
     private final BlockPos blockPos;
     @Nullable
     private final StorageTerminalBlockEntity terminal;
+    private final ContainerData data;
 
     // Cache des items agrégés (pour affichage dans la GUI)
     private List<ItemStack> aggregatedItems = new ArrayList<>();
@@ -66,28 +74,56 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public StorageTerminalMenu(int containerId, Inventory playerInventory, FriendlyByteBuf extraData) {
         this(containerId, playerInventory,
              new SimpleContainer(TOTAL_TERMINAL_SLOTS),
-             extraData.readBlockPos());
+             extraData.readBlockPos(),
+             new SimpleContainerData(DATA_SIZE));
     }
 
     // Server constructor
     public StorageTerminalMenu(int containerId, Inventory playerInventory, Container container, BlockPos pos) {
+        this(containerId, playerInventory, container, pos, null);
+    }
+
+    // Full constructor
+    private StorageTerminalMenu(int containerId, Inventory playerInventory, Container container,
+                                 BlockPos pos, @Nullable ContainerData data) {
         super(BeemancerMenus.STORAGE_TERMINAL.get(), containerId);
         this.container = container;
         this.blockPos = pos;
 
         if (container instanceof StorageTerminalBlockEntity be) {
             this.terminal = be;
+            // Créer ContainerData qui lit depuis le terminal
+            this.data = new ContainerData() {
+                @Override
+                public int get(int index) {
+                    return switch (index) {
+                        case DATA_PENDING_COUNT -> be.getTotalPendingCount();
+                        case DATA_PENDING_TYPES -> be.getPendingRequests().size();
+                        default -> 0;
+                    };
+                }
+
+                @Override
+                public void set(int index, int value) {
+                    // Read-only
+                }
+
+                @Override
+                public int getCount() {
+                    return DATA_SIZE;
+                }
+            };
         } else {
             this.terminal = null;
+            this.data = data != null ? data : new SimpleContainerData(DATA_SIZE);
         }
 
         checkContainerSize(container, TOTAL_TERMINAL_SLOTS);
         container.startOpen(playerInventory.player);
 
         // Deposit slots (3x3 grid, left side)
-        // Position Y à ajuster selon le design final
         int depositX = 8;
-        int depositY = 126;
+        int depositY = 140;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
                 int index = col + row * 3;
@@ -97,8 +133,8 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         }
 
         // Pickup slots (3x3 grid, right side)
-        int pickupX = 98;
-        int pickupY = 126;
+        int pickupX = 116;
+        int pickupY = 140;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
                 int index = DEPOSIT_SLOTS + col + row * 3;
@@ -121,6 +157,9 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         for (int col = 0; col < 9; col++) {
             this.addSlot(new Slot(playerInventory, col, 8 + col * 18, hotbarY));
         }
+
+        // Ajouter le ContainerData pour la synchronisation
+        this.addDataSlots(this.data);
     }
 
     @Override
@@ -200,6 +239,29 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         if (terminal == null) return false;
         ItemStack extracted = terminal.requestItem(template, count);
         return !extracted.isEmpty();
+    }
+
+    // === Pending Requests ===
+
+    /**
+     * Retourne le nombre total d'items en attente (synchronisé).
+     */
+    public int getPendingItemCount() {
+        return this.data.get(DATA_PENDING_COUNT);
+    }
+
+    /**
+     * Retourne le nombre de types d'items différents en attente.
+     */
+    public int getPendingRequestTypes() {
+        return this.data.get(DATA_PENDING_TYPES);
+    }
+
+    /**
+     * Vérifie s'il y a des requêtes en attente.
+     */
+    public boolean hasPendingRequests() {
+        return getPendingItemCount() > 0;
     }
 
     // === Getters ===

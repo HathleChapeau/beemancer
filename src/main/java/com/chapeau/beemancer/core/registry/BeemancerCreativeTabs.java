@@ -34,6 +34,7 @@ public class BeemancerCreativeTabs {
 
                         // Tools
                         output.accept(BeemancerItems.BEE_WAND.get());
+                        output.accept(BeemancerItems.BUILDING_WAND.get());
 
                         // Bee Machines
                         output.accept(BeemancerItems.BEE_CREATOR.get());

@@ -178,6 +178,10 @@ LISTE DES FEATURES:
   Fichier: Structure/feature_storage_network.txt
   Description: Système de stockage centralisé avec contrôleur et terminal (style AE2/RS)
 
+→ Building Wand
+  Fichier: Structure/feature_building_wand.txt
+  Description: Baguette de construction avec prévisualisation flood fill 2D
+
 ================================================================================
 6. FEATURES EN COURS
 ================================================================================

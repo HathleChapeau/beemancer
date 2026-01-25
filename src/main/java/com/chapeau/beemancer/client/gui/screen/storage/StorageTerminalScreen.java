@@ -145,11 +145,53 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         // Virtual grid items
         renderVirtualGrid(guiGraphics, x, y, mouseX, mouseY);
 
+        // Pending requests indicator
+        renderPendingIndicator(guiGraphics, x, y, mouseX, mouseY);
+
         // Request popup
         if (showRequestPopup) {
             renderRequestPopup(guiGraphics, mouseX, mouseY);
         }
     }
+
+    /**
+     * Affiche l'indicateur des items en attente.
+     */
+    private void renderPendingIndicator(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
+        int pendingCount = menu.getPendingItemCount();
+        if (pendingCount <= 0) return;
+
+        // Position: au-dessus des slots pickup (droite)
+        int indicatorX = x + 116;
+        int indicatorY = y + 128;
+        int indicatorWidth = 54;
+        int indicatorHeight = 10;
+
+        // Fond de l'indicateur (jaune/orange pour attirer l'attention)
+        guiGraphics.fill(indicatorX, indicatorY, indicatorX + indicatorWidth, indicatorY + indicatorHeight, 0xFFFF8800);
+        guiGraphics.fill(indicatorX + 1, indicatorY + 1, indicatorX + indicatorWidth - 1, indicatorY + indicatorHeight - 1, 0xFF442200);
+
+        // Texte: icône horloge + nombre
+        String text = "\u23F3 " + formatCount(pendingCount);
+        int textWidth = this.font.width(text);
+        int textX = indicatorX + (indicatorWidth - textWidth) / 2;
+        guiGraphics.drawString(this.font, text, textX, indicatorY + 1, 0xFFFFAA00, false);
+
+        // Tooltip au survol
+        if (mouseX >= indicatorX && mouseX < indicatorX + indicatorWidth &&
+            mouseY >= indicatorY && mouseY < indicatorY + indicatorHeight) {
+            pendingTooltipX = mouseX;
+            pendingTooltipY = mouseY;
+            showPendingTooltip = true;
+        } else {
+            showPendingTooltip = false;
+        }
+    }
+
+    // Variables pour le tooltip de pending
+    private boolean showPendingTooltip = false;
+    private int pendingTooltipX = 0;
+    private int pendingTooltipY = 0;
 
     private void renderScrollbar(GuiGraphics guiGraphics, int x, int y) {
         int maxScroll = getMaxScroll();
@@ -277,6 +319,29 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         if (!showRequestPopup) {
             renderVirtualGridTooltip(guiGraphics, mouseX, mouseY);
         }
+
+        // Tooltip for pending indicator
+        if (showPendingTooltip && !showRequestPopup) {
+            renderPendingTooltip(guiGraphics, pendingTooltipX, pendingTooltipY);
+        }
+    }
+
+    /**
+     * Affiche le tooltip des items en attente.
+     */
+    private void renderPendingTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        int pendingCount = menu.getPendingItemCount();
+        int pendingTypes = menu.getPendingRequestTypes();
+
+        List<Component> tooltip = new ArrayList<>();
+        tooltip.add(Component.translatable("gui.beemancer.storage_terminal.pending_title")
+            .withStyle(style -> style.withColor(0xFFAA00)));
+        tooltip.add(Component.translatable("gui.beemancer.storage_terminal.pending_count", pendingCount)
+            .withStyle(style -> style.withColor(0xAAAAAA)));
+        tooltip.add(Component.translatable("gui.beemancer.storage_terminal.pending_types", pendingTypes)
+            .withStyle(style -> style.withColor(0xAAAAAA)));
+
+        guiGraphics.renderComponentTooltip(this.font, tooltip, mouseX, mouseY);
     }
 
     private void renderVirtualGridTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {

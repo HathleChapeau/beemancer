@@ -3,6 +3,61 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Building Wand
+================================================================================
+
+AJOUTS:
+- common/item/tool/BuildingWandItem.java (baguette de construction)
+- client/renderer/BuildingWandPreviewRenderer.java (prévisualisation contours)
+- assets/beemancer/models/item/building_wand.json
+- assets/beemancer/textures/item/building_wand.png
+
+MODIFICATIONS:
+- BeemancerItems.java: +BUILDING_WAND
+- BeemancerCreativeTabs.java: +BUILDING_WAND
+- ClientSetup.java: +BuildingWandPreviewRenderer event registration
+- en_us.json/fr_fr.json: +traductions Building Wand
+
+NOUVELLE FEATURE:
+- Baguette de construction avec prévisualisation
+- Flood fill 2D sur la face pointée (4 cardinaux + 4 diagonales)
+- Limite: min(15, items inventaire) - illimité en créatif
+- Contours blancs pour prévisualisation
+- Placement avec orientation correcte (getStateForPlacement)
+- Consommation items de l'inventaire
+- Cache de prévisualisation (évite recalcul à chaque frame)
+
+================================================================================
+2026-01-25 - Storage Network: Pending Requests System
+================================================================================
+
+AJOUTS:
+- StorageTerminalBlockEntity.java:
+  - +PendingRequest record (queue de requêtes en attente)
+  - +serverTick() pour traitement périodique des requêtes
+  - +NBT persistence des pending requests
+- StorageTerminalMenu.java:
+  - +ContainerData pour sync pending count/types vers client
+- StorageTerminalScreen.java:
+  - +renderPendingIndicator() badge orange avec compteur
+  - +renderPendingTooltip() tooltip détaillé
+
+MODIFICATIONS:
+- StorageTerminalBlock.java: +getTicker() pour serverTick
+- StorageControllerBlockEntity.java: depositItem() réécrit pour prioriser les coffres contenant l'item
+
+NOUVELLE FEATURE:
+- Système de file d'attente pour les requêtes overflow
+- Si slots pickup pleins, items mis en attente
+- Traitement automatique toutes les 10 ticks
+- Indicateur visuel dans GUI (badge orange)
+- Tooltip avec nombre d'items et types en attente
+- Persistance NBT (survit restart)
+
+CORRECTION:
+- Dépôt priorise maintenant les coffres contenant déjà l'item
+
+================================================================================
 2026-01-25 - Storage Network System Fixes & Improvements
 ================================================================================
 
