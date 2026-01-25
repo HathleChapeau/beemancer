@@ -21,6 +21,7 @@ package com.chapeau.beemancer.common.entity.bee.goal;
 
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -95,7 +96,10 @@ public class BeeRevengeGoal extends HurtByTargetGoal {
     public void tick() {
         LivingEntity target = bee.getTarget();
         if (target == null) return;
-        
+
+        // Debug destination (position de la cible)
+        bee.setDebugDestination(target.blockPosition());
+
         // Décrémenter le cooldown
         if (attackCooldown > 0) {
             attackCooldown--;
@@ -132,6 +136,7 @@ public class BeeRevengeGoal extends HurtByTargetGoal {
     public void stop() {
         super.stop();
         bee.setDeltaMovement(Vec3.ZERO);
+        bee.clearDebugDestination();
         // Le timer enragé continue de décrémenter naturellement dans MagicBeeEntity.tick()
         // L'état enragé expire automatiquement après DEFAULT_ENRAGED_DURATION (10 sec)
     }

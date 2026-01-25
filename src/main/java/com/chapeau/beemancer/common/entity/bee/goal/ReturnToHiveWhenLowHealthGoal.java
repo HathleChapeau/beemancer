@@ -68,6 +68,8 @@ public class ReturnToHiveWhenLowHealthGoal extends Goal {
         bee.setTarget(null);
         // Signaler à la ruche qu'on revient
         bee.setReturning(true);
+        // Debug destination
+        bee.setDebugDestination(bee.getAssignedHivePos());
     }
     
     @Override
@@ -98,6 +100,7 @@ public class ReturnToHiveWhenLowHealthGoal extends Goal {
     @Override
     public void stop() {
         bee.setDeltaMovement(Vec3.ZERO);
+        bee.clearDebugDestination();
     }
     
     @Override

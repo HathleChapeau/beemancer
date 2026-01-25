@@ -151,6 +151,7 @@ public class ForagingBehaviorGoal extends Goal {
                     returnFlowerToHive(stateMachine.getTargetPos());
                 }
                 bee.setReturning(true);
+                bee.setDebugDestination(bee.getAssignedHivePos());
                 stateMachine.setState(BeeActivityState.RETURNING);
             }
             case RETURNING -> {
@@ -174,10 +175,12 @@ public class ForagingBehaviorGoal extends Goal {
             if (targetFlower == null) {
                 // Pas de fleur trouvée, retourner à la ruche
                 bee.setReturning(true);
+                bee.setDebugDestination(bee.getAssignedHivePos());
                 stateMachine.setState(BeeActivityState.RETURNING);
                 return;
             }
             stateMachine.setTargetPos(targetFlower);
+            bee.setDebugDestination(targetFlower);
             pathfinding.clearPath();
             isApproachingFromAbove = true;
         }
@@ -263,6 +266,7 @@ public class ForagingBehaviorGoal extends Goal {
         if (stateMachine.isWorkComplete()) {
             bee.setPollinated(true);
             bee.setReturning(true); // Signal pour la ruche
+            bee.setDebugDestination(bee.getAssignedHivePos());
             resetPitch();
             stateMachine.setState(BeeActivityState.RETURNING);
         }
@@ -475,6 +479,7 @@ public class ForagingBehaviorGoal extends Goal {
         }
 
         bee.setDeltaMovement(Vec3.ZERO);
+        bee.clearDebugDestination();
         resetPitch();
         isApproachingFromAbove = false;
         stateMachine.reset();

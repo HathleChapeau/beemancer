@@ -80,6 +80,10 @@ public class MagicBeeEntity extends Bee {
     private static final EntityDataAccessor<Boolean> DATA_RETURNING = SynchedEntityData.defineId(
             MagicBeeEntity.class, EntityDataSerializers.BOOLEAN);
 
+    // Debug destination (synchronisé pour affichage client)
+    private static final EntityDataAccessor<BlockPos> DATA_DEBUG_DESTINATION = SynchedEntityData.defineId(
+            MagicBeeEntity.class, EntityDataSerializers.BLOCK_POS);
+
     // --- Gene Data ---
     private final BeeGeneData geneData = new BeeGeneData();
 
@@ -179,6 +183,7 @@ public class MagicBeeEntity extends Bee {
         builder.define(DATA_POLLINATED, false);
         builder.define(DATA_ENRAGED, false);
         builder.define(DATA_RETURNING, false);
+        builder.define(DATA_DEBUG_DESTINATION, BlockPos.ZERO);
     }
 
     @Override
@@ -514,6 +519,40 @@ public class MagicBeeEntity extends Bee {
 
     public void clearTarget() {
         this.targetPos = null;
+    }
+
+    // --- Debug Destination (pour affichage visuel) ---
+
+    /**
+     * Définit la destination de debug (synchronisée au client).
+     * Appelé par les goals pour indiquer où l'abeille se dirige.
+     */
+    public void setDebugDestination(@Nullable BlockPos pos) {
+        entityData.set(DATA_DEBUG_DESTINATION, pos != null ? pos : BlockPos.ZERO);
+    }
+
+    /**
+     * Récupère la destination de debug actuelle.
+     * Retourne null si aucune destination (BlockPos.ZERO).
+     */
+    @Nullable
+    public BlockPos getDebugDestination() {
+        BlockPos pos = entityData.get(DATA_DEBUG_DESTINATION);
+        return pos.equals(BlockPos.ZERO) ? null : pos;
+    }
+
+    /**
+     * Vérifie si l'abeille a une destination de debug.
+     */
+    public boolean hasDebugDestination() {
+        return !entityData.get(DATA_DEBUG_DESTINATION).equals(BlockPos.ZERO);
+    }
+
+    /**
+     * Efface la destination de debug.
+     */
+    public void clearDebugDestination() {
+        entityData.set(DATA_DEBUG_DESTINATION, BlockPos.ZERO);
     }
 
     // --- NBT ---

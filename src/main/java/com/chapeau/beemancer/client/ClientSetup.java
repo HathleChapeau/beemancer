@@ -18,6 +18,7 @@ import com.chapeau.beemancer.client.gui.screen.alchemy.*;
 import com.chapeau.beemancer.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.beemancer.client.renderer.BuildingWandPreviewRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
+import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.beemancer.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
@@ -49,6 +50,7 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
         NeoForge.EVENT_BUS.register(DebugKeyHandler.class);
+        NeoForge.EVENT_BUS.register(BeeDebugRenderer.class);
     }
 
     private static void registerScreens(final RegisterMenuScreensEvent event) {
