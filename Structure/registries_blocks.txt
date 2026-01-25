@@ -18,8 +18,7 @@
 | powered_centrifuge_tier2 | PoweredCentrifugeBlock  | Oui          | Tiered Machines |
 | powered_centrifuge_tier3 | PoweredCentrifugeBlock  | Oui          | Tiered Machines |
 | honey_tank             | HoneyTankBlock            | Oui          | Alchemy         |
-| honey_tank_tier2       | HoneyTankBlock            | Oui          | Tiered Machines |
-| honey_tank_tier3       | HoneyTankBlock            | Oui          | Tiered Machines |
+| multiblock_tank        | MultiblockTankBlock       | Oui          | Multiblock Tank |
 | creative_tank          | CreativeTankBlock         | Oui          | Alchemy         |
 | honey_pipe             | HoneyPipeBlock            | Oui          | Alchemy         |
 | honey_pipe_tier2       | HoneyPipeBlock            | Oui          | Tiered Machines |
@@ -32,6 +31,8 @@
 | crystallizer           | CrystallizerBlock         | Oui          | Alchemy         |
 | alembic                | AlembicBlock              | Oui          | Alchemy         |
 | infuser                | InfuserBlock              | Oui          | Alchemy         |
+| infuser_tier2          | InfuserBlock              | Oui          | Tiered Machines |
+| infuser_tier3          | InfuserBlock              | Oui          | Tiered Machines |
 
 --- HONEY ALTAR ---
 | honeyed_stone          | HoneyedStoneBlock         | Non          | Honey Altar     |

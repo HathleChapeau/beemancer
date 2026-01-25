@@ -10,4 +10,14 @@
 | magic_hive    | MagicHiveMenu    | Bee Housing  |
 | incubator     | IncubatorMenu    | Incubator    |
 
+--- ALCHEMY MENUS ---
+| manual_centrifuge  | ManualCentrifugeMenu | Alchemy        |
+| powered_centrifuge | PoweredCentrifugeMenu| Alchemy        |
+| honey_tank         | HoneyTankMenu        | Alchemy        |
+| multiblock_tank    | MultiblockTankMenu   | Multiblock Tank|
+| creative_tank      | CreativeTankMenu     | Alchemy        |
+| crystallizer       | CrystallizerMenu     | Alchemy        |
+| alembic            | AlembicMenu          | Alchemy        |
+| infuser            | InfuserMenu          | Alchemy        |
+
 ################################################################################

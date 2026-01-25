@@ -104,20 +104,6 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.HONEY_TANK.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<HoneyTankBlockEntity>> HONEY_TANK_TIER2 =
-            BLOCK_ENTITIES.register("honey_tank_tier2",
-                    () -> BlockEntityType.Builder.of(
-                            HoneyTankBlockEntity::createTier2,
-                            BeemancerBlocks.HONEY_TANK_TIER2.get()
-                    ).build(null));
-
-    public static final Supplier<BlockEntityType<HoneyTankBlockEntity>> HONEY_TANK_TIER3 =
-            BLOCK_ENTITIES.register("honey_tank_tier3",
-                    () -> BlockEntityType.Builder.of(
-                            HoneyTankBlockEntity::createTier3,
-                            BeemancerBlocks.HONEY_TANK_TIER3.get()
-                    ).build(null));
-
     public static final Supplier<BlockEntityType<CreativeTankBlockEntity>> CREATIVE_TANK =
             BLOCK_ENTITIES.register("creative_tank",
                     () -> BlockEntityType.Builder.of(
@@ -200,6 +186,27 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             InfuserBlockEntity::new,
                             BeemancerBlocks.INFUSER.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<InfuserBlockEntity>> INFUSER_TIER2 =
+            BLOCK_ENTITIES.register("infuser_tier2",
+                    () -> BlockEntityType.Builder.of(
+                            InfuserBlockEntity::createTier2,
+                            BeemancerBlocks.INFUSER_TIER2.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<InfuserBlockEntity>> INFUSER_TIER3 =
+            BLOCK_ENTITIES.register("infuser_tier3",
+                    () -> BlockEntityType.Builder.of(
+                            InfuserBlockEntity::createTier3,
+                            BeemancerBlocks.INFUSER_TIER3.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<MultiblockTankBlockEntity>> MULTIBLOCK_TANK =
+            BLOCK_ENTITIES.register("multiblock_tank",
+                    () -> BlockEntityType.Builder.of(
+                            MultiblockTankBlockEntity::new,
+                            BeemancerBlocks.MULTIBLOCK_TANK.get()
                     ).build(null));
 
     // --- HONEY ALTAR ---

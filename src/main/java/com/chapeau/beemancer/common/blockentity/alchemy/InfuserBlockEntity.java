@@ -38,11 +38,26 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
+import net.minecraft.world.level.block.entity.BlockEntityType;
+
 import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
+    // --- TIER CONFIG ---
+    public static final int TIER1_TANK_CAPACITY = 4000;
+    public static final float TIER1_PROCESS_MULTIPLIER = 1.0f;
+
+    public static final int TIER2_TANK_CAPACITY = 8000;
+    public static final float TIER2_PROCESS_MULTIPLIER = 0.7f;
+
+    public static final int TIER3_TANK_CAPACITY = 16000;
+    public static final float TIER3_PROCESS_MULTIPLIER = 0.5f;
+
     private static final int DEFAULT_PROCESS_TIME = 200;
+
+    private final int tankCapacity;
+    private final float processTimeMultiplier;
 
     private final ItemStackHandler inputSlot = new ItemStackHandler(1) {
         @Override
@@ -60,20 +75,7 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
     // Flag pour eviter l'invalidation de la recette quand la machine drain elle-meme
     private boolean isProcessingDrain = false;
 
-    private final FluidTank honeyTank = new FluidTank(4000) {
-        @Override
-        public boolean isFluidValid(FluidStack stack) {
-            return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get();
-        }
-        @Override
-        protected void onContentsChanged() {
-            setChanged();
-            // Invalider seulement si ce n'est pas un drain interne
-            if (!isProcessingDrain) {
-                currentRecipe = null;
-            }
-        }
-    };
+    private final FluidTank honeyTank;
 
     private int progress = 0;
     private int currentProcessTime = DEFAULT_PROCESS_TIME;
@@ -100,8 +102,44 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
     };
 
     public InfuserBlockEntity(BlockPos pos, BlockState state) {
-        super(BeemancerBlockEntities.INFUSER.get(), pos, state);
+        this(BeemancerBlockEntities.INFUSER.get(), pos, state,
+            TIER1_TANK_CAPACITY, TIER1_PROCESS_MULTIPLIER);
     }
+
+    public InfuserBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                              int tankCapacity, float processTimeMultiplier) {
+        super(type, pos, state);
+        this.tankCapacity = tankCapacity;
+        this.processTimeMultiplier = processTimeMultiplier;
+
+        this.honeyTank = new FluidTank(tankCapacity) {
+            @Override
+            public boolean isFluidValid(FluidStack stack) {
+                return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get();
+            }
+            @Override
+            protected void onContentsChanged() {
+                setChanged();
+                if (!isProcessingDrain) {
+                    currentRecipe = null;
+                }
+            }
+        };
+    }
+
+    // Factory methods for tiered versions
+    public static InfuserBlockEntity createTier2(BlockPos pos, BlockState state) {
+        return new InfuserBlockEntity(BeemancerBlockEntities.INFUSER_TIER2.get(), pos, state,
+            TIER2_TANK_CAPACITY, TIER2_PROCESS_MULTIPLIER);
+    }
+
+    public static InfuserBlockEntity createTier3(BlockPos pos, BlockState state) {
+        return new InfuserBlockEntity(BeemancerBlockEntities.INFUSER_TIER3.get(), pos, state,
+            TIER3_TANK_CAPACITY, TIER3_PROCESS_MULTIPLIER);
+    }
+
+    public int getTankCapacity() { return tankCapacity; }
+    public float getProcessTimeMultiplier() { return processTimeMultiplier; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, InfuserBlockEntity be) {
         boolean wasWorking = state.getValue(InfuserBlock.WORKING);
@@ -110,7 +148,7 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         Optional<RecipeHolder<InfusingRecipe>> recipe = be.findRecipe(level);
         if (recipe.isPresent()) {
             be.currentRecipe = recipe.get();
-            be.currentProcessTime = recipe.get().value().processingTime();
+            be.currentProcessTime = Math.max(1, (int)(recipe.get().value().processingTime() * be.processTimeMultiplier));
 
             if (be.canProcess(recipe.get().value())) {
                 be.progress++;

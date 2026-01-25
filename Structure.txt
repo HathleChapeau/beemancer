@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-01-25                     #
-#                         (Tiered Machines)                                    #
+#                         (Infuser Tiers + Multiblock Tank)                    #
 ################################################################################
 
 ================================================================================
@@ -194,6 +194,10 @@ LISTE DES FEATURES:
 → Tiered Machines
   Fichier: Structure/feature_tiered_machines.txt
   Description: Système de tiers pour machines d'alchimie (centrifuge, tanks, pipes)
+
+→ Multiblock Fluid Tank
+  Fichier: Structure/feature_multiblock_tank.txt
+  Description: Tank extensible par blocs adjacents avec validation cuboïde
 
 ================================================================================
 6. FEATURES EN COURS

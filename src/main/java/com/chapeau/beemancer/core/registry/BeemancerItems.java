@@ -61,12 +61,6 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> HONEY_TANK = ITEMS.register("honey_tank",
             () -> new BlockItem(BeemancerBlocks.HONEY_TANK.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> HONEY_TANK_TIER2 = ITEMS.register("honey_tank_tier2",
-            () -> new BlockItem(BeemancerBlocks.HONEY_TANK_TIER2.get(), new Item.Properties()));
-
-    public static final DeferredItem<BlockItem> HONEY_TANK_TIER3 = ITEMS.register("honey_tank_tier3",
-            () -> new BlockItem(BeemancerBlocks.HONEY_TANK_TIER3.get(), new Item.Properties()));
-
     public static final DeferredItem<BlockItem> CREATIVE_TANK = ITEMS.register("creative_tank",
             () -> new BlockItem(BeemancerBlocks.CREATIVE_TANK.get(), new Item.Properties()));
 
@@ -102,6 +96,15 @@ public class BeemancerItems {
 
     public static final DeferredItem<BlockItem> INFUSER = ITEMS.register("infuser",
             () -> new BlockItem(BeemancerBlocks.INFUSER.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> INFUSER_TIER2 = ITEMS.register("infuser_tier2",
+            () -> new BlockItem(BeemancerBlocks.INFUSER_TIER2.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> INFUSER_TIER3 = ITEMS.register("infuser_tier3",
+            () -> new BlockItem(BeemancerBlocks.INFUSER_TIER3.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> MULTIBLOCK_TANK = ITEMS.register("multiblock_tank",
+            () -> new BlockItem(BeemancerBlocks.MULTIBLOCK_TANK.get(), new Item.Properties()));
 
     // --- HONEY ALTAR ---
     public static final DeferredItem<BlockItem> HONEYED_STONE = ITEMS.register("honeyed_stone",

@@ -101,18 +101,6 @@ public class BeemancerBlocks {
                     .sound(SoundType.GLASS)
                     .noOcclusion()));
 
-    public static final DeferredBlock<HoneyTankBlock> HONEY_TANK_TIER2 = BLOCKS.register("honey_tank_tier2",
-            () -> new HoneyTankBlock(BlockBehaviour.Properties.of()
-                    .strength(2.5f)
-                    .sound(SoundType.GLASS)
-                    .noOcclusion(), 2));
-
-    public static final DeferredBlock<HoneyTankBlock> HONEY_TANK_TIER3 = BLOCKS.register("honey_tank_tier3",
-            () -> new HoneyTankBlock(BlockBehaviour.Properties.of()
-                    .strength(3.0f)
-                    .sound(SoundType.GLASS)
-                    .noOcclusion(), 3));
-
     public static final DeferredBlock<CreativeTankBlock> CREATIVE_TANK = BLOCKS.register("creative_tank",
             () -> new CreativeTankBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
@@ -185,6 +173,24 @@ public class BeemancerBlocks {
                     .strength(3.0f)
                     .sound(SoundType.WOOD)
                     .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<InfuserBlock> INFUSER_TIER2 = BLOCKS.register("infuser_tier2",
+            () -> new InfuserBlock(BlockBehaviour.Properties.of()
+                    .strength(3.5f)
+                    .sound(SoundType.WOOD)
+                    .requiresCorrectToolForDrops(), 2));
+
+    public static final DeferredBlock<InfuserBlock> INFUSER_TIER3 = BLOCKS.register("infuser_tier3",
+            () -> new InfuserBlock(BlockBehaviour.Properties.of()
+                    .strength(4.0f)
+                    .sound(SoundType.WOOD)
+                    .requiresCorrectToolForDrops(), 3));
+
+    public static final DeferredBlock<MultiblockTankBlock> MULTIBLOCK_TANK = BLOCKS.register("multiblock_tank",
+            () -> new MultiblockTankBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion()));
 
     // --- HONEY ALTAR ---
     public static final DeferredBlock<HoneyedStoneBlock> HONEYED_STONE = BLOCKS.register("honeyed_stone",

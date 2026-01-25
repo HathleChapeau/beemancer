@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "beemancer:block/alchemy/infuser_tier3_top",
+    "bottom": "beemancer:block/alchemy/infuser_tier3_bottom",
+    "side": "beemancer:block/alchemy/infuser_tier3_side"
+  }
+}

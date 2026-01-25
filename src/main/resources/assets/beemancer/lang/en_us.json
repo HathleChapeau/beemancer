@@ -13,8 +13,7 @@
   "block.beemancer.powered_centrifuge_tier2": "Powered Centrifuge Tier 2",
   "block.beemancer.powered_centrifuge_tier3": "Powered Centrifuge Tier 3",
   "block.beemancer.honey_tank": "Honey Tank",
-  "block.beemancer.honey_tank_tier2": "Honey Tank Tier 2",
-  "block.beemancer.honey_tank_tier3": "Honey Tank Tier 3",
+  "block.beemancer.multiblock_tank": "Fluid Tank",
   "block.beemancer.honey_pipe": "Honey Pipe",
   "block.beemancer.honey_pipe_tier2": "Honey Pipe Tier 2",
   "block.beemancer.honey_pipe_tier3": "Honey Pipe Tier 3",
@@ -26,7 +25,9 @@
   "block.beemancer.crystallizer": "Crystallizer",
   "block.beemancer.alembic": "Alembic",
   "block.beemancer.infuser": "Infuser",
-  
+  "block.beemancer.infuser_tier2": "Infuser Tier 2",
+  "block.beemancer.infuser_tier3": "Infuser Tier 3",
+
   "fluid.beemancer.honey": "Honey",
   "fluid.beemancer.royal_jelly": "Royal Jelly",
   "fluid.beemancer.nectar": "Nectar",
@@ -58,6 +59,7 @@
   "container.beemancer.manual_centrifuge": "Manual Centrifuge",
   "container.beemancer.powered_centrifuge": "Powered Centrifuge",
   "container.beemancer.honey_tank": "Honey Tank",
+  "container.beemancer.multiblock_tank": "Fluid Tank",
   "container.beemancer.crystallizer": "Crystallizer",
   "container.beemancer.alembic": "Alembic",
   "container.beemancer.infuser": "Infuser",

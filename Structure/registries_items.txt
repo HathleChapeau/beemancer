@@ -19,8 +19,7 @@
 | powered_centrifuge_tier2 | BlockItem        | Tiered Machines |
 | powered_centrifuge_tier3 | BlockItem        | Tiered Machines |
 | honey_tank               | BlockItem        | Alchemy         |
-| honey_tank_tier2         | BlockItem        | Tiered Machines |
-| honey_tank_tier3         | BlockItem        | Tiered Machines |
+| multiblock_tank          | BlockItem        | Multiblock Tank |
 | creative_tank            | BlockItem        | Alchemy         |
 | honey_pipe               | BlockItem        | Alchemy         |
 | honey_pipe_tier2         | BlockItem        | Tiered Machines |
@@ -33,6 +32,8 @@
 | crystallizer             | BlockItem        | Alchemy         |
 | alembic                  | BlockItem        | Alchemy         |
 | infuser                  | BlockItem        | Alchemy         |
+| infuser_tier2            | BlockItem        | Tiered Machines |
+| infuser_tier3            | BlockItem        | Tiered Machines |
 
 --- HONEY ALTAR ---
 | honeyed_stone            | BlockItem        | Honey Altar     |

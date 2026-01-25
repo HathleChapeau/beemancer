@@ -32,10 +32,19 @@ public class InfuserBlock extends BaseEntityBlock {
     public static final MapCodec<InfuserBlock> CODEC = simpleCodec(InfuserBlock::new);
     public static final BooleanProperty WORKING = BooleanProperty.create("working");
 
+    private final int tier;
+
     public InfuserBlock(Properties properties) {
+        this(properties, 1);
+    }
+
+    public InfuserBlock(Properties properties, int tier) {
         super(properties);
+        this.tier = tier;
         this.registerDefaultState(this.stateDefinition.any().setValue(WORKING, false));
     }
+
+    public int getTier() { return tier; }
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
@@ -51,14 +60,23 @@ public class InfuserBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new InfuserBlockEntity(pos, state);
+        return switch (tier) {
+            case 2 -> InfuserBlockEntity.createTier2(pos, state);
+            case 3 -> InfuserBlockEntity.createTier3(pos, state);
+            default -> new InfuserBlockEntity(pos, state);
+        };
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
-        return createTickerHelper(type, BeemancerBlockEntities.INFUSER.get(), InfuserBlockEntity::serverTick);
+        BlockEntityType<?> expectedType = switch (tier) {
+            case 2 -> BeemancerBlockEntities.INFUSER_TIER2.get();
+            case 3 -> BeemancerBlockEntities.INFUSER_TIER3.get();
+            default -> BeemancerBlockEntities.INFUSER.get();
+        };
+        return createTickerHelper(type, (BlockEntityType<InfuserBlockEntity>) expectedType, InfuserBlockEntity::serverTick);
     }
 
     @Override

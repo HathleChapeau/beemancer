@@ -1,0 +1,131 @@
+################################################################################
+#                    FEATURE: MULTIBLOCK FLUID TANK                            #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Tank multibloc dynamique permettant de créer des structures de stockage
+de fluide extensibles. Chaque bloc ajouté augmente la capacité totale.
+La structure doit former un cuboïde plein (rectangle 3D) pour être valide.
+
+================================================================================
+CONCEPT
+================================================================================
+
+- Chaque bloc de tank = 8000 mB de capacité
+- Les blocs connectés forment un multibloc
+- Un master est élu automatiquement (position minimale Y, X, Z)
+- Les autres blocs sont des slaves qui délèguent au master
+- Si un bloc est cassé, TOUT le fluide est détruit
+- La forme doit être un cuboïde plein (pas de trous)
+
+================================================================================
+FICHIERS CRÉÉS
+================================================================================
+
+common/block/alchemy/MultiblockTankBlock.java
+  - Étend BaseEntityBlock
+  - setPlacedBy(): détecte voisins, forme multibloc
+  - onRemove(): notifie multibloc de destruction
+  - useWithoutItem(): ouvre GUI (délègue au master)
+
+common/blockentity/alchemy/MultiblockTankBlockEntity.java
+  - CAPACITY_PER_BLOCK = 8000 mB
+  - masterPos: BlockPos (null = je suis master)
+  - connectedBlocks: Set<BlockPos> (seulement master)
+  - fluidTank: FluidTank (seulement master)
+  - validCuboid: boolean
+  - isMaster(), getMaster(), getFluidTank()
+  - onPlaced(): rejoindre/créer multibloc
+  - onBroken(): détruire fluide, réorganiser structure
+  - validateCuboid(): vérifier forme rectangulaire
+  - serverTick(): traiter bucket slot
+
+common/menu/alchemy/MultiblockTankMenu.java
+  - ContainerData: fluid amount, capacity, block count, validity
+  - Slot bucket (délégué au master)
+  - getFluidAmount(), getCapacity(), getBlockCount(), isValidCuboid()
+
+client/gui/screen/alchemy/MultiblockTankScreen.java
+  - Jauge de fluide avec capacité dynamique
+  - Affichage: nombre de blocs, validité, capacité totale
+  - Tooltip avec informations détaillées
+
+================================================================================
+ALGORITHME DE VALIDATION CUBOÏDE
+================================================================================
+
+1. Calculer bounding box (min/max X, Y, Z)
+2. Calculer volume attendu: (maxX-minX+1) * (maxY-minY+1) * (maxZ-minZ+1)
+3. Si connectedBlocks.size() != attendu, invalide
+4. Vérifier que CHAQUE position dans la box est un tank
+
+================================================================================
+ALGORITHME D'ÉLECTION MASTER
+================================================================================
+
+1. Master = bloc avec position minimale (comparaison: Y, puis X, puis Z)
+2. Quand un bloc est placé:
+   - Chercher voisins tanks
+   - Si plusieurs masters différents, fusionner vers le plus petit
+3. Quand un bloc est cassé:
+   - Si c'était master, élire nouveau master parmi restants
+   - Transférer connectedBlocks et recréer fluidTank
+
+================================================================================
+REGISTRES
+================================================================================
+
+BeemancerBlocks.java: +MULTIBLOCK_TANK
+BeemancerBlockEntities.java: +MULTIBLOCK_TANK
+BeemancerItems.java: +MULTIBLOCK_TANK (BlockItem)
+BeemancerMenus.java: +MULTIBLOCK_TANK
+BeemancerCreativeTabs.java: +MULTIBLOCK_TANK (après HONEY_TANK)
+Beemancer.java: +FluidHandler capability registration
+
+================================================================================
+ASSETS
+================================================================================
+
+blockstates/multiblock_tank.json
+models/block/multiblock_tank.json (cube_column)
+models/item/multiblock_tank.json (parent block)
+textures/block/alchemy/multiblock_tank_side.png (placeholder)
+textures/block/alchemy/multiblock_tank_top.png (placeholder)
+textures/gui/multiblock_tank.png (copie honey_tank)
+
+================================================================================
+TRADUCTIONS
+================================================================================
+
+EN: "block.beemancer.multiblock_tank": "Fluid Tank"
+    "container.beemancer.multiblock_tank": "Fluid Tank"
+
+FR: "block.beemancer.multiblock_tank": "Réservoir de Fluide"
+    "container.beemancer.multiblock_tank": "Réservoir de Fluide"
+
+================================================================================
+UTILISATION
+================================================================================
+
+1. Placer un bloc → devient tank standalone (8000 mB)
+2. Placer blocs adjacents → se connectent automatiquement
+3. Capacité = 8000 mB × nombre de blocs
+4. Cliquer sur n'importe quel bloc → ouvre GUI du master
+5. GUI affiche: jauge fluide, nombre blocs, validité
+6. Si forme invalide (L, etc.): "Invalid" affiché, pas de stockage
+7. Si bloc cassé: TOUT le fluide est perdu
+
+================================================================================
+EXEMPLES
+================================================================================
+
+1 bloc:        8000 mB   | Valid
+2×2×2 (8):    64000 mB   | Valid
+3×3×3 (27):  216000 mB   | Valid
+Forme en L:        0 mB   | Invalid (affiche "Invalid")
+2×1×3 (6):    48000 mB   | Valid
+
+################################################################################

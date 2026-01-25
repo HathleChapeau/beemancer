@@ -21,13 +21,16 @@ POWERED CENTRIFUGE (Tier 1-3):
 | 2    | 15 mB      | x0.6         | 16,000 mB     |
 | 3    | 25 mB      | x0.3         | 32,000 mB     |
 
-HONEY TANK (Tier 1-3):
+INFUSER (Tier 1-3):
 --------------------------------------------------------------------------------
-| Tier | Capacity     |
-|------|--------------|
-| 1    | 16,000 mB    |
-| 2    | 64,000 mB    |
-| 3    | 256,000 mB   |
+| Tier | Tank Capacity | Process Time |
+|------|---------------|--------------|
+| 1    | 4,000 mB      | x1.0         |
+| 2    | 8,000 mB      | x0.7         |
+| 3    | 16,000 mB     | x0.5         |
+
+NOTE: Honey Tank tiers ont été supprimés au profit du Multiblock Tank.
+Voir: Structure/feature_multiblock_tank.txt
 
 HONEY PIPE (Tier 1-4):
 --------------------------------------------------------------------------------
@@ -74,10 +77,12 @@ BLOCK ENTITIES:
   - +createTier2(), createTier3() factory methods
   - Champs instance: honeyConsumption, processTimeMultiplier
 
-- common/blockentity/alchemy/HoneyTankBlockEntity.java
-  - +TIER1/2/3_CAPACITY
-  - +constructeur avec paramètres (type, pos, state, capacity)
+- common/blockentity/alchemy/InfuserBlockEntity.java
+  - +TIER1/2/3_TANK_CAPACITY, TIER1/2/3_PROCESS_MULTIPLIER
+  - +constructeur avec paramètres (type, pos, state, tankCapacity, processMultiplier)
   - +createTier2(), createTier3() factory methods
+
+NOTE: HoneyTankBlockEntity n'a plus de tiers (remplacé par MultiblockTankBlockEntity)
 
 - common/blockentity/alchemy/HoneyPipeBlockEntity.java
   - +TIER1/2/3/4_BUFFER, TIER1/2/3/4_TRANSFER
@@ -94,9 +99,11 @@ BLOCKS:
   - +champ tier, constructeur avec tier
   - newBlockEntity() et getTicker() délèguent selon tier
 
-- common/block/alchemy/HoneyTankBlock.java
+- common/block/alchemy/InfuserBlock.java
   - +champ tier, constructeur avec tier
   - newBlockEntity() et getTicker() délèguent selon tier
+
+NOTE: HoneyTankBlock n'a plus de tiers (remplacé par MultiblockTankBlock)
 
 - common/block/alchemy/HoneyPipeBlock.java
   - +champ tier, constructeur avec tier
@@ -113,8 +120,8 @@ REGISTRES MODIFIÉS
 BeemancerBlocks.java:
 - +POWERED_CENTRIFUGE_TIER2
 - +POWERED_CENTRIFUGE_TIER3
-- +HONEY_TANK_TIER2
-- +HONEY_TANK_TIER3
+- +INFUSER_TIER2
+- +INFUSER_TIER3
 - +HONEY_PIPE_TIER2
 - +HONEY_PIPE_TIER3
 - +HONEY_PIPE_TIER4
@@ -125,8 +132,8 @@ BeemancerBlocks.java:
 BeemancerBlockEntities.java:
 - +POWERED_CENTRIFUGE_TIER2
 - +POWERED_CENTRIFUGE_TIER3
-- +HONEY_TANK_TIER2
-- +HONEY_TANK_TIER3
+- +INFUSER_TIER2
+- +INFUSER_TIER3
 - +HONEY_PIPE_TIER2
 - +HONEY_PIPE_TIER3
 - +HONEY_PIPE_TIER4
@@ -137,8 +144,8 @@ BeemancerBlockEntities.java:
 BeemancerItems.java:
 - +POWERED_CENTRIFUGE_TIER2 (BlockItem)
 - +POWERED_CENTRIFUGE_TIER3 (BlockItem)
-- +HONEY_TANK_TIER2 (BlockItem)
-- +HONEY_TANK_TIER3 (BlockItem)
+- +INFUSER_TIER2 (BlockItem)
+- +INFUSER_TIER3 (BlockItem)
 - +HONEY_PIPE_TIER2 (BlockItem)
 - +HONEY_PIPE_TIER3 (BlockItem)
 - +HONEY_PIPE_TIER4 (BlockItem)
@@ -156,8 +163,8 @@ ASSETS
 BLOCKSTATES (assets/beemancer/blockstates/):
 - powered_centrifuge_tier2.json
 - powered_centrifuge_tier3.json
-- honey_tank_tier2.json
-- honey_tank_tier3.json
+- infuser_tier2.json
+- infuser_tier3.json
 - honey_pipe_tier2.json
 - honey_pipe_tier3.json
 - honey_pipe_tier4.json
@@ -170,14 +177,16 @@ BLOCK MODELS (assets/beemancer/models/block/):
 - powered_centrifuge_tier2_working.json
 - powered_centrifuge_tier3.json
 - powered_centrifuge_tier3_working.json
-- honey_tank_tier2.json
-- honey_tank_tier3.json
+- infuser_tier2.json
+- infuser_tier2_working.json
+- infuser_tier3.json
+- infuser_tier3_working.json
 
 ITEM MODELS (assets/beemancer/models/item/):
 - powered_centrifuge_tier2.json
 - powered_centrifuge_tier3.json
-- honey_tank_tier2.json
-- honey_tank_tier3.json
+- infuser_tier2.json
+- infuser_tier3.json
 - honey_pipe_tier2.json
 - honey_pipe_tier3.json
 - honey_pipe_tier4.json
@@ -188,8 +197,8 @@ ITEM MODELS (assets/beemancer/models/item/):
 TEXTURES (assets/beemancer/textures/block/):
 - alchemy/powered_centrifuge_tier2_*.png (placeholders)
 - alchemy/powered_centrifuge_tier3_*.png (placeholders)
-- alchemy/honey_tank_tier2_*.png (placeholders)
-- alchemy/honey_tank_tier3_*.png (placeholders)
+- alchemy/infuser_tier2.png (placeholder)
+- alchemy/infuser_tier3.png (placeholder)
 - honey_pipe_tier2.png (placeholder)
 - honey_pipe_tier3.png (placeholder)
 - honey_pipe_tier4.png (placeholder)
@@ -201,8 +210,8 @@ TRADUCTIONS
 EN (en_us.json):
 - block.beemancer.powered_centrifuge_tier2: Powered Centrifuge Tier 2
 - block.beemancer.powered_centrifuge_tier3: Powered Centrifuge Tier 3
-- block.beemancer.honey_tank_tier2: Honey Tank Tier 2
-- block.beemancer.honey_tank_tier3: Honey Tank Tier 3
+- block.beemancer.infuser_tier2: Infuser Tier 2
+- block.beemancer.infuser_tier3: Infuser Tier 3
 - block.beemancer.honey_pipe_tier2: Honey Pipe Tier 2
 - block.beemancer.honey_pipe_tier3: Honey Pipe Tier 3
 - block.beemancer.honey_pipe_tier4: Honey Pipe Tier 4
@@ -213,8 +222,8 @@ EN (en_us.json):
 FR (fr_fr.json):
 - block.beemancer.powered_centrifuge_tier2: Centrifugeuse Automatique Tier 2
 - block.beemancer.powered_centrifuge_tier3: Centrifugeuse Automatique Tier 3
-- block.beemancer.honey_tank_tier2: Réservoir de Miel Tier 2
-- block.beemancer.honey_tank_tier3: Réservoir de Miel Tier 3
+- block.beemancer.infuser_tier2: Infuseur Tier 2
+- block.beemancer.infuser_tier3: Infuseur Tier 3
 - block.beemancer.honey_pipe_tier2: Tuyau de Miel Tier 2
 - block.beemancer.honey_pipe_tier3: Tuyau de Miel Tier 3
 - block.beemancer.honey_pipe_tier4: Tuyau de Miel Tier 4

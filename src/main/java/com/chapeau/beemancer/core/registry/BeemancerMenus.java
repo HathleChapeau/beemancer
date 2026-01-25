@@ -75,6 +75,10 @@ public class BeemancerMenus {
             MENUS.register("infuser",
                     () -> IMenuTypeExtension.create(InfuserMenu::new));
 
+    public static final Supplier<MenuType<MultiblockTankMenu>> MULTIBLOCK_TANK =
+            MENUS.register("multiblock_tank",
+                    () -> IMenuTypeExtension.create(MultiblockTankMenu::new));
+
     public static void register(IEventBus eventBus) {
         MENUS.register(eventBus);
     }

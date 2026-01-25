@@ -35,12 +35,8 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import javax.annotation.Nullable;
 
 public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
-    // --- TIER CONFIG ---
-    public static final int TIER1_CAPACITY = 16000;
-    public static final int TIER2_CAPACITY = 64000;
-    public static final int TIER3_CAPACITY = 256000;
+    public static final int CAPACITY = 8000;
 
-    private final int capacity;
     protected final FluidTank fluidTank;
 
     // Slot pour bucket
@@ -69,13 +65,8 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
     };
 
     public HoneyTankBlockEntity(BlockPos pos, BlockState state) {
-        this(BeemancerBlockEntities.HONEY_TANK.get(), pos, state, TIER1_CAPACITY);
-    }
-
-    public HoneyTankBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int capacity) {
-        super(type, pos, state);
-        this.capacity = capacity;
-        this.fluidTank = new FluidTank(capacity) {
+        super(BeemancerBlockEntities.HONEY_TANK.get(), pos, state);
+        this.fluidTank = new FluidTank(CAPACITY) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
                 return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get()
@@ -93,16 +84,7 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
         };
     }
 
-    // Factory methods for tiered versions
-    public static HoneyTankBlockEntity createTier2(BlockPos pos, BlockState state) {
-        return new HoneyTankBlockEntity(BeemancerBlockEntities.HONEY_TANK_TIER2.get(), pos, state, TIER2_CAPACITY);
-    }
-
-    public static HoneyTankBlockEntity createTier3(BlockPos pos, BlockState state) {
-        return new HoneyTankBlockEntity(BeemancerBlockEntities.HONEY_TANK_TIER3.get(), pos, state, TIER3_CAPACITY);
-    }
-
-    public int getCapacity() { return capacity; }
+    public int getCapacity() { return CAPACITY; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HoneyTankBlockEntity be) {
         // Process bucket slot

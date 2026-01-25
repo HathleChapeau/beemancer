@@ -3,6 +3,58 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Infuser Tiers + Multiblock Tank
+================================================================================
+
+AJOUTS - INFUSER TIERS:
+- InfuserBlockEntity.java: +TIER1/2/3 constants, +constructeur paramétré, +createTier2/3()
+- InfuserBlock.java: +tier field, +tier constructor
+- BeemancerBlockEntities.java: +INFUSER_TIER2, +INFUSER_TIER3
+- BeemancerBlocks.java: +INFUSER_TIER2, +INFUSER_TIER3
+- BeemancerItems.java: +INFUSER_TIER2, +INFUSER_TIER3
+- Assets: blockstates, models/block, models/item pour tier2/tier3
+- Traductions en_us.json/fr_fr.json
+
+SUPPRESSIONS - HONEY TANK TIERS:
+- HoneyTankBlockEntity.java: suppression tiers, capacity fixée à 8000 mB
+- HoneyTankBlock.java: suppression tier field et logique
+- BeemancerBlockEntities.java: -HONEY_TANK_TIER2, -HONEY_TANK_TIER3
+- BeemancerBlocks.java: -HONEY_TANK_TIER2, -HONEY_TANK_TIER3
+- BeemancerItems.java: -HONEY_TANK_TIER2, -HONEY_TANK_TIER3
+- BeemancerCreativeTabs.java: -tier2/tier3
+- Suppression assets (blockstates, models, textures)
+- Traductions supprimées
+
+AJOUTS - MULTIBLOCK TANK:
+- common/block/alchemy/MultiblockTankBlock.java
+- common/blockentity/alchemy/MultiblockTankBlockEntity.java
+- common/menu/alchemy/MultiblockTankMenu.java
+- client/gui/screen/alchemy/MultiblockTankScreen.java
+- BeemancerBlocks.java: +MULTIBLOCK_TANK
+- BeemancerBlockEntities.java: +MULTIBLOCK_TANK
+- BeemancerItems.java: +MULTIBLOCK_TANK
+- BeemancerMenus.java: +MULTIBLOCK_TANK
+- BeemancerCreativeTabs.java: +MULTIBLOCK_TANK
+- ClientSetup.java: +MultiblockTankScreen
+- Beemancer.java: +FluidHandler capability pour multiblock_tank
+- Assets: blockstates, models, textures placeholders, GUI
+- Traductions en_us.json/fr_fr.json
+
+NOUVELLE FEATURE - INFUSER TIERS:
+- Tier 1: 4000 mB tank, 1.0x process time
+- Tier 2: 8000 mB tank, 0.7x process time (30% plus rapide)
+- Tier 3: 16000 mB tank, 0.5x process time (50% plus rapide)
+
+NOUVELLE FEATURE - MULTIBLOCK TANK:
+- Tank extensible par blocs adjacents
+- 8000 mB par bloc
+- Doit former un cuboïde plein (rectangle 3D)
+- Master élu automatiquement (position minimale)
+- Casser un bloc = détruit tout le fluide
+- GUI affiche: niveau fluide, nombre blocs, validité
+- Compatible avec honey pipes pour automation
+
+================================================================================
 2026-01-25 - Alchemy System Optimizations
 ================================================================================
 

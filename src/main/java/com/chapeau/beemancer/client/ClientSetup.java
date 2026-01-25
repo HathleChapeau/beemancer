@@ -59,6 +59,7 @@ public class ClientSetup {
         event.register(BeemancerMenus.CRYSTALLIZER.get(), CrystallizerScreen::new);
         event.register(BeemancerMenus.ALEMBIC.get(), AlembicScreen::new);
         event.register(BeemancerMenus.INFUSER.get(), InfuserScreen::new);
+        event.register(BeemancerMenus.MULTIBLOCK_TANK.get(), MultiblockTankScreen::new);
     }
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
