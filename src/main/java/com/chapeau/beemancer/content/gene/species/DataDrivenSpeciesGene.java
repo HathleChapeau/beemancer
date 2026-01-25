@@ -72,9 +72,8 @@ public class DataDrivenSpeciesGene extends AbstractGene {
     public double getSpeedModifier() {
         // Try to get from BeeSpeciesManager if loaded
         BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(id);
-        if (data != null && data.stats() != null) {
-            int flyingSpeedLevel = data.stats().getOrDefault("flying_speed", 1);
-            return BeeSpeciesManager.getLevelModifier(flyingSpeedLevel);
+        if (data != null) {
+            return BeeSpeciesManager.getLevelModifier(data.flyingSpeedLevel);
         }
         return getParameter("speedModifier", 1.0);
     }
@@ -85,9 +84,8 @@ public class DataDrivenSpeciesGene extends AbstractGene {
     public double getProductionModifier() {
         // Try to get from BeeSpeciesManager if loaded
         BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(id);
-        if (data != null && data.stats() != null) {
-            int dropLevel = data.stats().getOrDefault("drop_level", 1);
-            return BeeSpeciesManager.getLevelModifier(dropLevel);
+        if (data != null) {
+            return BeeSpeciesManager.getLevelModifier(data.dropLevel);
         }
         return getParameter("productionModifier", 1.0);
     }
@@ -102,8 +100,8 @@ public class DataDrivenSpeciesGene extends AbstractGene {
      * Creates a DataDrivenSpeciesGene from BeeSpeciesManager data.
      */
     public static DataDrivenSpeciesGene fromSpeciesData(String speciesId, BeeSpeciesManager.BeeSpeciesData data) {
-        String tier = data.tier() != null ? data.tier() : "I";
-        String texture = data.texture() != null ? data.texture() : speciesId;
+        String tier = data.tier != null ? data.tier : "I";
+        String texture = data.texture != null ? data.texture : speciesId;
         return new DataDrivenSpeciesGene(speciesId, tier, texture);
     }
 }
