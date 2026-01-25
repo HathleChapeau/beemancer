@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:diamond_fragment" },
+    { "item": "beemancer:diamond_fragment" },
+    { "item": "beemancer:diamond_fragment" },
+    { "item": "beemancer:diamond_fragment" }
+  ],
+  "result": { "id": "minecraft:diamond", "count": 1 }
+}

@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:centrifuging",
+  "ingredient": { "item": "beemancer:traveler_comb" },
+  "results": [
+    { "item": { "id": "beemancer:ender_pearl_dust" }, "chance": 0.4 }
+  ],
+  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "processing_time": 120
+}

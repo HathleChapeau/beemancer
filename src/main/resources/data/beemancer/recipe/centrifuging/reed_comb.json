@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:centrifuging",
+  "ingredient": { "item": "beemancer:reed_comb" },
+  "results": [
+    { "item": { "id": "minecraft:sugar_cane" }, "chance": 0.8 }
+  ],
+  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "processing_time": 60
+}

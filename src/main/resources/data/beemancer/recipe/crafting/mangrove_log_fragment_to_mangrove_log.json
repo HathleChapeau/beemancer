@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:mangrove_log_fragment" },
+    { "item": "beemancer:mangrove_log_fragment" },
+    { "item": "beemancer:mangrove_log_fragment" },
+    { "item": "beemancer:mangrove_log_fragment" }
+  ],
+  "result": { "id": "minecraft:mangrove_log", "count": 1 }
+}

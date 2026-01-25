@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:birch_log_fragment" },
+    { "item": "beemancer:birch_log_fragment" },
+    { "item": "beemancer:birch_log_fragment" },
+    { "item": "beemancer:birch_log_fragment" }
+  ],
+  "result": { "id": "minecraft:birch_log", "count": 1 }
+}

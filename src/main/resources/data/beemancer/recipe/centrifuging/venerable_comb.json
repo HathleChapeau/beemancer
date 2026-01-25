@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:centrifuging",
+  "ingredient": { "item": "beemancer:venerable_comb" },
+  "results": [
+    { "item": { "id": "beemancer:emerald_dust" }, "chance": 0.5 }
+  ],
+  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "processing_time": 120
+}

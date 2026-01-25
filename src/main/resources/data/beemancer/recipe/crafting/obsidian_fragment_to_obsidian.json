@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:obsidian_fragment" },
+    { "item": "beemancer:obsidian_fragment" },
+    { "item": "beemancer:obsidian_fragment" },
+    { "item": "beemancer:obsidian_fragment" }
+  ],
+  "result": { "id": "minecraft:obsidian", "count": 1 }
+}

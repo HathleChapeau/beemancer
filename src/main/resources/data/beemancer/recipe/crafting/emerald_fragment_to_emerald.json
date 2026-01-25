@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:emerald_fragment" },
+    { "item": "beemancer:emerald_fragment" },
+    { "item": "beemancer:emerald_fragment" },
+    { "item": "beemancer:emerald_fragment" }
+  ],
+  "result": { "id": "minecraft:emerald", "count": 1 }
+}

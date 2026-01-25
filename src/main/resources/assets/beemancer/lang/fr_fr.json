@@ -1,5 +1,8 @@
 {
   "itemGroup.beemancer": "Beemancer",
+  "itemGroup.beemancer.main": "Beemancer",
+  "itemGroup.beemancer.bees": "Beemancer - Abeilles",
+  "itemGroup.beemancer.combs": "Beemancer - Rayons & Ressources",
   
   "block.beemancer.storage_crate": "Caisse de Stockage",
   "block.beemancer.storage_controller": "Contrôleur de Stockage",

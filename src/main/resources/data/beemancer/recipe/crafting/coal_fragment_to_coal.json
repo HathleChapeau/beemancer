@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:coal_fragment" },
+    { "item": "beemancer:coal_fragment" },
+    { "item": "beemancer:coal_fragment" },
+    { "item": "beemancer:coal_fragment" }
+  ],
+  "result": { "id": "minecraft:coal", "count": 1 }
+}

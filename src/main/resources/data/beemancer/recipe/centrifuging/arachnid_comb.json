@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:centrifuging",
+  "ingredient": { "item": "beemancer:arachnid_comb" },
+  "results": [
+    { "item": { "id": "minecraft:spider_eye" }, "chance": 0.7 }
+  ],
+  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "processing_time": 60
+}

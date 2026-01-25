@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:slime_ball_shard" },
+    { "item": "beemancer:slime_ball_shard" },
+    { "item": "beemancer:slime_ball_shard" },
+    { "item": "beemancer:slime_ball_shard" }
+  ],
+  "result": { "id": "minecraft:slime_ball", "count": 1 }
+}

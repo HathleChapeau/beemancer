@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:glowstone_dust_shard" },
+    { "item": "beemancer:glowstone_dust_shard" },
+    { "item": "beemancer:glowstone_dust_shard" },
+    { "item": "beemancer:glowstone_dust_shard" }
+  ],
+  "result": { "id": "minecraft:glowstone_dust", "count": 1 }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:dark_oak_log_fragment" },
+    { "item": "beemancer:dark_oak_log_fragment" },
+    { "item": "beemancer:dark_oak_log_fragment" },
+    { "item": "beemancer:dark_oak_log_fragment" }
+  ],
+  "result": { "id": "minecraft:dark_oak_log", "count": 1 }
+}

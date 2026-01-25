@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "DDD",
+    "DDD",
+    "DDD"
+  ],
+  "key": {
+    "D": { "item": "beemancer:nether_star_dust" }
+  },
+  "result": { "id": "beemancer:nether_star_fragment", "count": 1 }
+}

@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:centrifuging",
+  "ingredient": { "item": "beemancer:umbra_comb" },
+  "results": [
+    { "item": { "id": "beemancer:dark_oak_log_fragment" }, "chance": 0.8 }
+  ],
+  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "processing_time": 60
+}

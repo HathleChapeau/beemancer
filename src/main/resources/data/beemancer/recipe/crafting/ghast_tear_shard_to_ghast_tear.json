@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:ghast_tear_shard" },
+    { "item": "beemancer:ghast_tear_shard" },
+    { "item": "beemancer:ghast_tear_shard" },
+    { "item": "beemancer:ghast_tear_shard" }
+  ],
+  "result": { "id": "minecraft:ghast_tear", "count": 1 }
+}

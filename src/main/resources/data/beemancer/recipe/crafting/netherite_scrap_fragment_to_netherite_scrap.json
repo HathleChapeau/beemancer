@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:netherite_scrap_fragment" },
+    { "item": "beemancer:netherite_scrap_fragment" },
+    { "item": "beemancer:netherite_scrap_fragment" },
+    { "item": "beemancer:netherite_scrap_fragment" }
+  ],
+  "result": { "id": "minecraft:netherite_scrap", "count": 1 }
+}

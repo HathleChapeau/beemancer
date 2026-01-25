@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:centrifuging",
+  "ingredient": { "item": "beemancer:geode_comb" },
+  "results": [
+    { "item": { "id": "minecraft:amethyst_shard" }, "chance": 0.7 }
+  ],
+  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "processing_time": 60
+}

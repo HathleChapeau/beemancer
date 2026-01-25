@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:jungle_log_fragment" },
+    { "item": "beemancer:jungle_log_fragment" },
+    { "item": "beemancer:jungle_log_fragment" },
+    { "item": "beemancer:jungle_log_fragment" }
+  ],
+  "result": { "id": "minecraft:jungle_log", "count": 1 }
+}

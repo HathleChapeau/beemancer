@@ -1,70 +1,981 @@
 {
-  "_comment": "Configuration des combinaisons de breeding entre especes",
+  "_comment": "Configuration des combinaisons de breeding entre especes - 97 species",
   "_format": "parent1 + parent2 -> resultats possibles avec probabilites (en %)",
   "_note": "Les probabilites doivent totaliser 100%. 'nothing' = pas de descendant",
-  
+
   "combinations": [
     {
-      "parent1": "common",
-      "parent2": "common",
+      "_comment": "Tier II - Monsty: Rocky + Meadow",
+      "parent1": "rocky",
+      "parent2": "meadow",
       "results": [
-        { "species": "common", "chance": 85 },
+        { "species": "monsty", "chance": 50 },
+        { "species": "rocky", "chance": 20 },
+        { "species": "meadow", "chance": 20 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier II - Docile: Forest + Meadow",
+      "parent1": "forest",
+      "parent2": "meadow",
+      "results": [
+        { "species": "docile", "chance": 50 },
+        { "species": "forest", "chance": 20 },
+        { "species": "meadow", "chance": 20 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier II - Loam: Forest + Rocky",
+      "parent1": "forest",
+      "parent2": "rocky",
+      "results": [
+        { "species": "loam", "chance": 50 },
+        { "species": "forest", "chance": 20 },
+        { "species": "rocky", "chance": 20 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier II - Sediment: Rocky + River",
+      "parent1": "rocky",
+      "parent2": "river",
+      "results": [
+        { "species": "sediment", "chance": 50 },
+        { "species": "rocky", "chance": 20 },
+        { "species": "river", "chance": 20 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier II - Spark: Rocky + Dune",
+      "parent1": "rocky",
+      "parent2": "dune",
+      "results": [
+        { "species": "spark", "chance": 50 },
+        { "species": "rocky", "chance": 20 },
+        { "species": "dune", "chance": 20 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier II - Cultural: Meadow + River",
+      "parent1": "meadow",
+      "parent2": "river",
+      "results": [
+        { "species": "cultural", "chance": 50 },
+        { "species": "meadow", "chance": 20 },
+        { "species": "river", "chance": 20 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Carbon: Sediment + Rocky",
+      "parent1": "sediment",
+      "parent2": "rocky",
+      "results": [
+        { "species": "carbon", "chance": 40 },
+        { "species": "sediment", "chance": 25 },
+        { "species": "rocky", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Cupric: Spark + Rocky",
+      "parent1": "spark",
+      "parent2": "rocky",
+      "results": [
+        { "species": "cupric", "chance": 40 },
+        { "species": "spark", "chance": 25 },
+        { "species": "rocky", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Festering: Monsty + Meadow",
+      "parent1": "monsty",
+      "parent2": "meadow",
+      "results": [
+        { "species": "festering", "chance": 40 },
+        { "species": "monsty", "chance": 25 },
+        { "species": "meadow", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Skeletal: Monsty + Forest",
+      "parent1": "monsty",
+      "parent2": "forest",
+      "results": [
+        { "species": "skeletal", "chance": 40 },
+        { "species": "monsty", "chance": 25 },
+        { "species": "forest", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Silken: Monsty + Rocky",
+      "parent1": "monsty",
+      "parent2": "rocky",
+      "results": [
+        { "species": "silken", "chance": 40 },
+        { "species": "monsty", "chance": 25 },
+        { "species": "rocky", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Arachnid: Monsty + Dune",
+      "parent1": "monsty",
+      "parent2": "dune",
+      "results": [
+        { "species": "arachnid", "chance": 40 },
+        { "species": "monsty", "chance": 25 },
+        { "species": "dune", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Tanner: Docile + Meadow",
+      "parent1": "docile",
+      "parent2": "meadow",
+      "results": [
+        { "species": "tanner", "chance": 40 },
+        { "species": "docile", "chance": 25 },
+        { "species": "meadow", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Plume: Docile + Forest",
+      "parent1": "docile",
+      "parent2": "forest",
+      "results": [
+        { "species": "plume", "chance": 40 },
+        { "species": "docile", "chance": 25 },
+        { "species": "forest", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Quercus: Loam + Meadow",
+      "parent1": "loam",
+      "parent2": "meadow",
+      "results": [
+        { "species": "quercus", "chance": 40 },
+        { "species": "loam", "chance": 25 },
+        { "species": "meadow", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Boreal: Loam + River",
+      "parent1": "loam",
+      "parent2": "river",
+      "results": [
+        { "species": "boreal", "chance": 40 },
+        { "species": "loam", "chance": 25 },
+        { "species": "river", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Tropical: Loam + Dune",
+      "parent1": "loam",
+      "parent2": "dune",
+      "results": [
+        { "species": "tropical", "chance": 40 },
+        { "species": "loam", "chance": 25 },
+        { "species": "dune", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Paperbark: Loam + Forest",
+      "parent1": "loam",
+      "parent2": "forest",
+      "results": [
+        { "species": "paperbark", "chance": 40 },
+        { "species": "loam", "chance": 25 },
+        { "species": "forest", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Reed: Sediment + Dune",
+      "parent1": "sediment",
+      "parent2": "dune",
+      "results": [
+        { "species": "reed", "chance": 40 },
+        { "species": "sediment", "chance": 25 },
+        { "species": "dune", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Karot: Cultural + Meadow",
+      "parent1": "cultural",
+      "parent2": "meadow",
+      "results": [
+        { "species": "karot", "chance": 40 },
+        { "species": "cultural", "chance": 25 },
+        { "species": "meadow", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Tuber: Cultural + Rocky",
+      "parent1": "cultural",
+      "parent2": "rocky",
+      "results": [
+        { "species": "tuber", "chance": 40 },
+        { "species": "cultural", "chance": 25 },
+        { "species": "rocky", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Juicy: Cultural + River",
+      "parent1": "cultural",
+      "parent2": "river",
+      "results": [
+        { "species": "juicy", "chance": 40 },
+        { "species": "cultural", "chance": 25 },
+        { "species": "river", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Gourd: Cultural + Monsty",
+      "parent1": "cultural",
+      "parent2": "monsty",
+      "results": [
+        { "species": "gourd", "chance": 40 },
+        { "species": "cultural", "chance": 25 },
+        { "species": "monsty", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier III - Agrarian: Cultural + Docile",
+      "parent1": "cultural",
+      "parent2": "docile",
+      "results": [
+        { "species": "agrarian", "chance": 40 },
+        { "species": "cultural", "chance": 25 },
+        { "species": "docile", "chance": 25 },
+        { "species": "nothing", "chance": 10 }
+      ]
+    },
+    {
+      "_comment": "Tier IV - Flower: Agrarian + Meadow",
+      "parent1": "agrarian",
+      "parent2": "meadow",
+      "results": [
+        { "species": "flower", "chance": 35 },
+        { "species": "agrarian", "chance": 25 },
+        { "species": "meadow", "chance": 25 },
         { "species": "nothing", "chance": 15 }
       ]
     },
     {
-      "parent1": "common",
-      "parent2": "noble",
+      "_comment": "Tier IV - Mushroom: Tuber + Agrarian",
+      "parent1": "tuber",
+      "parent2": "agrarian",
       "results": [
-        { "species": "common", "chance": 50 },
-        { "species": "noble", "chance": 30 },
-        { "species": "nothing", "chance": 20 }
-      ]
-    },
-    {
-      "parent1": "common",
-      "parent2": "diligent",
-      "results": [
-        { "species": "common", "chance": 50 },
-        { "species": "diligent", "chance": 30 },
-        { "species": "nothing", "chance": 20 }
-      ]
-    },
-    {
-      "parent1": "noble",
-      "parent2": "noble",
-      "results": [
-        { "species": "noble", "chance": 70 },
-        { "species": "common", "chance": 15 },
+        { "species": "mushroom", "chance": 35 },
+        { "species": "tuber", "chance": 25 },
+        { "species": "agrarian", "chance": 25 },
         { "species": "nothing", "chance": 15 }
       ]
     },
     {
-      "parent1": "noble",
-      "parent2": "diligent",
+      "_comment": "Tier IV - Tree: Quercus + Forest",
+      "parent1": "quercus",
+      "parent2": "forest",
       "results": [
-        { "species": "noble", "chance": 30 },
-        { "species": "diligent", "chance": 30 },
-        { "species": "common", "chance": 20 },
+        { "species": "tree", "chance": 35 },
+        { "species": "quercus", "chance": 25 },
+        { "species": "forest", "chance": 25 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "_comment": "Tier IV - Crystal: Carbon + Reed",
+      "parent1": "carbon",
+      "parent2": "reed",
+      "results": [
+        { "species": "crystal", "chance": 35 },
+        { "species": "carbon", "chance": 25 },
+        { "species": "reed", "chance": 25 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "_comment": "Tier IV - Argil: Reed + Loam",
+      "parent1": "reed",
+      "parent2": "loam",
+      "results": [
+        { "species": "argil", "chance": 35 },
+        { "species": "reed", "chance": 25 },
+        { "species": "loam", "chance": 25 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "_comment": "Tier IV - Umbra: Reed + Carbon",
+      "parent1": "reed",
+      "parent2": "carbon",
+      "results": [
+        { "species": "umbra", "chance": 35 },
+        { "species": "reed", "chance": 25 },
+        { "species": "carbon", "chance": 25 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "_comment": "Tier IV - Savanna: Paperbark + Dune",
+      "parent1": "paperbark",
+      "parent2": "dune",
+      "results": [
+        { "species": "savanna", "chance": 35 },
+        { "species": "paperbark", "chance": 25 },
+        { "species": "dune", "chance": 25 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "_comment": "Tier IV - Frost: Boreal + River",
+      "parent1": "boreal",
+      "parent2": "river",
+      "results": [
+        { "species": "frost", "chance": 35 },
+        { "species": "boreal", "chance": 25 },
+        { "species": "river", "chance": 25 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "_comment": "Tier IV - Volatile: Carbon + Monsty",
+      "parent1": "carbon",
+      "parent2": "monsty",
+      "results": [
+        { "species": "volatile", "chance": 35 },
+        { "species": "carbon", "chance": 25 },
+        { "species": "monsty", "chance": 25 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "_comment": "Tier IV - Ashen: Carbon + Rocky",
+      "parent1": "carbon",
+      "parent2": "rocky",
+      "results": [
+        { "species": "ashen", "chance": 35 },
+        { "species": "carbon", "chance": 25 },
+        { "species": "rocky", "chance": 25 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "_comment": "Tier IV - Igneous: Skeletal + Rocky",
+      "parent1": "skeletal",
+      "parent2": "rocky",
+      "results": [
+        { "species": "igneous", "chance": 35 },
+        { "species": "skeletal", "chance": 25 },
+        { "species": "rocky", "chance": 25 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "_comment": "Tier IV - Rose Stone: Arachnid + Rocky",
+      "parent1": "arachnid",
+      "parent2": "rocky",
+      "results": [
+        { "species": "rose_stone", "chance": 35 },
+        { "species": "arachnid", "chance": 25 },
+        { "species": "rocky", "chance": 25 },
+        { "species": "nothing", "chance": 15 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Swift: Prince + Plume",
+      "parent1": "prince",
+      "parent2": "plume",
+      "results": [
+        { "species": "swift", "chance": 30 },
+        { "species": "prince", "chance": 25 },
+        { "species": "plume", "chance": 25 },
         { "species": "nothing", "chance": 20 }
       ]
     },
     {
-      "parent1": "diligent",
-      "parent2": "diligent",
+      "_comment": "Tier V - Royal: Prince + Prince (same species breeding)",
+      "parent1": "prince",
+      "parent2": "prince",
       "results": [
-        { "species": "diligent", "chance": 70 },
-        { "species": "common", "chance": 15 },
-        { "species": "nothing", "chance": 15 }
+        { "species": "royal", "chance": 25 },
+        { "species": "prince", "chance": 55 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Ferrous: Ashen + Spark",
+      "parent1": "ashen",
+      "parent2": "spark",
+      "results": [
+        { "species": "ferrous", "chance": 30 },
+        { "species": "ashen", "chance": 25 },
+        { "species": "spark", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Flux: Rose Stone + Crystal",
+      "parent1": "rose_stone",
+      "parent2": "crystal",
+      "results": [
+        { "species": "flux", "chance": 30 },
+        { "species": "rose_stone", "chance": 25 },
+        { "species": "crystal", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Lazuli: Crystal + Cupric",
+      "parent1": "crystal",
+      "parent2": "cupric",
+      "results": [
+        { "species": "lazuli", "chance": 30 },
+        { "species": "crystal", "chance": 25 },
+        { "species": "cupric", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Quartzose: Crystal + Nether",
+      "parent1": "crystal",
+      "parent2": "nether",
+      "results": [
+        { "species": "quartzose", "chance": 30 },
+        { "species": "crystal", "chance": 25 },
+        { "species": "nether", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Luminous: Volatile + Nether",
+      "parent1": "volatile",
+      "parent2": "nether",
+      "results": [
+        { "species": "luminous", "chance": 30 },
+        { "species": "volatile", "chance": 25 },
+        { "species": "nether", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Grim: Ashen + Carbon",
+      "parent1": "ashen",
+      "parent2": "carbon",
+      "results": [
+        { "species": "grim", "chance": 30 },
+        { "species": "ashen", "chance": 25 },
+        { "species": "carbon", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Columnar: Ashen + Rocky",
+      "parent1": "ashen",
+      "parent2": "rocky",
+      "results": [
+        { "species": "columnar", "chance": 30 },
+        { "species": "ashen", "chance": 25 },
+        { "species": "rocky", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Viscous: Argil + Monsty",
+      "parent1": "argil",
+      "parent2": "monsty",
+      "results": [
+        { "species": "viscous", "chance": 30 },
+        { "species": "argil", "chance": 25 },
+        { "species": "monsty", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Inky: Argil + Docile",
+      "parent1": "argil",
+      "parent2": "docile",
+      "results": [
+        { "species": "inky", "chance": 30 },
+        { "species": "argil", "chance": 25 },
+        { "species": "docile", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Fleece: Flower + Docile",
+      "parent1": "flower",
+      "parent2": "docile",
+      "results": [
+        { "species": "fleece", "chance": 30 },
+        { "species": "flower", "chance": 25 },
+        { "species": "docile", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Adobe: Rose Stone + River",
+      "parent1": "rose_stone",
+      "parent2": "river",
+      "results": [
+        { "species": "adobe", "chance": 30 },
+        { "species": "rose_stone", "chance": 25 },
+        { "species": "river", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Geode: Crystal + Crystal (same species breeding)",
+      "parent1": "crystal",
+      "parent2": "crystal",
+      "results": [
+        { "species": "geode", "chance": 25 },
+        { "species": "crystal", "chance": 55 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier V - Marsh: Umbra + Savanna",
+      "parent1": "umbra",
+      "parent2": "savanna",
+      "results": [
+        { "species": "marsh", "chance": 30 },
+        { "species": "umbra", "chance": 25 },
+        { "species": "savanna", "chance": 25 },
+        { "species": "nothing", "chance": 20 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Majestic: Royal + Luminous",
+      "parent1": "royal",
+      "parent2": "luminous",
+      "results": [
+        { "species": "majestic", "chance": 25 },
+        { "species": "royal", "chance": 25 },
+        { "species": "luminous", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Steady: Grim + Ferrous",
+      "parent1": "grim",
+      "parent2": "ferrous",
+      "results": [
+        { "species": "steady", "chance": 25 },
+        { "species": "grim", "chance": 25 },
+        { "species": "ferrous", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Wind: Swift + Plume",
+      "parent1": "swift",
+      "parent2": "plume",
+      "results": [
+        { "species": "wind", "chance": 25 },
+        { "species": "swift", "chance": 25 },
+        { "species": "plume", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Thunder: Ferrous + Dune",
+      "parent1": "ferrous",
+      "parent2": "dune",
+      "results": [
+        { "species": "thunder", "chance": 25 },
+        { "species": "ferrous", "chance": 25 },
+        { "species": "dune", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Water: Inky + River",
+      "parent1": "inky",
+      "parent2": "river",
+      "results": [
+        { "species": "water", "chance": 25 },
+        { "species": "inky", "chance": 25 },
+        { "species": "river", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Fire: Luminous + Nether",
+      "parent1": "luminous",
+      "parent2": "nether",
+      "results": [
+        { "species": "fire", "chance": 25 },
+        { "species": "luminous", "chance": 25 },
+        { "species": "nether", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Auric: Ferrous + Royal",
+      "parent1": "ferrous",
+      "parent2": "royal",
+      "results": [
+        { "species": "auric", "chance": 25 },
+        { "species": "ferrous", "chance": 25 },
+        { "species": "royal", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Magmatic: Infernalist + Monsty",
+      "parent1": "infernalist",
+      "parent2": "monsty",
+      "results": [
+        { "species": "magmatic", "chance": 25 },
+        { "species": "infernalist", "chance": 25 },
+        { "species": "monsty", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Spirit: Infernalist + Skeletal",
+      "parent1": "infernalist",
+      "parent2": "skeletal",
+      "results": [
+        { "species": "spirit", "chance": 25 },
+        { "species": "infernalist", "chance": 25 },
+        { "species": "skeletal", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Crimson: Infernalist + Agrarian",
+      "parent1": "infernalist",
+      "parent2": "agrarian",
+      "results": [
+        { "species": "crimson", "chance": 25 },
+        { "species": "infernalist", "chance": 25 },
+        { "species": "agrarian", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Mycelial: Grim + Loam",
+      "parent1": "grim",
+      "parent2": "loam",
+      "results": [
+        { "species": "mycelial", "chance": 25 },
+        { "species": "grim", "chance": 25 },
+        { "species": "loam", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Humus: Columnar + Loam",
+      "parent1": "columnar",
+      "parent2": "loam",
+      "results": [
+        { "species": "humus", "chance": 25 },
+        { "species": "columnar", "chance": 25 },
+        { "species": "loam", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VI - Floral: Royal + Meadow",
+      "parent1": "royal",
+      "parent2": "meadow",
+      "results": [
+        { "species": "floral", "chance": 25 },
+        { "species": "royal", "chance": 25 },
+        { "species": "meadow", "chance": 25 },
+        { "species": "nothing", "chance": 25 }
+      ]
+    },
+    {
+      "_comment": "Tier VII - Treasure: Auric + Boreal",
+      "parent1": "auric",
+      "parent2": "boreal",
+      "results": [
+        { "species": "treasure", "chance": 20 },
+        { "species": "auric", "chance": 25 },
+        { "species": "boreal", "chance": 25 },
+        { "species": "nothing", "chance": 30 }
+      ]
+    },
+    {
+      "_comment": "Tier VII - Siphoning: Wind + End",
+      "parent1": "wind",
+      "parent2": "end",
+      "results": [
+        { "species": "siphoning", "chance": 20 },
+        { "species": "wind", "chance": 25 },
+        { "species": "end", "chance": 25 },
+        { "species": "nothing", "chance": 30 }
+      ]
+    },
+    {
+      "_comment": "Tier VII - Zephyr: Wind + Swift",
+      "parent1": "wind",
+      "parent2": "swift",
+      "results": [
+        { "species": "zephyr", "chance": 20 },
+        { "species": "wind", "chance": 25 },
+        { "species": "swift", "chance": 25 },
+        { "species": "nothing", "chance": 30 }
+      ]
+    },
+    {
+      "_comment": "Tier VII - Prismatic: Water + Crystal",
+      "parent1": "water",
+      "parent2": "crystal",
+      "results": [
+        { "species": "prismatic", "chance": 20 },
+        { "species": "water", "chance": 25 },
+        { "species": "crystal", "chance": 25 },
+        { "species": "nothing", "chance": 30 }
+      ]
+    },
+    {
+      "_comment": "Tier VII - Crystalline: Auric + Crystal",
+      "parent1": "auric",
+      "parent2": "crystal",
+      "results": [
+        { "species": "crystalline", "chance": 20 },
+        { "species": "auric", "chance": 25 },
+        { "species": "crystal", "chance": 25 },
+        { "species": "nothing", "chance": 30 }
+      ]
+    },
+    {
+      "_comment": "Tier VII - Insomnia: Magmatic + End",
+      "parent1": "magmatic",
+      "parent2": "end",
+      "results": [
+        { "species": "insomnia", "chance": 20 },
+        { "species": "magmatic", "chance": 25 },
+        { "species": "end", "chance": 25 },
+        { "species": "nothing", "chance": 30 }
+      ]
+    },
+    {
+      "_comment": "Tier VII - Blazing: Fire + Infernalist",
+      "parent1": "fire",
+      "parent2": "infernalist",
+      "results": [
+        { "species": "blazing", "chance": 20 },
+        { "species": "fire", "chance": 25 },
+        { "species": "infernalist", "chance": 25 },
+        { "species": "nothing", "chance": 30 }
+      ]
+    },
+    {
+      "_comment": "Tier VIII - Diamantine: Treasure + Ferrous",
+      "parent1": "treasure",
+      "parent2": "ferrous",
+      "results": [
+        { "species": "diamantine", "chance": 15 },
+        { "species": "treasure", "chance": 25 },
+        { "species": "ferrous", "chance": 25 },
+        { "species": "nothing", "chance": 35 }
+      ]
+    },
+    {
+      "_comment": "Tier VIII - Venerable: Treasure + Royal",
+      "parent1": "treasure",
+      "parent2": "royal",
+      "results": [
+        { "species": "venerable", "chance": 15 },
+        { "species": "treasure", "chance": 25 },
+        { "species": "royal", "chance": 25 },
+        { "species": "nothing", "chance": 35 }
+      ]
+    },
+    {
+      "_comment": "Tier VIII - Volcanic: Prismatic + Magmatic",
+      "parent1": "prismatic",
+      "parent2": "magmatic",
+      "results": [
+        { "species": "volcanic", "chance": 15 },
+        { "species": "prismatic", "chance": 25 },
+        { "species": "magmatic", "chance": 25 },
+        { "species": "nothing", "chance": 35 }
+      ]
+    },
+    {
+      "_comment": "Tier VIII - Xenolith: Insomnia + End",
+      "parent1": "insomnia",
+      "parent2": "end",
+      "results": [
+        { "species": "xenolith", "chance": 15 },
+        { "species": "insomnia", "chance": 25 },
+        { "species": "end", "chance": 25 },
+        { "species": "nothing", "chance": 35 }
+      ]
+    },
+    {
+      "_comment": "Tier VIII - Traveler: Insomnia + Zephyr",
+      "parent1": "insomnia",
+      "parent2": "zephyr",
+      "results": [
+        { "species": "traveler", "chance": 15 },
+        { "species": "insomnia", "chance": 25 },
+        { "species": "zephyr", "chance": 25 },
+        { "species": "nothing", "chance": 35 }
+      ]
+    },
+    {
+      "_comment": "Tier VIII - Sorrow: Blazing + Spirit",
+      "parent1": "blazing",
+      "parent2": "spirit",
+      "results": [
+        { "species": "sorrow", "chance": 15 },
+        { "species": "blazing", "chance": 25 },
+        { "species": "spirit", "chance": 25 },
+        { "species": "nothing", "chance": 35 }
+      ]
+    },
+    {
+      "_comment": "Tier VIII - Absorbent: Prismatic + Loam",
+      "parent1": "prismatic",
+      "parent2": "loam",
+      "results": [
+        { "species": "absorbent", "chance": 15 },
+        { "species": "prismatic", "chance": 25 },
+        { "species": "loam", "chance": 25 },
+        { "species": "nothing", "chance": 35 }
+      ]
+    },
+    {
+      "_comment": "Tier VIII - Light: Fire + Majestic",
+      "parent1": "fire",
+      "parent2": "majestic",
+      "results": [
+        { "species": "light", "chance": 15 },
+        { "species": "fire", "chance": 25 },
+        { "species": "majestic", "chance": 25 },
+        { "species": "nothing", "chance": 35 }
+      ]
+    },
+    {
+      "_comment": "Tier VIII - Dark: Water + Wind",
+      "parent1": "water",
+      "parent2": "wind",
+      "results": [
+        { "species": "dark", "chance": 15 },
+        { "species": "water", "chance": 25 },
+        { "species": "wind", "chance": 25 },
+        { "species": "nothing", "chance": 35 }
+      ]
+    },
+    {
+      "_comment": "Tier VIII - Imperial: Treasure + Majestic",
+      "parent1": "treasure",
+      "parent2": "majestic",
+      "results": [
+        { "species": "imperial", "chance": 15 },
+        { "species": "treasure", "chance": 25 },
+        { "species": "majestic", "chance": 25 },
+        { "species": "nothing", "chance": 35 }
+      ]
+    },
+    {
+      "_comment": "Tier IX - Demonic: Dark + Infernalist",
+      "parent1": "dark",
+      "parent2": "infernalist",
+      "results": [
+        { "species": "demonic", "chance": 10 },
+        { "species": "dark", "chance": 25 },
+        { "species": "infernalist", "chance": 25 },
+        { "species": "nothing", "chance": 40 }
+      ]
+    },
+    {
+      "_comment": "Tier IX - Paladin: Light + Steady",
+      "parent1": "light",
+      "parent2": "steady",
+      "results": [
+        { "species": "paladin", "chance": 10 },
+        { "species": "light", "chance": 25 },
+        { "species": "steady", "chance": 25 },
+        { "species": "nothing", "chance": 40 }
+      ]
+    },
+    {
+      "_comment": "Tier IX - Chorus: Traveler + Tuber",
+      "parent1": "traveler",
+      "parent2": "tuber",
+      "results": [
+        { "species": "chorus", "chance": 10 },
+        { "species": "traveler", "chance": 25 },
+        { "species": "tuber", "chance": 25 },
+        { "species": "nothing", "chance": 40 }
+      ]
+    },
+    {
+      "_comment": "Tier IX - Ancient: Treasure + Infernalist",
+      "parent1": "treasure",
+      "parent2": "infernalist",
+      "results": [
+        { "species": "ancient", "chance": 10 },
+        { "species": "treasure", "chance": 25 },
+        { "species": "infernalist", "chance": 25 },
+        { "species": "nothing", "chance": 40 }
+      ]
+    },
+    {
+      "_comment": "Tier IX - Void: Light + Dark",
+      "parent1": "light",
+      "parent2": "dark",
+      "results": [
+        { "species": "void", "chance": 10 },
+        { "species": "light", "chance": 25 },
+        { "species": "dark", "chance": 25 },
+        { "species": "nothing", "chance": 40 }
+      ]
+    },
+    {
+      "_comment": "Tier X - Draconic: Chorus + Demonic",
+      "parent1": "chorus",
+      "parent2": "demonic",
+      "results": [
+        { "species": "draconic", "chance": 5 },
+        { "species": "chorus", "chance": 25 },
+        { "species": "demonic", "chance": 25 },
+        { "species": "nothing", "chance": 45 }
+      ]
+    },
+    {
+      "_comment": "Tier X - Stellar: Void + Paladin",
+      "parent1": "void",
+      "parent2": "paladin",
+      "results": [
+        { "species": "stellar", "chance": 5 },
+        { "species": "void", "chance": 25 },
+        { "species": "paladin", "chance": 25 },
+        { "species": "nothing", "chance": 45 }
       ]
     }
   ],
-  
+
   "defaultResult": {
     "_comment": "Resultat par defaut si la combinaison n'est pas definie",
     "results": [
-      { "species": "nothing", "chance": 40 },
-      { "species": "nothing", "chance": 60 }
+      { "species": "nothing", "chance": 100 }
     ]
   }
 }

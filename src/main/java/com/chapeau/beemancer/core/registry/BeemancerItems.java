@@ -172,7 +172,7 @@ public class BeemancerItems {
     public static final DeferredItem<Item> HONEYED_WOOD = ITEMS.register("honeyed_wood",
             () -> new Item(new Item.Properties()));
 
-    // --- COMBS (par espèce) ---
+    // --- COMBS (legacy) ---
     public static final DeferredItem<Item> COMMON_COMB = ITEMS.register("common_comb",
             () -> new Item(new Item.Properties()));
 
@@ -183,6 +183,238 @@ public class BeemancerItems {
             () -> new Item(new Item.Properties()));
 
     public static final DeferredItem<Item> ROYAL_COMB = ITEMS.register("royal_comb",
+            () -> new Item(new Item.Properties()));
+
+    // --- NEW COMBS (from bee species) ---
+    public static final DeferredItem<Item> MEADOW_COMB = ITEMS.register("meadow_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> FOREST_COMB = ITEMS.register("forest_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> RIVER_COMB = ITEMS.register("river_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> NETHER_COMB = ITEMS.register("nether_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> END_COMB = ITEMS.register("end_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> MONSTY_COMB = ITEMS.register("monsty_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> DOCILE_COMB = ITEMS.register("docile_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> SPARK_COMB = ITEMS.register("spark_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> CULTURAL_COMB = ITEMS.register("cultural_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> CARBON_COMB = ITEMS.register("carbon_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> CUPRIC_COMB = ITEMS.register("cupric_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> FESTERING_COMB = ITEMS.register("festering_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> SKELETAL_COMB = ITEMS.register("skeletal_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ARACHNID_COMB = ITEMS.register("arachnid_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> TANNER_COMB = ITEMS.register("tanner_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> QUERCUS_COMB = ITEMS.register("quercus_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> BOREAL_COMB = ITEMS.register("boreal_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> TROPICAL_COMB = ITEMS.register("tropical_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> PAPERBARK_COMB = ITEMS.register("paperbark_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> REED_COMB = ITEMS.register("reed_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> FLOWER_COMB = ITEMS.register("flower_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> MUSHROOM_COMB = ITEMS.register("mushroom_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> TREE_COMB = ITEMS.register("tree_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> CRYSTAL_COMB = ITEMS.register("crystal_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ARGIL_COMB = ITEMS.register("argil_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> UMBRA_COMB = ITEMS.register("umbra_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> SAVANNA_COMB = ITEMS.register("savanna_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> FROST_COMB = ITEMS.register("frost_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> VOLATILE_COMB = ITEMS.register("volatile_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> SWIFT_COMB = ITEMS.register("swift_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> FERROUS_COMB = ITEMS.register("ferrous_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> FLUX_COMB = ITEMS.register("flux_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> LAZULI_COMB = ITEMS.register("lazuli_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> QUARTZOSE_COMB = ITEMS.register("quartzose_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> LUMINOUS_COMB = ITEMS.register("luminous_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> VISCOUS_COMB = ITEMS.register("viscous_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> INKY_COMB = ITEMS.register("inky_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> GEODE_COMB = ITEMS.register("geode_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> MARSH_COMB = ITEMS.register("marsh_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> MAJESTIC_COMB = ITEMS.register("majestic_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> STEADY_COMB = ITEMS.register("steady_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> AURIC_COMB = ITEMS.register("auric_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> MAGMATIC_COMB = ITEMS.register("magmatic_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> CRIMSON_COMB = ITEMS.register("crimson_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> TREASURE_COMB = ITEMS.register("treasure_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> SIPHONING_COMB = ITEMS.register("siphoning_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ZEPHYR_COMB = ITEMS.register("zephyr_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> PRISMATIC_COMB = ITEMS.register("prismatic_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> CRYSTALLINE_COMB = ITEMS.register("crystalline_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> BLAZING_COMB = ITEMS.register("blazing_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> DIAMANTINE_COMB = ITEMS.register("diamantine_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> VENERABLE_COMB = ITEMS.register("venerable_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> VOLCANIC_COMB = ITEMS.register("volcanic_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> TRAVELER_COMB = ITEMS.register("traveler_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> SORROW_COMB = ITEMS.register("sorrow_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> LIGHT_COMB = ITEMS.register("light_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> DARK_COMB = ITEMS.register("dark_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> IMPERIAL_COMB = ITEMS.register("imperial_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> DEMONIC_COMB = ITEMS.register("demonic_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> PALADIN_COMB = ITEMS.register("paladin_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ANCIENT_COMB = ITEMS.register("ancient_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> VOID_COMB = ITEMS.register("void_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> DRACONIC_COMB = ITEMS.register("draconic_comb",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> STELLAR_COMB = ITEMS.register("stellar_comb",
+            () -> new Item(new Item.Properties()));
+
+    // --- POLLENS ---
+    public static final DeferredItem<Item> FLOWER_POLLEN = ITEMS.register("flower_pollen",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> MUSHROOM_SPORE = ITEMS.register("mushroom_spore",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> TREE_POLLEN = ITEMS.register("tree_pollen",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> CRYSTAL_POLLEN = ITEMS.register("crystal_pollen",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> POLLEN_OF_WIND = ITEMS.register("pollen_of_wind",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> POLLEN_OF_THUNDER = ITEMS.register("pollen_of_thunder",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> POLLEN_OF_WATER = ITEMS.register("pollen_of_water",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> POLLEN_OF_FIRE = ITEMS.register("pollen_of_fire",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> POLLEN_OF_LIGHT = ITEMS.register("pollen_of_light",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> POLLEN_OF_DARKNESS = ITEMS.register("pollen_of_darkness",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> VOID_POLLEN = ITEMS.register("void_pollen",
+            () -> new Item(new Item.Properties()));
+
+    // --- FRAGMENTS (4 fragments = 1 resource) ---
+    public static final DeferredItem<Item> COAL_FRAGMENT = ITEMS.register("coal_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> LEATHER_FRAGMENT = ITEMS.register("leather_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> OAK_LOG_FRAGMENT = ITEMS.register("oak_log_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> SPRUCE_LOG_FRAGMENT = ITEMS.register("spruce_log_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> JUNGLE_LOG_FRAGMENT = ITEMS.register("jungle_log_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> BIRCH_LOG_FRAGMENT = ITEMS.register("birch_log_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> DARK_OAK_LOG_FRAGMENT = ITEMS.register("dark_oak_log_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ACACIA_LOG_FRAGMENT = ITEMS.register("acacia_log_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> MANGROVE_LOG_FRAGMENT = ITEMS.register("mangrove_log_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ICE_FRAGMENT = ITEMS.register("ice_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> GUNPOWDER_FRAGMENT = ITEMS.register("gunpowder_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> BLAZE_ROD_FRAGMENT = ITEMS.register("blaze_rod_fragment",
+            () -> new Item(new Item.Properties()));
+
+    // --- SHARDS (4 shards = 1 resource) ---
+    public static final DeferredItem<Item> RAW_COPPER_SHARD = ITEMS.register("raw_copper_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> RAW_IRON_SHARD = ITEMS.register("raw_iron_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> RAW_GOLD_SHARD = ITEMS.register("raw_gold_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> LAPIS_LAZULI_SHARD = ITEMS.register("lapis_lazuli_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> QUARTZ_SHARD = ITEMS.register("quartz_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> GLOWSTONE_DUST_SHARD = ITEMS.register("glowstone_dust_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> SLIME_BALL_SHARD = ITEMS.register("slime_ball_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> MAGMA_CREAM_SHARD = ITEMS.register("magma_cream_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> GHAST_TEAR_SHARD = ITEMS.register("ghast_tear_shard",
+            () -> new Item(new Item.Properties()));
+
+    // --- DUSTS (9 dusts = 1 fragment) ---
+    public static final DeferredItem<Item> DIAMOND_DUST = ITEMS.register("diamond_dust",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> EMERALD_DUST = ITEMS.register("emerald_dust",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> OBSIDIAN_DUST = ITEMS.register("obsidian_dust",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ENDER_PEARL_DUST = ITEMS.register("ender_pearl_dust",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> NETHERITE_SCRAP_DUST = ITEMS.register("netherite_scrap_dust",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> DRAGON_BREATH_DUST = ITEMS.register("dragon_breath_dust",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> NETHER_STAR_DUST = ITEMS.register("nether_star_dust",
+            () -> new Item(new Item.Properties()));
+
+    // --- DUST FRAGMENTS (4 fragments = 1 resource, made from 9 dusts) ---
+    public static final DeferredItem<Item> DIAMOND_FRAGMENT = ITEMS.register("diamond_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> EMERALD_FRAGMENT = ITEMS.register("emerald_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> OBSIDIAN_FRAGMENT = ITEMS.register("obsidian_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ENDER_PEARL_FRAGMENT = ITEMS.register("ender_pearl_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> NETHERITE_SCRAP_FRAGMENT = ITEMS.register("netherite_scrap_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> DRAGON_BREATH_FRAGMENT = ITEMS.register("dragon_breath_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> NETHER_STAR_FRAGMENT = ITEMS.register("nether_star_fragment",
             () -> new Item(new Item.Properties()));
 
     // --- CRYSTAL SHARDS ---

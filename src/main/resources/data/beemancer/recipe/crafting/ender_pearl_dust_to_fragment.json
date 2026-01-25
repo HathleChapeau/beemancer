@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "DDD",
+    "DDD",
+    "DDD"
+  ],
+  "key": {
+    "D": { "item": "beemancer:ender_pearl_dust" }
+  },
+  "result": { "id": "beemancer:ender_pearl_fragment", "count": 1 }
+}

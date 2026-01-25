@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:centrifuging",
+  "ingredient": { "item": "beemancer:draconic_comb" },
+  "results": [
+    { "item": { "id": "beemancer:dragon_breath_dust" }, "chance": 0.25 }
+  ],
+  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "processing_time": 150
+}

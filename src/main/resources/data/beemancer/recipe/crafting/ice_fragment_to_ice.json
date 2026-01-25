@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:ice_fragment" },
+    { "item": "beemancer:ice_fragment" },
+    { "item": "beemancer:ice_fragment" },
+    { "item": "beemancer:ice_fragment" }
+  ],
+  "result": { "id": "minecraft:ice", "count": 1 }
+}

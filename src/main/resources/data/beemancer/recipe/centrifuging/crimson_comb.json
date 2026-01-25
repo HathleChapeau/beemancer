@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:centrifuging",
+  "ingredient": { "item": "beemancer:crimson_comb" },
+  "results": [
+    { "item": { "id": "minecraft:nether_wart" }, "chance": 0.8 }
+  ],
+  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "processing_time": 60
+}

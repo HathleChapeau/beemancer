@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:leather_fragment" },
+    { "item": "beemancer:leather_fragment" },
+    { "item": "beemancer:leather_fragment" },
+    { "item": "beemancer:leather_fragment" }
+  ],
+  "result": { "id": "minecraft:leather", "count": 1 }
+}

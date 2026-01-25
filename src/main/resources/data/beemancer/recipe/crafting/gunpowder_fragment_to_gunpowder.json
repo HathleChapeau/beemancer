@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:gunpowder_fragment" },
+    { "item": "beemancer:gunpowder_fragment" },
+    { "item": "beemancer:gunpowder_fragment" },
+    { "item": "beemancer:gunpowder_fragment" }
+  ],
+  "result": { "id": "minecraft:gunpowder", "count": 1 }
+}

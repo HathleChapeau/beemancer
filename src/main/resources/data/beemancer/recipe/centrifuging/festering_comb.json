@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:centrifuging",
+  "ingredient": { "item": "beemancer:festering_comb" },
+  "results": [
+    { "item": { "id": "minecraft:rotten_flesh" }, "chance": 0.9 }
+  ],
+  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "processing_time": 60
+}
