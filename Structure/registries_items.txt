@@ -4,8 +4,10 @@
 
 | ID               | Classe          | Feature      |
 |------------------|-----------------|--------------|
-| storage_crate    | BlockItem       | Storage      |
-| bee_creator      | BlockItem       | Bee Creator  |
+| storage_crate      | BlockItem       | Storage        |
+| storage_controller | BlockItem       | Storage Network|
+| storage_terminal   | BlockItem       | Storage Network|
+| bee_creator        | BlockItem       | Bee Creator    |
 | magic_hive       | BlockItem       | Magic Hive   |
 | breeding_crystal | BlockItem       | Breeding     |
 | incubator        | BlockItem       | Incubator    |

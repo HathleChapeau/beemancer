@@ -4,8 +4,9 @@
 
 | ID            | Classe           | Feature      |
 |---------------|------------------|--------------|
-| storage_crate | StorageCrateMenu | Storage      |
-| bee_creator   | BeeCreatorMenu   | Gene Editor  |
+| storage_crate    | StorageCrateMenu    | Storage        |
+| storage_terminal | StorageTerminalMenu | Storage Network|
+| bee_creator      | BeeCreatorMenu      | Gene Editor    |
 | magic_hive    | MagicHiveMenu    | Bee Housing  |
 | incubator     | IncubatorMenu    | Incubator    |
 

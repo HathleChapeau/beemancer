@@ -13,7 +13,10 @@ import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
 import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
 import com.chapeau.beemancer.client.gui.screen.alchemy.*;
+import com.chapeau.beemancer.client.gui.screen.storage.StorageTerminalScreen;
+import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
+import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -41,6 +44,7 @@ public class ClientSetup {
     private static void registerScreens(final RegisterMenuScreensEvent event) {
         // Core screens
         event.register(BeemancerMenus.STORAGE_CRATE.get(), StorageCrateScreen::new);
+        event.register(BeemancerMenus.STORAGE_TERMINAL.get(), StorageTerminalScreen::new);
         event.register(BeemancerMenus.BEE_CREATOR.get(), BeeCreatorScreen::new);
         event.register(BeemancerMenus.MAGIC_HIVE.get(), MagicHiveScreen::new);
         event.register(BeemancerMenus.INCUBATOR.get(), IncubatorScreen::new);
@@ -57,6 +61,10 @@ public class ClientSetup {
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(BeemancerEntities.MAGIC_BEE.get(), MagicBeeRenderer::new);
+
+        // Block Entity Renderers
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_CONTROLLER.get(),
+            StorageControllerRenderer::new);
     }
 
     private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {

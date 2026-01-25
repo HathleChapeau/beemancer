@@ -2,6 +2,8 @@
   "itemGroup.beemancer": "Beemancer",
   
   "block.beemancer.storage_crate": "Storage Crate",
+  "block.beemancer.storage_controller": "Storage Controller",
+  "block.beemancer.storage_terminal": "Storage Terminal",
   "block.beemancer.bee_creator": "Bee Creator",
   "block.beemancer.magic_hive": "Magic Hive",
   "block.beemancer.breeding_crystal": "Magic Breeding Crystal",
@@ -39,6 +41,7 @@
   "item.beemancer.radiant_honey_crystal": "Radiant Honey Crystal",
   
   "container.beemancer.storage_crate": "Storage Crate",
+  "container.beemancer.storage_terminal": "Storage Terminal",
   "container.beemancer.bee_creator": "Bee Creator",
   "container.beemancer.magic_hive": "Magic Hive",
   "container.beemancer.incubator": "Incubator",
@@ -155,5 +158,20 @@
   "gene.beemancer.lifetime.normal": "Normal",
   "gene.beemancer.lifetime.normal.desc": "Lives for about 20 minutes",
   "gene.beemancer.lifetime.long": "Long",
-  "gene.beemancer.lifetime.long.desc": "Lives for about 60 minutes"
+  "gene.beemancer.lifetime.long.desc": "Lives for about 60 minutes",
+
+  "message.beemancer.storage_controller.edit_mode_on": "Edit mode enabled - Click chests to register",
+  "message.beemancer.storage_controller.edit_mode_off": "Edit mode disabled",
+  "message.beemancer.storage_controller.status": "Registered: %d chests, %d terminals",
+  "message.beemancer.storage_controller.chest_removed": "Chest removed from network",
+  "message.beemancer.storage_controller.chests_registered": "%d chests registered",
+
+  "message.beemancer.storage_terminal.linked": "Linked to controller at (%d, %d, %d)",
+  "message.beemancer.storage_terminal.not_linked": "Not linked to any controller",
+  "message.beemancer.storage_terminal.auto_linked": "Terminal linked to controller!",
+
+  "gui.beemancer.storage_terminal.search": "Search...",
+  "gui.beemancer.storage_terminal.request": "Request Items",
+  "gui.beemancer.cancel": "Cancel",
+  "gui.beemancer.request": "Request"
 }

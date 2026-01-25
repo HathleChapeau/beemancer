@@ -1,0 +1,159 @@
+################################################################################
+#                    FEATURE: Storage Network System                           #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Système de stockage centralisé inspiré d'Applied Energistics 2 / Refined Storage.
+Permet de gérer plusieurs coffres depuis un terminal unique avec:
+- Enregistrement de coffres par flood fill
+- Agrégation automatique des items
+- Interface de recherche et demande d'items
+- Mode édition visuel avec lignes de connexion
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              STORAGE NETWORK                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   StorageControllerBlock ────── StorageControllerBlockEntity                 │
+│         │                              │                                     │
+│         │ (liaison manuelle)           │ (liste coffres, items agrégés)      │
+│         │                              │                                     │
+│   StorageTerminalBlock ─────── StorageTerminalBlockEntity                    │
+│                                        │                                     │
+│                                 StorageTerminalMenu                          │
+│                                        │                                     │
+│                                 StorageTerminalScreen                        │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+FICHIERS CRÉÉS
+================================================================================
+
+BLOCKS & BLOCKENTITIES:
+- common/block/storage/StorageControllerBlock.java
+- common/block/storage/StorageTerminalBlock.java
+- common/block/storage/StorageEditModeHandler.java
+- common/block/storage/StorageEvents.java
+- common/blockentity/storage/StorageControllerBlockEntity.java
+- common/blockentity/storage/StorageTerminalBlockEntity.java
+
+MENU & GUI:
+- common/menu/storage/StorageTerminalMenu.java
+- client/gui/screen/storage/StorageTerminalScreen.java
+
+RÉSEAU:
+- core/network/packets/StorageRequestPacket.java
+
+RENDERING:
+- client/renderer/block/StorageControllerRenderer.java
+
+ASSETS:
+- blockstates/storage_controller.json
+- blockstates/storage_terminal.json
+- models/block/storage_controller.json
+- models/block/storage_terminal.json
+- models/item/storage_controller.json
+- models/item/storage_terminal.json
+
+================================================================================
+FONCTIONNALITÉS
+================================================================================
+
+STORAGE CONTROLLER:
+- Shift+clic droit: Toggle mode édition
+- En mode édition: Clic droit sur coffre = enregistrement (flood fill)
+- En mode édition: Clic sur coffre enregistré = retrait
+- Rayon maximum: 24 blocs
+- Affiche outline rouge + lignes vertes vers coffres en mode édition
+- Supporte: Chest, Trapped Chest, Barrel
+
+STORAGE TERMINAL:
+- Liaison automatique si placé en mode édition du controller
+- Shift+clic: Affiche état de liaison
+- Clic normal: Ouvre l'interface
+
+INTERFACE TERMINAL:
+- Barre de recherche avec filtre en temps réel
+- Grille virtuelle 9x6 avec scroll
+- Clic sur item: Popup de demande (---, --, -, +, ++, +++)
+- 9 slots de dépôt (items → réseau automatique)
+- 9 slots de pickup (demandes → joueur)
+- Inventaire joueur standard
+
+SYNCHRONISATION:
+- GUI ouverte: Scan chaque tick
+- GUI fermée: Scan toutes les 40 ticks (2 sec)
+
+================================================================================
+REGISTRES MODIFIÉS
+================================================================================
+
+BeemancerBlocks.java:
+- +STORAGE_CONTROLLER
+- +STORAGE_TERMINAL
+
+BeemancerBlockEntities.java:
+- +STORAGE_CONTROLLER
+- +STORAGE_TERMINAL
+
+BeemancerItems.java:
+- +STORAGE_CONTROLLER (BlockItem)
+- +STORAGE_TERMINAL (BlockItem)
+
+BeemancerMenus.java:
+- +STORAGE_TERMINAL
+
+BeemancerNetwork.java:
+- +StorageRequestPacket
+
+ClientSetup.java:
+- +StorageTerminalScreen
+- +StorageControllerRenderer
+
+================================================================================
+UTILISATION
+================================================================================
+
+1. Placer un Storage Controller
+2. Shift+clic droit dessus → mode édition (outline rouge)
+3. Clic droit sur les coffres proches → enregistrement avec flood fill
+4. Placer un Storage Terminal → lié automatiquement si en mode édition
+5. Ouvrir le terminal → voir tous les items agrégés
+6. Déposer items dans slots gauche → transfert vers coffres
+7. Cliquer item dans grille → popup demande → items dans slots droite
+
+================================================================================
+TRADUCTIONS
+================================================================================
+
+EN:
+- block.beemancer.storage_controller: Storage Controller
+- block.beemancer.storage_terminal: Storage Terminal
+- container.beemancer.storage_terminal: Storage Terminal
+- message.beemancer.storage_controller.edit_mode_on: Edit mode enabled...
+- message.beemancer.storage_controller.edit_mode_off: Edit mode disabled
+- message.beemancer.storage_controller.status: Registered: %d chests, %d terminals
+- message.beemancer.storage_controller.chest_removed: Chest removed from network
+- message.beemancer.storage_controller.chests_registered: %d chests registered
+- message.beemancer.storage_terminal.linked: Linked to controller at (...)
+- message.beemancer.storage_terminal.not_linked: Not linked to any controller
+- message.beemancer.storage_terminal.auto_linked: Terminal linked to controller!
+- gui.beemancer.storage_terminal.search: Search...
+- gui.beemancer.storage_terminal.request: Request Items
+- gui.beemancer.cancel: Cancel
+- gui.beemancer.request: Request
+
+FR:
+- block.beemancer.storage_controller: Contrôleur de Stockage
+- block.beemancer.storage_terminal: Terminal de Stockage
+- (+ toutes les traductions correspondantes)
+
+################################################################################

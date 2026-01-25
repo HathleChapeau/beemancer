@@ -1,6 +1,6 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-01-24                     #
+#                         Dernière mise à jour: 2026-01-25                     #
 ################################################################################
 
 ================================================================================
@@ -173,6 +173,10 @@ LISTE DES FEATURES:
 → Alchemy Processing System
   Fichier: Structure/feature_alchemy_system.txt
   Description: Système de traitement alchimique modulaire basé sur recettes JSON
+
+→ Storage Network System
+  Fichier: Structure/feature_storage_network.txt
+  Description: Système de stockage centralisé avec contrôleur et terminal (style AE2/RS)
 
 ================================================================================
 6. FEATURES EN COURS

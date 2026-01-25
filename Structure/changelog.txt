@@ -3,6 +3,43 @@
 ################################################################################
 
 ================================================================================
+2026-01-25 - Storage Network System (Complete)
+================================================================================
+
+AJOUTS:
+- common/block/storage/StorageControllerBlock.java (bloc contrôleur central)
+- common/block/storage/StorageTerminalBlock.java (bloc terminal d'accès)
+- common/block/storage/StorageEditModeHandler.java (gestionnaire mode édition)
+- common/block/storage/StorageEvents.java (interception clics coffres)
+- common/blockentity/storage/StorageControllerBlockEntity.java (flood fill, agrégation)
+- common/blockentity/storage/StorageTerminalBlockEntity.java (liaison, dépôt/pickup)
+- common/menu/storage/StorageTerminalMenu.java (slots dépôt/pickup)
+- client/gui/screen/storage/StorageTerminalScreen.java (grille virtuelle, recherche, popup)
+- client/renderer/block/StorageControllerRenderer.java (lignes vers coffres)
+- core/network/packets/StorageRequestPacket.java (packet demande items)
+- assets blockstates/models pour storage_controller et storage_terminal
+
+MODIFICATIONS:
+- BeemancerBlocks.java: +STORAGE_CONTROLLER, +STORAGE_TERMINAL
+- BeemancerBlockEntities.java: +STORAGE_CONTROLLER, +STORAGE_TERMINAL
+- BeemancerItems.java: +STORAGE_CONTROLLER, +STORAGE_TERMINAL (BlockItems)
+- BeemancerMenus.java: +STORAGE_TERMINAL
+- BeemancerNetwork.java: +StorageRequestPacket
+- ClientSetup.java: +StorageTerminalScreen, +StorageControllerRenderer
+- Beemancer.java: +StorageEvents registration
+- en_us.json/fr_fr.json: +traductions Storage Network
+
+NOUVELLE FEATURE:
+- Système de stockage centralisé style AE2/Refined Storage
+- Storage Controller avec mode édition (shift+clic droit)
+- Enregistrement coffres par flood fill (rayon 24 blocs)
+- Visualisation: outline rouge + lignes vertes vers coffres
+- Storage Terminal avec liaison automatique en mode édition
+- Interface: recherche, grille virtuelle 9x6, popup demande items
+- Slots dépôt (auto-transfert vers réseau) et pickup (demandes)
+- Sync temps réel (GUI ouverte) ou périodique (40 ticks)
+
+================================================================================
 2026-01-24 - Custom Bee Renderer + AI Improvements
 ================================================================================
 

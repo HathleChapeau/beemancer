@@ -12,6 +12,7 @@ import com.chapeau.beemancer.common.menu.IncubatorMenu;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import com.chapeau.beemancer.common.menu.StorageCrateMenu;
 import com.chapeau.beemancer.common.menu.alchemy.*;
+import com.chapeau.beemancer.common.menu.storage.StorageTerminalMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;
@@ -25,9 +26,13 @@ public class BeemancerMenus {
             DeferredRegister.create(Registries.MENU, Beemancer.MOD_ID);
 
     // --- CORE MENUS ---
-    public static final Supplier<MenuType<StorageCrateMenu>> STORAGE_CRATE = 
+    public static final Supplier<MenuType<StorageCrateMenu>> STORAGE_CRATE =
             MENUS.register("storage_crate",
                     () -> IMenuTypeExtension.create(StorageCrateMenu::new));
+
+    public static final Supplier<MenuType<StorageTerminalMenu>> STORAGE_TERMINAL =
+            MENUS.register("storage_terminal",
+                    () -> IMenuTypeExtension.create(StorageTerminalMenu::new));
 
     public static final Supplier<MenuType<BeeCreatorMenu>> BEE_CREATOR = 
             MENUS.register("bee_creator",

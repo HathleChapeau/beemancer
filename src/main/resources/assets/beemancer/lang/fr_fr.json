@@ -2,6 +2,8 @@
   "itemGroup.beemancer": "Beemancer",
   
   "block.beemancer.storage_crate": "Caisse de Stockage",
+  "block.beemancer.storage_controller": "Contrôleur de Stockage",
+  "block.beemancer.storage_terminal": "Terminal de Stockage",
   "block.beemancer.bee_creator": "Créateur d'Abeilles",
   "block.beemancer.magic_hive": "Ruche Magique",
   "block.beemancer.breeding_crystal": "Cristal de Reproduction",
@@ -39,6 +41,7 @@
   "item.beemancer.radiant_honey_crystal": "Cristal de Miel Radiant",
   
   "container.beemancer.storage_crate": "Caisse de Stockage",
+  "container.beemancer.storage_terminal": "Terminal de Stockage",
   "container.beemancer.bee_creator": "Créateur d'Abeilles",
   "container.beemancer.magic_hive": "Ruche Magique",
   "container.beemancer.incubator": "Incubateur",
@@ -155,5 +158,20 @@
   "gene.beemancer.lifetime.normal": "Normale",
   "gene.beemancer.lifetime.normal.desc": "Vit environ 20 minutes",
   "gene.beemancer.lifetime.long": "Longue",
-  "gene.beemancer.lifetime.long.desc": "Vit environ 60 minutes"
+  "gene.beemancer.lifetime.long.desc": "Vit environ 60 minutes",
+
+  "message.beemancer.storage_controller.edit_mode_on": "Mode édition activé - Cliquez sur les coffres pour les enregistrer",
+  "message.beemancer.storage_controller.edit_mode_off": "Mode édition désactivé",
+  "message.beemancer.storage_controller.status": "Enregistrés: %d coffres, %d terminaux",
+  "message.beemancer.storage_controller.chest_removed": "Coffre retiré du réseau",
+  "message.beemancer.storage_controller.chests_registered": "%d coffres enregistrés",
+
+  "message.beemancer.storage_terminal.linked": "Lié au contrôleur en (%d, %d, %d)",
+  "message.beemancer.storage_terminal.not_linked": "Non lié à un contrôleur",
+  "message.beemancer.storage_terminal.auto_linked": "Terminal lié au contrôleur !",
+
+  "gui.beemancer.storage_terminal.search": "Rechercher...",
+  "gui.beemancer.storage_terminal.request": "Demander des Items",
+  "gui.beemancer.cancel": "Annuler",
+  "gui.beemancer.request": "Demander"
 }

@@ -7,6 +7,7 @@
 package com.chapeau.beemancer;
 
 import com.chapeau.beemancer.client.ClientSetup;
+import com.chapeau.beemancer.common.block.storage.StorageEvents;
 import com.chapeau.beemancer.common.codex.CodexManager;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
@@ -69,6 +70,7 @@ public class Beemancer {
 
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.register(StorageEvents.class);
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ClientSetup.register(modEventBus);

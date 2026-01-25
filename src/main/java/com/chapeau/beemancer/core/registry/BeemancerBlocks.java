@@ -12,7 +12,9 @@ import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlock;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlock;
+import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
+import com.chapeau.beemancer.common.block.storage.StorageTerminalBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -30,6 +32,18 @@ public class BeemancerBlocks {
     public static final DeferredBlock<Block> STORAGE_CRATE = BLOCKS.register("storage_crate",
             () -> new StorageCrateBlock(BlockBehaviour.Properties.of()
                     .strength(2.5f)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<StorageControllerBlock> STORAGE_CONTROLLER = BLOCKS.register("storage_controller",
+            () -> new StorageControllerBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<StorageTerminalBlock> STORAGE_TERMINAL = BLOCKS.register("storage_terminal",
+            () -> new StorageTerminalBlock(BlockBehaviour.Properties.of()
+                    .strength(2.5f)
+                    .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()));
 
     // --- BEE MACHINES ---
