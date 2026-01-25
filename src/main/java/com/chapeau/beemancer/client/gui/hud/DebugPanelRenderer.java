@@ -86,7 +86,7 @@ public class DebugPanelRenderer {
 
     private static void renderPanel(GuiGraphics graphics, Font font) {
         String title = "Debug Panel";
-        String hint = "[Numpad 1-9] Select | [<][>] ±0.1 | [Shift] ±1.0";
+        String hint = "[Numpad 1-9 / ↑↓] Select | [←→] ±0.1 | [Shift] ±1.0";
 
         // Calculer dimensions
         int maxWidth = font.width(title);

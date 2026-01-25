@@ -71,6 +71,22 @@ public class DebugKeyHandler {
             return;
         }
 
+        // Flèche haut - sélectionner valeur précédente (avec boucle)
+        if (key == GLFW.GLFW_KEY_UP) {
+            int newIndex = DebugWandItem.selectedIndex - 1;
+            if (newIndex < 1) newIndex = 9;
+            DebugWandItem.selectValue(newIndex);
+            return;
+        }
+
+        // Flèche bas - sélectionner valeur suivante (avec boucle)
+        if (key == GLFW.GLFW_KEY_DOWN) {
+            int newIndex = DebugWandItem.selectedIndex + 1;
+            if (newIndex > 9) newIndex = 1;
+            DebugWandItem.selectValue(newIndex);
+            return;
+        }
+
         // Flèche gauche - diminuer
         if (key == GLFW.GLFW_KEY_LEFT) {
             float delta = shift ? -LARGE_STEP : -SMALL_STEP;
