@@ -19,12 +19,16 @@
  */
 package com.chapeau.beemancer.common.block.storage;
 
+import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -52,18 +56,37 @@ public class StorageEvents {
         // Vérifier si le joueur est en mode édition
         if (!StorageEditModeHandler.isEditing(player, level)) return;
 
-        // Vérifier si c'est un coffre ou barrel
+        // Récupérer la position du controller
+        BlockPos controllerPos = StorageEditModeHandler.getEditingController(player.getUUID());
+        if (controllerPos == null) return;
+
         BlockState clickedState = level.getBlockState(clickedPos);
+
+        // Shift+clic sur un terminal = lier au controller
+        if (player.isShiftKeyDown()) {
+            BlockEntity be = level.getBlockEntity(clickedPos);
+            if (be instanceof StorageTerminalBlockEntity terminal) {
+                BlockEntity controllerBe = level.getBlockEntity(controllerPos);
+                if (controllerBe instanceof StorageControllerBlockEntity controller) {
+                    terminal.linkToController(controllerPos);
+                    player.displayClientMessage(
+                        Component.translatable("message.beemancer.storage_terminal.linked_manually"),
+                        true
+                    );
+                    event.setCanceled(true);
+                    event.setCancellationResult(InteractionResult.SUCCESS);
+                    return;
+                }
+            }
+        }
+
+        // Vérifier si c'est un coffre ou barrel
         if (!(clickedState.getBlock() instanceof ChestBlock) &&
             !clickedState.is(Blocks.CHEST) &&
             !clickedState.is(Blocks.TRAPPED_CHEST) &&
             !clickedState.is(Blocks.BARREL)) {
             return;
         }
-
-        // Récupérer la position du controller
-        BlockPos controllerPos = StorageEditModeHandler.getEditingController(player.getUUID());
-        if (controllerPos == null) return;
 
         // Déléguer au controller
         boolean handled = StorageControllerBlock.handleChestClick(

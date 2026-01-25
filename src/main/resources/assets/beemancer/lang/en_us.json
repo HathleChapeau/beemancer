@@ -169,6 +169,7 @@
   "message.beemancer.storage_terminal.linked": "Linked to controller at (%d, %d, %d)",
   "message.beemancer.storage_terminal.not_linked": "Not linked to any controller",
   "message.beemancer.storage_terminal.auto_linked": "Terminal linked to controller!",
+  "message.beemancer.storage_terminal.linked_manually": "Terminal linked to controller!",
 
   "gui.beemancer.storage_terminal.search": "Search...",
   "gui.beemancer.storage_terminal.request": "Request Items",

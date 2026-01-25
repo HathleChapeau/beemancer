@@ -169,6 +169,7 @@
   "message.beemancer.storage_terminal.linked": "Lié au contrôleur en (%d, %d, %d)",
   "message.beemancer.storage_terminal.not_linked": "Non lié à un contrôleur",
   "message.beemancer.storage_terminal.auto_linked": "Terminal lié au contrôleur !",
+  "message.beemancer.storage_terminal.linked_manually": "Terminal lié au contrôleur !",
 
   "gui.beemancer.storage_terminal.search": "Rechercher...",
   "gui.beemancer.storage_terminal.request": "Demander des Items",
