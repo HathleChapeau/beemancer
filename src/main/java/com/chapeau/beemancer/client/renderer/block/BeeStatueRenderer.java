@@ -69,8 +69,8 @@ public class BeeStatueRenderer implements BlockEntityRenderer<BeeStatueBlockEnti
         poseStack.pushPose();
 
         // ===== Render Bee Model =====
-        // Position au centre du bloc, sur le piédestal
-        poseStack.translate(0.5, 0.85, 0.5);
+        // Position au centre du bloc, sur le piédestal (Y+1 bloc au-dessus)
+        poseStack.translate(0.5, 1.85, 0.5);
 
         // Rotation pour faire face au joueur (ou rotation fixe)
         float time = (blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0) + partialTick;
@@ -92,8 +92,8 @@ public class BeeStatueRenderer implements BlockEntityRenderer<BeeStatueBlockEnti
         // ===== Render Name Tag =====
         poseStack.pushPose();
 
-        // Position au-dessus de l'abeille
-        poseStack.translate(0.5, 1.6, 0.5);
+        // Position au-dessus de l'abeille (Y+1 bloc au-dessus)
+        poseStack.translate(0.5, 2.6, 0.5);
 
         // Toujours face au joueur
         poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
