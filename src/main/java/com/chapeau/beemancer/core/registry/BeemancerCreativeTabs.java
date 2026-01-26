@@ -44,7 +44,10 @@ public class BeemancerCreativeTabs {
                         addFluidBuckets(output);
                         addStorageBlocks(output);
                         addHoneyAltarBlocks(output);
+                        addEssenceExtractor(output);
+                        addEssences(output);
                         addCrystalItems(output);
+                        addBeeStatue(output);
                     })
                     .build());
 
@@ -153,6 +156,45 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.ENRICHED_HONEY_CRYSTAL.get());
         output.accept(BeemancerItems.RADIANT_HONEY_CRYSTAL.get());
         output.accept(BeemancerItems.ROYAL_HONEY_CRYSTAL.get());
+    }
+
+    private static void addEssenceExtractor(CreativeModeTab.Output output) {
+        output.accept(BeemancerItems.EXTRACTOR_HEART.get());
+    }
+
+    private static void addBeeStatue(CreativeModeTab.Output output) {
+        output.accept(BeemancerItems.BEE_STATUE.get());
+    }
+
+    private static void addEssences(CreativeModeTab.Output output) {
+        // Drop Essences
+        output.accept(BeemancerItems.LESSER_DROP_ESSENCE.get());
+        output.accept(BeemancerItems.DROP_ESSENCE.get());
+        output.accept(BeemancerItems.GREATER_DROP_ESSENCE.get());
+        output.accept(BeemancerItems.PERFECT_DROP_ESSENCE.get());
+
+        // Speed Essences
+        output.accept(BeemancerItems.LESSER_SPEED_ESSENCE.get());
+        output.accept(BeemancerItems.SPEED_ESSENCE.get());
+        output.accept(BeemancerItems.GREATER_SPEED_ESSENCE.get());
+        output.accept(BeemancerItems.PERFECT_SPEED_ESSENCE.get());
+
+        // Foraging Essences
+        output.accept(BeemancerItems.LESSER_FORAGING_ESSENCE.get());
+        output.accept(BeemancerItems.FORAGING_ESSENCE.get());
+        output.accept(BeemancerItems.GREATER_FORAGING_ESSENCE.get());
+        output.accept(BeemancerItems.PERFECT_FORAGING_ESSENCE.get());
+
+        // Tolerance Essences
+        output.accept(BeemancerItems.LESSER_TOLERANCE_ESSENCE.get());
+        output.accept(BeemancerItems.TOLERANCE_ESSENCE.get());
+        output.accept(BeemancerItems.GREATER_TOLERANCE_ESSENCE.get());
+        output.accept(BeemancerItems.PERFECT_TOLERANCE_ESSENCE.get());
+
+        // Day/Night Essences
+        output.accept(BeemancerItems.DIURNAL_ESSENCE.get());
+        output.accept(BeemancerItems.NOCTURNAL_ESSENCE.get());
+        output.accept(BeemancerItems.INSOMNIA_ESSENCE.get());
     }
 
     // =========================================================================

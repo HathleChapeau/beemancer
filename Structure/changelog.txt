@@ -3,6 +3,70 @@
 ################################################################################
 
 ================================================================================
+2026-01-26 - Bee Statue
+================================================================================
+
+AJOUTS:
+- common/block/statue/BeeStatueBlock.java (bloc statue avec interactions)
+- common/block/statue/BeeStatueBlockEntity.java (stockage espèce)
+- client/renderer/block/BeeStatueRenderer.java (rendu abeille + nametag)
+- assets/beemancer/blockstates/bee_statue.json
+- assets/beemancer/models/block/bee_statue.json
+- assets/beemancer/models/item/bee_statue.json
+- data/beemancer/loot_table/blocks/bee_statue.json
+
+MODIFICATIONS:
+- BeemancerBlocks.java: +BEE_STATUE
+- BeemancerBlockEntities.java: +BEE_STATUE
+- BeemancerItems.java: +BEE_STATUE (BlockItem)
+- BeemancerCreativeTabs.java: +BEE_STATUE
+- ClientSetup.java: +BeeStatueRenderer
+- en_us.json/fr_fr.json: +traductions bloc et messages
+
+NOUVELLE FEATURE:
+- Statue d'abeille sur piédestal:
+  - Shift+clic droit: cycle entre les espèces disponibles
+  - Clic droit: donne une abeille de l'espèce avec gènes par défaut
+  - Affiche le modèle 3D de l'abeille en rotation
+  - Affiche le nom de l'espèce au-dessus de la tête
+
+================================================================================
+2026-01-26 - Essence Extractor + Essences
+================================================================================
+
+AJOUTS:
+- common/block/extractor/ExtractorHeartBlock.java (contrôleur multibloc)
+- common/blockentity/extractor/ExtractorHeartBlockEntity.java (logique multibloc)
+- common/item/essence/EssenceItem.java (item essence avec type et niveau)
+- core/multiblock/MultiblockPatterns.java: +ESSENCE_EXTRACTOR pattern
+- 20 items d'essence (5 types × 4 niveaux)
+- assets/beemancer/blockstates/extractor_heart.json
+- assets/beemancer/models/block/extractor_heart.json
+- assets/beemancer/models/block/extractor_heart_formed.json
+- assets/beemancer/models/item/extractor_heart.json
+- 20 models/item pour essences (lesser/normal/greater/perfect × drop/speed/foraging/tolerance/temporal)
+- data/beemancer/loot_table/blocks/extractor_heart.json
+
+MODIFICATIONS:
+- BeemancerBlocks.java: +EXTRACTOR_HEART
+- BeemancerBlockEntities.java: +EXTRACTOR_HEART
+- BeemancerItems.java: +EXTRACTOR_HEART (BlockItem), +20 EssenceItems
+- BeemancerCreativeTabs.java: +EXTRACTOR_HEART, +20 essences
+- en_us.json/fr_fr.json: +traductions bloc, messages, essences
+
+NOUVELLE FEATURE:
+- Multibloc Essence Extractor 3x3x4:
+  - Étage 1 (Y-2): 5 Pedestals en croix + 4 Honeyed Stone aux coins
+  - Étage 2 (Y-1): Vide (air)
+  - Étage 3 (Y+0): Extractor Heart (contrôleur)
+  - Étage 4 (Y+1): 5 Honeyed Stone en croix
+- Clic droit sur Extractor Heart pour former
+- 19 items d'essence pour améliorer les perks des abeilles:
+  - Types classiques (4 niveaux): Drop, Speed, Foraging, Tolerance
+  - Types jour/nuit: Diurnal, Nocturnal, Insomnia (perfect)
+- Perfect Essences et Insomnia Essence ont l'effet enchantement (brillent)
+
+================================================================================
 2026-01-26 - Pollen Pot
 ================================================================================
 
@@ -12,728 +76,26 @@ AJOUTS:
 - common/block/pollenpot/PollenPotEvents.java (gestion clic gauche)
 - core/registry/BeemancerTags.java (tags items et blocs)
 - client/color/PollenColors.java (couleurs des 12 types de pollen)
-- data/beemancer/tags/item/pollens.json (tag tous les pollens)
-- assets/beemancer/blockstates/pollen_pot.json
-- assets/beemancer/models/block/pollen_pot.json (avec tintindex pour couleur)
-- assets/beemancer/models/item/pollen_pot.json
-- data/beemancer/loot_table/blocks/pollen_pot.json
-
-MODIFICATIONS:
-- BeemancerBlocks.java: +POLLEN_POT
-- BeemancerBlockEntities.java: +POLLEN_POT
-- BeemancerItems.java: +POLLEN_POT (BlockItem)
-- BeemancerCreativeTabs.java: +POLLEN_POT dans section Alchemy Machines
-- Beemancer.java: +PollenPotEvents registration
-- ClientSetup.java: +registerBlockColors (tinting pollen pot)
-- en_us.json/fr_fr.json: +traductions Pollen Pot
 
 NOUVELLE FEATURE:
 - Pot à pollen stockant jusqu'à 16 pollens d'un seul type
 - Clic droit avec pollen en main: ajouter au pot
 - Clic gauche: retirer un pollen (donné au joueur)
-- Un seul type de pollen par pot (premier pollen définit le type)
-- Pot vide peut accepter n'importe quel type de pollen
-- Drop tout le contenu quand cassé
-- Messages informatifs (contenu, pot plein, mauvais type)
+- Un seul type de pollen par pot
 - Support Comparator (signal 0-15 selon remplissage)
-- Couleur de l'intérieur selon le type de pollen (12 couleurs uniques)
+- Couleur de l'intérieur selon le type de pollen
 
 ================================================================================
 2026-01-25 - Debug Wand System
 ================================================================================
 
-AJOUTS:
-- common/item/debug/DebugWandItem.java (baguette avec 9 valeurs statiques)
-- client/gui/hud/DebugPanelRenderer.java (HUD overlay affichant les valeurs)
-- client/input/DebugKeyHandler.java (gestionnaire touches debug)
-- assets/beemancer/models/item/debug_wand.json
-- assets/beemancer/textures/item/debug_wand.png
-
-MODIFICATIONS:
-- BeemancerItems.java: +DEBUG_WAND
-- BeemancerCreativeTabs.java: +DEBUG_WAND dans section Tools
-- ClientSetup.java: +DebugPanelRenderer et +DebugKeyHandler event registration
-- en_us.json/fr_fr.json: +traductions Debug Wand
-
 NOUVELLE FEATURE:
 - Baguette de debug avec 9 valeurs float ajustables en temps réel
-- HUD Panel affiché quand la baguette est tenue (main principale ou secondaire)
-- Contrôles:
-  - Numpad 1-9: Sélectionner une valeur directement
-  - Flèches ↑/↓: Naviguer entre les valeurs (avec boucle 1↔9)
-  - Flèches ←/→: Ajuster de ±0.1
-  - Shift + ←/→: Ajuster de ±1.0
-  - Shift + R: Reset toutes les valeurs aux défauts
-- Valeurs par défaut configurées pour MagicBeeItemRenderer:
-  - value1-3: Position X,Y,Z (0.5, 1.1, 0.5)
-  - value4-5: Rotation X,Y (-30°, 225°)
-  - value7: Scale (1.4)
-- Utilisé pour ajuster le rendu des abeilles dans l'inventaire
+- HUD Panel affiché quand la baguette est tenue
+- Contrôles Numpad 1-9 pour sélection, flèches pour ajustement
 
 ================================================================================
-2026-01-25 - Texture System Refactoring + Magic Bee Item Renderer
+HISTORIQUE ANTÉRIEUR: Supprimé pour clarté
 ================================================================================
-
-RESTRUCTURATION TEXTURES:
-- Déplacement textures/bees/*.png → textures/entity/bee/*.png (97 fichiers)
-- Déplacement textures/combs/*.png → textures/item/combs/*.png (97 fichiers)
-- Renommage PascalCase → lowercase (Meadow_Bee.png → meadow_bee.png)
-- Suppression anciens dossiers vides
-
-CORRECTIONS:
-- MagicBeeRenderer.java: Chemin corrigé textures/entity/bee/{speciesid}_bee.png
-- BeeSpeciesManager.java: Default texture en lowercase (id + "_bee")
-- 97 modèles *_comb.json: Chemin corrigé beemancer:item/combs/{name}
-
-AJOUTS:
-- client/renderer/item/MagicBeeItemRenderer.java (BEWLR pour rendu 3D abeille)
-  - Rend le modèle vanilla BeeModel avec texture par espèce
-  - Ajustements position/échelle par contexte (GUI, main, sol, frame)
-  - Cache des textures pour performance
-
-MODIFICATIONS:
-- ClientSetup.java: +IClientItemExtensions pour MagicBeeItem
-- models/item/magic_bee.json: parent changé en "minecraft:builtin/entity"
-
-NOUVELLE FEATURE:
-- Les MagicBee items affichent maintenant le modèle 3D de l'abeille dans l'inventaire
-- La texture correspond à l'espèce stockée dans l'item
-- Fonctionne dans: inventaire, main, sol, item frame
-
-TEXTURES PLACEHOLDER CRÉÉES:
-- cultural_bee.png (copie de meadow_bee)
-- cultural_comb.png (copie de meadow_comb)
-
-================================================================================
-2026-01-25 - Hive Multiblock Bug Fixes
-================================================================================
-
-CORRECTIONS:
-- HiveMultiblockBlockEntity.java:
-  - Skip slabs (Y>=3) dans formMultiblock() et onBroken() - slabs n'ont pas de BlockEntity
-  - +breedingCooldown dans saveAdditional() et loadAdditional() (persistance NBT)
-  - +Message de formation envoyé aux joueurs proches (rayon 16 blocs)
-
-TRADUCTIONS AJOUTÉES:
-- en_us.json: +message.beemancer.hive_multiblock.formed, +container.beemancer.hive_multiblock
-- fr_fr.json: +message.beemancer.hive_multiblock.formed, +container.beemancer.hive_multiblock
-
-================================================================================
-2026-01-25 - Hive Multiblock
-================================================================================
-
-AJOUTS:
-- common/block/hive/HiveMultiblockBlock.java (bloc de structure)
-- common/block/hive/HiveMultiblockBlockEntity.java (logique ruche)
-- common/block/altar/HoneyedSlabBlock.java (slab)
-- MultiblockPatterns.java: +HIVE_MULTIBLOCK pattern
-- BlockMatcher.java: +slab() matcher
-
-REGISTRES:
-- BeemancerBlocks.java: +HONEYED_SLAB, +HIVE_MULTIBLOCK
-- BeemancerBlockEntities.java: +HIVE_MULTIBLOCK
-- BeemancerItems.java: +HONEYED_SLAB, +HIVE_MULTIBLOCK
-- BeemancerCreativeTabs.java: +HONEYED_SLAB, +HIVE_MULTIBLOCK
-
-ASSETS:
-- blockstates/honeyed_slab.json, hive_multiblock.json
-- models/block/honeyed_slab*.json, hive_multiblock.json
-- models/item/honeyed_slab.json, hive_multiblock.json
-- textures/block/hive_multiblock.png (placeholder)
-
-NOUVELLE FEATURE:
-- Ruche multibloc: 3x3x3 blocs + 3x3 slabs sur le dessus
-- Fonctionne exactement comme MagicHive une fois formé
-- 5 slots abeilles, 7 slots output, breeding
-- Casser un bloc = drop tous les items
-
-================================================================================
-2026-01-25 - Multiblock Tank Bug Fixes
-================================================================================
-
-CORRECTIONS:
-- MultiblockTankBlockEntity.java:
-  - +getUpdatePacket() et handleUpdateTag() pour sync client correcte
-  - Fix perte fluide lors de fusion multiblocks (capacité calculée AVANT transfert)
-  - Optimisation recalculateStructure() (resize tank seulement si nécessaire)
-  - Séparation mergeBlocksInto() et logique fluide (plus propre)
-
-COMPORTEMENT INVALIDE AMÉLIORÉ:
-- Shape invalide = pas de capability fluide (pipes déconnectent)
-- Shape invalide = pas d'accès GUI (click droit ignoré)
-- Compléter la shape → tank redevient fonctionnel automatiquement
-
-DOCUMENTATION:
-- Structure/feature_multiblock_tank.txt mis à jour avec:
-  - Section "COMPORTEMENT INVALIDE"
-  - Section "FUSION DE MULTIBLOCS"
-  - Exemples corrigés
-
-================================================================================
-2026-01-25 - Infuser Tiers + Multiblock Tank
-================================================================================
-
-AJOUTS - INFUSER TIERS:
-- InfuserBlockEntity.java: +TIER1/2/3 constants, +constructeur paramétré, +createTier2/3()
-- InfuserBlock.java: +tier field, +tier constructor
-- BeemancerBlockEntities.java: +INFUSER_TIER2, +INFUSER_TIER3
-- BeemancerBlocks.java: +INFUSER_TIER2, +INFUSER_TIER3
-- BeemancerItems.java: +INFUSER_TIER2, +INFUSER_TIER3
-- Assets: blockstates, models/block, models/item pour tier2/tier3
-- Traductions en_us.json/fr_fr.json
-
-SUPPRESSIONS - HONEY TANK TIERS:
-- HoneyTankBlockEntity.java: suppression tiers, capacity fixée à 8000 mB
-- HoneyTankBlock.java: suppression tier field et logique
-- BeemancerBlockEntities.java: -HONEY_TANK_TIER2, -HONEY_TANK_TIER3
-- BeemancerBlocks.java: -HONEY_TANK_TIER2, -HONEY_TANK_TIER3
-- BeemancerItems.java: -HONEY_TANK_TIER2, -HONEY_TANK_TIER3
-- BeemancerCreativeTabs.java: -tier2/tier3
-- Suppression assets (blockstates, models, textures)
-- Traductions supprimées
-
-AJOUTS - MULTIBLOCK TANK:
-- common/block/alchemy/MultiblockTankBlock.java
-- common/blockentity/alchemy/MultiblockTankBlockEntity.java
-- common/menu/alchemy/MultiblockTankMenu.java
-- client/gui/screen/alchemy/MultiblockTankScreen.java
-- BeemancerBlocks.java: +MULTIBLOCK_TANK
-- BeemancerBlockEntities.java: +MULTIBLOCK_TANK
-- BeemancerItems.java: +MULTIBLOCK_TANK
-- BeemancerMenus.java: +MULTIBLOCK_TANK
-- BeemancerCreativeTabs.java: +MULTIBLOCK_TANK
-- ClientSetup.java: +MultiblockTankScreen
-- Beemancer.java: +FluidHandler capability pour multiblock_tank
-- Assets: blockstates, models, textures placeholders, GUI
-- Traductions en_us.json/fr_fr.json
-
-NOUVELLE FEATURE - INFUSER TIERS:
-- Tier 1: 4000 mB tank, 1.0x process time
-- Tier 2: 8000 mB tank, 0.7x process time (30% plus rapide)
-- Tier 3: 16000 mB tank, 0.5x process time (50% plus rapide)
-
-NOUVELLE FEATURE - MULTIBLOCK TANK:
-- Tank extensible par blocs adjacents
-- 8000 mB par bloc
-- Doit former un cuboïde plein (rectangle 3D)
-- Master élu automatiquement (position minimale)
-- Casser un bloc = détruit tout le fluide
-- GUI affiche: niveau fluide, nombre blocs, validité
-- Compatible avec honey pipes pour automation
-
-================================================================================
-2026-01-25 - Alchemy System Optimizations
-================================================================================
-
-CORRECTIONS CRITIQUES:
-- HoneyPipeBlockEntity.java: Fix integer overflow du roundRobinIndex
-- ItemPipeBlockEntity.java: Fix integer overflow du roundRobinIndex
-- PoweredCentrifugeBlockEntity.java: Vérifie l'espace output avant consommer fuel
-
-CORRECTIONS MODÉRÉES:
-- HoneyPipeBlockEntity.java: Pattern de transfert atomique (évite perte fluide)
-- HoneyTankBlockEntity.java: Pattern de transfert atomique
-- AlembicBlockEntity.java: Pattern de transfert atomique pour auto-output
-- ItemPipeBlockEntity.java: Break après extraction réussie (performance)
-- ItemPipeBlockEntity.java: Optimisation canInsertAnyIntoHandler O(n) au lieu de O(n²)
-
-OPTIMISATIONS:
-- InfuserBlockEntity.java: Flag isProcessingDrain évite invalidation recette inutile
-- CrystallizerBlockEntity.java: Flag isProcessingDrain + check tank vide
-- AlembicBlockEntity.java: Flag isProcessingDrain + check tanks vides
-- CreativeTankBlockEntity.java: Fix constructor et getCapacity()
-
-NOUVELLES MÉTHODES:
-- PoweredCentrifugeBlockEntity.hasOutputSpace(): Vérifie espace avant processing
-
-================================================================================
-2026-01-25 - Tiered Machines System
-================================================================================
-
-AJOUTS:
-- Structure/feature_tiered_machines.txt (documentation feature)
-
-MODIFICATIONS:
-- common/blockentity/alchemy/PoweredCentrifugeBlockEntity.java:
-  - +TIER1/2/3 constants, +constructeur avec paramètres, +createTier2/3()
-- common/blockentity/alchemy/HoneyTankBlockEntity.java:
-  - +TIER1/2/3_CAPACITY, +constructeur avec paramètres, +createTier2/3()
-- common/blockentity/alchemy/HoneyPipeBlockEntity.java:
-  - +TIER1/2/3/4 constants, +constructeur avec paramètres, +createTier2/3/4()
-- common/blockentity/alchemy/ItemPipeBlockEntity.java:
-  - +TIER1/2/3/4 constants, +constructeur avec paramètres, +createTier2/3/4()
-- common/block/alchemy/PoweredCentrifugeBlock.java: +tier field, +tier constructor
-- common/block/alchemy/HoneyTankBlock.java: +tier field, +tier constructor
-- common/block/alchemy/HoneyPipeBlock.java: +tier field, +tier constructor
-- common/block/alchemy/ItemPipeBlock.java: +tier field, +tier constructor
-
-REGISTRES:
-- BeemancerBlocks.java: +10 blocs tiered
-- BeemancerBlockEntities.java: +10 block entities tiered
-- BeemancerItems.java: +10 BlockItems tiered
-- BeemancerCreativeTabs.java: +tiered items dans section Alchemy Machines
-
-ASSETS:
-- blockstates/: +10 fichiers tiered
-- models/block/: +6 fichiers tiered (centrifuge + tank)
-- models/item/: +10 fichiers tiered
-- textures/block/alchemy/: +10 textures tiered (placeholders)
-- textures/block/: +3 textures honey_pipe tiered (placeholders)
-
-TRADUCTIONS:
-- en_us.json: +14 traductions blocs tiered
-- fr_fr.json: +14 traductions blocs tiered
-
-NOUVELLE FEATURE:
-- Système de tiers pour machines d'alchimie
-- Powered Centrifuge: 3 tiers (vitesse x1.0/x0.6/x0.3, tanks 8/16/32K)
-- Honey Tank: 3 tiers (capacité 16K/64K/256K mB)
-- Honey Pipe: 4 tiers (buffer 500-4000 mB, transfer 100-1000 mB)
-- Item Pipe: 4 tiers (buffer 4-32 slots, transfer 4-32 items)
-
-================================================================================
-2026-01-25 - Multiblock System (Refactoring)
-================================================================================
-
-AJOUTS:
-- core/multiblock/BlockMatcher.java (predicates réutilisables)
-- core/multiblock/MultiblockPattern.java (définition déclarative patterns)
-- core/multiblock/MultiblockPatterns.java (registre central)
-- core/multiblock/MultiblockValidator.java (validation générique)
-- core/multiblock/MultiblockController.java (interface contrôleurs)
-- core/multiblock/MultiblockEvents.java (détection destruction blocs)
-
-MODIFICATIONS:
-- HoneyCrystalBlockEntity.java: Implémente MultiblockController, utilise système modulaire
-- HoneyAltarMultiblock.java: Déprécié, délègue au nouveau système
-- Beemancer.java: +MultiblockEvents, +onServerStopping pour cleanup
-
-NOUVELLE FEATURE:
-- Système modulaire pour créer n'importe quel multibloc
-- Patterns définis de manière déclarative avec Builder
-- Détection automatique de destruction de blocs
-- Matchers réutilisables: air(), block(), stairFacing(), any(), or(), and()
-- Interface MultiblockController pour les BlockEntities
-
-CONTRAINTE TEXTURES:
-- Ajout règle: copier template_*.png pour chaque nouveau bloc/item/gui
-- Templates disponibles: template_texture.png, template_item.png, template_gui.png
-
-================================================================================
-2026-01-25 - Honey Altar Multibloc
-================================================================================
-
-AJOUTS:
-- common/block/altar/HoneyedStoneBlock.java (bloc simple)
-- common/block/altar/HoneyedStoneStairBlock.java (escalier)
-- common/block/altar/HoneyPedestalBlock.java (piédestal)
-- common/block/altar/HoneyCrystalConduitBlock.java (conduit)
-- common/block/altar/HoneyCrystalBlock.java (contrôleur multibloc)
-- common/block/altar/HoneyAltarMultiblock.java (validation pattern)
-- common/blockentity/altar/HoneyCrystalBlockEntity.java (état formé)
-- Assets: blockstates, models/block, models/item pour les 5 blocs
-
-MODIFICATIONS:
-- BeemancerBlocks.java: +5 blocs (HONEYED_STONE, HONEYED_STONE_STAIR,
-  HONEY_PEDESTAL, HONEY_CRYSTAL_CONDUIT, HONEY_CRYSTAL)
-- BeemancerBlockEntities.java: +HONEY_CRYSTAL
-- BeemancerItems.java: HONEY_CRYSTAL changé de Item → BlockItem, +4 BlockItems
-- BeemancerCreativeTabs.java: +section "Honey Altar"
-- en_us.json/fr_fr.json: +traductions blocs et messages altar
-
-NOUVELLE FEATURE:
-- Multibloc 3x3x5 avec validation de pattern
-- Structure: Pedestal + Stairs (étage 1), vide (étage 2), Crystal contrôleur
-  (étage 3), Stone + Conduits (étage 4), Stone en croix (étage 5)
-- Stairs doivent pointer vers le centre (validation orientation)
-- Clic droit sur Crystal pour activer
-- Reset complet si bloc cassé
-
-================================================================================
-2026-01-25 - Building Wand
-================================================================================
-
-AJOUTS:
-- common/item/tool/BuildingWandItem.java (baguette de construction)
-- client/renderer/BuildingWandPreviewRenderer.java (prévisualisation contours)
-- assets/beemancer/models/item/building_wand.json
-- assets/beemancer/textures/item/building_wand.png
-
-MODIFICATIONS:
-- BeemancerItems.java: +BUILDING_WAND
-- BeemancerCreativeTabs.java: +BUILDING_WAND
-- ClientSetup.java: +BuildingWandPreviewRenderer event registration
-- en_us.json/fr_fr.json: +traductions Building Wand
-
-NOUVELLE FEATURE:
-- Baguette de construction avec prévisualisation
-- Flood fill 2D sur la face pointée (4 cardinaux + 4 diagonales)
-- Limite: min(15, items inventaire) - illimité en créatif
-- Contours blancs pour prévisualisation
-- Placement avec orientation correcte (getStateForPlacement)
-- Consommation items de l'inventaire
-- Cache de prévisualisation (évite recalcul à chaque frame)
-
-================================================================================
-2026-01-25 - Storage Network: Pending Requests System
-================================================================================
-
-AJOUTS:
-- StorageTerminalBlockEntity.java:
-  - +PendingRequest record (queue de requêtes en attente)
-  - +serverTick() pour traitement périodique des requêtes
-  - +NBT persistence des pending requests
-- StorageTerminalMenu.java:
-  - +ContainerData pour sync pending count/types vers client
-- StorageTerminalScreen.java:
-  - +renderPendingIndicator() badge orange avec compteur
-  - +renderPendingTooltip() tooltip détaillé
-
-MODIFICATIONS:
-- StorageTerminalBlock.java: +getTicker() pour serverTick
-- StorageControllerBlockEntity.java: depositItem() réécrit pour prioriser les coffres contenant l'item
-
-NOUVELLE FEATURE:
-- Système de file d'attente pour les requêtes overflow
-- Si slots pickup pleins, items mis en attente
-- Traitement automatique toutes les 10 ticks
-- Indicateur visuel dans GUI (badge orange)
-- Tooltip avec nombre d'items et types en attente
-- Persistance NBT (survit restart)
-
-CORRECTION:
-- Dépôt priorise maintenant les coffres contenant déjà l'item
-
-================================================================================
-2026-01-25 - Storage Network System Fixes & Improvements
-================================================================================
-
-AJOUTS:
-- core/network/packets/StorageItemsSyncPacket.java (sync items agrégés vers client)
-- core/util/StorageHelper.java (utilitaire vérification conteneurs stockage)
-
-CORRECTIONS:
-- StorageControllerBlockEntity.java:
-  - +handleUpdateTag() pour sync correcte vers client (fix contour bleu invisible)
-  - Fix ConcurrentModificationException dans refreshAggregatedItems()
-  - Mode édition auto-exit si joueur déconnecté ou trop loin
-  - Nettoyage automatique des viewers déconnectés
-  - addViewer() prend maintenant terminalPos pour sync ciblée
-
-- StorageTerminalBlockEntity.java:
-  - +handleUpdateTag() pour sync correcte vers client
-  - +flag isDepositing pour éviter récursion lors du dépôt automatique
-
-- StorageEvents.java:
-  - +onServerStopping() pour nettoyer StorageEditModeHandler
-  - Utilisation StorageHelper au lieu de vérification redondante
-
-- StorageControllerBlock.java:
-  - Utilisation StorageHelper au lieu de vérification redondante
-
-- StorageRequestPacket.java:
-  - Validation count (clamp 1-3456) contre exploits
-
-- StorageControllerRenderer.java:
-  - Optimisation: buffer obtenu une seule fois et réutilisé
-
-MODIFICATIONS:
-- BeemancerNetwork.java: +StorageItemsSyncPacket (playToClient)
-
-FIXES:
-- Les items agrégés sont maintenant envoyés au client via packet dédié
-- Les contours bleus autour des coffres enregistrés s'affichent correctement
-- La sauvegarde/chargement des coffres enregistrés fonctionne correctement
-- Plus de fuite mémoire dans StorageEditModeHandler au quit/reload monde
-
-================================================================================
-2026-01-25 - Storage Network System (Complete)
-================================================================================
-
-AJOUTS:
-- common/block/storage/StorageControllerBlock.java (bloc contrôleur central)
-- common/block/storage/StorageTerminalBlock.java (bloc terminal d'accès)
-- common/block/storage/StorageEditModeHandler.java (gestionnaire mode édition)
-- common/block/storage/StorageEvents.java (interception clics coffres)
-- common/blockentity/storage/StorageControllerBlockEntity.java (flood fill, agrégation)
-- common/blockentity/storage/StorageTerminalBlockEntity.java (liaison, dépôt/pickup)
-- common/menu/storage/StorageTerminalMenu.java (slots dépôt/pickup)
-- client/gui/screen/storage/StorageTerminalScreen.java (grille virtuelle, recherche, popup)
-- client/renderer/block/StorageControllerRenderer.java (lignes vers coffres)
-- core/network/packets/StorageRequestPacket.java (packet demande items)
-- assets blockstates/models pour storage_controller et storage_terminal
-
-MODIFICATIONS:
-- BeemancerBlocks.java: +STORAGE_CONTROLLER, +STORAGE_TERMINAL
-- BeemancerBlockEntities.java: +STORAGE_CONTROLLER, +STORAGE_TERMINAL
-- BeemancerItems.java: +STORAGE_CONTROLLER, +STORAGE_TERMINAL (BlockItems)
-- BeemancerMenus.java: +STORAGE_TERMINAL
-- BeemancerNetwork.java: +StorageRequestPacket
-- ClientSetup.java: +StorageTerminalScreen, +StorageControllerRenderer
-- Beemancer.java: +StorageEvents registration
-- en_us.json/fr_fr.json: +traductions Storage Network
-
-NOUVELLE FEATURE:
-- Système de stockage centralisé style AE2/Refined Storage
-- Storage Controller avec mode édition (shift+clic droit)
-- Enregistrement coffres par flood fill (rayon 24 blocs)
-- Visualisation: outline rouge + lignes vertes vers coffres
-- Storage Terminal avec liaison automatique en mode édition
-- Interface: recherche, grille virtuelle 9x6, popup demande items
-- Slots dépôt (auto-transfert vers réseau) et pickup (demandes)
-- Sync temps réel (GUI ouverte) ou périodique (40 ticks)
-
-================================================================================
-2026-01-24 - Custom Bee Renderer + AI Improvements
-================================================================================
-
-AJOUTS:
-- client/renderer/entity/MagicBeeRenderer.java (renderer custom avec textures par espèce)
-- common/entity/bee/BeeAIStateMachine.java (machine à états centralisée)
-- common/entity/bee/BeePathfinding.java (pathfinding A* pour abeilles volantes)
-- common/block/hive/HiveBeeSlot.java (encapsulation données slot abeille)
-- common/block/hive/HiveFlowerPool.java (pool partagé de fleurs)
-- assets/beemancer/textures/entity/bee/ (dossier pour textures espèces)
-
-MODIFICATIONS:
-- ClientSetup.java: Utilisation MagicBeeRenderer au lieu de BeeRenderer vanilla
-- MagicBeeEntity.java: +cache config, +timer enraged, +getSpeciesId()
-- ForagingBehaviorGoal.java: +approche par le haut, +inclinaison butinage, +descente douce
-- MagicHiveBlockEntity.java: Refactorisation vers HiveBeeSlot[] et HiveFlowerPool
-
-NOUVELLES FEATURES:
-- Renderer custom supportant textures différentes par espèce
-- Pattern: textures/entity/bee/{species}.png et {species}_nectar.png
-- Cache des textures pour performance
-- Machine à états AI centralisée avec timeouts (40 sec SEEKING_FLOWER)
-- Pathfinding A* 3D pour navigation intelligente
-- Sélection aléatoire des fleurs (évite conflits entre abeilles)
-- Comportement réaliste: approche par le haut, inclinaison pendant butinage
-
-================================================================================
-2026-01-24 - Alchemy Processing System (Complete)
-================================================================================
-
-AJOUTS:
-- core/recipe/ProcessingOutput.java (output avec probabilite)
-- core/recipe/FluidIngredient.java (ingredient fluide avec codec)
-- core/recipe/ProcessingRecipeInput.java (RecipeInput combines items+fluides)
-- core/recipe/BeemancerRecipeTypes.java (registre des 4 types de recettes)
-- core/recipe/BeemancerRecipeSerializers.java (registre des serializers)
-- core/recipe/type/CentrifugeRecipe.java (recette centrifugeuse)
-- core/recipe/type/InfusingRecipe.java (recette infuseur)
-- core/recipe/type/CrystallizingRecipe.java (recette cristalliseur)
-- core/recipe/type/DistillingRecipe.java (recette alambic)
-- client/gui/widget/BeemancerSlot.java (slot personnalise avec image de fond)
-- client/gui/widget/FluidGaugeWidget.java (jauge de fluide avec rendu visuel)
-- data/beemancer/recipe/centrifuging/*.json (4 recettes combs)
-- data/beemancer/recipe/infusing/honeyed_wood.json
-- data/beemancer/recipe/crystallizing/*.json (2 recettes cristaux)
-- data/beemancer/recipe/distilling/nectar.json
-- assets/beemancer/blockstates/item_pipe.json
-- assets/beemancer/models/block/item_pipe_*.json (core, side, side_extract)
-- assets/beemancer/models/block/honey_pipe_side_extract.json
-
-MODIFICATIONS:
-- BeemancerMenus.java: Correction code corrompu lignes 62-76
-- Beemancer.java: Suppression NECTAR_FILTER, correction capabilities, ajout ItemPipe
-- BeemancerCreativeTabs.java: Suppression NECTAR_FILTER, ajout ITEM_PIPE/INFUSER
-- PoweredCentrifugeBlockEntity.java: Refactoring vers CentrifugeRecipe
-- ManualCentrifugeBlockEntity.java: Refactoring vers CentrifugeRecipe
-- InfuserBlockEntity.java: Refactoring vers InfusingRecipe
-- CrystallizerBlockEntity.java: Refactoring vers CrystallizingRecipe
-- AlembicBlockEntity.java: Refactoring vers DistillingRecipe
-- PoweredCentrifugeMenu.java: Utilisation BeemancerSlot
-- InfuserMenu.java: Utilisation BeemancerSlot
-- CrystallizerMenu.java: Utilisation BeemancerSlot
-- PoweredCentrifugeScreen.java: Utilisation FluidGaugeWidget
-- ManualCentrifugeScreen.java: Utilisation FluidGaugeWidget
-- InfuserScreen.java: Utilisation FluidGaugeWidget
-- CrystallizerScreen.java: Utilisation FluidGaugeWidget
-- AlembicScreen.java: Utilisation FluidGaugeWidget
-- HoneyTankScreen.java: Utilisation FluidGaugeWidget
-- blockstates/honey_pipe.json: Ajout modeles extraction
-
-NOUVELLE FEATURE:
-- Systeme de recettes JSON modulaire pour l'alchimie
-- 4 types de recettes: centrifuging, infusing, crystallizing, distilling
-- Support probabilites sur outputs items (CentrifugeRecipe)
-- Support inputs/outputs fluides avec FluidIngredient
-- GUI ameliorees avec jauges de fluide colorees
-- Slots personnalises avec icones de fond (comb, wood, etc.)
-- Visuels extraction pour pipes (modele elargi)
-
-================================================================================
-2026-01-23 - Codex System (Complete)
-================================================================================
-
-AJOUTS:
-- common/codex/CodexPage.java (enum des 3 pages: BEE, ALCHEMY, LOGISTICS)
-- common/codex/CodexNodeCategory.java (enum catégories visuelles)
-- common/codex/CodexNode.java (représentation d'un node)
-- common/codex/CodexPlayerData.java (données progression joueur)
-- common/codex/CodexManager.java (gestionnaire central, chargement JSON)
-- common/item/codex/CodexItem.java (item livre ouvrant le Codex)
-- core/network/packets/CodexUnlockPacket.java (packet déblocage)
-- core/network/packets/CodexSyncPacket.java (packet synchronisation)
-- core/registry/BeemancerAttachments.java (attachment données joueur)
-- core/registry/BeemancerSounds.java (sons du mod)
-- client/gui/screen/CodexScreen.java (screen principal avec onglets)
-- client/gui/widget/CodexNodeWidget.java (widget rendu node)
-- data/beemancer/codex/bee.json (6 nodes exemple)
-- data/beemancer/codex/alchemy.json (6 nodes exemple)
-- data/beemancer/codex/logistics.json (6 nodes exemple)
-- assets/beemancer/sounds.json (définition sons)
-- assets/beemancer/models/item/codex.json
-- assets/beemancer/textures/item/codex.png
-- assets/beemancer/textures/gui/codex_*.png
-
-MODIFICATIONS:
-- BeemancerItems.java: +CODEX item
-- BeemancerCreativeTabs.java: +CODEX dans l'onglet créatif
-- BeemancerNetwork.java: +CodexUnlockPacket, +CodexSyncPacket
-- Beemancer.java: +BeemancerAttachments, +BeemancerSounds, +CodexManager.load(), +onPlayerLoggedIn()
-- en_us.json: +traductions Codex
-- fr_fr.json: +traductions Codex
-
-NOUVELLE FEATURE:
-- Système de Codex avec 3 onglets (Bees, Alchemy, Logistics)
-- Nodes interconnectés formant un arbre de progression
-- Nodes cachés jusqu'au déblocage du parent
-- Click pour débloquer si parent débloqué
-- Sauvegarde par joueur (conservé à la mort)
-- Synchronisation client/server
-- Sons de navigation et déblocage
-- Scroll/drag dans la zone de contenu
-- 4 catégories visuelles (ROOT, NORMAL, GOAL, CHALLENGE)
-
-================================================================================
-2026-01-22 - Bee Wand Refonte (Complete)
-================================================================================
-
-AJOUTS:
-- common/item/bee/WandTrackedData.java (définition donnée trackée)
-- common/item/bee/WandClassTracker.java (configuration tracking par classe)
-- client/gui/hud/WandOverlayRenderer.java (renderer HUD overlay)
-
-MODIFICATIONS:
-- BeeWandItem.java: Refonte complète avec système de tracking générique
-  - Configuration des classes trackées dans bloc static {}
-  - Tracking MagicBeeEntity (9 données: Species, Health, Lifetime, etc.)
-  - Tracking MagicHiveBlockEntity (4 données: Breeding Mode, Bees Inside/Outside, Empty Slots)
-  - Sélection par clic, désélection par Shift+clic droit
-- ClientSetup.java: +enregistrement WandOverlayRenderer sur NeoForge.EVENT_BUS
-
-NOUVELLE ARCHITECTURE:
-- Système de tracking générique extensible via WandClassTracker<T>
-- HUD overlay en haut à gauche quand baguette tenue
-- Affichage dynamique des valeurs tick par tick
-
-================================================================================
-2026-01-22 - Structure Documentation Refonte
-================================================================================
-
-AJOUTS:
-- Structure/ (dossier à la racine)
-- Structure/registries_items.txt
-- Structure/registries_blocks.txt
-- Structure/registries_entities.txt
-- Structure/registries_menus.txt
-- Structure/registries_flower_genes.txt
-- Structure/feature_*.txt (1 fichier par feature)
-- Structure/dependencies.txt
-- Structure/integration_guide.txt
-- Structure/changelog.txt
-
-MODIFICATIONS:
-- Structure.txt: Références aux fichiers de détail avec instructions d'extension
-
-================================================================================
-2026-01-22 - Harvester Behavior System (Complete)
-================================================================================
-
-AJOUTS:
-- core/behavior/SpeedThreshold.java (record seuil vitesse)
-- core/util/FlowerSearchHelper.java (recherche fleurs dans rayon)
-- core/util/HarvestHelper.java (logique récolte par type bloc)
-- common/entity/bee/BeeInventory.java (inventaire interne récolteuses)
-
-MODIFICATIONS:
-- BeeBehaviorConfig.java: +areaOfEffect, +returnThreshold, +speedThresholds, +getEffectiveSpeedMultiplier()
-- BeeBehaviorManager.java: +parsing nouveaux paramètres JSON
-- MagicBeeEntity.java: +BeeInventory, +getInventory(), +getEffectiveFlyingSpeed(), +shouldReturnDueToInventory()
-- MagicHiveBlockEntity.java: +détection fleurs par abeille, +getAndAssignFlower(), +returnFlower(), +dépôt inventaire récolteuse
-- HarvestingBehaviorGoal.java: Implémentation complète (state machine, récolte par type, inventaire)
-- ForagingBehaviorGoal.java: Utilisation de la liste de fleurs de la ruche
-- species_behaviors.json: +areaOfEffect, +speedThresholds, +returnThreshold, +espèce industrious
-
-================================================================================
-2026-01-22 - Bee Behavior System
-================================================================================
-
-AJOUTS:
-- core/behavior/BeeBehaviorType.java (enum FORAGER/HARVESTER)
-- core/behavior/BeeBehaviorConfig.java (configuration par espèce)
-- core/behavior/BeeBehaviorManager.java (chargement JSON)
-- core/behavior/LootEntry.java (record pour loot)
-- common/entity/bee/BeeActivityState.java (enum états)
-- common/entity/bee/goal/ReturnToHiveWhenLowHealthGoal.java
-- common/entity/bee/goal/BeeRevengeGoal.java
-- common/entity/bee/goal/ForagingBehaviorGoal.java
-- common/entity/bee/goal/HarvestingBehaviorGoal.java
-- content/gene/flower/TreesFlowerGene.java
-- content/gene/flower/MushroomsFlowerGene.java
-- content/gene/flower/CrystalsFlowerGene.java
-- content/gene/flower/NetherWartFlowerGene.java
-- data/beemancer/behavior/species_behaviors.json
-- data/beemancer/tags/blocks/bee_flowers_trees.json
-- data/beemancer/tags/blocks/bee_flowers_mushrooms.json
-- data/beemancer/tags/blocks/bee_flowers_crystals.json
-- data/beemancer/tags/blocks/bee_flowers_nether_wart.json
-
-MODIFICATIONS:
-- MagicBeeEntity.java: +goals AI, +états (pollinated, enraged), +hurt(), +shouldFlee()
-- MagicHiveBlockEntity.java: +cooldowns, +régénération, +dépôt loot, +auto-release
-- MagicBeeItem.java: +storedHealth
-- GeneInit.java: +4 nouveaux FlowerGenes
-- Beemancer.java: +chargement BeeBehaviorManager au démarrage serveur
-
-================================================================================
-2026-01-22 - Breeding System
-================================================================================
-
-- Ajout MagicBreedingCrystalBlock (active breeding au-dessus d'une ruche)
-- Ajout BeeLarvaItem (item larve avec gènes)
-- Ajout LarvaSlot (slot acceptant uniquement larves)
-- Ajout BreedingManager (logique breeding + héritage gènes)
-- Ajout IncubatorBlock/BlockEntity/Menu/Screen (machine incubation)
-- Modification MagicHiveBlockEntity (logique breeding intégrée)
-- Modification MagicHiveMenu (ContainerData pour sync breeding mode)
-- Modification MagicHiveScreen (indicateur mode breeding)
-- Config breeding: data/beemancer/breeding/species_combinations.json
-
-================================================================================
-2026-01-22 - Lifetime System + Magic Hive
-================================================================================
-
-- Ajout catégorie LIFETIME aux gènes (short, normal, long)
-- MagicBeeEntity: countdown lifetime, mort automatique à 0
-- MagicBeeItem: barre de durabilité (lifetime)
-- Création MagicHiveBlock avec système d'assignation
-- 5 slots bee + 7 slots output honeycomb
-- États de tracking: EMPTY, INSIDE, OUTSIDE
-- Notification ruche quand abeille meurt
-- Slots custom: OutputOnlySlot, BeeAssignmentSlot
-
-================================================================================
-2026-01-21 - Refonte Gene System
-================================================================================
-
-- Remplacement DebugBee par MagicBee avec système de gènes
-- Création du système de gènes modulaire (core/gene/)
-- Création des catégories: Species, Environment, Flower
-- Création du BeeCreator avec GUI
-- Mise à jour BeeWand pour MagicBee
-- 9 gènes implémentés (3 par catégorie)
 
 ################################################################################

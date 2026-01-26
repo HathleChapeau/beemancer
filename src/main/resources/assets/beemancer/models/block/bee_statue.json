@@ -1,0 +1,47 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "base": "beemancer:block/bee_statue_base",
+    "column": "beemancer:block/bee_statue_column",
+    "top": "beemancer:block/bee_statue_top",
+    "particle": "beemancer:block/bee_statue_column"
+  },
+  "elements": [
+    {
+      "name": "Base",
+      "from": [4, 0, 4],
+      "to": [12, 2, 12],
+      "faces": {
+        "north": {"texture": "#base", "uv": [4, 14, 12, 16]},
+        "east": {"texture": "#base", "uv": [4, 14, 12, 16]},
+        "south": {"texture": "#base", "uv": [4, 14, 12, 16]},
+        "west": {"texture": "#base", "uv": [4, 14, 12, 16]},
+        "up": {"texture": "#base", "uv": [4, 4, 12, 12]},
+        "down": {"texture": "#base", "uv": [4, 4, 12, 12], "cullface": "down"}
+      }
+    },
+    {
+      "name": "Column",
+      "from": [5, 2, 5],
+      "to": [11, 8, 11],
+      "faces": {
+        "north": {"texture": "#column", "uv": [5, 8, 11, 14]},
+        "east": {"texture": "#column", "uv": [5, 8, 11, 14]},
+        "south": {"texture": "#column", "uv": [5, 8, 11, 14]},
+        "west": {"texture": "#column", "uv": [5, 8, 11, 14]}
+      }
+    },
+    {
+      "name": "Top Platform",
+      "from": [3, 8, 3],
+      "to": [13, 10, 13],
+      "faces": {
+        "north": {"texture": "#top", "uv": [3, 14, 13, 16]},
+        "east": {"texture": "#top", "uv": [3, 14, 13, 16]},
+        "south": {"texture": "#top", "uv": [3, 14, 13, 16]},
+        "west": {"texture": "#top", "uv": [3, 14, 13, 16]},
+        "up": {"texture": "#top", "uv": [3, 3, 13, 13]}
+      }
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+################################################################################
+#                         FEATURE: BEE STATUE                                  #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Bloc décoratif servant de statue d'abeille avec piédestal. Affiche une espèce
+d'abeille en rotation avec son nom au-dessus. Permet de parcourir les espèces
+et d'obtenir des abeilles avec les gènes par défaut.
+
+================================================================================
+INTERACTIONS
+================================================================================
+
+- Shift + Clic droit: Cycle vers l'espèce suivante (affiche "X/N")
+- Clic droit: Donne une MagicBee de l'espèce actuelle avec gènes par défaut
+
+================================================================================
+RENDU
+================================================================================
+
+- Piédestal: Modèle bloc standard (base + colonne + plateau)
+- Abeille: Modèle vanilla BeeModel rendu par BeeStatueRenderer
+  - Position: Centre du bloc, au-dessus du plateau
+  - Rotation: Lente rotation continue (2°/tick)
+  - Échelle: 0.7 (légèrement plus petite qu'une abeille normale)
+- Nom: Text flottant au-dessus de l'abeille
+  - Face toujours le joueur (billboard)
+  - Fond semi-transparent
+
+================================================================================
+FICHIERS CRÉÉS
+================================================================================
+
+Java:
+- common/block/statue/BeeStatueBlock.java
+- common/block/statue/BeeStatueBlockEntity.java
+- client/renderer/block/BeeStatueRenderer.java
+
+Assets:
+- blockstates/bee_statue.json
+- models/block/bee_statue.json
+- models/item/bee_statue.json
+- loot_table/blocks/bee_statue.json
+
+================================================================================
+REGISTRES MODIFIÉS
+================================================================================
+
+BeemancerBlocks.java:
+- +BEE_STATUE
+
+BeemancerBlockEntities.java:
+- +BEE_STATUE
+
+BeemancerItems.java:
+- +BEE_STATUE (BlockItem)
+
+BeemancerCreativeTabs.java:
+- +addBeeStatue()
+
+ClientSetup.java:
+- +BeeStatueRenderer registration
+
+================================================================================
+DÉPENDANCES
+================================================================================
+
+- core/bee/BeeSpeciesManager.java (liste des espèces)
+- core/gene/GeneRegistry.java (gènes par défaut)
+- core/gene/BeeGeneData.java (création données gènes)
+- common/item/bee/MagicBeeItem.java (création item abeille)
+
+================================================================================
+NOTES TECHNIQUES
+================================================================================
+
+- Le BlockEntity stocke uniquement l'ID de l'espèce (String)
+- Les données sont synchronisées via NBT (getUpdateTag/handleUpdateTag)
+- Le renderer utilise le modèle vanilla BeeModel avec texture custom ou fallback
+- La texture cherche: textures/entity/bee/{speciesId}_bee.png, sinon vanilla
+
+################################################################################

@@ -11,7 +11,9 @@ import com.chapeau.beemancer.common.block.alchemy.*;
 import com.chapeau.beemancer.common.block.altar.*;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
+import com.chapeau.beemancer.common.block.extractor.ExtractorHeartBlock;
 import com.chapeau.beemancer.common.block.hive.HiveMultiblockBlock;
+import com.chapeau.beemancer.common.block.statue.BeeStatueBlock;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlock;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlock;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlock;
@@ -250,6 +252,22 @@ public class BeemancerBlocks {
             () -> new PollenPotBlock(BlockBehaviour.Properties.of()
                     .strength(1.0f)
                     .sound(SoundType.DECORATED_POT)
+                    .noOcclusion()));
+
+    // --- ESSENCE EXTRACTOR ---
+    public static final DeferredBlock<ExtractorHeartBlock> EXTRACTOR_HEART = BLOCKS.register("extractor_heart",
+            () -> new ExtractorHeartBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> state.getValue(ExtractorHeartBlock.FORMED) ? 12 : 6)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
+    // --- BEE STATUE ---
+    public static final DeferredBlock<BeeStatueBlock> BEE_STATUE = BLOCKS.register("bee_statue",
+            () -> new BeeStatueBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.STONE)
                     .noOcclusion()));
 
     // --- FLUID BLOCKS ---

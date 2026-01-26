@@ -18,6 +18,7 @@ import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
 import com.chapeau.beemancer.client.gui.screen.alchemy.*;
 import com.chapeau.beemancer.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.beemancer.client.renderer.BuildingWandPreviewRenderer;
+import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
@@ -83,6 +84,8 @@ public class ClientSetup {
         // Block Entity Renderers
         event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_CONTROLLER.get(),
             StorageControllerRenderer::new);
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.BEE_STATUE.get(),
+            BeeStatueRenderer::new);
     }
 
     private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {

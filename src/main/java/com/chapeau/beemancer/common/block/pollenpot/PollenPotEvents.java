@@ -29,6 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
@@ -56,13 +57,19 @@ public class PollenPotEvents {
         // Si le pot est vide, laisser le comportement normal (casser le bloc)
         if (pot.isEmpty()) return;
 
-        // Annuler immédiatement pour empêcher de casser le bloc (côté client et serveur)
+        // Empêcher le block breaking (côté client ET serveur)
+        // TriState.FALSE empêche l'interaction avec le bloc (cassage)
+        event.setUseBlock(TriState.FALSE);
+        event.setUseItem(TriState.FALSE);
         event.setCanceled(true);
 
-        // Côté client: juste annuler, pas de logique
+        // Côté client: juste empêcher le cassage, pas de logique
         if (level.isClientSide()) return;
 
-        // Côté serveur: retirer un pollen
+        // Côté serveur: retirer un pollen seulement au début du clic
+        // getAction() permet de vérifier si c'est le début du clic ou un maintien
+        if (event.getAction() != PlayerInteractEvent.LeftClickBlock.Action.START) return;
+
         ItemStack removed = pot.removePollen();
         if (!removed.isEmpty()) {
             // Donner au joueur ou drop

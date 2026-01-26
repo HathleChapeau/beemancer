@@ -44,6 +44,12 @@
 --- POLLEN POT ---
 | pollen_pot             | PollenPotBlock            | Oui          | Pollen Pot      |
 
+--- ESSENCE EXTRACTOR ---
+| extractor_heart        | ExtractorHeartBlock       | Oui          | Essence Extractor |
+
+--- BEE STATUE ---
+| bee_statue             | BeeStatueBlock            | Oui          | Bee Statue      |
+
 --- FLUID BLOCKS ---
 | honey                  | LiquidBlock               | Non          | Fluids          |
 | royal_jelly            | LiquidBlock               | Non          | Fluids          |
