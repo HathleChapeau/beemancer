@@ -130,20 +130,17 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
             updateBlockFormed(worldPosition.offset(offset), HoneyedStoneStairBlock.FORMED, formed);
         }
 
-        // === 8 Conduits à Y+1 ===
-        BlockPos[] conduitOffsets = {
-            new BlockPos(0, 1, -1),   // N
-            new BlockPos(0, 1, 1),    // S
-            new BlockPos(1, 1, 0),    // E
-            new BlockPos(-1, 1, 0),   // W
-            new BlockPos(-1, 1, -1),  // NW
-            new BlockPos(1, 1, -1),   // NE
-            new BlockPos(-1, 1, 1),   // SW
-            new BlockPos(1, 1, 1)     // SE
-        };
-        for (BlockPos offset : conduitOffsets) {
-            updateBlockFormed(worldPosition.offset(offset), HoneyCrystalConduitBlock.FORMED, formed);
-        }
+        // === 8 Conduits à Y+1 (orientés vers le centre) ===
+        // Conduits cardinaux
+        updateConduit(worldPosition.offset(0, 1, -1), formed, Direction.SOUTH);   // N pointe vers S
+        updateConduit(worldPosition.offset(0, 1, 1), formed, Direction.NORTH);    // S pointe vers N
+        updateConduit(worldPosition.offset(1, 1, 0), formed, Direction.WEST);     // E pointe vers W
+        updateConduit(worldPosition.offset(-1, 1, 0), formed, Direction.EAST);    // W pointe vers E
+        // Conduits diagonaux (alternance X/Z pour symétrie)
+        updateConduit(worldPosition.offset(-1, 1, -1), formed, Direction.EAST);   // NW → X-axis
+        updateConduit(worldPosition.offset(1, 1, -1), formed, Direction.SOUTH);   // NE → Z-axis
+        updateConduit(worldPosition.offset(-1, 1, 1), formed, Direction.NORTH);   // SW → Z-axis
+        updateConduit(worldPosition.offset(1, 1, 1), formed, Direction.WEST);     // SE → X-axis
 
         // === Honeyed Stone centre à Y+1 (layer 1: base avec colonne) ===
         updateHoneyedStone(worldPosition.offset(0, 1, 0), formed, 1);
@@ -189,6 +186,18 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
             level.setBlock(pos, state
                 .setValue(HoneyReservoirBlock.FORMED, formed)
                 .setValue(HoneyReservoirBlock.FACING, facing), 3);
+        }
+    }
+
+    /**
+     * Met à jour un HoneyCrystalConduitBlock avec FORMED et FACING.
+     */
+    private void updateConduit(BlockPos pos, boolean formed, Direction facing) {
+        BlockState state = level.getBlockState(pos);
+        if (state.hasProperty(HoneyCrystalConduitBlock.FORMED) && state.hasProperty(HoneyCrystalConduitBlock.FACING)) {
+            level.setBlock(pos, state
+                .setValue(HoneyCrystalConduitBlock.FORMED, formed)
+                .setValue(HoneyCrystalConduitBlock.FACING, facing), 3);
         }
     }
 

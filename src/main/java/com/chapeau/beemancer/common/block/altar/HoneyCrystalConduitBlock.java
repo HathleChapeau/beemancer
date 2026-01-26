@@ -20,12 +20,15 @@
 package com.chapeau.beemancer.common.block.altar;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -37,18 +40,21 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class HoneyCrystalConduitBlock extends Block {
 
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     // Forme: pilier vertical fin
     private static final VoxelShape SHAPE = Block.box(4, 0, 4, 12, 16, 12);
 
     public HoneyCrystalConduitBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FORMED, false));
+        this.registerDefaultState(this.stateDefinition.any()
+            .setValue(FORMED, false)
+            .setValue(FACING, Direction.NORTH));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED);
+        builder.add(FORMED, FACING);
     }
 
     @Override
