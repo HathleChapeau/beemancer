@@ -76,9 +76,12 @@ public class BeeStatueRenderer implements BlockEntityRenderer<BeeStatueBlockEnti
         float time = (blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0) + partialTick;
         poseStack.mulPose(Axis.YP.rotationDegrees(time * 2)); // Rotation lente
 
+        // Rotation 180° sur X pour retourner le modèle (au lieu de scale négatif qui inverse les normales)
+        poseStack.mulPose(Axis.XP.rotationDegrees(180));
+
         // Échelle de l'abeille
         float scale = 0.7f;
-        poseStack.scale(scale, -scale, scale); // -Y pour retourner le modèle
+        poseStack.scale(scale, scale, scale);
 
         // Récupérer la texture de l'espèce
         ResourceLocation texture = getTextureForSpecies(speciesId);
@@ -92,8 +95,8 @@ public class BeeStatueRenderer implements BlockEntityRenderer<BeeStatueBlockEnti
         // ===== Render Name Tag =====
         poseStack.pushPose();
 
-        // Position au-dessus de l'abeille (Y+1 bloc au-dessus)
-        poseStack.translate(0.5, 2.6, 0.5);
+        // Position au-dessus de l'abeille
+        poseStack.translate(0.5, 1.6, 0.5);
 
         // Toujours face au joueur
         poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
