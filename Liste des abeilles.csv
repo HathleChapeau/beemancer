@@ -1,98 +1,98 @@
 Tier,Nom de l'Abeille (English),Loot,Pollen,Couleur Torse,Couleur Rayure,Couleur Aile,Couleur Antenne,Couleur Oeil,Couleur Pupille
 I,Meadow Comb,Honeycomb,,#F7C325,#3D2807,#FFFFFF,#3D2807,#000000,#87CEEB
-I,Forest Comb,Honeycomb,,,,,,,
-I,Rocky Comb,Cobblestone,,,,,,,
-I,River Comb,Honeycomb,,,,,,,
-I,Dune Comb,Sand,,,,,,,
-I,Neither Comb,Honeycomb,,,,,,,
-I,End Comb,Honeycomb,,,,,,,
-II,Monsty Comb,Honeycomb,,,,,,,
-II,Docile Comb,Honeycomb,,,,,,,
-II,Loam Comb,Dirt,,,,,,,
-II,Sediment Comb,Gravel,,,,,,,
-II,Spark Comb,Flint,,,,,,,
-II,Carbon Comb,Honeycomb,,,,,,,
-III,Cupric Comb,Coal Fragment,,,,,,,
-III,Festering Comb,Raw Copper Shard,,,,,,,
-III,Skeletal Comb,Rotten Flesh,,,,,,,
-III,Silken Comb,Bone,,,,,,,
-III,Arachnid Comb,String,,,,,,,
-III,Tanner Comb,Spider Eye,,,,,,,
-III,Quercus Comb,Leather Fragment,,,,,,,
-III,Boreal Comb,Feather,,,,,,,
-III,Tropical Comb,Oak Log Fragment,,,,,,,
-III,Paperbark Comb,Spruce Log Fragment,,,,,,,
-III,Reed Comb,Jung Log Fragment,,,,,,,
-III,Karot Comb,Birch Log Fragment,,,,,,,
-III,Tuber Comb,Sugar Cane,,,,,,,
-III,Juicy Comb,Carrot,,,,,,,
-III,Gourd Comb,Potato,,,,,,,
-III,Agrarian Comb,Melon Slice,,,,,,,
-III,Prince Comb,Pumpkin,,,,,,,
-III,Flower Comb,Wheat,,,,,,,
-IV,Mushroom Comb,Honeycomb,,,,,,,
-IV,Tree Comb,Honeycomb,Flower Pollen,,,,,,
-IV,Crystal Comb,Honeycomb,Mushroom Spore,,,,,,
-IV,Argil Comb,Honeycomb,Tree Pollen,,,,,,
-IV,Umbra Comb,Honeycomb,Crystal Pollen,,,,,,
-IV,Savanna Comb,Clay Ball,,,,,,,
-IV,Frost Comb,Dark Oak Log Fragment,,,,,,,
-IV,Volatile Comb,Acacia Log Fragment,,,,,,,
-IV,Ashen Comb,Ice Fragment,,,,,,,
-IV,Igneous Comb,Gunpowder Fragment,,,,,,,
-IV,Rose Stone Comb,Andesite,,,,,,,
-IV,Swift Comb,Diorite,,,,,,,
-IV,Royal Comb,Granite,,,,,,,
-V,Ferrous Comb,Honeycomb,,,,,,,
-V,Flux Comb,Honeycomb,,,,,,,
-V,Lazuli Comb,Royal Comb,,,,,,,
-V,Quartzose Comb,Raw Iron Shard,,,,,,,
-V,Luminous Comb,Redstone Dust,,,,,,,
-V,Grim Comb,Lapis Lazuli Fragment,,,,,,,
-V,Columnar Comb,Quartz Fragment,,,,,,,
-V,Viscous Comb,Glowstone Dust Fragment,,,,,,,
-V,Inky Comb,Blackstone,,,,,,,
-V,Plume Comb,Basalt,,,,,,,
-V,Fleece Comb,Slime Ball Shard,,,,,,,
-V,Adobe Comb,Ink Sac,,,,,,,
-V,Geode Comb,Wool,,,,,,,
-V,Marsh Comb,Terracotta,,,,,,,
-V,Infernalist Comb,Amethyst Shard,,,,,,,
-V,Majestic Comb,Mangrove Log Fragment,,,,,,,
-VI,Steady Comb,Honeycomb,,,,,,,
-VI,Wind Comb,Honeycomb,,,,,,,
-VI,Thunder Comb,Honeycomb,Pollen of Wind,,,,,,
-VI,Water Comb,Honeycomb,Pollen of Thunder,,,,,,
-VI,Fire Comb,Honeycomb,Pollen of Water,,,,,,
-VI,Auric Comb,Honeycomb,Pollen of Fire,,,,,,
-VI,Magmatic Comb,Raw Gold Fragment,,,,,,,
-VI,Spirit Comb,Magma Cream Shard,,,,,,,
-VI,Crimson Comb,Soul Sand,,,,,,,
-VI,Mycelial Comb,Nether Wart,,,,,,,
-VI,Humus Comb,Mycelium,,,,,,,
-VI,Floral Comb,Podzol,,,,,,,
-VI,Treasure Comb,Flower,,,,,,,
-VII,Siphoning Comb,Honeycomb,,,,,,,
-VII,Zephyr Comb,Honeycomb,,,,,,,
-VII,Prismatic Comb,Honeycomb,,,,,,,
-VII,Crystalline Comb,Prismarine Shard,,,,,,,
-VII,Insomnia Comb,Prismarine Crystal,,,,,,,
-VII,Blazing Comb,Phantom Membrane,,,,,,,
-VII,Diamantine Comb,Blaze Rod Fragment,,,,,,,
-VIII,Venerable Comb,Diamond Dust,,,,,,,
-VIII,Volcanic Comb,Emerald Dust,,,,,,,
-VIII,Xenolith Comb,Obsidian Dust,,,,,,,
-VIII,Traveler Comb,End Stone,,,,,,,
-VIII,Sorrow Comb,Ender Pearl Dust,,,,,,,
-VIII,Absorbent Comb,Ghast Tear Shard,,,,,,,
-VIII,Light Comb,Sponge,,,,,,,
-VIII,Dark Comb,Honeycomb,Pollen of Light,,,,,,
-VIII,Imperial Comb,Honeycomb,Pollen of Darkness,,,,,,
-VIII,Demonic Comb,Honeycomb,,,,,,,
-IX,Paladin Comb,Honeycomb,,,,,,,
-IX,Chorus Comb,Honeycomb,,,,,,,
-IX,Ancient Comb,Chorus Fruit,,,,,,,
-IX,Void Comb,Netherite Scrap Dust,,,,,,,
-IX,Draconic Comb,Honeycomb,Void Pollen,,,,,,
-X,Stellar Comb,Dragon Breath Dust,,,,,,,
-X,,Nether Star Dust,,,,,,,
+I,Forest Comb,Honeycomb,,#4A7C4E,#2D1B0E,#E8FFE8,#2D1B0E,#000000,#228B22
+I,Rocky Comb,Cobblestone,,#7A7A7A,#4A4A4A,#FFFFFF,#4A4A4A,#000000,#A9A9A9
+I,River Comb,Honeycomb,,#4A90B8,#1E3A5F,#D4F1F9,#1E3A5F,#000000,#00CED1
+I,Dune Comb,Sand,,#DBD3A0,#8B7355,#FFFACD,#8B7355,#000000,#F4A460
+I,Neither Comb,Honeycomb,,#8B0000,#FF4500,#FFD4D4,#FF4500,#000000,#FF6347
+I,End Comb,Honeycomb,,#E0D68A,#6B4B8C,#E8E0FF,#6B4B8C,#000000,#9370DB
+II,Monsty Comb,Honeycomb,,#7BC67B,#355E35,#CCFFCC,#355E35,#FF0000,#00FF00
+II,Docile Comb,Honeycomb,,#FFE4B5,#D2B48C,#FFFFFF,#D2B48C,#000000,#FFC0CB
+II,Loam Comb,Dirt,,#8B5A2B,#5C3D2E,#E8DCC8,#5C3D2E,#000000,#CD853F
+II,Sediment Comb,Gravel,,#8E8E8E,#5A5A5A,#D3D3D3,#5A5A5A,#000000,#778899
+II,Spark Comb,Flint,,#3D3D3D,#1A1A1A,#C0C0C0,#1A1A1A,#000000,#FFD700
+II,Carbon Comb,Honeycomb,,#2F2F2F,#1A1A1A,#A0A0A0,#1A1A1A,#000000,#4A4A4A
+III,Cupric Comb,Coal Fragment,,#4A9B8C,#B87333,#D4FFFF,#B87333,#000000,#20B2AA
+III,Festering Comb,Raw Copper Shard,,#B87333,#8B4513,#FFE4C4,#8B4513,#000000,#CD7F32
+III,Skeletal Comb,Rotten Flesh,,#E3DAC9,#8B8B7A,#FFFFFF,#8B8B7A,#000000,#F5F5DC
+III,Silken Comb,Bone,,#FFFAF0,#E3DAC9,#FFFFFF,#E3DAC9,#000000,#FAEBD7
+III,Arachnid Comb,String,,#2D2D2D,#1A1A1A,#808080,#1A1A1A,#8B0000,#FF0000
+III,Tanner Comb,Spider Eye,,#8B4513,#5C3317,#DEB887,#5C3317,#000000,#A0522D
+III,Quercus Comb,Leather Fragment,,#B8945F,#6B4423,#F5DEB3,#6B4423,#000000,#D2691E
+III,Boreal Comb,Feather,,#D3D3D3,#6B7B8C,#FFFFFF,#6B7B8C,#000000,#B0C4DE
+III,Tropical Comb,Oak Log Fragment,,#32CD32,#6B4423,#98FB98,#6B4423,#000000,#00FF7F
+III,Paperbark Comb,Spruce Log Fragment,,#D2B48C,#5A4630,#FFF8DC,#5A4630,#000000,#DEB887
+III,Reed Comb,Jung Log Fragment,,#9ACD32,#6D5026,#F0FFF0,#6D5026,#000000,#7CFC00
+III,Karot Comb,Birch Log Fragment,,#D6D0AD,#2F2F2F,#FFFFF0,#2F2F2F,#000000,#F5F5DC
+III,Tuber Comb,Sugar Cane,,#C4A35A,#4A7C4E,#FFFACD,#4A7C4E,#000000,#BDB76B
+III,Juicy Comb,Carrot,,#FF8C00,#CC6600,#FFE4B5,#CC6600,#000000,#FFA500
+III,Gourd Comb,Potato,,#C4A35A,#8B7355,#FFF8DC,#8B7355,#000000,#DAA520
+III,Agrarian Comb,Melon Slice,,#AEDD00,#FF6B6B,#F0FFF0,#32CD32,#000000,#00FA9A
+III,Prince Comb,Pumpkin,,#E67519,#2D5A1E,#FFE4B5,#2D5A1E,#000000,#FF7F50
+III,Flower Comb,Wheat,,#DEB887,#8B7355,#FFFACD,#8B7355,#000000,#F4A460
+IV,Mushroom Comb,Honeycomb,,#BC4A42,#F5F5F5,#FFE4E1,#8B0000,#000000,#FF6347
+IV,Tree Comb,Honeycomb,Flower Pollen,#228B22,#6B4423,#90EE90,#6B4423,#000000,#32CD32
+IV,Crystal Comb,Honeycomb,Mushroom Spore,#9966CC,#00CED1,#E6E6FA,#9966CC,#000000,#DA70D6
+IV,Argil Comb,Honeycomb,Tree Pollen,#D2B48C,#985F45,#FFF8DC,#985F45,#000000,#DEB887
+IV,Umbra Comb,Honeycomb,Crystal Pollen,#4A3B5C,#1A0A2E,#9370DB,#1A0A2E,#000000,#8B008B
+IV,Savanna Comb,Clay Ball,,#DAA520,#9BA1A8,#FAFAD2,#8B7355,#000000,#F0E68C
+IV,Frost Comb,Dark Oak Log Fragment,,#A5F3FC,#E8F4F8,#FFFFFF,#87CEEB,#000000,#00BFFF
+IV,Volatile Comb,Acacia Log Fragment,,#FF6347,#CC0000,#FFD4D4,#CC0000,#000000,#FF4500
+IV,Ashen Comb,Ice Fragment,,#A9A9A9,#696969,#D3D3D3,#696969,#000000,#808080
+IV,Igneous Comb,Gunpowder Fragment,,#B22222,#2F2F2F,#FFB6C1,#2F2F2F,#000000,#FF4500
+IV,Rose Stone Comb,Andesite,,#C4A4A4,#8A8A8A,#FFE4E1,#8A8A8A,#000000,#BC8F8F
+IV,Swift Comb,Diorite,,#DFDEDE,#A0A0A0,#FFFFFF,#A0A0A0,#000000,#E0FFFF
+IV,Royal Comb,Granite,,#9B6B53,#6B4423,#FFE4E1,#6B4423,#000000,#CD853F
+V,Ferrous Comb,Honeycomb,,#A8A8A8,#5C5C5C,#D8D8D8,#5C5C5C,#000000,#C0C0C0
+V,Flux Comb,Honeycomb,,#AA0000,#5C0000,#FFB6C1,#5C0000,#000000,#FF0000
+V,Lazuli Comb,Royal Comb,,#1F4DB4,#0A1F4A,#ADD8E6,#0A1F4A,#000000,#4169E1
+V,Quartzose Comb,Raw Iron Shard,,#EEEDE9,#D8BFD8,#FFFFFF,#C0C0C0,#000000,#FFB6C1
+V,Luminous Comb,Redstone Dust,,#AA0000,#660000,#FFB6C1,#660000,#CC0000,#FF0000
+V,Grim Comb,Lapis Lazuli Fragment,,#19398A,#0A0A2E,#6495ED,#0A0A2E,#000000,#191970
+V,Columnar Comb,Quartz Fragment,,#EEEDE9,#D3D3D3,#FFFFFF,#D3D3D3,#000000,#FFFAFA
+V,Viscous Comb,Glowstone Dust Fragment,,#FFBC5E,#CC9933,#FFFACD,#CC9933,#FFD700,#FFFF00
+V,Inky Comb,Blackstone,,#2D2429,#1A1A1A,#4A4A4A,#1A1A1A,#000000,#483D8B
+V,Plume Comb,Basalt,,#4B4B4F,#2D2D2D,#808080,#2D2D2D,#000000,#696969
+V,Fleece Comb,Slime Ball Shard,,#7FBF00,#3D5C00,#CCFF99,#3D5C00,#000000,#00FF00
+V,Adobe Comb,Ink Sac,,#CD853F,#8B4513,#FFDAB9,#8B4513,#000000,#D2691E
+V,Geode Comb,Wool,,#9966CC,#E8E0FF,#E6E6FA,#8A2BE2,#000000,#DA70D6
+V,Marsh Comb,Terracotta,,#556B2F,#3D2E1F,#8FBC8F,#3D2E1F,#000000,#6B8E23
+V,Infernalist Comb,Amethyst Shard,,#6B2D5C,#AA0000,#E6E6FA,#AA0000,#8B0000,#9400D3
+V,Majestic Comb,Mangrove Log Fragment,,#6E3735,#4A2320,#FFDAB9,#4A2320,#000000,#8B4513
+VI,Steady Comb,Honeycomb,,#A0826D,#5C4033,#DEB887,#5C4033,#000000,#D2B48C
+VI,Wind Comb,Honeycomb,,#87CEEB,#E8F4F8,#F0FFFF,#B0C4DE,#000000,#00BFFF
+VI,Thunder Comb,Honeycomb,Pollen of Wind,#FFD700,#6A0DAD,#FFFACD,#6A0DAD,#4B0082,#FFFF00
+VI,Water Comb,Honeycomb,Pollen of Thunder,#1E90FF,#00CED1,#ADD8E6,#0077BE,#000000,#00BFFF
+VI,Fire Comb,Honeycomb,Pollen of Water,#FF6600,#CC0000,#FFD4B5,#CC0000,#8B0000,#FF4500
+VI,Auric Comb,Honeycomb,Pollen of Fire,#FFD700,#B8860B,#FFFACD,#B8860B,#000000,#FFA500
+VI,Magmatic Comb,Raw Gold Fragment,,#FF6600,#2F2F2F,#FFCC99,#2F2F2F,#8B0000,#FF4500
+VI,Spirit Comb,Magma Cream Shard,,#E0FFFF,#F5F5F5,#FFFFFF,#87CEEB,#4169E1,#00CED1
+VI,Crimson Comb,Soul Sand,,#8B0000,#4A0000,#FFB6C1,#4A0000,#000000,#DC143C
+VI,Mycelial Comb,Nether Wart,,#6B6067,#6E0D0D,#D8BFD8,#6B6067,#000000,#9370DB
+VI,Humus Comb,Mycelium,,#3D2E1F,#1F140C,#8B7355,#1F140C,#000000,#6B4423
+VI,Floral Comb,Podzol,,#FF69B4,#228B22,#FFB6C1,#228B22,#000000,#FF1493
+VI,Treasure Comb,Flower,,#FFD700,#1E90FF,#FFFACD,#B8860B,#000000,#00CED1
+VII,Siphoning Comb,Honeycomb,,#8B0000,#4A0000,#FFB6C1,#4A0000,#000000,#DC143C
+VII,Zephyr Comb,Honeycomb,,#ADD8E6,#E8F4F8,#F0FFFF,#87CEEB,#000000,#87CEEB
+VII,Prismatic Comb,Honeycomb,,#00CED1,#FF00FF,#FFFFFF,#DA70D6,#4B0082,#00FFFF
+VII,Crystalline Comb,Prismarine Shard,,#63A8A0,#408080,#D4FFFF,#408080,#000000,#40E0D0
+VII,Insomnia Comb,Prismarine Crystal,,#4E6FA5,#2E4A6A,#B0C4DE,#2E4A6A,#000000,#6495ED
+VII,Blazing Comb,Phantom Membrane,,#F6C700,#FF6600,#FFFACD,#FF6600,#FF4500,#FFFF00
+VII,Diamantine Comb,Blaze Rod Fragment,,#4AEDD9,#0A8A8A,#E0FFFF,#0A8A8A,#000000,#00FFFF
+VIII,Venerable Comb,Diamond Dust,,#17DD62,#0A6B30,#98FB98,#0A6B30,#000000,#00FF7F
+VIII,Volcanic Comb,Emerald Dust,,#B22222,#2F2F2F,#FFB6C1,#2F2F2F,#8B0000,#FF4500
+VIII,Xenolith Comb,Obsidian Dust,,#100C14,#4A0080,#9370DB,#1A0A2E,#000000,#8A2BE2
+VIII,Traveler Comb,End Stone,,#DBDE9F,#B8B87A,#FFFACD,#B8B87A,#000000,#F0E68C
+VIII,Sorrow Comb,Ender Pearl Dust,,#0C7575,#0A2E2E,#AFEEEE,#0A2E2E,#000000,#008B8B
+VIII,Absorbent Comb,Ghast Tear Shard,,#F0F0F0,#C0C0C0,#FFFFFF,#C0C0C0,#4169E1,#E0FFFF
+VIII,Light Comb,Sponge,,#FFFF99,#C5B758,#FFFFCC,#C5B758,#FFD700,#FFFF00
+VIII,Dark Comb,Honeycomb,Pollen of Light,#1A0A2E,#4A0080,#4B0082,#1A0A2E,#8B008B,#9400D3
+VIII,Imperial Comb,Honeycomb,Pollen of Darkness,#6A0DAD,#FFD700,#E6E6FA,#4A0080,#000000,#DA70D6
+VIII,Demonic Comb,Honeycomb,,#660000,#1A1A1A,#8B0000,#1A1A1A,#FF0000,#8B0000
+IX,Paladin Comb,Honeycomb,,#F5F5F5,#FFD700,#FFFFFF,#FFD700,#4169E1,#87CEEB
+IX,Chorus Comb,Honeycomb,,#8F6BAE,#5C3D6E,#E6E6FA,#5C3D6E,#000000,#9932CC
+IX,Ancient Comb,Chorus Fruit,,#6B5C4A,#3D5C3D,#D2B48C,#3D5C3D,#000000,#8B8B7A
+IX,Void Comb,Netherite Scrap Dust,,#443A3B,#1A1A1A,#696969,#1A1A1A,#000000,#2F4F4F
+IX,Draconic Comb,Honeycomb,Void Pollen,#20002F,#6A0DAD,#9370DB,#4A0080,#8B008B,#9400D3
+X,Stellar Comb,Dragon Breath Dust,,#9932CC,#FF69B4,#E6E6FA,#9932CC,#4B0082,#FF00FF
+X,Starlight Comb,Nether Star Dust,,#FFFFC9,#FFD700,#FFFFFF,#FFD700,#FFFAFA,#FFFF00
