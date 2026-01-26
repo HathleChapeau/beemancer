@@ -18,7 +18,7 @@ import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
 import com.chapeau.beemancer.client.gui.screen.alchemy.*;
 import com.chapeau.beemancer.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.beemancer.client.renderer.BuildingWandPreviewRenderer;
-import com.chapeau.beemancer.client.renderer.block.AltarHeartRenderer;
+// import com.chapeau.beemancer.client.renderer.block.AltarHeartRenderer;
 import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
@@ -87,8 +87,9 @@ public class ClientSetup {
             StorageControllerRenderer::new);
         event.registerBlockEntityRenderer(BeemancerBlockEntities.BEE_STATUE.get(),
             BeeStatueRenderer::new);
-        event.registerBlockEntityRenderer(BeemancerBlockEntities.ALTAR_HEART.get(),
-            AltarHeartRenderer::new);
+        // AltarHeartRenderer désactivé - utilise les modèles de blocs JSON
+        // event.registerBlockEntityRenderer(BeemancerBlockEntities.ALTAR_HEART.get(),
+        //     AltarHeartRenderer::new);
     }
 
     private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {
