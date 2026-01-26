@@ -135,8 +135,8 @@ public class BeeStatueBlock extends Block implements EntityBlock {
             }
         }
 
-        // Initialiser le lifetime avec les valeurs par défaut
-        geneData.initializeLifetime();
+        // Initialiser le lifetime depuis le gène
+        geneData.initializeLifetimeFromGene();
 
         return MagicBeeItem.createWithGenes(geneData);
     }
