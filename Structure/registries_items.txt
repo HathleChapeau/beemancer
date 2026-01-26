@@ -45,6 +45,30 @@
 --- POLLEN POT ---
 | pollen_pot               | BlockItem        | Pollen Pot      |
 
+--- ESSENCE EXTRACTOR ---
+| extractor_heart          | BlockItem        | Essence Extractor |
+
+--- ESSENCES ---
+| lesser_drop_essence      | EssenceItem      | Essence Extractor |
+| drop_essence             | EssenceItem      | Essence Extractor |
+| greater_drop_essence     | EssenceItem      | Essence Extractor |
+| perfect_drop_essence     | EssenceItem      | Essence Extractor |
+| lesser_speed_essence     | EssenceItem      | Essence Extractor |
+| speed_essence            | EssenceItem      | Essence Extractor |
+| greater_speed_essence    | EssenceItem      | Essence Extractor |
+| perfect_speed_essence    | EssenceItem      | Essence Extractor |
+| lesser_foraging_essence  | EssenceItem      | Essence Extractor |
+| foraging_essence         | EssenceItem      | Essence Extractor |
+| greater_foraging_essence | EssenceItem      | Essence Extractor |
+| perfect_foraging_essence | EssenceItem      | Essence Extractor |
+| lesser_tolerance_essence | EssenceItem      | Essence Extractor |
+| tolerance_essence        | EssenceItem      | Essence Extractor |
+| greater_tolerance_essence| EssenceItem      | Essence Extractor |
+| perfect_tolerance_essence| EssenceItem      | Essence Extractor |
+| diurnal_essence          | EssenceItem      | Essence Extractor |
+| nocturnal_essence        | EssenceItem      | Essence Extractor |
+| insomnia_essence         | EssenceItem      | Essence Extractor |
+
 --- BEE ITEMS ---
 | magic_bee                | MagicBeeItem     | Gene System     |
 | bee_larva                | BeeLarvaItem     | Breeding        |

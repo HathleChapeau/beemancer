@@ -12,6 +12,7 @@ import com.chapeau.beemancer.common.item.bee.BeeWandItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.item.codex.CodexItem;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
+import com.chapeau.beemancer.common.item.essence.EssenceItem;
 import com.chapeau.beemancer.common.item.tool.BuildingWandItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
@@ -132,6 +133,59 @@ public class BeemancerItems {
     // --- POLLEN POT ---
     public static final DeferredItem<BlockItem> POLLEN_POT = ITEMS.register("pollen_pot",
             () -> new BlockItem(BeemancerBlocks.POLLEN_POT.get(), new Item.Properties()));
+
+    // --- ESSENCE EXTRACTOR ---
+    public static final DeferredItem<BlockItem> EXTRACTOR_HEART = ITEMS.register("extractor_heart",
+            () -> new BlockItem(BeemancerBlocks.EXTRACTOR_HEART.get(), new Item.Properties()));
+
+    // --- ESSENCES ---
+    // Drop Essences (améliore le drop level des abeilles)
+    public static final DeferredItem<EssenceItem> LESSER_DROP_ESSENCE = ITEMS.register("lesser_drop_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.DROP, EssenceItem.EssenceLevel.LESSER));
+    public static final DeferredItem<EssenceItem> DROP_ESSENCE = ITEMS.register("drop_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.DROP, EssenceItem.EssenceLevel.NORMAL));
+    public static final DeferredItem<EssenceItem> GREATER_DROP_ESSENCE = ITEMS.register("greater_drop_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.DROP, EssenceItem.EssenceLevel.GREATER));
+    public static final DeferredItem<EssenceItem> PERFECT_DROP_ESSENCE = ITEMS.register("perfect_drop_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.DROP, EssenceItem.EssenceLevel.PERFECT));
+
+    // Speed Essences (améliore la vitesse de vol des abeilles)
+    public static final DeferredItem<EssenceItem> LESSER_SPEED_ESSENCE = ITEMS.register("lesser_speed_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.SPEED, EssenceItem.EssenceLevel.LESSER));
+    public static final DeferredItem<EssenceItem> SPEED_ESSENCE = ITEMS.register("speed_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.SPEED, EssenceItem.EssenceLevel.NORMAL));
+    public static final DeferredItem<EssenceItem> GREATER_SPEED_ESSENCE = ITEMS.register("greater_speed_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.SPEED, EssenceItem.EssenceLevel.GREATER));
+    public static final DeferredItem<EssenceItem> PERFECT_SPEED_ESSENCE = ITEMS.register("perfect_speed_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.SPEED, EssenceItem.EssenceLevel.PERFECT));
+
+    // Foraging Essences (améliore la durée de butinage des abeilles)
+    public static final DeferredItem<EssenceItem> LESSER_FORAGING_ESSENCE = ITEMS.register("lesser_foraging_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.FORAGING, EssenceItem.EssenceLevel.LESSER));
+    public static final DeferredItem<EssenceItem> FORAGING_ESSENCE = ITEMS.register("foraging_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.FORAGING, EssenceItem.EssenceLevel.NORMAL));
+    public static final DeferredItem<EssenceItem> GREATER_FORAGING_ESSENCE = ITEMS.register("greater_foraging_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.FORAGING, EssenceItem.EssenceLevel.GREATER));
+    public static final DeferredItem<EssenceItem> PERFECT_FORAGING_ESSENCE = ITEMS.register("perfect_foraging_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.FORAGING, EssenceItem.EssenceLevel.PERFECT));
+
+    // Tolerance Essences (améliore la tolérance des abeilles)
+    public static final DeferredItem<EssenceItem> LESSER_TOLERANCE_ESSENCE = ITEMS.register("lesser_tolerance_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.TOLERANCE, EssenceItem.EssenceLevel.LESSER));
+    public static final DeferredItem<EssenceItem> TOLERANCE_ESSENCE = ITEMS.register("tolerance_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.TOLERANCE, EssenceItem.EssenceLevel.NORMAL));
+    public static final DeferredItem<EssenceItem> GREATER_TOLERANCE_ESSENCE = ITEMS.register("greater_tolerance_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.TOLERANCE, EssenceItem.EssenceLevel.GREATER));
+    public static final DeferredItem<EssenceItem> PERFECT_TOLERANCE_ESSENCE = ITEMS.register("perfect_tolerance_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.TOLERANCE, EssenceItem.EssenceLevel.PERFECT));
+
+    // Day/Night Essences (améliore le cycle jour/nuit des abeilles)
+    public static final DeferredItem<EssenceItem> DIURNAL_ESSENCE = ITEMS.register("diurnal_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.DIURNAL, EssenceItem.EssenceLevel.NORMAL));
+    public static final DeferredItem<EssenceItem> NOCTURNAL_ESSENCE = ITEMS.register("nocturnal_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.NOCTURNAL, EssenceItem.EssenceLevel.NORMAL));
+    public static final DeferredItem<EssenceItem> INSOMNIA_ESSENCE = ITEMS.register("insomnia_essence",
+            () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.INSOMNIA, EssenceItem.EssenceLevel.PERFECT));
 
     // --- BEE ITEMS ---
     public static final DeferredItem<MagicBeeItem> MAGIC_BEE = ITEMS.register("magic_bee",

@@ -1,0 +1,130 @@
+################################################################################
+#                         FEATURE: ESSENCE EXTRACTOR                           #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Multibloc 3x3x4 servant à extraire des essences pour améliorer les perks des
+abeilles. Utilise le système multibloc existant (MultiblockPatterns).
+
+================================================================================
+STRUCTURE DU MULTIBLOC
+================================================================================
+
+Vue de dessus (par étage):
+
+Étage 4 (Y+1) - Honeyed Stone en croix:
+    [ ][S][ ]
+    [S][S][S]
+    [ ][S][ ]
+
+Étage 3 (Y+0) - Contrôleur au centre:
+    [ ][ ][ ]
+    [ ][H][ ]
+    [ ][ ][ ]
+
+Étage 2 (Y-1) - Vide (air):
+    [ ][ ][ ]
+    [ ][ ][ ]
+    [ ][ ][ ]
+
+Étage 1 (Y-2) - Pedestals + Honeyed Stone:
+    [S][P][S]
+    [P][P][P]
+    [S][P][S]
+
+Légende:
+- [H] = Extractor Heart (contrôleur)
+- [S] = Honeyed Stone
+- [P] = Honey Pedestal
+- [ ] = Air
+
+================================================================================
+FICHIERS CRÉÉS
+================================================================================
+
+Java:
+- common/block/extractor/ExtractorHeartBlock.java
+- common/blockentity/extractor/ExtractorHeartBlockEntity.java
+- common/item/essence/EssenceItem.java
+
+Assets:
+- blockstates/extractor_heart.json
+- models/block/extractor_heart.json
+- models/block/extractor_heart_formed.json
+- models/item/extractor_heart.json
+- models/item/*_essence.json (20 fichiers)
+- loot_table/blocks/extractor_heart.json
+
+================================================================================
+REGISTRES MODIFIÉS
+================================================================================
+
+BeemancerBlocks.java:
+- +EXTRACTOR_HEART
+
+BeemancerBlockEntities.java:
+- +EXTRACTOR_HEART
+
+BeemancerItems.java:
+- +EXTRACTOR_HEART (BlockItem)
+- +LESSER_DROP_ESSENCE, +DROP_ESSENCE, +GREATER_DROP_ESSENCE, +PERFECT_DROP_ESSENCE
+- +LESSER_SPEED_ESSENCE, +SPEED_ESSENCE, +GREATER_SPEED_ESSENCE, +PERFECT_SPEED_ESSENCE
+- +LESSER_FORAGING_ESSENCE, +FORAGING_ESSENCE, +GREATER_FORAGING_ESSENCE, +PERFECT_FORAGING_ESSENCE
+- +LESSER_TOLERANCE_ESSENCE, +TOLERANCE_ESSENCE, +GREATER_TOLERANCE_ESSENCE, +PERFECT_TOLERANCE_ESSENCE
+- +DIURNAL_ESSENCE, +NOCTURNAL_ESSENCE, +INSOMNIA_ESSENCE
+
+BeemancerCreativeTabs.java:
+- +addEssenceExtractor()
+- +addEssences()
+
+MultiblockPatterns.java:
+- +ESSENCE_EXTRACTOR pattern
+
+================================================================================
+ESSENCES
+================================================================================
+
+Types d'essence classiques (4 niveaux chacun):
+1. DROP - Améliore le drop level des abeilles
+2. SPEED - Améliore la vitesse de vol
+3. FORAGING - Améliore la durée de butinage
+4. TOLERANCE - Améliore la tolérance environnementale
+
+Types d'essence jour/nuit (uniques):
+5. DIURNAL - Permet de travailler le jour (niveau NORMAL)
+6. NOCTURNAL - Permet de travailler la nuit (niveau NORMAL)
+7. INSOMNIA - Permet de travailler jour ET nuit (niveau PERFECT, brille)
+
+Niveaux d'essence (EssenceLevel):
+1. LESSER (niveau 1)
+2. NORMAL (niveau 2)
+3. GREATER (niveau 3)
+4. PERFECT (niveau 4) - Effet enchantement (brille)
+
+Total: 4 types × 4 niveaux + 3 essences jour/nuit = 19 items d'essence
+
+================================================================================
+UTILISATION
+================================================================================
+
+1. Construire la structure selon le pattern ci-dessus
+2. Placer l'Extractor Heart au niveau Y+0 (centre)
+3. Clic droit sur l'Extractor Heart pour former le multibloc
+4. Message "The Essence Extractor has been formed!" si succès
+5. Le bloc passe en état "formed=true" avec texture différente
+
+================================================================================
+DÉPENDANCES
+================================================================================
+
+- core/multiblock/MultiblockPatterns.java (définition pattern)
+- core/multiblock/MultiblockValidator.java (validation)
+- core/multiblock/MultiblockController.java (interface)
+- core/multiblock/MultiblockEvents.java (détection destruction)
+- BeemancerBlocks.HONEY_PEDESTAL (composant structure)
+- BeemancerBlocks.HONEYED_STONE (composant structure)
+
+################################################################################

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "beemancer:item/essence/perfect_drop_essence"
+  }
+}

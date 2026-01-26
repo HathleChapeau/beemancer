@@ -20,7 +20,6 @@
  */
 package com.chapeau.beemancer.common.block.pollenpot;
 
-import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -181,4 +180,5 @@ public class PollenPotBlock extends BaseEntityBlock {
         }
         return 0;
     }
+
 }

@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-01-26                     #
-#                    (Pollen Pot)                                              #
+#                    (Essence Extractor + Essences)                            #
 ################################################################################
 
 ================================================================================
@@ -215,6 +215,10 @@ LISTE DES FEATURES:
 → Pollen Pot
   Fichier: Structure/feature_pollen_pot.txt
   Description: Pot de stockage pour 16 pollens d'un seul type avec interactions clic
+
+→ Essence Extractor
+  Fichier: Structure/feature_essence_extractor.txt
+  Description: Multibloc 3x3x4 pour extraire des essences + 20 items d'essence (5 types × 4 niveaux)
 
 ================================================================================
 6. FEATURES EN COURS
