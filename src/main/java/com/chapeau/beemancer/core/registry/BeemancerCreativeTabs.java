@@ -103,6 +103,7 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.INFUSER.get());
         output.accept(BeemancerItems.INFUSER_TIER2.get());
         output.accept(BeemancerItems.INFUSER_TIER3.get());
+        output.accept(BeemancerItems.POLLEN_POT.get());
     }
 
     private static void addPipesAndTanks(CreativeModeTab.Output output) {

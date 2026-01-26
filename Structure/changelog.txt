@@ -3,6 +3,42 @@
 ################################################################################
 
 ================================================================================
+2026-01-26 - Pollen Pot
+================================================================================
+
+AJOUTS:
+- common/block/pollenpot/PollenPotBlock.java (bloc pot à pollen)
+- common/block/pollenpot/PollenPotBlockEntity.java (stockage pollen)
+- common/block/pollenpot/PollenPotEvents.java (gestion clic gauche)
+- core/registry/BeemancerTags.java (tags items et blocs)
+- client/color/PollenColors.java (couleurs des 12 types de pollen)
+- data/beemancer/tags/item/pollens.json (tag tous les pollens)
+- assets/beemancer/blockstates/pollen_pot.json
+- assets/beemancer/models/block/pollen_pot.json (avec tintindex pour couleur)
+- assets/beemancer/models/item/pollen_pot.json
+- data/beemancer/loot_table/blocks/pollen_pot.json
+
+MODIFICATIONS:
+- BeemancerBlocks.java: +POLLEN_POT
+- BeemancerBlockEntities.java: +POLLEN_POT
+- BeemancerItems.java: +POLLEN_POT (BlockItem)
+- BeemancerCreativeTabs.java: +POLLEN_POT dans section Alchemy Machines
+- Beemancer.java: +PollenPotEvents registration
+- ClientSetup.java: +registerBlockColors (tinting pollen pot)
+- en_us.json/fr_fr.json: +traductions Pollen Pot
+
+NOUVELLE FEATURE:
+- Pot à pollen stockant jusqu'à 16 pollens d'un seul type
+- Clic droit avec pollen en main: ajouter au pot
+- Clic gauche: retirer un pollen (donné au joueur)
+- Un seul type de pollen par pot (premier pollen définit le type)
+- Pot vide peut accepter n'importe quel type de pollen
+- Drop tout le contenu quand cassé
+- Messages informatifs (contenu, pot plein, mauvais type)
+- Support Comparator (signal 0-15 selon remplissage)
+- Couleur de l'intérieur selon le type de pollen (12 couleurs uniques)
+
+================================================================================
 2026-01-25 - Debug Wand System
 ================================================================================
 

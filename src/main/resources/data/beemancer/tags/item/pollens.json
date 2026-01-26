@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "beemancer:pollen",
+    "beemancer:flower_pollen",
+    "beemancer:mushroom_spore",
+    "beemancer:tree_pollen",
+    "beemancer:crystal_pollen",
+    "beemancer:pollen_of_wind",
+    "beemancer:pollen_of_thunder",
+    "beemancer:pollen_of_water",
+    "beemancer:pollen_of_fire",
+    "beemancer:pollen_of_light",
+    "beemancer:pollen_of_darkness",
+    "beemancer:void_pollen"
+  ]
+}

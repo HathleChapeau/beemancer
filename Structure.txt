@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-01-25                     #
-#                    (Debug Wand System)                                       #
+#                         Dernière mise à jour: 2026-01-26                     #
+#                    (Pollen Pot)                                              #
 ################################################################################
 
 ================================================================================
@@ -211,6 +211,10 @@ LISTE DES FEATURES:
 → Debug Wand
   Fichier: Structure/feature_debug_wand.txt
   Description: Baguette de debug avec 9 valeurs ajustables en temps réel via HUD
+
+→ Pollen Pot
+  Fichier: Structure/feature_pollen_pot.txt
+  Description: Pot de stockage pour 16 pollens d'un seul type avec interactions clic
 
 ================================================================================
 6. FEATURES EN COURS

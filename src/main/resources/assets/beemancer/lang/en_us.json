@@ -409,5 +409,11 @@
   "message.beemancer.honey_altar.invalid_structure": "Invalid structure - check the altar pattern",
 
   "message.beemancer.hive_multiblock.formed": "The Hive Multiblock has been formed!",
-  "container.beemancer.hive_multiblock": "Hive Multiblock"
+  "container.beemancer.hive_multiblock": "Hive Multiblock",
+
+  "block.beemancer.pollen_pot": "Pollen Pot",
+  "message.beemancer.pollen_pot.empty": "Pot is empty",
+  "message.beemancer.pollen_pot.contents": "Contains %d/%d %s",
+  "message.beemancer.pollen_pot.full": "Pot is full!",
+  "message.beemancer.pollen_pot.wrong_type": "This pot already contains a different pollen type"
 }

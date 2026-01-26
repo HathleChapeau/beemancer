@@ -18,6 +18,7 @@
 package com.chapeau.beemancer;
 
 import com.chapeau.beemancer.client.ClientSetup;
+import com.chapeau.beemancer.common.block.pollenpot.PollenPotEvents;
 import com.chapeau.beemancer.common.block.storage.StorageEvents;
 import com.chapeau.beemancer.common.codex.CodexManager;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
@@ -147,6 +148,7 @@ public class Beemancer {
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.register(StorageEvents.class);
         NeoForge.EVENT_BUS.register(MultiblockEvents.class);
+        NeoForge.EVENT_BUS.register(PollenPotEvents.class);
     }
 
     private void onServerStarting(final ServerStartingEvent event) {

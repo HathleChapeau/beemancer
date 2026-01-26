@@ -1,0 +1,145 @@
+################################################################################
+#                         FEATURE: POLLEN POT                                  #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Pot de stockage pour pollens. Peut contenir jusqu'à 16 pollens d'un seul type.
+Interaction simple: clic droit pour ajouter, clic gauche pour retirer.
+
+================================================================================
+FONCTIONNEMENT
+================================================================================
+
+AJOUT DE POLLEN (Clic droit):
+- Le joueur doit tenir un pollen dans sa main
+- Si le pot est vide: accepte n'importe quel pollen
+- Si le pot contient déjà du pollen: accepte uniquement le même type
+- Consomme 1 pollen de la main du joueur (sauf mode créatif)
+- Maximum 16 pollens par pot
+
+RETRAIT DE POLLEN (Clic gauche):
+- Retire 1 pollen du pot
+- Le pollen est donné directement au joueur (inventaire ou drop)
+- Si le pot est vide: comportement normal (casser le bloc)
+- L'event est annulé pour éviter de casser le bloc
+
+DESTRUCTION DU BLOC:
+- Drop tout le contenu (pollens) en plus du bloc lui-même
+
+MESSAGES:
+- Pot vide: "Pot is empty"
+- Contenu: "Contains X/16 [Pollen Name]"
+- Pot plein: "Pot is full!"
+- Mauvais type: "This pot already contains a different pollen type"
+
+================================================================================
+POLLENS SUPPORTÉS
+================================================================================
+
+Tag: beemancer:pollens
+
+Items inclus:
+- pollen (générique)
+- flower_pollen
+- mushroom_spore
+- tree_pollen
+- crystal_pollen
+- pollen_of_wind
+- pollen_of_thunder
+- pollen_of_water
+- pollen_of_fire
+- pollen_of_light
+- pollen_of_darkness
+- void_pollen
+
+================================================================================
+COULEURS DES POLLENS
+================================================================================
+
+L'intérieur du pot est coloré selon le type de pollen stocké.
+Utilise le système de tinting de Minecraft (BlockColor).
+
+| Pollen              | Couleur      | Hex      |
+|---------------------|--------------|----------|
+| pollen              | Jaune doré   | 0xFFD700 |
+| flower_pollen       | Rose vif     | 0xFF69B4 |
+| mushroom_spore      | Marron       | 0x8B4513 |
+| tree_pollen         | Vert forêt   | 0x228B22 |
+| crystal_pollen      | Cyan         | 0x00FFFF |
+| pollen_of_wind      | Bleu ciel    | 0xADD8E6 |
+| pollen_of_thunder   | Jaune élec.  | 0xFFFF00 |
+| pollen_of_water     | Bleu océan   | 0x1E90FF |
+| pollen_of_fire      | Orange feu   | 0xFF4500 |
+| pollen_of_light     | Jaune pâle   | 0xFFFACD |
+| pollen_of_darkness  | Indigo       | 0x4B0082 |
+| void_pollen         | Violet noir  | 0x1A0033 |
+| (pot vide)          | Gris         | 0x808080 |
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+FICHIERS:
+- common/block/pollenpot/PollenPotBlock.java
+  - Bloc avec shape custom (pot)
+  - useItemOn() pour clic droit
+  - onRemove() pour drop contenu
+  - Support Comparator (signal 0-15)
+
+- common/block/pollenpot/PollenPotBlockEntity.java
+  - Stockage: ItemStack (type) + int (count)
+  - Méthodes: addPollen(), removePollen(), canAcceptPollen()
+  - NBT serialization
+  - Sync client/server via getUpdateTag() + handleUpdateTag()
+  - getComparatorOutput() pour signal redstone
+
+- common/block/pollenpot/PollenPotEvents.java
+  - Event handler pour clic gauche (LeftClickBlock)
+  - Intercepte et annule si pollen retiré
+  - Vérification MAIN_HAND pour éviter double exécution
+
+- core/registry/BeemancerTags.java
+  - Définition du tag POLLENS pour items
+
+- client/color/PollenColors.java
+  - Mapping pollen -> couleur (12 couleurs définies)
+  - Couleur par défaut: jaune doré (0xFFD700)
+  - Couleur pot vide: gris (0x808080)
+
+REGISTRES:
+- BeemancerBlocks.POLLEN_POT
+- BeemancerBlockEntities.POLLEN_POT
+- BeemancerItems.POLLEN_POT (BlockItem)
+
+================================================================================
+ASSETS
+================================================================================
+
+- blockstates/pollen_pot.json
+- models/block/pollen_pot.json (modèle custom avec 4 éléments)
+- models/item/pollen_pot.json (parent block model)
+- loot_table/blocks/pollen_pot.json
+- textures: utilise honeyed_stone comme placeholder
+
+================================================================================
+TRADUCTIONS
+================================================================================
+
+EN:
+- block.beemancer.pollen_pot: "Pollen Pot"
+- message.beemancer.pollen_pot.empty: "Pot is empty"
+- message.beemancer.pollen_pot.contents: "Contains %d/%d %s"
+- message.beemancer.pollen_pot.full: "Pot is full!"
+- message.beemancer.pollen_pot.wrong_type: "This pot already contains a different pollen type"
+
+FR:
+- block.beemancer.pollen_pot: "Pot à Pollen"
+- message.beemancer.pollen_pot.empty: "Le pot est vide"
+- message.beemancer.pollen_pot.contents: "Contient %d/%d %s"
+- message.beemancer.pollen_pot.full: "Le pot est plein !"
+- message.beemancer.pollen_pot.wrong_type: "Ce pot contient déjà un autre type de pollen"
+
+################################################################################

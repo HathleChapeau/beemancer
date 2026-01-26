@@ -409,5 +409,11 @@
   "message.beemancer.honey_altar.invalid_structure": "Structure invalide - vérifiez le pattern de l'autel",
 
   "message.beemancer.hive_multiblock.formed": "Le Multibloc de Ruche a été formé !",
-  "container.beemancer.hive_multiblock": "Multibloc de Ruche"
+  "container.beemancer.hive_multiblock": "Multibloc de Ruche",
+
+  "block.beemancer.pollen_pot": "Pot à Pollen",
+  "message.beemancer.pollen_pot.empty": "Le pot est vide",
+  "message.beemancer.pollen_pot.contents": "Contient %d/%d %s",
+  "message.beemancer.pollen_pot.full": "Le pot est plein !",
+  "message.beemancer.pollen_pot.wrong_type": "Ce pot contient déjà un autre type de pollen"
 }

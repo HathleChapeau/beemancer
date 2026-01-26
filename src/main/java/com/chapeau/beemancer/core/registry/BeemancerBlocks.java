@@ -14,6 +14,7 @@ import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
 import com.chapeau.beemancer.common.block.hive.HiveMultiblockBlock;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlock;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlock;
+import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
 import com.chapeau.beemancer.common.block.storage.StorageTerminalBlock;
@@ -242,6 +243,13 @@ public class BeemancerBlocks {
             () -> new HiveMultiblockBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.WOOD)
+                    .noOcclusion()));
+
+    // --- POLLEN POT ---
+    public static final DeferredBlock<PollenPotBlock> POLLEN_POT = BLOCKS.register("pollen_pot",
+            () -> new PollenPotBlock(BlockBehaviour.Properties.of()
+                    .strength(1.0f)
+                    .sound(SoundType.DECORATED_POT)
                     .noOcclusion()));
 
     // --- FLUID BLOCKS ---

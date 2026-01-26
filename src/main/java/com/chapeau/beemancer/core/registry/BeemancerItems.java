@@ -129,6 +129,10 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> HIVE_MULTIBLOCK = ITEMS.register("hive_multiblock",
             () -> new BlockItem(BeemancerBlocks.HIVE_MULTIBLOCK.get(), new Item.Properties()));
 
+    // --- POLLEN POT ---
+    public static final DeferredItem<BlockItem> POLLEN_POT = ITEMS.register("pollen_pot",
+            () -> new BlockItem(BeemancerBlocks.POLLEN_POT.get(), new Item.Properties()));
+
     // --- BEE ITEMS ---
     public static final DeferredItem<MagicBeeItem> MAGIC_BEE = ITEMS.register("magic_bee",
             () -> new MagicBeeItem(new Item.Properties()));

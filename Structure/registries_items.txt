@@ -42,6 +42,9 @@
 | honey_crystal_conduit    | BlockItem        | Honey Altar     |
 | honey_crystal            | BlockItem        | Honey Altar     |
 
+--- POLLEN POT ---
+| pollen_pot               | BlockItem        | Pollen Pot      |
+
 --- BEE ITEMS ---
 | magic_bee                | MagicBeeItem     | Gene System     |
 | bee_larva                | BeeLarvaItem     | Breeding        |

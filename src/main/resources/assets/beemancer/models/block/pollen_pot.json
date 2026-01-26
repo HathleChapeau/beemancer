@@ -1,0 +1,58 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "beemancer:block/honeyed_stone",
+    "bottom": "beemancer:block/honeyed_stone",
+    "side": "beemancer:block/honeyed_stone",
+    "top": "beemancer:block/honeyed_stone",
+    "inside": "minecraft:block/honey_block_top"
+  },
+  "elements": [
+    {
+      "name": "Base",
+      "from": [3, 0, 3],
+      "to": [13, 1, 13],
+      "faces": {
+        "north": {"texture": "#side"},
+        "east": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "up": {"texture": "#bottom"},
+        "down": {"texture": "#bottom"}
+      }
+    },
+    {
+      "name": "Body",
+      "from": [2, 1, 2],
+      "to": [14, 10, 14],
+      "faces": {
+        "north": {"texture": "#side"},
+        "east": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "down": {"texture": "#bottom"}
+      }
+    },
+    {
+      "name": "Inside",
+      "from": [3, 2, 3],
+      "to": [13, 10, 13],
+      "faces": {
+        "up": {"texture": "#inside", "tintindex": 0}
+      }
+    },
+    {
+      "name": "Rim",
+      "from": [1, 10, 1],
+      "to": [15, 12, 15],
+      "faces": {
+        "north": {"texture": "#top"},
+        "east": {"texture": "#top"},
+        "south": {"texture": "#top"},
+        "west": {"texture": "#top"},
+        "up": {"texture": "#top"},
+        "down": {"texture": "#top"}
+      }
+    }
+  ]
+}

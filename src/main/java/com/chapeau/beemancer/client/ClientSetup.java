@@ -7,6 +7,7 @@
 package com.chapeau.beemancer.client;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.color.PollenColors;
 import com.chapeau.beemancer.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.beemancer.client.gui.hud.WandOverlayRenderer;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
@@ -21,7 +22,9 @@ import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.beemancer.client.renderer.item.MagicBeeItemRenderer;
+import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
+import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
@@ -30,6 +33,7 @@ import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
@@ -45,7 +49,8 @@ public class ClientSetup {
         modEventBus.addListener(ClientSetup::registerScreens);
         modEventBus.addListener(ClientSetup::registerEntityRenderers);
         modEventBus.addListener(ClientSetup::registerClientExtensions);
-        
+        modEventBus.addListener(ClientSetup::registerBlockColors);
+
         NeoForge.EVENT_BUS.register(WandOverlayRenderer.class);
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
@@ -109,12 +114,12 @@ public class ClientSetup {
             "block/fluid/nectar_still", "block/fluid/nectar_flow", 0xFFB388DD);
     }
 
-    private static void registerFluidExtension(RegisterClientExtensionsEvent event, 
+    private static void registerFluidExtension(RegisterClientExtensionsEvent event,
             Supplier<FluidType> fluidType, String stillPath, String flowPath, int tintColor) {
         event.registerFluidType(new IClientFluidTypeExtensions() {
-            private final ResourceLocation stillTexture = 
+            private final ResourceLocation stillTexture =
                 ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, stillPath);
-            private final ResourceLocation flowingTexture = 
+            private final ResourceLocation flowingTexture =
                 ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, flowPath);
 
             @Override
@@ -126,5 +131,27 @@ public class ClientSetup {
             @Override
             public int getTintColor() { return tintColor; }
         }, fluidType.get());
+    }
+
+    // =========================================================================
+    // BLOCK COLORS
+    // =========================================================================
+
+    private static void registerBlockColors(final RegisterColorHandlersEvent.Block event) {
+        // Pollen Pot - colore l'intérieur selon le type de pollen stocké
+        event.register((state, level, pos, tintIndex) -> {
+            if (tintIndex != 0 || level == null || pos == null) {
+                return 0xFFFFFFFF;
+            }
+
+            if (level.getBlockEntity(pos) instanceof PollenPotBlockEntity pot) {
+                if (pot.isEmpty()) {
+                    return PollenColors.EMPTY_COLOR;
+                }
+                return PollenColors.getColor(pot.getPollenItem());
+            }
+
+            return PollenColors.EMPTY_COLOR;
+        }, BeemancerBlocks.POLLEN_POT.get());
     }
 }
