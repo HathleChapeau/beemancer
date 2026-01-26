@@ -30,6 +30,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -65,6 +66,15 @@ public class AltarHeartBlock extends Block implements EntityBlock {
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
+    }
+
+    /**
+     * Quand FORMED=true, utilise ENTITYBLOCK_ANIMATED pour que le BlockEntityRenderer soit appelé.
+     * Le modèle par défaut est caché et remplacé par le rendu custom de tout le multibloc.
+     */
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return state.getValue(FORMED) ? RenderShape.ENTITYBLOCK_ANIMATED : RenderShape.MODEL;
     }
 
     @Nullable

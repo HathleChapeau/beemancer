@@ -179,6 +179,13 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
         return fluidTank.getFluid();
     }
 
+    /**
+     * Retourne le niveau de fluide actuel (0-4) pour le rendu.
+     */
+    public int getFluidLevel() {
+        return calculateFluidLevel();
+    }
+
     // --- NBT ---
 
     @Override

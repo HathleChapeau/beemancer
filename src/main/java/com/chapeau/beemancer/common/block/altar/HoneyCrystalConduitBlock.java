@@ -22,6 +22,7 @@ package com.chapeau.beemancer.common.block.altar;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -53,5 +54,13 @@ public class HoneyCrystalConduitBlock extends Block {
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
+    }
+
+    /**
+     * Quand FORMED=true, le modèle est caché - rendu par AltarHeartRenderer.
+     */
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return state.getValue(FORMED) ? RenderShape.INVISIBLE : RenderShape.MODEL;
     }
 }

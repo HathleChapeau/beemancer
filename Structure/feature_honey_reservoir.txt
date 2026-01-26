@@ -42,10 +42,12 @@ SCRIPTS
 
 | Fichier                                            | Role                           |
 |----------------------------------------------------|--------------------------------|
-| common/block/altar/HoneyReservoirBlock.java        | Bloc avec FLUID_LEVEL 0-4      |
+| common/block/altar/HoneyReservoirBlock.java        | Bloc avec FLUID_LEVEL 0-4, FORMED |
 | common/blockentity/altar/HoneyReservoirBlockEntity.java | FluidTank 4000mB, IFluidHandler |
 | common/block/altar/AltarHeartBlock.java            | Controleur multibloc           |
 | common/blockentity/altar/AltarHeartBlockEntity.java | Logique formation/validation  |
+| common/block/altar/HoneyCrystalConduitBlock.java   | Conduit avec FORMED property   |
+| client/renderer/block/AltarHeartRenderer.java      | Rendu multibloc complet        |
 
 ================================================================================
 FONCTIONNALITES
@@ -61,11 +63,18 @@ FLUIDES ACCEPTES:
 - ROYAL_JELLY_SOURCE
 - NECTAR_SOURCE
 
-AFFICHAGE VISUEL:
-- BlockState FLUID_LEVEL (0-4) controle le modele
-- Niveau 0: vide
-- Niveau 1-4: fluide visible a differentes hauteurs
-- Couleur fluide selon type (ambre/rose/violet)
+AFFICHAGE VISUEL (MULTIBLOC FORME):
+- Quand FORMED=true, les modeles individuels sont CACHES (RenderShape.INVISIBLE)
+- Le AltarHeartRenderer rend TOUTE la structure depuis le controleur
+- Les blocs individuels restent en place (collision, interaction) mais invisibles
+- Le renderer affiche les conduits, reservoirs avec teinte doree "active"
+- Le fluide dans les reservoirs est rendu dynamiquement selon le niveau
+
+RENDU CUSTOM (AltarHeartRenderer):
+- Conduits: modele de base avec teinte cristal active (1.0, 0.95, 0.7)
+- Reservoirs: modele de base avec teinte (0.9, 0.85, 0.7) + fluide interne
+- Heart: modele avec teinte doree brillante (1.0, 0.9, 0.6)
+- Fluide: cube translucide couleur miel (0.92, 0.61, 0.23)
 
 ================================================================================
 REGISTRES MODIFIES
