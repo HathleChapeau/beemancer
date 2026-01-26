@@ -3,6 +3,34 @@
 ################################################################################
 
 ================================================================================
+2026-01-26 - AltarHeartRenderer - Multibloc Custom Render
+================================================================================
+
+AJOUTS:
+- client/renderer/block/AltarHeartRenderer.java (rendu multibloc complet)
+
+MODIFICATIONS:
+- common/block/altar/AltarHeartBlock.java: +getRenderShape() ENTITYBLOCK_ANIMATED when formed
+- common/block/altar/HoneyReservoirBlock.java: +getRenderShape() INVISIBLE when formed
+- common/block/altar/HoneyCrystalConduitBlock.java: +getRenderShape() INVISIBLE when formed
+- common/blockentity/altar/HoneyReservoirBlockEntity.java: +getFluidLevel()
+- client/ClientSetup.java: +registerBlockEntityRenderer pour ALTAR_HEART
+
+NOUVELLE FONCTIONNALITE:
+- Rendu custom multibloc Honey Altar:
+  - Quand multibloc forme, les blocs individuels deviennent INVISIBLES
+  - Le AltarHeartRenderer rend toute la structure depuis le controleur
+  - Teintes actives pour conduits (cristal) et reservoirs (ambre)
+  - Rendu dynamique du fluide dans les reservoirs
+  - Distance de rendu etendue (96 blocs)
+  - shouldRenderOffScreen=true pour structure large
+
+PATTERN UTILISE:
+- RenderShape.INVISIBLE pour cacher les blocs individuels
+- RenderShape.ENTITYBLOCK_ANIMATED pour le controleur (appelle le BER)
+- BlockEntityRenderer pour rendre toute la structure
+
+================================================================================
 2026-01-26 - Honey Reservoir + Altar Restructuration
 ================================================================================
 

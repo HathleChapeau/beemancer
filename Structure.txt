@@ -69,6 +69,7 @@ Philosophie:
 │ client/input/DebugKeyHandler          │ Gestion touches debug panel          │
 │ client/renderer/entity/MagicBeeRenderer│ Renderer entité avec texture espèce  │
 │ common/codex/CodexManager.java      │ Gestionnaire central du Codex          │
+│ client/renderer/block/AltarHeartRenderer│ Renderer multibloc Honey Altar     │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================

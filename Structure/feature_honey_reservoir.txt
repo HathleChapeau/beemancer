@@ -99,6 +99,9 @@ BeemancerCreativeTabs.java:
 Beemancer.java:
 - +Capability FluidHandler.BLOCK pour HONEY_RESERVOIR
 
+ClientSetup.java:
+- +registerBlockEntityRenderer(ALTAR_HEART, AltarHeartRenderer::new)
+
 MultiblockPatterns.java:
 - Corrige pattern HONEY_ALTAR (8 conduits, 4 reservoirs)
 
