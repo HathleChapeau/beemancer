@@ -1,7 +1,6 @@
 {
   "variants": {
-    "": {
-      "model": "beemancer:block/honey_crystal_conduit"
-    }
+    "formed=false": { "model": "beemancer:block/honey_crystal_conduit" },
+    "formed=true": { "model": "beemancer:block/honey_crystal_conduit_formed" }
   }
 }

@@ -1,9 +1,14 @@
 {
   "variants": {
-    "fluid_level=0": { "model": "beemancer:block/honey_reservoir" },
-    "fluid_level=1": { "model": "beemancer:block/honey_reservoir_level1" },
-    "fluid_level=2": { "model": "beemancer:block/honey_reservoir_level2" },
-    "fluid_level=3": { "model": "beemancer:block/honey_reservoir_level3" },
-    "fluid_level=4": { "model": "beemancer:block/honey_reservoir_level4" }
+    "fluid_level=0,formed=false": { "model": "beemancer:block/honey_reservoir" },
+    "fluid_level=1,formed=false": { "model": "beemancer:block/honey_reservoir_level1" },
+    "fluid_level=2,formed=false": { "model": "beemancer:block/honey_reservoir_level2" },
+    "fluid_level=3,formed=false": { "model": "beemancer:block/honey_reservoir_level3" },
+    "fluid_level=4,formed=false": { "model": "beemancer:block/honey_reservoir_level4" },
+    "fluid_level=0,formed=true": { "model": "beemancer:block/honey_reservoir_formed" },
+    "fluid_level=1,formed=true": { "model": "beemancer:block/honey_reservoir_formed_level1" },
+    "fluid_level=2,formed=true": { "model": "beemancer:block/honey_reservoir_formed_level2" },
+    "fluid_level=3,formed=true": { "model": "beemancer:block/honey_reservoir_formed_level3" },
+    "fluid_level=4,formed=true": { "model": "beemancer:block/honey_reservoir_formed_level4" }
   }
 }

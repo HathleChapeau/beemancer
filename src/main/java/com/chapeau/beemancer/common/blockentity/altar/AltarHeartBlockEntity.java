@@ -23,6 +23,8 @@ package com.chapeau.beemancer.common.blockentity.altar;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.altar.AltarHeartBlock;
+import com.chapeau.beemancer.common.block.altar.HoneyCrystalConduitBlock;
+import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
@@ -76,7 +78,12 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     public void onMultiblockFormed() {
         altarFormed = true;
         if (level != null && !level.isClientSide()) {
+            // Mettre à jour le contrôleur
             level.setBlock(worldPosition, getBlockState().setValue(AltarHeartBlock.FORMED, true), 3);
+
+            // Mettre à jour tous les blocs du multibloc
+            updateMultiblockBlocksState(true);
+
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
         }
@@ -86,12 +93,59 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     public void onMultiblockBroken() {
         altarFormed = false;
         if (level != null && !level.isClientSide()) {
-            // Vérifier que le bloc existe encore avant de modifier son état
+            // Mettre à jour le contrôleur
             if (level.getBlockState(worldPosition).hasProperty(AltarHeartBlock.FORMED)) {
                 level.setBlock(worldPosition, getBlockState().setValue(AltarHeartBlock.FORMED, false), 3);
             }
+
+            // Mettre à jour tous les blocs du multibloc
+            updateMultiblockBlocksState(false);
+
             MultiblockEvents.unregisterController(worldPosition);
             setChanged();
+        }
+    }
+
+    /**
+     * Met à jour l'état FORMED de tous les blocs du multibloc.
+     */
+    private void updateMultiblockBlocksState(boolean formed) {
+        if (level == null) return;
+
+        // Positions des 8 conduits à Y+1
+        BlockPos[] conduitOffsets = {
+            new BlockPos(0, 1, -1),   // N
+            new BlockPos(0, 1, 1),    // S
+            new BlockPos(1, 1, 0),    // E
+            new BlockPos(-1, 1, 0),   // W
+            new BlockPos(-1, 1, -1),  // NW
+            new BlockPos(1, 1, -1),   // NE
+            new BlockPos(-1, 1, 1),   // SW
+            new BlockPos(1, 1, 1)     // SE
+        };
+
+        for (BlockPos offset : conduitOffsets) {
+            BlockPos pos = worldPosition.offset(offset);
+            BlockState state = level.getBlockState(pos);
+            if (state.hasProperty(HoneyCrystalConduitBlock.FORMED)) {
+                level.setBlock(pos, state.setValue(HoneyCrystalConduitBlock.FORMED, formed), 3);
+            }
+        }
+
+        // Positions des 4 réservoirs à Y+2
+        BlockPos[] reservoirOffsets = {
+            new BlockPos(0, 2, -1),  // N
+            new BlockPos(0, 2, 1),   // S
+            new BlockPos(1, 2, 0),   // E
+            new BlockPos(-1, 2, 0)   // W
+        };
+
+        for (BlockPos offset : reservoirOffsets) {
+            BlockPos pos = worldPosition.offset(offset);
+            BlockState state = level.getBlockState(pos);
+            if (state.hasProperty(HoneyReservoirBlock.FORMED)) {
+                level.setBlock(pos, state.setValue(HoneyReservoirBlock.FORMED, formed), 3);
+            }
         }
     }
 

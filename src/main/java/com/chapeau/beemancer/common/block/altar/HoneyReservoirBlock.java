@@ -39,6 +39,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -60,6 +61,7 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
     public static final MapCodec<HoneyReservoirBlock> CODEC = simpleCodec(HoneyReservoirBlock::new);
 
     public static final IntegerProperty FLUID_LEVEL = IntegerProperty.create("fluid_level", 0, 4);
+    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
 
     // Forme horizontale: réservoir allongé
     private static final VoxelShape SHAPE = Shapes.or(
@@ -73,7 +75,9 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
 
     public HoneyReservoirBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FLUID_LEVEL, 0));
+        this.registerDefaultState(this.stateDefinition.any()
+            .setValue(FLUID_LEVEL, 0)
+            .setValue(FORMED, false));
     }
 
     @Override
@@ -83,7 +87,7 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FLUID_LEVEL);
+        builder.add(FLUID_LEVEL, FORMED);
     }
 
     @Override
