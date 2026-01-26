@@ -24,7 +24,10 @@ package com.chapeau.beemancer.common.blockentity.altar;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.altar.AltarHeartBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyCrystalConduitBlock;
+import com.chapeau.beemancer.common.block.altar.HoneyPedestalBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
+import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
+import com.chapeau.beemancer.common.block.altar.HoneyedStoneStairBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
@@ -112,7 +115,21 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     private void updateMultiblockBlocksState(boolean formed) {
         if (level == null) return;
 
-        // Positions des 8 conduits à Y+1
+        // === Pedestal à Y-2 ===
+        updateBlockFormed(worldPosition.offset(0, -2, 0), HoneyPedestalBlock.FORMED, formed);
+
+        // === 4 Stairs à Y-2 ===
+        BlockPos[] stairOffsets = {
+            new BlockPos(0, -2, -1),  // N
+            new BlockPos(0, -2, 1),   // S
+            new BlockPos(1, -2, 0),   // E
+            new BlockPos(-1, -2, 0)   // W
+        };
+        for (BlockPos offset : stairOffsets) {
+            updateBlockFormed(worldPosition.offset(offset), HoneyedStoneStairBlock.FORMED, formed);
+        }
+
+        // === 8 Conduits à Y+1 ===
         BlockPos[] conduitOffsets = {
             new BlockPos(0, 1, -1),   // N
             new BlockPos(0, 1, 1),    // S
@@ -123,29 +140,35 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
             new BlockPos(-1, 1, 1),   // SW
             new BlockPos(1, 1, 1)     // SE
         };
-
         for (BlockPos offset : conduitOffsets) {
-            BlockPos pos = worldPosition.offset(offset);
-            BlockState state = level.getBlockState(pos);
-            if (state.hasProperty(HoneyCrystalConduitBlock.FORMED)) {
-                level.setBlock(pos, state.setValue(HoneyCrystalConduitBlock.FORMED, formed), 3);
-            }
+            updateBlockFormed(worldPosition.offset(offset), HoneyCrystalConduitBlock.FORMED, formed);
         }
 
-        // Positions des 4 réservoirs à Y+2
+        // === Honeyed Stone centre à Y+1 ===
+        updateBlockFormed(worldPosition.offset(0, 1, 0), HoneyedStoneBlock.FORMED, formed);
+
+        // === Honeyed Stone centre à Y+2 ===
+        updateBlockFormed(worldPosition.offset(0, 2, 0), HoneyedStoneBlock.FORMED, formed);
+
+        // === 4 Réservoirs à Y+2 ===
         BlockPos[] reservoirOffsets = {
             new BlockPos(0, 2, -1),  // N
             new BlockPos(0, 2, 1),   // S
             new BlockPos(1, 2, 0),   // E
             new BlockPos(-1, 2, 0)   // W
         };
-
         for (BlockPos offset : reservoirOffsets) {
-            BlockPos pos = worldPosition.offset(offset);
-            BlockState state = level.getBlockState(pos);
-            if (state.hasProperty(HoneyReservoirBlock.FORMED)) {
-                level.setBlock(pos, state.setValue(HoneyReservoirBlock.FORMED, formed), 3);
-            }
+            updateBlockFormed(worldPosition.offset(offset), HoneyReservoirBlock.FORMED, formed);
+        }
+    }
+
+    /**
+     * Met à jour la propriété FORMED d'un bloc si elle existe.
+     */
+    private void updateBlockFormed(BlockPos pos, net.minecraft.world.level.block.state.properties.BooleanProperty property, boolean formed) {
+        BlockState state = level.getBlockState(pos);
+        if (state.hasProperty(property)) {
+            level.setBlock(pos, state.setValue(property, formed), 3);
         }
     }
 
