@@ -90,23 +90,23 @@ public class MultiblockPatterns {
             .add(-1, 0, 1, air())
             .add(1, 0, 1, air())
 
-            // Étage 4 (Y+1): Honeyed Stone centre + 4 Conduits
+            // Étage 4 (Y+1): Honeyed Stone centre + 8 Conduits (anneau complet)
             .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))
-            .add(0, 1, -1, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))
-            .add(0, 1, 1, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))
-            .add(1, 1, 0, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))
-            .add(-1, 1, 0, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))
-            .add(-1, 1, -1, air())  // Coins vides
-            .add(1, 1, -1, air())
-            .add(-1, 1, 1, air())
-            .add(1, 1, 1, air())
+            .add(0, 1, -1, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))   // N
+            .add(0, 1, 1, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))    // S
+            .add(1, 1, 0, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))    // E
+            .add(-1, 1, 0, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))   // W
+            .add(-1, 1, -1, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))  // NW
+            .add(1, 1, -1, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))   // NE
+            .add(-1, 1, 1, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))   // SW
+            .add(1, 1, 1, block(BeemancerBlocks.HONEY_CRYSTAL_CONDUIT))    // SE
 
-            // Étage 5 (Y+2): 5 Honeyed Stone en croix
+            // Étage 5 (Y+2): Centre Honeyed Stone + 4 Honey Reservoirs
             .add(0, 2, 0, block(BeemancerBlocks.HONEYED_STONE))
-            .add(0, 2, -1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(0, 2, 1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(1, 2, 0, block(BeemancerBlocks.HONEYED_STONE))
-            .add(-1, 2, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, 2, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // N
+            .add(0, 2, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // S
+            .add(1, 2, 0, block(BeemancerBlocks.HONEY_RESERVOIR))    // E
+            .add(-1, 2, 0, block(BeemancerBlocks.HONEY_RESERVOIR))   // W
             .add(-1, 2, -1, air())  // Coins vides
             .add(1, 2, -1, air())
             .add(-1, 2, 1, air())

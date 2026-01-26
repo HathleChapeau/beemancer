@@ -220,6 +220,12 @@ public class Beemancer {
                 (be, side) -> be.getHoneyTank()
         );
 
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                BeemancerBlockEntities.HONEY_RESERVOIR.get(),
+                (be, side) -> be
+        );
+
         // Conditional fluid handlers
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,

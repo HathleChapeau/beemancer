@@ -36,8 +36,11 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * BlockEntity du cristal de miel.
@@ -109,6 +112,47 @@ public class HoneyCrystalBlockEntity extends BlockEntity implements MultiblockCo
         }
 
         return false;
+    }
+
+    /**
+     * Récupère les 4 réservoirs du multiblock formé.
+     * @return Liste des HoneyReservoirBlockEntity (peut être vide si non formé)
+     */
+    public List<HoneyReservoirBlockEntity> getReservoirs() {
+        List<HoneyReservoirBlockEntity> reservoirs = new ArrayList<>();
+        if (!altarFormed || level == null) return reservoirs;
+
+        // Positions des réservoirs à Y+2 relatif au contrôleur
+        BlockPos[] offsets = {
+            new BlockPos(0, 2, -1),  // Nord
+            new BlockPos(0, 2, 1),   // Sud
+            new BlockPos(1, 2, 0),   // Est
+            new BlockPos(-1, 2, 0)   // Ouest
+        };
+
+        for (BlockPos offset : offsets) {
+            BlockEntity be = level.getBlockEntity(worldPosition.offset(offset));
+            if (be instanceof HoneyReservoirBlockEntity reservoir) {
+                reservoirs.add(reservoir);
+            }
+        }
+
+        return reservoirs;
+    }
+
+    /**
+     * Calcule le total de fluide d'un type spécifique dans tous les réservoirs.
+     * @param fluidType Le type de fluide à compter
+     * @return Le montant total en mB
+     */
+    public int getTotalFluidAmount(Fluid fluidType) {
+        int total = 0;
+        for (HoneyReservoirBlockEntity reservoir : getReservoirs()) {
+            if (!reservoir.getFluid().isEmpty() && reservoir.getFluid().getFluid() == fluidType) {
+                total += reservoir.getFluidAmount();
+            }
+        }
+        return total;
     }
 
     /**

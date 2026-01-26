@@ -144,6 +144,7 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.HONEYED_STONE.get());
         output.accept(BeemancerItems.HONEYED_STONE_STAIR.get());
         output.accept(BeemancerItems.HONEYED_SLAB.get());
+        output.accept(BeemancerItems.HONEY_RESERVOIR.get());
         output.accept(BeemancerItems.HONEY_PEDESTAL.get());
         output.accept(BeemancerItems.HONEY_CRYSTAL_CONDUIT.get());
         output.accept(BeemancerItems.HONEY_CRYSTAL.get());

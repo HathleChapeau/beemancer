@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "fluid_level=0": { "model": "beemancer:block/honey_reservoir" },
+    "fluid_level=1": { "model": "beemancer:block/honey_reservoir_level1" },
+    "fluid_level=2": { "model": "beemancer:block/honey_reservoir_level2" },
+    "fluid_level=3": { "model": "beemancer:block/honey_reservoir_level3" },
+    "fluid_level=4": { "model": "beemancer:block/honey_reservoir_level4" }
+  }
+}

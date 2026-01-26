@@ -240,6 +240,12 @@ public class BeemancerBlocks {
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<HoneyReservoirBlock> HONEY_RESERVOIR = BLOCKS.register("honey_reservoir",
+            () -> new HoneyReservoirBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion()));
+
     // --- HIVE MULTIBLOCK ---
     public static final DeferredBlock<HiveMultiblockBlock> HIVE_MULTIBLOCK = BLOCKS.register("hive_multiblock",
             () -> new HiveMultiblockBlock(BlockBehaviour.Properties.of()
