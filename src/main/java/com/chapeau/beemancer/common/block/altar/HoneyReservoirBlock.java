@@ -95,12 +95,9 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
         return SHAPE;
     }
 
-    /**
-     * Quand FORMED=true, le modèle est caché - rendu par AltarHeartRenderer.
-     */
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return state.getValue(FORMED) ? RenderShape.INVISIBLE : RenderShape.MODEL;
+        return RenderShape.MODEL;
     }
 
     @Nullable

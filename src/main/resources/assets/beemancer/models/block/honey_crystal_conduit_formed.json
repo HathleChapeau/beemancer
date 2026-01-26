@@ -1,22 +1,22 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "conduit": "minecraft:block/glowstone",
-    "particle": "minecraft:block/glowstone"
+    "conduit": "beemancer:block/honey_crystal_conduit_formed",
+    "particle": "beemancer:block/honey_crystal_conduit_formed"
   },
   "elements": [
     {
-      "name": "Conduit",
-      "from": [4, 0, 4],
-      "to": [12, 16, 12],
+      "name": "Conduit Bar 2x2x24",
+      "from": [7, 7, -4],
+      "to": [9, 9, 20],
       "shade": false,
       "faces": {
-        "north": {"texture": "#conduit", "uv": [4, 0, 12, 16]},
-        "east": {"texture": "#conduit", "uv": [4, 0, 12, 16]},
-        "south": {"texture": "#conduit", "uv": [4, 0, 12, 16]},
-        "west": {"texture": "#conduit", "uv": [4, 0, 12, 16]},
-        "up": {"texture": "#conduit", "uv": [4, 4, 12, 12]},
-        "down": {"texture": "#conduit", "uv": [4, 4, 12, 12], "cullface": "down"}
+        "north": {"texture": "#conduit", "uv": [7, 7, 9, 9]},
+        "east": {"texture": "#conduit", "uv": [0, 7, 16, 9]},
+        "south": {"texture": "#conduit", "uv": [7, 7, 9, 9]},
+        "west": {"texture": "#conduit", "uv": [0, 7, 16, 9]},
+        "up": {"texture": "#conduit", "uv": [0, 7, 16, 9]},
+        "down": {"texture": "#conduit", "uv": [0, 7, 16, 9]}
       }
     }
   ]

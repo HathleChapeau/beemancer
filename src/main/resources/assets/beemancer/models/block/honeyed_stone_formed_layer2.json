@@ -1,0 +1,22 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "all": "beemancer:block/honeyed_stone_formed",
+    "particle": "beemancer:block/honeyed_stone_formed"
+  },
+  "elements": [
+    {
+      "name": "Core 24x16x24",
+      "from": [-4, 0, -4],
+      "to": [20, 16, 20],
+      "faces": {
+        "north": {"texture": "#all", "uv": [0, 0, 16, 16]},
+        "east": {"texture": "#all", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#all", "uv": [0, 0, 16, 16]},
+        "west": {"texture": "#all", "uv": [0, 0, 16, 16]},
+        "up": {"texture": "#all", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#all", "uv": [0, 0, 16, 16]}
+      }
+    }
+  ]
+}

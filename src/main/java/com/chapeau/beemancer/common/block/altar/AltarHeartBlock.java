@@ -68,13 +68,9 @@ public class AltarHeartBlock extends Block implements EntityBlock {
         return SHAPE;
     }
 
-    /**
-     * Quand FORMED=true, utilise ENTITYBLOCK_ANIMATED pour que le BlockEntityRenderer soit appelé.
-     * Le modèle par défaut est caché et remplacé par le rendu custom de tout le multibloc.
-     */
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return state.getValue(FORMED) ? RenderShape.ENTITYBLOCK_ANIMATED : RenderShape.MODEL;
+        return RenderShape.MODEL;
     }
 
     @Nullable

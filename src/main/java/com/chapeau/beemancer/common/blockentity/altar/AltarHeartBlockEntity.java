@@ -144,11 +144,11 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
             updateBlockFormed(worldPosition.offset(offset), HoneyCrystalConduitBlock.FORMED, formed);
         }
 
-        // === Honeyed Stone centre à Y+1 ===
-        updateBlockFormed(worldPosition.offset(0, 1, 0), HoneyedStoneBlock.FORMED, formed);
+        // === Honeyed Stone centre à Y+1 (layer 1: base avec colonne) ===
+        updateHoneyedStone(worldPosition.offset(0, 1, 0), formed, 1);
 
-        // === Honeyed Stone centre à Y+2 ===
-        updateBlockFormed(worldPosition.offset(0, 2, 0), HoneyedStoneBlock.FORMED, formed);
+        // === Honeyed Stone centre à Y+2 (layer 2: gros cube) ===
+        updateHoneyedStone(worldPosition.offset(0, 2, 0), formed, 2);
 
         // === 4 Réservoirs à Y+2 ===
         BlockPos[] reservoirOffsets = {
@@ -169,6 +169,18 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         BlockState state = level.getBlockState(pos);
         if (state.hasProperty(property)) {
             level.setBlock(pos, state.setValue(property, formed), 3);
+        }
+    }
+
+    /**
+     * Met à jour un HoneyedStoneBlock avec FORMED et LAYER.
+     */
+    private void updateHoneyedStone(BlockPos pos, boolean formed, int layer) {
+        BlockState state = level.getBlockState(pos);
+        if (state.hasProperty(HoneyedStoneBlock.FORMED) && state.hasProperty(HoneyedStoneBlock.LAYER)) {
+            level.setBlock(pos, state
+                .setValue(HoneyedStoneBlock.FORMED, formed)
+                .setValue(HoneyedStoneBlock.LAYER, formed ? layer : 0), 3);
         }
     }
 
