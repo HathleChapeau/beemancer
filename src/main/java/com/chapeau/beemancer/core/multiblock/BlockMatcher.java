@@ -42,14 +42,26 @@ public class BlockMatcher {
         boolean matches(Level level, BlockPos pos);
     }
 
+    // Singleton pour le matcher air - évite les problèmes de comparaison par référence
+    private static final Matcher AIR_MATCHER = (level, pos) -> {
+        BlockState state = level.getBlockState(pos);
+        return state.isAir() || state.canBeReplaced();
+    };
+
     /**
      * Accepte l'air ou les blocs remplaçables.
+     * Retourne toujours la même instance (singleton).
      */
     public static Matcher air() {
-        return (level, pos) -> {
-            BlockState state = level.getBlockState(pos);
-            return state.isAir() || state.canBeReplaced();
-        };
+        return AIR_MATCHER;
+    }
+
+    /**
+     * Vérifie si un matcher est le matcher air.
+     * Utilisé pour exclure les positions air de la détection de structure.
+     */
+    public static boolean isAirMatcher(Matcher matcher) {
+        return matcher == AIR_MATCHER;
     }
 
     /**

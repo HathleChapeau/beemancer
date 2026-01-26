@@ -21,6 +21,7 @@
  */
 package com.chapeau.beemancer.common.blockentity.extractor;
 
+import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.extractor.ExtractorHeartBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
@@ -101,13 +102,17 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     public boolean tryFormExtractor() {
         if (level == null || level.isClientSide()) return false;
 
-        boolean valid = MultiblockValidator.validate(getPattern(), level, worldPosition);
+        // Utiliser validateDetailed pour avoir les infos d'échec
+        var result = MultiblockValidator.validateDetailed(getPattern(), level, worldPosition);
 
-        if (valid) {
+        if (result.valid()) {
             onMultiblockFormed();
             return true;
         }
 
+        // Log l'échec pour debug
+        Beemancer.LOGGER.debug("Extractor validation failed at {} - {}",
+            result.failedAt(), result.reason());
         return false;
     }
 

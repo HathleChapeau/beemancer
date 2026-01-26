@@ -59,7 +59,7 @@ public class MultiblockPattern {
         List<Vec3i> positions = new ArrayList<>();
         for (PatternElement element : elements) {
             // Exclure les positions "air" de la structure
-            if (element.matcher() != BlockMatcher.air()) {
+            if (!BlockMatcher.isAirMatcher(element.matcher())) {
                 positions.add(element.offset());
             }
         }

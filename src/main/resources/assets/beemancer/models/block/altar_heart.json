@@ -1,72 +1,21 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "beemancer:block/honeyed_stone",
-    "stone": "beemancer:block/honeyed_stone",
-    "crystal": "minecraft:block/amethyst_block",
-    "gold": "minecraft:block/gold_block"
+    "particle": "minecraft:block/amethyst_block",
+    "all": "minecraft:block/amethyst_block"
   },
   "elements": [
     {
-      "name": "Base",
-      "from": [3, 0, 3],
-      "to": [13, 2, 13],
-      "faces": {
-        "north": {"texture": "#stone", "uv": [3, 14, 13, 16]},
-        "south": {"texture": "#stone", "uv": [3, 14, 13, 16]},
-        "east": {"texture": "#stone", "uv": [3, 14, 13, 16]},
-        "west": {"texture": "#stone", "uv": [3, 14, 13, 16]},
-        "up": {"texture": "#stone", "uv": [3, 3, 13, 13]},
-        "down": {"texture": "#stone", "uv": [3, 3, 13, 13]}
-      }
-    },
-    {
-      "name": "Core_Bottom",
-      "from": [5, 2, 5],
-      "to": [11, 6, 11],
-      "faces": {
-        "north": {"texture": "#crystal", "uv": [5, 10, 11, 14]},
-        "south": {"texture": "#crystal", "uv": [5, 10, 11, 14]},
-        "east": {"texture": "#crystal", "uv": [5, 10, 11, 14]},
-        "west": {"texture": "#crystal", "uv": [5, 10, 11, 14]},
-        "up": {"texture": "#crystal", "uv": [5, 5, 11, 11]}
-      }
-    },
-    {
-      "name": "Core_Middle",
-      "from": [6, 6, 6],
-      "to": [10, 10, 10],
-      "faces": {
-        "north": {"texture": "#crystal", "uv": [6, 6, 10, 10]},
-        "south": {"texture": "#crystal", "uv": [6, 6, 10, 10]},
-        "east": {"texture": "#crystal", "uv": [6, 6, 10, 10]},
-        "west": {"texture": "#crystal", "uv": [6, 6, 10, 10]},
-        "up": {"texture": "#crystal", "uv": [6, 6, 10, 10]}
-      }
-    },
-    {
-      "name": "Spike",
-      "from": [7, 10, 7],
-      "to": [9, 14, 9],
-      "faces": {
-        "north": {"texture": "#crystal", "uv": [7, 2, 9, 6]},
-        "south": {"texture": "#crystal", "uv": [7, 2, 9, 6]},
-        "east": {"texture": "#crystal", "uv": [7, 2, 9, 6]},
-        "west": {"texture": "#crystal", "uv": [7, 2, 9, 6]},
-        "up": {"texture": "#crystal", "uv": [7, 7, 9, 9]}
-      }
-    },
-    {
-      "name": "Gold_Ring",
+      "name": "Core",
       "from": [4, 4, 4],
-      "to": [12, 5, 12],
+      "to": [12, 12, 12],
       "faces": {
-        "north": {"texture": "#gold", "uv": [4, 11, 12, 12]},
-        "south": {"texture": "#gold", "uv": [4, 11, 12, 12]},
-        "east": {"texture": "#gold", "uv": [4, 11, 12, 12]},
-        "west": {"texture": "#gold", "uv": [4, 11, 12, 12]},
-        "up": {"texture": "#gold", "uv": [4, 4, 12, 12]},
-        "down": {"texture": "#gold", "uv": [4, 4, 12, 12]}
+        "north": {"texture": "#all", "uv": [4, 4, 12, 12]},
+        "south": {"texture": "#all", "uv": [4, 4, 12, 12]},
+        "east": {"texture": "#all", "uv": [4, 4, 12, 12]},
+        "west": {"texture": "#all", "uv": [4, 4, 12, 12]},
+        "up": {"texture": "#all", "uv": [4, 4, 12, 12]},
+        "down": {"texture": "#all", "uv": [4, 4, 12, 12]}
       }
     }
   ]

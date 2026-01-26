@@ -21,6 +21,7 @@
  */
 package com.chapeau.beemancer.common.blockentity.altar;
 
+import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.altar.HoneyCrystalBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
@@ -103,14 +104,17 @@ public class HoneyCrystalBlockEntity extends BlockEntity implements MultiblockCo
     public boolean tryFormAltar() {
         if (level == null || level.isClientSide()) return false;
 
-        // Vérifier le pattern via le système modulaire
-        boolean valid = MultiblockValidator.validate(getPattern(), level, worldPosition);
+        // Utiliser validateDetailed pour avoir les infos d'échec
+        var result = MultiblockValidator.validateDetailed(getPattern(), level, worldPosition);
 
-        if (valid) {
+        if (result.valid()) {
             onMultiblockFormed();
             return true;
         }
 
+        // Log l'échec pour debug
+        Beemancer.LOGGER.debug("Crystal altar validation failed at {} - {}",
+            result.failedAt(), result.reason());
         return false;
     }
 

@@ -36,7 +36,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
@@ -50,12 +49,8 @@ public class AltarHeartBlock extends Block implements EntityBlock {
 
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
 
-    // Forme: coeur stylisé avec base
-    private static final VoxelShape SHAPE = Shapes.or(
-        Block.box(4, 0, 4, 12, 2, 12),   // Base plate
-        Block.box(5, 2, 5, 11, 10, 11),  // Corps central
-        Block.box(6, 10, 6, 10, 14, 10)  // Pointe supérieure
-    );
+    // Forme: petit cube centré
+    private static final VoxelShape SHAPE = Block.box(4, 4, 4, 12, 12, 12);
 
     public AltarHeartBlock(Properties properties) {
         super(properties);
