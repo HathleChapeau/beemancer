@@ -1,7 +1,135 @@
 {
-  "parent": "minecraft:block/cube_column",
+  "parent": "minecraft:block/block",
   "textures": {
-    "end": "beemancer:block/alchemy/honey_tank_top",
-    "side": "beemancer:block/alchemy/honey_tank_side"
-  }
+    "dark_wood": "beemancer:block/alchemy/honey_tank_side",
+    "amber_glass": "beemancer:block/alchemy/honey_tank_top",
+    "dark_iron": "beemancer:block/alchemy/honey_tank_top",
+    "particle": "beemancer:block/alchemy/honey_tank_side"
+  },
+  "elements": [
+    {
+      "name": "Iron Band Bottom",
+      "from": [1, 0, 1],
+      "to": [15, 2, 15],
+      "faces": {
+        "north": {"texture": "#dark_iron", "uv": [1, 14, 15, 16]},
+        "east": {"texture": "#dark_iron", "uv": [1, 14, 15, 16]},
+        "south": {"texture": "#dark_iron", "uv": [1, 14, 15, 16]},
+        "west": {"texture": "#dark_iron", "uv": [1, 14, 15, 16]},
+        "up": {"texture": "#dark_iron", "uv": [1, 1, 15, 15]},
+        "down": {"texture": "#dark_iron", "uv": [1, 1, 15, 15], "cullface": "down"}
+      }
+    },
+    {
+      "name": "Iron Band Top",
+      "from": [1, 14, 1],
+      "to": [15, 16, 15],
+      "faces": {
+        "north": {"texture": "#dark_iron", "uv": [1, 0, 15, 2]},
+        "east": {"texture": "#dark_iron", "uv": [1, 0, 15, 2]},
+        "south": {"texture": "#dark_iron", "uv": [1, 0, 15, 2]},
+        "west": {"texture": "#dark_iron", "uv": [1, 0, 15, 2]},
+        "up": {"texture": "#dark_iron", "uv": [1, 1, 15, 15], "cullface": "up"},
+        "down": {"texture": "#dark_iron", "uv": [1, 1, 15, 15]}
+      }
+    },
+    {
+      "name": "Hex Body Left",
+      "from": [0, 2, 4],
+      "to": [2, 14, 12],
+      "faces": {
+        "north": {"texture": "#dark_wood", "uv": [14, 2, 16, 14]},
+        "south": {"texture": "#dark_wood", "uv": [0, 2, 2, 14]},
+        "west": {"texture": "#dark_wood", "uv": [4, 2, 12, 14], "cullface": "west"},
+        "up": {"texture": "#dark_wood", "uv": [0, 4, 2, 12]},
+        "down": {"texture": "#dark_wood", "uv": [0, 4, 2, 12]}
+      }
+    },
+    {
+      "name": "Hex Body Right",
+      "from": [14, 2, 4],
+      "to": [16, 14, 12],
+      "faces": {
+        "north": {"texture": "#dark_wood", "uv": [0, 2, 2, 14]},
+        "south": {"texture": "#dark_wood", "uv": [14, 2, 16, 14]},
+        "east": {"texture": "#dark_wood", "uv": [4, 2, 12, 14], "cullface": "east"},
+        "up": {"texture": "#dark_wood", "uv": [14, 4, 16, 12]},
+        "down": {"texture": "#dark_wood", "uv": [14, 4, 16, 12]}
+      }
+    },
+    {
+      "name": "Hex Body Back",
+      "from": [4, 2, 14],
+      "to": [12, 14, 16],
+      "faces": {
+        "east": {"texture": "#dark_wood", "uv": [0, 2, 2, 14]},
+        "south": {"texture": "#dark_wood", "uv": [4, 2, 12, 14], "cullface": "south"},
+        "west": {"texture": "#dark_wood", "uv": [14, 2, 16, 14]},
+        "up": {"texture": "#dark_wood", "uv": [4, 0, 12, 2]},
+        "down": {"texture": "#dark_wood", "uv": [4, 14, 12, 16]}
+      }
+    },
+    {
+      "name": "Hex Corner NW",
+      "from": [2, 2, 0],
+      "to": [4, 14, 4],
+      "rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 8]},
+      "faces": {
+        "north": {"texture": "#dark_wood", "uv": [12, 2, 14, 14]},
+        "west": {"texture": "#dark_wood", "uv": [0, 2, 4, 14]}
+      }
+    },
+    {
+      "name": "Hex Corner NE",
+      "from": [12, 2, 0],
+      "to": [14, 14, 4],
+      "faces": {
+        "north": {"texture": "#dark_wood", "uv": [2, 2, 4, 14]},
+        "east": {"texture": "#dark_wood", "uv": [12, 2, 16, 14]}
+      }
+    },
+    {
+      "name": "Hex Corner SW",
+      "from": [2, 2, 12],
+      "to": [4, 14, 14],
+      "faces": {
+        "south": {"texture": "#dark_wood", "uv": [12, 2, 14, 14]},
+        "west": {"texture": "#dark_wood", "uv": [12, 2, 14, 14]}
+      }
+    },
+    {
+      "name": "Hex Corner SE",
+      "from": [12, 2, 12],
+      "to": [14, 14, 14],
+      "faces": {
+        "south": {"texture": "#dark_wood", "uv": [2, 2, 4, 14]},
+        "east": {"texture": "#dark_wood", "uv": [2, 2, 4, 14]}
+      }
+    },
+    {
+      "name": "Glass Front",
+      "from": [4, 2, 0],
+      "to": [12, 14, 2],
+      "faces": {
+        "north": {"texture": "#amber_glass", "uv": [4, 2, 12, 14], "cullface": "north"},
+        "east": {"texture": "#dark_wood", "uv": [14, 2, 16, 14]},
+        "west": {"texture": "#dark_wood", "uv": [0, 2, 2, 14]},
+        "up": {"texture": "#amber_glass", "uv": [4, 0, 12, 2]},
+        "down": {"texture": "#amber_glass", "uv": [4, 14, 12, 16]}
+      }
+    },
+    {
+      "name": "Interior",
+      "from": [2, 2, 2],
+      "to": [14, 14, 14],
+      "faces": {
+        "north": {"texture": "#amber_glass", "uv": [2, 2, 14, 14]},
+        "east": {"texture": "#amber_glass", "uv": [2, 2, 14, 14]},
+        "south": {"texture": "#amber_glass", "uv": [2, 2, 14, 14]},
+        "west": {"texture": "#amber_glass", "uv": [2, 2, 14, 14]},
+        "up": {"texture": "#amber_glass", "uv": [2, 2, 14, 14]},
+        "down": {"texture": "#amber_glass", "uv": [2, 2, 14, 14]}
+      }
+    }
+  ]
 }
