@@ -35,6 +35,7 @@ import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
 import com.chapeau.beemancer.core.multiblock.MultiblockValidator;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -150,16 +151,11 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         // === Honeyed Stone centre à Y+2 (layer 2: gros cube) ===
         updateHoneyedStone(worldPosition.offset(0, 2, 0), formed, 2);
 
-        // === 4 Réservoirs à Y+2 ===
-        BlockPos[] reservoirOffsets = {
-            new BlockPos(0, 2, -1),  // N
-            new BlockPos(0, 2, 1),   // S
-            new BlockPos(1, 2, 0),   // E
-            new BlockPos(-1, 2, 0)   // W
-        };
-        for (BlockPos offset : reservoirOffsets) {
-            updateBlockFormed(worldPosition.offset(offset), HoneyReservoirBlock.FORMED, formed);
-        }
+        // === 4 Réservoirs à Y+2 (orientés vers le centre) ===
+        updateReservoir(worldPosition.offset(0, 2, -1), formed, Direction.SOUTH);  // N pointe vers S
+        updateReservoir(worldPosition.offset(0, 2, 1), formed, Direction.NORTH);   // S pointe vers N
+        updateReservoir(worldPosition.offset(1, 2, 0), formed, Direction.WEST);    // E pointe vers W
+        updateReservoir(worldPosition.offset(-1, 2, 0), formed, Direction.EAST);   // W pointe vers E
     }
 
     /**
@@ -181,6 +177,18 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
             level.setBlock(pos, state
                 .setValue(HoneyedStoneBlock.FORMED, formed)
                 .setValue(HoneyedStoneBlock.LAYER, formed ? layer : 0), 3);
+        }
+    }
+
+    /**
+     * Met à jour un HoneyReservoirBlock avec FORMED et FACING.
+     */
+    private void updateReservoir(BlockPos pos, boolean formed, Direction facing) {
+        BlockState state = level.getBlockState(pos);
+        if (state.hasProperty(HoneyReservoirBlock.FORMED) && state.hasProperty(HoneyReservoirBlock.FACING)) {
+            level.setBlock(pos, state
+                .setValue(HoneyReservoirBlock.FORMED, formed)
+                .setValue(HoneyReservoirBlock.FACING, facing), 3);
         }
     }
 

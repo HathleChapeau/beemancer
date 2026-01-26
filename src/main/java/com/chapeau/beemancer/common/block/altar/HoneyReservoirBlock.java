@@ -25,6 +25,7 @@ import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -39,7 +40,9 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -62,6 +65,7 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
 
     public static final IntegerProperty FLUID_LEVEL = IntegerProperty.create("fluid_level", 0, 4);
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     // Forme horizontale: réservoir allongé
     private static final VoxelShape SHAPE = Shapes.or(
@@ -77,7 +81,8 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(FLUID_LEVEL, 0)
-            .setValue(FORMED, false));
+            .setValue(FORMED, false)
+            .setValue(FACING, Direction.NORTH));
     }
 
     @Override
@@ -87,7 +92,7 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FLUID_LEVEL, FORMED);
+        builder.add(FLUID_LEVEL, FORMED, FACING);
     }
 
     @Override
