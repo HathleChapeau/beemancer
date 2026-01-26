@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-01-26                     #
-#                    (Bee Statue)                                              #
+#                    (Honey Reservoir + Altar Restructuration)                 #
 ################################################################################
 
 ================================================================================
@@ -223,6 +223,10 @@ LISTE DES FEATURES:
 → Bee Statue
   Fichier: Structure/feature_bee_statue.txt
   Description: Statue décorative affichant une espèce d'abeille avec interactions
+
+→ Honey Reservoir + Altar Heart
+  Fichier: Structure/feature_honey_reservoir.txt
+  Description: Réservoir fluide + Coeur d'Autel (contrôleur) pour multibloc Honey Altar
 
 ================================================================================
 6. FEATURES EN COURS

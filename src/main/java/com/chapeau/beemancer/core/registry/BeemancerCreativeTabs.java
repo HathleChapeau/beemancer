@@ -148,6 +148,7 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.HONEY_PEDESTAL.get());
         output.accept(BeemancerItems.HONEY_CRYSTAL_CONDUIT.get());
         output.accept(BeemancerItems.HONEY_CRYSTAL.get());
+        output.accept(BeemancerItems.ALTAR_HEART.get());
     }
 
     private static void addCrystalItems(CreativeModeTab.Output output) {

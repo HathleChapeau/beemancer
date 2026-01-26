@@ -130,6 +130,9 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> HONEY_RESERVOIR = ITEMS.register("honey_reservoir",
             () -> new BlockItem(BeemancerBlocks.HONEY_RESERVOIR.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> ALTAR_HEART = ITEMS.register("altar_heart",
+            () -> new BlockItem(BeemancerBlocks.ALTAR_HEART.get(), new Item.Properties()));
+
     public static final DeferredItem<BlockItem> HIVE_MULTIBLOCK = ITEMS.register("hive_multiblock",
             () -> new BlockItem(BeemancerBlocks.HIVE_MULTIBLOCK.get(), new Item.Properties()));
 

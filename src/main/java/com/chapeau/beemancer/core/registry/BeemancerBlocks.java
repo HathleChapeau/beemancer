@@ -246,6 +246,14 @@ public class BeemancerBlocks {
                     .sound(SoundType.GLASS)
                     .noOcclusion()));
 
+    public static final DeferredBlock<AltarHeartBlock> ALTAR_HEART = BLOCKS.register("altar_heart",
+            () -> new AltarHeartBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> state.getValue(AltarHeartBlock.FORMED) ? 15 : 8)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
     // --- HIVE MULTIBLOCK ---
     public static final DeferredBlock<HiveMultiblockBlock> HIVE_MULTIBLOCK = BLOCKS.register("hive_multiblock",
             () -> new HiveMultiblockBlock(BlockBehaviour.Properties.of()

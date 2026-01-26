@@ -11,7 +11,7 @@
  * | BeemancerBlockEntities  | Type registration   | super()               |
  * | BeemancerFluids         | Fluides acceptés    | isFluidValid          |
  * | HoneyReservoirBlock     | BlockState update   | FLUID_LEVEL           |
- * | HoneyCrystalBlockEntity | Multiblock check    | isPartOfFormedMultiblock |
+ * | AltarHeartBlockEntity   | Multiblock check    | isPartOfFormedMultiblock |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -102,16 +102,16 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
 
     /**
      * Vérifie si ce réservoir fait partie d'un multiblock formé.
-     * Cherche le HoneyCrystal (contrôleur) 2 blocs en dessous.
+     * Cherche l'AltarHeart (contrôleur) 2 blocs en dessous.
      */
     public boolean isPartOfFormedMultiblock() {
         if (level == null) return false;
 
-        // Le réservoir est à Y+2 relatif au crystal (Y+0)
-        BlockPos crystalPos = worldPosition.below(2);
-        BlockEntity be = level.getBlockEntity(crystalPos);
-        if (be instanceof HoneyCrystalBlockEntity crystal) {
-            return crystal.isFormed();
+        // Le réservoir est à Y+2 relatif à l'AltarHeart (Y+0)
+        BlockPos heartPos = worldPosition.below(2);
+        BlockEntity be = level.getBlockEntity(heartPos);
+        if (be instanceof AltarHeartBlockEntity heart) {
+            return heart.isFormed();
         }
         return false;
     }

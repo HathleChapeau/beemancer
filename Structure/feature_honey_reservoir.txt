@@ -1,0 +1,170 @@
+################################################################################
+#             FEATURE: HONEY RESERVOIR + ALTAR HEART                           #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Nouveaux blocs pour le multibloc Honey Altar:
+- ALTAR_HEART: Controleur du multibloc (remplace HONEY_CRYSTAL comme controleur)
+- HONEY_RESERVOIR: Bloc de stockage fluide horizontal
+
+4 reservoirs sont positionnes au niveau Y+2 du multibloc, pointant vers le centre.
+Design chempunk avec capuchons de fer rivete aux extremites et corps en verre ambre.
+L'Altar Heart est place au centre (Y+0) et valide la structure.
+
+================================================================================
+STRUCTURE MULTIBLOCK CORRIGEE
+================================================================================
+
+Suite a cette feature, le pattern du Honey Altar a ete corrige:
+- Y+1: 8 conduits (anneau complet) au lieu de 4
+- Y+2: 4 Honey Reservoirs remplacent les 4 Honeyed Stone exterieurs
+
+Structure Y+2:
+```
+   [air]   [R]   [air]       [R] = HONEY_RESERVOIR (x4)
+    [R]    [S]    [R]        [S] = HONEYED_STONE (centre)
+   [air]   [R]   [air]
+```
+
+Structure Y+1:
+```
+    [C]    [C]    [C]        [C] = HONEY_CRYSTAL_CONDUIT (x8)
+    [C]    [S]    [C]        [S] = HONEYED_STONE (centre)
+    [C]    [C]    [C]        = ANNEAU COMPLET
+```
+
+================================================================================
+SCRIPTS
+================================================================================
+
+| Fichier                                            | Role                           |
+|----------------------------------------------------|--------------------------------|
+| common/block/altar/HoneyReservoirBlock.java        | Bloc avec FLUID_LEVEL 0-4      |
+| common/blockentity/altar/HoneyReservoirBlockEntity.java | FluidTank 4000mB, IFluidHandler |
+| common/block/altar/AltarHeartBlock.java            | Controleur multibloc           |
+| common/blockentity/altar/AltarHeartBlockEntity.java | Logique formation/validation  |
+
+================================================================================
+FONCTIONNALITES
+================================================================================
+
+INTERACTIONS:
+- Clic droit + bucket plein (honey/royal_jelly/nectar) -> remplit le reservoir
+- Clic droit + bucket vide -> recupere 1000mB
+- Shift + clic droit (main vide, multiblock forme) -> vide completement
+
+FLUIDES ACCEPTES:
+- HONEY_SOURCE
+- ROYAL_JELLY_SOURCE
+- NECTAR_SOURCE
+
+AFFICHAGE VISUEL:
+- BlockState FLUID_LEVEL (0-4) controle le modele
+- Niveau 0: vide
+- Niveau 1-4: fluide visible a differentes hauteurs
+- Couleur fluide selon type (ambre/rose/violet)
+
+================================================================================
+REGISTRES MODIFIES
+================================================================================
+
+BeemancerBlocks.java:
+- +HONEY_RESERVOIR
+- +ALTAR_HEART
+
+BeemancerBlockEntities.java:
+- +HONEY_RESERVOIR
+- +ALTAR_HEART
+
+BeemancerItems.java:
+- +HONEY_RESERVOIR (BlockItem)
+- +ALTAR_HEART (BlockItem)
+
+BeemancerCreativeTabs.java:
+- +HONEY_RESERVOIR (onglet Honey Altar)
+- +ALTAR_HEART (onglet Honey Altar)
+
+Beemancer.java:
+- +Capability FluidHandler.BLOCK pour HONEY_RESERVOIR
+
+MultiblockPatterns.java:
+- Corrige pattern HONEY_ALTAR (8 conduits, 4 reservoirs)
+
+AltarHeartBlockEntity.java:
+- +getReservoirs() - liste des 4 reservoirs
+- +getTotalFluidAmount(Fluid) - quantite totale d'un fluide
+
+HoneyReservoirBlockEntity.java:
+- utilise AltarHeartBlockEntity pour verifier multiblock forme
+
+================================================================================
+ASSETS
+================================================================================
+
+Blockstates:
+- blockstates/honey_reservoir.json (5 variantes selon fluid_level)
+- blockstates/altar_heart.json (2 variantes: formed/not formed)
+
+Models Block:
+- models/block/honey_reservoir.json (base, niveau 0)
+- models/block/honey_reservoir_level1.json (25%)
+- models/block/honey_reservoir_level2.json (50%)
+- models/block/honey_reservoir_level3.json (75%)
+- models/block/honey_reservoir_level4.json (100%)
+- models/block/altar_heart.json (etat normal)
+- models/block/altar_heart_formed.json (etat forme, lumineux)
+
+Models Item:
+- models/item/honey_reservoir.json
+- models/item/altar_heart.json
+
+Loot Tables:
+- data/beemancer/loot_table/blocks/altar_heart.json
+
+================================================================================
+DESIGN 3D
+================================================================================
+
+Style chempunk/magicpunk:
+```
++===+=======================+===+
+| o |~~~~~~~~~~~~~~~~~~~~~~~| o |   <- o = rivets decoratifs
+|###|~~~~~~~~~~~~~~~~~~~~~~~|###|   <- # = fer noir (capuchons)
+|###|~~~~~~~~~~~~~~~~~~~~~~~|###|   <- ~~~ = verre ambre (corps)
++===+=======================+===+
+```
+
+Elements:
+- Capuchon fer gauche: [0,4,4] to [3,12,12]
+- Corps verre: [3,4,4] to [13,12,12]
+- Capuchon fer droit: [13,4,4] to [16,12,12]
+- Rivets: petits cubes sur les capuchons de fer
+
+Texture reference:
+- Fer: minecraft:block/iron_block
+- Verre: beemancer:block/amber_glass (ou honey_tank)
+- Fluide: beemancer:block/honey_still (tinte selon type)
+
+================================================================================
+DEPENDANCES
+================================================================================
+
+| Dependance              | Raison                              |
+|-------------------------|-------------------------------------|
+| BeemancerFluids         | Types de fluides acceptes           |
+| MultiblockValidator     | Detection multiblock forme          |
+| HoneyCrystalBlockEntity | Reference controleur multibloc      |
+| FluidUtil               | Interaction buckets NeoForge        |
+
+================================================================================
+REFERENCE CREATE/COBBLEMON
+================================================================================
+
+Pattern inspire de:
+- Create: FluidTankBlock / FluidTankBlockEntity
+- Style visuel: Create Basin, alchimie industrielle
+
+################################################################################

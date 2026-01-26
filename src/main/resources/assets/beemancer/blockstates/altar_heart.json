@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "beemancer:block/altar_heart"
+    },
+    "formed=true": {
+      "model": "beemancer:block/altar_heart_formed"
+    }
+  }
+}

@@ -3,6 +3,51 @@
 ################################################################################
 
 ================================================================================
+2026-01-26 - Honey Reservoir + Altar Restructuration
+================================================================================
+
+AJOUTS:
+- common/block/altar/HoneyReservoirBlock.java (bloc reservoir horizontal)
+- common/blockentity/altar/HoneyReservoirBlockEntity.java (FluidTank 4000mB)
+- common/block/altar/AltarHeartBlock.java (controleur multibloc)
+- common/blockentity/altar/AltarHeartBlockEntity.java (logique multibloc)
+- assets/beemancer/blockstates/honey_reservoir.json
+- assets/beemancer/models/block/honey_reservoir.json
+- assets/beemancer/models/block/honey_reservoir_level1.json
+- assets/beemancer/models/block/honey_reservoir_level2.json
+- assets/beemancer/models/block/honey_reservoir_level3.json
+- assets/beemancer/models/block/honey_reservoir_level4.json
+- assets/beemancer/models/item/honey_reservoir.json
+- assets/beemancer/blockstates/altar_heart.json
+- assets/beemancer/models/block/altar_heart.json
+- assets/beemancer/models/block/altar_heart_formed.json
+- assets/beemancer/models/item/altar_heart.json
+- data/beemancer/loot_table/blocks/altar_heart.json
+
+MODIFICATIONS:
+- BeemancerBlocks.java: +HONEY_RESERVOIR, +ALTAR_HEART
+- BeemancerBlockEntities.java: +HONEY_RESERVOIR, +ALTAR_HEART
+- BeemancerItems.java: +HONEY_RESERVOIR (BlockItem), +ALTAR_HEART (BlockItem)
+- BeemancerCreativeTabs.java: +HONEY_RESERVOIR, +ALTAR_HEART
+- Beemancer.java: +Capability FluidHandler pour HONEY_RESERVOIR
+- MultiblockPatterns.java: Corrige pattern HONEY_ALTAR
+  - Y+1: 8 conduits (anneau complet) au lieu de 4
+  - Y+2: 4 HONEY_RESERVOIR au lieu de 4 HONEYED_STONE
+- HoneyReservoirBlockEntity.java: utilise AltarHeartBlockEntity pour multiblock check
+- en_us.json/fr_fr.json: +traductions (honey_reservoir, altar_heart)
+
+NOUVELLE FEATURE:
+- Reservoir de miel horizontal pour multibloc Honey Altar:
+  - Design chempunk avec capuchons fer rivete et corps verre ambre
+  - Stocke 4000mB de honey/royal_jelly/nectar
+  - Clic droit bucket: remplit/vide
+  - Shift+clic (multiblock forme): vide completement
+  - Affichage visuel niveau fluide (0-4)
+- Correction pattern multibloc:
+  - 8 conduits formant anneau complet a Y+1
+  - 4 reservoirs a Y+2 pointant vers le centre
+
+================================================================================
 2026-01-26 - Bee Statue
 ================================================================================
 
