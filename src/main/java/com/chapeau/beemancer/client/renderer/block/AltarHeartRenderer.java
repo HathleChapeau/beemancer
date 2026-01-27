@@ -37,6 +37,8 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Renderer pour le Honey Altar multibloc.
@@ -45,7 +47,9 @@ import net.neoforged.neoforge.client.model.data.ModelData;
  */
 public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEntity> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AltarHeartRenderer.class);
     private final BlockRenderDispatcher blockRenderer;
+    private static int logCounter = 0; // Pour limiter les logs
 
     public AltarHeartRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
@@ -54,6 +58,11 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     @Override
     public void render(AltarHeartBlockEntity blockEntity, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
+
+        // DEBUG: Log une fois toutes les 100 frames
+        if (logCounter++ % 100 == 0) {
+            LOGGER.info("[AltarHeartRenderer] render() appelé, isFormed={}", blockEntity.isFormed());
+        }
 
         // Seulement rendre si le multibloc est forme
         if (!blockEntity.isFormed()) {
@@ -84,6 +93,11 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             .setValue(HoneyCrystalConduitBlock.FORMED, false)
             .setValue(HoneyCrystalConduitBlock.FACING, Direction.NORTH);
 
+        // DEBUG
+        if (logCounter % 100 == 1) {
+            LOGGER.info("[AltarHeartRenderer] renderOrbitingConduits() - conduitState={}", conduitState);
+        }
+
         // Positions des 4 conduits cardinaux relatifs au contrôleur
         int[][] conduitOffsets = {
             {0, 1, -1},  // Nord
@@ -94,6 +108,12 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         for (int[] offset : conduitOffsets) {
             poseStack.pushPose();
+
+            // DEBUG
+            if (logCounter % 100 == 1) {
+                LOGGER.info("[AltarHeartRenderer] Rendering conduit at offset [{}, {}, {}]",
+                    offset[0], offset[1], offset[2]);
+            }
 
             // Translater vers la position du conduit
             poseStack.translate(offset[0], offset[1], offset[2]);
