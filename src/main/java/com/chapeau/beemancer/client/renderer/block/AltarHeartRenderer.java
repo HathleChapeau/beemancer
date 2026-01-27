@@ -57,11 +57,11 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     private final BlockRenderDispatcher blockRenderer;
     private final RandomSource random = RandomSource.create();
 
-    // Modèles pour les anneaux
-    private static final ResourceLocation BIG_RING_MODEL_LOC =
-        ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_big_ring");
-    private static final ResourceLocation SMALL_RING_MODEL_LOC =
-        ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring");
+    // Modèles pour les anneaux (enregistrés via ModelEvent.RegisterAdditional)
+    private static final ModelResourceLocation BIG_RING_MODEL_LOC =
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_big_ring"));
+    private static final ModelResourceLocation SMALL_RING_MODEL_LOC =
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring"));
 
     // Modèle conduit formed via blockstate
     private static final ModelResourceLocation CONDUIT_FORMED_MODEL =

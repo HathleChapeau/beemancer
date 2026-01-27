@@ -36,6 +36,7 @@ import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -53,6 +54,7 @@ public class ClientSetup {
         modEventBus.addListener(ClientSetup::registerEntityRenderers);
         modEventBus.addListener(ClientSetup::registerClientExtensions);
         modEventBus.addListener(ClientSetup::registerBlockColors);
+        modEventBus.addListener(ClientSetup::registerAdditionalModels);
 
         NeoForge.EVENT_BUS.register(WandOverlayRenderer.class);
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
@@ -164,5 +166,15 @@ public class ClientSetup {
 
             return PollenColors.EMPTY_COLOR;
         }, BeemancerBlocks.POLLEN_POT.get());
+    }
+
+    // =========================================================================
+    // ADDITIONAL MODELS (pour le rendu dynamique)
+    // =========================================================================
+
+    private static void registerAdditionalModels(final ModelEvent.RegisterAdditional event) {
+        // Modèles des anneaux du Altar Heart (rendus dynamiquement)
+        event.register(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_big_ring"));
+        event.register(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring"));
     }
 }
