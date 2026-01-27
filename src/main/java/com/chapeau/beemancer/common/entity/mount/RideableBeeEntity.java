@@ -194,11 +194,9 @@ public class RideableBeeEntity extends Bee implements PlayerRideable {
     private void handleSprinting(Player driver) {
         boolean tryingToSprint = driver.isSprinting() && driver.zza > 0;
 
-        if (!driver.zza.equals(0f) || driver.zza <= 0) {
-            // Si pas d'input forward, arrêter le sprint
-            if (driver.zza <= 0) {
-                sprinting = false;
-            }
+        // Si pas d'input forward, arrêter le sprint
+        if (driver.zza <= 0) {
+            sprinting = false;
         }
 
         if (tryingToSprint && !sprinting) {
@@ -259,77 +257,71 @@ public class RideableBeeEntity extends Bee implements PlayerRideable {
     }
 
     /**
-     * Mode RUN: vélocité avec inertie (copié de Cobblemon HorseBehaviour.kt)
-     * calculateRideSpaceVel() lignes 264-380
+     * Mode RUN: style Jet de Cobblemon mais au sol.
+     * - A/D (xxa) contrôle directement le yaw (JetBehaviour ligne 290)
+     * - W accélère, S décélère (JetBehaviour lignes 232-255)
+     * - Vitesse minimum maintenue (pas d'arrêt complet en RUN)
+     * - Gravité et friction au sol
      */
     private void handleRunMode(Player driver) {
         float forward = driver.zza;
         float strafe = driver.xxa;
         boolean jump = driver.jumping;
 
-        // === Paramètres (Cobblemon utilise des expressions MoLang, on simplifie) ===
-        double topSpeed = sprinting ? settings.maxRunSpeed() : settings.walkSpeed();
-        double accel = topSpeed / (settings.acceleration() * 20.0); // Cobblemon ligne 276
-        double handling = 180.0; // Degrés par seconde de rotation max
-        float lookYawLimit = 90.0f; // Limite de rotation
+        // === Paramètres ===
+        double topSpeed = settings.maxRunSpeed();
+        double minSpeed = settings.walkSpeed() * 0.5; // Vitesse minimum en RUN
+        double accel = topSpeed / (settings.acceleration() * 20.0);
+        double deccel = accel * 0.5; // Décélération = moitié de l'accélération (JetBehaviour ligne 243)
+        // Handling: degrés par seconde pour la rotation (JetBehaviour ligne 281)
+        double handlingYaw = 180.0;
 
         // === Copie de la vélocité précédente ===
         Vec3 newVelocity = rideVelocity;
+        double speed = newVelocity.z;
 
-        // === Collision horizontale (Cobblemon ligne 298-300) ===
+        // === Collision horizontale ===
         if (this.horizontalCollision) {
             newVelocity = newVelocity.normalize().scale(this.getDeltaMovement().length());
+            speed = newVelocity.z;
         }
 
-        // === Input Forward (Cobblemon ligne 305-334) ===
-        boolean activeInput = false;
-        if (forward != 0.0f) {
-            // Calcul du turn speed limit (Cobblemon ligne 309-313)
-            float percOfMaxTurnSpeed = Math.abs(Mth.wrapDegrees(driver.getYRot() - this.getYRot()) / lookYawLimit) * 100.0f;
-            float turnPercThresh = 0.0f;
-            float s = Math.min((float) Math.pow((percOfMaxTurnSpeed - turnPercThresh) / (100.0f - turnPercThresh), 1), 1.0f);
-            double effectiveTopSpeed = percOfMaxTurnSpeed > turnPercThresh ? topSpeed / Math.max(2.0f * s, 1.0f) : topSpeed;
-
-            // Input (Cobblemon ligne 317-321)
-            double forwardInput;
-            if (forward > 0 && newVelocity.z > effectiveTopSpeed) {
-                forwardInput = 0.0;
-            } else if (forward < 0 && newVelocity.z < (-effectiveTopSpeed / 3.0)) {
-                forwardInput = 0.0;
-            } else {
-                forwardInput = Math.signum(forward);
-            }
-
-            // Extra friction si on tourne (Cobblemon ligne 324-326)
-            double turningSlowDown = s * 0.1;
-            if (newVelocity.z > effectiveTopSpeed) {
-                newVelocity = newVelocity.subtract(0, 0, Math.min(turningSlowDown * Math.signum(newVelocity.z), newVelocity.z));
-            }
-
-            // Appliquer accélération (Cobblemon ligne 328-331)
-            newVelocity = new Vec3(newVelocity.x, newVelocity.y, newVelocity.z + (accel * forwardInput));
-            activeInput = true;
+        // === Vitesse (JetBehaviour lignes 232-255) ===
+        // W accélère, S décélère, vitesse minimum maintenue
+        if (speed < minSpeed) {
+            // Toujours accélérer vers minSpeed (JetBehaviour ligne 232)
+            double accelMod = Math.max(1.0 - scaleToRange(speed, minSpeed, topSpeed), 0.0);
+            speed = Math.min(speed + (accel * accelMod), topSpeed);
+        } else if (forward > 0 && speed < topSpeed) {
+            // W: accélérer vers topSpeed (JetBehaviour lignes 233-241)
+            double accelMod = Math.max(1.0 - scaleToRange(speed, minSpeed, topSpeed), 0.0);
+            speed = Math.min(speed + (accel * accelMod), topSpeed);
+        } else if (forward < 0 && speed > minSpeed) {
+            // S: décélérer vers minSpeed (JetBehaviour lignes 242-250)
+            speed = Math.max(speed - deccel, minSpeed);
+        } else if (speed > topSpeed) {
+            // Au-dessus de topSpeed: friction (JetBehaviour lignes 251-255)
+            speed *= 0.98;
         }
 
-        // === Input Strafe pour la rotation ===
-        if (Math.abs(strafe) > 0.1f) {
-            // Strafe influence la rotation, pas la vélocité latérale directement
-            // On garde X à 0 comme Cobblemon (ligne 376)
-        }
+        newVelocity = new Vec3(0, newVelocity.y, speed);
 
-        // === Gravité (Cobblemon ligne 339-345) ===
+        // === Rotation avec A/D (JetBehaviour angRollVel lignes 269-293) ===
+        // val yawForce = driver.xxa * handlingYaw * -1 (ligne 290)
+        float yawForce = (float) (strafe * (handlingYaw / 20.0) * -1.0);
+        float newYaw = this.getYRot() + yawForce;
+        this.setYRot(newYaw);
+        this.yBodyRot = newYaw;
+        this.yHeadRot = newYaw;
+
+        // === Gravité ===
         if (!this.onGround() && jumpTicks <= 0) {
             newVelocity = new Vec3(newVelocity.x, Math.max(newVelocity.y - GRAVITY, -TERMINAL_VELOCITY), newVelocity.z);
         } else if (this.onGround()) {
             newVelocity = new Vec3(newVelocity.x, 0, newVelocity.z);
         }
 
-        // === Friction au sol (Cobblemon ligne 351-353) ===
-        if (newVelocity.horizontalDistance() > 0 && this.onGround() && !activeInput) {
-            newVelocity = newVelocity.subtract(0, 0, Math.min(GROUND_FRICTION * Math.signum(newVelocity.z), newVelocity.z));
-        }
-
-        // === Saut/Leap (Cobblemon ligne 358-373) ===
+        // === Saut/Leap ===
         if (jumpTicks > 0 || (jumpTicks >= 0 && jump && this.onGround() && this.getDeltaMovement().y <= 0.1)) {
             int jumpInputTicks = 6;
             if (jump && jumpTicks >= 0 && jumpTicks < jumpInputTicks) {
@@ -343,47 +335,12 @@ public class RideableBeeEntity extends Bee implements PlayerRideable {
             jumpTicks++;
         }
 
-        // === Zero lateral velocity (Cobblemon ligne 376) ===
-        newVelocity = new Vec3(0, newVelocity.y, newVelocity.z);
-
-        // === Rotation (Cobblemon calcRotAmount ligne 217-250) ===
-        float rotAmount = calcRotAmount(driver, handling, lookYawLimit, topSpeed);
-        float newYaw = this.getYRot() + rotAmount;
-        this.setYRot(newYaw);
-        this.yBodyRot = newYaw;
-        this.yHeadRot = newYaw;
-
-        // === Transition vers WALK si trop lent ===
-        if (newVelocity.z < settings.runToWalkThreshold() && !activeInput) {
+        // === Transition vers WALK si relâche sprint et vitesse basse ===
+        if (!sprinting && speed <= settings.runToWalkThreshold()) {
             setRidingMode(RidingMode.WALK);
-            sprinting = false;
         }
 
         rideVelocity = newVelocity;
-    }
-
-    /**
-     * Calcul de la rotation (copié de Cobblemon HorseBehaviour.kt ligne 217-250)
-     */
-    private float calcRotAmount(Player driver, double handling, float maxYawDiff, double topSpeed) {
-        // Normalize the current rotation diff (ligne 229-230)
-        float rotDiff = Mth.clamp(Mth.wrapDegrees(driver.getYRot() - this.getYRot()), -maxYawDiff, maxYawDiff);
-        float rotDiffNorm = rotDiff / maxYawDiff;
-
-        // Square root pour rotation plus douce (ligne 235-236)
-        float minRotMod = 0.4f;
-        float rotDiffMod = (float) ((Math.sqrt(Math.abs(rotDiffNorm)) * (1.0f - minRotMod)) + minRotMod) * Math.signum(rotDiffNorm);
-
-        // Turn rate basé sur la vitesse (ligne 239-243)
-        double walkSpeed = settings.walkSpeed();
-        double w = Math.max(walkSpeed, this.getDeltaMovement().horizontalDistance());
-        double invRelSpeed = (scaleToRange(w, walkSpeed, topSpeed) - 1.0) * -1.0;
-        int walkHandlingBoost = 5;
-        float turnRate = (float) ((handling / 20.0) * Math.max(walkHandlingBoost * invRelSpeed, 1.0));
-
-        // Clamp (ligne 246-247)
-        float turnSpeed = turnRate * rotDiffMod;
-        return Mth.clamp(turnSpeed, -Math.abs(rotDiff), Math.abs(rotDiff));
     }
 
     /**
