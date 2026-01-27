@@ -197,15 +197,22 @@ public class CodexScreen extends Screen {
 
         graphics.blit(WINDOW_TEXTURE, windowX, windowY, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+        // Render content nodes with scissor (clipped to content area)
         graphics.enableScissor(contentX, contentY, contentX + contentWidth, contentY + contentHeight);
-
         currentRenderer.renderConnections(graphics);
-        super.render(graphics, mouseX, mouseY, partialTick);
-
+        for (Object widget : currentRenderer.getWidgets()) {
+            if (widget instanceof AbstractWidget aw) {
+                aw.render(graphics, mouseX, mouseY, partialTick);
+            }
+        }
         graphics.disableScissor();
 
-        currentRenderer.renderTooltips(graphics, mouseX, mouseY);
+        // Render tab buttons OUTSIDE scissor so they're visible
+        for (Button btn : tabButtons.values()) {
+            btn.render(graphics, mouseX, mouseY, partialTick);
+        }
 
+        currentRenderer.renderTooltips(graphics, mouseX, mouseY);
         renderProgress(graphics);
     }
 
