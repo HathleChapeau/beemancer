@@ -71,8 +71,8 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         Fluid fluid = fluidStack.getFluid();
         IClientFluidTypeExtensions fluidExtensions = IClientFluidTypeExtensions.of(fluid);
 
-        // Obtenir la texture still du fluide depuis l'atlas
-        ResourceLocation stillTexture = fluidExtensions.getStillTexture(fluidStack);
+        // Obtenir la texture still du fluide depuis l'atlas (sans paramètre!)
+        ResourceLocation stillTexture = fluidExtensions.getStillTexture();
         TextureAtlasSprite sprite = Minecraft.getInstance()
             .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
             .apply(stillTexture);
