@@ -227,7 +227,9 @@ public class RideableBeeEntity extends Bee implements PlayerRideable {
 
     @Override
     protected void registerGoals() {
-        // Pas de goals AI - l'abeille ne fait rien quand pas montée
+        // Appeler super pour initialiser les goals internes de Bee (évite NPE dans aiStep)
+        // Les goals ne seront pas exécutés car on override travel() quand monté
+        super.registerGoals();
     }
 
     @Override

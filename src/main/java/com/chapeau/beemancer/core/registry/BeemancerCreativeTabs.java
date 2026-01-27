@@ -86,6 +86,7 @@ public class BeemancerCreativeTabs {
     private static void addBees(CreativeModeTab.Output output) {
         output.accept(BeemancerItems.MAGIC_BEE.get());
         output.accept(BeemancerItems.BEE_LARVA.get());
+        output.accept(BeemancerItems.RIDEABLE_BEE_SPAWN.get());
     }
 
     private static void addBeeMachines(CreativeModeTab.Output output) {
