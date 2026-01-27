@@ -2,6 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "all": "beemancer:block/altar/stone",
+    "edge": "beemancer:block/altar/stone_edge",
     "particle": "beemancer:block/honeyed_stone"
   },
   "elements": [
@@ -16,6 +17,130 @@
         "west": {"texture": "#all", "uv": [0, 0, 16, 11]},
         "up": {"texture": "#all", "uv": [0, 0, 16, 16]},
         "down": {"texture": "#all", "uv": [0, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Edge Vertical NW",
+      "from": [-6, 0, -6],
+      "to": [-4, 16, -4],
+      "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "west": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "up": {"texture": "#edge", "uv": [0, 0, 2, 2]},
+        "down": {"texture": "#edge", "uv": [0, 0, 2, 2]}
+      }
+    },
+    {
+      "name": "Edge Vertical NE",
+      "from": [20, 0, -6],
+      "to": [22, 16, -4],
+      "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "east": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "up": {"texture": "#edge", "uv": [0, 0, 2, 2]},
+        "down": {"texture": "#edge", "uv": [0, 0, 2, 2]}
+      }
+    },
+    {
+      "name": "Edge Vertical SW",
+      "from": [-6, 0, 20],
+      "to": [-4, 16, 22],
+      "faces": {
+        "south": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "west": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "up": {"texture": "#edge", "uv": [0, 0, 2, 2]},
+        "down": {"texture": "#edge", "uv": [0, 0, 2, 2]}
+      }
+    },
+    {
+      "name": "Edge Vertical SE",
+      "from": [20, 0, 20],
+      "to": [22, 16, 22],
+      "faces": {
+        "south": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "east": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "up": {"texture": "#edge", "uv": [0, 0, 2, 2]},
+        "down": {"texture": "#edge", "uv": [0, 0, 2, 2]}
+      }
+    },
+    {
+      "name": "Edge Horizontal Bottom North",
+      "from": [-4, -2, -6],
+      "to": [20, 0, -4],
+      "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "up": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "down": {"texture": "#edge", "uv": [0, 0, 16, 2]}
+      }
+    },
+    {
+      "name": "Edge Horizontal Bottom South",
+      "from": [-4, -2, 20],
+      "to": [20, 0, 22],
+      "faces": {
+        "south": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "up": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "down": {"texture": "#edge", "uv": [0, 0, 16, 2]}
+      }
+    },
+    {
+      "name": "Edge Horizontal Bottom West",
+      "from": [-6, -2, -4],
+      "to": [-4, 0, 20],
+      "faces": {
+        "west": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "up": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "down": {"texture": "#edge", "uv": [0, 0, 2, 16]}
+      }
+    },
+    {
+      "name": "Edge Horizontal Bottom East",
+      "from": [20, -2, -4],
+      "to": [22, 0, 20],
+      "faces": {
+        "east": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "up": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "down": {"texture": "#edge", "uv": [0, 0, 2, 16]}
+      }
+    },
+    {
+      "name": "Edge Horizontal Top North",
+      "from": [-4, 16, -6],
+      "to": [20, 18, -4],
+      "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "up": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "down": {"texture": "#edge", "uv": [0, 0, 16, 2]}
+      }
+    },
+    {
+      "name": "Edge Horizontal Top South",
+      "from": [-4, 16, 20],
+      "to": [20, 18, 22],
+      "faces": {
+        "south": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "up": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "down": {"texture": "#edge", "uv": [0, 0, 16, 2]}
+      }
+    },
+    {
+      "name": "Edge Horizontal Top West",
+      "from": [-6, 16, -4],
+      "to": [-4, 18, 20],
+      "faces": {
+        "west": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "up": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "down": {"texture": "#edge", "uv": [0, 0, 2, 16]}
+      }
+    },
+    {
+      "name": "Edge Horizontal Top East",
+      "from": [20, 16, -4],
+      "to": [22, 18, 20],
+      "faces": {
+        "east": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "up": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "down": {"texture": "#edge", "uv": [0, 0, 2, 16]}
       }
     }
   ]
