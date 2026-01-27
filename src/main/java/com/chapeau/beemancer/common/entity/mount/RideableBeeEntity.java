@@ -156,7 +156,7 @@ public class RideableBeeEntity extends Bee implements PlayerRideable {
      * Cela permet à Minecraft de synchroniser les inputs correctement.
      */
     @Override
-    protected boolean isControlledByLocalInstance() {
+    public boolean isControlledByLocalInstance() {
         LivingEntity passenger = this.getControllingPassenger();
         if (passenger instanceof Player player) {
             return player.isLocalPlayer();
