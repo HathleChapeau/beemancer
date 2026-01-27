@@ -115,7 +115,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.solid());
 
-        // === BIG RING: Rotation sur l'axe X ===
+        // === BIG RING: Rotation sur l'axe X uniquement ===
         poseStack.pushPose();
 
         // Centrer pour la rotation
@@ -145,17 +145,14 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         poseStack.popPose();
 
-        // === SMALL RING: Rotation sur l'axe Z + hérite rotation X ===
+        // === SMALL RING: Rotation sur l'axe Z uniquement (décorrélé du big ring) ===
         poseStack.pushPose();
 
         // Centrer pour la rotation
         poseStack.translate(0.5, 0.5, 0.5);
 
-        // D'abord rotation X (comme le big ring)
-        poseStack.mulPose(Axis.XP.rotationDegrees(rotationAngle));
-
-        // Puis rotation Z additionnelle
-        poseStack.mulPose(Axis.ZP.rotationDegrees(rotationAngle * 1.5f)); // Vitesse légèrement différente
+        // Rotation sur l'axe Z uniquement (indépendante)
+        poseStack.mulPose(Axis.ZP.rotationDegrees(rotationAngle));
 
         // Revenir au coin
         poseStack.translate(-0.5, -0.5, -0.5);
