@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/cross",
+  "render_type": "translucent",
   "textures": {
     "cross": "beemancer:block/breeding_crystal"
   }

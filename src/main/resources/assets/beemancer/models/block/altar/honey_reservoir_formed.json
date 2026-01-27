@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "translucent",
   "textures": {
     "cap": "minecraft:block/copper_block",
     "body": "minecraft:block/glass",
