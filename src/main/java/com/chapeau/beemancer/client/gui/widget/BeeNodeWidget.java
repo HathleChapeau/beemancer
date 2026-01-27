@@ -21,7 +21,8 @@ package com.chapeau.beemancer.client.gui.widget;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.codex.CodexNode;
-import com.chapeau.beemancer.common.item.debug.DebugWandItem;
+import com.chapeau.beemancer.common.codex.CodexPlayerData;
+import com.chapeau.beemancer.core.registry.BeemancerAttachments;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -38,8 +39,11 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class BeeNodeWidget extends AbstractWidget {
     public static final int NODE_SIZE = 20;
@@ -199,15 +203,31 @@ public class BeeNodeWidget extends AbstractWidget {
             String displayName = speciesId.substring(0, 1).toUpperCase() + speciesId.substring(1) + " Bee";
 
             if (unlocked) {
-                graphics.renderTooltip(mc.font, java.util.List.of(
-                    Component.literal(displayName),
-                    node.getDescription()
-                ), java.util.Optional.empty(), mouseX, mouseY);
+                List<Component> tooltipLines = new ArrayList<>();
+                tooltipLines.add(Component.literal(displayName));
+
+                // Add breeding parents line if bee has parents
+                Component breedingLine = getBreedingParentsLine();
+                if (breedingLine != null) {
+                    tooltipLines.add(breedingLine);
+                }
+
+                tooltipLines.add(node.getDescription());
+
+                graphics.renderTooltip(mc.font, tooltipLines, java.util.Optional.empty(), mouseX, mouseY);
             } else if (canUnlock) {
-                graphics.renderTooltip(mc.font, java.util.List.of(
-                    Component.literal(displayName),
-                    Component.translatable("codex.beemancer.click_to_unlock")
-                ), java.util.Optional.empty(), mouseX, mouseY);
+                List<Component> tooltipLines = new ArrayList<>();
+                tooltipLines.add(Component.literal(displayName));
+
+                // Add breeding parents line if bee has parents
+                Component breedingLine = getBreedingParentsLine();
+                if (breedingLine != null) {
+                    tooltipLines.add(breedingLine);
+                }
+
+                tooltipLines.add(Component.translatable("codex.beemancer.click_to_unlock"));
+
+                graphics.renderTooltip(mc.font, tooltipLines, java.util.Optional.empty(), mouseX, mouseY);
             } else {
                 graphics.renderTooltip(mc.font, java.util.List.of(
                     Component.translatable("codex.beemancer.locked"),
@@ -215,6 +235,55 @@ public class BeeNodeWidget extends AbstractWidget {
                 ), java.util.Optional.empty(), mouseX, mouseY);
             }
         }
+    }
+
+    private Component getBreedingParentsLine() {
+        String parent1 = node.getBreedingParent1();
+        String parent2 = node.getBreedingParent2();
+
+        if (parent1 == null || parent2 == null) {
+            return null; // Base bees have no parents
+        }
+
+        // Get player's unlocked nodes
+        Set<String> unlockedNodes = getUnlockedNodes();
+
+        String parent1Display = isParentUnlocked(parent1, unlockedNodes)
+            ? formatBeeName(parent1)
+            : "???";
+        String parent2Display = isParentUnlocked(parent2, unlockedNodes)
+            ? formatBeeName(parent2)
+            : "???";
+
+        return Component.literal(parent1Display + " + " + parent2Display).withStyle(style -> style.withColor(0xAAAA55));
+    }
+
+    private Set<String> getUnlockedNodes() {
+        if (Minecraft.getInstance().player != null) {
+            CodexPlayerData data = Minecraft.getInstance().player.getData(BeemancerAttachments.CODEX_DATA);
+            return data.getUnlockedNodes();
+        }
+        return Set.of();
+    }
+
+    private boolean isParentUnlocked(String parentId, Set<String> unlockedNodes) {
+        // The node ID in unlockedNodes includes the page prefix (e.g., "bees:meadow_bee")
+        String fullId = "bees:" + parentId;
+        return unlockedNodes.contains(fullId);
+    }
+
+    private String formatBeeName(String beeId) {
+        // Convert "meadow_bee" to "Meadow Bee"
+        String[] parts = beeId.replace("_", " ").split(" ");
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            if (!part.isEmpty()) {
+                result.append(Character.toUpperCase(part.charAt(0)))
+                      .append(part.substring(1))
+                      .append(" ");
+            }
+        }
+        return result.toString().trim();
     }
 
     @Override

@@ -44,11 +44,16 @@ public class CodexNode {
     private final List<String> childrenIds;
     private final JsonObject unlockCondition;
     private final JsonObject rewards;
+    @Nullable
+    private final String breedingParent1;
+    @Nullable
+    private final String breedingParent2;
 
     public CodexNode(String id, CodexPage page, int x, int y,
                      ResourceLocation icon, CodexNodeCategory category,
                      @Nullable String parentId, boolean hiddenUntilParentUnlocked,
-                     JsonObject unlockCondition, JsonObject rewards) {
+                     JsonObject unlockCondition, JsonObject rewards,
+                     @Nullable String breedingParent1, @Nullable String breedingParent2) {
         this.id = id;
         this.page = page;
         this.x = x;
@@ -60,6 +65,8 @@ public class CodexNode {
         this.childrenIds = new ArrayList<>();
         this.unlockCondition = unlockCondition;
         this.rewards = rewards;
+        this.breedingParent1 = breedingParent1;
+        this.breedingParent2 = breedingParent2;
     }
 
     public String getId() {
@@ -129,6 +136,20 @@ public class CodexNode {
         return rewards;
     }
 
+    @Nullable
+    public String getBreedingParent1() {
+        return breedingParent1;
+    }
+
+    @Nullable
+    public String getBreedingParent2() {
+        return breedingParent2;
+    }
+
+    public boolean hasBreedingParents() {
+        return breedingParent1 != null && breedingParent2 != null;
+    }
+
     public static CodexNode fromJson(JsonObject json, CodexPage page) {
         String id = json.get("id").getAsString();
 
@@ -157,6 +178,15 @@ public class CodexNode {
             ? json.getAsJsonObject("rewards")
             : new JsonObject();
 
-        return new CodexNode(id, page, x, y, icon, category, parentId, hidden, unlockCondition, rewards);
+        String breedingParent1 = json.has("breeding_parent1") && !json.get("breeding_parent1").isJsonNull()
+            ? json.get("breeding_parent1").getAsString()
+            : null;
+
+        String breedingParent2 = json.has("breeding_parent2") && !json.get("breeding_parent2").isJsonNull()
+            ? json.get("breeding_parent2").getAsString()
+            : null;
+
+        return new CodexNode(id, page, x, y, icon, category, parentId, hidden, unlockCondition, rewards,
+                breedingParent1, breedingParent2);
     }
 }
