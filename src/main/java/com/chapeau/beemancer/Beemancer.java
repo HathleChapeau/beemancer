@@ -24,6 +24,8 @@ import com.chapeau.beemancer.common.codex.CodexManager;
 import com.chapeau.beemancer.core.command.BeemancerCommands;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
+import com.chapeau.beemancer.common.entity.mount.RideableBeeEntity;
+import com.chapeau.beemancer.common.entity.mount.RidingSettingsLoader;
 import com.chapeau.beemancer.content.gene.GeneInit;
 import com.chapeau.beemancer.core.bee.BeeSpeciesManager;
 import com.chapeau.beemancer.core.bee.BiomeTemperatureManager;
@@ -133,6 +135,7 @@ public class Beemancer {
 
     private void onEntityAttributeCreation(final EntityAttributeCreationEvent event) {
         event.put(BeemancerEntities.MAGIC_BEE.get(), MagicBeeEntity.createAttributes().build());
+        event.put(BeemancerEntities.RIDEABLE_BEE.get(), RideableBeeEntity.createAttributes().build());
     }
 
     private void onRegisterCapabilities(final RegisterCapabilitiesEvent event) {
@@ -278,6 +281,7 @@ public class Beemancer {
         BiomeTemperatureManager.load(server);
         BreedingManager.loadCombinations(server);
         BeeBehaviorManager.load(server);
+        RidingSettingsLoader.load(server);
         CodexManager.load(server);
     }
 

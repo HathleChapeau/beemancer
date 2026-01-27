@@ -7,11 +7,13 @@
 package com.chapeau.beemancer.client;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.camera.RidingCameraController;
 import com.chapeau.beemancer.client.color.PollenColors;
 import com.chapeau.beemancer.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.beemancer.client.gui.hud.WandOverlayRenderer;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
 import com.chapeau.beemancer.client.input.DebugKeyHandler;
+import com.chapeau.beemancer.client.input.RidingInputHandler;
 import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
 import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
@@ -24,6 +26,7 @@ import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
+import com.chapeau.beemancer.client.renderer.entity.RideableBeeRenderer;
 import com.chapeau.beemancer.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
@@ -62,6 +65,10 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
         NeoForge.EVENT_BUS.register(DebugKeyHandler.class);
         NeoForge.EVENT_BUS.register(BeeDebugRenderer.class);
+
+        // Riding system
+        NeoForge.EVENT_BUS.register(RidingInputHandler.class);
+        NeoForge.EVENT_BUS.register(RidingCameraController.class);
     }
 
     private static void registerScreens(final RegisterMenuScreensEvent event) {
@@ -85,6 +92,7 @@ public class ClientSetup {
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(BeemancerEntities.MAGIC_BEE.get(), MagicBeeRenderer::new);
+        event.registerEntityRenderer(BeemancerEntities.RIDEABLE_BEE.get(), RideableBeeRenderer::new);
 
         // Block Entity Renderers
         event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_CONTROLLER.get(),

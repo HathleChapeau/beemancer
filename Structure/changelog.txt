@@ -3,6 +3,50 @@
 ################################################################################
 
 ================================================================================
+2026-01-28 - Rideable Bee System (Cobblemon-inspired)
+================================================================================
+
+AJOUTS:
+Core (common/entity/mount/):
+- RidingMode.java: Enum WALK/RUN
+- RidingSettings.java: Record des paramètres configurables
+- RidingSettingsLoader.java: Chargeur JSON
+- RidingState.java: État runtime mutable
+- RideableBeeMovement.java: Calculs vélocité/inertie
+- RideableBeeController.java: Orchestrateur déplacement
+- RideableBeeEntity.java: Entité chevauchable
+
+Client:
+- client/input/RidingInputHandler.java: Capture WASD+Space+Sprint
+- client/renderer/entity/RideableBeeRenderer.java: Renderer (2x scale)
+- client/camera/RidingCameraController.java: Caméra WALK(libre)/RUN(épaule)
+
+Network:
+- core/network/packets/RidingInputPacket.java: Sync input client→serveur
+
+Item:
+- common/item/mount/RideableBeeSpawnItem.java: Item de spawn
+
+Config:
+- data/beemancer/mount/rideable_bee.json: Paramètres configurables
+
+MODIFICATIONS:
+- BeemancerEntities.java: +RIDEABLE_BEE
+- BeemancerItems.java: +RIDEABLE_BEE_SPAWN
+- BeemancerNetwork.java: +RidingInputPacket
+- ClientSetup.java: +renderer, +handlers
+- Beemancer.java: +attributs, +RidingSettingsLoader.load()
+
+FEATURE:
+- Mode WALK: Mouvement WASD libre, caméra 3P libre, saut normal
+- Mode RUN: Accél/décél, rotation inertie, caméra épaule droite fixe, leap
+- Transition WALK→RUN: Sprint + vitesse suffisante
+- Transition RUN→WALK: Vitesse sous seuil
+- Décélération passive quand touche avant relâchée
+
+RÉFÉRENCE: Cobblemon 1.7 (RidingController, RidingBehaviour, MountedCameraTypeHandler)
+
+================================================================================
 2026-01-27 - Refactorisation Honey Reservoir Models + Fluid Renderer
 ================================================================================
 

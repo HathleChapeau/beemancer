@@ -2,8 +2,9 @@
 #                           REGISTRE: ENTITIES                                 #
 ################################################################################
 
-| ID        | Classe          | Feature      |
-|-----------|-----------------|--------------|
-| magic_bee | MagicBeeEntity  | Gene System  |
+| ID           | Classe             | Feature        |
+|--------------|--------------------| ---------------|
+| magic_bee    | MagicBeeEntity     | Gene System    |
+| rideable_bee | RideableBeeEntity  | Rideable Bee   |
 
 ################################################################################

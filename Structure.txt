@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-01-26                     #
-#                    (AltarHeartRenderer - Multibloc Custom Render)            #
+#                         Dernière mise à jour: 2026-01-28                     #
+#                    (Rideable Bee - Système d'abeille chevauchable)           #
 ################################################################################
 
 ================================================================================
@@ -228,6 +228,10 @@ LISTE DES FEATURES:
 → Honey Reservoir + Altar Heart
   Fichier: Structure/feature_honey_reservoir.txt
   Description: Réservoir fluide + Coeur d'Autel (contrôleur) pour multibloc Honey Altar
+
+→ Rideable Bee
+  Fichier: Structure/feature_rideable_bee.txt
+  Description: Abeille chevauchable avec modes WALK/RUN et caméra dynamique (inspiré Cobblemon)
 
 ================================================================================
 6. FEATURES EN COURS

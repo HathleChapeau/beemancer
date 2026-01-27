@@ -1,0 +1,10 @@
+{
+  "walkSpeed": 0.15,
+  "maxRunSpeed": 0.45,
+  "acceleration": 0.02,
+  "deceleration": 0.03,
+  "health": 20.0,
+  "walkJumpStrength": 0.5,
+  "runLeapForce": 1.2,
+  "turnInertia": 0.15
+}

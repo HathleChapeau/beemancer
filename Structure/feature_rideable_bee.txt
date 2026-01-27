@@ -1,0 +1,101 @@
+################################################################################
+#                         FEATURE: Rideable Bee                                #
+################################################################################
+
+Description: Abeille chevauchable avec modes WALK/RUN et caméra dynamique
+Statut: COMPLÈTE
+Référence: Cobblemon 1.7 (RidingController, RidingBehaviour, MountedCameraTypeHandler)
+
+================================================================================
+COMPOSANTS
+================================================================================
+
+Core (common/entity/mount/):
+- RidingMode: Enum WALK/RUN avec méthodes de sérialisation
+- RidingSettings: Record immutable des paramètres configurables (JSON)
+- RidingSettingsLoader: Chargeur JSON depuis data/beemancer/mount/
+- RidingState: État runtime mutable (vitesse, yaw, leaping, input)
+- RideableBeeMovement: Calculs de vélocité et physique (utilitaire statique)
+- RideableBeeController: Orchestrateur du déplacement et transitions
+
+Entité:
+- RideableBeeEntity: Entité Mob chevauchable avec EntityDataAccessors sync
+
+Client (client/):
+- RidingInputHandler: Capture WASD+Space+Sprint, envoie packets
+- RideableBeeRenderer: Renderer avec modèle Bee agrandi 2x
+- RidingCameraController: Gestion caméra 3P libre (WALK) et épaule (RUN)
+
+Réseau:
+- RidingInputPacket: Sync input client vers serveur chaque tick
+
+Item:
+- RideableBeeSpawnItem: Item pour faire apparaître l'abeille
+
+================================================================================
+FONCTIONNALITÉS
+================================================================================
+
+Mode WALK:
+- Mouvement libre WASD selon orientation caméra
+- Caméra 3ème personne libre (comme F5)
+- Saut normal sur place
+
+Mode RUN:
+- Accélération (W), décélération (S), décélération passive (relâcher W)
+- Rotation A/D avec inertie (turnInertia)
+- Caméra épaule droite fixe, verrouillée sur direction
+- Effet FOV selon vitesse
+- Leap (bond) vers l'avant avec Space, pas de contrôle aérien
+
+Transitions:
+- WALK → RUN: Sprint (Ctrl ou double-tap W) + vitesse suffisante
+- RUN → WALK: Vitesse sous seuil runToWalkThreshold
+- Démontage: Shift (vanilla)
+
+Configuration JSON (data/beemancer/mount/rideable_bee.json):
+- walkSpeed, maxRunSpeed, acceleration, deceleration
+- health, walkJumpStrength, runLeapForce, turnInertia
+
+================================================================================
+FICHIERS LIÉS
+================================================================================
+
+Core:
+- common/entity/mount/RidingMode.java
+- common/entity/mount/RidingSettings.java
+- common/entity/mount/RidingSettingsLoader.java
+- common/entity/mount/RidingState.java
+- common/entity/mount/RideableBeeMovement.java
+- common/entity/mount/RideableBeeController.java
+- common/entity/mount/RideableBeeEntity.java
+
+Client:
+- client/input/RidingInputHandler.java
+- client/renderer/entity/RideableBeeRenderer.java
+- client/camera/RidingCameraController.java
+
+Network:
+- core/network/packets/RidingInputPacket.java
+
+Item:
+- common/item/mount/RideableBeeSpawnItem.java
+
+Config:
+- resources/data/beemancer/mount/rideable_bee.json
+
+Modifiés:
+- core/registry/BeemancerEntities.java (ajout RIDEABLE_BEE)
+- core/registry/BeemancerItems.java (ajout RIDEABLE_BEE_SPAWN)
+- core/network/BeemancerNetwork.java (ajout RidingInputPacket)
+- client/ClientSetup.java (renderer, handlers)
+- Beemancer.java (attributs, loader)
+
+================================================================================
+COMMANDES TEST
+================================================================================
+
+/summon beemancer:rideable_bee ~ ~ ~
+/give @p beemancer:rideable_bee_spawn
+
+################################################################################

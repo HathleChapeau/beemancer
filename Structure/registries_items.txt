@@ -111,4 +111,7 @@
 | radiant_honey_crystal    | Item             | Alchemy         |
 | royal_honey_crystal      | Item             | Alchemy         |
 
+--- MOUNT ITEMS ---
+| rideable_bee_spawn       | RideableBeeSpawnItem | Rideable Bee |
+
 ################################################################################

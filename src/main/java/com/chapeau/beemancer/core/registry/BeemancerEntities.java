@@ -8,6 +8,7 @@ package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
+import com.chapeau.beemancer.common.entity.mount.RideableBeeEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -26,6 +27,13 @@ public class BeemancerEntities {
                     .sized(0.7F, 0.6F)
                     .clientTrackingRange(8)
                     .build("magic_bee"));
+
+    // --- MOUNTS ---
+    public static final Supplier<EntityType<RideableBeeEntity>> RIDEABLE_BEE = ENTITIES.register("rideable_bee",
+            () -> EntityType.Builder.of(RideableBeeEntity::new, MobCategory.CREATURE)
+                    .sized(1.4F, 1.2F)
+                    .clientTrackingRange(10)
+                    .build("rideable_bee"));
 
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);

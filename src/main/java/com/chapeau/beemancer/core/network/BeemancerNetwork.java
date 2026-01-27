@@ -10,6 +10,7 @@ import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.core.network.packets.BeeCreatorActionPacket;
 import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
+import com.chapeau.beemancer.core.network.packets.RidingInputPacket;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageRequestPacket;
 import net.neoforged.bus.api.IEventBus;
@@ -41,6 +42,12 @@ public class BeemancerNetwork {
                 StorageRequestPacket.TYPE,
                 StorageRequestPacket.STREAM_CODEC,
                 StorageRequestPacket::handle
+        );
+
+        registrar.playToServer(
+                RidingInputPacket.TYPE,
+                RidingInputPacket.STREAM_CODEC,
+                RidingInputPacket::handle
         );
 
         // Server to Client packets
