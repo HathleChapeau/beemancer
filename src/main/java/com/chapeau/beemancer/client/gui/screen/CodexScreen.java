@@ -91,23 +91,26 @@ public class CodexScreen extends Screen {
         windowX = (width - WINDOW_WIDTH) / 2;
         windowY = (height - WINDOW_HEIGHT) / 2;
         contentX = windowX + CONTENT_PADDING;
-        contentY = windowY + CONTENT_PADDING + 16;
+        contentY = windowY + CONTENT_PADDING + TAB_HEIGHT + 8;
         contentWidth = WINDOW_WIDTH - CONTENT_PADDING * 2;
-        contentHeight = WINDOW_HEIGHT - CONTENT_PADDING * 2 - 20;
+        contentHeight = WINDOW_HEIGHT - CONTENT_PADDING * 2 - TAB_HEIGHT - 12;
 
-        createTabButtons();
+        // Create node widgets first
         currentRenderer = pageRenderers.get(currentPage);
         rebuildNodeWidgets();
+
+        // Create tab buttons LAST so they render on top
+        createTabButtons();
     }
 
     private void createTabButtons() {
         tabButtons.clear();
 
-        // Position tabs horizontally centered at top of screen, above window
+        // Position tabs horizontally centered at top of window (inside the GUI)
         CodexPage[] pages = CodexPage.values();
         int totalWidth = pages.length * TAB_WIDTH + (pages.length - 1) * 4;
         int tabX = (width - totalWidth) / 2;
-        int tabY = windowY - TAB_HEIGHT - 5;
+        int tabY = windowY + CONTENT_PADDING;
 
         for (CodexPage page : pages) {
             final CodexPage currentPageRef = page;
@@ -127,16 +130,27 @@ public class CodexScreen extends Screen {
     }
 
     private void switchToPage(CodexPage page) {
-        // Clear current widgets
+        // Clear current widgets and tab buttons
         clearCurrentWidgets();
+        clearTabButtons();
 
         currentPage = page;
         currentRenderer = pageRenderers.get(currentPage);
         scrollX = 0;
         scrollY = 0;
 
+        // Rebuild node widgets first
         rebuildNodeWidgets();
-        updateTabButtonStyles();
+
+        // Recreate tab buttons LAST so they render on top
+        createTabButtons();
+    }
+
+    private void clearTabButtons() {
+        for (Button btn : tabButtons.values()) {
+            removeWidget(btn);
+        }
+        tabButtons.clear();
     }
 
     private void updateTabButtonStyles() {
@@ -192,7 +206,6 @@ public class CodexScreen extends Screen {
 
         currentRenderer.renderTooltips(graphics, mouseX, mouseY);
 
-        graphics.drawCenteredString(font, currentPage.getDisplayName(), width / 2, windowY + 6, 0xFFFFFF);
         renderProgress(graphics);
     }
 
