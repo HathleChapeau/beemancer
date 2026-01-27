@@ -76,7 +76,8 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
                                          PoseStack poseStack, MultiBufferSource buffer,
                                          int packedLight, int packedOverlay) {
 
-        float rotationAngle = AltarConduitAnimator.getRotationAngle(blockEntity, partialTick);
+        // DEBUG: Rotation désactivée pour test
+        float rotationAngle = 0f; // AltarConduitAnimator.getRotationAngle(blockEntity, partialTick);
 
         // Utiliser le BlockState NON-formé (RenderShape.MODEL) pour le rendu
         BlockState conduitState = BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get().defaultBlockState()
