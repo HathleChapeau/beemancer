@@ -36,6 +36,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
@@ -53,8 +54,8 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     private final RandomSource random = RandomSource.create();
 
     // Chemin vers le modèle formed
-    private static final ResourceLocation CONDUIT_FORMED_MODEL =
-        ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/honey_crystal_conduit_formed");
+    private static final ModelResourceLocation CONDUIT_FORMED_MODEL =
+        new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "honey_crystal_conduit"), "facing=north,formed=true");
 
     public AltarHeartRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
