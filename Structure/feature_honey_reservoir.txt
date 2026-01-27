@@ -14,6 +14,11 @@ Nouveaux blocs pour le multibloc Honey Altar:
 Design chempunk avec capuchons de fer rivete aux extremites et corps en verre ambre.
 L'Altar Heart est place au centre (Y+0) et valide la structure.
 
+ROTATION DYNAMIQUE:
+- Quand le multibloc se forme, les reservoirs TOURNENT pour pointer vers le centre
+- La rotation est geree via le blockstate FACING (comme un escalier Minecraft)
+- Le blockstate utilise la propriete "y" pour appliquer la rotation au modele JSON
+
 ================================================================================
 STRUCTURE MULTIBLOCK CORRIGEE
 ================================================================================
@@ -42,12 +47,12 @@ SCRIPTS
 
 | Fichier                                            | Role                           |
 |----------------------------------------------------|--------------------------------|
-| common/block/altar/HoneyReservoirBlock.java        | Bloc avec FLUID_LEVEL 0-4, FORMED |
+| common/block/altar/HoneyReservoirBlock.java        | Bloc avec FORMED, FACING       |
 | common/blockentity/altar/HoneyReservoirBlockEntity.java | FluidTank 4000mB, IFluidHandler |
 | common/block/altar/AltarHeartBlock.java            | Controleur multibloc           |
 | common/blockentity/altar/AltarHeartBlockEntity.java | Logique formation/validation  |
 | common/block/altar/HoneyCrystalConduitBlock.java   | Conduit avec FORMED property   |
-| client/renderer/block/AltarHeartRenderer.java      | Rendu multibloc complet        |
+| client/renderer/block/HoneyReservoirRenderer.java  | Rendu fluide avec scale dynamique |
 
 ================================================================================
 FONCTIONNALITES
@@ -63,18 +68,15 @@ FLUIDES ACCEPTES:
 - ROYAL_JELLY_SOURCE
 - NECTAR_SOURCE
 
-AFFICHAGE VISUEL (MULTIBLOC FORME):
-- Quand FORMED=true, les modeles individuels sont CACHES (RenderShape.INVISIBLE)
-- Le AltarHeartRenderer rend TOUTE la structure depuis le controleur
-- Les blocs individuels restent en place (collision, interaction) mais invisibles
-- Le renderer affiche les conduits, reservoirs avec teinte doree "active"
-- Le fluide dans les reservoirs est rendu dynamiquement selon le niveau
+AFFICHAGE VISUEL:
+- Le bloc utilise des modeles JSON pour le container (2 modeles: forme/non-forme)
+- Le fluide est rendu dynamiquement par HoneyReservoirRenderer avec scale
+- La rotation est geree par le blockstate via la propriete "y" sur le modele
 
-RENDU CUSTOM (AltarHeartRenderer):
-- Conduits: modele de base avec teinte cristal active (1.0, 0.95, 0.7)
-- Reservoirs: modele de base avec teinte (0.9, 0.85, 0.7) + fluide interne
-- Heart: modele avec teinte doree brillante (1.0, 0.9, 0.6)
-- Fluide: cube translucide couleur miel (0.92, 0.61, 0.23)
+RENDU FLUIDE (HoneyReservoirRenderer):
+- Scale dynamique base sur le ratio de remplissage (0.0 a 1.0)
+- Couleur provenant de IClientFluidTypeExtensions (tint color du fluide)
+- Cube translucide rendu a l'interieur du corps verre
 
 ================================================================================
 REGISTRES MODIFIES
@@ -100,7 +102,7 @@ Beemancer.java:
 - +Capability FluidHandler.BLOCK pour HONEY_RESERVOIR
 
 ClientSetup.java:
-- +registerBlockEntityRenderer(ALTAR_HEART, AltarHeartRenderer::new)
+- +registerBlockEntityRenderer(HONEY_RESERVOIR, HoneyReservoirRenderer::new)
 
 MultiblockPatterns.java:
 - Corrige pattern HONEY_ALTAR (8 conduits, 4 reservoirs)
@@ -108,30 +110,31 @@ MultiblockPatterns.java:
 AltarHeartBlockEntity.java:
 - +getReservoirs() - liste des 4 reservoirs
 - +getTotalFluidAmount(Fluid) - quantite totale d'un fluide
+- +updateReservoir() - met a jour FACING pour pointer vers le centre
 
 HoneyReservoirBlockEntity.java:
 - utilise AltarHeartBlockEntity pour verifier multiblock forme
+- +getFillRatio() - ratio de remplissage pour le renderer
 
 ================================================================================
 ASSETS
 ================================================================================
 
 Blockstates:
-- blockstates/honey_reservoir.json (5 variantes selon fluid_level)
-- blockstates/altar_heart.json (2 variantes: formed/not formed)
+- blockstates/honey_reservoir.json (8 variantes: facing x formed)
 
-Models Block:
-- models/block/honey_reservoir.json (base, niveau 0)
-- models/block/honey_reservoir_level1.json (25%)
-- models/block/honey_reservoir_level2.json (50%)
-- models/block/honey_reservoir_level3.json (75%)
-- models/block/honey_reservoir_level4.json (100%)
-- models/block/altar_heart.json (etat normal)
-- models/block/altar_heart_formed.json (etat forme, lumineux)
+Models Block (dans models/block/altar/):
+- honey_reservoir.json (non-forme)
+- honey_reservoir_formed.json (forme)
 
 Models Item:
-- models/item/honey_reservoir.json
-- models/item/altar_heart.json
+- models/item/honey_reservoir.json -> parent: block/altar/honey_reservoir
+
+Textures (dans textures/block/altar/):
+- reservoir_cap.png (capuchon fer, non-forme)
+- reservoir_body.png (corps verre, non-forme)
+- reservoir_cap_formed.png (capuchon fer, forme)
+- reservoir_body_formed.png (corps verre, forme)
 
 Loot Tables:
 - data/beemancer/loot_table/blocks/altar_heart.json
@@ -156,9 +159,24 @@ Elements:
 - Rivets: petits cubes sur les capuchons de fer
 
 Texture reference:
-- Fer: minecraft:block/iron_block
-- Verre: beemancer:block/amber_glass (ou honey_tank)
-- Fluide: beemancer:block/honey_still (tinte selon type)
+- Capuchon: beemancer:block/altar/reservoir_cap
+- Corps: beemancer:block/altar/reservoir_body
+- Fluide: rendu dynamique via renderer (couleur du FluidType)
+
+================================================================================
+ROTATION VIA BLOCKSTATE
+================================================================================
+
+La rotation des reservoirs est geree comme un escalier Minecraft:
+- FACING=NORTH -> y: 90 (pointe vers sud)
+- FACING=SOUTH -> y: 270 (pointe vers nord)
+- FACING=EAST -> y: 180 (pointe vers ouest)
+- FACING=WEST -> y: 0 (pointe vers est)
+
+Quand le multibloc se forme:
+- AltarHeartBlockEntity.updateReservoir() met a jour FACING et FORMED
+- Le blockstate applique la rotation "y" au modele JSON
+- Le bloc physique tourne pour pointer vers le centre du multibloc
 
 ================================================================================
 DEPENDANCES
@@ -168,8 +186,8 @@ DEPENDANCES
 |-------------------------|-------------------------------------|
 | BeemancerFluids         | Types de fluides acceptes           |
 | MultiblockValidator     | Detection multiblock forme          |
-| HoneyCrystalBlockEntity | Reference controleur multibloc      |
 | FluidUtil               | Interaction buckets NeoForge        |
+| IClientFluidTypeExtensions | Couleur du fluide pour renderer  |
 
 ================================================================================
 REFERENCE CREATE/COBBLEMON
@@ -178,5 +196,6 @@ REFERENCE CREATE/COBBLEMON
 Pattern inspire de:
 - Create: FluidTankBlock / FluidTankBlockEntity
 - Style visuel: Create Basin, alchimie industrielle
+- Rotation: Minecraft stairs/slabs blockstate system
 
 ################################################################################

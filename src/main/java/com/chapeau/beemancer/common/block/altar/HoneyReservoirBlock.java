@@ -43,7 +43,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -63,7 +62,6 @@ import javax.annotation.Nullable;
 public class HoneyReservoirBlock extends BaseEntityBlock {
     public static final MapCodec<HoneyReservoirBlock> CODEC = simpleCodec(HoneyReservoirBlock::new);
 
-    public static final IntegerProperty FLUID_LEVEL = IntegerProperty.create("fluid_level", 0, 4);
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -80,7 +78,6 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
     public HoneyReservoirBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(FLUID_LEVEL, 0)
             .setValue(FORMED, false)
             .setValue(FACING, Direction.NORTH));
     }
@@ -92,7 +89,7 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FLUID_LEVEL, FORMED, FACING);
+        builder.add(FORMED, FACING);
     }
 
     @Override
@@ -134,7 +131,6 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
         // Try bucket interaction via FluidUtil
         boolean success = FluidUtil.interactWithFluidHandler(player, hand, level, pos, null);
         if (success) {
-            reservoir.updateFluidLevel();
             return ItemInteractionResult.SUCCESS;
         }
 
@@ -143,7 +139,6 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
             if (reservoir.isPartOfFormedMultiblock()) {
                 FluidStack drained = reservoir.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.EXECUTE);
                 if (!drained.isEmpty()) {
-                    reservoir.updateFluidLevel();
                     return ItemInteractionResult.SUCCESS;
                 }
             }

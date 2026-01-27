@@ -1,7 +1,9 @@
 {
-  "parent": "beemancer:block/honey_reservoir",
+  "parent": "minecraft:block/block",
   "textures": {
-    "fluid": "beemancer:block/honey_fluid_still"
+    "dark_iron": "beemancer:block/altar/reservoir_cap",
+    "amber_glass": "beemancer:block/altar/reservoir_body",
+    "particle": "beemancer:block/altar/reservoir_cap"
   },
   "elements": [
     {
@@ -39,19 +41,6 @@
         "west": {"texture": "#dark_iron", "uv": [4, 4, 12, 12]},
         "up": {"texture": "#dark_iron", "uv": [13, 4, 16, 12]},
         "down": {"texture": "#dark_iron", "uv": [13, 4, 16, 12]}
-      }
-    },
-    {
-      "name": "Fluid Level 2",
-      "from": [4, 5, 5],
-      "to": [12, 8, 11],
-      "faces": {
-        "north": {"texture": "#fluid", "uv": [4, 8, 12, 11]},
-        "east": {"texture": "#fluid", "uv": [5, 8, 11, 11]},
-        "south": {"texture": "#fluid", "uv": [4, 8, 12, 11]},
-        "west": {"texture": "#fluid", "uv": [5, 8, 11, 11]},
-        "up": {"texture": "#fluid", "uv": [4, 5, 12, 11]},
-        "down": {"texture": "#fluid", "uv": [4, 5, 12, 11]}
       }
     },
     {

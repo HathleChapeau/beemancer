@@ -1,10 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "cap": "beemancer:block/honey_reservoir_cap_formed",
-    "body": "beemancer:block/honey_reservoir_body_formed",
-    "fluid": "beemancer:block/honey_fluid_still",
-    "particle": "beemancer:block/honey_reservoir_cap_formed"
+    "cap": "beemancer:block/altar/reservoir_cap_formed",
+    "body": "beemancer:block/altar/reservoir_body_formed",
+    "particle": "beemancer:block/altar/reservoir_cap_formed"
   },
   "elements": [
     {
@@ -42,20 +41,6 @@
         "west": {"texture": "#cap", "uv": [3, 3, 13, 13]},
         "up": {"texture": "#cap", "uv": [13, 3, 15, 13]},
         "down": {"texture": "#cap", "uv": [13, 3, 15, 13]}
-      }
-    },
-    {
-      "name": "Fluid Level 3",
-      "from": [3, 5, 5],
-      "to": [13, 10, 11],
-      "shade": false,
-      "faces": {
-        "north": {"texture": "#fluid", "uv": [3, 6, 13, 11]},
-        "east": {"texture": "#fluid", "uv": [5, 6, 11, 11]},
-        "south": {"texture": "#fluid", "uv": [3, 6, 13, 11]},
-        "west": {"texture": "#fluid", "uv": [5, 6, 11, 11]},
-        "up": {"texture": "#fluid", "uv": [3, 5, 13, 11]},
-        "down": {"texture": "#fluid", "uv": [3, 5, 13, 11]}
       }
     }
   ]

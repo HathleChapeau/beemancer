@@ -3,6 +3,38 @@
 ################################################################################
 
 ================================================================================
+2026-01-27 - Refactorisation Honey Reservoir Models + Fluid Renderer
+================================================================================
+
+SUPPRESSIONS:
+- models/block/honey_reservoir_level1.json (et 2,3,4)
+- models/block/honey_reservoir_formed.json (et level1-4)
+- models/block/honey_reservoir_formed_z.json (et level1-4)
+- HoneyReservoirBlock.FLUID_LEVEL property (supprimee du blockstate)
+
+AJOUTS:
+- models/block/altar/honey_reservoir.json (model unique non-forme)
+- models/block/altar/honey_reservoir_formed.json (model unique forme)
+- textures/block/altar/reservoir_cap.png
+- textures/block/altar/reservoir_body.png
+- textures/block/altar/reservoir_cap_formed.png
+- textures/block/altar/reservoir_body_formed.png
+- client/renderer/block/HoneyReservoirRenderer.java (fluide avec scale dynamique)
+
+MODIFICATIONS:
+- blockstates/honey_reservoir.json: simplifie (8 variantes au lieu de 40)
+  - Rotation via propriete "y" basee sur FACING (comme escaliers)
+- HoneyReservoirBlock.java: supprime FLUID_LEVEL, garde FORMED + FACING
+- HoneyReservoirBlockEntity.java: +getFillRatio(), supprime updateFluidLevel()
+- ClientSetup.java: +registerBlockEntityRenderer(HONEY_RESERVOIR)
+
+REFACTORISATION:
+- Models: 18 fichiers -> 2 fichiers
+- Rotation geree par blockstate "y" (comme escaliers Minecraft)
+- Fluide rendu par HoneyReservoirRenderer avec scale dynamique
+- Textures organisees dans sous-dossier textures/block/altar/
+
+================================================================================
 2026-01-26 - AltarHeartRenderer - Multibloc Custom Render
 ================================================================================
 

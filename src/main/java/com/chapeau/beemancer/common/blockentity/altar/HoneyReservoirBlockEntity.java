@@ -10,7 +10,6 @@
  * |-------------------------|----------------------|-----------------------|
  * | BeemancerBlockEntities  | Type registration   | super()               |
  * | BeemancerFluids         | Fluides acceptés    | isFluidValid          |
- * | HoneyReservoirBlock     | BlockState update   | FLUID_LEVEL           |
  * | AltarHeartBlockEntity   | Multiblock check    | isPartOfFormedMultiblock |
  * ------------------------------------------------------------
  *
@@ -22,11 +21,9 @@
  */
 package com.chapeau.beemancer.common.blockentity.altar;
 
-import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -74,30 +71,11 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
     }
 
     /**
-     * Met à jour le blockstate FLUID_LEVEL basé sur le contenu du tank.
+     * Calcule le ratio de remplissage (0.0 à 1.0) pour le renderer.
      */
-    public void updateFluidLevel() {
-        if (level == null || level.isClientSide()) return;
-
-        int newLevel = calculateFluidLevel();
-        BlockState currentState = getBlockState();
-        int currentLevel = currentState.getValue(HoneyReservoirBlock.FLUID_LEVEL);
-
-        if (newLevel != currentLevel) {
-            level.setBlock(worldPosition, currentState.setValue(HoneyReservoirBlock.FLUID_LEVEL, newLevel), 3);
-        }
-    }
-
-    /**
-     * Calcule le niveau de fluide (0-4) basé sur le remplissage.
-     */
-    private int calculateFluidLevel() {
-        if (fluidTank.isEmpty()) return 0;
-        float ratio = (float) fluidTank.getFluidAmount() / CAPACITY;
-        if (ratio <= 0.25f) return 1;
-        if (ratio <= 0.50f) return 2;
-        if (ratio <= 0.75f) return 3;
-        return 4;
+    public float getFillRatio() {
+        if (fluidTank.isEmpty()) return 0f;
+        return (float) fluidTank.getFluidAmount() / CAPACITY;
     }
 
     /**
@@ -140,29 +118,17 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
 
     @Override
     public int fill(FluidStack resource, FluidAction action) {
-        int filled = fluidTank.fill(resource, action);
-        if (action.execute() && filled > 0) {
-            updateFluidLevel();
-        }
-        return filled;
+        return fluidTank.fill(resource, action);
     }
 
     @Override
     public FluidStack drain(FluidStack resource, FluidAction action) {
-        FluidStack drained = fluidTank.drain(resource, action);
-        if (action.execute() && !drained.isEmpty()) {
-            updateFluidLevel();
-        }
-        return drained;
+        return fluidTank.drain(resource, action);
     }
 
     @Override
     public FluidStack drain(int maxDrain, FluidAction action) {
-        FluidStack drained = fluidTank.drain(maxDrain, action);
-        if (action.execute() && !drained.isEmpty()) {
-            updateFluidLevel();
-        }
-        return drained;
+        return fluidTank.drain(maxDrain, action);
     }
 
     // --- Accessors ---
@@ -177,13 +143,6 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
 
     public FluidStack getFluid() {
         return fluidTank.getFluid();
-    }
-
-    /**
-     * Retourne le niveau de fluide actuel (0-4) pour le rendu.
-     */
-    public int getFluidLevel() {
-        return calculateFluidLevel();
     }
 
     // --- NBT ---
