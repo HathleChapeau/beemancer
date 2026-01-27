@@ -85,9 +85,10 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         float rotationAngle = AltarConduitAnimator.getRotationAngle(blockEntity, partialTick);
 
-        // Utiliser le BlockState FORMED pour avoir le modèle formed
+        // Utiliser le BlockState NON-FORMED car FORMED a RenderShape.INVISIBLE
+        // qui empêche renderSingleBlock de rendre quoi que ce soit
         BlockState conduitState = BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get().defaultBlockState()
-            .setValue(HoneyCrystalConduitBlock.FORMED, true)
+            .setValue(HoneyCrystalConduitBlock.FORMED, false)
             .setValue(HoneyCrystalConduitBlock.FACING, Direction.NORTH);
 
         if (logCounter % 100 == 1) {
