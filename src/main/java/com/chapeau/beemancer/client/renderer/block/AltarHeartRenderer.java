@@ -64,8 +64,8 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         renderBigHeart(poseStack, buffer, packedLight);
         poseStack.popPose();
 
-        // === CONDUITS EN ORBITE ===
-        renderOrbitingConduits(blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay);
+        // === CONDUITS EN ORBITE === (COMMENTÉ POUR DEBUG)
+        // renderOrbitingConduits(blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay);
     }
 
     /**

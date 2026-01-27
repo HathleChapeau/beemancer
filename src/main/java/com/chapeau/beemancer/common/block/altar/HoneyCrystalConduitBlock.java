@@ -64,7 +64,9 @@ public class HoneyCrystalConduitBlock extends Block {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        // Quand formé, le rendu normal est désactivé - l'animation orbitale est gérée par AltarHeartRenderer
-        return state.getValue(FORMED) ? RenderShape.INVISIBLE : RenderShape.MODEL;
+        // DEBUG: Toujours visible pour tester
+        return RenderShape.MODEL;
+        // TODO: Remettre quand l'animation fonctionne:
+        // return state.getValue(FORMED) ? RenderShape.INVISIBLE : RenderShape.MODEL;
     }
 }
