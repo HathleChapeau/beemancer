@@ -3,7 +3,7 @@
   "render_type": "translucent",
   "textures": {
     "cap": "minecraft:block/copper_block",
-    "body": "minecraft:block/glass",
+    "body": "minecraft:block/copper_block",
     "particle": "beemancer:block/altar/reservoir_cap_formed"
   },
   "elements": [
