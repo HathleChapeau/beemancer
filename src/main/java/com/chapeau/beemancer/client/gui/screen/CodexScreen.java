@@ -1,20 +1,20 @@
 /**
  * ============================================================
  * [CodexScreen.java]
- * Description: Screen principal du Codex avec onglets et nodes
+ * Description: Screen principal du Codex avec onglets et delegation
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation                    |
+ * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | CodexManager        | Accès aux nodes      | Récupération des données       |
- * | CodexPlayerData     | Progression joueur   | État des déblocages            |
- * | CodexNodeWidget     | Rendu des nodes      | Affichage interactif           |
+ * | CodexPageRenderer   | Interface renderers  | Delegation par page            |
+ * | BeeTreePageRenderer | Page BEES            | Rendu abeilles 3D              |
+ * | StandardPageRenderer| Pages standard       | Rendu nodes classiques         |
  * | BeemancerSounds     | Sons                 | Feedback audio                 |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - CodexItem (ouverture du screen)
  *
  * ============================================================
@@ -22,33 +22,30 @@
 package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.client.gui.widget.BeeNodeWidget;
-import com.chapeau.beemancer.client.gui.widget.CodexNodeWidget;
+import com.chapeau.beemancer.client.gui.screen.codex.BeeTreePageRenderer;
+import com.chapeau.beemancer.client.gui.screen.codex.CodexPageRenderer;
+import com.chapeau.beemancer.client.gui.screen.codex.StandardPageRenderer;
 import com.chapeau.beemancer.common.codex.*;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
 import com.chapeau.beemancer.core.registry.BeemancerAttachments;
 import com.chapeau.beemancer.core.registry.BeemancerSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundSource;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.*;
 
 public class CodexScreen extends Screen {
     private static final ResourceLocation BACKGROUND_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/codex_background.png"
+            Beemancer.MOD_ID, "textures/gui/codex_background.png"
     );
     private static final ResourceLocation WINDOW_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/codex_window.png"
-    );
-    // Achievement-style background for bee tree
-    private static final ResourceLocation ADVANCEMENT_BACKGROUND = ResourceLocation.withDefaultNamespace(
-        "textures/gui/advancements/backgrounds/stone.png"
+            Beemancer.MOD_ID, "textures/gui/codex_window.png"
     );
 
     private static final int WINDOW_WIDTH = 252;
@@ -60,8 +57,8 @@ public class CodexScreen extends Screen {
 
     private CodexPage currentPage = CodexPage.BEES;
     private final Map<CodexPage, Button> tabButtons = new EnumMap<>(CodexPage.class);
-    private final List<CodexNodeWidget> nodeWidgets = new ArrayList<>();
-    private final List<BeeNodeWidget> beeWidgets = new ArrayList<>();
+    private final Map<CodexPage, CodexPageRenderer> pageRenderers = new EnumMap<>(CodexPage.class);
+    private CodexPageRenderer currentRenderer;
 
     private int windowX;
     private int windowY;
@@ -74,11 +71,17 @@ public class CodexScreen extends Screen {
     private double scrollX = 0;
     private double scrollY = 0;
     private boolean isDragging = false;
-    private double dragStartX;
-    private double dragStartY;
 
     public CodexScreen() {
         super(Component.translatable("screen.beemancer.codex"));
+        initRenderers();
+    }
+
+    private void initRenderers() {
+        pageRenderers.put(CodexPage.BEES, new BeeTreePageRenderer());
+        pageRenderers.put(CodexPage.BEE, new StandardPageRenderer());
+        pageRenderers.put(CodexPage.ALCHEMY, new StandardPageRenderer());
+        pageRenderers.put(CodexPage.LOGISTICS, new StandardPageRenderer());
     }
 
     @Override
@@ -93,6 +96,7 @@ public class CodexScreen extends Screen {
         contentHeight = WINDOW_HEIGHT - CONTENT_PADDING * 2 - 20;
 
         createTabButtons();
+        currentRenderer = pageRenderers.get(currentPage);
         rebuildNodeWidgets();
     }
 
@@ -110,11 +114,7 @@ public class CodexScreen extends Screen {
             Button tabButton = Button.builder(page.getDisplayName(), btn -> {
                 if (currentPage != currentPageRef) {
                     playSound(BeemancerSounds.CODEX_PAGE_TURN.get());
-                    currentPage = currentPageRef;
-                    scrollX = 0;
-                    scrollY = 0;
-                    rebuildNodeWidgets();
-                    updateTabButtonStyles();
+                    switchToPage(currentPageRef);
                 }
             }).bounds(tabX, tabY, TAB_WIDTH, TAB_HEIGHT).build();
 
@@ -123,6 +123,19 @@ public class CodexScreen extends Screen {
             tabX += TAB_WIDTH + 4;
         }
 
+        updateTabButtonStyles();
+    }
+
+    private void switchToPage(CodexPage page) {
+        // Clear current widgets
+        clearCurrentWidgets();
+
+        currentPage = page;
+        currentRenderer = pageRenderers.get(currentPage);
+        scrollX = 0;
+        scrollY = 0;
+
+        rebuildNodeWidgets();
         updateTabButtonStyles();
     }
 
@@ -135,185 +148,64 @@ public class CodexScreen extends Screen {
     }
 
     private void rebuildNodeWidgets() {
-        // Remove old widgets
-        for (CodexNodeWidget widget : nodeWidgets) {
-            removeWidget(widget);
-        }
-        nodeWidgets.clear();
+        clearCurrentWidgets();
 
-        for (BeeNodeWidget widget : beeWidgets) {
-            removeWidget(widget);
-        }
-        beeWidgets.clear();
-
-        // Get player data
         CodexPlayerData playerData = getPlayerData();
         Set<String> unlockedNodes = playerData.getUnlockedNodes();
-
-        // Get nodes for current page
         List<CodexNode> nodes = CodexManager.getNodesForPage(currentPage);
 
-        for (CodexNode node : nodes) {
-            // Check visibility
-            if (!CodexManager.isVisible(node, unlockedNodes)) {
-                continue;
+        currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData,
+                contentX, contentY, NODE_SPACING, scrollX, scrollY);
+
+        // Add widgets to screen
+        for (Object widget : currentRenderer.getWidgets()) {
+            if (widget instanceof AbstractWidget abstractWidget) {
+                addRenderableWidget(abstractWidget);
             }
+        }
+    }
 
-            boolean unlocked = playerData.isUnlocked(node);
-            boolean canUnlock = CodexManager.canUnlock(node, unlockedNodes);
-
-            int nodeScreenX = contentX + node.getX() * NODE_SPACING + (int) scrollX;
-            int nodeScreenY = contentY + node.getY() * NODE_SPACING + (int) scrollY;
-
-            // Use BeeNodeWidget for BEES page, CodexNodeWidget for others
-            if (currentPage.isBeeTree()) {
-                BeeNodeWidget widget = new BeeNodeWidget(node, nodeScreenX, nodeScreenY, unlocked, canUnlock);
-                beeWidgets.add(widget);
-                addRenderableWidget(widget);
-            } else {
-                CodexNodeWidget widget = new CodexNodeWidget(node, nodeScreenX, nodeScreenY, unlocked, canUnlock);
-                nodeWidgets.add(widget);
-                addRenderableWidget(widget);
+    private void clearCurrentWidgets() {
+        if (currentRenderer != null) {
+            for (Object widget : currentRenderer.getWidgets()) {
+                if (widget instanceof AbstractWidget abstractWidget) {
+                    removeWidget(abstractWidget);
+                }
             }
+            currentRenderer.clearWidgets();
         }
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Render dark background
         renderBackground(graphics, mouseX, mouseY, partialTick);
-
-        // Render tiled background pattern
         renderTiledBackground(graphics);
 
-        // Render window frame
         graphics.blit(WINDOW_TEXTURE, windowX, windowY, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        // Enable scissor for content area
         graphics.enableScissor(contentX, contentY, contentX + contentWidth, contentY + contentHeight);
 
-        // Render connection lines between nodes
-        renderConnections(graphics);
-
-        // Render node widgets
+        currentRenderer.renderConnections(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
 
         graphics.disableScissor();
 
-        // Render tooltips (outside scissor)
-        if (currentPage.isBeeTree()) {
-            for (BeeNodeWidget widget : beeWidgets) {
-                widget.renderTooltip(graphics, mouseX, mouseY);
-            }
-        } else {
-            for (CodexNodeWidget widget : nodeWidgets) {
-                widget.renderTooltip(graphics, mouseX, mouseY);
-            }
-        }
+        currentRenderer.renderTooltips(graphics, mouseX, mouseY);
 
-        // Render title
         graphics.drawCenteredString(font, currentPage.getDisplayName(), width / 2, windowY + 6, 0xFFFFFF);
-
-        // Render page progress
         renderProgress(graphics);
     }
 
     private void renderTiledBackground(GuiGraphics graphics) {
         int tileSize = 16;
-
         for (int x = contentX; x < contentX + contentWidth; x += tileSize) {
             for (int y = contentY; y < contentY + contentHeight; y += tileSize) {
                 graphics.blit(BACKGROUND_TEXTURE, x, y, 0, 0,
-                    Math.min(tileSize, contentX + contentWidth - x),
-                    Math.min(tileSize, contentY + contentHeight - y),
-                    tileSize, tileSize);
+                        Math.min(tileSize, contentX + contentWidth - x),
+                        Math.min(tileSize, contentY + contentHeight - y),
+                        tileSize, tileSize);
             }
         }
-    }
-
-    private void renderConnections(GuiGraphics graphics) {
-        if (currentPage.isBeeTree()) {
-            renderBeeConnections(graphics);
-        } else {
-            renderCodexConnections(graphics);
-        }
-    }
-
-    private void renderCodexConnections(GuiGraphics graphics) {
-        for (CodexNodeWidget widget : nodeWidgets) {
-            CodexNode node = widget.getNode();
-            String parentId = node.getParentId();
-
-            if (parentId != null) {
-                CodexNodeWidget parentWidget = findCodexWidgetByNodeId(parentId);
-                if (parentWidget != null) {
-                    int startX = parentWidget.getX() + CodexNodeWidget.NODE_SIZE / 2;
-                    int startY = parentWidget.getY() + CodexNodeWidget.NODE_SIZE / 2;
-                    int endX = widget.getX() + CodexNodeWidget.NODE_SIZE / 2;
-                    int endY = widget.getY() + CodexNodeWidget.NODE_SIZE / 2;
-
-                    int lineColor = widget.isUnlocked() ? 0xFF00FF00 : 0xFF666666;
-
-                    int midX = (startX + endX) / 2;
-                    graphics.fill(startX, startY - 1, midX, startY + 1, lineColor);
-                    graphics.fill(midX - 1, startY, midX + 1, endY, lineColor);
-                    graphics.fill(midX, endY - 1, endX, endY + 1, lineColor);
-                }
-            }
-        }
-    }
-
-    private void renderBeeConnections(GuiGraphics graphics) {
-        for (BeeNodeWidget widget : beeWidgets) {
-            CodexNode node = widget.getNode();
-            String parentId = node.getParentId();
-
-            if (parentId != null) {
-                BeeNodeWidget parentWidget = findBeeWidgetByNodeId(parentId);
-                if (parentWidget != null) {
-                    int startX = parentWidget.getX() + BeeNodeWidget.NODE_SIZE / 2;
-                    int startY = parentWidget.getY() + BeeNodeWidget.NODE_SIZE / 2;
-                    int endX = widget.getX() + BeeNodeWidget.NODE_SIZE / 2;
-                    int endY = widget.getY() + BeeNodeWidget.NODE_SIZE / 2;
-
-                    // Golden connections for bees
-                    int lineColor = widget.isUnlocked() ? 0xFFFFAA00 : 0xFF555555;
-                    int lineWidth = 2;
-
-                    // Draw bezier-like connection
-                    int midX = (startX + endX) / 2;
-                    int midY = (startY + endY) / 2;
-
-                    // Horizontal from parent
-                    graphics.fill(Math.min(startX, midX), startY - lineWidth/2,
-                                  Math.max(startX, midX), startY + lineWidth/2, lineColor);
-                    // Vertical connector
-                    graphics.fill(midX - lineWidth/2, Math.min(startY, endY),
-                                  midX + lineWidth/2, Math.max(startY, endY), lineColor);
-                    // Horizontal to child
-                    graphics.fill(Math.min(midX, endX), endY - lineWidth/2,
-                                  Math.max(midX, endX), endY + lineWidth/2, lineColor);
-                }
-            }
-        }
-    }
-
-    private CodexNodeWidget findCodexWidgetByNodeId(String nodeId) {
-        for (CodexNodeWidget widget : nodeWidgets) {
-            if (widget.getNode().getId().equals(nodeId)) {
-                return widget;
-            }
-        }
-        return null;
-    }
-
-    private BeeNodeWidget findBeeWidgetByNodeId(String nodeId) {
-        for (BeeNodeWidget widget : beeWidgets) {
-            if (widget.getNode().getId().equals(nodeId)) {
-                return widget;
-            }
-        }
-        return null;
     }
 
     private void renderProgress(GuiGraphics graphics) {
@@ -322,50 +214,34 @@ public class CodexScreen extends Screen {
         int total = CodexManager.getNodesForPage(currentPage).size();
 
         String progress = unlocked + "/" + total;
-        graphics.drawString(font, progress, windowX + WINDOW_WIDTH - font.width(progress) - 8, 
-            windowY + WINDOW_HEIGHT - 14, 0xAAAAAA);
+        graphics.drawString(font, progress, windowX + WINDOW_WIDTH - font.width(progress) - 8,
+                windowY + WINDOW_HEIGHT - 14, 0xAAAAAA);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
-            // Check node clicks based on current page type
-            if (currentPage.isBeeTree()) {
-                for (BeeNodeWidget widget : beeWidgets) {
-                    if (widget.isMouseOver(mouseX, mouseY)) {
-                        if (widget.canUnlock() && !widget.isUnlocked()) {
-                            unlockBeeNode(widget);
-                            return true;
-                        } else if (widget.isUnlocked()) {
-                            playSound(BeemancerSounds.CODEX_NODE_CLICK.get());
-                            return true;
-                        }
-                    }
-                }
-            } else {
-                for (CodexNodeWidget widget : nodeWidgets) {
-                    if (widget.isMouseOver(mouseX, mouseY)) {
-                        if (widget.canUnlock() && !widget.isUnlocked()) {
-                            unlockNode(widget);
-                            return true;
-                        } else if (widget.isUnlocked()) {
-                            playSound(BeemancerSounds.CODEX_NODE_CLICK.get());
-                            return true;
-                        }
-                    }
-                }
+            boolean handled = currentRenderer.handleClick(mouseX, mouseY, this::handleNodeClick);
+            if (handled) {
+                return true;
             }
 
-            // Start dragging for scroll
             if (isInContentArea(mouseX, mouseY)) {
                 isDragging = true;
-                dragStartX = mouseX;
-                dragStartY = mouseY;
                 return true;
             }
         }
-
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private void handleNodeClick(CodexNode node, boolean isUnlocked, boolean canUnlock) {
+        if (canUnlock && !isUnlocked) {
+            PacketDistributor.sendToServer(new CodexUnlockPacket(node.getFullId()));
+            playSound(BeemancerSounds.CODEX_NODE_UNLOCK.get());
+            rebuildNodeWidgets();
+        } else if (isUnlocked) {
+            playSound(BeemancerSounds.CODEX_NODE_CLICK.get());
+        }
     }
 
     @Override
@@ -381,66 +257,25 @@ public class CodexScreen extends Screen {
         if (isDragging && button == 0) {
             scrollX += dragX;
             scrollY += dragY;
-            updateNodePositions();
+            currentRenderer.updatePositions(contentX, contentY, NODE_SPACING, scrollX, scrollY);
             return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollXDelta, double scrollYDelta) {
         if (isInContentArea(mouseX, mouseY)) {
-            this.scrollY += scrollY * 20;
-            updateNodePositions();
+            this.scrollY += scrollYDelta * 20;
+            currentRenderer.updatePositions(contentX, contentY, NODE_SPACING, scrollX, scrollY);
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
-    }
-
-    private void updateNodePositions() {
-        for (CodexNodeWidget widget : nodeWidgets) {
-            CodexNode node = widget.getNode();
-            int nodeScreenX = contentX + node.getX() * NODE_SPACING + (int) scrollX;
-            int nodeScreenY = contentY + node.getY() * NODE_SPACING + (int) scrollY;
-            widget.setX(nodeScreenX);
-            widget.setY(nodeScreenY);
-        }
-        for (BeeNodeWidget widget : beeWidgets) {
-            CodexNode node = widget.getNode();
-            int nodeScreenX = contentX + node.getX() * NODE_SPACING + (int) scrollX;
-            int nodeScreenY = contentY + node.getY() * NODE_SPACING + (int) scrollY;
-            widget.setX(nodeScreenX);
-            widget.setY(nodeScreenY);
-        }
+        return super.mouseScrolled(mouseX, mouseY, scrollXDelta, scrollYDelta);
     }
 
     private boolean isInContentArea(double mouseX, double mouseY) {
         return mouseX >= contentX && mouseX < contentX + contentWidth
-            && mouseY >= contentY && mouseY < contentY + contentHeight;
-    }
-
-    private void unlockNode(CodexNodeWidget widget) {
-        // Send packet to server
-        PacketDistributor.sendToServer(new CodexUnlockPacket(widget.getNode().getFullId()));
-
-        // Optimistic update
-        widget.setUnlocked(true);
-        playSound(BeemancerSounds.CODEX_NODE_UNLOCK.get());
-
-        // Update can-unlock status for children
-        rebuildNodeWidgets();
-    }
-
-    private void unlockBeeNode(BeeNodeWidget widget) {
-        // Send packet to server
-        PacketDistributor.sendToServer(new CodexUnlockPacket(widget.getNode().getFullId()));
-
-        // Optimistic update
-        widget.setUnlocked(true);
-        playSound(BeemancerSounds.CODEX_NODE_UNLOCK.get());
-
-        // Update can-unlock status for children
-        rebuildNodeWidgets();
+                && mouseY >= contentY && mouseY < contentY + contentHeight;
     }
 
     private void playSound(net.minecraft.sounds.SoundEvent sound) {
