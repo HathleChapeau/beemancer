@@ -32,13 +32,13 @@ import net.minecraft.world.level.Level;
 public class DebugWandItem extends Item {
 
     // Valeurs par défaut
-    private static final float DEFAULT_1 = 0.5f;   // Pos X
-    private static final float DEFAULT_2 = 1.1f;   // Pos Y
-    private static final float DEFAULT_3 = 0.5f;   // Pos Z
-    private static final float DEFAULT_4 = -30.0f; // Rot X
-    private static final float DEFAULT_5 = 225.0f; // Rot Y
+    private static final float DEFAULT_1 = 0f;   // Pos X
+    private static final float DEFAULT_2 = 0f;   // Pos Y
+    private static final float DEFAULT_3 = 0f;   // Pos Z
+    private static final float DEFAULT_4 = 0f; // Rot X
+    private static final float DEFAULT_5 = 0f; // Rot Y
     private static final float DEFAULT_6 = 0.0f;
-    private static final float DEFAULT_7 = 1.4f;   // Scale
+    private static final float DEFAULT_7 = 0f;   // Scale
     private static final float DEFAULT_8 = 0.0f;
     private static final float DEFAULT_9 = 0.0f;
 

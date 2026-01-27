@@ -95,21 +95,21 @@ public class MagicBeeItemRenderer extends BlockEntityWithoutLevelRenderer {
             }
             case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
                 // En main première personne
-                poseStack.translate(0.5, 0.5, 0.5);
+                poseStack.translate(0.5, 2.0f, 0.5);
                 poseStack.scale(-1.0f, -1.0f, 1.0f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(180));
-                poseStack.scale(0.7f, 0.7f, 0.7f);
+                poseStack.mulPose(Axis.YP.rotationDegrees(-114.0f));
+                poseStack.scale(1f, 1f, 1f);
             }
             case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND -> {
                 // En main troisième personne
-                poseStack.translate(0.5, 0.4, 0.5);
+                poseStack.translate(0.5f, 0.2f, 1.2f);
                 poseStack.scale(-1.0f, -1.0f, 1.0f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(180));
+                poseStack.mulPose(Axis.XP.rotationDegrees(-116.4f));
                 poseStack.scale(0.6f, 0.6f, 0.6f);
             }
             case GROUND -> {
                 // Au sol
-                poseStack.translate(0.5, 0.3, 0.5);
+                poseStack.translate(0.5, 1.2f, 0.5);
                 poseStack.scale(-1.0f, -1.0f, 1.0f);
                 poseStack.mulPose(Axis.YP.rotationDegrees(225));
                 poseStack.scale(0.6f, 0.6f, 0.6f);
