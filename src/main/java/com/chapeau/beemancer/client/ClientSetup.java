@@ -13,7 +13,6 @@ import com.chapeau.beemancer.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.beemancer.client.gui.hud.WandOverlayRenderer;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
 import com.chapeau.beemancer.client.input.DebugKeyHandler;
-import com.chapeau.beemancer.client.input.RidingInputHandler;
 import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
 import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
@@ -66,8 +65,7 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.register(DebugKeyHandler.class);
         NeoForge.EVENT_BUS.register(BeeDebugRenderer.class);
 
-        // Riding system
-        NeoForge.EVENT_BUS.register(RidingInputHandler.class);
+        // Riding system - caméra seulement (input lu directement depuis le joueur)
         NeoForge.EVENT_BUS.register(RidingCameraController.class);
     }
 

@@ -47,16 +47,20 @@ public record RidingSettings(
 
     /**
      * Valeurs par défaut utilisées si le JSON n'est pas disponible.
+     * Basé sur Cobblemon HorseBehaviour.kt
+     *
+     * acceleration: Temps en secondes pour atteindre topSpeed
+     *   (Cobblemon: topSpeed / (accelExpr * 20.0))
      */
     public static final RidingSettings DEFAULT = new RidingSettings(
-        0.15f,   // walkSpeed
-        0.45f,   // maxRunSpeed
-        0.02f,   // acceleration
-        0.03f,   // deceleration
+        0.12f,   // walkSpeed (blocs/tick)
+        0.35f,   // maxRunSpeed (blocs/tick)
+        1.5f,    // acceleration (secondes pour atteindre maxSpeed)
+        0.03f,   // deceleration (friction au sol par tick)
         20.0f,   // health
-        0.5f,    // walkJumpStrength
-        1.2f,    // runLeapForce
-        0.15f    // turnInertia
+        0.42f,   // walkJumpStrength (vanilla horse = 0.42)
+        0.8f,    // runLeapForce
+        0.15f    // turnInertia (non utilisé actuellement)
     );
 
     /**

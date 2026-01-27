@@ -19,10 +19,8 @@
  */
 package com.chapeau.beemancer.client.camera;
 
-import com.chapeau.beemancer.client.input.RidingInputHandler;
 import com.chapeau.beemancer.common.entity.mount.RideableBeeEntity;
 import com.chapeau.beemancer.common.entity.mount.RidingMode;
-import com.chapeau.beemancer.common.entity.mount.RidingSettingsLoader;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -36,7 +34,7 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
  * Contrôle la caméra quand le joueur monte une RideableBeeEntity.
  *
  * Mode WALK: Caméra 3ème personne libre (joueur peut regarder librement)
- * Mode RUN: Caméra fixée à l'épaule droite, regarde vers l'avant
+ * Mode RUN: Caméra fixée derrière l'abeille, regarde vers l'avant
  */
 @OnlyIn(Dist.CLIENT)
 public class RidingCameraController {
@@ -45,10 +43,8 @@ public class RidingCameraController {
     private static CameraType savedCameraType = null;
     private static boolean wasRiding = false;
 
-    // Offset de la caméra épaule (mode RUN)
-    private static final float SHOULDER_OFFSET_X = 0.8f;   // Droite
-    private static final float SHOULDER_OFFSET_Y = 0.5f;   // Haut
-    private static final float SHOULDER_PITCH = 10f;       // Légère plongée
+    // Paramètres caméra mode RUN
+    private static final float SHOULDER_PITCH = 15f; // Légère plongée vers l'avant
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -71,7 +67,7 @@ public class RidingCameraController {
 
         wasRiding = isRiding;
 
-        // En mode RUN, forcer la caméra en 3ème personne si le joueur essaie de changer
+        // En mode RUN, forcer la caméra en 3ème personne
         if (isRiding) {
             RideableBeeEntity bee = (RideableBeeEntity) player.getVehicle();
             if (bee.getRidingMode() == RidingMode.RUN) {
@@ -104,8 +100,6 @@ public class RidingCameraController {
             mc.options.setCameraType(savedCameraType);
             savedCameraType = null;
         }
-        // Reset le cache d'input
-        RidingInputHandler.resetCache();
     }
 
     @SubscribeEvent
@@ -136,15 +130,15 @@ public class RidingCameraController {
         if (player == null) return;
         if (!(player.getVehicle() instanceof RideableBeeEntity bee)) return;
 
-        // En mode RUN avec vitesse élevée, augmenter légèrement le FOV pour effet de vitesse
+        // En mode RUN avec vitesse élevée, augmenter légèrement le FOV
         if (bee.getRidingMode() == RidingMode.RUN) {
             float speed = bee.getSyncedSpeed();
-            float maxSpeed = RidingSettingsLoader.getSettings().maxRunSpeed();
+            float maxSpeed = bee.getSettings().maxRunSpeed();
             float speedRatio = Math.min(speed / maxSpeed, 1.0f);
 
-            // Augmenter le FOV jusqu'à +10° à vitesse max
+            // Augmenter le FOV jusqu'à +15° à vitesse max
             double baseFov = event.getFOV();
-            double fovBoost = speedRatio * 10.0;
+            double fovBoost = speedRatio * 15.0;
             event.setFOV(baseFov + fovBoost);
         }
     }
