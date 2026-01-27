@@ -21,6 +21,7 @@ package com.chapeau.beemancer.client.gui.widget;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.codex.CodexNode;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -145,15 +146,14 @@ public class BeeNodeWidget extends AbstractWidget {
         poseStack.pushPose();
 
         // Position at center of widget
-        poseStack.translate(centerX, centerY + 3, 100);
+        poseStack.translate(centerX, centerY - 50, 100);
 
         // Scale up bee model (5x zoom)
         float scale = 40.0f;
         poseStack.scale(scale, scale, scale);
 
         // Flip and rotate for display
-        poseStack.scale(-1.0f, -1.0f, 1.0f);
-        poseStack.mulPose(Axis.XP.rotationDegrees(-20));
+        poseStack.mulPose(Axis.XP.rotationDegrees(20));
         poseStack.mulPose(Axis.YP.rotationDegrees(45 + (hovered ? partialTick * 2 : 0)));
 
         // Get buffer source and render

@@ -30,8 +30,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class CodexNodeWidget extends AbstractWidget {
-    public static final int NODE_SIZE = 26;
-    public static final int ICON_SIZE = 16;
+    public static final int NODE_SIZE = 20;
+    public static final int ICON_SIZE = 14;
     private static final ResourceLocation WIDGETS_TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Beemancer.MOD_ID, "textures/gui/codex_widgets.png"
     );
