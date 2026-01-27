@@ -6,17 +6,17 @@
   },
   "elements": [
     {
-      "name": "Conduit Bar 2x2x24",
-      "from": [7, 7, -4],
-      "to": [9, 9, 20],
+      "name": "Conduit Bar 24x2x2",
+      "from": [-4, 7, 7],
+      "to": [20, 9, 9],
       "shade": false,
       "faces": {
         "north": {"texture": "#conduit", "uv": [7, 7, 9, 9]},
-        "east": {"texture": "#conduit", "uv": [0, 7, 16, 9]},
+        "east": {"texture": "#conduit", "uv": [0, 7, 9, 16]},
         "south": {"texture": "#conduit", "uv": [7, 7, 9, 9]},
-        "west": {"texture": "#conduit", "uv": [0, 7, 16, 9]},
-        "up": {"texture": "#conduit", "uv": [0, 7, 16, 9]},
-        "down": {"texture": "#conduit", "uv": [0, 7, 16, 9]}
+        "west": {"texture": "#conduit", "uv": [0, 7, 9, 16]},
+        "up": {"texture": "#conduit", "uv": [0, 7, 9, 16]},
+        "down": {"texture": "#conduit", "uv": [0, 7, 9, 16]}
       }
     }
   ]
