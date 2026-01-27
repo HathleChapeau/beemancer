@@ -36,6 +36,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * Renderer pour le Honey Altar multibloc.
@@ -64,8 +65,8 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         renderBigHeart(poseStack, buffer, packedLight);
         poseStack.popPose();
 
-        // === CONDUITS EN ORBITE === (COMMENTÉ POUR DEBUG)
-        // renderOrbitingConduits(blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay);
+        // === CONDUITS EN ORBITE ===
+        renderOrbitingConduits(blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay);
     }
 
     /**
@@ -105,13 +106,15 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             // Revenir au coin du bloc
             poseStack.translate(-0.5, -0.5, -0.5);
 
-            // Rendre le modèle
+            // Rendre le modèle avec la signature NeoForge complète
             blockRenderer.renderSingleBlock(
                 conduitState,
                 poseStack,
                 buffer,
                 packedLight,
-                packedOverlay
+                packedOverlay,
+                ModelData.EMPTY,
+                RenderType.cutout()  // cutout pour les textures avec transparence
             );
 
             poseStack.popPose();
