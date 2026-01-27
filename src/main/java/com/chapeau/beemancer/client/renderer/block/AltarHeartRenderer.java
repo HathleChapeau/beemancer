@@ -79,12 +79,12 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         float rotationAngle = AltarConduitAnimator.getRotationAngle(blockEntity, partialTick);
 
-        // BlockState du conduit formé (utiliser SOUTH comme facing de base, rotation 0°)
+        // BlockState du conduit formé pour récupérer le BakedModel
         BlockState conduitState = BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get().defaultBlockState()
             .setValue(HoneyCrystalConduitBlock.FORMED, true)
             .setValue(HoneyCrystalConduitBlock.FACING, Direction.SOUTH);
 
-        // Récupérer le BakedModel pour le rendu direct
+        // Récupérer le BakedModel (disponible même si RenderShape=INVISIBLE)
         BakedModel model = blockRenderer.getBlockModel(conduitState);
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.solid());
 
@@ -109,7 +109,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
                 vertexConsumer,
                 conduitState,
                 model,
-                1.0f, 1.0f, 1.0f, // Couleur blanche (pas de tint)
+                1.0f, 1.0f, 1.0f,
                 packedLight,
                 packedOverlay,
                 net.neoforged.neoforge.client.model.data.ModelData.EMPTY,
