@@ -72,9 +72,10 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         float rotationAngle = AltarConduitAnimator.getRotationAngle(blockEntity, partialTick);
 
-        // Utiliser le BlockState FORMED pour avoir le modèle barre
+        // Utiliser le BlockState NON-FORMED car FORMED a RenderShape.INVISIBLE
+        // qui empêche renderSingleBlock de fonctionner
         BlockState conduitState = BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get().defaultBlockState()
-            .setValue(HoneyCrystalConduitBlock.FORMED, true)
+            .setValue(HoneyCrystalConduitBlock.FORMED, false)
             .setValue(HoneyCrystalConduitBlock.FACING, Direction.NORTH);
 
         // Rendre les 4 conduits en orbite
