@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "conduit": "beemancer:block/honey_crystal_conduit",
-    "particle": "beemancer:block/honey_crystal_conduit"
+    "conduit": "beemancer:block/altar/honey_crystal_conduit",
+    "particle": "beemancer:block/altar/honey_crystal_conduit"
   },
   "elements": [
     {

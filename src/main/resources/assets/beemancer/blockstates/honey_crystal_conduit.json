@@ -4,9 +4,9 @@
     "facing=south,formed=false": { "model": "beemancer:block/altar/honey_crystal_conduit" },
     "facing=east,formed=false": { "model": "beemancer:block/altar/honey_crystal_conduit" },
     "facing=west,formed=false": { "model": "beemancer:block/altar/honey_crystal_conduit" },
-    "facing=north,formed=true": { "model": "beemancer:block/altar/honey_crystal_conduit_formed" },
-    "facing=south,formed=true": { "model": "beemancer:block/altar/honey_crystal_conduit_formed" },
-    "facing=east,formed=true": { "model": "beemancer:block/altar/honey_crystal_conduit_formed_x" },
-    "facing=west,formed=true": { "model": "beemancer:block/altar/honey_crystal_conduit_formed_x" }
+    "facing=north,formed=true": { "model": "beemancer:block/altar/honey_crystal_conduit_formed", "y": 0 },
+    "facing=south,formed=true": { "model": "beemancer:block/altar/honey_crystal_conduit_formed", "y": 180 },
+    "facing=east,formed=true": { "model": "beemancer:block/altar/honey_crystal_conduit_formed", "y": 90 },
+    "facing=west,formed=true": { "model": "beemancer:block/altar/honey_crystal_conduit_formed", "y": 270 }
   }
 }
