@@ -64,8 +64,6 @@ public class HoneyCrystalConduitBlock extends Block {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        // Quand formé: invisible (rendu par AltarHeartRenderer avec animation)
-        // Quand non-formé: modèle standard
-        return state.getValue(FORMED) ? RenderShape.INVISIBLE : RenderShape.MODEL;
+        return RenderShape.MODEL;
     }
 }
