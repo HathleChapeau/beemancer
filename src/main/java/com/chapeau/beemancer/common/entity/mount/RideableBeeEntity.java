@@ -149,25 +149,48 @@ public class RideableBeeEntity extends Bee implements PlayerRideable {
         return new Vec3(0, dimensions.height() * 0.75, 0);
     }
 
+    // --- Control ---
+
+    /**
+     * Indique que le client local contrôle cette entité quand montée.
+     * Cela permet à Minecraft de synchroniser les inputs correctement.
+     */
+    @Override
+    protected boolean isControlledByLocalInstance() {
+        LivingEntity passenger = this.getControllingPassenger();
+        if (passenger instanceof Player player) {
+            return player.isLocalPlayer();
+        }
+        return false;
+    }
+
     // --- Movement (pattern Cobblemon HorseBehaviour.kt) ---
 
+    /**
+     * travelVector contient les inputs synchronisés:
+     * - x = strafe (A/D)
+     * - z = forward (W/S)
+     */
     @Override
     public void travel(Vec3 travelVector) {
         if (this.getControllingPassenger() instanceof Player driver) {
             // === JOUEUR MONTE: contrôle du mouvement ===
 
-            // Gestion du sprint (Cobblemon handleSprinting ligne 141-159)
-            handleSprinting(driver);
+            // Extraire les inputs depuis travelVector (synchronisé par Minecraft)
+            float forward = (float) travelVector.z;
+            float strafe = (float) travelVector.x;
+
+            // Gestion du sprint
+            handleSprinting(driver, forward);
 
             // Gestion des modes WALK/RUN
             if (getRidingMode() == RidingMode.WALK) {
-                handleWalkMode(driver);
+                handleWalkMode(driver, forward, strafe);
             } else {
-                handleRunMode(driver);
+                handleRunMode(driver, forward, strafe);
             }
 
             // Convertir vélocité locale en vélocité monde
-            // (Cobblemon fait ça dans le mixin, on le fait ici)
             Vec3 worldVelocity = localToWorldVelocity(rideVelocity);
             this.setDeltaMovement(worldVelocity);
 
@@ -191,11 +214,11 @@ public class RideableBeeEntity extends Bee implements PlayerRideable {
     /**
      * Gestion du sprint (copié de Cobblemon HorseBehaviour.kt ligne 141-159)
      */
-    private void handleSprinting(Player driver) {
-        boolean tryingToSprint = driver.isSprinting() && driver.zza > 0;
+    private void handleSprinting(Player driver, float forward) {
+        boolean tryingToSprint = driver.isSprinting() && forward > 0;
 
         // Si pas d'input forward, arrêter le sprint
-        if (driver.zza <= 0) {
+        if (forward <= 0) {
             sprinting = false;
         }
 
@@ -208,9 +231,7 @@ public class RideableBeeEntity extends Bee implements PlayerRideable {
      * Mode WALK: mouvement libre dans toutes les directions.
      * La rotation est basée sur la direction de mouvement.
      */
-    private void handleWalkMode(Player driver) {
-        float forward = driver.zza;
-        float strafe = driver.xxa;
+    private void handleWalkMode(Player driver, float forward, float strafe) {
         boolean jump = driver.jumping;
 
         // Transition vers RUN si sprint + avance
@@ -258,14 +279,12 @@ public class RideableBeeEntity extends Bee implements PlayerRideable {
 
     /**
      * Mode RUN: style Jet de Cobblemon mais au sol.
-     * - A/D (xxa) contrôle directement le yaw (JetBehaviour ligne 290)
+     * - A/D (strafe) contrôle directement le yaw (JetBehaviour ligne 290)
      * - W accélère, S décélère (JetBehaviour lignes 232-255)
      * - Vitesse minimum maintenue (pas d'arrêt complet en RUN)
      * - Gravité et friction au sol
      */
-    private void handleRunMode(Player driver) {
-        float forward = driver.zza;
-        float strafe = driver.xxa;
+    private void handleRunMode(Player driver, float forward, float strafe) {
         boolean jump = driver.jumping;
 
         // === Paramètres ===

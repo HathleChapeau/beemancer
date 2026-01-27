@@ -41,8 +41,8 @@ public class RideableBeeRenderer extends MobRenderer<RideableBeeEntity, BeeModel
             "textures/entity/bee/bee.png");
 
     public RideableBeeRenderer(EntityRendererProvider.Context context) {
-        // Shadow radius 1.2f pour correspondre à la taille de l'abeille (scale 3x)
-        super(context, new BeeModel<>(context.bakeLayer(ModelLayers.BEE)), 1.2f);
+        // Shadow radius 0.6f pour correspondre à la taille de l'abeille (scale 1.5x)
+        super(context, new BeeModel<>(context.bakeLayer(ModelLayers.BEE)), 0.6f);
     }
 
     @Override
@@ -53,8 +53,7 @@ public class RideableBeeRenderer extends MobRenderer<RideableBeeEntity, BeeModel
 
     @Override
     protected void scale(RideableBeeEntity entity, com.mojang.blaze3d.vertex.PoseStack poseStack, float partialTick) {
-        // Abeille géante chevauchable: scale 3x
-        // Assez grande pour qu'un joueur puisse monter dessus
-        poseStack.scale(3.0f, 3.0f, 3.0f);
+        // Abeille chevauchable: scale 1.5x
+        poseStack.scale(1.5f, 1.5f, 1.5f);
     }
 }

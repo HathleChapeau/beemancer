@@ -4,7 +4,7 @@
 
 Description: Abeille chevauchable avec modes WALK/RUN et caméra dynamique
 Statut: COMPLÈTE
-Référence: Cobblemon 1.7 (RidingController, RidingBehaviour, MountedCameraTypeHandler)
+Référence: Cobblemon 1.7 (HorseBehaviour.kt pour WALK, JetBehaviour.kt pour RUN)
 
 ================================================================================
 COMPOSANTS
@@ -14,43 +14,54 @@ Core (common/entity/mount/):
 - RidingMode: Enum WALK/RUN avec méthodes de sérialisation
 - RidingSettings: Record immutable des paramètres configurables (JSON)
 - RidingSettingsLoader: Chargeur JSON depuis data/beemancer/mount/
-- RidingState: État runtime mutable (vitesse, yaw, leaping, input)
-- RideableBeeMovement: Calculs de vélocité et physique (utilitaire statique)
-- RideableBeeController: Orchestrateur du déplacement et transitions
-
-Entité:
-- RideableBeeEntity: Entité Mob chevauchable avec EntityDataAccessors sync
+- RideableBeeEntity: Entité Mob chevauchable (toute la logique de mouvement intégrée)
 
 Client (client/):
-- RidingInputHandler: Capture WASD+Space+Sprint, envoie packets
-- RideableBeeRenderer: Renderer avec modèle Bee agrandi 2x
+- RideableBeeRenderer: Renderer avec modèle Bee agrandi 3x, shadow 1.2f
 - RidingCameraController: Gestion caméra 3P libre (WALK) et épaule (RUN)
-
-Réseau:
-- RidingInputPacket: Sync input client vers serveur chaque tick
 
 Item:
 - RideableBeeSpawnItem: Item pour faire apparaître l'abeille
+
+Config:
+- META-INF/accesstransformer.cfg: Accès au champ LivingEntity.jumping
+
+================================================================================
+ARCHITECTURE (Cobblemon-style)
+================================================================================
+
+Input: Direct via player.zza (forward) et player.xxa (strafe)
+       Pas de packets - le serveur lit directement l'input du driver
+
+Vélocité: Vec3 en espace local (Z = avant, X = côté, Y = vertical)
+          Convertie en coordonnées monde via localToWorldVelocity()
+
+Physique (copiée de Cobblemon):
+- Gravité: (9.8 / 20.0) * 0.2 * 0.6 par tick
+- Terminal velocity: 2.0 blocs/tick
+- Friction sol: 0.03 par tick (RUN mode)
 
 ================================================================================
 FONCTIONNALITÉS
 ================================================================================
 
 Mode WALK:
-- Mouvement libre WASD selon orientation caméra
+- Mouvement libre WASD selon orientation caméra du joueur
 - Caméra 3ème personne libre (comme F5)
-- Saut normal sur place
+- Saut normal avec cooldown
+- Abeille tourne vers la direction de mouvement
 
-Mode RUN:
-- Accélération (W), décélération (S), décélération passive (relâcher W)
-- Rotation A/D avec inertie (turnInertia)
-- Caméra épaule droite fixe, verrouillée sur direction
+Mode RUN (style Jet de Cobblemon mais au sol):
+- W accélère vers topSpeed, S décélère vers minSpeed
+- Vitesse minimum maintenue (pas d'arrêt complet en RUN)
+- A/D contrôle DIRECTEMENT le yaw (rotation immédiate, JetBehaviour ligne 290)
+- Caméra épaule droite, suit la direction de l'abeille
 - Effet FOV selon vitesse
-- Leap (bond) vers l'avant avec Space, pas de contrôle aérien
+- Leap (bond) vers l'avant avec Space
 
 Transitions:
-- WALK → RUN: Sprint (Ctrl ou double-tap W) + vitesse suffisante
-- RUN → WALK: Vitesse sous seuil runToWalkThreshold
+- WALK → RUN: Sprint (Ctrl) + avancer (W)
+- RUN → WALK: Relâcher sprint et vitesse sous seuil
 - Démontage: Shift (vanilla)
 
 Configuration JSON (data/beemancer/mount/rideable_bee.json):
@@ -65,31 +76,46 @@ Core:
 - common/entity/mount/RidingMode.java
 - common/entity/mount/RidingSettings.java
 - common/entity/mount/RidingSettingsLoader.java
-- common/entity/mount/RidingState.java
-- common/entity/mount/RideableBeeMovement.java
-- common/entity/mount/RideableBeeController.java
 - common/entity/mount/RideableBeeEntity.java
 
 Client:
-- client/input/RidingInputHandler.java
 - client/renderer/entity/RideableBeeRenderer.java
 - client/camera/RidingCameraController.java
-
-Network:
-- core/network/packets/RidingInputPacket.java
 
 Item:
 - common/item/mount/RideableBeeSpawnItem.java
 
 Config:
 - resources/data/beemancer/mount/rideable_bee.json
+- resources/META-INF/accesstransformer.cfg
 
 Modifiés:
-- core/registry/BeemancerEntities.java (ajout RIDEABLE_BEE)
-- core/registry/BeemancerItems.java (ajout RIDEABLE_BEE_SPAWN)
-- core/network/BeemancerNetwork.java (ajout RidingInputPacket)
-- client/ClientSetup.java (renderer, handlers)
+- core/registry/BeemancerEntities.java (RIDEABLE_BEE, size 2.1x1.8)
+- core/registry/BeemancerItems.java (+RIDEABLE_BEE_SPAWN)
+- client/ClientSetup.java (renderer)
 - Beemancer.java (attributs, loader)
+
+FICHIERS SUPPRIMÉS (refactorisation v2):
+- client/input/RidingInputHandler.java (input direct maintenant)
+- core/network/packets/RidingInputPacket.java (plus de packets)
+- common/entity/mount/RideableBeeController.java (logique dans Entity)
+- common/entity/mount/RideableBeeMovement.java (logique dans Entity)
+- common/entity/mount/RidingState.java (état dans Entity)
+
+================================================================================
+PATTERNS COBBLEMON UTILISÉS
+================================================================================
+
+De HorseBehaviour.kt:
+- Gravité ligne 340: (9.8 / 20.0) * 0.2 * 0.6
+- Friction ligne 352: 0.03
+- Input direct: driver.zza, driver.xxa, driver.jumping
+- Vélocité en espace local (Z = avant)
+
+De JetBehaviour.kt (mode RUN):
+- Ligne 290: yawForce = driver.xxa * handlingYaw * -1
+- Lignes 232-255: W accélère, S décélère, vitesse minimum maintenue
+- Pas de rotation basée sur la caméra, rotation directe via A/D
 
 ================================================================================
 COMMANDES TEST
@@ -97,5 +123,21 @@ COMMANDES TEST
 
 /summon beemancer:rideable_bee ~ ~ ~
 /give @p beemancer:rideable_bee_spawn
+
+================================================================================
+DIFFÉRENCES AVEC v1
+================================================================================
+
+v1 (supprimé):
+- Packets réseau pour sync input
+- RidingState séparé
+- Controller/Movement en classes utilitaires
+- Rotation Horse-style (basée sur diff yaw player/entity)
+
+v2 (actuel):
+- Input direct via player.zza/xxa (comme Cobblemon)
+- Tout intégré dans RideableBeeEntity
+- Rotation Jet-style en RUN (A/D direct)
+- Plus simple, moins de fichiers
 
 ################################################################################

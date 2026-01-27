@@ -3,7 +3,44 @@
 ################################################################################
 
 ================================================================================
-2026-01-28 - Rideable Bee System (Cobblemon-inspired)
+2026-01-28 - Rideable Bee v2 (Refactorisation Jet-style)
+================================================================================
+
+REFACTORISATION MAJEURE:
+- Suppression système de packets (input direct comme Cobblemon)
+- Mode RUN: style Jet (A/D contrôle yaw directement au lieu de suivre la caméra)
+- Toute la logique intégrée dans RideableBeeEntity
+
+SUPPRESSIONS:
+- client/input/RidingInputHandler.java (remplacé par input direct)
+- core/network/packets/RidingInputPacket.java (plus de sync réseau)
+- common/entity/mount/RideableBeeController.java (logique dans Entity)
+- common/entity/mount/RideableBeeMovement.java (logique dans Entity)
+- common/entity/mount/RidingState.java (état dans Entity)
+
+MODIFICATIONS:
+- RideableBeeEntity.java: Réécriture complète basée sur Cobblemon
+  - handleWalkMode(): Mouvement libre selon caméra joueur
+  - handleRunMode(): Style Jet (W accélère, S décélère, A/D tourne)
+  - Input direct via driver.zza/xxa/jumping
+  - Gravité: (9.8/20.0)*0.2*0.6, friction: 0.03
+- RideableBeeRenderer.java: Scale 3.0f, shadow 1.2f
+- BeemancerEntities.java: Entity size 2.1x1.8
+- accesstransformer.cfg: +LivingEntity.jumping (accès au champ protégé)
+
+PATTERNS COBBLEMON:
+- HorseBehaviour.kt: Gravité, friction, vélocité locale (Z=avant)
+- JetBehaviour.kt ligne 290: yawForce = driver.xxa * handlingYaw * -1
+- JetBehaviour.kt lignes 232-255: W accélère, S décélère vers minSpeed
+
+COMPORTEMENT ACTUEL:
+- Mode WALK: WASD libre selon caméra, abeille tourne vers mouvement
+- Mode RUN: W accélère, S décélère (vitesse min maintenue), A/D tourne
+- Transition WALK→RUN: Ctrl + W
+- Transition RUN→WALK: Relâcher sprint + vitesse basse
+
+================================================================================
+2026-01-28 - Rideable Bee System (Cobblemon-inspired) [v1 - obsolète]
 ================================================================================
 
 AJOUTS:
@@ -11,18 +48,18 @@ Core (common/entity/mount/):
 - RidingMode.java: Enum WALK/RUN
 - RidingSettings.java: Record des paramètres configurables
 - RidingSettingsLoader.java: Chargeur JSON
-- RidingState.java: État runtime mutable
-- RideableBeeMovement.java: Calculs vélocité/inertie
-- RideableBeeController.java: Orchestrateur déplacement
+- RidingState.java: État runtime mutable [SUPPRIMÉ en v2]
+- RideableBeeMovement.java: Calculs vélocité/inertie [SUPPRIMÉ en v2]
+- RideableBeeController.java: Orchestrateur déplacement [SUPPRIMÉ en v2]
 - RideableBeeEntity.java: Entité chevauchable
 
 Client:
-- client/input/RidingInputHandler.java: Capture WASD+Space+Sprint
+- client/input/RidingInputHandler.java: Capture WASD+Space+Sprint [SUPPRIMÉ en v2]
 - client/renderer/entity/RideableBeeRenderer.java: Renderer (2x scale)
 - client/camera/RidingCameraController.java: Caméra WALK(libre)/RUN(épaule)
 
 Network:
-- core/network/packets/RidingInputPacket.java: Sync input client→serveur
+- core/network/packets/RidingInputPacket.java: Sync input client→serveur [SUPPRIMÉ en v2]
 
 Item:
 - common/item/mount/RideableBeeSpawnItem.java: Item de spawn
@@ -36,13 +73,6 @@ MODIFICATIONS:
 - BeemancerNetwork.java: +RidingInputPacket
 - ClientSetup.java: +renderer, +handlers
 - Beemancer.java: +attributs, +RidingSettingsLoader.load()
-
-FEATURE:
-- Mode WALK: Mouvement WASD libre, caméra 3P libre, saut normal
-- Mode RUN: Accél/décél, rotation inertie, caméra épaule droite fixe, leap
-- Transition WALK→RUN: Sprint + vitesse suffisante
-- Transition RUN→WALK: Vitesse sous seuil
-- Décélération passive quand touche avant relâchée
 
 RÉFÉRENCE: Cobblemon 1.7 (RidingController, RidingBehaviour, MountedCameraTypeHandler)
 

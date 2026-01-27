@@ -29,11 +29,11 @@ public class BeemancerEntities {
                     .build("magic_bee"));
 
     // --- MOUNTS ---
-    // Abeille géante chevauchable (scale 3x visuellement)
-    // Hitbox: ~2.1 largeur, ~1.8 hauteur (pour correspondre au scale 3x)
+    // Abeille chevauchable (scale 1.5x visuellement)
+    // Hitbox: ~1.05 largeur, ~0.9 hauteur
     public static final Supplier<EntityType<RideableBeeEntity>> RIDEABLE_BEE = ENTITIES.register("rideable_bee",
             () -> EntityType.Builder.of(RideableBeeEntity::new, MobCategory.CREATURE)
-                    .sized(2.1F, 1.8F)
+                    .sized(1.05F, 0.9F)
                     .clientTrackingRange(10)
                     .build("rideable_bee"));
 
