@@ -9,7 +9,7 @@
  * | Dependance              | Raison                | Utilisation           |
  * |-------------------------|----------------------|-----------------------|
  * | AltarHeartBlockEntity   | Donnees a rendre     | isFormed()            |
- * | AltarConduitAnimator    | Animation conduits   | Calcul orbite         |
+ * | AltarConduitAnimator    | Animation conduits   | Calcul rotation       |
  * | BlockEntityRenderer     | Interface renderer   | Rendu custom          |
  * ------------------------------------------------------------
  *
@@ -33,13 +33,12 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * Renderer pour le Honey Altar multibloc.
- * Quand le multibloc est formé, rend les conduits qui orbitent autour de l'altar.
- * Utilise le modèle "formed" des conduits (barre horizontale).
+ * Quand le multibloc est formé, rend les conduits qui tournent sur eux-mêmes.
+ * Utilise le modèle "formed" des conduits.
  */
 public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEntity> {
 
@@ -58,39 +57,43 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             return;
         }
 
-        // Rendre les conduits qui orbitent autour de l'altar
-        renderOrbitingConduits(blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay);
+        // Rendre les conduits qui tournent sur eux-mêmes
+        renderRotatingConduits(blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay);
     }
 
     /**
-     * Rend les 4 conduits qui orbitent autour de l'altar.
-     * Chaque conduit utilise le modèle "formed" et pointe vers le centre.
+     * Rend les 4 conduits qui tournent sur eux-mêmes à leurs positions fixes.
      */
-    private void renderOrbitingConduits(AltarHeartBlockEntity blockEntity, float partialTick,
+    private void renderRotatingConduits(AltarHeartBlockEntity blockEntity, float partialTick,
                                         PoseStack poseStack, MultiBufferSource buffer,
                                         int packedLight, int packedOverlay) {
 
         float rotationAngle = AltarConduitAnimator.getRotationAngle(blockEntity, partialTick);
 
-        // Utiliser le BlockState FORMED pour avoir le modèle barre
+        // Utiliser le BlockState FORMED pour avoir le modèle formed
         BlockState conduitState = BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get().defaultBlockState()
             .setValue(HoneyCrystalConduitBlock.FORMED, true)
             .setValue(HoneyCrystalConduitBlock.FACING, Direction.NORTH);
 
-        // Rendre les 4 conduits en orbite
-        for (int i = 0; i < AltarConduitAnimator.CONDUIT_COUNT; i++) {
+        // Positions fixes des 4 conduits cardinaux relatifs au contrôleur (Y+1)
+        int[][] conduitOffsets = {
+            {0, 1, -1},  // Nord
+            {0, 1, 1},   // Sud
+            {1, 1, 0},   // Est
+            {-1, 1, 0}   // Ouest
+        };
+
+        for (int[] offset : conduitOffsets) {
             poseStack.pushPose();
 
-            // Calculer la position orbitale du conduit
-            Vec3 offset = AltarConduitAnimator.getConduitOffset(i, rotationAngle);
-            poseStack.translate(offset.x, offset.y, offset.z);
+            // Translater vers la position fixe du conduit
+            poseStack.translate(offset[0], offset[1], offset[2]);
 
-            // Centrer pour la rotation de facing
+            // Centrer pour la rotation
             poseStack.translate(0.5, 0.5, 0.5);
 
-            // Rotation pour que le conduit pointe vers le centre
-            float facingAngle = AltarConduitAnimator.getConduitFacingAngle(i, rotationAngle);
-            poseStack.mulPose(Axis.YP.rotationDegrees(facingAngle));
+            // Rotation sur l'axe Y (tourner sur lui-même)
+            poseStack.mulPose(Axis.YP.rotationDegrees(rotationAngle));
 
             // Revenir au coin du bloc
             poseStack.translate(-0.5, -0.5, -0.5);
@@ -112,7 +115,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
     @Override
     public boolean shouldRenderOffScreen(AltarHeartBlockEntity blockEntity) {
-        // Les conduits orbitent autour, donc dépassent du bloc contrôleur
+        // Les conduits sont à Y+1, donc légèrement hors du bloc contrôleur
         return true;
     }
 
