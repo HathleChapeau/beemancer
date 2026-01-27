@@ -60,8 +60,6 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     // === Animation ===
     /** Vitesse de rotation des conduits en degrés par tick (20 ticks = 1 seconde) */
     private float conduitRotationSpeed = 1.0f;
-    /** Angle de rotation actuel (utilisé côté client pour le rendu) */
-    private float currentRotationAngle = 0f;
 
     public AltarHeartBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.ALTAR_HEART.get(), pos, state);
@@ -294,20 +292,12 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     }
 
     /**
-     * @return L'angle de rotation actuel pour le rendu
-     */
-    public float getCurrentRotationAngle() {
-        return currentRotationAngle;
-    }
-
-    /**
-     * Met à jour l'angle de rotation (appelé côté client).
-     * @param partialTick Interpolation entre ticks
-     * @return L'angle interpolé pour le rendu
+     * Calcule l'angle de rotation interpolé pour le rendu.
+     * @param partialTick Interpolation entre ticks (0.0 - 1.0)
+     * @return L'angle de rotation en degrés
      */
     public float getInterpolatedRotationAngle(float partialTick) {
-        if (!altarFormed) return 0f;
-        if (level == null) return currentRotationAngle;
+        if (!altarFormed || level == null) return 0f;
 
         // Utilise gameTime pour une rotation fluide et déterministe
         long gameTime = level.getGameTime();

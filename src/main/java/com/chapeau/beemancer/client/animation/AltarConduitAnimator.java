@@ -23,7 +23,6 @@
 package com.chapeau.beemancer.client.animation;
 
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -39,8 +38,8 @@ public class AltarConduitAnimator {
     /** Rayon de l'orbite des conduits (en blocs) */
     public static final float ORBIT_RADIUS = 1.0f;
 
-    /** Hauteur de l'orbite relative au contrôleur */
-    public static final float ORBIT_HEIGHT = 1.5f;
+    /** Offset Y de l'orbite par rapport au contrôleur (Y+1 = niveau des conduits) */
+    public static final float ORBIT_Y_OFFSET = 1.0f;
 
     /** Nombre de conduits dans l'animation */
     public static final int CONDUIT_COUNT = 4;
@@ -59,33 +58,6 @@ public class AltarConduitAnimator {
             return 0f;
         }
         return blockEntity.getInterpolatedRotationAngle(partialTick);
-    }
-
-    /**
-     * Calcule la position orbitale d'un conduit.
-     *
-     * @param centerPos    Position du centre de l'altar
-     * @param conduitIndex Index du conduit (0-3)
-     * @param rotationAngle Angle de rotation actuel en degrés
-     * @return Position 3D du conduit dans l'orbite
-     */
-    public static Vec3 getConduitPosition(BlockPos centerPos, int conduitIndex, float rotationAngle) {
-        // Chaque conduit est espacé de 90° (360° / 4 conduits)
-        float baseAngle = conduitIndex * 90f;
-        float totalAngle = baseAngle + rotationAngle;
-
-        // Convertir en radians
-        double angleRad = Math.toRadians(totalAngle);
-
-        // Calculer la position sur le cercle
-        double offsetX = Math.sin(angleRad) * ORBIT_RADIUS;
-        double offsetZ = Math.cos(angleRad) * ORBIT_RADIUS;
-
-        return new Vec3(
-            centerPos.getX() + 0.5 + offsetX,
-            centerPos.getY() + ORBIT_HEIGHT,
-            centerPos.getZ() + 0.5 + offsetZ
-        );
     }
 
     /**
@@ -117,20 +89,9 @@ public class AltarConduitAnimator {
 
         return new Vec3(
             Math.sin(angleRad) * ORBIT_RADIUS,
-            ORBIT_HEIGHT - 0.5, // Ajuster pour centrer sur Y+1
+            ORBIT_Y_OFFSET,
             Math.cos(angleRad) * ORBIT_RADIUS
         );
-    }
-
-    /**
-     * Vérifie si un conduit est visible (pour optimisation).
-     * Tous les conduits sont toujours visibles dans l'orbite.
-     *
-     * @param conduitIndex Index du conduit
-     * @return true si le conduit doit être rendu
-     */
-    public static boolean isConduitVisible(int conduitIndex) {
-        return conduitIndex >= 0 && conduitIndex < CONDUIT_COUNT;
     }
 
     /**
