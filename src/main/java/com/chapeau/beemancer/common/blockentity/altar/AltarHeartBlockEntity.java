@@ -57,6 +57,12 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
 
     private boolean altarFormed = false;
 
+    // === Animation ===
+    /** Vitesse de rotation des conduits en degrés par tick (20 ticks = 1 seconde) */
+    private float conduitRotationSpeed = 1.0f;
+    /** Angle de rotation actuel (utilisé côté client pour le rendu) */
+    private float currentRotationAngle = 0f;
+
     public AltarHeartBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.ALTAR_HEART.get(), pos, state);
     }
@@ -130,17 +136,11 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
             updateBlockFormed(worldPosition.offset(offset), HoneyedStoneStairBlock.FORMED, formed);
         }
 
-        // === 8 Conduits à Y+1 (orientés vers le centre) ===
-        // Conduits cardinaux
+        // === 4 Conduits cardinaux à Y+1 (orientés vers le centre) ===
         updateConduit(worldPosition.offset(0, 1, -1), formed, Direction.SOUTH);   // N pointe vers S
         updateConduit(worldPosition.offset(0, 1, 1), formed, Direction.NORTH);    // S pointe vers N
         updateConduit(worldPosition.offset(1, 1, 0), formed, Direction.WEST);     // E pointe vers W
         updateConduit(worldPosition.offset(-1, 1, 0), formed, Direction.EAST);    // W pointe vers E
-        // Conduits diagonaux (alternance X/Z pour symétrie)
-        updateConduit(worldPosition.offset(-1, 1, -1), formed, Direction.EAST);   // NW → X-axis
-        updateConduit(worldPosition.offset(1, 1, -1), formed, Direction.SOUTH);   // NE → Z-axis
-        updateConduit(worldPosition.offset(-1, 1, 1), formed, Direction.NORTH);   // SW → Z-axis
-        updateConduit(worldPosition.offset(1, 1, 1), formed, Direction.WEST);     // SE → X-axis
 
         // === Honeyed Stone centre à Y+1 (layer 1: base avec colonne) ===
         updateHoneyedStone(worldPosition.offset(0, 1, 0), formed, 1);
@@ -272,6 +272,48 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         return isFormed();
     }
 
+    // ==================== Animation ====================
+
+    /**
+     * @return La vitesse de rotation des conduits en degrés par tick
+     */
+    public float getConduitRotationSpeed() {
+        return conduitRotationSpeed;
+    }
+
+    /**
+     * Définit la vitesse de rotation des conduits.
+     * @param speed Vitesse en degrés par tick (1.0 = 1°/tick = 18°/sec)
+     */
+    public void setConduitRotationSpeed(float speed) {
+        this.conduitRotationSpeed = speed;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    /**
+     * @return L'angle de rotation actuel pour le rendu
+     */
+    public float getCurrentRotationAngle() {
+        return currentRotationAngle;
+    }
+
+    /**
+     * Met à jour l'angle de rotation (appelé côté client).
+     * @param partialTick Interpolation entre ticks
+     * @return L'angle interpolé pour le rendu
+     */
+    public float getInterpolatedRotationAngle(float partialTick) {
+        if (!altarFormed) return 0f;
+        if (level == null) return currentRotationAngle;
+
+        // Utilise gameTime pour une rotation fluide et déterministe
+        long gameTime = level.getGameTime();
+        return (gameTime + partialTick) * conduitRotationSpeed;
+    }
+
     // ==================== Lifecycle ====================
 
     @Override
@@ -296,12 +338,16 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putBoolean("AltarFormed", altarFormed);
+        tag.putFloat("ConduitRotationSpeed", conduitRotationSpeed);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         altarFormed = tag.getBoolean("AltarFormed");
+        if (tag.contains("ConduitRotationSpeed")) {
+            conduitRotationSpeed = tag.getFloat("ConduitRotationSpeed");
+        }
     }
 
     // ==================== Sync ====================

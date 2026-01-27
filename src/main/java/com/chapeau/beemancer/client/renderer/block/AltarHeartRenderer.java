@@ -9,6 +9,7 @@
  * | Dependance              | Raison                | Utilisation           |
  * |-------------------------|----------------------|-----------------------|
  * | AltarHeartBlockEntity   | Donnees a rendre     | isFormed()            |
+ * | AltarConduitAnimator    | Animation conduits   | Calcul positions      |
  * | BlockEntityRenderer     | Interface renderer   | Rendu custom          |
  * ------------------------------------------------------------
  *
@@ -19,24 +20,36 @@
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.client.animation.AltarConduitAnimator;
+import com.chapeau.beemancer.common.block.altar.HoneyCrystalConduitBlock;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
+import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Renderer pour le Honey Altar multibloc.
  * Quand le multibloc est forme, rend un coeur de 2 blocs de large.
- * Les autres blocs (conduits, reservoirs) deviennent invisibles.
+ * Les conduits tournent autour du coeur en orbite.
  */
 public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEntity> {
 
+    private final BlockRenderDispatcher blockRenderer;
+
     public AltarHeartRenderer(BlockEntityRendererProvider.Context context) {
-        // Context fourni par NeoForge
+        this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
     }
 
     @Override
@@ -49,14 +62,62 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         }
 
         // === COEUR ACTIVE: 2 blocs de large ===
-        // Le coeur est centre sur le bloc controleur et s'etend de -0.5 a 1.5 sur X et Z
         poseStack.pushPose();
-
-        // Cube de 2x2x2 blocs, centre sur le controleur
-        // Position: de -0.5 a 1.5 sur X et Z, de 0 a 2 sur Y
         renderBigHeart(poseStack, buffer, packedLight);
-
         poseStack.popPose();
+
+        // === CONDUITS EN ORBITE ===
+        renderOrbitingConduits(blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay);
+    }
+
+    /**
+     * Rend les 4 conduits en orbite autour de l'altar.
+     */
+    private void renderOrbitingConduits(AltarHeartBlockEntity blockEntity, float partialTick,
+                                         PoseStack poseStack, MultiBufferSource buffer,
+                                         int packedLight, int packedOverlay) {
+
+        float rotationAngle = AltarConduitAnimator.getRotationAngle(blockEntity, partialTick);
+
+        // BlockState du conduit formé (utiliser SOUTH comme facing de base, rotation 0°)
+        BlockState conduitState = BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get().defaultBlockState()
+            .setValue(HoneyCrystalConduitBlock.FORMED, true)
+            .setValue(HoneyCrystalConduitBlock.FACING, Direction.SOUTH);
+
+        // Récupérer le BakedModel pour le rendu direct
+        BakedModel model = blockRenderer.getBlockModel(conduitState);
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.solid());
+
+        for (int i = 0; i < AltarConduitAnimator.CONDUIT_COUNT; i++) {
+            Vec3 offset = AltarConduitAnimator.getConduitOffset(i, rotationAngle);
+            float facingAngle = AltarConduitAnimator.getConduitFacingAngle(i, rotationAngle);
+
+            poseStack.pushPose();
+
+            // Translater vers la position orbitale (centre du bloc + offset)
+            poseStack.translate(0.5 + offset.x, offset.y, 0.5 + offset.z);
+
+            // Rotation pour pointer vers le centre
+            poseStack.mulPose(Axis.YP.rotationDegrees(facingAngle));
+
+            // Recentrer le modèle
+            poseStack.translate(-0.5, 0, -0.5);
+
+            // Rendre le modèle directement (bypass RenderShape check)
+            blockRenderer.getModelRenderer().renderModel(
+                poseStack.last(),
+                vertexConsumer,
+                conduitState,
+                model,
+                1.0f, 1.0f, 1.0f, // Couleur blanche (pas de tint)
+                packedLight,
+                packedOverlay,
+                net.neoforged.neoforge.client.model.data.ModelData.EMPTY,
+                RenderType.solid()
+            );
+
+            poseStack.popPose();
+        }
     }
 
     /**
