@@ -34,10 +34,8 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * Renderer pour le Honey Altar multibloc.
@@ -71,7 +69,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     }
 
     /**
-     * Rend les 4 conduits en orbite autour de l'altar.
+     * Rend les 4 conduits qui tournent sur eux-mêmes à leurs positions fixes.
      */
     private void renderOrbitingConduits(AltarHeartBlockEntity blockEntity, float partialTick,
                                          PoseStack poseStack, MultiBufferSource buffer,
@@ -79,41 +77,41 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         float rotationAngle = AltarConduitAnimator.getRotationAngle(blockEntity, partialTick);
 
-        // BlockState du conduit formé pour récupérer le BakedModel
+        // Utiliser le BlockState NON-formé (RenderShape.MODEL) pour le rendu
         BlockState conduitState = BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get().defaultBlockState()
-            .setValue(HoneyCrystalConduitBlock.FORMED, true)
-            .setValue(HoneyCrystalConduitBlock.FACING, Direction.SOUTH);
+            .setValue(HoneyCrystalConduitBlock.FORMED, false)
+            .setValue(HoneyCrystalConduitBlock.FACING, Direction.NORTH);
 
-        // Récupérer le BakedModel (disponible même si RenderShape=INVISIBLE)
-        BakedModel model = blockRenderer.getBlockModel(conduitState);
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.solid());
+        // Positions des 4 conduits cardinaux relatifs au contrôleur
+        int[][] conduitOffsets = {
+            {0, 1, -1},  // Nord
+            {0, 1, 1},   // Sud
+            {1, 1, 0},   // Est
+            {-1, 1, 0}   // Ouest
+        };
 
-        for (int i = 0; i < AltarConduitAnimator.CONDUIT_COUNT; i++) {
-            Vec3 offset = AltarConduitAnimator.getConduitOffset(i, rotationAngle);
-            float facingAngle = AltarConduitAnimator.getConduitFacingAngle(i, rotationAngle);
-
+        for (int[] offset : conduitOffsets) {
             poseStack.pushPose();
 
-            // Translater vers la position orbitale (centre du bloc + offset)
-            poseStack.translate(0.5 + offset.x, offset.y, 0.5 + offset.z);
+            // Translater vers la position du conduit
+            poseStack.translate(offset[0], offset[1], offset[2]);
 
-            // Rotation pour pointer vers le centre
-            poseStack.mulPose(Axis.YP.rotationDegrees(facingAngle));
+            // Centrer pour la rotation
+            poseStack.translate(0.5, 0.5, 0.5);
 
-            // Recentrer le modèle
-            poseStack.translate(-0.5, 0, -0.5);
+            // Rotation sur l'axe Y (tourner sur lui-même)
+            poseStack.mulPose(Axis.YP.rotationDegrees(rotationAngle));
 
-            // Rendre le modèle directement (bypass RenderShape check)
-            blockRenderer.getModelRenderer().renderModel(
-                poseStack.last(),
-                vertexConsumer,
+            // Revenir au coin du bloc
+            poseStack.translate(-0.5, -0.5, -0.5);
+
+            // Rendre le modèle
+            blockRenderer.renderSingleBlock(
                 conduitState,
-                model,
-                1.0f, 1.0f, 1.0f,
+                poseStack,
+                buffer,
                 packedLight,
-                packedOverlay,
-                net.neoforged.neoforge.client.model.data.ModelData.EMPTY,
-                RenderType.solid()
+                packedOverlay
             );
 
             poseStack.popPose();
