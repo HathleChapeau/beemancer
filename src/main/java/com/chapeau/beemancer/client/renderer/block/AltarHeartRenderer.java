@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [AltarHeartRenderer.java]
- * Description: Renderer pour l'animation des conduits du Honey Altar
+ * Description: Renderer pour l'animation des conduits et anneaux du Honey Altar
  * ============================================================
  *
  * DEPENDANCES:
@@ -10,6 +10,7 @@
  * |-------------------------|----------------------|-----------------------|
  * | AltarHeartBlockEntity   | Donnees a rendre     | isFormed()            |
  * | AltarConduitAnimator    | Animation conduits   | Calcul orbite         |
+ * | DebugWandItem           | Vitesse rotation     | value1                |
  * | BlockEntityRenderer     | Interface renderer   | Rendu custom          |
  * ------------------------------------------------------------
  *
@@ -24,6 +25,7 @@ import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.animation.AltarConduitAnimator;
 import com.chapeau.beemancer.common.block.altar.HoneyCrystalConduitBlock;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -35,8 +37,8 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Direction;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,15 +47,23 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * Renderer pour le Honey Altar multibloc.
- * Quand le multibloc est formé, rend les conduits qui orbitent autour de l'altar.
- * Utilise le modèle "formed" des conduits (barre horizontale).
+ * Quand le multibloc est formé:
+ * - Rend les conduits qui orbitent autour de l'altar
+ * - Rend les anneaux qui tournent (big ring sur X, small ring sur Z+X)
+ * Vitesse de rotation liée à DebugWandItem.value1
  */
 public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEntity> {
 
     private final BlockRenderDispatcher blockRenderer;
     private final RandomSource random = RandomSource.create();
 
-    // Chemin vers le modèle formed
+    // Modèles pour les anneaux
+    private static final ResourceLocation BIG_RING_MODEL_LOC =
+        ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_big_ring");
+    private static final ResourceLocation SMALL_RING_MODEL_LOC =
+        ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring");
+
+    // Modèle conduit formed via blockstate
     private static final ModelResourceLocation CONDUIT_FORMED_MODEL =
         new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "honey_crystal_conduit"), "facing=north,formed=true");
 
@@ -65,30 +75,126 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     public void render(AltarHeartBlockEntity blockEntity, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
-        // Seulement rendre les conduits animés si le multibloc est formé
+        // Seulement rendre si le multibloc est formé
         if (!blockEntity.isFormed()) {
             return;
         }
 
-        // Rendre les conduits qui orbitent autour de l'altar
-        renderOrbitingConduits(blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay);
+        // Vitesses de rotation depuis debug wand
+        float conduitSpeed = DebugWandItem.value1;  // Vitesse conduits
+        float ringSpeed = DebugWandItem.value2;     // Vitesse anneaux
+
+        // Calculer les angles de rotation basés sur le temps
+        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
+        float ringAngle = (gameTime + partialTick) * ringSpeed;
+
+        // Rendre les anneaux qui tournent
+        renderRotatingRings(blockEntity, ringAngle, poseStack, buffer, packedLight, packedOverlay);
+
+        // Rendre les conduits qui orbitent
+        renderOrbitingConduits(blockEntity, partialTick, conduitSpeed, poseStack, buffer, packedLight, packedOverlay);
+    }
+
+    /**
+     * Rend les 2 anneaux qui tournent.
+     * Big ring: tourne sur l'axe X
+     * Small ring: tourne sur l'axe Z + hérite la rotation X du big ring
+     */
+    private void renderRotatingRings(AltarHeartBlockEntity blockEntity, float rotationAngle,
+                                     PoseStack poseStack, MultiBufferSource buffer,
+                                     int packedLight, int packedOverlay) {
+
+        // Récupérer les modèles
+        BakedModel bigRingModel = Minecraft.getInstance().getModelManager()
+            .getModel(BIG_RING_MODEL_LOC);
+        BakedModel smallRingModel = Minecraft.getInstance().getModelManager()
+            .getModel(SMALL_RING_MODEL_LOC);
+
+        // BlockState pour le rendu (juste pour les propriétés)
+        BlockState heartState = BeemancerBlocks.ALTAR_HEART.get().defaultBlockState();
+
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.solid());
+
+        // === BIG RING: Rotation sur l'axe X ===
+        poseStack.pushPose();
+
+        // Centrer pour la rotation
+        poseStack.translate(0.5, 0.5, 0.5);
+
+        // Rotation sur l'axe X
+        poseStack.mulPose(Axis.XP.rotationDegrees(rotationAngle));
+
+        // Revenir au coin
+        poseStack.translate(-0.5, -0.5, -0.5);
+
+        // Rendre le big ring
+        blockRenderer.getModelRenderer().tesselateBlock(
+            blockEntity.getLevel(),
+            bigRingModel,
+            heartState,
+            blockEntity.getBlockPos(),
+            poseStack,
+            vertexConsumer,
+            false,
+            random,
+            packedLight,
+            packedOverlay,
+            ModelData.EMPTY,
+            RenderType.solid()
+        );
+
+        poseStack.popPose();
+
+        // === SMALL RING: Rotation sur l'axe Z + hérite rotation X ===
+        poseStack.pushPose();
+
+        // Centrer pour la rotation
+        poseStack.translate(0.5, 0.5, 0.5);
+
+        // D'abord rotation X (comme le big ring)
+        poseStack.mulPose(Axis.XP.rotationDegrees(rotationAngle));
+
+        // Puis rotation Z additionnelle
+        poseStack.mulPose(Axis.ZP.rotationDegrees(rotationAngle * 1.5f)); // Vitesse légèrement différente
+
+        // Revenir au coin
+        poseStack.translate(-0.5, -0.5, -0.5);
+
+        // Rendre le small ring
+        blockRenderer.getModelRenderer().tesselateBlock(
+            blockEntity.getLevel(),
+            smallRingModel,
+            heartState,
+            blockEntity.getBlockPos(),
+            poseStack,
+            vertexConsumer,
+            false,
+            random,
+            packedLight,
+            packedOverlay,
+            ModelData.EMPTY,
+            RenderType.solid()
+        );
+
+        poseStack.popPose();
     }
 
     /**
      * Rend les 4 conduits qui orbitent autour de l'altar.
-     * Chaque conduit utilise le modèle "formed" et pointe vers le centre.
      */
     private void renderOrbitingConduits(AltarHeartBlockEntity blockEntity, float partialTick,
-                                        PoseStack poseStack, MultiBufferSource buffer,
-                                        int packedLight, int packedOverlay) {
+                                        float rotationSpeed, PoseStack poseStack,
+                                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
-        float rotationAngle = AltarConduitAnimator.getRotationAngle(blockEntity, partialTick);
+        // Calculer l'angle avec la vitesse de la debug wand
+        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
+        float rotationAngle = (gameTime + partialTick) * rotationSpeed;
 
-        // Récupérer le BakedModel du conduit formed directement
+        // Récupérer le BakedModel du conduit formed
         BakedModel formedModel = Minecraft.getInstance().getModelManager()
             .getModel(CONDUIT_FORMED_MODEL);
 
-        // BlockState pour les propriétés (texture, etc.) - mais on utilise le modèle formed
+        // BlockState pour les propriétés
         BlockState conduitState = BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get().defaultBlockState()
             .setValue(HoneyCrystalConduitBlock.FORMED, true)
             .setValue(HoneyCrystalConduitBlock.FACING, Direction.NORTH);
@@ -113,7 +219,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             // Revenir au coin du bloc
             poseStack.translate(-0.5, -0.5, -0.5);
 
-            // Rendre le modèle directement
+            // Rendre le modèle
             blockRenderer.getModelRenderer().tesselateBlock(
                 blockEntity.getLevel(),
                 formedModel,
@@ -135,7 +241,6 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
     @Override
     public boolean shouldRenderOffScreen(AltarHeartBlockEntity blockEntity) {
-        // Les conduits orbitent autour, donc dépassent du bloc contrôleur
         return true;
     }
 
