@@ -34,6 +34,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Renderer pour le Honey Altar multibloc.
@@ -42,19 +44,32 @@ import net.neoforged.neoforge.client.model.data.ModelData;
  */
 public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEntity> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AltarHeartRenderer.class);
     private final BlockRenderDispatcher blockRenderer;
+    private static int logCounter = 0;
 
     public AltarHeartRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
+        LOGGER.info("[AltarHeartRenderer] Renderer créé!");
     }
 
     @Override
     public void render(AltarHeartBlockEntity blockEntity, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
+        // Log toutes les 100 frames
+        if (logCounter++ % 100 == 0) {
+            LOGGER.info("[AltarHeartRenderer] render() - isFormed={}, pos={}",
+                blockEntity.isFormed(), blockEntity.getBlockPos());
+        }
+
         // Seulement rendre les conduits animés si le multibloc est formé
         if (!blockEntity.isFormed()) {
             return;
+        }
+
+        if (logCounter % 100 == 1) {
+            LOGGER.info("[AltarHeartRenderer] Multibloc formé, rendu des conduits...");
         }
 
         // Rendre les conduits qui tournent sur eux-mêmes
@@ -75,6 +90,10 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             .setValue(HoneyCrystalConduitBlock.FORMED, true)
             .setValue(HoneyCrystalConduitBlock.FACING, Direction.NORTH);
 
+        if (logCounter % 100 == 1) {
+            LOGGER.info("[AltarHeartRenderer] conduitState={}, rotationAngle={}", conduitState, rotationAngle);
+        }
+
         // Positions fixes des 4 conduits cardinaux relatifs au contrôleur (Y+1)
         int[][] conduitOffsets = {
             {0, 1, -1},  // Nord
@@ -85,6 +104,10 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         for (int[] offset : conduitOffsets) {
             poseStack.pushPose();
+
+            if (logCounter % 100 == 1) {
+                LOGGER.info("[AltarHeartRenderer] Rendu conduit offset=[{},{},{}]", offset[0], offset[1], offset[2]);
+            }
 
             // Translater vers la position fixe du conduit
             poseStack.translate(offset[0], offset[1], offset[2]);
