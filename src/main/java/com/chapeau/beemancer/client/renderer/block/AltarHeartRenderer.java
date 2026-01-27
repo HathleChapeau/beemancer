@@ -115,7 +115,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
                 packedLight,
                 packedOverlay,
                 ModelData.EMPTY,
-                RenderType.cutout()  // cutout pour les textures avec transparence
+                null  // null = laisser le système choisir le RenderType
             );
 
             poseStack.popPose();
