@@ -21,6 +21,7 @@ import com.chapeau.beemancer.client.ClientSetup;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotEvents;
 import com.chapeau.beemancer.common.block.storage.StorageEvents;
 import com.chapeau.beemancer.common.codex.CodexManager;
+import com.chapeau.beemancer.core.command.BeemancerCommands;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.content.gene.GeneInit;
@@ -48,6 +49,7 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -146,6 +148,7 @@ public class Beemancer {
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
         NeoForge.EVENT_BUS.register(StorageEvents.class);
         NeoForge.EVENT_BUS.register(MultiblockEvents.class);
         NeoForge.EVENT_BUS.register(PollenPotEvents.class);
@@ -166,6 +169,11 @@ public class Beemancer {
         if (event.getEntity() instanceof ServerPlayer player) {
             syncCodexDataToPlayer(player);
         }
+    }
+
+    private void onRegisterCommands(final RegisterCommandsEvent event) {
+        BeemancerCommands.register(event.getDispatcher());
+        LOGGER.info("Beemancer commands registered");
     }
 
     // =========================================================================

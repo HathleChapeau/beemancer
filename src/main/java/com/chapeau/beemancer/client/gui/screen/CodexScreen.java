@@ -88,9 +88,9 @@ public class CodexScreen extends Screen {
         windowX = (width - WINDOW_WIDTH) / 2;
         windowY = (height - WINDOW_HEIGHT) / 2;
         contentX = windowX + CONTENT_PADDING;
-        contentY = windowY + TAB_HEIGHT + 22;
+        contentY = windowY + CONTENT_PADDING + 16;
         contentWidth = WINDOW_WIDTH - CONTENT_PADDING * 2;
-        contentHeight = WINDOW_HEIGHT - TAB_HEIGHT - 30;
+        contentHeight = WINDOW_HEIGHT - CONTENT_PADDING * 2 - 20;
 
         createTabButtons();
         rebuildNodeWidgets();
@@ -99,10 +99,9 @@ public class CodexScreen extends Screen {
     private void createTabButtons() {
         tabButtons.clear();
 
-        // Position tabs at top of window, inside the frame
-        int totalTabsWidth = CodexPage.values().length * (TAB_WIDTH + 2) - 2;
-        int tabX = windowX + (WINDOW_WIDTH - totalTabsWidth) / 2;
-        int tabY = windowY + 4;
+        // Position tabs on the left edge of the screen
+        int tabX = 5;
+        int tabY = windowY;
 
         for (CodexPage page : CodexPage.values()) {
             final CodexPage currentPageRef = page;
@@ -119,7 +118,7 @@ public class CodexScreen extends Screen {
 
             tabButtons.put(page, tabButton);
             addRenderableWidget(tabButton);
-            tabX += TAB_WIDTH + 2;
+            tabY += TAB_HEIGHT + 4;
         }
 
         updateTabButtonStyles();
@@ -210,8 +209,8 @@ public class CodexScreen extends Screen {
             }
         }
 
-        // Render current page name below tabs
-        graphics.drawCenteredString(font, currentPage.getDisplayName(), width / 2, windowY + TAB_HEIGHT + 8, 0xFFFFFF);
+        // Render title
+        graphics.drawCenteredString(font, currentPage.getDisplayName(), width / 2, windowY + 6, 0xFFFFFF);
 
         // Render page progress
         renderProgress(graphics);
