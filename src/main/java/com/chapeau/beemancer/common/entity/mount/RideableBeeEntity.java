@@ -35,10 +35,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PlayerRideable;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -47,8 +47,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Entité abeille géante chevauchable.
  * Deux modes de déplacement: WALK (libre) et RUN (inertie).
+ * Étend Bee pour réutiliser le BeeModel vanilla.
  */
-public class RideableBeeEntity extends Mob implements PlayerRideable {
+public class RideableBeeEntity extends Bee implements PlayerRideable {
 
     // --- Entity Data Accessors (synchronisés client-serveur) ---
     private static final EntityDataAccessor<Byte> DATA_RIDING_MODE = SynchedEntityData.defineId(
@@ -65,7 +66,7 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
     // --- Camera yaw (reçu du client) ---
     private float clientCameraYaw = 0f;
 
-    public RideableBeeEntity(EntityType<? extends Mob> entityType, Level level) {
+    public RideableBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
         this.controller = new RideableBeeController(RidingSettingsLoader.getSettings(), state);
     }
@@ -73,7 +74,7 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
     // --- Attributes ---
 
     public static AttributeSupplier.Builder createAttributes() {
-        return Mob.createMobAttributes()
+        return Bee.createAttributes()
                 .add(Attributes.MAX_HEALTH, RidingSettings.DEFAULT.health())
                 .add(Attributes.MOVEMENT_SPEED, 0.3)
                 .add(Attributes.FOLLOW_RANGE, 48.0);

@@ -29,9 +29,10 @@ public class BeemancerEntities {
                     .build("magic_bee"));
 
     // --- MOUNTS ---
+    // Fox: 0.6x0.7, notre abeille est légèrement plus grande
     public static final Supplier<EntityType<RideableBeeEntity>> RIDEABLE_BEE = ENTITIES.register("rideable_bee",
             () -> EntityType.Builder.of(RideableBeeEntity::new, MobCategory.CREATURE)
-                    .sized(1.4F, 1.2F)
+                    .sized(0.9F, 0.8F)
                     .clientTrackingRange(10)
                     .build("rideable_bee"));
 
