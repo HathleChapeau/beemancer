@@ -149,12 +149,12 @@ public class BeeNodeWidget extends AbstractWidget {
         poseStack.translate(centerX, centerY - 50, 100);
 
         // Scale up bee model (5x zoom)
-        float scale = 40.0f;
+        float scale = -40;
         poseStack.scale(scale, scale, scale);
 
         // Flip and rotate for display
-        poseStack.mulPose(Axis.XP.rotationDegrees(20));
-        poseStack.mulPose(Axis.YP.rotationDegrees(45 + (hovered ? partialTick * 2 : 0)));
+        poseStack.mulPose(Axis.XP.rotationDegrees(160));
+        poseStack.mulPose(Axis.YP.rotationDegrees(144 + (hovered ? partialTick * 2 : 0)));
 
         // Get buffer source and render
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
