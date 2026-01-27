@@ -33,6 +33,7 @@ import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -174,7 +175,9 @@ public class ClientSetup {
 
     private static void registerAdditionalModels(final ModelEvent.RegisterAdditional event) {
         // Modèles des anneaux du Altar Heart (rendus dynamiquement)
-        event.register(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_big_ring"));
-        event.register(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring"));
+        event.register(ModelResourceLocation.standalone(
+            ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_big_ring")));
+        event.register(ModelResourceLocation.standalone(
+            ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring")));
     }
 }
