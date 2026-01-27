@@ -21,10 +21,12 @@
     },
     {
       "name": "Edge Vertical NW",
-      "from": [-6, 0, -6],
-      "to": [-4, 16, -4],
+      "from": [-5, 0, -5],
+      "to": [-3, 16, -3],
       "faces": {
         "north": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "east": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "south": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "west": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "up": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "down": {"texture": "#edge", "uv": [0, 0, 2, 2]}
@@ -32,20 +34,24 @@
     },
     {
       "name": "Edge Vertical NE",
-      "from": [20, 0, -6],
-      "to": [22, 16, -4],
+      "from": [19, 0, -5],
+      "to": [21, 16, -3],
       "faces": {
         "north": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "east": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "south": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "west": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "up": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "down": {"texture": "#edge", "uv": [0, 0, 2, 2]}
       }
     },
     {
       "name": "Edge Vertical SW",
-      "from": [-6, 0, 20],
-      "to": [-4, 16, 22],
+      "from": [-5, 0, 19],
+      "to": [-3, 16, 21],
       "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "east": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "south": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "west": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "up": {"texture": "#edge", "uv": [0, 0, 2, 2]},
@@ -54,40 +60,51 @@
     },
     {
       "name": "Edge Vertical SE",
-      "from": [20, 0, 20],
-      "to": [22, 16, 22],
+      "from": [19, 0, 19],
+      "to": [21, 16, 21],
       "faces": {
-        "south": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "north": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "east": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "south": {"texture": "#edge", "uv": [0, 0, 2, 16]},
+        "west": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "up": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "down": {"texture": "#edge", "uv": [0, 0, 2, 2]}
       }
     },
     {
       "name": "Edge Horizontal Bottom North",
-      "from": [-4, -2, -6],
-      "to": [20, 0, -4],
+      "from": [-3, -1, -5],
+      "to": [19, 1, -3],
       "faces": {
         "north": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "east": {"texture": "#edge", "uv": [0, 0, 2, 2]},
+        "south": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "west": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "up": {"texture": "#edge", "uv": [0, 0, 16, 2]},
         "down": {"texture": "#edge", "uv": [0, 0, 16, 2]}
       }
     },
     {
       "name": "Edge Horizontal Bottom South",
-      "from": [-4, -2, 20],
-      "to": [20, 0, 22],
+      "from": [-3, -1, 19],
+      "to": [19, 1, 21],
       "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "east": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "south": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "west": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "up": {"texture": "#edge", "uv": [0, 0, 16, 2]},
         "down": {"texture": "#edge", "uv": [0, 0, 16, 2]}
       }
     },
     {
       "name": "Edge Horizontal Bottom West",
-      "from": [-6, -2, -4],
-      "to": [-4, 0, 20],
+      "from": [-5, -1, -3],
+      "to": [-3, 1, 19],
       "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 2, 2]},
+        "east": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "south": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "west": {"texture": "#edge", "uv": [0, 0, 16, 2]},
         "up": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "down": {"texture": "#edge", "uv": [0, 0, 2, 16]}
@@ -95,39 +112,51 @@
     },
     {
       "name": "Edge Horizontal Bottom East",
-      "from": [20, -2, -4],
-      "to": [22, 0, 20],
+      "from": [19, -1, -3],
+      "to": [21, 1, 19],
       "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "east": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "south": {"texture": "#edge", "uv": [0, 0, 2, 2]},
+        "west": {"texture": "#edge", "uv": [0, 0, 16, 2]},
         "up": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "down": {"texture": "#edge", "uv": [0, 0, 2, 16]}
       }
     },
     {
       "name": "Edge Horizontal Top North",
-      "from": [-4, 16, -6],
-      "to": [20, 18, -4],
+      "from": [-3, 15, -5],
+      "to": [19, 17, -3],
       "faces": {
         "north": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "east": {"texture": "#edge", "uv": [0, 0, 2, 2]},
+        "south": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "west": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "up": {"texture": "#edge", "uv": [0, 0, 16, 2]},
         "down": {"texture": "#edge", "uv": [0, 0, 16, 2]}
       }
     },
     {
       "name": "Edge Horizontal Top South",
-      "from": [-4, 16, 20],
-      "to": [20, 18, 22],
+      "from": [-3, 15, 19],
+      "to": [19, 17, 21],
       "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "east": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "south": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "west": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "up": {"texture": "#edge", "uv": [0, 0, 16, 2]},
         "down": {"texture": "#edge", "uv": [0, 0, 16, 2]}
       }
     },
     {
       "name": "Edge Horizontal Top West",
-      "from": [-6, 16, -4],
-      "to": [-4, 18, 20],
+      "from": [-5, 15, -3],
+      "to": [-3, 17, 19],
       "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 2, 2]},
+        "east": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "south": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "west": {"texture": "#edge", "uv": [0, 0, 16, 2]},
         "up": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "down": {"texture": "#edge", "uv": [0, 0, 2, 16]}
@@ -135,10 +164,13 @@
     },
     {
       "name": "Edge Horizontal Top East",
-      "from": [20, 16, -4],
-      "to": [22, 18, 20],
+      "from": [19, 15, -3],
+      "to": [21, 17, 19],
       "faces": {
+        "north": {"texture": "#edge", "uv": [0, 0, 2, 2]},
         "east": {"texture": "#edge", "uv": [0, 0, 16, 2]},
+        "south": {"texture": "#edge", "uv": [0, 0, 2, 2]},
+        "west": {"texture": "#edge", "uv": [0, 0, 16, 2]},
         "up": {"texture": "#edge", "uv": [0, 0, 2, 16]},
         "down": {"texture": "#edge", "uv": [0, 0, 2, 16]}
       }
