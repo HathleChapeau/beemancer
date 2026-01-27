@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "beemancer:block/breeding_crystal"
+      "model": "beemancer:block/machines/breeding_crystal"
     }
   }
 }

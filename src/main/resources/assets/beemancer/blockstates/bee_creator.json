@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": { "model": "beemancer:block/bee_creator" }
+    "": { "model": "beemancer:block/machines/bee_creator" }
   }
 }

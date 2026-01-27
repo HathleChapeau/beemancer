@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "beemancer:block/storage_crate"
+      "model": "beemancer:block/storage/storage_crate"
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "variants": {
-    "working=false": { "model": "beemancer:block/powered_centrifuge" },
-    "working=true": { "model": "beemancer:block/powered_centrifuge_working" }
+    "working=false": { "model": "beemancer:block/alchemy/powered_centrifuge" },
+    "working=true": { "model": "beemancer:block/alchemy/powered_centrifuge_working" }
   }
 }

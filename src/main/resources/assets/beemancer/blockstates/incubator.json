@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "beemancer:block/incubator"
+      "model": "beemancer:block/machines/incubator"
     }
   }
 }

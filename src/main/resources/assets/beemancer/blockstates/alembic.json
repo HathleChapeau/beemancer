@@ -1,6 +1,6 @@
 {
   "variants": {
-    "distilling=false": { "model": "beemancer:block/alembic" },
-    "distilling=true": { "model": "beemancer:block/alembic_distilling" }
+    "distilling=false": { "model": "beemancer:block/alchemy/alembic" },
+    "distilling=true": { "model": "beemancer:block/alchemy/alembic_distilling" }
   }
 }

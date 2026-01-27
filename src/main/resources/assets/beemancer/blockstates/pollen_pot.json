@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": { "model": "beemancer:block/pollen_pot" }
+    "": { "model": "beemancer:block/machines/pollen_pot" }
   }
 }

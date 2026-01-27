@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": { "model": "beemancer:block/magic_hive" }
+    "": { "model": "beemancer:block/machines/magic_hive" }
   }
 }

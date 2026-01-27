@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": { "model": "beemancer:block/honey_tank" }
+    "": { "model": "beemancer:block/alchemy/honey_tank" }
   }
 }

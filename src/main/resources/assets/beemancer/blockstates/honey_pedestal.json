@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "beemancer:block/honey_pedestal"
+      "model": "beemancer:block/altar/honey_pedestal"
     }
   }
 }

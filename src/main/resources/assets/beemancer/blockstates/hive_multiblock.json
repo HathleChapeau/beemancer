@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "beemancer:block/hive_multiblock"
+      "model": "beemancer:block/machines/hive_multiblock"
     }
   }
 }

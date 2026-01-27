@@ -1,10 +1,10 @@
 {
   "variants": {
     "formed=false": {
-      "model": "beemancer:block/extractor_heart"
+      "model": "beemancer:block/machines/extractor_heart"
     },
     "formed=true": {
-      "model": "beemancer:block/extractor_heart_formed"
+      "model": "beemancer:block/machines/extractor_heart_formed"
     }
   }
 }

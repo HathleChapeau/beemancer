@@ -1,7 +1,7 @@
 {
   "variants": {
     "": {
-      "model": "beemancer:block/storage_controller"
+      "model": "beemancer:block/storage/storage_controller"
     }
   }
 }
