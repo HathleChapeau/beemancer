@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "beemancer:block/honey_crystal_formed"
+    "particle": "beemancer:block/honey_crystal"
   },
   "elements": []
 }

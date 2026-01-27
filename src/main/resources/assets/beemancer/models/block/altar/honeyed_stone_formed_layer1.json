@@ -2,6 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "all": "beemancer:block/honeyed_stone",
+    "ring": "beemancer:block/honey_crystal",
     "particle": "beemancer:block/honeyed_stone"
   },
   "elements": [
