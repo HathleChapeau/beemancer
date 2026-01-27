@@ -2,7 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "all": "beemancer:block/altar/stone",
-    "edge": "beemancer:block/altar/stone_edge",
+    "edge": "minecraft:block/copper_block",
     "particle": "beemancer:block/honeyed_stone"
   },
   "elements": [

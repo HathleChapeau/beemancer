@@ -2,6 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "all": "beemancer:block/honeyed_stone",
+    "top": "minecraft:block/copper_block",
     "ring": "beemancer:block/honey_crystal",
     "particle": "beemancer:block/honeyed_stone"
   },
@@ -11,12 +12,12 @@
       "from": [0, 12, 0],
       "to": [16, 16, 16],
       "faces": {
-        "north": {"texture": "#all", "uv": [0, 4, 16, 12]},
-        "east": {"texture": "#all", "uv": [0, 4, 16, 12]},
-        "south": {"texture": "#all", "uv": [0, 4, 16, 12]},
-        "west": {"texture": "#all", "uv": [0, 4, 16, 12]},
-        "up": {"texture": "#all", "uv": [0, 0, 16, 16]},
-        "down": {"texture": "#all", "uv": [0, 0, 16, 16]}
+        "north": {"texture": "#top", "uv": [0, 4, 16, 12]},
+        "east": {"texture": "#top", "uv": [0, 4, 16, 12]},
+        "south": {"texture": "#top", "uv": [0, 4, 16, 12]},
+        "west": {"texture": "#top", "uv": [0, 4, 16, 12]},
+        "up": {"texture": "#top", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#top", "uv": [0, 0, 16, 16]}
       }
     },
     {
