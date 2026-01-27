@@ -18,7 +18,7 @@ import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
 import com.chapeau.beemancer.client.gui.screen.alchemy.*;
 import com.chapeau.beemancer.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.beemancer.client.renderer.BuildingWandPreviewRenderer;
-// import com.chapeau.beemancer.client.renderer.block.AltarHeartRenderer;
+import com.chapeau.beemancer.client.renderer.block.AltarHeartRenderer;
 import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
@@ -91,9 +91,9 @@ public class ClientSetup {
         // HoneyReservoirRenderer - rendu dynamique du fluide avec scale
         event.registerBlockEntityRenderer(BeemancerBlockEntities.HONEY_RESERVOIR.get(),
             HoneyReservoirRenderer::new);
-        // AltarHeartRenderer désactivé - utilise les modèles de blocs JSON
-        // event.registerBlockEntityRenderer(BeemancerBlockEntities.ALTAR_HEART.get(),
-        //     AltarHeartRenderer::new);
+        // AltarHeartRenderer - rendu des conduits animés
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.ALTAR_HEART.get(),
+            AltarHeartRenderer::new);
     }
 
     private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {
