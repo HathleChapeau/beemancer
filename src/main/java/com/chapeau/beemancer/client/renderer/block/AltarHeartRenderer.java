@@ -20,18 +20,24 @@
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.animation.AltarConduitAnimator;
 import com.chapeau.beemancer.common.block.altar.HoneyCrystalConduitBlock;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -44,6 +50,11 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEntity> {
 
     private final BlockRenderDispatcher blockRenderer;
+    private final RandomSource random = RandomSource.create();
+
+    // Chemin vers le modèle formed
+    private static final ResourceLocation CONDUIT_FORMED_MODEL =
+        ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/honey_crystal_conduit_formed");
 
     public AltarHeartRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
@@ -72,11 +83,16 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         float rotationAngle = AltarConduitAnimator.getRotationAngle(blockEntity, partialTick);
 
-        // Utiliser le BlockState NON-FORMED car FORMED a RenderShape.INVISIBLE
-        // qui empêche renderSingleBlock de fonctionner
+        // Récupérer le BakedModel du conduit formed directement
+        BakedModel formedModel = Minecraft.getInstance().getModelManager()
+            .getModel(CONDUIT_FORMED_MODEL);
+
+        // BlockState pour les propriétés (texture, etc.) - mais on utilise le modèle formed
         BlockState conduitState = BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get().defaultBlockState()
-            .setValue(HoneyCrystalConduitBlock.FORMED, false)
+            .setValue(HoneyCrystalConduitBlock.FORMED, true)
             .setValue(HoneyCrystalConduitBlock.FACING, Direction.NORTH);
+
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.solid());
 
         // Rendre les 4 conduits en orbite
         for (int i = 0; i < AltarConduitAnimator.CONDUIT_COUNT; i++) {
@@ -96,15 +112,20 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             // Revenir au coin du bloc
             poseStack.translate(-0.5, -0.5, -0.5);
 
-            // Rendre le modèle
-            blockRenderer.renderSingleBlock(
+            // Rendre le modèle directement
+            blockRenderer.getModelRenderer().tesselateBlock(
+                blockEntity.getLevel(),
+                formedModel,
                 conduitState,
+                blockEntity.getBlockPos(),
                 poseStack,
-                buffer,
+                vertexConsumer,
+                false,
+                random,
                 packedLight,
                 packedOverlay,
                 ModelData.EMPTY,
-                null
+                RenderType.solid()
             );
 
             poseStack.popPose();
