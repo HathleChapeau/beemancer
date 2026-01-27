@@ -56,7 +56,7 @@ public class CodexScreen extends Screen {
     private static final int TAB_WIDTH = 28;
     private static final int TAB_HEIGHT = 32;
     private static final int CONTENT_PADDING = 9;
-    private static final int NODE_SPACING = 40;
+    private static final int NODE_SPACING = 30;
 
     private CodexPage currentPage = CodexPage.BEES;
     private final Map<CodexPage, Button> tabButtons = new EnumMap<>(CodexPage.class);
@@ -201,17 +201,10 @@ public class CodexScreen extends Screen {
 
     private void renderTiledBackground(GuiGraphics graphics) {
         int tileSize = 16;
-        ResourceLocation bgTexture = currentPage.isBeeTree() ? ADVANCEMENT_BACKGROUND : BACKGROUND_TEXTURE;
 
         for (int x = contentX; x < contentX + contentWidth; x += tileSize) {
             for (int y = contentY; y < contentY + contentHeight; y += tileSize) {
-                // Apply scroll offset for parallax effect on bee tree
-                int texU = currentPage.isBeeTree() ? (int)(-scrollX * 0.5) % tileSize : 0;
-                int texV = currentPage.isBeeTree() ? (int)(-scrollY * 0.5) % tileSize : 0;
-                if (texU < 0) texU += tileSize;
-                if (texV < 0) texV += tileSize;
-
-                graphics.blit(bgTexture, x, y, texU, texV,
+                graphics.blit(BACKGROUND_TEXTURE, x, y, 0, 0,
                     Math.min(tileSize, contentX + contentWidth - x),
                     Math.min(tileSize, contentY + contentHeight - y),
                     tileSize, tileSize);

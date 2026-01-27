@@ -41,13 +41,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BeeNodeWidget extends AbstractWidget {
-    public static final int NODE_SIZE = 26;
-    private static final int BEE_RENDER_SIZE = 22;
-
-    // Background style achievements
-    private static final ResourceLocation ADVANCEMENT_WIDGETS = ResourceLocation.withDefaultNamespace(
-        "textures/gui/advancements/widgets.png"
-    );
+    public static final int NODE_SIZE = 20;
+    private static final int BEE_RENDER_SIZE = 16;
 
     // Vanilla bee texture fallback
     private static final ResourceLocation VANILLA_BEE_TEXTURE =
@@ -123,18 +118,21 @@ public class BeeNodeWidget extends AbstractWidget {
     }
 
     private void renderFrame(GuiGraphics graphics) {
-        // Achievement widget textures from vanilla
-        // Normal frame: 0,0 to 26,26
-        // Challenge frame: 26,0 to 52,26
-        int frameU = 0;
-        int frameV = unlocked ? 0 : 26;
+        // Simple colored background frame
+        int bgColor = unlocked ? 0xFF333333 : 0xFF222222;
+        int borderColor;
 
-        // Use challenge frame for special bees (tier 1 base)
-        if (node.getCategory().name().equals("ROOT")) {
-            frameU = 26;
+        switch (node.getCategory().name()) {
+            case "ROOT" -> borderColor = unlocked ? 0xFFFFAA00 : 0xFF886600; // Golden for base bees
+            case "GOAL" -> borderColor = unlocked ? 0xFF00FF00 : 0xFF006600; // Green for goals
+            case "CHALLENGE" -> borderColor = unlocked ? 0xFFFF00FF : 0xFF660066; // Purple for challenges
+            default -> borderColor = unlocked ? 0xFFAAAAAA : 0xFF555555; // Gray for normal
         }
 
-        graphics.blit(ADVANCEMENT_WIDGETS, getX(), getY(), frameU, frameV, NODE_SIZE, NODE_SIZE, 256, 256);
+        // Draw border
+        graphics.fill(getX() - 1, getY() - 1, getX() + NODE_SIZE + 1, getY() + NODE_SIZE + 1, borderColor);
+        // Draw background
+        graphics.fill(getX(), getY(), getX() + NODE_SIZE, getY() + NODE_SIZE, bgColor);
     }
 
     private void renderBee3D(GuiGraphics graphics, float partialTick) {
@@ -147,10 +145,10 @@ public class BeeNodeWidget extends AbstractWidget {
         poseStack.pushPose();
 
         // Position at center of widget
-        poseStack.translate(centerX, centerY + 5, 100);
+        poseStack.translate(centerX, centerY + 3, 100);
 
-        // Scale down to fit in widget
-        float scale = 8.0f;
+        // Scale up bee model (5x zoom)
+        float scale = 40.0f;
         poseStack.scale(scale, scale, scale);
 
         // Flip and rotate for display
@@ -158,16 +156,11 @@ public class BeeNodeWidget extends AbstractWidget {
         poseStack.mulPose(Axis.XP.rotationDegrees(-20));
         poseStack.mulPose(Axis.YP.rotationDegrees(45 + (hovered ? partialTick * 2 : 0)));
 
-        // Apply color tint if locked
-        float colorMult = unlocked ? 1.0f : 0.4f;
-
         // Get buffer source and render
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entityCutout(texture));
 
         BeeModel<?> model = getOrCreateModel();
-        int color = ((int)(colorMult * 255) << 24) | ((int)(colorMult * 255) << 16) |
-                   ((int)(colorMult * 255) << 8) | 255;
 
         model.renderToBuffer(poseStack, vertexConsumer, LightTexture.FULL_BRIGHT,
                 OverlayTexture.NO_OVERLAY, unlocked ? 0xFFFFFFFF : 0xFF666666);
