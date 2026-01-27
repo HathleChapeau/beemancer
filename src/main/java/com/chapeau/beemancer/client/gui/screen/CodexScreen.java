@@ -99,11 +99,13 @@ public class CodexScreen extends Screen {
     private void createTabButtons() {
         tabButtons.clear();
 
-        // Position tabs on the left edge of the screen
-        int tabX = 5;
-        int tabY = windowY;
+        // Position tabs horizontally centered at top of screen, above window
+        CodexPage[] pages = CodexPage.values();
+        int totalWidth = pages.length * TAB_WIDTH + (pages.length - 1) * 4;
+        int tabX = (width - totalWidth) / 2;
+        int tabY = windowY - TAB_HEIGHT - 5;
 
-        for (CodexPage page : CodexPage.values()) {
+        for (CodexPage page : pages) {
             final CodexPage currentPageRef = page;
             Button tabButton = Button.builder(page.getDisplayName(), btn -> {
                 if (currentPage != currentPageRef) {
@@ -118,7 +120,7 @@ public class CodexScreen extends Screen {
 
             tabButtons.put(page, tabButton);
             addRenderableWidget(tabButton);
-            tabY += TAB_HEIGHT + 4;
+            tabX += TAB_WIDTH + 4;
         }
 
         updateTabButtonStyles();
