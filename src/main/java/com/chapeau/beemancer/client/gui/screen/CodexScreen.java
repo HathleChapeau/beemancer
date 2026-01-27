@@ -53,8 +53,8 @@ public class CodexScreen extends Screen {
 
     private static final int WINDOW_WIDTH = 252;
     private static final int WINDOW_HEIGHT = 200;
-    private static final int TAB_WIDTH = 28;
-    private static final int TAB_HEIGHT = 32;
+    private static final int TAB_WIDTH = 60;
+    private static final int TAB_HEIGHT = 20;
     private static final int CONTENT_PADDING = 9;
     private static final int NODE_SPACING = 30;
 
@@ -88,9 +88,9 @@ public class CodexScreen extends Screen {
         windowX = (width - WINDOW_WIDTH) / 2;
         windowY = (height - WINDOW_HEIGHT) / 2;
         contentX = windowX + CONTENT_PADDING;
-        contentY = windowY + CONTENT_PADDING + TAB_HEIGHT - 4;
+        contentY = windowY + TAB_HEIGHT + 22;
         contentWidth = WINDOW_WIDTH - CONTENT_PADDING * 2;
-        contentHeight = WINDOW_HEIGHT - CONTENT_PADDING * 2 - TAB_HEIGHT + 4;
+        contentHeight = WINDOW_HEIGHT - TAB_HEIGHT - 30;
 
         createTabButtons();
         rebuildNodeWidgets();
@@ -99,19 +99,37 @@ public class CodexScreen extends Screen {
     private void createTabButtons() {
         tabButtons.clear();
 
-        int tabX = windowX;
+        // Position tabs at top of window, inside the frame
+        int totalTabsWidth = CodexPage.values().length * (TAB_WIDTH + 2) - 2;
+        int tabX = windowX + (WINDOW_WIDTH - totalTabsWidth) / 2;
+        int tabY = windowY + 4;
+
         for (CodexPage page : CodexPage.values()) {
+            final CodexPage currentPageRef = page;
             Button tabButton = Button.builder(page.getDisplayName(), btn -> {
-                if (currentPage != page) {
+                if (currentPage != currentPageRef) {
                     playSound(BeemancerSounds.CODEX_PAGE_TURN.get());
-                    currentPage = page;
+                    currentPage = currentPageRef;
+                    scrollX = 0;
+                    scrollY = 0;
                     rebuildNodeWidgets();
+                    updateTabButtonStyles();
                 }
-            }).bounds(tabX, windowY - TAB_HEIGHT + 4, TAB_WIDTH, TAB_HEIGHT).build();
+            }).bounds(tabX, tabY, TAB_WIDTH, TAB_HEIGHT).build();
 
             tabButtons.put(page, tabButton);
             addRenderableWidget(tabButton);
             tabX += TAB_WIDTH + 2;
+        }
+
+        updateTabButtonStyles();
+    }
+
+    private void updateTabButtonStyles() {
+        for (Map.Entry<CodexPage, Button> entry : tabButtons.entrySet()) {
+            Button btn = entry.getValue();
+            boolean isActive = entry.getKey() == currentPage;
+            btn.active = !isActive;
         }
     }
 
@@ -192,8 +210,8 @@ public class CodexScreen extends Screen {
             }
         }
 
-        // Render title
-        graphics.drawCenteredString(font, title, width / 2, windowY + 6, 0xFFFFFF);
+        // Render current page name below tabs
+        graphics.drawCenteredString(font, currentPage.getDisplayName(), width / 2, windowY + TAB_HEIGHT + 8, 0xFFFFFF);
 
         // Render page progress
         renderProgress(graphics);
