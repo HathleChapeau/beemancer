@@ -22,6 +22,7 @@
 package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.gui.widget.BeeNodeWidget;
 import com.chapeau.beemancer.client.gui.widget.CodexNodeWidget;
 import com.chapeau.beemancer.common.codex.*;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
@@ -45,6 +46,10 @@ public class CodexScreen extends Screen {
     private static final ResourceLocation WINDOW_TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Beemancer.MOD_ID, "textures/gui/codex_window.png"
     );
+    // Achievement-style background for bee tree
+    private static final ResourceLocation ADVANCEMENT_BACKGROUND = ResourceLocation.withDefaultNamespace(
+        "textures/gui/advancements/backgrounds/stone.png"
+    );
 
     private static final int WINDOW_WIDTH = 252;
     private static final int WINDOW_HEIGHT = 200;
@@ -53,9 +58,10 @@ public class CodexScreen extends Screen {
     private static final int CONTENT_PADDING = 9;
     private static final int NODE_SPACING = 40;
 
-    private CodexPage currentPage = CodexPage.BEE;
+    private CodexPage currentPage = CodexPage.BEES;
     private final Map<CodexPage, Button> tabButtons = new EnumMap<>(CodexPage.class);
     private final List<CodexNodeWidget> nodeWidgets = new ArrayList<>();
+    private final List<BeeNodeWidget> beeWidgets = new ArrayList<>();
 
     private int windowX;
     private int windowY;
@@ -116,6 +122,11 @@ public class CodexScreen extends Screen {
         }
         nodeWidgets.clear();
 
+        for (BeeNodeWidget widget : beeWidgets) {
+            removeWidget(widget);
+        }
+        beeWidgets.clear();
+
         // Get player data
         CodexPlayerData playerData = getPlayerData();
         Set<String> unlockedNodes = playerData.getUnlockedNodes();
@@ -135,9 +146,16 @@ public class CodexScreen extends Screen {
             int nodeScreenX = contentX + node.getX() * NODE_SPACING + (int) scrollX;
             int nodeScreenY = contentY + node.getY() * NODE_SPACING + (int) scrollY;
 
-            CodexNodeWidget widget = new CodexNodeWidget(node, nodeScreenX, nodeScreenY, unlocked, canUnlock);
-            nodeWidgets.add(widget);
-            addRenderableWidget(widget);
+            // Use BeeNodeWidget for BEES page, CodexNodeWidget for others
+            if (currentPage.isBeeTree()) {
+                BeeNodeWidget widget = new BeeNodeWidget(node, nodeScreenX, nodeScreenY, unlocked, canUnlock);
+                beeWidgets.add(widget);
+                addRenderableWidget(widget);
+            } else {
+                CodexNodeWidget widget = new CodexNodeWidget(node, nodeScreenX, nodeScreenY, unlocked, canUnlock);
+                nodeWidgets.add(widget);
+                addRenderableWidget(widget);
+            }
         }
     }
 
@@ -164,8 +182,14 @@ public class CodexScreen extends Screen {
         graphics.disableScissor();
 
         // Render tooltips (outside scissor)
-        for (CodexNodeWidget widget : nodeWidgets) {
-            widget.renderTooltip(graphics, mouseX, mouseY);
+        if (currentPage.isBeeTree()) {
+            for (BeeNodeWidget widget : beeWidgets) {
+                widget.renderTooltip(graphics, mouseX, mouseY);
+            }
+        } else {
+            for (CodexNodeWidget widget : nodeWidgets) {
+                widget.renderTooltip(graphics, mouseX, mouseY);
+            }
         }
 
         // Render title
@@ -177,9 +201,17 @@ public class CodexScreen extends Screen {
 
     private void renderTiledBackground(GuiGraphics graphics) {
         int tileSize = 16;
+        ResourceLocation bgTexture = currentPage.isBeeTree() ? ADVANCEMENT_BACKGROUND : BACKGROUND_TEXTURE;
+
         for (int x = contentX; x < contentX + contentWidth; x += tileSize) {
             for (int y = contentY; y < contentY + contentHeight; y += tileSize) {
-                graphics.blit(BACKGROUND_TEXTURE, x, y, 0, 0, 
+                // Apply scroll offset for parallax effect on bee tree
+                int texU = currentPage.isBeeTree() ? (int)(-scrollX * 0.5) % tileSize : 0;
+                int texV = currentPage.isBeeTree() ? (int)(-scrollY * 0.5) % tileSize : 0;
+                if (texU < 0) texU += tileSize;
+                if (texV < 0) texV += tileSize;
+
+                graphics.blit(bgTexture, x, y, texU, texV,
                     Math.min(tileSize, contentX + contentWidth - x),
                     Math.min(tileSize, contentY + contentHeight - y),
                     tileSize, tileSize);
@@ -188,15 +220,20 @@ public class CodexScreen extends Screen {
     }
 
     private void renderConnections(GuiGraphics graphics) {
-        CodexPlayerData playerData = getPlayerData();
+        if (currentPage.isBeeTree()) {
+            renderBeeConnections(graphics);
+        } else {
+            renderCodexConnections(graphics);
+        }
+    }
 
+    private void renderCodexConnections(GuiGraphics graphics) {
         for (CodexNodeWidget widget : nodeWidgets) {
             CodexNode node = widget.getNode();
             String parentId = node.getParentId();
 
             if (parentId != null) {
-                // Find parent widget
-                CodexNodeWidget parentWidget = findWidgetByNodeId(parentId);
+                CodexNodeWidget parentWidget = findCodexWidgetByNodeId(parentId);
                 if (parentWidget != null) {
                     int startX = parentWidget.getX() + CodexNodeWidget.NODE_SIZE / 2;
                     int startY = parentWidget.getY() + CodexNodeWidget.NODE_SIZE / 2;
@@ -204,8 +241,7 @@ public class CodexScreen extends Screen {
                     int endY = widget.getY() + CodexNodeWidget.NODE_SIZE / 2;
 
                     int lineColor = widget.isUnlocked() ? 0xFF00FF00 : 0xFF666666;
-                    
-                    // Draw line (simple horizontal then vertical)
+
                     int midX = (startX + endX) / 2;
                     graphics.fill(startX, startY - 1, midX, startY + 1, lineColor);
                     graphics.fill(midX - 1, startY, midX + 1, endY, lineColor);
@@ -215,8 +251,52 @@ public class CodexScreen extends Screen {
         }
     }
 
-    private CodexNodeWidget findWidgetByNodeId(String nodeId) {
+    private void renderBeeConnections(GuiGraphics graphics) {
+        for (BeeNodeWidget widget : beeWidgets) {
+            CodexNode node = widget.getNode();
+            String parentId = node.getParentId();
+
+            if (parentId != null) {
+                BeeNodeWidget parentWidget = findBeeWidgetByNodeId(parentId);
+                if (parentWidget != null) {
+                    int startX = parentWidget.getX() + BeeNodeWidget.NODE_SIZE / 2;
+                    int startY = parentWidget.getY() + BeeNodeWidget.NODE_SIZE / 2;
+                    int endX = widget.getX() + BeeNodeWidget.NODE_SIZE / 2;
+                    int endY = widget.getY() + BeeNodeWidget.NODE_SIZE / 2;
+
+                    // Golden connections for bees
+                    int lineColor = widget.isUnlocked() ? 0xFFFFAA00 : 0xFF555555;
+                    int lineWidth = 2;
+
+                    // Draw bezier-like connection
+                    int midX = (startX + endX) / 2;
+                    int midY = (startY + endY) / 2;
+
+                    // Horizontal from parent
+                    graphics.fill(Math.min(startX, midX), startY - lineWidth/2,
+                                  Math.max(startX, midX), startY + lineWidth/2, lineColor);
+                    // Vertical connector
+                    graphics.fill(midX - lineWidth/2, Math.min(startY, endY),
+                                  midX + lineWidth/2, Math.max(startY, endY), lineColor);
+                    // Horizontal to child
+                    graphics.fill(Math.min(midX, endX), endY - lineWidth/2,
+                                  Math.max(midX, endX), endY + lineWidth/2, lineColor);
+                }
+            }
+        }
+    }
+
+    private CodexNodeWidget findCodexWidgetByNodeId(String nodeId) {
         for (CodexNodeWidget widget : nodeWidgets) {
+            if (widget.getNode().getId().equals(nodeId)) {
+                return widget;
+            }
+        }
+        return null;
+    }
+
+    private BeeNodeWidget findBeeWidgetByNodeId(String nodeId) {
+        for (BeeNodeWidget widget : beeWidgets) {
             if (widget.getNode().getId().equals(nodeId)) {
                 return widget;
             }
@@ -237,15 +317,29 @@ public class CodexScreen extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
-            // Check node clicks
-            for (CodexNodeWidget widget : nodeWidgets) {
-                if (widget.isMouseOver(mouseX, mouseY)) {
-                    if (widget.canUnlock() && !widget.isUnlocked()) {
-                        unlockNode(widget);
-                        return true;
-                    } else if (widget.isUnlocked()) {
-                        playSound(BeemancerSounds.CODEX_NODE_CLICK.get());
-                        return true;
+            // Check node clicks based on current page type
+            if (currentPage.isBeeTree()) {
+                for (BeeNodeWidget widget : beeWidgets) {
+                    if (widget.isMouseOver(mouseX, mouseY)) {
+                        if (widget.canUnlock() && !widget.isUnlocked()) {
+                            unlockBeeNode(widget);
+                            return true;
+                        } else if (widget.isUnlocked()) {
+                            playSound(BeemancerSounds.CODEX_NODE_CLICK.get());
+                            return true;
+                        }
+                    }
+                }
+            } else {
+                for (CodexNodeWidget widget : nodeWidgets) {
+                    if (widget.isMouseOver(mouseX, mouseY)) {
+                        if (widget.canUnlock() && !widget.isUnlocked()) {
+                            unlockNode(widget);
+                            return true;
+                        } else if (widget.isUnlocked()) {
+                            playSound(BeemancerSounds.CODEX_NODE_CLICK.get());
+                            return true;
+                        }
                     }
                 }
             }
@@ -299,6 +393,13 @@ public class CodexScreen extends Screen {
             widget.setX(nodeScreenX);
             widget.setY(nodeScreenY);
         }
+        for (BeeNodeWidget widget : beeWidgets) {
+            CodexNode node = widget.getNode();
+            int nodeScreenX = contentX + node.getX() * NODE_SPACING + (int) scrollX;
+            int nodeScreenY = contentY + node.getY() * NODE_SPACING + (int) scrollY;
+            widget.setX(nodeScreenX);
+            widget.setY(nodeScreenY);
+        }
     }
 
     private boolean isInContentArea(double mouseX, double mouseY) {
@@ -307,6 +408,18 @@ public class CodexScreen extends Screen {
     }
 
     private void unlockNode(CodexNodeWidget widget) {
+        // Send packet to server
+        PacketDistributor.sendToServer(new CodexUnlockPacket(widget.getNode().getFullId()));
+
+        // Optimistic update
+        widget.setUnlocked(true);
+        playSound(BeemancerSounds.CODEX_NODE_UNLOCK.get());
+
+        // Update can-unlock status for children
+        rebuildNodeWidgets();
+    }
+
+    private void unlockBeeNode(BeeNodeWidget widget) {
         // Send packet to server
         PacketDistributor.sendToServer(new CodexUnlockPacket(widget.getNode().getFullId()));
 
