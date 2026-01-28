@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/netherite_scrap_fragment"
+    "layer0": "beemancer:item/combproduct/netherite_scrap_fragment"
   }
 }

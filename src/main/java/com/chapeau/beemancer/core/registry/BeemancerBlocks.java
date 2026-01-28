@@ -21,9 +21,19 @@ import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
 import com.chapeau.beemancer.common.block.storage.StorageTerminalBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FenceBlock;
+import net.minecraft.world.level.block.FenceGateBlock;
+import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.TrapDoorBlock;
+import net.minecraft.world.level.block.TransparentBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
@@ -283,6 +293,129 @@ public class BeemancerBlocks {
                     .strength(2.0f)
                     .sound(SoundType.STONE)
                     .noOcclusion()));
+
+    // --- BUILDING BLOCKS: HONEYED WOOD ---
+    public static final DeferredBlock<Block> HONEYED_PLANKS = BLOCKS.register("honeyed_planks",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<StairBlock> HONEYED_WOOD_STAIR = BLOCKS.register("honeyed_wood_stair",
+            () -> new StairBlock(HONEYED_PLANKS.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<SlabBlock> HONEYED_WOOD_SLAB = BLOCKS.register("honeyed_wood_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<FenceBlock> HONEYED_FENCE = BLOCKS.register("honeyed_fence",
+            () -> new FenceBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<FenceGateBlock> HONEYED_FENCE_GATE = BLOCKS.register("honeyed_fence_gate",
+            () -> new FenceGateBlock(WoodType.OAK, BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<TrapDoorBlock> HONEYED_TRAPDOOR = BLOCKS.register("honeyed_trapdoor",
+            () -> new TrapDoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    // --- BUILDING BLOCKS: HONEYED STONE ---
+    public static final DeferredBlock<WallBlock> HONEYED_STONE_WALL = BLOCKS.register("honeyed_stone_wall",
+            () -> new WallBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    // --- BUILDING BLOCKS: HONEYED GLASS ---
+    public static final DeferredBlock<TransparentBlock> HONEYED_GLASS = BLOCKS.register("honeyed_glass",
+            () -> new TransparentBlock(BlockBehaviour.Properties.of()
+                    .strength(0.3f).sound(SoundType.GLASS).noOcclusion()));
+
+    public static final DeferredBlock<IronBarsBlock> HONEYED_GLASS_PANE = BLOCKS.register("honeyed_glass_pane",
+            () -> new IronBarsBlock(BlockBehaviour.Properties.of()
+                    .strength(0.3f).sound(SoundType.GLASS).noOcclusion()));
+
+    // --- BUILDING BLOCKS: ROYAL WOOD ---
+    public static final DeferredBlock<Block> ROYAL_PLANKS = BLOCKS.register("royal_planks",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<StairBlock> ROYAL_WOOD_STAIR = BLOCKS.register("royal_wood_stair",
+            () -> new StairBlock(ROYAL_PLANKS.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<SlabBlock> ROYAL_WOOD_SLAB = BLOCKS.register("royal_wood_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<FenceBlock> ROYAL_FENCE = BLOCKS.register("royal_fence",
+            () -> new FenceBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<FenceGateBlock> ROYAL_FENCE_GATE = BLOCKS.register("royal_fence_gate",
+            () -> new FenceGateBlock(WoodType.OAK, BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<TrapDoorBlock> ROYAL_TRAPDOOR = BLOCKS.register("royal_trapdoor",
+            () -> new TrapDoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    // --- BUILDING BLOCKS: ROYAL STONE ---
+    public static final DeferredBlock<Block> ROYAL_STONE = BLOCKS.register("royal_stone",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<StairBlock> ROYAL_STONE_STAIR = BLOCKS.register("royal_stone_stair",
+            () -> new StairBlock(ROYAL_STONE.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<SlabBlock> ROYAL_STONE_SLAB = BLOCKS.register("royal_stone_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<WallBlock> ROYAL_STONE_WALL = BLOCKS.register("royal_stone_wall",
+            () -> new WallBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    // --- BUILDING BLOCKS: NECTAR WOOD ---
+    public static final DeferredBlock<Block> NECTAR_PLANKS = BLOCKS.register("nectar_planks",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<StairBlock> NECTAR_WOOD_STAIR = BLOCKS.register("nectar_wood_stair",
+            () -> new StairBlock(NECTAR_PLANKS.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<SlabBlock> NECTAR_WOOD_SLAB = BLOCKS.register("nectar_wood_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<FenceBlock> NECTAR_FENCE = BLOCKS.register("nectar_fence",
+            () -> new FenceBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<FenceGateBlock> NECTAR_FENCE_GATE = BLOCKS.register("nectar_fence_gate",
+            () -> new FenceGateBlock(WoodType.OAK, BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<TrapDoorBlock> NECTAR_TRAPDOOR = BLOCKS.register("nectar_trapdoor",
+            () -> new TrapDoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    // --- BUILDING BLOCKS: NECTAR STONE ---
+    public static final DeferredBlock<Block> NECTAR_STONE = BLOCKS.register("nectar_stone",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<StairBlock> NECTAR_STONE_STAIR = BLOCKS.register("nectar_stone_stair",
+            () -> new StairBlock(NECTAR_STONE.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<SlabBlock> NECTAR_STONE_SLAB = BLOCKS.register("nectar_stone_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<WallBlock> NECTAR_STONE_WALL = BLOCKS.register("nectar_stone_wall",
+            () -> new WallBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
 
     // --- FLUID BLOCKS ---
     public static final DeferredBlock<LiquidBlock> HONEY_FLUID_BLOCK = BLOCKS.register("honey",

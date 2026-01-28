@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/radiant_crystal_shard"
+    "layer0": "beemancer:item/ingredient/radiant_crystal_shard"
   }
 }

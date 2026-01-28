@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "beemancer:block/royal_planks",
+    "top": "beemancer:block/royal_planks",
+    "side": "beemancer:block/royal_planks"
+  }
+}

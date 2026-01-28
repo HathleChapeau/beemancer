@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/bee_larva"
+    "layer0": "beemancer:item/ingredient/bee_larva"
   }
 }

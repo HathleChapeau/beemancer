@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/coal_fragment"
+    "layer0": "beemancer:item/combproduct/coal_fragment"
   }
 }

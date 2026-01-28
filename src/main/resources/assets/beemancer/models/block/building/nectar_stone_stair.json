@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "beemancer:block/nectar_stone",
+    "top": "beemancer:block/nectar_stone",
+    "side": "beemancer:block/nectar_stone"
+  }
+}

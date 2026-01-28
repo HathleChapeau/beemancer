@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "beemancer:block/royal_stone",
+    "top": "beemancer:block/royal_stone",
+    "side": "beemancer:block/royal_stone"
+  }
+}

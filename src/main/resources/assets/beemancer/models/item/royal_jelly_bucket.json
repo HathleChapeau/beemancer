@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/royal_jelly_bucket"
+    "layer0": "beemancer:item/ingredient/royal_jelly_bucket"
   }
 }

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/leather_fragment"
+    "layer0": "beemancer:item/combproduct/leather_fragment"
   }
 }

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/nether_star_fragment"
+    "layer0": "beemancer:item/combproduct/nether_star_fragment"
   }
 }

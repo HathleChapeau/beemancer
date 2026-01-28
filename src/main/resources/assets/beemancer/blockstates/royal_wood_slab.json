@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "type=bottom": { "model": "beemancer:block/building/royal_wood_slab" },
+    "type=top": { "model": "beemancer:block/building/royal_wood_slab_top" },
+    "type=double": { "model": "beemancer:block/building/royal_planks" }
+  }
+}

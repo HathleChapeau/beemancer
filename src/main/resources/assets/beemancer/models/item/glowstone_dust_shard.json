@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/glowstone_dust_shard"
+    "layer0": "beemancer:item/combproduct/glowstone_dust_shard"
   }
 }

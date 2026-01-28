@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/mushroom_spore"
+    "layer0": "beemancer:item/ingredient/mushroom_spore"
   }
 }

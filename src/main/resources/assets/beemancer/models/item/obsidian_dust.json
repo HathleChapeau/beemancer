@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/obsidian_dust"
+    "layer0": "beemancer:item/combproduct/obsidian_dust"
   }
 }

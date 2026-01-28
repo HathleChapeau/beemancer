@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/slime_ball_shard"
+    "layer0": "beemancer:item/combproduct/slime_ball_shard"
   }
 }

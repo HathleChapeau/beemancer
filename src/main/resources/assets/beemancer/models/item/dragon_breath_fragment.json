@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/dragon_breath_fragment"
+    "layer0": "beemancer:item/combproduct/dragon_breath_fragment"
   }
 }
