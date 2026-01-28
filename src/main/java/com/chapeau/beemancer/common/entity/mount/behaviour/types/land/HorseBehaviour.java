@@ -167,6 +167,11 @@ public class HorseBehaviour implements RidingBehaviour<HorseSettings, HorseState
     /**
      * Vérifie si l'entité est en l'air.
      * Pattern Cobblemon: inAirCheck() L124-139
+     *
+     * LOGIQUE:
+     * - deltaMovement.y == 0.0 → au sol (vélocité Y nulle)
+     * - standingOnSolid → bloc solide sous les pieds
+     * - inAir = NOT (yVelZero OR standingOnSolid)
      */
     private void inAirCheck(HorseState state, LivingEntity vehicle) {
         var posBelow = vehicle.blockPosition().below();
@@ -176,8 +181,9 @@ public class HorseBehaviour implements RidingBehaviour<HorseSettings, HorseState
         boolean canSupportEntity = blockStateBelow.isFaceSturdy(vehicle.level(), posBelow, Direction.UP);
         boolean standingOnSolid = canSupportEntity && !isAirOrLiquid;
 
-        // En l'air si pas au sol
-        boolean inAir = !(vehicle.getDeltaMovement().y == 0.0 || standingOnSolid);
+        // Cobblemon L137: inAir si PAS (vélocité Y nulle OU sur bloc solide)
+        boolean yVelocityZero = Math.abs(vehicle.getDeltaMovement().y) < 0.001; // Tolérance pour float
+        boolean inAir = !(yVelocityZero || standingOnSolid);
         state.setInAir(inAir);
     }
 

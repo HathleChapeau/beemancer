@@ -333,6 +333,20 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
     }
 
     /**
+     * Retourne si l'abeille est en l'air (selon HorseState, pas onGround()).
+     * Plus stable que onGround() car utilise deltaMovement.y et bloc en dessous.
+     */
+    public boolean isInAir() {
+        if (ridingController != null && ridingController.getContext() != null) {
+            RidingBehaviourState state = ridingController.getContext().getState();
+            if (state instanceof HorseState horseState) {
+                return horseState.isInAir();
+            }
+        }
+        return !this.onGround(); // Fallback
+    }
+
+    /**
      * Retourne le riding mode actuel.
      */
     public RidingMode getRidingMode() {
@@ -347,15 +361,23 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
 
     /**
      * Calcule l'état actuel pour le debug.
+     * Utilise HorseState.inAir au lieu de onGround() pour éviter le flicker.
      */
     public String getDebugState() {
-        if (!this.onGround()) {
-            if (getJumpCooldown() > 0) {
-                return "JUMPING";
+        if (ridingController != null && ridingController.getContext() != null) {
+            RidingBehaviourState state = ridingController.getContext().getState();
+            if (state instanceof HorseState horseState) {
+                if (horseState.isInAir()) {
+                    if (horseState.getJumpTicks() > 0) {
+                        return "JUMPING";
+                    }
+                    return "AIRBORNE";
+                }
+                return horseState.isSprinting() ? "RUN" : "WALK";
             }
-            return "AIRBORNE";
         }
-        return isSprinting() ? "RUN" : "WALK";
+        // Fallback si pas de state
+        return "WALK";
     }
 
     /**
