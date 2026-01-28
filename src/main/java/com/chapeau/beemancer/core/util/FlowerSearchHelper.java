@@ -21,12 +21,15 @@ package com.chapeau.beemancer.core.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -38,36 +41,68 @@ public final class FlowerSearchHelper {
     
     /**
      * Recherche toutes les fleurs dans un rayon autour d'une position.
+     * Effectue un raycast pour ignorer les fleurs bloquées par des blocs.
      *
      * @param level Le monde
      * @param center Position centrale de recherche
      * @param radius Rayon de recherche
      * @param flowerTag Tag des blocs à rechercher
-     * @return Liste des positions de fleurs trouvées (triée par distance)
+     * @return Liste des positions de fleurs trouvées (avec ligne de vue dégagée)
      */
     public static List<BlockPos> findAllFlowers(Level level, BlockPos center, int radius, TagKey<Block> flowerTag) {
         List<BlockPos> flowers = new ArrayList<>();
-        
+
         if (flowerTag == null || level == null) {
             return flowers;
         }
-        
+
+        Vec3 centerVec = Vec3.atCenterOf(center);
+
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
                 for (int z = -radius; z <= radius; z++) {
                     BlockPos checkPos = center.offset(x, y, z);
                     BlockState blockState = level.getBlockState(checkPos);
-                    
+
                     if (blockState.is(flowerTag)) {
-                        flowers.add(checkPos.immutable());
+                        // Raycast pour vérifier la ligne de vue
+                        if (hasLineOfSight(level, centerVec, checkPos)) {
+                            flowers.add(checkPos.immutable());
+                        }
                     }
                 }
             }
         }
-        
-        // Ne pas trier - la sélection aléatoire est faite par l'appelant
-        // Cela permet une meilleure distribution des abeilles sur les fleurs
+
         return flowers;
+    }
+
+    /**
+     * Vérifie si la ligne de vue entre le centre et la position cible est dégagée.
+     *
+     * @param level Le monde
+     * @param from Position de départ (centre de la ruche)
+     * @param to Position cible (fleur)
+     * @return true si aucun bloc ne bloque la vue
+     */
+    public static boolean hasLineOfSight(Level level, Vec3 from, BlockPos to) {
+        Vec3 toVec = Vec3.atCenterOf(to);
+
+        BlockHitResult result = level.clip(new ClipContext(
+            from,
+            toVec,
+            ClipContext.Block.COLLIDER,
+            ClipContext.Fluid.NONE,
+            null
+        ));
+
+        // Si on n'a rien touché ou si on a touché la fleur elle-même, la vue est dégagée
+        if (result.getType() == HitResult.Type.MISS) {
+            return true;
+        }
+
+        // Si on a touché un bloc, vérifier si c'est la position de la fleur
+        return result.getBlockPos().equals(to);
     }
     
     /**

@@ -6,9 +6,10 @@
  *
  * FONCTIONNEMENT:
  * - Mode extraction (par direction): tire le fluide du bloc connecte
- * - Mode normal: pousse le fluide vers les pipes connectees
- * - Round-robin entre les pipes disponibles
- * - Evite les va-et-vient en trackant l'origine du fluide
+ * - Partage équitable toutes les 0.5 sec entre toutes les pipes connectées
+ * - Seule la pipe "master" (plus petite position) exécute le partage
+ * - Inclut les conteneurs à fluide dans le réseau de partage
+ * - Capacités: T1=1000mb, T2=2000mb, T3=4000mb, T4=8000mb
  * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
@@ -20,52 +21,41 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class HoneyPipeBlockEntity extends BlockEntity {
     // --- TIER CONFIG ---
-    public static final int TIER1_BUFFER = 500;
-    public static final int TIER1_TRANSFER = 100;
+    public static final int TIER1_BUFFER = 1000;
+    public static final int TIER2_BUFFER = 2000;
+    public static final int TIER3_BUFFER = 4000;
+    public static final int TIER4_BUFFER = 8000;
 
-    public static final int TIER2_BUFFER = 1000;
-    public static final int TIER2_TRANSFER = 250;
+    private static final int SHARE_INTERVAL = 10; // 0.5 secondes
+    private static final int MAX_NETWORK_SIZE = 256; // Limite pour éviter stack overflow
 
-    public static final int TIER3_BUFFER = 2000;
-    public static final int TIER3_TRANSFER = 500;
-
-    public static final int TIER4_BUFFER = 4000;
-    public static final int TIER4_TRANSFER = 1000;
-
-    private final int transferRate;
     private final FluidTank buffer;
 
-    private int transferCooldown = 0;
-    private int roundRobinIndex = 0;
-
-    // Position de la pipe d'ou vient le fluide actuel (pour eviter les va-et-vient)
-    @Nullable
-    private BlockPos sourcePos = null;
+    private int shareCooldown = 0;
 
     public HoneyPipeBlockEntity(BlockPos pos, BlockState state) {
-        this(BeemancerBlockEntities.HONEY_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
+        this(BeemancerBlockEntities.HONEY_PIPE.get(), pos, state, TIER1_BUFFER);
     }
 
-    public HoneyPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
-                                int bufferCapacity, int transferRate) {
+    public HoneyPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int bufferCapacity) {
         super(type, pos, state);
-        this.transferRate = transferRate;
         this.buffer = new FluidTank(bufferCapacity) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
@@ -83,38 +73,27 @@ public class HoneyPipeBlockEntity extends BlockEntity {
 
     // Factory methods for tiered versions
     public static HoneyPipeBlockEntity createTier2(BlockPos pos, BlockState state) {
-        return new HoneyPipeBlockEntity(BeemancerBlockEntities.HONEY_PIPE_TIER2.get(), pos, state,
-            TIER2_BUFFER, TIER2_TRANSFER);
+        return new HoneyPipeBlockEntity(BeemancerBlockEntities.HONEY_PIPE_TIER2.get(), pos, state, TIER2_BUFFER);
     }
 
     public static HoneyPipeBlockEntity createTier3(BlockPos pos, BlockState state) {
-        return new HoneyPipeBlockEntity(BeemancerBlockEntities.HONEY_PIPE_TIER3.get(), pos, state,
-            TIER3_BUFFER, TIER3_TRANSFER);
+        return new HoneyPipeBlockEntity(BeemancerBlockEntities.HONEY_PIPE_TIER3.get(), pos, state, TIER3_BUFFER);
     }
 
     public static HoneyPipeBlockEntity createTier4(BlockPos pos, BlockState state) {
-        return new HoneyPipeBlockEntity(BeemancerBlockEntities.HONEY_PIPE_TIER4.get(), pos, state,
-            TIER4_BUFFER, TIER4_TRANSFER);
+        return new HoneyPipeBlockEntity(BeemancerBlockEntities.HONEY_PIPE_TIER4.get(), pos, state, TIER4_BUFFER);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HoneyPipeBlockEntity be) {
-        if (be.transferCooldown > 0) {
-            be.transferCooldown--;
-            return;
-        }
-
-        // Reset source tracking si buffer est vide
-        if (be.buffer.isEmpty()) {
-            be.sourcePos = null;
-        }
-
-        // Process extraction from neighbors marked for extraction
+        // Extraction depuis les blocs marqués pour extraction (chaque tick)
         be.processExtractions(level, pos, state);
 
-        // Push to neighbors (not in extraction mode)
-        be.pushToNeighbors(level, pos, state);
-
-        be.transferCooldown = 2;
+        // Partage équitable toutes les 0.5 sec
+        be.shareCooldown--;
+        if (be.shareCooldown <= 0) {
+            be.shareCooldown = SHARE_INTERVAL;
+            be.tryShareFluidWithNetwork(level, pos, state);
+        }
     }
 
     private void processExtractions(Level level, BlockPos pos, BlockState state) {
@@ -133,99 +112,13 @@ public class HoneyPipeBlockEntity extends BlockEntity {
 
             var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
             if (cap != null) {
-                FluidStack toDrain = cap.drain(transferRate, IFluidHandler.FluidAction.SIMULATE);
+                int maxExtract = buffer.getCapacity() - buffer.getFluidAmount();
+                FluidStack toDrain = cap.drain(maxExtract, IFluidHandler.FluidAction.SIMULATE);
                 if (!toDrain.isEmpty() && buffer.isFluidValid(toDrain)) {
                     int canFill = buffer.fill(toDrain, IFluidHandler.FluidAction.SIMULATE);
                     if (canFill > 0) {
                         FluidStack drained = cap.drain(canFill, IFluidHandler.FluidAction.EXECUTE);
                         buffer.fill(drained, IFluidHandler.FluidAction.EXECUTE);
-                        // Mark source as non-pipe (null = from machine)
-                        sourcePos = null;
-                    }
-                }
-            }
-        }
-    }
-
-    private void pushToNeighbors(Level level, BlockPos pos, BlockState state) {
-        if (buffer.isEmpty()) {
-            return;
-        }
-
-        // Construire la liste des destinations disponibles
-        List<PipeDestination> availableDestinations = new ArrayList<>();
-
-        for (Direction dir : Direction.values()) {
-            if (!HoneyPipeBlock.isConnected(state, dir)) continue;
-            if (HoneyPipeBlock.isExtracting(state, dir)) continue;
-
-            BlockPos neighborPos = pos.relative(dir);
-
-            // Skip si c'est la source (evite va-et-vient)
-            if (neighborPos.equals(sourcePos)) continue;
-
-            // Check si c'est une pipe
-            BlockEntity neighborBe = level.getBlockEntity(neighborPos);
-            if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe) {
-                // Skip si la pipe voisine est pleine
-                if (neighborPipe.buffer.getFluidAmount() >= neighborPipe.buffer.getCapacity()) continue;
-                // Skip si le fluide n'est pas compatible
-                if (!neighborPipe.buffer.isEmpty() && !neighborPipe.buffer.getFluid().getFluid().isSame(buffer.getFluid().getFluid())) continue;
-
-                availableDestinations.add(new PipeDestination(dir, neighborPos, true));
-            } else {
-                // C'est un bloc normal avec capacite fluide
-                var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
-                if (cap != null) {
-                    FluidStack toTransfer = buffer.drain(transferRate, IFluidHandler.FluidAction.SIMULATE);
-                    if (!toTransfer.isEmpty()) {
-                        int canFill = cap.fill(toTransfer, IFluidHandler.FluidAction.SIMULATE);
-                        if (canFill > 0) {
-                            availableDestinations.add(new PipeDestination(dir, neighborPos, false));
-                        }
-                    }
-                }
-            }
-        }
-
-        if (availableDestinations.isEmpty()) return;
-
-        // Round-robin: choisir la prochaine destination (avec protection overflow)
-        roundRobinIndex = roundRobinIndex % availableDestinations.size();
-        PipeDestination dest = availableDestinations.get(roundRobinIndex);
-        roundRobinIndex = (roundRobinIndex + 1) % 1000000; // Reset periodique pour eviter overflow
-
-        // Transferer vers la destination choisie (pattern atomique: calcul puis execute)
-        if (dest.isPipe) {
-            BlockEntity neighborBe = level.getBlockEntity(dest.pos);
-            if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe) {
-                // Calculer le maximum transferable
-                int availableInBuffer = buffer.getFluidAmount();
-                int spaceInNeighbor = neighborPipe.buffer.getCapacity() - neighborPipe.buffer.getFluidAmount();
-                int toTransferAmount = Math.min(Math.min(transferRate, availableInBuffer), spaceInNeighbor);
-
-                if (toTransferAmount > 0 && !buffer.isEmpty()) {
-                    FluidStack toTransfer = new FluidStack(buffer.getFluid().getFluid(), toTransferAmount);
-                    // Execute directement - les calculs garantissent que ca marchera
-                    int filled = neighborPipe.buffer.fill(toTransfer, IFluidHandler.FluidAction.EXECUTE);
-                    if (filled > 0) {
-                        buffer.drain(filled, IFluidHandler.FluidAction.EXECUTE);
-                        neighborPipe.sourcePos = pos;
-                    }
-                }
-            }
-        } else {
-            var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, dest.pos, dest.direction.getOpposite());
-            if (cap != null && !buffer.isEmpty()) {
-                // Pour les non-pipes, on doit quand meme simuler car on ne connait pas leur implementation
-                int toTransferAmount = Math.min(transferRate, buffer.getFluidAmount());
-                FluidStack toTransfer = new FluidStack(buffer.getFluid().getFluid(), toTransferAmount);
-                int canFill = cap.fill(toTransfer, IFluidHandler.FluidAction.SIMULATE);
-                if (canFill > 0) {
-                    FluidStack actualTransfer = new FluidStack(buffer.getFluid().getFluid(), canFill);
-                    int filled = cap.fill(actualTransfer, IFluidHandler.FluidAction.EXECUTE);
-                    if (filled > 0) {
-                        buffer.drain(filled, IFluidHandler.FluidAction.EXECUTE);
                     }
                 }
             }
@@ -233,17 +126,316 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     }
 
     /**
-     * Recoit du fluide d'une autre pipe
+     * Tente de partager le fluide. Seul le "master" du réseau exécute le partage.
      */
-    public int receiveFluid(FluidStack fluid, BlockPos fromPos) {
-        if (buffer.getFluidAmount() >= buffer.getCapacity()) return 0;
-        if (!buffer.isFluidValid(fluid)) return 0;
-
-        int filled = buffer.fill(fluid, IFluidHandler.FluidAction.EXECUTE);
-        if (filled > 0) {
-            sourcePos = fromPos;
+    private void tryShareFluidWithNetwork(Level level, BlockPos pos, BlockState state) {
+        if (buffer.isEmpty()) {
+            return;
         }
-        return filled;
+
+        Fluid fluidType = buffer.getFluid().getFluid();
+
+        // Collecter toutes les pipes du réseau
+        List<HoneyPipeBlockEntity> allPipes = new ArrayList<>();
+        List<ContainerParticipant> containers = new ArrayList<>();
+        Set<BlockPos> visited = new HashSet<>();
+
+        collectAllNetworkMembers(level, pos, state, fluidType, allPipes, containers, visited);
+
+        // Déterminer le master (plus petite position)
+        BlockPos masterPos = pos;
+        for (HoneyPipeBlockEntity pipe : allPipes) {
+            if (comparePosForMaster(pipe.getBlockPos(), masterPos) < 0) {
+                masterPos = pipe.getBlockPos();
+            }
+        }
+
+        // Seul le master exécute le partage
+        if (!pos.equals(masterPos)) {
+            return;
+        }
+
+        // Ajouter cette pipe à la liste
+        allPipes.add(this);
+
+        // Exécuter le partage
+        executeFluidSharing(fluidType, allPipes, containers);
+    }
+
+    /**
+     * Compare deux positions pour déterminer le master (X, puis Y, puis Z).
+     */
+    private int comparePosForMaster(BlockPos a, BlockPos b) {
+        int cmp = Integer.compare(a.getX(), b.getX());
+        if (cmp != 0) return cmp;
+        cmp = Integer.compare(a.getY(), b.getY());
+        if (cmp != 0) return cmp;
+        return Integer.compare(a.getZ(), b.getZ());
+    }
+
+    /**
+     * Collecte récursivement toutes les pipes et conteneurs du réseau.
+     * Continue la récursion même pour les pipes pleines.
+     */
+    private void collectAllNetworkMembers(Level level, BlockPos fromPos, BlockState fromState,
+                                          Fluid fluidType,
+                                          List<HoneyPipeBlockEntity> pipes,
+                                          List<ContainerParticipant> containers,
+                                          Set<BlockPos> visited) {
+        if (visited.size() >= MAX_NETWORK_SIZE) {
+            return; // Limite atteinte
+        }
+
+        for (Direction dir : Direction.values()) {
+            if (!HoneyPipeBlock.isConnected(fromState, dir)) continue;
+            if (HoneyPipeBlock.isExtracting(fromState, dir)) continue;
+
+            BlockPos neighborPos = fromPos.relative(dir);
+            if (visited.contains(neighborPos)) continue;
+            visited.add(neighborPos);
+
+            BlockEntity neighborBe = level.getBlockEntity(neighborPos);
+
+            if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe) {
+                // Vérifier compatibilité de fluide
+                if (!neighborPipe.buffer.isEmpty() &&
+                    !neighborPipe.buffer.getFluid().getFluid().isSame(fluidType)) {
+                    continue; // Fluide différent, ignorer complètement
+                }
+
+                // Ajouter la pipe (même si pleine, pour le calcul du master)
+                pipes.add(neighborPipe);
+
+                // Continuer la récursion (toujours, même si pleine)
+                BlockState neighborState = level.getBlockState(neighborPos);
+                collectAllNetworkMembers(level, neighborPos, neighborState, fluidType, pipes, containers, visited);
+            } else {
+                // Conteneur à fluide (tank, etc.)
+                var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
+                if (cap != null) {
+                    // Vérifier compatibilité
+                    boolean compatible = true;
+                    for (int i = 0; i < cap.getTanks(); i++) {
+                        FluidStack tankFluid = cap.getFluidInTank(i);
+                        if (!tankFluid.isEmpty() && !tankFluid.getFluid().isSame(fluidType)) {
+                            compatible = false;
+                            break;
+                        }
+                    }
+
+                    if (compatible) {
+                        // Vérifier s'il peut accepter notre fluide
+                        FluidStack testStack = new FluidStack(fluidType, 1);
+                        int canFill = cap.fill(testStack, IFluidHandler.FluidAction.SIMULATE);
+                        if (canFill > 0) {
+                            containers.add(new ContainerParticipant(cap));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Exécute le partage équitable du fluide entre tous les participants.
+     */
+    private void executeFluidSharing(Fluid fluidType, List<HoneyPipeBlockEntity> pipes,
+                                     List<ContainerParticipant> containers) {
+        // Calculer le total de fluide et la capacité totale
+        int totalFluid = 0;
+        int totalCapacity = 0;
+
+        for (HoneyPipeBlockEntity pipe : pipes) {
+            totalFluid += pipe.buffer.getFluidAmount();
+            totalCapacity += pipe.buffer.getCapacity();
+        }
+
+        for (ContainerParticipant container : containers) {
+            totalFluid += container.getCurrentAmount(fluidType);
+            totalCapacity += container.getCapacity();
+        }
+
+        if (totalFluid == 0 || totalCapacity == 0) {
+            return;
+        }
+
+        // Calculer le ratio de remplissage cible
+        float targetRatio = (float) totalFluid / totalCapacity;
+
+        // Séparer les donneurs et receveurs
+        List<FluidSource> donors = new ArrayList<>();
+        List<FluidReceiver> receivers = new ArrayList<>();
+
+        for (HoneyPipeBlockEntity pipe : pipes) {
+            int current = pipe.buffer.getFluidAmount();
+            int capacity = pipe.buffer.getCapacity();
+            int target = Math.round(capacity * targetRatio);
+
+            if (current > target) {
+                donors.add(new PipeSource(pipe, current - target));
+            } else if (current < target) {
+                receivers.add(new PipeReceiver(pipe, target - current, fluidType));
+            }
+        }
+
+        for (ContainerParticipant container : containers) {
+            int current = container.getCurrentAmount(fluidType);
+            int capacity = container.getCapacity();
+            int target = Math.round(capacity * targetRatio);
+
+            if (current > target) {
+                donors.add(new ContainerSource(container, current - target, fluidType));
+            } else if (current < target) {
+                receivers.add(new ContainerReceiver(container, target - current, fluidType));
+            }
+        }
+
+        // Transférer des donneurs vers les receveurs
+        for (FluidSource donor : donors) {
+            for (FluidReceiver receiver : receivers) {
+                int toTransfer = Math.min(donor.getAvailable(), receiver.getNeeded());
+                if (toTransfer > 0) {
+                    int drained = donor.drain(toTransfer);
+                    receiver.fill(drained);
+                }
+            }
+        }
+    }
+
+    // --- Interfaces pour le partage ---
+
+    private interface FluidSource {
+        int getAvailable();
+        int drain(int amount);
+    }
+
+    private interface FluidReceiver {
+        int getNeeded();
+        void fill(int amount);
+    }
+
+    private static class PipeSource implements FluidSource {
+        private final HoneyPipeBlockEntity pipe;
+        private int available;
+
+        PipeSource(HoneyPipeBlockEntity pipe, int available) {
+            this.pipe = pipe;
+            this.available = available;
+        }
+
+        @Override
+        public int getAvailable() { return available; }
+
+        @Override
+        public int drain(int amount) {
+            int toDrain = Math.min(amount, available);
+            FluidStack drained = pipe.buffer.drain(toDrain, IFluidHandler.FluidAction.EXECUTE);
+            available -= drained.getAmount();
+            return drained.getAmount();
+        }
+    }
+
+    private static class PipeReceiver implements FluidReceiver {
+        private final HoneyPipeBlockEntity pipe;
+        private final Fluid fluidType;
+        private int needed;
+
+        PipeReceiver(HoneyPipeBlockEntity pipe, int needed, Fluid fluidType) {
+            this.pipe = pipe;
+            this.needed = needed;
+            this.fluidType = fluidType;
+        }
+
+        @Override
+        public int getNeeded() { return needed; }
+
+        @Override
+        public void fill(int amount) {
+            int filled = pipe.buffer.fill(
+                new FluidStack(fluidType, amount),
+                IFluidHandler.FluidAction.EXECUTE
+            );
+            needed -= filled;
+        }
+    }
+
+    private static class ContainerParticipant {
+        private final IFluidHandler handler;
+
+        ContainerParticipant(IFluidHandler handler) {
+            this.handler = handler;
+        }
+
+        int getCurrentAmount(Fluid fluidType) {
+            int amount = 0;
+            for (int i = 0; i < handler.getTanks(); i++) {
+                FluidStack stack = handler.getFluidInTank(i);
+                if (stack.getFluid().isSame(fluidType)) {
+                    amount += stack.getAmount();
+                }
+            }
+            return amount;
+        }
+
+        int getCapacity() {
+            int capacity = 0;
+            for (int i = 0; i < handler.getTanks(); i++) {
+                capacity += handler.getTankCapacity(i);
+            }
+            return capacity;
+        }
+
+        IFluidHandler getHandler() { return handler; }
+    }
+
+    private static class ContainerSource implements FluidSource {
+        private final ContainerParticipant container;
+        private int available;
+        private final Fluid fluidType;
+
+        ContainerSource(ContainerParticipant container, int available, Fluid fluidType) {
+            this.container = container;
+            this.available = available;
+            this.fluidType = fluidType;
+        }
+
+        @Override
+        public int getAvailable() { return available; }
+
+        @Override
+        public int drain(int amount) {
+            int toDrain = Math.min(amount, available);
+            FluidStack drained = container.getHandler().drain(
+                new FluidStack(fluidType, toDrain),
+                IFluidHandler.FluidAction.EXECUTE
+            );
+            available -= drained.getAmount();
+            return drained.getAmount();
+        }
+    }
+
+    private static class ContainerReceiver implements FluidReceiver {
+        private final ContainerParticipant container;
+        private int needed;
+        private final Fluid fluidType;
+
+        ContainerReceiver(ContainerParticipant container, int needed, Fluid fluidType) {
+            this.container = container;
+            this.needed = needed;
+            this.fluidType = fluidType;
+        }
+
+        @Override
+        public int getNeeded() { return needed; }
+
+        @Override
+        public void fill(int amount) {
+            int filled = container.getHandler().fill(
+                new FluidStack(fluidType, amount),
+                IFluidHandler.FluidAction.EXECUTE
+            );
+            needed -= filled;
+        }
     }
 
     public FluidTank getBuffer() {
@@ -254,10 +446,7 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Buffer", buffer.writeToNBT(registries, new CompoundTag()));
-        tag.putInt("RoundRobin", roundRobinIndex);
-        if (sourcePos != null) {
-            tag.put("SourcePos", NbtUtils.writeBlockPos(sourcePos));
-        }
+        tag.putInt("ShareCooldown", shareCooldown);
     }
 
     @Override
@@ -266,11 +455,6 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         if (tag.contains("Buffer")) {
             buffer.readFromNBT(registries, tag.getCompound("Buffer"));
         }
-        roundRobinIndex = tag.getInt("RoundRobin");
-        if (tag.contains("SourcePos")) {
-            sourcePos = NbtUtils.readBlockPos(tag, "SourcePos").orElse(null);
-        }
+        shareCooldown = tag.getInt("ShareCooldown");
     }
-
-    private record PipeDestination(Direction direction, BlockPos pos, boolean isPipe) {}
 }
