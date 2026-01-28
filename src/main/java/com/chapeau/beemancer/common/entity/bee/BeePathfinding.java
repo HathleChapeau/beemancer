@@ -1,24 +1,27 @@
 /**
  * ============================================================
  * [BeePathfinding.java]
- * Description: Pathfinding Theta* optimisé pour abeilles volantes
+ * Description: Pathfinding Theta* optimise pour abeilles volantes
  * ============================================================
  *
  * ALGORITHME: Theta* (Any-Angle Pathfinding)
  * - Extension de A* qui permet des chemins en ligne droite
- * - Utilise Bresenham 3D pour la vérification de ligne de vue
- * - Optimisé pour les entités volantes en 3D
+ * - Utilise DDA 3D pour la verification de ligne de vue
+ * - Optimise pour les entites volantes en 3D
+ * - Penalite de proximite aux murs (steering behavior)
+ * - Preference d'altitude (voler au-dessus des obstacles)
+ * - Clearance entity (verification 1x2 pour le hitbox)
  *
- * Référence: Nash et al. 2007 "Theta*: Any-Angle Path Planning on Grids"
+ * Reference: Nash et al. 2007 "Theta*: Any-Angle Path Planning on Grids"
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation                    |
+ * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | Level               | Monde Minecraft      | Vérification collisions        |
+ * | Level               | Monde Minecraft      | Verification collisions        |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - ForagingBehaviorGoal.java: Navigation vers fleurs/ruche
  *
  * ============================================================
@@ -26,6 +29,7 @@
 package com.chapeau.beemancer.common.entity.bee;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -40,23 +44,29 @@ import java.util.*;
  *
  * Theta* est un algorithme "any-angle" qui produit des chemins plus courts
  * et plus naturels que A* standard en permettant des mouvements en ligne droite
- * plutôt que de suivre la grille.
+ * plutot que de suivre la grille.
  *
- * Caractéristiques:
- * - Vol direct si ligne de vue dégagée (O(1) dans le meilleur cas)
- * - Theta* avec Bresenham 3D pour les obstacles
- * - Lissage automatique du chemin
- * - Visualisation debug par particules
+ * Ameliorations par rapport a A* standard:
+ * - Vol direct si ligne de vue degagee (O(1) dans le meilleur cas)
+ * - DDA 3D precise pour la detection de ligne de vue
+ * - Penalite murs: evite de raser les obstacles
+ * - Preference altitude: prefere voler au-dessus des obstacles
+ * - Clearance entity: verifie 1x2 blocs pour le hitbox
+ * - Fallback intelligent: se rapproche au maximum si echec
+ * - Replanning: recalcule si l'abeille est poussee hors du chemin
  */
 public class BeePathfinding {
 
     // Configuration
-    private static final int MAX_ITERATIONS = 500;
+    private static final int MAX_ITERATIONS = 1000;
     private static final int MAX_PATH_LENGTH = 100;
     private static final double DIAGONAL_COST = 1.414;
     private static final double STRAIGHT_COST = 1.0;
+    private static final double WALL_PENALTY = 0.5;
+    private static final double ALTITUDE_BONUS = 0.3;
+    private static final double OFF_PATH_THRESHOLD = 5.0;
 
-    // Directions 3D pour l'expansion des nœuds (26 directions)
+    // Directions 3D pour l'expansion des noeuds (26 directions)
     private static final int[][] DIRECTIONS = {
             // Cardinales (6)
             {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1},
@@ -88,27 +98,27 @@ public class BeePathfinding {
     }
 
     /**
-     * Calcule un chemin optimisé de start vers end.
+     * Calcule un chemin optimise de start vers end.
      * Utilise le vol direct si possible, sinon Theta*.
      */
     @Nullable
     public List<BlockPos> findPath(BlockPos start, BlockPos end) {
-        // Cache hit - réutiliser le chemin existant
-        if (end.equals(cachedEnd) && start.closerThan(cachedStart, 3) && currentPath != null) {
+        // Cache hit - reutiliser le chemin existant
+        if (end.equals(cachedEnd) && cachedStart != null && start.closerThan(cachedStart, 3) && currentPath != null) {
             return currentPath;
         }
 
         cachedStart = start;
         cachedEnd = end;
 
-        // Étape 1: Essayer le vol direct (ligne de vue)
+        // Etape 1: Essayer le vol direct (ligne de vue)
         if (hasLineOfSight(start, end)) {
             currentPath = List.of(end);
             currentPathIndex = 0;
             return currentPath;
         }
 
-        // Étape 2: Theta* pour contourner les obstacles
+        // Etape 2: Theta* pour contourner les obstacles
         currentPath = computeThetaStar(start, end);
         currentPathIndex = 0;
 
@@ -117,6 +127,7 @@ public class BeePathfinding {
 
     /**
      * Retourne le prochain waypoint du chemin.
+     * Inclut replanning si l'abeille est trop loin du chemin.
      */
     @Nullable
     public BlockPos getNextWaypoint(Vec3 currentPos, double reachDistance) {
@@ -129,10 +140,16 @@ public class BeePathfinding {
             BlockPos waypoint = currentPath.get(currentPathIndex);
             double dist = currentPos.distanceTo(Vec3.atCenterOf(waypoint));
 
+            // Replanning: si trop loin du prochain waypoint, invalider le cache
+            if (dist > OFF_PATH_THRESHOLD) {
+                clearPath();
+                return null;
+            }
+
             if (dist <= reachDistance) {
                 currentPathIndex++;
             } else {
-                // Optimisation: vérifier si on peut sauter des waypoints
+                // Optimisation: verifier si on peut sauter des waypoints
                 // en ayant une ligne de vue directe vers un waypoint plus loin
                 for (int i = currentPath.size() - 1; i > currentPathIndex; i--) {
                     BlockPos futureWaypoint = currentPath.get(i);
@@ -191,6 +208,7 @@ public class BeePathfinding {
     /**
      * Algorithme Theta* - Any-Angle Pathfinding.
      * Produit des chemins plus courts que A* en utilisant des lignes de vue.
+     * Inclut penalites murs, preference altitude, et fallback intelligent.
      */
     @Nullable
     private List<BlockPos> computeThetaStar(BlockPos start, BlockPos end) {
@@ -202,6 +220,10 @@ public class BeePathfinding {
         openSet.add(startNode);
         allNodes.put(start, startNode);
 
+        // Tracker le noeud le plus proche de la destination (pour fallback)
+        Node closestToGoal = startNode;
+        double closestDist = heuristic(start, end);
+
         int iterations = 0;
 
         while (!openSet.isEmpty() && iterations < MAX_ITERATIONS) {
@@ -209,6 +231,13 @@ public class BeePathfinding {
 
             Node current = openSet.poll();
             if (current == null) break;
+
+            // Mettre a jour le noeud le plus proche
+            double distToGoal = heuristic(current.pos, end);
+            if (distToGoal < closestDist) {
+                closestDist = distToGoal;
+                closestToGoal = current;
+            }
 
             // Destination atteinte
             if (current.pos.closerThan(end, 1.5)) {
@@ -224,20 +253,23 @@ public class BeePathfinding {
                 if (closedSet.contains(neighborPos)) continue;
                 if (!isPassable(neighborPos)) continue;
 
+                // Calculer le cout de deplacement avec penalites
+                double moveCost = computeMoveCost(dir);
+                double penalty = computeWallPenalty(neighborPos);
+
                 // === THETA* KEY DIFFERENCE ===
                 // Au lieu de toujours utiliser current comme parent,
-                // on vérifie si le parent de current a une ligne de vue vers neighbor
+                // on verifie si le parent de current a une ligne de vue vers neighbor
                 Node parent = current;
                 double tentativeG;
 
                 if (current.parent != null && hasLineOfSight(current.parent.pos, neighborPos)) {
                     // Ligne de vue directe depuis le grand-parent
                     parent = current.parent;
-                    tentativeG = parent.gScore + euclideanDistance(parent.pos, neighborPos);
+                    tentativeG = parent.gScore + euclideanDistance(parent.pos, neighborPos) + penalty;
                 } else {
                     // Pas de ligne de vue, utiliser le chemin standard
-                    double moveCost = isDiagonal(dir) ? DIAGONAL_COST : STRAIGHT_COST;
-                    tentativeG = current.gScore + moveCost;
+                    tentativeG = current.gScore + moveCost + penalty;
                 }
 
                 Node neighbor = allNodes.get(neighborPos);
@@ -255,8 +287,40 @@ public class BeePathfinding {
             }
         }
 
-        // Échec: retourner chemin direct (l'abeille essaiera de contourner)
-        return List.of(end);
+        // Echec: retourner le chemin vers le noeud le plus proche atteint
+        return reconstructAndSmoothPath(closestToGoal, closestToGoal.pos);
+    }
+
+    /**
+     * Calcule le cout de deplacement pour une direction, avec preference d'altitude.
+     * Monter coute moins cher, descendre coute plus cher.
+     */
+    private double computeMoveCost(int[] dir) {
+        double baseCost = isDiagonal(dir) ? DIAGONAL_COST : STRAIGHT_COST;
+
+        // Preference d'altitude: bonus pour monter, malus pour descendre
+        if (dir[1] > 0) {
+            baseCost -= ALTITUDE_BONUS;
+        } else if (dir[1] < 0) {
+            baseCost += ALTITUDE_BONUS;
+        }
+
+        return baseCost;
+    }
+
+    /**
+     * Calcule la penalite de proximite aux murs.
+     * Plus il y a de blocs solides adjacents, plus le cout est eleve.
+     */
+    private double computeWallPenalty(BlockPos pos) {
+        int solidCount = 0;
+        for (Direction dir : Direction.values()) {
+            BlockState neighborState = level.getBlockState(pos.relative(dir));
+            if (neighborState.isSolid()) {
+                solidCount++;
+            }
+        }
+        return solidCount * WALL_PENALTY;
     }
 
     /**
@@ -273,18 +337,18 @@ public class BeePathfinding {
 
         Collections.reverse(path);
 
-        // Ajouter destination si nécessaire
+        // Ajouter destination si necessaire
         if (!path.isEmpty() && !path.get(path.size() - 1).equals(finalDest)) {
             path.add(finalDest);
         }
 
-        // Lissage final avec Bresenham
+        // Lissage final avec DDA
         return smoothPath(path);
     }
 
     /**
-     * Lisse le chemin en supprimant les waypoints intermédiaires inutiles.
-     * Utilise la technique du "string pulling" avec vérification de ligne de vue.
+     * Lisse le chemin en supprimant les waypoints intermediaires inutiles.
+     * Utilise la technique du "string pulling" avec verification de ligne de vue.
      */
     private List<BlockPos> smoothPath(List<BlockPos> path) {
         if (path.size() <= 2) return path;
@@ -294,7 +358,7 @@ public class BeePathfinding {
 
         int current = 0;
         while (current < path.size() - 1) {
-            // Chercher le point le plus éloigné visible depuis current
+            // Chercher le point le plus eloigne visible depuis current
             int farthestVisible = current + 1;
 
             for (int i = path.size() - 1; i > current + 1; i--) {
@@ -312,8 +376,9 @@ public class BeePathfinding {
     }
 
     /**
-     * Vérifie la ligne de vue avec l'algorithme de Bresenham 3D.
-     * Optimisé pour éviter les allocations et utiliser uniquement des entiers.
+     * Verifie la ligne de vue avec l'algorithme DDA 3D.
+     * Avance pas-a-pas le long de l'axe dominant, interpolant les deux autres axes.
+     * Utilise l'arithmetique entiere pour eviter les erreurs de floating point.
      */
     public boolean hasLineOfSight(BlockPos start, BlockPos end) {
         int x0 = start.getX(), y0 = start.getY(), z0 = start.getZ();
@@ -323,49 +388,25 @@ public class BeePathfinding {
         int dy = Math.abs(y1 - y0);
         int dz = Math.abs(z1 - z0);
 
-        int sx = x0 < x1 ? 1 : -1;
-        int sy = y0 < y1 ? 1 : -1;
-        int sz = z0 < z1 ? 1 : -1;
+        int steps = Math.max(dx, Math.max(dy, dz));
+        if (steps == 0) return true;
 
-        // Déterminer l'axe dominant
-        int maxDelta = Math.max(dx, Math.max(dy, dz));
-        if (maxDelta == 0) return true;
+        // DDA 3D avec arithmetique entiere
+        // On multiplie par steps pour eviter les divisions flottantes
+        // position = start * steps + i * delta
+        int deltaX = x1 - x0;
+        int deltaY = y1 - y0;
+        int deltaZ = z1 - z0;
 
-        // Bresenham 3D
-        int x = x0, y = y0, z = z0;
-        int errXY = dx - dy;
-        int errXZ = dx - dz;
-        int errYZ = dy - dz;
+        for (int i = 1; i < steps; i++) {
+            // Interpolation entiere: pos = start + (delta * i) / steps
+            // Arrondi au plus proche: (delta * i + steps/2) / steps
+            int x = x0 + (deltaX * i + (deltaX > 0 ? steps / 2 : -steps / 2)) / steps;
+            int y = y0 + (deltaY * i + (deltaY > 0 ? steps / 2 : -steps / 2)) / steps;
+            int z = z0 + (deltaZ * i + (deltaZ > 0 ? steps / 2 : -steps / 2)) / steps;
 
-        for (int i = 0; i <= maxDelta; i++) {
-            // Vérifier si le bloc est passable (ignorer start et end)
-            if (i > 0 && i < maxDelta) {
-                BlockPos check = new BlockPos(x, y, z);
-                if (!isPassable(check)) {
-                    return false;
-                }
-            }
-
-            // Avancer selon Bresenham
-            int errXY2 = errXY * 2;
-            int errXZ2 = errXZ * 2;
-            int errYZ2 = errYZ * 2;
-
-            if (errXY2 > -dy) {
-                errXY -= dy;
-                x += sx;
-            }
-            if (errXY2 < dx) {
-                errXY += dx;
-                y += sy;
-            }
-            if (errXZ2 > -dz) {
-                errXZ -= dz;
-                // x already updated
-            }
-            if (errXZ2 < dx) {
-                errXZ += dx;
-                z += sz;
+            if (!isPassable(new BlockPos(x, y, z))) {
+                return false;
             }
         }
 
@@ -373,12 +414,17 @@ public class BeePathfinding {
     }
 
     /**
-     * Vérifie si une position est traversable.
+     * Verifie si une position est traversable par l'abeille.
+     * Verifie le bloc et le bloc au-dessus (clearance 1x2 pour le hitbox).
      */
     private boolean isPassable(BlockPos pos) {
         BlockState state = level.getBlockState(pos);
-        // Pour les abeilles, on considère les blocs non-solides comme passables
-        return !state.isSolid() && !state.liquid();
+        if (state.isSolid() || state.liquid()) {
+            return false;
+        }
+        // Clearance: verifier le bloc au-dessus pour le hitbox de l'abeille
+        BlockState above = level.getBlockState(pos.above());
+        return !above.isSolid() && !above.liquid();
     }
 
     /**
@@ -399,7 +445,7 @@ public class BeePathfinding {
     }
 
     /**
-     * Vérifie si une direction est diagonale.
+     * Verifie si une direction est diagonale.
      */
     private boolean isDiagonal(int[] dir) {
         int nonZero = 0;
@@ -436,7 +482,7 @@ public class BeePathfinding {
     }
 
     /**
-     * Nœud pour Theta*.
+     * Noeud pour Theta*.
      */
     private static class Node {
         final BlockPos pos;
