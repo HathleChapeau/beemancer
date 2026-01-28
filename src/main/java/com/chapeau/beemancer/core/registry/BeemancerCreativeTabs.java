@@ -48,6 +48,7 @@ public class BeemancerCreativeTabs {
                         addEssences(output);
                         addCrystalItems(output);
                         addBeeStatue(output);
+                        addBuildingBlocks(output);
                     })
                     .build());
 
@@ -167,6 +168,51 @@ public class BeemancerCreativeTabs {
 
     private static void addBeeStatue(CreativeModeTab.Output output) {
         output.accept(BeemancerItems.BEE_STATUE.get());
+    }
+
+    private static void addBuildingBlocks(CreativeModeTab.Output output) {
+        // Honeyed Wood
+        output.accept(BeemancerItems.HONEYED_PLANKS.get());
+        output.accept(BeemancerItems.HONEYED_WOOD_STAIR.get());
+        output.accept(BeemancerItems.HONEYED_WOOD_SLAB.get());
+        output.accept(BeemancerItems.HONEYED_FENCE.get());
+        output.accept(BeemancerItems.HONEYED_FENCE_GATE.get());
+        output.accept(BeemancerItems.HONEYED_TRAPDOOR.get());
+
+        // Honeyed Stone
+        output.accept(BeemancerItems.HONEYED_STONE_WALL.get());
+
+        // Honeyed Glass
+        output.accept(BeemancerItems.HONEYED_GLASS.get());
+        output.accept(BeemancerItems.HONEYED_GLASS_PANE.get());
+
+        // Royal Wood
+        output.accept(BeemancerItems.ROYAL_PLANKS.get());
+        output.accept(BeemancerItems.ROYAL_WOOD_STAIR.get());
+        output.accept(BeemancerItems.ROYAL_WOOD_SLAB.get());
+        output.accept(BeemancerItems.ROYAL_FENCE.get());
+        output.accept(BeemancerItems.ROYAL_FENCE_GATE.get());
+        output.accept(BeemancerItems.ROYAL_TRAPDOOR.get());
+
+        // Royal Stone
+        output.accept(BeemancerItems.ROYAL_STONE.get());
+        output.accept(BeemancerItems.ROYAL_STONE_STAIR.get());
+        output.accept(BeemancerItems.ROYAL_STONE_SLAB.get());
+        output.accept(BeemancerItems.ROYAL_STONE_WALL.get());
+
+        // Nectar Wood
+        output.accept(BeemancerItems.NECTAR_PLANKS.get());
+        output.accept(BeemancerItems.NECTAR_WOOD_STAIR.get());
+        output.accept(BeemancerItems.NECTAR_WOOD_SLAB.get());
+        output.accept(BeemancerItems.NECTAR_FENCE.get());
+        output.accept(BeemancerItems.NECTAR_FENCE_GATE.get());
+        output.accept(BeemancerItems.NECTAR_TRAPDOOR.get());
+
+        // Nectar Stone
+        output.accept(BeemancerItems.NECTAR_STONE.get());
+        output.accept(BeemancerItems.NECTAR_STONE_STAIR.get());
+        output.accept(BeemancerItems.NECTAR_STONE_SLAB.get());
+        output.accept(BeemancerItems.NECTAR_STONE_WALL.get());
     }
 
     private static void addEssences(CreativeModeTab.Output output) {
