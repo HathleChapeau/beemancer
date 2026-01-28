@@ -39,7 +39,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -118,12 +117,11 @@ public class PipeDebugRenderer {
      */
     private static List<String> getItemPipeContent(ItemPipeBlockEntity pipe) {
         List<String> lines = new ArrayList<>();
-        ItemStackHandler buffer = pipe.getBuffer();
 
         // Agréger les items par type
         Map<String, Integer> itemCounts = new HashMap<>();
-        for (int i = 0; i < buffer.getSlots(); i++) {
-            ItemStack stack = buffer.getStackInSlot(i);
+        for (ItemPipeBlockEntity.PipeItem pipeItem : pipe.getItems()) {
+            ItemStack stack = pipeItem.stack;
             if (!stack.isEmpty()) {
                 String name = stack.getHoverName().getString();
                 itemCounts.merge(name, stack.getCount(), Integer::sum);
@@ -134,7 +132,7 @@ public class PipeDebugRenderer {
             return lines;
         }
 
-        lines.add("[Items]");
+        lines.add("[Items " + pipe.getItemCount() + "/" + pipe.getMaxSlots() + "]");
         for (Map.Entry<String, Integer> entry : itemCounts.entrySet()) {
             lines.add(entry.getKey() + " x" + entry.getValue());
         }

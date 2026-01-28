@@ -93,7 +93,7 @@ public final class FlowerSearchHelper {
             toVec,
             ClipContext.Block.COLLIDER,
             ClipContext.Fluid.NONE,
-            null
+            net.minecraft.world.phys.shapes.CollisionContext.empty()
         ));
 
         // Si on n'a rien touché ou si on a touché la fleur elle-même, la vue est dégagée
