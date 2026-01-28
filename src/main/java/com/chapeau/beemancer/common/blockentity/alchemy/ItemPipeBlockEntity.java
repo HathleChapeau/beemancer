@@ -106,11 +106,11 @@ public class ItemPipeBlockEntity extends BlockEntity {
             be.sourcePos = null;
         }
 
-        // Process extractions
-        be.processExtractions(level, pos, state);
-
-        // Push to neighbors
+        // Push d'abord les items existants (du cycle precedent)
         be.pushToNeighbors(level, pos, state);
+
+        // Puis extraire de nouveaux items (resteront dans le buffer jusqu'au prochain cycle)
+        be.processExtractions(level, pos, state);
 
         be.transferCooldown = 8; // Slower than fluid pipes
     }
