@@ -3,6 +3,67 @@
 ################################################################################
 
 ================================================================================
+2026-01-28 - REFONTE COMPLÈTE: Système de Ride (Architecture Cobblemon)
+================================================================================
+
+REFONTE MAJEURE DU SYSTÈME DE RIDE:
+Réécriture complète basée sur l'architecture Cobblemon PokemonEntity + RidingBehaviour.
+
+NOUVEAU PACKAGE: common/entity/mount/behaviour/
+- RidingStyle.java: Enum LAND/LIQUID/AIR
+- Side.java: Enum CLIENT/SERVER/BOTH
+- SidedRidingState.java: État avec restriction de côté
+- RidingBehaviourState.java: État mutable base (rideVelocity, stamina)
+- RidingBehaviourSettings.java: Interface settings constants
+- RidingBehaviour.java: Interface stateless pour comportement
+- ActiveRidingContext.java: Contexte actif (behaviour + settings + state + style)
+- RidingBehaviours.java: Registre singleton des behaviours
+- RidingController.java: Orchestrateur de behaviours
+
+NOUVEAU PACKAGE: common/entity/mount/behaviour/types/land/
+- HorseSettings.java: Settings terrestre (topSpeed, acceleration, handling, jump)
+- HorseState.java: État mutable (sprinting, walking, inAir, jumpTicks)
+- HorseBehaviour.java: Logique de mouvement terrestre complète
+  - Gravité: (9.8/20)*0.2*0.6
+  - Friction: 0.03 par tick
+  - Rotation influencée par direction regard
+  - Sprint avec gestion de vitesse
+  - Saut avec force variable sur 6 ticks
+
+MODIFICATIONS:
+- RideableBeeEntity.java: Réécriture complète
+  - Utilise RidingController pour orchestration
+  - travel(): Conversion vélocité locale → monde (rotation yRot)
+  - tickRidden(): Tick le behaviour, applique rotation
+  - getRiddenInput(): Retourne vélocité du behaviour
+  - Getters debug conservés pour HUD
+
+- RideableBeeDebugHud.java: Adapté pour HorseSettings
+
+- Beemancer.java:
+  - +Enregistrement HorseBehaviour dans RidingBehaviours
+  - -RidingSettingsLoader.load() (remplacé par HorseSettings)
+
+PATTERN COBBLEMON APPLIQUÉ:
+- RidingBehaviour: Stateless, une instance partagée
+- RidingBehaviourState: Mutable, créé par ride
+- RidingBehaviourSettings: Constants, chargé au démarrage
+- RidingController: Orchestre transitions
+- travel(): Vélocité locale → monde via sin/cos(yRot)
+- tickRidden(): Tick behaviour, met à jour rotation
+
+SIMPLIFICATIONS BEEMANCER (vs Cobblemon):
+- Pas de stamina (toujours 1.0)
+- Pas de MoLang expressions (valeurs directes)
+- Pas de transitions multi-style (LAND uniquement pour l'instant)
+- Pas de sync réseau complexe
+
+FICHIERS OBSOLÈTES (non supprimés):
+- RidingSettings.java
+- RidingSettingsLoader.java
+- RideableBeeMovement.java
+
+================================================================================
 2026-01-28 - Rideable Bee Movement Fix + Debug HUD Fix
 ================================================================================
 

@@ -21,6 +21,7 @@ package com.chapeau.beemancer.client.gui.hud;
 
 import com.chapeau.beemancer.common.entity.mount.RideableBeeEntity;
 import com.chapeau.beemancer.common.entity.mount.RidingMode;
+import com.chapeau.beemancer.common.entity.mount.behaviour.types.land.HorseSettings;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -103,9 +104,8 @@ public class RideableBeeDebugHud {
         float strafe = player.xxa;
         String state = bee.getDebugState();
         RidingMode mode = bee.getRidingMode();
-        float maxSpeed = (mode == RidingMode.RUN)
-            ? bee.getSettings().maxRunSpeed()
-            : bee.getSettings().walkSpeed();
+        HorseSettings settings = bee.getSettings();
+        float maxSpeed = settings.getTopSpeed();
 
         // Formater les lignes
         String velLine = String.format("Vel: X=%+.3f Z=%+.3f", velocity.x, velocity.z);
