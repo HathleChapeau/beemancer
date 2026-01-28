@@ -118,19 +118,20 @@ public final class FlowerSearchHelper {
         if (flowerTag == null || level == null) {
             return null;
         }
-        
+
+        Vec3 centerVec = Vec3.atCenterOf(center);
         BlockPos closest = null;
         double closestDist = Double.MAX_VALUE;
-        
+
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
                 for (int z = -radius; z <= radius; z++) {
                     BlockPos checkPos = center.offset(x, y, z);
                     BlockState blockState = level.getBlockState(checkPos);
-                    
+
                     if (blockState.is(flowerTag)) {
                         double dist = checkPos.distSqr(center);
-                        if (dist < closestDist) {
+                        if (dist < closestDist && hasLineOfSight(level, centerVec, checkPos)) {
                             closestDist = dist;
                             closest = checkPos.immutable();
                         }
@@ -138,7 +139,7 @@ public final class FlowerSearchHelper {
                 }
             }
         }
-        
+
         return closest;
     }
     

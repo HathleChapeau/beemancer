@@ -21,6 +21,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -31,6 +34,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +53,7 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     private final FluidTank buffer;
 
     private int shareCooldown = 0;
+    private boolean isSharing = false;
 
     public HoneyPipeBlockEntity(BlockPos pos, BlockState state) {
         this(BeemancerBlockEntities.HONEY_PIPE.get(), pos, state, TIER1_BUFFER);
@@ -67,6 +72,9 @@ public class HoneyPipeBlockEntity extends BlockEntity {
             @Override
             protected void onContentsChanged() {
                 setChanged();
+                if (!isSharing) {
+                    syncToClient();
+                }
             }
         };
     }
@@ -129,16 +137,17 @@ public class HoneyPipeBlockEntity extends BlockEntity {
      * Tente de partager le fluide. Seul le "master" du réseau exécute le partage.
      */
     private void tryShareFluidWithNetwork(Level level, BlockPos pos, BlockState state) {
-        if (buffer.isEmpty()) {
-            return;
+        // Déterminer le type de fluide du réseau (chercher dans cette pipe ou les voisines)
+        Fluid fluidType = findNetworkFluidType(level, pos, state);
+        if (fluidType == null) {
+            return; // Aucun fluide dans le réseau proche
         }
-
-        Fluid fluidType = buffer.getFluid().getFluid();
 
         // Collecter toutes les pipes du réseau
         List<HoneyPipeBlockEntity> allPipes = new ArrayList<>();
         List<ContainerParticipant> containers = new ArrayList<>();
         Set<BlockPos> visited = new HashSet<>();
+        visited.add(pos); // Évite que les cycles re-visitent la pipe de départ
 
         collectAllNetworkMembers(level, pos, state, fluidType, allPipes, containers, visited);
 
@@ -158,8 +167,46 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         // Ajouter cette pipe à la liste
         allPipes.add(this);
 
+        // Désactiver le sync pendant le partage pour éviter le spam de packets
+        for (HoneyPipeBlockEntity pipe : allPipes) {
+            pipe.isSharing = true;
+        }
+
         // Exécuter le partage
         executeFluidSharing(fluidType, allPipes, containers);
+
+        // Réactiver et sync une seule fois par pipe modifiée
+        for (HoneyPipeBlockEntity pipe : allPipes) {
+            pipe.isSharing = false;
+            pipe.syncToClient();
+        }
+    }
+
+    /**
+     * Trouve le type de fluide du réseau. Cherche d'abord dans cette pipe, puis les voisines.
+     */
+    @Nullable
+    private Fluid findNetworkFluidType(Level level, BlockPos pos, BlockState state) {
+        if (!buffer.isEmpty()) {
+            return buffer.getFluid().getFluid();
+        }
+
+        // Chercher dans les pipes voisines directes
+        for (Direction dir : Direction.values()) {
+            if (!HoneyPipeBlock.isConnected(state, dir)) continue;
+            if (HoneyPipeBlock.isExtracting(state, dir)) continue;
+
+            BlockPos neighborPos = pos.relative(dir);
+            BlockEntity neighborBe = level.getBlockEntity(neighborPos);
+
+            if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe) {
+                if (!neighborPipe.buffer.isEmpty()) {
+                    return neighborPipe.buffer.getFluid().getFluid();
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -440,6 +487,25 @@ public class HoneyPipeBlockEntity extends BlockEntity {
 
     public FluidTank getBuffer() {
         return buffer;
+    }
+
+    private void syncToClient() {
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override

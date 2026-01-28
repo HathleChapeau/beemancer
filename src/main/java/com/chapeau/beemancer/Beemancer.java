@@ -270,7 +270,11 @@ public class Beemancer {
     }
 
     private void registerItemCapabilities(RegisterCapabilitiesEvent event) {
-        // Les ItemPipes n'exposent pas de capability - elles utilisent leur propre logique de transfert
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                BeemancerBlockEntities.ITEM_PIPE.get(),
+                (be, side) -> be.getBuffer()
+        );
     }
 
     // =========================================================================

@@ -39,6 +39,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Renderer affichant le contenu des pipes en texte flottant.
+ * Renderer affichant le contenu des pipes en texte flottant (nametag).
  * - ItemPipe: liste des items et quantités
  * - HoneyPipe: type de fluide et quantité en mB
  */
@@ -58,8 +59,8 @@ public class PipeDebugRenderer {
     private static final float TEXT_SCALE = 0.025f;
     private static final int TEXT_BG_COLOR = 0x80000000;
     private static final int TEXT_COLOR = 0xFFFFFFFF;
-    private static final int ITEM_COLOR = 0xFF55FF55;
-    private static final int FLUID_COLOR = 0xFF55FFFF;
+    private static final int ITEM_TITLE_COLOR = 0xFF55FF55;
+    private static final int FLUID_TITLE_COLOR = 0xFF55FFFF;
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
@@ -81,7 +82,6 @@ public class PipeDebugRenderer {
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
         Font font = mc.font;
 
-        // Scanner les BlockEntities dans un rayon
         BlockPos playerPos = player.blockPosition();
         AABB searchBox = new AABB(playerPos).inflate(SCAN_RADIUS);
 
@@ -94,14 +94,14 @@ public class PipeDebugRenderer {
                     BlockEntity be = level.getBlockEntity(pos);
 
                     if (be instanceof ItemPipeBlockEntity itemPipe) {
-                        List<String> lines = getItemPipeContent(itemPipe);
+                        List<LineInfo> lines = getItemPipeContent(itemPipe);
                         if (!lines.isEmpty()) {
-                            renderTextAbove(poseStack, bufferSource, font, cameraPos, pos, lines, ITEM_COLOR);
+                            renderTextAbove(poseStack, bufferSource, font, cameraPos, pos, lines);
                         }
                     } else if (be instanceof HoneyPipeBlockEntity honeyPipe) {
-                        List<String> lines = getHoneyPipeContent(honeyPipe);
+                        List<LineInfo> lines = getHoneyPipeContent(honeyPipe);
                         if (!lines.isEmpty()) {
-                            renderTextAbove(poseStack, bufferSource, font, cameraPos, pos, lines, FLUID_COLOR);
+                            renderTextAbove(poseStack, bufferSource, font, cameraPos, pos, lines);
                         }
                     }
                 }
@@ -115,13 +115,14 @@ public class PipeDebugRenderer {
     /**
      * Récupère le contenu d'un ItemPipe sous forme de lignes.
      */
-    private static List<String> getItemPipeContent(ItemPipeBlockEntity pipe) {
-        List<String> lines = new ArrayList<>();
+    private static List<LineInfo> getItemPipeContent(ItemPipeBlockEntity pipe) {
+        List<LineInfo> lines = new ArrayList<>();
+        ItemStackHandler buffer = pipe.getBuffer();
 
         // Agréger les items par type
         Map<String, Integer> itemCounts = new HashMap<>();
-        for (ItemPipeBlockEntity.PipeItem pipeItem : pipe.getItems()) {
-            ItemStack stack = pipeItem.stack;
+        for (int i = 0; i < buffer.getSlots(); i++) {
+            ItemStack stack = buffer.getStackInSlot(i);
             if (!stack.isEmpty()) {
                 String name = stack.getHoverName().getString();
                 itemCounts.merge(name, stack.getCount(), Integer::sum);
@@ -132,9 +133,9 @@ public class PipeDebugRenderer {
             return lines;
         }
 
-        lines.add("[Items " + pipe.getItemCount() + "/" + pipe.getMaxSlots() + "]");
+        lines.add(new LineInfo("[Item Pipe]", ITEM_TITLE_COLOR));
         for (Map.Entry<String, Integer> entry : itemCounts.entrySet()) {
-            lines.add(entry.getKey() + " x" + entry.getValue());
+            lines.add(new LineInfo(entry.getKey() + " x" + entry.getValue(), TEXT_COLOR));
         }
 
         return lines;
@@ -143,8 +144,8 @@ public class PipeDebugRenderer {
     /**
      * Récupère le contenu d'un HoneyPipe sous forme de lignes.
      */
-    private static List<String> getHoneyPipeContent(HoneyPipeBlockEntity pipe) {
-        List<String> lines = new ArrayList<>();
+    private static List<LineInfo> getHoneyPipeContent(HoneyPipeBlockEntity pipe) {
+        List<LineInfo> lines = new ArrayList<>();
         FluidStack fluid = pipe.getBuffer().getFluid();
 
         if (fluid.isEmpty()) {
@@ -153,23 +154,23 @@ public class PipeDebugRenderer {
 
         String fluidName = fluid.getHoverName().getString();
         int amount = fluid.getAmount();
+        int capacity = pipe.getBuffer().getCapacity();
 
-        lines.add("[Fluid]");
-        lines.add(fluidName);
-        lines.add(amount + " mB");
+        lines.add(new LineInfo("[Fluid Pipe]", FLUID_TITLE_COLOR));
+        lines.add(new LineInfo(fluidName, TEXT_COLOR));
+        lines.add(new LineInfo(amount + "/" + capacity + " mB", TEXT_COLOR));
 
         return lines;
     }
 
     /**
-     * Rend du texte flottant au-dessus d'une position.
+     * Rend du texte flottant au-dessus d'une position (style nametag).
      */
     private static void renderTextAbove(PoseStack poseStack, MultiBufferSource bufferSource,
                                         Font font, Vec3 cameraPos, BlockPos pos,
-                                        List<String> lines, int textColor) {
-        // Position au centre du bloc, légèrement au-dessus
+                                        List<LineInfo> lines) {
         double x = pos.getX() + 0.5 - cameraPos.x;
-        double y = pos.getY() + 1.2 - cameraPos.y;
+        double y = pos.getY() + 1.3 - cameraPos.y;
         double z = pos.getZ() + 0.5 - cameraPos.z;
 
         poseStack.pushPose();
@@ -183,37 +184,17 @@ public class PipeDebugRenderer {
 
         Matrix4f matrix = poseStack.last().pose();
 
-        // Calculer dimensions du fond
-        int maxWidth = 0;
-        for (String line : lines) {
-            maxWidth = Math.max(maxWidth, font.width(line));
-        }
-        int totalHeight = lines.size() * 10;
-
-        // Dessiner le fond
-        int bgX = -maxWidth / 2 - 2;
-        int bgY = -2;
-        int bgWidth = maxWidth + 4;
-        int bgHeight = totalHeight + 4;
-
-        // Rendre le fond via vertex buffer (simplifié: utiliser le font renderer)
-        // Le fond sera dessiné par ligne avec le mode see-through
-
         // Dessiner chaque ligne
         int lineY = 0;
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
+        for (LineInfo lineInfo : lines) {
+            String line = lineInfo.text;
             int lineX = -font.width(line) / 2;
 
-            // Couleur différente pour le titre
-            int color = (i == 0) ? textColor : TEXT_COLOR;
-
-            // Dessiner avec fond (see-through)
             font.drawInBatch(
                 line,
                 lineX,
                 lineY,
-                color,
+                lineInfo.color,
                 false,
                 matrix,
                 bufferSource,
@@ -227,4 +208,6 @@ public class PipeDebugRenderer {
 
         poseStack.popPose();
     }
+
+    private record LineInfo(String text, int color) {}
 }
