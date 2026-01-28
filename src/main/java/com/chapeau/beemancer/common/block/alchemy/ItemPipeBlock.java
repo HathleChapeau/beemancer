@@ -139,7 +139,25 @@ public class ItemPipeBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        if (!isConnected(state, clickedDir)) return InteractionResult.PASS;
+        if (!isConnected(state, clickedDir)) {
+            // Check si le voisin a deconnecte de notre cote -> reconnect depuis l'autre pipe
+            BlockPos neighborPos = pos.relative(clickedDir);
+            BlockEntity neighborBe = level.getBlockEntity(neighborPos);
+            if (neighborBe instanceof ItemPipeBlockEntity neighborPipe
+                && neighborPipe.isDisconnected(clickedDir.getOpposite())) {
+                neighborPipe.setDisconnected(clickedDir.getOpposite(), false);
+                // Recalculer les deux cotes
+                BlockState newState = getConnectionState(level, pos, state);
+                level.setBlock(pos, newState, 3);
+                BlockState neighborState = level.getBlockState(neighborPos);
+                level.setBlock(neighborPos, getConnectionState(level, neighborPos, neighborState), 3);
+
+                level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, 1.2f);
+                player.displayClientMessage(Component.literal(clickedDir.getName() + ": Connected"), true);
+                return InteractionResult.SUCCESS;
+            }
+            return InteractionResult.PASS;
+        }
 
         BlockPos neighborPos = pos.relative(clickedDir);
         boolean neighborIsPipe = level.getBlockState(neighborPos).getBlock() instanceof ItemPipeBlock;
