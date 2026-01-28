@@ -231,7 +231,9 @@ public class HorseBehaviour implements RidingBehaviour<HorseSettings, HorseState
         float walkSpeed = getWalkSpeed(vehicle);
         float topSpeed = (canSprint && state.isSprinting()) ? rideTopSpeed : walkSpeed;
         float accel = settings.getAcceleration();
-        boolean activeInput = false;
+
+        // activeInput = true si le joueur appuie sur une touche de direction (WASD)
+        boolean activeInput = (driver.zza != 0.0f) || (driver.xxa != 0.0f);
 
         // Récupérer la vélocité précédente
         Vec3 newVelocity = state.getRideVelocity();
@@ -272,8 +274,6 @@ public class HorseBehaviour implements RidingBehaviour<HorseSettings, HorseState
                     newVelocity.y,
                     newVelocity.z + (accel * forwardInput)
             );
-
-            activeInput = true;
         }
 
         // --- Gravité ---
