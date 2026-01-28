@@ -7,7 +7,7 @@
  * FONCTIONNEMENT:
  * - Mode extraction (par direction): tire le fluide du bloc connecte
  * - Chaque pipe pousse independamment vers ses voisins toutes les 0.5s
- * - Egalisation entre pipes: pousse la moitie de la difference
+ * - Egalisation equitable: calcule la cible, puis transfere simultanement
  * - Push vers conteneurs: pousse jusqu'au transferRate
  * - Capacites: T1=1000mb, T2=2000mb, T3=4000mb, T4=8000mb
  * ============================================================
@@ -34,7 +34,9 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 public class HoneyPipeBlockEntity extends BlockEntity {
     // --- TIER CONFIG ---
@@ -140,8 +142,10 @@ public class HoneyPipeBlockEntity extends BlockEntity {
 
     /**
      * Pousse le fluide vers les voisins connectes.
-     * - Vers une pipe: egalise (pousse la moitie de la difference)
-     * - Vers un conteneur: pousse jusqu'au transferRate
+     * Utilise une approche en deux phases pour une repartition equitable:
+     * Phase 1: Calculer la cible d'egalisation entre toutes les pipes voisines
+     * Phase 2: Executer les transferts simultanement
+     * Les conteneurs recoivent ensuite jusqu'au transferRate.
      */
     private void pushToNeighbors(Level level, BlockPos pos, BlockState state) {
         if (buffer.isEmpty()) {
@@ -149,9 +153,14 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         }
 
         boolean changed = false;
+        FluidStack myFluid = buffer.getFluid();
+
+        // --- Phase 1: Collecter les voisins et calculer la cible ---
+        List<PipeTarget> pipeTargets = new ArrayList<>();
+        List<ContainerTarget> containerTargets = new ArrayList<>();
+        int myAmount = buffer.getFluidAmount();
 
         for (Direction dir : Direction.values()) {
-            if (buffer.isEmpty()) break;
             if (!HoneyPipeBlock.isConnected(state, dir)) continue;
             if (HoneyPipeBlock.isExtracting(state, dir)) continue;
 
@@ -159,13 +168,69 @@ public class HoneyPipeBlockEntity extends BlockEntity {
             BlockEntity neighborBe = level.getBlockEntity(neighborPos);
 
             if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe) {
-                changed |= pushToPipe(neighborPipe);
+                FluidStack theirFluid = neighborPipe.buffer.getFluid();
+                // Verifier compatibilite de fluide
+                if (!theirFluid.isEmpty() && !myFluid.getFluid().isSame(theirFluid.getFluid())) {
+                    continue;
+                }
+                int theirAmount = neighborPipe.buffer.getFluidAmount();
+                // Inclure seulement les voisins avec moins de fluide
+                if (myAmount > theirAmount) {
+                    pipeTargets.add(new PipeTarget(neighborPipe, theirAmount));
+                }
             } else {
                 var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
                 if (cap != null) {
-                    changed |= pushToContainer(cap);
+                    containerTargets.add(new ContainerTarget(cap, dir));
                 }
             }
+        }
+
+        // --- Phase 2: Egalisation equitable entre pipes ---
+        if (!pipeTargets.isEmpty()) {
+            // Calculer la cible: total / (participants)
+            // Exclure iterativement les voisins deja au-dessus de la cible
+            int targetAmount = computeEqualTarget(myAmount, pipeTargets);
+
+            // Calculer les transferts pour chaque voisin
+            int totalTransfer = 0;
+            for (PipeTarget target : pipeTargets) {
+                int toGive = targetAmount - target.amount;
+                if (toGive <= 0) {
+                    target.transfer = 0;
+                    continue;
+                }
+                int capped = Math.min(toGive, transferRate);
+                capped = Math.min(capped, target.pipe.buffer.getCapacity() - target.amount);
+                target.transfer = Math.max(capped, 0);
+                totalTransfer += target.transfer;
+            }
+
+            // Securite: si le total depasse ce qu'on peut donner, scaler proportionnellement
+            int maxGive = myAmount - targetAmount;
+            if (totalTransfer > maxGive && totalTransfer > 0) {
+                for (PipeTarget target : pipeTargets) {
+                    target.transfer = (int) ((long) target.transfer * maxGive / totalTransfer);
+                }
+            }
+
+            // Executer les transferts
+            for (PipeTarget target : pipeTargets) {
+                if (target.transfer <= 0) continue;
+
+                FluidStack drained = buffer.drain(target.transfer, IFluidHandler.FluidAction.EXECUTE);
+                if (!drained.isEmpty()) {
+                    target.pipe.buffer.fill(drained, IFluidHandler.FluidAction.EXECUTE);
+                    target.pipe.syncToClient();
+                    changed = true;
+                }
+            }
+        }
+
+        // --- Phase 3: Push vers conteneurs ---
+        for (ContainerTarget ct : containerTargets) {
+            if (buffer.isEmpty()) break;
+            changed |= pushToContainer(ct.handler);
         }
 
         if (changed) {
@@ -174,41 +239,39 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     }
 
     /**
-     * Egalise le fluide avec une pipe voisine.
-     * Pousse la moitie de la difference si on a plus qu'elle.
+     * Calcule la cible d'egalisation equitable.
+     * Exclut iterativement les voisins dont le niveau est deja au-dessus de la cible.
+     *
+     * Exemple: me=1000, voisins=[0, 0, 800]
+     * - Tentative avec 4 participants: cible = 1800/4 = 450
+     * - Voisin a 800 > 450 → exclure
+     * - Recalcul avec 3 participants: cible = 1000/3 = 333
+     * - Tous les restants < 333 → valide
      */
-    private boolean pushToPipe(HoneyPipeBlockEntity neighborPipe) {
-        FluidStack myFluid = buffer.getFluid();
-        FluidStack theirFluid = neighborPipe.buffer.getFluid();
+    private int computeEqualTarget(int myAmount, List<PipeTarget> targets) {
+        // Trier par quantite croissante pour l'exclusion iterative
+        targets.sort((a, b) -> Integer.compare(a.amount, b.amount));
 
-        // Verifier compatibilite de fluide
-        if (!theirFluid.isEmpty() && !myFluid.getFluid().isSame(theirFluid.getFluid())) {
-            return false;
+        int totalFluid = myAmount;
+        int participantCount = 1; // moi
+
+        for (PipeTarget target : targets) {
+            totalFluid += target.amount;
+            participantCount++;
         }
 
-        int myAmount = buffer.getFluidAmount();
-        int theirAmount = neighborPipe.buffer.getFluidAmount();
-        int diff = myAmount - theirAmount;
-
-        if (diff <= 1) {
-            return false;
+        // Exclure iterativement les voisins au-dessus de la cible
+        for (int i = targets.size() - 1; i >= 0; i--) {
+            int target = totalFluid / participantCount;
+            if (targets.get(i).amount < target) {
+                break; // Tous les restants sont en dessous de la cible
+            }
+            // Ce voisin est au-dessus de la cible, l'exclure
+            totalFluid -= targets.get(i).amount;
+            participantCount--;
         }
 
-        int toTransfer = Math.min(diff / 2, transferRate);
-        toTransfer = Math.min(toTransfer, neighborPipe.buffer.getCapacity() - theirAmount);
-
-        if (toTransfer <= 0) {
-            return false;
-        }
-
-        FluidStack drained = buffer.drain(toTransfer, IFluidHandler.FluidAction.EXECUTE);
-        if (!drained.isEmpty()) {
-            neighborPipe.buffer.fill(drained, IFluidHandler.FluidAction.EXECUTE);
-            neighborPipe.syncToClient();
-            return true;
-        }
-
-        return false;
+        return participantCount > 0 ? totalFluid / participantCount : myAmount;
     }
 
     /**
@@ -233,6 +296,20 @@ public class HoneyPipeBlockEntity extends BlockEntity {
 
         return false;
     }
+
+    private static class PipeTarget {
+        final HoneyPipeBlockEntity pipe;
+        final int amount;
+        int transfer;
+
+        PipeTarget(HoneyPipeBlockEntity pipe, int amount) {
+            this.pipe = pipe;
+            this.amount = amount;
+            this.transfer = 0;
+        }
+    }
+
+    private record ContainerTarget(IFluidHandler handler, Direction direction) {}
 
     public FluidTank getBuffer() {
         return buffer;
