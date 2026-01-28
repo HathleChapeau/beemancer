@@ -51,6 +51,10 @@ public class RideableBeeDebugHud {
     private static final int LINE_HEIGHT = 11;
     private static final int BOX_MARGIN = 10;
 
+    // Taille fixe du panneau (évite le resize permanent)
+    private static final int FIXED_BOX_WIDTH = 180;
+    private static final int FIXED_BOX_HEIGHT = 75;
+
     // Couleurs
     private static final int BG_COLOR = 0xDD000000;
     private static final int BORDER_COLOR = 0xFF555555;
@@ -104,20 +108,14 @@ public class RideableBeeDebugHud {
             : bee.getSettings().walkSpeed();
 
         // Formater les lignes
-        String velLine = String.format("Velocity: X=%.3f Z=%.3f", velocity.x, velocity.z);
-        String inputLine = String.format("Input: fwd=%.2f str=%.2f", forward, strafe);
-        String speedLine = String.format("Max Speed: %.3f", maxSpeed);
+        String velLine = String.format("Vel: X=%+.3f Z=%+.3f", velocity.x, velocity.z);
+        String inputLine = String.format("Input: fwd=%+.2f str=%+.2f", forward, strafe);
+        String speedLine = String.format("Max Speed: %.2f", maxSpeed);
         String stateLine = "State: " + state;
 
-        // Calculer dimensions
-        int maxWidth = font.width(title);
-        maxWidth = Math.max(maxWidth, font.width(velLine));
-        maxWidth = Math.max(maxWidth, font.width(inputLine));
-        maxWidth = Math.max(maxWidth, font.width(speedLine));
-        maxWidth = Math.max(maxWidth, font.width(stateLine));
-
-        int boxWidth = maxWidth + PADDING * 2;
-        int boxHeight = PADDING * 2 + LINE_HEIGHT * 5 + 4; // titre + séparateur + 4 lignes
+        // Taille fixe (pas de resize)
+        int boxWidth = FIXED_BOX_WIDTH;
+        int boxHeight = FIXED_BOX_HEIGHT;
 
         // Position en haut à droite
         int screenWidth = graphics.guiWidth();

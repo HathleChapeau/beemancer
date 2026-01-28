@@ -245,17 +245,14 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
     }
 
     /**
-     * Retourne l'input de riding transformé.
-     * Pattern Cobblemon: getRiddenInput() lignes 2397-2401
+     * Retourne l'input brut du joueur pour le riding.
+     * IMPORTANT: Cette méthode doit retourner l'INPUT (forward/strafe),
+     * PAS la vélocité calculée! Sinon tickRidden reçoit toujours 0.
      */
     @Override
     protected Vec3 getRiddenInput(Player driver, Vec3 movementInput) {
-        // Retourner la vélocité calculée
-        if (getRidingMode() == RidingMode.WALK) {
-            return rideVelocity;
-        } else {
-            return RideableBeeMovement.localToWorldVelocity(rideVelocity, this.getYRot());
-        }
+        // Retourner l'input brut du joueur (xxa=strafe, zza=forward)
+        return new Vec3(driver.xxa, 0, driver.zza);
     }
 
     // --- Mode Handlers ---

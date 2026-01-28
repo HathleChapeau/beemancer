@@ -3,6 +3,19 @@
 ################################################################################
 
 ================================================================================
+2026-01-28 - Rideable Bee Movement Fix + Debug HUD Fix
+================================================================================
+
+FIX: Abeille ne bouge pas en mode WALK
+- Problème: getRiddenInput() retournait rideVelocity au lieu de l'input joueur
+- Au 1er tick, rideVelocity=0, donc forward=0, et l'abeille ne bougeait jamais
+- Solution: getRiddenInput() retourne maintenant new Vec3(driver.xxa, 0, driver.zza)
+
+FIX: Panneau debug resize constant
+- RideableBeeDebugHud.java: Taille fixe 180x75 pixels au lieu de calcul dynamique
+- Ajout constantes FIXED_BOX_WIDTH et FIXED_BOX_HEIGHT
+
+================================================================================
 2026-01-28 - Rideable Bee Ground Detection Fix + Speed Update
 ================================================================================
 
