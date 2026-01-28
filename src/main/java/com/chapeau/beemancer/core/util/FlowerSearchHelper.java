@@ -21,33 +21,29 @@ package com.chapeau.beemancer.core.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Utilitaire pour rechercher des blocs correspondant à un tag dans un rayon.
+ * La navigation vers la fleur est gérée par BeePathfinding (Theta*).
  */
 public final class FlowerSearchHelper {
-    
+
     private FlowerSearchHelper() {}
-    
+
     /**
      * Recherche toutes les fleurs dans un rayon autour d'une position.
-     * Effectue un raycast pour ignorer les fleurs bloquées par des blocs.
      *
      * @param level Le monde
      * @param center Position centrale de recherche
      * @param radius Rayon de recherche
      * @param flowerTag Tag des blocs à rechercher
-     * @return Liste des positions de fleurs trouvées (avec ligne de vue dégagée)
+     * @return Liste des positions de fleurs trouvées
      */
     public static List<BlockPos> findAllFlowers(Level level, BlockPos center, int radius, TagKey<Block> flowerTag) {
         List<BlockPos> flowers = new ArrayList<>();
@@ -56,8 +52,6 @@ public final class FlowerSearchHelper {
             return flowers;
         }
 
-        Vec3 centerVec = Vec3.atCenterOf(center);
-
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {
                 for (int z = -radius; z <= radius; z++) {
@@ -65,10 +59,7 @@ public final class FlowerSearchHelper {
                     BlockState blockState = level.getBlockState(checkPos);
 
                     if (blockState.is(flowerTag)) {
-                        // Raycast pour vérifier la ligne de vue
-                        if (hasLineOfSight(level, centerVec, checkPos)) {
-                            flowers.add(checkPos.immutable());
-                        }
+                        flowers.add(checkPos.immutable());
                     }
                 }
             }
@@ -77,34 +68,6 @@ public final class FlowerSearchHelper {
         return flowers;
     }
 
-    /**
-     * Vérifie si la ligne de vue entre le centre et la position cible est dégagée.
-     *
-     * @param level Le monde
-     * @param from Position de départ (centre de la ruche)
-     * @param to Position cible (fleur)
-     * @return true si aucun bloc ne bloque la vue
-     */
-    public static boolean hasLineOfSight(Level level, Vec3 from, BlockPos to) {
-        Vec3 toVec = Vec3.atCenterOf(to);
-
-        BlockHitResult result = level.clip(new ClipContext(
-            from,
-            toVec,
-            ClipContext.Block.COLLIDER,
-            ClipContext.Fluid.NONE,
-            net.minecraft.world.phys.shapes.CollisionContext.empty()
-        ));
-
-        // Si on n'a rien touché ou si on a touché la fleur elle-même, la vue est dégagée
-        if (result.getType() == HitResult.Type.MISS) {
-            return true;
-        }
-
-        // Si on a touché un bloc, vérifier si c'est la position de la fleur
-        return result.getBlockPos().equals(to);
-    }
-    
     /**
      * Recherche la fleur la plus proche dans un rayon.
      *
@@ -119,7 +82,6 @@ public final class FlowerSearchHelper {
             return null;
         }
 
-        Vec3 centerVec = Vec3.atCenterOf(center);
         BlockPos closest = null;
         double closestDist = Double.MAX_VALUE;
 
@@ -131,7 +93,7 @@ public final class FlowerSearchHelper {
 
                     if (blockState.is(flowerTag)) {
                         double dist = checkPos.distSqr(center);
-                        if (dist < closestDist && hasLineOfSight(level, centerVec, checkPos)) {
+                        if (dist < closestDist) {
                             closestDist = dist;
                             closest = checkPos.immutable();
                         }
@@ -142,7 +104,7 @@ public final class FlowerSearchHelper {
 
         return closest;
     }
-    
+
     /**
      * Vérifie si une position contient une fleur valide.
      *
