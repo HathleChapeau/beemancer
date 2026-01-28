@@ -3,9 +3,10 @@
   "category": "misc",
   "key": {
     "A": { "item": "beemancer:honeyed_iron" },
+    "W": { "item": "beemancer:honeyed_wood" },
     "I": { "item": "beemancer:infuser" },
     "R": { "item": "beemancer:royal_crystal" }
   },
-  "pattern": [ " R ", "AIA", " R " ],
+  "pattern": [ "AIA", "WRW", "AWA" ],
   "result": { "id": "beemancer:infuser_tier2", "count": 1 }
 }

@@ -6,6 +6,6 @@
     "C": { "item": "beemancer:manual_centrifuge" },
     "H": { "item": "beemancer:honey_crystal" }
   },
-  "pattern": [ " H ", "ICI", " H " ],
+  "pattern": [ "I I", "IHI", "ICI" ],
   "result": { "id": "beemancer:powered_centrifuge", "count": 1 }
 }

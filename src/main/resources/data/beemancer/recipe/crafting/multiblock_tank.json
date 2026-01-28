@@ -7,6 +7,6 @@
     "G": { "item": "beemancer:honeyed_glass" },
     "C": { "item": "beemancer:honey_crystal" }
   },
-  "pattern": [ "WGW", "ACA", "WGW" ],
-  "result": { "id": "beemancer:multiblock_tank", "count": 1 }
+  "pattern": [ "AWA", "GCG", "AWA" ],
+  "result": { "id": "beemancer:multiblock_tank", "count": 2 }
 }

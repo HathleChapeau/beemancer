@@ -6,6 +6,6 @@
     "C": { "item": "beemancer:powered_centrifuge" },
     "H": { "item": "beemancer:honey_crystal" }
   },
-  "pattern": [ " H ", "ACA", " H " ],
+  "pattern": [ "A A", "ACA", "AHA" ],
   "result": { "id": "beemancer:powered_centrifuge_tier2", "count": 1 }
 }

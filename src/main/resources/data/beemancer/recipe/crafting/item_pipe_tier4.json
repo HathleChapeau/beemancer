@@ -6,5 +6,5 @@
     "N": { "item": "beemancer:nectar_crystal" }
   },
   "pattern": [ "GNG" ],
-  "result": { "id": "beemancer:item_pipe_tier4", "count": 4 }
+  "result": { "id": "beemancer:item_pipe_tier4", "count": 16 }
 }

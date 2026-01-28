@@ -5,6 +5,6 @@
     "P": { "item": "beemancer:honeyed_planks" },
     "G": { "item": "beemancer:honeyed_glass" }
   },
-  "pattern": [ "PGP", "G G", "PGP" ],
+  "pattern": [ "PPP", "GGG", "PPP" ],
   "result": { "id": "beemancer:honey_tank", "count": 1 }
 }

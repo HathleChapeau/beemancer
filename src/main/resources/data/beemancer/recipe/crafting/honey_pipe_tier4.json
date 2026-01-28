@@ -6,5 +6,5 @@
     "N": { "item": "beemancer:nectar_crystal" }
   },
   "pattern": [ "DND" ],
-  "result": { "id": "beemancer:honey_pipe_tier4", "count": 4 }
+  "result": { "id": "beemancer:honey_pipe_tier4", "count": 16 }
 }

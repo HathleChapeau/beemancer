@@ -3,9 +3,9 @@
   "category": "misc",
   "key": {
     "I": { "item": "minecraft:iron_ingot" },
-    "P": { "tag": "minecraft:planks" },
+    "W": { "tag": "minecraft:log" },
     "H": { "item": "beemancer:honey_crystal" }
   },
-  "pattern": [ " H ", "IPI", " H " ],
+  "pattern": [ "IWI", "WHW", "IWI" ],
   "result": { "id": "beemancer:infuser", "count": 1 }
 }

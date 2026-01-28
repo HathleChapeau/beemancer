@@ -5,6 +5,6 @@
     "A": { "item": "beemancer:honeyed_iron" },
     "R": { "item": "beemancer:royal_crystal" }
   },
-  "pattern": [ "A", "R", "A" ],
-  "result": { "id": "beemancer:item_pipe_tier3", "count": 4 }
+  "pattern": [ "ARA" ],
+  "result": { "id": "beemancer:item_pipe_tier3", "count": 8 }
 }

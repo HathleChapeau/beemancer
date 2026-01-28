@@ -4,8 +4,8 @@
   "key": {
     "I": { "item": "minecraft:iron_ingot" },
     "G": { "item": "minecraft:glass" },
-    "C": { "item": "minecraft:honeycomb" }
+    "H": { "item": "minecraft:honeycomb" }
   },
-  "pattern": [ " G ", "ICI", " G " ],
+  "pattern": [ "IHI", "G G", "IHI" ],
   "result": { "id": "beemancer:crystallizer", "count": 1 }
 }
