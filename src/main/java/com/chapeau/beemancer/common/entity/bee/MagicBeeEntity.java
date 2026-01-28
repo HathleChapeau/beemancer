@@ -36,6 +36,7 @@ import com.chapeau.beemancer.core.gene.GeneCategory;
 import com.chapeau.beemancer.core.gene.GeneRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.LongArrayTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -56,7 +57,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 public class MagicBeeEntity extends Bee {
 
@@ -83,6 +86,10 @@ public class MagicBeeEntity extends Bee {
     // Debug destination (synchronisé pour affichage client)
     private static final EntityDataAccessor<BlockPos> DATA_DEBUG_DESTINATION = SynchedEntityData.defineId(
             MagicBeeEntity.class, EntityDataSerializers.BLOCK_POS);
+
+    // Debug path (synchronisé pour affichage client - chemin Theta* complet)
+    private static final EntityDataAccessor<CompoundTag> DATA_DEBUG_PATH = SynchedEntityData.defineId(
+            MagicBeeEntity.class, EntityDataSerializers.COMPOUND_TAG);
 
     // --- Gene Data ---
     private final BeeGeneData geneData = new BeeGeneData();
@@ -184,6 +191,7 @@ public class MagicBeeEntity extends Bee {
         builder.define(DATA_ENRAGED, false);
         builder.define(DATA_RETURNING, false);
         builder.define(DATA_DEBUG_DESTINATION, BlockPos.ZERO);
+        builder.define(DATA_DEBUG_PATH, new CompoundTag());
     }
 
     @Override
@@ -553,6 +561,40 @@ public class MagicBeeEntity extends Bee {
      */
     public void clearDebugDestination() {
         entityData.set(DATA_DEBUG_DESTINATION, BlockPos.ZERO);
+    }
+
+    // --- Debug Path (chemin Theta* complet) ---
+
+    /**
+     * Définit le chemin de debug (synchronisé au client).
+     * Encode les positions comme long[] dans un CompoundTag.
+     */
+    public void setDebugPath(@Nullable List<BlockPos> path) {
+        CompoundTag tag = new CompoundTag();
+        if (path != null && !path.isEmpty()) {
+            long[] longs = new long[path.size()];
+            for (int i = 0; i < path.size(); i++) {
+                longs[i] = path.get(i).asLong();
+            }
+            tag.put("Path", new LongArrayTag(longs));
+        }
+        entityData.set(DATA_DEBUG_PATH, tag);
+    }
+
+    /**
+     * Récupère le chemin de debug.
+     */
+    public List<BlockPos> getDebugPath() {
+        CompoundTag tag = entityData.get(DATA_DEBUG_PATH);
+        if (tag.contains("Path")) {
+            long[] longs = tag.getLongArray("Path");
+            List<BlockPos> path = new ArrayList<>(longs.length);
+            for (long l : longs) {
+                path.add(BlockPos.of(l));
+            }
+            return path;
+        }
+        return List.of();
     }
 
     // --- NBT ---

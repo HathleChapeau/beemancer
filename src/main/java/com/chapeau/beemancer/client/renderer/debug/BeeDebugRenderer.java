@@ -48,16 +48,29 @@ public class BeeDebugRenderer {
     private static final float LINE_WIDTH = 2.0f;
     private static final float SQUARE_SIZE = 0.3f;
 
-    // Couleurs
+    // Couleurs - ligne destination (orange)
     private static final float LINE_R = 1.0f;
     private static final float LINE_G = 0.5f;
     private static final float LINE_B = 0.0f;
     private static final float LINE_A = 0.8f;
 
+    // Couleurs - carré destination (jaune)
     private static final float SQUARE_R = 1.0f;
     private static final float SQUARE_G = 1.0f;
     private static final float SQUARE_B = 0.0f;
     private static final float SQUARE_A = 0.9f;
+
+    // Couleurs - chemin Theta* (blanc)
+    private static final float PATH_R = 1.0f;
+    private static final float PATH_G = 1.0f;
+    private static final float PATH_B = 1.0f;
+    private static final float PATH_A = 0.9f;
+
+    // Couleurs - waypoints (cyan)
+    private static final float WP_R = 0.0f;
+    private static final float WP_G = 1.0f;
+    private static final float WP_B = 1.0f;
+    private static final float WP_A = 0.9f;
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
@@ -89,17 +102,29 @@ public class BeeDebugRenderer {
         poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
         for (MagicBeeEntity bee : bees) {
-            BlockPos destination = bee.getDebugDestination();
-            if (destination == null) continue;
-
             Vec3 beePos = bee.position().add(0, bee.getBbHeight() / 2, 0);
-            Vec3 destPos = Vec3.atCenterOf(destination);
 
-            // Dessiner la ligne
-            renderLine(poseStack, bufferSource, beePos, destPos);
+            // Dessiner la ligne de destination (orange)
+            BlockPos destination = bee.getDebugDestination();
+            if (destination != null) {
+                Vec3 destPos = Vec3.atCenterOf(destination);
+                renderLine(poseStack, bufferSource, beePos, destPos,
+                        LINE_R, LINE_G, LINE_B, LINE_A);
+                renderSquare(poseStack, bufferSource, destPos);
+            }
 
-            // Dessiner le carré à la destination
-            renderSquare(poseStack, bufferSource, destPos);
+            // Dessiner le chemin Theta* (blanc)
+            List<BlockPos> path = bee.getDebugPath();
+            if (!path.isEmpty()) {
+                Vec3 prevPos = beePos;
+                for (BlockPos waypoint : path) {
+                    Vec3 wpPos = Vec3.atCenterOf(waypoint);
+                    renderLine(poseStack, bufferSource, prevPos, wpPos,
+                            PATH_R, PATH_G, PATH_B, PATH_A);
+                    renderWaypointMarker(poseStack, bufferSource, wpPos);
+                    prevPos = wpPos;
+                }
+            }
         }
 
         poseStack.popPose();
@@ -109,25 +134,46 @@ public class BeeDebugRenderer {
     }
 
     /**
-     * Dessine une ligne entre deux points.
+     * Dessine une ligne entre deux points avec couleur personnalisée.
      */
-    private static void renderLine(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 from, Vec3 to) {
+    private static void renderLine(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 from, Vec3 to,
+                                    float r, float g, float b, float a) {
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.lines());
         Matrix4f matrix = poseStack.last().pose();
 
-        // Direction normalisée pour les normales
-        Vec3 dir = to.subtract(from).normalize();
+        Vec3 dir = to.subtract(from);
+        double len = dir.length();
+        if (len < 0.001) return;
+        dir = dir.scale(1.0 / len);
         float nx = (float) dir.x;
         float ny = (float) dir.y;
         float nz = (float) dir.z;
 
         consumer.addVertex(matrix, (float) from.x, (float) from.y, (float) from.z)
-                .setColor(LINE_R, LINE_G, LINE_B, LINE_A)
+                .setColor(r, g, b, a)
                 .setNormal(nx, ny, nz);
 
         consumer.addVertex(matrix, (float) to.x, (float) to.y, (float) to.z)
-                .setColor(LINE_R, LINE_G, LINE_B, LINE_A)
+                .setColor(r, g, b, a)
                 .setNormal(nx, ny, nz);
+    }
+
+    /**
+     * Dessine un petit marqueur de waypoint (croix 3D cyan).
+     */
+    private static void renderWaypointMarker(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 pos) {
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.lines());
+        Matrix4f matrix = poseStack.last().pose();
+
+        float x = (float) pos.x;
+        float y = (float) pos.y;
+        float z = (float) pos.z;
+        float s = 0.15f;
+
+        // Croix 3D (3 lignes)
+        addColoredLineVertex(consumer, matrix, x - s, y, z, x + s, y, z, WP_R, WP_G, WP_B, WP_A);
+        addColoredLineVertex(consumer, matrix, x, y - s, z, x, y + s, z, WP_R, WP_G, WP_B, WP_A);
+        addColoredLineVertex(consumer, matrix, x, y, z - s, x, y, z + s, WP_R, WP_G, WP_B, WP_A);
     }
 
     /**
@@ -160,7 +206,14 @@ public class BeeDebugRenderer {
     private static void addLineVertex(VertexConsumer consumer, Matrix4f matrix,
                                        float x1, float y1, float z1,
                                        float x2, float y2, float z2) {
-        // Calculer la normale
+        addColoredLineVertex(consumer, matrix, x1, y1, z1, x2, y2, z2,
+                SQUARE_R, SQUARE_G, SQUARE_B, SQUARE_A);
+    }
+
+    private static void addColoredLineVertex(VertexConsumer consumer, Matrix4f matrix,
+                                              float x1, float y1, float z1,
+                                              float x2, float y2, float z2,
+                                              float r, float g, float b, float a) {
         float dx = x2 - x1;
         float dy = y2 - y1;
         float dz = z2 - z1;
@@ -171,11 +224,11 @@ public class BeeDebugRenderer {
         float nz = dz / len;
 
         consumer.addVertex(matrix, x1, y1, z1)
-                .setColor(SQUARE_R, SQUARE_G, SQUARE_B, SQUARE_A)
+                .setColor(r, g, b, a)
                 .setNormal(nx, ny, nz);
 
         consumer.addVertex(matrix, x2, y2, z2)
-                .setColor(SQUARE_R, SQUARE_G, SQUARE_B, SQUARE_A)
+                .setColor(r, g, b, a)
                 .setNormal(nx, ny, nz);
     }
 }

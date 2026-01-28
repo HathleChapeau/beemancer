@@ -322,6 +322,10 @@ public class ForagingBehaviorGoal extends Goal {
         // Calculer ou récupérer le chemin avec Theta*
         pathfinding.findPath(bee.blockPosition(), flightDestination);
 
+        // Sync du chemin pour le debug renderer (client)
+        List<BlockPos> path = pathfinding.getCurrentPath();
+        bee.setDebugPath(path);
+
         // Afficher le chemin avec des particules (debug)
         pathfinding.showPathParticles(bee.position());
 
@@ -480,6 +484,7 @@ public class ForagingBehaviorGoal extends Goal {
 
         bee.setDeltaMovement(Vec3.ZERO);
         bee.clearDebugDestination();
+        bee.setDebugPath(null);
         resetPitch();
         isApproachingFromAbove = false;
         stateMachine.reset();
