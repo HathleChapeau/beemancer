@@ -133,7 +133,7 @@ public class RidingCameraController {
         // En mode RUN avec vitesse élevée, augmenter légèrement le FOV
         if (bee.getRidingMode() == RidingMode.RUN) {
             float speed = bee.getSyncedSpeed();
-            float maxSpeed = bee.getSettings().maxRunSpeed();
+            float maxSpeed = bee.getSettings().getTopSpeed();
             float speedRatio = Math.min(speed / maxSpeed, 1.0f);
 
             // Augmenter le FOV jusqu'à +15° à vitesse max
