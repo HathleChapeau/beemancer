@@ -65,6 +65,7 @@ public class BeePathfinding {
     private static final double WALL_PENALTY = 0.5;
     private static final double ALTITUDE_BONUS = 0.3;
     private static final double OFF_PATH_THRESHOLD = 5.0;
+    private static final double WAYPOINT_REACH_DISTANCE = 0.7;
 
     // Directions 3D pour l'expansion des noeuds (26 directions)
     private static final int[][] DIRECTIONS = {
@@ -129,6 +130,9 @@ public class BeePathfinding {
      * Retourne le prochain waypoint du chemin.
      * Suit le chemin compute fidelement (pas de skip de waypoints).
      * Le lissage est deja fait dans smoothPath() lors du calcul.
+     * Utilise une distance serree (0.7 bloc) pour les waypoints intermediaires
+     * afin que l'abeille passe le coin du mur avant de tourner.
+     * Le dernier waypoint utilise la reachDistance passee en parametre.
      * Inclut replanning si l'abeille est trop loin du chemin.
      */
     @Nullable
@@ -148,7 +152,12 @@ public class BeePathfinding {
                 return null;
             }
 
-            if (dist <= reachDistance) {
+            // Distance serree pour les waypoints intermediaires,
+            // distance normale pour le dernier (destination)
+            boolean isLastWaypoint = (currentPathIndex == currentPath.size() - 1);
+            double threshold = isLastWaypoint ? reachDistance : WAYPOINT_REACH_DISTANCE;
+
+            if (dist <= threshold) {
                 currentPathIndex++;
             } else {
                 return waypoint;
