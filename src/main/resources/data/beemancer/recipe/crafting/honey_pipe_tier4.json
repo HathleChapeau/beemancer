@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": { "item": "beemancer:nectar_diamond" },
+    "N": { "item": "beemancer:nectar_crystal" }
+  },
+  "pattern": [ "DND" ],
+  "result": { "id": "beemancer:honey_pipe_tier4", "count": 4 }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": { "item": "beemancer:honeyed_iron" },
+    "C": { "item": "beemancer:powered_centrifuge" },
+    "H": { "item": "beemancer:honey_crystal" }
+  },
+  "pattern": [ " H ", "ACA", " H " ],
+  "result": { "id": "beemancer:powered_centrifuge_tier2", "count": 1 }
+}

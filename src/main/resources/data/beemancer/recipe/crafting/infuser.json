@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "P": { "tag": "minecraft:planks" },
+    "H": { "item": "beemancer:honey_crystal" }
+  },
+  "pattern": [ " H ", "IPI", " H " ],
+  "result": { "id": "beemancer:infuser", "count": 1 }
+}

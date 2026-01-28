@@ -49,6 +49,7 @@ public class BeemancerCreativeTabs {
                         addCrystalItems(output);
                         addBeeStatue(output);
                         addBuildingBlocks(output);
+                        addCraftingMaterials(output);
                     })
                     .build());
 
@@ -216,6 +217,14 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.NECTAR_STONE_STAIR.get());
         output.accept(BeemancerItems.NECTAR_STONE_SLAB.get());
         output.accept(BeemancerItems.NECTAR_STONE_WALL.get());
+    }
+
+    private static void addCraftingMaterials(CreativeModeTab.Output output) {
+        output.accept(BeemancerItems.HONEYED_IRON.get());
+        output.accept(BeemancerItems.ROYAL_CRYSTAL.get());
+        output.accept(BeemancerItems.ROYAL_GOLD.get());
+        output.accept(BeemancerItems.NECTAR_DIAMOND.get());
+        output.accept(BeemancerItems.NECTAR_CRYSTAL.get());
     }
 
     private static void addEssences(CreativeModeTab.Output output) {

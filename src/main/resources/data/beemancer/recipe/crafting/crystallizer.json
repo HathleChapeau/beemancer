@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "G": { "item": "minecraft:glass" },
+    "C": { "item": "minecraft:honeycomb" }
+  },
+  "pattern": [ " G ", "ICI", " G " ],
+  "result": { "id": "beemancer:crystallizer", "count": 1 }
+}

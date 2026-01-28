@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": { "item": "beemancer:honeyed_iron" },
+    "I": { "item": "beemancer:infuser" },
+    "R": { "item": "beemancer:royal_crystal" }
+  },
+  "pattern": [ " R ", "AIA", " R " ],
+  "result": { "id": "beemancer:infuser_tier2", "count": 1 }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "P": { "tag": "minecraft:planks" }
+  },
+  "pattern": [ " I ", "IPI", " I " ],
+  "result": { "id": "beemancer:manual_centrifuge", "count": 1 }
+}

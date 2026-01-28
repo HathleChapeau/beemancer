@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "C": { "item": "beemancer:manual_centrifuge" },
+    "H": { "item": "beemancer:honey_crystal" }
+  },
+  "pattern": [ " H ", "ICI", " H " ],
+  "result": { "id": "beemancer:powered_centrifuge", "count": 1 }
+}

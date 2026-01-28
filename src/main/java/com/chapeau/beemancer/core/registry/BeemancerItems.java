@@ -228,6 +228,18 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> NECTAR_STONE_WALL = ITEMS.register("nectar_stone_wall",
             () -> new BlockItem(BeemancerBlocks.NECTAR_STONE_WALL.get(), new Item.Properties()));
 
+    // --- CRAFTING MATERIALS ---
+    public static final DeferredItem<Item> HONEYED_IRON = ITEMS.register("honeyed_iron",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ROYAL_CRYSTAL = ITEMS.register("royal_crystal",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ROYAL_GOLD = ITEMS.register("royal_gold",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> NECTAR_DIAMOND = ITEMS.register("nectar_diamond",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> NECTAR_CRYSTAL = ITEMS.register("nectar_crystal",
+            () -> new Item(new Item.Properties()));
+
     // --- ESSENCES ---
     // Drop Essences (améliore le drop level des abeilles)
     public static final DeferredItem<EssenceItem> LESSER_DROP_ESSENCE = ITEMS.register("lesser_drop_essence",
