@@ -287,10 +287,13 @@ public class HorseBehaviour implements RidingBehaviour<HorseSettings, HorseState
             newVelocity = new Vec3(newVelocity.x, 0.0, newVelocity.z);
         }
 
-        // --- Friction au sol ---
-        if ((newVelocity.horizontalDistance() > 0 && vehicle.onGround() && !activeInput) ||
-                newVelocity.horizontalDistance() > topSpeed) {
-            double friction = Math.min(GROUND_FRICTION * Math.signum(newVelocity.z), newVelocity.z);
+        // --- 1. Clamp vélocité à la vitesse max ---
+        double clampedZ = Mth.clamp(newVelocity.z, -topSpeed / 3.0, topSpeed);
+        newVelocity = new Vec3(newVelocity.x, newVelocity.y, clampedZ);
+
+        // --- 2. Friction au sol (seulement si aucune touche pressée) ---
+        if (!activeInput && vehicle.onGround() && newVelocity.z != 0.0) {
+            double friction = Math.min(GROUND_FRICTION, Math.abs(newVelocity.z)) * Math.signum(newVelocity.z);
             newVelocity = newVelocity.subtract(0.0, 0.0, friction);
         }
 
