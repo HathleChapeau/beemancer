@@ -3,6 +3,34 @@
 ################################################################################
 
 ================================================================================
+2026-01-28 - Rideable Bee Ground Detection Fix + Speed Update
+================================================================================
+
+FIX: Oscillation AIRBORNE/WALK
+- Remplacement de onGround() par raycast de 1.2 blocs vers le bas
+- Nouvelle méthode isOnGroundRaycast() utilisant level.clip()
+- Cache cachedOnGround mis à jour une fois par tick
+- Détection beaucoup plus stable
+
+MODIFICATIONS:
+- RideableBeeEntity.java:
+  - +GROUND_RAYCAST_LENGTH = 1.2
+  - +isOnGroundRaycast() - raycast avec ClipContext
+  - +updateGroundState() - mise à jour du cache
+  - +isEffectivelyOnGround() - getter du cache
+  - Remplacement de tous les onGround() par isEffectivelyOnGround()
+
+SPEED UPDATE:
+- RidingSettings.java: maxRunSpeed 0.35 → 10.0 (blocs/tick)
+
+DEPENDENCY REMOVAL:
+- build.gradle: Désactivation FTB mods (minimap)
+  - ftb-chunks-neoforge (commenté)
+  - ftb-teams-neoforge (commenté)
+  - ftb-library-neoforge (commenté)
+  - architectury-neoforge (commenté)
+
+================================================================================
 2026-01-28 - Debug Display System Enhancement
 ================================================================================
 

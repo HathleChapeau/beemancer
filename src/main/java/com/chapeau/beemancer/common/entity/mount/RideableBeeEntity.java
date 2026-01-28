@@ -33,7 +33,10 @@ import net.minecraft.world.entity.PlayerRideable;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,10 +53,14 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
     private static final EntityDataAccessor<Float> DATA_CURRENT_SPEED = SynchedEntityData.defineId(
             RideableBeeEntity.class, EntityDataSerializers.FLOAT);
 
+    // --- Constantes ---
+    private static final double GROUND_RAYCAST_LENGTH = 1.2;
+
     // --- État de riding ---
     private Vec3 rideVelocity = Vec3.ZERO;
     private boolean sprinting = false;
     private int jumpCooldown = 0;
+    private boolean cachedOnGround = false;
 
     // --- Settings ---
     private RidingSettings settings;
@@ -164,6 +171,9 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
     protected void tickRidden(Player driver, Vec3 movementInput) {
         super.tickRidden(driver, movementInput);
 
+        // Mettre à jour l'état du sol via raycast (une fois par tick)
+        updateGroundState();
+
         // Extraire inputs
         float forward = (float) movementInput.z;
         float strafe = (float) movementInput.x;
@@ -172,7 +182,7 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
         updateSprinting(driver, forward);
 
         // Mise à jour du jump cooldown
-        if (this.onGround() && jumpCooldown < 0) {
+        if (isEffectivelyOnGround() && jumpCooldown < 0) {
             jumpCooldown++;
         }
 
@@ -220,8 +230,11 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
 
         } else {
             // Pas de passager: comportement par défaut avec gravité
+            // Mettre à jour l'état du sol via raycast
+            updateGroundState();
+
             Vec3 motion = this.getDeltaMovement();
-            if (!this.onGround()) {
+            if (!isEffectivelyOnGround()) {
                 motion = new Vec3(motion.x,
                         Math.max(motion.y - RideableBeeMovement.GRAVITY, -RideableBeeMovement.TERMINAL_VELOCITY),
                         motion.z);
@@ -272,12 +285,12 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
         // Calculer vélocité (en coordonnées monde)
         rideVelocity = RideableBeeMovement.calculateWalkVelocity(
                 driver, forward, strafe,
-                rideVelocity.y, this.onGround(), jumping, jumpCooldown,
+                rideVelocity.y, isEffectivelyOnGround(), jumping, jumpCooldown,
                 settings
         );
 
         // Mettre à jour le jump cooldown
-        if (jumping && this.onGround() && jumpCooldown >= 0) {
+        if (jumping && isEffectivelyOnGround() && jumpCooldown >= 0) {
             jumpCooldown = -5;
         }
 
@@ -294,12 +307,12 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
         // Calculer vélocité (en espace local)
         rideVelocity = RideableBeeMovement.calculateRunVelocity(
                 forward, rideVelocity.z,
-                rideVelocity.y, this.onGround(), jumping, jumpCooldown,
+                rideVelocity.y, isEffectivelyOnGround(), jumping, jumpCooldown,
                 sprinting, settings
         );
 
         // Mettre à jour le jump cooldown
-        if (jumping && this.onGround() && jumpCooldown >= 0) {
+        if (jumping && isEffectivelyOnGround() && jumpCooldown >= 0) {
             jumpCooldown = -5;
         }
 
@@ -311,6 +324,45 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
         if (!sprinting && rideVelocity.z <= settings.runToWalkThreshold()) {
             setRidingMode(RidingMode.WALK);
         }
+    }
+
+    // --- Ground Detection (Raycast) ---
+
+    /**
+     * Vérifie si l'abeille est au sol via un raycast de 1.2 blocs vers le bas.
+     * Plus stable que onGround() natif qui peut osciller rapidement.
+     *
+     * Pattern inspiré Cobblemon: utilisation de clip() pour détection fiable.
+     */
+    private boolean isOnGroundRaycast() {
+        Vec3 start = this.position();
+        Vec3 end = start.add(0, -GROUND_RAYCAST_LENGTH, 0);
+
+        ClipContext context = new ClipContext(
+            start,
+            end,
+            ClipContext.Block.COLLIDER,
+            ClipContext.Fluid.NONE,
+            this
+        );
+
+        BlockHitResult result = this.level().clip(context);
+        return result.getType() == HitResult.Type.BLOCK;
+    }
+
+    /**
+     * Met à jour le cache de détection du sol.
+     * Appelé une fois par tick pour éviter les calculs multiples.
+     */
+    private void updateGroundState() {
+        this.cachedOnGround = isOnGroundRaycast();
+    }
+
+    /**
+     * Retourne l'état du sol (caché pour performance).
+     */
+    public boolean isEffectivelyOnGround() {
+        return cachedOnGround;
     }
 
     // --- AI ---
@@ -382,7 +434,7 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
      * @return "WALK", "RUN", "AIRBORNE" ou "JUMPING"
      */
     public String getDebugState() {
-        if (!this.onGround()) {
+        if (!isEffectivelyOnGround()) {
             if (jumpCooldown < 0) {
                 return "JUMPING";
             }

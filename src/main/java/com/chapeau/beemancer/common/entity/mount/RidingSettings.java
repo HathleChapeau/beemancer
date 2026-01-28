@@ -54,7 +54,7 @@ public record RidingSettings(
      */
     public static final RidingSettings DEFAULT = new RidingSettings(
         0.12f,   // walkSpeed (blocs/tick)
-        0.35f,   // maxRunSpeed (blocs/tick)
+        10.0f,   // maxRunSpeed (blocs/tick) - très rapide!
         1.5f,    // acceleration (secondes pour atteindre maxSpeed)
         0.03f,   // deceleration (friction au sol par tick)
         20.0f,   // health
