@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": { "#": { "item": "beemancer:honeyed_stone" } },
+  "pattern": [ "###", "###" ],
+  "result": { "id": "beemancer:honeyed_stone_wall", "count": 6 }
+}

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": { "#": { "item": "beemancer:nectar_stone" } },
+  "pattern": [ "###", "###" ],
+  "result": { "id": "beemancer:nectar_stone_wall", "count": 6 }
+}
