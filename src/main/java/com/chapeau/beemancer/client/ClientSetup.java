@@ -24,6 +24,7 @@ import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
+import com.chapeau.beemancer.client.model.RideableBeeModel;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.RideableBeeRenderer;
 import com.chapeau.beemancer.client.renderer.item.MagicBeeItemRenderer;
@@ -55,6 +56,7 @@ public class ClientSetup {
     public static void register(IEventBus modEventBus) {
         modEventBus.addListener(ClientSetup::registerScreens);
         modEventBus.addListener(ClientSetup::registerEntityRenderers);
+        modEventBus.addListener(ClientSetup::registerLayerDefinitions);
         modEventBus.addListener(ClientSetup::registerClientExtensions);
         modEventBus.addListener(ClientSetup::registerBlockColors);
         modEventBus.addListener(ClientSetup::registerAdditionalModels);
@@ -103,6 +105,11 @@ public class ClientSetup {
         // AltarHeartRenderer - rendu des conduits animés
         event.registerBlockEntityRenderer(BeemancerBlockEntities.ALTAR_HEART.get(),
             AltarHeartRenderer::new);
+    }
+
+    private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
+        // RideableBee model layer
+        event.registerLayerDefinition(RideableBeeRenderer.LAYER_LOCATION, RideableBeeModel::createBodyLayer);
     }
 
     private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {
