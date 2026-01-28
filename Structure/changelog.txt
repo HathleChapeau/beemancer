@@ -3,6 +3,27 @@
 ################################################################################
 
 ================================================================================
+2026-01-28 - Debug Display System Enhancement
+================================================================================
+
+AJOUTS:
+- RideableBeeDebugHud.java: Panneau HUD en haut à droite quand on chevauche
+  - Vélocité (X, Z), Input (forward, strafe), Vitesse max, État
+  - États: WALK (vert), RUN (jaune), AIRBORNE (cyan), JUMPING (rouge)
+- PipeDebugRenderer.java: Texte flottant au-dessus des pipes
+  - ItemPipe: liste des items agrégés + quantités
+  - HoneyPipe: type de fluide + quantité en mB
+- HiveDebugRenderer.java: Cooldowns des abeilles au-dessus des ruches
+  - Affiche état (INSIDE/OUTSIDE) et cooldown en secondes
+
+MODIFICATIONS:
+- RideableBeeEntity.java: +getRideVelocity(), +getJumpCooldown(), +getDebugState()
+- MagicHiveBlockEntity.java: +getBeeStates() pour accès aux états des slots
+- ClientSetup.java: Enregistrement des 3 nouveaux renderers
+
+CONDITION D'AFFICHAGE: DebugWandItem.displayDebug = true
+
+================================================================================
 2026-01-28 - Rideable Bee v2 (Refactorisation Jet-style)
 ================================================================================
 

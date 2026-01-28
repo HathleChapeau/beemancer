@@ -70,6 +70,9 @@ Philosophie:
 │ client/renderer/entity/MagicBeeRenderer│ Renderer entité avec texture espèce  │
 │ common/codex/CodexManager.java      │ Gestionnaire central du Codex          │
 │ client/renderer/block/AltarHeartRenderer│ Renderer multibloc Honey Altar     │
+│ client/gui/hud/RideableBeeDebugHud  │ HUD debug rideable bee (haut droit)    │
+│ client/renderer/debug/PipeDebugRenderer│ Texte debug au-dessus des pipes     │
+│ client/renderer/debug/HiveDebugRenderer│ Cooldowns au-dessus des ruches      │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -232,6 +235,10 @@ LISTE DES FEATURES:
 → Rideable Bee
   Fichier: Structure/feature_rideable_bee.txt
   Description: Abeille chevauchable avec modes WALK/RUN et caméra dynamique (inspiré Cobblemon)
+
+→ Debug Display System
+  Fichier: Structure/feature_debug_display.txt
+  Description: Affichages debug visuels (HUD rideable bee, texte pipes/ruches) quand displayDebug=true
 
 ================================================================================
 6. FEATURES EN COURS

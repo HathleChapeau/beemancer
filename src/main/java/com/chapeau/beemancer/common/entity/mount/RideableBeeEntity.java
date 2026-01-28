@@ -353,4 +353,41 @@ public class RideableBeeEntity extends Mob implements PlayerRideable {
     public RidingSettings getSettings() {
         return settings;
     }
+
+    // --- Debug Getters (pour RideableBeeDebugHud) ---
+
+    /**
+     * Retourne la vélocité actuelle (Z = forward, X = strafe)
+     */
+    public Vec3 getRideVelocity() {
+        return rideVelocity;
+    }
+
+    /**
+     * Retourne le jump cooldown actuel
+     */
+    public int getJumpCooldown() {
+        return jumpCooldown;
+    }
+
+    /**
+     * Retourne si l'abeille est en train de sprinter
+     */
+    public boolean isSprinting() {
+        return sprinting;
+    }
+
+    /**
+     * Calcule l'état actuel de l'abeille pour le debug.
+     * @return "WALK", "RUN", "AIRBORNE" ou "JUMPING"
+     */
+    public String getDebugState() {
+        if (!this.onGround()) {
+            if (jumpCooldown < 0) {
+                return "JUMPING";
+            }
+            return "AIRBORNE";
+        }
+        return getRidingMode().name();
+    }
 }

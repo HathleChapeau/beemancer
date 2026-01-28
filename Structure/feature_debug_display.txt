@@ -1,0 +1,112 @@
+################################################################################
+#                         FEATURE: DEBUG DISPLAY SYSTEM                         #
+################################################################################
+
+================================================================================
+1. DESCRIPTION
+================================================================================
+
+Système d'affichage de debug visuel activé quand DebugWandItem.displayDebug = true.
+Affiche des informations contextuelles pour:
+- Rideable Bee (quand chevauchée): HUD en haut à droite
+- Pipes (Item/Honey): Texte flottant au-dessus montrant le contenu
+- Ruches (MagicHive): Cooldowns des abeilles
+
+================================================================================
+2. FICHIERS
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CLIENT - HUD                                                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ client/gui/hud/RideableBeeDebugHud.java                                     │
+│   - Panneau en haut à droite de l'écran                                     │
+│   - Affiche: Velocity (X,Z), Input (fwd,str), Max Speed, State              │
+│   - Condition: displayDebug + player chevauche RideableBee                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ CLIENT - WORLD RENDERERS                                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ client/renderer/debug/PipeDebugRenderer.java                                │
+│   - Texte billboard au-dessus des pipes                                     │
+│   - ItemPipe: "[Items]" + liste items agrégés x quantité                    │
+│   - HoneyPipe: "[Fluid]" + nom + quantité mB                                │
+│   - Rayon de scan: 32 blocs                                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ client/renderer/debug/HiveDebugRenderer.java                                │
+│   - Texte billboard au-dessus des MagicHive                                 │
+│   - Affiche: slot + état (INSIDE/OUTSIDE) + cooldown en secondes            │
+│   - Slots vides non affichés                                                │
+│   - Rayon de scan: 32 blocs                                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+3. DONNÉES AFFICHÉES
+================================================================================
+
+RIDEABLE BEE HUD:
+┌─────────────────────────────────┐
+│ Rideable Bee Debug              │  <- Orange
+├─────────────────────────────────┤
+│ Velocity: X=0.000 Z=0.120       │  <- Blanc
+│ Input: fwd=1.00 str=0.00        │  <- Blanc
+│ Max Speed: 0.120                │  <- Blanc
+│ State: WALK                     │  <- Vert/Jaune/Cyan/Rouge
+└─────────────────────────────────┘
+
+COULEURS D'ÉTAT:
+- WALK: Vert (#55FF55)
+- RUN: Jaune (#FFFF55)
+- AIRBORNE: Cyan (#55FFFF)
+- JUMPING: Rouge (#FF5555)
+
+PIPE DEBUG:
+[Items]          <- Vert (#55FF55)
+Cobblestone x64  <- Blanc
+Iron Ingot x12   <- Blanc
+
+[Fluid]          <- Cyan (#55FFFF)
+Honey            <- Blanc
+500 mB           <- Blanc
+
+HIVE DEBUG:
+[Hive Cooldowns]          <- Orange (#FFAA00)
+Slot 1: INSIDE [2.5s]     <- Vert (INSIDE)
+Slot 2: OUTSIDE [Ready]   <- Cyan (OUTSIDE)
+
+================================================================================
+4. ACTIVATION
+================================================================================
+
+Pour activer l'affichage debug:
+1. Tenir la Debug Wand en main
+2. Clic droit pour toggle displayDebug
+3. Les affichages apparaissent automatiquement selon le contexte
+
+================================================================================
+5. DÉPENDANCES
+================================================================================
+
+| Script                    | Utilisation                                     |
+|---------------------------|-------------------------------------------------|
+| DebugWandItem.java        | Flag displayDebug (condition d'affichage)       |
+| RideableBeeEntity.java    | Données vélocité, état, settings                |
+| ItemPipeBlockEntity.java  | Buffer ItemStackHandler                         |
+| HoneyPipeBlockEntity.java | Buffer FluidTank                                |
+| MagicHiveBlockEntity.java | Cooldowns et états des slots                    |
+| HiveBeeSlot.java          | Enum State (EMPTY, INSIDE, OUTSIDE)             |
+
+================================================================================
+6. ENREGISTREMENT
+================================================================================
+
+Dans ClientSetup.java:
+```java
+// Debug renderers (quand displayDebug = true)
+NeoForge.EVENT_BUS.register(RideableBeeDebugHud.class);
+NeoForge.EVENT_BUS.register(PipeDebugRenderer.class);
+NeoForge.EVENT_BUS.register(HiveDebugRenderer.class);
+```
+
+################################################################################
+#                              FIN DU DOCUMENT                                  #
+################################################################################

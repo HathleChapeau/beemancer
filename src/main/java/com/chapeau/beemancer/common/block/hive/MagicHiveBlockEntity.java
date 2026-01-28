@@ -300,6 +300,15 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         for (int i = 0; i < BEE_SLOTS; i++) cooldowns[i] = beeSlots[i].getCooldown();
         return cooldowns;
     }
+
+    /**
+     * Retourne les états de tous les slots d'abeilles (pour debug HUD).
+     */
+    public HiveBeeSlot.State[] getBeeStates() {
+        HiveBeeSlot.State[] states = new HiveBeeSlot.State[BEE_SLOTS];
+        for (int i = 0; i < BEE_SLOTS; i++) states[i] = beeSlots[i].getState();
+        return states;
+    }
     public int getFlowerScanCooldown() { return flowerPool.getScanCooldown(); }
     public List<BlockPos>[] getBeeFlowers() {
         @SuppressWarnings("unchecked")
