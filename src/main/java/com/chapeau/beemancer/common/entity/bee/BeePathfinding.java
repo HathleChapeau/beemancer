@@ -127,6 +127,8 @@ public class BeePathfinding {
 
     /**
      * Retourne le prochain waypoint du chemin.
+     * Suit le chemin compute fidelement (pas de skip de waypoints).
+     * Le lissage est deja fait dans smoothPath() lors du calcul.
      * Inclut replanning si l'abeille est trop loin du chemin.
      */
     @Nullable
@@ -149,15 +151,6 @@ public class BeePathfinding {
             if (dist <= reachDistance) {
                 currentPathIndex++;
             } else {
-                // Optimisation: verifier si on peut sauter des waypoints
-                // en ayant une ligne de vue directe vers un waypoint plus loin
-                for (int i = currentPath.size() - 1; i > currentPathIndex; i--) {
-                    BlockPos futureWaypoint = currentPath.get(i);
-                    if (hasLineOfSight(BlockPos.containing(currentPos), futureWaypoint)) {
-                        currentPathIndex = i;
-                        return futureWaypoint;
-                    }
-                }
                 return waypoint;
             }
         }
