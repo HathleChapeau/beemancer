@@ -26,7 +26,6 @@ import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.beemancer.client.renderer.debug.HiveDebugRenderer;
-import com.chapeau.beemancer.client.renderer.debug.PipeDebugRenderer;
 import com.chapeau.beemancer.client.model.RideableBeeModel;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.RideableBeeRenderer;
@@ -72,7 +71,6 @@ public class ClientSetup {
 
         // Debug renderers (quand displayDebug = true)
         NeoForge.EVENT_BUS.register(RideableBeeDebugHud.class);
-        NeoForge.EVENT_BUS.register(PipeDebugRenderer.class);
         NeoForge.EVENT_BUS.register(HiveDebugRenderer.class);
 
         // Riding system - caméra seulement (input lu directement depuis le joueur)

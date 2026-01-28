@@ -36,6 +36,7 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +55,9 @@ public class HoneyPipeBlockEntity extends BlockEntity {
 
     private int shareCooldown = 0;
     private boolean isSharing = false;
+
+    // Directions manuellement deconnectees par le joueur
+    private final EnumSet<Direction> disconnectedDirections = EnumSet.noneOf(Direction.class);
 
     public HoneyPipeBlockEntity(BlockPos pos, BlockState state) {
         this(BeemancerBlockEntities.HONEY_PIPE.get(), pos, state, TIER1_BUFFER);
@@ -489,6 +493,19 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         return buffer;
     }
 
+    public boolean isDisconnected(Direction dir) {
+        return disconnectedDirections.contains(dir);
+    }
+
+    public void setDisconnected(Direction dir, boolean disconnected) {
+        if (disconnected) {
+            disconnectedDirections.add(dir);
+        } else {
+            disconnectedDirections.remove(dir);
+        }
+        setChanged();
+    }
+
     private void syncToClient() {
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
@@ -513,6 +530,13 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         super.saveAdditional(tag, registries);
         tag.put("Buffer", buffer.writeToNBT(registries, new CompoundTag()));
         tag.putInt("ShareCooldown", shareCooldown);
+        int disconnectedBits = 0;
+        for (Direction dir : disconnectedDirections) {
+            disconnectedBits |= (1 << dir.ordinal());
+        }
+        if (disconnectedBits != 0) {
+            tag.putInt("DisconnectedDirs", disconnectedBits);
+        }
     }
 
     @Override
@@ -522,5 +546,14 @@ public class HoneyPipeBlockEntity extends BlockEntity {
             buffer.readFromNBT(registries, tag.getCompound("Buffer"));
         }
         shareCooldown = tag.getInt("ShareCooldown");
+        disconnectedDirections.clear();
+        if (tag.contains("DisconnectedDirs")) {
+            int bits = tag.getInt("DisconnectedDirs");
+            for (Direction dir : Direction.values()) {
+                if ((bits & (1 << dir.ordinal())) != 0) {
+                    disconnectedDirections.add(dir);
+                }
+            }
+        }
     }
 }

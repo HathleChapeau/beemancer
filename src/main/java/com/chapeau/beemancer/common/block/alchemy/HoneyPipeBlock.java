@@ -36,8 +36,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -118,55 +116,77 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
 
+    private static final double CLICK_THRESHOLD = 0.1;
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
-        // Determine which face was clicked based on hit location
-        Direction clickedFace = getClickedConnectionFace(state, pos, hit);
-        if (clickedFace == null) {
-            return InteractionResult.PASS;
+        Direction clickedDir = getClickedDirection(pos, hit);
+        if (clickedDir == null) return InteractionResult.PASS;
+
+        BlockEntity be = level.getBlockEntity(pos);
+        boolean isDisconnected = be instanceof HoneyPipeBlockEntity pipe && pipe.isDisconnected(clickedDir);
+
+        if (isDisconnected) {
+            // Reconnect
+            ((HoneyPipeBlockEntity) be).setDisconnected(clickedDir, false);
+            BlockState newState = getConnectionState(level, pos, state);
+            level.setBlock(pos, newState, 3);
+
+            level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, 1.2f);
+            player.displayClientMessage(Component.literal(clickedDir.getName() + ": Connected"), true);
+            return InteractionResult.SUCCESS;
         }
 
-        // Toggle extraction mode for that direction
-        BooleanProperty extractProp = getExtractProperty(clickedFace);
-        boolean newValue = !state.getValue(extractProp);
-        level.setBlock(pos, state.setValue(extractProp, newValue), 3);
+        if (!isConnected(state, clickedDir)) return InteractionResult.PASS;
 
-        // Feedback
-        level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, newValue ? 1.2f : 0.8f);
-        player.displayClientMessage(
-            Component.literal(clickedFace.getName() + ": " + (newValue ? "Extraction" : "Insertion")), 
-            true);
+        BlockPos neighborPos = pos.relative(clickedDir);
+        boolean neighborIsPipe = level.getBlockState(neighborPos).getBlock() instanceof HoneyPipeBlock;
+
+        if (neighborIsPipe) {
+            // Disconnect pipe-to-pipe
+            if (be instanceof HoneyPipeBlockEntity pipe) {
+                pipe.setDisconnected(clickedDir, true);
+            }
+            BlockState newState = state
+                .setValue(getConnectionProperty(clickedDir), false)
+                .setValue(getExtractProperty(clickedDir), false);
+            level.setBlock(pos, newState, 3);
+
+            level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, 0.6f);
+            player.displayClientMessage(Component.literal(clickedDir.getName() + ": Disconnected"), true);
+        } else {
+            // Toggle extraction (non-pipe neighbor)
+            BooleanProperty extractProp = getExtractProperty(clickedDir);
+            boolean newValue = !state.getValue(extractProp);
+            level.setBlock(pos, state.setValue(extractProp, newValue), 3);
+
+            level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, newValue ? 1.2f : 0.8f);
+            player.displayClientMessage(
+                Component.literal(clickedDir.getName() + ": " + (newValue ? "Extraction" : "Insertion")),
+                true);
+        }
 
         return InteractionResult.SUCCESS;
     }
 
     @Nullable
-    private Direction getClickedConnectionFace(BlockState state, BlockPos pos, BlockHitResult hit) {
-        Vec3 hitVec = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
-        
-        // Check each connected direction
+    private Direction getClickedDirection(BlockPos pos, BlockHitResult hit) {
+        Vec3 hitVec = hit.getLocation().subtract(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+
+        Direction best = null;
+        double bestDot = CLICK_THRESHOLD;
+
         for (Direction dir : Direction.values()) {
-            if (!isConnected(state, dir)) continue;
-            
-            AABB connectionBox = getConnectionBounds(dir);
-            if (connectionBox.contains(hitVec)) {
-                return dir;
+            Vec3 normal = Vec3.atLowerCornerOf(dir.getNormal());
+            double dot = hitVec.dot(normal);
+            if (dot > bestDot) {
+                bestDot = dot;
+                best = dir;
             }
         }
-        return null;
-    }
-
-    private AABB getConnectionBounds(Direction dir) {
-        return switch (dir) {
-            case NORTH -> new AABB(5/16.0, 5/16.0, 0, 11/16.0, 11/16.0, 5/16.0);
-            case SOUTH -> new AABB(5/16.0, 5/16.0, 11/16.0, 11/16.0, 11/16.0, 1);
-            case EAST -> new AABB(11/16.0, 5/16.0, 5/16.0, 1, 11/16.0, 11/16.0);
-            case WEST -> new AABB(0, 5/16.0, 5/16.0, 5/16.0, 11/16.0, 11/16.0);
-            case UP -> new AABB(5/16.0, 11/16.0, 5/16.0, 11/16.0, 1, 11/16.0);
-            case DOWN -> new AABB(5/16.0, 0, 5/16.0, 11/16.0, 5/16.0, 11/16.0);
-        };
+        return best;
     }
 
     public static BooleanProperty getConnectionProperty(Direction dir) {
@@ -225,20 +245,32 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     }
 
     private boolean canConnect(LevelAccessor level, BlockPos pos, Direction direction) {
+        // Check si manuellement deconnecte
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof HoneyPipeBlockEntity pipe && pipe.isDisconnected(direction)) {
+            return false;
+        }
+
         BlockPos neighborPos = pos.relative(direction);
         BlockState neighborState = level.getBlockState(neighborPos);
-        
+
         // Connect to other pipes
         if (neighborState.getBlock() instanceof HoneyPipeBlock) {
+            // Check si le voisin a deconnecte de notre cote
+            BlockEntity neighborBe = level.getBlockEntity(neighborPos);
+            if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe
+                && neighborPipe.isDisconnected(direction.getOpposite())) {
+                return false;
+            }
             return true;
         }
-        
+
         // Connect to fluid handlers
         if (level instanceof Level realLevel) {
             var cap = realLevel.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, direction.getOpposite());
             return cap != null;
         }
-        
+
         return false;
     }
 
