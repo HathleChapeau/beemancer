@@ -17,6 +17,7 @@ import com.chapeau.beemancer.common.item.mount.RideableBeeSpawnItem;
 import com.chapeau.beemancer.common.item.tool.BuildingWandItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.IEventBus;
@@ -162,6 +163,8 @@ public class BeemancerItems {
             () -> new BlockItem(BeemancerBlocks.HONEYED_FENCE_GATE.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> HONEYED_TRAPDOOR = ITEMS.register("honeyed_trapdoor",
             () -> new BlockItem(BeemancerBlocks.HONEYED_TRAPDOOR.get(), new Item.Properties()));
+    public static final DeferredItem<DoubleHighBlockItem> HONEYED_DOOR = ITEMS.register("honeyed_door",
+            () -> new DoubleHighBlockItem(BeemancerBlocks.HONEYED_DOOR.get(), new Item.Properties()));
 
     // --- BUILDING BLOCKS: HONEYED STONE ---
     public static final DeferredItem<BlockItem> HONEYED_STONE_WALL = ITEMS.register("honeyed_stone_wall",
@@ -186,6 +189,8 @@ public class BeemancerItems {
             () -> new BlockItem(BeemancerBlocks.ROYAL_FENCE_GATE.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> ROYAL_TRAPDOOR = ITEMS.register("royal_trapdoor",
             () -> new BlockItem(BeemancerBlocks.ROYAL_TRAPDOOR.get(), new Item.Properties()));
+    public static final DeferredItem<DoubleHighBlockItem> ROYAL_DOOR = ITEMS.register("royal_door",
+            () -> new DoubleHighBlockItem(BeemancerBlocks.ROYAL_DOOR.get(), new Item.Properties()));
 
     // --- BUILDING BLOCKS: ROYAL STONE ---
     public static final DeferredItem<BlockItem> ROYAL_STONE = ITEMS.register("royal_stone",
@@ -210,6 +215,8 @@ public class BeemancerItems {
             () -> new BlockItem(BeemancerBlocks.NECTAR_FENCE_GATE.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> NECTAR_TRAPDOOR = ITEMS.register("nectar_trapdoor",
             () -> new BlockItem(BeemancerBlocks.NECTAR_TRAPDOOR.get(), new Item.Properties()));
+    public static final DeferredItem<DoubleHighBlockItem> NECTAR_DOOR = ITEMS.register("nectar_door",
+            () -> new DoubleHighBlockItem(BeemancerBlocks.NECTAR_DOOR.get(), new Item.Properties()));
 
     // --- BUILDING BLOCKS: NECTAR STONE ---
     public static final DeferredItem<BlockItem> NECTAR_STONE = ITEMS.register("nectar_stone",

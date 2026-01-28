@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_bottom_right_open",
+  "textures": {
+    "bottom": "beemancer:block/royal_planks",
+    "top": "beemancer:block/royal_planks"
+  }
+}

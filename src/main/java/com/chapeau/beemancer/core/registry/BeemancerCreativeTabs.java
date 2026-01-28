@@ -178,6 +178,7 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.HONEYED_FENCE.get());
         output.accept(BeemancerItems.HONEYED_FENCE_GATE.get());
         output.accept(BeemancerItems.HONEYED_TRAPDOOR.get());
+        output.accept(BeemancerItems.HONEYED_DOOR.get());
 
         // Honeyed Stone
         output.accept(BeemancerItems.HONEYED_STONE_WALL.get());
@@ -193,6 +194,7 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.ROYAL_FENCE.get());
         output.accept(BeemancerItems.ROYAL_FENCE_GATE.get());
         output.accept(BeemancerItems.ROYAL_TRAPDOOR.get());
+        output.accept(BeemancerItems.ROYAL_DOOR.get());
 
         // Royal Stone
         output.accept(BeemancerItems.ROYAL_STONE.get());
@@ -207,6 +209,7 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.NECTAR_FENCE.get());
         output.accept(BeemancerItems.NECTAR_FENCE_GATE.get());
         output.accept(BeemancerItems.NECTAR_TRAPDOOR.get());
+        output.accept(BeemancerItems.NECTAR_DOOR.get());
 
         // Nectar Stone
         output.accept(BeemancerItems.NECTAR_STONE.get());

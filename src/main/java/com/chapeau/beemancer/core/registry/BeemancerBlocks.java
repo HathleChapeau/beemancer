@@ -21,6 +21,7 @@ import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
 import com.chapeau.beemancer.common.block.storage.StorageTerminalBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
@@ -319,6 +320,10 @@ public class BeemancerBlocks {
             () -> new TrapDoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
                     .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
 
+    public static final DeferredBlock<DoorBlock> HONEYED_DOOR = BLOCKS.register("honeyed_door",
+            () -> new DoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
     // --- BUILDING BLOCKS: HONEYED STONE ---
     public static final DeferredBlock<WallBlock> HONEYED_STONE_WALL = BLOCKS.register("honeyed_stone_wall",
             () -> new WallBlock(BlockBehaviour.Properties.of()
@@ -356,6 +361,10 @@ public class BeemancerBlocks {
 
     public static final DeferredBlock<TrapDoorBlock> ROYAL_TRAPDOOR = BLOCKS.register("royal_trapdoor",
             () -> new TrapDoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    public static final DeferredBlock<DoorBlock> ROYAL_DOOR = BLOCKS.register("royal_door",
+            () -> new DoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
                     .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
 
     // --- BUILDING BLOCKS: ROYAL STONE ---
@@ -398,6 +407,10 @@ public class BeemancerBlocks {
 
     public static final DeferredBlock<TrapDoorBlock> NECTAR_TRAPDOOR = BLOCKS.register("nectar_trapdoor",
             () -> new TrapDoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    public static final DeferredBlock<DoorBlock> NECTAR_DOOR = BLOCKS.register("nectar_door",
+            () -> new DoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
                     .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
 
     // --- BUILDING BLOCKS: NECTAR STONE ---
