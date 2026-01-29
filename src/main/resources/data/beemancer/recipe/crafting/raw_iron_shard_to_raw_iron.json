@@ -1,11 +1,12 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    { "item": "beemancer:raw_iron_shard" },
-    { "item": "beemancer:raw_iron_shard" },
-    { "item": "beemancer:raw_iron_shard" },
-    { "item": "beemancer:raw_iron_shard" }
+  "pattern": [
+    "SSS",
+    "SSS"
   ],
+  "key": {
+    "S": { "item": "beemancer:raw_iron_shard" }
+  },
   "result": { "id": "minecraft:raw_iron", "count": 1 }
 }

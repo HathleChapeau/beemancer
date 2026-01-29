@@ -549,7 +549,7 @@ public class BeemancerItems {
     public static final DeferredItem<Item> GHAST_TEAR_SHARD = ITEMS.register("ghast_tear_shard",
             () -> new Item(new Item.Properties()));
 
-    // --- DUSTS (9 dusts = 1 fragment) ---
+    // --- DUSTS (9 dusts = 1 shard) ---
     public static final DeferredItem<Item> DIAMOND_DUST = ITEMS.register("diamond_dust",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> EMERALD_DUST = ITEMS.register("emerald_dust",
@@ -565,7 +565,23 @@ public class BeemancerItems {
     public static final DeferredItem<Item> NETHER_STAR_DUST = ITEMS.register("nether_star_dust",
             () -> new Item(new Item.Properties()));
 
-    // --- DUST FRAGMENTS (4 fragments = 1 resource, made from 9 dusts) ---
+    // --- DUST SHARDS (9 dusts = 1 shard, 6 shards = 1 fragment) ---
+    public static final DeferredItem<Item> DIAMOND_SHARD = ITEMS.register("diamond_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> EMERALD_SHARD = ITEMS.register("emerald_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> OBSIDIAN_SHARD = ITEMS.register("obsidian_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ENDER_PEARL_SHARD = ITEMS.register("ender_pearl_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> NETHERITE_SCRAP_SHARD = ITEMS.register("netherite_scrap_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> DRAGON_BREATH_SHARD = ITEMS.register("dragon_breath_shard",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> NETHER_STAR_SHARD = ITEMS.register("nether_star_shard",
+            () -> new Item(new Item.Properties()));
+
+    // --- DUST FRAGMENTS (6 shards = 1 fragment, 4 fragments = 1 resource) ---
     public static final DeferredItem<Item> DIAMOND_FRAGMENT = ITEMS.register("diamond_fragment",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> EMERALD_FRAGMENT = ITEMS.register("emerald_fragment",

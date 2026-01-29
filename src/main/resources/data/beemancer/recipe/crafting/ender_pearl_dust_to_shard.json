@@ -7,7 +7,7 @@
     "DDD"
   ],
   "key": {
-    "D": { "item": "beemancer:netherite_scrap_dust" }
+    "D": { "item": "beemancer:ender_pearl_dust" }
   },
-  "result": { "id": "beemancer:netherite_scrap_fragment", "count": 1 }
+  "result": { "id": "beemancer:ender_pearl_shard", "count": 1 }
 }

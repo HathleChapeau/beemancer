@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "beemancer:netherite_scrap_shard" }
+  },
+  "result": { "id": "beemancer:netherite_scrap_fragment", "count": 1 }
+}

@@ -2,12 +2,11 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "DDD",
-    "DDD",
-    "DDD"
+    "SSS",
+    "SSS"
   ],
   "key": {
-    "D": { "item": "beemancer:dragon_breath_dust" }
+    "S": { "item": "beemancer:dragon_breath_shard" }
   },
   "result": { "id": "beemancer:dragon_breath_fragment", "count": 1 }
 }

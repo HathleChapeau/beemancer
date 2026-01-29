@@ -1,11 +1,12 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    { "item": "beemancer:lapis_lazuli_shard" },
-    { "item": "beemancer:lapis_lazuli_shard" },
-    { "item": "beemancer:lapis_lazuli_shard" },
-    { "item": "beemancer:lapis_lazuli_shard" }
+  "pattern": [
+    "SSS",
+    "SSS"
   ],
+  "key": {
+    "S": { "item": "beemancer:lapis_lazuli_shard" }
+  },
   "result": { "id": "minecraft:lapis_lazuli", "count": 1 }
 }
