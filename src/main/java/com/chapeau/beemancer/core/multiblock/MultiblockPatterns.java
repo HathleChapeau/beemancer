@@ -174,10 +174,10 @@ public class MultiblockPatterns {
     // ==================== ESSENCE EXTRACTOR ====================
     // Structure 3x3x4, contrôleur au Y+0 (Extractor Heart) qui est à l'étage 3
     //
-    // Étage 4 (Y+1 relatif): Honeyed Stone en croix + Reservoirs aux coins
+    // Étage 4 (Y+1 relatif): Honeyed Stone aux coins/centre + Reservoirs aux bords
+    //         [S][R][S]
     //         [R][S][R]
-    //         [S][S][S]
-    //         [R][S][R]
+    //         [S][R][S]
     //
     // Étage 3 (Y+0 relatif): Contrôleur au centre (Extractor Heart)
     //            [ ]
@@ -228,16 +228,16 @@ public class MultiblockPatterns {
             .add(-1, 0, 1, air())
             .add(1, 0, 1, air())
 
-            // Étage 4 (Y+1): Honeyed Stone en croix + Reservoirs aux coins
+            // Étage 4 (Y+1): Honeyed Stone aux coins/centre + Reservoirs aux bords (N/S/E/W)
             .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))        // Centre
-            .add(0, 1, -1, block(BeemancerBlocks.HONEYED_STONE))       // Nord
-            .add(0, 1, 1, block(BeemancerBlocks.HONEYED_STONE))        // Sud
-            .add(1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))        // Est
-            .add(-1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))       // Ouest
-            .add(-1, 1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin NO
-            .add(1, 1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))     // Coin NE
-            .add(-1, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))     // Coin SO
-            .add(1, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))      // Coin SE
+            .add(0, 1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))     // Nord
+            .add(0, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))      // Sud
+            .add(1, 1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))      // Est
+            .add(-1, 1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))     // Ouest
+            .add(-1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))      // Coin NO
+            .add(1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))       // Coin NE
+            .add(-1, 1, 1, block(BeemancerBlocks.HONEYED_STONE))       // Coin SO
+            .add(1, 1, 1, block(BeemancerBlocks.HONEYED_STONE))        // Coin SE
 
             .build()
     );

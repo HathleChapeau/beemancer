@@ -86,12 +86,12 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
         new BlockPos(-1, -2, 0)   // Ouest
     };
 
-    // Positions relatives des réservoirs (Y+1, coins)
+    // Positions relatives des réservoirs (Y+1, bords N/S/E/W)
     private static final BlockPos[] RESERVOIR_OFFSETS = {
-        new BlockPos(-1, 1, -1),  // NO
-        new BlockPos(1, 1, -1),   // NE
-        new BlockPos(-1, 1, 1),   // SO
-        new BlockPos(1, 1, 1)     // SE
+        new BlockPos(0, 1, -1),   // Nord
+        new BlockPos(0, 1, 1),    // Sud
+        new BlockPos(1, 1, 0),    // Est
+        new BlockPos(-1, 1, 0)    // Ouest
     };
 
     public ExtractorHeartBlockEntity(BlockPos pos, BlockState state) {
