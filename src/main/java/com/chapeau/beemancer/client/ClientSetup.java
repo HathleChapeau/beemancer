@@ -204,7 +204,7 @@ public class ClientSetup {
                     return pipe.getTintColor() | 0xFF000000;
                 }
             }
-            return 0xFFC8C8C8; // Gris par défaut
+            return 0xFFFF9020; // Orange par défaut
         },
             BeemancerBlocks.ITEM_PIPE.get(),
             BeemancerBlocks.ITEM_PIPE_TIER2.get(),
@@ -213,7 +213,7 @@ public class ClientSetup {
         );
 
         // Honey Pipes - teinte du core
-        // Sans teinte = gris (0xC8C8C8), avec teinte = couleur du colorant
+        // Sans teinte = orange, avec teinte = couleur du colorant
         event.register((state, level, pos, tintIndex) -> {
             if (tintIndex != 0 || level == null || pos == null) {
                 return 0xFFFFFFFF;
@@ -223,7 +223,7 @@ public class ClientSetup {
                     return pipe.getTintColor() | 0xFF000000;
                 }
             }
-            return 0xFFC8C8C8; // Gris par défaut
+            return 0xFFFF9020; // Orange par défaut
         },
             BeemancerBlocks.HONEY_PIPE.get(),
             BeemancerBlocks.HONEY_PIPE_TIER2.get(),

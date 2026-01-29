@@ -21,6 +21,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -426,6 +427,30 @@ public class ItemPipeBlockEntity extends BlockEntity {
             sourcePos = NbtUtils.readBlockPos(tag, "SourcePos").orElse(null);
         }
         tintColor = tag.contains("TintColor") ? tag.getInt("TintColor") : -1;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        super.handleUpdateTag(tag, registries);
+        requestModelDataUpdate();
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+        super.onDataPacket(net, pkt, registries);
+        // Force re-render côté client pour mettre à jour le BlockColor
+        if (level != null && level.isClientSide()) {
+            level.invalidateCapabilities(worldPosition);
+            requestModelDataUpdate();
+        }
+    }
+
+    @Override
+    public void requestModelDataUpdate() {
+        super.requestModelDataUpdate();
+        if (level != null && level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
 
     private record PipeDestination(Direction direction, BlockPos pos, boolean isPipe) {}
