@@ -1,14 +1,11 @@
 {
   "type": "beemancer:altar",
-  "center_item": { "item": "beemancer:honey_crystal" },
+  "center_item": { "item": "beemancer:nectar_diamond" },
   "pedestal_items": [
     { "item": "beemancer:honeyed_iron" },
     { "item": "beemancer:honeyed_iron" },
     { "item": "beemancer:honeyed_iron" },
     { "item": "beemancer:honeyed_iron" }
   ],
-  "pollen": {
-    "beemancer:crystal_pollen": 4
-  },
-  "result": { "id": "beemancer:nectar_diamond" }
+  "result": { "id": "beemancer:honey_crystal" }
 }
