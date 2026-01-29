@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "core": "beemancer:block/honey_pipe",
+    "core": "beemancer:block/pipe_core_white",
     "frame": "beemancer:block/pipe_frame"
   },
   "elements": [

@@ -73,13 +73,13 @@ public class ItemPipeBlock extends BaseEntityBlock {
 
     // Core: 6x6x6 center + 8x8x8 frame outline
     private static final VoxelShape CORE = Block.box(4, 4, 4, 12, 12, 12);
-    // Connections: 2x2 tubes
-    private static final VoxelShape NORTH_SHAPE = Block.box(7, 7, 0, 9, 9, 4);
-    private static final VoxelShape SOUTH_SHAPE = Block.box(7, 7, 12, 9, 9, 16);
-    private static final VoxelShape EAST_SHAPE = Block.box(12, 7, 7, 16, 9, 9);
-    private static final VoxelShape WEST_SHAPE = Block.box(0, 7, 7, 4, 9, 9);
-    private static final VoxelShape UP_SHAPE = Block.box(7, 12, 7, 9, 16, 9);
-    private static final VoxelShape DOWN_SHAPE = Block.box(7, 0, 7, 9, 4, 9);
+    // Connections: 6x6 tubes (same width as core)
+    private static final VoxelShape NORTH_SHAPE = Block.box(5, 5, 0, 11, 11, 4);
+    private static final VoxelShape SOUTH_SHAPE = Block.box(5, 5, 12, 11, 11, 16);
+    private static final VoxelShape EAST_SHAPE = Block.box(12, 5, 5, 16, 11, 11);
+    private static final VoxelShape WEST_SHAPE = Block.box(0, 5, 5, 4, 11, 11);
+    private static final VoxelShape UP_SHAPE = Block.box(5, 12, 5, 11, 16, 11);
+    private static final VoxelShape DOWN_SHAPE = Block.box(5, 0, 5, 11, 4, 11);
 
     public ItemPipeBlock(Properties properties) {
         this(properties, 1);
