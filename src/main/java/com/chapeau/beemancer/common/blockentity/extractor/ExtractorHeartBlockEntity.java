@@ -66,7 +66,7 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
 
     private static final int HONEY_CONSUMPTION_PER_TICK = 10; // mB par seconde
     private static final double ESSENCE_DROP_CHANCE = 0.05; // 5% par seconde
-    private static final int TICK_INTERVAL = 20; // Toutes les secondes
+    private static final int TICK_INTERVAL = 1200; // Toutes les minutes
 
     // Poids des essences par niveau
     private static final int WEIGHT_LESSER = 8;
@@ -175,14 +175,12 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     }
 
     private void addWeightedEssences(List<ItemStack> list, EssenceItem.EssenceType type, int level) {
-        // Ajouter des essences de chaque niveau jusqu'au niveau de l'abeille
-        for (int lvl = 1; lvl <= level; lvl++) {
-            ItemStack essence = getEssenceItem(type, lvl);
-            if (!essence.isEmpty()) {
-                int weight = getWeightForLevel(lvl);
-                for (int i = 0; i < weight; i++) {
-                    list.add(essence);
-                }
+        // Ajouter uniquement l'essence du niveau exact de l'abeille
+        ItemStack essence = getEssenceItem(type, level);
+        if (!essence.isEmpty()) {
+            int weight = getWeightForLevel(level);
+            for (int i = 0; i < weight; i++) {
+                list.add(essence);
             }
         }
     }

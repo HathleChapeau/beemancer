@@ -20,6 +20,7 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.common.blockentity.altar.HoneyPedestalBlockEntity;
+import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -53,22 +54,26 @@ public class HoneyPedestalRenderer implements BlockEntityRenderer<HoneyPedestalB
 
         poseStack.pushPose();
 
-        // Position au-dessus du pedestal (le pedestal fait 1 bloc de haut)
-        poseStack.translate(0.5, 1.25, 0.5);
-
-        // Rotation lente
         float time = (blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0) + partialTick;
-        poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
-
-        // Legere oscillation verticale (bob effect)
         float bob = (float) Math.sin(time * 0.1) * 0.05f;
-        poseStack.translate(0, bob, 0);
 
-        // Echelle de l'item
-        float scale = 0.5f;
-        poseStack.scale(scale, scale, scale);
+        boolean isBee = storedItem.getItem() instanceof MagicBeeItem;
 
-        // Rendre l'item
+        if (isBee) {
+            // Abeilles: le BEWLR ajoute ses propres transforms (flip, translate 0.5)
+            // On compense pour centrer le modèle 3D au-dessus du pedestal
+            poseStack.translate(0.5, 1.15 + bob, 0.5);
+            poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
+            poseStack.scale(0.6f, 0.6f, 0.6f);
+            // Compenser le translate(0.5, 0.5, 0.5) du BEWLR FIXED
+            poseStack.translate(-0.5, -0.5, -0.5);
+        } else {
+            // Items normaux
+            poseStack.translate(0.5, 1.25 + bob, 0.5);
+            poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
+            poseStack.scale(0.5f, 0.5f, 0.5f);
+        }
+
         itemRenderer.renderStatic(
             storedItem,
             ItemDisplayContext.FIXED,
