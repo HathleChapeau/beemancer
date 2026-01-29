@@ -361,8 +361,15 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
             return true;
         }
 
-        Beemancer.LOGGER.debug("Extractor validation failed at {} - {}",
-            result.failedAt(), result.reason());
+        // Log détaillé pour debug
+        BlockPos failPos = result.failedAt();
+        if (failPos != null) {
+            BlockState failedState = level.getBlockState(failPos);
+            Beemancer.LOGGER.warn("Extractor validation failed at {} (offset from controller: {}) - Found: {} - {}",
+                failPos, failPos.subtract(worldPosition), failedState, result.reason());
+        } else {
+            Beemancer.LOGGER.warn("Extractor validation failed - {}", result.reason());
+        }
         return false;
     }
 

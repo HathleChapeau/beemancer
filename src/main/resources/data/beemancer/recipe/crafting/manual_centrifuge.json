@@ -5,6 +5,6 @@
     "I": { "item": "minecraft:iron_ingot" },
     "P": { "tag": "minecraft:planks" }
   },
-  "pattern": [ "I I", "W W", "IWI" ],
+  "pattern": [ "I I", "P P", "IPI" ],
   "result": { "id": "beemancer:manual_centrifuge", "count": 1 }
 }
