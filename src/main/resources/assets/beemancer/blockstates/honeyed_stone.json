@@ -3,7 +3,7 @@
     "formed=false,layer=0": { "model": "beemancer:block/altar/honeyed_stone" },
     "formed=false,layer=1": { "model": "beemancer:block/altar/honeyed_stone" },
     "formed=false,layer=2": { "model": "beemancer:block/altar/honeyed_stone" },
-    "formed=true,layer=0": { "model": "beemancer:block/altar/honeyed_stone" },
+    "formed=true,layer=0": { "model": "beemancer:block/altar/honeyed_stone_formed" },
     "formed=true,layer=1": { "model": "beemancer:block/altar/honeyed_stone_formed_layer1" },
     "formed=true,layer=2": { "model": "beemancer:block/altar/honeyed_stone_formed_layer2" }
   }

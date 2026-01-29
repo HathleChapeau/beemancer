@@ -132,16 +132,67 @@ ClientSetup.java:
 - +StorageControllerRenderer
 
 ================================================================================
+MULTIBLOC STORAGE CONTROLLER (3x3x3)
+================================================================================
+
+Le Storage Controller est maintenant un multibloc 3 étages (3x3x3).
+Le controller est au centre (0,0,0). Vue de côté (axe X horizontal, Y vertical):
+
+  Étage 3 (Y+1):  honey_pipe(-1,1,0)  | honeyed_stone(0,1,0)  | honey_pipe(1,1,0)
+  Étage 2 (Y=0):  reservoir(-1,0,0)    | CONTROLLER(0,0,0)     | reservoir(1,0,0)
+                   + terminal(0,0,-1) devant le controller
+  Étage 1 (Y-1):  honey_pipe(-1,-1,0) | honeyed_stone(0,-1,0) | honey_pipe(1,-1,0)
+
+  Toutes les autres positions du 3x3x3 = air
+
+FORMATION:
+- Clic droit sur le controller → tente la formation du multibloc
+- MultiblockValidator vérifie le pattern STORAGE_CONTROLLER
+- Si valide: FORMED=true sur controller + tous les blocs du pattern
+- Si invalide: message d'erreur au joueur
+
+FORMED VISUALS:
+- Controller: 2 cubes de 2×2×2 pixels centrés ([6,6,6]-[8,8,8] et [8,8,8]-[10,10,10])
+- Honey Pipes: colonne verticale 6×16×6 ([5,0,5]-[11,16,11])
+- Honeyed Stone: base 16×16×16 + ailes latérales 10×10×2 ([-2,3,3]-[0,13,13] et [16,3,3]-[18,13,13])
+- Reservoir: cube vertical 8×16×8 ([4,0,4]-[12,16,12])
+- Terminal: 3 plaques en Z (fond 10×10×2, milieu 14×14×2, avant 14×14×2)
+
+DESTRUCTION:
+- Casser un bloc du multibloc → onRemove() du controller reset FORMED=false sur tous
+- MultiblockEvents gère aussi l'invalidation via block break events
+
+FICHIERS AJOUTÉS (Multibloc):
+- core/multiblock/MultiblockPatterns.java: +STORAGE_CONTROLLER pattern
+- models/block/storage/storage_controller_formed.json
+- models/block/storage/storage_terminal_formed.json
+- models/block/pipes/honey_pipe_formed.json
+- models/block/altar/honeyed_stone_formed.json (déjà existant, réutilisé)
+- models/block/altar/honey_reservoir_formed.json (modifié)
+
+FICHIERS MODIFIÉS (Multibloc):
+- StorageControllerBlock.java: +FORMED property, formation logic, onRemove
+- StorageControllerBlockEntity.java: implements MultiblockController
+- StorageTerminalBlock.java: +FORMED property
+- HoneyPipeBlock.java: +FORMED property (13e boolean property)
+- blockstates/storage_controller.json: formed=false/true variants
+- blockstates/storage_terminal.json: formed=false/true variants
+- blockstates/honey_pipe.json: multipart avec formed conditions
+- blockstates/honey_pipe_tier2/3/4.json: idem
+- blockstates/honeyed_stone.json: formed=true,layer=0 → modèle formed
+
+================================================================================
 UTILISATION
 ================================================================================
 
 1. Placer un Storage Controller
-2. Shift+clic droit dessus → mode édition (outline rouge)
-3. Clic droit sur les coffres proches → enregistrement avec flood fill
-4. Placer un Storage Terminal → lié automatiquement si en mode édition
-5. Ouvrir le terminal → voir tous les items agrégés
-6. Déposer items dans slots gauche → transfert vers coffres
-7. Cliquer item dans grille → popup demande → items dans slots droite
+2. Construire le multibloc autour (pipes, stones, reservoirs, terminal)
+3. Clic droit sur le controller → formation du multibloc
+4. Shift+clic droit → mode édition (outline rouge)
+5. En mode édition: clic droit sur coffres → enregistrement flood fill
+6. Ouvrir le terminal → voir tous les items agrégés
+7. Déposer items dans slots gauche → transfert vers coffres
+8. Cliquer item dans grille → popup demande → items dans slots droite
 
 ================================================================================
 TRADUCTIONS

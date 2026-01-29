@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [StorageControllerBlockEntity.java]
- * Description: BlockEntity pour le Storage Controller - gère le réseau de coffres
+ * Description: BlockEntity pour le Storage Controller - gère le réseau de coffres et le multibloc
  * ============================================================
  *
  * DÉPENDANCES:
@@ -12,6 +12,10 @@
  * | Level                    | Accès monde            | Flood fill, vérification coffres|
  * | StorageHelper            | Vérification coffres   | isStorageContainer             |
  * | StorageItemsSyncPacket   | Sync vers client       | Envoi items agrégés            |
+ * | MultiblockController     | Interface multibloc    | Formation/destruction          |
+ * | MultiblockPatterns       | Pattern storage        | Définition structure           |
+ * | MultiblockValidator      | Validation             | tryFormStorage()               |
+ * | MultiblockEvents         | Détection destruction  | Enregistrement contrôleur      |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -23,13 +27,21 @@
  */
 package com.chapeau.beemancer.common.blockentity.storage;
 
+import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageEditModeHandler;
+import com.chapeau.beemancer.core.multiblock.MultiblockController;
+import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
+import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
+import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
+import com.chapeau.beemancer.core.multiblock.MultiblockValidator;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.util.StorageHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -42,6 +54,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,17 +62,22 @@ import java.util.*;
 
 /**
  * Unité centrale du réseau de stockage.
+ * Implémente MultiblockController pour gérer la formation/destruction du multibloc.
  *
  * Fonctionnalités:
+ * - Multibloc: formation 3x3x3 avec pipes, honeyed stone, reservoirs, terminal
  * - Mode édition: shift+clic droit pour toggle
  * - Enregistrement coffres: clic droit en mode édition (flood fill)
  * - Agrégation items: liste tous items de tous coffres enregistrés
  * - Synchronisation: temps réel si GUI ouverte, périodique sinon
  */
-public class StorageControllerBlockEntity extends BlockEntity {
+public class StorageControllerBlockEntity extends BlockEntity implements MultiblockController {
 
     private static final int MAX_RANGE = 24;
-    private static final int SYNC_INTERVAL = 40; // ticks (2 secondes)
+    private static final int SYNC_INTERVAL = 40;
+
+    // Multibloc
+    private boolean storageFormed = false;
 
     // Coffres enregistrés
     private final Set<BlockPos> registeredChests = new HashSet<>();
@@ -83,6 +101,98 @@ public class StorageControllerBlockEntity extends BlockEntity {
         super(BeemancerBlockEntities.STORAGE_CONTROLLER.get(), pos, blockState);
     }
 
+    // ==================== MultiblockController ====================
+
+    @Override
+    public MultiblockPattern getPattern() {
+        return MultiblockPatterns.STORAGE_CONTROLLER;
+    }
+
+    @Override
+    public boolean isFormed() {
+        return storageFormed;
+    }
+
+    @Override
+    public BlockPos getControllerPos() {
+        return worldPosition;
+    }
+
+    @Override
+    public void onMultiblockFormed() {
+        storageFormed = true;
+        if (level != null && !level.isClientSide()) {
+            level.setBlock(worldPosition, getBlockState().setValue(StorageControllerBlock.FORMED, true), 3);
+            setFormedOnStructureBlocks(true);
+            MultiblockEvents.registerActiveController(level, worldPosition);
+            setChanged();
+        }
+    }
+
+    @Override
+    public void onMultiblockBroken() {
+        storageFormed = false;
+        if (level != null && !level.isClientSide()) {
+            if (level.getBlockState(worldPosition).hasProperty(StorageControllerBlock.FORMED)) {
+                level.setBlock(worldPosition, getBlockState().setValue(StorageControllerBlock.FORMED, false), 3);
+            }
+            setFormedOnStructureBlocks(false);
+            MultiblockEvents.unregisterController(worldPosition);
+            setChanged();
+        }
+    }
+
+    /**
+     * Tente de former le multibloc Storage Controller.
+     * @return true si la formation a réussi
+     */
+    public boolean tryFormStorage() {
+        if (level == null || level.isClientSide()) return false;
+
+        var result = MultiblockValidator.validateDetailed(getPattern(), level, worldPosition);
+
+        if (result.valid()) {
+            onMultiblockFormed();
+            return true;
+        }
+
+        Beemancer.LOGGER.debug("Storage controller validation failed at {} - {}",
+            result.failedAt(), result.reason());
+        return false;
+    }
+
+    /**
+     * Met à jour la propriété FORMED sur tous les blocs structurels du multibloc.
+     * Vérifie que chaque bloc possède bien la propriété avant de la modifier.
+     */
+    private void setFormedOnStructureBlocks(boolean formed) {
+        if (level == null) return;
+
+        for (Vec3i offset : getPattern().getStructurePositions()) {
+            BlockPos blockPos = worldPosition.offset(offset);
+            BlockState state = level.getBlockState(blockPos);
+
+            BooleanProperty formedProp = findFormedProperty(state);
+            if (formedProp != null && state.getValue(formedProp) != formed) {
+                level.setBlock(blockPos, state.setValue(formedProp, formed), 3);
+            }
+        }
+    }
+
+    /**
+     * Cherche la propriété FORMED dans un BlockState.
+     * Supporte les différents blocs du multibloc qui ont chacun leur propre constante FORMED.
+     */
+    @Nullable
+    private static BooleanProperty findFormedProperty(BlockState state) {
+        for (var prop : state.getProperties()) {
+            if (prop.getName().equals("formed") && prop instanceof BooleanProperty boolProp) {
+                return boolProp;
+            }
+        }
+        return null;
+    }
+
     // === Mode Édition ===
 
     /**
@@ -90,14 +200,12 @@ public class StorageControllerBlockEntity extends BlockEntity {
      */
     public boolean toggleEditMode(UUID playerId) {
         if (editMode && editingPlayer != null && editingPlayer.equals(playerId)) {
-            // Désactiver
             editMode = false;
             editingPlayer = null;
             setChanged();
             syncToClient();
             return false;
         } else if (!editMode) {
-            // Activer
             editMode = true;
             editingPlayer = playerId;
             setChanged();
@@ -150,21 +258,16 @@ public class StorageControllerBlockEntity extends BlockEntity {
     public boolean toggleChest(BlockPos chestPos) {
         if (level == null) return false;
 
-        // Vérifier la distance
         if (!isInRange(chestPos)) return false;
-
-        // Vérifier si c'est un coffre
         if (!isChest(chestPos)) return false;
 
         if (registeredChests.contains(chestPos)) {
-            // Retirer uniquement ce coffre
             registeredChests.remove(chestPos);
             setChanged();
             syncToClient();
             needsSync = true;
             return true;
         } else {
-            // Flood fill pour enregistrer tous les coffres adjacents
             registerChestWithNeighbors(chestPos);
             needsSync = true;
             return true;
@@ -187,15 +290,12 @@ public class StorageControllerBlockEntity extends BlockEntity {
             if (checked.contains(current)) continue;
             checked.add(current);
 
-            // Vérifications
             if (!isChest(current)) continue;
             if (registeredChests.contains(current)) continue;
             if (!isInRange(current)) continue;
 
-            // Enregistrer ce coffre
             registeredChests.add(current);
 
-            // Ajouter les 6 voisins
             for (Direction dir : Direction.values()) {
                 BlockPos neighbor = current.relative(dir);
                 if (!checked.contains(neighbor)) {
@@ -247,7 +347,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
      */
     public void unlinkTerminal(BlockPos terminalPos) {
         linkedTerminals.remove(terminalPos);
-        // Retirer aussi des viewers
         playersViewing.entrySet().removeIf(entry -> entry.getValue().equals(terminalPos));
         setChanged();
     }
@@ -274,7 +373,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
 
         Map<ItemStackKey, Integer> itemCounts = new HashMap<>();
 
-        // Nettoyer les coffres invalides (copie pour éviter ConcurrentModification)
         List<BlockPos> toRemove = new ArrayList<>();
         for (BlockPos pos : registeredChests) {
             if (!isChest(pos)) {
@@ -287,7 +385,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
             syncToClient();
         }
 
-        // Parcourir tous les coffres
         for (BlockPos chestPos : registeredChests) {
             BlockEntity be = level.getBlockEntity(chestPos);
             if (be instanceof Container container) {
@@ -301,7 +398,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
             }
         }
 
-        // Convertir en liste
         aggregatedItems = new ArrayList<>();
         for (Map.Entry<ItemStackKey, Integer> entry : itemCounts.entrySet()) {
             ItemStack stack = entry.getKey().toStack();
@@ -309,12 +405,10 @@ public class StorageControllerBlockEntity extends BlockEntity {
             aggregatedItems.add(stack);
         }
 
-        // Trier par nom
         aggregatedItems.sort(Comparator.comparing(
             stack -> stack.getHoverName().getString()
         ));
 
-        // Envoyer aux clients qui regardent
         syncItemsToViewers();
     }
 
@@ -342,7 +436,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
     public BlockPos findSlotForItem(ItemStack stack) {
         if (level == null) return null;
 
-        // D'abord chercher un coffre avec le même item
         for (BlockPos chestPos : registeredChests) {
             BlockEntity be = level.getBlockEntity(chestPos);
             if (be instanceof Container container) {
@@ -356,7 +449,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
             }
         }
 
-        // Sinon chercher un slot vide
         for (BlockPos chestPos : registeredChests) {
             BlockEntity be = level.getBlockEntity(chestPos);
             if (be instanceof Container container) {
@@ -382,13 +474,11 @@ public class StorageControllerBlockEntity extends BlockEntity {
 
         ItemStack remaining = stack.copy();
 
-        // Phase 1: Coffres qui contiennent déjà l'item (fusion + slots vides du même coffre)
         for (BlockPos chestPos : registeredChests) {
             if (remaining.isEmpty()) break;
 
             BlockEntity be = level.getBlockEntity(chestPos);
             if (be instanceof Container container) {
-                // Vérifier si ce coffre contient déjà l'item
                 boolean hasItem = false;
                 for (int i = 0; i < container.getContainerSize(); i++) {
                     if (ItemStack.isSameItemSameComponents(container.getItem(i), remaining)) {
@@ -398,7 +488,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
                 }
 
                 if (hasItem) {
-                    // D'abord fusionner avec les stacks existants
                     for (int i = 0; i < container.getContainerSize(); i++) {
                         ItemStack existing = container.getItem(i);
                         if (ItemStack.isSameItemSameComponents(existing, remaining)) {
@@ -413,7 +502,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
                         if (remaining.isEmpty()) break;
                     }
 
-                    // Puis utiliser les slots vides du même coffre
                     for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
                         if (container.getItem(i).isEmpty()) {
                             int toTransfer = Math.min(remaining.getMaxStackSize(), remaining.getCount());
@@ -428,7 +516,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
             }
         }
 
-        // Phase 2: Si reste des items, chercher un slot vide dans n'importe quel coffre
         for (BlockPos chestPos : registeredChests) {
             if (remaining.isEmpty()) break;
 
@@ -496,7 +583,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
     public static void serverTick(StorageControllerBlockEntity be) {
         be.syncTimer++;
 
-        // Sync périodique ou si des joueurs regardent
         boolean hasViewers = !be.playersViewing.isEmpty();
         boolean shouldSync = hasViewers || (be.syncTimer >= SYNC_INTERVAL && be.needsSync);
 
@@ -506,12 +592,10 @@ public class StorageControllerBlockEntity extends BlockEntity {
             be.needsSync = false;
         }
 
-        // Vérifier le mode édition
         if (be.editMode && be.editingPlayer != null && be.level != null) {
             var server = be.level.getServer();
             if (server != null) {
                 var player = server.getPlayerList().getPlayer(be.editingPlayer);
-                // Quitter le mode édition si le joueur n'est plus là ou trop loin
                 if (player == null) {
                     be.exitEditMode();
                 } else {
@@ -526,7 +610,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
             }
         }
 
-        // Nettoyer les viewers déconnectés
         if (be.level != null && be.level.getServer() != null) {
             be.playersViewing.keySet().removeIf(uuid ->
                 be.level.getServer().getPlayerList().getPlayer(uuid) == null);
@@ -535,7 +618,6 @@ public class StorageControllerBlockEntity extends BlockEntity {
 
     public void addViewer(UUID playerId, BlockPos terminalPos) {
         playersViewing.put(playerId, terminalPos);
-        // Envoyer les items immédiatement
         if (level != null && !level.isClientSide()) {
             ServerPlayer player = level.getServer().getPlayerList().getPlayer(playerId);
             if (player != null) {
@@ -550,13 +632,32 @@ public class StorageControllerBlockEntity extends BlockEntity {
         playersViewing.remove(playerId);
     }
 
+    // === Lifecycle ===
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        MultiblockEvents.unregisterController(worldPosition);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (storageFormed && level != null && !level.isClientSide()) {
+            MultiblockEvents.registerActiveController(level, worldPosition);
+        }
+    }
+
     // === NBT ===
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
 
-        // Coffres enregistrés - utilise une clé pour chaque position
+        // Multibloc
+        tag.putBoolean("StorageFormed", storageFormed);
+
+        // Coffres enregistrés
         ListTag chestsTag = new ListTag();
         for (BlockPos pos : registeredChests) {
             CompoundTag posTag = new CompoundTag();
@@ -584,6 +685,9 @@ public class StorageControllerBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+
+        // Multibloc
+        storageFormed = tag.getBoolean("StorageFormed");
 
         // Coffres enregistrés
         registeredChests.clear();

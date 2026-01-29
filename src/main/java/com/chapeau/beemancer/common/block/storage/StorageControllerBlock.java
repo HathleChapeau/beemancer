@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [StorageControllerBlock.java]
- * Description: Bloc unité centrale du réseau de stockage
+ * Description: Bloc unité centrale du réseau de stockage (multibloc)
  * ============================================================
  *
  * DÉPENDANCES:
@@ -10,10 +10,12 @@
  * |---------------------------------|------------------------|-----------------------|
  * | StorageControllerBlockEntity    | BlockEntity associé    | Logique stockage      |
  * | BeemancerBlockEntities          | Type du BlockEntity    | Création et ticker    |
+ * | MultiblockController            | Interface multibloc    | Formation/destruction |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
  * - BeemancerBlocks.java (enregistrement)
+ * - MultiblockPatterns.java (centre du pattern storage)
  *
  * ============================================================
  */
@@ -29,29 +31,39 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Bloc unité centrale du réseau de stockage.
+ * Contrôleur du multibloc Storage Controller.
  *
  * Interactions:
- * - Shift+clic droit: Toggle mode édition
- * - En mode édition, clic droit sur coffre: Enregistrer/retirer
- *
- * Le bloc ne possède pas de GUI propre - seul le terminal permet
- * d'accéder aux items du réseau.
+ * - Clic droit (non formé): Tenter la formation du multibloc
+ * - Shift+clic droit: Toggle mode édition (coffres)
+ * - Clic droit (formé): Afficher statut
  */
 public class StorageControllerBlock extends BaseEntityBlock {
     public static final MapCodec<StorageControllerBlock> CODEC = simpleCodec(StorageControllerBlock::new);
 
+    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+
     public StorageControllerBlock(Properties properties) {
         super(properties);
+        this.registerDefaultState(this.stateDefinition.any().setValue(FORMED, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(FORMED);
     }
 
     @Override
@@ -112,16 +124,44 @@ public class StorageControllerBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        // Clic normal: afficher statut
-        int chestCount = controller.getRegisteredChests().size();
-        int terminalCount = controller.getLinkedTerminals().size();
-        player.displayClientMessage(
-            Component.translatable("message.beemancer.storage_controller.status",
-                chestCount, terminalCount),
-            true
-        );
+        // Clic normal: tenter formation si pas formé, sinon afficher statut
+        if (!state.getValue(FORMED)) {
+            boolean success = controller.tryFormStorage();
+            if (success) {
+                player.displayClientMessage(
+                    Component.translatable("message.beemancer.storage_controller.formed"),
+                    true
+                );
+            } else {
+                player.displayClientMessage(
+                    Component.translatable("message.beemancer.storage_controller.invalid_structure"),
+                    true
+                );
+            }
+        } else {
+            int chestCount = controller.getRegisteredChests().size();
+            int terminalCount = controller.getLinkedTerminals().size();
+            player.displayClientMessage(
+                Component.translatable("message.beemancer.storage_controller.status",
+                    chestCount, terminalCount),
+                true
+            );
+        }
 
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            if (state.getValue(FORMED)) {
+                BlockEntity be = level.getBlockEntity(pos);
+                if (be instanceof StorageControllerBlockEntity controller) {
+                    controller.onMultiblockBroken();
+                }
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     /**
@@ -140,13 +180,11 @@ public class StorageControllerBlock extends BaseEntityBlock {
             return false;
         }
 
-        // Vérifier si c'est un conteneur de stockage supporté
         BlockState clickedState = level.getBlockState(clickedPos);
         if (!StorageHelper.isStorageContainer(clickedState)) {
             return false;
         }
 
-        // Toggle ce coffre
         boolean wasRegistered = controller.getRegisteredChests().contains(clickedPos);
         controller.toggleChest(clickedPos);
 

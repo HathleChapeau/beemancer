@@ -1,0 +1,48 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "all": "beemancer:block/honeyed_stone",
+    "particle": "beemancer:block/honeyed_stone"
+  },
+  "elements": [
+    {
+      "name": "Base Block 16x16x16",
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": {"texture": "#all", "cullface": "north"},
+        "east": {"texture": "#all", "cullface": "east"},
+        "south": {"texture": "#all", "cullface": "south"},
+        "west": {"texture": "#all", "cullface": "west"},
+        "up": {"texture": "#all", "cullface": "up"},
+        "down": {"texture": "#all", "cullface": "down"}
+      }
+    },
+    {
+      "name": "Left Wing 10x10x2",
+      "from": [-2, 3, 3],
+      "to": [0, 13, 13],
+      "faces": {
+        "north": {"texture": "#all", "uv": [14, 3, 16, 13]},
+        "east": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "south": {"texture": "#all", "uv": [0, 3, 2, 13]},
+        "west": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "up": {"texture": "#all", "uv": [0, 3, 2, 13]},
+        "down": {"texture": "#all", "uv": [0, 3, 2, 13]}
+      }
+    },
+    {
+      "name": "Right Wing 10x10x2",
+      "from": [16, 3, 3],
+      "to": [18, 13, 13],
+      "faces": {
+        "north": {"texture": "#all", "uv": [0, 3, 2, 13]},
+        "east": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "south": {"texture": "#all", "uv": [14, 3, 16, 13]},
+        "west": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "up": {"texture": "#all", "uv": [14, 3, 16, 13]},
+        "down": {"texture": "#all", "uv": [14, 3, 16, 13]}
+      }
+    }
+  ]
+}

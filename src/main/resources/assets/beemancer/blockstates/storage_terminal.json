@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "formed=false": {
       "model": "beemancer:block/storage/storage_terminal"
+    },
+    "formed=true": {
+      "model": "beemancer:block/storage/storage_terminal_formed"
     }
   }
 }

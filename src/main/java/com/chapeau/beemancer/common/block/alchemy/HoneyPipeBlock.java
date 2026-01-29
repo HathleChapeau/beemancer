@@ -72,6 +72,9 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     public static final BooleanProperty EXTRACT_UP = BooleanProperty.create("extract_up");
     public static final BooleanProperty EXTRACT_DOWN = BooleanProperty.create("extract_down");
 
+    // Multibloc formed state
+    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+
     // Core: 6x6x6 center + 8x8x8 frame outline
     private static final VoxelShape CORE = Block.box(4, 4, 4, 12, 12, 12);
     // Connections: 6x6 tubes (same width as core)
@@ -95,7 +98,8 @@ public class HoneyPipeBlock extends BaseEntityBlock {
             .setValue(UP, false).setValue(DOWN, false)
             .setValue(EXTRACT_NORTH, false).setValue(EXTRACT_SOUTH, false)
             .setValue(EXTRACT_EAST, false).setValue(EXTRACT_WEST, false)
-            .setValue(EXTRACT_UP, false).setValue(EXTRACT_DOWN, false));
+            .setValue(EXTRACT_UP, false).setValue(EXTRACT_DOWN, false)
+            .setValue(FORMED, false));
     }
 
     public int getTier() { return tier; }
@@ -107,6 +111,7 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN);
         builder.add(EXTRACT_NORTH, EXTRACT_SOUTH, EXTRACT_EAST, EXTRACT_WEST, EXTRACT_UP, EXTRACT_DOWN);
+        builder.add(FORMED);
     }
 
     @Override

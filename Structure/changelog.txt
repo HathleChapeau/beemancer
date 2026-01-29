@@ -3,6 +3,33 @@
 ################################################################################
 
 ================================================================================
+2026-01-29 - Storage Controller Multibloc
+================================================================================
+
+Transformation du Storage Controller en multibloc 3x3x3 (3 étages).
+Utilise le système FORMED (blockstate property) comme l'altar.
+
+JAVA MODIFIÉS:
+- StorageControllerBlock.java: +FORMED property, formation clic droit, onRemove
+- StorageControllerBlockEntity.java: implements MultiblockController, tryFormStorage()
+- StorageTerminalBlock.java: +FORMED property
+- HoneyPipeBlock.java: +FORMED property (13e boolean)
+- MultiblockPatterns.java: +STORAGE_CONTROLLER pattern
+
+JSON CRÉÉS:
+- models/block/storage/storage_controller_formed.json (2 cubes 2×2×2)
+- models/block/storage/storage_terminal_formed.json (3 plaques en Z)
+- models/block/pipes/honey_pipe_formed.json (colonne 6×16×6)
+- models/block/altar/honeyed_stone_formed.json (base + ailes)
+
+JSON MODIFIÉS:
+- models/block/altar/honey_reservoir_formed.json (cube 8×16×8)
+- blockstates/storage_controller.json (formed variants)
+- blockstates/storage_terminal.json (formed variants)
+- blockstates/honey_pipe.json + tier2/3/4 (formed conditions multipart)
+- blockstates/honeyed_stone.json (formed=true,layer=0 → modèle formed)
+
+================================================================================
 2026-01-29 - Suppression Système Lifetime
 ================================================================================
 

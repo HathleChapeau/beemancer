@@ -242,6 +242,58 @@ public class MultiblockPatterns {
             .build()
     );
 
+    // ==================== STORAGE CONTROLLER ====================
+    // Structure 3x3x3, contrôleur au centre Y+0
+    //
+    // Vue de face (Nord vers le joueur):
+    //
+    // Étage 3 (Y+1):  [P][S][P]    P=Honey Pipe, S=Honeyed Stone
+    // Étage 2 (Y+0):  [R][C][R]    R=Reservoir, C=Controller, T=Terminal (devant)
+    // Étage 1 (Y-1):  [P][S][P]
+    //
+    // Terminal à z=-1 (devant le controller)
+
+    public static final MultiblockPattern STORAGE_CONTROLLER = register(
+        MultiblockPattern.builder("storage_controller")
+            // Étage 1 (Y-1): Pipes + Honeyed Stone en ligne (z=0)
+            .add(-1, -1, 0, block(BeemancerBlocks.HONEY_PIPE))        // Pipe gauche
+            .add(0, -1, 0, block(BeemancerBlocks.HONEYED_STONE))      // Pierre centre
+            .add(1, -1, 0, block(BeemancerBlocks.HONEY_PIPE))         // Pipe droite
+            // Positions air autour de l'étage 1
+            .add(-1, -1, -1, air())
+            .add(0, -1, -1, air())
+            .add(1, -1, -1, air())
+            .add(-1, -1, 1, air())
+            .add(0, -1, 1, air())
+            .add(1, -1, 1, air())
+
+            // Étage 2 (Y+0): Reservoirs + Controller + Terminal devant
+            .add(-1, 0, 0, block(BeemancerBlocks.HONEY_RESERVOIR))    // Reservoir gauche
+            // (0, 0, 0) = Controller - skip
+            .add(1, 0, 0, block(BeemancerBlocks.HONEY_RESERVOIR))     // Reservoir droite
+            .add(0, 0, -1, block(BeemancerBlocks.STORAGE_TERMINAL))   // Terminal devant
+            // Positions air autour de l'étage 2
+            .add(-1, 0, -1, air())
+            .add(1, 0, -1, air())
+            .add(-1, 0, 1, air())
+            .add(0, 0, 1, air())
+            .add(1, 0, 1, air())
+
+            // Étage 3 (Y+1): Pipes + Honeyed Stone en ligne (z=0)
+            .add(-1, 1, 0, block(BeemancerBlocks.HONEY_PIPE))         // Pipe gauche
+            .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))       // Pierre centre
+            .add(1, 1, 0, block(BeemancerBlocks.HONEY_PIPE))          // Pipe droite
+            // Positions air autour de l'étage 3
+            .add(-1, 1, -1, air())
+            .add(0, 1, -1, air())
+            .add(1, 1, -1, air())
+            .add(-1, 1, 1, air())
+            .add(0, 1, 1, air())
+            .add(1, 1, 1, air())
+
+            .build()
+    );
+
     private static MultiblockPattern register(MultiblockPattern pattern) {
         PATTERNS.put(pattern.getId(), pattern);
         return pattern;
