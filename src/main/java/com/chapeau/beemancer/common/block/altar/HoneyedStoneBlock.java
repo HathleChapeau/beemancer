@@ -38,17 +38,19 @@ public class HoneyedStoneBlock extends Block {
 
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
     public static final IntegerProperty LAYER = IntegerProperty.create("layer", 0, 2);
+    public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 3);
 
     public HoneyedStoneBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(FORMED, false)
-            .setValue(LAYER, 0));
+            .setValue(LAYER, 0)
+            .setValue(FORMED_ROTATION, 0));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED, LAYER);
+        builder.add(FORMED, LAYER, FORMED_ROTATION);
     }
 
     @Override

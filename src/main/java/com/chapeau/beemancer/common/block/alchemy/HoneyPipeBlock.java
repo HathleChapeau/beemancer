@@ -42,6 +42,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -74,6 +75,7 @@ public class HoneyPipeBlock extends BaseEntityBlock {
 
     // Multibloc formed state
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 3);
 
     // Core: 6x6x6 center + 8x8x8 frame outline
     private static final VoxelShape CORE = Block.box(4, 4, 4, 12, 12, 12);
@@ -99,7 +101,8 @@ public class HoneyPipeBlock extends BaseEntityBlock {
             .setValue(EXTRACT_NORTH, false).setValue(EXTRACT_SOUTH, false)
             .setValue(EXTRACT_EAST, false).setValue(EXTRACT_WEST, false)
             .setValue(EXTRACT_UP, false).setValue(EXTRACT_DOWN, false)
-            .setValue(FORMED, false));
+            .setValue(FORMED, false)
+            .setValue(FORMED_ROTATION, 0));
     }
 
     public int getTier() { return tier; }
@@ -111,7 +114,7 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN);
         builder.add(EXTRACT_NORTH, EXTRACT_SOUTH, EXTRACT_EAST, EXTRACT_WEST, EXTRACT_UP, EXTRACT_DOWN);
-        builder.add(FORMED);
+        builder.add(FORMED, FORMED_ROTATION);
     }
 
     @Override

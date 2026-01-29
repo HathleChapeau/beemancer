@@ -28,8 +28,10 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.block.alchemy.HoneyPipeBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageEditModeHandler;
+import com.chapeau.beemancer.core.multiblock.BlockMatcher;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
@@ -55,6 +57,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -171,21 +174,61 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     }
 
     /**
-     * Met à jour la propriété FORMED sur tous les blocs structurels du multibloc.
-     * Vérifie que chaque bloc possède bien la propriété avant de la modifier.
+     * Met à jour FORMED et FORMED_ROTATION sur tous les blocs structurels du multibloc.
+     * Itère les offsets originaux du pattern puis applique la rotation du multibloc.
+     * Calcule la rotation de chaque bloc en fonction de sa position dans la structure.
      */
     private void setFormedOnStructureBlocks(boolean formed) {
         if (level == null) return;
 
-        for (Vec3i offset : getPattern().getStructurePositions(multiblockRotation)) {
-            BlockPos blockPos = worldPosition.offset(offset);
+        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
+            if (BlockMatcher.isAirMatcher(element.matcher())) continue;
+
+            Vec3i originalOffset = element.offset();
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(originalOffset, multiblockRotation);
+            BlockPos blockPos = worldPosition.offset(rotatedOffset);
             BlockState state = level.getBlockState(blockPos);
+            boolean changed = false;
 
             BooleanProperty formedProp = findFormedProperty(state);
             if (formedProp != null && state.getValue(formedProp) != formed) {
-                level.setBlock(blockPos, state.setValue(formedProp, formed), 3);
+                state = state.setValue(formedProp, formed);
+                changed = true;
+            }
+
+            IntegerProperty rotProp = findFormedRotationProperty(state);
+            if (rotProp != null) {
+                int rotation = formed ? computeBlockRotation(originalOffset, state) : 0;
+                if (state.getValue(rotProp) != rotation) {
+                    state = state.setValue(rotProp, rotation);
+                    changed = true;
+                }
+            }
+
+            if (changed) {
+                level.setBlock(blockPos, state, 3);
             }
         }
+    }
+
+    /**
+     * Calcule la rotation à appliquer sur un bloc de la structure.
+     * Les pipes ont une rotation spécifique (direction du coude), les autres
+     * utilisent directement la rotation du multibloc.
+     *
+     * @param originalOffset L'offset original (non roté) dans le pattern
+     * @param state Le BlockState actuel du bloc
+     * @return La rotation (0-3) à appliquer sur le bloc
+     */
+    private int computeBlockRotation(Vec3i originalOffset, BlockState state) {
+        if (state.getBlock() instanceof HoneyPipeBlock) {
+            // Le modèle de pipe formed a un coude vers +X.
+            // Pipe à x=-1: coude vers +X = rotation de base 0
+            // Pipe à x=+1: coude vers -X = rotation de base 2
+            int baseRotation = originalOffset.getX() < 0 ? 0 : 2;
+            return (baseRotation + multiblockRotation) & 3;
+        }
+        return multiblockRotation;
     }
 
     /**
@@ -197,6 +240,19 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         for (var prop : state.getProperties()) {
             if (prop.getName().equals("formed") && prop instanceof BooleanProperty boolProp) {
                 return boolProp;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Cherche la propriété FORMED_ROTATION dans un BlockState.
+     */
+    @Nullable
+    private static IntegerProperty findFormedRotationProperty(BlockState state) {
+        for (var prop : state.getProperties()) {
+            if (prop.getName().equals("formed_rotation") && prop instanceof IntegerProperty intProp) {
+                return intProp;
             }
         }
         return null;

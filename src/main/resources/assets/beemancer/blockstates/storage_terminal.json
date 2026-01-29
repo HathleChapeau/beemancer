@@ -1,10 +1,12 @@
 {
   "variants": {
-    "formed=false": {
-      "model": "beemancer:block/storage/storage_terminal"
-    },
-    "formed=true": {
-      "model": "beemancer:block/storage/storage_terminal_formed"
-    }
+    "formed=false,formed_rotation=0": { "model": "beemancer:block/storage/storage_terminal" },
+    "formed=false,formed_rotation=1": { "model": "beemancer:block/storage/storage_terminal" },
+    "formed=false,formed_rotation=2": { "model": "beemancer:block/storage/storage_terminal" },
+    "formed=false,formed_rotation=3": { "model": "beemancer:block/storage/storage_terminal" },
+    "formed=true,formed_rotation=0": { "model": "beemancer:block/storage/storage_terminal_formed" },
+    "formed=true,formed_rotation=1": { "model": "beemancer:block/storage/storage_terminal_formed", "y": 90 },
+    "formed=true,formed_rotation=2": { "model": "beemancer:block/storage/storage_terminal_formed", "y": 180 },
+    "formed=true,formed_rotation=3": { "model": "beemancer:block/storage/storage_terminal_formed", "y": 270 }
   }
 }

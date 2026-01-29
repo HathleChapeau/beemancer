@@ -7,7 +7,7 @@
   },
   "elements": [
     {
-      "name": "Formed Pipe Column 6x16x6",
+      "name": "Pipe Column 6x16x6",
       "from": [5, 0, 5],
       "to": [11, 16, 11],
       "faces": {
@@ -17,6 +17,19 @@
         "west": {"texture": "#pipe", "uv": [5, 0, 11, 16]},
         "up": {"texture": "#frame", "uv": [5, 5, 11, 11], "cullface": "up"},
         "down": {"texture": "#frame", "uv": [5, 5, 11, 11], "cullface": "down"}
+      }
+    },
+    {
+      "name": "Bend toward +X 5x6x6",
+      "from": [11, 5, 5],
+      "to": [16, 11, 11],
+      "faces": {
+        "north": {"texture": "#pipe", "uv": [0, 5, 5, 11]},
+        "east": {"texture": "#frame", "uv": [5, 5, 11, 11], "cullface": "east"},
+        "south": {"texture": "#pipe", "uv": [11, 5, 16, 11]},
+        "west": {"texture": "#pipe", "uv": [5, 5, 11, 11]},
+        "up": {"texture": "#pipe", "uv": [11, 5, 16, 11]},
+        "down": {"texture": "#pipe", "uv": [11, 5, 16, 11]}
       }
     }
   ]
