@@ -29,6 +29,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import com.chapeau.beemancer.core.registry.BeemancerTags;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -128,7 +129,7 @@ public class ItemPipeBlock extends BaseEntityBlock {
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                               Player player, InteractionHand hand, BlockHitResult hit) {
-        // Colorant: applique une teinte au core
+        // Colorant: applique une teinte au core (sans consommer)
         if (stack.getItem() instanceof DyeItem dyeItem) {
             if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
 
@@ -138,12 +139,28 @@ public class ItemPipeBlock extends BaseEntityBlock {
                 int rgb = color.getTextureDiffuseColor();
                 pipe.setTintColor(rgb);
 
-                if (!player.isCreative()) {
-                    stack.shrink(1);
-                }
+                // Force visual update
+                level.setBlock(pos, state, 3);
 
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
                 player.displayClientMessage(Component.literal("Tinted: " + color.getName()), true);
+                return ItemInteractionResult.SUCCESS;
+            }
+        }
+
+        // Comb: retire la teinte (sans consommer)
+        if (stack.is(BeemancerTags.Items.COMBS)) {
+            if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
+
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof ItemPipeBlockEntity pipe && pipe.hasTint()) {
+                pipe.setTintColor(-1);
+
+                // Force visual update
+                level.setBlock(pos, state, 3);
+
+                level.playSound(null, pos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0f, 1.0f);
+                player.displayClientMessage(Component.literal("Tint removed"), true);
                 return ItemInteractionResult.SUCCESS;
             }
         }

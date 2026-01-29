@@ -194,14 +194,17 @@ public class ClientSetup {
         }, BeemancerBlocks.POLLEN_POT.get());
 
         // Item Pipes - teinte du core
+        // Sans teinte = gris (0xC8C8C8), avec teinte = couleur du colorant
         event.register((state, level, pos, tintIndex) -> {
             if (tintIndex != 0 || level == null || pos == null) {
                 return 0xFFFFFFFF;
             }
-            if (level.getBlockEntity(pos) instanceof ItemPipeBlockEntity pipe && pipe.hasTint()) {
-                return pipe.getTintColor() | 0xFF000000;
+            if (level.getBlockEntity(pos) instanceof ItemPipeBlockEntity pipe) {
+                if (pipe.hasTint()) {
+                    return pipe.getTintColor() | 0xFF000000;
+                }
             }
-            return 0xFFFFFFFF;
+            return 0xFFC8C8C8; // Gris par défaut
         },
             BeemancerBlocks.ITEM_PIPE.get(),
             BeemancerBlocks.ITEM_PIPE_TIER2.get(),
@@ -210,14 +213,17 @@ public class ClientSetup {
         );
 
         // Honey Pipes - teinte du core
+        // Sans teinte = gris (0xC8C8C8), avec teinte = couleur du colorant
         event.register((state, level, pos, tintIndex) -> {
             if (tintIndex != 0 || level == null || pos == null) {
                 return 0xFFFFFFFF;
             }
-            if (level.getBlockEntity(pos) instanceof HoneyPipeBlockEntity pipe && pipe.hasTint()) {
-                return pipe.getTintColor() | 0xFF000000;
+            if (level.getBlockEntity(pos) instanceof HoneyPipeBlockEntity pipe) {
+                if (pipe.hasTint()) {
+                    return pipe.getTintColor() | 0xFF000000;
+                }
             }
-            return 0xFFFFFFFF;
+            return 0xFFC8C8C8; // Gris par défaut
         },
             BeemancerBlocks.HONEY_PIPE.get(),
             BeemancerBlocks.HONEY_PIPE_TIER2.get(),
