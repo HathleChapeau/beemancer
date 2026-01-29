@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "I": { "item": "minecraft:iron_ingot" },
-    "W": { "tag": "minecraft:log" },
+    "W": { "tag": "minecraft:logs" },
     "H": { "item": "beemancer:honey_crystal" }
   },
   "pattern": [ "IWI", "WHW", "IWI" ],
