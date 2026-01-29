@@ -7,6 +7,8 @@
 package com.chapeau.beemancer.common.item.bee;
 
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
+import com.chapeau.beemancer.content.gene.species.DataDrivenSpeciesGene;
+import com.chapeau.beemancer.core.bee.BeeSpeciesManager;
 import com.chapeau.beemancer.core.gene.BeeGeneData;
 import com.chapeau.beemancer.core.gene.Gene;
 import com.chapeau.beemancer.core.gene.GeneCategory;
@@ -226,43 +228,86 @@ public class MagicBeeItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
-        
+
+        BeeGeneData geneData = getGeneData(stack);
+        Gene speciesGene = geneData.getGene(GeneCategory.SPECIES);
+
         if (net.minecraft.client.gui.screens.Screen.hasShiftDown()) {
-            BeeGeneData geneData = getGeneData(stack);
-            
-            // Sort categories by display order
-            List<GeneCategory> categories = GeneRegistry.getAllCategories();
-            categories.sort(Comparator.comparingInt(GeneCategory::getDisplayOrder));
-            
-            for (GeneCategory category : categories) {
-                Gene gene = geneData.getGene(category);
-                if (gene != null) {
-                    tooltip.add(Component.literal("")
-                            .append(category.getDisplayName())
-                            .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                            .append(gene.getDisplayName().copy().withStyle(ChatFormatting.WHITE)));
-                }
+            // Recuperer les donnees de l'espece
+            BeeSpeciesManager.BeeSpeciesData speciesData = null;
+            if (speciesGene instanceof DataDrivenSpeciesGene ddGene) {
+                speciesData = BeeSpeciesManager.getSpecies(ddGene.getId());
             }
-            
-            // Show lifetime
-            int remaining = geneData.getRemainingLifetime() / 20; // seconds
+
+            // Espece
+            if (speciesGene != null) {
+                tooltip.add(Component.translatable("tooltip.beemancer.species")
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                        .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD)));
+            }
+
+            if (speciesData != null) {
+                // Activite (Diurne/Nocturne/Insomniac) - couleurs essences
+                String activityKey = switch (speciesData.dayNight) {
+                    case "night" -> "tooltip.beemancer.activity.nocturnal";
+                    case "both" -> "tooltip.beemancer.activity.insomniac";
+                    default -> "tooltip.beemancer.activity.diurnal";
+                };
+                ChatFormatting activityColor = switch (speciesData.dayNight) {
+                    case "night" -> ChatFormatting.DARK_PURPLE;  // NOCTURNAL
+                    case "both" -> ChatFormatting.LIGHT_PURPLE;  // INSOMNIA
+                    default -> ChatFormatting.YELLOW;            // DIURNAL
+                };
+                tooltip.add(Component.translatable("tooltip.beemancer.activity")
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.translatable(activityKey).withStyle(activityColor)));
+
+                // Stats avec etoiles - couleurs essences
+                tooltip.add(Component.literal(""));
+                tooltip.add(Component.translatable("tooltip.beemancer.drop")
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal(formatStars(speciesData.dropLevel)).withStyle(ChatFormatting.GOLD)));
+
+                tooltip.add(Component.translatable("tooltip.beemancer.flyspeed")
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal(formatStars(speciesData.flyingSpeedLevel)).withStyle(ChatFormatting.AQUA)));
+
+                tooltip.add(Component.translatable("tooltip.beemancer.foraging")
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal(formatStars(speciesData.foragingDurationLevel)).withStyle(ChatFormatting.GREEN)));
+
+                tooltip.add(Component.translatable("tooltip.beemancer.tolerance")
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal(formatStars(speciesData.toleranceLevel)).withStyle(ChatFormatting.RED)));
+            }
+
+            // Lifetime
+            tooltip.add(Component.literal(""));
+            int remaining = geneData.getRemainingLifetime() / 20;
             int max = geneData.getMaxLifetime() / 20;
-            tooltip.add(Component.literal("")
-                    .append(Component.translatable("gene.category.beemancer.lifetime").withStyle(ChatFormatting.AQUA))
+            tooltip.add(Component.translatable("tooltip.beemancer.lifetime")
+                    .withStyle(ChatFormatting.GRAY)
                     .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                     .append(Component.literal(formatTime(remaining) + " / " + formatTime(max)).withStyle(ChatFormatting.WHITE)));
-            
-            // Show hive assignment if any
-            if (hasAssignedHive(stack)) {
-                BlockPos hivePos = getAssignedHivePos(stack);
-                tooltip.add(Component.literal("")
-                        .append(Component.translatable("item.beemancer.magic_bee.assigned_hive").withStyle(ChatFormatting.YELLOW))
-                        .append(Component.literal(": " + hivePos.toShortString()).withStyle(ChatFormatting.WHITE)));
-            }
+
         } else {
-            tooltip.add(Component.translatable("item.beemancer.magic_bee.shift_hint")
-                    .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+            // Affichage simple: juste le nom de l'espece
+            if (speciesGene != null) {
+                tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
+            }
+            tooltip.add(Component.translatable("tooltip.beemancer.shift_for_details")
+                    .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
         }
+    }
+
+    private String formatStars(int level) {
+        return "\u2605".repeat(Math.max(0, level)) + "\u2606".repeat(Math.max(0, 4 - level));
     }
 
     private String formatTime(int seconds) {

@@ -181,7 +181,19 @@
   "item.beemancer.magic_bee": "Magic Bee",
   "item.beemancer.magic_bee.shift_hint": "Hold SHIFT for gene details",
   "item.beemancer.magic_bee.assigned_hive": "Assigned Hive",
-  
+
+  "tooltip.beemancer.species": "Species",
+  "tooltip.beemancer.activity": "Activity",
+  "tooltip.beemancer.activity.diurnal": "Diurnal",
+  "tooltip.beemancer.activity.nocturnal": "Nocturnal",
+  "tooltip.beemancer.activity.insomniac": "Insomniac",
+  "tooltip.beemancer.drop": "Drop",
+  "tooltip.beemancer.flyspeed": "Fly Speed",
+  "tooltip.beemancer.foraging": "Foraging",
+  "tooltip.beemancer.tolerance": "Tolerance",
+  "tooltip.beemancer.lifetime": "Lifetime",
+  "tooltip.beemancer.shift_for_details": "Hold SHIFT for details",
+
   "item.beemancer.bee_larva": "Bee Larva",
   "item.beemancer.bee_larva.shift_hint": "Hold SHIFT for gene details",
   
