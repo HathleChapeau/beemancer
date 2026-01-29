@@ -1,0 +1,7 @@
+{
+  "type": "beemancer:infusing",
+  "ingredient": { "item": "minecraft:diamond" },
+  "fluid_ingredient": { "fluid": "beemancer:nectar", "amount": 1000 },
+  "result": { "id": "beemancer:nectar_diamond" },
+  "processing_time": 200
+}

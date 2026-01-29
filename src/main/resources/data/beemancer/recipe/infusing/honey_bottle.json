@@ -1,0 +1,7 @@
+{
+  "type": "beemancer:infusing",
+  "ingredient": { "item": "minecraft:glass_bottle" },
+  "fluid_ingredient": { "fluid": "beemancer:honey", "amount": 1000 },
+  "result": { "id": "minecraft:honey_bottle" },
+  "processing_time": 100
+}

@@ -1,0 +1,7 @@
+{
+  "type": "beemancer:infusing",
+  "ingredient": { "item": "minecraft:gold_ingot" },
+  "fluid_ingredient": { "fluid": "beemancer:royal_jelly", "amount": 1000 },
+  "result": { "id": "beemancer:royal_gold" },
+  "processing_time": 200
+}

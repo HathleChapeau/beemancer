@@ -122,6 +122,21 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
+        // Shift+clic droit = vider le pipe
+        if (player.isShiftKeyDown()) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof HoneyPipeBlockEntity pipe) {
+                int drained = pipe.getBuffer().drain(Integer.MAX_VALUE, net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE).getAmount();
+                if (drained > 0) {
+                    level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.5f, 1.0f);
+                    player.displayClientMessage(Component.literal("Drained " + drained + " mB"), true);
+                } else {
+                    player.displayClientMessage(Component.literal("Pipe is empty"), true);
+                }
+                return InteractionResult.SUCCESS;
+            }
+        }
+
         Direction clickedDir = getClickedDirection(pos, hit);
         if (clickedDir == null) return InteractionResult.PASS;
 

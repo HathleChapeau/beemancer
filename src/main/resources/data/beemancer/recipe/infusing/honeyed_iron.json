@@ -1,0 +1,7 @@
+{
+  "type": "beemancer:infusing",
+  "ingredient": { "item": "minecraft:iron_ingot" },
+  "fluid_ingredient": { "fluid": "beemancer:honey", "amount": 1000 },
+  "result": { "id": "beemancer:honeyed_iron" },
+  "processing_time": 200
+}
