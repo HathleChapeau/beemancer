@@ -1,19 +1,161 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "pipe": "beemancer:block/item_pipe"
+    "core": "beemancer:block/item_pipe",
+    "frame": "beemancer:block/pipe_frame"
   },
   "elements": [
     {
+      "name": "core_tinted",
       "from": [5, 5, 5],
       "to": [11, 11, 11],
       "faces": {
-        "north": {"texture": "#pipe"},
-        "south": {"texture": "#pipe"},
-        "east": {"texture": "#pipe"},
-        "west": {"texture": "#pipe"},
-        "up": {"texture": "#pipe"},
-        "down": {"texture": "#pipe"}
+        "north": {"texture": "#core", "tintindex": 0},
+        "south": {"texture": "#core", "tintindex": 0},
+        "east": {"texture": "#core", "tintindex": 0},
+        "west": {"texture": "#core", "tintindex": 0},
+        "up": {"texture": "#core", "tintindex": 0},
+        "down": {"texture": "#core", "tintindex": 0}
+      }
+    },
+    {
+      "name": "frame_vertical_nw",
+      "from": [4, 4, 4],
+      "to": [6, 12, 6],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_vertical_ne",
+      "from": [10, 4, 4],
+      "to": [12, 12, 6],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_vertical_sw",
+      "from": [4, 4, 10],
+      "to": [6, 12, 12],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_vertical_se",
+      "from": [10, 4, 10],
+      "to": [12, 12, 12],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_bottom_north",
+      "from": [6, 4, 4],
+      "to": [10, 6, 6],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_bottom_south",
+      "from": [6, 4, 10],
+      "to": [10, 6, 12],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_bottom_west",
+      "from": [4, 4, 6],
+      "to": [6, 6, 10],
+      "faces": {
+        "east": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_bottom_east",
+      "from": [10, 4, 6],
+      "to": [12, 6, 10],
+      "faces": {
+        "east": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_top_north",
+      "from": [6, 10, 4],
+      "to": [10, 12, 6],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_top_south",
+      "from": [6, 10, 10],
+      "to": [10, 12, 12],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_top_west",
+      "from": [4, 10, 6],
+      "to": [6, 12, 10],
+      "faces": {
+        "east": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "frame_top_east",
+      "from": [10, 10, 6],
+      "to": [12, 12, 10],
+      "faces": {
+        "east": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
       }
     }
   ]

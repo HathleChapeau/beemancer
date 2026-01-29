@@ -21,8 +21,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -66,13 +70,15 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     public static final BooleanProperty EXTRACT_UP = BooleanProperty.create("extract_up");
     public static final BooleanProperty EXTRACT_DOWN = BooleanProperty.create("extract_down");
 
-    private static final VoxelShape CORE = Block.box(5, 5, 5, 11, 11, 11);
-    private static final VoxelShape NORTH_SHAPE = Block.box(5, 5, 0, 11, 11, 5);
-    private static final VoxelShape SOUTH_SHAPE = Block.box(5, 5, 11, 11, 11, 16);
-    private static final VoxelShape EAST_SHAPE = Block.box(11, 5, 5, 16, 11, 11);
-    private static final VoxelShape WEST_SHAPE = Block.box(0, 5, 5, 5, 11, 11);
-    private static final VoxelShape UP_SHAPE = Block.box(5, 11, 5, 11, 16, 11);
-    private static final VoxelShape DOWN_SHAPE = Block.box(5, 0, 5, 11, 5, 11);
+    // Core: 6x6x6 center + 8x8x8 frame outline
+    private static final VoxelShape CORE = Block.box(4, 4, 4, 12, 12, 12);
+    // Connections: 2x2 tubes
+    private static final VoxelShape NORTH_SHAPE = Block.box(7, 7, 0, 9, 9, 4);
+    private static final VoxelShape SOUTH_SHAPE = Block.box(7, 7, 12, 9, 9, 16);
+    private static final VoxelShape EAST_SHAPE = Block.box(12, 7, 7, 16, 9, 9);
+    private static final VoxelShape WEST_SHAPE = Block.box(0, 7, 7, 4, 9, 9);
+    private static final VoxelShape UP_SHAPE = Block.box(7, 12, 7, 9, 16, 9);
+    private static final VoxelShape DOWN_SHAPE = Block.box(7, 0, 7, 9, 4, 9);
 
     public HoneyPipeBlock(Properties properties) {
         this(properties, 1);
@@ -117,6 +123,32 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
 
     private static final double CLICK_THRESHOLD = 0.1;
+
+    @Override
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
+                                          Player player, InteractionHand hand, BlockHitResult hit) {
+        // Colorant: applique une teinte au core
+        if (stack.getItem() instanceof DyeItem dyeItem) {
+            if (level.isClientSide()) return InteractionResult.SUCCESS;
+
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof HoneyPipeBlockEntity pipe) {
+                DyeColor color = dyeItem.getDyeColor();
+                int rgb = color.getTextureDiffuseColor();
+                pipe.setTintColor(rgb);
+
+                if (!player.isCreative()) {
+                    stack.shrink(1);
+                }
+
+                level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+                player.displayClientMessage(Component.literal("Tinted: " + color.getName()), true);
+                return InteractionResult.SUCCESS;
+            }
+        }
+
+        return super.useItemOn(stack, state, level, pos, player, hand, hit);
+    }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {

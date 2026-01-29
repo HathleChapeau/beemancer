@@ -1,14 +1,16 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "pipe": "beemancer:block/item_pipe_extract"
+    "pipe": "beemancer:block/pipe_frame",
+    "extract": "beemancer:block/pipe_extract"
   },
   "elements": [
     {
-      "from": [4, 4, 0],
-      "to": [12, 12, 5],
+      "name": "connection_tube",
+      "from": [7, 7, 0],
+      "to": [9, 9, 4],
       "faces": {
-        "north": {"texture": "#pipe"},
+        "north": {"texture": "#extract"},
         "east": {"texture": "#pipe"},
         "west": {"texture": "#pipe"},
         "up": {"texture": "#pipe"},

@@ -66,6 +66,9 @@ public class ItemPipeBlockEntity extends BlockEntity {
     // Directions manuellement deconnectees par le joueur
     private final EnumSet<Direction> disconnectedDirections = EnumSet.noneOf(Direction.class);
 
+    // Couleur de teinte du core (-1 = pas de teinte)
+    private int tintColor = -1;
+
     public ItemPipeBlockEntity(BlockPos pos, BlockState state) {
         this(BeemancerBlockEntities.ITEM_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
     }
@@ -352,6 +355,22 @@ public class ItemPipeBlockEntity extends BlockEntity {
         setChanged();
     }
 
+    public int getTintColor() {
+        return tintColor;
+    }
+
+    public void setTintColor(int color) {
+        this.tintColor = color;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public boolean hasTint() {
+        return tintColor != -1;
+    }
+
     // --- Sync client ---
 
     @Override
@@ -382,6 +401,9 @@ public class ItemPipeBlockEntity extends BlockEntity {
         if (disconnectedBits != 0) {
             tag.putInt("DisconnectedDirs", disconnectedBits);
         }
+        if (tintColor != -1) {
+            tag.putInt("TintColor", tintColor);
+        }
     }
 
     @Override
@@ -403,6 +425,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
         if (tag.contains("SourcePos")) {
             sourcePos = NbtUtils.readBlockPos(tag, "SourcePos").orElse(null);
         }
+        tintColor = tag.contains("TintColor") ? tag.getInt("TintColor") : -1;
     }
 
     private record PipeDestination(Direction direction, BlockPos pos, boolean isPipe) {}

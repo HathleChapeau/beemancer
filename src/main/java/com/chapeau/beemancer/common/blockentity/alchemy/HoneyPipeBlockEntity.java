@@ -60,6 +60,9 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     // Directions manuellement deconnectees par le joueur
     private final EnumSet<Direction> disconnectedDirections = EnumSet.noneOf(Direction.class);
 
+    // Couleur de teinte du core (-1 = pas de teinte)
+    private int tintColor = -1;
+
     public HoneyPipeBlockEntity(BlockPos pos, BlockState state) {
         this(BeemancerBlockEntities.HONEY_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
     }
@@ -328,6 +331,20 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         setChanged();
     }
 
+    public int getTintColor() {
+        return tintColor;
+    }
+
+    public void setTintColor(int color) {
+        this.tintColor = color;
+        setChanged();
+        syncToClient();
+    }
+
+    public boolean hasTint() {
+        return tintColor != -1;
+    }
+
     private void syncToClient() {
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
@@ -359,6 +376,9 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         if (disconnectedBits != 0) {
             tag.putInt("DisconnectedDirs", disconnectedBits);
         }
+        if (tintColor != -1) {
+            tag.putInt("TintColor", tintColor);
+        }
     }
 
     @Override
@@ -377,5 +397,6 @@ public class HoneyPipeBlockEntity extends BlockEntity {
                 }
             }
         }
+        tintColor = tag.contains("TintColor") ? tag.getInt("TintColor") : -1;
     }
 }

@@ -32,6 +32,8 @@ import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.RideableBeeRenderer;
 import com.chapeau.beemancer.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlockEntity;
+import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
+import com.chapeau.beemancer.common.blockentity.alchemy.ItemPipeBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerEntities;
@@ -190,6 +192,38 @@ public class ClientSetup {
 
             return PollenColors.EMPTY_COLOR;
         }, BeemancerBlocks.POLLEN_POT.get());
+
+        // Item Pipes - teinte du core
+        event.register((state, level, pos, tintIndex) -> {
+            if (tintIndex != 0 || level == null || pos == null) {
+                return 0xFFFFFFFF;
+            }
+            if (level.getBlockEntity(pos) instanceof ItemPipeBlockEntity pipe && pipe.hasTint()) {
+                return pipe.getTintColor() | 0xFF000000;
+            }
+            return 0xFFFFFFFF;
+        },
+            BeemancerBlocks.ITEM_PIPE.get(),
+            BeemancerBlocks.ITEM_PIPE_TIER2.get(),
+            BeemancerBlocks.ITEM_PIPE_TIER3.get(),
+            BeemancerBlocks.ITEM_PIPE_TIER4.get()
+        );
+
+        // Honey Pipes - teinte du core
+        event.register((state, level, pos, tintIndex) -> {
+            if (tintIndex != 0 || level == null || pos == null) {
+                return 0xFFFFFFFF;
+            }
+            if (level.getBlockEntity(pos) instanceof HoneyPipeBlockEntity pipe && pipe.hasTint()) {
+                return pipe.getTintColor() | 0xFF000000;
+            }
+            return 0xFFFFFFFF;
+        },
+            BeemancerBlocks.HONEY_PIPE.get(),
+            BeemancerBlocks.HONEY_PIPE_TIER2.get(),
+            BeemancerBlocks.HONEY_PIPE_TIER3.get(),
+            BeemancerBlocks.HONEY_PIPE_TIER4.get()
+        );
     }
 
     // =========================================================================
