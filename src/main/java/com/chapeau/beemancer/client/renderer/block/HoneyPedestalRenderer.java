@@ -60,13 +60,20 @@ public class HoneyPedestalRenderer implements BlockEntityRenderer<HoneyPedestalB
         boolean isBee = storedItem.getItem() instanceof MagicBeeItem;
 
         if (isBee) {
-            // Abeilles: le BEWLR ajoute ses propres transforms (flip, translate 0.5)
-            // On compense pour centrer le modèle 3D au-dessus du pedestal
-            poseStack.translate(0.5, 1.15 + bob, 0.5);
-            poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
+            // Pivot du modèle abeille dans l'espace BEWLR (ajuster si besoin)
+            float pivotX = 0.5f;
+            float pivotY = 0.35f;
+            float pivotZ = 0.5f;
+
+            // Position au-dessus du pedestal
+            poseStack.translate(0.5, 1.4 + bob, 0.5);
             poseStack.scale(0.6f, 0.6f, 0.6f);
             // Compenser le translate(0.5, 0.5, 0.5) du BEWLR FIXED
             poseStack.translate(-0.5, -0.5, -0.5);
+            // Rotation autour du pivot (centre du modèle abeille)
+            poseStack.translate(pivotX, pivotY, pivotZ);
+            poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
+            poseStack.translate(-pivotX, -pivotY, -pivotZ);
         } else {
             // Items normaux
             poseStack.translate(0.5, 1.25 + bob, 0.5);
