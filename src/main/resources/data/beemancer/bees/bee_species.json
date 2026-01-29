@@ -621,7 +621,7 @@
       "stats": { "attack": 2, "health": 3, "drop_level": 1, "flying_speed": 1, "foraging_duration": 2, "tolerance": 2 },
       "aggression": { "players": false, "passive_mobs": true, "hostile_mobs": true },
       "day_night": "both",
-      "loot": { "item": "beemancer:glowstone_dust_shard", "in_comb": true },
+      "loot": { "item": "minecraft:glowstone_dust", "in_comb": true },
       "pollen": null,
       "texture": "Luminous_Bee"
     },

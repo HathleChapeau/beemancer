@@ -397,7 +397,6 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.RAW_GOLD_SHARD.get());
         output.accept(BeemancerItems.LAPIS_LAZULI_SHARD.get());
         output.accept(BeemancerItems.QUARTZ_SHARD.get());
-        output.accept(BeemancerItems.GLOWSTONE_DUST_SHARD.get());
         output.accept(BeemancerItems.SLIME_BALL_SHARD.get());
         output.accept(BeemancerItems.MAGMA_CREAM_SHARD.get());
         output.accept(BeemancerItems.GHAST_TEAR_SHARD.get());
