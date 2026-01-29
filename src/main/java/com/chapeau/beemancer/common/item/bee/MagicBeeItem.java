@@ -238,6 +238,18 @@ public class MagicBeeItem extends Item {
                         .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                         .append(Component.translatable(activityKey).withStyle(activityColor)));
 
+                // Type de fleur
+                String flowerKey = "tooltip.beemancer.flower." + speciesData.flowerType;
+                ChatFormatting flowerColor = switch (speciesData.flowerType) {
+                    case "mushroom" -> ChatFormatting.GOLD;
+                    case "crystal" -> ChatFormatting.LIGHT_PURPLE;
+                    default -> ChatFormatting.GREEN; // flower
+                };
+                tooltip.add(Component.translatable("tooltip.beemancer.flower")
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.translatable(flowerKey).withStyle(flowerColor)));
+
                 // Stats avec etoiles - couleurs essences
                 tooltip.add(Component.literal(""));
                 tooltip.add(Component.translatable("tooltip.beemancer.drop")

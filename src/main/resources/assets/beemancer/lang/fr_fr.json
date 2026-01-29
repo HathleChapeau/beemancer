@@ -195,7 +195,22 @@
   "item.beemancer.magic_bee": "Abeille Magique",
   "item.beemancer.magic_bee.shift_hint": "Maintenir SHIFT pour les détails des gènes",
   "item.beemancer.magic_bee.assigned_hive": "Ruche assignée",
-  
+
+  "tooltip.beemancer.species": "Espèce",
+  "tooltip.beemancer.activity": "Activité",
+  "tooltip.beemancer.activity.diurnal": "Diurne",
+  "tooltip.beemancer.activity.nocturnal": "Nocturne",
+  "tooltip.beemancer.activity.insomniac": "Insomniac",
+  "tooltip.beemancer.flower": "Fleur",
+  "tooltip.beemancer.flower.flower": "Fleurs",
+  "tooltip.beemancer.flower.mushroom": "Champignons",
+  "tooltip.beemancer.flower.crystal": "Cristaux",
+  "tooltip.beemancer.drop": "Drop",
+  "tooltip.beemancer.flyspeed": "Vitesse",
+  "tooltip.beemancer.foraging": "Butinage",
+  "tooltip.beemancer.tolerance": "Tolérance",
+  "tooltip.beemancer.shift_for_details": "Maintenir SHIFT pour les détails",
+
   "item.beemancer.bee_larva": "Larve d'Abeille",
   "item.beemancer.bee_larva.shift_hint": "Maintenir SHIFT pour les détails des gènes",
   

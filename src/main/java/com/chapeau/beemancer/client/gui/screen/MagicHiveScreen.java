@@ -177,23 +177,6 @@ public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
 
             // Dessiner le smiley
             guiGraphics.drawString(font, smiley, smileyX, smileyY, color, false);
-
-            // Tooltip au survol
-            if (mouseX >= smileyX && mouseX < smileyX + 8 && mouseY >= smileyY && mouseY < smileyY + 8) {
-                List<Component> tooltip = new ArrayList<>();
-                if (canForage) {
-                    tooltip.add(Component.literal("Peut butiner").withStyle(ChatFormatting.GREEN));
-                } else {
-                    tooltip.add(Component.literal("Ne peut pas butiner").withStyle(ChatFormatting.RED));
-                    if (!menu.hasFlowers()) {
-                        tooltip.add(Component.literal("• Pas de fleurs").withStyle(ChatFormatting.GRAY));
-                    }
-                    if (menu.isAntibreedingMode()) {
-                        tooltip.add(Component.literal("• Mode antibreeding actif").withStyle(ChatFormatting.GRAY));
-                    }
-                }
-                guiGraphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
-            }
         }
     }
 }
