@@ -174,10 +174,10 @@ public class MultiblockPatterns {
     // ==================== ESSENCE EXTRACTOR ====================
     // Structure 3x3x4, contrôleur au Y+0 (Extractor Heart) qui est à l'étage 3
     //
-    // Étage 4 (Y+1 relatif): 5 Honeyed Stone en croix (centre + 4 adjacents)
-    //            [S]
+    // Étage 4 (Y+1 relatif): Honeyed Stone en croix + Reservoirs aux coins
+    //         [R][S][R]
     //         [S][S][S]
-    //            [S]
+    //         [R][S][R]
     //
     // Étage 3 (Y+0 relatif): Contrôleur au centre (Extractor Heart)
     //            [ ]
@@ -202,10 +202,10 @@ public class MultiblockPatterns {
             .add(0, -2, 1, block(BeemancerBlocks.HONEY_PEDESTAL))   // Sud
             .add(1, -2, 0, block(BeemancerBlocks.HONEY_PEDESTAL))   // Est
             .add(-1, -2, 0, block(BeemancerBlocks.HONEY_PEDESTAL))  // Ouest
-            .add(-1, -2, -1, air())  // Coin NO
-            .add(1, -2, -1, air())   // Coin NE
-            .add(-1, -2, 1, air())   // Coin SO
-            .add(1, -2, 1, air())    // Coin SE
+            .add(-1, -2, -1, block(BeemancerBlocks.HONEYED_STONE))  // Coin NO
+            .add(1, -2, -1, block(BeemancerBlocks.HONEYED_STONE))   // Coin NE
+            .add(-1, -2, 1, block(BeemancerBlocks.HONEYED_STONE))   // Coin SO
+            .add(1, -2, 1, block(BeemancerBlocks.HONEYED_STONE))    // Coin SE
 
             // Étage 2 (Y-1): Vide
             .add(0, -1, 0, air())
@@ -228,16 +228,16 @@ public class MultiblockPatterns {
             .add(-1, 0, 1, air())
             .add(1, 0, 1, air())
 
-            // Étage 4 (Y+1): 5 Honeyed Stone en croix
-            .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))     // Centre
-            .add(0, 1, -1, block(BeemancerBlocks.HONEYED_STONE))    // Nord
-            .add(0, 1, 1, block(BeemancerBlocks.HONEYED_STONE))     // Sud
-            .add(1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))     // Est
-            .add(-1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))    // Ouest
-            .add(-1, 1, -1, air())  // Coins vides
-            .add(1, 1, -1, air())
-            .add(-1, 1, 1, air())
-            .add(1, 1, 1, air())
+            // Étage 4 (Y+1): Honeyed Stone en croix + Reservoirs aux coins
+            .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))        // Centre
+            .add(0, 1, -1, block(BeemancerBlocks.HONEYED_STONE))       // Nord
+            .add(0, 1, 1, block(BeemancerBlocks.HONEYED_STONE))        // Sud
+            .add(1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))        // Est
+            .add(-1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))       // Ouest
+            .add(-1, 1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin NO
+            .add(1, 1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))     // Coin NE
+            .add(-1, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))     // Coin SO
+            .add(1, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))      // Coin SE
 
             .build()
     );

@@ -47,10 +47,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.FluidUtil;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nullable;
 
@@ -132,16 +129,6 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
         boolean success = FluidUtil.interactWithFluidHandler(player, hand, level, pos, null);
         if (success) {
             return ItemInteractionResult.SUCCESS;
-        }
-
-        // Shift+clic droit avec main vide pour vider (si multiblock formé)
-        if (player.isShiftKeyDown() && stack.isEmpty()) {
-            if (reservoir.isPartOfFormedMultiblock()) {
-                FluidStack drained = reservoir.drain(FluidType.BUCKET_VOLUME, IFluidHandler.FluidAction.EXECUTE);
-                if (!drained.isEmpty()) {
-                    return ItemInteractionResult.SUCCESS;
-                }
-            }
         }
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
