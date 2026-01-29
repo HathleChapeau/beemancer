@@ -332,6 +332,55 @@ Référence: Create `AllPackets`
 
 ---
 
+## Règle Anti-Inversion d'Intent
+
+Quand l'utilisateur signale un bug ou un comportement manquant:
+- **"X ne marche pas"** = CORRIGER X, pas le supprimer
+- **"il manque X"** = AJOUTER X
+- **"X fait Y au lieu de Z"** = CHANGER le comportement, garder la feature
+- En cas de doute, **DEMANDER** avant de coder
+
+**INTERDIT**: Supprimer une feature pour "corriger" un bug.
+
+---
+
+## Coordonnées 3D et Modèles
+
+### Convention Coordonnées Minecraft
+- Blockstate multipart: le modèle de base est orienté NORD (z=0)
+- Les rotations y=90/180/270 réorientent vers E/S/W
+- Les éléments d'un modèle JSON:
+  - from/to en pixels (0-16 = 1 bloc)
+  - Valeurs < 0 ou > 16 = dépasse du bloc
+  - Pour un indicateur SUR le pipe, rester dans [0-16]
+
+### Convention BEWLR (BlockEntityWithoutLevelRenderer)
+- Le BEWLR ajoute ses propres transforms (translate, scale, flip)
+- Quand un renderer externe (pedestal, etc.) appelle renderStatic():
+  - Les transforms du BEWLR s'EMPILENT sur ceux du renderer
+  - Toujours compenser les offsets du BEWLR
+  - Pour une rotation sur soi-même: translate au pivot → rotate → translate inverse
+
+---
+
+## Vérification Avant Code
+
+### Avant de modifier du code
+1. **LIRE** le fichier complet, pas seulement la zone à modifier
+2. **COMPRENDRE** le flux: qui appelle quoi, dans quel ordre
+3. Si modification de multibloc/pattern: vérifier **TOUS** les fichiers qui référencent les positions (BlockEntity, Renderer, Pattern)
+4. Si modification de rendu: comprendre la chaîne de transforms complète
+5. Si correction de bug: reproduire mentalement le bug AVANT de coder
+
+### Avant de répondre à un bug report
+1. Relire le message utilisateur **2 fois**
+2. Identifier: quel est le comportement ACTUEL?
+3. Identifier: quel est le comportement VOULU?
+4. Identifier: l'utilisateur veut-il **ajouter**, **modifier**, ou **supprimer**?
+5. En cas de doute, DEMANDER
+
+---
+
 ## Notes Importantes
 
 1. **Structure.txt est la source de vérité** — Toujours le consulter avant d'implémenter, toujours le mettre à jour après.
