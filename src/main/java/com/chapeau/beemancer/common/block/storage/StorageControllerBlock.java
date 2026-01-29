@@ -26,7 +26,9 @@ import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.util.StorageHelper;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -172,6 +174,25 @@ public class StorageControllerBlock extends BaseEntityBlock {
             }
         }
         super.onRemove(state, level, pos, newState, movedByPiston);
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (!state.getValue(FORMED)) return;
+
+        double cx = pos.getX() + 0.5;
+        double cy = pos.getY() + 0.5;
+        double cz = pos.getZ() + 0.5;
+
+        // Petite boule de particules au centre du controller
+        for (int i = 0; i < 3; i++) {
+            double ox = (random.nextDouble() - 0.5) * 0.15;
+            double oy = (random.nextDouble() - 0.5) * 0.15;
+            double oz = (random.nextDouble() - 0.5) * 0.15;
+            level.addParticle(ParticleTypes.END_ROD,
+                cx + ox, cy + oy, cz + oz,
+                0, 0, 0);
+        }
     }
 
     /**

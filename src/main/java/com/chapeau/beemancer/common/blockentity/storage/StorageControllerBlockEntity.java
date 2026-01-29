@@ -29,6 +29,7 @@ package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.HoneyPipeBlock;
+import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageEditModeHandler;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
@@ -190,8 +191,12 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             BlockState state = level.getBlockState(blockPos);
             boolean changed = false;
 
+            // Honeyed stone du bas (y<0): pas de formed (juste la pierre brute)
+            boolean skipFormed = (state.getBlock() instanceof HoneyedStoneBlock)
+                && originalOffset.getY() < 0;
+
             BooleanProperty formedProp = findFormedProperty(state);
-            if (formedProp != null && state.getValue(formedProp) != formed) {
+            if (formedProp != null && !skipFormed && state.getValue(formedProp) != formed) {
                 state = state.setValue(formedProp, formed);
                 changed = true;
             }

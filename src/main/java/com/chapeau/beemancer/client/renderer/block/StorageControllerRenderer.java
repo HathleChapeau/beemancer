@@ -110,12 +110,10 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         poseStack.mulPose(Axis.ZP.rotationDegrees(time * 0.7f));
         poseStack.translate(-0.5, -0.5, -0.5);
 
-        // === Cube 1 (position x=2/16) avec oscillation individuelle ===
+        // === Cube 1 (position x=2/16) ===
         poseStack.pushPose();
-        float osc1X = (float) Math.sin(time * 0.05) * 0.05f;
-        float osc1Y = (float) Math.cos(time * 0.07) * 0.05f;
         // Décaler vers x=2/16 depuis le centre du modèle (7/16)
-        poseStack.translate((2.0 / 16.0) - (7.0 / 16.0) + osc1X, osc1Y, 0);
+        poseStack.translate((2.0 / 16.0) - (7.0 / 16.0), 0, 0);
         blockRenderer.getModelRenderer().tesselateBlock(
             blockEntity.getLevel(),
             cubeModel,
@@ -132,12 +130,10 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         );
         poseStack.popPose();
 
-        // === Cube 2 (position x=14/16) avec oscillation individuelle ===
+        // === Cube 2 (position x=14/16) ===
         poseStack.pushPose();
-        float osc2X = (float) Math.sin(time * 0.06) * 0.05f;
-        float osc2Y = (float) Math.cos(time * 0.04) * 0.05f;
         // Décaler vers x=14/16 depuis le centre du modèle (7/16)
-        poseStack.translate((14.0 / 16.0) - (7.0 / 16.0) + osc2X, osc2Y, 0);
+        poseStack.translate((14.0 / 16.0) - (7.0 / 16.0), 0, 0);
         blockRenderer.getModelRenderer().tesselateBlock(
             blockEntity.getLevel(),
             cubeModel,

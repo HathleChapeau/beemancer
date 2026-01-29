@@ -6,16 +6,16 @@
   },
   "elements": [
     {
-      "name": "Back Plate 10x10x2",
-      "from": [3, 3, 14],
-      "to": [13, 13, 16],
+      "name": "Central Plate 12x12x3",
+      "from": [2, 2, 6.5],
+      "to": [14, 14, 9.5],
       "faces": {
-        "north": {"texture": "#screen", "uv": [3, 3, 13, 13]},
-        "east": {"texture": "#screen", "uv": [0, 3, 2, 13]},
-        "south": {"texture": "#screen", "uv": [3, 3, 13, 13]},
-        "west": {"texture": "#screen", "uv": [14, 3, 16, 13]},
-        "up": {"texture": "#screen", "uv": [3, 0, 13, 2]},
-        "down": {"texture": "#screen", "uv": [3, 14, 13, 16]}
+        "north": {"texture": "#screen", "uv": [2, 2, 14, 14]},
+        "east": {"texture": "#screen", "uv": [0, 2, 3, 14]},
+        "south": {"texture": "#screen", "uv": [2, 2, 14, 14]},
+        "west": {"texture": "#screen", "uv": [13, 2, 16, 14]},
+        "up": {"texture": "#screen", "uv": [2, 0, 14, 3]},
+        "down": {"texture": "#screen", "uv": [2, 13, 14, 16]}
       }
     }
   ]

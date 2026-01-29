@@ -244,10 +244,7 @@ public class ClientSetup {
         event.register(ModelResourceLocation.standalone(
             ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring")));
 
-        // Modèles du Storage Controller formé (cubes animés)
+        // Modèle cube du Storage Controller formé (cubes animés)
         event.register(StorageControllerRenderer.CUBE_MODEL_LOC);
-
-        // Modèle plaque du Storage Terminal formé (plaques animées)
-        event.register(StorageTerminalRenderer.PLATE_MODEL_LOC);
     }
 }
