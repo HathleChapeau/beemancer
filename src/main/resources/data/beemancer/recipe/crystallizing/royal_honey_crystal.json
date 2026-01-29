@@ -1,6 +1,6 @@
 {
   "type": "beemancer:crystallizing",
-  "fluid_ingredient": { "fluid": "beemancer:royal_jelly", "amount": 500 },
+  "fluid_ingredient": { "fluid": "beemancer:royal_jelly", "amount": 1000 },
   "result": { "id": "beemancer:royal_honey_crystal" },
   "processing_time": 100
 }
