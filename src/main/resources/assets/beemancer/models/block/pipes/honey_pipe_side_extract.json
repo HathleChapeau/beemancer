@@ -16,6 +16,19 @@
         "up": {"texture": "#pipe"},
         "down": {"texture": "#pipe"}
       }
+    },
+    {
+      "name": "extract_indicator",
+      "from": [4, 4, -1],
+      "to": [12, 12, 0],
+      "faces": {
+        "north": {"texture": "#extract"},
+        "east": {"texture": "#extract"},
+        "west": {"texture": "#extract"},
+        "up": {"texture": "#extract"},
+        "down": {"texture": "#extract"},
+        "south": {"texture": "#extract"}
+      }
     }
   ]
 }

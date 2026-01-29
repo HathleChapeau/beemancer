@@ -48,6 +48,10 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
 
@@ -128,6 +132,18 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
         // Try bucket interaction via FluidUtil
         boolean success = FluidUtil.interactWithFluidHandler(player, hand, level, pos, null);
         if (success) {
+            return ItemInteractionResult.SUCCESS;
+        }
+
+        // Shift+clic droit avec main vide = vider le réservoir
+        if (player.isShiftKeyDown() && stack.isEmpty()) {
+            int drained = reservoir.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE).getAmount();
+            if (drained > 0) {
+                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.5f, 1.0f);
+                player.displayClientMessage(Component.literal("Drained " + drained + " mB"), true);
+            } else {
+                player.displayClientMessage(Component.literal("Reservoir is empty"), true);
+            }
             return ItemInteractionResult.SUCCESS;
         }
 
