@@ -6,7 +6,7 @@
     "SSS"
   ],
   "key": {
-    "S": { "item": "beemancer:raw_gold_shard" }
+    "S": { "item": "beemancer:raw_copper_shard" }
   },
-  "result": { "id": "minecraft:raw_gold", "count": 1 }
+  "result": { "id": "beemancer:raw_copper_fragment", "count": 1 }
 }

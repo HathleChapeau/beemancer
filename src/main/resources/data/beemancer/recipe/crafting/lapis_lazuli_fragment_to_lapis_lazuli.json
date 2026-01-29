@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:lapis_lazuli_fragment" },
+    { "item": "beemancer:lapis_lazuli_fragment" },
+    { "item": "beemancer:lapis_lazuli_fragment" },
+    { "item": "beemancer:lapis_lazuli_fragment" }
+  ],
+  "result": { "id": "minecraft:lapis_lazuli", "count": 1 }
+}

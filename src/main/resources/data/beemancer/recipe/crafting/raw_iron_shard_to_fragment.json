@@ -6,7 +6,7 @@
     "SSS"
   ],
   "key": {
-    "S": { "item": "beemancer:ghast_tear_shard" }
+    "S": { "item": "beemancer:raw_iron_shard" }
   },
-  "result": { "id": "minecraft:ghast_tear", "count": 1 }
+  "result": { "id": "beemancer:raw_iron_fragment", "count": 1 }
 }

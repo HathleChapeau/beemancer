@@ -6,7 +6,7 @@
     "SSS"
   ],
   "key": {
-    "S": { "item": "beemancer:quartz_shard" }
+    "S": { "item": "beemancer:lapis_lazuli_shard" }
   },
-  "result": { "id": "minecraft:quartz", "count": 1 }
+  "result": { "id": "beemancer:lapis_lazuli_fragment", "count": 1 }
 }

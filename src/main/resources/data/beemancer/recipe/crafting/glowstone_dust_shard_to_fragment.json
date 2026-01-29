@@ -8,5 +8,5 @@
   "key": {
     "S": { "item": "beemancer:glowstone_dust_shard" }
   },
-  "result": { "id": "minecraft:glowstone_dust", "count": 1 }
+  "result": { "id": "beemancer:glowstone_dust_fragment", "count": 1 }
 }

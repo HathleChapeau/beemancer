@@ -8,5 +8,5 @@
   "key": {
     "S": { "item": "beemancer:magma_cream_shard" }
   },
-  "result": { "id": "minecraft:magma_cream", "count": 1 }
+  "result": { "id": "beemancer:magma_cream_fragment", "count": 1 }
 }

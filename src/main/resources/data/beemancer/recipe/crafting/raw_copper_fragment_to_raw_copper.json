@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:raw_copper_fragment" },
+    { "item": "beemancer:raw_copper_fragment" },
+    { "item": "beemancer:raw_copper_fragment" },
+    { "item": "beemancer:raw_copper_fragment" }
+  ],
+  "result": { "id": "minecraft:raw_copper", "count": 1 }
+}

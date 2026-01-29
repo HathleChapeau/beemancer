@@ -529,7 +529,7 @@ public class BeemancerItems {
     public static final DeferredItem<Item> BLAZE_ROD_FRAGMENT = ITEMS.register("blaze_rod_fragment",
             () -> new Item(new Item.Properties()));
 
-    // --- SHARDS (4 shards = 1 resource) ---
+    // --- SHARDS (6 shards = 1 fragment) ---
     public static final DeferredItem<Item> RAW_COPPER_SHARD = ITEMS.register("raw_copper_shard",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> RAW_IRON_SHARD = ITEMS.register("raw_iron_shard",
@@ -547,6 +547,26 @@ public class BeemancerItems {
     public static final DeferredItem<Item> MAGMA_CREAM_SHARD = ITEMS.register("magma_cream_shard",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> GHAST_TEAR_SHARD = ITEMS.register("ghast_tear_shard",
+            () -> new Item(new Item.Properties()));
+
+    // --- SHARD FRAGMENTS (6 shards = 1 fragment, 4 fragments = 1 resource) ---
+    public static final DeferredItem<Item> RAW_COPPER_FRAGMENT = ITEMS.register("raw_copper_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> RAW_IRON_FRAGMENT = ITEMS.register("raw_iron_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> RAW_GOLD_FRAGMENT = ITEMS.register("raw_gold_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> LAPIS_LAZULI_FRAGMENT = ITEMS.register("lapis_lazuli_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> QUARTZ_FRAGMENT = ITEMS.register("quartz_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> GLOWSTONE_DUST_FRAGMENT = ITEMS.register("glowstone_dust_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> SLIME_BALL_FRAGMENT = ITEMS.register("slime_ball_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> MAGMA_CREAM_FRAGMENT = ITEMS.register("magma_cream_fragment",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> GHAST_TEAR_FRAGMENT = ITEMS.register("ghast_tear_fragment",
             () -> new Item(new Item.Properties()));
 
     // --- DUSTS (9 dusts = 1 shard) ---

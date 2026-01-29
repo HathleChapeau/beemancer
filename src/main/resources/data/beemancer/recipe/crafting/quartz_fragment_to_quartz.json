@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "beemancer:quartz_fragment" },
+    { "item": "beemancer:quartz_fragment" },
+    { "item": "beemancer:quartz_fragment" },
+    { "item": "beemancer:quartz_fragment" }
+  ],
+  "result": { "id": "minecraft:quartz", "count": 1 }
+}

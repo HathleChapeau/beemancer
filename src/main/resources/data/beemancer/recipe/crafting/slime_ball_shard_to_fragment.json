@@ -8,5 +8,5 @@
   "key": {
     "S": { "item": "beemancer:slime_ball_shard" }
   },
-  "result": { "id": "minecraft:slime_ball", "count": 1 }
+  "result": { "id": "beemancer:slime_ball_fragment", "count": 1 }
 }
