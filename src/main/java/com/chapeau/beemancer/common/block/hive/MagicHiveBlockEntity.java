@@ -30,6 +30,8 @@ import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import com.chapeau.beemancer.content.gene.environment.EnvironmentGene;
 import com.chapeau.beemancer.content.gene.flower.FlowerGene;
+import com.chapeau.beemancer.core.bee.BiomeTemperatureManager;
+import com.chapeau.beemancer.core.bee.BeeSpeciesManager;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
 import com.chapeau.beemancer.core.breeding.BreedingManager;
@@ -92,13 +94,13 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     private boolean hasFlowers = false;
     private boolean hasMushrooms = false;
     private boolean isDaytime = true;
-    private float temperature = 0.5f;
+    private int temperature = 0; // -2 (gelé) à 2 (brûlant)
 
     // Legacy compatibility
     public enum BeeState { EMPTY, INSIDE, OUTSIDE }
 
     // ContainerData for GUI sync
-    // 0: antibreedingMode, 1: hasFlowers, 2: hasMushrooms, 3: isDaytime, 4: temperature*100
+    // 0: antibreedingMode, 1: hasFlowers, 2: hasMushrooms, 3: isDaytime, 4: temperature (-2 to 2, offset +2 for positive)
     // 5-9: canForage pour chaque slot d'abeille
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -108,7 +110,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 case 1 -> hasFlowers ? 1 : 0;
                 case 2 -> hasMushrooms ? 1 : 0;
                 case 3 -> isDaytime ? 1 : 0;
-                case 4 -> (int) (temperature * 100);
+                case 4 -> temperature + 2; // Offset pour valeurs positives (0-4)
                 case 5, 6, 7, 8, 9 -> canBeeForage(index - 5) ? 1 : 0;
                 default -> 0;
             };
@@ -121,7 +123,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 case 1 -> hasFlowers = value != 0;
                 case 2 -> hasMushrooms = value != 0;
                 case 3 -> isDaytime = value != 0;
-                case 4 -> temperature = value / 100f;
+                case 4 -> temperature = value - 2; // Retirer l'offset
             }
         }
 
@@ -322,11 +324,11 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     public boolean hasFlowers() { return hasFlowers; }
     public boolean hasMushrooms() { return hasMushrooms; }
     public boolean isDaytime() { return isDaytime; }
-    public float getTemperature() { return temperature; }
+    public int getTemperature() { return temperature; }
 
     /**
      * Vérifie si une abeille dans le slot peut aller butiner.
-     * Conditions: fleurs disponibles, jour (sauf nocturne), température OK, pas en breeding mode
+     * Conditions: fleurs disponibles, jour (sauf nocturne), température OK, pas en mode antibreeding
      */
     public boolean canBeeForage(int slot) {
         if (slot < 0 || slot >= BEE_SLOTS) return false;
@@ -336,23 +338,35 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
         BeeGeneData geneData = MagicBeeItem.getGeneData(items.get(slot));
         Gene envGene = geneData.getGene(GeneCategory.ENVIRONMENT);
+        String speciesId = getSpeciesId(geneData);
+
+        // Récupérer les données de l'espèce pour le niveau de tolérance
+        BeeSpeciesManager.BeeSpeciesData speciesData = BeeSpeciesManager.getSpecies(speciesId);
+        int speciesLevel = (speciesData != null) ? speciesData.toleranceLevel : 1;
 
         // Vérifier si l'abeille peut travailler de nuit
         boolean canWorkAtNight = false;
-        int tempTolerance = 0;
+        int geneTolerance = 0;
         if (envGene instanceof EnvironmentGene env) {
             canWorkAtNight = env.canWorkAtNight();
-            tempTolerance = env.getTemperatureTolerance();
+            geneTolerance = env.getTemperatureTolerance();
         }
 
         // Si c'est la nuit et l'abeille n'est pas nocturne, elle ne peut pas butiner
         if (!isDaytime && !canWorkAtNight) return false;
 
-        // Vérifier la température (biome temperature: 0.0=froid, 0.5=tempéré, 1.0+=chaud)
-        // Tolérance 0 = plage [0.3, 0.8], tolérance 1+ = toutes températures acceptées
-        if (tempTolerance == 0) {
-            if (temperature < 0.3f || temperature > 0.8f) return false;
-        }
+        // Tolérance totale = tolérance du gène + (niveau espèce - 1)
+        // Ex: gène normal (0) + niveau 1 = tolérance 0 (tempéré seulement)
+        // Ex: gène normal (0) + niveau 2 = tolérance 1 (±1 niveau)
+        // Ex: gène robust (1) + niveau 2 = tolérance 2 (±2 niveaux, toutes températures)
+        int totalTolerance = geneTolerance + (speciesLevel - 1);
+
+        // Température préférée de l'espèce (0 = tempéré par défaut)
+        int preferredTemp = (speciesData != null) ? speciesData.environment : 0;
+
+        // L'abeille peut travailler si |temperature - preferredTemp| <= totalTolerance
+        int tempDiff = Math.abs(temperature - preferredTemp);
+        if (tempDiff > totalTolerance) return false;
 
         return true;
     }
@@ -610,8 +624,8 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         // Jour/Nuit
         isDaytime = level.isDay();
 
-        // Température du biome
-        temperature = level.getBiome(pos).value().getBaseTemperature();
+        // Température du biome (entier de -2 à 2)
+        temperature = BiomeTemperatureManager.getTemperature(level.getBiome(pos));
 
         // Fleurs disponibles
         hasFlowers = flowerPool.hasFlowers();
@@ -638,8 +652,8 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             beeSlot.decrementCooldown();
         }
 
-        // Les abeilles sortent si: cooldown fini, pas besoin de soin, et PAS de crystal antibreeding
-        if (beeSlot.isCooldownComplete() && !beeSlot.needsHealing() && !antibreedingMode) {
+        // Les abeilles sortent si: cooldown fini, pas besoin de soin, et conditions de sortie OK
+        if (beeSlot.isCooldownComplete() && !beeSlot.needsHealing() && canBeeForage(slot)) {
             releaseBee(slot);
         }
     }

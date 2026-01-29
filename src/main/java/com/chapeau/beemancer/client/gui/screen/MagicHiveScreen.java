@@ -100,34 +100,25 @@ public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
     }
 
     private void renderTemperatureIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
-        float temp = menu.getTemperature();
+        int temp = menu.getTemperature(); // -2 à 2
         int color;
         String symbol;
+        String tempDesc;
 
-        if (temp < 0.2f) {
-            color = 0xFF00BFFF; // Bleu glacé
-            symbol = "❄";
-        } else if (temp < 0.5f) {
-            color = 0xFF87CEEB; // Bleu clair
-            symbol = "~";
-        } else if (temp < 1.0f) {
-            color = 0xFF90EE90; // Vert
-            symbol = "◉";
-        } else if (temp < 1.5f) {
-            color = 0xFFFFD700; // Or
-            symbol = "☼";
-        } else {
-            color = 0xFFFF4500; // Rouge
-            symbol = "♨";
+        switch (temp) {
+            case -2 -> { color = 0xFF00BFFF; symbol = "❄"; tempDesc = "Glacial"; }
+            case -1 -> { color = 0xFF87CEEB; symbol = "~"; tempDesc = "Froid"; }
+            case 0 -> { color = 0xFF90EE90; symbol = "◉"; tempDesc = "Tempéré"; }
+            case 1 -> { color = 0xFFFFD700; symbol = "☼"; tempDesc = "Chaud"; }
+            default -> { color = 0xFFFF4500; symbol = "♨"; tempDesc = "Brûlant"; } // 2+
         }
 
         guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, color);
         guiGraphics.drawCenteredString(font, symbol, x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
 
         if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
-            String tempDesc = temp < 0.2f ? "Glacial" : temp < 0.5f ? "Froid" : temp < 1.0f ? "Tempéré" : temp < 1.5f ? "Chaud" : "Brûlant";
             guiGraphics.renderTooltip(font,
-                    Component.literal("Température: " + tempDesc + " (" + String.format("%.1f", temp) + ")").withStyle(ChatFormatting.GOLD),
+                    Component.literal("Température: " + tempDesc + " (" + temp + ")").withStyle(ChatFormatting.GOLD),
                     mouseX, mouseY);
         }
     }

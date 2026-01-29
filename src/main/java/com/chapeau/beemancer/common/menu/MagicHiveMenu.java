@@ -108,9 +108,9 @@ public class MagicHiveMenu extends AbstractContainerMenu {
         return data.get(3) != 0;
     }
 
-    /** @return la température du biome (0.0 - 2.0) */
-    public float getTemperature() {
-        return data.get(4) / 100f;
+    /** @return la température du biome (-2 à 2) */
+    public int getTemperature() {
+        return data.get(4) - 2; // Retirer l'offset
     }
 
     /** @return true si l'abeille dans le slot peut aller butiner */
