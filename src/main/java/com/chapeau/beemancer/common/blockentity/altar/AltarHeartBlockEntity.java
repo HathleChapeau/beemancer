@@ -332,8 +332,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
             .getRecipeFor(BeemancerRecipeTypes.ALTAR.get(), input, level);
 
         if (recipeHolder.isEmpty()) {
-            // Pas de recette trouvee - son d'echec
-            playFailSound();
+            // Pas de recette trouvee - pas de son
             return false;
         }
 
@@ -349,10 +348,10 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
             Map<Item, Integer> toConsume = recipe.getPollenToConsume(availablePollen);
             if (!toConsume.isEmpty()) {
                 consumePollenPartial(pollenPots, toConsume);
-                playPartialSound();
+                playFailSound(); // Pchit - pollen consomme mais craft incomplet
                 return true;
             } else {
-                playFailSound();
+                // Pas de pollen a consommer - pas de son
                 return false;
             }
         }
@@ -508,17 +507,20 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     private void playFailSound() {
         if (level != null) {
             level.playSound(null, worldPosition, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 1.5f);
+
+            // Petites particules de poussiere
+            if (level instanceof ServerLevel serverLevel) {
+                BlockPos centerPedestalPos = worldPosition.offset(0, -2, 0);
+                double x = centerPedestalPos.getX() + 0.5;
+                double y = centerPedestalPos.getY() + 1.2;
+                double z = centerPedestalPos.getZ() + 0.5;
+
+                serverLevel.sendParticles(ParticleTypes.SMOKE,
+                    x, y, z, 5, 0.2, 0.1, 0.2, 0.01);
+            }
         }
     }
 
-    /**
-     * Joue un son de consommation partielle.
-     */
-    private void playPartialSound() {
-        if (level != null) {
-            level.playSound(null, worldPosition, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 0.7f, 1.0f);
-        }
-    }
 
     // ==================== Animation ====================
 
