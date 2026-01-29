@@ -1,0 +1,9 @@
+{
+  "type": "beemancer:altar",
+  "center_item": { "item": "minecraft:diamond" },
+  "pedestal_items": [
+    { "item": "minecraft:iron_ingot" },
+    { "item": "minecraft:iron_ingot" }
+  ],
+  "result": { "id": "minecraft:diamond_block" }
+}

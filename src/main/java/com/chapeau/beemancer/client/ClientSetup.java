@@ -22,6 +22,7 @@ import com.chapeau.beemancer.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.beemancer.client.renderer.BuildingWandPreviewRenderer;
 import com.chapeau.beemancer.client.renderer.block.AltarHeartRenderer;
 import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
+import com.chapeau.beemancer.client.renderer.block.HoneyPedestalRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
@@ -111,6 +112,9 @@ public class ClientSetup {
         // AltarHeartRenderer - rendu des conduits animés
         event.registerBlockEntityRenderer(BeemancerBlockEntities.ALTAR_HEART.get(),
             AltarHeartRenderer::new);
+        // HoneyPedestalRenderer - item flottant au-dessus du pedestal
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.HONEY_PEDESTAL.get(),
+            HoneyPedestalRenderer::new);
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
