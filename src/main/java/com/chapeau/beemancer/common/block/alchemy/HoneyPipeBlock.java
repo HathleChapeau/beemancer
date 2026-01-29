@@ -159,7 +159,7 @@ public class HoneyPipeBlock extends BaseEntityBlock {
                 // Force visual update
                 level.setBlock(pos, state, 3);
 
-                level.playSound(null, pos, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 1.0f, 1.0f);
+                level.playSound(null, pos, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 0.7f, 1.0f);
                 player.displayClientMessage(Component.literal("Tint removed"), true);
                 return ItemInteractionResult.SUCCESS;
             }
