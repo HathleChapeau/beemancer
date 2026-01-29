@@ -540,8 +540,6 @@ public class BeemancerItems {
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> QUARTZ_SHARD = ITEMS.register("quartz_shard",
             () -> new Item(new Item.Properties()));
-    public static final DeferredItem<Item> GLOWSTONE_DUST_SHARD = ITEMS.register("glowstone_dust_shard",
-            () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> SLIME_BALL_SHARD = ITEMS.register("slime_ball_shard",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> MAGMA_CREAM_SHARD = ITEMS.register("magma_cream_shard",
@@ -559,8 +557,6 @@ public class BeemancerItems {
     public static final DeferredItem<Item> LAPIS_LAZULI_FRAGMENT = ITEMS.register("lapis_lazuli_fragment",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> QUARTZ_FRAGMENT = ITEMS.register("quartz_fragment",
-            () -> new Item(new Item.Properties()));
-    public static final DeferredItem<Item> GLOWSTONE_DUST_FRAGMENT = ITEMS.register("glowstone_dust_fragment",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> SLIME_BALL_FRAGMENT = ITEMS.register("slime_ball_fragment",
             () -> new Item(new Item.Properties()));
