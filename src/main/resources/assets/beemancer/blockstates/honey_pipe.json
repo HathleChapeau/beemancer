@@ -16,6 +16,10 @@
     { "when": { "formed": true, "formed_rotation": 0 }, "apply": { "model": "beemancer:block/pipes/honey_pipe_formed" } },
     { "when": { "formed": true, "formed_rotation": 1 }, "apply": { "model": "beemancer:block/pipes/honey_pipe_formed", "y": 90 } },
     { "when": { "formed": true, "formed_rotation": 2 }, "apply": { "model": "beemancer:block/pipes/honey_pipe_formed", "y": 180 } },
-    { "when": { "formed": true, "formed_rotation": 3 }, "apply": { "model": "beemancer:block/pipes/honey_pipe_formed", "y": 270 } }
+    { "when": { "formed": true, "formed_rotation": 3 }, "apply": { "model": "beemancer:block/pipes/honey_pipe_formed", "y": 270 } },
+    { "when": { "formed": true, "formed_rotation": 4 }, "apply": { "model": "beemancer:block/pipes/honey_pipe_formed", "x": 180 } },
+    { "when": { "formed": true, "formed_rotation": 5 }, "apply": { "model": "beemancer:block/pipes/honey_pipe_formed", "x": 180, "y": 90 } },
+    { "when": { "formed": true, "formed_rotation": 6 }, "apply": { "model": "beemancer:block/pipes/honey_pipe_formed", "x": 180, "y": 180 } },
+    { "when": { "formed": true, "formed_rotation": 7 }, "apply": { "model": "beemancer:block/pipes/honey_pipe_formed", "x": 180, "y": 270 } }
   ]
 }

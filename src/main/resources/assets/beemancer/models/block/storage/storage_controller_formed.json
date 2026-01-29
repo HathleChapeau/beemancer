@@ -4,32 +4,5 @@
     "all": "beemancer:block/logistic/storage_controller",
     "particle": "beemancer:block/logistic/storage_controller"
   },
-  "elements": [
-    {
-      "name": "Cube Bottom",
-      "from": [6, 6, 6],
-      "to": [8, 8, 8],
-      "faces": {
-        "north": {"texture": "#all"},
-        "east": {"texture": "#all"},
-        "south": {"texture": "#all"},
-        "west": {"texture": "#all"},
-        "up": {"texture": "#all"},
-        "down": {"texture": "#all"}
-      }
-    },
-    {
-      "name": "Cube Top",
-      "from": [8, 8, 8],
-      "to": [10, 10, 10],
-      "faces": {
-        "north": {"texture": "#all"},
-        "east": {"texture": "#all"},
-        "south": {"texture": "#all"},
-        "west": {"texture": "#all"},
-        "up": {"texture": "#all"},
-        "down": {"texture": "#all"}
-      }
-    }
-  ]
+  "elements": []
 }

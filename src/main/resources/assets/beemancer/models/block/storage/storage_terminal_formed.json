@@ -17,32 +17,6 @@
         "up": {"texture": "#screen", "uv": [3, 0, 13, 2]},
         "down": {"texture": "#screen", "uv": [3, 14, 13, 16]}
       }
-    },
-    {
-      "name": "Middle Plate 14x14x2",
-      "from": [1, 1, 12],
-      "to": [15, 15, 14],
-      "faces": {
-        "north": {"texture": "#screen", "uv": [1, 1, 15, 15]},
-        "east": {"texture": "#screen", "uv": [2, 1, 4, 15]},
-        "south": {"texture": "#screen", "uv": [1, 1, 15, 15]},
-        "west": {"texture": "#screen", "uv": [12, 1, 14, 15]},
-        "up": {"texture": "#screen", "uv": [1, 2, 15, 4]},
-        "down": {"texture": "#screen", "uv": [1, 12, 15, 14]}
-      }
-    },
-    {
-      "name": "Front Plate 14x14x2",
-      "from": [1, 1, 10],
-      "to": [15, 15, 12],
-      "faces": {
-        "north": {"texture": "#screen", "uv": [1, 1, 15, 15]},
-        "east": {"texture": "#screen", "uv": [4, 1, 6, 15]},
-        "south": {"texture": "#screen", "uv": [1, 1, 15, 15]},
-        "west": {"texture": "#screen", "uv": [10, 1, 12, 15]},
-        "up": {"texture": "#screen", "uv": [1, 4, 15, 6]},
-        "down": {"texture": "#screen", "uv": [1, 10, 15, 12]}
-      }
     }
   ]
 }

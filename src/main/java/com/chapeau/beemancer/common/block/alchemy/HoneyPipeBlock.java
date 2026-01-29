@@ -75,7 +75,7 @@ public class HoneyPipeBlock extends BaseEntityBlock {
 
     // Multibloc formed state
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
-    public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 3);
+    public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 7);
 
     // Core: 6x6x6 center + 8x8x8 frame outline
     private static final VoxelShape CORE = Block.box(4, 4, 4, 12, 12, 12);

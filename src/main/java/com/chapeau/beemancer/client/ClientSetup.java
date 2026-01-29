@@ -24,6 +24,7 @@ import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyPedestalRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
+import com.chapeau.beemancer.client.renderer.block.StorageTerminalRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.beemancer.client.renderer.debug.HiveDebugRenderer;
 import com.chapeau.beemancer.client.model.RideableBeeModel;
@@ -104,6 +105,8 @@ public class ClientSetup {
         // Block Entity Renderers
         event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_CONTROLLER.get(),
             StorageControllerRenderer::new);
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_TERMINAL.get(),
+            StorageTerminalRenderer::new);
         event.registerBlockEntityRenderer(BeemancerBlockEntities.BEE_STATUE.get(),
             BeeStatueRenderer::new);
         // HoneyReservoirRenderer - rendu dynamique du fluide avec scale
@@ -240,5 +243,11 @@ public class ClientSetup {
             ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_big_ring")));
         event.register(ModelResourceLocation.standalone(
             ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring")));
+
+        // Modèles du Storage Controller formé (cubes animés)
+        event.register(StorageControllerRenderer.CUBE_MODEL_LOC);
+
+        // Modèle plaque du Storage Terminal formé (plaques animées)
+        event.register(StorageTerminalRenderer.PLATE_MODEL_LOC);
     }
 }

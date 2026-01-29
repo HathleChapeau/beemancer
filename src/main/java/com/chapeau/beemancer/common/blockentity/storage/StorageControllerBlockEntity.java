@@ -213,20 +213,29 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     /**
      * Calcule la rotation à appliquer sur un bloc de la structure.
-     * Les pipes ont une rotation spécifique (direction du coude), les autres
-     * utilisent directement la rotation du multibloc.
+     * Les pipes ont une rotation spécifique (direction du coude + flip vertical),
+     * les autres utilisent directement la rotation du multibloc.
+     *
+     * Pipes formed_rotation:
+     * - 0-3: coude vertical vers le bas (ouverture en bas), Y rotation 0/90/180/270
+     * - 4-7: coude vertical vers le haut (x=180 flip), Y rotation 0/90/180/270
+     * Pipes du bas (y<0): ouverture vers le haut (valeurs 4-7)
+     * Pipes du haut (y>0): ouverture vers le bas (valeurs 0-3)
      *
      * @param originalOffset L'offset original (non roté) dans le pattern
      * @param state Le BlockState actuel du bloc
-     * @return La rotation (0-3) à appliquer sur le bloc
+     * @return La rotation à appliquer sur le bloc (0-3 pour la plupart, 0-7 pour les pipes)
      */
     private int computeBlockRotation(Vec3i originalOffset, BlockState state) {
         if (state.getBlock() instanceof HoneyPipeBlock) {
-            // Le modèle de pipe formed a un coude vers +X.
+            // Le modèle de pipe formed a un coude vers +X, ouverture en bas.
             // Pipe à x=-1: coude vers +X = rotation de base 0
             // Pipe à x=+1: coude vers -X = rotation de base 2
-            int baseRotation = originalOffset.getX() < 0 ? 0 : 2;
-            return (baseRotation + multiblockRotation) & 3;
+            int baseRotation = (originalOffset.getX() < 0 ? 0 : 2);
+            int yRotation = (baseRotation + multiblockRotation) & 3;
+            // Pipes en bas (y<0): flip vertical (+4) pour que l'ouverture pointe vers le haut
+            boolean bottom = originalOffset.getY() < 0;
+            return bottom ? yRotation + 4 : yRotation;
         }
         return multiblockRotation;
     }

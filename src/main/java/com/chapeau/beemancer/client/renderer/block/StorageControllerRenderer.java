@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [StorageControllerRenderer.java]
- * Description: Renderer pour visualiser le mode édition du Storage Controller
+ * Description: Renderer pour le Storage Controller (mode édition + animation formé)
  * ============================================================
  *
  * DÉPENDANCES:
@@ -9,7 +9,8 @@
  * | Dépendance                      | Raison                  | Utilisation           |
  * |---------------------------------|------------------------|-----------------------|
  * | StorageControllerBlockEntity    | BlockEntity            | Données de rendu      |
- * | RenderType                      | Type de rendu          | Lignes debug          |
+ * | StorageControllerBlock          | FORMED property        | État formé            |
+ * | RenderType                      | Type de rendu          | Lignes debug + solid  |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -19,31 +20,52 @@
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 
 import java.util.Set;
 
 /**
- * Renderer pour le Storage Controller en mode édition.
+ * Renderer pour le Storage Controller.
  *
- * Affiche:
+ * Mode édition:
  * - Outline rouge autour du controller
  * - Lignes vertes vers chaque coffre enregistré
  * - Outlines bleus autour des coffres enregistrés
+ *
+ * Mode formé:
+ * - 2 cubes à x=2 et x=14, le tout tourne sur X/Y/Z à des rythmes différents
+ * - Chaque cube oscille individuellement avec sin/cos
  */
 public class StorageControllerRenderer implements BlockEntityRenderer<StorageControllerBlockEntity> {
 
+    private final BlockRenderDispatcher blockRenderer;
+    private final RandomSource random = RandomSource.create();
+
+    public static final ModelResourceLocation CUBE_MODEL_LOC =
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "block/storage/storage_controller_cube"));
+
     public StorageControllerRenderer(BlockEntityRendererProvider.Context context) {
-        // Context non utilisé
+        this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
     }
 
     @Override
@@ -51,28 +73,109 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
                        PoseStack poseStack, MultiBufferSource bufferSource,
                        int packedLight, int packedOverlay) {
 
-        // Seulement afficher en mode édition
-        if (!blockEntity.isEditMode()) {
-            return;
-        }
+        BlockState state = blockEntity.getBlockState();
+        boolean formed = state.hasProperty(StorageControllerBlock.FORMED) &&
+                         state.getValue(StorageControllerBlock.FORMED);
 
-        // Vérifier que c'est le joueur qui édite
+        if (formed) {
+            renderFormedAnimation(blockEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        } else if (blockEntity.isEditMode()) {
+            renderEditMode(blockEntity, poseStack, bufferSource);
+        }
+    }
+
+    /**
+     * Rend l'animation du controller formé.
+     * Tout le renderer tourne sur X, Y, Z à des rythmes différents.
+     * Chaque cube oscille individuellement avec sin/cos.
+     */
+    private void renderFormedAnimation(StorageControllerBlockEntity blockEntity, float partialTick,
+                                        PoseStack poseStack, MultiBufferSource bufferSource,
+                                        int packedLight, int packedOverlay) {
+
+        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
+        float time = (gameTime + partialTick);
+
+        BakedModel cubeModel = Minecraft.getInstance().getModelManager()
+            .getModel(CUBE_MODEL_LOC);
+
+        BlockState state = blockEntity.getBlockState();
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.solid());
+
+        // === Rotation globale (tout le renderer tourne) ===
+        poseStack.pushPose();
+        poseStack.translate(0.5, 0.5, 0.5);
+        poseStack.mulPose(Axis.XP.rotationDegrees(time * 1.0f));
+        poseStack.mulPose(Axis.YP.rotationDegrees(time * 1.5f));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(time * 0.7f));
+        poseStack.translate(-0.5, -0.5, -0.5);
+
+        // === Cube 1 (position x=2/16) avec oscillation individuelle ===
+        poseStack.pushPose();
+        float osc1X = (float) Math.sin(time * 0.05) * 0.05f;
+        float osc1Y = (float) Math.cos(time * 0.07) * 0.05f;
+        // Décaler vers x=2/16 depuis le centre du modèle (7/16)
+        poseStack.translate((2.0 / 16.0) - (7.0 / 16.0) + osc1X, osc1Y, 0);
+        blockRenderer.getModelRenderer().tesselateBlock(
+            blockEntity.getLevel(),
+            cubeModel,
+            state,
+            blockEntity.getBlockPos(),
+            poseStack,
+            vertexConsumer,
+            false,
+            random,
+            packedLight,
+            packedOverlay,
+            ModelData.EMPTY,
+            RenderType.solid()
+        );
+        poseStack.popPose();
+
+        // === Cube 2 (position x=14/16) avec oscillation individuelle ===
+        poseStack.pushPose();
+        float osc2X = (float) Math.sin(time * 0.06) * 0.05f;
+        float osc2Y = (float) Math.cos(time * 0.04) * 0.05f;
+        // Décaler vers x=14/16 depuis le centre du modèle (7/16)
+        poseStack.translate((14.0 / 16.0) - (7.0 / 16.0) + osc2X, osc2Y, 0);
+        blockRenderer.getModelRenderer().tesselateBlock(
+            blockEntity.getLevel(),
+            cubeModel,
+            state,
+            blockEntity.getBlockPos(),
+            poseStack,
+            vertexConsumer,
+            false,
+            random,
+            packedLight,
+            packedOverlay,
+            ModelData.EMPTY,
+            RenderType.solid()
+        );
+        poseStack.popPose();
+
+        poseStack.popPose(); // Fin rotation globale
+    }
+
+    /**
+     * Rend le mode édition (outlines et lignes debug).
+     */
+    private void renderEditMode(StorageControllerBlockEntity blockEntity,
+                                 PoseStack poseStack, MultiBufferSource bufferSource) {
+
         var player = Minecraft.getInstance().player;
         if (player == null || !player.getUUID().equals(blockEntity.getEditingPlayer())) {
             return;
         }
 
-        // Obtenir le buffer une seule fois pour toutes les lignes
         VertexConsumer lineBuffer = bufferSource.getBuffer(RenderType.lines());
 
         poseStack.pushPose();
 
         Matrix4f matrix = poseStack.last().pose();
 
-        // Outline rouge autour du controller
         renderControllerOutline(lineBuffer, matrix);
 
-        // Lignes et outlines pour les coffres
         BlockPos controllerPos = blockEntity.getBlockPos();
         Set<BlockPos> chests = blockEntity.getRegisteredChests();
 
@@ -91,20 +194,16 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         float min = -0.01f;
         float max = 1.01f;
 
-        // Dessiner les 12 arêtes du cube
-        // Bottom face
         drawLine(buffer, matrix, min, min, min, max, min, min, r, g, b, a);
         drawLine(buffer, matrix, max, min, min, max, min, max, r, g, b, a);
         drawLine(buffer, matrix, max, min, max, min, min, max, r, g, b, a);
         drawLine(buffer, matrix, min, min, max, min, min, min, r, g, b, a);
 
-        // Top face
         drawLine(buffer, matrix, min, max, min, max, max, min, r, g, b, a);
         drawLine(buffer, matrix, max, max, min, max, max, max, r, g, b, a);
         drawLine(buffer, matrix, max, max, max, min, max, max, r, g, b, a);
         drawLine(buffer, matrix, min, max, max, min, max, min, r, g, b, a);
 
-        // Vertical edges
         drawLine(buffer, matrix, min, min, min, min, max, min, r, g, b, a);
         drawLine(buffer, matrix, max, min, min, max, max, min, r, g, b, a);
         drawLine(buffer, matrix, max, min, max, max, max, max, r, g, b, a);
@@ -116,32 +215,26 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
      */
     private void renderLineToChest(VertexConsumer buffer, Matrix4f matrix,
                                     BlockPos controllerPos, BlockPos chestPos) {
-        // Position relative du coffre
         float dx = chestPos.getX() - controllerPos.getX();
         float dy = chestPos.getY() - controllerPos.getY();
         float dz = chestPos.getZ() - controllerPos.getZ();
 
-        // Ligne verte du centre du controller au centre du coffre
         drawLine(buffer, matrix, 0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f, 0.2f, 1.0f, 0.2f, 1.0f);
 
-        // Outline bleu autour du coffre
         float r = 0.2f, g = 0.6f, b = 1.0f, a = 1.0f;
         float min = -0.02f;
         float max = 1.02f;
 
-        // Bottom face
         drawLine(buffer, matrix, dx + min, dy + min, dz + min, dx + max, dy + min, dz + min, r, g, b, a);
         drawLine(buffer, matrix, dx + max, dy + min, dz + min, dx + max, dy + min, dz + max, r, g, b, a);
         drawLine(buffer, matrix, dx + max, dy + min, dz + max, dx + min, dy + min, dz + max, r, g, b, a);
         drawLine(buffer, matrix, dx + min, dy + min, dz + max, dx + min, dy + min, dz + min, r, g, b, a);
 
-        // Top face
         drawLine(buffer, matrix, dx + min, dy + max, dz + min, dx + max, dy + max, dz + min, r, g, b, a);
         drawLine(buffer, matrix, dx + max, dy + max, dz + min, dx + max, dy + max, dz + max, r, g, b, a);
         drawLine(buffer, matrix, dx + max, dy + max, dz + max, dx + min, dy + max, dz + max, r, g, b, a);
         drawLine(buffer, matrix, dx + min, dy + max, dz + max, dx + min, dy + max, dz + min, r, g, b, a);
 
-        // Vertical edges
         drawLine(buffer, matrix, dx + min, dy + min, dz + min, dx + min, dy + max, dz + min, r, g, b, a);
         drawLine(buffer, matrix, dx + max, dy + min, dz + min, dx + max, dy + max, dz + min, r, g, b, a);
         drawLine(buffer, matrix, dx + max, dy + min, dz + max, dx + max, dy + max, dz + max, r, g, b, a);
@@ -155,7 +248,6 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
                           float x1, float y1, float z1,
                           float x2, float y2, float z2,
                           float r, float g, float b, float a) {
-        // Calculer la normale (direction de la ligne normalisée)
         float dx = x2 - x1;
         float dy = y2 - y1;
         float dz = z2 - z1;
@@ -176,13 +268,11 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
     @Override
     public boolean shouldRenderOffScreen(StorageControllerBlockEntity blockEntity) {
-        // Rendre même si le bloc est hors écran (pour les lignes longues)
-        return blockEntity.isEditMode();
+        return blockEntity.isEditMode() || blockEntity.isFormed();
     }
 
     @Override
     public int getViewDistance() {
-        // Distance de vue étendue pour le mode édition
         return 48;
     }
 }
