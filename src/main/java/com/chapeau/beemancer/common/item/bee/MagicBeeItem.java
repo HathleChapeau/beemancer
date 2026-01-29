@@ -229,9 +229,9 @@ public class MagicBeeItem extends Item {
                     default -> "tooltip.beemancer.activity.diurnal";
                 };
                 ChatFormatting activityColor = switch (speciesData.dayNight) {
-                    case "night" -> ChatFormatting.DARK_PURPLE;  // NOCTURNAL
+                    case "night" -> ChatFormatting.DARK_AQUA;    // NOCTURNAL
                     case "both" -> ChatFormatting.LIGHT_PURPLE;  // INSOMNIA
-                    default -> ChatFormatting.DARK_AQUA;         // DIURNAL
+                    default -> ChatFormatting.DARK_GREEN;        // DIURNAL
                 };
                 tooltip.add(Component.translatable("tooltip.beemancer.activity")
                         .withStyle(ChatFormatting.GRAY)

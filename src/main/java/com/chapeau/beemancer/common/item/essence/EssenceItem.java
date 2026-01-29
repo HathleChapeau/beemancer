@@ -88,8 +88,8 @@ public class EssenceItem extends Item {
         SPEED("speed", ChatFormatting.AQUA),
         FORAGING("foraging", ChatFormatting.GREEN),
         TOLERANCE("tolerance", ChatFormatting.RED),
-        DIURNAL("diurnal", ChatFormatting.DARK_AQUA),
-        NOCTURNAL("nocturnal", ChatFormatting.DARK_PURPLE),
+        DIURNAL("diurnal", ChatFormatting.DARK_GREEN),
+        NOCTURNAL("nocturnal", ChatFormatting.DARK_AQUA),
         INSOMNIA("insomnia", ChatFormatting.LIGHT_PURPLE);
 
         public static final StringRepresentable.EnumCodec<EssenceType> CODEC =
