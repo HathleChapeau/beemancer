@@ -38,7 +38,7 @@ public class MagicHiveMenu extends AbstractContainerMenu {
 
     // Client constructor
     public MagicHiveMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buf) {
-        this(containerId, playerInventory, new SimpleContainer(MagicHiveBlockEntity.TOTAL_SLOTS), new SimpleContainerData(1));
+        this(containerId, playerInventory, new SimpleContainer(MagicHiveBlockEntity.TOTAL_SLOTS), new SimpleContainerData(10));
     }
 
     // Server constructor
@@ -87,10 +87,41 @@ public class MagicHiveMenu extends AbstractContainerMenu {
     }
 
     /**
-     * @return true if breeding mode is active (crystal above hive)
+     * @return true si le crystal antibreeding est présent (pas de reproduction)
      */
-    public boolean isBreedingMode() {
+    public boolean isAntibreedingMode() {
         return data.get(0) != 0;
+    }
+
+    /** @return true si des fleurs sont disponibles */
+    public boolean hasFlowers() {
+        return data.get(1) != 0;
+    }
+
+    /** @return true si des champignons sont disponibles */
+    public boolean hasMushrooms() {
+        return data.get(2) != 0;
+    }
+
+    /** @return true si c'est le jour */
+    public boolean isDaytime() {
+        return data.get(3) != 0;
+    }
+
+    /** @return la température du biome (0.0 - 2.0) */
+    public float getTemperature() {
+        return data.get(4) / 100f;
+    }
+
+    /** @return true si l'abeille dans le slot peut aller butiner */
+    public boolean canBeeForage(int slot) {
+        if (slot < 0 || slot >= MagicHiveBlockEntity.BEE_SLOTS) return false;
+        return data.get(5 + slot) != 0;
+    }
+
+    // Alias pour compatibilité
+    public boolean isBreedingMode() {
+        return isAntibreedingMode();
     }
 
     @Override

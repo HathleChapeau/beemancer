@@ -80,7 +80,6 @@ public class BeemancerCreativeTabs {
 
     private static void addCodexAndTools(CreativeModeTab.Output output) {
         output.accept(BeemancerItems.CODEX.get());
-        output.accept(BeemancerItems.BEE_WAND.get());
         output.accept(BeemancerItems.BUILDING_WAND.get());
         output.accept(BeemancerItems.DEBUG_WAND.get());
     }
@@ -95,7 +94,7 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.BEE_CREATOR.get());
         output.accept(BeemancerItems.MAGIC_HIVE.get());
         output.accept(BeemancerItems.INCUBATOR.get());
-        output.accept(BeemancerItems.BREEDING_CRYSTAL.get());
+        output.accept(BeemancerItems.ANTIBREEDING_CRYSTAL.get());
         output.accept(BeemancerItems.HIVE_MULTIBLOCK.get());
     }
 

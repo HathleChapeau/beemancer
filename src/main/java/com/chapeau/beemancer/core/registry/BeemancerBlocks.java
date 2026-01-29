@@ -77,13 +77,16 @@ public class BeemancerBlocks {
                     .strength(3.0f)
                     .requiresCorrectToolForDrops()));
 
-    // --- BREEDING ---
-    public static final DeferredBlock<Block> BREEDING_CRYSTAL = BLOCKS.register("breeding_crystal",
+    // --- ANTIBREEDING ---
+    public static final DeferredBlock<Block> ANTIBREEDING_CRYSTAL = BLOCKS.register("antibreeding_crystal",
             () -> new MagicBreedingCrystalBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f)
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 7)
                     .noOcclusion()));
+
+    // Legacy alias
+    public static final DeferredBlock<Block> BREEDING_CRYSTAL = ANTIBREEDING_CRYSTAL;
 
     // --- ALCHEMY MACHINES ---
     public static final DeferredBlock<ManualCentrifugeBlock> MANUAL_CENTRIFUGE = BLOCKS.register("manual_centrifuge",

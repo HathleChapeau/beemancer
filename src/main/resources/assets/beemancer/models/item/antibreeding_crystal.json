@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/breeding_crystal"
+    "layer0": "beemancer:item/antibreeding_crystal"
   }
 }

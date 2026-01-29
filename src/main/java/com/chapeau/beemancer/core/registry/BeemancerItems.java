@@ -8,7 +8,6 @@ package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
-import com.chapeau.beemancer.common.item.bee.BeeWandItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.item.codex.CodexItem;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
@@ -46,8 +45,11 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> INCUBATOR = ITEMS.register("incubator",
             () -> new BlockItem(BeemancerBlocks.INCUBATOR.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> BREEDING_CRYSTAL = ITEMS.register("breeding_crystal",
-            () -> new BlockItem(BeemancerBlocks.BREEDING_CRYSTAL.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> ANTIBREEDING_CRYSTAL = ITEMS.register("antibreeding_crystal",
+            () -> new BlockItem(BeemancerBlocks.ANTIBREEDING_CRYSTAL.get(), new Item.Properties()));
+
+    // Legacy alias
+    public static final DeferredItem<BlockItem> BREEDING_CRYSTAL = ANTIBREEDING_CRYSTAL;
 
     // --- ALCHEMY MACHINES ---
     public static final DeferredItem<BlockItem> MANUAL_CENTRIFUGE = ITEMS.register("manual_centrifuge",
@@ -297,9 +299,6 @@ public class BeemancerItems {
             () -> new BeeLarvaItem(new Item.Properties()));
 
     // --- TOOLS ---
-    public static final DeferredItem<BeeWandItem> BEE_WAND = ITEMS.register("bee_wand",
-            () -> new BeeWandItem(new Item.Properties()));
-
     public static final DeferredItem<BuildingWandItem> BUILDING_WAND = ITEMS.register("building_wand",
             () -> new BuildingWandItem(new Item.Properties()));
 

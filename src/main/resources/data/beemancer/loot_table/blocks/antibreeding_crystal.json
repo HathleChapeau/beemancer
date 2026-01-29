@@ -7,7 +7,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "beemancer:breeding_crystal"
+          "name": "beemancer:antibreeding_crystal"
         }
       ],
       "conditions": [

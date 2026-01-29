@@ -40,6 +40,7 @@ public class HiveFlowerPool {
 
     private final List<BlockPos> availableFlowers = new ArrayList<>();
     private int scanCooldown = 0;
+    private boolean foundMushrooms = false;
 
     // --- Scanning ---
 
@@ -70,10 +71,16 @@ public class HiveFlowerPool {
         if (level == null) return;
 
         Set<BlockPos> found = new HashSet<>();
+        foundMushrooms = false;
 
         for (TagKey<Block> flowerTag : flowerTags) {
             List<BlockPos> flowers = FlowerSearchHelper.findAllFlowers(level, hivePos, radius, flowerTag);
             found.addAll(flowers);
+
+            // Détecter les champignons par le tag
+            if (flowerTag.location().getPath().contains("mushroom")) {
+                foundMushrooms = !flowers.isEmpty();
+            }
         }
 
         // Exclure les fleurs déjà assignées
@@ -137,6 +144,10 @@ public class HiveFlowerPool {
 
     public boolean hasFlowers() {
         return !availableFlowers.isEmpty();
+    }
+
+    public boolean hasMushrooms() {
+        return foundMushrooms;
     }
 
     public int getFlowerCount() {

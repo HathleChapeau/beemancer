@@ -11,7 +11,6 @@ import com.chapeau.beemancer.client.camera.RidingCameraController;
 import com.chapeau.beemancer.client.color.PollenColors;
 import com.chapeau.beemancer.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.beemancer.client.gui.hud.RideableBeeDebugHud;
-import com.chapeau.beemancer.client.gui.hud.WandOverlayRenderer;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
 import com.chapeau.beemancer.client.input.DebugKeyHandler;
 import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
@@ -66,7 +65,6 @@ public class ClientSetup {
         modEventBus.addListener(ClientSetup::registerBlockColors);
         modEventBus.addListener(ClientSetup::registerAdditionalModels);
 
-        NeoForge.EVENT_BUS.register(WandOverlayRenderer.class);
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
         NeoForge.EVENT_BUS.register(DebugKeyHandler.class);

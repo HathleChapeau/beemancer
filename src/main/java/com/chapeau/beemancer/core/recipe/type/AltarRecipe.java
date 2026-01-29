@@ -18,7 +18,7 @@
  *   "center_item": { "item": "minecraft:diamond" },
  *   "pedestal_items": [ { "item": "beemancer:honeyed_iron" }, ... ],
  *   "pollen": { "beemancer:common_pollen": 4 },
- *   "result": { "id": "beemancer:bee_wand" }
+ *   "result": { "id": "beemancer:codex" }
  * }
  *
  * ============================================================

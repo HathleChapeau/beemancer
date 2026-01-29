@@ -7,6 +7,7 @@
 package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,9 +16,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Beemancer.MOD_ID, "textures/gui/magic_hive.png");
+
+    // Positions des icônes de status (coin supérieur droit)
+    private static final int ICON_SIZE = 12;
+    private static final int ICON_SPACING = 2;
 
     public MagicHiveScreen(MagicHiveMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -37,27 +45,164 @@ public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         renderTooltip(guiGraphics, mouseX, mouseY);
-        
-        // Render breeding indicator
-        if (menu.isBreedingMode()) {
-            renderBreedingIndicator(guiGraphics, mouseX, mouseY);
+
+        // Icônes de status permanents
+        renderStatusIcons(guiGraphics, mouseX, mouseY);
+
+        // Smileys pour chaque abeille
+        renderBeeSmileys(guiGraphics, mouseX, mouseY);
+    }
+
+    private void renderStatusIcons(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        int iconX = leftPos + imageWidth - ICON_SIZE - 4;
+        int iconY = topPos + 4;
+        int currentY = iconY;
+
+        // Icône Jour/Nuit (permanent)
+        renderDayNightIcon(guiGraphics, iconX, currentY, mouseX, mouseY);
+        currentY += ICON_SIZE + ICON_SPACING;
+
+        // Icône Température (permanent)
+        renderTemperatureIcon(guiGraphics, iconX, currentY, mouseX, mouseY);
+        currentY += ICON_SIZE + ICON_SPACING;
+
+        // Icône Fleur (si disponible)
+        if (menu.hasFlowers()) {
+            renderFlowerIcon(guiGraphics, iconX, currentY, mouseX, mouseY);
+            currentY += ICON_SIZE + ICON_SPACING;
+        }
+
+        // Icône Champignon (si disponible)
+        if (menu.hasMushrooms()) {
+            renderMushroomIcon(guiGraphics, iconX, currentY, mouseX, mouseY);
+            currentY += ICON_SIZE + ICON_SPACING;
+        }
+
+        // Icône Antibreeding (si crystal présent)
+        if (menu.isAntibreedingMode()) {
+            renderAntibreedingIcon(guiGraphics, iconX, currentY, mouseX, mouseY);
         }
     }
-    
-    private void renderBreedingIndicator(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        int x = leftPos + imageWidth - 20;
-        int y = topPos + 6;
-        
-        // Draw indicator icon (pink heart-like symbol)
-        guiGraphics.fill(x, y, x + 14, y + 14, 0xFFFF69B4); // Pink background
-        guiGraphics.drawCenteredString(font, "\u2665", x + 7, y + 3, 0xFFFFFFFF); // Heart symbol
-        
-        // Tooltip on hover
-        if (isHovering(imageWidth - 20, 6, 14, 14, mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font, 
-                    Component.translatable("gui.beemancer.magic_hive.breeding_mode")
-                            .withStyle(ChatFormatting.LIGHT_PURPLE), 
+
+    private void renderDayNightIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
+        boolean isDay = menu.isDaytime();
+        int bgColor = isDay ? 0xFFFFEB3B : 0xFF3F51B5; // Jaune jour, bleu nuit
+        String symbol = isDay ? "☀" : "☽";
+
+        guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, bgColor);
+        guiGraphics.drawCenteredString(font, symbol, x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
+
+        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+            guiGraphics.renderTooltip(font,
+                    Component.literal(isDay ? "Jour" : "Nuit").withStyle(ChatFormatting.YELLOW),
                     mouseX, mouseY);
+        }
+    }
+
+    private void renderTemperatureIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
+        float temp = menu.getTemperature();
+        int color;
+        String symbol;
+
+        if (temp < 0.2f) {
+            color = 0xFF00BFFF; // Bleu glacé
+            symbol = "❄";
+        } else if (temp < 0.5f) {
+            color = 0xFF87CEEB; // Bleu clair
+            symbol = "~";
+        } else if (temp < 1.0f) {
+            color = 0xFF90EE90; // Vert
+            symbol = "◉";
+        } else if (temp < 1.5f) {
+            color = 0xFFFFD700; // Or
+            symbol = "☼";
+        } else {
+            color = 0xFFFF4500; // Rouge
+            symbol = "♨";
+        }
+
+        guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, color);
+        guiGraphics.drawCenteredString(font, symbol, x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
+
+        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+            String tempDesc = temp < 0.2f ? "Glacial" : temp < 0.5f ? "Froid" : temp < 1.0f ? "Tempéré" : temp < 1.5f ? "Chaud" : "Brûlant";
+            guiGraphics.renderTooltip(font,
+                    Component.literal("Température: " + tempDesc + " (" + String.format("%.1f", temp) + ")").withStyle(ChatFormatting.GOLD),
+                    mouseX, mouseY);
+        }
+    }
+
+    private void renderFlowerIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
+        guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, 0xFF4CAF50); // Vert
+        guiGraphics.drawCenteredString(font, "✿", x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
+
+        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+            guiGraphics.renderTooltip(font,
+                    Component.literal("Fleurs disponibles").withStyle(ChatFormatting.GREEN),
+                    mouseX, mouseY);
+        }
+    }
+
+    private void renderMushroomIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
+        guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, 0xFF8B4513); // Marron
+        guiGraphics.drawCenteredString(font, "🍄", x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
+
+        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+            guiGraphics.renderTooltip(font,
+                    Component.literal("Champignons disponibles").withStyle(ChatFormatting.GOLD),
+                    mouseX, mouseY);
+        }
+    }
+
+    private void renderAntibreedingIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
+        // Rond rouge barré
+        guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, 0xFFCC0000); // Rouge
+        guiGraphics.drawCenteredString(font, "⊘", x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
+
+        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+            List<Component> tooltip = new ArrayList<>();
+            tooltip.add(Component.literal("Crystal Antibreeding actif").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.literal("Les abeilles ne se reproduisent pas").withStyle(ChatFormatting.GRAY));
+            guiGraphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
+        }
+    }
+
+    private void renderBeeSmileys(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        // Position des slots d'abeilles
+        int beeSlotY = topPos + 20;
+        int beeSlotStartX = leftPos + 44;
+
+        for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
+            // Vérifier si le slot a une abeille
+            if (menu.getContainer().getItem(i).isEmpty()) continue;
+
+            int slotX = beeSlotStartX + i * 18;
+            int smileyX = slotX + 12; // Coin supérieur droit du slot
+            int smileyY = beeSlotY - 2;
+
+            boolean canForage = menu.canBeeForage(i);
+            int color = canForage ? 0xFF00FF00 : 0xFFFF0000; // Vert ou rouge
+            String smiley = canForage ? "☺" : "☹";
+
+            // Dessiner le smiley
+            guiGraphics.drawString(font, smiley, smileyX, smileyY, color, false);
+
+            // Tooltip au survol
+            if (mouseX >= smileyX && mouseX < smileyX + 8 && mouseY >= smileyY && mouseY < smileyY + 8) {
+                List<Component> tooltip = new ArrayList<>();
+                if (canForage) {
+                    tooltip.add(Component.literal("Peut butiner").withStyle(ChatFormatting.GREEN));
+                } else {
+                    tooltip.add(Component.literal("Ne peut pas butiner").withStyle(ChatFormatting.RED));
+                    if (!menu.hasFlowers()) {
+                        tooltip.add(Component.literal("• Pas de fleurs").withStyle(ChatFormatting.GRAY));
+                    }
+                    if (menu.isAntibreedingMode()) {
+                        tooltip.add(Component.literal("• Mode antibreeding actif").withStyle(ChatFormatting.GRAY));
+                    }
+                }
+                guiGraphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
+            }
         }
     }
 }

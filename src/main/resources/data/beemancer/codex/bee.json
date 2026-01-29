@@ -21,16 +21,6 @@
       "rewards": {}
     },
     {
-      "id": "bee_wand",
-      "position": { "x": 1, "y": 3 },
-      "icon": "beemancer:textures/item/bee_wand.png",
-      "category": "NORMAL",
-      "parent": "introduction",
-      "hidden_until_parent_unlocked": false,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
       "id": "magic_hive",
       "position": { "x": 2, "y": 1 },
       "icon": "beemancer:textures/block/magic_hive.png",

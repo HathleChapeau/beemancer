@@ -83,26 +83,49 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     private final HiveFlowerPool flowerPool = new HiveFlowerPool();
 
     // Breeding
-    private boolean breedingMode = false;
+    private boolean antibreedingMode = false; // Crystal présent = pas de reproduction
     private int breedingCooldown = 0;
+    private static final double AUTO_BREEDING_CHANCE = 0.05; // 5% chance quand une abeille entre
+
+    // Conditions de ruche (pour GUI)
+    private boolean hasFlowers = false;
+    private boolean hasMushrooms = false;
+    private boolean isDaytime = true;
+    private float temperature = 0.5f;
 
     // Legacy compatibility
     public enum BeeState { EMPTY, INSIDE, OUTSIDE }
 
     // ContainerData for GUI sync
+    // 0: antibreedingMode, 1: hasFlowers, 2: hasMushrooms, 3: isDaytime, 4: temperature*100
+    // 5-9: canForage pour chaque slot d'abeille
     public final ContainerData containerData = new ContainerData() {
         @Override
         public int get(int index) {
-            return index == 0 ? (breedingMode ? 1 : 0) : 0;
+            return switch (index) {
+                case 0 -> antibreedingMode ? 1 : 0;
+                case 1 -> hasFlowers ? 1 : 0;
+                case 2 -> hasMushrooms ? 1 : 0;
+                case 3 -> isDaytime ? 1 : 0;
+                case 4 -> (int) (temperature * 100);
+                case 5, 6, 7, 8, 9 -> canBeeForage(index - 5) ? 1 : 0;
+                default -> 0;
+            };
         }
 
         @Override
         public void set(int index, int value) {
-            if (index == 0) breedingMode = value != 0;
+            switch (index) {
+                case 0 -> antibreedingMode = value != 0;
+                case 1 -> hasFlowers = value != 0;
+                case 2 -> hasMushrooms = value != 0;
+                case 3 -> isDaytime = value != 0;
+                case 4 -> temperature = value / 100f;
+            }
         }
 
         @Override
-        public int getCount() { return 1; }
+        public int getCount() { return 10; }
     };
 
     public MagicHiveBlockEntity(BlockPos pos, BlockState state) {
@@ -294,7 +317,30 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         };
     }
 
-    public boolean isBreedingMode() { return breedingMode; }
+    public boolean isAntibreedingMode() { return antibreedingMode; }
+    public boolean hasFlowers() { return hasFlowers; }
+    public boolean hasMushrooms() { return hasMushrooms; }
+    public boolean isDaytime() { return isDaytime; }
+    public float getTemperature() { return temperature; }
+
+    /**
+     * Vérifie si une abeille dans le slot peut aller butiner.
+     * Conditions: fleurs disponibles, jour (sauf nocturne), température OK, pas en breeding mode
+     */
+    public boolean canBeeForage(int slot) {
+        if (slot < 0 || slot >= BEE_SLOTS) return false;
+        if (items.get(slot).isEmpty()) return false;
+        if (!hasFlowers) return false;
+        if (antibreedingMode) return false; // En mode antibreeding, les abeilles restent dedans
+
+        BeeGeneData geneData = MagicBeeItem.getGeneData(items.get(slot));
+        BeeBehaviorConfig config = BeeBehaviorManager.getConfig(getSpeciesId(geneData));
+
+        // TODO: Vérifier si l'abeille est nocturne
+        // TODO: Vérifier la température requise par l'abeille
+
+        return true;
+    }
     public int[] getBeeCooldowns() {
         int[] cooldowns = new int[BEE_SLOTS];
         for (int i = 0; i < BEE_SLOTS; i++) cooldowns[i] = beeSlots[i].getCooldown();
@@ -386,8 +432,55 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         bee.setEnraged(false);
         bee.setReturning(false);
 
+        // Reproduction automatique 5% si pas de crystal antibreeding et abeille compatible présente
+        if (!antibreedingMode && level != null) {
+            tryAutoBreeding(slot, level.getRandom());
+        }
+
         triggerFlowerScan();
         setChanged();
+    }
+
+    /**
+     * Tente une reproduction automatique quand une abeille entre dans la ruche.
+     * 5% de chance si une autre abeille compatible est présente.
+     */
+    private void tryAutoBreeding(int enteringSlot, RandomSource random) {
+        if (random.nextDouble() >= AUTO_BREEDING_CHANCE) return;
+
+        // Chercher une autre abeille à l'intérieur
+        int partnerSlot = -1;
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            if (i != enteringSlot && beeSlots[i].isInside() && !items.get(i).isEmpty()) {
+                partnerSlot = i;
+                break;
+            }
+        }
+        if (partnerSlot < 0) return;
+
+        // Chercher un slot de sortie vide
+        int outputSlot = -1;
+        for (int i = BEE_SLOTS; i < TOTAL_SLOTS; i++) {
+            if (items.get(i).isEmpty()) {
+                outputSlot = i;
+                break;
+            }
+        }
+        if (outputSlot < 0) return;
+
+        // Vérifier compatibilité et créer larve
+        BeeGeneData parent1 = MagicBeeItem.getGeneData(items.get(enteringSlot));
+        BeeGeneData parent2 = MagicBeeItem.getGeneData(items.get(partnerSlot));
+
+        Gene species1 = parent1.getGene(GeneCategory.SPECIES);
+        Gene species2 = parent2.getGene(GeneCategory.SPECIES);
+        if (species1 == null || species2 == null) return;
+
+        String offspringSpecies = BreedingManager.resolveOffspringSpecies(species1.getId(), species2.getId(), random);
+        if ("nothing".equals(offspringSpecies)) return;
+
+        BeeGeneData offspringData = BreedingManager.createOffspringGeneData(parent1, parent2, offspringSpecies, random);
+        items.set(outputSlot, BeeLarvaItem.createWithGenes(offspringData));
     }
 
     public void onBeeKilled(UUID beeUUID) {
@@ -476,7 +569,11 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     // ==================== Tick ====================
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MagicHiveBlockEntity hive) {
-        hive.breedingMode = level.getBlockState(pos.above()).is(BeemancerBlocks.BREEDING_CRYSTAL.get());
+        // Vérifier si le crystal antibreeding est présent
+        hive.antibreedingMode = level.getBlockState(pos.above()).is(BeemancerBlocks.BREEDING_CRYSTAL.get());
+
+        // Mettre à jour les conditions de la ruche
+        hive.updateHiveConditions(level, pos);
 
         if (hive.flowerPool.tickScanCooldown()) {
             hive.triggerFlowerScan();
@@ -487,7 +584,25 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         }
 
         hive.checkReturningBees(level, pos);
-        hive.tickBreeding(level.getRandom());
+
+        // Breeding automatique seulement si PAS de crystal antibreeding
+        if (!hive.antibreedingMode) {
+            hive.tickBreeding(level.getRandom());
+        }
+    }
+
+    private void updateHiveConditions(Level level, BlockPos pos) {
+        // Jour/Nuit
+        isDaytime = level.isDay();
+
+        // Température du biome
+        temperature = level.getBiome(pos).value().getBaseTemperature();
+
+        // Fleurs disponibles
+        hasFlowers = flowerPool.hasFlowers();
+
+        // Champignons (vérifier si des champignons sont dans la pool)
+        hasMushrooms = flowerPool.hasMushrooms();
     }
 
     private void tickBeeSlot(int slot) {
@@ -508,7 +623,8 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             beeSlot.decrementCooldown();
         }
 
-        if (beeSlot.isCooldownComplete() && !beeSlot.needsHealing() && !breedingMode) {
+        // Les abeilles sortent si: cooldown fini, pas besoin de soin, et PAS de crystal antibreeding
+        if (beeSlot.isCooldownComplete() && !beeSlot.needsHealing() && !antibreedingMode) {
             releaseBee(slot);
         }
     }
@@ -527,7 +643,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     }
 
     private void tickBreeding(RandomSource random) {
-        if (breedingMode && breedingCooldown <= 0) {
+        if (!antibreedingMode && breedingCooldown <= 0) {
             if (random.nextDouble() < BreedingManager.BREEDING_CHANCE_PER_SECOND) {
                 attemptBreeding(random);
             }
