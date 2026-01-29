@@ -56,14 +56,41 @@ public class MultiblockPattern {
      * Retourne toutes les positions qui font partie du multibloc (hors air).
      */
     public List<Vec3i> getStructurePositions() {
+        return getStructurePositions(0);
+    }
+
+    /**
+     * Retourne toutes les positions qui font partie du multibloc (hors air),
+     * avec rotation horizontale appliquée.
+     * @param rotation 0=0°, 1=90°, 2=180°, 3=270° (sens horaire vu du dessus)
+     */
+    public List<Vec3i> getStructurePositions(int rotation) {
         List<Vec3i> positions = new ArrayList<>();
         for (PatternElement element : elements) {
-            // Exclure les positions "air" de la structure
             if (!BlockMatcher.isAirMatcher(element.matcher())) {
-                positions.add(element.offset());
+                positions.add(rotateY(element.offset(), rotation));
             }
         }
         return positions;
+    }
+
+    /**
+     * Applique une rotation horizontale (autour de l'axe Y) à un offset.
+     * @param offset L'offset relatif original
+     * @param rotation 0=0°, 1=90°, 2=180°, 3=270° (sens horaire vu du dessus)
+     * @return L'offset après rotation
+     */
+    public static Vec3i rotateY(Vec3i offset, int rotation) {
+        int x = offset.getX();
+        int y = offset.getY();
+        int z = offset.getZ();
+        return switch (rotation & 3) {
+            case 0 -> offset;                      // 0°:   (x, y, z)
+            case 1 -> new Vec3i(-z, y, x);         // 90°:  (-z, y, x)
+            case 2 -> new Vec3i(-x, y, -z);        // 180°: (-x, y, -z)
+            case 3 -> new Vec3i(z, y, -x);         // 270°: (z, y, -x)
+            default -> offset;
+        };
     }
 
     /**

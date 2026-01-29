@@ -81,9 +81,9 @@ public class MultiblockEvents {
                 continue;
             }
 
-            // Vérifier si le bloc cassé fait partie de ce multibloc
+            // Vérifier si le bloc cassé fait partie de ce multibloc (avec rotation)
             if (MultiblockValidator.isPartOfMultiblock(
-                    controller.getPattern(), controllerPos, brokenPos)) {
+                    controller.getPattern(), controllerPos, brokenPos, controller.getRotation())) {
                 // Invalider le multibloc
                 controller.onMultiblockBroken();
                 activeControllers.remove(controllerPos);

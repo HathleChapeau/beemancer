@@ -50,4 +50,12 @@ public interface MultiblockController {
      * Appelé quand le multibloc est détruit (bloc cassé).
      */
     void onMultiblockBroken();
+
+    /**
+     * @return La rotation horizontale du multibloc (0=0°, 1=90°, 2=180°, 3=270°).
+     *         Par défaut 0 (pas de rotation).
+     */
+    default int getRotation() {
+        return 0;
+    }
 }

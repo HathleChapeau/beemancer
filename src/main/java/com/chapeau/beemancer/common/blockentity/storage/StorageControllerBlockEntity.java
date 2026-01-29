@@ -78,6 +78,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     // Multibloc
     private boolean storageFormed = false;
+    private int multiblockRotation = 0;
 
     // Coffres enregistrés
     private final Set<BlockPos> registeredChests = new HashSet<>();
@@ -119,6 +120,11 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     }
 
     @Override
+    public int getRotation() {
+        return multiblockRotation;
+    }
+
+    @Override
     public void onMultiblockFormed() {
         storageFormed = true;
         if (level != null && !level.isClientSide()) {
@@ -133,10 +139,11 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     public void onMultiblockBroken() {
         storageFormed = false;
         if (level != null && !level.isClientSide()) {
+            setFormedOnStructureBlocks(false);
+            multiblockRotation = 0;
             if (level.getBlockState(worldPosition).hasProperty(StorageControllerBlock.FORMED)) {
                 level.setBlock(worldPosition, getBlockState().setValue(StorageControllerBlock.FORMED, false), 3);
             }
-            setFormedOnStructureBlocks(false);
             MultiblockEvents.unregisterController(worldPosition);
             setChanged();
         }
@@ -144,20 +151,22 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     /**
      * Tente de former le multibloc Storage Controller.
+     * Essaie les 4 rotations horizontales (0°, 90°, 180°, 270°).
      * @return true si la formation a réussi
      */
     public boolean tryFormStorage() {
         if (level == null || level.isClientSide()) return false;
 
-        var result = MultiblockValidator.validateDetailed(getPattern(), level, worldPosition);
+        int rotation = MultiblockValidator.validateWithRotations(getPattern(), level, worldPosition);
 
-        if (result.valid()) {
+        if (rotation >= 0) {
+            multiblockRotation = rotation;
             onMultiblockFormed();
             return true;
         }
 
-        Beemancer.LOGGER.debug("Storage controller validation failed at {} - {}",
-            result.failedAt(), result.reason());
+        Beemancer.LOGGER.debug("Storage controller validation failed at {} - no valid rotation found",
+            worldPosition);
         return false;
     }
 
@@ -168,7 +177,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     private void setFormedOnStructureBlocks(boolean formed) {
         if (level == null) return;
 
-        for (Vec3i offset : getPattern().getStructurePositions()) {
+        for (Vec3i offset : getPattern().getStructurePositions(multiblockRotation)) {
             BlockPos blockPos = worldPosition.offset(offset);
             BlockState state = level.getBlockState(blockPos);
 
@@ -656,6 +665,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
         // Multibloc
         tag.putBoolean("StorageFormed", storageFormed);
+        tag.putInt("MultiblockRotation", multiblockRotation);
 
         // Coffres enregistrés
         ListTag chestsTag = new ListTag();
@@ -688,6 +698,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
         // Multibloc
         storageFormed = tag.getBoolean("StorageFormed");
+        multiblockRotation = tag.getInt("MultiblockRotation");
 
         // Coffres enregistrés
         registeredChests.clear();

@@ -66,20 +66,51 @@ public class MultiblockValidator {
     }
 
     /**
-     * Vérifie si une position fait partie d'un multibloc formé.
+     * Vérifie si une position fait partie d'un multibloc formé (sans rotation).
+     */
+    public static boolean isPartOfMultiblock(MultiblockPattern pattern, BlockPos controllerPos, BlockPos checkPos) {
+        return isPartOfMultiblock(pattern, controllerPos, checkPos, 0);
+    }
+
+    /**
+     * Vérifie si une position fait partie d'un multibloc formé, avec rotation.
      *
      * @param pattern Le pattern
      * @param controllerPos Position du contrôleur
      * @param checkPos Position à vérifier
+     * @param rotation Rotation horizontale (0-3)
      * @return true si la position fait partie du multibloc
      */
-    public static boolean isPartOfMultiblock(MultiblockPattern pattern, BlockPos controllerPos, BlockPos checkPos) {
-        for (Vec3i offset : pattern.getStructurePositions()) {
+    public static boolean isPartOfMultiblock(MultiblockPattern pattern, BlockPos controllerPos, BlockPos checkPos, int rotation) {
+        for (Vec3i offset : pattern.getStructurePositions(rotation)) {
             if (controllerPos.offset(offset).equals(checkPos)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Valide un pattern en essayant les 4 rotations horizontales (0°, 90°, 180°, 270°).
+     *
+     * @return La rotation qui a réussi (0-3), ou -1 si aucune rotation ne fonctionne
+     */
+    public static int validateWithRotations(MultiblockPattern pattern, Level level, BlockPos controllerPos) {
+        for (int rotation = 0; rotation < 4; rotation++) {
+            boolean valid = true;
+            for (MultiblockPattern.PatternElement element : pattern.getElements()) {
+                Vec3i rotatedOffset = MultiblockPattern.rotateY(element.offset(), rotation);
+                BlockPos checkPos = controllerPos.offset(rotatedOffset);
+                if (!element.matcher().matches(level, checkPos)) {
+                    valid = false;
+                    break;
+                }
+            }
+            if (valid) {
+                return rotation;
+            }
+        }
+        return -1;
     }
 
     /**
