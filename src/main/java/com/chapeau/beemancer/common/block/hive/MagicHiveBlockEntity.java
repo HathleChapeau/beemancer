@@ -28,6 +28,7 @@ import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
+import com.chapeau.beemancer.content.gene.environment.EnvironmentGene;
 import com.chapeau.beemancer.content.gene.flower.FlowerGene;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
@@ -331,13 +332,27 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         if (slot < 0 || slot >= BEE_SLOTS) return false;
         if (items.get(slot).isEmpty()) return false;
         if (!hasFlowers) return false;
-        if (antibreedingMode) return false; // En mode antibreeding, les abeilles restent dedans
+        if (antibreedingMode) return false;
 
         BeeGeneData geneData = MagicBeeItem.getGeneData(items.get(slot));
-        BeeBehaviorConfig config = BeeBehaviorManager.getConfig(getSpeciesId(geneData));
+        Gene envGene = geneData.getGene(GeneCategory.ENVIRONMENT);
 
-        // TODO: Vérifier si l'abeille est nocturne
-        // TODO: Vérifier la température requise par l'abeille
+        // Vérifier si l'abeille peut travailler de nuit
+        boolean canWorkAtNight = false;
+        int tempTolerance = 0;
+        if (envGene instanceof EnvironmentGene env) {
+            canWorkAtNight = env.canWorkAtNight();
+            tempTolerance = env.getTemperatureTolerance();
+        }
+
+        // Si c'est la nuit et l'abeille n'est pas nocturne, elle ne peut pas butiner
+        if (!isDaytime && !canWorkAtNight) return false;
+
+        // Vérifier la température (biome temperature: 0.0=froid, 0.5=tempéré, 1.0+=chaud)
+        // Tolérance 0 = plage [0.3, 0.8], tolérance 1+ = toutes températures acceptées
+        if (tempTolerance == 0) {
+            if (temperature < 0.3f || temperature > 0.8f) return false;
+        }
 
         return true;
     }

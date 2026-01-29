@@ -59,7 +59,15 @@ Ajouts: [liste]
 - Privilégier la composition à l'héritage
 - Dépendances universelles > dépendances spécifiques
 
-### 2. Commentaires Obligatoires
+### 2. Code Complet — JAMAIS de TODO
+**RÈGLE ABSOLUE**: Ne JAMAIS laisser de TODO, FIXME, ou code incomplet.
+- Chaque script doit être 100% fonctionnel à la livraison
+- Si une fonctionnalité est complexe, l'implémenter entièrement ou ne pas la commencer
+- Si des informations manquent, demander AVANT de coder, pas après
+- Les commentaires de type `// TODO: ...` sont INTERDITS
+- Un code livré doit compiler ET fonctionner, sans exception
+
+### 3. Commentaires Obligatoires
 Chaque fichier commence par un bloc d'en-tête:
 
 ```java
@@ -84,7 +92,7 @@ Chaque fichier commence par un bloc d'en-tête:
  */
 ```
 
-### 3. Structure de Packages
+### 4. Structure de Packages
 ```
 com.beemancer/
 ├── Beemancer.java                 # Point d'entrée unique
@@ -302,8 +310,7 @@ Référence: Create `AllPackets`
 - [ ] Une seule responsabilité
 - [ ] Pas de code dupliqué (extraire en util si besoin)
 - [ ] Imports organisés (pas de wildcard `*`)
-- [ ] Pas de TODO non documenté
-- [ ] Pas de TODO, code complet uniquement
+- [ ] **ZÉRO TODO/FIXME** — Code 100% complet et fonctionnel
 - [ ] Si espace vide demandé, mettre PLACEHOLDER
 - [ ] **Structure.txt mis à jour** (registres, features, changelog)
 
