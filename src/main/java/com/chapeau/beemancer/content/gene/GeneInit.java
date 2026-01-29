@@ -19,7 +19,6 @@ package com.chapeau.beemancer.content.gene;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.content.gene.environment.*;
 import com.chapeau.beemancer.content.gene.flower.*;
-import com.chapeau.beemancer.content.gene.lifetime.*;
 import com.chapeau.beemancer.content.gene.species.*;
 import com.chapeau.beemancer.core.gene.GeneRegistry;
 
@@ -85,7 +84,6 @@ public class GeneInit {
         registerSpeciesGenes();
         registerEnvironmentGenes();
         registerFlowerGenes();
-        registerLifetimeGenes();
 
         initialized = true;
         Beemancer.LOGGER.info("Registered {} species genes", ALL_SPECIES.size());
@@ -123,16 +121,6 @@ public class GeneInit {
         GeneRegistry.register(MushroomsFlowerGene.INSTANCE);
         GeneRegistry.register(CrystalsFlowerGene.INSTANCE);
         GeneRegistry.register(NetherWartFlowerGene.INSTANCE);
-    }
-
-    // =========================================================================
-    // LIFETIME GENES
-    // =========================================================================
-
-    private static void registerLifetimeGenes() {
-        GeneRegistry.register(ShortLifetimeGene.INSTANCE);
-        GeneRegistry.register(NormalLifetimeGene.INSTANCE);
-        GeneRegistry.register(LongLifetimeGene.INSTANCE);
     }
 
     /**

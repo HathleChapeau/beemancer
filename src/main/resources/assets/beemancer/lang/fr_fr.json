@@ -256,7 +256,6 @@
   "gene.category.beemancer.species": "Espèce",
   "gene.category.beemancer.environment": "Environnement",
   "gene.category.beemancer.flower": "Fleur",
-  "gene.category.beemancer.lifetime": "Durée de Vie",
 
   "gene.beemancer.environment.normal": "Normal",
   "gene.beemancer.environment.normal.desc": "Travaille dans des conditions standard",
@@ -271,13 +270,6 @@
   "gene.beemancer.flower.crops.desc": "Pollinise les plantes cultivées",
   "gene.beemancer.flower.cave_plants": "Plantes de Caverne",
   "gene.beemancer.flower.cave_plants.desc": "Pollinise la végétation souterraine",
-  
-  "gene.beemancer.lifetime.short": "Courte",
-  "gene.beemancer.lifetime.short.desc": "Vit environ 5 minutes",
-  "gene.beemancer.lifetime.normal": "Normale",
-  "gene.beemancer.lifetime.normal.desc": "Vit environ 20 minutes",
-  "gene.beemancer.lifetime.long": "Longue",
-  "gene.beemancer.lifetime.long.desc": "Vit environ 60 minutes",
 
   "species.beemancer.meadow": "Abeille des Prés",
   "species.beemancer.forest": "Abeille Forestière",

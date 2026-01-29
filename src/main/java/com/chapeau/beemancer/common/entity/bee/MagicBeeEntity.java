@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [MagicBeeEntity.java]
- * Description: Entité abeille magique avec système de gènes, lifetime et comportements
+ * Description: Entité abeille magique avec système de gènes et comportements
  * ============================================================
  *
  * DÉPENDANCES:
@@ -70,10 +70,6 @@ public class MagicBeeEntity extends Bee {
             MagicBeeEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<String> DATA_FLOWER = SynchedEntityData.defineId(
             MagicBeeEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<String> DATA_LIFETIME_GENE = SynchedEntityData.defineId(
-            MagicBeeEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<Integer> DATA_REMAINING_LIFETIME = SynchedEntityData.defineId(
-            MagicBeeEntity.class, EntityDataSerializers.INT);
 
     // Nouveaux EntityData pour le comportement
     private static final EntityDataAccessor<Boolean> DATA_POLLINATED = SynchedEntityData.defineId(
@@ -185,8 +181,6 @@ public class MagicBeeEntity extends Bee {
         builder.define(DATA_SPECIES, "meadow");
         builder.define(DATA_ENVIRONMENT, "normal");
         builder.define(DATA_FLOWER, "flowers");
-        builder.define(DATA_LIFETIME_GENE, "normal");
-        builder.define(DATA_REMAINING_LIFETIME, 24000);
         builder.define(DATA_POLLINATED, false);
         builder.define(DATA_ENRAGED, false);
         builder.define(DATA_RETURNING, false);
@@ -239,8 +233,6 @@ public class MagicBeeEntity extends Bee {
             this.entityData.set(DATA_ENVIRONMENT, gene.getId());
         } else if (cat == GeneCategory.FLOWER) {
             this.entityData.set(DATA_FLOWER, gene.getId());
-        } else if (cat == GeneCategory.LIFETIME) {
-            this.entityData.set(DATA_LIFETIME_GENE, gene.getId());
         }
     }
 
@@ -248,12 +240,10 @@ public class MagicBeeEntity extends Bee {
         Gene species = GeneRegistry.getGene(GeneCategory.SPECIES, entityData.get(DATA_SPECIES));
         Gene environment = GeneRegistry.getGene(GeneCategory.ENVIRONMENT, entityData.get(DATA_ENVIRONMENT));
         Gene flower = GeneRegistry.getGene(GeneCategory.FLOWER, entityData.get(DATA_FLOWER));
-        Gene lifetime = GeneRegistry.getGene(GeneCategory.LIFETIME, entityData.get(DATA_LIFETIME_GENE));
 
         if (species != null) geneData.setGene(species);
         if (environment != null) geneData.setGene(environment);
         if (flower != null) geneData.setGene(flower);
-        if (lifetime != null) geneData.setGene(lifetime);
     }
 
     /**
@@ -397,8 +387,6 @@ public class MagicBeeEntity extends Bee {
         return baseSpeed;
     }
 
-    // --- Lifetime System ---
-
     @Override
     public void tick() {
         super.tick();
@@ -416,37 +404,12 @@ public class MagicBeeEntity extends Bee {
         if (!level().isClientSide()) {
             // Tick le timer enragé chaque tick
             tickEnragedTimer();
-
-            // Décrémente le lifetime chaque seconde
-            if (tickCount % 20 == 0) {
-                boolean alive = geneData.decrementLifetime(20);
-                entityData.set(DATA_REMAINING_LIFETIME, geneData.getRemainingLifetime());
-
-                if (!alive) {
-                    this.discard();
-                    return;
-                }
-            }
         }
 
         // Apply gene behaviors
         for (Gene gene : geneData.getAllGenes()) {
             gene.applyBehavior(this);
         }
-    }
-
-    public int getRemainingLifetime() {
-        return entityData.get(DATA_REMAINING_LIFETIME);
-    }
-
-    public int getMaxLifetime() {
-        return geneData.getMaxLifetime();
-    }
-
-    public float getLifetimeRatio() {
-        int max = getMaxLifetime();
-        if (max <= 0) return 1.0f;
-        return (float) getRemainingLifetime() / max;
     }
 
     // --- Stored Health (for item capture) ---
@@ -632,7 +595,6 @@ public class MagicBeeEntity extends Bee {
             for (Gene gene : geneData.getAllGenes()) {
                 syncGeneToData(gene);
             }
-            entityData.set(DATA_REMAINING_LIFETIME, geneData.getRemainingLifetime());
         }
 
         if (tag.contains("TargetX")) {
@@ -665,7 +627,7 @@ public class MagicBeeEntity extends Bee {
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
-        if (key == DATA_SPECIES || key == DATA_ENVIRONMENT || key == DATA_FLOWER || key == DATA_LIFETIME_GENE) {
+        if (key == DATA_SPECIES || key == DATA_ENVIRONMENT || key == DATA_FLOWER) {
             loadGenesFromData();
         }
     }

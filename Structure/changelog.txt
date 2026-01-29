@@ -3,401 +3,48 @@
 ################################################################################
 
 ================================================================================
-2026-01-28 - REFONTE COMPLÈTE: Système de Ride (Architecture Cobblemon)
-================================================================================
-
-REFONTE MAJEURE DU SYSTÈME DE RIDE:
-Réécriture complète basée sur l'architecture Cobblemon PokemonEntity + RidingBehaviour.
-
-NOUVEAU PACKAGE: common/entity/mount/behaviour/
-- RidingStyle.java: Enum LAND/LIQUID/AIR
-- Side.java: Enum CLIENT/SERVER/BOTH
-- SidedRidingState.java: État avec restriction de côté
-- RidingBehaviourState.java: État mutable base (rideVelocity, stamina)
-- RidingBehaviourSettings.java: Interface settings constants
-- RidingBehaviour.java: Interface stateless pour comportement
-- ActiveRidingContext.java: Contexte actif (behaviour + settings + state + style)
-- RidingBehaviours.java: Registre singleton des behaviours
-- RidingController.java: Orchestrateur de behaviours
-
-NOUVEAU PACKAGE: common/entity/mount/behaviour/types/land/
-- HorseSettings.java: Settings terrestre (topSpeed, acceleration, handling, jump)
-- HorseState.java: État mutable (sprinting, walking, inAir, jumpTicks)
-- HorseBehaviour.java: Logique de mouvement terrestre complète
-  - Gravité: (9.8/20)*0.2*0.6
-  - Friction: 0.03 par tick
-  - Rotation influencée par direction regard
-  - Sprint avec gestion de vitesse
-  - Saut avec force variable sur 6 ticks
-
-MODIFICATIONS:
-- RideableBeeEntity.java: Réécriture complète
-  - Utilise RidingController pour orchestration
-  - travel(): Conversion vélocité locale → monde (rotation yRot)
-  - tickRidden(): Tick le behaviour, applique rotation
-  - getRiddenInput(): Retourne vélocité du behaviour
-  - Getters debug conservés pour HUD
-
-- RideableBeeDebugHud.java: Adapté pour HorseSettings
-
-- Beemancer.java:
-  - +Enregistrement HorseBehaviour dans RidingBehaviours
-  - -RidingSettingsLoader.load() (remplacé par HorseSettings)
-
-PATTERN COBBLEMON APPLIQUÉ:
-- RidingBehaviour: Stateless, une instance partagée
-- RidingBehaviourState: Mutable, créé par ride
-- RidingBehaviourSettings: Constants, chargé au démarrage
-- RidingController: Orchestre transitions
-- travel(): Vélocité locale → monde via sin/cos(yRot)
-- tickRidden(): Tick behaviour, met à jour rotation
-
-SIMPLIFICATIONS BEEMANCER (vs Cobblemon):
-- Pas de stamina (toujours 1.0)
-- Pas de MoLang expressions (valeurs directes)
-- Pas de transitions multi-style (LAND uniquement pour l'instant)
-- Pas de sync réseau complexe
-
-FICHIERS OBSOLÈTES (non supprimés):
-- RidingSettings.java
-- RidingSettingsLoader.java
-- RideableBeeMovement.java
-
-================================================================================
-2026-01-28 - Rideable Bee Movement Fix + Debug HUD Fix
-================================================================================
-
-FIX: Abeille ne bouge pas en mode WALK
-- Problème: getRiddenInput() retournait rideVelocity au lieu de l'input joueur
-- Au 1er tick, rideVelocity=0, donc forward=0, et l'abeille ne bougeait jamais
-- Solution: getRiddenInput() retourne maintenant new Vec3(driver.xxa, 0, driver.zza)
-
-FIX: Panneau debug resize constant
-- RideableBeeDebugHud.java: Taille fixe 180x75 pixels au lieu de calcul dynamique
-- Ajout constantes FIXED_BOX_WIDTH et FIXED_BOX_HEIGHT
-
-================================================================================
-2026-01-28 - Rideable Bee Ground Detection Fix + Speed Update
-================================================================================
-
-FIX: Oscillation AIRBORNE/WALK
-- Remplacement de onGround() par raycast de 1.2 blocs vers le bas
-- Nouvelle méthode isOnGroundRaycast() utilisant level.clip()
-- Cache cachedOnGround mis à jour une fois par tick
-- Détection beaucoup plus stable
-
-MODIFICATIONS:
-- RideableBeeEntity.java:
-  - +GROUND_RAYCAST_LENGTH = 1.2
-  - +isOnGroundRaycast() - raycast avec ClipContext
-  - +updateGroundState() - mise à jour du cache
-  - +isEffectivelyOnGround() - getter du cache
-  - Remplacement de tous les onGround() par isEffectivelyOnGround()
-
-SPEED UPDATE:
-- RidingSettings.java: maxRunSpeed 0.35 → 10.0 (blocs/tick)
-
-DEPENDENCY REMOVAL:
-- build.gradle: Désactivation FTB mods (minimap)
-  - ftb-chunks-neoforge (commenté)
-  - ftb-teams-neoforge (commenté)
-  - ftb-library-neoforge (commenté)
-  - architectury-neoforge (commenté)
-
-================================================================================
-2026-01-28 - Debug Display System Enhancement
-================================================================================
-
-AJOUTS:
-- RideableBeeDebugHud.java: Panneau HUD en haut à droite quand on chevauche
-  - Vélocité (X, Z), Input (forward, strafe), Vitesse max, État
-  - États: WALK (vert), RUN (jaune), AIRBORNE (cyan), JUMPING (rouge)
-- PipeDebugRenderer.java: Texte flottant au-dessus des pipes
-  - ItemPipe: liste des items agrégés + quantités
-  - HoneyPipe: type de fluide + quantité en mB
-- HiveDebugRenderer.java: Cooldowns des abeilles au-dessus des ruches
-  - Affiche état (INSIDE/OUTSIDE) et cooldown en secondes
-
-MODIFICATIONS:
-- RideableBeeEntity.java: +getRideVelocity(), +getJumpCooldown(), +getDebugState()
-- MagicHiveBlockEntity.java: +getBeeStates() pour accès aux états des slots
-- ClientSetup.java: Enregistrement des 3 nouveaux renderers
-
-CONDITION D'AFFICHAGE: DebugWandItem.displayDebug = true
-
-================================================================================
-2026-01-28 - Rideable Bee v2 (Refactorisation Jet-style)
-================================================================================
-
-REFACTORISATION MAJEURE:
-- Suppression système de packets (input direct comme Cobblemon)
-- Mode RUN: style Jet (A/D contrôle yaw directement au lieu de suivre la caméra)
-- Toute la logique intégrée dans RideableBeeEntity
-
-SUPPRESSIONS:
-- client/input/RidingInputHandler.java (remplacé par input direct)
-- core/network/packets/RidingInputPacket.java (plus de sync réseau)
-- common/entity/mount/RideableBeeController.java (logique dans Entity)
-- common/entity/mount/RideableBeeMovement.java (logique dans Entity)
-- common/entity/mount/RidingState.java (état dans Entity)
-
-MODIFICATIONS:
-- RideableBeeEntity.java: Réécriture complète basée sur Cobblemon
-  - handleWalkMode(): Mouvement libre selon caméra joueur
-  - handleRunMode(): Style Jet (W accélère, S décélère, A/D tourne)
-  - Input direct via driver.zza/xxa/jumping
-  - Gravité: (9.8/20.0)*0.2*0.6, friction: 0.03
-- RideableBeeRenderer.java: Scale 3.0f, shadow 1.2f
-- BeemancerEntities.java: Entity size 2.1x1.8
-- accesstransformer.cfg: +LivingEntity.jumping (accès au champ protégé)
-
-PATTERNS COBBLEMON:
-- HorseBehaviour.kt: Gravité, friction, vélocité locale (Z=avant)
-- JetBehaviour.kt ligne 290: yawForce = driver.xxa * handlingYaw * -1
-- JetBehaviour.kt lignes 232-255: W accélère, S décélère vers minSpeed
-
-COMPORTEMENT ACTUEL:
-- Mode WALK: WASD libre selon caméra, abeille tourne vers mouvement
-- Mode RUN: W accélère, S décélère (vitesse min maintenue), A/D tourne
-- Transition WALK→RUN: Ctrl + W
-- Transition RUN→WALK: Relâcher sprint + vitesse basse
-
-================================================================================
-2026-01-28 - Rideable Bee System (Cobblemon-inspired) [v1 - obsolète]
-================================================================================
-
-AJOUTS:
-Core (common/entity/mount/):
-- RidingMode.java: Enum WALK/RUN
-- RidingSettings.java: Record des paramètres configurables
-- RidingSettingsLoader.java: Chargeur JSON
-- RidingState.java: État runtime mutable [SUPPRIMÉ en v2]
-- RideableBeeMovement.java: Calculs vélocité/inertie [SUPPRIMÉ en v2]
-- RideableBeeController.java: Orchestrateur déplacement [SUPPRIMÉ en v2]
-- RideableBeeEntity.java: Entité chevauchable
-
-Client:
-- client/input/RidingInputHandler.java: Capture WASD+Space+Sprint [SUPPRIMÉ en v2]
-- client/renderer/entity/RideableBeeRenderer.java: Renderer (2x scale)
-- client/camera/RidingCameraController.java: Caméra WALK(libre)/RUN(épaule)
-
-Network:
-- core/network/packets/RidingInputPacket.java: Sync input client→serveur [SUPPRIMÉ en v2]
-
-Item:
-- common/item/mount/RideableBeeSpawnItem.java: Item de spawn
-
-Config:
-- data/beemancer/mount/rideable_bee.json: Paramètres configurables
-
-MODIFICATIONS:
-- BeemancerEntities.java: +RIDEABLE_BEE
-- BeemancerItems.java: +RIDEABLE_BEE_SPAWN
-- BeemancerNetwork.java: +RidingInputPacket
-- ClientSetup.java: +renderer, +handlers
-- Beemancer.java: +attributs, +RidingSettingsLoader.load()
-
-RÉFÉRENCE: Cobblemon 1.7 (RidingController, RidingBehaviour, MountedCameraTypeHandler)
-
-================================================================================
-2026-01-27 - Refactorisation Honey Reservoir Models + Fluid Renderer
+2026-01-29 - Suppression Système Lifetime
 ================================================================================
 
 SUPPRESSIONS:
-- models/block/honey_reservoir_level1.json (et 2,3,4)
-- models/block/honey_reservoir_formed.json (et level1-4)
-- models/block/honey_reservoir_formed_z.json (et level1-4)
-- HoneyReservoirBlock.FLUID_LEVEL property (supprimee du blockstate)
-
-AJOUTS:
-- models/block/altar/honey_reservoir.json (model unique non-forme)
-- models/block/altar/honey_reservoir_formed.json (model unique forme)
-- textures/block/altar/reservoir_cap.png
-- textures/block/altar/reservoir_body.png
-- textures/block/altar/reservoir_cap_formed.png
-- textures/block/altar/reservoir_body_formed.png
-- client/renderer/block/HoneyReservoirRenderer.java (fluide avec scale dynamique)
+- content/gene/lifetime/ (dossier complet avec 3 gènes)
+- GeneCategory.LIFETIME
+- data/beemancer/genes/lifetime.json
+- Structure/feature_lifetime_system.txt
 
 MODIFICATIONS:
-- blockstates/honey_reservoir.json: simplifie (8 variantes au lieu de 40)
-  - Rotation via propriete "y" basee sur FACING (comme escaliers)
-- HoneyReservoirBlock.java: supprime FLUID_LEVEL, garde FORMED + FACING
-- HoneyReservoirBlockEntity.java: +getFillRatio(), supprime updateFluidLevel()
-- ClientSetup.java: +registerBlockEntityRenderer(HONEY_RESERVOIR)
+- BeeGeneData.java: Retiré tous les champs/méthodes lifetime
+- MagicBeeEntity.java: Retiré DATA_LIFETIME_GENE, DATA_REMAINING_LIFETIME, tick lifetime
+- MagicBeeItem.java: Retiré barre de durabilité et tooltip lifetime
+- GeneInit.java: Retiré registerLifetimeGenes()
+- BeeWandItem.java: Retiré track "Lifetime"
+- BreedingManager.java: Retiré LIFETIME_COST_RATIO
+- MagicHiveBlockEntity.java: Retiré coût lifetime dans attemptBreeding()
+- HiveMultiblockBlockEntity.java: Retiré coût lifetime dans attemptBreeding()
+- BeeStatueBlock.java: Retiré initializeLifetimeFromGene()
 
-REFACTORISATION:
-- Models: 18 fichiers -> 2 fichiers
-- Rotation geree par blockstate "y" (comme escaliers Minecraft)
-- Fluide rendu par HoneyReservoirRenderer avec scale dynamique
-- Textures organisees dans sous-dossier textures/block/altar/
-
-================================================================================
-2026-01-26 - AltarHeartRenderer - Multibloc Custom Render
-================================================================================
-
-AJOUTS:
-- client/renderer/block/AltarHeartRenderer.java (rendu multibloc complet)
-
-MODIFICATIONS:
-- common/block/altar/AltarHeartBlock.java: +getRenderShape() ENTITYBLOCK_ANIMATED when formed
-- common/block/altar/HoneyReservoirBlock.java: +getRenderShape() INVISIBLE when formed
-- common/block/altar/HoneyCrystalConduitBlock.java: +getRenderShape() INVISIBLE when formed
-- common/blockentity/altar/HoneyReservoirBlockEntity.java: +getFluidLevel()
-- client/ClientSetup.java: +registerBlockEntityRenderer pour ALTAR_HEART
-
-NOUVELLE FONCTIONNALITE:
-- Rendu custom multibloc Honey Altar:
-  - Quand multibloc forme, les blocs individuels deviennent INVISIBLES
-  - Le AltarHeartRenderer rend toute la structure depuis le controleur
-  - Teintes actives pour conduits (cristal) et reservoirs (ambre)
-  - Rendu dynamique du fluide dans les reservoirs
-  - Distance de rendu etendue (96 blocs)
-  - shouldRenderOffScreen=true pour structure large
-
-PATTERN UTILISE:
-- RenderShape.INVISIBLE pour cacher les blocs individuels
-- RenderShape.ENTITYBLOCK_ANIMATED pour le controleur (appelle le BER)
-- BlockEntityRenderer pour rendre toute la structure
+RAISON: Système obsolète, remplacé par abeilles immortelles.
 
 ================================================================================
-2026-01-26 - Honey Reservoir + Altar Restructuration
+2026-01-28 - Rideable Bee System (Architecture Cobblemon)
 ================================================================================
 
-AJOUTS:
-- common/block/altar/HoneyReservoirBlock.java (bloc reservoir horizontal)
-- common/blockentity/altar/HoneyReservoirBlockEntity.java (FluidTank 4000mB)
-- common/block/altar/AltarHeartBlock.java (controleur multibloc)
-- common/blockentity/altar/AltarHeartBlockEntity.java (logique multibloc)
-- assets/beemancer/blockstates/honey_reservoir.json
-- assets/beemancer/models/block/honey_reservoir.json
-- assets/beemancer/models/block/honey_reservoir_level1.json
-- assets/beemancer/models/block/honey_reservoir_level2.json
-- assets/beemancer/models/block/honey_reservoir_level3.json
-- assets/beemancer/models/block/honey_reservoir_level4.json
-- assets/beemancer/models/item/honey_reservoir.json
-- assets/beemancer/blockstates/altar_heart.json
-- assets/beemancer/models/block/altar_heart.json
-- assets/beemancer/models/block/altar_heart_formed.json
-- assets/beemancer/models/item/altar_heart.json
-- data/beemancer/loot_table/blocks/altar_heart.json
-
-MODIFICATIONS:
-- BeemancerBlocks.java: +HONEY_RESERVOIR, +ALTAR_HEART
-- BeemancerBlockEntities.java: +HONEY_RESERVOIR, +ALTAR_HEART
-- BeemancerItems.java: +HONEY_RESERVOIR (BlockItem), +ALTAR_HEART (BlockItem)
-- BeemancerCreativeTabs.java: +HONEY_RESERVOIR, +ALTAR_HEART
-- Beemancer.java: +Capability FluidHandler pour HONEY_RESERVOIR
-- MultiblockPatterns.java: Corrige pattern HONEY_ALTAR
-  - Y+1: 8 conduits (anneau complet) au lieu de 4
-  - Y+2: 4 HONEY_RESERVOIR au lieu de 4 HONEYED_STONE
-- HoneyReservoirBlockEntity.java: utilise AltarHeartBlockEntity pour multiblock check
-- en_us.json/fr_fr.json: +traductions (honey_reservoir, altar_heart)
-
-NOUVELLE FEATURE:
-- Reservoir de miel horizontal pour multibloc Honey Altar:
-  - Design chempunk avec capuchons fer rivete et corps verre ambre
-  - Stocke 4000mB de honey/royal_jelly/nectar
-  - Clic droit bucket: remplit/vide
-  - Shift+clic (multiblock forme): vide completement
-  - Affichage visuel niveau fluide (0-4)
-- Correction pattern multibloc:
-  - 8 conduits formant anneau complet a Y+1
-  - 4 reservoirs a Y+2 pointant vers le centre
+Système de monture pour abeilles basé sur l'architecture Cobblemon.
+- RidingBehaviour stateless + RidingBehaviourState mutable
+- Modes WALK (caméra libre) et RUN (style jet)
+- HUD debug en haut à droite
 
 ================================================================================
-2026-01-26 - Bee Statue
+2026-01-27 - Honey Altar + Reservoir Multibloc
 ================================================================================
 
-AJOUTS:
-- common/block/statue/BeeStatueBlock.java (bloc statue avec interactions)
-- common/block/statue/BeeStatueBlockEntity.java (stockage espèce)
-- client/renderer/block/BeeStatueRenderer.java (rendu abeille + nametag)
-- assets/beemancer/blockstates/bee_statue.json
-- assets/beemancer/models/block/bee_statue.json
-- assets/beemancer/models/item/bee_statue.json
-- data/beemancer/loot_table/blocks/bee_statue.json
-
-MODIFICATIONS:
-- BeemancerBlocks.java: +BEE_STATUE
-- BeemancerBlockEntities.java: +BEE_STATUE
-- BeemancerItems.java: +BEE_STATUE (BlockItem)
-- BeemancerCreativeTabs.java: +BEE_STATUE
-- ClientSetup.java: +BeeStatueRenderer
-- en_us.json/fr_fr.json: +traductions bloc et messages
-
-NOUVELLE FEATURE:
-- Statue d'abeille sur piédestal:
-  - Shift+clic droit: cycle entre les espèces disponibles
-  - Clic droit: donne une abeille de l'espèce avec gènes par défaut
-  - Affiche le modèle 3D de l'abeille en rotation
-  - Affiche le nom de l'espèce au-dessus de la tête
+Multibloc Honey Altar 3x3x5 avec:
+- HoneyReservoirBlock (stockage fluide 4000mB)
+- AltarHeartBlock (contrôleur)
+- Renderer custom multibloc
 
 ================================================================================
-2026-01-26 - Essence Extractor + Essences
-================================================================================
-
-AJOUTS:
-- common/block/extractor/ExtractorHeartBlock.java (contrôleur multibloc)
-- common/blockentity/extractor/ExtractorHeartBlockEntity.java (logique multibloc)
-- common/item/essence/EssenceItem.java (item essence avec type et niveau)
-- core/multiblock/MultiblockPatterns.java: +ESSENCE_EXTRACTOR pattern
-- 20 items d'essence (5 types × 4 niveaux)
-- assets/beemancer/blockstates/extractor_heart.json
-- assets/beemancer/models/block/extractor_heart.json
-- assets/beemancer/models/block/extractor_heart_formed.json
-- assets/beemancer/models/item/extractor_heart.json
-- 20 models/item pour essences (lesser/normal/greater/perfect × drop/speed/foraging/tolerance/temporal)
-- data/beemancer/loot_table/blocks/extractor_heart.json
-
-MODIFICATIONS:
-- BeemancerBlocks.java: +EXTRACTOR_HEART
-- BeemancerBlockEntities.java: +EXTRACTOR_HEART
-- BeemancerItems.java: +EXTRACTOR_HEART (BlockItem), +20 EssenceItems
-- BeemancerCreativeTabs.java: +EXTRACTOR_HEART, +20 essences
-- en_us.json/fr_fr.json: +traductions bloc, messages, essences
-
-NOUVELLE FEATURE:
-- Multibloc Essence Extractor 3x3x4:
-  - Étage 1 (Y-2): 5 Pedestals en croix + 4 Honeyed Stone aux coins
-  - Étage 2 (Y-1): Vide (air)
-  - Étage 3 (Y+0): Extractor Heart (contrôleur)
-  - Étage 4 (Y+1): 5 Honeyed Stone en croix
-- Clic droit sur Extractor Heart pour former
-- 19 items d'essence pour améliorer les perks des abeilles:
-  - Types classiques (4 niveaux): Drop, Speed, Foraging, Tolerance
-  - Types jour/nuit: Diurnal, Nocturnal, Insomnia (perfect)
-- Perfect Essences et Insomnia Essence ont l'effet enchantement (brillent)
-
-================================================================================
-2026-01-26 - Pollen Pot
-================================================================================
-
-AJOUTS:
-- common/block/pollenpot/PollenPotBlock.java (bloc pot à pollen)
-- common/block/pollenpot/PollenPotBlockEntity.java (stockage pollen)
-- common/block/pollenpot/PollenPotEvents.java (gestion clic gauche)
-- core/registry/BeemancerTags.java (tags items et blocs)
-- client/color/PollenColors.java (couleurs des 12 types de pollen)
-
-NOUVELLE FEATURE:
-- Pot à pollen stockant jusqu'à 16 pollens d'un seul type
-- Clic droit avec pollen en main: ajouter au pot
-- Clic gauche: retirer un pollen (donné au joueur)
-- Un seul type de pollen par pot
-- Support Comparator (signal 0-15 selon remplissage)
-- Couleur de l'intérieur selon le type de pollen
-
-================================================================================
-2026-01-25 - Debug Wand System
-================================================================================
-
-NOUVELLE FEATURE:
-- Baguette de debug avec 9 valeurs float ajustables en temps réel
-- HUD Panel affiché quand la baguette est tenue
-- Contrôles Numpad 1-9 pour sélection, flèches pour ajustement
-
-================================================================================
-HISTORIQUE ANTÉRIEUR: Supprimé pour clarté
+HISTORIQUE ANTÉRIEUR: Voir commits Git
 ================================================================================
 
 ################################################################################

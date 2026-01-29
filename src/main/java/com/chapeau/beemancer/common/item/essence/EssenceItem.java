@@ -63,11 +63,15 @@ public class EssenceItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
 
-        // Afficher le type et le niveau
+        // Afficher le type et le niveau avec étoiles
         tooltip.add(Component.translatable("item.beemancer.essence.type." + type.getSerializedName())
                 .withStyle(type.getColor()));
-        tooltip.add(Component.translatable("item.beemancer.essence.level", level.getValue())
+        tooltip.add(Component.literal(formatStars(level.getValue()))
                 .withStyle(ChatFormatting.GRAY));
+    }
+
+    private String formatStars(int level) {
+        return "\u2605".repeat(Math.max(0, level)) + "\u2606".repeat(Math.max(0, 4 - level));
     }
 
     @Override
@@ -84,7 +88,7 @@ public class EssenceItem extends Item {
         SPEED("speed", ChatFormatting.AQUA),
         FORAGING("foraging", ChatFormatting.GREEN),
         TOLERANCE("tolerance", ChatFormatting.RED),
-        DIURNAL("diurnal", ChatFormatting.YELLOW),
+        DIURNAL("diurnal", ChatFormatting.DARK_AQUA),
         NOCTURNAL("nocturnal", ChatFormatting.DARK_PURPLE),
         INSOMNIA("insomnia", ChatFormatting.LIGHT_PURPLE);
 

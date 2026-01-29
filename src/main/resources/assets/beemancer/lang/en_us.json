@@ -191,7 +191,6 @@
   "tooltip.beemancer.flyspeed": "Fly Speed",
   "tooltip.beemancer.foraging": "Foraging",
   "tooltip.beemancer.tolerance": "Tolerance",
-  "tooltip.beemancer.lifetime": "Lifetime",
   "tooltip.beemancer.shift_for_details": "Hold SHIFT for details",
 
   "item.beemancer.bee_larva": "Bee Larva",
@@ -269,7 +268,6 @@
   "gene.category.beemancer.species": "Species",
   "gene.category.beemancer.environment": "Environment",
   "gene.category.beemancer.flower": "Flower",
-  "gene.category.beemancer.lifetime": "Lifetime",
 
   "species.beemancer.meadow": "Meadow Bee",
   "species.beemancer.forest": "Forest Bee",
@@ -382,13 +380,6 @@
   "gene.beemancer.flower.crops.desc": "Pollinates crop plants",
   "gene.beemancer.flower.cave_plants": "Cave Plants",
   "gene.beemancer.flower.cave_plants.desc": "Pollinates cave vegetation",
-  
-  "gene.beemancer.lifetime.short": "Short",
-  "gene.beemancer.lifetime.short.desc": "Lives for about 5 minutes",
-  "gene.beemancer.lifetime.normal": "Normal",
-  "gene.beemancer.lifetime.normal.desc": "Lives for about 20 minutes",
-  "gene.beemancer.lifetime.long": "Long",
-  "gene.beemancer.lifetime.long.desc": "Lives for about 60 minutes",
 
   "message.beemancer.storage_controller.edit_mode_on": "Edit mode enabled - Click chests to register",
   "message.beemancer.storage_controller.edit_mode_off": "Edit mode disabled",

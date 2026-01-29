@@ -45,7 +45,6 @@ public class BreedingManager {
     
     // Config parameters
     public static final double BREEDING_CHANCE_PER_SECOND = 0.05; // 5% par seconde
-    public static final float LIFETIME_COST_RATIO = 0.10f; // 10% du max lifetime
     
     // Breeding combinations cache
     private static final Map<String, List<BreedingResult>> combinations = new HashMap<>();

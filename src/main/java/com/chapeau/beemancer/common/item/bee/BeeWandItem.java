@@ -55,7 +55,6 @@ public class BeeWandItem extends Item {
         TRACKERS.add(new WandClassTracker<>(MagicBeeEntity.class)
                 .track("Species", bee -> bee.getSpeciesId())
                 .track("Health", bee -> String.format("%.1f/%.1f", bee.getHealth(), bee.getMaxHealth()))
-                .track("Lifetime", bee -> formatTicks(bee.getRemainingLifetime()))
                 .track("Pollinated", bee -> bee.isPollinated() ? "Yes" : "No")
                 .track("Enraged", bee -> bee.isEnraged() ? "Yes" : "No")
                 .track("Hive", bee -> bee.hasAssignedHive() ? formatPos(bee.getAssignedHivePos()) : "None")

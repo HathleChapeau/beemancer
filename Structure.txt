@@ -52,7 +52,7 @@ Philosophie:
 │ core/gene/Gene.java                 │ Interface pour tous les gènes          │
 │ core/gene/GeneRegistry.java         │ Registre central des gènes             │
 │ core/gene/GeneCategory.java         │ Définition des catégories              │
-│ core/gene/BeeGeneData.java          │ Stockage gènes + lifetime              │
+│ core/gene/BeeGeneData.java          │ Stockage gènes                         │
 │ core/behavior/BeeBehaviorManager.java│ Chargement config comportements       │
 │ core/breeding/BreedingManager.java  │ Logique breeding + héritage            │
 │ core/util/FlowerSearchHelper.java   │ Recherche de fleurs dans un rayon      │
@@ -155,10 +155,6 @@ LISTE DES FEATURES:
 → Gene System
   Fichier: Structure/feature_gene_system.txt
   Description: Système modulaire de gènes pour les abeilles
-
-→ Lifetime System
-  Fichier: Structure/feature_lifetime_system.txt
-  Description: Système de durée de vie pour les abeilles
 
 → Magic Bee
   Fichier: Structure/feature_magic_bee.txt

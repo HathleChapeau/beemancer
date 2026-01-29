@@ -596,12 +596,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
         String offspringSpecies = BreedingManager.resolveOffspringSpecies(species1.getId(), species2.getId(), random);
 
-        int costSlot = random.nextBoolean() ? slot1 : slot2;
-        BeeGeneData costData = MagicBeeItem.getGeneData(items.get(costSlot));
-        int lifetimeCost = (int) (costData.getMaxLifetime() * BreedingManager.LIFETIME_COST_RATIO);
-        costData.setRemainingLifetime(costData.getRemainingLifetime() - lifetimeCost);
-        MagicBeeItem.saveGeneData(items.get(costSlot), costData);
-
         if ("nothing".equals(offspringSpecies)) return;
 
         BeeGeneData offspringData = BreedingManager.createOffspringGeneData(parent1, parent2, offspringSpecies, random);
