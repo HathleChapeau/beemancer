@@ -1,0 +1,27 @@
+{
+  "_comment": "Schema de reference pour les recettes d'Altar - NE PAS CHARGER",
+
+  "format": {
+    "type": "beemancer:altar",
+    "center_item": "Item sous l'altar (sur le pedestal central)",
+    "pedestal_items": "Liste d'items sur les pedestals autour (ordre non important)",
+    "pollen": "Map de pollen_id -> quantite requise (optionnel)",
+    "result": "Item produit"
+  },
+
+  "exemple": {
+    "type": "beemancer:altar",
+    "center_item": { "item": "minecraft:diamond" },
+    "pedestal_items": [
+      { "item": "beemancer:honeyed_iron" },
+      { "item": "beemancer:honeyed_iron" },
+      { "item": "beemancer:royal_gold" },
+      { "item": "beemancer:royal_gold" }
+    ],
+    "pollen": {
+      "beemancer:common_pollen": 8,
+      "beemancer:forest_pollen": 4
+    },
+    "result": { "id": "beemancer:bee_wand" }
+  }
+}

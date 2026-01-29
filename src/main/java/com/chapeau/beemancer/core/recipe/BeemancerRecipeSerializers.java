@@ -20,6 +20,7 @@
 package com.chapeau.beemancer.core.recipe;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.core.recipe.type.AltarRecipe;
 import com.chapeau.beemancer.core.recipe.type.CentrifugeRecipe;
 import com.chapeau.beemancer.core.recipe.type.CrystallizingRecipe;
 import com.chapeau.beemancer.core.recipe.type.DistillingRecipe;
@@ -46,6 +47,9 @@ public class BeemancerRecipeSerializers {
 
     public static final Supplier<RecipeSerializer<DistillingRecipe>> DISTILLING =
             RECIPE_SERIALIZERS.register("distilling", DistillingRecipe.Serializer::new);
+
+    public static final Supplier<RecipeSerializer<AltarRecipe>> ALTAR =
+            RECIPE_SERIALIZERS.register("altar", AltarRecipe.Serializer::new);
 
     public static void register(IEventBus eventBus) {
         RECIPE_SERIALIZERS.register(eventBus);

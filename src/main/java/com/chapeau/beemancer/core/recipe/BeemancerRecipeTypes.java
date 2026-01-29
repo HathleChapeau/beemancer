@@ -21,6 +21,7 @@
 package com.chapeau.beemancer.core.recipe;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.core.recipe.type.AltarRecipe;
 import com.chapeau.beemancer.core.recipe.type.CentrifugeRecipe;
 import com.chapeau.beemancer.core.recipe.type.CrystallizingRecipe;
 import com.chapeau.beemancer.core.recipe.type.DistillingRecipe;
@@ -51,6 +52,10 @@ public class BeemancerRecipeTypes {
     public static final Supplier<RecipeType<DistillingRecipe>> DISTILLING =
             RECIPE_TYPES.register("distilling", () -> RecipeType.simple(
                     Beemancer.modLoc("distilling")));
+
+    public static final Supplier<RecipeType<AltarRecipe>> ALTAR =
+            RECIPE_TYPES.register("altar", () -> RecipeType.simple(
+                    Beemancer.modLoc("altar")));
 
     public static void register(IEventBus eventBus) {
         RECIPE_TYPES.register(eventBus);

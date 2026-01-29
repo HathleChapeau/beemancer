@@ -93,11 +93,9 @@ public class AltarHeartBlock extends Block implements EntityBlock {
 
         // Tenter de former/vérifier l'altar
         if (state.getValue(FORMED)) {
-            // Déjà formé - afficher statut
-            player.displayClientMessage(
-                Component.translatable("message.beemancer.honey_altar.already_formed"),
-                true
-            );
+            // Altar formé - tenter un craft
+            heartBE.tryCraft();
+            return InteractionResult.CONSUME;
         } else {
             // Tenter la formation
             boolean success = heartBE.tryFormAltar();
