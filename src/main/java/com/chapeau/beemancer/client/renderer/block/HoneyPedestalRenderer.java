@@ -21,6 +21,7 @@ package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -61,12 +62,12 @@ public class HoneyPedestalRenderer implements BlockEntityRenderer<HoneyPedestalB
 
         if (isBee) {
             // Pivot du modèle abeille dans l'espace BEWLR (ajuster si besoin)
-            float pivotX = 0.5f;
-            float pivotY = 0.35f;
-            float pivotZ = 0.5f;
+            float pivotX = 0;
+            float pivotY = 0;
+            float pivotZ = 0;
 
             // Position au-dessus du pedestal
-            poseStack.translate(0.5, 1.4 + bob, 0.5);
+            poseStack.translate(0.8f, 2.2f + bob, 0.8f);
             poseStack.scale(0.6f, 0.6f, 0.6f);
             // Compenser le translate(0.5, 0.5, 0.5) du BEWLR FIXED
             poseStack.translate(-0.5, -0.5, -0.5);
