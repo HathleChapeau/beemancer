@@ -23,6 +23,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -125,11 +126,11 @@ public class HoneyPipeBlock extends BaseEntityBlock {
     private static final double CLICK_THRESHOLD = 0.1;
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                          Player player, InteractionHand hand, BlockHitResult hit) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
+                                              Player player, InteractionHand hand, BlockHitResult hit) {
         // Colorant: applique une teinte au core
         if (stack.getItem() instanceof DyeItem dyeItem) {
-            if (level.isClientSide()) return InteractionResult.SUCCESS;
+            if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
 
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof HoneyPipeBlockEntity pipe) {
@@ -143,11 +144,11 @@ public class HoneyPipeBlock extends BaseEntityBlock {
 
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
                 player.displayClientMessage(Component.literal("Tinted: " + color.getName()), true);
-                return InteractionResult.SUCCESS;
+                return ItemInteractionResult.SUCCESS;
             }
         }
 
-        return super.useItemOn(stack, state, level, pos, player, hand, hit);
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override
