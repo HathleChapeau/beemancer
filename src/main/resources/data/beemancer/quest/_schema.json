@@ -1,0 +1,30 @@
+{
+  "_comment": "Schema de reference pour les quests Beemancer - NE PAS CHARGER",
+
+  "quest_types": {
+    "none": "Quest sans condition, completee automatiquement ou manuellement",
+    "obtain": "Obtenir un item specifique (detecte dans l'inventaire)",
+    "bee": "Placer une larva dans l'incubateur - declenche selon l'espece de la larva",
+    "altar": "Cliquer sur l'Altar Heart - declenche selon l'action effectuee"
+  },
+
+  "format": {
+    "type": "string (none|obtain|bee|altar)",
+    "parameter": "string - depend du type",
+    "unlocks": "array of string - IDs des elements debloques"
+  },
+
+  "parameter_by_type": {
+    "none": "null ou absent",
+    "obtain": "item ID (ex: 'minecraft:diamond', 'beemancer:honeyed_iron')",
+    "bee": "species ID (ex: 'common', 'forest', 'nether')",
+    "altar": "action ID (ex: 'first_infusion', 'craft_wand')"
+  },
+
+  "unlocks_types": {
+    "quest:quest_id": "Deverrouille une autre quest",
+    "codex:page_id": "Deverrouille une page du Codex",
+    "recipe:recipe_id": "Deverrouille une recette",
+    "advancement:advancement_id": "Donne un advancement vanilla"
+  }
+}
