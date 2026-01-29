@@ -395,15 +395,11 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         Map<Item, Integer> pollenToConsume = recipe.getPollenToConsume(availablePollen);
         consumePollenPartial(pollenPots, pollenToConsume);
 
-        // Creer le resultat - drop au-dessus du pedestal central
+        // Placer le resultat sur le pedestal central
         ItemStack result = recipe.result().copy();
-        double x = centerPedestalPos.getX() + 0.5;
-        double y = centerPedestalPos.getY() + 1.5;
-        double z = centerPedestalPos.getZ() + 0.5;
-        net.minecraft.world.entity.item.ItemEntity itemEntity =
-            new net.minecraft.world.entity.item.ItemEntity(level, x, y, z, result);
-        itemEntity.setDeltaMovement(0, 0.2, 0);
-        level.addFreshEntity(itemEntity);
+        if (centerBe instanceof HoneyPedestalBlockEntity centerPedestal) {
+            centerPedestal.placeItem(result);
+        }
 
         // Effets visuels et sonores
         playSuccessEffects(centerPedestalPos);
