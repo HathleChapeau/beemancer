@@ -26,7 +26,11 @@ import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -34,15 +38,18 @@ import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Abeille de livraison pour le réseau de stockage.
- * Visuelle uniquement: skin de Bee vanilla, pas de collision, pas de gravité,
- * pas de drops, pas de dégâts. Suit un pathfinding volant entre le controller
- * et les coffres du réseau.
+ * Purement visuelle: skin de Bee vanilla avec pathfinding volant.
+ * Tous les comportements vanilla (anger, sting, pollination, hive, breeding,
+ * sons, drops, interactions) sont neutralisés.
  *
  * Timeout: se discard après 2400 ticks (2 min).
  * Vérifie chaque tick que le controller est encore formé.
@@ -87,7 +94,11 @@ public class DeliveryBeeEntity extends Bee {
 
     @Override
     protected void registerGoals() {
-        // Supprime TOUS les goals vanilla. Seul DeliveryPhaseGoal est ajouté après spawn.
+        // Appeler super pour initialiser les champs internes de Bee (beePollinateGoal, etc.)
+        // requis par BeeLookControl, puis vider les goal selectors.
+        super.registerGoals();
+        this.goalSelector.removeAllGoals(goal -> true);
+        this.targetSelector.removeAllGoals(goal -> true);
     }
 
     /**
@@ -138,10 +149,9 @@ public class DeliveryBeeEntity extends Bee {
         return false;
     }
 
-    // === Pas de collision, pas de drops, invincible ===
-
-    @Override
-    public boolean isPushable() { return false; }
+    // =========================================================================
+    // INVULNÉRABILITÉ — Aucun dégât, aucune mort, aucun loot
+    // =========================================================================
 
     @Override
     public boolean isInvulnerable() { return true; }
@@ -150,12 +160,119 @@ public class DeliveryBeeEntity extends Bee {
     public boolean hurt(DamageSource source, float amount) { return false; }
 
     @Override
+    public boolean isInvulnerableTo(DamageSource source) { return true; }
+
+    @Override
+    public boolean fireImmune() { return true; }
+
+    @Override
+    protected void dropExperience(Entity killer) { }
+
+    // =========================================================================
+    // COLLISION / PHYSIQUE — Pas de collision, pas de push, pas de pickup
+    // =========================================================================
+
+    @Override
+    public boolean isPushable() { return false; }
+
+    @Override
+    public boolean canBeCollidedWith() { return false; }
+
+    @Override
+    protected void doPush(Entity entity) { }
+
+    @Override
+    protected void pushEntities() { }
+
+    @Override
+    public boolean canBeLeashed() { return false; }
+
+    // =========================================================================
+    // DESPAWN — Ne despawn jamais (géré par timeout interne)
+    // =========================================================================
+
+    @Override
     public boolean shouldDespawnInPeaceful() { return false; }
 
     @Override
     public boolean removeWhenFarAway(double distanceToClosestPlayer) { return false; }
 
-    // === Getters ===
+    @Override
+    public boolean requiresCustomPersistence() { return true; }
+
+    // =========================================================================
+    // INTERACTIONS — Aucune interaction joueur
+    // =========================================================================
+
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        return InteractionResult.PASS;
+    }
+
+    // =========================================================================
+    // ANGER / STING — Désactivés
+    // =========================================================================
+
+    @Override
+    public void setRemainingPersistentAngerTime(int time) { }
+
+    @Override
+    public int getRemainingPersistentAngerTime() { return 0; }
+
+    @Override
+    public boolean isAngry() { return false; }
+
+    @Override
+    public boolean hasStung() { return false; }
+
+    @Override
+    public boolean doHurtTarget(Entity target) { return false; }
+
+    // =========================================================================
+    // POLLINATION / HIVE / NECTAR — Désactivés
+    // =========================================================================
+
+    @Override
+    public boolean hasNectar() { return false; }
+
+    // =========================================================================
+    // SONS — Silencieux
+    // =========================================================================
+
+    @Override
+    protected void playStepSound(BlockPos pos, BlockState state) { }
+
+    @Override
+    public void playAmbientSound() { }
+
+    @Nullable
+    @Override
+    protected SoundEvent getAmbientSound() { return null; }
+
+    @Nullable
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) { return null; }
+
+    @Nullable
+    @Override
+    protected SoundEvent getDeathSound() { return null; }
+
+    @Override
+    protected float getSoundVolume() { return 0.0f; }
+
+    // =========================================================================
+    // BREEDING — Désactivé
+    // =========================================================================
+
+    @Override
+    public boolean canBreed() { return false; }
+
+    @Override
+    public boolean isFood(ItemStack stack) { return false; }
+
+    // =========================================================================
+    // GETTERS
+    // =========================================================================
 
     public BlockPos getControllerPos() { return controllerPos; }
     public BlockPos getTargetPos() { return targetPos; }
@@ -172,21 +289,19 @@ public class DeliveryBeeEntity extends Bee {
         this.carriedItems = items.copy();
     }
 
-    // === NBT (pas besoin de sauvegarder, les bees sont éphémères) ===
-    // Au rechargement, les tâches actives sont remises en queue par le controller.
+    // =========================================================================
+    // NBT — Éphémère, discard au rechargement
+    // =========================================================================
 
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        // Volontairement minimal: au rechargement, l'abeille est discard
-        // et la tâche est remise en queue
         tag.putBoolean("IsDeliveryBee", true);
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        // Au rechargement, discard l'abeille (tâche remise en queue par controller)
         if (tag.getBoolean("IsDeliveryBee")) {
             this.discard();
         }
