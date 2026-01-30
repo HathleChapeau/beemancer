@@ -19,15 +19,15 @@
       }
     },
     {
-      "name": "Horizontal Bend 8x6x6",
+      "name": "Horizontal Bend 5x6x6",
       "from": [11, 5, 5],
-      "to": [19, 11, 11],
+      "to": [16, 11, 11],
       "faces": {
-        "north": {"texture": "#pipe", "uv": [0, 5, 8, 11]},
+        "north": {"texture": "#pipe", "uv": [0, 5, 5, 11]},
         "east": {"texture": "#frame", "uv": [5, 5, 11, 11]},
-        "south": {"texture": "#pipe", "uv": [8, 5, 16, 11]},
-        "up": {"texture": "#pipe", "uv": [11, 5, 19, 11]},
-        "down": {"texture": "#pipe", "uv": [11, 5, 19, 11]}
+        "south": {"texture": "#pipe", "uv": [11, 5, 16, 11]},
+        "up": {"texture": "#pipe", "uv": [0, 5, 5, 11]},
+        "down": {"texture": "#pipe", "uv": [0, 5, 5, 11]}
       }
     }
   ]

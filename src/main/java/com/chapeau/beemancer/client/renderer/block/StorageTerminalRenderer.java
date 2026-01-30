@@ -81,7 +81,7 @@ public class StorageTerminalRenderer implements BlockEntityRenderer<StorageTermi
 
         // Appliquer la rotation Y selon formed_rotation
         poseStack.translate(0.5, 0.5, 0.5);
-        poseStack.mulPose(Axis.YP.rotationDegrees(rotation * 90.0f));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-rotation * 90.0f));
         poseStack.translate(-0.5, -0.5, -0.5);
 
         // Rendre le quad portal à [4, 4, 14.5] → [12, 12, 14.5] (en pixels)

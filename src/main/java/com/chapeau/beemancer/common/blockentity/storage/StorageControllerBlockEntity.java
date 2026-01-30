@@ -287,24 +287,27 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             float spreadX = 0.0f;
             float spreadZ = 0.0f;
             if (formed && originalOffset.getX() != 0) {
-                spreadX = rotatedOffset.getX() * 3.0f / 16.0f;
-                spreadZ = rotatedOffset.getZ() * 3.0f / 16.0f;
+                spreadX = rotatedOffset.getX() * -3.0f / 16.0f;
+                spreadZ = rotatedOffset.getZ() * -3.0f / 16.0f;
             }
 
-            // Controller Pipes: formed state via blockstate + BlockEntity pour rotation/spread
+            // Controller Pipes: formed state + rotation via blockstate, spread via BlockEntity
             if (state.getBlock() instanceof ControllerPipeBlock) {
+                int rotation = formed ? computeBlockRotation(originalOffset, state) : 0;
                 BlockEntity be = level.getBlockEntity(blockPos);
                 if (be instanceof ControllerPipeBlockEntity pipeBe) {
                     if (formed) {
-                        int rotation = computeBlockRotation(originalOffset, state);
                         pipeBe.setFormed(rotation, spreadX, spreadZ);
                     } else {
                         pipeBe.clearFormed();
                     }
                 }
-                // Set FORMED in blockstate
-                if (state.getValue(ControllerPipeBlock.FORMED) != formed) {
-                    level.setBlock(blockPos, state.setValue(ControllerPipeBlock.FORMED, formed), 3);
+                // Set FORMED and FORMED_ROTATION in blockstate
+                BlockState newState = state
+                    .setValue(ControllerPipeBlock.FORMED, formed)
+                    .setValue(ControllerPipeBlock.FORMED_ROTATION, rotation);
+                if (!newState.equals(state)) {
+                    level.setBlock(blockPos, newState, 3);
                 }
                 continue;
             }
@@ -1001,11 +1004,11 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         int consumptionPerSecond = ControllerStats.getHoneyConsumption(essenceSlots, registeredChests.size());
         int remaining = consumptionPerSecond;
 
-        // Trouver les 2 reservoirs du multibloc (offsets y=-1 et y=+1, x=0, z=0 dans le pattern)
-        // Les reservoirs sont aux offsets (0,-1,0) et (0,1,0) dans le pattern original
-        for (int yOff : new int[]{-1, 1}) {
+        // Trouver les 2 reservoirs du multibloc (offsets x=-1 et x=+1, y=0, z=0 dans le pattern)
+        // Les reservoirs sont aux offsets (-1,0,0) et (1,0,0) dans le pattern original
+        for (int xOff : new int[]{-1, 1}) {
             if (remaining <= 0) break;
-            Vec3i rotatedOffset = MultiblockPattern.rotateY(new Vec3i(0, yOff, 0), multiblockRotation);
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(new Vec3i(xOff, 0, 0), multiblockRotation);
             BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             BlockEntity be = level.getBlockEntity(reservoirPos);
             if (be instanceof HoneyReservoirBlockEntity reservoir) {

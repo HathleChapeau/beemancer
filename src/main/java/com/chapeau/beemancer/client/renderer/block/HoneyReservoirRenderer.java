@@ -152,8 +152,8 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         var pose = poseStack.last();
 
         float fluidHeight = 6.0f * fillRatio;
-        float minX = 4f / 16f;
-        float maxX = 12f / 16f;
+        float minX = 5f / 16f;
+        float maxX = 11f / 16f;
         float minZ = 5f / 16f;
         float maxZ = 11f / 16f;
         float minY = 5f / 16f;

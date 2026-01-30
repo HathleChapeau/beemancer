@@ -68,7 +68,7 @@ public class ControllerPipeRenderer implements BlockEntityRenderer<ControllerPip
             return;
         }
 
-        int rotation = blockEntity.getFormedRotation();
+        int rotation = state.getValue(ControllerPipeBlock.FORMED_ROTATION);
         int yRotation = rotation & 3;
         boolean flipped = rotation >= 4;
 
