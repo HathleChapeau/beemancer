@@ -19,6 +19,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -30,12 +31,25 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
 public class CrystallizerBlock extends BaseEntityBlock {
     public static final MapCodec<CrystallizerBlock> CODEC = simpleCodec(CrystallizerBlock::new);
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
+
+    private static final VoxelShape SHAPE = Shapes.or(
+        Block.box(0, 0, 0, 4, 16, 4),      // Pillar NW
+        Block.box(12, 0, 0, 16, 16, 4),     // Pillar NE
+        Block.box(0, 0, 12, 4, 16, 16),     // Pillar SW
+        Block.box(12, 0, 12, 16, 16, 16),   // Pillar SE
+        Block.box(1, 1, 1, 15, 4, 15),      // Frame Bottom
+        Block.box(1, 12, 1, 15, 15, 15),    // Frame Top
+        Block.box(2, 2, 2, 14, 14, 14)      // Glass Core
+    );
 
     public CrystallizerBlock(Properties properties) {
         super(properties);
@@ -52,6 +66,11 @@ public class CrystallizerBlock extends BaseEntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
+    }
 
     @Nullable
     @Override
