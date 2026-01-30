@@ -19,8 +19,8 @@
     },
     {
       "name": "extract_indicator",
-      "from": [3, 3, 3],
-      "to": [13, 13, 5],
+      "from": [3, 3, 0],
+      "to": [13, 13, 3],
       "faces": {
         "north": {"texture": "#extract"},
         "east": {"texture": "#extract"},

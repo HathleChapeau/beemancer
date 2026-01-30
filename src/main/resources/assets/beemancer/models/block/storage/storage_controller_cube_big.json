@@ -7,8 +7,8 @@
   "elements": [
     {
       "name": "Cube 6x6x6",
-      "from": [5, 5, 5],
-      "to": [11, 11, 11],
+      "from": [6, 6, 6],
+      "to": [10, 10, 10],
       "faces": {
         "north": {"texture": "#all"},
         "east": {"texture": "#all"},
