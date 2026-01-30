@@ -11,7 +11,6 @@ import com.chapeau.beemancer.common.blockentity.alchemy.InfuserBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -44,9 +43,8 @@ public class InfuserMenu extends AbstractContainerMenu {
         
         addDataSlots(data);
 
-        // Input slot (wood) avec icone bois
-        addSlot(BeemancerSlot.woodInput(blockEntity.getInputSlot(), 0, 44, 35)
-            .withFilter(stack -> stack.is(ItemTags.LOGS)));
+        // Input slot - accepte tout item valide pour une recette d'infusion
+        addSlot(new BeemancerSlot(blockEntity.getInputSlot(), 0, 44, 35));
 
         // Output slot (extraction seulement)
         addSlot(BeemancerSlot.output(blockEntity.getOutputSlot(), 0, 116, 35));
@@ -87,23 +85,20 @@ public class InfuserMenu extends AbstractContainerMenu {
                 if (!moveItemStackTo(stack, PLAYER_INV_START, HOTBAR_END, true)) {
                     return ItemStack.EMPTY;
                 }
-            } 
+            }
             // From player to machine
             else {
-                // Try to put logs in input
-                if (stack.is(ItemTags.LOGS)) {
-                    if (!moveItemStackTo(stack, INPUT_SLOT, INPUT_SLOT + 1, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                }
-                // Move between player inventory and hotbar
-                else if (index >= PLAYER_INV_START && index < PLAYER_INV_END) {
-                    if (!moveItemStackTo(stack, HOTBAR_START, HOTBAR_END, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (index >= HOTBAR_START && index < HOTBAR_END) {
-                    if (!moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, false)) {
-                        return ItemStack.EMPTY;
+                // Essayer de placer dans le slot d'input
+                if (!moveItemStackTo(stack, INPUT_SLOT, INPUT_SLOT + 1, false)) {
+                    // Si ca ne rentre pas, deplacer entre inventaire et hotbar
+                    if (index >= PLAYER_INV_START && index < PLAYER_INV_END) {
+                        if (!moveItemStackTo(stack, HOTBAR_START, HOTBAR_END, false)) {
+                            return ItemStack.EMPTY;
+                        }
+                    } else if (index >= HOTBAR_START && index < HOTBAR_END) {
+                        if (!moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, false)) {
+                            return ItemStack.EMPTY;
+                        }
                     }
                 }
             }
