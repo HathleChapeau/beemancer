@@ -50,13 +50,31 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
         // Input fluid tank avec le nouveau widget
         inputGauge.render(guiGraphics, x, y);
 
-        // Progress arrow
+        // Progress bar
         int processTime = menu.getProcessTime();
         if (processTime > 0) {
             int progress = menu.getProgress();
-            int arrowWidth = (int) (24 * ((float) progress / processTime));
-            if (arrowWidth > 0) {
-                guiGraphics.blit(TEXTURE, x + 76, y + 35, 176, 52, arrowWidth, 17);
+            float ratio = (float) progress / processTime;
+
+            int barX = x + 52;
+            int barY = y + 39;
+            int barWidth = 56;
+            int barHeight = 6;
+
+            // Background (dark)
+            guiGraphics.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF1A1A1A);
+            // Border
+            guiGraphics.fill(barX - 1, barY - 1, barX + barWidth + 1, barY, 0xFF3A3A3A);
+            guiGraphics.fill(barX - 1, barY + barHeight, barX + barWidth + 1, barY + barHeight + 1, 0xFF3A3A3A);
+            guiGraphics.fill(barX - 1, barY, barX, barY + barHeight, 0xFF3A3A3A);
+            guiGraphics.fill(barX + barWidth, barY, barX + barWidth + 1, barY + barHeight, 0xFF3A3A3A);
+
+            // Fill (honey gold gradient)
+            int fillWidth = (int) (barWidth * ratio);
+            if (fillWidth > 0) {
+                guiGraphics.fill(barX, barY, barX + fillWidth, barY + barHeight, 0xFFD4A017);
+                // Highlight top pixel
+                guiGraphics.fill(barX, barY, barX + fillWidth, barY + 1, 0xFFE8B830);
             }
         }
     }
