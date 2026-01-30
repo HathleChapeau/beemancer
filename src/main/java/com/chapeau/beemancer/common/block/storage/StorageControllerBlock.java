@@ -26,9 +26,7 @@ import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.util.StorageHelper;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -176,34 +174,6 @@ public class StorageControllerBlock extends BaseEntityBlock {
         super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
-    @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (!state.getValue(FORMED)) return;
-
-        double cx = pos.getX() + 0.5;
-        double cy = pos.getY() + 0.5;
-        double cz = pos.getZ() + 0.5;
-
-        // Boule de particules qui tourne autour du centre
-        float time = level.getGameTime() * 0.1f;
-        double radius = 0.25;
-        int count = 8;
-
-        for (int i = 0; i < count; i++) {
-            // Distribuer les particules sur une sphère tournante
-            float phi = time + i * ((float) Math.PI * 2.0f / count);
-            float theta = (float) Math.sin(time * 0.2 + i * 0.8) * (float) Math.PI * 0.4f + (float) Math.PI * 0.5f;
-
-            double px = radius * Math.sin(theta) * Math.cos(phi);
-            double py = radius * Math.cos(theta);
-            double pz = radius * Math.sin(theta) * Math.sin(phi);
-
-            // END_ROD: petites particules persistantes qui ne tombent pas
-            level.addParticle(ParticleTypes.END_ROD,
-                cx + px, cy + py, cz + pz,
-                0, 0, 0);
-        }
-    }
 
     /**
      * Appelé par d'autres blocs quand le joueur clique dessus en mode édition.

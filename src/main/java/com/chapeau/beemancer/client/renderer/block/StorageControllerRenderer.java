@@ -52,8 +52,8 @@ import java.util.Set;
  * - Outlines bleus autour des coffres enregistrés
  *
  * Mode formé:
- * - 2 cubes à x=2 et x=14, le tout tourne sur X/Y/Z à des rythmes différents
- * - Chaque cube oscille individuellement avec sin/cos
+ * - 2 petits cubes à x=2 et x=14, le tout tourne sur X/Y/Z à des rythmes différents
+ * - 2 gros cubes 6x6x6 au centre, tournent rapidement sur eux-mêmes (même pattern XYZ)
  */
 public class StorageControllerRenderer implements BlockEntityRenderer<StorageControllerBlockEntity> {
 
@@ -63,6 +63,10 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
     public static final ModelResourceLocation CUBE_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
             Beemancer.MOD_ID, "block/storage/storage_controller_cube"));
+
+    public static final ModelResourceLocation CUBE_BIG_MODEL_LOC =
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "block/storage/storage_controller_cube_big"));
 
     public StorageControllerRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
@@ -86,8 +90,8 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
     /**
      * Rend l'animation du controller formé.
-     * Tout le renderer tourne sur X, Y, Z à des rythmes différents.
-     * Chaque cube oscille individuellement avec sin/cos.
+     * 2 petits cubes à x=2 et x=14 tournent ensemble sur X/Y/Z.
+     * 2 gros cubes 6x6x6 au centre tournent rapidement sur eux-mêmes (même pattern).
      */
     private void renderFormedAnimation(StorageControllerBlockEntity blockEntity, float partialTick,
                                         PoseStack poseStack, MultiBufferSource bufferSource,
@@ -98,11 +102,42 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
         BakedModel cubeModel = Minecraft.getInstance().getModelManager()
             .getModel(CUBE_MODEL_LOC);
+        BakedModel cubeBigModel = Minecraft.getInstance().getModelManager()
+            .getModel(CUBE_BIG_MODEL_LOC);
 
         BlockState state = blockEntity.getBlockState();
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.solid());
 
-        // === Rotation globale (tout le renderer tourne) ===
+        // === 2 gros cubes au centre (rotation rapide sur eux-mêmes) ===
+        // Cube A: même pattern XYZ, vitesse rapide
+        poseStack.pushPose();
+        poseStack.translate(0.5, 0.5, 0.5);
+        poseStack.mulPose(Axis.XP.rotationDegrees(time * 3.0f));
+        poseStack.mulPose(Axis.YP.rotationDegrees(time * 4.5f));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(time * 2.1f));
+        poseStack.translate(-0.5, -0.5, -0.5);
+        blockRenderer.getModelRenderer().tesselateBlock(
+            blockEntity.getLevel(), cubeBigModel, state, blockEntity.getBlockPos(),
+            poseStack, vertexConsumer, false, random,
+            packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
+        );
+        poseStack.popPose();
+
+        // Cube B: même pattern XYZ, vitesse rapide, phase décalée
+        poseStack.pushPose();
+        poseStack.translate(0.5, 0.5, 0.5);
+        poseStack.mulPose(Axis.XP.rotationDegrees(time * 3.0f + 90));
+        poseStack.mulPose(Axis.YP.rotationDegrees(time * 4.5f + 60));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(time * 2.1f + 45));
+        poseStack.translate(-0.5, -0.5, -0.5);
+        blockRenderer.getModelRenderer().tesselateBlock(
+            blockEntity.getLevel(), cubeBigModel, state, blockEntity.getBlockPos(),
+            poseStack, vertexConsumer, false, random,
+            packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
+        );
+        poseStack.popPose();
+
+        // === Rotation globale des 2 petits cubes ===
         poseStack.pushPose();
         poseStack.translate(0.5, 0.5, 0.5);
         poseStack.mulPose(Axis.XP.rotationDegrees(time * 1.0f));
@@ -110,47 +145,27 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         poseStack.mulPose(Axis.ZP.rotationDegrees(time * 0.7f));
         poseStack.translate(-0.5, -0.5, -0.5);
 
-        // === Cube 1 (position x=2/16) ===
+        // Petit cube 1 (position x=2/16)
         poseStack.pushPose();
-        // Décaler vers x=2/16 depuis le centre du modèle (7/16)
         poseStack.translate((2.0 / 16.0) - (7.0 / 16.0), 0, 0);
         blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(),
-            cubeModel,
-            state,
-            blockEntity.getBlockPos(),
-            poseStack,
-            vertexConsumer,
-            false,
-            random,
-            packedLight,
-            packedOverlay,
-            ModelData.EMPTY,
-            RenderType.solid()
+            blockEntity.getLevel(), cubeModel, state, blockEntity.getBlockPos(),
+            poseStack, vertexConsumer, false, random,
+            packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
         );
         poseStack.popPose();
 
-        // === Cube 2 (position x=14/16) ===
+        // Petit cube 2 (position x=14/16)
         poseStack.pushPose();
-        // Décaler vers x=14/16 depuis le centre du modèle (7/16)
         poseStack.translate((14.0 / 16.0) - (7.0 / 16.0), 0, 0);
         blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(),
-            cubeModel,
-            state,
-            blockEntity.getBlockPos(),
-            poseStack,
-            vertexConsumer,
-            false,
-            random,
-            packedLight,
-            packedOverlay,
-            ModelData.EMPTY,
-            RenderType.solid()
+            blockEntity.getLevel(), cubeModel, state, blockEntity.getBlockPos(),
+            poseStack, vertexConsumer, false, random,
+            packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
         );
         poseStack.popPose();
 
-        poseStack.popPose(); // Fin rotation globale
+        poseStack.popPose(); // Fin rotation globale petits cubes
     }
 
     /**
