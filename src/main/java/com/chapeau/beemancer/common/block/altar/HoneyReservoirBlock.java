@@ -45,7 +45,6 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -66,15 +65,8 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    // Forme horizontale: réservoir allongé
-    private static final VoxelShape SHAPE = Shapes.or(
-        // Capuchon fer gauche
-        Block.box(0, 4, 4, 3, 12, 12),
-        // Corps verre central
-        Block.box(3, 4, 4, 13, 12, 12),
-        // Capuchon fer droit
-        Block.box(13, 4, 4, 16, 12, 12)
-    );
+    // Forme carrée: réservoir 8x8x8 centré
+    private static final VoxelShape SHAPE = Block.box(4, 4, 4, 12, 12, 12);
 
     public HoneyReservoirBlock(Properties properties) {
         super(properties);

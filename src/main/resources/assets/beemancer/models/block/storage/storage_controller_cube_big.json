@@ -1,21 +1,22 @@
 {
   "parent": "minecraft:block/block",
+  "ambientocclusion": false,
   "textures": {
     "all": "beemancer:block/logistic/storage_controller",
     "particle": "beemancer:block/logistic/storage_controller"
   },
   "elements": [
     {
-      "name": "Cube 6x6x6",
+      "name": "Cube 4x4x4",
       "from": [6, 6, 6],
       "to": [10, 10, 10],
       "faces": {
-        "north": {"texture": "#all"},
-        "east": {"texture": "#all"},
-        "south": {"texture": "#all"},
-        "west": {"texture": "#all"},
-        "up": {"texture": "#all"},
-        "down": {"texture": "#all"}
+        "north": {"texture": "#all", "uv": [6, 6, 10, 10]},
+        "east": {"texture": "#all", "uv": [6, 6, 10, 10]},
+        "south": {"texture": "#all", "uv": [6, 6, 10, 10]},
+        "west": {"texture": "#all", "uv": [6, 6, 10, 10]},
+        "up": {"texture": "#all", "uv": [6, 6, 10, 10]},
+        "down": {"texture": "#all", "uv": [6, 6, 10, 10]}
       }
     }
   ]

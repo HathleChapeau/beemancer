@@ -51,7 +51,7 @@ import org.joml.Matrix4f;
 public class StorageTerminalRenderer implements BlockEntityRenderer<StorageTerminalBlockEntity> {
 
     private static final ResourceLocation PORTAL_TEXTURE =
-        ResourceLocation.withDefaultNamespace("textures/block/nether_portal.png");
+        ResourceLocation.withDefaultNamespace("textures/block/honey_block_top.png");
     private static final ResourceLocation OFF_TEXTURE =
         ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "textures/block/logistic/storage_terminal_off.png");
 
@@ -75,7 +75,7 @@ public class StorageTerminalRenderer implements BlockEntityRenderer<StorageTermi
         }
 
         ResourceLocation texture = depleted ? OFF_TEXTURE : PORTAL_TEXTURE;
-        VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityTranslucent(texture));
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(texture));
 
         poseStack.pushPose();
 

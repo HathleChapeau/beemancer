@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "ambientocclusion": false,
   "textures": {
     "pipe": "beemancer:block/honey_pipe",
     "frame": "beemancer:block/pipe_frame",
@@ -15,6 +16,7 @@
         "east": {"texture": "#pipe", "uv": [5, 5, 11, 16]},
         "south": {"texture": "#pipe", "uv": [5, 5, 11, 16]},
         "west": {"texture": "#pipe", "uv": [5, 5, 11, 16]},
+        "up": {"texture": "#pipe", "uv": [5, 5, 11, 11]},
         "down": {"texture": "#frame", "uv": [5, 5, 11, 11], "cullface": "down"}
       }
     },

@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "ambientocclusion": false,
   "textures": {
     "all": "beemancer:block/logistic/storage_controller",
     "particle": "beemancer:block/logistic/storage_controller"
@@ -10,12 +11,12 @@
       "from": [7, 7, 7],
       "to": [9, 9, 9],
       "faces": {
-        "north": {"texture": "#all"},
-        "east": {"texture": "#all"},
-        "south": {"texture": "#all"},
-        "west": {"texture": "#all"},
-        "up": {"texture": "#all"},
-        "down": {"texture": "#all"}
+        "north": {"texture": "#all", "uv": [7, 7, 9, 9]},
+        "east": {"texture": "#all", "uv": [7, 7, 9, 9]},
+        "south": {"texture": "#all", "uv": [7, 7, 9, 9]},
+        "west": {"texture": "#all", "uv": [7, 7, 9, 9]},
+        "up": {"texture": "#all", "uv": [7, 7, 9, 9]},
+        "down": {"texture": "#all", "uv": [7, 7, 9, 9]}
       }
     }
   ]

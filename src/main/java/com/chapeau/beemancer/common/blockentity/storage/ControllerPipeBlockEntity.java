@@ -13,7 +13,7 @@
  *
  * UTILISÉ PAR:
  * - ControllerPipeBlock.java (newBlockEntity)
- * - ControllerPipeRenderer.java (lecture rotation/spread)
+ * - ControllerPipeRenderer.java (lecture spread)
  * - StorageControllerBlockEntity.java (set formed state)
  *
  * ============================================================
@@ -34,14 +34,13 @@ import javax.annotation.Nullable;
 
 /**
  * Stocke les données de rendu du conduit formé:
- * - formedRotation (0-7): direction du coude + flip vertical
  * - formedSpreadX/Z: décalage en coordonnées monde pour l'écartement
  *
+ * La rotation du coude est stockée dans le blockstate (FORMED_ROTATION).
  * Pas de tick — bloc purement visuel.
  */
 public class ControllerPipeBlockEntity extends BlockEntity {
 
-    private int formedRotation = 0;
     private float formedSpreadX = 0.0f;
     private float formedSpreadZ = 0.0f;
 
@@ -50,10 +49,6 @@ public class ControllerPipeBlockEntity extends BlockEntity {
     }
 
     // --- Getters ---
-
-    public int getFormedRotation() {
-        return formedRotation;
-    }
 
     public float getFormedSpreadX() {
         return formedSpreadX;
@@ -66,11 +61,10 @@ public class ControllerPipeBlockEntity extends BlockEntity {
     // --- Setter ---
 
     /**
-     * Configure l'état formé: rotation du coude et décalage de spread.
+     * Configure le décalage de spread pour l'écartement visuel.
      * Appelé par StorageControllerBlockEntity lors de la formation du multibloc.
      */
-    public void setFormed(int rotation, float spreadX, float spreadZ) {
-        this.formedRotation = rotation;
+    public void setFormed(float spreadX, float spreadZ) {
         this.formedSpreadX = spreadX;
         this.formedSpreadZ = spreadZ;
         setChanged();
@@ -83,7 +77,6 @@ public class ControllerPipeBlockEntity extends BlockEntity {
      * Réinitialise les données formed quand le multibloc est détruit.
      */
     public void clearFormed() {
-        this.formedRotation = 0;
         this.formedSpreadX = 0.0f;
         this.formedSpreadZ = 0.0f;
         setChanged();
@@ -97,7 +90,6 @@ public class ControllerPipeBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.putInt("FormedRotation", formedRotation);
         if (formedSpreadX != 0.0f) {
             tag.putFloat("FormedSpreadX", formedSpreadX);
         }
@@ -109,7 +101,6 @@ public class ControllerPipeBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        formedRotation = tag.getInt("FormedRotation");
         formedSpreadX = tag.getFloat("FormedSpreadX");
         formedSpreadZ = tag.getFloat("FormedSpreadZ");
     }
@@ -119,7 +110,6 @@ public class ControllerPipeBlockEntity extends BlockEntity {
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
-        tag.putInt("FormedRotation", formedRotation);
         if (formedSpreadX != 0.0f) {
             tag.putFloat("FormedSpreadX", formedSpreadX);
         }

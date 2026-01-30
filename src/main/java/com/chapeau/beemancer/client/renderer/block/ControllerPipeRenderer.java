@@ -41,7 +41,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 /**
  * Rend le modèle de coude (elbow) quand le controller pipe est formé.
  *
- * formedRotation (0-7):
+ * FORMED_ROTATION blockstate (0-7):
  * - 0-3: coude vertical vers le bas, Y rotation 0/90/180/270
  * - 4-7: coude vertical vers le haut (x=180 flip), Y rotation 0/90/180/270
  */
@@ -92,7 +92,7 @@ public class ControllerPipeRenderer implements BlockEntityRenderer<ControllerPip
             poseStack.mulPose(Axis.XP.rotationDegrees(180));
         }
         if (yRotation != 0) {
-            poseStack.mulPose(Axis.YP.rotationDegrees(yRotation * 90.0f));
+            poseStack.mulPose(Axis.YP.rotationDegrees(-yRotation * 90.0f));
         }
         poseStack.translate(-0.5, -0.5, -0.5);
 

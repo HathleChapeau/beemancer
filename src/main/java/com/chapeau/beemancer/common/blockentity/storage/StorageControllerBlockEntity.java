@@ -287,8 +287,8 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             float spreadX = 0.0f;
             float spreadZ = 0.0f;
             if (formed && originalOffset.getX() != 0) {
-                spreadX = rotatedOffset.getX() * -3.0f / 16.0f;
-                spreadZ = rotatedOffset.getZ() * -3.0f / 16.0f;
+                spreadX = rotatedOffset.getX() * 1.0f / 16.0f;
+                spreadZ = rotatedOffset.getZ() * 1.0f / 16.0f;
             }
 
             // Controller Pipes: formed state + rotation via blockstate, spread via BlockEntity
@@ -297,7 +297,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
                 BlockEntity be = level.getBlockEntity(blockPos);
                 if (be instanceof ControllerPipeBlockEntity pipeBe) {
                     if (formed) {
-                        pipeBe.setFormed(rotation, spreadX, spreadZ);
+                        pipeBe.setFormed(spreadX, spreadZ);
                     } else {
                         pipeBe.clearFormed();
                     }
