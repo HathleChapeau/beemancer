@@ -7,16 +7,16 @@
   },
   "elements": [
     {
-      "name": "Reservoir Body 8x16x8",
-      "from": [4, 0, 4],
-      "to": [12, 16, 12],
+      "name": "Reservoir Body 10x16x10",
+      "from": [3, 0, 3],
+      "to": [13, 16, 13],
       "faces": {
-        "north": {"texture": "#body", "uv": [4, 0, 12, 16]},
-        "east": {"texture": "#body", "uv": [4, 0, 12, 16]},
-        "south": {"texture": "#body", "uv": [4, 0, 12, 16]},
-        "west": {"texture": "#body", "uv": [4, 0, 12, 16]},
-        "up": {"texture": "#cap", "uv": [4, 4, 12, 12], "cullface": "up"},
-        "down": {"texture": "#cap", "uv": [4, 4, 12, 12], "cullface": "down"}
+        "north": {"texture": "#body", "uv": [3, 0, 13, 16]},
+        "east": {"texture": "#body", "uv": [3, 0, 13, 16]},
+        "south": {"texture": "#body", "uv": [3, 0, 13, 16]},
+        "west": {"texture": "#body", "uv": [3, 0, 13, 16]},
+        "up": {"texture": "#cap", "uv": [3, 3, 13, 13], "cullface": "up"},
+        "down": {"texture": "#cap", "uv": [3, 3, 13, 13], "cullface": "down"}
       }
     }
   ]

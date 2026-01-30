@@ -17,32 +17,6 @@
         "up": {"texture": "#all", "cullface": "up"},
         "down": {"texture": "#all", "cullface": "down"}
       }
-    },
-    {
-      "name": "Front Wing 10x10x2",
-      "from": [3, 3, -2],
-      "to": [13, 13, 0],
-      "faces": {
-        "north": {"texture": "#all", "uv": [3, 3, 13, 13]},
-        "east": {"texture": "#all", "uv": [0, 3, 2, 13]},
-        "south": {"texture": "#all", "uv": [3, 3, 13, 13]},
-        "west": {"texture": "#all", "uv": [14, 3, 16, 13]},
-        "up": {"texture": "#all", "uv": [3, 0, 13, 2]},
-        "down": {"texture": "#all", "uv": [3, 14, 13, 16]}
-      }
-    },
-    {
-      "name": "Back Wing 10x10x2",
-      "from": [3, 3, 16],
-      "to": [13, 13, 18],
-      "faces": {
-        "north": {"texture": "#all", "uv": [3, 3, 13, 13]},
-        "east": {"texture": "#all", "uv": [14, 3, 16, 13]},
-        "south": {"texture": "#all", "uv": [3, 3, 13, 13]},
-        "west": {"texture": "#all", "uv": [0, 3, 2, 13]},
-        "up": {"texture": "#all", "uv": [3, 14, 13, 16]},
-        "down": {"texture": "#all", "uv": [3, 0, 13, 2]}
-      }
     }
   ]
 }

@@ -1,6 +1,22 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
   "textures": {
-    "all": "beemancer:block/logistic/storage_terminal"
-  }
+    "all": "beemancer:block/logistic/storage_terminal",
+    "particle": "beemancer:block/logistic/storage_terminal"
+  },
+  "elements": [
+    {
+      "name": "Terminal Plate 12x12x3",
+      "from": [2, 2, 13],
+      "to": [14, 14, 16],
+      "faces": {
+        "north": {"texture": "#all", "uv": [2, 2, 14, 14]},
+        "east": {"texture": "#all", "uv": [0, 2, 3, 14]},
+        "south": {"texture": "#all", "uv": [2, 2, 14, 14]},
+        "west": {"texture": "#all", "uv": [13, 2, 16, 14]},
+        "up": {"texture": "#all", "uv": [2, 0, 14, 3]},
+        "down": {"texture": "#all", "uv": [2, 13, 14, 16]}
+      }
+    }
+  ]
 }
