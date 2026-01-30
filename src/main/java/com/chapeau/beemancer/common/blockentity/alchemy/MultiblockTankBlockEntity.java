@@ -6,6 +6,7 @@
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
+import com.chapeau.beemancer.common.block.alchemy.MultiblockTankBlock;
 import com.chapeau.beemancer.common.menu.alchemy.MultiblockTankMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
@@ -337,9 +338,15 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         // Validate cuboid shape
         validCuboid = validateCuboid();
 
-        // Update all connected blocks
+        // Mettre a jour le blockstate FORMED sur tous les blocs connectes
+        boolean formed = validCuboid && connectedBlocks.size() > 1;
         if (level != null) {
             for (BlockPos pos : connectedBlocks) {
+                BlockState currentState = level.getBlockState(pos);
+                if (currentState.hasProperty(MultiblockTankBlock.FORMED)
+                    && currentState.getValue(MultiblockTankBlock.FORMED) != formed) {
+                    level.setBlock(pos, currentState.setValue(MultiblockTankBlock.FORMED, formed), 3);
+                }
                 level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
             }
         }
@@ -383,6 +390,39 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         }
 
         return true;
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level == null || level.isClientSide()) return;
+
+        if (isMaster()) {
+            // Re-valider la structure au chargement
+            for (BlockPos blockPos : new HashSet<>(connectedBlocks)) {
+                if (blockPos.equals(worldPosition)) continue;
+                BlockEntity be = level.getBlockEntity(blockPos);
+                if (be instanceof MultiblockTankBlockEntity slave) {
+                    // S'assurer que le slave pointe vers ce master
+                    slave.masterPos = worldPosition;
+                    slave.setChanged();
+                } else {
+                    // Le bloc n'existe plus ou n'est plus un tank
+                    connectedBlocks.remove(blockPos);
+                }
+            }
+            recalculateStructure();
+        } else {
+            // Verifier que le master existe et est valide
+            if (masterPos != null) {
+                BlockEntity be = level.getBlockEntity(masterPos);
+                if (!(be instanceof MultiblockTankBlockEntity)) {
+                    // Master invalide - reinitialiser en master isole
+                    initializeAsMaster();
+                    setChanged();
+                }
+            }
+        }
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MultiblockTankBlockEntity be) {
@@ -498,6 +538,14 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             }
 
             this.validCuboid = tag.getBoolean("ValidCuboid");
+
+            // Charger bounding box pour le client
+            if (tag.contains("BoundingBox")) {
+                this.clientBoundingBox = tag.getIntArray("BoundingBox");
+                if (this.clientBoundingBox.length != 6) {
+                    this.clientBoundingBox = null;
+                }
+            }
         } else {
             // Load slave data
             if (tag.contains("MasterPos")) {
@@ -505,6 +553,37 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             }
             this.fluidTank = null;
         }
+    }
+
+    /**
+     * Calcule le bounding box du cuboid (pour le rendu client).
+     * Retourne [minX, minY, minZ, maxX, maxY, maxZ] en coordonnees monde.
+     */
+    public int[] getBoundingBox() {
+        if (connectedBlocks.isEmpty()) {
+            return new int[]{worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
+                             worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()};
+        }
+        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
+        int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
+        int minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
+        for (BlockPos pos : connectedBlocks) {
+            minX = Math.min(minX, pos.getX());
+            maxX = Math.max(maxX, pos.getX());
+            minY = Math.min(minY, pos.getY());
+            maxY = Math.max(maxY, pos.getY());
+            minZ = Math.min(minZ, pos.getZ());
+            maxZ = Math.max(maxZ, pos.getZ());
+        }
+        return new int[]{minX, minY, minZ, maxX, maxY, maxZ};
+    }
+
+    // Bounding box cache pour le client (charge via updateTag)
+    private int[] clientBoundingBox = null;
+
+    public int[] getClientBoundingBox() {
+        if (clientBoundingBox != null) return clientBoundingBox;
+        return getBoundingBox();
     }
 
     @Override
@@ -518,6 +597,10 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             }
             tag.putInt("BlockCount", connectedBlocks.size());
             tag.putBoolean("ValidCuboid", validCuboid);
+
+            // Bounding box pour le rendu client du fluide
+            int[] bb = getBoundingBox();
+            tag.putIntArray("BoundingBox", bb);
         } else if (masterPos != null) {
             tag.put("MasterPos", NbtUtils.writeBlockPos(masterPos));
         }

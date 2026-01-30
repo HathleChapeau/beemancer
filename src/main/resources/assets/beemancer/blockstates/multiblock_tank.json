@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "beemancer:block/alchemy/multiblock_tank" }
+    "formed=false": { "model": "beemancer:block/alchemy/multiblock_tank" },
+    "formed=true": { "model": "beemancer:block/alchemy/multiblock_tank_formed" }
   }
 }

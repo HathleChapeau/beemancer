@@ -25,6 +25,9 @@ import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyPedestalRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.ControllerPipeRenderer;
+import com.chapeau.beemancer.client.renderer.block.CrystallizerRenderer;
+import com.chapeau.beemancer.client.renderer.block.HoneyTankRenderer;
+import com.chapeau.beemancer.client.renderer.block.MultiblockTankRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageTerminalRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
@@ -126,6 +129,15 @@ public class ClientSetup {
         // ControllerPipeRenderer - rendu coude formé pour le multibloc storage
         event.registerBlockEntityRenderer(BeemancerBlockEntities.CONTROLLER_PIPE.get(),
             ControllerPipeRenderer::new);
+        // CrystallizerRenderer - cores animés (rotation + scale)
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.CRYSTALLIZER.get(),
+            CrystallizerRenderer::new);
+        // HoneyTankRenderer - fluide dynamique
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.HONEY_TANK.get(),
+            HoneyTankRenderer::new);
+        // MultiblockTankRenderer - fluide dynamique multi-bloc
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.MULTIBLOCK_TANK.get(),
+            MultiblockTankRenderer::new);
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -261,5 +273,8 @@ public class ClientSetup {
 
         // Modèle formed du honey reservoir (rendu par BER avec spread offset)
         event.register(HoneyReservoirRenderer.FORMED_MODEL_LOC);
+
+        // Modèle core du crystallizer (cubes animés)
+        event.register(CrystallizerRenderer.CORE_MODEL_LOC);
     }
 }

@@ -231,7 +231,7 @@ public class Beemancer {
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 BeemancerBlockEntities.CRYSTALLIZER.get(),
-                (be, side) -> be.getInputTank()
+                (be, side) -> (side == Direction.UP || side == Direction.DOWN) ? be.getInputTank() : null
         );
 
         event.registerBlockEntity(
@@ -276,6 +276,13 @@ public class Beemancer {
                 Capabilities.ItemHandler.BLOCK,
                 BeemancerBlockEntities.ITEM_PIPE.get(),
                 (be, side) -> be.getBuffer()
+        );
+
+        // Crystallizer: extraction seulement du crystal produit (toutes directions)
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                BeemancerBlockEntities.CRYSTALLIZER.get(),
+                (be, side) -> be.getOutputSlot()
         );
     }
 

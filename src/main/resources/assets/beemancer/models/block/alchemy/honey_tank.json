@@ -4,7 +4,6 @@
   "textures": {
     "dark_wood": "beemancer:block/honeyed_stone",
     "amber_glass": "beemancer:block/honeyed_glass",
-    "liquid": "beemancer:block/honey",
     "dark_iron": "beemancer:block/honeyed_plank",
     "particle": "beemancer:block/alchemy/honey_tank_side"
   },
@@ -90,19 +89,6 @@
         "west":  {"texture": "#amber_glass", "uv": [1, 1, 15, 15]},
         "up":    {"texture": "#amber_glass", "uv": [1, 1, 15, 15]},
         "down":  {"texture": "#amber_glass", "uv": [1, 1, 15, 15]}
-      }
-    },
-    {
-      "name": "Liquid",
-      "from": [2, 2, 2],
-      "to": [14, 14, 14],
-      "faces": {
-        "north": {"texture": "#liquid", "uv": [2, 2, 14, 14]},
-        "east":  {"texture": "#liquid", "uv": [2, 2, 14, 14]},
-        "south": {"texture": "#liquid", "uv": [2, 2, 14, 14]},
-        "west":  {"texture": "#liquid", "uv": [2, 2, 14, 14]},
-        "up":    {"texture": "#liquid", "uv": [2, 2, 14, 14]},
-        "down":  {"texture": "#liquid", "uv": [2, 2, 14, 14]}
       }
     }
   ]

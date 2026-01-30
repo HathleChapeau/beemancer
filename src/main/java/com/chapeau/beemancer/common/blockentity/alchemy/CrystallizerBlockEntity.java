@@ -30,6 +30,9 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -59,6 +62,11 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
     private final ItemStackHandler outputSlot = new ItemStackHandler(1) {
         @Override
         protected void onContentsChanged(int slot) { setChanged(); }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return false; // Extraction seulement, pas d'insertion externe
+        }
     };
 
     private int progress = 0;
@@ -119,6 +127,11 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
             level.setBlock(pos, state.setValue(CrystallizerBlock.ACTIVE, isActive), 3);
         }
 
+        // Sync au client pour le renderer (progress + output)
+        if (isActive || wasActive) {
+            level.sendBlockUpdated(pos, state, state, 3);
+        }
+
         be.setChanged();
     }
 
@@ -140,15 +153,8 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
     }
 
     private boolean canProcess(CrystallizingRecipe recipe) {
-        // Need space in output
-        ItemStack output = outputSlot.getStackInSlot(0);
-        if (output.isEmpty()) {
-            return true;
-        }
-
-        ItemStack expectedOutput = recipe.result();
-        return ItemStack.isSameItemSameComponents(output, expectedOutput)
-            && output.getCount() < output.getMaxStackSize();
+        // Ne pas produire si un crystal est deja present dans l'output
+        return outputSlot.getStackInSlot(0).isEmpty();
     }
 
     private void processFluid(CrystallizingRecipe recipe) {
@@ -170,6 +176,9 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
     public ItemStackHandler getOutputSlot() { return outputSlot; }
     @Nullable
     public RecipeHolder<CrystallizingRecipe> getCurrentRecipe() { return currentRecipe; }
+    public int getProgress() { return progress; }
+    public int getCurrentProcessTime() { return currentProcessTime; }
+    public boolean hasOutputCrystal() { return !outputSlot.getStackInSlot(0).isEmpty(); }
 
     @Override
     public Component getDisplayName() {
@@ -188,6 +197,7 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
         tag.put("InputTank", inputTank.writeToNBT(registries, new CompoundTag()));
         tag.put("Output", outputSlot.serializeNBT(registries));
         tag.putInt("Progress", progress);
+        tag.putInt("ProcessTime", currentProcessTime);
     }
 
     @Override
@@ -196,5 +206,28 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
         inputTank.readFromNBT(registries, tag.getCompound("InputTank"));
         outputSlot.deserializeNBT(registries, tag.getCompound("Output"));
         progress = tag.getInt("Progress");
+        if (tag.contains("ProcessTime")) {
+            currentProcessTime = tag.getInt("ProcessTime");
+        }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        tag.putInt("Progress", progress);
+        tag.putInt("ProcessTime", currentProcessTime);
+        tag.put("Output", outputSlot.serializeNBT(registries));
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        loadAdditional(tag, registries);
     }
 }

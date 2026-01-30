@@ -4,7 +4,6 @@
   "textures": {
     "dark_iron": "beemancer:block/alchemy/crystallizer_side",
     "amber_glass": "beemancer:block/honeyed_glass",
-    "honey": "beemancer:block/honey",
     "dark_wood": "beemancer:block/alchemy/crystallizer_bottom",
     "particle": "beemancer:block/alchemy/crystallizer_side"
   },
@@ -98,32 +97,6 @@
         "west": {"texture": "#amber_glass", "uv": [3, 3, 13, 13]},
         "up": {"texture": "#amber_glass", "uv": [3, 3, 13, 13]},
         "down": {"texture": "#amber_glass", "uv": [3, 3, 13, 13]}
-      }
-    },
-    {
-      "name": "Core 1",
-      "from": [7, 7, 7],
-      "to": [9, 9, 9],
-      "faces": {
-        "north": {"texture": "#honey", "uv": [7, 7, 10, 10]},
-        "east": {"texture": "#honey", "uv": [7, 7, 10, 10]},
-        "south": {"texture": "#honey", "uv": [7, 7, 10, 10]},
-        "west": {"texture": "#honey", "uv": [7, 7, 10, 10]},
-        "up": {"texture": "#honey", "uv": [7, 7, 10, 10]},
-        "down": {"texture": "#honey", "uv": [7, 7, 10, 10]}
-      }
-    },
-    {
-      "name": "Core 2",
-      "from": [7, 7, 7],
-      "to": [9, 9, 9],
-      "faces": {
-        "north": {"texture": "#honey", "uv": [7, 7, 10, 10]},
-        "east": {"texture": "#honey", "uv": [7, 7, 10, 10]},
-        "south": {"texture": "#honey", "uv": [7, 7, 10, 10]},
-        "west": {"texture": "#honey", "uv": [7, 7, 10, 10]},
-        "up": {"texture": "#honey", "uv": [7, 7, 10, 10]},
-        "down": {"texture": "#honey", "uv": [7, 7, 10, 10]}
       }
     }
   ]
