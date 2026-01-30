@@ -10,6 +10,8 @@
  * |-------------------------------|----------------------|--------------------------------|
  * | ManualCentrifugeBlock         | Support requis       | Placement conditionnel         |
  * | ManualCentrifugeBlockEntity   | Processing           | onPlayerSpin() delegation      |
+ * | CrankBlockEntity              | BER support          | Rendu rotation                 |
+ * | BeemancerBlockEntities        | Registration BE      | Type du BlockEntity            |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -20,7 +22,10 @@
  */
 package com.chapeau.beemancer.common.block.alchemy;
 
+import com.chapeau.beemancer.common.blockentity.alchemy.CrankBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.ManualCentrifugeBlockEntity;
+import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -32,8 +37,11 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -42,7 +50,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
-public class CrankBlock extends Block {
+public class CrankBlock extends BaseEntityBlock {
+    public static final MapCodec<CrankBlock> CODEC = simpleCodec(CrankBlock::new);
 
     private static final VoxelShape SHAPE = Shapes.or(
         Block.box(7, 0, 7, 9, 2, 9),     // Tige centrale
@@ -56,8 +65,22 @@ public class CrankBlock extends Block {
     }
 
     @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
+
+    @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new CrankBlockEntity(pos, state);
     }
 
     @Override

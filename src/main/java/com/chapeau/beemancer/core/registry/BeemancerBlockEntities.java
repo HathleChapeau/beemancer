@@ -91,11 +91,18 @@ public class BeemancerBlockEntities {
                     ).build(null));
 
     // --- ALCHEMY MACHINES ---
-    public static final Supplier<BlockEntityType<ManualCentrifugeBlockEntity>> MANUAL_CENTRIFUGE = 
+    public static final Supplier<BlockEntityType<ManualCentrifugeBlockEntity>> MANUAL_CENTRIFUGE =
             BLOCK_ENTITIES.register("manual_centrifuge",
                     () -> BlockEntityType.Builder.of(
                             ManualCentrifugeBlockEntity::new,
                             BeemancerBlocks.MANUAL_CENTRIFUGE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<CrankBlockEntity>> CRANK =
+            BLOCK_ENTITIES.register("crank",
+                    () -> BlockEntityType.Builder.of(
+                            CrankBlockEntity::new,
+                            BeemancerBlocks.CRANK.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<PoweredCentrifugeBlockEntity>> POWERED_CENTRIFUGE =

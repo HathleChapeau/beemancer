@@ -93,16 +93,23 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ManualCentrifugeBlockEntity be) {
-        boolean wasSpinning = state.getValue(ManualCentrifugeBlock.SPINNING);
-
-        // Check if player stopped holding (no interaction for 5 ticks) — visual feedback only
+        boolean wasSpinning = be.isSpinning;
         int currentTick = (int) level.getGameTime();
-        if (be.isSpinning && (currentTick - be.lastInteractionTick) > 5) {
+
+        // Advance progress each tick while cranking (within 10 ticks of last interaction)
+        if (be.isSpinning && be.hasInputToProcess() && (currentTick - be.lastInteractionTick) <= 10) {
+            be.progress++;
+            if (be.progress >= PROCESS_TIME) {
+                be.processInput();
+                be.progress = 0;
+            }
+        } else if (be.isSpinning && (currentTick - be.lastInteractionTick) > 10) {
             be.isSpinning = false;
         }
 
         // Update block state
-        if (wasSpinning != be.isSpinning) {
+        boolean blockSpinning = state.getValue(ManualCentrifugeBlock.SPINNING);
+        if (blockSpinning != be.isSpinning) {
             level.setBlock(pos, state.setValue(ManualCentrifugeBlock.SPINNING, be.isSpinning), 3);
         }
 
@@ -110,23 +117,14 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
     }
 
     /**
-     * Called when player holds right-click on the centrifuge
-     * @return true if progress was made
+     * Called by CrankBlock when player holds right-click on the crank.
+     * Registers the interaction timestamp; serverTick advances progress.
      */
     public boolean onPlayerSpin(Level level) {
         if (!hasInputToProcess()) return false;
 
         lastInteractionTick = (int) level.getGameTime();
         isSpinning = true;
-        progress++;
-
-        if (progress >= PROCESS_TIME) {
-            processInput();
-            progress = 0;
-            isSpinning = false;
-            return true;
-        }
-
         return true;
     }
 

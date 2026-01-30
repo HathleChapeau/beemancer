@@ -25,6 +25,7 @@ import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyPedestalRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.ControllerPipeRenderer;
+import com.chapeau.beemancer.client.renderer.block.CrankRenderer;
 import com.chapeau.beemancer.client.renderer.block.CrystallizerRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyTankRenderer;
 import com.chapeau.beemancer.client.renderer.block.MultiblockTankRenderer;
@@ -129,6 +130,9 @@ public class ClientSetup {
         // ControllerPipeRenderer - rendu coude formé pour le multibloc storage
         event.registerBlockEntityRenderer(BeemancerBlockEntities.CONTROLLER_PIPE.get(),
             ControllerPipeRenderer::new);
+        // CrankRenderer - rotation quand la centrifugeuse tourne
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.CRANK.get(),
+            CrankRenderer::new);
         // CrystallizerRenderer - cores animés (rotation + scale)
         event.registerBlockEntityRenderer(BeemancerBlockEntities.CRYSTALLIZER.get(),
             CrystallizerRenderer::new);
@@ -276,5 +280,8 @@ public class ClientSetup {
 
         // Modèle core du crystallizer (cubes animés)
         event.register(CrystallizerRenderer.CORE_MODEL_LOC);
+
+        // Modèle crank (rendu par BER avec rotation)
+        event.register(CrankRenderer.CRANK_MODEL_LOC);
     }
 }

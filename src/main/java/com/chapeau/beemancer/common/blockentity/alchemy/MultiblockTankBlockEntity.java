@@ -410,6 +410,19 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     }
 
     private void performLoadValidation() {
+        if (level == null) return;
+
+        // Skip validation if any connected block's chunk is not loaded yet
+        if (isMaster()) {
+            for (BlockPos blockPos : connectedBlocks) {
+                if (!level.isLoaded(blockPos)) {
+                    return; // Retry next tick
+                }
+            }
+        } else if (masterPos != null && !level.isLoaded(masterPos)) {
+            return; // Retry next tick
+        }
+
         needsLoadValidation = false;
 
         if (isMaster()) {
