@@ -90,15 +90,15 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
     /**
      * Rend l'animation du controller formé.
-     * 2 petits cubes à x=2 et x=14 tournent ensemble sur X/Y/Z.
-     * 2 gros cubes 6x6x6 au centre tournent rapidement sur eux-mêmes (même pattern).
+     * Quand alimenté en miel:
+     *   2 petits cubes à x=2 et x=14 tournent ensemble sur X/Y/Z.
+     *   2 gros cubes 6x6x6 au centre tournent rapidement sur eux-mêmes.
+     * Quand sans miel (honey depleted):
+     *   Tous les cubes sont immobiles au centre, superposés.
      */
     private void renderFormedAnimation(StorageControllerBlockEntity blockEntity, float partialTick,
                                         PoseStack poseStack, MultiBufferSource bufferSource,
                                         int packedLight, int packedOverlay) {
-
-        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
-        float time = (gameTime + partialTick);
 
         BakedModel cubeModel = Minecraft.getInstance().getModelManager()
             .getModel(CUBE_MODEL_LOC);
@@ -107,6 +107,30 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
         BlockState state = blockEntity.getBlockState();
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.solid());
+
+        boolean depleted = blockEntity.isHoneyDepleted();
+
+        if (depleted) {
+            // Mode éteint: tous les cubes au centre, immobiles
+            // 2 gros cubes (superposés, pas de rotation)
+            blockRenderer.getModelRenderer().tesselateBlock(
+                blockEntity.getLevel(), cubeBigModel, state, blockEntity.getBlockPos(),
+                poseStack, vertexConsumer, false, random,
+                packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
+            );
+
+            // 2 petits cubes (au centre, pas de décalage)
+            blockRenderer.getModelRenderer().tesselateBlock(
+                blockEntity.getLevel(), cubeModel, state, blockEntity.getBlockPos(),
+                poseStack, vertexConsumer, false, random,
+                packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
+            );
+            return;
+        }
+
+        // Mode actif: animation complète
+        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
+        float time = (gameTime + partialTick);
 
         // === 2 gros cubes au centre (rotation rapide sur eux-mêmes) ===
         // Cube A: même pattern XYZ, vitesse rapide

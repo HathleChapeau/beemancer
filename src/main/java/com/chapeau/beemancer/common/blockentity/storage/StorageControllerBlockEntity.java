@@ -1013,7 +1013,15 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             }
         }
 
+        boolean wasDepleted = honeyDepleted;
         honeyDepleted = remaining > 0;
+        if (wasDepleted != honeyDepleted) {
+            syncToClient();
+        }
+    }
+
+    public boolean isHoneyDepleted() {
+        return honeyDepleted;
     }
 
     /**
@@ -1160,6 +1168,9 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             tag.putUUID("EditingPlayer", editingPlayer);
         }
 
+        // Honey state
+        tag.putBoolean("HoneyDepleted", honeyDepleted);
+
         // Essence slots
         tag.put("EssenceSlots", essenceSlots.serializeNBT(registries));
 
@@ -1205,6 +1216,9 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         } else {
             editingPlayer = null;
         }
+
+        // Honey state
+        honeyDepleted = tag.getBoolean("HoneyDepleted");
 
         // Essence slots
         if (tag.contains("EssenceSlots")) {

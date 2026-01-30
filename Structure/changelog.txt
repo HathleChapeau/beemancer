@@ -3,6 +3,47 @@
 ################################################################################
 
 ================================================================================
+2026-01-30 - Controller Pipe + Honey Consumption + Cleanup
+================================================================================
+
+NOUVEAU BLOC:
+- ControllerPipeBlock: conduit structurel pour le multibloc Storage Controller
+- Cube simple quand non formé, coude orienté quand formé (rendu BER)
+- Remplace honey_pipe T1 aux 4 positions de pipe dans le pattern multibloc
+- ControllerPipeBlockEntity: stocke rotation (0-7), spreadX/Z
+- ControllerPipeRenderer: rendu du coude formed avec spread + rotation
+
+HONEY CONSUMPTION:
+- Le controller consomme du miel en continu quand formé (toutes les secondes)
+- Drain depuis les 2 HoneyReservoirs du multibloc
+- Formule: (base 20 mB/s + coffres × 10 + essences × level × 10) × (1 - efficiency)
+- Insomnia essence donne honey efficiency: level × 10% (PERFECT = 40%)
+- Si plus de miel: delivery bees bloquées (honeyDepleted)
+- ContainerData étendu de 4 à 6 indices (+ consumption, efficiency)
+
+GUI:
+- 2 nouvelles stats dans StorageControllerScreen: "Honey" (mB/s), "Efficiency" (%)
+- StorageControllerMenu: SimpleContainerData(6), getters consumption/efficiency
+
+NETTOYAGE:
+- Supprimé HoneyPipeRenderer.java (remplacé par ControllerPipeRenderer)
+- Retiré champs formed de HoneyPipeBlockEntity (formed, formedRotation, formedSpreadX/Z)
+- Terminal blockstate simplifié: toutes les variantes utilisent le modèle de base
+
+REGISTRES:
+- BeemancerBlocks: +CONTROLLER_PIPE
+- BeemancerItems: +CONTROLLER_PIPE (BlockItem)
+- BeemancerBlockEntities: +CONTROLLER_PIPE
+
+ASSETS:
+- blockstates/controller_pipe.json
+- models/block/storage/controller_pipe.json (cube, texture honeyed_stone)
+- models/block/storage/controller_pipe_formed.json (coude, copie honey_pipe_formed)
+- models/item/controller_pipe.json
+- data/beemancer/loot_table/blocks/controller_pipe.json
+- Lang EN/FR: block.beemancer.controller_pipe, gui honey_consumption, honey_efficiency
+
+================================================================================
 2026-01-30 - Storage Controller: Controlled Hive, Terminal 2px, Spread 3px
 ================================================================================
 

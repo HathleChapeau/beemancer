@@ -78,6 +78,10 @@ public record StorageRequestPacket(
             // Vérifier que le terminal est lié
             if (!terminal.isLinked()) return;
 
+            // Vérifier que le controller a du miel
+            var controller = terminal.getController();
+            if (controller != null && controller.isHoneyDepleted()) return;
+
             // Valider et exécuter la requête (max d'un coffre double = 54 stacks)
             int safeCount = Mth.clamp(packet.count, 1, 64 * 54);
             terminal.requestItem(packet.requestedItem, safeCount);

@@ -381,6 +381,9 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
                 int slotY = y + GRID_Y + row * SLOT_SIZE;
 
                 if (index < displayedItems.size() && isMouseOverSlot(slotX, slotY, (int) mouseX, (int) mouseY)) {
+                    if (menu.isHoneyDepleted()) {
+                        return true;
+                    }
                     openRequestPopup(displayedItems.get(index));
                     return true;
                 }

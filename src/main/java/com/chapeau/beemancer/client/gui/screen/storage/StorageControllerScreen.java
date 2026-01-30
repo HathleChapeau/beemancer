@@ -80,9 +80,11 @@ public class StorageControllerScreen extends AbstractContainerScreen<StorageCont
             Component.translatable("gui.beemancer.storage_controller.honey_consumption"),
             menu.getHoneyConsumption() + " mB/s");
 
+        int efficiencyBonus = menu.getHoneyEfficiency();
+        String efficiencyText = efficiencyBonus > 0 ? "100% + " + efficiencyBonus + "%" : "100%";
         drawStat(guiGraphics, statX, statY + lineHeight * 5,
             Component.translatable("gui.beemancer.storage_controller.honey_efficiency"),
-            menu.getHoneyEfficiency() + "%");
+            efficiencyText);
 
         // Player inventory label
         guiGraphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);

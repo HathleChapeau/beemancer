@@ -59,7 +59,8 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     // ContainerData indices
     public static final int DATA_PENDING_COUNT = 0;
     public static final int DATA_PENDING_TYPES = 1;
-    public static final int DATA_SIZE = 2;
+    public static final int DATA_HONEY_DEPLETED = 2;
+    public static final int DATA_SIZE = 3;
 
     private final Container container;
     private final BlockPos blockPos;
@@ -99,6 +100,10 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
                     return switch (index) {
                         case DATA_PENDING_COUNT -> be.getTotalPendingCount();
                         case DATA_PENDING_TYPES -> be.getPendingRequests().size();
+                        case DATA_HONEY_DEPLETED -> {
+                            var controller = be.getController();
+                            yield (controller != null && controller.isHoneyDepleted()) ? 1 : 0;
+                        }
                         default -> 0;
                     };
                 }
@@ -262,6 +267,13 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
      */
     public boolean hasPendingRequests() {
         return getPendingItemCount() > 0;
+    }
+
+    /**
+     * Vérifie si le controller lié n'a plus de miel.
+     */
+    public boolean isHoneyDepleted() {
+        return this.data.get(DATA_HONEY_DEPLETED) != 0;
     }
 
     // === Getters ===

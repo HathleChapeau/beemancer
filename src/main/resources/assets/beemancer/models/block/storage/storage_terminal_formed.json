@@ -2,7 +2,6 @@
   "parent": "minecraft:block/block",
   "textures": {
     "frame": "beemancer:block/logistic/storage_terminal",
-    "portal": "minecraft:block/nether_portal",
     "particle": "beemancer:block/logistic/storage_terminal"
   },
   "elements": [
@@ -56,15 +55,6 @@
         "west": {"texture": "#frame", "uv": [14, 4, 16, 12]},
         "up": {"texture": "#frame", "uv": [12, 0, 14, 2]},
         "down": {"texture": "#frame", "uv": [12, 14, 14, 16]}
-      }
-    },
-    {
-      "name": "Portal Center Plane",
-      "from": [4, 4, 15],
-      "to": [12, 12, 15],
-      "faces": {
-        "north": {"texture": "#portal", "uv": [4, 4, 12, 12]},
-        "south": {"texture": "#portal", "uv": [4, 4, 12, 12]}
       }
     }
   ]
