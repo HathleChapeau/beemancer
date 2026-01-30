@@ -38,6 +38,11 @@ public class BeemancerTags {
          */
         public static final TagKey<Item> COMBS = tag("combs");
 
+        /**
+         * Tag pour toutes les essences (filtre slots du Storage Controller)
+         */
+        public static final TagKey<Item> ESSENCES = tag("essences");
+
         private static TagKey<Item> tag(String name) {
             return TagKey.create(Registries.ITEM,
                     ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, name));

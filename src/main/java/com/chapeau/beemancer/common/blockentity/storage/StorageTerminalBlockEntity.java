@@ -21,6 +21,8 @@
  */
 package com.chapeau.beemancer.common.blockentity.storage;
 
+import com.chapeau.beemancer.common.block.storage.ControllerStats;
+import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.menu.storage.StorageTerminalMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -193,40 +195,29 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         StorageControllerBlockEntity controller = getController();
         if (controller == null) return ItemStack.EMPTY;
 
-        // Calculer l'espace disponible dans les slots pickup
-        int availableSpace = calculateAvailableSpace(template);
+        // Limiter par la quantité max du controller
+        int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
+        int toRequest = Math.min(count, maxQuantity);
 
-        if (availableSpace <= 0) {
-            // Pas de place du tout, ajouter tout à la file d'attente
-            addToPendingQueue(template.copy(), count);
-            return ItemStack.EMPTY;
-        }
+        // Trouver un coffre contenant l'item
+        BlockPos chestPos = controller.findChestWithItem(template, 1);
+        if (chestPos == null) return ItemStack.EMPTY;
 
-        // Extraire ce qu'on peut placer immédiatement
-        int toExtractNow = Math.min(count, availableSpace);
-        ItemStack extracted = controller.extractItem(template, toExtractNow);
+        // Créer une tâche de livraison (extraction)
+        DeliveryTask task = new DeliveryTask(
+            template, toRequest, chestPos, worldPosition,
+            DeliveryTask.DeliveryType.EXTRACT
+        );
+        controller.addDeliveryTask(task);
 
-        if (extracted.isEmpty()) return ItemStack.EMPTY;
-
-        // Placer dans les slots pickup
-        ItemStack remaining = extracted.copy();
-        for (int i = 0; i < PICKUP_SLOTS && !remaining.isEmpty(); i++) {
-            remaining = pickupSlots.insertItem(i, remaining, false);
-        }
-
-        // Si reste des items (ne devrait pas arriver), les remettre dans le réseau
-        if (!remaining.isEmpty()) {
-            controller.depositItem(remaining);
-        }
-
-        // Ajouter le reste à la file d'attente
-        int pendingCount = count - extracted.getCount();
+        // Ajouter le reste à la file d'attente si demande > max quantité
+        int pendingCount = count - toRequest;
         if (pendingCount > 0) {
             addToPendingQueue(template.copy(), pendingCount);
         }
 
         setChanged();
-        return extracted;
+        return ItemStack.EMPTY;
     }
 
     /**
@@ -280,35 +271,25 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         StorageControllerBlockEntity controller = getController();
         if (controller == null) return;
 
-        // Traiter chaque requête dans l'ordre
+        int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
+
         List<PendingRequest> toRemove = new ArrayList<>();
 
         for (PendingRequest request : pendingRequests) {
-            int availableSpace = calculateAvailableSpace(request.item);
-            if (availableSpace <= 0) continue;
+            int toRequest = Math.min(request.count, maxQuantity);
 
-            int toExtract = Math.min(request.count, availableSpace);
-            ItemStack extracted = controller.extractItem(request.item, toExtract);
+            BlockPos chestPos = controller.findChestWithItem(request.item, 1);
+            if (chestPos == null) continue;
 
-            if (!extracted.isEmpty()) {
-                // Placer dans les slots pickup
-                ItemStack remaining = extracted.copy();
-                for (int i = 0; i < PICKUP_SLOTS && !remaining.isEmpty(); i++) {
-                    remaining = pickupSlots.insertItem(i, remaining, false);
-                }
+            DeliveryTask task = new DeliveryTask(
+                request.item, toRequest, chestPos, worldPosition,
+                DeliveryTask.DeliveryType.EXTRACT
+            );
+            controller.addDeliveryTask(task);
 
-                // Remettre le reste dans le réseau (ne devrait pas arriver)
-                if (!remaining.isEmpty()) {
-                    controller.depositItem(remaining);
-                    extracted.shrink(remaining.getCount());
-                }
-
-                // Mettre à jour la requête
-                request.count -= extracted.getCount();
-
-                if (request.count <= 0) {
-                    toRemove.add(request);
-                }
+            request.count -= toRequest;
+            if (request.count <= 0) {
+                toRemove.add(request);
             }
         }
 
@@ -358,11 +339,29 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         ItemStack stack = depositSlots.getStackInSlot(slot);
         if (stack.isEmpty()) return;
 
+        // Limiter par la quantité max du controller
+        int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
+        int toDeposit = Math.min(stack.getCount(), maxQuantity);
+
+        // Trouver un coffre avec de l'espace
+        BlockPos chestPos = controller.findSlotForItem(stack);
+        if (chestPos == null) return;
+
         // Flag pour éviter la récursion
         isDepositing = true;
         try {
-            ItemStack remaining = controller.depositItem(stack);
-            depositSlots.setStackInSlot(slot, remaining);
+            // Retirer les items du slot de dépôt
+            ItemStack toSend = stack.copy();
+            toSend.setCount(toDeposit);
+            stack.shrink(toDeposit);
+            depositSlots.setStackInSlot(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
+
+            // Créer une tâche de livraison (dépôt)
+            DeliveryTask task = new DeliveryTask(
+                toSend, toDeposit, chestPos, worldPosition,
+                DeliveryTask.DeliveryType.DEPOSIT
+            );
+            controller.addDeliveryTask(task);
         } finally {
             isDepositing = false;
         }
@@ -385,6 +384,22 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     public ItemStackHandler getPickupSlots() {
         return pickupSlots;
+    }
+
+    /**
+     * Insère des items dans les slots pickup (appelé par DeliveryBeeEntity).
+     * @return le reste non inséré
+     */
+    public ItemStack insertIntoPickupSlots(ItemStack stack) {
+        if (stack.isEmpty()) return ItemStack.EMPTY;
+        ItemStack remaining = stack.copy();
+        for (int i = 0; i < PICKUP_SLOTS && !remaining.isEmpty(); i++) {
+            remaining = pickupSlots.insertItem(i, remaining, false);
+        }
+        if (!remaining.equals(stack)) {
+            setChanged();
+        }
+        return remaining;
     }
 
     // === Container Implementation ===

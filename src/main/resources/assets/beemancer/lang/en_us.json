@@ -391,6 +391,16 @@
   "message.beemancer.storage_controller.status": "Registered: %d chests, %d terminals",
   "message.beemancer.storage_controller.chest_removed": "Chest removed from network",
   "message.beemancer.storage_controller.chests_registered": "%d chests registered",
+  "message.beemancer.storage_controller.formed": "Storage Controller formed!",
+  "message.beemancer.storage_controller.invalid_structure": "Invalid structure - check the storage pattern",
+
+  "container.beemancer.storage_controller": "Storage Controller",
+  "gui.beemancer.storage_controller.flight_speed": "Flight Speed",
+  "gui.beemancer.storage_controller.search_speed": "Search Speed",
+  "gui.beemancer.storage_controller.craft_speed": "Craft Speed",
+  "gui.beemancer.storage_controller.quantity": "Quantity",
+
+  "entity.beemancer.delivery_bee": "Delivery Bee",
 
   "message.beemancer.storage_terminal.linked": "Linked to controller at (%d, %d, %d)",
   "message.beemancer.storage_terminal.not_linked": "Not linked to any controller",

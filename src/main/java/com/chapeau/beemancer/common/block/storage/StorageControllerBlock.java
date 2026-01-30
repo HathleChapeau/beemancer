@@ -149,13 +149,8 @@ public class StorageControllerBlock extends BaseEntityBlock {
                 );
             }
         } else {
-            int chestCount = controller.getRegisteredChests().size();
-            int terminalCount = controller.getLinkedTerminals().size();
-            player.displayClientMessage(
-                Component.translatable("message.beemancer.storage_controller.status",
-                    chestCount, terminalCount),
-                true
-            );
+            // Formé: ouvrir le menu du controller
+            player.openMenu(controller, pos);
         }
 
         return InteractionResult.SUCCESS;

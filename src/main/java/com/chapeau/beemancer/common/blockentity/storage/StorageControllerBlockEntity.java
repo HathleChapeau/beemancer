@@ -30,9 +30,13 @@ package com.chapeau.beemancer.common.blockentity.storage;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.HoneyPipeBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
+import com.chapeau.beemancer.common.block.storage.ControllerStats;
+import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageEditModeHandler;
+import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
+import com.chapeau.beemancer.common.menu.storage.StorageControllerMenu;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
@@ -41,6 +45,8 @@ import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
 import com.chapeau.beemancer.core.multiblock.MultiblockValidator;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
+import com.chapeau.beemancer.core.registry.BeemancerEntities;
+import com.chapeau.beemancer.core.registry.BeemancerTags;
 import com.chapeau.beemancer.core.util.StorageHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -50,16 +56,24 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -76,7 +90,7 @@ import java.util.*;
  * - Agrégation items: liste tous items de tous coffres enregistrés
  * - Synchronisation: temps réel si GUI ouverte, périodique sinon
  */
-public class StorageControllerBlockEntity extends BlockEntity implements MultiblockController {
+public class StorageControllerBlockEntity extends BlockEntity implements MultiblockController, MenuProvider {
 
     private static final int MAX_RANGE = 24;
     private static final int SYNC_INTERVAL = 40;
@@ -102,6 +116,46 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     // Joueurs avec GUI ouverte (UUID -> terminal pos)
     private final Map<UUID, BlockPos> playersViewing = new HashMap<>();
+
+    // === Delivery System ===
+    private static final int MAX_ACTIVE_BEES = 4;
+    private static final int DELIVERY_PROCESS_INTERVAL = 10;
+
+    private final ItemStackHandler essenceSlots = new ItemStackHandler(4) {
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return stack.is(BeemancerTags.Items.ESSENCES);
+        }
+
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+            syncToClient();
+        }
+    };
+
+    private final Queue<DeliveryTask> deliveryQueue = new LinkedList<>();
+    private final List<DeliveryTask> activeTasks = new ArrayList<>();
+    private int deliveryTimer = 0;
+
+    private final ContainerData dataAccess = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> ControllerStats.getFlightSpeed(essenceSlots);
+                case 1 -> ControllerStats.getSearchSpeed(essenceSlots);
+                case 2 -> ControllerStats.getCraftSpeed(essenceSlots);
+                case 3 -> ControllerStats.getQuantity(essenceSlots);
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int value) { }
+
+        @Override
+        public int getCount() { return 4; }
+    };
 
     public StorageControllerBlockEntity(BlockPos pos, BlockState blockState) {
         super(BeemancerBlockEntities.STORAGE_CONTROLLER.get(), pos, blockState);
@@ -683,6 +737,13 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             be.needsSync = false;
         }
 
+        // Delivery system
+        be.deliveryTimer++;
+        if (be.deliveryTimer >= DELIVERY_PROCESS_INTERVAL) {
+            be.deliveryTimer = 0;
+            be.processDeliveryQueue();
+        }
+
         if (be.editMode && be.editingPlayer != null && be.level != null) {
             var server = be.level.getServer();
             if (server != null) {
@@ -721,6 +782,234 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     public void removeViewer(UUID playerId) {
         playersViewing.remove(playerId);
+    }
+
+    // === MenuProvider ===
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("container.beemancer.storage_controller");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
+        return new StorageControllerMenu(containerId, playerInv, essenceSlots, dataAccess);
+    }
+
+    public ItemStackHandler getEssenceSlots() {
+        return essenceSlots;
+    }
+
+    // === Delivery System ===
+
+    /**
+     * Ajoute une tâche de livraison à la queue.
+     * Appelé par le terminal quand un joueur demande un item ou dépose un item.
+     */
+    public void addDeliveryTask(DeliveryTask task) {
+        deliveryQueue.add(task);
+        setChanged();
+    }
+
+    /**
+     * Trouve un coffre contenant l'item demandé.
+     * @return la position du coffre, ou null si introuvable
+     */
+    @Nullable
+    public BlockPos findChestWithItem(ItemStack template, int minCount) {
+        if (level == null || template.isEmpty()) return null;
+
+        for (BlockPos chestPos : registeredChests) {
+            BlockEntity be = level.getBlockEntity(chestPos);
+            if (be instanceof Container container) {
+                int found = 0;
+                for (int i = 0; i < container.getContainerSize(); i++) {
+                    ItemStack existing = container.getItem(i);
+                    if (ItemStack.isSameItemSameComponents(existing, template)) {
+                        found += existing.getCount();
+                        if (found >= minCount) return chestPos;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Extrait un item d'un coffre spécifique pour une livraison.
+     * Appelé par DeliveryPhaseGoal quand l'abeille arrive au coffre.
+     */
+    public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
+        if (level == null || template.isEmpty() || count <= 0) return ItemStack.EMPTY;
+
+        BlockEntity be = level.getBlockEntity(chestPos);
+        if (!(be instanceof Container container)) return ItemStack.EMPTY;
+
+        ItemStack result = template.copy();
+        result.setCount(0);
+        int needed = count;
+
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            ItemStack existing = container.getItem(i);
+            if (ItemStack.isSameItemSameComponents(existing, template)) {
+                int toTake = Math.min(needed, existing.getCount());
+                existing.shrink(toTake);
+                result.grow(toTake);
+                needed -= toTake;
+                container.setChanged();
+                if (existing.isEmpty()) {
+                    container.setItem(i, ItemStack.EMPTY);
+                }
+            }
+            if (needed <= 0) break;
+        }
+
+        needsSync = true;
+        return result;
+    }
+
+    /**
+     * Dépose un item dans un coffre spécifique pour une livraison.
+     * Si chestPos est null, dépose dans n'importe quel coffre du réseau.
+     * Appelé par DeliveryPhaseGoal quand l'abeille arrive au coffre.
+     *
+     * @return le reste non déposé
+     */
+    public ItemStack depositItemForDelivery(ItemStack stack, @Nullable BlockPos chestPos) {
+        if (chestPos != null) {
+            return depositIntoChest(stack, chestPos);
+        }
+        return depositItem(stack);
+    }
+
+    private ItemStack depositIntoChest(ItemStack stack, BlockPos chestPos) {
+        if (level == null || stack.isEmpty()) return stack;
+
+        BlockEntity be = level.getBlockEntity(chestPos);
+        if (!(be instanceof Container container)) return stack;
+
+        ItemStack remaining = stack.copy();
+
+        for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
+            ItemStack existing = container.getItem(i);
+            if (ItemStack.isSameItemSameComponents(existing, remaining)) {
+                int space = existing.getMaxStackSize() - existing.getCount();
+                int toTransfer = Math.min(space, remaining.getCount());
+                if (toTransfer > 0) {
+                    existing.grow(toTransfer);
+                    remaining.shrink(toTransfer);
+                    container.setChanged();
+                }
+            }
+        }
+
+        for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
+            if (container.getItem(i).isEmpty()) {
+                int toTransfer = Math.min(remaining.getMaxStackSize(), remaining.getCount());
+                ItemStack toPlace = remaining.copy();
+                toPlace.setCount(toTransfer);
+                container.setItem(i, toPlace);
+                remaining.shrink(toTransfer);
+                container.setChanged();
+            }
+        }
+
+        needsSync = true;
+        return remaining;
+    }
+
+    /**
+     * Traite la queue de livraison: spawne des bees pour les tâches en attente.
+     * Appelé depuis serverTick().
+     */
+    private void processDeliveryQueue() {
+        if (level == null || level.isClientSide() || !storageFormed) return;
+
+        // Nettoyer les tâches terminées ou échouées
+        activeTasks.removeIf(task ->
+            task.getState() == DeliveryTask.DeliveryState.COMPLETED ||
+            task.getState() == DeliveryTask.DeliveryState.FAILED);
+
+        // Spawner de nouvelles bees si possible
+        while (!deliveryQueue.isEmpty() && activeTasks.size() < MAX_ACTIVE_BEES) {
+            DeliveryTask task = deliveryQueue.poll();
+            if (task == null) break;
+
+            boolean spawned = spawnDeliveryBee(task);
+            if (spawned) {
+                task.setState(DeliveryTask.DeliveryState.FLYING);
+                activeTasks.add(task);
+            } else {
+                task.setState(DeliveryTask.DeliveryState.FAILED);
+            }
+        }
+    }
+
+    /**
+     * Spawne une abeille de livraison pour exécuter une tâche.
+     */
+    private boolean spawnDeliveryBee(DeliveryTask task) {
+        if (!(level instanceof ServerLevel serverLevel)) return false;
+
+        BlockPos spawnPos;
+        BlockPos returnPos;
+
+        if (task.getType() == DeliveryTask.DeliveryType.EXTRACT) {
+            // EXTRACT: spawn en bas, retour en haut
+            spawnPos = getSpawnPosBottom();
+            returnPos = getSpawnPosTop();
+        } else {
+            // DEPOSIT: spawn en haut (avec items), retour en bas
+            spawnPos = getSpawnPosTop();
+            returnPos = getSpawnPosBottom();
+        }
+
+        if (spawnPos == null || returnPos == null) return false;
+
+        DeliveryBeeEntity bee = BeemancerEntities.DELIVERY_BEE.get().create(serverLevel);
+        if (bee == null) return false;
+
+        bee.setPos(spawnPos.getX() + 0.5, spawnPos.getY() + 0.5, spawnPos.getZ() + 0.5);
+
+        ItemStack carried = ItemStack.EMPTY;
+        if (task.getType() == DeliveryTask.DeliveryType.DEPOSIT) {
+            carried = task.getTemplate().copyWithCount(task.getCount());
+        }
+
+        bee.initDeliveryTask(
+            worldPosition,
+            task.getTargetChest(),
+            returnPos,
+            task.getTerminalPos(),
+            task.getTemplate(),
+            task.getCount(),
+            task.getType(),
+            carried,
+            ControllerStats.getFlightSpeedMultiplier(essenceSlots),
+            ControllerStats.getSearchSpeedMultiplier(essenceSlots)
+        );
+
+        serverLevel.addFreshEntity(bee);
+        return true;
+    }
+
+    /**
+     * Position de spawn en bas (honeyed stone sous le controller).
+     */
+    @Nullable
+    private BlockPos getSpawnPosBottom() {
+        Vec3i offset = MultiblockPattern.rotateY(new Vec3i(0, -1, 0), multiblockRotation);
+        return worldPosition.offset(offset);
+    }
+
+    /**
+     * Position de spawn en haut (honeyed stone au-dessus du controller).
+     */
+    @Nullable
+    private BlockPos getSpawnPosTop() {
+        Vec3i offset = MultiblockPattern.rotateY(new Vec3i(0, 1, 0), multiblockRotation);
+        return worldPosition.offset(offset);
     }
 
     // === Lifecycle ===
@@ -772,6 +1061,21 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         if (editingPlayer != null) {
             tag.putUUID("EditingPlayer", editingPlayer);
         }
+
+        // Essence slots
+        tag.put("EssenceSlots", essenceSlots.serializeNBT(registries));
+
+        // Delivery queue (active tasks remises en queue au rechargement)
+        ListTag queueTag = new ListTag();
+        for (DeliveryTask task : deliveryQueue) {
+            queueTag.add(task.save(registries));
+        }
+        for (DeliveryTask task : activeTasks) {
+            // Remettre les tâches actives en queue (bees seront re-spawned)
+            task.setState(DeliveryTask.DeliveryState.QUEUED);
+            queueTag.add(task.save(registries));
+        }
+        tag.put("DeliveryQueue", queueTag);
     }
 
     @Override
@@ -802,6 +1106,22 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             editingPlayer = tag.getUUID("EditingPlayer");
         } else {
             editingPlayer = null;
+        }
+
+        // Essence slots
+        if (tag.contains("EssenceSlots")) {
+            essenceSlots.deserializeNBT(registries, tag.getCompound("EssenceSlots"));
+        }
+
+        // Delivery queue
+        deliveryQueue.clear();
+        activeTasks.clear();
+        if (tag.contains("DeliveryQueue")) {
+            ListTag queueTag = tag.getList("DeliveryQueue", Tag.TAG_COMPOUND);
+            for (int i = 0; i < queueTag.size(); i++) {
+                DeliveryTask task = DeliveryTask.load(queueTag.getCompound(i), registries);
+                deliveryQueue.add(task);
+            }
         }
     }
 

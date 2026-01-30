@@ -1,0 +1,24 @@
+{
+  "replace": false,
+  "values": [
+    "beemancer:lesser_drop_essence",
+    "beemancer:drop_essence",
+    "beemancer:greater_drop_essence",
+    "beemancer:perfect_drop_essence",
+    "beemancer:lesser_speed_essence",
+    "beemancer:speed_essence",
+    "beemancer:greater_speed_essence",
+    "beemancer:perfect_speed_essence",
+    "beemancer:lesser_foraging_essence",
+    "beemancer:foraging_essence",
+    "beemancer:greater_foraging_essence",
+    "beemancer:perfect_foraging_essence",
+    "beemancer:lesser_tolerance_essence",
+    "beemancer:tolerance_essence",
+    "beemancer:greater_tolerance_essence",
+    "beemancer:perfect_tolerance_essence",
+    "beemancer:diurnal_essence",
+    "beemancer:nocturnal_essence",
+    "beemancer:insomnia_essence"
+  ]
+}

@@ -8,6 +8,7 @@ package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
+import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
 import com.chapeau.beemancer.common.entity.mount.RideableBeeEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -27,6 +28,13 @@ public class BeemancerEntities {
                     .sized(0.7F, 0.6F)
                     .clientTrackingRange(8)
                     .build("magic_bee"));
+
+    // --- DELIVERY ---
+    public static final Supplier<EntityType<DeliveryBeeEntity>> DELIVERY_BEE = ENTITIES.register("delivery_bee",
+            () -> EntityType.Builder.of(DeliveryBeeEntity::new, MobCategory.CREATURE)
+                    .sized(0.7F, 0.6F)
+                    .clientTrackingRange(8)
+                    .build("delivery_bee"));
 
     // --- MOUNTS ---
     // Abeille chevauchable (scale 1.5x visuellement)

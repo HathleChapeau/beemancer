@@ -390,6 +390,16 @@
   "message.beemancer.storage_controller.status": "Enregistrés: %d coffres, %d terminaux",
   "message.beemancer.storage_controller.chest_removed": "Coffre retiré du réseau",
   "message.beemancer.storage_controller.chests_registered": "%d coffres enregistrés",
+  "message.beemancer.storage_controller.formed": "Contrôleur de Stockage formé !",
+  "message.beemancer.storage_controller.invalid_structure": "Structure invalide - vérifiez le pattern de stockage",
+
+  "container.beemancer.storage_controller": "Contrôleur de Stockage",
+  "gui.beemancer.storage_controller.flight_speed": "Vitesse de vol",
+  "gui.beemancer.storage_controller.search_speed": "Vitesse de recherche",
+  "gui.beemancer.storage_controller.craft_speed": "Vitesse de craft",
+  "gui.beemancer.storage_controller.quantity": "Quantité",
+
+  "entity.beemancer.delivery_bee": "Abeille de livraison",
 
   "message.beemancer.storage_terminal.linked": "Lié au contrôleur en (%d, %d, %d)",
   "message.beemancer.storage_terminal.not_linked": "Non lié à un contrôleur",
