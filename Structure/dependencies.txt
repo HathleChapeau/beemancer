@@ -95,5 +95,41 @@ common/entity/bee/goal/
 - BeeRevengeGoal.java: Attaque si blessée
 - ForagingBehaviorGoal.java: Cycle complet butineuse
 - HarvestingBehaviorGoal.java: Cycle complet récolteuse
+- MoveToTargetGoal.java: Navigation manuelle vers cible (BeeWand)
+
+================================================================================
+client/renderer/util/
+================================================================================
+
+- FluidCubeRenderer.java: Rendu d'un cube fluide 6 faces (24 vertices)
+  - Méthode statique renderFluidCube(PoseStack, MultiBufferSource, FluidStack, float, float, float, float, float, float, int)
+  - Utilisé par: HoneyTankRenderer, HoneyReservoirRenderer, MultiblockTankRenderer
+
+- DebugRenderHelper.java: Utilitaires de rendu debug partagés
+  - drawLine(VertexConsumer, Matrix4f, float...) — ligne simple avec couleur
+  - drawLine(PoseStack, MultiBufferSource, Vec3, Vec3, int, int, int, int) — ligne complète
+  - drawCubeOutline(VertexConsumer, Matrix4f, AABB, float...) — contour de cube
+  - Utilisé par: BeeDebugRenderer, StorageControllerRenderer
+
+================================================================================
+common/block/alchemy/
+================================================================================
+
+- AbstractPipeBlock.java: Classe de base pour les pipes (Item et Honey)
+  - Gère: propriétés NORTH/S/E/W/UP/DOWN + EXTRACT_*, VoxelShape cache, connexion, tinting, interactions
+  - Méthodes abstraites: isPipeEntity(), isPipeDisconnected(), setPipeDisconnected(),
+    isSamePipeType(), hasCapabilityAt(), isTintablePipe(), hasTint(), applyTint()
+  - Utilisé par: HoneyPipeBlock, ItemPipeBlock
+
+================================================================================
+common/menu/
+================================================================================
+
+- BeemancerMenu.java: Classe de base pour tous les menus Beemancer
+  - addPlayerInventory(Inventory, int x, int y) — 27 slots inventaire principal
+  - addPlayerHotbar(Inventory, int x, int y) — 9 slots hotbar
+  - Utilisé par: ManualCentrifugeMenu, PoweredCentrifugeMenu, AlembicMenu,
+    InfuserMenu, CrystallizerMenu, HoneyTankMenu, MultiblockTankMenu,
+    IncubatorMenu, MagicHiveMenu, StorageControllerMenu
 
 ################################################################################

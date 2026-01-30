@@ -3,6 +3,123 @@
 ################################################################################
 
 ================================================================================
+2026-01-30 - Refactorisation: split des 2 plus gros BlockEntity en managers
+================================================================================
+
+Extraction de managers avec back-reference (pattern Create/Mekanism) pour
+améliorer la maintenabilité. NBT 100% compatible, API externe préservée.
+
+FICHIERS CRÉÉS (5):
+
+1. common/blockentity/storage/StorageChestManager.java (~158 lignes)
+   - Gestion coffres enregistrés, BFS flood fill, toggle, range check
+   - Champs: registeredChests
+   - NBT: "RegisteredChests"
+
+2. common/blockentity/storage/StorageItemAggregator.java (~367 lignes)
+   - Agrégation items, dépôt, extraction, sync viewers, inner class ItemStackKey
+   - Champs: aggregatedItems, syncTimer, needsSync, playersViewing
+   - NBT: aucun (état runtime)
+
+3. common/blockentity/storage/StorageDeliveryManager.java (~446 lignes)
+   - Queue livraison, spawn bees, honey consumption, extract/deposit delivery
+   - Champs: deliveryQueue, activeTasks, completedTaskIds, timers, honeyDepleted
+   - NBT: "DeliveryQueue", "CompletedTaskIds", "HoneyDepleted"
+
+4. common/blockentity/storage/StorageMultiblockManager.java (~243 lignes)
+   - Formation/destruction multibloc, blockstate FORMED/FORMED_ROTATION updates
+   - Champs: storageFormed, multiblockRotation
+   - NBT: "StorageFormed", "MultiblockRotation"
+
+5. common/block/hive/HiveBeeLifecycleManager.java (~258 lignes)
+   - Release/entry abeilles, breeding auto, loot pollinisation, tick slots
+   - Champs: aucun (opère via back-reference)
+   - NBT: aucun
+
+FICHIERS MODIFIÉS (2):
+
+- StorageControllerBlockEntity.java: 1376→405 lignes
+  Délègue à 4 managers, conserve inline: editMode, linkedTerminals, essenceSlots
+  syncToClient() changé de private à package-private
+
+- MagicHiveBlockEntity.java: 786→528 lignes
+  Délègue à lifecycleManager, conserve: Container, NBT, flower management, helpers
+  getSpeciesId() déplacé en static sur HiveBeeLifecycleManager
+
+BILAN:
+- ~1200 lignes extraites en managers spécialisés
+- 5 nouveaux fichiers
+- 2 fichiers simplifiés
+- Zéro changement de comportement, NBT 100% compatible
+
+================================================================================
+2026-01-30 - Refactorisation: extraction classes utilitaires et base classes
+================================================================================
+
+Analyse complète du projet (231 fichiers, 38 419 lignes) et refactorisation
+structurelle pour réduire la duplication et améliorer la maintenabilité.
+Aucun changement de comportement.
+
+FICHIERS CRÉÉS (5):
+
+1. client/renderer/util/FluidCubeRenderer.java
+   - Méthode statique renderFluidCube() extraite de 3 renderers identiques
+   - Rendu d'un cube fluide avec 6 faces et 24 vertices
+
+2. client/renderer/util/DebugRenderHelper.java
+   - drawLine() et drawCubeOutline() extraits de BeeDebugRenderer et StorageControllerRenderer
+   - Support Vec3 et float[] pour compatibilité avec les deux appelants
+
+3. common/block/alchemy/AbstractPipeBlock.java
+   - Base commune pour HoneyPipeBlock et ItemPipeBlock (étaient 95% identiques)
+   - Contient: propriétés BlockState, VoxelShape cache, connexion, tinting, interactions
+   - Template Method avec 8 méthodes abstraites pour les spécificités
+
+4. common/menu/BeemancerMenu.java
+   - Base classe pour tous les menus Beemancer
+   - addPlayerInventory() et addPlayerHotbar() partagés par 10 menus
+
+5. common/entity/bee/goal/MoveToTargetGoal.java
+   - Classe interne extraite de MagicBeeEntity vers fichier autonome
+   - Goal de navigation manuelle via BeeWand
+
+FICHIERS MODIFIÉS (18):
+
+Renderers fluide (→ FluidCubeRenderer):
+- HoneyTankRenderer.java: supprimé renderFluidCube() local (163→81 lignes)
+- HoneyReservoirRenderer.java: supprimé renderFluidCubeWithSprite() (~76 lignes)
+- MultiblockTankRenderer.java: supprimé renderFluidCube() (~76 lignes)
+
+Renderers debug (→ DebugRenderHelper):
+- BeeDebugRenderer.java: supprimé renderLine(), addColoredLineVertex(), addLineVertex() (234→174 lignes)
+- StorageControllerRenderer.java: supprimé drawLine(), outline inline code
+
+Pipes (→ AbstractPipeBlock):
+- HoneyPipeBlock.java: extends AbstractPipeBlock (401→153 lignes)
+- ItemPipeBlock.java: extends AbstractPipeBlock (385→124 lignes)
+
+Menus (→ BeemancerMenu):
+- ManualCentrifugeMenu.java: extends BeemancerMenu, supprimé addPlayerInventory/Hotbar
+- PoweredCentrifugeMenu.java: idem
+- AlembicMenu.java: idem
+- InfuserMenu.java: idem
+- CrystallizerMenu.java: idem
+- HoneyTankMenu.java: idem
+- MultiblockTankMenu.java: idem
+- IncubatorMenu.java: idem
+- MagicHiveMenu.java: idem
+- StorageControllerMenu.java: idem
+
+Entity:
+- MagicBeeEntity.java: supprimé inner class MoveToTargetGoal, import externe
+
+BILAN:
+- ~900 lignes de duplication éliminées
+- 5 nouvelles classes utilitaires/base
+- 18 fichiers existants simplifiés
+- Zéro changement de comportement
+
+================================================================================
 2026-01-30 - Controller Pipe + Honey Consumption + Cleanup
 ================================================================================
 

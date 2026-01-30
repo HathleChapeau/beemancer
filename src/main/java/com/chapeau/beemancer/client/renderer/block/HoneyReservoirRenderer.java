@@ -12,6 +12,7 @@
  * | HoneyReservoirBlock        | État formé           | FORMED                |
  * | BlockEntityRenderer        | Interface renderer   | Rendu fluide          |
  * | IClientFluidTypeExtensions | Texture atlas        | getStillTexture()     |
+ * | FluidCubeRenderer          | Rendu cube fluide    | renderFluidCube()     |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -22,19 +23,18 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.renderer.util.FluidCubeRenderer;
 import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
@@ -159,7 +159,7 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         float minY = 5f / 16f;
         float maxY = minY + (fluidHeight / 16f);
 
-        renderFluidCubeWithSprite(consumer, pose, sprite, minX, minY, minZ, maxX, maxY, maxZ);
+        FluidCubeRenderer.renderFluidCube(consumer, pose, sprite, minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     /**
@@ -177,87 +177,6 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         float minY = 5f / 16f;
         float maxY = minY + (fluidHeight / 16f);
 
-        renderFluidCubeWithSprite(consumer, pose, sprite, minX, minY, minZ, maxX, maxY, maxZ);
-    }
-
-    /**
-     * Rend un cube de fluide avec texture atlas sprite animée.
-     * Fullbright (pas d'ombrage), couleur blanche (pas de tint).
-     */
-    private void renderFluidCubeWithSprite(VertexConsumer consumer, PoseStack.Pose pose, TextureAtlasSprite sprite,
-                                            float minX, float minY, float minZ,
-                                            float maxX, float maxY, float maxZ) {
-
-        float u0 = sprite.getU0();
-        float u1 = sprite.getU1();
-        float v0 = sprite.getV0();
-        float v1 = sprite.getV1();
-
-        float r = 1.0f;
-        float g = 1.0f;
-        float b = 1.0f;
-        float a = 0.9f;
-
-        int light = LightTexture.FULL_BRIGHT;
-
-        // Face dessus (Y+)
-        consumer.addVertex(pose, minX, maxY, minZ).setColor(r, g, b, a)
-            .setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 1, 0);
-        consumer.addVertex(pose, minX, maxY, maxZ).setColor(r, g, b, a)
-            .setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 1, 0);
-        consumer.addVertex(pose, maxX, maxY, maxZ).setColor(r, g, b, a)
-            .setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 1, 0);
-        consumer.addVertex(pose, maxX, maxY, minZ).setColor(r, g, b, a)
-            .setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 1, 0);
-
-        // Face dessous (Y-)
-        consumer.addVertex(pose, minX, minY, maxZ).setColor(r, g, b, a)
-            .setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, -1, 0);
-        consumer.addVertex(pose, minX, minY, minZ).setColor(r, g, b, a)
-            .setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, -1, 0);
-        consumer.addVertex(pose, maxX, minY, minZ).setColor(r, g, b, a)
-            .setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, -1, 0);
-        consumer.addVertex(pose, maxX, minY, maxZ).setColor(r, g, b, a)
-            .setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, -1, 0);
-
-        // Face nord (Z-)
-        consumer.addVertex(pose, minX, minY, minZ).setColor(r, g, b, a)
-            .setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, -1);
-        consumer.addVertex(pose, minX, maxY, minZ).setColor(r, g, b, a)
-            .setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, -1);
-        consumer.addVertex(pose, maxX, maxY, minZ).setColor(r, g, b, a)
-            .setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, -1);
-        consumer.addVertex(pose, maxX, minY, minZ).setColor(r, g, b, a)
-            .setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, -1);
-
-        // Face sud (Z+)
-        consumer.addVertex(pose, maxX, minY, maxZ).setColor(r, g, b, a)
-            .setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, 1);
-        consumer.addVertex(pose, maxX, maxY, maxZ).setColor(r, g, b, a)
-            .setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, 1);
-        consumer.addVertex(pose, minX, maxY, maxZ).setColor(r, g, b, a)
-            .setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, 1);
-        consumer.addVertex(pose, minX, minY, maxZ).setColor(r, g, b, a)
-            .setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, 1);
-
-        // Face ouest (X-)
-        consumer.addVertex(pose, minX, minY, maxZ).setColor(r, g, b, a)
-            .setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, -1, 0, 0);
-        consumer.addVertex(pose, minX, maxY, maxZ).setColor(r, g, b, a)
-            .setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, -1, 0, 0);
-        consumer.addVertex(pose, minX, maxY, minZ).setColor(r, g, b, a)
-            .setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, -1, 0, 0);
-        consumer.addVertex(pose, minX, minY, minZ).setColor(r, g, b, a)
-            .setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, -1, 0, 0);
-
-        // Face est (X+)
-        consumer.addVertex(pose, maxX, minY, minZ).setColor(r, g, b, a)
-            .setUv(u0, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 1, 0, 0);
-        consumer.addVertex(pose, maxX, maxY, minZ).setColor(r, g, b, a)
-            .setUv(u0, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 1, 0, 0);
-        consumer.addVertex(pose, maxX, maxY, maxZ).setColor(r, g, b, a)
-            .setUv(u1, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 1, 0, 0);
-        consumer.addVertex(pose, maxX, minY, maxZ).setColor(r, g, b, a)
-            .setUv(u1, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 1, 0, 0);
+        FluidCubeRenderer.renderFluidCube(consumer, pose, sprite, minX, minY, minZ, maxX, maxY, maxZ);
     }
 }

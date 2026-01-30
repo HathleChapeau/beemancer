@@ -29,14 +29,14 @@ import com.chapeau.beemancer.core.registry.BeemancerTags;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import com.chapeau.beemancer.common.menu.BeemancerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-public class StorageControllerMenu extends AbstractContainerMenu {
+public class StorageControllerMenu extends BeemancerMenu {
 
     private final ContainerData data;
 
@@ -68,20 +68,6 @@ public class StorageControllerMenu extends AbstractContainerMenu {
 
         addPlayerInventory(playerInv, 8, 84);
         addPlayerHotbar(playerInv, 8, 142);
-    }
-
-    private void addPlayerInventory(Inventory playerInv, int x, int y) {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(playerInv, col + row * 9 + 9, x + col * 18, y + row * 18));
-            }
-        }
-    }
-
-    private void addPlayerHotbar(Inventory playerInv, int x, int y) {
-        for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(playerInv, col, x + col * 18, y));
-        }
     }
 
     public int getFlightSpeed() { return data.get(0); }

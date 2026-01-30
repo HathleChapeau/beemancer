@@ -10,6 +10,7 @@
  * |---------------------|----------------------|--------------------------------|
  * | DebugWandItem       | Flag displayDebug    | Condition d'affichage          |
  * | MagicBeeEntity      | Destinations         | Récupération des positions     |
+ * | DebugRenderHelper   | Rendu lignes         | drawLine(), drawCubeOutline()  |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -19,6 +20,7 @@
  */
 package com.chapeau.beemancer.client.renderer.debug;
 
+import com.chapeau.beemancer.client.renderer.util.DebugRenderHelper;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -45,7 +47,6 @@ import java.util.List;
 @OnlyIn(Dist.CLIENT)
 public class BeeDebugRenderer {
 
-    private static final float LINE_WIDTH = 2.0f;
     private static final float SQUARE_SIZE = 0.3f;
 
     // Couleurs - ligne destination (orange)
@@ -78,7 +79,6 @@ public class BeeDebugRenderer {
             return;
         }
 
-        // Vérifier si le debug est actif
         if (!DebugWandItem.displayDebug) {
             return;
         }
@@ -90,7 +90,6 @@ public class BeeDebugRenderer {
         Vec3 cameraPos = event.getCamera().getPosition();
         PoseStack poseStack = event.getPoseStack();
 
-        // Chercher toutes les MagicBee dans un rayon de 64 blocs
         AABB searchBox = player.getBoundingBox().inflate(64);
         List<MagicBeeEntity> bees = mc.level.getEntitiesOfClass(MagicBeeEntity.class, searchBox);
 
@@ -108,7 +107,7 @@ public class BeeDebugRenderer {
             BlockPos destination = bee.getDebugDestination();
             if (destination != null) {
                 Vec3 destPos = Vec3.atCenterOf(destination);
-                renderLine(poseStack, bufferSource, beePos, destPos,
+                DebugRenderHelper.drawLine(poseStack, bufferSource, beePos, destPos,
                         LINE_R, LINE_G, LINE_B, LINE_A);
                 renderSquare(poseStack, bufferSource, destPos);
             }
@@ -119,7 +118,7 @@ public class BeeDebugRenderer {
                 Vec3 prevPos = beePos;
                 for (BlockPos waypoint : path) {
                     Vec3 wpPos = Vec3.atCenterOf(waypoint);
-                    renderLine(poseStack, bufferSource, prevPos, wpPos,
+                    DebugRenderHelper.drawLine(poseStack, bufferSource, prevPos, wpPos,
                             PATH_R, PATH_G, PATH_B, PATH_A);
                     renderWaypointMarker(poseStack, bufferSource, wpPos);
                     prevPos = wpPos;
@@ -129,33 +128,7 @@ public class BeeDebugRenderer {
 
         poseStack.popPose();
 
-        // Flush le buffer
         bufferSource.endBatch();
-    }
-
-    /**
-     * Dessine une ligne entre deux points avec couleur personnalisée.
-     */
-    private static void renderLine(PoseStack poseStack, MultiBufferSource bufferSource, Vec3 from, Vec3 to,
-                                    float r, float g, float b, float a) {
-        VertexConsumer consumer = bufferSource.getBuffer(RenderType.lines());
-        Matrix4f matrix = poseStack.last().pose();
-
-        Vec3 dir = to.subtract(from);
-        double len = dir.length();
-        if (len < 0.001) return;
-        dir = dir.scale(1.0 / len);
-        float nx = (float) dir.x;
-        float ny = (float) dir.y;
-        float nz = (float) dir.z;
-
-        consumer.addVertex(matrix, (float) from.x, (float) from.y, (float) from.z)
-                .setColor(r, g, b, a)
-                .setNormal(nx, ny, nz);
-
-        consumer.addVertex(matrix, (float) to.x, (float) to.y, (float) to.z)
-                .setColor(r, g, b, a)
-                .setNormal(nx, ny, nz);
     }
 
     /**
@@ -171,9 +144,9 @@ public class BeeDebugRenderer {
         float s = 0.15f;
 
         // Croix 3D (3 lignes)
-        addColoredLineVertex(consumer, matrix, x - s, y, z, x + s, y, z, WP_R, WP_G, WP_B, WP_A);
-        addColoredLineVertex(consumer, matrix, x, y - s, z, x, y + s, z, WP_R, WP_G, WP_B, WP_A);
-        addColoredLineVertex(consumer, matrix, x, y, z - s, x, y, z + s, WP_R, WP_G, WP_B, WP_A);
+        DebugRenderHelper.drawLine(consumer, matrix, x - s, y, z, x + s, y, z, WP_R, WP_G, WP_B, WP_A);
+        DebugRenderHelper.drawLine(consumer, matrix, x, y - s, z, x, y + s, z, WP_R, WP_G, WP_B, WP_A);
+        DebugRenderHelper.drawLine(consumer, matrix, x, y, z - s, x, y, z + s, WP_R, WP_G, WP_B, WP_A);
     }
 
     /**
@@ -189,46 +162,13 @@ public class BeeDebugRenderer {
         float s = SQUARE_SIZE;
 
         // Carré horizontal (4 lignes)
-        // Ligne 1: -x,-z -> +x,-z
-        addLineVertex(consumer, matrix, x - s, y, z - s, x + s, y, z - s);
-        // Ligne 2: +x,-z -> +x,+z
-        addLineVertex(consumer, matrix, x + s, y, z - s, x + s, y, z + s);
-        // Ligne 3: +x,+z -> -x,+z
-        addLineVertex(consumer, matrix, x + s, y, z + s, x - s, y, z + s);
-        // Ligne 4: -x,+z -> -x,-z
-        addLineVertex(consumer, matrix, x - s, y, z + s, x - s, y, z - s);
+        DebugRenderHelper.drawLine(consumer, matrix, x - s, y, z - s, x + s, y, z - s, SQUARE_R, SQUARE_G, SQUARE_B, SQUARE_A);
+        DebugRenderHelper.drawLine(consumer, matrix, x + s, y, z - s, x + s, y, z + s, SQUARE_R, SQUARE_G, SQUARE_B, SQUARE_A);
+        DebugRenderHelper.drawLine(consumer, matrix, x + s, y, z + s, x - s, y, z + s, SQUARE_R, SQUARE_G, SQUARE_B, SQUARE_A);
+        DebugRenderHelper.drawLine(consumer, matrix, x - s, y, z + s, x - s, y, z - s, SQUARE_R, SQUARE_G, SQUARE_B, SQUARE_A);
 
         // Croix au centre
-        addLineVertex(consumer, matrix, x - s * 0.5f, y, z, x + s * 0.5f, y, z);
-        addLineVertex(consumer, matrix, x, y, z - s * 0.5f, x, y, z + s * 0.5f);
-    }
-
-    private static void addLineVertex(VertexConsumer consumer, Matrix4f matrix,
-                                       float x1, float y1, float z1,
-                                       float x2, float y2, float z2) {
-        addColoredLineVertex(consumer, matrix, x1, y1, z1, x2, y2, z2,
-                SQUARE_R, SQUARE_G, SQUARE_B, SQUARE_A);
-    }
-
-    private static void addColoredLineVertex(VertexConsumer consumer, Matrix4f matrix,
-                                              float x1, float y1, float z1,
-                                              float x2, float y2, float z2,
-                                              float r, float g, float b, float a) {
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        float dz = z2 - z1;
-        float len = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (len < 0.001f) len = 1;
-        float nx = dx / len;
-        float ny = dy / len;
-        float nz = dz / len;
-
-        consumer.addVertex(matrix, x1, y1, z1)
-                .setColor(r, g, b, a)
-                .setNormal(nx, ny, nz);
-
-        consumer.addVertex(matrix, x2, y2, z2)
-                .setColor(r, g, b, a)
-                .setNormal(nx, ny, nz);
+        DebugRenderHelper.drawLine(consumer, matrix, x - s * 0.5f, y, z, x + s * 0.5f, y, z, SQUARE_R, SQUARE_G, SQUARE_B, SQUARE_A);
+        DebugRenderHelper.drawLine(consumer, matrix, x, y, z - s * 0.5f, x, y, z + s * 0.5f, SQUARE_R, SQUARE_G, SQUARE_B, SQUARE_A);
     }
 }

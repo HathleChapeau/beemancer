@@ -8,6 +8,7 @@ package com.chapeau.beemancer.common.menu.alchemy;
 
 import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.blockentity.alchemy.CrystallizerBlockEntity;
+import com.chapeau.beemancer.common.menu.BeemancerMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.network.FriendlyByteBuf;
@@ -17,7 +18,7 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public class CrystallizerMenu extends AbstractContainerMenu {
+public class CrystallizerMenu extends BeemancerMenu {
     private final CrystallizerBlockEntity blockEntity;
     private final ContainerLevelAccess access;
     private final ContainerData data;
@@ -47,20 +48,6 @@ public class CrystallizerMenu extends AbstractContainerMenu {
 
         addPlayerInventory(playerInv, 8, 84);
         addPlayerHotbar(playerInv, 8, 142);
-    }
-
-    private void addPlayerInventory(Inventory playerInv, int x, int y) {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(playerInv, col + row * 9 + 9, x + col * 18, y + row * 18));
-            }
-        }
-    }
-
-    private void addPlayerHotbar(Inventory playerInv, int x, int y) {
-        for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(playerInv, col, x + col * 18, y));
-        }
     }
 
     public CrystallizerBlockEntity getBlockEntity() { return blockEntity; }

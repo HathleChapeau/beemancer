@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-01-30                     #
-#            (Controller Pipe + Honey Consumption + Cleanup)                  #
+#            (Refactorisation: split BlockEntity en managers)                 #
 ################################################################################
 
 ================================================================================
@@ -73,6 +73,18 @@ Philosophie:
 │ client/gui/hud/RideableBeeDebugHud  │ HUD debug rideable bee (haut droit)    │
 │ client/renderer/debug/PipeDebugRenderer│ Texte debug au-dessus des pipes     │
 │ client/renderer/debug/HiveDebugRenderer│ Cooldowns au-dessus des ruches      │
+│ client/renderer/util/FluidCubeRenderer │ Rendu fluide 6 faces (3 renderers) │
+│ client/renderer/util/DebugRenderHelper │ Lignes et cubes debug partagés     │
+│ common/block/alchemy/AbstractPipeBlock │ Base commune pipes (Item+Honey)    │
+│ common/menu/BeemancerMenu              │ Base menus (player inv/hotbar)     │
+│ common/entity/bee/goal/MoveToTargetGoal│ Goal navigation bee via BeeWand    │
+│ common/blockentity/storage/           │                                        │
+│   StorageChestManager               │ Gestion coffres réseau stockage      │
+│   StorageItemAggregator             │ Agrégation/dépôt/extraction items    │
+│   StorageDeliveryManager            │ Queue livraison + spawn bees         │
+│   StorageMultiblockManager          │ Formation/destruction multibloc      │
+│ common/block/hive/                    │                                        │
+│   HiveBeeLifecycleManager           │ Cycle de vie abeilles dans ruche     │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================

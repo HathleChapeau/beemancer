@@ -57,11 +57,21 @@ src/main/java/com/chapeau/beemancer/
 │   │   ├── BeeLarvaItem.java
 │   │   └── BeeWandItem.java
 │   │
+│   ├── block/alchemy/
+│   │   ├── AbstractPipeBlock.java         # Base commune HoneyPipe + ItemPipe
+│   │   ├── HoneyPipeBlock.java
+│   │   └── ItemPipeBlock.java
+│   │
+│   ├── menu/
+│   │   ├── BeemancerMenu.java             # Base menus (player inv/hotbar)
+│   │   └── slot/
+│   │
 │   ├── entity/bee/
 │   │   ├── MagicBeeEntity.java
 │   │   ├── BeeActivityState.java
 │   │   ├── BeeInventory.java
 │   │   └── goal/
+│   │       ├── MoveToTargetGoal.java      # Navigation manuelle (BeeWand)
 │   │
 │   └── menu/
 │       └── slot/
@@ -75,6 +85,12 @@ src/main/java/com/chapeau/beemancer/
 │
 └── client/
     ├── ClientSetup.java
+    ├── renderer/
+    │   ├── util/
+    │   │   ├── FluidCubeRenderer.java     # Rendu fluide 6 faces partagé
+    │   │   └── DebugRenderHelper.java     # Lignes et cubes debug partagés
+    │   ├── block/                         # Renderers de blocs
+    │   └── debug/                         # Renderers debug
     └── gui/
         ├── screen/
         └── hud/                        # === HUD OVERLAYS ===

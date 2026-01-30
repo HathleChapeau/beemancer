@@ -11,6 +11,7 @@
  * | StorageControllerBlockEntity    | BlockEntity            | Données de rendu      |
  * | StorageControllerBlock          | FORMED property        | État formé            |
  * | RenderType                      | Type de rendu          | Lignes debug + solid  |
+ * | DebugRenderHelper               | Rendu lignes/outlines  | drawLine/CubeOutline  |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -20,6 +21,7 @@
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.client.renderer.util.DebugRenderHelper;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
@@ -225,24 +227,8 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
      * Dessine un outline rouge autour du controller.
      */
     private void renderControllerOutline(VertexConsumer buffer, Matrix4f matrix) {
-        float r = 1.0f, g = 0.2f, b = 0.2f, a = 1.0f;
-        float min = -0.01f;
-        float max = 1.01f;
-
-        drawLine(buffer, matrix, min, min, min, max, min, min, r, g, b, a);
-        drawLine(buffer, matrix, max, min, min, max, min, max, r, g, b, a);
-        drawLine(buffer, matrix, max, min, max, min, min, max, r, g, b, a);
-        drawLine(buffer, matrix, min, min, max, min, min, min, r, g, b, a);
-
-        drawLine(buffer, matrix, min, max, min, max, max, min, r, g, b, a);
-        drawLine(buffer, matrix, max, max, min, max, max, max, r, g, b, a);
-        drawLine(buffer, matrix, max, max, max, min, max, max, r, g, b, a);
-        drawLine(buffer, matrix, min, max, max, min, max, min, r, g, b, a);
-
-        drawLine(buffer, matrix, min, min, min, min, max, min, r, g, b, a);
-        drawLine(buffer, matrix, max, min, min, max, max, min, r, g, b, a);
-        drawLine(buffer, matrix, max, min, max, max, max, max, r, g, b, a);
-        drawLine(buffer, matrix, min, min, max, min, max, max, r, g, b, a);
+        DebugRenderHelper.drawCubeOutline(buffer, matrix, -0.01f, -0.01f, -0.01f, 1.01f, 1.01f, 1.01f,
+                1.0f, 0.2f, 0.2f, 1.0f);
     }
 
     /**
@@ -254,51 +240,13 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         float dy = chestPos.getY() - controllerPos.getY();
         float dz = chestPos.getZ() - controllerPos.getZ();
 
-        drawLine(buffer, matrix, 0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f, 0.2f, 1.0f, 0.2f, 1.0f);
+        DebugRenderHelper.drawLine(buffer, matrix, 0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
+                0.2f, 1.0f, 0.2f, 1.0f);
 
-        float r = 0.2f, g = 0.6f, b = 1.0f, a = 1.0f;
         float min = -0.02f;
         float max = 1.02f;
-
-        drawLine(buffer, matrix, dx + min, dy + min, dz + min, dx + max, dy + min, dz + min, r, g, b, a);
-        drawLine(buffer, matrix, dx + max, dy + min, dz + min, dx + max, dy + min, dz + max, r, g, b, a);
-        drawLine(buffer, matrix, dx + max, dy + min, dz + max, dx + min, dy + min, dz + max, r, g, b, a);
-        drawLine(buffer, matrix, dx + min, dy + min, dz + max, dx + min, dy + min, dz + min, r, g, b, a);
-
-        drawLine(buffer, matrix, dx + min, dy + max, dz + min, dx + max, dy + max, dz + min, r, g, b, a);
-        drawLine(buffer, matrix, dx + max, dy + max, dz + min, dx + max, dy + max, dz + max, r, g, b, a);
-        drawLine(buffer, matrix, dx + max, dy + max, dz + max, dx + min, dy + max, dz + max, r, g, b, a);
-        drawLine(buffer, matrix, dx + min, dy + max, dz + max, dx + min, dy + max, dz + min, r, g, b, a);
-
-        drawLine(buffer, matrix, dx + min, dy + min, dz + min, dx + min, dy + max, dz + min, r, g, b, a);
-        drawLine(buffer, matrix, dx + max, dy + min, dz + min, dx + max, dy + max, dz + min, r, g, b, a);
-        drawLine(buffer, matrix, dx + max, dy + min, dz + max, dx + max, dy + max, dz + max, r, g, b, a);
-        drawLine(buffer, matrix, dx + min, dy + min, dz + max, dx + min, dy + max, dz + max, r, g, b, a);
-    }
-
-    /**
-     * Utilitaire pour dessiner une ligne.
-     */
-    private void drawLine(VertexConsumer buffer, Matrix4f matrix,
-                          float x1, float y1, float z1,
-                          float x2, float y2, float z2,
-                          float r, float g, float b, float a) {
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        float dz = z2 - z1;
-        float length = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (length > 0) {
-            dx /= length;
-            dy /= length;
-            dz /= length;
-        }
-
-        buffer.addVertex(matrix, x1, y1, z1)
-              .setColor(r, g, b, a)
-              .setNormal(dx, dy, dz);
-        buffer.addVertex(matrix, x2, y2, z2)
-              .setColor(r, g, b, a)
-              .setNormal(dx, dy, dz);
+        DebugRenderHelper.drawCubeOutline(buffer, matrix, dx + min, dy + min, dz + min, dx + max, dy + max, dz + max,
+                0.2f, 0.6f, 1.0f, 1.0f);
     }
 
     @Override

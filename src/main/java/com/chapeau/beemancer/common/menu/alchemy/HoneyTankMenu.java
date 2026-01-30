@@ -7,6 +7,7 @@
 package com.chapeau.beemancer.common.menu.alchemy;
 
 import com.chapeau.beemancer.common.blockentity.alchemy.HoneyTankBlockEntity;
+import com.chapeau.beemancer.common.menu.BeemancerMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.network.FriendlyByteBuf;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
-public class HoneyTankMenu extends AbstractContainerMenu {
+public class HoneyTankMenu extends BeemancerMenu {
     protected final HoneyTankBlockEntity blockEntity;
     protected final ContainerLevelAccess access;
     protected final ContainerData data;
@@ -63,20 +64,6 @@ public class HoneyTankMenu extends AbstractContainerMenu {
 
         addPlayerInventory(playerInv, 8, 84);
         addPlayerHotbar(playerInv, 8, 142);
-    }
-
-    private void addPlayerInventory(Inventory playerInv, int x, int y) {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(playerInv, col + row * 9 + 9, x + col * 18, y + row * 18));
-            }
-        }
-    }
-
-    private void addPlayerHotbar(Inventory playerInv, int x, int y) {
-        for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(playerInv, col, x + col * 18, y));
-        }
     }
 
     public HoneyTankBlockEntity getBlockEntity() { return blockEntity; }

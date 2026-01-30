@@ -27,6 +27,7 @@ package com.chapeau.beemancer.common.entity.bee;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.entity.bee.goal.BeeRevengeGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.ForagingBehaviorGoal;
+import com.chapeau.beemancer.common.entity.bee.goal.MoveToTargetGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.ReturnToHiveWhenLowHealthGoal;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
@@ -632,53 +633,4 @@ public class MagicBeeEntity extends Bee {
         }
     }
 
-    // --- Movement Goal (manual navigation via BeeWand) ---
-
-    private static class MoveToTargetGoal extends Goal {
-        private final MagicBeeEntity bee;
-        private static final double REACH_DISTANCE = 1.5;
-
-        public MoveToTargetGoal(MagicBeeEntity bee) {
-            this.bee = bee;
-            this.setFlags(EnumSet.of(Flag.MOVE));
-        }
-
-        @Override
-        public boolean canUse() {
-            return bee.hasTarget();
-        }
-
-        @Override
-        public boolean canContinueToUse() {
-            if (!bee.hasTarget()) return false;
-            BlockPos target = bee.getTargetPos();
-            if (target == null) return false;
-            double distance = bee.position().distanceTo(Vec3.atCenterOf(target));
-            return distance > REACH_DISTANCE;
-        }
-
-        @Override
-        public void tick() {
-            BlockPos target = bee.getTargetPos();
-            if (target == null) return;
-
-            Vec3 targetVec = Vec3.atCenterOf(target);
-            Vec3 direction = targetVec.subtract(bee.position()).normalize();
-            double speed = 0.08;
-
-            Vec3 movement = direction.scale(speed);
-            bee.setDeltaMovement(movement);
-
-            double dx = targetVec.x - bee.getX();
-            double dz = targetVec.z - bee.getZ();
-            float targetYaw = (float) (Math.atan2(dz, dx) * (180.0 / Math.PI)) - 90.0F;
-            bee.setYRot(targetYaw);
-            bee.yBodyRot = targetYaw;
-        }
-
-        @Override
-        public void stop() {
-            bee.setDeltaMovement(Vec3.ZERO);
-        }
-    }
 }

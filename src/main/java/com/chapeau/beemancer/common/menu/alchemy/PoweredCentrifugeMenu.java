@@ -15,6 +15,7 @@ package com.chapeau.beemancer.common.menu.alchemy;
 
 import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.blockentity.alchemy.PoweredCentrifugeBlockEntity;
+import com.chapeau.beemancer.common.menu.BeemancerMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -26,7 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public class PoweredCentrifugeMenu extends AbstractContainerMenu {
+public class PoweredCentrifugeMenu extends BeemancerMenu {
     private final PoweredCentrifugeBlockEntity blockEntity;
     private final ContainerData data;
     private final ContainerLevelAccess access;
@@ -72,20 +73,6 @@ public class PoweredCentrifugeMenu extends AbstractContainerMenu {
         // Player inventory
         addPlayerInventory(playerInv, 8, 84);
         addPlayerHotbar(playerInv, 8, 142);
-    }
-
-    private void addPlayerInventory(Inventory playerInv, int x, int y) {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(playerInv, col + row * 9 + 9, x + col * 18, y + row * 18));
-            }
-        }
-    }
-
-    private void addPlayerHotbar(Inventory playerInv, int x, int y) {
-        for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(playerInv, col, x + col * 18, y));
-        }
     }
 
     public int getProgress() { return data.get(0); }
