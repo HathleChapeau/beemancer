@@ -2,8 +2,8 @@
   "parent": "minecraft:block/block",
   "ambientocclusion": false,
   "textures": {
-    "all": "beemancer:block/logistic/storage_controller",
-    "particle": "beemancer:block/logistic/storage_controller"
+    "all": "beemancer:block/honey",
+    "particle": "beemancer:block/honey"
   },
   "elements": [
     {
