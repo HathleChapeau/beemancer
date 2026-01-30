@@ -3,6 +3,41 @@
 ################################################################################
 
 ================================================================================
+2026-01-30 - Storage Controller: Controlled Hive, Terminal 2px, Spread 3px
+================================================================================
+
+Améliorations visuelles et structurelles du multibloc Storage Controller.
+
+NOUVEAU BLOC:
+- ControlledHiveBlock: bloc passif avec FORMED + FORMED_ROTATION
+- Remplace le honeyed_stone en position (0,1,0) dans le pattern multibloc
+- Le controller gère les abeilles via cette hive (spawn/retour)
+
+TERMINAL FORMED:
+- Réduit à 2px d'épaisseur (z=[14,16] au lieu de [13,16])
+- Design: cadre de barres 2px + plan central texture portal nether
+
+SPREAD COLONNES:
+- Les colonnes pipe-reservoir-pipe écartées de 3px (3/16 bloc) du centre
+- Spread calculé en world-space par StorageControllerBlockEntity
+- HoneyPipeBlockEntity + HoneyReservoirBlockEntity: formedSpreadX/Z (NBT + sync)
+- HoneyPipeRenderer + HoneyReservoirRenderer: translation spread avant rendu
+- HoneyReservoirRenderer: rendu formed model via BER (blockstate model vidé)
+
+REGISTRES:
+- BeemancerBlocks: +CONTROLLED_HIVE
+- BeemancerItems: +CONTROLLED_HIVE (BlockItem)
+
+ASSETS:
+- blockstates/controlled_hive.json (8 variants)
+- models/block/storage/controlled_hive.json + controlled_hive_formed.json
+- models/block/altar/honey_reservoir_formed_render.json (modèle pour BER)
+- models/item/controlled_hive.json
+- textures/block/storage/controlled_hive.png
+- data/beemancer/loot_table/blocks/controlled_hive.json
+- lang/en_us.json + fr_fr.json: +block.beemancer.controlled_hive
+
+================================================================================
 2026-01-29 - Storage Controller Multibloc
 ================================================================================
 

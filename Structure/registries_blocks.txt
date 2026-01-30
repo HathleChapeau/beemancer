@@ -49,6 +49,9 @@
 --- ESSENCE EXTRACTOR ---
 | extractor_heart        | ExtractorHeartBlock       | Oui          | Essence Extractor |
 
+--- STORAGE ---
+| controlled_hive        | ControlledHiveBlock       | Non          | Storage Network |
+
 --- BEE STATUE ---
 | bee_statue             | BeeStatueBlock            | Oui          | Bee Statue      |
 

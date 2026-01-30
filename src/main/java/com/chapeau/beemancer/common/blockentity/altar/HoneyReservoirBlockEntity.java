@@ -46,6 +46,10 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
 
     private final FluidTank fluidTank;
 
+    // Spread offset pour le multibloc Storage Controller (en blocs, coordonnées monde)
+    private float formedSpreadX = 0.0f;
+    private float formedSpreadZ = 0.0f;
+
     public HoneyReservoirBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.HONEY_RESERVOIR.get(), pos, state);
         this.fluidTank = new FluidTank(CAPACITY) {
@@ -131,6 +135,25 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
         return fluidTank.drain(maxDrain, action);
     }
 
+    // --- Spread (Storage Controller multibloc) ---
+
+    public float getFormedSpreadX() {
+        return formedSpreadX;
+    }
+
+    public float getFormedSpreadZ() {
+        return formedSpreadZ;
+    }
+
+    public void setFormedSpread(float spreadX, float spreadZ) {
+        this.formedSpreadX = spreadX;
+        this.formedSpreadZ = spreadZ;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
     // --- Accessors ---
 
     public FluidTank getFluidTank() {
@@ -151,6 +174,12 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
+        if (formedSpreadX != 0.0f) {
+            tag.putFloat("FormedSpreadX", formedSpreadX);
+        }
+        if (formedSpreadZ != 0.0f) {
+            tag.putFloat("FormedSpreadZ", formedSpreadZ);
+        }
     }
 
     @Override
@@ -159,12 +188,20 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
         if (tag.contains("Fluid")) {
             fluidTank.readFromNBT(registries, tag.getCompound("Fluid"));
         }
+        formedSpreadX = tag.getFloat("FormedSpreadX");
+        formedSpreadZ = tag.getFloat("FormedSpreadZ");
     }
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
+        if (formedSpreadX != 0.0f) {
+            tag.putFloat("FormedSpreadX", formedSpreadX);
+        }
+        if (formedSpreadZ != 0.0f) {
+            tag.putFloat("FormedSpreadZ", formedSpreadZ);
+        }
         return tag;
     }
 

@@ -79,6 +79,13 @@ public class HoneyPipeRenderer implements BlockEntityRenderer<HoneyPipeBlockEnti
 
         poseStack.pushPose();
 
+        // Appliquer le spread (décalage en coordonnées monde)
+        float spreadX = blockEntity.getFormedSpreadX();
+        float spreadZ = blockEntity.getFormedSpreadZ();
+        if (spreadX != 0.0f || spreadZ != 0.0f) {
+            poseStack.translate(spreadX, 0, spreadZ);
+        }
+
         // Appliquer la rotation au centre du bloc
         poseStack.translate(0.5, 0.5, 0.5);
         if (flipped) {

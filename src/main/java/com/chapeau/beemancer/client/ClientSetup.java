@@ -264,5 +264,8 @@ public class ClientSetup {
 
         // Modèle formed du honey pipe (coude, rendu par BER)
         event.register(HoneyPipeRenderer.FORMED_MODEL_LOC);
+
+        // Modèle formed du honey reservoir (rendu par BER avec spread offset)
+        event.register(HoneyReservoirRenderer.FORMED_MODEL_LOC);
     }
 }

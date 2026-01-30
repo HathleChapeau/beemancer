@@ -281,7 +281,7 @@ public class MultiblockPatterns {
 
             // Étage 3 (Y+1): Pipes + Honeyed Stone en ligne (z=0)
             .add(-1, 1, 0, block(BeemancerBlocks.HONEY_PIPE))         // Pipe gauche
-            .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))       // Pierre centre
+            .add(0, 1, 0, block(BeemancerBlocks.CONTROLLED_HIVE))      // Controlled Hive
             .add(1, 1, 0, block(BeemancerBlocks.HONEY_PIPE))          // Pipe droite
             // Positions air autour de l'étage 3
             .add(-1, 1, -1, air())

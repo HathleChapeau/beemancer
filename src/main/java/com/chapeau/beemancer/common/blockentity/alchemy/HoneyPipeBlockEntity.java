@@ -67,6 +67,8 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     // Multibloc formed state (stocké dans le BE au lieu du blockstate pour réduire les combinaisons)
     private boolean formed = false;
     private int formedRotation = 0;
+    private float formedSpreadX = 0.0f;
+    private float formedSpreadZ = 0.0f;
 
     public HoneyPipeBlockEntity(BlockPos pos, BlockState state) {
         this(BeemancerBlockEntities.HONEY_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
@@ -358,9 +360,28 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         return formedRotation;
     }
 
+    public float getFormedSpreadX() {
+        return formedSpreadX;
+    }
+
+    public float getFormedSpreadZ() {
+        return formedSpreadZ;
+    }
+
     public void setFormed(boolean formed, int rotation) {
         this.formed = formed;
         this.formedRotation = formed ? rotation : 0;
+        if (!formed) {
+            this.formedSpreadX = 0.0f;
+            this.formedSpreadZ = 0.0f;
+        }
+        setChanged();
+        syncToClient();
+    }
+
+    public void setFormedSpread(float spreadX, float spreadZ) {
+        this.formedSpreadX = spreadX;
+        this.formedSpreadZ = spreadZ;
         setChanged();
         syncToClient();
     }
@@ -402,6 +423,12 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         if (formed) {
             tag.putBoolean("Formed", true);
             tag.putInt("FormedRotation", formedRotation);
+            if (formedSpreadX != 0.0f) {
+                tag.putFloat("FormedSpreadX", formedSpreadX);
+            }
+            if (formedSpreadZ != 0.0f) {
+                tag.putFloat("FormedSpreadZ", formedSpreadZ);
+            }
         }
     }
 
@@ -424,6 +451,8 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         tintColor = tag.contains("TintColor") ? tag.getInt("TintColor") : -1;
         formed = tag.getBoolean("Formed");
         formedRotation = tag.getInt("FormedRotation");
+        formedSpreadX = tag.getFloat("FormedSpreadX");
+        formedSpreadZ = tag.getFloat("FormedSpreadZ");
     }
 
     @Override

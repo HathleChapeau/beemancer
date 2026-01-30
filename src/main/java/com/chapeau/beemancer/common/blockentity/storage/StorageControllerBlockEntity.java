@@ -29,8 +29,10 @@ package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.HoneyPipeBlock;
+import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
+import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
@@ -269,14 +271,31 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             BlockPos blockPos = worldPosition.offset(rotatedOffset);
             BlockState state = level.getBlockState(blockPos);
 
+            // Calcul du spread pour les colonnes gauche/droite (x != 0)
+            float spreadX = 0.0f;
+            float spreadZ = 0.0f;
+            if (formed && originalOffset.getX() != 0) {
+                spreadX = rotatedOffset.getX() * 3.0f / 16.0f;
+                spreadZ = rotatedOffset.getZ() * 3.0f / 16.0f;
+            }
+
             // Pipes: formed state stocké dans le BlockEntity (pas dans le blockstate)
             if (state.getBlock() instanceof HoneyPipeBlock) {
                 BlockEntity be = level.getBlockEntity(blockPos);
                 if (be instanceof HoneyPipeBlockEntity pipeBe) {
                     int rotation = formed ? computeBlockRotation(originalOffset, state) : 0;
                     pipeBe.setFormed(formed, rotation);
+                    pipeBe.setFormedSpread(spreadX, spreadZ);
                 }
                 continue;
+            }
+
+            // Reservoirs: appliquer le spread
+            if (state.getBlock() instanceof HoneyReservoirBlock) {
+                BlockEntity be = level.getBlockEntity(blockPos);
+                if (be instanceof HoneyReservoirBlockEntity reservoirBe) {
+                    reservoirBe.setFormedSpread(spreadX, spreadZ);
+                }
             }
 
             boolean changed = false;

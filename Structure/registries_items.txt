@@ -35,6 +35,9 @@
 | infuser_tier2            | BlockItem        | Tiered Machines |
 | infuser_tier3            | BlockItem        | Tiered Machines |
 
+--- STORAGE ---
+| controlled_hive          | BlockItem        | Storage Network |
+
 --- HONEY ALTAR ---
 | honeyed_stone            | BlockItem        | Honey Altar     |
 | honeyed_stone_stair      | BlockItem        | Honey Altar     |
