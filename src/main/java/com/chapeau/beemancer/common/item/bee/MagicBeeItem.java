@@ -250,6 +250,26 @@ public class MagicBeeItem extends Item {
                         .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                         .append(Component.translatable(flowerKey).withStyle(flowerColor)));
 
+                // Climat
+                String climateKey = switch (speciesData.environment) {
+                    case -2 -> "tooltip.beemancer.climate.frozen";
+                    case -1 -> "tooltip.beemancer.climate.cold";
+                    case 1 -> "tooltip.beemancer.climate.warm";
+                    case 2 -> "tooltip.beemancer.climate.hot";
+                    default -> "tooltip.beemancer.climate.temperate";
+                };
+                ChatFormatting climateColor = switch (speciesData.environment) {
+                    case -2 -> ChatFormatting.DARK_PURPLE;
+                    case -1 -> ChatFormatting.BLUE;
+                    case 1 -> ChatFormatting.YELLOW;
+                    case 2 -> ChatFormatting.RED;
+                    default -> ChatFormatting.GREEN;
+                };
+                tooltip.add(Component.translatable("tooltip.beemancer.climate")
+                        .withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                        .append(Component.translatable(climateKey).withStyle(climateColor)));
+
                 // Stats avec etoiles - couleurs essences
                 tooltip.add(Component.literal(""));
                 tooltip.add(Component.translatable("tooltip.beemancer.drop")

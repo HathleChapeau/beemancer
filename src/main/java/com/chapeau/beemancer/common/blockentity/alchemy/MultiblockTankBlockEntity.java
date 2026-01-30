@@ -54,6 +54,9 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     private FluidTank fluidTank;
     private boolean validCuboid = true;
 
+    // Deferred validation: onLoad() ne peut pas valider car les voisins ne sont pas encore charges
+    private boolean needsLoadValidation = false;
+
     // Bucket slot (only used by master for GUI)
     protected final ItemStackHandler bucketSlot = new ItemStackHandler(1) {
         @Override
@@ -401,30 +404,32 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     @Override
     public void onLoad() {
         super.onLoad();
-        if (level == null || level.isClientSide()) return;
+        if (level != null && !level.isClientSide()) {
+            needsLoadValidation = true;
+        }
+    }
+
+    private void performLoadValidation() {
+        needsLoadValidation = false;
 
         if (isMaster()) {
-            // Re-valider la structure au chargement
             for (BlockPos blockPos : new HashSet<>(connectedBlocks)) {
                 if (blockPos.equals(worldPosition)) continue;
                 BlockEntity be = level.getBlockEntity(blockPos);
                 if (be instanceof MultiblockTankBlockEntity slave) {
-                    // S'assurer que le slave pointe vers ce master
                     slave.masterPos = worldPosition;
                     slave.setChanged();
                 } else {
-                    // Le bloc n'existe plus ou n'est plus un tank
                     connectedBlocks.remove(blockPos);
                 }
             }
             recalculateStructure();
         } else {
-            // Verifier que le master existe et est valide
             if (masterPos != null) {
                 BlockEntity be = level.getBlockEntity(masterPos);
                 if (!(be instanceof MultiblockTankBlockEntity)) {
-                    // Master invalide - reinitialiser en master isole
                     initializeAsMaster();
+                    recalculateStructure();
                     setChanged();
                 }
             }
@@ -432,10 +437,12 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MultiblockTankBlockEntity be) {
-        // Only master processes logic
+        if (be.needsLoadValidation) {
+            be.performLoadValidation();
+        }
+
         if (!be.isMaster()) return;
 
-        // Process bucket slot
         be.processBucketSlot();
     }
 
