@@ -72,15 +72,31 @@ public class ItemPipeBlock extends BaseEntityBlock {
     public static final BooleanProperty EXTRACT_UP = BooleanProperty.create("extract_up");
     public static final BooleanProperty EXTRACT_DOWN = BooleanProperty.create("extract_down");
 
-    // Core: 6x6x6 center + 8x8x8 frame outline
+    // Pre-computed VoxelShapes for all 64 direction combinations (6 bits)
     private static final VoxelShape CORE = Block.box(4, 4, 4, 12, 12, 12);
-    // Connections: 6x6 tubes (same width as core)
-    private static final VoxelShape NORTH_SHAPE = Block.box(5, 5, 0, 11, 11, 4);
-    private static final VoxelShape SOUTH_SHAPE = Block.box(5, 5, 12, 11, 11, 16);
-    private static final VoxelShape EAST_SHAPE = Block.box(12, 5, 5, 16, 11, 11);
-    private static final VoxelShape WEST_SHAPE = Block.box(0, 5, 5, 4, 11, 11);
-    private static final VoxelShape UP_SHAPE = Block.box(5, 12, 5, 11, 16, 11);
-    private static final VoxelShape DOWN_SHAPE = Block.box(5, 0, 5, 11, 4, 11);
+    private static final VoxelShape[] DIR_SHAPES = {
+        Block.box(5, 5, 0, 11, 11, 4),   // NORTH (bit 0)
+        Block.box(5, 5, 12, 11, 11, 16),  // SOUTH (bit 1)
+        Block.box(12, 5, 5, 16, 11, 11),  // EAST (bit 2)
+        Block.box(0, 5, 5, 4, 11, 11),    // WEST (bit 3)
+        Block.box(5, 12, 5, 11, 16, 11),  // UP (bit 4)
+        Block.box(5, 0, 5, 11, 4, 11)     // DOWN (bit 5)
+    };
+    private static final VoxelShape[] SHAPE_CACHE = buildShapeCache();
+
+    private static VoxelShape[] buildShapeCache() {
+        VoxelShape[] cache = new VoxelShape[64];
+        for (int i = 0; i < 64; i++) {
+            VoxelShape shape = CORE;
+            for (int bit = 0; bit < 6; bit++) {
+                if ((i & (1 << bit)) != 0) {
+                    shape = Shapes.or(shape, DIR_SHAPES[bit]);
+                }
+            }
+            cache[i] = shape;
+        }
+        return cache;
+    }
 
     public ItemPipeBlock(Properties properties) {
         this(properties, 1);
@@ -111,14 +127,14 @@ public class ItemPipeBlock extends BaseEntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        VoxelShape shape = CORE;
-        if (state.getValue(NORTH)) shape = Shapes.or(shape, NORTH_SHAPE);
-        if (state.getValue(SOUTH)) shape = Shapes.or(shape, SOUTH_SHAPE);
-        if (state.getValue(EAST)) shape = Shapes.or(shape, EAST_SHAPE);
-        if (state.getValue(WEST)) shape = Shapes.or(shape, WEST_SHAPE);
-        if (state.getValue(UP)) shape = Shapes.or(shape, UP_SHAPE);
-        if (state.getValue(DOWN)) shape = Shapes.or(shape, DOWN_SHAPE);
-        return shape;
+        int index = 0;
+        if (state.getValue(NORTH)) index |= 1;
+        if (state.getValue(SOUTH)) index |= 2;
+        if (state.getValue(EAST))  index |= 4;
+        if (state.getValue(WEST))  index |= 8;
+        if (state.getValue(UP))    index |= 16;
+        if (state.getValue(DOWN))  index |= 32;
+        return SHAPE_CACHE[index];
     }
 
     @Override

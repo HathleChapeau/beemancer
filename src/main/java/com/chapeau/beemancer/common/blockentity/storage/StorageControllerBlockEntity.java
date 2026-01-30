@@ -30,6 +30,7 @@ package com.chapeau.beemancer.common.blockentity.storage;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.HoneyPipeBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
+import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageEditModeHandler;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
@@ -189,6 +190,17 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             Vec3i rotatedOffset = MultiblockPattern.rotateY(originalOffset, multiblockRotation);
             BlockPos blockPos = worldPosition.offset(rotatedOffset);
             BlockState state = level.getBlockState(blockPos);
+
+            // Pipes: formed state stocké dans le BlockEntity (pas dans le blockstate)
+            if (state.getBlock() instanceof HoneyPipeBlock) {
+                BlockEntity be = level.getBlockEntity(blockPos);
+                if (be instanceof HoneyPipeBlockEntity pipeBe) {
+                    int rotation = formed ? computeBlockRotation(originalOffset, state) : 0;
+                    pipeBe.setFormed(formed, rotation);
+                }
+                continue;
+            }
+
             boolean changed = false;
 
             // Honeyed stone du bas (y<0): pas de formed (juste la pierre brute)

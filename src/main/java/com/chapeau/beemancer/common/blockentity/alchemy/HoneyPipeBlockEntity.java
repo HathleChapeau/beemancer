@@ -64,6 +64,10 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     // Couleur de teinte du core (-1 = pas de teinte)
     private int tintColor = -1;
 
+    // Multibloc formed state (stocké dans le BE au lieu du blockstate pour réduire les combinaisons)
+    private boolean formed = false;
+    private int formedRotation = 0;
+
     public HoneyPipeBlockEntity(BlockPos pos, BlockState state) {
         this(BeemancerBlockEntities.HONEY_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
     }
@@ -346,6 +350,21 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         return tintColor != -1;
     }
 
+    public boolean isFormed() {
+        return formed;
+    }
+
+    public int getFormedRotation() {
+        return formedRotation;
+    }
+
+    public void setFormed(boolean formed, int rotation) {
+        this.formed = formed;
+        this.formedRotation = formed ? rotation : 0;
+        setChanged();
+        syncToClient();
+    }
+
     private void syncToClient() {
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
@@ -380,6 +399,10 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         if (tintColor != -1) {
             tag.putInt("TintColor", tintColor);
         }
+        if (formed) {
+            tag.putBoolean("Formed", true);
+            tag.putInt("FormedRotation", formedRotation);
+        }
     }
 
     @Override
@@ -399,6 +422,8 @@ public class HoneyPipeBlockEntity extends BlockEntity {
             }
         }
         tintColor = tag.contains("TintColor") ? tag.getInt("TintColor") : -1;
+        formed = tag.getBoolean("Formed");
+        formedRotation = tag.getInt("FormedRotation");
     }
 
     @Override

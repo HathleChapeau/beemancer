@@ -185,20 +185,21 @@ public class StorageControllerBlock extends BaseEntityBlock {
         double cz = pos.getZ() + 0.5;
 
         // Boule de particules qui tourne autour du centre
-        float time = level.getGameTime() * 0.15f;
-        double radius = 0.12;
-        int count = 4;
+        float time = level.getGameTime() * 0.1f;
+        double radius = 0.25;
+        int count = 8;
 
         for (int i = 0; i < count; i++) {
             // Distribuer les particules sur une sphère tournante
             float phi = time + i * ((float) Math.PI * 2.0f / count);
-            float theta = (float) Math.sin(time * 0.3 + i * 1.2) * (float) Math.PI * 0.5f + (float) Math.PI * 0.5f;
+            float theta = (float) Math.sin(time * 0.2 + i * 0.8) * (float) Math.PI * 0.4f + (float) Math.PI * 0.5f;
 
             double px = radius * Math.sin(theta) * Math.cos(phi);
             double py = radius * Math.cos(theta);
             double pz = radius * Math.sin(theta) * Math.sin(phi);
 
-            level.addParticle(ParticleTypes.ELECTRIC_SPARK,
+            // END_ROD: petites particules persistantes qui ne tombent pas
+            level.addParticle(ParticleTypes.END_ROD,
                 cx + px, cy + py, cz + pz,
                 0, 0, 0);
         }
