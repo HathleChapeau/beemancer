@@ -95,11 +95,10 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
     public static void serverTick(Level level, BlockPos pos, BlockState state, ManualCentrifugeBlockEntity be) {
         boolean wasSpinning = state.getValue(ManualCentrifugeBlock.SPINNING);
 
-        // Check if player stopped holding (no interaction for 5 ticks)
+        // Check if player stopped holding (no interaction for 5 ticks) — visual feedback only
         int currentTick = (int) level.getGameTime();
         if (be.isSpinning && (currentTick - be.lastInteractionTick) > 5) {
             be.isSpinning = false;
-            be.progress = Math.max(0, be.progress - 2); // Slowly lose progress if not holding
         }
 
         // Update block state

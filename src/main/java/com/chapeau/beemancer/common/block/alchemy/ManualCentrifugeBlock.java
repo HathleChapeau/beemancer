@@ -1,14 +1,13 @@
 /**
  * ============================================================
  * [ManualCentrifugeBlock.java]
- * Description: Centrifugeuse manuelle - maintenir clic droit pour extraire
+ * Description: Centrifugeuse manuelle - clic droit pour ouvrir GUI
  * ============================================================
- * 
+ *
  * INTERACTION:
- * - Clic droit avec comb -> insère le comb
- * - Maintenir clic droit (main vide) -> fait tourner
- * - Shift + clic droit -> ouvre le GUI
- * - Clic droit (main vide, pas de combs) -> extrait les outputs
+ * - Clic droit avec comb -> insere le comb
+ * - Clic droit (main vide) -> ouvre le GUI
+ * - Spinning controle par le CrankBlock au-dessus
  * ============================================================
  */
 package com.chapeau.beemancer.common.block.alchemy;
@@ -18,7 +17,6 @@ import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -112,56 +110,13 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level.isClientSide()) return InteractionResult.SUCCESS;
-
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof ManualCentrifugeBlockEntity centrifuge)) {
-            return InteractionResult.PASS;
-        }
-
-        // Shift + right click = open GUI
-        if (player.isShiftKeyDown()) {
-            if (player instanceof ServerPlayer serverPlayer) {
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof ManualCentrifugeBlockEntity centrifuge) {
                 serverPlayer.openMenu(centrifuge, pos);
             }
-            return InteractionResult.SUCCESS;
         }
-
-        // Try to spin (hold right click)
-        if (centrifuge.hasCombsToProcess()) {
-            boolean spun = centrifuge.onPlayerSpin(level);
-            if (spun) {
-                // Update spinning state
-                if (!state.getValue(SPINNING)) {
-                    level.setBlock(pos, state.setValue(SPINNING, true), 3);
-                }
-                
-                // Play sound occasionally
-                if (level.random.nextInt(10) == 0) {
-                    level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.5f, 1.2f);
-                }
-
-                // Spawn particles
-                if (level instanceof ServerLevel serverLevel) {
-                    double offsetX = level.random.nextDouble() * 0.6 - 0.3;
-                    double offsetZ = level.random.nextDouble() * 0.6 - 0.3;
-                    serverLevel.sendParticles(ParticleTypes.FALLING_HONEY,
-                        pos.getX() + 0.5 + offsetX, pos.getY() + 0.8, pos.getZ() + 0.5 + offsetZ,
-                        1, 0, 0, 0, 0);
-                }
-                return InteractionResult.SUCCESS;
-            }
-        }
-
-        // Extract output if no combs to process
-        ItemStack output = centrifuge.extractOutput();
-        if (!output.isEmpty()) {
-            player.addItem(output);
-            level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 0.5f, 1.0f);
-            return InteractionResult.SUCCESS;
-        }
-
-        return InteractionResult.PASS;
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
     @Override

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": { "item": "minecraft:stick" }
+  },
+  "pattern": [
+    " SS",
+    " S ",
+    "SS "
+  ],
+  "result": { "id": "beemancer:crank", "count": 1 }
+}

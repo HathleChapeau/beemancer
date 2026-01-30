@@ -108,6 +108,12 @@ public class BeemancerBlocks {
                     .sound(SoundType.WOOD)
                     .requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<CrankBlock> CRANK = BLOCKS.register("crank",
+            () -> new CrankBlock(BlockBehaviour.Properties.of()
+                    .strength(1.0f)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion()));
+
     public static final DeferredBlock<PoweredCentrifugeBlock> POWERED_CENTRIFUGE = BLOCKS.register("powered_centrifuge",
             () -> new PoweredCentrifugeBlock(BlockBehaviour.Properties.of()
                     .strength(3.5f)

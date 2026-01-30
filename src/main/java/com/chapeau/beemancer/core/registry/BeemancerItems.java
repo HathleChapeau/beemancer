@@ -61,6 +61,9 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> MANUAL_CENTRIFUGE = ITEMS.register("manual_centrifuge",
             () -> new BlockItem(BeemancerBlocks.MANUAL_CENTRIFUGE.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> CRANK = ITEMS.register("crank",
+            () -> new BlockItem(BeemancerBlocks.CRANK.get(), new Item.Properties()));
+
     public static final DeferredItem<BlockItem> POWERED_CENTRIFUGE = ITEMS.register("powered_centrifuge",
             () -> new BlockItem(BeemancerBlocks.POWERED_CENTRIFUGE.get(), new Item.Properties()));
 
