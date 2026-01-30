@@ -81,4 +81,9 @@ public record ProcessingRecipeInput(List<ItemStack> items, List<FluidStack> flui
     public boolean hasFluids() {
         return !fluids.isEmpty() && fluids.stream().anyMatch(s -> !s.isEmpty());
     }
+
+    @Override
+    public boolean isEmpty() {
+        return !hasItems() && !hasFluids();
+    }
 }
