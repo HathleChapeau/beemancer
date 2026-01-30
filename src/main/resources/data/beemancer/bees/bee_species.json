@@ -873,7 +873,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 3 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:poppy", "in_comb": false },
+      "loot": { "item": "#minecraft:small_flowers", "in_comb": false },
       "pollen": null,
       "texture": "Floral_Bee"
     },

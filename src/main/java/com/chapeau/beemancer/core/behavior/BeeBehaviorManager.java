@@ -7,6 +7,7 @@
 package com.chapeau.beemancer.core.behavior;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.core.bee.BeeSpeciesManager;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -165,14 +166,67 @@ public class BeeBehaviorManager {
 
     /**
      * Recupere la configuration pour une espece donnee.
-     * Retourne la config par defaut si l'espece n'est pas trouvee.
+     * Si l'espece n'a pas de config explicite dans species_behaviors.json,
+     * genere automatiquement une config a partir des donnees de BeeSpeciesManager.
      */
     public static BeeBehaviorConfig getConfig(String speciesId) {
         if (!loaded) {
             LOGGER.warn("BeeBehaviorManager not loaded, using defaults");
             setupDefaults();
         }
-        return configs.getOrDefault(speciesId, defaultConfig);
+
+        BeeBehaviorConfig config = configs.get(speciesId);
+        if (config != null) {
+            return config;
+        }
+
+        // Auto-generer depuis les donnees d'espece
+        config = generateConfigFromSpecies(speciesId);
+        if (config != null) {
+            configs.put(speciesId, config);
+            return config;
+        }
+
+        return defaultConfig;
+    }
+
+    /**
+     * Genere une BeeBehaviorConfig a partir des donnees de BeeSpeciesManager.
+     * Utilise le champ lootItem de l'espece pour configurer le loot de pollinisation.
+     */
+    private static BeeBehaviorConfig generateConfigFromSpecies(String speciesId) {
+        BeeSpeciesManager.BeeSpeciesData speciesData = BeeSpeciesManager.getSpecies(speciesId);
+        if (speciesData == null) {
+            return null;
+        }
+
+        BeeBehaviorConfig config = BeeBehaviorConfig.createWithDefaults(defaultConfig);
+
+        // Appliquer les stats de l'espece
+        config.setFlyingSpeed(BeeSpeciesManager.calculateStat(speciesId, BeeSpeciesManager.StatType.FLYING_SPEED));
+        config.setHealth(BeeSpeciesManager.calculateStat(speciesId, BeeSpeciesManager.StatType.HEALTH));
+        config.setAttackDamage(BeeSpeciesManager.calculateStat(speciesId, BeeSpeciesManager.StatType.ATTACK));
+
+        // Aggression
+        config.setAggressiveToPlayers(speciesData.aggressiveToPlayers);
+        config.setAggressiveToPassiveMobs(speciesData.aggressiveToPassiveMobs);
+        config.setAggressiveToHostileMobs(speciesData.aggressiveToHostileMobs);
+
+        // Configurer le loot a partir de l'item defini dans bee_species.json
+        String lootItem = speciesData.lootItem;
+        if (lootItem != null && !lootItem.isEmpty()) {
+            if (lootItem.startsWith("#")) {
+                // Loot base sur un tag (ex: "#minecraft:small_flowers")
+                config.addLootEntry(new LootEntry(lootItem, 1, 1, 80));
+            } else {
+                config.addLootEntry(new LootEntry(lootItem, 1, 1, 80));
+            }
+        } else {
+            config.addLootEntry(new LootEntry("minecraft:honeycomb", 1, 1, 80));
+        }
+
+        LOGGER.debug("Auto-generated behavior config for species: {} (loot: {})", speciesId, lootItem);
+        return config;
     }
 
     /**

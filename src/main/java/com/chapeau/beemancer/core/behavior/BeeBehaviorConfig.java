@@ -8,6 +8,7 @@ package com.chapeau.beemancer.core.behavior;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -167,6 +168,7 @@ public class BeeBehaviorConfig {
 
     /**
      * Genere le loot de pollinisation base sur les probabilites.
+     * Supporte les items directs (ex: "minecraft:honeycomb") et les tags (ex: "#minecraft:small_flowers").
      */
     public List<ItemStack> rollPollinationLoot(RandomSource random) {
         List<ItemStack> result = new ArrayList<>();
@@ -174,25 +176,60 @@ public class BeeBehaviorConfig {
         for (LootEntry entry : pollinationLoot) {
             // Roll pour la chance
             if (random.nextInt(100) < entry.chance()) {
-                // Resoudre l'item
-                ResourceLocation itemId = ResourceLocation.tryParse(entry.itemId());
-                if (itemId != null) {
-                    Item item = BuiltInRegistries.ITEM.get(itemId);
-                    if (item != null) {
-                        // Quantite aleatoire entre min et max
-                        int qty = entry.minQty();
-                        if (entry.maxQty() > entry.minQty()) {
-                            qty += random.nextInt(entry.maxQty() - entry.minQty() + 1);
-                        }
-                        if (qty > 0) {
-                            result.add(new ItemStack(item, qty));
-                        }
-                    }
+                ItemStack rolled = resolveItemFromEntry(entry, random);
+                if (!rolled.isEmpty()) {
+                    result.add(rolled);
                 }
             }
         }
 
         return result;
+    }
+
+    /**
+     * Resout un ItemStack depuis une LootEntry.
+     * Si l'itemId commence par "#", pioche un item aleatoire parmi le tag.
+     */
+    private ItemStack resolveItemFromEntry(LootEntry entry, RandomSource random) {
+        String id = entry.itemId();
+
+        if (id.startsWith("#")) {
+            // Tag-based loot: choisir un item aleatoire parmi le tag
+            String tagPath = id.substring(1); // Retirer le "#"
+            ResourceLocation tagId = ResourceLocation.tryParse(tagPath);
+            if (tagId == null) return ItemStack.EMPTY;
+
+            TagKey<Item> tag = TagKey.create(BuiltInRegistries.ITEM.key(), tagId);
+            List<Item> tagItems = new ArrayList<>();
+            BuiltInRegistries.ITEM.getTag(tag).ifPresent(holders -> {
+                holders.forEach(holder -> tagItems.add(holder.value()));
+            });
+
+            if (tagItems.isEmpty()) return ItemStack.EMPTY;
+
+            Item chosen = tagItems.get(random.nextInt(tagItems.size()));
+            int qty = entry.minQty();
+            if (entry.maxQty() > entry.minQty()) {
+                qty += random.nextInt(entry.maxQty() - entry.minQty() + 1);
+            }
+            return qty > 0 ? new ItemStack(chosen, qty) : ItemStack.EMPTY;
+        }
+
+        // Item direct
+        ResourceLocation itemId = ResourceLocation.tryParse(id);
+        if (itemId != null) {
+            Item item = BuiltInRegistries.ITEM.get(itemId);
+            if (item != null) {
+                int qty = entry.minQty();
+                if (entry.maxQty() > entry.minQty()) {
+                    qty += random.nextInt(entry.maxQty() - entry.minQty() + 1);
+                }
+                if (qty > 0) {
+                    return new ItemStack(item, qty);
+                }
+            }
+        }
+        return ItemStack.EMPTY;
     }
 
     /**
