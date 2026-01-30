@@ -122,8 +122,9 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     private final Map<UUID, BlockPos> playersViewing = new HashMap<>();
 
     // === Delivery System ===
-    private static final int MAX_ACTIVE_BEES = 4;
+    private static final int MAX_ACTIVE_BEES = 2;
     private static final int DELIVERY_PROCESS_INTERVAL = 10;
+    private static final int MAX_COMPLETED_IDS = 100;
 
     private final ItemStackHandler essenceSlots = new ItemStackHandler(4) {
         @Override
@@ -140,6 +141,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     private final Queue<DeliveryTask> deliveryQueue = new LinkedList<>();
     private final List<DeliveryTask> activeTasks = new ArrayList<>();
+    private final Set<UUID> completedTaskIds = new LinkedHashSet<>();
     private int deliveryTimer = 0;
 
     // Honey consumption
@@ -212,9 +214,10 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             // Tuer toutes les abeilles de livraison liées à ce controller
             killAllDeliveryBees();
 
-            // Vider la queue et les tâches actives
+            // Vider la queue, les tâches actives et les IDs complétées
             deliveryQueue.clear();
             activeTasks.clear();
+            completedTaskIds.clear();
 
             setFormedOnStructureBlocks(false);
             multiblockRotation = 0;
@@ -1027,28 +1030,83 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     /**
      * Traite la queue de livraison: spawne des bees pour les tâches en attente.
      * Appelé depuis serverTick().
+     *
+     * Logique:
+     * 1. Nettoyer les tâches terminées (enregistrer dans completedTaskIds)
+     * 2. Trier la queue par priorité
+     * 3. Pour chaque slot d'abeille libre:
+     *    a. Trouver la première tâche QUEUED dont les dépendances sont satisfaites
+     *    b. Si la quantité dépasse la capacité de l'abeille, splitter la tâche
+     *    c. Spawner l'abeille
      */
     private void processDeliveryQueue() {
         if (level == null || level.isClientSide() || !storageFormed || honeyDepleted) return;
 
-        // Nettoyer les tâches terminées ou échouées
-        activeTasks.removeIf(task ->
-            task.getState() == DeliveryTask.DeliveryState.COMPLETED ||
-            task.getState() == DeliveryTask.DeliveryState.FAILED);
+        // Nettoyer les tâches terminées ou échouées → enregistrer les IDs complétées
+        activeTasks.removeIf(task -> {
+            if (task.getState() == DeliveryTask.DeliveryState.COMPLETED) {
+                completedTaskIds.add(task.getTaskId());
+                return true;
+            }
+            if (task.getState() == DeliveryTask.DeliveryState.FAILED) {
+                return true;
+            }
+            return false;
+        });
 
-        // Spawner de nouvelles bees si possible
-        while (!deliveryQueue.isEmpty() && activeTasks.size() < MAX_ACTIVE_BEES) {
-            DeliveryTask task = deliveryQueue.poll();
-            if (task == null) break;
-
-            boolean spawned = spawnDeliveryBee(task);
-            if (spawned) {
-                task.setState(DeliveryTask.DeliveryState.FLYING);
-                activeTasks.add(task);
-            } else {
-                task.setState(DeliveryTask.DeliveryState.FAILED);
+        // Limiter la taille de completedTaskIds pour éviter fuite mémoire
+        if (completedTaskIds.size() > MAX_COMPLETED_IDS) {
+            Iterator<UUID> it = completedTaskIds.iterator();
+            while (completedTaskIds.size() > MAX_COMPLETED_IDS / 2 && it.hasNext()) {
+                it.next();
+                it.remove();
             }
         }
+
+        // Trier la queue par priorité (lower = higher priority)
+        List<DeliveryTask> sortedQueue = new ArrayList<>(deliveryQueue);
+        sortedQueue.sort(Comparator.comparingInt(DeliveryTask::getPriority));
+        deliveryQueue.clear();
+        deliveryQueue.addAll(sortedQueue);
+
+        // Spawner des abeilles pour les tâches éligibles
+        while (activeTasks.size() < MAX_ACTIVE_BEES) {
+            DeliveryTask eligible = findEligibleTask();
+            if (eligible == null) break;
+
+            deliveryQueue.remove(eligible);
+
+            // Splitter si la quantité dépasse la capacité de l'abeille
+            int beeCapacity = eligible.getTemplate().getMaxStackSize();
+            if (eligible.getCount() > beeCapacity) {
+                DeliveryTask remaining = eligible.splitRemaining(beeCapacity);
+                if (remaining != null) {
+                    deliveryQueue.add(remaining);
+                }
+            }
+
+            boolean spawned = spawnDeliveryBee(eligible);
+            if (spawned) {
+                eligible.setState(DeliveryTask.DeliveryState.FLYING);
+                eligible.setAssignedBeeId(null);
+                activeTasks.add(eligible);
+            } else {
+                eligible.setState(DeliveryTask.DeliveryState.FAILED);
+            }
+        }
+    }
+
+    /**
+     * Trouve la première tâche éligible dans la queue (QUEUED + dépendances satisfaites).
+     */
+    private DeliveryTask findEligibleTask() {
+        for (DeliveryTask task : deliveryQueue) {
+            if (task.getState() == DeliveryTask.DeliveryState.QUEUED
+                && task.isReady(completedTaskIds)) {
+                return task;
+            }
+        }
+        return null;
     }
 
     /**
@@ -1182,9 +1240,19 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         for (DeliveryTask task : activeTasks) {
             // Remettre les tâches actives en queue (bees seront re-spawned)
             task.setState(DeliveryTask.DeliveryState.QUEUED);
+            task.setAssignedBeeId(null);
             queueTag.add(task.save(registries));
         }
         tag.put("DeliveryQueue", queueTag);
+
+        // Completed task IDs (pour vérification dépendances cross-save)
+        ListTag completedTag = new ListTag();
+        for (UUID id : completedTaskIds) {
+            CompoundTag idTag = new CompoundTag();
+            idTag.putUUID("Id", id);
+            completedTag.add(idTag);
+        }
+        tag.put("CompletedTaskIds", completedTag);
     }
 
     @Override
@@ -1233,6 +1301,15 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             for (int i = 0; i < queueTag.size(); i++) {
                 DeliveryTask task = DeliveryTask.load(queueTag.getCompound(i), registries);
                 deliveryQueue.add(task);
+            }
+        }
+
+        // Completed task IDs
+        completedTaskIds.clear();
+        if (tag.contains("CompletedTaskIds")) {
+            ListTag completedTag = tag.getList("CompletedTaskIds", Tag.TAG_COMPOUND);
+            for (int i = 0; i < completedTag.size(); i++) {
+                completedTaskIds.add(completedTag.getCompound(i).getUUID("Id"));
             }
         }
     }
