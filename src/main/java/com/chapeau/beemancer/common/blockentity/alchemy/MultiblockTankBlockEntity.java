@@ -6,6 +6,7 @@
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
+import com.chapeau.beemancer.common.block.alchemy.MultiblockTankBlock;
 import com.chapeau.beemancer.common.menu.alchemy.MultiblockTankMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
@@ -337,9 +338,21 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         // Validate cuboid shape
         validCuboid = validateCuboid();
 
-        // Sync all connected blocks to client
+        // Update blockstate connection properties on all connected blocks
         if (level != null) {
+            boolean formed = validCuboid && connectedBlocks.size() > 1;
             for (BlockPos pos : connectedBlocks) {
+                BlockState currentState = level.getBlockState(pos);
+                if (!(currentState.getBlock() instanceof MultiblockTankBlock)) continue;
+
+                BlockState newState = currentState;
+                for (Direction dir : Direction.values()) {
+                    boolean connected = formed && connectedBlocks.contains(pos.relative(dir));
+                    newState = newState.setValue(MultiblockTankBlock.getPropertyForDirection(dir), connected);
+                }
+                if (newState != currentState) {
+                    level.setBlock(pos, newState, 3);
+                }
                 level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
             }
         }

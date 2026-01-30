@@ -12,19 +12,19 @@
       "apply": { "model": "beemancer:block/alchemy/multiblock_tank/frame_top" }
     },
     {
-      "when": { "OR": [{"north": "false"}, {"west": "false"}] },
+      "when": { "north": "false", "west": "false" },
       "apply": { "model": "beemancer:block/alchemy/multiblock_tank/pillar_nw" }
     },
     {
-      "when": { "OR": [{"north": "false"}, {"east": "false"}] },
+      "when": { "north": "false", "east": "false" },
       "apply": { "model": "beemancer:block/alchemy/multiblock_tank/pillar_ne" }
     },
     {
-      "when": { "OR": [{"south": "false"}, {"west": "false"}] },
+      "when": { "south": "false", "west": "false" },
       "apply": { "model": "beemancer:block/alchemy/multiblock_tank/pillar_sw" }
     },
     {
-      "when": { "OR": [{"south": "false"}, {"east": "false"}] },
+      "when": { "south": "false", "east": "false" },
       "apply": { "model": "beemancer:block/alchemy/multiblock_tank/pillar_se" }
     },
     {

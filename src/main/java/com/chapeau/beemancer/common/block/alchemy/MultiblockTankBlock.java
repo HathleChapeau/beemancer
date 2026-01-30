@@ -30,9 +30,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -69,27 +67,7 @@ public class MultiblockTankBlock extends BaseEntityBlock {
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN);
     }
 
-    @Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
-                                     LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        boolean connected = neighborState.getBlock() instanceof MultiblockTankBlock;
-        return state.setValue(getPropertyForDirection(direction), connected);
-    }
-
-    @Override
-    public BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext context) {
-        BlockGetter level = context.getLevel();
-        BlockPos pos = context.getClickedPos();
-        return this.defaultBlockState()
-            .setValue(NORTH, level.getBlockState(pos.north()).getBlock() instanceof MultiblockTankBlock)
-            .setValue(SOUTH, level.getBlockState(pos.south()).getBlock() instanceof MultiblockTankBlock)
-            .setValue(EAST, level.getBlockState(pos.east()).getBlock() instanceof MultiblockTankBlock)
-            .setValue(WEST, level.getBlockState(pos.west()).getBlock() instanceof MultiblockTankBlock)
-            .setValue(UP, level.getBlockState(pos.above()).getBlock() instanceof MultiblockTankBlock)
-            .setValue(DOWN, level.getBlockState(pos.below()).getBlock() instanceof MultiblockTankBlock);
-    }
-
-    private static BooleanProperty getPropertyForDirection(Direction dir) {
+    public static BooleanProperty getPropertyForDirection(Direction dir) {
         return switch (dir) {
             case NORTH -> NORTH;
             case SOUTH -> SOUTH;
