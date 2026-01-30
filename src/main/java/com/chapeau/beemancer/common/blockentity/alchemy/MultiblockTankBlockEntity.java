@@ -56,6 +56,8 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
 
     // Deferred validation: onLoad() ne peut pas valider car les voisins ne sont pas encore charges
     private boolean needsLoadValidation = false;
+    private int loadValidationDelay = 0;
+    private static final int LOAD_VALIDATION_WAIT_TICKS = 10;
 
     // Bucket slot (only used by master for GUI)
     protected final ItemStackHandler bucketSlot = new ItemStackHandler(1) {
@@ -406,21 +408,33 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         super.onLoad();
         if (level != null && !level.isClientSide()) {
             needsLoadValidation = true;
+            loadValidationDelay = 0;
         }
     }
 
     private void performLoadValidation() {
         if (level == null) return;
 
-        // Skip validation if any connected block's chunk is not loaded yet
+        // Wait several ticks for all BEs to finish loading (chunks + deserialization)
+        loadValidationDelay++;
+        if (loadValidationDelay < LOAD_VALIDATION_WAIT_TICKS) return;
+
+        // Additional check: ensure all relevant BEs exist
         if (isMaster()) {
             for (BlockPos blockPos : connectedBlocks) {
-                if (!level.isLoaded(blockPos)) {
-                    return; // Retry next tick
+                if (blockPos.equals(worldPosition)) continue;
+                if (!level.isLoaded(blockPos)) return;
+                BlockEntity be = level.getBlockEntity(blockPos);
+                if (be == null && loadValidationDelay < LOAD_VALIDATION_WAIT_TICKS * 10) {
+                    return; // BE not deserialized yet, retry
                 }
             }
-        } else if (masterPos != null && !level.isLoaded(masterPos)) {
-            return; // Retry next tick
+        } else if (masterPos != null) {
+            if (!level.isLoaded(masterPos)) return;
+            BlockEntity be = level.getBlockEntity(masterPos);
+            if (be == null && loadValidationDelay < LOAD_VALIDATION_WAIT_TICKS * 10) {
+                return; // Master BE not deserialized yet, retry
+            }
         }
 
         needsLoadValidation = false;
@@ -431,6 +445,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                 BlockEntity be = level.getBlockEntity(blockPos);
                 if (be instanceof MultiblockTankBlockEntity slave) {
                     slave.masterPos = worldPosition;
+                    slave.needsLoadValidation = false;
                     slave.setChanged();
                 } else {
                     connectedBlocks.remove(blockPos);
@@ -440,7 +455,9 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         } else {
             if (masterPos != null) {
                 BlockEntity be = level.getBlockEntity(masterPos);
-                if (!(be instanceof MultiblockTankBlockEntity)) {
+                if (be instanceof MultiblockTankBlockEntity master && master.isMaster()) {
+                    // Master exists and is valid, nothing to do
+                } else {
                     initializeAsMaster();
                     recalculateStructure();
                     setChanged();

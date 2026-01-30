@@ -24,11 +24,8 @@ package com.chapeau.beemancer.common.block.alchemy;
 
 import com.chapeau.beemancer.common.blockentity.alchemy.CrankBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.ManualCentrifugeBlockEntity;
-import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -41,7 +38,6 @@ import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -121,19 +117,9 @@ public class CrankBlock extends BaseEntityBlock {
                         level.setBlock(belowPos, belowState.setValue(ManualCentrifugeBlock.SPINNING, true), 3);
                     }
 
-                    // Sound
-                    if (level.random.nextInt(10) == 0) {
-                        level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.5f, 1.2f);
-                    }
-
-                    // Particles on the centrifuge
-                    if (level instanceof ServerLevel serverLevel) {
-                        double offsetX = level.random.nextDouble() * 0.6 - 0.3;
-                        double offsetZ = level.random.nextDouble() * 0.6 - 0.3;
-                        serverLevel.sendParticles(ParticleTypes.FALLING_HONEY,
-                            belowPos.getX() + 0.5 + offsetX, belowPos.getY() + 0.8,
-                            belowPos.getZ() + 0.5 + offsetZ,
-                            1, 0, 0, 0, 0);
+                    // Wood hit sound
+                    if (level.random.nextInt(6) == 0) {
+                        level.playSound(null, pos, SoundEvents.WOOD_HIT, SoundSource.BLOCKS, 0.6f, 1.0f);
                     }
 
                     return InteractionResult.SUCCESS;
