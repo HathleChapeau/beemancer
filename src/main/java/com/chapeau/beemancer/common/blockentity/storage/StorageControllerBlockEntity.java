@@ -198,6 +198,13 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     public void onMultiblockBroken() {
         storageFormed = false;
         if (level != null && !level.isClientSide()) {
+            // Tuer toutes les abeilles de livraison liées à ce controller
+            killAllDeliveryBees();
+
+            // Vider la queue et les tâches actives
+            deliveryQueue.clear();
+            activeTasks.clear();
+
             setFormedOnStructureBlocks(false);
             multiblockRotation = 0;
             if (level.getBlockState(worldPosition).hasProperty(StorageControllerBlock.FORMED)) {
@@ -205,6 +212,23 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             }
             MultiblockEvents.unregisterController(worldPosition);
             setChanged();
+        }
+    }
+
+    /**
+     * Tue toutes les DeliveryBeeEntity liées à ce controller.
+     * Recherche dans un rayon de MAX_RANGE autour du controller.
+     */
+    private void killAllDeliveryBees() {
+        if (level == null || level.isClientSide()) return;
+
+        List<DeliveryBeeEntity> bees = level.getEntitiesOfClass(
+            DeliveryBeeEntity.class,
+            new net.minecraft.world.phys.AABB(worldPosition).inflate(MAX_RANGE),
+            bee -> worldPosition.equals(bee.getControllerPos())
+        );
+        for (DeliveryBeeEntity bee : bees) {
+            bee.discard();
         }
     }
 
@@ -1017,6 +1041,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     @Override
     public void setRemoved() {
         super.setRemoved();
+        killAllDeliveryBees();
         MultiblockEvents.unregisterController(worldPosition);
     }
 

@@ -32,7 +32,7 @@ import com.chapeau.beemancer.client.renderer.debug.HiveDebugRenderer;
 import com.chapeau.beemancer.client.model.RideableBeeModel;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.RideableBeeRenderer;
-import net.minecraft.client.renderer.entity.BeeRenderer;
+import com.chapeau.beemancer.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.beemancer.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
@@ -105,7 +105,7 @@ public class ClientSetup {
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(BeemancerEntities.MAGIC_BEE.get(), MagicBeeRenderer::new);
         event.registerEntityRenderer(BeemancerEntities.RIDEABLE_BEE.get(), RideableBeeRenderer::new);
-        event.registerEntityRenderer(BeemancerEntities.DELIVERY_BEE.get(), BeeRenderer::new);
+        event.registerEntityRenderer(BeemancerEntities.DELIVERY_BEE.get(), DeliveryBeeRenderer::new);
 
         // Block Entity Renderers
         event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_CONTROLLER.get(),
