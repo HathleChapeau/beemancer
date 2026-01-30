@@ -1,7 +1,136 @@
 {
-  "parent": "minecraft:block/cube_column",
+  "parent": "minecraft:block/block",
+  "render_type": "translucent",
   "textures": {
-    "end": "beemancer:block/alchemy/multiblock_tank_top",
-    "side": "beemancer:block/alchemy/multiblock_tank_side"
-  }
+    "frame": "beemancer:block/honeyed_stone",
+    "glass": "beemancer:block/honeyed_glass",
+    "pillar": "beemancer:block/honeyed_plank",
+    "particle": "beemancer:block/honeyed_glass"
+  },
+  "elements": [
+    {
+      "name": "Frame Bottom",
+      "from": [0, 0, 0],
+      "to": [16, 2, 16],
+      "faces": {
+        "north": {"texture": "#frame", "uv": [0, 14, 16, 16]},
+        "east": {"texture": "#frame", "uv": [0, 14, 16, 16]},
+        "south": {"texture": "#frame", "uv": [0, 14, 16, 16]},
+        "west": {"texture": "#frame", "uv": [0, 14, 16, 16]},
+        "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#frame", "uv": [0, 0, 16, 16], "cullface": "down"}
+      }
+    },
+    {
+      "name": "Frame Top",
+      "from": [0, 14, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": {"texture": "#frame", "uv": [0, 0, 16, 2]},
+        "east": {"texture": "#frame", "uv": [0, 0, 16, 2]},
+        "south": {"texture": "#frame", "uv": [0, 0, 16, 2]},
+        "west": {"texture": "#frame", "uv": [0, 0, 16, 2]},
+        "up": {"texture": "#frame", "uv": [0, 0, 16, 16], "cullface": "up"},
+        "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Pillar NW",
+      "from": [0, 0, 0],
+      "to": [2, 16, 2],
+      "faces": {
+        "north": {"texture": "#pillar", "uv": [14, 0, 16, 16]},
+        "east": {"texture": "#pillar", "uv": [14, 0, 16, 16]},
+        "south": {"texture": "#pillar", "uv": [0, 0, 2, 16]},
+        "west": {"texture": "#pillar", "uv": [0, 0, 2, 16]}
+      }
+    },
+    {
+      "name": "Pillar NE",
+      "from": [14, 0, 0],
+      "to": [16, 16, 2],
+      "faces": {
+        "north": {"texture": "#pillar", "uv": [0, 0, 2, 16]},
+        "east": {"texture": "#pillar", "uv": [0, 0, 2, 16]},
+        "south": {"texture": "#pillar", "uv": [14, 0, 16, 16]},
+        "west": {"texture": "#pillar", "uv": [14, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Pillar SW",
+      "from": [0, 0, 14],
+      "to": [2, 16, 16],
+      "faces": {
+        "north": {"texture": "#pillar", "uv": [14, 0, 16, 16]},
+        "east": {"texture": "#pillar", "uv": [0, 0, 2, 16]},
+        "south": {"texture": "#pillar", "uv": [0, 0, 2, 16]},
+        "west": {"texture": "#pillar", "uv": [14, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Pillar SE",
+      "from": [14, 0, 14],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": {"texture": "#pillar", "uv": [0, 0, 2, 16]},
+        "east": {"texture": "#pillar", "uv": [14, 0, 16, 16]},
+        "south": {"texture": "#pillar", "uv": [14, 0, 16, 16]},
+        "west": {"texture": "#pillar", "uv": [0, 0, 2, 16]}
+      }
+    },
+    {
+      "name": "Glass North",
+      "from": [2, 2, 0],
+      "to": [14, 14, 1],
+      "faces": {
+        "north": {"texture": "#glass", "uv": [2, 2, 14, 14]},
+        "south": {"texture": "#glass", "uv": [2, 2, 14, 14]}
+      }
+    },
+    {
+      "name": "Glass South",
+      "from": [2, 2, 15],
+      "to": [14, 14, 16],
+      "faces": {
+        "north": {"texture": "#glass", "uv": [2, 2, 14, 14]},
+        "south": {"texture": "#glass", "uv": [2, 2, 14, 14]}
+      }
+    },
+    {
+      "name": "Glass East",
+      "from": [15, 2, 2],
+      "to": [16, 14, 14],
+      "faces": {
+        "east": {"texture": "#glass", "uv": [2, 2, 14, 14]},
+        "west": {"texture": "#glass", "uv": [2, 2, 14, 14]}
+      }
+    },
+    {
+      "name": "Glass West",
+      "from": [0, 2, 2],
+      "to": [1, 14, 14],
+      "faces": {
+        "east": {"texture": "#glass", "uv": [2, 2, 14, 14]},
+        "west": {"texture": "#glass", "uv": [2, 2, 14, 14]}
+      }
+    },
+    {
+      "name": "Glass Up",
+      "from": [2, 15, 2],
+      "to": [14, 16, 14],
+      "faces": {
+        "up": {"texture": "#glass", "uv": [2, 2, 14, 14]},
+        "down": {"texture": "#glass", "uv": [2, 2, 14, 14]}
+      }
+    },
+    {
+      "name": "Glass Down",
+      "from": [2, 0, 2],
+      "to": [14, 1, 14],
+      "faces": {
+        "up": {"texture": "#glass", "uv": [2, 2, 14, 14]},
+        "down": {"texture": "#glass", "uv": [2, 2, 14, 14]}
+      }
+    }
+  ]
 }

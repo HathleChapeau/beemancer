@@ -6,7 +6,6 @@
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
-import com.chapeau.beemancer.common.block.alchemy.MultiblockTankBlock;
 import com.chapeau.beemancer.common.menu.alchemy.MultiblockTankMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
@@ -338,15 +337,9 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         // Validate cuboid shape
         validCuboid = validateCuboid();
 
-        // Mettre a jour le blockstate FORMED sur tous les blocs connectes
-        boolean formed = validCuboid && connectedBlocks.size() > 1;
+        // Sync all connected blocks to client
         if (level != null) {
             for (BlockPos pos : connectedBlocks) {
-                BlockState currentState = level.getBlockState(pos);
-                if (currentState.hasProperty(MultiblockTankBlock.FORMED)
-                    && currentState.getValue(MultiblockTankBlock.FORMED) != formed) {
-                    level.setBlock(pos, currentState.setValue(MultiblockTankBlock.FORMED, formed), 3);
-                }
                 level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
             }
         }
@@ -584,6 +577,32 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     public int[] getClientBoundingBox() {
         if (clientBoundingBox != null) return clientBoundingBox;
         return getBoundingBox();
+    }
+
+    /**
+     * Calcule le ratio de remplissage [0.0-1.0] pour un bloc specifique
+     * selon sa position Y dans le multibloc.
+     */
+    public float getFluidFillRatioForBlock(BlockPos blockPos) {
+        MultiblockTankBlockEntity master = getMaster();
+        if (master == null || master.fluidTank == null || master.fluidTank.isEmpty()) return 0f;
+
+        int[] bb = master.getClientBoundingBox();
+        int minY = bb[1];
+        int maxY = bb[4];
+        int totalHeight = maxY - minY + 1;
+        if (totalHeight <= 0) return 0f;
+
+        float globalFill = (float) master.fluidTank.getFluidAmount() / master.fluidTank.getCapacity();
+        int blockIndex = blockPos.getY() - minY;
+
+        float fillPerBlock = 1.0f / totalHeight;
+        float blockStartFill = blockIndex * fillPerBlock;
+        float blockEndFill = (blockIndex + 1) * fillPerBlock;
+
+        if (globalFill <= blockStartFill) return 0f;
+        if (globalFill >= blockEndFill) return 1f;
+        return (globalFill - blockStartFill) / fillPerBlock;
     }
 
     @Override

@@ -73,7 +73,7 @@ Philosophie:
 │ client/gui/hud/RideableBeeDebugHud  │ HUD debug rideable bee (haut droit)    │
 │ client/renderer/debug/PipeDebugRenderer│ Texte debug au-dessus des pipes     │
 │ client/renderer/debug/HiveDebugRenderer│ Cooldowns au-dessus des ruches      │
-│ client/renderer/util/FluidCubeRenderer │ Rendu fluide 6 faces (3 renderers) │
+│ client/renderer/util/FluidCubeRenderer │ Rendu fluide avec sélection faces  │
 │ client/renderer/util/DebugRenderHelper │ Lignes et cubes debug partagés     │
 │ common/block/alchemy/AbstractPipeBlock │ Base commune pipes (Item+Honey)    │
 │ common/menu/BeemancerMenu              │ Base menus (player inv/hotbar)     │
@@ -214,7 +214,7 @@ LISTE DES FEATURES:
 
 → Multiblock Fluid Tank
   Fichier: Structure/feature_multiblock_tank.txt
-  Description: Tank extensible par blocs adjacents avec validation cuboïde
+  Description: Tank extensible style honey tank avec connexions visuelles et rendu fluide par bloc
 
 → Hive Multiblock
   Fichier: Structure/feature_hive_multiblock.txt

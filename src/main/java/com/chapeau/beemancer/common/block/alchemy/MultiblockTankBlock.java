@@ -1,7 +1,21 @@
 /**
  * ============================================================
  * [MultiblockTankBlock.java]
- * Description: Bloc tank multi-bloc avec forme cuboide requise
+ * Description: Bloc tank multi-bloc avec connexions visuelles entre tanks adjacents
+ * ============================================================
+ *
+ * DÉPENDANCES:
+ * ------------------------------------------------------------
+ * | Dépendance                    | Raison                  | Utilisation                    |
+ * |-------------------------------|------------------------|--------------------------------|
+ * | MultiblockTankBlockEntity     | BlockEntity associé    | Logique multibloc              |
+ * | BeemancerBlockEntities        | Registre               | Ticker                         |
+ * ------------------------------------------------------------
+ *
+ * UTILISÉ PAR:
+ * - MultiblockTankBlockEntity.java (référence bloc)
+ * - MultiblockTankRenderer.java (lecture blockstate connexions)
+ *
  * ============================================================
  */
 package com.chapeau.beemancer.common.block.alchemy;
@@ -10,12 +24,15 @@ import com.chapeau.beemancer.common.blockentity.alchemy.MultiblockTankBlockEntit
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -31,16 +48,56 @@ import javax.annotation.Nullable;
 
 public class MultiblockTankBlock extends BaseEntityBlock {
     public static final MapCodec<MultiblockTankBlock> CODEC = simpleCodec(MultiblockTankBlock::new);
-    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+
+    public static final BooleanProperty NORTH = BooleanProperty.create("north");
+    public static final BooleanProperty SOUTH = BooleanProperty.create("south");
+    public static final BooleanProperty EAST = BooleanProperty.create("east");
+    public static final BooleanProperty WEST = BooleanProperty.create("west");
+    public static final BooleanProperty UP = BooleanProperty.create("up");
+    public static final BooleanProperty DOWN = BooleanProperty.create("down");
 
     public MultiblockTankBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FORMED, false));
+        this.registerDefaultState(this.stateDefinition.any()
+            .setValue(NORTH, false).setValue(SOUTH, false)
+            .setValue(EAST, false).setValue(WEST, false)
+            .setValue(UP, false).setValue(DOWN, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED);
+        builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN);
+    }
+
+    @Override
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
+                                     LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        boolean connected = neighborState.getBlock() instanceof MultiblockTankBlock;
+        return state.setValue(getPropertyForDirection(direction), connected);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext context) {
+        BlockGetter level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        return this.defaultBlockState()
+            .setValue(NORTH, level.getBlockState(pos.north()).getBlock() instanceof MultiblockTankBlock)
+            .setValue(SOUTH, level.getBlockState(pos.south()).getBlock() instanceof MultiblockTankBlock)
+            .setValue(EAST, level.getBlockState(pos.east()).getBlock() instanceof MultiblockTankBlock)
+            .setValue(WEST, level.getBlockState(pos.west()).getBlock() instanceof MultiblockTankBlock)
+            .setValue(UP, level.getBlockState(pos.above()).getBlock() instanceof MultiblockTankBlock)
+            .setValue(DOWN, level.getBlockState(pos.below()).getBlock() instanceof MultiblockTankBlock);
+    }
+
+    private static BooleanProperty getPropertyForDirection(Direction dir) {
+        return switch (dir) {
+            case NORTH -> NORTH;
+            case SOUTH -> SOUTH;
+            case EAST -> EAST;
+            case WEST -> WEST;
+            case UP -> UP;
+            case DOWN -> DOWN;
+        };
     }
 
     @Override
@@ -90,13 +147,11 @@ public class MultiblockTankBlock extends BaseEntityBlock {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof MultiblockTankBlockEntity tank) {
-                // Only open menu if structure is valid
                 if (tank.isValidCuboid()) {
                     serverPlayer.openMenu(tank, buf -> {
                         buf.writeBlockPos(pos);
                     });
                 }
-                // If invalid, do nothing (no GUI access)
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide());

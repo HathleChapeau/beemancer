@@ -1,0 +1,14 @@
+{
+  "parent": "beemancer:block/alchemy/multiblock_tank/base",
+  "elements": [
+    {
+      "name": "Glass West",
+      "from": [0, 2, 2],
+      "to": [1, 14, 14],
+      "faces": {
+        "east": {"texture": "#glass", "uv": [2, 2, 14, 14]},
+        "west": {"texture": "#glass", "uv": [2, 2, 14, 14]}
+      }
+    }
+  ]
+}

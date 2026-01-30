@@ -3,6 +3,47 @@
 ################################################################################
 
 ================================================================================
+2026-01-30 - Multiblock Tank: Apparence Honey Tank + Connexions visuelles
+================================================================================
+
+Refonte visuelle du Multiblock Fluid Tank pour ressembler au Honey Tank
+(cadre + piliers + verre translucide) avec masquage des faces connectées
+et rendu fluide par bloc individuel.
+
+JAVA MODIFIÉS (3):
+- MultiblockTankBlock.java: FORMED remplacé par 6 BooleanProperties (NORTH/SOUTH/
+  EAST/WEST/UP/DOWN), updateShape() pour connexion automatique, getStateForPlacement()
+- MultiblockTankBlockEntity.java: Supprimé MAJ blockstate FORMED dans
+  recalculateStructure(), ajouté getFluidFillRatioForBlock() pour rendu par bloc
+- MultiblockTankRenderer.java: Réécrit — chaque bloc rend son propre fluide selon
+  sa position Y, face culling via propriétés de connexion
+
+JAVA MODIFIÉ (1 utilitaire):
+- FluidCubeRenderer.java: Ajouté surcharge avec 6 booléens de sélection de face
+
+ASSETS CRÉÉS (13 modèles):
+- models/block/alchemy/multiblock_tank/base.json (parent translucent)
+- models/block/alchemy/multiblock_tank/frame_bottom.json (cadre bas)
+- models/block/alchemy/multiblock_tank/frame_top.json (cadre haut)
+- models/block/alchemy/multiblock_tank/pillar_nw.json (pilier NW)
+- models/block/alchemy/multiblock_tank/pillar_ne.json (pilier NE)
+- models/block/alchemy/multiblock_tank/pillar_sw.json (pilier SW)
+- models/block/alchemy/multiblock_tank/pillar_se.json (pilier SE)
+- models/block/alchemy/multiblock_tank/glass_north.json
+- models/block/alchemy/multiblock_tank/glass_south.json
+- models/block/alchemy/multiblock_tank/glass_east.json
+- models/block/alchemy/multiblock_tank/glass_west.json
+- models/block/alchemy/multiblock_tank/glass_up.json
+- models/block/alchemy/multiblock_tank/glass_down.json
+
+ASSETS MODIFIÉS (2):
+- blockstates/multiblock_tank.json: multipart avec conditions de connexion
+- models/block/alchemy/multiblock_tank.json: modèle complet pour item (style honey tank)
+
+ASSETS SUPPRIMÉS (1):
+- models/block/alchemy/multiblock_tank_formed.json
+
+================================================================================
 2026-01-30 - Refactorisation: split des 2 plus gros BlockEntity en managers
 ================================================================================
 

@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/block",
-  "textures": {
-    "particle": "beemancer:block/alchemy/multiblock_tank_side"
-  }
-}
