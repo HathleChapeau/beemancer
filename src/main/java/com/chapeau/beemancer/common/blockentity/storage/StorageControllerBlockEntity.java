@@ -28,13 +28,13 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.common.block.alchemy.HoneyPipeBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
+import com.chapeau.beemancer.common.block.storage.ControllerPipeBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
-import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.ControllerPipeBlockEntity;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageEditModeHandler;
 import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
@@ -75,6 +75,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
@@ -140,6 +142,11 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     private final List<DeliveryTask> activeTasks = new ArrayList<>();
     private int deliveryTimer = 0;
 
+    // Honey consumption
+    private static final int HONEY_CONSUME_INTERVAL = 20; // 1 seconde
+    private int honeyConsumeTimer = 0;
+    private boolean honeyDepleted = false;
+
     private final ContainerData dataAccess = new ContainerData() {
         @Override
         public int get(int index) {
@@ -148,6 +155,8 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
                 case 1 -> ControllerStats.getSearchSpeed(essenceSlots);
                 case 2 -> ControllerStats.getCraftSpeed(essenceSlots);
                 case 3 -> ControllerStats.getQuantity(essenceSlots);
+                case 4 -> ControllerStats.getHoneyConsumption(essenceSlots, registeredChests.size());
+                case 5 -> ControllerStats.getHoneyEfficiency(essenceSlots);
                 default -> 0;
             };
         }
@@ -156,7 +165,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         public void set(int index, int value) { }
 
         @Override
-        public int getCount() { return 4; }
+        public int getCount() { return 6; }
     };
 
     public StorageControllerBlockEntity(BlockPos pos, BlockState blockState) {
@@ -279,13 +288,20 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
                 spreadZ = rotatedOffset.getZ() * 3.0f / 16.0f;
             }
 
-            // Pipes: formed state stocké dans le BlockEntity (pas dans le blockstate)
-            if (state.getBlock() instanceof HoneyPipeBlock) {
+            // Controller Pipes: formed state via blockstate + BlockEntity pour rotation/spread
+            if (state.getBlock() instanceof ControllerPipeBlock) {
                 BlockEntity be = level.getBlockEntity(blockPos);
-                if (be instanceof HoneyPipeBlockEntity pipeBe) {
-                    int rotation = formed ? computeBlockRotation(originalOffset, state) : 0;
-                    pipeBe.setFormed(formed, rotation);
-                    pipeBe.setFormedSpread(spreadX, spreadZ);
+                if (be instanceof ControllerPipeBlockEntity pipeBe) {
+                    if (formed) {
+                        int rotation = computeBlockRotation(originalOffset, state);
+                        pipeBe.setFormed(rotation, spreadX, spreadZ);
+                    } else {
+                        pipeBe.clearFormed();
+                    }
+                }
+                // Set FORMED in blockstate
+                if (state.getValue(ControllerPipeBlock.FORMED) != formed) {
+                    level.setBlock(blockPos, state.setValue(ControllerPipeBlock.FORMED, formed), 3);
                 }
                 continue;
             }
@@ -341,7 +357,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
      * @return La rotation à appliquer sur le bloc (0-3 pour la plupart, 0-7 pour les pipes)
      */
     private int computeBlockRotation(Vec3i originalOffset, BlockState state) {
-        if (state.getBlock() instanceof HoneyPipeBlock) {
+        if (state.getBlock() instanceof ControllerPipeBlock) {
             // Le modèle de pipe formed a un coude vers +X, ouverture en bas.
             // Pipe à x=-1: coude vers +X = rotation de base 0
             // Pipe à x=+1: coude vers -X = rotation de base 2
@@ -780,6 +796,15 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             be.needsSync = false;
         }
 
+        // Honey consumption (only when formed)
+        if (be.storageFormed) {
+            be.honeyConsumeTimer++;
+            if (be.honeyConsumeTimer >= HONEY_CONSUME_INTERVAL) {
+                be.honeyConsumeTimer = 0;
+                be.consumeHoney();
+            }
+        }
+
         // Delivery system
         be.deliveryTimer++;
         if (be.deliveryTimer >= DELIVERY_PROCESS_INTERVAL) {
@@ -963,11 +988,40 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     }
 
     /**
+     * Consomme du miel depuis les 2 HoneyReservoirs du multibloc.
+     * Appelé toutes les secondes (20 ticks) quand le multibloc est formé.
+     * Si pas assez de miel: honeyDepleted = true → bloque les livraisons.
+     */
+    private void consumeHoney() {
+        if (level == null || level.isClientSide()) return;
+
+        int consumptionPerSecond = ControllerStats.getHoneyConsumption(essenceSlots, registeredChests.size());
+        int remaining = consumptionPerSecond;
+
+        // Trouver les 2 reservoirs du multibloc (offsets y=-1 et y=+1, x=0, z=0 dans le pattern)
+        // Les reservoirs sont aux offsets (0,-1,0) et (0,1,0) dans le pattern original
+        for (int yOff : new int[]{-1, 1}) {
+            if (remaining <= 0) break;
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(new Vec3i(0, yOff, 0), multiblockRotation);
+            BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
+            BlockEntity be = level.getBlockEntity(reservoirPos);
+            if (be instanceof HoneyReservoirBlockEntity reservoir) {
+                FluidStack drained = reservoir.drain(remaining, IFluidHandler.FluidAction.EXECUTE);
+                if (!drained.isEmpty()) {
+                    remaining -= drained.getAmount();
+                }
+            }
+        }
+
+        honeyDepleted = remaining > 0;
+    }
+
+    /**
      * Traite la queue de livraison: spawne des bees pour les tâches en attente.
      * Appelé depuis serverTick().
      */
     private void processDeliveryQueue() {
-        if (level == null || level.isClientSide() || !storageFormed) return;
+        if (level == null || level.isClientSide() || !storageFormed || honeyDepleted) return;
 
         // Nettoyer les tâches terminées ou échouées
         activeTasks.removeIf(task ->

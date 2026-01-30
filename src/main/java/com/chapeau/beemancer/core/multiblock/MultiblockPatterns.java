@@ -247,18 +247,18 @@ public class MultiblockPatterns {
     //
     // Vue de face (Nord vers le joueur):
     //
-    // Étage 3 (Y+1):  [P][S][P]    P=Honey Pipe, S=Honeyed Stone
+    // Étage 3 (Y+1):  [P][H][P]    P=Controller Pipe, H=Controlled Hive
     // Étage 2 (Y+0):  [R][C][R]    R=Reservoir, C=Controller, T=Terminal (devant)
-    // Étage 1 (Y-1):  [P][S][P]
+    // Étage 1 (Y-1):  [P][S][P]    S=Honeyed Stone
     //
     // Terminal à z=-1 (devant le controller)
 
     public static final MultiblockPattern STORAGE_CONTROLLER = register(
         MultiblockPattern.builder("storage_controller")
-            // Étage 1 (Y-1): Pipes + Honeyed Stone en ligne (z=0)
-            .add(-1, -1, 0, block(BeemancerBlocks.HONEY_PIPE))        // Pipe gauche
+            // Étage 1 (Y-1): Controller Pipes + Honeyed Stone en ligne (z=0)
+            .add(-1, -1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))   // Pipe gauche
             .add(0, -1, 0, block(BeemancerBlocks.HONEYED_STONE))      // Pierre centre
-            .add(1, -1, 0, block(BeemancerBlocks.HONEY_PIPE))         // Pipe droite
+            .add(1, -1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))    // Pipe droite
             // Positions air autour de l'étage 1
             .add(-1, -1, -1, air())
             .add(0, -1, -1, air())
@@ -279,10 +279,10 @@ public class MultiblockPatterns {
             .add(0, 0, 1, air())
             .add(1, 0, 1, air())
 
-            // Étage 3 (Y+1): Pipes + Honeyed Stone en ligne (z=0)
-            .add(-1, 1, 0, block(BeemancerBlocks.HONEY_PIPE))         // Pipe gauche
-            .add(0, 1, 0, block(BeemancerBlocks.CONTROLLED_HIVE))      // Controlled Hive
-            .add(1, 1, 0, block(BeemancerBlocks.HONEY_PIPE))          // Pipe droite
+            // Étage 3 (Y+1): Controller Pipes + Controlled Hive en ligne (z=0)
+            .add(-1, 1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))    // Pipe gauche
+            .add(0, 1, 0, block(BeemancerBlocks.CONTROLLED_HIVE))     // Controlled Hive
+            .add(1, 1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))     // Pipe droite
             // Positions air autour de l'étage 3
             .add(-1, 1, -1, air())
             .add(0, 1, -1, air())

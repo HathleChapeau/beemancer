@@ -25,7 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 /**
- * Calcule les 4 stats du Storage Controller à partir des 4 slots essence.
+ * Calcule les stats du Storage Controller à partir des 4 slots essence.
  *
  * Chaque slot accepte n'importe quelle essence. Chaque essence dans chaque slot
  * contribue au bonus du type correspondant. Mettre 2 essences du même type
@@ -34,11 +34,17 @@ import net.neoforged.neoforge.items.ItemStackHandler;
  * Formule bonus par essence: essenceLevel * 0.25f
  *   LESSER=+25%, NORMAL=+50%, GREATER=+75%, PERFECT=+100%
  *
- * Stats:
+ * Stats (delivery):
  *   SPEED    → Vitesse de vol (base 100%)
  *   FORAGING → Vitesse de recherche (base 100%)
  *   TOLERANCE → Vitesse de craft (base 100%)
  *   DROP     → Quantité par déplacement (base 32)
+ *
+ * Stats (honey):
+ *   Consumption = (base + chestCost + essenceCost) * (1 - efficiency)
+ *     base = 20 mB/s, chestCost = chests * 10 mB/s
+ *     essenceCost = sum(level * 10) pour DROP/SPEED/FORAGING/TOLERANCE
+ *   Efficiency = insomnia level * 10% (PERFECT = 40%)
  */
 public class ControllerStats {
 
@@ -46,6 +52,12 @@ public class ControllerStats {
     public static final int BASE_FORAGING = 100;
     public static final int BASE_TOLERANCE = 100;
     public static final int BASE_DROP = 32;
+
+    // Honey consumption constants (mB per second)
+    public static final int BASE_HONEY_CONSUMPTION = 20;
+    public static final int HONEY_PER_CHEST = 10;
+    public static final int HONEY_PER_ESSENCE_LEVEL = 10;
+    public static final int EFFICIENCY_PER_INSOMNIA_LEVEL = 10;
 
     /**
      * Calcule le pourcentage de vitesse de vol (100 = 100%).
@@ -123,5 +135,61 @@ public class ControllerStats {
      */
     public static float getCraftSpeedMultiplier(ItemStackHandler essenceSlots) {
         return 1.0f + getTotalBonus(essenceSlots, EssenceItem.EssenceType.TOLERANCE);
+    }
+
+    // === Honey Consumption ===
+
+    /**
+     * Calcule la consommation effective de miel en mB/s.
+     * Formula: (base + chests * perChest + essenceCost) * (1 - efficiency/100)
+     */
+    public static int getHoneyConsumption(ItemStackHandler essenceSlots, int chestCount) {
+        int base = BASE_HONEY_CONSUMPTION;
+        int chestCost = chestCount * HONEY_PER_CHEST;
+        int essenceCost = getEssenceConsumptionCost(essenceSlots);
+        int total = base + chestCost + essenceCost;
+
+        int efficiency = getHoneyEfficiency(essenceSlots);
+        return Math.max(1, Math.round(total * (1.0f - efficiency / 100.0f)));
+    }
+
+    /**
+     * Calcule le pourcentage d'efficacite du miel (reduction de consommation).
+     * Seule l'essence INSOMNIA contribue: level * 10%.
+     * LESSER=10%, NORMAL=20%, GREATER=30%, PERFECT=40%.
+     * Plusieurs insomnia se cumulent.
+     */
+    public static int getHoneyEfficiency(ItemStackHandler essenceSlots) {
+        int total = 0;
+        for (int i = 0; i < essenceSlots.getSlots(); i++) {
+            ItemStack stack = essenceSlots.getStackInSlot(i);
+            if (stack.isEmpty() || !(stack.getItem() instanceof EssenceItem essence)) {
+                continue;
+            }
+            if (essence.getEssenceType() == EssenceItem.EssenceType.INSOMNIA) {
+                total += essence.getLevelValue() * EFFICIENCY_PER_INSOMNIA_LEVEL;
+            }
+        }
+        return Math.min(total, 100);
+    }
+
+    /**
+     * Somme le cout en miel des essences non-temps (DROP, SPEED, FORAGING, TOLERANCE).
+     * Chaque essence contribue: level * HONEY_PER_ESSENCE_LEVEL mB/s.
+     */
+    private static int getEssenceConsumptionCost(ItemStackHandler essenceSlots) {
+        int cost = 0;
+        for (int i = 0; i < essenceSlots.getSlots(); i++) {
+            ItemStack stack = essenceSlots.getStackInSlot(i);
+            if (stack.isEmpty() || !(stack.getItem() instanceof EssenceItem essence)) {
+                continue;
+            }
+            EssenceItem.EssenceType type = essence.getEssenceType();
+            if (type == EssenceItem.EssenceType.DROP || type == EssenceItem.EssenceType.SPEED
+                || type == EssenceItem.EssenceType.FORAGING || type == EssenceItem.EssenceType.TOLERANCE) {
+                cost += essence.getLevelValue() * HONEY_PER_ESSENCE_LEVEL;
+            }
+        }
+        return cost;
     }
 }

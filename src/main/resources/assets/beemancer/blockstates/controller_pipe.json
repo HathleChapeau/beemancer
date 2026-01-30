@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "formed=false": { "model": "beemancer:block/storage/controller_pipe" },
+    "formed=true": { "model": "beemancer:block/storage/controller_pipe" }
+  }
+}

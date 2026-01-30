@@ -1,15 +1,15 @@
 /**
  * ============================================================
- * [HoneyPipeRenderer.java]
- * Description: Renderer pour le modèle formed des honey pipes (multibloc storage)
+ * [ControllerPipeRenderer.java]
+ * Description: Renderer pour le conduit formé du multibloc Storage Controller
  * ============================================================
  *
  * DÉPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance                    | Raison                  | Utilisation           |
- * |-------------------------------|------------------------|-----------------------|
- * | HoneyPipeBlockEntity         | Données formed          | isFormed(), rotation  |
- * | BlockEntityRenderer          | Interface renderer      | Rendu custom          |
+ * | Dépendance                     | Raison                  | Utilisation                    |
+ * |--------------------------------|------------------------|---------------------------------|
+ * | ControllerPipeBlockEntity     | Données formed          | rotation, spread               |
+ * | BlockEntityRenderer           | Interface renderer      | Rendu custom                   |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -20,7 +20,8 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
+import com.chapeau.beemancer.common.block.storage.ControllerPipeBlock;
+import com.chapeau.beemancer.common.blockentity.storage.ControllerPipeBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -38,32 +39,32 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
- * Renderer pour les honey pipes en mode formed (multibloc storage).
- * Quand le pipe est formé, rend le modèle de coude (elbow) avec la rotation appropriée.
+ * Rend le modèle de coude (elbow) quand le controller pipe est formé.
  *
- * Rotations formed_rotation:
+ * formedRotation (0-7):
  * - 0-3: coude vertical vers le bas, Y rotation 0/90/180/270
  * - 4-7: coude vertical vers le haut (x=180 flip), Y rotation 0/90/180/270
  */
-public class HoneyPipeRenderer implements BlockEntityRenderer<HoneyPipeBlockEntity> {
+public class ControllerPipeRenderer implements BlockEntityRenderer<ControllerPipeBlockEntity> {
 
     private final BlockRenderDispatcher blockRenderer;
     private final RandomSource random = RandomSource.create();
 
     public static final ModelResourceLocation FORMED_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "block/pipes/honey_pipe_formed"));
+            Beemancer.MOD_ID, "block/storage/controller_pipe_formed"));
 
-    public HoneyPipeRenderer(BlockEntityRendererProvider.Context context) {
+    public ControllerPipeRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
     }
 
     @Override
-    public void render(HoneyPipeBlockEntity blockEntity, float partialTick,
+    public void render(ControllerPipeBlockEntity blockEntity, float partialTick,
                        PoseStack poseStack, MultiBufferSource bufferSource,
                        int packedLight, int packedOverlay) {
 
-        if (!blockEntity.isFormed()) {
+        BlockState state = blockEntity.getBlockState();
+        if (!state.getValue(ControllerPipeBlock.FORMED)) {
             return;
         }
 
@@ -74,7 +75,6 @@ public class HoneyPipeRenderer implements BlockEntityRenderer<HoneyPipeBlockEnti
         BakedModel formedModel = Minecraft.getInstance().getModelManager()
             .getModel(FORMED_MODEL_LOC);
 
-        BlockState state = blockEntity.getBlockState();
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.solid());
 
         poseStack.pushPose();

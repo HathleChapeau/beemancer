@@ -18,6 +18,7 @@ import com.chapeau.beemancer.common.block.hive.MagicHiveBlock;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlock;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlock;
 import com.chapeau.beemancer.common.block.storage.ControlledHiveBlock;
+import com.chapeau.beemancer.common.block.storage.ControllerPipeBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
 import com.chapeau.beemancer.common.block.storage.StorageTerminalBlock;
@@ -67,6 +68,12 @@ public class BeemancerBlocks {
             () -> new ControlledHiveBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<ControllerPipeBlock> CONTROLLER_PIPE = BLOCKS.register("controller_pipe",
+            () -> new ControllerPipeBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.COPPER)
+                    .noOcclusion()));
 
     // --- BEE MACHINES ---
     public static final DeferredBlock<Block> BEE_CREATOR = BLOCKS.register("bee_creator",

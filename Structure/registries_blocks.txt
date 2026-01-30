@@ -51,6 +51,7 @@
 
 --- STORAGE ---
 | controlled_hive        | ControlledHiveBlock       | Non          | Storage Network |
+| controller_pipe        | ControllerPipeBlock       | Oui          | Storage Network |
 
 --- BEE STATUE ---
 | bee_statue             | BeeStatueBlock            | Oui          | Bee Statue      |

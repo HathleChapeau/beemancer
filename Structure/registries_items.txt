@@ -37,6 +37,7 @@
 
 --- STORAGE ---
 | controlled_hive          | BlockItem        | Storage Network |
+| controller_pipe          | BlockItem        | Storage Network |
 
 --- HONEY ALTAR ---
 | honeyed_stone            | BlockItem        | Honey Altar     |

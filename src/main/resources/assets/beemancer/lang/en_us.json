@@ -7,6 +7,7 @@
   "block.beemancer.storage_controller": "Storage Controller",
   "block.beemancer.storage_terminal": "Storage Terminal",
   "block.beemancer.controlled_hive": "Controlled Hive",
+  "block.beemancer.controller_pipe": "Controller Pipe",
   "block.beemancer.bee_creator": "Bee Creator",
   "block.beemancer.magic_hive": "Magic Hive",
   "block.beemancer.antibreeding_crystal": "Antibreeding Crystal",
@@ -400,6 +401,8 @@
   "gui.beemancer.storage_controller.search_speed": "Search Speed",
   "gui.beemancer.storage_controller.craft_speed": "Craft Speed",
   "gui.beemancer.storage_controller.quantity": "Quantity",
+  "gui.beemancer.storage_controller.honey_consumption": "Honey",
+  "gui.beemancer.storage_controller.honey_efficiency": "Efficiency",
 
   "entity.beemancer.delivery_bee": "Delivery Bee",
 

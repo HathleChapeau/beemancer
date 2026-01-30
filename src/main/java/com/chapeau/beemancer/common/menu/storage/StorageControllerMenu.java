@@ -49,7 +49,7 @@ public class StorageControllerMenu extends AbstractContainerMenu {
     private static final int HOTBAR_END = 40;
 
     public StorageControllerMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
-        this(containerId, playerInv, new ItemStackHandler(4), new SimpleContainerData(4));
+        this(containerId, playerInv, new ItemStackHandler(4), new SimpleContainerData(6));
     }
 
     public StorageControllerMenu(int containerId, Inventory playerInv,
@@ -88,6 +88,8 @@ public class StorageControllerMenu extends AbstractContainerMenu {
     public int getSearchSpeed() { return data.get(1); }
     public int getCraftSpeed() { return data.get(2); }
     public int getQuantity() { return data.get(3); }
+    public int getHoneyConsumption() { return data.get(4); }
+    public int getHoneyEfficiency() { return data.get(5); }
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {

@@ -7,6 +7,7 @@
   "block.beemancer.storage_controller": "Contrôleur de Stockage",
   "block.beemancer.storage_terminal": "Terminal de Stockage",
   "block.beemancer.controlled_hive": "Ruche Contrôlée",
+  "block.beemancer.controller_pipe": "Tuyau de Contrôleur",
   "block.beemancer.bee_creator": "Créateur d'Abeilles",
   "block.beemancer.magic_hive": "Ruche Magique",
   "block.beemancer.antibreeding_crystal": "Cristal Anti-reproduction",
@@ -399,6 +400,8 @@
   "gui.beemancer.storage_controller.search_speed": "Vitesse de recherche",
   "gui.beemancer.storage_controller.craft_speed": "Vitesse de craft",
   "gui.beemancer.storage_controller.quantity": "Quantité",
+  "gui.beemancer.storage_controller.honey_consumption": "Miel",
+  "gui.beemancer.storage_controller.honey_efficiency": "Efficacité",
 
   "entity.beemancer.delivery_bee": "Abeille de livraison",
 
