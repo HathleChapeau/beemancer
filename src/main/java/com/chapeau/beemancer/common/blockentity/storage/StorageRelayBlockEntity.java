@@ -39,6 +39,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 /**
@@ -51,6 +54,7 @@ import java.util.*;
  */
 public class StorageRelayBlockEntity extends BlockEntity implements INetworkNode {
 
+    private static final Logger SAVE_LOG = LoggerFactory.getLogger("Beemancer.SaveDebug");
     public static final int MAX_RANGE = 15;
 
     private final StorageChestManager chestManager = new StorageChestManager(this);
@@ -179,6 +183,8 @@ public class StorageRelayBlockEntity extends BlockEntity implements INetworkNode
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        long startTime = System.nanoTime();
+        SAVE_LOG.info("[Relay@{}] saveAdditional START (already saving={})", worldPosition, isSaving);
         isSaving = true;
         try {
             super.saveAdditional(tag, registries);
@@ -199,6 +205,8 @@ public class StorageRelayBlockEntity extends BlockEntity implements INetworkNode
             }
         } finally {
             isSaving = false;
+            long elapsed = (System.nanoTime() - startTime) / 1_000_000;
+            SAVE_LOG.info("[Relay@{}] saveAdditional END ({}ms)", worldPosition, elapsed);
         }
     }
 
@@ -227,7 +235,10 @@ public class StorageRelayBlockEntity extends BlockEntity implements INetworkNode
     // === Sync Client ===
 
     void syncToClient() {
-        if (isSaving) return;
+        if (isSaving) {
+            SAVE_LOG.warn("[Relay@{}] syncToClient BLOCKED (isSaving=true)", worldPosition);
+            return;
+        }
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
