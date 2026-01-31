@@ -336,32 +336,30 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         StorageControllerBlockEntity controller = getController();
         if (controller == null) return;
 
-        ItemStack stack = depositSlots.getStackInSlot(slot);
-        if (stack.isEmpty()) return;
-
-        // Limiter par la quantité max du controller
-        int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
-        int toDeposit = Math.min(stack.getCount(), maxQuantity);
-
-        // Trouver un coffre avec de l'espace
-        BlockPos chestPos = controller.findSlotForItem(stack);
-        if (chestPos == null) return;
-
-        // Flag pour éviter la récursion
         isDepositing = true;
         try {
-            // Retirer les items du slot de dépôt
-            ItemStack toSend = stack.copy();
-            toSend.setCount(toDeposit);
-            stack.shrink(toDeposit);
-            depositSlots.setStackInSlot(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
+            int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
 
-            // Créer une tâche de livraison (dépôt)
-            DeliveryTask task = new DeliveryTask(
-                toSend, toDeposit, chestPos, worldPosition,
-                DeliveryTask.DeliveryType.DEPOSIT
-            );
-            controller.addDeliveryTask(task);
+            while (true) {
+                ItemStack stack = depositSlots.getStackInSlot(slot);
+                if (stack.isEmpty()) break;
+
+                int toDeposit = Math.min(stack.getCount(), maxQuantity);
+
+                BlockPos chestPos = controller.findSlotForItem(stack);
+                if (chestPos == null) break;
+
+                ItemStack toSend = stack.copy();
+                toSend.setCount(toDeposit);
+                stack.shrink(toDeposit);
+                depositSlots.setStackInSlot(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
+
+                DeliveryTask task = new DeliveryTask(
+                    toSend, toDeposit, chestPos, worldPosition,
+                    DeliveryTask.DeliveryType.DEPOSIT
+                );
+                controller.addDeliveryTask(task);
+            }
         } finally {
             isDepositing = false;
         }
