@@ -15,6 +15,7 @@
  * - DeliveryPhaseGoal.java (livraison polymorphe)
  * - StorageTerminalBlockEntity.java (implements)
  * - ImportInterfaceBlockEntity.java (implements)
+ * - ExportInterfaceBlockEntity.java (implements)
  *
  * ============================================================
  */

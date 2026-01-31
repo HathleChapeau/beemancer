@@ -78,7 +78,7 @@ public class ImportInterfaceBlock extends BaseEntityBlock {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState()
-            .setValue(FACING, context.getNearestLookingDirection().getOpposite());
+            .setValue(FACING, context.getNearestLookingDirection());
     }
 
     @Nullable
