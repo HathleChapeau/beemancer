@@ -245,6 +245,23 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
                 0.8f, 0.2f, 1.0f, 0.8f);
         }
 
+        // Lignes orange vers les interfaces liees (import/export)
+        Set<BlockPos> interfaces = blockEntity.getLinkedInterfaces();
+        for (BlockPos ifacePos : interfaces) {
+            float dx = ifacePos.getX() - controllerPos.getX();
+            float dy = ifacePos.getY() - controllerPos.getY();
+            float dz = ifacePos.getZ() - controllerPos.getZ();
+
+            DebugRenderHelper.drawLine(lineBuffer, matrix,
+                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
+                1.0f, 0.6f, 0.1f, 1.0f);
+
+            DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
+                dx - 0.01f, dy - 0.01f, dz - 0.01f,
+                dx + 1.01f, dy + 1.01f, dz + 1.01f,
+                1.0f, 0.6f, 0.1f, 0.8f);
+        }
+
         poseStack.popPose();
     }
 

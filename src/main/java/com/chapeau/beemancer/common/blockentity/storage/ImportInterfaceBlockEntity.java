@@ -190,6 +190,9 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
             BlockPos chestPos = controller.findChestWithItem(filterItem, 1);
             if (chestPos == null) continue;
 
+            // Loop prevention: ne pas creer de tache si la source est le meme bloc que la destination
+            if (chestPos.equals(getAdjacentPos())) continue;
+
             DeliveryTask task = new DeliveryTask(
                 filterItem, needed, chestPos, worldPosition,
                 DeliveryTask.DeliveryType.EXTRACT
@@ -223,6 +226,9 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
             BlockPos chestPos = controller.findChestWithItem(networkItem, 1);
             if (chestPos == null) continue;
+
+            // Loop prevention: ne pas creer de tache si la source est le meme bloc que la destination
+            if (chestPos.equals(getAdjacentPos())) continue;
 
             DeliveryTask task = new DeliveryTask(
                 networkItem, needed, chestPos, worldPosition,

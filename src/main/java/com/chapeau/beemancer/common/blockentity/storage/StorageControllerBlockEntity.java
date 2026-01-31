@@ -88,6 +88,9 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     // === Terminaux liés (inline — trop petit pour extraire) ===
     private final Set<BlockPos> linkedTerminals = new HashSet<>();
 
+    // === Interfaces liées (import/export) ===
+    private final Set<BlockPos> linkedInterfaces = new HashSet<>();
+
     // === Essence slots ===
     private boolean isSaving = false;
 
@@ -294,6 +297,24 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         return Collections.unmodifiableSet(linkedTerminals);
     }
 
+    // === Gestion des Interfaces (import/export) ===
+
+    public void linkInterface(BlockPos interfacePos) {
+        linkedInterfaces.add(interfacePos);
+        setChanged();
+        syncToClient();
+    }
+
+    public void unlinkInterface(BlockPos interfacePos) {
+        linkedInterfaces.remove(interfacePos);
+        setChanged();
+        syncToClient();
+    }
+
+    public Set<BlockPos> getLinkedInterfaces() {
+        return Collections.unmodifiableSet(linkedInterfaces);
+    }
+
     // === Agrégation Items (délègue) ===
 
     public List<ItemStack> getAggregatedItems() { return itemAggregator.getAggregatedItems(); }
@@ -421,6 +442,15 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             }
             tag.put("LinkedTerminals", terminalsTag);
 
+            // Interfaces liees
+            ListTag interfacesTag = new ListTag();
+            for (BlockPos pos : linkedInterfaces) {
+                CompoundTag posTag = new CompoundTag();
+                posTag.put("Pos", NbtUtils.writeBlockPos(pos));
+                interfacesTag.add(posTag);
+            }
+            tag.put("LinkedInterfaces", interfacesTag);
+
             // Noeuds connectes
             ListTag nodesTag = new ListTag();
             for (BlockPos pos : connectedNodes) {
@@ -457,6 +487,15 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         ListTag terminalsTag = tag.getList("LinkedTerminals", Tag.TAG_COMPOUND);
         for (int i = 0; i < terminalsTag.size(); i++) {
             NbtUtils.readBlockPos(terminalsTag.getCompound(i), "Pos").ifPresent(linkedTerminals::add);
+        }
+
+        // Interfaces liees
+        linkedInterfaces.clear();
+        if (tag.contains("LinkedInterfaces")) {
+            ListTag interfacesTag = tag.getList("LinkedInterfaces", Tag.TAG_COMPOUND);
+            for (int i = 0; i < interfacesTag.size(); i++) {
+                NbtUtils.readBlockPos(interfacesTag.getCompound(i), "Pos").ifPresent(linkedInterfaces::add);
+            }
         }
 
         // Noeuds connectes

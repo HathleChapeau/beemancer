@@ -22,6 +22,7 @@ package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.client.renderer.util.DebugRenderHelper;
 import com.chapeau.beemancer.common.blockentity.storage.INetworkNode;
+import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageRelayBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -35,7 +36,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * Renderer pour le Storage Relay.
@@ -120,7 +121,54 @@ public class StorageRelayRenderer implements BlockEntityRenderer<StorageRelayBlo
                 0.8f, 0.2f, 1.0f, 0.8f);
         }
 
+        // Lignes orange vers les interfaces liees au reseau
+        Set<BlockPos> interfaces = findNetworkInterfaces(blockEntity);
+        for (BlockPos ifacePos : interfaces) {
+            float dx = ifacePos.getX() - relayPos.getX();
+            float dy = ifacePos.getY() - relayPos.getY();
+            float dz = ifacePos.getZ() - relayPos.getZ();
+
+            DebugRenderHelper.drawLine(lineBuffer, matrix,
+                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
+                1.0f, 0.6f, 0.1f, 1.0f);
+
+            DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
+                dx - 0.01f, dy - 0.01f, dz - 0.01f,
+                dx + 1.01f, dy + 1.01f, dz + 1.01f,
+                1.0f, 0.6f, 0.1f, 0.8f);
+        }
+
         poseStack.popPose();
+    }
+
+    /**
+     * Trouve les interfaces liees au reseau en remontant au controller via BFS.
+     */
+    private Set<BlockPos> findNetworkInterfaces(StorageRelayBlockEntity relay) {
+        if (relay.getNodeLevel() == null) return Collections.emptySet();
+
+        Set<BlockPos> visited = new HashSet<>();
+        Queue<BlockPos> queue = new LinkedList<>();
+        visited.add(relay.getNodePos());
+        for (BlockPos connected : relay.getConnectedNodes()) {
+            queue.add(connected);
+        }
+        while (!queue.isEmpty()) {
+            BlockPos pos = queue.poll();
+            if (!visited.add(pos)) continue;
+            BlockEntity be = relay.getNodeLevel().getBlockEntity(pos);
+            if (be instanceof StorageControllerBlockEntity controller) {
+                return controller.getLinkedInterfaces();
+            }
+            if (be instanceof INetworkNode node) {
+                for (BlockPos neighbor : node.getConnectedNodes()) {
+                    if (!visited.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+        }
+        return Collections.emptySet();
     }
 
     @Override

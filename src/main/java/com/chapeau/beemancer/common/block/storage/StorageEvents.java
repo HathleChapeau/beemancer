@@ -87,6 +87,11 @@ public class StorageEvents {
                 BlockPos ctrlPos = findControllerInNetwork(node, level);
                 if (ctrlPos != null) {
                     iface.linkToController(ctrlPos);
+                    // Enregistrer l'interface dans le controller pour le rendu en mode edition
+                    BlockEntity ctrlBe = level.getBlockEntity(ctrlPos);
+                    if (ctrlBe instanceof com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity controller) {
+                        controller.linkInterface(clickedPos);
+                    }
                     player.displayClientMessage(
                         Component.translatable("message.beemancer.network_interface.linked_manually"),
                         true);
