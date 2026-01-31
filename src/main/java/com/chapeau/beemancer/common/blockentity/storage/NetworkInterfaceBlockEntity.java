@@ -21,19 +21,23 @@
  */
 package com.chapeau.beemancer.common.blockentity.storage;
 
+import com.chapeau.beemancer.common.menu.storage.NetworkInterfaceMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -60,7 +64,7 @@ import java.util.UUID;
  * - Suivi des taches en cours (pendingTasks)
  * - Scan periodique de l'inventaire adjacent
  */
-public abstract class NetworkInterfaceBlockEntity extends BlockEntity {
+public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements MenuProvider {
 
     public enum FilterMode {
         ITEM,
@@ -80,6 +84,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity {
     protected final Map<String, UUID> pendingTasks = new HashMap<>();
     protected boolean hasAdjacentGui = false;
     protected int scanTimer = 0;
+    private int guiCheckTimer = 0;
 
     public NetworkInterfaceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -192,6 +197,26 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity {
         return hasAdjacentGui;
     }
 
+    public boolean isImport() {
+        return this instanceof ImportInterfaceBlockEntity;
+    }
+
+    // === MenuProvider ===
+
+    @Override
+    public Component getDisplayName() {
+        if (isImport()) {
+            return Component.translatable("container.beemancer.import_interface");
+        }
+        return Component.translatable("container.beemancer.export_interface");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
+        return new NetworkInterfaceMenu(containerId, playerInv, this);
+    }
+
     // === Filter Matching ===
 
     /**
@@ -274,9 +299,10 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity {
 
     /**
      * Retourne la position du bloc adjacent (inventaire cible).
+     * L'inventaire est derriere l'interface (opposite du facing, car le facing pointe vers le joueur).
      */
     public BlockPos getAdjacentPos() {
-        return worldPosition.relative(getFacing());
+        return worldPosition.relative(getFacing().getOpposite());
     }
 
     /**
@@ -336,9 +362,11 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity {
         if (level == null || level.isClientSide()) return;
 
         scanTimer++;
+        guiCheckTimer++;
 
-        // Update hasAdjacentGui periodiquement
-        if (scanTimer % 100 == 0) {
+        // Update hasAdjacentGui toutes les 100 ticks (~5 sec)
+        if (guiCheckTimer >= 100) {
+            guiCheckTimer = 0;
             boolean hadGui = hasAdjacentGui;
             BlockEntity adjacentBe = level.getBlockEntity(getAdjacentPos());
             hasAdjacentGui = adjacentBe instanceof net.minecraft.world.MenuProvider;
@@ -391,6 +419,17 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity {
             tag.putIntArray("SelectedSlots", selectedSlots.stream().mapToInt(Integer::intValue).toArray());
         }
 
+        if (!pendingTasks.isEmpty()) {
+            ListTag tasksTag = new ListTag();
+            for (Map.Entry<String, UUID> entry : pendingTasks.entrySet()) {
+                CompoundTag taskEntry = new CompoundTag();
+                taskEntry.putString("Key", entry.getKey());
+                taskEntry.putUUID("TaskId", entry.getValue());
+                tasksTag.add(taskEntry);
+            }
+            tag.put("PendingTasks", tasksTag);
+        }
+
         saveExtra(tag, registries);
     }
 
@@ -427,6 +466,15 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity {
         if (tag.contains("SelectedSlots")) {
             for (int s : tag.getIntArray("SelectedSlots")) {
                 selectedSlots.add(s);
+            }
+        }
+
+        pendingTasks.clear();
+        if (tag.contains("PendingTasks")) {
+            ListTag tasksTag = tag.getList("PendingTasks", Tag.TAG_COMPOUND);
+            for (int i = 0; i < tasksTag.size(); i++) {
+                CompoundTag taskEntry = tasksTag.getCompound(i);
+                pendingTasks.put(taskEntry.getString("Key"), taskEntry.getUUID("TaskId"));
             }
         }
 

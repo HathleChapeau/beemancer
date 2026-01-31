@@ -17,6 +17,7 @@ import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
 import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
 import com.chapeau.beemancer.client.gui.screen.alchemy.*;
+import com.chapeau.beemancer.client.gui.screen.storage.NetworkInterfaceScreen;
 import com.chapeau.beemancer.client.gui.screen.storage.StorageControllerScreen;
 import com.chapeau.beemancer.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.beemancer.client.renderer.BuildingWandPreviewRenderer;
@@ -91,6 +92,7 @@ public class ClientSetup {
         event.register(BeemancerMenus.STORAGE_CRATE.get(), StorageCrateScreen::new);
         event.register(BeemancerMenus.STORAGE_TERMINAL.get(), StorageTerminalScreen::new);
         event.register(BeemancerMenus.STORAGE_CONTROLLER.get(), StorageControllerScreen::new);
+        event.register(BeemancerMenus.NETWORK_INTERFACE.get(), NetworkInterfaceScreen::new);
         event.register(BeemancerMenus.BEE_CREATOR.get(), BeeCreatorScreen::new);
         event.register(BeemancerMenus.MAGIC_HIVE.get(), MagicHiveScreen::new);
         event.register(BeemancerMenus.INCUBATOR.get(), IncubatorScreen::new);

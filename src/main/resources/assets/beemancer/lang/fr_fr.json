@@ -445,6 +445,8 @@
   "message.beemancer.network_interface.not_linked": "Non lié à un contrôleur",
   "message.beemancer.network_interface.linked": "Lié au contrôleur en (%d, %d, %d)",
   "message.beemancer.network_interface.linked_manually": "Interface liée au contrôleur !",
+  "container.beemancer.import_interface": "Interface d'Import",
+  "container.beemancer.export_interface": "Interface d'Export",
 
   "block.beemancer.honeyed_stone": "Pierre Miellée",
   "block.beemancer.honeyed_stone_stair": "Escalier en Pierre Miellée",

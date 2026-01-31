@@ -25,7 +25,6 @@ import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -105,18 +104,9 @@ public class ImportInterfaceBlock extends BaseEntityBlock {
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof ImportInterfaceBlockEntity iface)) return InteractionResult.PASS;
 
-        if (!iface.isLinked()) {
-            player.displayClientMessage(
-                Component.translatable("message.beemancer.network_interface.not_linked"), true);
-            return InteractionResult.SUCCESS;
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.openMenu(iface, iface.getBlockPos());
         }
-
-        // Ouvrir le GUI (Phase 2)
-        player.displayClientMessage(
-            Component.translatable("message.beemancer.network_interface.linked",
-                iface.getControllerPos().getX(),
-                iface.getControllerPos().getY(),
-                iface.getControllerPos().getZ()), true);
         return InteractionResult.SUCCESS;
     }
 

@@ -69,16 +69,11 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
         ItemStack remaining = items.copy();
         int[] slots = getOperableSlots(adjacent);
 
-        // Essayer d'inserer dans les slots operables
+        // Phase 1: merger dans les stacks existants du meme type
         for (int slot : slots) {
             if (remaining.isEmpty()) break;
-
             ItemStack existing = adjacent.getItem(slot);
-            if (existing.isEmpty()) {
-                int toPlace = Math.min(remaining.getCount(), remaining.getMaxStackSize());
-                adjacent.setItem(slot, remaining.copyWithCount(toPlace));
-                remaining.shrink(toPlace);
-            } else if (ItemStack.isSameItemSameComponents(existing, remaining)) {
+            if (!existing.isEmpty() && ItemStack.isSameItemSameComponents(existing, remaining)) {
                 int space = existing.getMaxStackSize() - existing.getCount();
                 int toTransfer = Math.min(space, remaining.getCount());
                 if (toTransfer > 0) {
@@ -88,7 +83,17 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
             }
         }
 
-        if (!remaining.equals(items)) {
+        // Phase 2: remplir les slots vides
+        for (int slot : slots) {
+            if (remaining.isEmpty()) break;
+            if (adjacent.getItem(slot).isEmpty()) {
+                int toPlace = Math.min(remaining.getCount(), remaining.getMaxStackSize());
+                adjacent.setItem(slot, remaining.copyWithCount(toPlace));
+                remaining.shrink(toPlace);
+            }
+        }
+
+        if (remaining.getCount() != items.getCount()) {
             adjacent.setChanged();
         }
 
