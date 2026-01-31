@@ -75,6 +75,37 @@ public class AdjacentGuiOverlayRenderer {
         });
     }
 
+    /**
+     * Bloque les clics souris dans la zone noire de l'overlay.
+     * ScreenEvent.MouseButtonPressed.Pre est cancellable — si on cancel,
+     * le clic ne parvient jamais au container screen.
+     */
+    @SubscribeEvent
+    public static void onMouseClick(ScreenEvent.MouseButtonPressed.Pre event) {
+        if (!NetworkInterfaceScreen.openedFromDebugButton) return;
+        if (event.getScreen() instanceof NetworkInterfaceScreen) return;
+        if (!(event.getScreen() instanceof AbstractContainerScreen<?>)) return;
+
+        int screenHeight = event.getScreen().height;
+        int overlayTop = screenHeight / 2 + 20;
+        if (event.getMouseY() >= overlayTop) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onMouseRelease(ScreenEvent.MouseButtonReleased.Pre event) {
+        if (!NetworkInterfaceScreen.openedFromDebugButton) return;
+        if (event.getScreen() instanceof NetworkInterfaceScreen) return;
+        if (!(event.getScreen() instanceof AbstractContainerScreen<?>)) return;
+
+        int screenHeight = event.getScreen().height;
+        int overlayTop = screenHeight / 2 + 20;
+        if (event.getMouseY() >= overlayTop) {
+            event.setCanceled(true);
+        }
+    }
+
     @SubscribeEvent
     public static void onScreenClosing(ScreenEvent.Closing event) {
         if (NetworkInterfaceScreen.openedFromDebugButton) {
