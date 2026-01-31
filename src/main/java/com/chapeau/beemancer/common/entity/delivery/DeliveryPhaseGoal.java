@@ -24,6 +24,7 @@ import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.IDeliveryEndpoint;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -323,24 +324,64 @@ public class DeliveryPhaseGoal extends Goal {
     }
 
     /**
-     * Livraison au retour: insere les items dans le terminal (EXTRACT)
-     * ou confirme le depot (DEPOSIT).
+     * Livraison au terminal: insere les items dans un IDeliveryEndpoint (import interface,
+     * terminal) ou directement dans un Container (coffre du reseau pour export).
      */
     private void performDelivery() {
         Level level = bee.level();
         if (level.isClientSide()) return;
 
-        if (bee.getDeliveryType() == DeliveryTask.DeliveryType.EXTRACT) {
-            BlockEntity terminalBe = level.getBlockEntity(bee.getTerminalPos());
-            if (terminalBe instanceof IDeliveryEndpoint endpoint) {
-                ItemStack remaining = endpoint.receiveDeliveredItems(bee.getCarriedItems());
-                if (!remaining.isEmpty()) {
-                    BlockEntity controllerBe = level.getBlockEntity(bee.getControllerPos());
-                    if (controllerBe instanceof StorageControllerBlockEntity controller) {
-                        controller.depositItemForDelivery(remaining, null);
-                    }
+        ItemStack carried = bee.getCarriedItems();
+        if (carried.isEmpty()) return;
+
+        BlockEntity terminalBe = level.getBlockEntity(bee.getTerminalPos());
+
+        ItemStack remaining;
+        if (terminalBe instanceof IDeliveryEndpoint endpoint) {
+            remaining = endpoint.receiveDeliveredItems(carried);
+        } else if (terminalBe instanceof Container container) {
+            remaining = depositIntoContainer(container, carried);
+        } else {
+            remaining = carried;
+        }
+
+        if (!remaining.isEmpty()) {
+            BlockEntity controllerBe = level.getBlockEntity(bee.getControllerPos());
+            if (controllerBe instanceof StorageControllerBlockEntity controller) {
+                controller.depositItemForDelivery(remaining, null);
+            }
+        }
+
+        bee.setCarriedItems(ItemStack.EMPTY);
+    }
+
+    /**
+     * Depose des items dans un Container (coffre): merge dans stacks existants, puis slots vides.
+     */
+    private ItemStack depositIntoContainer(Container container, ItemStack stack) {
+        ItemStack remaining = stack.copy();
+
+        for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
+            ItemStack existing = container.getItem(i);
+            if (ItemStack.isSameItemSameComponents(existing, remaining)) {
+                int space = existing.getMaxStackSize() - existing.getCount();
+                int toTransfer = Math.min(space, remaining.getCount());
+                if (toTransfer > 0) {
+                    existing.grow(toTransfer);
+                    remaining.shrink(toTransfer);
                 }
             }
         }
+
+        for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
+            if (container.getItem(i).isEmpty()) {
+                int toPlace = Math.min(remaining.getCount(), remaining.getMaxStackSize());
+                container.setItem(i, remaining.copyWithCount(toPlace));
+                remaining.shrink(toPlace);
+            }
+        }
+
+        container.setChanged();
+        return remaining;
     }
 }

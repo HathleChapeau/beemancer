@@ -4,25 +4,25 @@
  * Description: BlockEntity pour le Storage Controller - gère le réseau de coffres et le multibloc
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance               | Raison                  | Utilisation                    |
- * |--------------------------|------------------------|--------------------------------|
- * | StorageChestManager      | Gestion coffres        | Enregistrement et flood fill   |
- * | StorageItemAggregator    | Agrégation items       | Dépôt, extraction, sync        |
- * | StorageDeliveryManager   | Système livraison      | Queue, bees, honey consumption |
- * | StorageMultiblockManager | Multibloc              | Formation, destruction         |
- * | BeemancerBlockEntities   | Type du BlockEntity    | Constructeur                   |
- * | MultiblockController     | Interface multibloc    | Formation/destruction          |
- * | StorageEditModeHandler   | Mode édition           | Start/stop editing             |
+ * | Dependance                    | Raison                | Utilisation                    |
+ * |-------------------------------|----------------------|--------------------------------|
+ * | AbstractNetworkNodeBlockEntity| Base reseau          | Edit mode, nodes, chests, sync |
+ * | StorageNetworkRegistry        | Registre central     | Propriete exclusive des blocs  |
+ * | StorageItemAggregator         | Agregation items     | Depot, extraction, sync        |
+ * | StorageDeliveryManager        | Systeme livraison    | Queue, bees, honey consumption |
+ * | StorageMultiblockManager      | Multibloc            | Formation, destruction         |
+ * | MultiblockController          | Interface multibloc  | Formation/destruction          |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
- * - StorageControllerBlock.java (création et interaction)
- * - StorageTerminalBlockEntity.java (récupération items agrégés)
- * - StorageControllerRenderer.java (rendu mode édition)
- * - DeliveryPhaseGoal.java (extraction/dépôt items)
- * - DeliveryBeeEntity.java (vérification formation)
+ * UTILISE PAR:
+ * - StorageControllerBlock.java (creation et interaction)
+ * - StorageTerminalBlockEntity.java (recuperation items agreges)
+ * - StorageControllerRenderer.java (rendu mode edition)
+ * - DeliveryPhaseGoal.java (extraction/depot items)
+ * - DeliveryBeeEntity.java (verification formation)
+ * - StorageEvents.java (enregistrement reseau)
  *
  * ============================================================
  */
@@ -30,7 +30,6 @@ package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
-import com.chapeau.beemancer.common.block.storage.StorageEditModeHandler;
 import com.chapeau.beemancer.common.menu.storage.StorageControllerMenu;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
@@ -44,16 +43,12 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
@@ -61,39 +56,30 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
- * Unité centrale du réseau de stockage.
- * Délègue aux managers spécialisés:
+ * Unite centrale du reseau de stockage.
+ * Etend AbstractNetworkNodeBlockEntity pour heriter: mode edition, noeuds connectes,
+ * gestion coffres, synchronisation client.
+ *
+ * Delegue aux managers specialises:
  * - StorageMultiblockManager: formation/destruction du multibloc 3x3x3
- * - StorageChestManager: enregistrement coffres (flood fill)
- * - StorageItemAggregator: agrégation, dépôt, extraction d'items
+ * - StorageItemAggregator: agregation, depot, extraction d'items
  * - StorageDeliveryManager: queue de livraison, spawn de bees, honey consumption
+ *
+ * Possede le StorageNetworkRegistry central: registre de tous les blocs du reseau
+ * avec propriete exclusive (un bloc = un proprietaire).
  */
-public class StorageControllerBlockEntity extends BlockEntity implements MultiblockController, MenuProvider, INetworkNode {
+public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
+        implements MultiblockController, MenuProvider {
 
-    public static final int MAX_RANGE = 15;
+    // === Registre central du reseau ===
+    private final StorageNetworkRegistry networkRegistry = new StorageNetworkRegistry();
 
     // === Managers ===
     private final StorageMultiblockManager multiblockManager = new StorageMultiblockManager(this);
-    private final StorageChestManager chestManager = new StorageChestManager(this);
     private final StorageItemAggregator itemAggregator = new StorageItemAggregator(this);
     private final StorageDeliveryManager deliveryManager = new StorageDeliveryManager(this);
 
-    // === Mode édition (inline — trop petit pour extraire) ===
-    private boolean editMode = false;
-    private UUID editingPlayer = null;
-
-    // === Noeuds connectes (relays) ===
-    private final Set<BlockPos> connectedNodes = new HashSet<>();
-
-    // === Terminaux liés (inline — trop petit pour extraire) ===
-    private final Set<BlockPos> linkedTerminals = new HashSet<>();
-
-    // === Interfaces liées (import/export) ===
-    private final Set<BlockPos> linkedInterfaces = new HashSet<>();
-
     // === Essence slots ===
-    private boolean isSaving = false;
-
     private final ItemStackHandler essenceSlots = new ItemStackHandler(4) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -118,7 +104,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
                 case 1 -> ControllerStats.getSearchSpeed(essenceSlots);
                 case 2 -> ControllerStats.getCraftSpeed(essenceSlots);
                 case 3 -> ControllerStats.getQuantity(essenceSlots);
-                case 4 -> ControllerStats.getHoneyConsumption(essenceSlots, chestManager.getRegisteredChestCount());
+                case 4 -> ControllerStats.getHoneyConsumption(essenceSlots, networkRegistry.getChestCount());
                 case 5 -> ControllerStats.getHoneyEfficiency(essenceSlots);
                 default -> 0;
             };
@@ -135,15 +121,18 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         super(BeemancerBlockEntities.STORAGE_CONTROLLER.get(), pos, blockState);
     }
 
+    // === Registry Accessor ===
+
+    public StorageNetworkRegistry getNetworkRegistry() { return networkRegistry; }
+
     // === Manager Accessors ===
 
     public StorageMultiblockManager getMultiblockManager() { return multiblockManager; }
-    public StorageChestManager getChestManager() { return chestManager; }
     public StorageItemAggregator getItemAggregator() { return itemAggregator; }
     public StorageDeliveryManager getDeliveryManager() { return deliveryManager; }
     public ItemStackHandler getEssenceSlots() { return essenceSlots; }
 
-    // === MultiblockController Interface (délègue) ===
+    // === MultiblockController Interface (delegue) ===
 
     @Override
     public MultiblockPattern getPattern() { return multiblockManager.getPattern(); }
@@ -165,157 +154,69 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     public boolean tryFormStorage() { return multiblockManager.tryFormStorage(); }
 
-    // === INetworkNode Interface ===
-
-    @Override
-    public BlockPos getNodePos() { return worldPosition; }
-
-    @Override
-    public net.minecraft.world.level.Level getNodeLevel() { return level; }
-
-    @Override
-    public int getRange() { return MAX_RANGE; }
-
-    @Override
-    public void markDirty() { setChanged(); }
-
-    @Override
-    public void syncNodeToClient() { syncToClient(); }
-
-    @Override
-    public Set<BlockPos> getConnectedNodes() { return Collections.unmodifiableSet(connectedNodes); }
-
-    @Override
-    public void connectNode(BlockPos nodePos) {
-        connectedNodes.add(nodePos);
-        setChanged();
-        syncToClient();
-    }
-
-    @Override
-    public void disconnectNode(BlockPos nodePos) {
-        connectedNodes.remove(nodePos);
-        setChanged();
-        syncToClient();
-    }
-
-    // === Mode Édition ===
-
-    @Override
-    public boolean toggleEditMode(UUID playerId) {
-        if (editMode && editingPlayer != null && editingPlayer.equals(playerId)) {
-            editMode = false;
-            editingPlayer = null;
-            setChanged();
-            syncToClient();
-            return false;
-        } else if (!editMode) {
-            editMode = true;
-            editingPlayer = playerId;
-            setChanged();
-            syncToClient();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public void exitEditMode() {
-        if (editMode) {
-            if (editingPlayer != null) {
-                StorageEditModeHandler.stopEditing(editingPlayer);
-            }
-            editMode = false;
-            editingPlayer = null;
-            setChanged();
-            syncToClient();
-        }
-    }
-
-    @Override
-    public boolean canEdit(UUID playerId) {
-        return editMode && editingPlayer != null && editingPlayer.equals(playerId);
-    }
-
-    @Override
-    public boolean isEditMode() { return editMode; }
-
-    @Nullable
-    @Override
-    public UUID getEditingPlayer() { return editingPlayer; }
-
-    // === Gestion des Coffres (délègue) ===
-
-    public boolean toggleChest(BlockPos chestPos) { return chestManager.toggleChest(chestPos); }
-
-    public Set<BlockPos> getRegisteredChests() { return chestManager.getRegisteredChests(); }
+    // === Reseau: coffres, terminaux, interfaces (via registre) ===
 
     /**
-     * Retourne TOUS les coffres du reseau: ceux du controller + ceux de tous les relays connectes.
-     * Parcours BFS du graphe de noeuds.
+     * Retourne TOUS les coffres du reseau via le registre central.
      */
     public Set<BlockPos> getAllNetworkChests() {
-        Set<BlockPos> allChests = new LinkedHashSet<>(chestManager.getRegisteredChests());
-        if (level == null) return allChests;
-
-        Set<BlockPos> visitedNodes = new HashSet<>();
-        visitedNodes.add(worldPosition);
-        Queue<BlockPos> queue = new LinkedList<>(connectedNodes);
-
-        while (!queue.isEmpty()) {
-            BlockPos nodePos = queue.poll();
-            if (!visitedNodes.add(nodePos)) continue;
-            if (!level.isLoaded(nodePos)) continue;
-
-            BlockEntity be = level.getBlockEntity(nodePos);
-            if (be instanceof INetworkNode node) {
-                allChests.addAll(node.getRegisteredChests());
-                for (BlockPos neighbor : node.getConnectedNodes()) {
-                    if (!visitedNodes.contains(neighbor)) {
-                        queue.add(neighbor);
-                    }
-                }
-            }
-        }
-        return allChests;
+        return networkRegistry.getAllChests();
     }
 
-    // === Gestion des Terminaux ===
+    /**
+     * Retourne tous les terminaux du reseau via le registre central.
+     */
+    public Set<BlockPos> getLinkedTerminals() {
+        return networkRegistry.getAllTerminals();
+    }
 
+    /**
+     * Retourne toutes les interfaces du reseau via le registre central.
+     */
+    public Set<BlockPos> getLinkedInterfaces() {
+        return networkRegistry.getAllInterfaces();
+    }
+
+    /**
+     * Enregistre un terminal dans le registre du reseau.
+     * Delegation vers le registre central avec propriete exclusive.
+     */
     public void linkTerminal(BlockPos terminalPos) {
-        linkedTerminals.add(terminalPos);
+        networkRegistry.registerBlock(terminalPos, worldPosition, StorageNetworkRegistry.NetworkBlockType.TERMINAL);
         setChanged();
+        syncToClient();
     }
 
+    /**
+     * Retire un terminal du registre du reseau.
+     */
     public void unlinkTerminal(BlockPos terminalPos) {
-        linkedTerminals.remove(terminalPos);
+        networkRegistry.unregisterBlock(terminalPos);
         itemAggregator.removeViewersForTerminal(terminalPos);
         setChanged();
+        syncToClient();
     }
 
-    public Set<BlockPos> getLinkedTerminals() {
-        return Collections.unmodifiableSet(linkedTerminals);
-    }
-
-    // === Gestion des Interfaces (import/export) ===
-
+    /**
+     * Enregistre une interface dans le registre du reseau.
+     * Delegation vers le registre central avec propriete exclusive.
+     */
     public void linkInterface(BlockPos interfacePos) {
-        linkedInterfaces.add(interfacePos);
+        networkRegistry.registerBlock(interfacePos, worldPosition, StorageNetworkRegistry.NetworkBlockType.INTERFACE);
         setChanged();
         syncToClient();
     }
 
+    /**
+     * Retire une interface du registre du reseau.
+     */
     public void unlinkInterface(BlockPos interfacePos) {
-        linkedInterfaces.remove(interfacePos);
+        networkRegistry.unregisterBlock(interfacePos);
         setChanged();
         syncToClient();
     }
 
-    public Set<BlockPos> getLinkedInterfaces() {
-        return Collections.unmodifiableSet(linkedInterfaces);
-    }
-
-    // === Agrégation Items (délègue) ===
+    // === Agregation Items (delegue) ===
 
     public List<ItemStack> getAggregatedItems() { return itemAggregator.getAggregatedItems(); }
 
@@ -332,13 +233,18 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     public void removeViewer(UUID playerId) { itemAggregator.removeViewer(playerId); }
 
-    // === Delivery System (délègue) ===
+    // === Delivery System (delegue) ===
 
     public void addDeliveryTask(DeliveryTask task) { deliveryManager.addDeliveryTask(task); }
 
     @Nullable
     public BlockPos findChestWithItem(ItemStack template, int minCount) {
         return deliveryManager.findChestWithItem(template, minCount);
+    }
+
+    @Nullable
+    public BlockPos findChestWithSpace(ItemStack template, int count) {
+        return deliveryManager.findChestWithSpace(template, count);
     }
 
     public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
@@ -351,9 +257,9 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     public boolean isHoneyDepleted() { return deliveryManager.isHoneyDepleted(); }
 
-    public boolean cancelTask(java.util.UUID taskId) { return deliveryManager.cancelTask(taskId); }
+    public boolean cancelTask(UUID taskId) { return deliveryManager.cancelTask(taskId); }
 
-    public java.util.List<com.chapeau.beemancer.common.block.storage.TaskDisplayData> getTaskDisplayData() {
+    public List<com.chapeau.beemancer.common.block.storage.TaskDisplayData> getTaskDisplayData() {
         return deliveryManager.getTaskDisplayData();
     }
 
@@ -367,26 +273,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         }
 
         be.deliveryManager.tickDelivery();
-
-        // Validation mode édition
-        if (be.editMode && be.editingPlayer != null && be.level != null) {
-            var server = be.level.getServer();
-            if (server != null) {
-                var player = server.getPlayerList().getPlayer(be.editingPlayer);
-                if (player == null) {
-                    be.exitEditMode();
-                } else {
-                    double distSqr = player.distanceToSqr(
-                        be.worldPosition.getX() + 0.5,
-                        be.worldPosition.getY() + 0.5,
-                        be.worldPosition.getZ() + 0.5);
-                    if (distSqr > MAX_RANGE * MAX_RANGE) {
-                        be.exitEditMode();
-                    }
-                }
-            }
-        }
-
+        be.tickEditMode();
         be.itemAggregator.cleanupViewers();
     }
 
@@ -428,43 +315,15 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         try {
             super.saveAdditional(tag, registries);
 
-            // Délégation aux managers
+            // Common: edit mode, connected nodes, chests (from abstract base)
+            saveCommon(tag);
+
+            // Registre central du reseau
+            networkRegistry.save(tag);
+
+            // Managers specifiques au controller
             multiblockManager.save(tag);
-            chestManager.save(tag);
             deliveryManager.save(tag, registries);
-
-            // Terminaux liés (inline)
-            ListTag terminalsTag = new ListTag();
-            for (BlockPos pos : linkedTerminals) {
-                CompoundTag posTag = new CompoundTag();
-                posTag.put("Pos", NbtUtils.writeBlockPos(pos));
-                terminalsTag.add(posTag);
-            }
-            tag.put("LinkedTerminals", terminalsTag);
-
-            // Interfaces liees
-            ListTag interfacesTag = new ListTag();
-            for (BlockPos pos : linkedInterfaces) {
-                CompoundTag posTag = new CompoundTag();
-                posTag.put("Pos", NbtUtils.writeBlockPos(pos));
-                interfacesTag.add(posTag);
-            }
-            tag.put("LinkedInterfaces", interfacesTag);
-
-            // Noeuds connectes
-            ListTag nodesTag = new ListTag();
-            for (BlockPos pos : connectedNodes) {
-                CompoundTag posTag = new CompoundTag();
-                posTag.put("Pos", NbtUtils.writeBlockPos(pos));
-                nodesTag.add(posTag);
-            }
-            tag.put("ConnectedNodes", nodesTag);
-
-            // Mode édition (inline)
-            tag.putBoolean("EditMode", editMode);
-            if (editingPlayer != null) {
-                tag.putUUID("EditingPlayer", editingPlayer);
-            }
 
             // Essence slots
             tag.put("EssenceSlots", essenceSlots.serializeNBT(registries));
@@ -477,74 +336,57 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
-        // Délégation aux managers
+        // Common: edit mode, connected nodes, chests (from abstract base)
+        loadCommon(tag);
+
+        // Managers specifiques au controller
         multiblockManager.load(tag);
-        chestManager.load(tag);
         deliveryManager.load(tag, registries);
-
-        // Terminaux liés (inline)
-        linkedTerminals.clear();
-        ListTag terminalsTag = tag.getList("LinkedTerminals", Tag.TAG_COMPOUND);
-        for (int i = 0; i < terminalsTag.size(); i++) {
-            NbtUtils.readBlockPos(terminalsTag.getCompound(i), "Pos").ifPresent(linkedTerminals::add);
-        }
-
-        // Interfaces liees
-        linkedInterfaces.clear();
-        if (tag.contains("LinkedInterfaces")) {
-            ListTag interfacesTag = tag.getList("LinkedInterfaces", Tag.TAG_COMPOUND);
-            for (int i = 0; i < interfacesTag.size(); i++) {
-                NbtUtils.readBlockPos(interfacesTag.getCompound(i), "Pos").ifPresent(linkedInterfaces::add);
-            }
-        }
-
-        // Noeuds connectes
-        connectedNodes.clear();
-        if (tag.contains("ConnectedNodes")) {
-            ListTag nodesTag = tag.getList("ConnectedNodes", Tag.TAG_COMPOUND);
-            for (int i = 0; i < nodesTag.size(); i++) {
-                NbtUtils.readBlockPos(nodesTag.getCompound(i), "Pos").ifPresent(connectedNodes::add);
-            }
-        }
-
-        // Mode édition (inline)
-        editMode = tag.getBoolean("EditMode");
-        if (tag.hasUUID("EditingPlayer")) {
-            editingPlayer = tag.getUUID("EditingPlayer");
-        } else {
-            editingPlayer = null;
-        }
 
         // Essence slots
         if (tag.contains("EssenceSlots")) {
             essenceSlots.deserializeNBT(registries, tag.getCompound("EssenceSlots"));
         }
-    }
 
-    // === Sync Client ===
-
-    void syncToClient() {
-        if (isSaving) return;
-        if (level != null && !level.isClientSide()) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        // Registre central: charger ou migrer depuis l'ancien format
+        if (tag.contains("NetworkRegistry")) {
+            networkRegistry.load(tag);
+        } else {
+            migrateOldNetworkData(tag);
         }
     }
 
-    @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        CompoundTag tag = new CompoundTag();
-        saveAdditional(tag, registries);
-        return tag;
-    }
+    /**
+     * Migration depuis l'ancien format NBT (avant le registre central).
+     * Lit les anciennes listes LinkedTerminals, LinkedInterfaces et les coffres
+     * du chestManager, puis les enregistre dans le registre avec le controller
+     * comme proprietaire.
+     */
+    private void migrateOldNetworkData(CompoundTag tag) {
+        // Migrer les coffres du chestManager vers le registre
+        for (BlockPos chestPos : getChestManager().getRegisteredChests()) {
+            networkRegistry.registerBlock(chestPos, worldPosition,
+                    StorageNetworkRegistry.NetworkBlockType.CHEST);
+        }
 
-    @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
-        loadAdditional(tag, registries);
-    }
+        // Migrer les terminaux depuis l'ancien format
+        if (tag.contains("LinkedTerminals")) {
+            ListTag terminalsTag = tag.getList("LinkedTerminals", Tag.TAG_COMPOUND);
+            for (int i = 0; i < terminalsTag.size(); i++) {
+                NbtUtils.readBlockPos(terminalsTag.getCompound(i), "Pos").ifPresent(pos ->
+                        networkRegistry.registerBlock(pos, worldPosition,
+                                StorageNetworkRegistry.NetworkBlockType.TERMINAL));
+            }
+        }
 
-    @Nullable
-    @Override
-    public Packet<ClientGamePacketListener> getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
+        // Migrer les interfaces depuis l'ancien format
+        if (tag.contains("LinkedInterfaces")) {
+            ListTag interfacesTag = tag.getList("LinkedInterfaces", Tag.TAG_COMPOUND);
+            for (int i = 0; i < interfacesTag.size(); i++) {
+                NbtUtils.readBlockPos(interfacesTag.getCompound(i), "Pos").ifPresent(pos ->
+                        networkRegistry.registerBlock(pos, worldPosition,
+                                StorageNetworkRegistry.NetworkBlockType.INTERFACE));
+            }
+        }
     }
 }

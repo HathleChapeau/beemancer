@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ExportInterfaceBlockEntity.java]
- * Description: Interface d'export - exporte les items de l'inventaire adjacent vers le reseau
+ * Description: Interface d'export - exporte les items de l'inventaire adjacent vers un coffre du reseau
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,7 +9,6 @@
  * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
  * | NetworkInterfaceBlockEntity   | Parent abstrait      | Filtres, controller, scan      |
- * | IDeliveryEndpoint             | Reception livraison  | Abeille depose items ici       |
  * | StorageControllerBlockEntity  | Controller lie       | Taches de livraison, depot     |
  * | ControllerStats               | Quantite max         | Limite par tache               |
  * | InterfaceFilter               | Filtre individuel    | Logique per-filter             |
@@ -17,7 +16,6 @@
  *
  * UTILISE PAR:
  * - ExportInterfaceBlock.java (creation BlockEntity)
- * - DeliveryPhaseGoal.java (livraison polymorphe via IDeliveryEndpoint)
  *
  * ============================================================
  */
@@ -38,7 +36,8 @@ import java.util.Map;
 
 /**
  * Export Interface: scanne l'inventaire adjacent et cree des taches EXTRACT
- * pour qu'une abeille aille physiquement chercher les items et les ramene au reseau.
+ * pour qu'une abeille aille physiquement chercher les items, puis les depose
+ * dans un coffre du reseau ayant de la place.
  *
  * Comportement quantite:
  * - quantite=0: exporter tout
@@ -46,22 +45,13 @@ import java.util.Map;
  *
  * Sans filtre: exporter tous les items des globalSelectedSlots.
  *
- * Implemente IDeliveryEndpoint: quand l'abeille revient avec les items extraits
- * de l'inventaire adjacent, ils sont deposes dans le reseau de stockage.
+ * L'abeille fait le trajet complet:
+ * controller → adjacent (extraction) → controller → coffre destination (depot) → controller
  */
-public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity implements IDeliveryEndpoint {
+public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
 
     public ExportInterfaceBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.EXPORT_INTERFACE.get(), pos, state);
-    }
-
-    // === IDeliveryEndpoint ===
-
-    @Override
-    public ItemStack receiveDeliveredItems(ItemStack items) {
-        StorageControllerBlockEntity controller = getController();
-        if (controller == null) return items;
-        return controller.depositItemForDelivery(items, null);
     }
 
     // === Scan Logic ===
@@ -100,7 +90,8 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
     /**
      * Cree des taches EXTRACT pour chaque type d'item a exporter.
-     * L'abeille ira chercher les items dans l'inventaire adjacent.
+     * L'abeille va a l'inventaire adjacent, prend les items, puis vole
+     * jusqu'au coffre destination dans le reseau pour les deposer.
      *
      * @param filter si non-null, seuls les items matchant ce filtre sont exportes
      * @param keepQty 0=tout exporter, N=garder N items
@@ -108,7 +99,6 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
     private void createExportTasks(Container adjacent, StorageControllerBlockEntity controller,
                                     int[] slots, int keepQty, int maxQuantity,
                                     InterfaceFilter filter) {
-        // Agreger les counts par type d'item
         Map<String, ItemStack> templatesByKey = new LinkedHashMap<>();
         Map<String, Integer> totalCountsByKey = new LinkedHashMap<>();
 
@@ -125,7 +115,6 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
         BlockPos adjacentPos = getAdjacentPos();
 
-        // Pour chaque type d'item, creer une tache EXTRACT
         for (Map.Entry<String, ItemStack> entry : templatesByKey.entrySet()) {
             String key = entry.getKey();
             ItemStack template = entry.getValue();
@@ -138,11 +127,16 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
             int toExport = Math.min(exportable, maxQuantity);
 
-            // EXTRACT: l'abeille va a l'inventaire adjacent, prend les items,
-            // revient au controller, puis livre a cette interface (IDeliveryEndpoint)
-            // qui depose dans le reseau
+            // Trouver un coffre du reseau avec de la place
+            BlockPos destChest = controller.findChestWithSpace(template, toExport);
+            if (destChest == null) continue;
+
+            // Loop prevention: ne pas exporter vers le bloc adjacent lui-meme
+            if (destChest.equals(adjacentPos)) continue;
+
+            // EXTRACT: abeille va a l'adjacent, extrait, puis vole au coffre destination
             DeliveryTask task = new DeliveryTask(
-                template, toExport, adjacentPos, worldPosition,
+                template, toExport, adjacentPos, destChest,
                 DeliveryTask.DeliveryType.EXTRACT
             );
             controller.addDeliveryTask(task);

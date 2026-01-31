@@ -6,11 +6,12 @@
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance                    | Raison                  | Utilisation           |
- * |-------------------------------|------------------------|-----------------------|
- * | StorageRelayBlockEntity      | BlockEntity            | Donnees de rendu      |
- * | DebugRenderHelper            | Rendu lignes/outlines  | drawLine/CubeOutline  |
- * | INetworkNode                 | Interface reseau       | Donnees communes      |
+ * | Dependance                    | Raison                | Utilisation                    |
+ * |-------------------------------|----------------------|--------------------------------|
+ * | StorageRelayBlockEntity       | BlockEntity          | Donnees de rendu               |
+ * | DebugRenderHelper             | Rendu lignes/outlines| drawLine/CubeOutline           |
+ * | INetworkNode                  | Interface reseau     | Donnees communes               |
+ * | StorageNetworkRegistry        | Registre central     | Blocs possedes par ce relay    |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -23,6 +24,7 @@ package com.chapeau.beemancer.client.renderer.block;
 import com.chapeau.beemancer.client.renderer.util.DebugRenderHelper;
 import com.chapeau.beemancer.common.blockentity.storage.INetworkNode;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.StorageNetworkRegistry;
 import com.chapeau.beemancer.common.blockentity.storage.StorageRelayBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -36,7 +38,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  * Renderer pour le Storage Relay.
@@ -44,8 +49,9 @@ import java.util.*;
  * Mode edition:
  * - Outline jaune autour du relay
  * - Sphere de rayon d'action (jaune/orange)
- * - Lignes vertes vers chaque coffre enregistre
- * - Outlines bleus autour des coffres enregistres
+ * - Lignes vertes vers les coffres possedes par ce relay
+ * - Lignes orange vers les interfaces possedees par ce relay
+ * - Lignes cyan vers les terminaux possedes par ce relay
  * - Lignes magenta vers les noeuds connectes
  */
 public class StorageRelayRenderer implements BlockEntityRenderer<StorageRelayBlockEntity> {
@@ -87,65 +93,72 @@ public class StorageRelayRenderer implements BlockEntityRenderer<StorageRelayBlo
 
         BlockPos relayPos = blockEntity.getBlockPos();
 
-        // Lignes et outlines vers les coffres
-        Set<BlockPos> chests = blockEntity.getRegisteredChests();
-        for (BlockPos chestPos : chests) {
-            float dx = chestPos.getX() - relayPos.getX();
-            float dy = chestPos.getY() - relayPos.getY();
-            float dz = chestPos.getZ() - relayPos.getZ();
-
-            DebugRenderHelper.drawLine(lineBuffer, matrix,
-                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
-                0.2f, 1.0f, 0.2f, 1.0f);
-
-            DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
-                dx - 0.02f, dy - 0.02f, dz - 0.02f,
-                dx + 1.02f, dy + 1.02f, dz + 1.02f,
-                0.2f, 0.6f, 1.0f, 1.0f);
-        }
-
         // Lignes magenta vers les noeuds connectes
-        Set<BlockPos> nodes = blockEntity.getConnectedNodes();
-        for (BlockPos nodePos : nodes) {
-            float dx = nodePos.getX() - relayPos.getX();
-            float dy = nodePos.getY() - relayPos.getY();
-            float dz = nodePos.getZ() - relayPos.getZ();
-
-            DebugRenderHelper.drawLine(lineBuffer, matrix,
-                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
-                0.8f, 0.2f, 1.0f, 1.0f);
-
-            DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
-                dx - 0.01f, dy - 0.01f, dz - 0.01f,
-                dx + 1.01f, dy + 1.01f, dz + 1.01f,
-                0.8f, 0.2f, 1.0f, 0.8f);
+        for (BlockPos nodePos : blockEntity.getConnectedNodes()) {
+            renderBlockLink(lineBuffer, matrix, relayPos, nodePos,
+                    0.8f, 0.2f, 1.0f, 1.0f, 0.8f);
         }
 
-        // Lignes orange vers les interfaces liees au reseau
-        Set<BlockPos> interfaces = findNetworkInterfaces(blockEntity);
-        for (BlockPos ifacePos : interfaces) {
-            float dx = ifacePos.getX() - relayPos.getX();
-            float dy = ifacePos.getY() - relayPos.getY();
-            float dz = ifacePos.getZ() - relayPos.getZ();
+        // Afficher les blocs possedes par ce relay depuis le registre central
+        StorageControllerBlockEntity controller = findController(blockEntity);
+        if (controller != null) {
+            StorageNetworkRegistry registry = controller.getNetworkRegistry();
+            Set<BlockPos> ownedBlocks = registry.getBlocksByOwner(relayPos);
 
-            DebugRenderHelper.drawLine(lineBuffer, matrix,
-                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
-                1.0f, 0.6f, 0.1f, 1.0f);
+            for (BlockPos blockPos : ownedBlocks) {
+                StorageNetworkRegistry.NetworkBlockType type = registry.getType(blockPos);
+                if (type == null) continue;
 
-            DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
-                dx - 0.01f, dy - 0.01f, dz - 0.01f,
-                dx + 1.01f, dy + 1.01f, dz + 1.01f,
-                1.0f, 0.6f, 0.1f, 0.8f);
+                switch (type) {
+                    case CHEST -> {
+                        // Vert + outline bleu
+                        float dx = blockPos.getX() - relayPos.getX();
+                        float dy = blockPos.getY() - relayPos.getY();
+                        float dz = blockPos.getZ() - relayPos.getZ();
+                        DebugRenderHelper.drawLine(lineBuffer, matrix,
+                                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
+                                0.2f, 1.0f, 0.2f, 1.0f);
+                        DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
+                                dx - 0.02f, dy - 0.02f, dz - 0.02f,
+                                dx + 1.02f, dy + 1.02f, dz + 1.02f,
+                                0.2f, 0.6f, 1.0f, 1.0f);
+                    }
+                    case INTERFACE -> renderBlockLink(lineBuffer, matrix, relayPos, blockPos,
+                            1.0f, 0.6f, 0.1f, 1.0f, 0.8f);
+                    case TERMINAL -> renderBlockLink(lineBuffer, matrix, relayPos, blockPos,
+                            0.1f, 0.8f, 0.9f, 1.0f, 0.8f);
+                }
+            }
         }
 
         poseStack.popPose();
     }
 
     /**
-     * Trouve les interfaces liees au reseau en remontant au controller via BFS.
+     * Dessine une ligne et un outline vers un bloc du reseau.
      */
-    private Set<BlockPos> findNetworkInterfaces(StorageRelayBlockEntity relay) {
-        if (relay.getNodeLevel() == null) return Collections.emptySet();
+    private void renderBlockLink(VertexConsumer buffer, Matrix4f matrix,
+                                  BlockPos origin, BlockPos target,
+                                  float r, float g, float b, float lineAlpha, float outlineAlpha) {
+        float dx = target.getX() - origin.getX();
+        float dy = target.getY() - origin.getY();
+        float dz = target.getZ() - origin.getZ();
+
+        DebugRenderHelper.drawLine(buffer, matrix,
+                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
+                r, g, b, lineAlpha);
+
+        DebugRenderHelper.drawCubeOutline(buffer, matrix,
+                dx - 0.01f, dy - 0.01f, dz - 0.01f,
+                dx + 1.01f, dy + 1.01f, dz + 1.01f,
+                r, g, b, outlineAlpha);
+    }
+
+    /**
+     * Trouve le controller du reseau via BFS depuis ce relay.
+     */
+    private StorageControllerBlockEntity findController(StorageRelayBlockEntity relay) {
+        if (relay.getNodeLevel() == null) return null;
 
         Set<BlockPos> visited = new HashSet<>();
         Queue<BlockPos> queue = new LinkedList<>();
@@ -158,7 +171,7 @@ public class StorageRelayRenderer implements BlockEntityRenderer<StorageRelayBlo
             if (!visited.add(pos)) continue;
             BlockEntity be = relay.getNodeLevel().getBlockEntity(pos);
             if (be instanceof StorageControllerBlockEntity controller) {
-                return controller.getLinkedInterfaces();
+                return controller;
             }
             if (be instanceof INetworkNode node) {
                 for (BlockPos neighbor : node.getConnectedNodes()) {
@@ -168,7 +181,7 @@ public class StorageRelayRenderer implements BlockEntityRenderer<StorageRelayBlo
                 }
             }
         }
-        return Collections.emptySet();
+        return null;
     }
 
     @Override

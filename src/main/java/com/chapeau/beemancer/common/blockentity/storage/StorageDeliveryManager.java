@@ -206,6 +206,33 @@ public class StorageDeliveryManager {
     }
 
     /**
+     * Trouve un coffre du reseau qui a de la place pour l'item donne.
+     * @return la position du coffre, ou null si aucun n'a de place
+     */
+    @Nullable
+    public BlockPos findChestWithSpace(ItemStack template, int count) {
+        if (parent.getLevel() == null || template.isEmpty()) return null;
+
+        for (BlockPos chestPos : parent.getAllNetworkChests()) {
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
+            if (be instanceof Container container) {
+                int available = 0;
+                for (int i = 0; i < container.getContainerSize(); i++) {
+                    ItemStack existing = container.getItem(i);
+                    if (existing.isEmpty()) {
+                        available += template.getMaxStackSize();
+                    } else if (ItemStack.isSameItemSameComponents(existing, template)) {
+                        available += existing.getMaxStackSize() - existing.getCount();
+                    }
+                    if (available >= count) return chestPos;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Extrait un item d'un coffre spécifique pour une livraison.
      */
     public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
@@ -447,11 +474,14 @@ public class StorageDeliveryManager {
             bee.setWaypoints(relayPath, returnPath);
         }
 
-        // Calculer les waypoints terminaux pour les taches EXTRACT avec terminal distant
-        if (task.getType() == DeliveryTask.DeliveryType.EXTRACT
-                && task.getTerminalPos() != null
+        // Calculer les waypoints terminaux pour les taches avec terminal distant
+        if (task.getTerminalPos() != null
                 && !task.getTerminalPos().equals(parent.getBlockPos())) {
-            List<BlockPos> terminalPath = findPathToPosition(task.getTerminalPos());
+            // Utiliser findPathToChest si le terminal est un coffre enregistre, sinon findPathToPosition
+            List<BlockPos> terminalPath = findPathToChest(task.getTerminalPos());
+            if (terminalPath.isEmpty()) {
+                terminalPath = findPathToPosition(task.getTerminalPos());
+            }
             bee.setTerminalWaypoints(terminalPath);
         }
 

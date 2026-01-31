@@ -222,44 +222,29 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
             1.0f, 0.8f, 0.2f, 0.4f);
 
         BlockPos controllerPos = blockEntity.getBlockPos();
-        Set<BlockPos> chests = blockEntity.getRegisteredChests();
 
+        // Lignes vertes + outlines bleus vers TOUS les coffres du reseau
+        Set<BlockPos> chests = blockEntity.getAllNetworkChests();
         for (BlockPos chestPos : chests) {
             renderLineToChest(lineBuffer, matrix, controllerPos, chestPos);
         }
 
         // Lignes magenta vers les noeuds connectes (relays)
-        Set<BlockPos> nodes = blockEntity.getConnectedNodes();
-        for (BlockPos nodePos : nodes) {
-            float dx = nodePos.getX() - controllerPos.getX();
-            float dy = nodePos.getY() - controllerPos.getY();
-            float dz = nodePos.getZ() - controllerPos.getZ();
-
-            DebugRenderHelper.drawLine(lineBuffer, matrix,
-                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
-                0.8f, 0.2f, 1.0f, 1.0f);
-
-            DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
-                dx - 0.01f, dy - 0.01f, dz - 0.01f,
-                dx + 1.01f, dy + 1.01f, dz + 1.01f,
-                0.8f, 0.2f, 1.0f, 0.8f);
+        for (BlockPos nodePos : blockEntity.getConnectedNodes()) {
+            renderBlockLink(lineBuffer, matrix, controllerPos, nodePos,
+                    0.8f, 0.2f, 1.0f, 1.0f, 0.8f);
         }
 
         // Lignes orange vers les interfaces liees (import/export)
-        Set<BlockPos> interfaces = blockEntity.getLinkedInterfaces();
-        for (BlockPos ifacePos : interfaces) {
-            float dx = ifacePos.getX() - controllerPos.getX();
-            float dy = ifacePos.getY() - controllerPos.getY();
-            float dz = ifacePos.getZ() - controllerPos.getZ();
+        for (BlockPos ifacePos : blockEntity.getLinkedInterfaces()) {
+            renderBlockLink(lineBuffer, matrix, controllerPos, ifacePos,
+                    1.0f, 0.6f, 0.1f, 1.0f, 0.8f);
+        }
 
-            DebugRenderHelper.drawLine(lineBuffer, matrix,
-                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
-                1.0f, 0.6f, 0.1f, 1.0f);
-
-            DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
-                dx - 0.01f, dy - 0.01f, dz - 0.01f,
-                dx + 1.01f, dy + 1.01f, dz + 1.01f,
-                1.0f, 0.6f, 0.1f, 0.8f);
+        // Lignes cyan vers les terminaux lies
+        for (BlockPos termPos : blockEntity.getLinkedTerminals()) {
+            renderBlockLink(lineBuffer, matrix, controllerPos, termPos,
+                    0.1f, 0.8f, 0.9f, 1.0f, 0.8f);
         }
 
         poseStack.popPose();
@@ -271,6 +256,26 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
     private void renderControllerOutline(VertexConsumer buffer, Matrix4f matrix) {
         DebugRenderHelper.drawCubeOutline(buffer, matrix, -0.01f, -0.01f, -0.01f, 1.01f, 1.01f, 1.01f,
                 1.0f, 0.2f, 0.2f, 1.0f);
+    }
+
+    /**
+     * Dessine une ligne et un outline vers un bloc du reseau.
+     */
+    private void renderBlockLink(VertexConsumer buffer, Matrix4f matrix,
+                                  BlockPos origin, BlockPos target,
+                                  float r, float g, float b, float lineAlpha, float outlineAlpha) {
+        float dx = target.getX() - origin.getX();
+        float dy = target.getY() - origin.getY();
+        float dz = target.getZ() - origin.getZ();
+
+        DebugRenderHelper.drawLine(buffer, matrix,
+                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
+                r, g, b, lineAlpha);
+
+        DebugRenderHelper.drawCubeOutline(buffer, matrix,
+                dx - 0.01f, dy - 0.01f, dz - 0.01f,
+                dx + 1.01f, dy + 1.01f, dz + 1.01f,
+                r, g, b, outlineAlpha);
     }
 
     /**

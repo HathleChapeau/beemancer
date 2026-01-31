@@ -60,30 +60,32 @@ public class StorageItemAggregator {
     }
 
     /**
-     * Force le recalcul des items agrégés depuis tous les coffres enregistrés.
-     * Nettoie les coffres invalides au passage.
+     * Force le recalcul des items agreges depuis tous les coffres enregistres.
+     * Nettoie les coffres invalides du registre au passage.
      */
     public void refreshAggregatedItems() {
         if (parent.getLevel() == null) return;
 
-        // Nettoyage des coffres invalides du controller uniquement
+        // Nettoyage des coffres invalides du registre central
+        StorageNetworkRegistry registry = parent.getNetworkRegistry();
+        Set<BlockPos> allChests = new LinkedHashSet<>(registry.getAllChests());
         StorageChestManager chestManager = parent.getChestManager();
-        Set<BlockPos> ownChests = chestManager.getRegisteredChestsMutable();
 
         List<BlockPos> toRemove = new ArrayList<>();
-        for (BlockPos pos : ownChests) {
+        for (BlockPos pos : allChests) {
+            if (!parent.getLevel().isLoaded(pos)) continue;
             if (!chestManager.isChest(pos)) {
                 toRemove.add(pos);
             }
         }
         if (!toRemove.isEmpty()) {
-            ownChests.removeAll(toRemove);
+            for (BlockPos pos : toRemove) {
+                registry.unregisterBlock(pos);
+                allChests.remove(pos);
+            }
             parent.setChanged();
-            parent.syncToClient();
+            parent.syncNodeToClient();
         }
-
-        // Agregation depuis TOUS les coffres du reseau (controller + relays)
-        Set<BlockPos> allChests = parent.getAllNetworkChests();
         Map<ItemStackKey, Integer> itemCounts = new HashMap<>();
         for (BlockPos chestPos : allChests) {
             if (!parent.getLevel().isLoaded(chestPos)) continue;

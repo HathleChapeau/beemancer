@@ -114,15 +114,6 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
      */
     public void linkToController(BlockPos pos) {
         this.controllerPos = pos;
-
-        // Informer le controller
-        if (level != null) {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof StorageControllerBlockEntity controller) {
-                controller.linkTerminal(worldPosition);
-            }
-        }
-
         setChanged();
         syncToClient();
     }
@@ -132,13 +123,15 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
      */
     public void unlinkController() {
         if (controllerPos != null && level != null) {
+            // Retirer du registre central
             BlockEntity be = level.getBlockEntity(controllerPos);
             if (be instanceof StorageControllerBlockEntity controller) {
-                controller.unlinkTerminal(worldPosition);
+                controller.getNetworkRegistry().unregisterBlock(worldPosition);
+                controller.getItemAggregator().removeViewersForTerminal(worldPosition);
+                controller.setChanged();
             }
         }
         controllerPos = null;
-        // Annuler les requêtes en attente et remettre les items dans le réseau
         cancelAllPendingRequests();
         setChanged();
         syncToClient();
