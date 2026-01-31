@@ -68,6 +68,9 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
     /** ContainerId du menu Interface pour envoyer le packet de retour. */
     public static int overlayContainerId = -1;
 
+    /** Reference au BlockEntity pour mise a jour client-side apres selection. */
+    public static NetworkInterfaceBlockEntity overlayBlockEntity = null;
+
     private static final int BG_WIDTH = 176;
     private static final int BG_HEIGHT = 192;
 
@@ -417,6 +420,7 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
             overlayInitialSelection.clear();
             overlayInitialSelection.addAll(existingSelection);
             overlayContainerId = menu.containerId;
+            overlayBlockEntity = be;
             openedFromDebugButton = true;
             PacketDistributor.sendToServer(new InterfaceActionPacket(
                 menu.containerId, InterfaceActionPacket.ACTION_OPEN_ADJACENT_GUI, 0, ""));

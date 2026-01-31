@@ -33,6 +33,8 @@ import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -281,6 +283,7 @@ public class AdjacentGuiOverlayRenderer {
                 NetworkInterfaceScreen.overlaySelectingFilterIndex = -1;
                 NetworkInterfaceScreen.overlayInitialSelection.clear();
                 NetworkInterfaceScreen.overlayContainerId = -1;
+                NetworkInterfaceScreen.overlayBlockEntity = null;
                 toggledSlots.clear();
                 initialized = false;
                 cancelled = false;
@@ -295,9 +298,11 @@ public class AdjacentGuiOverlayRenderer {
     private static void sendSlotSelection() {
         int filterIndex = NetworkInterfaceScreen.overlaySelectingFilterIndex;
         int containerId = NetworkInterfaceScreen.overlayContainerId;
+        NetworkInterfaceBlockEntity be = NetworkInterfaceScreen.overlayBlockEntity;
         if (filterIndex < 0 || containerId < 0) return;
 
-        String slotsStr = toggledSlots.stream()
+        Set<Integer> selection = new HashSet<>(toggledSlots);
+        String slotsStr = selection.stream()
             .map(String::valueOf)
             .collect(Collectors.joining(","));
 
@@ -305,10 +310,16 @@ public class AdjacentGuiOverlayRenderer {
             PacketDistributor.sendToServer(new InterfaceActionPacket(
                 containerId, InterfaceActionPacket.ACTION_SET_GLOBAL_SELECTED_SLOTS,
                 0, slotsStr));
+            if (be != null) {
+                be.setGlobalSelectedSlots(selection);
+            }
         } else {
             PacketDistributor.sendToServer(new InterfaceActionPacket(
                 containerId, InterfaceActionPacket.ACTION_SET_SELECTED_SLOTS,
                 filterIndex, slotsStr));
+            if (be != null) {
+                be.setFilterSelectedSlots(filterIndex, selection);
+            }
         }
     }
 }
