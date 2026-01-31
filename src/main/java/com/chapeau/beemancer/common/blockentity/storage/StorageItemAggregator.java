@@ -390,7 +390,8 @@ public class StorageItemAggregator {
         syncTimer++;
 
         boolean hasViewers = !playersViewing.isEmpty();
-        boolean shouldSync = hasViewers || (syncTimer >= SYNC_INTERVAL && needsSync);
+        // Sync toutes les SYNC_INTERVAL ticks quand il y a des viewers (pas chaque tick)
+        boolean shouldSync = (syncTimer >= SYNC_INTERVAL) && (hasViewers || needsSync);
 
         if (shouldSync) {
             refreshAggregatedItems();

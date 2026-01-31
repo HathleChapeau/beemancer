@@ -72,13 +72,13 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
 
     // Ghost slot positions (matching screen layout)
     private static final int GHOST_SLOTS_X = 23;
-    private static final int GHOST_SLOTS_BASE_Y = 21;
+    private static final int GHOST_SLOTS_BASE_Y = 31;
     private static final int FILTER_LINE_H = 20;
 
     // Player inventory positions
     private static final int PLAYER_INV_X = 8;
-    private static final int PLAYER_INV_Y = 100;
-    private static final int HOTBAR_Y = 158;
+    private static final int PLAYER_INV_Y = 110;
+    private static final int HOTBAR_Y = 168;
 
     @Nullable
     private final NetworkInterfaceBlockEntity blockEntity;

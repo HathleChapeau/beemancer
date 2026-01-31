@@ -29,15 +29,24 @@ import com.chapeau.beemancer.core.network.packets.InterfaceActionPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.PacketDistributor;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Screen programmatique pour Import/Export Interface.
  *
- * Layout (176w x 182h):
+ * Layout (176w x 192h):
  * - Titre + status (Linked / Not Linked)
+ * - Adjacent block info line
  * - Zone filtres: jusqu'a 3 lignes de 20px
  *   Chaque ligne: [T] [5 slots OU EditBox] [S] [qty EditBox] [-]
  * - Bouton [+] si < 3 filtres
@@ -48,10 +57,10 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInterfaceMenu> {
 
     private static final int BG_WIDTH = 176;
-    private static final int BG_HEIGHT = 182;
+    private static final int BG_HEIGHT = 192;
 
     // Filter line layout
-    private static final int FILTER_ZONE_Y = 18;
+    private static final int FILTER_ZONE_Y = 28;
     private static final int FILTER_LINE_H = 20;
 
     // Per-line element positions (relative to line start)
@@ -79,8 +88,8 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
     private static final int ADD_BTN_H = 14;
 
     // Player inventory
-    private static final int PLAYER_INV_Y = 100;
-    private static final int HOTBAR_Y = 158;
+    private static final int PLAYER_INV_Y = 110;
+    private static final int HOTBAR_Y = 168;
 
     // Filter text EditBoxes (one per possible filter line)
     private final EditBox[] filterTextBoxes = new EditBox[InterfaceFilter.MAX_FILTERS];
@@ -88,6 +97,11 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
     private final EditBox[] qtyBoxes = new EditBox[InterfaceFilter.MAX_FILTERS];
 
     private int lastFilterCount = -1;
+
+    // Slot selector overlay state
+    private int selectingFilterIndex = -1;
+    private final Set<Integer> currentSelection = new HashSet<>();
+    private int adjacentContainerSize = 0;
 
     public NetworkInterfaceScreen(NetworkInterfaceMenu menu, Inventory playerInventory,
                                    Component title) {
@@ -162,14 +176,11 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
             qtyBoxes[i].setVisible(filterExists);
         }
 
-        // Update ghost slot positions
         updateGhostSlotPositions();
         lastFilterCount = filterCount;
     }
 
     private void updateGhostSlotPositions() {
-        // Positions are fixed at menu construction time.
-        // We only toggle isActive() via menu.updateFilterSlots()
         menu.updateFilterSlots();
     }
 
@@ -181,6 +192,47 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
     private void onQuantityChanged(int filterIdx, String text) {
         PacketDistributor.sendToServer(new InterfaceActionPacket(
             menu.containerId, InterfaceActionPacket.ACTION_SET_FILTER_QUANTITY, filterIdx, text));
+    }
+
+    // === Key Handling ===
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // When an EditBox is focused, consume all keys except ESC
+        // to prevent the inventory key (E) from closing the screen
+        if (keyCode != 256 && isAnyEditBoxFocused()) {
+            for (EditBox box : filterTextBoxes) {
+                if (box != null && box.isVisible() && box.isFocused()) {
+                    box.keyPressed(keyCode, scanCode, modifiers);
+                    return true;
+                }
+            }
+            for (EditBox box : qtyBoxes) {
+                if (box != null && box.isVisible() && box.isFocused()) {
+                    box.keyPressed(keyCode, scanCode, modifiers);
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        // Close slot selector on ESC
+        if (keyCode == 256 && selectingFilterIndex >= 0) {
+            closeSlotSelector();
+            return true;
+        }
+
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    private boolean isAnyEditBoxFocused() {
+        for (EditBox box : filterTextBoxes) {
+            if (box != null && box.isVisible() && box.isFocused()) return true;
+        }
+        for (EditBox box : qtyBoxes) {
+            if (box != null && box.isVisible() && box.isFocused()) return true;
+        }
+        return false;
     }
 
     // === Rendering ===
@@ -199,6 +251,9 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
 
         // Status: Linked / Not Linked (top right)
         renderStatus(g, x, y);
+
+        // Adjacent block info
+        renderAdjacentBlock(g, x, y);
 
         // Filter lines
         NetworkInterfaceBlockEntity be = menu.getBlockEntity();
@@ -244,6 +299,27 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
             statusColor, false);
     }
 
+    private void renderAdjacentBlock(GuiGraphics g, int x, int y) {
+        NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+        if (be == null || be.getLevel() == null) return;
+
+        BlockPos adjPos = be.getAdjacentPos();
+        BlockState adjState = be.getLevel().getBlockState(adjPos);
+
+        String blockName;
+        int color;
+        if (adjState.isAir()) {
+            blockName = "No block";
+            color = 0x802020;
+        } else {
+            blockName = adjState.getBlock().getName().getString();
+            BlockEntity adjBe = be.getLevel().getBlockEntity(adjPos);
+            color = (adjBe instanceof Container) ? 0x206020 : 0x806020;
+        }
+
+        g.drawString(font, "\u2192 " + blockName, x + 8, y + 17, color, false);
+    }
+
     private void renderFilterLine(GuiGraphics g, int x, int y, int filterIdx,
                                    int mouseX, int mouseY) {
         NetworkInterfaceBlockEntity be = menu.getBlockEntity();
@@ -268,15 +344,14 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
                     x + SLOTS_X + slot * 18, lineY - 1);
             }
         }
-        // TEXT mode: EditBox is rendered by the widget system
 
         // [S] Select Slots button
+        boolean hasSelection = !filter.getSelectedSlots().isEmpty();
         boolean selectHovered = isMouseOver(mouseX, mouseY,
             x + SELECT_X, lineY, SELECT_W, SELECT_H);
+        String selectLabel = hasSelection ? "S*" : "S";
         GuiRenderHelper.renderButton(g, font, x + SELECT_X, lineY,
-            SELECT_W, SELECT_H, "S", selectHovered);
-
-        // Quantity EditBox background is rendered by the widget system
+            SELECT_W, SELECT_H, selectLabel, selectHovered);
 
         // [-] Remove button
         boolean removeHovered = isMouseOver(mouseX, mouseY,
@@ -296,12 +371,142 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
 
         super.render(g, mouseX, mouseY, partialTick);
         renderTooltip(g, mouseX, mouseY);
+
+        // Slot selector overlay (rendered on top of everything)
+        if (selectingFilterIndex >= 0) {
+            renderSlotSelectorOverlay(g, mouseX, mouseY);
+        }
+    }
+
+    // === Slot Selector Overlay ===
+
+    private void openSlotSelector(int filterIndex) {
+        NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+        if (be == null || be.getLevel() == null) return;
+
+        BlockPos adjPos = be.getAdjacentPos();
+        BlockEntity adjBe = be.getLevel().getBlockEntity(adjPos);
+        if (!(adjBe instanceof Container container)) return;
+
+        adjacentContainerSize = container.getContainerSize();
+        if (adjacentContainerSize <= 0) return;
+
+        selectingFilterIndex = filterIndex;
+        currentSelection.clear();
+
+        if (filterIndex == 99) {
+            currentSelection.addAll(be.getGlobalSelectedSlots());
+        } else {
+            InterfaceFilter filter = be.getFilter(filterIndex);
+            if (filter != null) {
+                currentSelection.addAll(filter.getSelectedSlots());
+            }
+        }
+    }
+
+    private void closeSlotSelector() {
+        if (selectingFilterIndex < 0) return;
+
+        // Send selected slots to server
+        String slotsStr = currentSelection.stream()
+            .map(String::valueOf)
+            .collect(Collectors.joining(","));
+
+        if (selectingFilterIndex == 99) {
+            PacketDistributor.sendToServer(new InterfaceActionPacket(
+                menu.containerId, InterfaceActionPacket.ACTION_SET_GLOBAL_SELECTED_SLOTS,
+                0, slotsStr));
+            NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+            if (be != null) {
+                be.setGlobalSelectedSlots(new HashSet<>(currentSelection));
+            }
+        } else {
+            PacketDistributor.sendToServer(new InterfaceActionPacket(
+                menu.containerId, InterfaceActionPacket.ACTION_SET_SELECTED_SLOTS,
+                selectingFilterIndex, slotsStr));
+            NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+            if (be != null) {
+                be.setFilterSelectedSlots(selectingFilterIndex, new HashSet<>(currentSelection));
+            }
+        }
+
+        selectingFilterIndex = -1;
+        currentSelection.clear();
+    }
+
+    private void renderSlotSelectorOverlay(GuiGraphics g, int mouseX, int mouseY) {
+        int cols = 9;
+        int rows = (adjacentContainerSize + cols - 1) / cols;
+
+        int panelW = cols * 18 + 14;
+        int panelH = rows * 18 + 30;
+        int panelX = leftPos + (BG_WIDTH - panelW) / 2;
+        int panelY = topPos + 20;
+
+        // Dim background
+        g.fill(leftPos, topPos, leftPos + BG_WIDTH, topPos + BG_HEIGHT, 0x80000000);
+
+        // Panel background
+        g.fill(panelX, panelY, panelX + panelW, panelY + panelH, 0xFFC6C6C6);
+        g.fill(panelX, panelY, panelX + panelW, panelY + 1, 0xFFFFFFFF);
+        g.fill(panelX, panelY, panelX + 1, panelY + panelH, 0xFFFFFFFF);
+        g.fill(panelX, panelY + panelH - 1, panelX + panelW, panelY + panelH, 0xFF555555);
+        g.fill(panelX + panelW - 1, panelY, panelX + panelW, panelY + panelH, 0xFF555555);
+
+        // Title
+        String title = selectingFilterIndex == 99
+            ? "Select Slots (Global)"
+            : "Select Slots (Filter " + (selectingFilterIndex + 1) + ")";
+        g.drawString(font, title, panelX + 7, panelY + 5, 0x404040, false);
+
+        // Slots grid
+        int gridX = panelX + 7;
+        int gridY = panelY + 16;
+
+        for (int i = 0; i < adjacentContainerSize; i++) {
+            int col = i % cols;
+            int row = i / cols;
+            int slotX = gridX + col * 18;
+            int slotY = gridY + row * 18;
+
+            GuiRenderHelper.renderSlot(g, slotX, slotY);
+
+            // Highlight selected slots
+            if (currentSelection.contains(i)) {
+                g.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0x6000FF00);
+            }
+
+            // Hover highlight
+            if (mouseX >= slotX + 1 && mouseX < slotX + 17
+                && mouseY >= slotY + 1 && mouseY < slotY + 17) {
+                g.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0x40FFFFFF);
+            }
+
+            // Slot number
+            String num = String.valueOf(i);
+            g.drawString(font, num, slotX + 9 - font.width(num) / 2,
+                slotY + 5, 0x606060, false);
+        }
+
+        // Done button
+        int btnW = 40;
+        int btnH = 12;
+        int btnX = panelX + panelW - btnW - 5;
+        int btnY = panelY + panelH - btnH - 3;
+        boolean btnHovered = mouseX >= btnX && mouseX < btnX + btnW
+            && mouseY >= btnY && mouseY < btnY + btnH;
+        GuiRenderHelper.renderButton(g, font, btnX, btnY, btnW, btnH, "Done", btnHovered);
     }
 
     // === Mouse Handling ===
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Slot selector overlay takes priority
+        if (selectingFilterIndex >= 0) {
+            return handleSlotSelectorClick(mouseX, mouseY);
+        }
+
         int x = leftPos;
         int y = topPos;
         NetworkInterfaceBlockEntity be = menu.getBlockEntity();
@@ -320,7 +525,6 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
                     PacketDistributor.sendToServer(new InterfaceActionPacket(
                         menu.containerId, InterfaceActionPacket.ACTION_SET_FILTER_MODE,
                         i, newMode));
-                    // Immediate local update for responsive UI
                     filter.setMode(InterfaceFilter.FilterMode.valueOf(newMode));
                     updateWidgetVisibility();
                     menu.updateFilterSlots();
@@ -328,8 +532,9 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
                 return true;
             }
 
-            // [S] Select Slots (noop for now - Phase 4)
+            // [S] Select Slots
             if (isMouseOver(mouseX, mouseY, x + SELECT_X, lineY, SELECT_W, SELECT_H)) {
+                openSlotSelector(i);
                 return true;
             }
 
@@ -337,7 +542,6 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
             if (isMouseOver(mouseX, mouseY, x + REMOVE_X, lineY, REMOVE_W, REMOVE_H)) {
                 PacketDistributor.sendToServer(new InterfaceActionPacket(
                     menu.containerId, InterfaceActionPacket.ACTION_REMOVE_FILTER, i, ""));
-                // Immediate local update
                 if (be != null) {
                     be.removeFilter(i);
                     updateWidgetVisibility();
@@ -353,7 +557,6 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
             if (isMouseOver(mouseX, mouseY, x + TOGGLE_X, addY, ADD_BTN_W, ADD_BTN_H)) {
                 PacketDistributor.sendToServer(new InterfaceActionPacket(
                     menu.containerId, InterfaceActionPacket.ACTION_ADD_FILTER, 0, ""));
-                // Immediate local update
                 if (be != null) {
                     be.addFilter();
                     updateWidgetVisibility();
@@ -362,16 +565,67 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
                 return true;
             }
 
-            // Global [S] (only when 0 filters, noop for now - Phase 4)
+            // Global [S] (only when 0 filters)
             if (filterCount == 0) {
                 if (isMouseOver(mouseX, mouseY, x + TOGGLE_X + ADD_BTN_W + 2, addY,
                     SELECT_W, SELECT_H)) {
+                    openSlotSelector(99);
                     return true;
                 }
             }
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private boolean handleSlotSelectorClick(double mouseX, double mouseY) {
+        int cols = 9;
+        int rows = (adjacentContainerSize + cols - 1) / cols;
+        int panelW = cols * 18 + 14;
+        int panelH = rows * 18 + 30;
+        int panelX = leftPos + (BG_WIDTH - panelW) / 2;
+        int panelY = topPos + 20;
+
+        int gridX = panelX + 7;
+        int gridY = panelY + 16;
+
+        // Check slot clicks
+        for (int i = 0; i < adjacentContainerSize; i++) {
+            int col = i % cols;
+            int row = i / cols;
+            int slotX = gridX + col * 18 + 1;
+            int slotY = gridY + row * 18 + 1;
+
+            if (mouseX >= slotX && mouseX < slotX + 16
+                && mouseY >= slotY && mouseY < slotY + 16) {
+                if (currentSelection.contains(i)) {
+                    currentSelection.remove(i);
+                } else {
+                    currentSelection.add(i);
+                }
+                return true;
+            }
+        }
+
+        // Check Done button
+        int btnW = 40;
+        int btnH = 12;
+        int btnX = panelX + panelW - btnW - 5;
+        int btnY = panelY + panelH - btnH - 3;
+        if (mouseX >= btnX && mouseX < btnX + btnW
+            && mouseY >= btnY && mouseY < btnY + btnH) {
+            closeSlotSelector();
+            return true;
+        }
+
+        // Click outside panel closes it
+        if (mouseX < panelX || mouseX >= panelX + panelW
+            || mouseY < panelY || mouseY >= panelY + panelH) {
+            closeSlotSelector();
+            return true;
+        }
+
+        return true;
     }
 
     private boolean isMouseOver(double mouseX, double mouseY, int x, int y, int w, int h) {

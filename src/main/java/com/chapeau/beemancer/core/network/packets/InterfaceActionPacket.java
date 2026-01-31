@@ -51,6 +51,8 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
     public static final int ACTION_SET_FILTER_MODE = 2;
     public static final int ACTION_SET_FILTER_TEXT = 3;
     public static final int ACTION_SET_FILTER_QUANTITY = 4;
+    public static final int ACTION_SET_SELECTED_SLOTS = 5;
+    public static final int ACTION_SET_GLOBAL_SELECTED_SLOTS = 6;
 
     public static final Type<InterfaceActionPacket> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "interface_action"));
@@ -67,6 +69,17 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
     @Override
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
+    }
+
+    private static java.util.Set<Integer> parseSlotSet(String text) {
+        java.util.Set<Integer> slots = new java.util.HashSet<>();
+        if (text == null || text.isEmpty()) return slots;
+        for (String part : text.split(",")) {
+            try {
+                slots.add(Integer.parseInt(part.trim()));
+            } catch (NumberFormatException ignored) { }
+        }
+        return slots;
     }
 
     public static void handle(InterfaceActionPacket packet, IPayloadContext context) {
@@ -102,6 +115,14 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
                         int qty = Integer.parseInt(packet.textValue());
                         be.setFilterQuantity(packet.slot(), qty);
                     } catch (NumberFormatException ignored) { }
+                }
+                case ACTION_SET_SELECTED_SLOTS -> {
+                    java.util.Set<Integer> slots = parseSlotSet(packet.textValue());
+                    be.setFilterSelectedSlots(packet.slot(), slots);
+                }
+                case ACTION_SET_GLOBAL_SELECTED_SLOTS -> {
+                    java.util.Set<Integer> slots = parseSlotSet(packet.textValue());
+                    be.setGlobalSelectedSlots(slots);
                 }
             }
         });

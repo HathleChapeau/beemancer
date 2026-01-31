@@ -640,10 +640,13 @@ public class StorageDeliveryManager {
         for (DeliveryTask task : deliveryQueue) {
             queueTag.add(task.save(registries));
         }
+        // Sauvegarder les taches actives comme QUEUED SANS muter l'original
+        // (getUpdateTag appelle aussi saveAdditional, muter ici corromprait l'etat)
         for (DeliveryTask task : activeTasks) {
-            task.setState(DeliveryTask.DeliveryState.QUEUED);
-            task.setAssignedBeeId(null);
-            queueTag.add(task.save(registries));
+            CompoundTag taskTag = task.save(registries);
+            taskTag.putString("State", DeliveryTask.DeliveryState.QUEUED.name());
+            taskTag.remove("AssignedBeeId");
+            queueTag.add(taskTag);
         }
         tag.put("DeliveryQueue", queueTag);
 

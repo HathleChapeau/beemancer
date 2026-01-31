@@ -1,6 +1,22 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
   "textures": {
-    "all": "beemancer:block/export_interface"
-  }
+    "all": "beemancer:block/export_interface",
+    "particle": "beemancer:block/export_interface"
+  },
+  "elements": [
+    {
+      "name": "Base 10x10x10",
+      "from": [3, 3, 3],
+      "to": [13, 13, 13],
+      "faces": {
+        "north": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "east": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "south": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "west": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "up": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "down": {"texture": "#all", "uv": [3, 3, 13, 13]}
+      }
+    }
+  ]
 }
