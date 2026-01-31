@@ -85,6 +85,9 @@ public class ClientSetup {
 
         // Riding system - caméra seulement (input lu directement depuis le joueur)
         NeoForge.EVENT_BUS.register(RidingCameraController.class);
+
+        // Overlay quand on ouvre un GUI adjacent depuis le bouton Debug de l'interface
+        NeoForge.EVENT_BUS.register(com.chapeau.beemancer.client.gui.screen.storage.AdjacentGuiOverlayRenderer.class);
     }
 
     private static void registerScreens(final RegisterMenuScreensEvent event) {

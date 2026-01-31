@@ -58,6 +58,9 @@ import java.util.stream.Collectors;
  */
 public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInterfaceMenu> {
 
+    /** Flag positionne par le bouton Debug pour que l'overlay sache qu'on a ouvert depuis l'interface. */
+    public static boolean openedFromDebugButton = false;
+
     private static final int BG_WIDTH = 176;
     private static final int BG_HEIGHT = 192;
 
@@ -536,6 +539,7 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
             int btnX = x + BG_WIDTH - DEBUG_BTN_W - 7;
             int btnY = y + 14;
             if (isMouseOver(mouseX, mouseY, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
+                openedFromDebugButton = true;
                 PacketDistributor.sendToServer(new InterfaceActionPacket(
                     menu.containerId, InterfaceActionPacket.ACTION_OPEN_ADJACENT_GUI, 0, ""));
                 return true;
