@@ -47,6 +47,10 @@ public class AdjacentGuiOverlayRenderer {
         int screenWidth = event.getScreen().width;
         int screenHeight = event.getScreen().height;
 
+        // Z=300 pour dessiner devant les items (z~200) mais derriere les tooltips (z~400)
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 300);
+
         // Rectangle noir couvrant la zone inventaire joueur (bas de l'ecran)
         int overlayTop = screenHeight / 2 + 20;
         g.fill(0, overlayTop, screenWidth, screenHeight, 0xE0000000);
@@ -55,6 +59,8 @@ public class AdjacentGuiOverlayRenderer {
         int iconX = screenWidth / 2 - 8;
         int iconY = overlayTop + (screenHeight - overlayTop) / 2 - 8;
         g.renderItem(BEE_ICON, iconX, iconY);
+
+        g.pose().popPose();
     }
 
     @SubscribeEvent
