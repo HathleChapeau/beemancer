@@ -58,9 +58,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.*;
 
 /**
@@ -73,7 +70,6 @@ import java.util.*;
  */
 public class StorageControllerBlockEntity extends BlockEntity implements MultiblockController, MenuProvider, INetworkNode {
 
-    private static final Logger SAVE_LOG = LoggerFactory.getLogger("Beemancer.SaveDebug");
     public static final int MAX_RANGE = 15;
 
     // === Managers ===
@@ -407,8 +403,6 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        long startTime = System.nanoTime();
-        SAVE_LOG.info("[Controller@{}] saveAdditional START (already saving={})", worldPosition, isSaving);
         isSaving = true;
         try {
             super.saveAdditional(tag, registries);
@@ -446,8 +440,6 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
             tag.put("EssenceSlots", essenceSlots.serializeNBT(registries));
         } finally {
             isSaving = false;
-            long elapsed = (System.nanoTime() - startTime) / 1_000_000;
-            SAVE_LOG.info("[Controller@{}] saveAdditional END ({}ms)", worldPosition, elapsed);
         }
     }
 
@@ -493,10 +485,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     // === Sync Client ===
 
     void syncToClient() {
-        if (isSaving) {
-            SAVE_LOG.warn("[Controller@{}] syncToClient BLOCKED (isSaving=true)", worldPosition);
-            return;
-        }
+        if (isSaving) return;
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }

@@ -46,9 +46,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -67,7 +64,6 @@ import java.util.Queue;
  */
 public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvider, Container, IDeliveryEndpoint {
 
-    private static final Logger SAVE_LOG = LoggerFactory.getLogger("Beemancer.SaveDebug");
     public static final int DEPOSIT_SLOTS = 9;
     public static final int PICKUP_SLOTS = 9;
     public static final int TOTAL_SLOTS = DEPOSIT_SLOTS + PICKUP_SLOTS;
@@ -533,8 +529,6 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        long startTime = System.nanoTime();
-        SAVE_LOG.info("[Terminal@{}] saveAdditional START (already saving={})", worldPosition, isSaving);
         isSaving = true;
         try {
             super.saveAdditional(tag, registries);
@@ -557,8 +551,6 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
             tag.put("PendingRequests", pendingTag);
         } finally {
             isSaving = false;
-            long elapsed = (System.nanoTime() - startTime) / 1_000_000;
-            SAVE_LOG.info("[Terminal@{}] saveAdditional END ({}ms)", worldPosition, elapsed);
         }
     }
 
@@ -597,10 +589,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     // === Sync Client ===
 
     private void syncToClient() {
-        if (isSaving) {
-            SAVE_LOG.warn("[Terminal@{}] syncToClient BLOCKED (isSaving=true)", worldPosition);
-            return;
-        }
+        if (isSaving) return;
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }

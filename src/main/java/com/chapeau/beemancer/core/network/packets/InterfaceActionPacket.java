@@ -31,6 +31,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -53,6 +55,7 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
     public static final int ACTION_SET_FILTER_QUANTITY = 4;
     public static final int ACTION_SET_SELECTED_SLOTS = 5;
     public static final int ACTION_SET_GLOBAL_SELECTED_SLOTS = 6;
+    public static final int ACTION_OPEN_ADJACENT_GUI = 7;
 
     public static final Type<InterfaceActionPacket> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "interface_action"));
@@ -123,6 +126,15 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
                 case ACTION_SET_GLOBAL_SELECTED_SLOTS -> {
                     java.util.Set<Integer> slots = parseSlotSet(packet.textValue());
                     be.setGlobalSelectedSlots(slots);
+                }
+                case ACTION_OPEN_ADJACENT_GUI -> {
+                    if (be.getLevel() == null) return;
+                    net.minecraft.core.BlockPos adjPos = be.getAdjacentPos();
+                    if (!be.getLevel().isLoaded(adjPos)) return;
+                    BlockEntity adjBe = be.getLevel().getBlockEntity(adjPos);
+                    if (adjBe instanceof MenuProvider menuProvider) {
+                        player.openMenu(menuProvider);
+                    }
                 }
             }
         });

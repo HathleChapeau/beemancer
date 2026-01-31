@@ -32,9 +32,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.*;
 
 /**
@@ -43,7 +40,6 @@ import java.util.*;
  * Aucun état persistant (NBT) — tout est recalculé au chargement.
  */
 public class StorageItemAggregator {
-    private static final Logger SAVE_LOG = LoggerFactory.getLogger("Beemancer.SaveDebug");
     private final StorageControllerBlockEntity parent;
 
     private List<ItemStack> aggregatedItems = new ArrayList<>();
@@ -81,7 +77,6 @@ public class StorageItemAggregator {
             }
         }
         if (!toRemove.isEmpty()) {
-            SAVE_LOG.info("[Aggregator] Removing {} invalid chests, calling setChanged+syncToClient", toRemove.size());
             ownChests.removeAll(toRemove);
             parent.setChanged();
             parent.syncToClient();

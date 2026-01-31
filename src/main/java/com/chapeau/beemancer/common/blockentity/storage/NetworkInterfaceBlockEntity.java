@@ -46,9 +46,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Nullable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,7 +66,6 @@ import java.util.UUID;
  */
 public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements MenuProvider {
 
-    private static final Logger SAVE_LOG = LoggerFactory.getLogger("Beemancer.SaveDebug");
     protected static final int SCAN_INTERVAL = 40;
 
     @Nullable
@@ -358,9 +354,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        long startTime = System.nanoTime();
-        String type = isImport() ? "Import" : "Export";
-        SAVE_LOG.info("[{}Interface@{}] saveAdditional START (already saving={})", type, worldPosition, isSaving);
         isSaving = true;
         try {
             super.saveAdditional(tag, registries);
@@ -397,8 +390,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             saveExtra(tag, registries);
         } finally {
             isSaving = false;
-            long elapsed = (System.nanoTime() - startTime) / 1_000_000;
-            SAVE_LOG.info("[{}Interface@{}] saveAdditional END ({}ms)", type, worldPosition, elapsed);
         }
     }
 
@@ -450,10 +441,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     // === Sync Client ===
 
     public void syncToClient() {
-        if (isSaving) {
-            SAVE_LOG.warn("[Interface@{}] syncToClient BLOCKED (isSaving=true)", worldPosition);
-            return;
-        }
+        if (isSaving) return;
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }

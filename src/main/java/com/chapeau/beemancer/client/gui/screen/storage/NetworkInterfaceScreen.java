@@ -33,6 +33,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -86,6 +88,10 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
     // Add button
     private static final int ADD_BTN_W = 14;
     private static final int ADD_BTN_H = 14;
+
+    // Debug button (adjacent block info line)
+    private static final int DEBUG_BTN_W = 18;
+    private static final int DEBUG_BTN_H = 18;
 
     // Player inventory
     private static final int PLAYER_INV_Y = 110;
@@ -252,8 +258,8 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         // Status: Linked / Not Linked (top right)
         renderStatus(g, x, y);
 
-        // Adjacent block info
-        renderAdjacentBlock(g, x, y);
+        // Adjacent block info + Debug button
+        renderAdjacentBlock(g, x, y, mouseX, mouseY);
 
         // Filter lines
         NetworkInterfaceBlockEntity be = menu.getBlockEntity();
@@ -299,7 +305,7 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
             statusColor, false);
     }
 
-    private void renderAdjacentBlock(GuiGraphics g, int x, int y) {
+    private void renderAdjacentBlock(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         NetworkInterfaceBlockEntity be = menu.getBlockEntity();
         if (be == null || be.getLevel() == null) return;
 
@@ -308,16 +314,29 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
 
         String blockName;
         int color;
+        boolean hasGui = false;
         if (adjState.isAir()) {
             blockName = "No block";
             color = 0x802020;
         } else {
             blockName = adjState.getBlock().getName().getString();
             BlockEntity adjBe = be.getLevel().getBlockEntity(adjPos);
+            hasGui = adjBe instanceof net.minecraft.world.MenuProvider;
             color = (adjBe instanceof Container) ? 0x206020 : 0x806020;
         }
 
         g.drawString(font, "\u2192 " + blockName, x + 8, y + 17, color, false);
+
+        // Debug button: open adjacent block's GUI (only if it has a MenuProvider)
+        if (hasGui) {
+            int btnX = x + BG_WIDTH - DEBUG_BTN_W - 7;
+            int btnY = y + 14;
+            boolean hovered = isMouseOver(mouseX, mouseY, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H);
+            GuiRenderHelper.renderButton(g, font, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H, "", hovered);
+
+            // Bee spawn egg icon centered in the button
+            g.renderItem(new ItemStack(Items.BEE_SPAWN_EGG), btnX + 1, btnY + 1);
+        }
     }
 
     private void renderFilterLine(GuiGraphics g, int x, int y, int filterIdx,
@@ -511,6 +530,17 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         int y = topPos;
         NetworkInterfaceBlockEntity be = menu.getBlockEntity();
         int filterCount = be != null ? be.getFilterCount() : 0;
+
+        // Debug button: open adjacent block's GUI
+        if (be != null && be.hasAdjacentGui()) {
+            int btnX = x + BG_WIDTH - DEBUG_BTN_W - 7;
+            int btnY = y + 14;
+            if (isMouseOver(mouseX, mouseY, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
+                PacketDistributor.sendToServer(new InterfaceActionPacket(
+                    menu.containerId, InterfaceActionPacket.ACTION_OPEN_ADJACENT_GUI, 0, ""));
+                return true;
+            }
+        }
 
         // Check filter line buttons
         for (int i = 0; i < filterCount; i++) {
