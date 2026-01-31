@@ -130,15 +130,29 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
                     be.setGlobalSelectedSlots(slots);
                 }
                 case ACTION_OPEN_ADJACENT_GUI -> {
-                    if (be.getLevel() == null) return;
+                    com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] Received ACTION_OPEN_ADJACENT_GUI from {}", player.getName().getString());
+                    if (be.getLevel() == null) {
+                        com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] be.getLevel() == null, aborting");
+                        return;
+                    }
                     BlockPos adjPos = be.getAdjacentPos();
-                    if (!be.getLevel().isLoaded(adjPos)) return;
+                    Direction facing = be.getFacing();
+                    com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] adjPos={}, facing={}", adjPos, facing);
+                    if (!be.getLevel().isLoaded(adjPos)) {
+                        com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] adjPos not loaded, aborting");
+                        return;
+                    }
                     net.minecraft.world.level.block.state.BlockState adjState =
                             be.getLevel().getBlockState(adjPos);
-                    Direction facing = be.getFacing();
+                    com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] adjState={}", adjState);
+                    net.minecraft.world.level.block.entity.BlockEntity adjBe = be.getLevel().getBlockEntity(adjPos);
+                    com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] adjBE={}, isMenuProvider={}",
+                            adjBe != null ? adjBe.getClass().getSimpleName() : "null",
+                            adjBe instanceof net.minecraft.world.MenuProvider);
                     BlockHitResult hitResult = new BlockHitResult(
                             Vec3.atCenterOf(adjPos), facing.getOpposite(), adjPos, false);
-                    adjState.useWithoutItem(be.getLevel(), player, hitResult);
+                    var result = adjState.useWithoutItem(be.getLevel(), player, hitResult);
+                    com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] useWithoutItem result={}", result);
                 }
             }
         });
