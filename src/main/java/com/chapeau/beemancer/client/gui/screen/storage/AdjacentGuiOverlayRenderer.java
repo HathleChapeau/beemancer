@@ -71,24 +71,21 @@ public class AdjacentGuiOverlayRenderer {
         double mouseY = screen.getMinecraft().mouseHandler.ypos()
                 * screenHeight / screen.getMinecraft().getWindow().getHeight();
 
-        // 1) Fond noir plein ecran (flush le batch items, puis dessine par-dessus)
+        // Tout dans un seul drawManaged: flush items, puis fond noir, puis toggles.
+        // Le fond noir est a z=400 (par-dessus items), les toggles a z=401 (par-dessus fond).
+        var menu = screen.getMenu();
+
         g.drawManaged(() -> {
+            // Fond noir plein ecran (coordonnees absolues)
             g.pose().pushPose();
             g.pose().translate(-leftPos, -topPos, 400);
             g.fill(0, 0, screenWidth, screenHeight, COLOR_OVERLAY);
             g.pose().popPose();
-        });
 
-        // 2) Boutons toggle par-dessus le fond noir (second drawManaged = nouveau batch)
-        var menu = screen.getMenu();
-        int containerSlotCount = 0;
-        for (int i = 0; i < menu.slots.size(); i++) {
-            Slot slot = menu.slots.get(i);
-            if (!(slot.container instanceof Inventory) && slot.isActive()) containerSlotCount++;
-        }
-        com.chapeau.beemancer.Beemancer.LOGGER.info("[OVERLAY] Container slots found: {}, total slots: {}", containerSlotCount, menu.slots.size());
+            // Boutons toggle par-dessus (coordonnees relatives container, z=401)
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 401);
 
-        g.drawManaged(() -> {
             for (int i = 0; i < menu.slots.size(); i++) {
                 Slot slot = menu.slots.get(i);
                 if (slot.container instanceof Inventory) continue;
@@ -96,9 +93,6 @@ public class AdjacentGuiOverlayRenderer {
 
                 int sx = slot.x - 1;
                 int sy = slot.y - 1;
-                if (i == 0) {
-                    com.chapeau.beemancer.Beemancer.LOGGER.info("[OVERLAY] Slot 0: x={}, y={}, sx={}, sy={}, leftPos={}, topPos={}", slot.x, slot.y, sx, sy, leftPos, topPos);
-                }
 
                 boolean toggled = toggledSlots.contains(i);
                 int color = toggled ? COLOR_TOGGLE_ON : COLOR_TOGGLE_OFF;
@@ -115,6 +109,8 @@ public class AdjacentGuiOverlayRenderer {
 
             // Icone abeille en haut a gauche du container
             g.renderItem(BEE_ICON, 0, -18);
+
+            g.pose().popPose();
         });
     }
 
