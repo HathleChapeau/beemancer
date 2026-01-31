@@ -52,6 +52,10 @@ public class AdjacentGuiOverlayRenderer {
 
         GuiGraphics g = event.getGuiGraphics();
 
+        // flush() vide le batch des items deja rendus, garantissant que
+        // notre overlay sera dessine APRES eux (meme technique que les tooltips).
+        g.flush();
+
         // Les coordonnees sont relatives au container (deja translatees par leftPos/topPos).
         // On annule la translation pour dessiner en coordonnees absolues ecran.
         int leftPos = screen.getGuiLeft();
