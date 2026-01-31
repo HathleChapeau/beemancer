@@ -31,10 +31,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -130,29 +127,14 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
                     be.setGlobalSelectedSlots(slots);
                 }
                 case ACTION_OPEN_ADJACENT_GUI -> {
-                    com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] Received ACTION_OPEN_ADJACENT_GUI from {}", player.getName().getString());
-                    if (be.getLevel() == null) {
-                        com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] be.getLevel() == null, aborting");
-                        return;
-                    }
+                    if (be.getLevel() == null) return;
                     BlockPos adjPos = be.getAdjacentPos();
-                    Direction facing = be.getFacing();
-                    com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] adjPos={}, facing={}", adjPos, facing);
-                    if (!be.getLevel().isLoaded(adjPos)) {
-                        com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] adjPos not loaded, aborting");
-                        return;
+                    if (!be.getLevel().isLoaded(adjPos)) return;
+                    net.minecraft.world.level.block.entity.BlockEntity adjBe =
+                            be.getLevel().getBlockEntity(adjPos);
+                    if (adjBe instanceof net.minecraft.world.MenuProvider menuProvider) {
+                        player.openMenu(menuProvider, adjPos);
                     }
-                    net.minecraft.world.level.block.state.BlockState adjState =
-                            be.getLevel().getBlockState(adjPos);
-                    com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] adjState={}", adjState);
-                    net.minecraft.world.level.block.entity.BlockEntity adjBe = be.getLevel().getBlockEntity(adjPos);
-                    com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] adjBE={}, isMenuProvider={}",
-                            adjBe != null ? adjBe.getClass().getSimpleName() : "null",
-                            adjBe instanceof net.minecraft.world.MenuProvider);
-                    BlockHitResult hitResult = new BlockHitResult(
-                            Vec3.atCenterOf(adjPos), facing.getOpposite(), adjPos, false);
-                    var result = adjState.useWithoutItem(be.getLevel(), player, hitResult);
-                    com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN SERVER] useWithoutItem result={}", result);
                 }
             }
         });

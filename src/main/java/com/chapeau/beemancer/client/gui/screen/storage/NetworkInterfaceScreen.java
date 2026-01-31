@@ -535,15 +535,11 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         if (be != null && be.hasAdjacentGui()) {
             int btnX = x + BG_WIDTH - DEBUG_BTN_W - 7;
             int btnY = y + 14;
-            com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN] hasAdjacentGui=true, btnX={}, btnY={}, mouseX={}, mouseY={}", btnX, btnY, (int) mouseX, (int) mouseY);
             if (isMouseOver(mouseX, mouseY, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
-                com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN] CLICK! Sending ACTION_OPEN_ADJACENT_GUI packet, containerId={}", menu.containerId);
                 PacketDistributor.sendToServer(new InterfaceActionPacket(
                     menu.containerId, InterfaceActionPacket.ACTION_OPEN_ADJACENT_GUI, 0, ""));
                 return true;
             }
-        } else {
-            com.chapeau.beemancer.Beemancer.LOGGER.info("[DEBUG BTN] be={}, hasAdjacentGui={}", be != null, be != null ? be.hasAdjacentGui() : "N/A");
         }
 
         // Check filter line buttons
