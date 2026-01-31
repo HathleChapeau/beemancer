@@ -47,7 +47,7 @@ public class AdjacentGuiOverlayRenderer {
     private static final int SLOT_SIZE = 18;
 
     private static final int COLOR_OVERLAY = 0xE0000000;
-    private static final int COLOR_TOGGLE_OFF = 0x80FF0000;
+    private static final int COLOR_TOGGLE_OFF = 0xFFFF0000;
     private static final int COLOR_TOGGLE_ON = 0x8000FF00;
     private static final int COLOR_TOGGLE_HOVER = 0x40FFFFFF;
 
@@ -80,8 +80,15 @@ public class AdjacentGuiOverlayRenderer {
         });
 
         // 2) Boutons toggle par-dessus le fond noir (second drawManaged = nouveau batch)
+        var menu = screen.getMenu();
+        int containerSlotCount = 0;
+        for (int i = 0; i < menu.slots.size(); i++) {
+            Slot slot = menu.slots.get(i);
+            if (!(slot.container instanceof Inventory) && slot.isActive()) containerSlotCount++;
+        }
+        com.chapeau.beemancer.Beemancer.LOGGER.info("[OVERLAY] Container slots found: {}, total slots: {}", containerSlotCount, menu.slots.size());
+
         g.drawManaged(() -> {
-            var menu = screen.getMenu();
             for (int i = 0; i < menu.slots.size(); i++) {
                 Slot slot = menu.slots.get(i);
                 if (slot.container instanceof Inventory) continue;
@@ -89,6 +96,9 @@ public class AdjacentGuiOverlayRenderer {
 
                 int sx = slot.x - 1;
                 int sy = slot.y - 1;
+                if (i == 0) {
+                    com.chapeau.beemancer.Beemancer.LOGGER.info("[OVERLAY] Slot 0: x={}, y={}, sx={}, sy={}, leftPos={}, topPos={}", slot.x, slot.y, sx, sy, leftPos, topPos);
+                }
 
                 boolean toggled = toggledSlots.contains(i);
                 int color = toggled ? COLOR_TOGGLE_ON : COLOR_TOGGLE_OFF;
