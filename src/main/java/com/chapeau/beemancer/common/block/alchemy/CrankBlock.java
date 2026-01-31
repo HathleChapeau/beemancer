@@ -26,8 +26,6 @@ import com.chapeau.beemancer.common.blockentity.alchemy.CrankBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.ManualCentrifugeBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -115,11 +113,6 @@ public class CrankBlock extends BaseEntityBlock {
                     if (belowState.hasProperty(ManualCentrifugeBlock.SPINNING)
                             && !belowState.getValue(ManualCentrifugeBlock.SPINNING)) {
                         level.setBlock(belowPos, belowState.setValue(ManualCentrifugeBlock.SPINNING, true), 3);
-                    }
-
-                    // Wood hit sound
-                    if (level.random.nextInt(6) == 0) {
-                        level.playSound(null, pos, SoundEvents.WOOD_HIT, SoundSource.BLOCKS, 0.6f, 1.0f);
                     }
 
                     return InteractionResult.SUCCESS;

@@ -1,0 +1,58 @@
+################################################################################
+#                         FEATURE: Crank Block                                #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Bloc manivelle (Crank) qui se place uniquement au-dessus d'une centrifugeuse
+manuelle. Maintenir clic droit sur le crank fait tourner la centrifugeuse et
+avance le process. La progression se conserve quand on lâche.
+
+================================================================================
+FONCTIONNEMENT
+================================================================================
+
+Placement:
+- canSurvive() vérifie que le bloc en-dessous est ManualCentrifugeBlock
+- Se détruit automatiquement si le support est retiré (neighborChanged)
+
+Interaction:
+- useWithoutItem() récupère le BE en-dessous, appelle onPlayerSpin()
+- Pas de son (silencieux)
+- Pas de BlockEntity (bloc simple)
+
+Centrifugeuse adaptée:
+- Clic droit sur centrifugeuse = ouvrir GUI (plus de spin direct)
+- Progress ne decay plus quand on arrête de tourner
+- Filtre sur slot input (seuls les combs valides sont acceptés)
+
+================================================================================
+FICHIERS
+================================================================================
+
+Créés:
+- common/block/alchemy/CrankBlock.java
+- assets/blockstates/crank.json
+- assets/models/block/alchemy/crank.json
+- assets/models/item/crank.json
+- data/recipe/crafting/crank.json
+
+Modifiés:
+- common/block/alchemy/ManualCentrifugeBlock.java (clic droit = GUI)
+- common/blockentity/alchemy/ManualCentrifugeBlockEntity.java (pas de decay)
+- common/menu/alchemy/ManualCentrifugeMenu.java (filtre slot)
+- BeemancerBlocks.java (+CRANK)
+- BeemancerItems.java (+CRANK)
+
+Recette: 5 sticks en S dans grille 3x3
+
+================================================================================
+REGISTRES
+================================================================================
+
+- BeemancerBlocks: +CRANK
+- BeemancerItems: +CRANK
+
+################################################################################

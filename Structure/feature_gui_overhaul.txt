@@ -1,0 +1,73 @@
+################################################################################
+#                    FEATURE: Programmatic GUI Overhaul                        #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Conversion de tous les 10 écrans de containers du rendu par texture (blit sur
+ResourceLocation) au rendu programmatique (GuiGraphics.fill() + drawString()).
+
+Avantages:
+- Plus besoin de fichiers PNG pour les backgrounds GUI
+- Modification des layouts directement dans le code
+- Style cohérent garanti par GuiRenderHelper partagé
+- Réduction des assets (suppression textures GUI)
+
+================================================================================
+UTILITAIRE PARTAGÉ
+================================================================================
+
+GuiRenderHelper.java (client/gui/):
+- renderContainerBackground(): fond gris #C6C6C6 avec bordures 3D (highlight/shadow)
+  + séparateur horizontal + labels (titre container + "Inventory")
+- renderSlot(): slot 18x18 avec effet inset (3 couleurs: shadow, highlight, fond)
+- renderPlayerInventory(): 27 slots (3x9) + 9 slots hotbar avec espacement
+- renderProgressArrow(): flèche 22x16 honey-gold (#E8A317) avec remplissage progressif
+- renderProgressBar(): barre horizontale avec fill ratio
+- getFluidName(): extraction nom depuis FluidStack
+
+FluidGaugeWidget.java (client/gui/widget/):
+- Widget réutilisable pour jauges de fluide
+- Frame inset, fill basé sur ratio, graduations 25/50/75%
+- Tooltip avec nom fluide, montant, pourcentage
+- Couleurs par type de fluide (honey, royal_jelly, nectar)
+
+================================================================================
+ÉCRANS CONVERTIS (10)
+================================================================================
+
+| Screen                    | Layout spécifique                              |
+|---------------------------|-------------------------------------------------|
+| MagicHiveScreen           | 5 bee slots, 7 honeycomb hex, status icons      |
+| IncubatorScreen           | 1 larva slot, progress arrow                    |
+| ManualCentrifugeScreen    | Input/output slots, progress arrow               |
+| PoweredCentrifugeScreen   | 2 fluid gauges, progress arrow, input/output     |
+| HoneyTankScreen           | 1 large gauge (52x52), bucket slot               |
+| CreativeTankScreen        | Même layout que HoneyTank                        |
+| MultiblockTankScreen      | Gauge custom avec couleurs fluide, status info   |
+| CrystallizerScreen        | 1 gauge, progress bar, output slot               |
+| AlembicScreen             | 3 gauges (honey, RJ, nectar), progress arrow     |
+| InfuserScreen             | 1 gauge, progress arrow, input/output slots      |
+
+================================================================================
+FICHIERS
+================================================================================
+
+Créés:
+- client/gui/GuiRenderHelper.java
+
+Modifiés (10 screens):
+- client/gui/screen/MagicHiveScreen.java
+- client/gui/screen/IncubatorScreen.java
+- client/gui/screen/alchemy/ManualCentrifugeScreen.java
+- client/gui/screen/alchemy/PoweredCentrifugeScreen.java
+- client/gui/screen/alchemy/HoneyTankScreen.java
+- client/gui/screen/alchemy/CreativeTankScreen.java
+- client/gui/screen/alchemy/MultiblockTankScreen.java
+- client/gui/screen/alchemy/CrystallizerScreen.java
+- client/gui/screen/alchemy/AlembicScreen.java
+- client/gui/screen/alchemy/InfuserScreen.java
+
+################################################################################

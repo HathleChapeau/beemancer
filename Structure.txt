@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-01-30                     #
-#            (Refactorisation: split BlockEntity en managers)                 #
+#                         Dernière mise à jour: 2026-01-31                     #
+#            (GUI overhaul programmatique + fixes crank/centrifuge/tank)      #
 ################################################################################
 
 ================================================================================
@@ -85,6 +85,7 @@ Philosophie:
 │   StorageMultiblockManager          │ Formation/destruction multibloc      │
 │ common/block/hive/                    │                                        │
 │   HiveBeeLifecycleManager           │ Cycle de vie abeilles dans ruche     │
+│ client/gui/GuiRenderHelper.java      │ Rendu programmatique GUIs partagé    │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -247,6 +248,14 @@ LISTE DES FEATURES:
 → Debug Display System
   Fichier: Structure/feature_debug_display.txt
   Description: Affichages debug visuels (HUD rideable bee, texte pipes/ruches) quand displayDebug=true
+
+→ Programmatic GUI Overhaul
+  Fichier: Structure/feature_gui_overhaul.txt
+  Description: Conversion de tous les écrans (10) du rendu texture vers rendu programmatique avec GuiRenderHelper
+
+→ Crank Block
+  Fichier: Structure/feature_crank.txt
+  Description: Bloc manivelle pour centrifugeuse manuelle, placement conditionnel au-dessus
 
 ================================================================================
 6. FEATURES EN COURS

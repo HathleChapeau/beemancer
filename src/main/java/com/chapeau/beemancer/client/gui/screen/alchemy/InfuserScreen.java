@@ -1,25 +1,34 @@
 /**
  * ============================================================
  * [InfuserScreen.java]
- * Description: GUI pour l'infuseur avec jauge de fluide amelioree
+ * Description: GUI pour l'infuseur (rendu programmatique)
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | InfuserMenu         | Donnees container    | Slots, progress, honey         |
+ * | FluidGaugeWidget    | Jauge de fluide      | Honey tank                     |
+ * | GuiRenderHelper     | Rendu programmatique | Background, slots, progress    |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - ClientSetup (enregistrement ecran)
+ *
  * ============================================================
  */
 package com.chapeau.beemancer.client.gui.screen.alchemy;
 
-import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.widget.FluidGaugeWidget;
 import com.chapeau.beemancer.common.menu.alchemy.InfuserMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.fluids.FluidStack;
 
 public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/infuser.png");
-
     private FluidGaugeWidget honeyGauge;
 
     public InfuserScreen(InfuserMenu menu, Inventory playerInventory, Component title) {
@@ -31,48 +40,49 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
     @Override
     protected void init() {
         super.init();
-
-        // Initialiser la jauge de miel
         honeyGauge = new FluidGaugeWidget(
-            17, 17,     // Position relative au GUI
-            16, 52,     // Dimensions
-            4000,       // Capacite
+            17, 17, 16, 52, 4000,
             () -> menu.getBlockEntity().getHoneyTank().getFluid(),
             menu::getHoneyAmount
         );
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
-        guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
-        // Honey tank avec le nouveau widget
-        honeyGauge.render(guiGraphics, x, y);
+        GuiRenderHelper.renderContainerBackground(g, font, x, y, imageWidth, imageHeight,
+            "container.beemancer.infuser", 79);
+
+        // Input slot (44, 35)
+        GuiRenderHelper.renderSlot(g, x + 43, y + 34);
+
+        // Output slot (116, 35)
+        GuiRenderHelper.renderSlot(g, x + 115, y + 34);
 
         // Progress arrow
         int processTime = menu.getProcessTime();
-        if (processTime > 0) {
-            int progress = menu.getProgress();
-            int arrowWidth = (int) (24 * ((float) progress / processTime));
-            if (arrowWidth > 0) {
-                guiGraphics.blit(TEXTURE, x + 76, y + 35, 176, 52, arrowWidth, 17);
-            }
-        }
+        float ratio = processTime > 0 ? (float) menu.getProgress() / processTime : 0;
+        GuiRenderHelper.renderProgressArrow(g, x + 68, y + 35, ratio);
+
+        // Honey gauge
+        honeyGauge.render(g, x, y);
+
+        // Player inventory
+        GuiRenderHelper.renderPlayerInventory(g, x, y, 83, 141);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderTooltip(guiGraphics, mouseX, mouseY);
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+        renderTooltip(g, mouseX, mouseY);
 
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        // Honey tank tooltip
         if (honeyGauge.isMouseOver(x, y, mouseX, mouseY)) {
-            guiGraphics.renderComponentTooltip(font, honeyGauge.getTooltip("Honey"), mouseX, mouseY);
+            g.renderComponentTooltip(font, honeyGauge.getTooltip("Honey"), mouseX, mouseY);
         }
     }
 }

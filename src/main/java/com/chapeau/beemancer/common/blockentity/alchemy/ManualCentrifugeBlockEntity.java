@@ -93,15 +93,17 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ManualCentrifugeBlockEntity be) {
-        boolean wasSpinning = be.isSpinning;
         int currentTick = (int) level.getGameTime();
 
         // Advance progress each tick while cranking (within 10 ticks of last interaction)
         if (be.isSpinning && be.hasInputToProcess() && (currentTick - be.lastInteractionTick) <= 10) {
-            be.progress++;
-            if (be.progress >= PROCESS_TIME) {
-                be.processInput();
-                be.progress = 0;
+            // Only advance if a valid recipe exists for the current input
+            if (be.findRecipe() != null) {
+                be.progress++;
+                if (be.progress >= PROCESS_TIME) {
+                    be.processInput();
+                    be.progress = 0;
+                }
             }
         } else if (be.isSpinning && (currentTick - be.lastInteractionTick) > 10) {
             be.isSpinning = false;
@@ -189,22 +191,42 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
         return ItemStack.EMPTY;
     }
 
-    private void processInput() {
-        if (level == null) return;
+    /**
+     * Recherche une recette de centrifugation pour l'item en entree.
+     */
+    private CentrifugeRecipe findRecipe() {
+        if (level == null) return null;
 
         ItemStack input = inputSlot.getStackInSlot(0);
-        if (input.isEmpty()) return;
+        if (input.isEmpty()) return null;
 
         ProcessingRecipeInput recipeInput = ProcessingRecipeInput.ofItem(input);
-        Optional<RecipeHolder<CentrifugeRecipe>> recipeHolder = level.getRecipeManager().getRecipeFor(
+        return level.getRecipeManager().getRecipeFor(
             BeemancerRecipeTypes.CENTRIFUGING.get(),
             recipeInput,
             level
-        );
+        ).map(RecipeHolder::value).orElse(null);
+    }
 
-        if (recipeHolder.isEmpty()) return;
+    /**
+     * Verifie qu'il y a de la place pour les outputs (au moins 1 slot libre ou non-plein).
+     */
+    private boolean hasOutputSpace() {
+        for (int i = 0; i < outputSlots.getSlots(); i++) {
+            ItemStack existing = outputSlots.getStackInSlot(i);
+            if (existing.isEmpty() || existing.getCount() < existing.getMaxStackSize()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-        CentrifugeRecipe recipe = recipeHolder.get().value();
+    private void processInput() {
+        CentrifugeRecipe recipe = findRecipe();
+        if (recipe == null) return;
+
+        // Check output space before consuming input
+        if (!hasOutputSpace() && !recipe.results().isEmpty()) return;
 
         // Consume 1 input item
         inputSlot.extractItem(0, 1, false);

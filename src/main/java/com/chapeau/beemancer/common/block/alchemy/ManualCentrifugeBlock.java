@@ -16,11 +16,9 @@ import com.chapeau.beemancer.common.blockentity.alchemy.ManualCentrifugeBlockEnt
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -130,14 +128,4 @@ public class ManualCentrifugeBlock extends BaseEntityBlock {
         super.onRemove(state, level, pos, newState, isMoving);
     }
 
-    @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (state.getValue(SPINNING)) {
-            double x = pos.getX() + 0.5;
-            double y = pos.getY() + 0.7;
-            double z = pos.getZ() + 0.5;
-            level.addParticle(ParticleTypes.FALLING_HONEY,
-                x + random.nextDouble() * 0.4 - 0.2, y, z + random.nextDouble() * 0.4 - 0.2, 0, 0, 0);
-        }
-    }
 }

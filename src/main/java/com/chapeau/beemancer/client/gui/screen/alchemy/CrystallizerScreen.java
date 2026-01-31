@@ -1,24 +1,34 @@
 /**
  * ============================================================
  * [CrystallizerScreen.java]
- * Description: GUI pour le cristalliseur avec jauge de fluide amelioree
+ * Description: GUI pour le cristalliseur (rendu programmatique)
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | CrystallizerMenu    | Donnees container    | Output slot, progress, fluid   |
+ * | FluidGaugeWidget    | Jauge de fluide      | Input tank                     |
+ * | GuiRenderHelper     | Rendu programmatique | Background, slots, progress    |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - ClientSetup (enregistrement ecran)
+ *
  * ============================================================
  */
 package com.chapeau.beemancer.client.gui.screen.alchemy;
 
-import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.widget.FluidGaugeWidget;
 import com.chapeau.beemancer.common.menu.alchemy.CrystallizerMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/crystallizer.png");
-
     private FluidGaugeWidget inputGauge;
 
     public CrystallizerScreen(CrystallizerMenu menu, Inventory playerInventory, Component title) {
@@ -30,76 +40,47 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
     @Override
     protected void init() {
         super.init();
-
-        // Initialiser la jauge d'input
         inputGauge = new FluidGaugeWidget(
-            26, 17,     // Position relative au GUI
-            16, 52,     // Dimensions
-            4000,       // Capacite
+            26, 17, 16, 52, 4000,
             () -> menu.getBlockEntity().getInputTank().getFluid(),
             menu::getFluidAmount
         );
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
-        guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
-        // Input fluid tank avec le nouveau widget
-        inputGauge.render(guiGraphics, x, y);
+        GuiRenderHelper.renderContainerBackground(g, font, x, y, imageWidth, imageHeight,
+            "container.beemancer.crystallizer", 79);
+
+        // Output slot (116, 35)
+        GuiRenderHelper.renderSlot(g, x + 115, y + 34);
 
         // Progress bar
         int processTime = menu.getProcessTime();
-        if (processTime > 0) {
-            int progress = menu.getProgress();
-            float ratio = (float) progress / processTime;
+        float ratio = processTime > 0 ? (float) menu.getProgress() / processTime : 0;
+        GuiRenderHelper.renderProgressBar(g, x + 52, y + 39, 56, 6, ratio);
 
-            int barX = x + 52;
-            int barY = y + 39;
-            int barWidth = 56;
-            int barHeight = 6;
+        // Input fluid gauge
+        inputGauge.render(g, x, y);
 
-            // Background (dark)
-            guiGraphics.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF1A1A1A);
-            // Border
-            guiGraphics.fill(barX - 1, barY - 1, barX + barWidth + 1, barY, 0xFF3A3A3A);
-            guiGraphics.fill(barX - 1, barY + barHeight, barX + barWidth + 1, barY + barHeight + 1, 0xFF3A3A3A);
-            guiGraphics.fill(barX - 1, barY, barX, barY + barHeight, 0xFF3A3A3A);
-            guiGraphics.fill(barX + barWidth, barY, barX + barWidth + 1, barY + barHeight, 0xFF3A3A3A);
-
-            // Fill (honey gold gradient)
-            int fillWidth = (int) (barWidth * ratio);
-            if (fillWidth > 0) {
-                guiGraphics.fill(barX, barY, barX + fillWidth, barY + barHeight, 0xFFD4A017);
-                // Highlight top pixel
-                guiGraphics.fill(barX, barY, barX + fillWidth, barY + 1, 0xFFE8B830);
-            }
-        }
+        // Player inventory
+        GuiRenderHelper.renderPlayerInventory(g, x, y, 83, 141);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderTooltip(guiGraphics, mouseX, mouseY);
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+        renderTooltip(g, mouseX, mouseY);
 
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        // Fluid tank tooltip
         if (inputGauge.isMouseOver(x, y, mouseX, mouseY)) {
-            String fluidName = getFluidName();
-            guiGraphics.renderComponentTooltip(font, inputGauge.getTooltip(fluidName), mouseX, mouseY);
+            String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getInputTank().getFluid());
+            g.renderComponentTooltip(font, inputGauge.getTooltip(name), mouseX, mouseY);
         }
-    }
-
-    private String getFluidName() {
-        var fluid = menu.getBlockEntity().getInputTank().getFluid();
-        if (fluid.isEmpty()) return "Empty";
-        String path = fluid.getFluid().builtInRegistryHolder().key().location().getPath();
-        if (path.contains("honey")) return "Honey";
-        if (path.contains("royal_jelly")) return "Royal Jelly";
-        return "Fluid";
     }
 }

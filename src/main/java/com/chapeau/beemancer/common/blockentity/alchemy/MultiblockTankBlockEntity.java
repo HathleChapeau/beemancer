@@ -39,6 +39,7 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -163,98 +164,107 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         return master != null ? master.bucketSlot : bucketSlot;
     }
 
-    // Called when block is placed
+    /**
+     * Appele quand un bloc est place. Utilise BFS pour decouvrir
+     * tous les tanks adjacents et reformer le multibloc entier.
+     */
     public void onPlaced() {
         if (level == null || level.isClientSide()) return;
-
-        // Find adjacent multiblock tanks
-        Set<MultiblockTankBlockEntity> adjacentMasters = new HashSet<>();
-        for (Direction dir : Direction.values()) {
-            BlockPos neighborPos = worldPosition.relative(dir);
-            BlockEntity be = level.getBlockEntity(neighborPos);
-            if (be instanceof MultiblockTankBlockEntity neighbor) {
-                MultiblockTankBlockEntity neighborMaster = neighbor.getMaster();
-                if (neighborMaster != null) {
-                    adjacentMasters.add(neighborMaster);
-                }
-            }
-        }
-
-        if (adjacentMasters.isEmpty()) {
-            // No neighbors - become a new master
-            initializeAsMaster();
-        } else {
-            // Join existing multiblock(s)
-            // If multiple masters, merge them all
-            MultiblockTankBlockEntity primaryMaster = adjacentMasters.iterator().next();
-
-            // Add this block to primary master
-            this.masterPos = primaryMaster.worldPosition;
-            primaryMaster.connectedBlocks.add(worldPosition);
-
-            // First: collect all blocks and calculate total capacity BEFORE merging fluids
-            int totalBlocks = primaryMaster.connectedBlocks.size();
-            FluidStack totalFluid = primaryMaster.fluidTank != null && !primaryMaster.fluidTank.isEmpty()
-                ? primaryMaster.fluidTank.getFluid().copy()
-                : FluidStack.EMPTY;
-
-            for (MultiblockTankBlockEntity otherMaster : adjacentMasters) {
-                if (otherMaster != primaryMaster) {
-                    // Count blocks
-                    totalBlocks += otherMaster.connectedBlocks.size();
-                    // Accumulate fluid
-                    if (otherMaster.fluidTank != null && !otherMaster.fluidTank.isEmpty()) {
-                        FluidStack otherFluid = otherMaster.fluidTank.getFluid();
-                        if (totalFluid.isEmpty()) {
-                            totalFluid = otherFluid.copy();
-                        } else if (totalFluid.getFluid() == otherFluid.getFluid()) {
-                            totalFluid.grow(otherFluid.getAmount());
-                        }
-                        // Incompatible fluids: keep primary's fluid
-                    }
-                }
-            }
-
-            // Update primary master's tank with new capacity BEFORE transferring blocks
-            int newCapacity = totalBlocks * CAPACITY_PER_BLOCK;
-            primaryMaster.fluidTank = primaryMaster.createFluidTank(newCapacity);
-            if (!totalFluid.isEmpty()) {
-                // Truncate if over capacity (shouldn't happen normally)
-                int toFill = Math.min(totalFluid.getAmount(), newCapacity);
-                primaryMaster.fluidTank.fill(new FluidStack(totalFluid.getFluid(), toFill), IFluidHandler.FluidAction.EXECUTE);
-            }
-
-            // Now merge blocks (fluid already handled)
-            for (MultiblockTankBlockEntity otherMaster : adjacentMasters) {
-                if (otherMaster != primaryMaster) {
-                    mergeBlocksInto(otherMaster, primaryMaster);
-                }
-            }
-
-            // Recalculate structure (validates cuboid shape)
-            primaryMaster.recalculateStructure();
-        }
-
+        reformMultiblock();
         setChanged();
     }
 
-    private void mergeBlocksInto(MultiblockTankBlockEntity source, MultiblockTankBlockEntity target) {
+    /**
+     * BFS flood-fill pour decouvrir et reformer tout le multibloc.
+     * Utilise par onPlaced() et performLoadValidation().
+     * Inspire de Create's ConnectivityHandler.formMulti().
+     */
+    private void reformMultiblock() {
         if (level == null) return;
 
-        // Transfer all blocks from source to target (fluid already handled in onPlaced)
-        for (BlockPos pos : source.connectedBlocks) {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof MultiblockTankBlockEntity tank && tank != target) {
-                tank.masterPos = target.worldPosition;
-                target.connectedBlocks.add(pos);
+        // BFS depuis cette position pour trouver tous les tanks connectes
+        Set<BlockPos> found = new HashSet<>();
+        ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+        queue.add(worldPosition);
+        found.add(worldPosition);
+
+        while (!queue.isEmpty()) {
+            BlockPos current = queue.poll();
+            for (Direction dir : Direction.values()) {
+                BlockPos neighbor = current.relative(dir);
+                if (found.contains(neighbor)) continue;
+                if (!level.isLoaded(neighbor)) continue;
+                if (level.getBlockEntity(neighbor) instanceof MultiblockTankBlockEntity) {
+                    found.add(neighbor);
+                    queue.add(neighbor);
+                }
             }
         }
 
-        source.connectedBlocks.clear();
-        source.fluidTank = null;
+        if (found.size() == 1) {
+            initializeAsMaster();
+            recalculateStructure();
+            return;
+        }
+
+        // Elire le master: plus petite position (Y, X, Z)
+        BlockPos newMasterPos = worldPosition;
+        for (BlockPos pos : found) {
+            if (comparePositions(pos, newMasterPos) < 0) {
+                newMasterPos = pos;
+            }
+        }
+
+        BlockEntity masterBe = level.getBlockEntity(newMasterPos);
+        if (!(masterBe instanceof MultiblockTankBlockEntity newMaster)) return;
+
+        // Collecter le fluide depuis tous les anciens masters
+        FluidStack totalFluid = FluidStack.EMPTY;
+        for (BlockPos pos : found) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof MultiblockTankBlockEntity tank && tank.fluidTank != null && !tank.fluidTank.isEmpty()) {
+                FluidStack f = tank.fluidTank.getFluid().copy();
+                if (totalFluid.isEmpty()) {
+                    totalFluid = f;
+                } else if (totalFluid.getFluid() == f.getFluid()) {
+                    totalFluid.grow(f.getAmount());
+                }
+                // Fluides incompatibles: garder le premier trouve
+            }
+        }
+
+        // Configurer le master
+        newMaster.masterPos = null;
+        newMaster.connectedBlocks.clear();
+        newMaster.connectedBlocks.addAll(found);
+        int newCapacity = found.size() * CAPACITY_PER_BLOCK;
+        newMaster.fluidTank = newMaster.createFluidTank(newCapacity);
+        if (!totalFluid.isEmpty()) {
+            int toFill = Math.min(totalFluid.getAmount(), newCapacity);
+            newMaster.fluidTank.fill(new FluidStack(totalFluid.getFluid(), toFill), IFluidHandler.FluidAction.EXECUTE);
+        }
+
+        // Configurer les slaves
+        for (BlockPos pos : found) {
+            if (pos.equals(newMasterPos)) continue;
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof MultiblockTankBlockEntity slave) {
+                slave.masterPos = newMasterPos;
+                slave.fluidTank = null;
+                slave.connectedBlocks.clear();
+                slave.needsLoadValidation = false;
+                slave.setChanged();
+            }
+        }
+
+        newMaster.needsLoadValidation = false;
+        newMaster.recalculateStructure();
     }
 
-    // Called when block is broken
+    /**
+     * Appele quand un bloc est casse. Detruit le fluide et
+     * reforme la structure restante via BFS depuis un voisin.
+     */
     public void onBroken() {
         if (level == null || level.isClientSide()) return;
 
@@ -266,54 +276,27 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             master.fluidTank.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
         }
 
-        // Remove this block from the structure
-        master.connectedBlocks.remove(worldPosition);
-
-        // If this was the master, elect new master
-        if (isMaster()) {
-            electNewMaster();
-        } else {
-            // Just recalculate the master's structure
-            master.recalculateStructure();
-        }
-    }
-
-    private void electNewMaster() {
-        if (level == null || connectedBlocks.isEmpty()) return;
-
-        // Find the block with minimum position (lexicographic: Y, X, Z)
-        BlockPos newMasterPos = null;
-        for (BlockPos pos : connectedBlocks) {
-            if (!pos.equals(worldPosition)) {
-                if (newMasterPos == null || comparePositions(pos, newMasterPos) < 0) {
-                    newMasterPos = pos;
-                }
+        // Find a remaining neighbor to trigger reformation
+        BlockPos reformFrom = null;
+        for (Direction dir : Direction.values()) {
+            BlockPos neighbor = worldPosition.relative(dir);
+            if (level.getBlockEntity(neighbor) instanceof MultiblockTankBlockEntity) {
+                reformFrom = neighbor;
+                break;
             }
         }
 
-        if (newMasterPos == null) return;
+        // Clear this block's state
+        this.masterPos = null;
+        this.connectedBlocks.clear();
+        this.fluidTank = null;
 
-        BlockEntity be = level.getBlockEntity(newMasterPos);
-        if (be instanceof MultiblockTankBlockEntity newMaster) {
-            // Transfer master status
-            newMaster.masterPos = null;
-            newMaster.connectedBlocks.clear();
-            newMaster.connectedBlocks.addAll(connectedBlocks);
-            newMaster.connectedBlocks.remove(worldPosition);
-            newMaster.fluidTank = createFluidTank(newMaster.getTotalCapacity());
-
-            // Update all slaves to point to new master
-            for (BlockPos slavePos : newMaster.connectedBlocks) {
-                if (!slavePos.equals(newMasterPos)) {
-                    BlockEntity slaveBe = level.getBlockEntity(slavePos);
-                    if (slaveBe instanceof MultiblockTankBlockEntity slave) {
-                        slave.masterPos = newMasterPos;
-                        slave.setChanged();
-                    }
-                }
+        // Trigger reformation from a remaining neighbor
+        if (reformFrom != null) {
+            BlockEntity be = level.getBlockEntity(reformFrom);
+            if (be instanceof MultiblockTankBlockEntity neighbor) {
+                neighbor.reformMultiblock();
             }
-
-            newMaster.recalculateStructure();
         }
     }
 
@@ -412,58 +395,18 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         }
     }
 
+    /**
+     * Validation differee apres chargement.
+     * Attend quelques ticks puis reforme le multibloc via BFS.
+     */
     private void performLoadValidation() {
         if (level == null) return;
 
-        // Wait several ticks for all BEs to finish loading (chunks + deserialization)
         loadValidationDelay++;
         if (loadValidationDelay < LOAD_VALIDATION_WAIT_TICKS) return;
 
-        // Additional check: ensure all relevant BEs exist
-        if (isMaster()) {
-            for (BlockPos blockPos : connectedBlocks) {
-                if (blockPos.equals(worldPosition)) continue;
-                if (!level.isLoaded(blockPos)) return;
-                BlockEntity be = level.getBlockEntity(blockPos);
-                if (be == null && loadValidationDelay < LOAD_VALIDATION_WAIT_TICKS * 10) {
-                    return; // BE not deserialized yet, retry
-                }
-            }
-        } else if (masterPos != null) {
-            if (!level.isLoaded(masterPos)) return;
-            BlockEntity be = level.getBlockEntity(masterPos);
-            if (be == null && loadValidationDelay < LOAD_VALIDATION_WAIT_TICKS * 10) {
-                return; // Master BE not deserialized yet, retry
-            }
-        }
-
         needsLoadValidation = false;
-
-        if (isMaster()) {
-            for (BlockPos blockPos : new HashSet<>(connectedBlocks)) {
-                if (blockPos.equals(worldPosition)) continue;
-                BlockEntity be = level.getBlockEntity(blockPos);
-                if (be instanceof MultiblockTankBlockEntity slave) {
-                    slave.masterPos = worldPosition;
-                    slave.needsLoadValidation = false;
-                    slave.setChanged();
-                } else {
-                    connectedBlocks.remove(blockPos);
-                }
-            }
-            recalculateStructure();
-        } else {
-            if (masterPos != null) {
-                BlockEntity be = level.getBlockEntity(masterPos);
-                if (be instanceof MultiblockTankBlockEntity master && master.isMaster()) {
-                    // Master exists and is valid, nothing to do
-                } else {
-                    initializeAsMaster();
-                    recalculateStructure();
-                    setChanged();
-                }
-            }
-        }
+        reformMultiblock();
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MultiblockTankBlockEntity be) {

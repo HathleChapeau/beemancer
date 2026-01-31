@@ -1,22 +1,32 @@
 /**
  * ============================================================
  * [IncubatorScreen.java]
- * Description: GUI de l'incubateur avec barre de progression
+ * Description: GUI de l'incubateur (rendu programmatique)
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | IncubatorMenu       | Donnees container    | Larva slot, progress           |
+ * | GuiRenderHelper     | Rendu programmatique | Background, slot, progress     |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - ClientSetup (enregistrement ecran)
+ *
  * ============================================================
  */
 package com.chapeau.beemancer.client.gui.screen;
 
-import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.common.menu.IncubatorMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class IncubatorScreen extends AbstractContainerScreen<IncubatorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/incubator.png");
 
     public IncubatorScreen(IncubatorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -25,23 +35,26 @@ public class IncubatorScreen extends AbstractContainerScreen<IncubatorMenu> {
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
-        guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
-        
-        // Render progress bar
-        float progress = menu.getProgressRatio();
-        if (progress > 0) {
-            int progressWidth = (int) (24 * progress);
-            // Progress arrow (from texture at 176,0)
-            guiGraphics.blit(TEXTURE, x + 102, y + 35, 176, 0, progressWidth, 16);
-        }
+
+        GuiRenderHelper.renderContainerBackground(g, font, x, y, imageWidth, imageHeight,
+            "container.beemancer.incubator", 79);
+
+        // Larva slot (80, 35)
+        GuiRenderHelper.renderSlot(g, x + 79, y + 34);
+
+        // Progress arrow
+        GuiRenderHelper.renderProgressArrow(g, x + 100, y + 35, menu.getProgressRatio());
+
+        // Player inventory
+        GuiRenderHelper.renderPlayerInventory(g, x, y, 83, 141);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderTooltip(guiGraphics, mouseX, mouseY);
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+        renderTooltip(g, mouseX, mouseY);
     }
 }

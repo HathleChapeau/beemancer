@@ -71,6 +71,21 @@ client/gui/widget/
   - isMouseOver() pour détection survol
 
 ================================================================================
+client/gui/
+================================================================================
+
+- GuiRenderHelper.java: Utilitaire partagé de rendu programmatique pour toutes les GUIs
+  - renderContainerBackground(): fond gris avec bordures 3D, séparateur, labels
+  - renderSlot(): slot 18x18 en creux
+  - renderPlayerInventory(): 27 slots inventaire + 9 slots hotbar
+  - renderProgressArrow(): flèche de progression honey-gold avec remplissage
+  - renderProgressBar(): barre de progression horizontale
+  - getFluidName(): nom de fluide depuis FluidStack
+  - Utilisé par: tous les 10 screens (MagicHive, Incubator, ManualCentrifuge,
+    PoweredCentrifuge, HoneyTank, CreativeTank, MultiblockTank, Crystallizer,
+    Alembic, Infuser)
+
+================================================================================
 core/multiblock/
 ================================================================================
 

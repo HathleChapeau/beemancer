@@ -52,8 +52,9 @@ public class ManualCentrifugeMenu extends BeemancerMenu {
 
         addDataSlots(data);
 
-        // Input slot (gauche)
-        addSlot(BeemancerSlot.combInput(blockEntity.getInputSlot(), 0, 44, 35));
+        // Input slot (gauche) - filtre par recette de centrifugation
+        addSlot(BeemancerSlot.combInput(blockEntity.getInputSlot(), 0, 44, 35)
+            .withFilter(stack -> blockEntity.isValidComb(stack)));
 
         // Output slots (droite, 2x2)
         addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 0, 107, 26));

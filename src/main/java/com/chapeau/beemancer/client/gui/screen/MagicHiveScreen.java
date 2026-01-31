@@ -1,29 +1,38 @@
 /**
  * ============================================================
  * [MagicHiveScreen.java]
- * Description: GUI de la ruche magique avec layout honeycomb
+ * Description: GUI de la ruche magique (rendu programmatique)
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | MagicHiveMenu       | Donnees container    | Bee slots, output, status      |
+ * | MagicHiveBlockEntity| Constantes           | BEE_SLOTS                      |
+ * | GuiRenderHelper     | Rendu programmatique | Background, slots              |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - ClientSetup (enregistrement ecran)
+ *
  * ============================================================
  */
 package com.chapeau.beemancer.client.gui.screen;
 
-import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/magic_hive.png");
-
-    // Positions des icônes de status (coin supérieur droit)
     private static final int ICON_SIZE = 12;
     private static final int ICON_SPACING = 2;
 
@@ -35,148 +44,104 @@ public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
-        guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
+
+        GuiRenderHelper.renderContainerBackground(g, font, x, y, imageWidth, imageHeight,
+            "container.beemancer.magic_hive", 103);
+
+        // Bee assignment slots (5 slots at Y=20, starting X=44, spaced 18px)
+        for (int i = 0; i < 5; i++) {
+            GuiRenderHelper.renderSlot(g, x + 43 + i * 18, y + 19);
+        }
+
+        // Honeycomb output slots (7 slots around center 88, 65)
+        int cx = x + 79, cy = y + 56;
+        GuiRenderHelper.renderSlot(g, cx, cy); // center
+        GuiRenderHelper.renderSlot(g, cx - 10, cy - 17);
+        GuiRenderHelper.renderSlot(g, cx + 10, cy - 17);
+        GuiRenderHelper.renderSlot(g, cx - 20, cy);
+        GuiRenderHelper.renderSlot(g, cx + 20, cy);
+        GuiRenderHelper.renderSlot(g, cx - 10, cy + 17);
+        GuiRenderHelper.renderSlot(g, cx + 10, cy + 17);
+
+        // Player inventory
+        GuiRenderHelper.renderPlayerInventory(g, x, y, 107, 165);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderTooltip(guiGraphics, mouseX, mouseY);
-
-        // Icônes de status permanents
-        renderStatusIcons(guiGraphics, mouseX, mouseY);
-
-        // Smileys pour chaque abeille
-        renderBeeSmileys(guiGraphics, mouseX, mouseY);
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+        renderTooltip(g, mouseX, mouseY);
+        renderStatusIcons(g, mouseX, mouseY);
+        renderBeeSmileys(g);
     }
 
-    private void renderStatusIcons(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    private void renderStatusIcons(GuiGraphics g, int mouseX, int mouseY) {
         int iconX = leftPos + imageWidth - ICON_SIZE - 4;
-        int iconY = topPos + 4;
-        int currentY = iconY;
+        int currentY = topPos + 4;
 
-        // Icône Jour/Nuit (permanent)
-        renderDayNightIcon(guiGraphics, iconX, currentY, mouseX, mouseY);
+        renderIcon(g, iconX, currentY, mouseX, mouseY,
+            menu.isDaytime() ? 0xFFFFEB3B : 0xFF3F51B5,
+            menu.isDaytime() ? "\u2600" : "\u263D",
+            menu.isDaytime() ? "Jour" : "Nuit", ChatFormatting.YELLOW);
         currentY += ICON_SIZE + ICON_SPACING;
 
-        // Icône Température (permanent)
-        renderTemperatureIcon(guiGraphics, iconX, currentY, mouseX, mouseY);
-        currentY += ICON_SIZE + ICON_SPACING;
-
-        // Icône Fleur (si disponible)
-        if (menu.hasFlowers()) {
-            renderFlowerIcon(guiGraphics, iconX, currentY, mouseX, mouseY);
-            currentY += ICON_SIZE + ICON_SPACING;
-        }
-
-        // Icône Champignon (si disponible)
-        if (menu.hasMushrooms()) {
-            renderMushroomIcon(guiGraphics, iconX, currentY, mouseX, mouseY);
-            currentY += ICON_SIZE + ICON_SPACING;
-        }
-
-        // Icône Antibreeding (si crystal présent)
-        if (menu.isAntibreedingMode()) {
-            renderAntibreedingIcon(guiGraphics, iconX, currentY, mouseX, mouseY);
-        }
-    }
-
-    private void renderDayNightIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
-        boolean isDay = menu.isDaytime();
-        int bgColor = isDay ? 0xFFFFEB3B : 0xFF3F51B5; // Jaune jour, bleu nuit
-        String symbol = isDay ? "☀" : "☽";
-
-        guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, bgColor);
-        guiGraphics.drawCenteredString(font, symbol, x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
-
-        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font,
-                    Component.literal(isDay ? "Jour" : "Nuit").withStyle(ChatFormatting.YELLOW),
-                    mouseX, mouseY);
-        }
-    }
-
-    private void renderTemperatureIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
-        int temp = menu.getTemperature(); // -2 à 2
+        int temp = menu.getTemperature();
         int color;
-        String symbol;
-        String tempDesc;
-
+        String symbol, desc;
         switch (temp) {
-            case -2 -> { color = 0xFF00BFFF; symbol = "❄"; tempDesc = "Glacial"; }
-            case -1 -> { color = 0xFF87CEEB; symbol = "~"; tempDesc = "Froid"; }
-            case 0 -> { color = 0xFF90EE90; symbol = "◉"; tempDesc = "Tempéré"; }
-            case 1 -> { color = 0xFFFFD700; symbol = "☼"; tempDesc = "Chaud"; }
-            default -> { color = 0xFFFF4500; symbol = "♨"; tempDesc = "Brûlant"; } // 2+
+            case -2 -> { color = 0xFF00BFFF; symbol = "\u2744"; desc = "Glacial"; }
+            case -1 -> { color = 0xFF87CEEB; symbol = "~"; desc = "Froid"; }
+            case 0 -> { color = 0xFF90EE90; symbol = "\u25C9"; desc = "Temper\u00e9"; }
+            case 1 -> { color = 0xFFFFD700; symbol = "\u263C"; desc = "Chaud"; }
+            default -> { color = 0xFFFF4500; symbol = "\u2668"; desc = "Br\u00fblant"; }
         }
+        renderIcon(g, iconX, currentY, mouseX, mouseY, color, symbol,
+            "Temp\u00e9rature: " + desc + " (" + temp + ")", ChatFormatting.GOLD);
+        currentY += ICON_SIZE + ICON_SPACING;
 
-        guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, color);
-        guiGraphics.drawCenteredString(font, symbol, x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
-
-        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font,
-                    Component.literal("Température: " + tempDesc + " (" + temp + ")").withStyle(ChatFormatting.GOLD),
-                    mouseX, mouseY);
+        if (menu.hasFlowers()) {
+            renderIcon(g, iconX, currentY, mouseX, mouseY, 0xFF4CAF50, "\u273F",
+                "Fleurs disponibles", ChatFormatting.GREEN);
+            currentY += ICON_SIZE + ICON_SPACING;
         }
-    }
-
-    private void renderFlowerIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
-        guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, 0xFF4CAF50); // Vert
-        guiGraphics.drawCenteredString(font, "✿", x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
-
-        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font,
-                    Component.literal("Fleurs disponibles").withStyle(ChatFormatting.GREEN),
-                    mouseX, mouseY);
+        if (menu.hasMushrooms()) {
+            renderIcon(g, iconX, currentY, mouseX, mouseY, 0xFF8B4513, "\uD83C\uDF44",
+                "Champignons disponibles", ChatFormatting.GOLD);
+            currentY += ICON_SIZE + ICON_SPACING;
         }
-    }
-
-    private void renderMushroomIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
-        guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, 0xFF8B4513); // Marron
-        guiGraphics.drawCenteredString(font, "🍄", x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
-
-        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font,
-                    Component.literal("Champignons disponibles").withStyle(ChatFormatting.GOLD),
-                    mouseX, mouseY);
+        if (menu.isAntibreedingMode()) {
+            g.fill(iconX, currentY, iconX + ICON_SIZE, currentY + ICON_SIZE, 0xFFCC0000);
+            g.drawCenteredString(font, "\u2298", iconX + ICON_SIZE / 2, currentY + 2, 0xFFFFFFFF);
+            if (isHovering(iconX - leftPos, currentY - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+                List<Component> tt = new ArrayList<>();
+                tt.add(Component.literal("Crystal Antibreeding actif").withStyle(ChatFormatting.RED));
+                tt.add(Component.literal("Les abeilles ne se reproduisent pas").withStyle(ChatFormatting.GRAY));
+                g.renderComponentTooltip(font, tt, mouseX, mouseY);
+            }
         }
     }
 
-    private void renderAntibreedingIcon(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY) {
-        // Rond rouge barré
-        guiGraphics.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, 0xFFCC0000); // Rouge
-        guiGraphics.drawCenteredString(font, "⊘", x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
-
-        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
-            List<Component> tooltip = new ArrayList<>();
-            tooltip.add(Component.literal("Crystal Antibreeding actif").withStyle(ChatFormatting.RED));
-            tooltip.add(Component.literal("Les abeilles ne se reproduisent pas").withStyle(ChatFormatting.GRAY));
-            guiGraphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
+    private void renderIcon(GuiGraphics g, int x, int y, int mx, int my,
+                            int bgColor, String symbol, String tooltip, ChatFormatting color) {
+        g.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, bgColor);
+        g.drawCenteredString(font, symbol, x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
+        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mx, my)) {
+            g.renderTooltip(font, Component.literal(tooltip).withStyle(color), mx, my);
         }
     }
 
-    private void renderBeeSmileys(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        // Position des slots d'abeilles
+    private void renderBeeSmileys(GuiGraphics g) {
         int beeSlotY = topPos + 20;
         int beeSlotStartX = leftPos + 44;
-
         for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
-            // Vérifier si le slot a une abeille
             if (menu.getContainer().getItem(i).isEmpty()) continue;
-
             int slotX = beeSlotStartX + i * 18;
-            int smileyX = slotX + 12; // Coin supérieur droit du slot
-            int smileyY = beeSlotY - 2;
-
             boolean canForage = menu.canBeeForage(i);
-            int color = canForage ? 0xFF00FF00 : 0xFFFF0000; // Vert ou rouge
-            String smiley = canForage ? "☺" : "☹";
-
-            // Dessiner le smiley
-            guiGraphics.drawString(font, smiley, smileyX, smileyY, color, false);
+            g.drawString(font, canForage ? "\u263A" : "\u2639",
+                slotX + 12, beeSlotY - 2, canForage ? 0xFF00FF00 : 0xFFFF0000, false);
         }
     }
 }

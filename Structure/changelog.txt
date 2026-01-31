@@ -3,6 +3,41 @@
 ################################################################################
 
 ================================================================================
+2026-01-31 - GUI Overhaul programmatique + Fixes (crank, centrifuge, tank)
+================================================================================
+
+4 changements majeurs dans cette session:
+
+1. OVERHAUL GUI PROGRAMMATIQUE (10 screens)
+   Conversion de tous les écrans containers du rendu texture vers rendu
+   programmatique (GuiGraphics.fill()). Création de GuiRenderHelper.java
+   (utilitaire partagé) utilisé par les 10 screens.
+
+   JAVA CRÉÉ (1):
+   - client/gui/GuiRenderHelper.java: background, slots, inventory, progress
+
+   JAVA MODIFIÉS (10 screens):
+   - MagicHiveScreen, IncubatorScreen, ManualCentrifugeScreen,
+     PoweredCentrifugeScreen, HoneyTankScreen, CreativeTankScreen,
+     MultiblockTankScreen, CrystallizerScreen, AlembicScreen, InfuserScreen
+
+2. SUPPRESSION SONS ET PARTICULES CRANK
+   - CrankBlock.java: suppression SoundEvents.WOOD_HIT
+   - ManualCentrifugeBlock.java: suppression animateTick() (FALLING_HONEY)
+
+3. FIX CENTRIFUGE PROCESSING
+   - ManualCentrifugeBlockEntity.java: ajout findRecipe(), hasOutputSpace(),
+     validation recette avant avancement progress, réécriture processInput()
+   - ManualCentrifugeMenu.java: ajout filtre slot input (.withFilter())
+   - honeycomb.json: recette vanilla honeycomb → pollen (50%) + 100mB honey
+
+4. FIX MULTIBLOCK TANK DISCONNECT/RECONNECT
+   - MultiblockTankBlockEntity.java: réécriture complète avec BFS flood-fill
+     reformation (inspiré Create ConnectivityHandler). Suppression des méthodes
+     mergeBlocksInto() et electNewMaster(). Ajout reformMultiblock() avec
+     découverte BFS, élection master, collecte fluide, setup master/slaves.
+
+================================================================================
 2026-01-30 - Multiblock Tank: Apparence Honey Tank + Connexions visuelles
 ================================================================================
 
