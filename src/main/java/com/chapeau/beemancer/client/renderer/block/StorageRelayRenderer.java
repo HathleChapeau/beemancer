@@ -32,6 +32,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 
 import java.util.Set;
@@ -125,6 +126,14 @@ public class StorageRelayRenderer implements BlockEntityRenderer<StorageRelayBlo
     @Override
     public boolean shouldRenderOffScreen(StorageRelayBlockEntity blockEntity) {
         return blockEntity.isEditMode();
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(StorageRelayBlockEntity blockEntity) {
+        if (blockEntity.isEditMode()) {
+            return new AABB(blockEntity.getBlockPos()).inflate(StorageRelayBlockEntity.MAX_RANGE);
+        }
+        return new AABB(blockEntity.getBlockPos());
     }
 
     @Override

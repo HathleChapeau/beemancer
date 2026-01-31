@@ -40,6 +40,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 
@@ -276,6 +277,14 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
     @Override
     public boolean shouldRenderOffScreen(StorageControllerBlockEntity blockEntity) {
         return blockEntity.isEditMode() || blockEntity.isFormed();
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(StorageControllerBlockEntity blockEntity) {
+        if (blockEntity.isEditMode()) {
+            return new AABB(blockEntity.getBlockPos()).inflate(StorageControllerBlockEntity.MAX_RANGE);
+        }
+        return new AABB(blockEntity.getBlockPos()).inflate(1.0);
     }
 
     @Override
