@@ -233,6 +233,35 @@ public class GuiRenderHelper {
     }
 
     /**
+     * Onglet vertical avec bordure 3D.
+     * L'onglet actif fusionne avec le panneau à droite (pas de bordure droite).
+     * L'onglet inactif est enfoncé.
+     */
+    public static void renderVerticalTab(GuiGraphics g, Font font,
+                                          int x, int y, int w, int h,
+                                          boolean active, String label) {
+        if (active) {
+            g.fill(x, y, x + w, y + h, 0xFFC6C6C6);
+            // Bordures top/left/bottom (light top/left, dark bottom)
+            g.fill(x, y, x + w, y + 1, 0xFFFFFFFF);
+            g.fill(x, y, x + 1, y + h, 0xFFFFFFFF);
+            g.fill(x, y + h - 1, x + w, y + h, 0xFF555555);
+        } else {
+            g.fill(x + 2, y, x + w, y + h, 0xFFAAAAAA);
+            g.fill(x + 2, y, x + w, y + 1, 0xFFDBDBDB);
+            g.fill(x + 2, y, x + 3, y + h, 0xFFDBDBDB);
+            g.fill(x + 2, y + h - 1, x + w, y + h, 0xFF555555);
+            g.fill(x + w - 1, y, x + w, y + h, 0xFF7B7B7B);
+        }
+
+        // Label centré (single char)
+        int textWidth = font.width(label);
+        int textX = x + (w - textWidth) / 2;
+        int textY = y + (h - 8) / 2;
+        g.drawString(font, label, textX, textY, active ? 0x404040 : 0x606060, false);
+    }
+
+    /**
      * Nom lisible d'un fluide Beemancer.
      */
     public static String getFluidName(FluidStack fluid) {

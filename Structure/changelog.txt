@@ -3,6 +3,34 @@
 ################################################################################
 
 ================================================================================
+2026-01-31 - Storage Terminal GUI Layout Refonte (v2)
+================================================================================
+
+Refonte complète du layout GUI du Storage Terminal:
+
+1. LAYOUT DEUX PANNEAUX (258x230)
+   - Panneau gauche: deposit 3x3, craft 3x3, result slot, pickup 3x3
+   - Panneau droit: search + grille virtuelle 9x5 + scrollbar + inventaire joueur
+
+2. ONGLETS VERTICAUX
+   - Onglets S/T/C à gauche du panneau gauche (x=2)
+   - renderVerticalTab() ajouté dans GuiRenderHelper
+   - Onglet actif fusionne visuellement avec le panneau
+
+3. SUPPRESSION FLÈCHE PROGRESSION
+   - Retrait de renderProgressArrow() du rendu Storage tab
+   - La méthode reste dans GuiRenderHelper (utilisée ailleurs)
+
+4. SLOT VISIBILITY VIA isActive()
+   - Remplacement du repositionnement Y=-9999 par isActive() override
+   - 4 inner classes: TabSlot, OutputOnlyTabSlot, TabResultSlot, TabBeemancerSlot
+
+Fichiers modifiés:
+- StorageTerminalScreen.java (rewrite complet)
+- StorageTerminalMenu.java (positions slots + inner classes)
+- GuiRenderHelper.java (+renderVerticalTab)
+
+================================================================================
 2026-01-31 - Storage Terminal Overhaul (8 changements interconnectés)
 ================================================================================
 

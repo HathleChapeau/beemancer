@@ -13,8 +13,8 @@ ARCHITECTURE
 ================================================================================
 
 Le terminal utilise un menu unique (StorageTerminalMenu) contenant tous les slots
-pour les 3 onglets. Les slots sont masqués/affichés en changeant leur position Y
-(-9999 pour masquer).
+pour les 3 onglets. Les slots sont masqués/affichés via isActive() sur des sous-classes de Slot
+(TabSlot, OutputOnlyTabSlot, TabResultSlot, TabBeemancerSlot).
 
 SLOTS (68 total):
 | Indices | Contenu                    | Onglet     |
@@ -80,10 +80,13 @@ TÂCHES:
 - Annulation récursive des dépendances
 - Pour DEPOSIT: remet les items dans le réseau
 
-GUI:
+GUI (layout v2 — deux panneaux):
 - Rendu 100% programmatique (GuiRenderHelper)
-- 230x280 pixels
-- Search box, grille virtuelle 9x5 avec scroll
-- Onglets cliquables en haut
+- 258x230 pixels
+- Onglets verticaux à gauche (S/T/C) via renderVerticalTab()
+- Panneau gauche: deposit 3x3 + craft 3x3 + result + pickup 3x3 (empilés)
+- Panneau droit: search box + grille virtuelle 9x5 + scrollbar
+- Inventaire joueur dans le panneau droit
 - Tasks: connecteurs L pour dépendances, bouton X pour annuler
 - Controller: stats + 4 essence slots
+- Pas de flèche de progression (retirée)

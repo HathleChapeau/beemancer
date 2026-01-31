@@ -40,57 +40,67 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 
 /**
- * Screen du Storage Terminal avec rendu 100% programmatique (style Crystallizer).
+ * Screen du Storage Terminal avec layout panneau gauche + droite.
  *
- * 3 onglets:
- * - Storage: grille items, dépôt, pickup, crafting, recherche
- * - Tasks: liste des tâches avec dépendances et annulation
- * - Controller: stats et slots essence
+ * Gauche: onglets verticaux + deposit/craft/result/pickup
+ * Droite: search + grille virtuelle 9x5 + inventaire joueur
  */
 public class StorageTerminalScreen extends AbstractContainerScreen<StorageTerminalMenu> {
 
     // Dimensions
-    private static final int GUI_WIDTH = 230;
-    private static final int GUI_HEIGHT = 280;
+    private static final int GUI_WIDTH = 258;
+    private static final int GUI_HEIGHT = 230;
 
-    // Tab bar
-    private static final int TAB_Y_OFFSET = -16;
-    private static final int TAB_HEIGHT = 16;
+    // Vertical tabs (far left)
+    private static final int VTAB_X = 2;
+    private static final int VTAB_Y = 4;
+    private static final int VTAB_W = 18;
+    private static final int VTAB_H = 20;
+    private static final int VTAB_GAP = 2;
 
-    // Storage tab: search
-    private static final int SEARCH_X = 8;
+    // Left panel — deposit/craft/result/pickup
+    private static final int DEPOSIT_LABEL_X = 22;
+    private static final int DEPOSIT_LABEL_Y = 4;
+    private static final int DEPOSIT_RENDER_X = 23;
+    private static final int DEPOSIT_RENDER_Y = 14;
+
+    private static final int CRAFT_LABEL_X = 22;
+    private static final int CRAFT_LABEL_Y = 72;
+    private static final int CRAFT_RENDER_X = 23;
+    private static final int CRAFT_RENDER_Y = 82;
+
+    private static final int RESULT_RENDER_X = 40;
+    private static final int RESULT_RENDER_Y = 138;
+
+    private static final int PICKUP_LABEL_X = 22;
+    private static final int PICKUP_LABEL_Y = 160;
+    private static final int PICKUP_RENDER_X = 23;
+    private static final int PICKUP_RENDER_Y = 170;
+
+    // Right panel — search + virtual grid
+    private static final int SEARCH_X = 82;
     private static final int SEARCH_Y = 6;
-    private static final int SEARCH_WIDTH = 194;
+    private static final int SEARCH_WIDTH = 154;
 
-    // Storage tab: virtual grid
     private static final int GRID_COLS = 9;
     private static final int GRID_ROWS = 5;
-    private static final int GRID_X = 8;
+    private static final int GRID_X = 82;
     private static final int GRID_Y = 24;
     private static final int SLOT_SIZE = 18;
 
-    // Scroll
-    private static final int SCROLLBAR_X = 172;
+    private static final int SCROLLBAR_X = 246;
     private static final int SCROLLBAR_Y = 24;
     private static final int SCROLLBAR_HEIGHT = 90;
 
-    // Storage tab: deposit / craft / pickup (below grid)
-    private static final int SECTION_Y = 118;
-    private static final int DEPOSIT_RENDER_X = 8;
-    private static final int CRAFT_RENDER_X = 68;
-    private static final int RESULT_RENDER_X = 148;
-    private static final int PICKUP_RENDER_X = 174;
-
-    // Player inventory
-    private static final int PLAYER_INV_RENDER_X = 35;
-    private static final int PLAYER_INV_Y = 178;
-    private static final int HOTBAR_RENDER_Y = 236;
+    // Right panel — player inventory
+    private static final int PLAYER_INV_RENDER_X = 89;
+    private static final int PLAYER_INV_Y = 134;
+    private static final int HOTBAR_RENDER_Y = 194;
 
     // Tasks tab
-    private static final int TASK_LIST_X = 8;
+    private static final int TASK_LIST_X = 82;
     private static final int TASK_LIST_Y = 6;
     private static final int TASK_ROW_HEIGHT = 18;
     private static final int TASK_CANCEL_SIZE = 10;
@@ -114,14 +124,12 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         super(menu, playerInventory, title);
         this.imageWidth = GUI_WIDTH;
         this.imageHeight = GUI_HEIGHT;
-        this.inventoryLabelY = this.imageHeight - 94;
     }
 
     @Override
     protected void init() {
         super.init();
 
-        // Search box (only visible on Storage tab)
         int searchX = this.leftPos + SEARCH_X;
         int searchY = this.topPos + SEARCH_Y;
         this.searchBox = new EditBox(this.font, searchX, searchY, SEARCH_WIDTH, 14,
@@ -170,33 +178,80 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         // Main background
         GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, GUI_WIDTH, GUI_HEIGHT);
 
-        // Tab bar
-        renderTabs(g, x, y, mouseX, mouseY);
+        // Vertical tabs
+        renderVerticalTabs(g, x, y, mouseX, mouseY);
 
-        // Tab content
+        // Left panel: deposit/craft/result/pickup slot backgrounds + labels
+        renderLeftPanel(g, x, y);
+
+        // Tab content (right panel area)
         switch (activeTab) {
             case STORAGE -> renderStorageTab(g, x, y, mouseX, mouseY);
             case TASKS -> renderTasksTab(g, x, y, mouseX, mouseY);
             case CONTROLLER -> renderControllerTab(g, x, y, mouseX, mouseY);
         }
 
-        // Player inventory (all tabs)
-        GuiRenderHelper.renderPlayerInventory(g, x, y, PLAYER_INV_Y, HOTBAR_RENDER_Y);
+        // Player inventory (right panel, all tabs)
+        renderPlayerInv(g, x, y);
 
-        // Request popup (on top of everything)
+        // Request popup (on top)
         if (showRequestPopup) {
             renderRequestPopup(g, mouseX, mouseY);
         }
     }
 
-    private void renderTabs(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        String[] labels = {
-            Component.translatable(StorageTab.STORAGE.getTranslationKey()).getString(),
-            Component.translatable(StorageTab.TASKS.getTranslationKey()).getString(),
-            Component.translatable(StorageTab.CONTROLLER.getTranslationKey()).getString()
-        };
-        GuiRenderHelper.renderTabBar(g, this.font, x, y + TAB_Y_OFFSET,
-            GUI_WIDTH, labels, activeTab.ordinal());
+    private void renderVerticalTabs(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
+        String[] labels = {"S", "T", "C"};
+        for (int i = 0; i < 3; i++) {
+            int tabY = y + VTAB_Y + i * (VTAB_H + VTAB_GAP);
+            GuiRenderHelper.renderVerticalTab(g, this.font,
+                x + VTAB_X, tabY, VTAB_W, VTAB_H,
+                activeTab.ordinal() == i, labels[i]);
+        }
+    }
+
+    private void renderLeftPanel(GuiGraphics g, int x, int y) {
+        // Deposit
+        g.drawString(font, Component.translatable("gui.beemancer.terminal.deposit"),
+            x + DEPOSIT_LABEL_X, y + DEPOSIT_LABEL_Y, 0x404040, false);
+        GuiRenderHelper.renderSlotGrid(g, x + DEPOSIT_RENDER_X, y + DEPOSIT_RENDER_Y, 3, 3);
+
+        // Craft
+        g.drawString(font, Component.translatable("gui.beemancer.terminal.craft"),
+            x + CRAFT_LABEL_X, y + CRAFT_LABEL_Y, 0x404040, false);
+        GuiRenderHelper.renderSlotGrid(g, x + CRAFT_RENDER_X, y + CRAFT_RENDER_Y, 3, 3);
+
+        // Result slot (below craft, offset right)
+        GuiRenderHelper.renderSlot(g, x + RESULT_RENDER_X, y + RESULT_RENDER_Y);
+
+        // Pickup
+        g.drawString(font, Component.translatable("gui.beemancer.terminal.pickup"),
+            x + PICKUP_LABEL_X, y + PICKUP_LABEL_Y, 0x404040, false);
+        GuiRenderHelper.renderSlotGrid(g, x + PICKUP_RENDER_X, y + PICKUP_RENDER_Y, 3, 3);
+    }
+
+    private void renderPlayerInv(GuiGraphics g, int x, int y) {
+        // Separator line
+        g.fill(x + 82, y + 120, x + GUI_WIDTH - 7, y + 121, 0xFF8B8B8B);
+
+        // Inventory label
+        g.drawString(font, Component.translatable("container.inventory"),
+            x + PLAYER_INV_RENDER_X, y + 123, 0x404040, false);
+
+        // Inventory slot backgrounds
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                GuiRenderHelper.renderSlot(g,
+                    x + PLAYER_INV_RENDER_X + col * 18,
+                    y + PLAYER_INV_Y + row * 18);
+            }
+        }
+        // Hotbar
+        for (int col = 0; col < 9; col++) {
+            GuiRenderHelper.renderSlot(g,
+                x + PLAYER_INV_RENDER_X + col * 18,
+                y + HOTBAR_RENDER_Y);
+        }
     }
 
     // === Storage Tab ===
@@ -208,31 +263,8 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         // Scrollbar
         renderScrollbar(g, x, y);
 
-        // Section labels
-        g.drawString(font, Component.translatable("gui.beemancer.terminal.deposit"),
-            x + DEPOSIT_RENDER_X, y + SECTION_Y - 10, 0x404040, false);
-        g.drawString(font, Component.translatable("gui.beemancer.terminal.craft"),
-            x + CRAFT_RENDER_X, y + SECTION_Y - 10, 0x404040, false);
-        g.drawString(font, Component.translatable("gui.beemancer.terminal.pickup"),
-            x + PICKUP_RENDER_X, y + SECTION_Y - 10, 0x404040, false);
-
-        // Deposit slots background (3x3)
-        GuiRenderHelper.renderSlotGrid(g, x + DEPOSIT_RENDER_X, y + SECTION_Y, 3, 3);
-
-        // Crafting grid background (3x3)
-        GuiRenderHelper.renderSlotGrid(g, x + CRAFT_RENDER_X, y + SECTION_Y, 3, 3);
-
-        // Crafting result slot
-        GuiRenderHelper.renderSlot(g, x + RESULT_RENDER_X, y + SECTION_Y + 18);
-
-        // Arrow indicator (craft -> result)
-        GuiRenderHelper.renderProgressArrow(g, x + CRAFT_RENDER_X + 56, y + SECTION_Y + 18, 1.0f);
-
-        // Pickup slots background (3x3)
-        GuiRenderHelper.renderSlotGrid(g, x + PICKUP_RENDER_X, y + SECTION_Y, 3, 3);
-
         // Pending indicator
-        renderPendingIndicator(g, x, y, mouseX, mouseY);
+        renderPendingIndicator(g, x, y);
     }
 
     private void renderVirtualGrid(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
@@ -244,22 +276,17 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
                 int slotX = x + GRID_X + col * SLOT_SIZE;
                 int slotY = y + GRID_Y + row * SLOT_SIZE;
 
-                // Slot background
                 GuiRenderHelper.renderSlot(g, slotX, slotY);
 
                 if (index < displayedItems.size()) {
                     ItemStack stack = displayedItems.get(index);
-
-                    // Item icon
                     g.renderItem(stack, slotX + 1, slotY + 1);
 
-                    // Count
                     String countStr = formatCount(stack.getCount());
                     g.drawString(this.font, countStr,
                         slotX + 17 - this.font.width(countStr),
                         slotY + 9, 0xFFFFFF, true);
 
-                    // Hover highlight
                     if (isMouseOverSlot(slotX, slotY, mouseX, mouseY)) {
                         g.fillGradient(slotX + 1, slotY + 1,
                             slotX + 17, slotY + 17,
@@ -275,10 +302,8 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int scrollX = x + SCROLLBAR_X;
         int scrollY = y + SCROLLBAR_Y;
 
-        // Track background
         g.fill(scrollX, scrollY, scrollX + 12, scrollY + SCROLLBAR_HEIGHT, 0xFF8B8B8B);
 
-        // Thumb
         if (maxScroll <= 0) {
             g.fill(scrollX + 1, scrollY + 1, scrollX + 11, scrollY + 16, 0xFFC6C6C6);
         } else {
@@ -289,22 +314,14 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         }
     }
 
-    private void renderPendingIndicator(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
+    private void renderPendingIndicator(GuiGraphics g, int x, int y) {
         int pendingCount = menu.getPendingItemCount();
         if (pendingCount <= 0) return;
 
-        int indicatorX = x + PICKUP_RENDER_X;
-        int indicatorY = y + SECTION_Y - 20;
-        int indicatorWidth = 54;
-        int indicatorHeight = 10;
-
-        g.fill(indicatorX, indicatorY, indicatorX + indicatorWidth, indicatorY + indicatorHeight, 0xFFFF8800);
-        g.fill(indicatorX + 1, indicatorY + 1, indicatorX + indicatorWidth - 1, indicatorY + indicatorHeight - 1, 0xFF442200);
-
-        String text = "\u23F3 " + formatCount(pendingCount);
-        int textWidth = this.font.width(text);
-        int textX = indicatorX + (indicatorWidth - textWidth) / 2;
-        g.drawString(this.font, text, textX, indicatorY + 1, 0xFFFFAA00, false);
+        int indicatorX = x + GRID_X;
+        int indicatorY = y + GRID_Y + GRID_ROWS * SLOT_SIZE + 2;
+        String text = "\u23F3 " + formatCount(pendingCount) + " pending";
+        g.drawString(this.font, text, indicatorX, indicatorY, 0xFFFFAA00, false);
     }
 
     // === Tasks Tab ===
@@ -315,6 +332,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int queuedCount = menu.getQueuedTaskCount();
 
         int currentY = y + TASK_LIST_Y;
+        int rightWidth = GUI_WIDTH - TASK_LIST_X;
 
         // Active Tasks header
         g.drawString(font, Component.translatable("gui.beemancer.tasks.active")
@@ -322,7 +340,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             x + TASK_LIST_X, currentY, 0xFFAA00, false);
         currentY += 12;
 
-        // Render each task
         int maxVisible = 8;
         int rendered = 0;
 
@@ -331,7 +348,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             boolean isActive = task.state().equals("FLYING") || task.state().equals("WAITING")
                 || task.state().equals("RETURNING");
 
-            // Separator between active and queued
             if (!isActive && rendered > 0 && i > 0) {
                 TaskDisplayData prev = tasks.get(i - 1);
                 boolean prevActive = prev.state().equals("FLYING") || prev.state().equals("WAITING")
@@ -345,43 +361,40 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
                 }
             }
 
-            // Dependency connector (L shape)
+            // Dependency connector
             if (!task.dependencyIds().isEmpty()) {
-                g.fill(x + TASK_LIST_X + 2, currentY - 2, x + TASK_LIST_X + 3, currentY + 8, 0xFF888888);
-                g.fill(x + TASK_LIST_X + 2, currentY + 7, x + TASK_LIST_X + 10, currentY + 8, 0xFF888888);
-                g.drawString(font, "L", x + TASK_LIST_X, currentY, 0xFF888888, false);
+                g.fill(x + TASK_LIST_X + 2, currentY - 2,
+                    x + TASK_LIST_X + 3, currentY + 8, 0xFF888888);
+                g.fill(x + TASK_LIST_X + 2, currentY + 7,
+                    x + TASK_LIST_X + 10, currentY + 8, 0xFF888888);
             }
 
             int taskX = x + TASK_LIST_X + (task.dependencyIds().isEmpty() ? 0 : 12);
 
-            // Item icon
             if (!task.template().isEmpty()) {
                 g.renderItem(task.template(), taskX, currentY);
             }
 
-            // Item name + count
             String itemName = task.template().getHoverName().getString();
             if (itemName.length() > 16) itemName = itemName.substring(0, 14) + "..";
             g.drawString(font, itemName + " x" + task.count(),
                 taskX + 18, currentY + 4, 0xFFFFFF, false);
 
-            // State badge
             int stateColor = getStateColor(task.state());
             String stateLabel = getStateLabel(task.state());
             int stateX = x + GUI_WIDTH - 60;
             g.drawString(font, stateLabel, stateX, currentY + 4, stateColor, false);
 
-            // Type indicator
             String typeChar = task.type().equals("DEPOSIT") ? "\u2193" : "\u2191";
             int typeColor = task.type().equals("DEPOSIT") ? 0xFF44AA44 : 0xFF4488FF;
             g.drawString(font, typeChar, stateX - 10, currentY + 4, typeColor, false);
 
-            // Cancel button (X)
             int cancelX = x + GUI_WIDTH - 18;
             int cancelY = currentY + 2;
             boolean hoverCancel = mouseX >= cancelX && mouseX < cancelX + TASK_CANCEL_SIZE &&
                 mouseY >= cancelY && mouseY < cancelY + TASK_CANCEL_SIZE;
-            g.drawString(font, "X", cancelX, cancelY, hoverCancel ? 0xFFFF4444 : 0xFFAA0000, false);
+            g.drawString(font, "X", cancelX, cancelY,
+                hoverCancel ? 0xFFFF4444 : 0xFFAA0000, false);
 
             currentY += TASK_ROW_HEIGHT;
             rendered++;
@@ -420,58 +433,53 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     // === Controller Tab ===
 
     private void renderControllerTab(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        int statX = x + 8;
+        int statX = x + TASK_LIST_X;
         int statY = y + 10;
         int lineHeight = 14;
+        int rightEdge = x + GUI_WIDTH - 8;
 
-        // Title
         g.drawString(font, Component.translatable("container.beemancer.storage_controller"),
             statX, statY, 0x404040, false);
         statY += lineHeight + 4;
 
-        // Stats
-        drawStat(g, x, statX, statY, "gui.beemancer.storage_controller.flight_speed",
+        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.flight_speed",
             menu.getFlightSpeed() + "%");
         statY += lineHeight;
-
-        drawStat(g, x, statX, statY, "gui.beemancer.storage_controller.search_speed",
+        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.search_speed",
             menu.getSearchSpeed() + "%");
         statY += lineHeight;
-
-        drawStat(g, x, statX, statY, "gui.beemancer.storage_controller.craft_speed",
+        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.craft_speed",
             menu.getCraftSpeed() + "%");
         statY += lineHeight;
-
-        drawStat(g, x, statX, statY, "gui.beemancer.storage_controller.quantity",
+        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.quantity",
             String.valueOf(menu.getQuantity()));
         statY += lineHeight;
-
-        drawStat(g, x, statX, statY, "gui.beemancer.storage_controller.honey_consumption",
+        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.honey_consumption",
             menu.getHoneyConsumption() + " mB/s");
         statY += lineHeight;
 
         int effBonus = menu.getHoneyEfficiency();
         String effText = effBonus > 0 ? "100% + " + effBonus + "%" : "100%";
-        drawStat(g, x, statX, statY, "gui.beemancer.storage_controller.honey_efficiency", effText);
+        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.honey_efficiency",
+            effText);
         statY += lineHeight + 8;
 
-        // Essence slots label
+        // Essence slots label + background
         g.drawString(font, Component.translatable("gui.beemancer.terminal.essences"),
             statX, statY - 2, 0x404040, false);
 
-        // Essence slots background (4 slots)
-        int essenceRenderX = x + 77;
+        int essenceRenderX = x + 155;
         int essenceRenderY = y + 80;
         for (int i = 0; i < 4; i++) {
             GuiRenderHelper.renderSlot(g, essenceRenderX + i * 20, essenceRenderY);
         }
     }
 
-    private void drawStat(GuiGraphics g, int containerX, int labelX, int y,
+    private void drawStat(GuiGraphics g, int rightEdge, int labelX, int y,
                            String labelKey, String value) {
         g.drawString(font, Component.translatable(labelKey), labelX, y, 0x404040, false);
         int valueWidth = font.width(value);
-        g.drawString(font, value, containerX + GUI_WIDTH - 8 - valueWidth, y, 0x206040, false);
+        g.drawString(font, value, rightEdge - valueWidth, y, 0x206040, false);
     }
 
     // === Request Popup ===
@@ -482,29 +490,23 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int popupX = (this.width - popupWidth) / 2;
         int popupY = (this.height - popupHeight) / 2;
 
-        // Background
         g.fill(popupX - 2, popupY - 2, popupX + popupWidth + 2, popupY + popupHeight + 2, 0xFF000000);
         g.fill(popupX, popupY, popupX + popupWidth, popupY + popupHeight, 0xFF3C3C3C);
 
-        // Title
         Component title = Component.translatable("gui.beemancer.storage_terminal.request");
         g.drawCenteredString(this.font, title, popupX + popupWidth / 2, popupY + 5, 0xFFFFFF);
 
-        // Item icon and name
         g.renderItem(requestItem, popupX + 10, popupY + 20);
         String name = requestItem.getHoverName().getString();
         if (name.length() > 14) name = name.substring(0, 12) + "..";
         g.drawString(this.font, name, popupX + 30, popupY + 24, 0xFFFFFF);
 
-        // Count display
         String countText = String.valueOf(requestCount);
         g.drawCenteredString(this.font, countText, popupX + popupWidth / 2, popupY + 42, 0xFFFF00);
 
-        // Buttons: --- -- - [count] + ++ +++
         int buttonY = popupY + 55;
         int[] positions = {popupX + 5, popupX + 25, popupX + 45, popupX + 70, popupX + 85, popupX + 100};
         String[] labels = {"---", "--", "-", "+", "++", "+++"};
-        int[] deltas = {-64, -10, -1, 1, 10, 64};
 
         for (int i = 0; i < 6; i++) {
             boolean hover = mouseX >= positions[i] && mouseX < positions[i] + 15 &&
@@ -513,7 +515,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             g.drawString(this.font, labels[i], positions[i], buttonY, color);
         }
 
-        // Cancel / Request buttons
         int cancelX = popupX + 10;
         int requestXBtn = popupX + 70;
         int actionY = popupY + popupHeight - 15;
@@ -536,7 +537,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         super.render(g, mouseX, mouseY, partialTick);
         this.renderTooltip(g, mouseX, mouseY);
 
-        // Virtual grid tooltip (Storage tab only)
         if (activeTab == StorageTab.STORAGE && !showRequestPopup) {
             renderVirtualGridTooltip(g, mouseX, mouseY);
         }
@@ -544,13 +544,10 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-        // Inventory label
-        g.drawString(font, playerInventoryTitle,
-            PLAYER_INV_RENDER_X - leftPos + 35, PLAYER_INV_Y - 11, 0x404040, false);
+        // No default labels — we render them manually in renderBg
     }
 
     private void renderVirtualGridTooltip(GuiGraphics g, int mouseX, int mouseY) {
-        if (activeTab != StorageTab.STORAGE) return;
         int x = this.leftPos;
         int y = this.topPos;
         int startIndex = scrollOffset * GRID_COLS;
@@ -573,7 +570,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Popup takes priority
         if (showRequestPopup) {
             return handleRequestPopupClick(mouseX, mouseY, button);
         }
@@ -581,15 +577,13 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int x = this.leftPos;
         int y = this.topPos;
 
-        // Tab clicks
-        int tabWidth = GUI_WIDTH / 3;
-        if (mouseY >= y + TAB_Y_OFFSET && mouseY < y + TAB_Y_OFFSET + TAB_HEIGHT) {
-            for (int i = 0; i < 3; i++) {
-                int tabX = x + i * tabWidth;
-                if (mouseX >= tabX && mouseX < tabX + tabWidth) {
-                    switchTab(StorageTab.values()[i]);
-                    return true;
-                }
+        // Vertical tab clicks
+        for (int i = 0; i < 3; i++) {
+            int tabY = y + VTAB_Y + i * (VTAB_H + VTAB_GAP);
+            if (mouseX >= x + VTAB_X && mouseX < x + VTAB_X + VTAB_W &&
+                mouseY >= tabY && mouseY < tabY + VTAB_H) {
+                switchTab(StorageTab.values()[i]);
+                return true;
             }
         }
 
@@ -603,7 +597,8 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
                     int slotX = x + GRID_X + col * SLOT_SIZE;
                     int slotY = y + GRID_Y + row * SLOT_SIZE;
 
-                    if (index < displayedItems.size() && isMouseOverSlot(slotX, slotY, (int) mouseX, (int) mouseY)) {
+                    if (index < displayedItems.size() &&
+                        isMouseOverSlot(slotX, slotY, (int) mouseX, (int) mouseY)) {
                         if (!menu.isHoneyDepleted()) {
                             openRequestPopup(displayedItems.get(index));
                         }
@@ -640,7 +635,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         for (int i = taskScrollOffset; i < tasks.size() && rendered < maxVisible; i++) {
             TaskDisplayData task = tasks.get(i);
 
-            // Check separator space
             if (rendered > 0 && i > 0) {
                 boolean isActive = task.state().equals("FLYING") || task.state().equals("WAITING")
                     || task.state().equals("RETURNING");
@@ -657,7 +651,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
             if (mouseX >= cancelX && mouseX < cancelX + TASK_CANCEL_SIZE &&
                 mouseY >= cancelY && mouseY < cancelY + TASK_CANCEL_SIZE) {
-                // Send cancel packet
                 PacketDistributor.sendToServer(
                     new StorageTaskCancelPacket(menu.getBlockPos(), task.taskId())
                 );
@@ -685,7 +678,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int popupX = (this.width - popupWidth) / 2;
         int popupY = (this.height - popupHeight) / 2;
 
-        // Count buttons
         int buttonY = popupY + 55;
         int[] positions = {popupX + 5, popupX + 25, popupX + 45, popupX + 70, popupX + 85, popupX + 100};
         int[] deltas = {-64, -10, -1, 1, 10, 64};
@@ -698,7 +690,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             }
         }
 
-        // Cancel / Request buttons
         int cancelX = popupX + 10;
         int requestXBtn = popupX + 70;
         int actionY = popupY + popupHeight - 15;
@@ -714,7 +705,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             }
         }
 
-        // Click outside closes popup
         if (mouseX < popupX || mouseX > popupX + popupWidth ||
             mouseY < popupY || mouseY > popupY + popupHeight) {
             closeRequestPopup();
@@ -754,11 +744,13 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+    public boolean mouseDragged(double mouseX, double mouseY, int button,
+                                 double dragX, double dragY) {
         if (isScrolling && activeTab == StorageTab.STORAGE) {
             int maxScroll = getMaxScroll();
             if (maxScroll > 0) {
-                float scrollRatio = (float) (mouseY - this.topPos - SCROLLBAR_Y) / (SCROLLBAR_HEIGHT - 15);
+                float scrollRatio = (float) (mouseY - this.topPos - SCROLLBAR_Y)
+                    / (SCROLLBAR_HEIGHT - 15);
                 scrollOffset = Mth.clamp((int) (scrollRatio * maxScroll), 0, maxScroll);
             }
             return true;

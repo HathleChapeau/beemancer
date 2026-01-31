@@ -94,20 +94,22 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public static final int DATA_QUEUED_TASKS = 10;
     public static final int DATA_SIZE = 11;
 
-    // Slot positions (default, Storage tab)
-    private static final int DEPOSIT_X = 8;
-    private static final int DEPOSIT_Y = 140;
-    private static final int PICKUP_X = 174;
-    private static final int PICKUP_Y = 140;
-    private static final int CRAFT_X = 68;
-    private static final int CRAFT_Y = 140;
-    private static final int RESULT_X = 148;
-    private static final int RESULT_Y = 158;
-    private static final int ESSENCE_X = 77;
+    // Slot positions — Left panel (deposit/craft/pickup stacked vertically)
+    private static final int DEPOSIT_X = 23;
+    private static final int DEPOSIT_Y = 14;
+    private static final int CRAFT_X = 23;
+    private static final int CRAFT_Y = 82;
+    private static final int RESULT_X = 41;
+    private static final int RESULT_Y = 138;
+    private static final int PICKUP_X = 23;
+    private static final int PICKUP_Y = 170;
+    // Controller tab essences (right panel)
+    private static final int ESSENCE_X = 155;
     private static final int ESSENCE_Y = 80;
-    private static final int PLAYER_INV_X = 35;
-    private static final int PLAYER_INV_Y = 200;
-    private static final int HOTBAR_Y = 258;
+    // Player inventory (right panel)
+    private static final int PLAYER_INV_X = 89;
+    private static final int PLAYER_INV_Y = 134;
+    private static final int HOTBAR_Y = 194;
 
     private final BlockPos blockPos;
     @Nullable
