@@ -68,9 +68,9 @@ import java.util.*;
  * - StorageItemAggregator: agrégation, dépôt, extraction d'items
  * - StorageDeliveryManager: queue de livraison, spawn de bees, honey consumption
  */
-public class StorageControllerBlockEntity extends BlockEntity implements MultiblockController, MenuProvider {
+public class StorageControllerBlockEntity extends BlockEntity implements MultiblockController, MenuProvider, INetworkNode {
 
-    private static final int MAX_RANGE = 24;
+    public static final int MAX_RANGE = 15;
 
     // === Managers ===
     private final StorageMultiblockManager multiblockManager = new StorageMultiblockManager(this);
@@ -81,6 +81,9 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     // === Mode édition (inline — trop petit pour extraire) ===
     private boolean editMode = false;
     private UUID editingPlayer = null;
+
+    // === Noeuds connectes (relays) ===
+    private final Set<BlockPos> connectedNodes = new HashSet<>();
 
     // === Terminaux liés (inline — trop petit pour extraire) ===
     private final Set<BlockPos> linkedTerminals = new HashSet<>();
@@ -155,8 +158,43 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     public boolean tryFormStorage() { return multiblockManager.tryFormStorage(); }
 
+    // === INetworkNode Interface ===
+
+    @Override
+    public BlockPos getNodePos() { return worldPosition; }
+
+    @Override
+    public net.minecraft.world.level.Level getNodeLevel() { return level; }
+
+    @Override
+    public int getRange() { return MAX_RANGE; }
+
+    @Override
+    public void markDirty() { setChanged(); }
+
+    @Override
+    public void syncNodeToClient() { syncToClient(); }
+
+    @Override
+    public Set<BlockPos> getConnectedNodes() { return Collections.unmodifiableSet(connectedNodes); }
+
+    @Override
+    public void connectNode(BlockPos nodePos) {
+        connectedNodes.add(nodePos);
+        setChanged();
+        syncToClient();
+    }
+
+    @Override
+    public void disconnectNode(BlockPos nodePos) {
+        connectedNodes.remove(nodePos);
+        setChanged();
+        syncToClient();
+    }
+
     // === Mode Édition ===
 
+    @Override
     public boolean toggleEditMode(UUID playerId) {
         if (editMode && editingPlayer != null && editingPlayer.equals(playerId)) {
             editMode = false;
@@ -174,6 +212,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         return false;
     }
 
+    @Override
     public void exitEditMode() {
         if (editMode) {
             if (editingPlayer != null) {
@@ -186,13 +225,16 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         }
     }
 
+    @Override
     public boolean canEdit(UUID playerId) {
         return editMode && editingPlayer != null && editingPlayer.equals(playerId);
     }
 
+    @Override
     public boolean isEditMode() { return editMode; }
 
     @Nullable
+    @Override
     public UUID getEditingPlayer() { return editingPlayer; }
 
     // === Gestion des Coffres (délègue) ===
@@ -200,6 +242,35 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     public boolean toggleChest(BlockPos chestPos) { return chestManager.toggleChest(chestPos); }
 
     public Set<BlockPos> getRegisteredChests() { return chestManager.getRegisteredChests(); }
+
+    /**
+     * Retourne TOUS les coffres du reseau: ceux du controller + ceux de tous les relays connectes.
+     * Parcours BFS du graphe de noeuds.
+     */
+    public Set<BlockPos> getAllNetworkChests() {
+        Set<BlockPos> allChests = new LinkedHashSet<>(chestManager.getRegisteredChests());
+        if (level == null) return allChests;
+
+        Set<BlockPos> visitedNodes = new HashSet<>();
+        visitedNodes.add(worldPosition);
+        Queue<BlockPos> queue = new LinkedList<>(connectedNodes);
+
+        while (!queue.isEmpty()) {
+            BlockPos nodePos = queue.poll();
+            if (!visitedNodes.add(nodePos)) continue;
+
+            BlockEntity be = level.getBlockEntity(nodePos);
+            if (be instanceof INetworkNode node) {
+                allChests.addAll(node.getRegisteredChests());
+                for (BlockPos neighbor : node.getConnectedNodes()) {
+                    if (!visitedNodes.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+        }
+        return allChests;
+    }
 
     // === Gestion des Terminaux ===
 
@@ -343,6 +414,15 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         }
         tag.put("LinkedTerminals", terminalsTag);
 
+        // Noeuds connectes
+        ListTag nodesTag = new ListTag();
+        for (BlockPos pos : connectedNodes) {
+            CompoundTag posTag = new CompoundTag();
+            posTag.put("Pos", NbtUtils.writeBlockPos(pos));
+            nodesTag.add(posTag);
+        }
+        tag.put("ConnectedNodes", nodesTag);
+
         // Mode édition (inline)
         tag.putBoolean("EditMode", editMode);
         if (editingPlayer != null) {
@@ -367,6 +447,15 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         ListTag terminalsTag = tag.getList("LinkedTerminals", Tag.TAG_COMPOUND);
         for (int i = 0; i < terminalsTag.size(); i++) {
             NbtUtils.readBlockPos(terminalsTag.getCompound(i), "Pos").ifPresent(linkedTerminals::add);
+        }
+
+        // Noeuds connectes
+        connectedNodes.clear();
+        if (tag.contains("ConnectedNodes")) {
+            ListTag nodesTag = tag.getList("ConnectedNodes", Tag.TAG_COMPOUND);
+            for (int i = 0; i < nodesTag.size(); i++) {
+                NbtUtils.readBlockPos(nodesTag.getCompound(i), "Pos").ifPresent(connectedNodes::add);
+            }
         }
 
         // Mode édition (inline)

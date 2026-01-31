@@ -57,7 +57,7 @@ public class StorageDeliveryManager {
     private static final int DELIVERY_PROCESS_INTERVAL = 10;
     private static final int MAX_COMPLETED_IDS = 100;
     private static final int HONEY_CONSUME_INTERVAL = 20;
-    private static final int MAX_RANGE = 24;
+    private static final int MAX_RANGE = 30;
 
     private final Queue<DeliveryTask> deliveryQueue = new LinkedList<>();
     private final List<DeliveryTask> activeTasks = new ArrayList<>();
@@ -81,14 +81,14 @@ public class StorageDeliveryManager {
     }
 
     /**
-     * Trouve un coffre contenant l'item demandé.
+     * Trouve un coffre contenant l'item demandé dans tout le reseau (controller + relays).
      * @return la position du coffre, ou null si introuvable
      */
     @Nullable
     public BlockPos findChestWithItem(ItemStack template, int minCount) {
         if (parent.getLevel() == null || template.isEmpty()) return null;
 
-        for (BlockPos chestPos : parent.getChestManager().getRegisteredChests()) {
+        for (BlockPos chestPos : parent.getAllNetworkChests()) {
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 int found = 0;
@@ -102,6 +102,52 @@ public class StorageDeliveryManager {
             }
         }
         return null;
+    }
+
+    /**
+     * Trouve le chemin de relais entre le controller et le noeud qui possede un coffre donne.
+     * BFS a travers le graphe de noeuds connectes.
+     *
+     * @return liste ordonnee des positions de relais (vide si le coffre est sur le controller)
+     */
+    private List<BlockPos> findPathToChest(BlockPos chestPos) {
+        if (parent.getChestManager().getRegisteredChests().contains(chestPos)) {
+            return List.of();
+        }
+        if (parent.getLevel() == null) return List.of();
+
+        Set<BlockPos> visited = new HashSet<>();
+        visited.add(parent.getBlockPos());
+
+        Queue<Map.Entry<BlockPos, List<BlockPos>>> queue = new LinkedList<>();
+        for (BlockPos neighbor : parent.getConnectedNodes()) {
+            queue.add(Map.entry(neighbor, new ArrayList<>(List.of(neighbor))));
+        }
+
+        while (!queue.isEmpty()) {
+            var entry = queue.poll();
+            BlockPos nodePos = entry.getKey();
+            List<BlockPos> path = entry.getValue();
+
+            if (!visited.add(nodePos)) continue;
+
+            BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
+            if (!(be instanceof INetworkNode node)) continue;
+
+            if (node.getRegisteredChests().contains(chestPos)) {
+                return path;
+            }
+
+            for (BlockPos neighbor : node.getConnectedNodes()) {
+                if (!visited.contains(neighbor)) {
+                    List<BlockPos> newPath = new ArrayList<>(path);
+                    newPath.add(neighbor);
+                    queue.add(Map.entry(neighbor, newPath));
+                }
+            }
+        }
+
+        return List.of();
     }
 
     /**
@@ -329,6 +375,13 @@ public class StorageDeliveryManager {
             ControllerStats.getSearchSpeedMultiplier(parent.getEssenceSlots()),
             task.getTaskId()
         );
+
+        List<BlockPos> relayPath = findPathToChest(task.getTargetChest());
+        if (!relayPath.isEmpty()) {
+            List<BlockPos> returnPath = new ArrayList<>(relayPath);
+            Collections.reverse(returnPath);
+            bee.setWaypoints(relayPath, returnPath);
+        }
 
         serverLevel.addFreshEntity(bee);
         return true;

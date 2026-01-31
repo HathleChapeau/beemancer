@@ -1,19 +1,19 @@
 /**
  * ============================================================
  * [DeliveryPhaseGoal.java]
- * Description: Goal unique de la DeliveryBee: 3 phases (vol → attente → retour)
+ * Description: Goal unique de la DeliveryBee: vol multi-relais avec waypoints
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance                    | Raison                | Utilisation                    |
+ * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
- * | DeliveryBeeEntity             | Entité porteuse      | Accès données tâche            |
- * | StorageControllerBlockEntity  | Controller parent    | Extraction/dépôt items         |
+ * | DeliveryBeeEntity             | Entite porteuse      | Acces donnees tache            |
+ * | StorageControllerBlockEntity  | Controller parent    | Extraction/depot items         |
  * | StorageTerminalBlockEntity    | Terminal cible       | Insertion items pickup         |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - DeliveryBeeEntity.java (ajout du goal)
  *
  * ============================================================
@@ -30,30 +30,37 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.EnumSet;
+import java.util.List;
 
 /**
- * Goal unique gérant les 3 phases de livraison:
+ * Goal de livraison multi-relais.
  *
- * Phase 1 - FLY_TO_TARGET: naviguer vers le coffre cible
- * Phase 2 - WAIT_AT_TARGET: attendre (recherche/craft), puis extraire ou déposer
- * Phase 3 - FLY_BACK: naviguer vers le point de retour, livrer puis discard
+ * Outbound: waypoint0 → waypoint1 → ... → target (chest)
+ * Wait: extraction ou depot au chest
+ * Return: waypoint0 → waypoint1 → ... → returnPos (controller)
+ *
+ * Si pas de waypoints, fonctionne comme avant (vol direct).
  */
 public class DeliveryPhaseGoal extends Goal {
 
-    private static final double ARRIVAL_DISTANCE_SQ = 4.0; // 2 blocs²
-    private static final int BASE_WAIT_TICKS = 60; // 3 secondes base
+    private static final double ARRIVAL_DISTANCE_SQ = 4.0;
+    private static final int BASE_WAIT_TICKS = 60;
 
     private final DeliveryBeeEntity bee;
 
     private enum Phase {
-        FLY_TO_TARGET,
+        FLY_OUTBOUND,
         WAIT_AT_TARGET,
-        FLY_BACK
+        FLY_RETURN
     }
 
-    private Phase phase = Phase.FLY_TO_TARGET;
+    private Phase phase = Phase.FLY_OUTBOUND;
     private int waitTimer;
     private boolean navigationStarted = false;
+
+    // Index courant dans la liste de waypoints
+    private int outboundIndex = 0;
+    private int returnIndex = 0;
 
     public DeliveryPhaseGoal(DeliveryBeeEntity bee) {
         this.bee = bee;
@@ -72,34 +79,54 @@ public class DeliveryPhaseGoal extends Goal {
 
     @Override
     public void start() {
-        phase = Phase.FLY_TO_TARGET;
+        phase = Phase.FLY_OUTBOUND;
+        outboundIndex = 0;
+        returnIndex = 0;
         navigationStarted = false;
     }
 
     @Override
     public void tick() {
         switch (phase) {
-            case FLY_TO_TARGET -> tickFlyToTarget();
+            case FLY_OUTBOUND -> tickFlyOutbound();
             case WAIT_AT_TARGET -> tickWaitAtTarget();
-            case FLY_BACK -> tickFlyBack();
+            case FLY_RETURN -> tickFlyReturn();
         }
     }
 
-    private void tickFlyToTarget() {
-        BlockPos target = bee.getTargetPos();
+    /**
+     * Navigue a travers les waypoints outbound puis vers le target.
+     */
+    private void tickFlyOutbound() {
+        List<BlockPos> waypoints = bee.getOutboundWaypoints();
+        BlockPos currentTarget;
+
+        if (outboundIndex < waypoints.size()) {
+            currentTarget = waypoints.get(outboundIndex);
+        } else {
+            currentTarget = bee.getTargetPos();
+        }
+
         if (!navigationStarted || bee.getNavigation().isDone()) {
             bee.getNavigation().moveTo(
-                target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5,
+                currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5,
                 1.0 * bee.getFlySpeedMultiplier()
             );
             navigationStarted = true;
         }
 
-        if (bee.distanceToSqr(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5) < ARRIVAL_DISTANCE_SQ) {
+        if (bee.distanceToSqr(currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5) < ARRIVAL_DISTANCE_SQ) {
             bee.getNavigation().stop();
-            phase = Phase.WAIT_AT_TARGET;
-            waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
             navigationStarted = false;
+
+            if (outboundIndex < waypoints.size()) {
+                // Waypoint relay atteint, passer au suivant
+                outboundIndex++;
+            } else {
+                // Target (chest) atteint, passer en attente
+                phase = Phase.WAIT_AT_TARGET;
+                waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
+            }
         }
     }
 
@@ -116,25 +143,45 @@ public class DeliveryPhaseGoal extends Goal {
             performDeposit(level);
         }
 
-        phase = Phase.FLY_BACK;
+        phase = Phase.FLY_RETURN;
+        returnIndex = 0;
         navigationStarted = false;
     }
 
-    private void tickFlyBack() {
-        BlockPos returnPos = bee.getReturnPos();
+    /**
+     * Navigue a travers les waypoints retour puis vers le returnPos.
+     */
+    private void tickFlyReturn() {
+        List<BlockPos> waypoints = bee.getReturnWaypoints();
+        BlockPos currentTarget;
+
+        if (returnIndex < waypoints.size()) {
+            currentTarget = waypoints.get(returnIndex);
+        } else {
+            currentTarget = bee.getReturnPos();
+        }
+
         if (!navigationStarted || bee.getNavigation().isDone()) {
             bee.getNavigation().moveTo(
-                returnPos.getX() + 0.5, returnPos.getY() + 0.5, returnPos.getZ() + 0.5,
+                currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5,
                 1.0 * bee.getFlySpeedMultiplier()
             );
             navigationStarted = true;
         }
 
-        if (bee.distanceToSqr(returnPos.getX() + 0.5, returnPos.getY() + 0.5, returnPos.getZ() + 0.5) < ARRIVAL_DISTANCE_SQ) {
+        if (bee.distanceToSqr(currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5) < ARRIVAL_DISTANCE_SQ) {
             bee.getNavigation().stop();
-            performDelivery();
-            bee.notifyTaskCompleted();
-            bee.discard();
+            navigationStarted = false;
+
+            if (returnIndex < waypoints.size()) {
+                // Waypoint relay atteint, passer au suivant
+                returnIndex++;
+            } else {
+                // Arrivee au controller, livrer et discard
+                performDelivery();
+                bee.notifyTaskCompleted();
+                bee.discard();
+            }
         }
     }
 
@@ -155,7 +202,7 @@ public class DeliveryPhaseGoal extends Goal {
     }
 
     /**
-     * DEPOSIT: l'abeille dépose ses items dans le coffre via le controller.
+     * DEPOSIT: l'abeille depose ses items dans le coffre via le controller.
      */
     private void performDeposit(Level level) {
         BlockEntity be = level.getBlockEntity(bee.getControllerPos());
@@ -171,19 +218,17 @@ public class DeliveryPhaseGoal extends Goal {
     }
 
     /**
-     * Livraison au retour: insère les items dans le terminal (EXTRACT)
-     * ou confirme le dépôt (DEPOSIT).
+     * Livraison au retour: insere les items dans le terminal (EXTRACT)
+     * ou confirme le depot (DEPOSIT).
      */
     private void performDelivery() {
         Level level = bee.level();
         if (level.isClientSide()) return;
 
         if (bee.getDeliveryType() == DeliveryTask.DeliveryType.EXTRACT) {
-            // Insérer les items extraits dans les pickup slots du terminal
             BlockEntity terminalBe = level.getBlockEntity(bee.getTerminalPos());
             if (terminalBe instanceof StorageTerminalBlockEntity terminal) {
                 ItemStack remaining = terminal.insertIntoPickupSlots(bee.getCarriedItems());
-                // Si des items restent, les remettre dans le réseau
                 if (!remaining.isEmpty()) {
                     BlockEntity controllerBe = level.getBlockEntity(bee.getControllerPos());
                     if (controllerBe instanceof StorageControllerBlockEntity controller) {
@@ -192,6 +237,5 @@ public class DeliveryPhaseGoal extends Goal {
                 }
             }
         }
-        // DEPOSIT: déjà déposé dans le coffre en phase 2, rien à faire au retour
     }
 }

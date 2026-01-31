@@ -22,6 +22,7 @@ import com.chapeau.beemancer.common.blockentity.extractor.ExtractorHeartBlockEnt
 import com.chapeau.beemancer.common.blockentity.storage.ControllerPipeBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageCrateBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.StorageRelayBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -46,6 +47,13 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             StorageControllerBlockEntity::new,
                             BeemancerBlocks.STORAGE_CONTROLLER.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<StorageRelayBlockEntity>> STORAGE_RELAY =
+            BLOCK_ENTITIES.register("storage_relay",
+                    () -> BlockEntityType.Builder.of(
+                            StorageRelayBlockEntity::new,
+                            BeemancerBlocks.STORAGE_RELAY.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<StorageTerminalBlockEntity>> STORAGE_TERMINAL =

@@ -33,6 +33,9 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> STORAGE_CONTROLLER = ITEMS.register("storage_controller",
             () -> new BlockItem(BeemancerBlocks.STORAGE_CONTROLLER.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> STORAGE_RELAY = ITEMS.register("storage_relay",
+            () -> new BlockItem(BeemancerBlocks.STORAGE_RELAY.get(), new Item.Properties()));
+
     public static final DeferredItem<BlockItem> STORAGE_TERMINAL = ITEMS.register("storage_terminal",
             () -> new BlockItem(BeemancerBlocks.STORAGE_TERMINAL.get(), new Item.Properties()));
 

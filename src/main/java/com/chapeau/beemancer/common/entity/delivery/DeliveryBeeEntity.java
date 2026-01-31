@@ -24,6 +24,8 @@ package com.chapeau.beemancer.common.entity.delivery;
 
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import net.minecraft.core.BlockPos;
@@ -72,6 +74,12 @@ public class DeliveryBeeEntity extends Bee {
     private float flySpeedMultiplier = 1.0f;
     private float searchSpeedMultiplier = 1.0f;
     private int ticksAlive = 0;
+
+    // Waypoints pour le trajet multi-relais
+    // outboundWaypoints: controller → relay1 → relay2 → ... → target
+    // returnWaypoints: target → ... → relay2 → relay1 → controller
+    private List<BlockPos> outboundWaypoints = new ArrayList<>();
+    private List<BlockPos> returnWaypoints = new ArrayList<>();
 
     public DeliveryBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
@@ -305,6 +313,13 @@ public class DeliveryBeeEntity extends Bee {
 
     public UUID getTaskId() { return taskId; }
     public BlockPos getControllerPos() { return controllerPos; }
+    public List<BlockPos> getOutboundWaypoints() { return outboundWaypoints; }
+    public List<BlockPos> getReturnWaypoints() { return returnWaypoints; }
+
+    public void setWaypoints(List<BlockPos> outbound, List<BlockPos> returnPath) {
+        this.outboundWaypoints = new ArrayList<>(outbound);
+        this.returnWaypoints = new ArrayList<>(returnPath);
+    }
     public BlockPos getTargetPos() { return targetPos; }
     public BlockPos getReturnPos() { return returnPos; }
     public BlockPos getTerminalPos() { return terminalPos; }

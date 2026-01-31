@@ -35,14 +35,13 @@ import java.util.*;
 /**
  * Gère l'enregistrement des coffres du réseau de stockage.
  * Supporte le flood fill BFS pour enregistrer les coffres adjacents.
+ * Fonctionne avec tout INetworkNode (controller ou relay).
  */
 public class StorageChestManager {
-    private final StorageControllerBlockEntity parent;
+    private final INetworkNode parent;
     private final Set<BlockPos> registeredChests = new HashSet<>();
 
-    private static final int MAX_RANGE = 24;
-
-    public StorageChestManager(StorageControllerBlockEntity parent) {
+    public StorageChestManager(INetworkNode parent) {
         this.parent = parent;
     }
 
@@ -54,15 +53,15 @@ public class StorageChestManager {
      * @return true si l'opération a réussi
      */
     public boolean toggleChest(BlockPos chestPos) {
-        if (parent.getLevel() == null) return false;
+        if (parent.getNodeLevel() == null) return false;
 
         if (!isInRange(chestPos)) return false;
         if (!isChest(chestPos)) return false;
 
         if (registeredChests.contains(chestPos)) {
             registeredChests.remove(chestPos);
-            parent.setChanged();
-            parent.syncToClient();
+            parent.markDirty();
+            parent.syncNodeToClient();
             return true;
         } else {
             registerChestWithNeighbors(chestPos);
@@ -74,7 +73,7 @@ public class StorageChestManager {
      * Flood fill pour enregistrer un coffre et tous ses adjacents.
      */
     private void registerChestWithNeighbors(BlockPos startPos) {
-        if (parent.getLevel() == null) return;
+        if (parent.getNodeLevel() == null) return;
 
         Queue<BlockPos> toCheck = new LinkedList<>();
         Set<BlockPos> checked = new HashSet<>();
@@ -100,16 +99,16 @@ public class StorageChestManager {
             }
         }
 
-        parent.setChanged();
-        parent.syncToClient();
+        parent.markDirty();
+        parent.syncNodeToClient();
     }
 
     /**
      * Vérifie si une position est un coffre.
      */
     public boolean isChest(BlockPos pos) {
-        if (parent.getLevel() == null) return false;
-        BlockState state = parent.getLevel().getBlockState(pos);
+        if (parent.getNodeLevel() == null) return false;
+        BlockState state = parent.getNodeLevel().getBlockState(pos);
         return StorageHelper.isStorageContainer(state);
     }
 
@@ -117,8 +116,8 @@ public class StorageChestManager {
      * Vérifie si une position est dans le rayon d'action.
      */
     public boolean isInRange(BlockPos pos) {
-        double distance = Math.sqrt(parent.getBlockPos().distSqr(pos));
-        return distance <= MAX_RANGE;
+        double distance = Math.sqrt(parent.getNodePos().distSqr(pos));
+        return distance <= parent.getRange();
     }
 
     public Set<BlockPos> getRegisteredChests() {

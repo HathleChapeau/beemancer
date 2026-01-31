@@ -85,7 +85,9 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
         if (formed) {
             renderFormedAnimation(blockEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
-        } else if (blockEntity.isEditMode()) {
+        }
+
+        if (blockEntity.isEditMode()) {
             renderEditMode(blockEntity, poseStack, bufferSource);
         }
     }
@@ -213,11 +215,33 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
         renderControllerOutline(lineBuffer, matrix);
 
+        // Sphère de rayon d'action (centrée sur le bloc)
+        DebugRenderHelper.drawSphereOutline(lineBuffer, matrix,
+            0.5f, 0.5f, 0.5f, StorageControllerBlockEntity.MAX_RANGE, 48,
+            1.0f, 0.8f, 0.2f, 0.4f);
+
         BlockPos controllerPos = blockEntity.getBlockPos();
         Set<BlockPos> chests = blockEntity.getRegisteredChests();
 
         for (BlockPos chestPos : chests) {
             renderLineToChest(lineBuffer, matrix, controllerPos, chestPos);
+        }
+
+        // Lignes magenta vers les noeuds connectes (relays)
+        Set<BlockPos> nodes = blockEntity.getConnectedNodes();
+        for (BlockPos nodePos : nodes) {
+            float dx = nodePos.getX() - controllerPos.getX();
+            float dy = nodePos.getY() - controllerPos.getY();
+            float dz = nodePos.getZ() - controllerPos.getZ();
+
+            DebugRenderHelper.drawLine(lineBuffer, matrix,
+                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
+                0.8f, 0.2f, 1.0f, 1.0f);
+
+            DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
+                dx - 0.01f, dy - 0.01f, dz - 0.01f,
+                dx + 1.01f, dy + 1.01f, dz + 1.01f,
+                0.8f, 0.2f, 1.0f, 0.8f);
         }
 
         poseStack.popPose();

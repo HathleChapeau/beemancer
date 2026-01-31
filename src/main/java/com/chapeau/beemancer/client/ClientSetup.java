@@ -114,6 +114,8 @@ public class ClientSetup {
         // Block Entity Renderers
         event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_CONTROLLER.get(),
             StorageControllerRenderer::new);
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_RELAY.get(),
+            com.chapeau.beemancer.client.renderer.block.StorageRelayRenderer::new);
         event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_TERMINAL.get(),
             StorageTerminalRenderer::new);
         event.registerBlockEntityRenderer(BeemancerBlockEntities.BEE_STATUE.get(),

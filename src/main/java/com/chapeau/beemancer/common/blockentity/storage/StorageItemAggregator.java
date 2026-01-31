@@ -66,23 +66,26 @@ public class StorageItemAggregator {
     public void refreshAggregatedItems() {
         if (parent.getLevel() == null) return;
 
+        // Nettoyage des coffres invalides du controller uniquement
         StorageChestManager chestManager = parent.getChestManager();
-        Set<BlockPos> chests = chestManager.getRegisteredChestsMutable();
+        Set<BlockPos> ownChests = chestManager.getRegisteredChestsMutable();
 
         List<BlockPos> toRemove = new ArrayList<>();
-        for (BlockPos pos : chests) {
+        for (BlockPos pos : ownChests) {
             if (!chestManager.isChest(pos)) {
                 toRemove.add(pos);
             }
         }
         if (!toRemove.isEmpty()) {
-            chests.removeAll(toRemove);
+            ownChests.removeAll(toRemove);
             parent.setChanged();
             parent.syncToClient();
         }
 
+        // Agregation depuis TOUS les coffres du reseau (controller + relays)
+        Set<BlockPos> allChests = parent.getAllNetworkChests();
         Map<ItemStackKey, Integer> itemCounts = new HashMap<>();
-        for (BlockPos chestPos : chests) {
+        for (BlockPos chestPos : allChests) {
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 for (int i = 0; i < container.getContainerSize(); i++) {
@@ -143,7 +146,7 @@ public class StorageItemAggregator {
     public BlockPos findSlotForItem(ItemStack stack) {
         if (parent.getLevel() == null) return null;
 
-        Set<BlockPos> chests = parent.getChestManager().getRegisteredChests();
+        Set<BlockPos> chests = parent.getAllNetworkChests();
 
         // Priorité 1: Coffre avec le même item exact (stack mergeable)
         for (BlockPos chestPos : chests) {
@@ -252,7 +255,7 @@ public class StorageItemAggregator {
     public ItemStack depositItem(ItemStack stack) {
         if (parent.getLevel() == null || stack.isEmpty()) return stack;
 
-        Set<BlockPos> chests = parent.getChestManager().getRegisteredChests();
+        Set<BlockPos> chests = parent.getAllNetworkChests();
         ItemStack remaining = stack.copy();
 
         for (BlockPos chestPos : chests) {
@@ -328,7 +331,7 @@ public class StorageItemAggregator {
     public ItemStack extractItem(ItemStack template, int count) {
         if (parent.getLevel() == null || template.isEmpty() || count <= 0) return ItemStack.EMPTY;
 
-        Set<BlockPos> chests = parent.getChestManager().getRegisteredChests();
+        Set<BlockPos> chests = parent.getAllNetworkChests();
         ItemStack result = template.copy();
         result.setCount(0);
         int needed = count;

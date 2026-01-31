@@ -407,6 +407,13 @@
   "gui.beemancer.storage_controller.honey_consumption": "Miel",
   "gui.beemancer.storage_controller.honey_efficiency": "Efficacité",
 
+  "block.beemancer.storage_relay": "Relais de Stockage",
+  "message.beemancer.storage_relay.edit_mode_on": "Mode édition relais activé - Cliquez sur les coffres ou Shift+clic sur les nœuds",
+  "message.beemancer.storage_relay.edit_mode_off": "Mode édition relais désactivé",
+  "message.beemancer.storage_relay.info": "Relais: %d coffres, %d nœuds connectés",
+  "message.beemancer.storage_relay.node_linked": "Nœud connecté !",
+  "message.beemancer.storage_relay.out_of_range": "Le nœud cible est hors de portée",
+
   "entity.beemancer.delivery_bee": "Abeille de livraison",
 
   "message.beemancer.storage_terminal.linked": "Lié au contrôleur en (%d, %d, %d)",

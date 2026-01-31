@@ -408,6 +408,13 @@
   "gui.beemancer.storage_controller.honey_consumption": "Honey",
   "gui.beemancer.storage_controller.honey_efficiency": "Efficiency",
 
+  "block.beemancer.storage_relay": "Storage Relay",
+  "message.beemancer.storage_relay.edit_mode_on": "Relay edit mode enabled - Click chests or Shift+click nodes to link",
+  "message.beemancer.storage_relay.edit_mode_off": "Relay edit mode disabled",
+  "message.beemancer.storage_relay.info": "Relay: %d chests, %d connected nodes",
+  "message.beemancer.storage_relay.node_linked": "Node linked!",
+  "message.beemancer.storage_relay.out_of_range": "Target node is out of range",
+
   "entity.beemancer.delivery_bee": "Delivery Bee",
 
   "message.beemancer.storage_terminal.linked": "Linked to controller at (%d, %d, %d)",

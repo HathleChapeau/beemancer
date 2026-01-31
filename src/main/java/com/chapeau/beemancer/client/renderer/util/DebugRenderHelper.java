@@ -86,6 +86,47 @@ public final class DebugRenderHelper {
     }
 
     /**
+     * Dessine une sphère wireframe (3 cercles: XY, XZ, YZ).
+     * Utilisée pour indiquer le rayon d'action en mode édition.
+     *
+     * @param cx centre X relatif
+     * @param cy centre Y relatif
+     * @param cz centre Z relatif
+     * @param radius rayon de la sphère
+     * @param segments nombre de segments par cercle (plus = plus lisse)
+     */
+    public static void drawSphereOutline(VertexConsumer buffer, Matrix4f matrix,
+                                          float cx, float cy, float cz, float radius,
+                                          int segments,
+                                          float r, float g, float b, float a) {
+        float step = (float) (2.0 * Math.PI / segments);
+        for (int i = 0; i < segments; i++) {
+            float angle1 = i * step;
+            float angle2 = (i + 1) * step;
+            float cos1 = (float) Math.cos(angle1);
+            float sin1 = (float) Math.sin(angle1);
+            float cos2 = (float) Math.cos(angle2);
+            float sin2 = (float) Math.sin(angle2);
+
+            // Cercle XZ (horizontal)
+            drawLine(buffer, matrix,
+                cx + radius * cos1, cy, cz + radius * sin1,
+                cx + radius * cos2, cy, cz + radius * sin2,
+                r, g, b, a);
+            // Cercle XY (face)
+            drawLine(buffer, matrix,
+                cx + radius * cos1, cy + radius * sin1, cz,
+                cx + radius * cos2, cy + radius * sin2, cz,
+                r, g, b, a);
+            // Cercle YZ (côté)
+            drawLine(buffer, matrix,
+                cx, cy + radius * cos1, cz + radius * sin1,
+                cx, cy + radius * cos2, cz + radius * sin2,
+                r, g, b, a);
+        }
+    }
+
+    /**
      * Dessine un outline de cube (12 arêtes) entre min et max.
      */
     public static void drawCubeOutline(VertexConsumer buffer, Matrix4f matrix,
