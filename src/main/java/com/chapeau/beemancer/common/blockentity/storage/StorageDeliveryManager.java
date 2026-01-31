@@ -434,7 +434,13 @@ public class StorageDeliveryManager {
             task.getTaskId()
         );
 
+        // Calculer le chemin relay vers le coffre cible
+        // findPathToChest trouve le relay dont les chests sont enregistres
+        // Fallback: findPathToPosition pour les cibles non enregistrees (ex: adjacent d'une export interface)
         List<BlockPos> relayPath = findPathToChest(task.getTargetChest());
+        if (relayPath.isEmpty()) {
+            relayPath = findPathToPosition(task.getTargetChest());
+        }
         if (!relayPath.isEmpty()) {
             List<BlockPos> returnPath = new ArrayList<>(relayPath);
             Collections.reverse(returnPath);

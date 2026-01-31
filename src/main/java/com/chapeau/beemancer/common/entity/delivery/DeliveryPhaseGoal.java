@@ -52,7 +52,9 @@ public class DeliveryPhaseGoal extends Goal {
         FLY_OUTBOUND,
         WAIT_AT_TARGET,
         FLY_RETURN,
-        FLY_TO_TERMINAL
+        FLY_TO_TERMINAL,
+        WAIT_AT_TERMINAL,
+        FLY_HOME
     }
 
     private Phase phase = Phase.FLY_OUTBOUND;
@@ -63,6 +65,7 @@ public class DeliveryPhaseGoal extends Goal {
     private int outboundIndex = 0;
     private int returnIndex = 0;
     private int terminalIndex = 0;
+    private int homeIndex = 0;
 
     public DeliveryPhaseGoal(DeliveryBeeEntity bee) {
         this.bee = bee;
@@ -94,6 +97,8 @@ public class DeliveryPhaseGoal extends Goal {
             case WAIT_AT_TARGET -> tickWaitAtTarget();
             case FLY_RETURN -> tickFlyReturn();
             case FLY_TO_TERMINAL -> tickFlyToTerminal();
+            case WAIT_AT_TERMINAL -> tickWaitAtTerminal();
+            case FLY_HOME -> tickFlyHome();
         }
     }
 
@@ -198,7 +203,6 @@ public class DeliveryPhaseGoal extends Goal {
 
     /**
      * Navigue du controller vers le terminal (import interface) via les waypoints terminaux.
-     * Phase finale pour les taches EXTRACT avec terminal distant.
      */
     private void tickFlyToTerminal() {
         List<BlockPos> waypoints = bee.getTerminalWaypoints();
@@ -223,11 +227,63 @@ public class DeliveryPhaseGoal extends Goal {
             navigationStarted = false;
 
             if (terminalIndex < waypoints.size()) {
-                // Waypoint relay atteint, passer au suivant
                 terminalIndex++;
             } else {
-                // Arrivee au terminal, livrer et discard
-                performDelivery();
+                // Arrivee au terminal, passer en attente pour livraison
+                phase = Phase.WAIT_AT_TERMINAL;
+                waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
+            }
+        }
+    }
+
+    /**
+     * Attente au terminal: livraison puis retour au controller.
+     */
+    private void tickWaitAtTerminal() {
+        waitTimer--;
+        if (waitTimer > 0) return;
+
+        if (!bee.level().isClientSide()) {
+            performDelivery();
+        }
+
+        // Retour au controller via les waypoints terminaux inverses
+        phase = Phase.FLY_HOME;
+        homeIndex = 0;
+        navigationStarted = false;
+    }
+
+    /**
+     * Retour du terminal vers le controller via les waypoints terminaux inverses.
+     */
+    private void tickFlyHome() {
+        List<BlockPos> terminalWaypoints = bee.getTerminalWaypoints();
+        BlockPos currentTarget;
+
+        // Parcourir les waypoints terminaux en sens inverse
+        int reverseIdx = terminalWaypoints.size() - 1 - homeIndex;
+        if (reverseIdx >= 0 && homeIndex < terminalWaypoints.size()) {
+            currentTarget = terminalWaypoints.get(reverseIdx);
+        } else {
+            currentTarget = bee.getReturnPos();
+        }
+
+        if (!navigationStarted || bee.getNavigation().isDone()) {
+            bee.getNavigation().moveTo(
+                currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5,
+                1.0 * bee.getFlySpeedMultiplier()
+            );
+            navigationStarted = true;
+        }
+
+        if (bee.distanceToSqr(currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5) < ARRIVAL_DISTANCE_SQ) {
+            bee.getNavigation().stop();
+            navigationStarted = false;
+
+            if (homeIndex < terminalWaypoints.size()) {
+                homeIndex++;
+            } else {
+                // Arrivee au controller, fin de tache
                 bee.notifyTaskCompleted();
                 bee.discard();
             }

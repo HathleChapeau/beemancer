@@ -244,6 +244,13 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
         return count;
     }
 
+    /**
+     * Calcule la capacite totale pour un item dans les slots donnes.
+     * Retourne le nombre total d'items de ce type que les slots peuvent contenir
+     * (slots vides = maxStackSize, slots avec le meme item = maxStackSize,
+     * slots avec un item different = 0).
+     * Utilise avec needed = totalCapacity - currentCount.
+     */
     private int calculateCapacity(Container container, ItemStack template, int[] slots) {
         int capacity = 0;
         for (int slot : slots) {
@@ -251,7 +258,7 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
             if (existing.isEmpty()) {
                 capacity += template.getMaxStackSize();
             } else if (ItemStack.isSameItemSameComponents(existing, template)) {
-                capacity += existing.getMaxStackSize() - existing.getCount();
+                capacity += existing.getMaxStackSize();
             }
         }
         return capacity;
