@@ -1,0 +1,89 @@
+================================================================================
+FEATURE: Storage Terminal Overhaul
+================================================================================
+
+Description: Refonte complète du Storage Terminal avec 3 onglets (Storage, Tasks,
+Controller), crafting intégré, annulation de tâches, pickup output-only, priorité
+de dépôt intelligente, et fix collision des delivery bees.
+
+Statut: IMPLÉMENTÉ
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+Le terminal utilise un menu unique (StorageTerminalMenu) contenant tous les slots
+pour les 3 onglets. Les slots sont masqués/affichés en changeant leur position Y
+(-9999 pour masquer).
+
+SLOTS (68 total):
+| Indices | Contenu                    | Onglet     |
+|---------|----------------------------|------------|
+| 0-8     | Deposit slots (3x3)        | Storage    |
+| 9-17    | Pickup slots (output-only) | Storage    |
+| 18-26   | Crafting grid (3x3)        | Storage    |
+| 27      | Crafting result            | Storage    |
+| 28-31   | Essence slots (4)          | Controller |
+| 32-67   | Player inventory + hotbar  | Tous       |
+
+CONTAINER DATA (11 valeurs):
+0: pendingCount, 1: pendingTypes, 2: honeyDepleted
+3: flightSpeed, 4: searchSpeed, 5: craftSpeed
+6: quantity, 7: honeyConsumption, 8: honeyEfficiency
+9: activeTaskCount, 10: queuedTaskCount
+
+================================================================================
+FICHIERS
+================================================================================
+
+CRÉÉS:
+- client/gui/screen/storage/StorageTab.java (enum 3 onglets)
+- common/block/storage/TaskDisplayData.java (record données tâche)
+- core/network/packets/StorageTasksSyncPacket.java (Server→Client)
+- core/network/packets/StorageTaskCancelPacket.java (Client→Server)
+
+MODIFIÉS:
+- common/entity/delivery/DeliveryBeeEntity.java
+- common/blockentity/storage/StorageItemAggregator.java
+- common/menu/storage/StorageTerminalMenu.java
+- common/blockentity/storage/StorageTerminalBlockEntity.java
+- common/blockentity/storage/StorageDeliveryManager.java
+- common/blockentity/storage/StorageControllerBlockEntity.java
+- core/network/BeemancerNetwork.java
+- client/gui/GuiRenderHelper.java
+- client/gui/screen/storage/StorageTerminalScreen.java
+- lang/en_us.json, lang/fr_fr.json
+
+================================================================================
+FONCTIONNEMENT
+================================================================================
+
+DELIVERY BEE FIX:
+- noPhysics = true dans tick() permet aux abeilles de traverser les blocs
+- Le pathfinding FlyingPathNavigation est conservé (chemin naturel)
+
+PRIORITÉ DÉPÔT:
+1. Coffre avec même item exact (stack mergeable)
+2. Coffre avec même item (besoin slot vide)
+3. Coffre avec item partageant un tag commun
+4. Coffre avec item du même mod/namespace
+5. N'importe quel coffre avec slot vide
+
+CRAFTING:
+- TransientCraftingContainer + ResultSlot
+- Recalcul recette via slotsChanged() + RecipeManager
+- Drop items crafting grid à la fermeture du menu
+
+TÂCHES:
+- Sync périodique via StorageTasksSyncPacket (toutes les 40 ticks)
+- Annulation via StorageTaskCancelPacket → controller.cancelTask(UUID)
+- Annulation récursive des dépendances
+- Pour DEPOSIT: remet les items dans le réseau
+
+GUI:
+- Rendu 100% programmatique (GuiRenderHelper)
+- 230x280 pixels
+- Search box, grille virtuelle 9x5 avec scroll
+- Onglets cliquables en haut
+- Tasks: connecteurs L pour dépendances, bouton X pour annuler
+- Controller: stats + 4 essence slots

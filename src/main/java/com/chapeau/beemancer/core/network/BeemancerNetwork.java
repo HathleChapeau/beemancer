@@ -12,6 +12,8 @@ import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageRequestPacket;
+import com.chapeau.beemancer.core.network.packets.StorageTaskCancelPacket;
+import com.chapeau.beemancer.core.network.packets.StorageTasksSyncPacket;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -43,6 +45,12 @@ public class BeemancerNetwork {
                 StorageRequestPacket::handle
         );
 
+        registrar.playToServer(
+                StorageTaskCancelPacket.TYPE,
+                StorageTaskCancelPacket.STREAM_CODEC,
+                StorageTaskCancelPacket::handle
+        );
+
         // Server to Client packets
         registrar.playToClient(
                 CodexSyncPacket.TYPE,
@@ -54,6 +62,12 @@ public class BeemancerNetwork {
                 StorageItemsSyncPacket.TYPE,
                 StorageItemsSyncPacket.STREAM_CODEC,
                 StorageItemsSyncPacket::handle
+        );
+
+        registrar.playToClient(
+                StorageTasksSyncPacket.TYPE,
+                StorageTasksSyncPacket.STREAM_CODEC,
+                StorageTasksSyncPacket::handle
         );
     }
 

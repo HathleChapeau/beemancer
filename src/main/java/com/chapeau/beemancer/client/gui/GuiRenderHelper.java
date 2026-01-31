@@ -129,6 +129,110 @@ public class GuiRenderHelper {
     }
 
     /**
+     * Onglet individuel avec bordure 3D style Minecraft.
+     * L'onglet actif est surélevé (fond clair, pas de bordure basse).
+     * L'onglet inactif est enfoncé (fond plus sombre).
+     */
+    public static void renderTab(GuiGraphics g, Font font, int x, int y, int w, int h,
+                                  boolean active, String label) {
+        if (active) {
+            // Onglet actif: fond container, pas de bordure basse (fusionné avec le contenu)
+            g.fill(x, y, x + w, y + h, 0xFFC6C6C6);
+            // Bordure top/left (light)
+            g.fill(x, y, x + w, y + 1, 0xFFFFFFFF);
+            g.fill(x, y, x + 1, y + h, 0xFFFFFFFF);
+            // Bordure right (dark)
+            g.fill(x + w - 1, y, x + w, y + h, 0xFF555555);
+        } else {
+            // Onglet inactif: fond plus sombre
+            g.fill(x, y + 2, x + w, y + h, 0xFFAAAAAA);
+            // Bordure top/left (dark light)
+            g.fill(x, y + 2, x + w, y + 3, 0xFFDBDBDB);
+            g.fill(x, y + 2, x + 1, y + h, 0xFFDBDBDB);
+            // Bordure right/bottom (dark)
+            g.fill(x + w - 1, y + 2, x + w, y + h, 0xFF555555);
+            g.fill(x, y + h - 1, x + w, y + h, 0xFF7B7B7B);
+        }
+
+        // Label centré
+        int textWidth = font.width(label);
+        int textX = x + (w - textWidth) / 2;
+        int textY = y + (active ? (h - 8) / 2 : (h - 8) / 2 + 1);
+        g.drawString(font, label, textX, textY, active ? 0x404040 : 0x606060, false);
+    }
+
+    /**
+     * Barre d'onglets complète. Rend N onglets côte à côte.
+     * Dessine aussi la ligne de séparation sous les onglets inactifs.
+     *
+     * @param labels les labels traduits des onglets
+     * @param activeIndex l'index de l'onglet actif (0-based)
+     * @return les positions X de début de chaque onglet (pour la détection de clic)
+     */
+    public static int[] renderTabBar(GuiGraphics g, Font font, int x, int y,
+                                      int totalWidth, String[] labels, int activeIndex) {
+        int tabCount = labels.length;
+        int tabWidth = totalWidth / tabCount;
+        int tabHeight = 16;
+        int[] tabPositions = new int[tabCount];
+
+        for (int i = 0; i < tabCount; i++) {
+            int tabX = x + i * tabWidth;
+            tabPositions[i] = tabX;
+            renderTab(g, font, tabX, y, tabWidth, tabHeight, i == activeIndex, labels[i]);
+        }
+
+        return tabPositions;
+    }
+
+    /**
+     * Fond de container sans titre ni séparateur (pour usage avec onglets).
+     */
+    public static void renderContainerBackgroundNoTitle(GuiGraphics g, int x, int y, int w, int h) {
+        g.fill(x, y, x + w, y + h, 0xFFC6C6C6);
+
+        // 3D border - top/left (light)
+        g.fill(x, y, x + w, y + 1, 0xFFFFFFFF);
+        g.fill(x, y, x + 1, y + h, 0xFFFFFFFF);
+        g.fill(x + 1, y + 1, x + w - 1, y + 2, 0xFFDBDBDB);
+        g.fill(x + 1, y + 1, x + 2, y + h - 1, 0xFFDBDBDB);
+
+        // 3D border - bottom/right (dark)
+        g.fill(x, y + h - 1, x + w, y + h, 0xFF555555);
+        g.fill(x + w - 1, y, x + w, y + h, 0xFF555555);
+        g.fill(x + 1, y + h - 2, x + w - 1, y + h - 1, 0xFF7B7B7B);
+        g.fill(x + w - 2, y + 1, x + w - 1, y + h - 1, 0xFF7B7B7B);
+    }
+
+    /**
+     * Grille de slots NxM.
+     */
+    public static void renderSlotGrid(GuiGraphics g, int x, int y, int cols, int rows) {
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                renderSlot(g, x + col * 18, y + row * 18);
+            }
+        }
+    }
+
+    /**
+     * Bouton cliquable simple avec texte centré et survol.
+     */
+    public static void renderButton(GuiGraphics g, Font font, int x, int y, int w, int h,
+                                     String label, boolean hovered) {
+        int bg = hovered ? 0xFFDBDBDB : 0xFFC6C6C6;
+        g.fill(x, y, x + w, y + h, bg);
+        // Bordures 3D
+        g.fill(x, y, x + w, y + 1, 0xFFFFFFFF);
+        g.fill(x, y, x + 1, y + h, 0xFFFFFFFF);
+        g.fill(x, y + h - 1, x + w, y + h, 0xFF555555);
+        g.fill(x + w - 1, y, x + w, y + h, 0xFF555555);
+        // Label centré
+        int textWidth = font.width(label);
+        g.drawString(font, label, x + (w - textWidth) / 2, y + (h - 8) / 2, 0x404040, false);
+    }
+
+    /**
      * Nom lisible d'un fluide Beemancer.
      */
     public static String getFluidName(FluidStack fluid) {

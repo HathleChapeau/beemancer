@@ -254,6 +254,12 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     public boolean isHoneyDepleted() { return deliveryManager.isHoneyDepleted(); }
 
+    public boolean cancelTask(java.util.UUID taskId) { return deliveryManager.cancelTask(taskId); }
+
+    public java.util.List<com.chapeau.beemancer.common.block.storage.TaskDisplayData> getTaskDisplayData() {
+        return deliveryManager.getTaskDisplayData();
+    }
+
     // === Tick ===
 
     public static void serverTick(StorageControllerBlockEntity be) {

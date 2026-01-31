@@ -125,6 +125,7 @@ public class DeliveryBeeEntity extends Bee {
 
     @Override
     public void tick() {
+        this.noPhysics = true;
         super.tick();
         ticksAlive++;
 

@@ -3,6 +3,71 @@
 ################################################################################
 
 ================================================================================
+2026-01-31 - Storage Terminal Overhaul (8 changements interconnectés)
+================================================================================
+
+Refonte complète du système Storage Terminal avec 8 améliorations:
+
+1. FIX DELIVERY BEE COLLISION
+   - DeliveryBeeEntity.java: ajout `this.noPhysics = true` dans tick()
+   - Les abeilles conservent le pathfinding mais traversent les blocs
+   - Corrige le bug où les abeilles ne pouvaient pas atteindre les coffres
+
+2. PRIORITÉ DE DÉPÔT INTELLIGENTE
+   - StorageItemAggregator.java: réécriture findSlotForItem() avec 4 niveaux
+   - Même item exact > même item (slot vide) > même tag > même namespace > coffre libre
+
+3. PICKUP SLOTS EN SORTIE UNIQUEMENT
+   - StorageTerminalMenu.java: OutputOnlySlot (inner class) pour slots 9-17
+   - mayPlace() retourne false, le joueur ne peut qu'extraire
+
+4. CRAFTING TABLE DANS LE TERMINAL
+   - StorageTerminalMenu.java: grille 3x3 (slots 18-26) + ResultSlot (slot 27)
+   - TransientCraftingContainer + recalcul recette via slotsChanged()
+   - Drop des items de crafting à la fermeture du menu
+
+5. 3 ONGLETS DANS LE TERMINAL
+   - StorageTab.java (NOUVEAU): enum STORAGE, TASKS, CONTROLLER
+   - Slots repositionnés à y=-9999 quand leur onglet n'est pas actif
+   - GuiRenderHelper.java: ajout renderTab(), renderTabBar(), renderButton()
+
+6. ONGLET TASKS (liste des tâches avec annulation)
+   - TaskDisplayData.java (NOUVEAU): record avec taskId, template, count, state, type, dependencyIds
+   - StorageTasksSyncPacket.java (NOUVEAU): Server→Client sync des tâches
+   - StorageTaskCancelPacket.java (NOUVEAU): Client→Server annulation par UUID
+   - StorageDeliveryManager.java: cancelTask(), cancelDependentTasks(), getTaskDisplayData()
+   - StorageControllerBlockEntity.java: délégation cancelTask(), getTaskDisplayData()
+   - Affichage avec connecteurs L pour les dépendances, bouton X pour annuler
+
+7. ONGLET CONTROLLER (stats + essences)
+   - ContainerData étendu à 11 valeurs (+ activeTaskCount, queuedTaskCount)
+   - Essence slots (28-31) accessibles depuis le terminal
+   - Affichage stats: flight/search/craft speed, quantity, honey, efficiency
+
+8. GUI PROGRAMMATIQUE COMPLÈTE
+   - StorageTerminalScreen.java: réécriture complète (230x280)
+   - Rendu 100% programmatique avec GuiRenderHelper (pas de texture)
+   - Grille virtuelle 9x5 avec scroll, search box, 3 zones de slots
+
+FICHIERS CRÉÉS (4):
+- client/gui/screen/storage/StorageTab.java
+- common/block/storage/TaskDisplayData.java
+- core/network/packets/StorageTasksSyncPacket.java
+- core/network/packets/StorageTaskCancelPacket.java
+
+FICHIERS MODIFIÉS (10):
+- common/entity/delivery/DeliveryBeeEntity.java (noPhysics)
+- common/blockentity/storage/StorageItemAggregator.java (priorité dépôt + task sync)
+- common/menu/storage/StorageTerminalMenu.java (refonte complète)
+- common/blockentity/storage/StorageTerminalBlockEntity.java (createMenu étendu)
+- common/blockentity/storage/StorageDeliveryManager.java (cancel + display)
+- common/blockentity/storage/StorageControllerBlockEntity.java (délégation)
+- core/network/BeemancerNetwork.java (+2 packets)
+- client/gui/GuiRenderHelper.java (tab rendering)
+- client/gui/screen/storage/StorageTerminalScreen.java (refonte complète)
+- lang/en_us.json + fr_fr.json (+10 clés traduction)
+
+================================================================================
 2026-01-31 - Suppression pollen/propolis/beeswax + Creative tab complète
 ================================================================================
 

@@ -422,6 +422,17 @@
   "gui.beemancer.cancel": "Annuler",
   "gui.beemancer.request": "Demander",
 
+  "gui.beemancer.tab.storage": "Stockage",
+  "gui.beemancer.tab.tasks": "Tâches",
+  "gui.beemancer.tab.controller": "Contrôleur",
+  "gui.beemancer.terminal.deposit": "Dépôt",
+  "gui.beemancer.terminal.craft": "Craft",
+  "gui.beemancer.terminal.pickup": "Retrait",
+  "gui.beemancer.tasks.active": "Tâches actives",
+  "gui.beemancer.tasks.queued": "Tâches en attente",
+  "gui.beemancer.tasks.empty": "Aucune tâche",
+  "gui.beemancer.terminal.essences": "Essences",
+
   "block.beemancer.honeyed_stone": "Pierre Miellée",
   "block.beemancer.honeyed_stone_stair": "Escalier en Pierre Miellée",
   "block.beemancer.honey_pedestal": "Piédestal de Miel",

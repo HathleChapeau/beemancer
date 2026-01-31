@@ -25,6 +25,7 @@ package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
+import com.chapeau.beemancer.common.block.storage.TaskDisplayData;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
@@ -371,6 +372,133 @@ public class StorageDeliveryManager {
         deliveryQueue.clear();
         activeTasks.clear();
         completedTaskIds.clear();
+    }
+
+    // === Task Cancellation ===
+
+    /**
+     * Annule une tâche par son ID.
+     * Si la tâche est en queue, la retire. Si active, marque comme FAILED et tue la bee.
+     * Annule aussi récursivement les tâches dépendantes.
+     *
+     * @return true si la tâche a été trouvée et annulée
+     */
+    public boolean cancelTask(UUID taskId) {
+        // Vérifier dans la queue
+        Iterator<DeliveryTask> it = deliveryQueue.iterator();
+        while (it.hasNext()) {
+            DeliveryTask task = it.next();
+            if (task.getTaskId().equals(taskId)) {
+                it.remove();
+                handleCancelledTask(task);
+                cancelDependentTasks(taskId);
+                parent.setChanged();
+                return true;
+            }
+        }
+
+        // Vérifier dans les tâches actives
+        for (DeliveryTask task : activeTasks) {
+            if (task.getTaskId().equals(taskId)) {
+                task.setState(DeliveryTask.DeliveryState.FAILED);
+                killBeeForTask(task);
+                handleCancelledTask(task);
+                cancelDependentTasks(taskId);
+                parent.setChanged();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Annule récursivement toutes les tâches qui dépendent de la tâche donnée.
+     */
+    private void cancelDependentTasks(UUID cancelledTaskId) {
+        List<DeliveryTask> toCancel = new ArrayList<>();
+        for (DeliveryTask task : deliveryQueue) {
+            if (task.getDependencies().contains(cancelledTaskId)) {
+                toCancel.add(task);
+            }
+        }
+        for (DeliveryTask task : toCancel) {
+            deliveryQueue.remove(task);
+            handleCancelledTask(task);
+            cancelDependentTasks(task.getTaskId());
+        }
+    }
+
+    /**
+     * Gère les conséquences de l'annulation d'une tâche.
+     * Pour DEPOSIT: remet les items dans le réseau.
+     */
+    private void handleCancelledTask(DeliveryTask task) {
+        if (task.getType() == DeliveryTask.DeliveryType.DEPOSIT) {
+            parent.getItemAggregator().depositItem(
+                task.getTemplate().copyWithCount(task.getCount()));
+        }
+    }
+
+    /**
+     * Tue la bee assignée à une tâche active.
+     */
+    private void killBeeForTask(DeliveryTask task) {
+        if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
+
+        List<DeliveryBeeEntity> bees = parent.getLevel().getEntitiesOfClass(
+            DeliveryBeeEntity.class,
+            new net.minecraft.world.phys.AABB(parent.getBlockPos()).inflate(MAX_RANGE),
+            bee -> parent.getBlockPos().equals(bee.getControllerPos())
+        );
+        for (DeliveryBeeEntity bee : bees) {
+            if (bee.getTemplate() != null &&
+                ItemStack.isSameItemSameComponents(bee.getTemplate(), task.getTemplate()) &&
+                bee.getRequestCount() == task.getCount()) {
+                bee.discard();
+                break;
+            }
+        }
+    }
+
+    // === Task Display Data ===
+
+    /**
+     * Retourne les données d'affichage de toutes les tâches (actives + en queue).
+     */
+    public List<TaskDisplayData> getTaskDisplayData() {
+        List<TaskDisplayData> result = new ArrayList<>();
+        for (DeliveryTask task : activeTasks) {
+            result.add(taskToDisplayData(task));
+        }
+        for (DeliveryTask task : deliveryQueue) {
+            result.add(taskToDisplayData(task));
+        }
+        return result;
+    }
+
+    private TaskDisplayData taskToDisplayData(DeliveryTask task) {
+        return new TaskDisplayData(
+            task.getTaskId(),
+            task.getTemplate(),
+            task.getCount(),
+            task.getState().name(),
+            task.getType().name(),
+            task.getDependencies()
+        );
+    }
+
+    /**
+     * Retourne le nombre de tâches actives (bees en vol).
+     */
+    public int getActiveTaskCount() {
+        return activeTasks.size();
+    }
+
+    /**
+     * Retourne le nombre de tâches en queue.
+     */
+    public int getQueuedTaskCount() {
+        return deliveryQueue.size();
     }
 
     // === Tick ===

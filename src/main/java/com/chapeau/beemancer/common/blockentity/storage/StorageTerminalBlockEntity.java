@@ -501,7 +501,14 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         if (controller != null) {
             controller.addViewer(player.getUUID(), worldPosition);
         }
-        return new StorageTerminalMenu(containerId, playerInventory, this, worldPosition);
+        // Récupérer les essence slots du controller (ou un handler vide si pas lié)
+        net.neoforged.neoforge.items.ItemStackHandler essenceSlots;
+        if (controller != null) {
+            essenceSlots = controller.getEssenceSlots();
+        } else {
+            essenceSlots = new net.neoforged.neoforge.items.ItemStackHandler(4);
+        }
+        return new StorageTerminalMenu(containerId, playerInventory, this, worldPosition, essenceSlots);
     }
 
     /**

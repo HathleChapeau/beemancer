@@ -423,6 +423,17 @@
   "gui.beemancer.cancel": "Cancel",
   "gui.beemancer.request": "Request",
 
+  "gui.beemancer.tab.storage": "Storage",
+  "gui.beemancer.tab.tasks": "Tasks",
+  "gui.beemancer.tab.controller": "Controller",
+  "gui.beemancer.terminal.deposit": "Deposit",
+  "gui.beemancer.terminal.craft": "Craft",
+  "gui.beemancer.terminal.pickup": "Pickup",
+  "gui.beemancer.tasks.active": "Active Tasks",
+  "gui.beemancer.tasks.queued": "Queued Tasks",
+  "gui.beemancer.tasks.empty": "No tasks",
+  "gui.beemancer.terminal.essences": "Essences",
+
   "block.beemancer.honeyed_stone": "Honeyed Stone",
   "block.beemancer.honeyed_stone_stair": "Honeyed Stone Stairs",
   "block.beemancer.honey_pedestal": "Honey Pedestal",

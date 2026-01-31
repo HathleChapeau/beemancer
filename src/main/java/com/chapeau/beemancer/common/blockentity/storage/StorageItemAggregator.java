@@ -21,7 +21,9 @@
  */
 package com.chapeau.beemancer.common.blockentity.storage;
 
+import com.chapeau.beemancer.common.block.storage.TaskDisplayData;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
+import com.chapeau.beemancer.core.network.packets.StorageTasksSyncPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -108,16 +110,20 @@ public class StorageItemAggregator {
     }
 
     /**
-     * Envoie la liste des items agrégés aux joueurs qui ont le terminal ouvert.
+     * Envoie la liste des items agrégés et des tâches aux joueurs qui ont le terminal ouvert.
      */
     private void syncItemsToViewers() {
         if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
+
+        List<TaskDisplayData> taskData = parent.getDeliveryManager().getTaskDisplayData();
 
         for (Map.Entry<UUID, BlockPos> entry : playersViewing.entrySet()) {
             ServerPlayer player = parent.getLevel().getServer().getPlayerList().getPlayer(entry.getKey());
             if (player != null) {
                 PacketDistributor.sendToPlayer(player,
                     new StorageItemsSyncPacket(entry.getValue(), aggregatedItems));
+                PacketDistributor.sendToPlayer(player,
+                    new StorageTasksSyncPacket(entry.getValue(), taskData));
             }
         }
     }
@@ -125,7 +131,11 @@ public class StorageItemAggregator {
     // === Deposit / Extract ===
 
     /**
-     * Trouve un slot pour déposer un item.
+     * Trouve un slot pour déposer un item avec priorité intelligente:
+     * 1. Coffre contenant le même item exact (mergeable ou slot vide dans ce coffre)
+     * 2. Coffre contenant un item partageant un tag commun (avec slot vide)
+     * 3. Coffre contenant un item du même mod/namespace (avec slot vide)
+     * 4. N'importe quel coffre avec un slot vide
      *
      * @return la position du coffre où déposer, ou null si aucun espace
      */
@@ -135,6 +145,7 @@ public class StorageItemAggregator {
 
         Set<BlockPos> chests = parent.getChestManager().getRegisteredChests();
 
+        // Priorité 1: Coffre avec le même item exact (stack mergeable)
         for (BlockPos chestPos : chests) {
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
@@ -148,6 +159,76 @@ public class StorageItemAggregator {
             }
         }
 
+        // Priorité 1b: Coffre avec le même item (mais besoin d'un slot vide)
+        for (BlockPos chestPos : chests) {
+            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
+            if (be instanceof Container container) {
+                boolean hasSameItem = false;
+                boolean hasEmptySlot = false;
+                for (int i = 0; i < container.getContainerSize(); i++) {
+                    ItemStack existing = container.getItem(i);
+                    if (existing.isEmpty()) {
+                        hasEmptySlot = true;
+                    } else if (ItemStack.isSameItemSameComponents(existing, stack)) {
+                        hasSameItem = true;
+                    }
+                }
+                if (hasSameItem && hasEmptySlot) return chestPos;
+            }
+        }
+
+        // Collecter les tags de l'item à déposer
+        var stackTags = stack.getTags().toList();
+        String stackNamespace = stack.getItem().builtInRegistryHolder().key().location().getNamespace();
+
+        // Priorité 2: Coffre contenant un item partageant un tag commun
+        if (!stackTags.isEmpty()) {
+            for (BlockPos chestPos : chests) {
+                BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
+                if (be instanceof Container container) {
+                    boolean hasSharedTag = false;
+                    boolean hasEmptySlot = false;
+                    for (int i = 0; i < container.getContainerSize(); i++) {
+                        ItemStack existing = container.getItem(i);
+                        if (existing.isEmpty()) {
+                            hasEmptySlot = true;
+                        } else if (!hasSharedTag) {
+                            for (var tag : stackTags) {
+                                if (existing.is(tag)) {
+                                    hasSharedTag = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (hasSharedTag && hasEmptySlot) return chestPos;
+                }
+            }
+        }
+
+        // Priorité 3: Coffre contenant un item du même mod/namespace
+        for (BlockPos chestPos : chests) {
+            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
+            if (be instanceof Container container) {
+                boolean hasSameNamespace = false;
+                boolean hasEmptySlot = false;
+                for (int i = 0; i < container.getContainerSize(); i++) {
+                    ItemStack existing = container.getItem(i);
+                    if (existing.isEmpty()) {
+                        hasEmptySlot = true;
+                    } else if (!hasSameNamespace) {
+                        String existingNs = existing.getItem().builtInRegistryHolder()
+                            .key().location().getNamespace();
+                        if (existingNs.equals(stackNamespace)) {
+                            hasSameNamespace = true;
+                        }
+                    }
+                }
+                if (hasSameNamespace && hasEmptySlot) return chestPos;
+            }
+        }
+
+        // Priorité 4: N'importe quel coffre avec un slot vide
         for (BlockPos chestPos : chests) {
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {

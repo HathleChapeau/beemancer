@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-01-31                     #
-#            (GUI overhaul programmatique + fixes crank/centrifuge/tank)      #
+#            (Storage Terminal Overhaul: tabs, crafting, tasks, noPhysics)    #
 ################################################################################
 
 ================================================================================
@@ -256,6 +256,10 @@ LISTE DES FEATURES:
 → Crank Block
   Fichier: Structure/feature_crank.txt
   Description: Bloc manivelle pour centrifugeuse manuelle, placement conditionnel au-dessus
+
+→ Storage Terminal Overhaul
+  Fichier: Structure/feature_storage_terminal_overhaul.txt
+  Description: Refonte complète du terminal (3 onglets, crafting, annulation tâches, GUI programmatique, noPhysics bees)
 
 ================================================================================
 6. FEATURES EN COURS
