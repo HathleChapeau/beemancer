@@ -22,7 +22,7 @@ package com.chapeau.beemancer.common.entity.delivery;
 
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
-import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.IDeliveryEndpoint;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
@@ -227,8 +227,8 @@ public class DeliveryPhaseGoal extends Goal {
 
         if (bee.getDeliveryType() == DeliveryTask.DeliveryType.EXTRACT) {
             BlockEntity terminalBe = level.getBlockEntity(bee.getTerminalPos());
-            if (terminalBe instanceof StorageTerminalBlockEntity terminal) {
-                ItemStack remaining = terminal.insertIntoPickupSlots(bee.getCarriedItems());
+            if (terminalBe instanceof IDeliveryEndpoint endpoint) {
+                ItemStack remaining = endpoint.receiveDeliveredItems(bee.getCarriedItems());
                 if (!remaining.isEmpty()) {
                     BlockEntity controllerBe = level.getBlockEntity(bee.getControllerPos());
                     if (controllerBe instanceof StorageControllerBlockEntity controller) {

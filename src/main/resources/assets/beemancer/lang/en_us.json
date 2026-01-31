@@ -441,6 +441,12 @@
   "gui.beemancer.tasks.empty": "No tasks",
   "gui.beemancer.terminal.essences": "Essences",
 
+  "block.beemancer.import_interface": "Import Interface",
+  "block.beemancer.export_interface": "Export Interface",
+  "message.beemancer.network_interface.not_linked": "Not linked to any controller",
+  "message.beemancer.network_interface.linked": "Linked to controller at (%d, %d, %d)",
+  "message.beemancer.network_interface.linked_manually": "Interface linked to controller!",
+
   "block.beemancer.honeyed_stone": "Honeyed Stone",
   "block.beemancer.honeyed_stone_stair": "Honeyed Stone Stairs",
   "block.beemancer.honey_pedestal": "Honey Pedestal",

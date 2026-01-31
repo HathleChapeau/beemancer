@@ -62,7 +62,7 @@ import java.util.Queue;
  * - File d'attente pour les requêtes quand pas assez de place
  * - Accès aux items agrégés via le controller
  */
-public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvider, Container {
+public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvider, Container, IDeliveryEndpoint {
 
     public static final int DEPOSIT_SLOTS = 9;
     public static final int PICKUP_SLOTS = 9;
@@ -382,6 +382,11 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     public ItemStackHandler getPickupSlots() {
         return pickupSlots;
+    }
+
+    @Override
+    public ItemStack receiveDeliveredItems(ItemStack items) {
+        return insertIntoPickupSlots(items);
     }
 
     /**

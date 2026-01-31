@@ -21,6 +21,7 @@
 package com.chapeau.beemancer.common.block.storage;
 
 import com.chapeau.beemancer.common.blockentity.storage.INetworkNode;
+import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
 import com.chapeau.beemancer.core.util.StorageHelper;
 import net.minecraft.core.BlockPos;
@@ -75,6 +76,20 @@ public class StorageEvents {
                         Component.translatable("message.beemancer.storage_terminal.linked_manually"),
                         true
                     );
+                    event.setCanceled(true);
+                    event.setCancellationResult(InteractionResult.SUCCESS);
+                    return;
+                }
+            }
+
+            // Shift+clic sur une interface reseau = lier au controller
+            if (be instanceof NetworkInterfaceBlockEntity iface) {
+                BlockPos ctrlPos = findControllerInNetwork(node, level);
+                if (ctrlPos != null) {
+                    iface.linkToController(ctrlPos);
+                    player.displayClientMessage(
+                        Component.translatable("message.beemancer.network_interface.linked_manually"),
+                        true);
                     event.setCanceled(true);
                     event.setCancellationResult(InteractionResult.SUCCESS);
                     return;

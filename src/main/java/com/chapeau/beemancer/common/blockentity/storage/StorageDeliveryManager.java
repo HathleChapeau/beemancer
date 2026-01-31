@@ -581,6 +581,19 @@ public class StorageDeliveryManager {
     }
 
     /**
+     * Verifie si une tache est encore en attente (queue ou active).
+     */
+    public boolean isTaskPending(UUID taskId) {
+        for (DeliveryTask t : activeTasks) {
+            if (t.getTaskId().equals(taskId)) return true;
+        }
+        for (DeliveryTask t : deliveryQueue) {
+            if (t.getTaskId().equals(taskId)) return true;
+        }
+        return false;
+    }
+
+    /**
      * Retourne le nombre de tâches actives (bees en vol).
      */
     public int getActiveTaskCount() {

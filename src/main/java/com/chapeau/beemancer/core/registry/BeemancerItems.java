@@ -39,6 +39,12 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> STORAGE_TERMINAL = ITEMS.register("storage_terminal",
             () -> new BlockItem(BeemancerBlocks.STORAGE_TERMINAL.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> IMPORT_INTERFACE = ITEMS.register("import_interface",
+            () -> new BlockItem(BeemancerBlocks.IMPORT_INTERFACE.get(), new Item.Properties()));
+
+    public static final DeferredItem<BlockItem> EXPORT_INTERFACE = ITEMS.register("export_interface",
+            () -> new BlockItem(BeemancerBlocks.EXPORT_INTERFACE.get(), new Item.Properties()));
+
     public static final DeferredItem<BlockItem> CONTROLLED_HIVE = ITEMS.register("controlled_hive",
             () -> new BlockItem(BeemancerBlocks.CONTROLLED_HIVE.get(), new Item.Properties()));
 

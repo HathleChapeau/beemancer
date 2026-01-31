@@ -19,6 +19,8 @@ import com.chapeau.beemancer.common.block.incubator.IncubatorBlock;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlock;
 import com.chapeau.beemancer.common.block.storage.ControlledHiveBlock;
 import com.chapeau.beemancer.common.block.storage.ControllerPipeBlock;
+import com.chapeau.beemancer.common.block.storage.ExportInterfaceBlock;
+import com.chapeau.beemancer.common.block.storage.ImportInterfaceBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
 import com.chapeau.beemancer.common.block.storage.StorageRelayBlock;
@@ -67,6 +69,18 @@ public class BeemancerBlocks {
 
     public static final DeferredBlock<StorageTerminalBlock> STORAGE_TERMINAL = BLOCKS.register("storage_terminal",
             () -> new StorageTerminalBlock(BlockBehaviour.Properties.of()
+                    .strength(2.5f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<ImportInterfaceBlock> IMPORT_INTERFACE = BLOCKS.register("import_interface",
+            () -> new ImportInterfaceBlock(BlockBehaviour.Properties.of()
+                    .strength(2.5f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<ExportInterfaceBlock> EXPORT_INTERFACE = BLOCKS.register("export_interface",
+            () -> new ExportInterfaceBlock(BlockBehaviour.Properties.of()
                     .strength(2.5f)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()));

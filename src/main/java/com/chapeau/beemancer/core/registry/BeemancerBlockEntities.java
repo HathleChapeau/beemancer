@@ -20,6 +20,8 @@ import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.block.statue.BeeStatueBlockEntity;
 import com.chapeau.beemancer.common.blockentity.extractor.ExtractorHeartBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.ControllerPipeBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.ExportInterfaceBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.ImportInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageCrateBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageRelayBlockEntity;
@@ -70,7 +72,21 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.CONTROLLER_PIPE.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<BeeCreatorBlockEntity>> BEE_CREATOR = 
+    public static final Supplier<BlockEntityType<ImportInterfaceBlockEntity>> IMPORT_INTERFACE =
+            BLOCK_ENTITIES.register("import_interface",
+                    () -> BlockEntityType.Builder.of(
+                            ImportInterfaceBlockEntity::new,
+                            BeemancerBlocks.IMPORT_INTERFACE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<ExportInterfaceBlockEntity>> EXPORT_INTERFACE =
+            BLOCK_ENTITIES.register("export_interface",
+                    () -> BlockEntityType.Builder.of(
+                            ExportInterfaceBlockEntity::new,
+                            BeemancerBlocks.EXPORT_INTERFACE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<BeeCreatorBlockEntity>> BEE_CREATOR =
             BLOCK_ENTITIES.register("bee_creator",
                     () -> BlockEntityType.Builder.of(
                             BeeCreatorBlockEntity::new,
