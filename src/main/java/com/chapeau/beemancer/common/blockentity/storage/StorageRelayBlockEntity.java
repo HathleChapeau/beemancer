@@ -58,6 +58,7 @@ public class StorageRelayBlockEntity extends BlockEntity implements INetworkNode
 
     private boolean editMode = false;
     private UUID editingPlayer = null;
+    private boolean isSaving = false;
 
     public StorageRelayBlockEntity(BlockPos pos, BlockState blockState) {
         super(BeemancerBlockEntities.STORAGE_RELAY.get(), pos, blockState);
@@ -178,21 +179,26 @@ public class StorageRelayBlockEntity extends BlockEntity implements INetworkNode
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+        isSaving = true;
+        try {
+            super.saveAdditional(tag, registries);
 
-        chestManager.save(tag);
+            chestManager.save(tag);
 
-        ListTag nodesTag = new ListTag();
-        for (BlockPos pos : connectedNodes) {
-            CompoundTag posTag = new CompoundTag();
-            posTag.put("Pos", NbtUtils.writeBlockPos(pos));
-            nodesTag.add(posTag);
-        }
-        tag.put("ConnectedNodes", nodesTag);
+            ListTag nodesTag = new ListTag();
+            for (BlockPos pos : connectedNodes) {
+                CompoundTag posTag = new CompoundTag();
+                posTag.put("Pos", NbtUtils.writeBlockPos(pos));
+                nodesTag.add(posTag);
+            }
+            tag.put("ConnectedNodes", nodesTag);
 
-        tag.putBoolean("EditMode", editMode);
-        if (editingPlayer != null) {
-            tag.putUUID("EditingPlayer", editingPlayer);
+            tag.putBoolean("EditMode", editMode);
+            if (editingPlayer != null) {
+                tag.putUUID("EditingPlayer", editingPlayer);
+            }
+        } finally {
+            isSaving = false;
         }
     }
 
@@ -221,6 +227,7 @@ public class StorageRelayBlockEntity extends BlockEntity implements INetworkNode
     // === Sync Client ===
 
     void syncToClient() {
+        if (isSaving) return;
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }

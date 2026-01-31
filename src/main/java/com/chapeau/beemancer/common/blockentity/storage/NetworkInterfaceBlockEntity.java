@@ -77,6 +77,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     protected boolean hasAdjacentGui = false;
     protected int scanTimer = 0;
     private int guiCheckTimer = 0;
+    private boolean isSaving = false;
 
     public NetworkInterfaceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -250,14 +251,14 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     public Direction getFacing() {
         BlockState state = getBlockState();
-        if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-            return state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+        if (state.hasProperty(BlockStateProperties.FACING)) {
+            return state.getValue(BlockStateProperties.FACING);
         }
         return Direction.NORTH;
     }
 
     public BlockPos getAdjacentPos() {
-        return worldPosition.relative(getFacing().getOpposite());
+        return worldPosition.relative(getFacing());
     }
 
     @Nullable
@@ -348,38 +349,43 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+        isSaving = true;
+        try {
+            super.saveAdditional(tag, registries);
 
-        if (controllerPos != null) {
-            tag.put("ControllerPos", NbtUtils.writeBlockPos(controllerPos));
-        }
-
-        // Filters
-        ListTag filtersTag = new ListTag();
-        for (InterfaceFilter filter : filters) {
-            filtersTag.add(filter.save(registries));
-        }
-        tag.put("Filters", filtersTag);
-
-        // Global selected slots
-        if (!globalSelectedSlots.isEmpty()) {
-            tag.putIntArray("GlobalSelectedSlots",
-                globalSelectedSlots.stream().mapToInt(Integer::intValue).toArray());
-        }
-
-        // Pending tasks
-        if (!pendingTasks.isEmpty()) {
-            ListTag tasksTag = new ListTag();
-            for (Map.Entry<String, UUID> entry : pendingTasks.entrySet()) {
-                CompoundTag taskEntry = new CompoundTag();
-                taskEntry.putString("Key", entry.getKey());
-                taskEntry.putUUID("TaskId", entry.getValue());
-                tasksTag.add(taskEntry);
+            if (controllerPos != null) {
+                tag.put("ControllerPos", NbtUtils.writeBlockPos(controllerPos));
             }
-            tag.put("PendingTasks", tasksTag);
-        }
 
-        saveExtra(tag, registries);
+            // Filters
+            ListTag filtersTag = new ListTag();
+            for (InterfaceFilter filter : filters) {
+                filtersTag.add(filter.save(registries));
+            }
+            tag.put("Filters", filtersTag);
+
+            // Global selected slots
+            if (!globalSelectedSlots.isEmpty()) {
+                tag.putIntArray("GlobalSelectedSlots",
+                    globalSelectedSlots.stream().mapToInt(Integer::intValue).toArray());
+            }
+
+            // Pending tasks
+            if (!pendingTasks.isEmpty()) {
+                ListTag tasksTag = new ListTag();
+                for (Map.Entry<String, UUID> entry : pendingTasks.entrySet()) {
+                    CompoundTag taskEntry = new CompoundTag();
+                    taskEntry.putString("Key", entry.getKey());
+                    taskEntry.putUUID("TaskId", entry.getValue());
+                    tasksTag.add(taskEntry);
+                }
+                tag.put("PendingTasks", tasksTag);
+            }
+
+            saveExtra(tag, registries);
+        } finally {
+            isSaving = false;
+        }
     }
 
     @Override
@@ -430,6 +436,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     // === Sync Client ===
 
     public void syncToClient() {
+        if (isSaving) return;
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }

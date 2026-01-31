@@ -45,13 +45,13 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Bloc Export Interface.
- * Se place avec HORIZONTAL_FACING pointant vers l'inventaire adjacent.
- * Le joueur fait face au bloc, le bloc pointe dans la direction du joueur.
+ * Se place avec FACING pointant vers l'inventaire adjacent cible (6 directions).
+ * FACING = direction vers le bloc a scanner.
  */
 public class ExportInterfaceBlock extends BaseEntityBlock {
 
     public static final MapCodec<ExportInterfaceBlock> CODEC = simpleCodec(ExportInterfaceBlock::new);
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
     public ExportInterfaceBlock(Properties properties) {
         super(properties);
@@ -78,7 +78,7 @@ public class ExportInterfaceBlock extends BaseEntityBlock {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState()
-            .setValue(FACING, context.getHorizontalDirection().getOpposite());
+            .setValue(FACING, context.getNearestLookingDirection().getOpposite());
     }
 
     @Nullable

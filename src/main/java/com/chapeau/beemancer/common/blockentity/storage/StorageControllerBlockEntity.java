@@ -89,6 +89,8 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     private final Set<BlockPos> linkedTerminals = new HashSet<>();
 
     // === Essence slots ===
+    private boolean isSaving = false;
+
     private final ItemStackHandler essenceSlots = new ItemStackHandler(4) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -98,7 +100,9 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            syncToClient();
+            if (!isSaving) {
+                syncToClient();
+            }
         }
     };
 
@@ -398,39 +402,44 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+        isSaving = true;
+        try {
+            super.saveAdditional(tag, registries);
 
-        // Délégation aux managers
-        multiblockManager.save(tag);
-        chestManager.save(tag);
-        deliveryManager.save(tag, registries);
+            // Délégation aux managers
+            multiblockManager.save(tag);
+            chestManager.save(tag);
+            deliveryManager.save(tag, registries);
 
-        // Terminaux liés (inline)
-        ListTag terminalsTag = new ListTag();
-        for (BlockPos pos : linkedTerminals) {
-            CompoundTag posTag = new CompoundTag();
-            posTag.put("Pos", NbtUtils.writeBlockPos(pos));
-            terminalsTag.add(posTag);
+            // Terminaux liés (inline)
+            ListTag terminalsTag = new ListTag();
+            for (BlockPos pos : linkedTerminals) {
+                CompoundTag posTag = new CompoundTag();
+                posTag.put("Pos", NbtUtils.writeBlockPos(pos));
+                terminalsTag.add(posTag);
+            }
+            tag.put("LinkedTerminals", terminalsTag);
+
+            // Noeuds connectes
+            ListTag nodesTag = new ListTag();
+            for (BlockPos pos : connectedNodes) {
+                CompoundTag posTag = new CompoundTag();
+                posTag.put("Pos", NbtUtils.writeBlockPos(pos));
+                nodesTag.add(posTag);
+            }
+            tag.put("ConnectedNodes", nodesTag);
+
+            // Mode édition (inline)
+            tag.putBoolean("EditMode", editMode);
+            if (editingPlayer != null) {
+                tag.putUUID("EditingPlayer", editingPlayer);
+            }
+
+            // Essence slots
+            tag.put("EssenceSlots", essenceSlots.serializeNBT(registries));
+        } finally {
+            isSaving = false;
         }
-        tag.put("LinkedTerminals", terminalsTag);
-
-        // Noeuds connectes
-        ListTag nodesTag = new ListTag();
-        for (BlockPos pos : connectedNodes) {
-            CompoundTag posTag = new CompoundTag();
-            posTag.put("Pos", NbtUtils.writeBlockPos(pos));
-            nodesTag.add(posTag);
-        }
-        tag.put("ConnectedNodes", nodesTag);
-
-        // Mode édition (inline)
-        tag.putBoolean("EditMode", editMode);
-        if (editingPlayer != null) {
-            tag.putUUID("EditingPlayer", editingPlayer);
-        }
-
-        // Essence slots
-        tag.put("EssenceSlots", essenceSlots.serializeNBT(registries));
     }
 
     @Override
@@ -475,6 +484,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
     // === Sync Client ===
 
     void syncToClient() {
+        if (isSaving) return;
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }

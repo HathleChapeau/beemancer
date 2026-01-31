@@ -75,6 +75,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     // Flag pour éviter la récursion lors du dépôt
     private boolean isDepositing = false;
+    private boolean isSaving = false;
 
     // File d'attente des requêtes en attente
     private final Queue<PendingRequest> pendingRequests = new LinkedList<>();
@@ -528,24 +529,29 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+        isSaving = true;
+        try {
+            super.saveAdditional(tag, registries);
 
-        if (controllerPos != null) {
-            tag.put("ControllerPos", NbtUtils.writeBlockPos(controllerPos));
+            if (controllerPos != null) {
+                tag.put("ControllerPos", NbtUtils.writeBlockPos(controllerPos));
+            }
+
+            tag.put("DepositSlots", depositSlots.serializeNBT(registries));
+            tag.put("PickupSlots", pickupSlots.serializeNBT(registries));
+
+            // Sauvegarder les requêtes en attente
+            ListTag pendingTag = new ListTag();
+            for (PendingRequest request : pendingRequests) {
+                CompoundTag requestTag = new CompoundTag();
+                requestTag.put("Item", request.item.saveOptional(registries));
+                requestTag.putInt("Count", request.count);
+                pendingTag.add(requestTag);
+            }
+            tag.put("PendingRequests", pendingTag);
+        } finally {
+            isSaving = false;
         }
-
-        tag.put("DepositSlots", depositSlots.serializeNBT(registries));
-        tag.put("PickupSlots", pickupSlots.serializeNBT(registries));
-
-        // Sauvegarder les requêtes en attente
-        ListTag pendingTag = new ListTag();
-        for (PendingRequest request : pendingRequests) {
-            CompoundTag requestTag = new CompoundTag();
-            requestTag.put("Item", request.item.saveOptional(registries));
-            requestTag.putInt("Count", request.count);
-            pendingTag.add(requestTag);
-        }
-        tag.put("PendingRequests", pendingTag);
     }
 
     @Override
@@ -583,6 +589,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     // === Sync Client ===
 
     private void syncToClient() {
+        if (isSaving) return;
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
