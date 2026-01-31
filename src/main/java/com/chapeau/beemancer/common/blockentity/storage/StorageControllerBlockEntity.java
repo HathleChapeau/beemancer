@@ -266,6 +266,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements Multibl
         while (!queue.isEmpty()) {
             BlockPos nodePos = queue.poll();
             if (!visitedNodes.add(nodePos)) continue;
+            if (!level.isLoaded(nodePos)) continue;
 
             BlockEntity be = level.getBlockEntity(nodePos);
             if (be instanceof INetworkNode node) {

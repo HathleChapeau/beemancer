@@ -270,6 +270,7 @@ public class StorageRelayBlockEntity extends BlockEntity implements INetworkNode
         // Deconnecter des noeuds lies
         if (level != null && !level.isClientSide()) {
             for (BlockPos nodePos : new ArrayList<>(connectedNodes)) {
+                if (!level.isLoaded(nodePos)) continue;
                 BlockEntity be = level.getBlockEntity(nodePos);
                 if (be instanceof INetworkNode node) {
                     node.disconnectNode(worldPosition);

@@ -91,6 +91,7 @@ public class StorageItemAggregator {
         Set<BlockPos> allChests = parent.getAllNetworkChests();
         Map<ItemStackKey, Integer> itemCounts = new HashMap<>();
         for (BlockPos chestPos : allChests) {
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 for (int i = 0; i < container.getContainerSize(); i++) {
@@ -155,6 +156,7 @@ public class StorageItemAggregator {
 
         // Priorité 1: Coffre avec le même item exact (stack mergeable)
         for (BlockPos chestPos : chests) {
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 for (int i = 0; i < container.getContainerSize(); i++) {
@@ -169,6 +171,7 @@ public class StorageItemAggregator {
 
         // Priorité 1b: Coffre avec le même item (mais besoin d'un slot vide)
         for (BlockPos chestPos : chests) {
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 boolean hasSameItem = false;
@@ -192,6 +195,7 @@ public class StorageItemAggregator {
         // Priorité 2: Coffre contenant un item partageant un tag commun
         if (!stackTags.isEmpty()) {
             for (BlockPos chestPos : chests) {
+                if (!parent.getLevel().isLoaded(chestPos)) continue;
                 BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
                 if (be instanceof Container container) {
                     boolean hasSharedTag = false;
@@ -216,6 +220,7 @@ public class StorageItemAggregator {
 
         // Priorité 3: Coffre contenant un item du même mod/namespace
         for (BlockPos chestPos : chests) {
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 boolean hasSameNamespace = false;
@@ -238,6 +243,7 @@ public class StorageItemAggregator {
 
         // Priorité 4: N'importe quel coffre avec un slot vide
         for (BlockPos chestPos : chests) {
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 for (int i = 0; i < container.getContainerSize(); i++) {
@@ -265,6 +271,7 @@ public class StorageItemAggregator {
 
         for (BlockPos chestPos : chests) {
             if (remaining.isEmpty()) break;
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
@@ -307,6 +314,7 @@ public class StorageItemAggregator {
 
         for (BlockPos chestPos : chests) {
             if (remaining.isEmpty()) break;
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
@@ -343,6 +351,7 @@ public class StorageItemAggregator {
 
         for (BlockPos chestPos : chests) {
             if (needed <= 0) break;
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {

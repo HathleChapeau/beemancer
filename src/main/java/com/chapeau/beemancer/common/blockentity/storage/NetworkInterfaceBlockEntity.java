@@ -114,6 +114,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     @Nullable
     public StorageControllerBlockEntity getController() {
         if (controllerPos == null || level == null) return null;
+        if (!level.isLoaded(controllerPos)) return null;
         BlockEntity be = level.getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
             return controller;
@@ -268,7 +269,9 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     @Nullable
     protected Container getAdjacentInventory() {
         if (level == null) return null;
-        BlockEntity be = level.getBlockEntity(getAdjacentPos());
+        BlockPos adjPos = getAdjacentPos();
+        if (!level.isLoaded(adjPos)) return null;
+        BlockEntity be = level.getBlockEntity(adjPos);
         if (be instanceof Container container) {
             return container;
         }
@@ -326,7 +329,9 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         if (guiCheckTimer >= 100) {
             guiCheckTimer = 0;
             boolean hadGui = hasAdjacentGui;
-            BlockEntity adjacentBe = level.getBlockEntity(getAdjacentPos());
+            BlockPos adjPos = getAdjacentPos();
+            if (!level.isLoaded(adjPos)) return;
+            BlockEntity adjacentBe = level.getBlockEntity(adjPos);
             hasAdjacentGui = adjacentBe instanceof net.minecraft.world.MenuProvider;
             if (hadGui != hasAdjacentGui) {
                 syncToClient();

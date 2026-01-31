@@ -89,6 +89,7 @@ public class StorageDeliveryManager {
         if (parent.getLevel() == null || template.isEmpty()) return null;
 
         for (BlockPos chestPos : parent.getAllNetworkChests()) {
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 int found = 0;
@@ -130,6 +131,7 @@ public class StorageDeliveryManager {
             List<BlockPos> path = entry.getValue();
 
             if (!visited.add(nodePos)) continue;
+            if (!parent.getLevel().isLoaded(nodePos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
             if (!(be instanceof INetworkNode node)) continue;
@@ -155,6 +157,7 @@ public class StorageDeliveryManager {
      */
     public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
         if (parent.getLevel() == null || template.isEmpty() || count <= 0) return ItemStack.EMPTY;
+        if (!parent.getLevel().isLoaded(chestPos)) return ItemStack.EMPTY;
 
         BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
         if (!(be instanceof Container container)) return ItemStack.EMPTY;
@@ -197,6 +200,7 @@ public class StorageDeliveryManager {
 
     private ItemStack depositIntoChest(ItemStack stack, BlockPos chestPos) {
         if (parent.getLevel() == null || stack.isEmpty()) return stack;
+        if (!parent.getLevel().isLoaded(chestPos)) return stack;
 
         BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
         if (!(be instanceof Container container)) return stack;
@@ -248,6 +252,7 @@ public class StorageDeliveryManager {
             if (remaining <= 0) break;
             Vec3i rotatedOffset = MultiblockPattern.rotateY(new Vec3i(xOff, 0, 0), rotation);
             BlockPos reservoirPos = parent.getBlockPos().offset(rotatedOffset);
+            if (!parent.getLevel().isLoaded(reservoirPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(reservoirPos);
             if (be instanceof HoneyReservoirBlockEntity reservoir) {
                 FluidStack drained = reservoir.drain(remaining, IFluidHandler.FluidAction.EXECUTE);

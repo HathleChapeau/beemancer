@@ -108,6 +108,7 @@ public class StorageChestManager {
      */
     public boolean isChest(BlockPos pos) {
         if (parent.getNodeLevel() == null) return false;
+        if (!parent.getNodeLevel().isLoaded(pos)) return false;
         BlockState state = parent.getNodeLevel().getBlockState(pos);
         return StorageHelper.isStorageContainer(state);
     }

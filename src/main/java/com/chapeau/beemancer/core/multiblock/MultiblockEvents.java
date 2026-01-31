@@ -70,6 +70,7 @@ public class MultiblockEvents {
         Set<BlockPos> controllersToCheck = new HashSet<>(activeControllers);
 
         for (BlockPos controllerPos : controllersToCheck) {
+            if (!level.isLoaded(controllerPos)) continue;
             // Vérifier si le contrôleur existe encore
             BlockEntity be = level.getBlockEntity(controllerPos);
             if (!(be instanceof MultiblockController controller)) {

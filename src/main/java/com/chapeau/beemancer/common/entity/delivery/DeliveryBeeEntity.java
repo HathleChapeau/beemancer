@@ -294,6 +294,7 @@ public class DeliveryBeeEntity extends Bee {
      */
     public void notifyTaskCompleted() {
         if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
+        if (!level().isLoaded(controllerPos)) return;
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
             controller.getDeliveryManager().completeTask(taskId);
@@ -305,6 +306,7 @@ public class DeliveryBeeEntity extends Bee {
      */
     private void notifyTaskFailed() {
         if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
+        if (!level().isLoaded(controllerPos)) return;
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
             controller.getDeliveryManager().failTask(taskId);
