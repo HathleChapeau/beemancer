@@ -387,6 +387,8 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
                 tag.put("PendingTasks", tasksTag);
             }
 
+            tag.putBoolean("HasAdjacentGui", hasAdjacentGui);
+
             saveExtra(tag, registries);
         } finally {
             isSaving = false;
@@ -431,6 +433,8 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
                 pendingTasks.put(taskEntry.getString("Key"), taskEntry.getUUID("TaskId"));
             }
         }
+
+        hasAdjacentGui = tag.getBoolean("HasAdjacentGui");
 
         loadExtra(tag, registries);
     }
