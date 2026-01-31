@@ -22,6 +22,8 @@
 package com.chapeau.beemancer.client.gui.screen.storage;
 
 import com.chapeau.beemancer.core.network.packets.InterfaceActionPacket;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.entity.player.Inventory;
@@ -40,21 +42,37 @@ import java.util.stream.Collectors;
  * quand il a ete ouvert pour la selection de slots depuis le bouton [S].
  * Affiche un bouton toggle par-dessus chaque slot du container (pas ceux du joueur).
  *
- * Quand le GUI se ferme, envoie la selection au serveur via InterfaceActionPacket.
+ * Inclut un titre "Select Slots", un bouton Validate (envoie la selection)
+ * et un bouton Cancel (annule sans envoyer).
  */
 public class AdjacentGuiOverlayRenderer {
 
     private static final int SLOT_SIZE = 18;
 
+    // Overlay
     private static final int COLOR_OVERLAY = 0xC0000000;
-    private static final int COLOR_SLOT_OFF = 0x60333333;
-    private static final int COLOR_SLOT_ON = 0x8040C040;
-    private static final int COLOR_SLOT_BORDER_OFF = 0x40666666;
-    private static final int COLOR_SLOT_BORDER_ON = 0x8060E060;
-    private static final int COLOR_HOVER = 0x30FFFFFF;
+
+    // Slots — plus clairs et moins transparents
+    private static final int COLOR_SLOT_OFF = 0xB0555555;
+    private static final int COLOR_SLOT_ON = 0xD050C050;
+    private static final int COLOR_SLOT_BORDER_OFF = 0xC0888888;
+    private static final int COLOR_SLOT_BORDER_ON = 0xD070E070;
+    private static final int COLOR_HOVER = 0x50FFFFFF;
+
+    // Boutons
+    private static final int BTN_W = 50;
+    private static final int BTN_H = 14;
+    private static final int BTN_SPACING = 6;
+    private static final int BTN_MARGIN_BOTTOM = 8;
+
+    // Titre
+    private static final String TITLE_TEXT = "Select Slots";
+    private static final int TITLE_COLOR = 0xFFFFFF;
+    private static final int TITLE_MARGIN_TOP = 6;
 
     private static final Set<Integer> toggledSlots = new HashSet<>();
     private static boolean initialized = false;
+    private static boolean cancelled = false;
 
     @SubscribeEvent
     public static void onContainerForeground(ContainerScreenEvent.Render.Foreground event) {
@@ -62,38 +80,60 @@ public class AdjacentGuiOverlayRenderer {
         AbstractContainerScreen<?> screen = event.getContainerScreen();
         if (screen instanceof NetworkInterfaceScreen) return;
 
-        // Load initial selection on first frame
         if (!initialized) {
             toggledSlots.clear();
             toggledSlots.addAll(NetworkInterfaceScreen.overlayInitialSelection);
             initialized = true;
+            cancelled = false;
         }
 
         GuiGraphics g = event.getGuiGraphics();
+        Font font = Minecraft.getInstance().font;
 
         int leftPos = screen.getGuiLeft();
         int topPos = screen.getGuiTop();
         int screenWidth = screen.width;
         int screenHeight = screen.height;
+        int guiWidth = screen.getXSize();
 
         double mouseX = screen.getMinecraft().mouseHandler.xpos()
                 * screenWidth / screen.getMinecraft().getWindow().getWidth();
         double mouseY = screen.getMinecraft().mouseHandler.ypos()
                 * screenHeight / screen.getMinecraft().getWindow().getHeight();
 
+        double relMouseX = mouseX - leftPos;
+        double relMouseY = mouseY - topPos;
+
         var menu = screen.getMenu();
 
+        // Calcul des positions des boutons (coordonnees absolues, converties en relatives)
+        int totalBtnW = BTN_W * 2 + BTN_SPACING;
+        int btnBaseX = (guiWidth - totalBtnW) / 2;
+        int btnBaseY = screenHeight - topPos - BTN_MARGIN_BOTTOM - BTN_H;
+
+        int validateX = btnBaseX;
+        int cancelX = btnBaseX + BTN_W + BTN_SPACING;
+
+        // Position du titre (relatif au container)
+        int titleY = -TITLE_MARGIN_TOP - 10;
+
         g.drawManaged(() -> {
-            // Fond semi-transparent plein ecran (coordonnees absolues)
+            // Fond semi-transparent plein ecran
             g.pose().pushPose();
             g.pose().translate(-leftPos, -topPos, 400);
             g.fill(0, 0, screenWidth, screenHeight, COLOR_OVERLAY);
             g.pose().popPose();
 
-            // Boutons toggle par-dessus chaque slot (coordonnees relatives container, z=401)
+            // Elements UI (z=401, coordonnees relatives au container)
             g.pose().pushPose();
             g.pose().translate(0, 0, 401);
 
+            // Titre "Select Slots" centre au-dessus du GUI
+            int titleWidth = font.width(TITLE_TEXT);
+            int titleX = (guiWidth - titleWidth) / 2;
+            g.drawString(font, TITLE_TEXT, titleX, titleY, TITLE_COLOR, true);
+
+            // Boutons toggle par slot
             for (int i = 0; i < menu.slots.size(); i++) {
                 Slot slot = menu.slots.get(i);
                 if (slot.container instanceof Inventory) continue;
@@ -104,7 +144,7 @@ public class AdjacentGuiOverlayRenderer {
 
                 boolean toggled = toggledSlots.contains(i);
 
-                // Bordure du slot
+                // Bordure
                 int borderColor = toggled ? COLOR_SLOT_BORDER_ON : COLOR_SLOT_BORDER_OFF;
                 g.fill(sx, sy, sx + SLOT_SIZE, sy + 1, borderColor);
                 g.fill(sx, sy + SLOT_SIZE - 1, sx + SLOT_SIZE, sy + SLOT_SIZE, borderColor);
@@ -115,23 +155,48 @@ public class AdjacentGuiOverlayRenderer {
                 int color = toggled ? COLOR_SLOT_ON : COLOR_SLOT_OFF;
                 g.fill(sx + 1, sy + 1, sx + SLOT_SIZE - 1, sy + SLOT_SIZE - 1, color);
 
-                // Hover highlight
-                double relMouseX = mouseX - leftPos;
-                double relMouseY = mouseY - topPos;
+                // Hover
                 if (relMouseX >= sx && relMouseX < sx + SLOT_SIZE
                         && relMouseY >= sy && relMouseY < sy + SLOT_SIZE) {
                     g.fill(sx + 1, sy + 1, sx + SLOT_SIZE - 1, sy + SLOT_SIZE - 1, COLOR_HOVER);
                 }
             }
 
+            // Bouton Validate
+            boolean valHover = relMouseX >= validateX && relMouseX < validateX + BTN_W
+                    && relMouseY >= btnBaseY && relMouseY < btnBaseY + BTN_H;
+            renderButton(g, font, validateX, btnBaseY, BTN_W, BTN_H,
+                    "Validate", valHover, 0xFF408040, 0xFF509050);
+
+            // Bouton Cancel
+            boolean canHover = relMouseX >= cancelX && relMouseX < cancelX + BTN_W
+                    && relMouseY >= btnBaseY && relMouseY < btnBaseY + BTN_H;
+            renderButton(g, font, cancelX, btnBaseY, BTN_W, BTN_H,
+                    "Cancel", canHover, 0xFF804040, 0xFF905050);
+
             g.pose().popPose();
         });
     }
 
     /**
-     * Intercepte tous les clics. Gere les toggles de slots et bloque
-     * tout clic qui n'est pas sur un toggle.
+     * Rendu d'un bouton avec bordure 3D et couleur personnalisee.
      */
+    private static void renderButton(GuiGraphics g, Font font, int x, int y, int w, int h,
+                                      String label, boolean hovered, int bgColor, int hoverColor) {
+        int bg = hovered ? hoverColor : bgColor;
+        g.fill(x, y, x + w, y + h, bg);
+        // Bordures 3D claires en haut/gauche, sombres en bas/droite
+        int light = 0x40FFFFFF;
+        int dark = 0x40000000;
+        g.fill(x, y, x + w, y + 1, light);
+        g.fill(x, y, x + 1, y + h, light);
+        g.fill(x, y + h - 1, x + w, y + h, dark);
+        g.fill(x + w - 1, y, x + w, y + h, dark);
+        // Label centre
+        int textWidth = font.width(label);
+        g.drawString(font, label, x + (w - textWidth) / 2, y + (h - 8) / 2, 0xFFFFFFFF, false);
+    }
+
     @SubscribeEvent
     public static void onMouseClick(ScreenEvent.MouseButtonPressed.Pre event) {
         if (!NetworkInterfaceScreen.openedFromDebugButton) return;
@@ -140,9 +205,38 @@ public class AdjacentGuiOverlayRenderer {
 
         int leftPos = screen.getGuiLeft();
         int topPos = screen.getGuiTop();
+        int screenWidth = screen.width;
+        int screenHeight = screen.height;
+        int guiWidth = screen.getXSize();
         double relX = event.getMouseX() - leftPos;
         double relY = event.getMouseY() - topPos;
 
+        // Calcul positions boutons (memes formules que le rendu)
+        int totalBtnW = BTN_W * 2 + BTN_SPACING;
+        int btnBaseX = (guiWidth - totalBtnW) / 2;
+        int btnBaseY = screenHeight - topPos - BTN_MARGIN_BOTTOM - BTN_H;
+
+        int validateX = btnBaseX;
+        int cancelX = btnBaseX + BTN_W + BTN_SPACING;
+
+        // Bouton Validate
+        if (relX >= validateX && relX < validateX + BTN_W
+                && relY >= btnBaseY && relY < btnBaseY + BTN_H) {
+            screen.onClose();
+            event.setCanceled(true);
+            return;
+        }
+
+        // Bouton Cancel
+        if (relX >= cancelX && relX < cancelX + BTN_W
+                && relY >= btnBaseY && relY < btnBaseY + BTN_H) {
+            cancelled = true;
+            screen.onClose();
+            event.setCanceled(true);
+            return;
+        }
+
+        // Slots toggle
         var menu = screen.getMenu();
         for (int i = 0; i < menu.slots.size(); i++) {
             Slot slot = menu.slots.get(i);
@@ -179,8 +273,9 @@ public class AdjacentGuiOverlayRenderer {
     public static void onScreenClosing(ScreenEvent.Closing event) {
         if (NetworkInterfaceScreen.openedFromDebugButton) {
             if (!(event.getScreen() instanceof NetworkInterfaceScreen)) {
-                // Envoie la selection au serveur avant de reset
-                sendSlotSelection();
+                if (!cancelled) {
+                    sendSlotSelection();
+                }
 
                 NetworkInterfaceScreen.openedFromDebugButton = false;
                 NetworkInterfaceScreen.overlaySelectingFilterIndex = -1;
@@ -188,6 +283,7 @@ public class AdjacentGuiOverlayRenderer {
                 NetworkInterfaceScreen.overlayContainerId = -1;
                 toggledSlots.clear();
                 initialized = false;
+                cancelled = false;
             }
         }
     }
