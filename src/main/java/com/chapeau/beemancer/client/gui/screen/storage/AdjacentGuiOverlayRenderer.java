@@ -52,30 +52,27 @@ public class AdjacentGuiOverlayRenderer {
 
         GuiGraphics g = event.getGuiGraphics();
 
-        // flush() vide le batch des items deja rendus, garantissant que
-        // notre overlay sera dessine APRES eux (meme technique que les tooltips).
-        g.flush();
-
-        // Les coordonnees sont relatives au container (deja translatees par leftPos/topPos).
-        // On annule la translation pour dessiner en coordonnees absolues ecran.
+        // drawManaged: flush avant (vide le batch items), execute le runnable,
+        // flush apres. Exactement ce que fait renderTooltipInternal pour
+        // dessiner le fond de tooltip PAR-DESSUS les items.
         int leftPos = screen.getGuiLeft();
         int topPos = screen.getGuiTop();
-        g.pose().pushPose();
-        g.pose().translate(-leftPos, -topPos, 0);
-
         int screenWidth = screen.width;
         int screenHeight = screen.height;
-
-        // Rectangle noir couvrant la zone inventaire joueur (bas de l'ecran)
         int overlayTop = screenHeight / 2 + 20;
-        g.fill(0, overlayTop, screenWidth, screenHeight, 0xE0000000);
 
-        // Icone abeille centree dans le rectangle noir
-        int iconX = screenWidth / 2 - 8;
-        int iconY = overlayTop + (screenHeight - overlayTop) / 2 - 8;
-        g.renderItem(BEE_ICON, iconX, iconY);
+        g.drawManaged(() -> {
+            g.pose().pushPose();
+            g.pose().translate(-leftPos, -topPos, 400);
 
-        g.pose().popPose();
+            g.fill(0, overlayTop, screenWidth, screenHeight, 0xE0000000);
+
+            int iconX = screenWidth / 2 - 8;
+            int iconY = overlayTop + (screenHeight - overlayTop) / 2 - 8;
+            g.renderItem(BEE_ICON, iconX, iconY);
+
+            g.pose().popPose();
+        });
     }
 
     @SubscribeEvent
