@@ -133,6 +133,7 @@ public class DeliveryPhaseGoal extends Goal {
         if (bee.distanceToSqr(returnPos.getX() + 0.5, returnPos.getY() + 0.5, returnPos.getZ() + 0.5) < ARRIVAL_DISTANCE_SQ) {
             bee.getNavigation().stop();
             performDelivery();
+            bee.notifyTaskCompleted();
             bee.discard();
         }
     }

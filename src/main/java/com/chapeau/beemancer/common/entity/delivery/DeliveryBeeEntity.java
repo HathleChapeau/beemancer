@@ -24,6 +24,8 @@ package com.chapeau.beemancer.common.entity.delivery;
 
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
+import java.util.UUID;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
@@ -66,6 +68,7 @@ public class DeliveryBeeEntity extends Bee {
     private int requestCount;
     private ItemStack carriedItems = ItemStack.EMPTY;
     private DeliveryTask.DeliveryType deliveryType;
+    private UUID taskId;
     private float flySpeedMultiplier = 1.0f;
     private float searchSpeedMultiplier = 1.0f;
     private int ticksAlive = 0;
@@ -108,7 +111,8 @@ public class DeliveryBeeEntity extends Bee {
     public void initDeliveryTask(BlockPos controllerPos, BlockPos targetPos, BlockPos returnPos,
                                   BlockPos terminalPos, ItemStack template, int requestCount,
                                   DeliveryTask.DeliveryType type, ItemStack carriedItems,
-                                  float flySpeedMultiplier, float searchSpeedMultiplier) {
+                                  float flySpeedMultiplier, float searchSpeedMultiplier,
+                                  UUID taskId) {
         this.controllerPos = controllerPos;
         this.targetPos = targetPos;
         this.returnPos = returnPos;
@@ -119,6 +123,7 @@ public class DeliveryBeeEntity extends Bee {
         this.carriedItems = carriedItems.copy();
         this.flySpeedMultiplier = flySpeedMultiplier;
         this.searchSpeedMultiplier = searchSpeedMultiplier;
+        this.taskId = taskId;
 
         this.goalSelector.addGoal(0, new DeliveryPhaseGoal(this));
     }
@@ -131,6 +136,7 @@ public class DeliveryBeeEntity extends Bee {
 
         if (!level().isClientSide()) {
             if (ticksAlive > TIMEOUT_TICKS) {
+                notifyTaskFailed();
                 discard();
                 return;
             }
@@ -275,6 +281,29 @@ public class DeliveryBeeEntity extends Bee {
     // GETTERS
     // =========================================================================
 
+    /**
+     * Notifie le controller que la tâche est complétée.
+     */
+    public void notifyTaskCompleted() {
+        if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            controller.getDeliveryManager().completeTask(taskId);
+        }
+    }
+
+    /**
+     * Notifie le controller que la tâche a échoué (timeout).
+     */
+    private void notifyTaskFailed() {
+        if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            controller.getDeliveryManager().failTask(taskId);
+        }
+    }
+
+    public UUID getTaskId() { return taskId; }
     public BlockPos getControllerPos() { return controllerPos; }
     public BlockPos getTargetPos() { return targetPos; }
     public BlockPos getReturnPos() { return returnPos; }

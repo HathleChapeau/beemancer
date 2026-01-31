@@ -326,7 +326,8 @@ public class StorageDeliveryManager {
             task.getType(),
             carried,
             ControllerStats.getFlightSpeedMultiplier(parent.getEssenceSlots()),
-            ControllerStats.getSearchSpeedMultiplier(parent.getEssenceSlots())
+            ControllerStats.getSearchSpeedMultiplier(parent.getEssenceSlots()),
+            task.getTaskId()
         );
 
         serverLevel.addFreshEntity(bee);
@@ -372,6 +373,45 @@ public class StorageDeliveryManager {
         deliveryQueue.clear();
         activeTasks.clear();
         completedTaskIds.clear();
+    }
+
+    // === Task Completion ===
+
+    /**
+     * Marque une tâche active comme complétée par son UUID.
+     * Appelé par la DeliveryBeeEntity quand elle termine sa livraison.
+     */
+    public void completeTask(UUID taskId) {
+        Iterator<DeliveryTask> it = activeTasks.iterator();
+        while (it.hasNext()) {
+            DeliveryTask task = it.next();
+            if (task.getTaskId().equals(taskId)) {
+                task.setState(DeliveryTask.DeliveryState.COMPLETED);
+                completedTaskIds.add(taskId);
+                it.remove();
+                parent.setChanged();
+                parent.getItemAggregator().setNeedsSync(true);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Marque une tâche active comme échouée par son UUID.
+     * Appelé par la DeliveryBeeEntity en cas de timeout.
+     */
+    public void failTask(UUID taskId) {
+        Iterator<DeliveryTask> it = activeTasks.iterator();
+        while (it.hasNext()) {
+            DeliveryTask task = it.next();
+            if (task.getTaskId().equals(taskId)) {
+                task.setState(DeliveryTask.DeliveryState.FAILED);
+                it.remove();
+                parent.setChanged();
+                parent.getItemAggregator().setNeedsSync(true);
+                return;
+            }
+        }
     }
 
     // === Task Cancellation ===
