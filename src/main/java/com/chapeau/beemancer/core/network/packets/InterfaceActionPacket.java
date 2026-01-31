@@ -30,9 +30,11 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -129,12 +131,14 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
                 }
                 case ACTION_OPEN_ADJACENT_GUI -> {
                     if (be.getLevel() == null) return;
-                    net.minecraft.core.BlockPos adjPos = be.getAdjacentPos();
+                    BlockPos adjPos = be.getAdjacentPos();
                     if (!be.getLevel().isLoaded(adjPos)) return;
-                    BlockEntity adjBe = be.getLevel().getBlockEntity(adjPos);
-                    if (adjBe instanceof MenuProvider menuProvider) {
-                        player.openMenu(menuProvider);
-                    }
+                    net.minecraft.world.level.block.state.BlockState adjState =
+                            be.getLevel().getBlockState(adjPos);
+                    Direction facing = be.getFacing();
+                    BlockHitResult hitResult = new BlockHitResult(
+                            Vec3.atCenterOf(adjPos), facing.getOpposite(), adjPos, false);
+                    adjState.useWithoutItem(be.getLevel(), player, hitResult);
                 }
             }
         });
