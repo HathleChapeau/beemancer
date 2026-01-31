@@ -10,7 +10,7 @@
  * |-------------------------------|----------------------|--------------------------------|
  * | NetworkInterfaceScreen        | Flag openedFromDebug | Savoir quand afficher overlay  |
  * | ContainerScreenEvent          | Event NeoForge       | Render.Foreground (apres items)|
- * | ScreenEvent                   | Event NeoForge       | Closing (reset flag)           |
+ * | ScreenEvent                   | Event NeoForge       | Closing, Mouse (block clics)   |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -22,27 +22,36 @@ package com.chapeau.beemancer.client.gui.screen.storage;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- * Dessine un overlay (rectangle noir + icone abeille) par-dessus le GUI
- * d'un bloc adjacent quand il a ete ouvert depuis le bouton Debug de l'interface.
+ * Dessine un overlay noir plein ecran par-dessus le GUI d'un bloc adjacent
+ * quand il a ete ouvert depuis le bouton Debug de l'interface.
+ * Affiche un bouton toggle par-dessus chaque slot du container (pas ceux du joueur).
  *
- * Utilise ContainerScreenEvent.Render.Foreground qui est fire APRES le rendu
- * des items dans les slots (ligne 118 de AbstractContainerScreen.render()).
- * Le depth test est desactive pendant le rendu du container, donc le z-level
- * est ignore — seul l'ordre d'appel compte.
- *
- * Le flag est pose par NetworkInterfaceScreen.openedFromDebugButton et reset
- * quand le screen se ferme.
+ * Utilise drawManaged pour forcer le rendu apres les items (meme technique
+ * que renderTooltipInternal dans GuiGraphics).
  */
 public class AdjacentGuiOverlayRenderer {
 
     private static final ItemStack BEE_ICON = new ItemStack(Items.BEE_SPAWN_EGG);
+    private static final int SLOT_SIZE = 18;
+
+    private static final int COLOR_OVERLAY = 0xE0000000;
+    private static final int COLOR_TOGGLE_OFF = 0x80FF0000;
+    private static final int COLOR_TOGGLE_ON = 0x8000FF00;
+    private static final int COLOR_TOGGLE_HOVER = 0x40FFFFFF;
+
+    private static final Set<Integer> toggledSlots = new HashSet<>();
 
     @SubscribeEvent
     public static void onContainerForeground(ContainerScreenEvent.Render.Foreground event) {
@@ -52,45 +61,89 @@ public class AdjacentGuiOverlayRenderer {
 
         GuiGraphics g = event.getGuiGraphics();
 
-        // drawManaged: flush avant (vide le batch items), execute le runnable,
-        // flush apres. Exactement ce que fait renderTooltipInternal pour
-        // dessiner le fond de tooltip PAR-DESSUS les items.
         int leftPos = screen.getGuiLeft();
         int topPos = screen.getGuiTop();
         int screenWidth = screen.width;
         int screenHeight = screen.height;
-        int overlayTop = screenHeight / 2 + 20;
+
+        double mouseX = screen.getMinecraft().mouseHandler.xpos()
+                * screenWidth / screen.getMinecraft().getWindow().getWidth();
+        double mouseY = screen.getMinecraft().mouseHandler.ypos()
+                * screenHeight / screen.getMinecraft().getWindow().getHeight();
 
         g.drawManaged(() -> {
             g.pose().pushPose();
             g.pose().translate(-leftPos, -topPos, 400);
 
-            g.fill(0, overlayTop, screenWidth, screenHeight, 0xE0000000);
-
-            int iconX = screenWidth / 2 - 8;
-            int iconY = overlayTop + (screenHeight - overlayTop) / 2 - 8;
-            g.renderItem(BEE_ICON, iconX, iconY);
+            // Fond noir plein ecran
+            g.fill(0, 0, screenWidth, screenHeight, COLOR_OVERLAY);
 
             g.pose().popPose();
+
+            // Boutons toggle par-dessus chaque slot du container (coordonnees relatives)
+            var menu = screen.getMenu();
+            for (int i = 0; i < menu.slots.size(); i++) {
+                Slot slot = menu.slots.get(i);
+                if (slot.container instanceof Inventory) continue;
+                if (!slot.isActive()) continue;
+
+                int sx = slot.x - 1;
+                int sy = slot.y - 1;
+
+                boolean toggled = toggledSlots.contains(i);
+                int color = toggled ? COLOR_TOGGLE_ON : COLOR_TOGGLE_OFF;
+                g.fill(sx, sy, sx + SLOT_SIZE, sy + SLOT_SIZE, color);
+
+                // Hover highlight
+                double relMouseX = mouseX - leftPos;
+                double relMouseY = mouseY - topPos;
+                if (relMouseX >= sx && relMouseX < sx + SLOT_SIZE
+                        && relMouseY >= sy && relMouseY < sy + SLOT_SIZE) {
+                    g.fill(sx, sy, sx + SLOT_SIZE, sy + SLOT_SIZE, COLOR_TOGGLE_HOVER);
+                }
+            }
+
+            // Icone abeille en haut a gauche du container
+            g.renderItem(BEE_ICON, 0, -18);
         });
     }
 
     /**
-     * Bloque les clics souris dans la zone noire de l'overlay.
-     * ScreenEvent.MouseButtonPressed.Pre est cancellable — si on cancel,
-     * le clic ne parvient jamais au container screen.
+     * Intercepte tous les clics. Gere les toggles de slots et bloque
+     * tout clic qui n'est pas sur un toggle.
      */
     @SubscribeEvent
     public static void onMouseClick(ScreenEvent.MouseButtonPressed.Pre event) {
         if (!NetworkInterfaceScreen.openedFromDebugButton) return;
         if (event.getScreen() instanceof NetworkInterfaceScreen) return;
-        if (!(event.getScreen() instanceof AbstractContainerScreen<?>)) return;
+        if (!(event.getScreen() instanceof AbstractContainerScreen<?> screen)) return;
 
-        int screenHeight = event.getScreen().height;
-        int overlayTop = screenHeight / 2 + 20;
-        if (event.getMouseY() >= overlayTop) {
-            event.setCanceled(true);
+        int leftPos = screen.getGuiLeft();
+        int topPos = screen.getGuiTop();
+        double relX = event.getMouseX() - leftPos;
+        double relY = event.getMouseY() - topPos;
+
+        var menu = screen.getMenu();
+        for (int i = 0; i < menu.slots.size(); i++) {
+            Slot slot = menu.slots.get(i);
+            if (slot.container instanceof Inventory) continue;
+            if (!slot.isActive()) continue;
+
+            int sx = slot.x - 1;
+            int sy = slot.y - 1;
+            if (relX >= sx && relX < sx + SLOT_SIZE && relY >= sy && relY < sy + SLOT_SIZE) {
+                if (toggledSlots.contains(i)) {
+                    toggledSlots.remove(i);
+                } else {
+                    toggledSlots.add(i);
+                }
+                event.setCanceled(true);
+                return;
+            }
         }
+
+        // Bloque tout autre clic (fond noir = pas d'interaction)
+        event.setCanceled(true);
     }
 
     @SubscribeEvent
@@ -99,11 +152,8 @@ public class AdjacentGuiOverlayRenderer {
         if (event.getScreen() instanceof NetworkInterfaceScreen) return;
         if (!(event.getScreen() instanceof AbstractContainerScreen<?>)) return;
 
-        int screenHeight = event.getScreen().height;
-        int overlayTop = screenHeight / 2 + 20;
-        if (event.getMouseY() >= overlayTop) {
-            event.setCanceled(true);
-        }
+        // Bloque tous les mouse release pour eviter les interactions avec le container
+        event.setCanceled(true);
     }
 
     @SubscribeEvent
@@ -111,6 +161,7 @@ public class AdjacentGuiOverlayRenderer {
         if (NetworkInterfaceScreen.openedFromDebugButton) {
             if (!(event.getScreen() instanceof NetworkInterfaceScreen)) {
                 NetworkInterfaceScreen.openedFromDebugButton = false;
+                toggledSlots.clear();
             }
         }
     }
