@@ -2,10 +2,10 @@
   "parent": "minecraft:block/block",
   "render_type": "translucent",
   "textures": {
-    "dark_iron": "beemancer:block/alchemy/crystallizer_side",
+    "dark_iron": "beemancer:block/iron",
     "amber_glass": "beemancer:block/honeyed_glass",
-    "dark_wood": "beemancer:block/alchemy/crystallizer_bottom",
-    "particle": "beemancer:block/alchemy/crystallizer_side"
+    "dark_wood": "beemancer:block/stone",
+    "particle": "beemancer:block/stone"
   },
   "elements": [
     {
@@ -13,11 +13,11 @@
       "from": [1, 1, 1],
       "to": [15, 4, 15],
       "faces": {
-        "north": {"texture": "#dark_iron", "uv": [1, 1, 15, 4]},
-        "east": {"texture": "#dark_iron", "uv": [1, 1, 15, 4]},
-        "south": {"texture": "#dark_iron", "uv": [1, 1, 15, 4]},
-        "west": {"texture": "#dark_iron", "uv": [1, 1, 15, 4]},
-        "up": {"texture": "#dark_iron", "uv": [1, 1, 15, 15]},
+        "north": {"texture": "#dark_wood", "uv": [1, 1, 15, 4]},
+        "east": {"texture": "#dark_wood", "uv": [1, 1, 15, 4]},
+        "south": {"texture": "#dark_wood", "uv": [1, 1, 15, 4]},
+        "west": {"texture": "#dark_wood", "uv": [1, 1, 15, 4]},
+        "up": {"texture": "#dark_wood", "uv": [1, 1, 15, 15]},
         "down": {"texture": "#dark_wood", "uv": [1, 1, 15, 15], "cullface": "down"}
       }
     },
@@ -26,12 +26,12 @@
       "from": [1, 12, 1],
       "to": [15, 15, 15],
       "faces": {
-        "north": {"texture": "#dark_iron", "uv": [1, 1, 15, 4]},
-        "east": {"texture": "#dark_iron", "uv": [1, 1, 15, 4]},
-        "south": {"texture": "#dark_iron", "uv": [1, 1, 15, 4]},
-        "west": {"texture": "#dark_iron", "uv": [1, 1, 15, 4]},
-        "up": {"texture": "#dark_iron", "uv": [1, 1, 15, 15], "cullface": "up"},
-        "down": {"texture": "#dark_iron", "uv": [1, 1, 15, 15]}
+        "north": {"texture": "#dark_wood", "uv": [1, 1, 15, 4]},
+        "east": {"texture": "#dark_wood", "uv": [1, 1, 15, 4]},
+        "south": {"texture": "#dark_wood", "uv": [1, 1, 15, 4]},
+        "west": {"texture": "#dark_wood", "uv": [1, 1, 15, 4]},
+        "up": {"texture": "#dark_wood", "uv": [1, 1, 15, 15], "cullface": "up"},
+        "down": {"texture": "#dark_wood", "uv": [1, 1, 15, 15]}
       }
     },
     {

@@ -2,7 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "core": "beemancer:block/pipe_core_white",
-    "frame": "beemancer:block/pipe_frame"
+    "frame": "beemancer:block/stone"
   },
   "elements": [
     {

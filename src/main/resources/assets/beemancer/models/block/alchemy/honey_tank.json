@@ -2,10 +2,10 @@
   "parent": "minecraft:block/block",
   "render_type": "translucent",
   "textures": {
-    "dark_wood": "beemancer:block/honeyed_stone",
+    "dark_wood": "beemancer:block/iron",
     "amber_glass": "beemancer:block/honeyed_glass",
-    "dark_iron": "beemancer:block/honeyed_plank",
-    "particle": "beemancer:block/alchemy/honey_tank_side"
+    "dark_iron": "beemancer:block/plank",
+    "particle": "beemancer:block/plank"
   },
   "elements": [
     {

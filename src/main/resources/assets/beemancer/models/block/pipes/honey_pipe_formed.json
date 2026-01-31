@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "pipe": "beemancer:block/honey_pipe",
-    "frame": "beemancer:block/pipe_frame",
-    "particle": "beemancer:block/honey_pipe"
+    "pipe": "beemancer:block/plank",
+    "frame": "beemancer:block/iron",
+    "particle": "beemancer:block/iron"
   },
   "elements": [
     {
