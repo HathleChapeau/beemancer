@@ -78,8 +78,10 @@ public class DeliveryBeeEntity extends Bee {
     // Waypoints pour le trajet multi-relais
     // outboundWaypoints: controller → relay1 → relay2 → ... → target
     // returnWaypoints: target → ... → relay2 → relay1 → controller
+    // terminalWaypoints: controller → relay1 → ... → terminal (pour livraison EXTRACT a une interface)
     private List<BlockPos> outboundWaypoints = new ArrayList<>();
     private List<BlockPos> returnWaypoints = new ArrayList<>();
+    private List<BlockPos> terminalWaypoints = new ArrayList<>();
 
     public DeliveryBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
@@ -143,14 +145,35 @@ public class DeliveryBeeEntity extends Bee {
         ticksAlive++;
 
         if (!level().isClientSide()) {
+            // Abeille chargee depuis une sauvegarde sans tache: cleanup et discard
+            if (taskId == null) {
+                returnCarriedItemsToNetwork();
+                discard();
+                return;
+            }
             if (ticksAlive > TIMEOUT_TICKS) {
                 notifyTaskFailed();
+                returnCarriedItemsToNetwork();
                 discard();
                 return;
             }
             if (!isControllerValid()) {
                 discard();
             }
+        }
+    }
+
+    /**
+     * Restitue les items transportes dans le reseau de stockage si possible.
+     * Appele lors du discard pour eviter la perte d'items en transit.
+     */
+    private void returnCarriedItemsToNetwork() {
+        if (carriedItems.isEmpty() || controllerPos == null || level() == null) return;
+        if (!level().isLoaded(controllerPos)) return;
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            controller.depositItemForDelivery(carriedItems, null);
+            carriedItems = ItemStack.EMPTY;
         }
     }
 
@@ -317,10 +340,26 @@ public class DeliveryBeeEntity extends Bee {
     public BlockPos getControllerPos() { return controllerPos; }
     public List<BlockPos> getOutboundWaypoints() { return outboundWaypoints; }
     public List<BlockPos> getReturnWaypoints() { return returnWaypoints; }
+    public List<BlockPos> getTerminalWaypoints() { return terminalWaypoints; }
 
     public void setWaypoints(List<BlockPos> outbound, List<BlockPos> returnPath) {
         this.outboundWaypoints = new ArrayList<>(outbound);
         this.returnWaypoints = new ArrayList<>(returnPath);
+    }
+
+    public void setTerminalWaypoints(List<BlockPos> terminalPath) {
+        this.terminalWaypoints = new ArrayList<>(terminalPath);
+    }
+
+    /**
+     * Verifie si l'abeille doit voler jusqu'au terminal apres le retour au controller.
+     * Vrai pour les taches EXTRACT ou le terminal (import interface) est distinct du controller.
+     */
+    public boolean needsTerminalFlight() {
+        return deliveryType == DeliveryTask.DeliveryType.EXTRACT
+            && terminalPos != null
+            && controllerPos != null
+            && !terminalPos.equals(controllerPos);
     }
     public BlockPos getTargetPos() { return targetPos; }
     public BlockPos getReturnPos() { return returnPos; }
@@ -344,12 +383,31 @@ public class DeliveryBeeEntity extends Bee {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putBoolean("IsDeliveryBee", true);
+        if (controllerPos != null) {
+            tag.putInt("CtrlX", controllerPos.getX());
+            tag.putInt("CtrlY", controllerPos.getY());
+            tag.putInt("CtrlZ", controllerPos.getZ());
+        }
+        if (!carriedItems.isEmpty()) {
+            tag.put("CarriedItems", carriedItems.save(level().registryAccess()));
+        }
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         if (tag.getBoolean("IsDeliveryBee")) {
+            // Restaurer le minimum pour le cleanup (restitution items, notification)
+            if (tag.contains("CtrlX")) {
+                controllerPos = new BlockPos(
+                    tag.getInt("CtrlX"), tag.getInt("CtrlY"), tag.getInt("CtrlZ"));
+            }
+            if (tag.contains("CarriedItems")) {
+                carriedItems = ItemStack.parse(
+                    level().registryAccess(), tag.getCompound("CarriedItems")
+                ).orElse(ItemStack.EMPTY);
+            }
+            // Marquer pour discard (taskId reste null → cleanup au premier tick)
             this.discard();
         }
     }

@@ -51,7 +51,8 @@ public class DeliveryPhaseGoal extends Goal {
     private enum Phase {
         FLY_OUTBOUND,
         WAIT_AT_TARGET,
-        FLY_RETURN
+        FLY_RETURN,
+        FLY_TO_TERMINAL
     }
 
     private Phase phase = Phase.FLY_OUTBOUND;
@@ -61,6 +62,7 @@ public class DeliveryPhaseGoal extends Goal {
     // Index courant dans la liste de waypoints
     private int outboundIndex = 0;
     private int returnIndex = 0;
+    private int terminalIndex = 0;
 
     public DeliveryPhaseGoal(DeliveryBeeEntity bee) {
         this.bee = bee;
@@ -91,6 +93,7 @@ public class DeliveryPhaseGoal extends Goal {
             case FLY_OUTBOUND -> tickFlyOutbound();
             case WAIT_AT_TARGET -> tickWaitAtTarget();
             case FLY_RETURN -> tickFlyReturn();
+            case FLY_TO_TERMINAL -> tickFlyToTerminal();
         }
     }
 
@@ -177,7 +180,53 @@ public class DeliveryPhaseGoal extends Goal {
                 // Waypoint relay atteint, passer au suivant
                 returnIndex++;
             } else {
-                // Arrivee au controller, livrer et discard
+                // Arrivee au controller
+                if (bee.needsTerminalFlight()) {
+                    // Tache EXTRACT avec terminal distant: voler jusqu'au terminal
+                    phase = Phase.FLY_TO_TERMINAL;
+                    terminalIndex = 0;
+                    navigationStarted = false;
+                } else {
+                    // Livraison directe et discard
+                    performDelivery();
+                    bee.notifyTaskCompleted();
+                    bee.discard();
+                }
+            }
+        }
+    }
+
+    /**
+     * Navigue du controller vers le terminal (import interface) via les waypoints terminaux.
+     * Phase finale pour les taches EXTRACT avec terminal distant.
+     */
+    private void tickFlyToTerminal() {
+        List<BlockPos> waypoints = bee.getTerminalWaypoints();
+        BlockPos currentTarget;
+
+        if (terminalIndex < waypoints.size()) {
+            currentTarget = waypoints.get(terminalIndex);
+        } else {
+            currentTarget = bee.getTerminalPos();
+        }
+
+        if (!navigationStarted || bee.getNavigation().isDone()) {
+            bee.getNavigation().moveTo(
+                currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5,
+                1.0 * bee.getFlySpeedMultiplier()
+            );
+            navigationStarted = true;
+        }
+
+        if (bee.distanceToSqr(currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5) < ARRIVAL_DISTANCE_SQ) {
+            bee.getNavigation().stop();
+            navigationStarted = false;
+
+            if (terminalIndex < waypoints.size()) {
+                // Waypoint relay atteint, passer au suivant
+                terminalIndex++;
+            } else {
+                // Arrivee au terminal, livrer et discard
                 performDelivery();
                 bee.notifyTaskCompleted();
                 bee.discard();

@@ -84,9 +84,68 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
         return slots;
     }
 
+    /**
+     * Parse le textValue encode avec BlockPos: "x,y,z;slot1,slot2,slot3".
+     * Retourne la partie apres le ';' (les slots), ou le texte entier si pas de ';'.
+     */
+    private static String extractSlotsFromText(String text) {
+        int sepIdx = text.indexOf(';');
+        return sepIdx >= 0 ? text.substring(sepIdx + 1) : text;
+    }
+
+    /**
+     * Cherche le NetworkInterfaceBlockEntity soit via le menu actif du joueur,
+     * soit via le BlockPos encode dans le textValue (fallback pour l'overlay adjacent).
+     */
+    private static NetworkInterfaceBlockEntity findBlockEntity(
+            ServerPlayer player, int containerId, String textValue) {
+        // Chemin normal: le joueur a le menu ouvert
+        if (player.containerMenu instanceof NetworkInterfaceMenu menu
+                && menu.containerId == containerId) {
+            return menu.getBlockEntity();
+        }
+        // Fallback: BlockPos encode dans le textValue (format "x,y,z;...")
+        int sepIdx = textValue.indexOf(';');
+        if (sepIdx < 0) return null;
+        String posStr = textValue.substring(0, sepIdx);
+        String[] parts = posStr.split(",");
+        if (parts.length != 3) return null;
+        try {
+            BlockPos pos = new BlockPos(
+                Integer.parseInt(parts[0].trim()),
+                Integer.parseInt(parts[1].trim()),
+                Integer.parseInt(parts[2].trim())
+            );
+            if (player.blockPosition().distSqr(pos) > 64 * 64) return null;
+            if (player.level().getBlockEntity(pos)
+                    instanceof NetworkInterfaceBlockEntity foundBe) {
+                return foundBe;
+            }
+        } catch (NumberFormatException ignored) { }
+        return null;
+    }
+
     public static void handle(InterfaceActionPacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
+
+            // Pour les actions de selection de slots, on accepte le fallback par BlockPos
+            if (packet.action() == ACTION_SET_SELECTED_SLOTS
+                    || packet.action() == ACTION_SET_GLOBAL_SELECTED_SLOTS) {
+                NetworkInterfaceBlockEntity be = findBlockEntity(
+                    player, packet.containerId(), packet.textValue());
+                if (be == null) return;
+                String slotsText = extractSlotsFromText(packet.textValue());
+                java.util.Set<Integer> slots = parseSlotSet(slotsText);
+                if (packet.action() == ACTION_SET_GLOBAL_SELECTED_SLOTS) {
+                    be.setGlobalSelectedSlots(slots);
+                } else {
+                    be.setFilterSelectedSlots(packet.slot(), slots);
+                }
+                return;
+            }
+
+            // Toutes les autres actions requierent le menu actif
             if (!(player.containerMenu instanceof NetworkInterfaceMenu menu)) return;
             if (menu.containerId != packet.containerId()) return;
 
@@ -117,14 +176,6 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
                         int qty = Integer.parseInt(packet.textValue());
                         be.setFilterQuantity(packet.slot(), qty);
                     } catch (NumberFormatException ignored) { }
-                }
-                case ACTION_SET_SELECTED_SLOTS -> {
-                    java.util.Set<Integer> slots = parseSlotSet(packet.textValue());
-                    be.setFilterSelectedSlots(packet.slot(), slots);
-                }
-                case ACTION_SET_GLOBAL_SELECTED_SLOTS -> {
-                    java.util.Set<Integer> slots = parseSlotSet(packet.textValue());
-                    be.setGlobalSelectedSlots(slots);
                 }
                 case ACTION_OPEN_ADJACENT_GUI -> {
                     if (be.getLevel() == null) return;

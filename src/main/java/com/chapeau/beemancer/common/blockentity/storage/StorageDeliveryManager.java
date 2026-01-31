@@ -153,6 +153,59 @@ public class StorageDeliveryManager {
     }
 
     /**
+     * Trouve le chemin de relais du controller vers une position arbitraire (ex: import interface).
+     * BFS a travers le graphe de noeuds; retourne le chemin vers le noeud le plus proche
+     * de la position cible (dans un rayon de 15 blocs), ou une liste vide (vol direct).
+     */
+    private List<BlockPos> findPathToPosition(BlockPos targetPos) {
+        if (parent.getLevel() == null) return List.of();
+
+        // Si le target est proche du controller, vol direct
+        double directDistSq = parent.getBlockPos().distSqr(targetPos);
+        if (directDistSq <= 15 * 15) return List.of();
+
+        // BFS a travers les relais pour trouver le plus proche du target
+        Set<BlockPos> visited = new HashSet<>();
+        visited.add(parent.getBlockPos());
+
+        List<BlockPos> bestPath = List.of();
+        double bestDistSq = directDistSq;
+
+        Queue<Map.Entry<BlockPos, List<BlockPos>>> queue = new LinkedList<>();
+        for (BlockPos neighbor : parent.getConnectedNodes()) {
+            queue.add(Map.entry(neighbor, new ArrayList<>(List.of(neighbor))));
+        }
+
+        while (!queue.isEmpty()) {
+            var entry = queue.poll();
+            BlockPos nodePos = entry.getKey();
+            List<BlockPos> path = entry.getValue();
+
+            if (!visited.add(nodePos)) continue;
+            if (!parent.getLevel().isLoaded(nodePos)) continue;
+
+            BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
+            if (!(be instanceof INetworkNode node)) continue;
+
+            double distSq = nodePos.distSqr(targetPos);
+            if (distSq < bestDistSq) {
+                bestDistSq = distSq;
+                bestPath = path;
+            }
+
+            for (BlockPos neighbor : node.getConnectedNodes()) {
+                if (!visited.contains(neighbor)) {
+                    List<BlockPos> newPath = new ArrayList<>(path);
+                    newPath.add(neighbor);
+                    queue.add(Map.entry(neighbor, newPath));
+                }
+            }
+        }
+
+        return bestPath;
+    }
+
+    /**
      * Extrait un item d'un coffre spécifique pour une livraison.
      */
     public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
@@ -386,6 +439,14 @@ public class StorageDeliveryManager {
             List<BlockPos> returnPath = new ArrayList<>(relayPath);
             Collections.reverse(returnPath);
             bee.setWaypoints(relayPath, returnPath);
+        }
+
+        // Calculer les waypoints terminaux pour les taches EXTRACT avec terminal distant
+        if (task.getType() == DeliveryTask.DeliveryType.EXTRACT
+                && task.getTerminalPos() != null
+                && !task.getTerminalPos().equals(parent.getBlockPos())) {
+            List<BlockPos> terminalPath = findPathToPosition(task.getTerminalPos());
+            bee.setTerminalWaypoints(terminalPath);
         }
 
         serverLevel.addFreshEntity(bee);

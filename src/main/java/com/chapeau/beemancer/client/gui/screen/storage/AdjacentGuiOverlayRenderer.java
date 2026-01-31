@@ -144,7 +144,7 @@ public class AdjacentGuiOverlayRenderer {
                 int sx = slot.x - 1;
                 int sy = slot.y - 1;
 
-                boolean toggled = toggledSlots.contains(i);
+                boolean toggled = toggledSlots.contains(slot.index);
 
                 // Bordure
                 int borderColor = toggled ? COLOR_SLOT_BORDER_ON : COLOR_SLOT_BORDER_OFF;
@@ -248,10 +248,10 @@ public class AdjacentGuiOverlayRenderer {
             int sx = slot.x - 1;
             int sy = slot.y - 1;
             if (relX >= sx && relX < sx + SLOT_SIZE && relY >= sy && relY < sy + SLOT_SIZE) {
-                if (toggledSlots.contains(i)) {
-                    toggledSlots.remove(i);
+                if (toggledSlots.contains(slot.index)) {
+                    toggledSlots.remove(slot.index);
                 } else {
-                    toggledSlots.add(i);
+                    toggledSlots.add(slot.index);
                 }
                 event.setCanceled(true);
                 return;
@@ -302,9 +302,19 @@ public class AdjacentGuiOverlayRenderer {
         if (filterIndex < 0 || containerId < 0) return;
 
         Set<Integer> selection = new HashSet<>(toggledSlots);
-        String slotsStr = selection.stream()
+        String slotsCsv = selection.stream()
             .map(String::valueOf)
             .collect(Collectors.joining(","));
+
+        // Encodage BlockPos dans le textValue: "x,y,z;slot1,slot2,slot3"
+        // Necessaire car le menu du joueur n'est plus le NetworkInterfaceMenu
+        // quand le GUI adjacent est ouvert (le handler ne peut pas trouver le BE via le menu)
+        String posPrefix = "";
+        if (be != null) {
+            net.minecraft.core.BlockPos pos = be.getBlockPos();
+            posPrefix = pos.getX() + "," + pos.getY() + "," + pos.getZ() + ";";
+        }
+        String slotsStr = posPrefix + slotsCsv;
 
         if (filterIndex == 99) {
             PacketDistributor.sendToServer(new InterfaceActionPacket(
