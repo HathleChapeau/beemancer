@@ -332,15 +332,6 @@ public class BeemancerItems {
                     new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
 
     // --- ALCHEMY INGREDIENTS ---
-    public static final DeferredItem<Item> BEESWAX = ITEMS.register("beeswax",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> PROPOLIS = ITEMS.register("propolis",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> POLLEN = ITEMS.register("pollen",
-            () -> new Item(new Item.Properties()));
-
     public static final DeferredItem<Item> HONEYED_WOOD = ITEMS.register("honeyed_wood",
             () -> new Item(new Item.Properties()));
 

@@ -1,9 +1,12 @@
 {
   "type": "beemancer:centrifuging",
-  "ingredient": { "item": "beemancer:royal_comb" },
-  "results": [
-    { "item": { "id": "beemancer:propolis" }, "chance": 1.0 }
-  ],
-  "fluid_result": { "fluid": "beemancer:royal_jelly", "amount": 250 },
+  "ingredient": {
+    "item": "beemancer:royal_comb"
+  },
+  "results": [],
+  "fluid_result": {
+    "fluid": "beemancer:royal_jelly",
+    "amount": 250
+  },
   "processing_time": 80
 }

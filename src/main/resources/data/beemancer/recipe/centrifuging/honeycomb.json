@@ -1,9 +1,12 @@
 {
   "type": "beemancer:centrifuging",
-  "ingredient": { "item": "minecraft:honeycomb" },
-  "results": [
-    { "item": { "id": "beemancer:pollen" }, "chance": 0.5 }
-  ],
-  "fluid_result": { "fluid": "beemancer:honey", "amount": 100 },
+  "ingredient": {
+    "item": "minecraft:honeycomb"
+  },
+  "results": [],
+  "fluid_result": {
+    "fluid": "beemancer:honey",
+    "amount": 100
+  },
   "processing_time": 60
 }

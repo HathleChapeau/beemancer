@@ -1,9 +1,12 @@
 {
   "type": "beemancer:centrifuging",
-  "ingredient": { "item": "beemancer:demonic_comb" },
-  "results": [
-    { "item": { "id": "beemancer:pollen" }, "chance": 1.0 }
-  ],
-  "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
+  "ingredient": {
+    "item": "beemancer:demonic_comb"
+  },
+  "results": [],
+  "fluid_result": {
+    "fluid": "beemancer:honey",
+    "amount": 250
+  },
   "processing_time": 60
 }

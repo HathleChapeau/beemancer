@@ -36,7 +36,6 @@ public class PollenColors {
 
     static {
         // Pollens naturels
-        register(BeemancerItems.POLLEN.get(), 0xFFD700);           // Jaune doré
         register(BeemancerItems.FLOWER_POLLEN.get(), 0xFF69B4);    // Rose vif
         register(BeemancerItems.MUSHROOM_SPORE.get(), 0x8B4513);   // Marron champignon
         register(BeemancerItems.TREE_POLLEN.get(), 0x228B22);      // Vert forêt

@@ -109,6 +109,7 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.INFUSER_TIER2.get());
         output.accept(BeemancerItems.INFUSER_TIER3.get());
         output.accept(BeemancerItems.POLLEN_POT.get());
+        output.accept(BeemancerItems.CRANK.get());
     }
 
     private static void addPipesAndTanks(CreativeModeTab.Output output) {
@@ -140,6 +141,8 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.STORAGE_CRATE.get());
         output.accept(BeemancerItems.STORAGE_CONTROLLER.get());
         output.accept(BeemancerItems.STORAGE_TERMINAL.get());
+        output.accept(BeemancerItems.CONTROLLED_HIVE.get());
+        output.accept(BeemancerItems.CONTROLLER_PIPE.get());
     }
 
     private static void addHoneyAltarBlocks(CreativeModeTab.Output output) {
@@ -262,9 +265,6 @@ public class BeemancerCreativeTabs {
     // =========================================================================
 
     private static void addAlchemyIngredients(CreativeModeTab.Output output) {
-        output.accept(BeemancerItems.BEESWAX.get());
-        output.accept(BeemancerItems.PROPOLIS.get());
-        output.accept(BeemancerItems.POLLEN.get());
         output.accept(BeemancerItems.HONEYED_WOOD.get());
     }
 
@@ -391,6 +391,7 @@ public class BeemancerCreativeTabs {
     }
 
     private static void addAllShards(CreativeModeTab.Output output) {
+        // Ore shards
         output.accept(BeemancerItems.RAW_COPPER_SHARD.get());
         output.accept(BeemancerItems.RAW_IRON_SHARD.get());
         output.accept(BeemancerItems.RAW_GOLD_SHARD.get());
@@ -399,9 +400,20 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.SLIME_BALL_SHARD.get());
         output.accept(BeemancerItems.MAGMA_CREAM_SHARD.get());
         output.accept(BeemancerItems.GHAST_TEAR_SHARD.get());
+
+        // Shard fragments
+        output.accept(BeemancerItems.RAW_COPPER_FRAGMENT.get());
+        output.accept(BeemancerItems.RAW_IRON_FRAGMENT.get());
+        output.accept(BeemancerItems.RAW_GOLD_FRAGMENT.get());
+        output.accept(BeemancerItems.LAPIS_LAZULI_FRAGMENT.get());
+        output.accept(BeemancerItems.QUARTZ_FRAGMENT.get());
+        output.accept(BeemancerItems.SLIME_BALL_FRAGMENT.get());
+        output.accept(BeemancerItems.MAGMA_CREAM_FRAGMENT.get());
+        output.accept(BeemancerItems.GHAST_TEAR_FRAGMENT.get());
     }
 
     private static void addAllDusts(CreativeModeTab.Output output) {
+        // Dusts
         output.accept(BeemancerItems.DIAMOND_DUST.get());
         output.accept(BeemancerItems.EMERALD_DUST.get());
         output.accept(BeemancerItems.OBSIDIAN_DUST.get());
@@ -409,6 +421,15 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.NETHERITE_SCRAP_DUST.get());
         output.accept(BeemancerItems.DRAGON_BREATH_DUST.get());
         output.accept(BeemancerItems.NETHER_STAR_DUST.get());
+
+        // Dust shards
+        output.accept(BeemancerItems.DIAMOND_SHARD.get());
+        output.accept(BeemancerItems.EMERALD_SHARD.get());
+        output.accept(BeemancerItems.OBSIDIAN_SHARD.get());
+        output.accept(BeemancerItems.ENDER_PEARL_SHARD.get());
+        output.accept(BeemancerItems.NETHERITE_SCRAP_SHARD.get());
+        output.accept(BeemancerItems.DRAGON_BREATH_SHARD.get());
+        output.accept(BeemancerItems.NETHER_STAR_SHARD.get());
     }
 
     private static void addAllDustFragments(CreativeModeTab.Output output) {

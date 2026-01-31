@@ -3,6 +3,43 @@
 ################################################################################
 
 ================================================================================
+2026-01-31 - Suppression pollen/propolis/beeswax + Creative tab complète
+================================================================================
+
+Suppression des 3 items non désirés (pollen de base, propolis, beeswax) et
+de toutes leurs références. Vérification et complétion de la creative tab.
+
+ITEMS SUPPRIMÉS (3):
+- BeemancerItems: POLLEN, PROPOLIS, BEESWAX
+
+JAVA MODIFIÉS (3):
+- BeemancerItems.java: suppression des 3 registrations
+- BeemancerCreativeTabs.java: suppression des 3 items + ajout 5 manquants
+  (CONTROLLED_HIVE, CONTROLLER_PIPE, CRANK, 8 shard fragments, 7 dust shards)
+- PollenColors.java: suppression référence POLLEN
+
+RECETTES MODIFIÉES (29):
+- 26 centrifuge recipes: suppression pollen comme résultat (results: [])
+- noble_comb.json: suppression pollen + beeswax
+- diligent_comb.json: suppression pollen + propolis
+- royal_comb.json: suppression propolis
+
+LANG MODIFIÉS (2):
+- en_us.json: suppression 3 item keys + 2 codex keys propolis
+- fr_fr.json: idem
+
+ASSETS MODIFIÉS (3):
+- tags/item/pollens.json: suppression beemancer:pollen
+- codex/alchemy.json: remplacement node propolis → bee_products
+- CentrifugeRecipe.java: mise à jour exemple dans commentaire
+
+CREATIVE TAB — ITEMS MANQUANTS AJOUTÉS (20):
+- CONTROLLED_HIVE, CONTROLLER_PIPE (storage)
+- CRANK (alchemy machines)
+- 8 shard fragments (RAW_COPPER_FRAGMENT → GHAST_TEAR_FRAGMENT)
+- 7 dust shards (DIAMOND_SHARD → NETHER_STAR_SHARD)
+
+================================================================================
 2026-01-31 - GUI Overhaul programmatique + Fixes (crank, centrifuge, tank)
 ================================================================================
 

@@ -21,9 +21,9 @@
       "rewards": {}
     },
     {
-      "id": "propolis",
+      "id": "bee_products",
       "position": { "x": 1, "y": 3 },
-      "icon": "minecraft:textures/item/slime_ball.png",
+      "icon": "minecraft:textures/item/honeycomb.png",
       "category": "NORMAL",
       "parent": "alchemy_basics",
       "hidden_until_parent_unlocked": false,
@@ -45,7 +45,7 @@
       "position": { "x": 2, "y": 3 },
       "icon": "minecraft:textures/item/experience_bottle.png",
       "category": "NORMAL",
-      "parent": "propolis",
+      "parent": "bee_products",
       "hidden_until_parent_unlocked": true,
       "unlock_condition": {},
       "rewards": {}

@@ -16,10 +16,9 @@
  * FORMAT JSON:
  * {
  *   "type": "beemancer:centrifuging",
- *   "ingredient": { "item": "beemancer:common_comb" },
+ *   "ingredient": { "item": "beemancer:cupric_comb" },
  *   "results": [
- *     { "item": "beemancer:pollen", "chance": 1.0 },
- *     { "item": "beemancer:beeswax", "chance": 0.5 }
+ *     { "item": { "id": "beemancer:raw_copper_shard" }, "chance": 0.8 }
  *   ],
  *   "fluid_result": { "fluid": "beemancer:honey", "amount": 250 },
  *   "processing_time": 60
