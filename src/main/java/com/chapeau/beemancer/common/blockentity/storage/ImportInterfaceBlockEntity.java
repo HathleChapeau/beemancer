@@ -12,6 +12,7 @@
  * | IDeliveryEndpoint             | Reception livraison  | Abeilles livrent ici           |
  * | StorageControllerBlockEntity  | Controller lie       | Taches de livraison            |
  * | ControllerStats               | Quantite max         | Limite par tache               |
+ * | InterfaceFilter               | Filtre individuel    | Logique per-filter             |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -32,31 +33,27 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Import Interface: scanne l'inventaire adjacent et cree des taches EXTRACT
- * pour le remplir avec les items filtres, jusqu'a maxCount.
+ * pour le remplir avec les items filtres.
+ *
+ * Comportement quantite:
+ * - quantite=0: importer jusqu'a remplir les slots
+ * - quantite=N: importer jusqu'a avoir N items de ce type
+ *
+ * Sans filtre: importer tous les items depuis le reseau vers les globalSelectedSlots.
  *
  * Implemente IDeliveryEndpoint pour recevoir les items livres par les abeilles
  * et les inserer dans l'inventaire adjacent.
  */
 public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity implements IDeliveryEndpoint {
 
-    private int maxCount = 64;
-
     public ImportInterfaceBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.IMPORT_INTERFACE.get(), pos, state);
-    }
-
-    public int getMaxCount() {
-        return maxCount;
-    }
-
-    public void setMaxCount(int maxCount) {
-        this.maxCount = Math.max(1, Math.min(maxCount, 64 * 9));
-        setChanged();
-        syncToClient();
     }
 
     // === IDeliveryEndpoint ===
@@ -67,8 +64,28 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
         if (adjacent == null) return items;
 
         ItemStack remaining = items.copy();
-        int[] slots = getOperableSlots(adjacent);
 
+        // Determiner les slots cibles: union de tous les selectedSlots des filtres, ou global
+        int[] slots;
+        if (filters.isEmpty()) {
+            slots = getGlobalOperableSlots(adjacent);
+        } else {
+            Set<Integer> allSlots = new HashSet<>();
+            for (InterfaceFilter filter : filters) {
+                if (filter.getSelectedSlots().isEmpty()) {
+                    // Si un filtre n'a pas de slots, utiliser tous
+                    slots = getGlobalOperableSlots(adjacent);
+                    return insertIntoSlots(adjacent, remaining, slots);
+                }
+                allSlots.addAll(filter.getSelectedSlots());
+            }
+            slots = getOperableSlots(adjacent, allSlots);
+        }
+
+        return insertIntoSlots(adjacent, remaining, slots);
+    }
+
+    private ItemStack insertIntoSlots(Container adjacent, ItemStack remaining, int[] slots) {
         // Phase 1: merger dans les stacks existants du meme type
         for (int slot : slots) {
             if (remaining.isEmpty()) break;
@@ -93,7 +110,7 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
             }
         }
 
-        if (remaining.getCount() != items.getCount()) {
+        if (remaining.getCount() != remaining.getMaxStackSize()) {
             adjacent.setChanged();
         }
 
@@ -112,36 +129,69 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
     @Override
     protected void doScan(Container adjacent, StorageControllerBlockEntity controller) {
-        if (filterMode == FilterMode.ITEM) {
-            doScanItemMode(adjacent, controller);
+        int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
+
+        if (filters.isEmpty()) {
+            doScanNoFilter(adjacent, controller, maxQuantity);
         } else {
-            doScanTextMode(adjacent, controller);
+            for (InterfaceFilter filter : filters) {
+                doScanWithFilter(adjacent, controller, filter, maxQuantity);
+            }
         }
     }
 
-    private void doScanItemMode(Container adjacent, StorageControllerBlockEntity controller) {
-        int[] slots = getOperableSlots(adjacent);
-        int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
+    /**
+     * Sans filtre: rien a importer specifiquement (pas de cible connue).
+     * On ne peut pas "tout importer" sans savoir quoi importer.
+     */
+    private void doScanNoFilter(Container adjacent, StorageControllerBlockEntity controller,
+                                 int maxQuantity) {
+        // Sans filtre, l'import n'a rien a faire car il ne sait pas quoi chercher
+    }
 
-        for (int i = 0; i < FILTER_SLOTS; i++) {
-            ItemStack filter = filterSlots.getStackInSlot(i);
-            if (filter.isEmpty()) continue;
+    /**
+     * Avec filtre: chercher les items qui matchent et creer des taches d'import.
+     */
+    private void doScanWithFilter(Container adjacent, StorageControllerBlockEntity controller,
+                                   InterfaceFilter filter, int maxQuantity) {
+        int[] slots = getOperableSlots(adjacent, filter.getSelectedSlots());
+        int targetQty = filter.getQuantity();
 
-            String key = itemKey(filter);
+        if (filter.getMode() == InterfaceFilter.FilterMode.ITEM) {
+            scanItemMode(adjacent, controller, filter, slots, maxQuantity, targetQty);
+        } else {
+            scanTextMode(adjacent, controller, filter, slots, maxQuantity, targetQty);
+        }
+    }
+
+    private void scanItemMode(Container adjacent, StorageControllerBlockEntity controller,
+                               InterfaceFilter filter, int[] slots, int maxQuantity, int targetQty) {
+        for (int i = 0; i < InterfaceFilter.SLOTS_PER_FILTER; i++) {
+            ItemStack filterItem = filter.getItem(i);
+            if (filterItem.isEmpty()) continue;
+
+            String key = itemKey(filterItem);
             if (pendingTasks.containsKey(key)) continue;
 
-            // Compter combien il y a deja dans l'inventaire adjacent
-            int currentCount = countInSlots(adjacent, filter, slots);
-            if (currentCount >= maxCount) continue;
+            int currentCount = countInSlots(adjacent, filterItem, slots);
 
-            int needed = Math.min(maxCount - currentCount, maxQuantity);
+            int needed;
+            if (targetQty == 0) {
+                // Illimite: remplir autant que possible (stack size * slots disponibles)
+                int capacity = calculateCapacity(adjacent, filterItem, slots);
+                needed = capacity - currentCount;
+            } else {
+                needed = targetQty - currentCount;
+            }
+
             if (needed <= 0) continue;
+            needed = Math.min(needed, maxQuantity);
 
-            BlockPos chestPos = controller.findChestWithItem(filter, 1);
+            BlockPos chestPos = controller.findChestWithItem(filterItem, 1);
             if (chestPos == null) continue;
 
             DeliveryTask task = new DeliveryTask(
-                filter, needed, chestPos, worldPosition,
+                filterItem, needed, chestPos, worldPosition,
                 DeliveryTask.DeliveryType.EXTRACT
             );
             controller.addDeliveryTask(task);
@@ -149,23 +199,27 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
         }
     }
 
-    private void doScanTextMode(Container adjacent, StorageControllerBlockEntity controller) {
-        int[] slots = getOperableSlots(adjacent);
-        int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
-
-        // Scanner les items agreges du reseau pour trouver ceux qui matchent les filtres texte
+    private void scanTextMode(Container adjacent, StorageControllerBlockEntity controller,
+                               InterfaceFilter filter, int[] slots, int maxQuantity, int targetQty) {
         List<ItemStack> networkItems = controller.getAggregatedItems();
         for (ItemStack networkItem : networkItems) {
-            if (!matchesFilter(networkItem, false)) continue;
+            if (!filter.matches(networkItem, false)) continue;
 
             String key = itemKey(networkItem);
             if (pendingTasks.containsKey(key)) continue;
 
             int currentCount = countInSlots(adjacent, networkItem, slots);
-            if (currentCount >= maxCount) continue;
 
-            int needed = Math.min(maxCount - currentCount, maxQuantity);
+            int needed;
+            if (targetQty == 0) {
+                int capacity = calculateCapacity(adjacent, networkItem, slots);
+                needed = capacity - currentCount;
+            } else {
+                needed = targetQty - currentCount;
+            }
+
             if (needed <= 0) continue;
+            needed = Math.min(needed, maxQuantity);
 
             BlockPos chestPos = controller.findChestWithItem(networkItem, 1);
             if (chestPos == null) continue;
@@ -190,17 +244,28 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
         return count;
     }
 
+    private int calculateCapacity(Container container, ItemStack template, int[] slots) {
+        int capacity = 0;
+        for (int slot : slots) {
+            ItemStack existing = container.getItem(slot);
+            if (existing.isEmpty()) {
+                capacity += template.getMaxStackSize();
+            } else if (ItemStack.isSameItemSameComponents(existing, template)) {
+                capacity += existing.getMaxStackSize() - existing.getCount();
+            }
+        }
+        return capacity;
+    }
+
     // === NBT Hooks ===
 
     @Override
     protected void saveExtra(CompoundTag tag, HolderLookup.Provider registries) {
-        tag.putInt("MaxCount", maxCount);
+        // Pas de donnees extra specifiques a l'import
     }
 
     @Override
     protected void loadExtra(CompoundTag tag, HolderLookup.Provider registries) {
-        if (tag.contains("MaxCount")) {
-            maxCount = tag.getInt("MaxCount");
-        }
+        // Pas de donnees extra specifiques a l'import
     }
 }

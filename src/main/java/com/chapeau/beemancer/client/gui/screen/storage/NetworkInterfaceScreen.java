@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [NetworkInterfaceScreen.java]
- * Description: GUI pour Import/Export Interface avec ghost slots, text inputs, mode toggle
+ * Description: GUI pour Import/Export Interface avec filtres par ligne
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,8 +9,9 @@
  * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
  * | NetworkInterfaceMenu          | Donnees container    | Slots, data accessors          |
- * | InterfaceActionPacket         | Envoi actions C2S    | Mode switch, text, count       |
+ * | InterfaceActionPacket         | Envoi actions C2S    | Add/remove filter, mode, text  |
  * | GuiRenderHelper               | Rendu programmatique | Background, slots, boutons     |
+ * | InterfaceFilter               | Donnees filtre       | Mode, quantite                 |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -21,6 +22,7 @@
 package com.chapeau.beemancer.client.gui.screen.storage;
 
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
+import com.chapeau.beemancer.common.blockentity.storage.InterfaceFilter;
 import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
 import com.chapeau.beemancer.common.menu.storage.NetworkInterfaceMenu;
 import com.chapeau.beemancer.core.network.packets.InterfaceActionPacket;
@@ -34,51 +36,61 @@ import net.neoforged.neoforge.network.PacketDistributor;
 /**
  * Screen programmatique pour Import/Export Interface.
  *
- * Layout (176w x 180h):
- * - Titre
- * - Mode toggle [Item] [Text] + [Select Slots] si adjacent GUI
- * - Mode ITEM: 3x3 ghost slots / Mode TEXT: 9 EditBox
- * - Count: Max (import) ou Keep (export) avec +/- boutons
- * - Status: Linked / Not Linked
+ * Layout (176w x 182h):
+ * - Titre + status (Linked / Not Linked)
+ * - Zone filtres: jusqu'a 3 lignes de 20px
+ *   Chaque ligne: [T] [5 slots OU EditBox] [S] [qty EditBox] [-]
+ * - Bouton [+] si < 3 filtres
+ * - Bouton [S] global si 0 filtres
+ * - Separateur
  * - Inventaire joueur
  */
 public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInterfaceMenu> {
 
-    // Layout constants
     private static final int BG_WIDTH = 176;
     private static final int BG_HEIGHT = 182;
 
-    // Mode buttons
-    private static final int MODE_BTN_Y = 17;
-    private static final int MODE_BTN_W = 30;
-    private static final int MODE_BTN_H = 12;
-    private static final int MODE_ITEM_X = 8;
-    private static final int MODE_TEXT_X = 42;
+    // Filter line layout
+    private static final int FILTER_ZONE_Y = 18;
+    private static final int FILTER_LINE_H = 20;
 
-    // Ghost slots area
-    private static final int GHOST_X = 62;
-    private static final int GHOST_Y = 30;
+    // Per-line element positions (relative to line start)
+    private static final int TOGGLE_X = 7;
+    private static final int TOGGLE_W = 14;
+    private static final int TOGGLE_H = 14;
 
-    // Text filter area (9 EditBoxes in a column on the left)
-    private static final int TEXT_X = 8;
-    private static final int TEXT_Y = 30;
-    private static final int TEXT_W = 160;
-    private static final int TEXT_H = 12;
-    private static final int TEXT_SPACING = 14;
+    private static final int SLOTS_X = 23;
+    private static final int SLOTS_COUNT = 5;
 
-    // Count area
-    private static final int COUNT_Y = 86;
-    private static final int COUNT_BTN_W = 20;
-    private static final int COUNT_BTN_H = 12;
+    private static final int SELECT_X = 115;
+    private static final int SELECT_W = 14;
+    private static final int SELECT_H = 14;
+
+    private static final int QTY_X = 131;
+    private static final int QTY_W = 26;
+    private static final int QTY_H = 14;
+
+    private static final int REMOVE_X = 159;
+    private static final int REMOVE_W = 14;
+    private static final int REMOVE_H = 14;
+
+    // Add button
+    private static final int ADD_BTN_W = 14;
+    private static final int ADD_BTN_H = 14;
 
     // Player inventory
     private static final int PLAYER_INV_Y = 100;
     private static final int HOTBAR_Y = 158;
 
-    private final EditBox[] textBoxes = new EditBox[9];
-    private boolean lastModeWasItem = true;
+    // Filter text EditBoxes (one per possible filter line)
+    private final EditBox[] filterTextBoxes = new EditBox[InterfaceFilter.MAX_FILTERS];
+    // Quantity EditBoxes (one per possible filter line)
+    private final EditBox[] qtyBoxes = new EditBox[InterfaceFilter.MAX_FILTERS];
 
-    public NetworkInterfaceScreen(NetworkInterfaceMenu menu, Inventory playerInventory, Component title) {
+    private int lastFilterCount = -1;
+
+    public NetworkInterfaceScreen(NetworkInterfaceMenu menu, Inventory playerInventory,
+                                   Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = BG_WIDTH;
         this.imageHeight = BG_HEIGHT;
@@ -89,45 +101,86 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
     protected void init() {
         super.init();
 
-        // Create 9 EditBoxes for text filter mode
-        for (int i = 0; i < 9; i++) {
-            int bx = leftPos + TEXT_X;
-            int by = topPos + TEXT_Y + i * TEXT_SPACING;
-            EditBox box = new EditBox(font, bx, by, TEXT_W, TEXT_H, Component.empty());
-            box.setMaxLength(64);
-            box.setBordered(true);
-            box.setVisible(false);
+        for (int i = 0; i < InterfaceFilter.MAX_FILTERS; i++) {
+            int lineY = topPos + FILTER_ZONE_Y + i * FILTER_LINE_H + 3;
 
-            // Load existing text from BE if available
-            NetworkInterfaceBlockEntity be = menu.getBlockEntity();
-            if (be != null) {
-                String existing = be.getTextFilter(i);
-                if (existing != null && !existing.isEmpty()) {
-                    box.setValue(existing);
-                }
-            }
+            // Text filter EditBox (shown in TEXT mode)
+            EditBox textBox = new EditBox(font, leftPos + SLOTS_X, lineY,
+                SLOTS_COUNT * 18, TOGGLE_H, Component.empty());
+            textBox.setMaxLength(64);
+            textBox.setBordered(true);
+            textBox.setVisible(false);
 
             final int idx = i;
-            box.setResponder(text -> onTextFilterChanged(idx, text));
+            textBox.setResponder(text -> onFilterTextChanged(idx, text));
+            filterTextBoxes[i] = textBox;
+            addRenderableWidget(textBox);
 
-            textBoxes[i] = box;
-            addRenderableWidget(box);
+            // Quantity EditBox
+            EditBox qtyBox = new EditBox(font, leftPos + QTY_X, lineY,
+                QTY_W, QTY_H, Component.empty());
+            qtyBox.setMaxLength(5);
+            qtyBox.setBordered(true);
+            qtyBox.setVisible(false);
+            qtyBox.setValue("0");
+
+            qtyBox.setResponder(text -> onQuantityChanged(idx, text));
+            qtyBoxes[i] = qtyBox;
+            addRenderableWidget(qtyBox);
         }
 
-        updateTextBoxVisibility();
+        loadFilterData();
+        updateWidgetVisibility();
     }
 
-    private void updateTextBoxVisibility() {
-        boolean isTextMode = menu.getFilterModeOrdinal() == 1;
-        for (EditBox box : textBoxes) {
-            if (box != null) box.setVisible(isTextMode);
+    private void loadFilterData() {
+        NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+        if (be == null) return;
+
+        for (int i = 0; i < be.getFilterCount() && i < InterfaceFilter.MAX_FILTERS; i++) {
+            InterfaceFilter filter = be.getFilter(i);
+            if (filter == null) continue;
+
+            if (filter.getTextFilter() != null && !filter.getTextFilter().isEmpty()) {
+                filterTextBoxes[i].setValue(filter.getTextFilter());
+            }
+            qtyBoxes[i].setValue(String.valueOf(filter.getQuantity()));
         }
-        lastModeWasItem = !isTextMode;
     }
 
-    private void onTextFilterChanged(int slot, String text) {
+    private void updateWidgetVisibility() {
+        NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+        int filterCount = be != null ? be.getFilterCount() : 0;
+
+        for (int i = 0; i < InterfaceFilter.MAX_FILTERS; i++) {
+            boolean filterExists = i < filterCount;
+            InterfaceFilter filter = (filterExists && be != null) ? be.getFilter(i) : null;
+            boolean isTextMode = filter != null
+                && filter.getMode() == InterfaceFilter.FilterMode.TEXT;
+
+            filterTextBoxes[i].setVisible(filterExists && isTextMode);
+            qtyBoxes[i].setVisible(filterExists);
+        }
+
+        // Update ghost slot positions
+        updateGhostSlotPositions();
+        lastFilterCount = filterCount;
+    }
+
+    private void updateGhostSlotPositions() {
+        // Positions are fixed at menu construction time.
+        // We only toggle isActive() via menu.updateFilterSlots()
+        menu.updateFilterSlots();
+    }
+
+    private void onFilterTextChanged(int filterIdx, String text) {
         PacketDistributor.sendToServer(new InterfaceActionPacket(
-            menu.containerId, InterfaceActionPacket.ACTION_SET_TEXT_FILTER, slot, text));
+            menu.containerId, InterfaceActionPacket.ACTION_SET_FILTER_TEXT, filterIdx, text));
+    }
+
+    private void onQuantityChanged(int filterIdx, String text) {
+        PacketDistributor.sendToServer(new InterfaceActionPacket(
+            menu.containerId, InterfaceActionPacket.ACTION_SET_FILTER_QUANTITY, filterIdx, text));
     }
 
     // === Rendering ===
@@ -136,7 +189,6 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
-        boolean isTextMode = menu.getFilterModeOrdinal() == 1;
         boolean isImport = menu.isImport();
 
         // Background
@@ -145,92 +197,101 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         GuiRenderHelper.renderContainerBackground(g, font, x, y, BG_WIDTH, BG_HEIGHT,
             titleKey, PLAYER_INV_Y - 2);
 
-        // Mode toggle buttons
-        boolean itemHovered = isMouseOver(mouseX, mouseY, x + MODE_ITEM_X, y + MODE_BTN_Y,
-            MODE_BTN_W, MODE_BTN_H);
-        boolean textHovered = isMouseOver(mouseX, mouseY, x + MODE_TEXT_X, y + MODE_BTN_Y,
-            MODE_BTN_W, MODE_BTN_H);
+        // Status: Linked / Not Linked (top right)
+        renderStatus(g, x, y);
 
-        renderModeButton(g, x + MODE_ITEM_X, y + MODE_BTN_Y, "Item", !isTextMode, itemHovered);
-        renderModeButton(g, x + MODE_TEXT_X, y + MODE_BTN_Y, "Text", isTextMode, textHovered);
+        // Filter lines
+        NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+        int filterCount = be != null ? be.getFilterCount() : 0;
 
-        // Ghost slots (mode ITEM only)
-        if (!isTextMode) {
-            GuiRenderHelper.renderSlotGrid(g, x + GHOST_X - 1, y + GHOST_Y - 1, 3, 3);
+        for (int i = 0; i < filterCount; i++) {
+            renderFilterLine(g, x, y, i, mouseX, mouseY);
         }
 
-        // Count controls
-        String countLabel;
-        int countValue = menu.getCountValue();
-        if (isImport) {
-            countLabel = "Max: " + countValue;
-        } else {
-            countLabel = "Keep: " + countValue;
-        }
-        g.drawString(font, countLabel, x + 8, y + COUNT_Y + 2, 0x404040, false);
+        // [+] Add filter button (if < 3 filters)
+        if (filterCount < InterfaceFilter.MAX_FILTERS) {
+            int addY = y + FILTER_ZONE_Y + filterCount * FILTER_LINE_H + 3;
+            boolean addHovered = isMouseOver(mouseX, mouseY,
+                x + TOGGLE_X, addY, ADD_BTN_W, ADD_BTN_H);
+            GuiRenderHelper.renderButton(g, font, x + TOGGLE_X, addY,
+                ADD_BTN_W, ADD_BTN_H, "+", addHovered);
 
-        // +/- buttons
-        int btnBaseX = x + 80;
-        boolean minus16Hov = isMouseOver(mouseX, mouseY, btnBaseX, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H);
-        boolean minus1Hov = isMouseOver(mouseX, mouseY, btnBaseX + 22, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H);
-        boolean plus1Hov = isMouseOver(mouseX, mouseY, btnBaseX + 44, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H);
-        boolean plus16Hov = isMouseOver(mouseX, mouseY, btnBaseX + 66, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H);
-
-        GuiRenderHelper.renderButton(g, font, btnBaseX, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H,
-            "-16", minus16Hov);
-        GuiRenderHelper.renderButton(g, font, btnBaseX + 22, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H,
-            "-1", minus1Hov);
-        GuiRenderHelper.renderButton(g, font, btnBaseX + 44, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H,
-            "+1", plus1Hov);
-        GuiRenderHelper.renderButton(g, font, btnBaseX + 66, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H,
-            "+16", plus16Hov);
-
-        // Status
-        if (menu.isLinked()) {
-            NetworkInterfaceBlockEntity be = menu.getBlockEntity();
-            if (be != null && be.getControllerPos() != null) {
-                String status = String.format("Linked (%d, %d, %d)",
-                    be.getControllerPos().getX(),
-                    be.getControllerPos().getY(),
-                    be.getControllerPos().getZ());
-                g.drawString(font, status, x + 8, y + COUNT_Y - 10, 0x206020, false);
+            // Global [S] button (only when 0 filters)
+            if (filterCount == 0) {
+                boolean sHovered = isMouseOver(mouseX, mouseY,
+                    x + TOGGLE_X + ADD_BTN_W + 2, addY, SELECT_W, SELECT_H);
+                GuiRenderHelper.renderButton(g, font, x + TOGGLE_X + ADD_BTN_W + 2, addY,
+                    SELECT_W, SELECT_H, "S", sHovered);
             }
-        } else {
-            g.drawString(font, "Not Linked", x + 8, y + COUNT_Y - 10, 0x802020, false);
         }
 
         // Player inventory
         GuiRenderHelper.renderPlayerInventory(g, x, y, PLAYER_INV_Y - 1, HOTBAR_Y - 1);
     }
 
-    private void renderModeButton(GuiGraphics g, int x, int y, String label,
-                                    boolean active, boolean hovered) {
-        int bg;
-        if (active) {
-            bg = 0xFFDBDBDB;
-        } else if (hovered) {
-            bg = 0xFFBBBBBB;
+    private void renderStatus(GuiGraphics g, int x, int y) {
+        String statusText;
+        int statusColor;
+        if (menu.isLinked()) {
+            statusText = "Linked";
+            statusColor = 0x206020;
         } else {
-            bg = 0xFFAAAAAA;
+            statusText = "Not Linked";
+            statusColor = 0x802020;
         }
-        g.fill(x, y, x + MODE_BTN_W, y + MODE_BTN_H, bg);
-        // Border
-        g.fill(x, y, x + MODE_BTN_W, y + 1, active ? 0xFFFFFFFF : 0xFFDBDBDB);
-        g.fill(x, y, x + 1, y + MODE_BTN_H, active ? 0xFFFFFFFF : 0xFFDBDBDB);
-        g.fill(x, y + MODE_BTN_H - 1, x + MODE_BTN_W, y + MODE_BTN_H, 0xFF555555);
-        g.fill(x + MODE_BTN_W - 1, y, x + MODE_BTN_W, y + MODE_BTN_H, 0xFF555555);
-        // Label
-        int textWidth = font.width(label);
-        g.drawString(font, label, x + (MODE_BTN_W - textWidth) / 2,
-            y + (MODE_BTN_H - 8) / 2, active ? 0x404040 : 0x606060, false);
+        int statusWidth = font.width(statusText);
+        g.drawString(font, statusText, x + BG_WIDTH - 8 - statusWidth, y + 6,
+            statusColor, false);
+    }
+
+    private void renderFilterLine(GuiGraphics g, int x, int y, int filterIdx,
+                                   int mouseX, int mouseY) {
+        NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+        if (be == null) return;
+        InterfaceFilter filter = be.getFilter(filterIdx);
+        if (filter == null) return;
+
+        int lineY = y + FILTER_ZONE_Y + filterIdx * FILTER_LINE_H + 3;
+        boolean isItemMode = filter.getMode() == InterfaceFilter.FilterMode.ITEM;
+
+        // [T] Toggle button
+        boolean toggleHovered = isMouseOver(mouseX, mouseY,
+            x + TOGGLE_X, lineY, TOGGLE_W, TOGGLE_H);
+        String toggleLabel = isItemMode ? "I" : "T";
+        GuiRenderHelper.renderButton(g, font, x + TOGGLE_X, lineY,
+            TOGGLE_W, TOGGLE_H, toggleLabel, toggleHovered);
+
+        // Ghost slots (ITEM mode) - rendered by the container system via GhostSlot
+        if (isItemMode) {
+            for (int slot = 0; slot < SLOTS_COUNT; slot++) {
+                GuiRenderHelper.renderSlot(g,
+                    x + SLOTS_X + slot * 18, lineY - 1);
+            }
+        }
+        // TEXT mode: EditBox is rendered by the widget system
+
+        // [S] Select Slots button
+        boolean selectHovered = isMouseOver(mouseX, mouseY,
+            x + SELECT_X, lineY, SELECT_W, SELECT_H);
+        GuiRenderHelper.renderButton(g, font, x + SELECT_X, lineY,
+            SELECT_W, SELECT_H, "S", selectHovered);
+
+        // Quantity EditBox background is rendered by the widget system
+
+        // [-] Remove button
+        boolean removeHovered = isMouseOver(mouseX, mouseY,
+            x + REMOVE_X, lineY, REMOVE_W, REMOVE_H);
+        GuiRenderHelper.renderButton(g, font, x + REMOVE_X, lineY,
+            REMOVE_W, REMOVE_H, "-", removeHovered);
     }
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // Check if mode changed (ContainerData sync) and update visibility
-        boolean currentlyTextMode = menu.getFilterModeOrdinal() == 1;
-        if (lastModeWasItem == currentlyTextMode) {
-            updateTextBoxVisibility();
+        // Check if filter count changed (ContainerData sync) and update visibility
+        NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+        int currentCount = be != null ? be.getFilterCount() : 0;
+        if (currentCount != lastFilterCount) {
+            updateWidgetVisibility();
         }
 
         super.render(g, mouseX, mouseY, partialTick);
@@ -243,47 +304,71 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         int x = leftPos;
         int y = topPos;
+        NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+        int filterCount = be != null ? be.getFilterCount() : 0;
 
-        // Mode Item button
-        if (isMouseOver(mouseX, mouseY, x + MODE_ITEM_X, y + MODE_BTN_Y, MODE_BTN_W, MODE_BTN_H)) {
-            PacketDistributor.sendToServer(new InterfaceActionPacket(
-                menu.containerId, InterfaceActionPacket.ACTION_SET_FILTER_MODE, 0, "ITEM"));
-            updateTextBoxVisibility();
-            return true;
+        // Check filter line buttons
+        for (int i = 0; i < filterCount; i++) {
+            int lineY = y + FILTER_ZONE_Y + i * FILTER_LINE_H + 3;
+
+            // [T] Toggle
+            if (isMouseOver(mouseX, mouseY, x + TOGGLE_X, lineY, TOGGLE_W, TOGGLE_H)) {
+                InterfaceFilter filter = be.getFilter(i);
+                if (filter != null) {
+                    String newMode = filter.getMode() == InterfaceFilter.FilterMode.ITEM
+                        ? "TEXT" : "ITEM";
+                    PacketDistributor.sendToServer(new InterfaceActionPacket(
+                        menu.containerId, InterfaceActionPacket.ACTION_SET_FILTER_MODE,
+                        i, newMode));
+                    // Immediate local update for responsive UI
+                    filter.setMode(InterfaceFilter.FilterMode.valueOf(newMode));
+                    updateWidgetVisibility();
+                    menu.updateFilterSlots();
+                }
+                return true;
+            }
+
+            // [S] Select Slots (noop for now - Phase 4)
+            if (isMouseOver(mouseX, mouseY, x + SELECT_X, lineY, SELECT_W, SELECT_H)) {
+                return true;
+            }
+
+            // [-] Remove
+            if (isMouseOver(mouseX, mouseY, x + REMOVE_X, lineY, REMOVE_W, REMOVE_H)) {
+                PacketDistributor.sendToServer(new InterfaceActionPacket(
+                    menu.containerId, InterfaceActionPacket.ACTION_REMOVE_FILTER, i, ""));
+                // Immediate local update
+                if (be != null) {
+                    be.removeFilter(i);
+                    updateWidgetVisibility();
+                    menu.updateFilterSlots();
+                }
+                return true;
+            }
         }
 
-        // Mode Text button
-        if (isMouseOver(mouseX, mouseY, x + MODE_TEXT_X, y + MODE_BTN_Y, MODE_BTN_W, MODE_BTN_H)) {
-            PacketDistributor.sendToServer(new InterfaceActionPacket(
-                menu.containerId, InterfaceActionPacket.ACTION_SET_FILTER_MODE, 0, "TEXT"));
-            updateTextBoxVisibility();
-            return true;
-        }
+        // [+] Add filter button
+        if (filterCount < InterfaceFilter.MAX_FILTERS) {
+            int addY = y + FILTER_ZONE_Y + filterCount * FILTER_LINE_H + 3;
+            if (isMouseOver(mouseX, mouseY, x + TOGGLE_X, addY, ADD_BTN_W, ADD_BTN_H)) {
+                PacketDistributor.sendToServer(new InterfaceActionPacket(
+                    menu.containerId, InterfaceActionPacket.ACTION_ADD_FILTER, 0, ""));
+                // Immediate local update
+                if (be != null) {
+                    be.addFilter();
+                    updateWidgetVisibility();
+                    menu.updateFilterSlots();
+                }
+                return true;
+            }
 
-        // Count buttons
-        int btnBaseX = x + 80;
-        int actionType = menu.isImport() ? InterfaceActionPacket.ACTION_SET_MAX_COUNT
-                                          : InterfaceActionPacket.ACTION_SET_MIN_KEEP;
-
-        if (isMouseOver(mouseX, mouseY, btnBaseX, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H)) {
-            PacketDistributor.sendToServer(new InterfaceActionPacket(
-                menu.containerId, actionType, -16, ""));
-            return true;
-        }
-        if (isMouseOver(mouseX, mouseY, btnBaseX + 22, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H)) {
-            PacketDistributor.sendToServer(new InterfaceActionPacket(
-                menu.containerId, actionType, -1, ""));
-            return true;
-        }
-        if (isMouseOver(mouseX, mouseY, btnBaseX + 44, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H)) {
-            PacketDistributor.sendToServer(new InterfaceActionPacket(
-                menu.containerId, actionType, 1, ""));
-            return true;
-        }
-        if (isMouseOver(mouseX, mouseY, btnBaseX + 66, y + COUNT_Y, COUNT_BTN_W, COUNT_BTN_H)) {
-            PacketDistributor.sendToServer(new InterfaceActionPacket(
-                menu.containerId, actionType, 16, ""));
-            return true;
+            // Global [S] (only when 0 filters, noop for now - Phase 4)
+            if (filterCount == 0) {
+                if (isMouseOver(mouseX, mouseY, x + TOGGLE_X + ADD_BTN_W + 2, addY,
+                    SELECT_W, SELECT_H)) {
+                    return true;
+                }
+            }
         }
 
         return super.mouseClicked(mouseX, mouseY, button);

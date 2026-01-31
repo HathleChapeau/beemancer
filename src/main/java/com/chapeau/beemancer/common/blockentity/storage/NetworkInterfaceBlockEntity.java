@@ -10,6 +10,7 @@
  * |-------------------------------|----------------------|--------------------------------|
  * | StorageControllerBlockEntity  | Controller lie       | Acces reseau de stockage       |
  * | INetworkNode                  | Interface reseau     | Recherche controller           |
+ * | InterfaceFilter               | Filtre individuel    | Systeme de filtres par ligne   |
  * | DeliveryTask                  | Taches livraison     | Creation taches                |
  * ------------------------------------------------------------
  *
@@ -43,11 +44,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -57,30 +59,20 @@ import java.util.UUID;
  *
  * Fonctionnalites communes:
  * - Liaison a un controller (via edit mode shift+clic)
- * - 9 filter slots (ghost items, mode ITEM)
- * - 9 text filters (mode TEXT)
- * - Mode global ITEM ou TEXT
- * - Selected slots (overlay sur le GUI adjacent)
+ * - Jusqu'a 3 filtres individuels (InterfaceFilter)
+ * - globalSelectedSlots utilise quand 0 filtres
  * - Suivi des taches en cours (pendingTasks)
  * - Scan periodique de l'inventaire adjacent
  */
 public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements MenuProvider {
 
-    public enum FilterMode {
-        ITEM,
-        TEXT
-    }
-
-    protected static final int FILTER_SLOTS = 9;
     protected static final int SCAN_INTERVAL = 40;
 
     @Nullable
     protected BlockPos controllerPos = null;
 
-    protected final ItemStackHandler filterSlots = new ItemStackHandler(FILTER_SLOTS);
-    protected final String[] textFilters = new String[FILTER_SLOTS];
-    protected FilterMode filterMode = FilterMode.ITEM;
-    protected final Set<Integer> selectedSlots = new HashSet<>();
+    protected final List<InterfaceFilter> filters = new ArrayList<>();
+    protected final Set<Integer> globalSelectedSlots = new HashSet<>();
     protected final Map<String, UUID> pendingTasks = new HashMap<>();
     protected boolean hasAdjacentGui = false;
     protected int scanTimer = 0;
@@ -88,9 +80,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     public NetworkInterfaceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        for (int i = 0; i < FILTER_SLOTS; i++) {
-            textFilters[i] = "";
-        }
     }
 
     // === Controller Link ===
@@ -131,64 +120,90 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     // === Filter Management ===
 
-    public FilterMode getFilterMode() {
-        return filterMode;
+    public List<InterfaceFilter> getFilters() {
+        return filters;
     }
 
-    public void setFilterMode(FilterMode mode) {
-        this.filterMode = mode;
+    public int getFilterCount() {
+        return filters.size();
+    }
+
+    public InterfaceFilter getFilter(int index) {
+        if (index < 0 || index >= filters.size()) return null;
+        return filters.get(index);
+    }
+
+    public void addFilter() {
+        if (filters.size() >= InterfaceFilter.MAX_FILTERS) return;
+        filters.add(new InterfaceFilter());
         setChanged();
         syncToClient();
     }
 
-    public void setFilter(int slot, ItemStack stack) {
-        if (slot < 0 || slot >= FILTER_SLOTS) return;
-        filterSlots.setStackInSlot(slot, stack.copyWithCount(1));
+    public void removeFilter(int index) {
+        if (index < 0 || index >= filters.size()) return;
+        filters.remove(index);
         setChanged();
         syncToClient();
     }
 
-    public void clearFilter(int slot) {
-        if (slot < 0 || slot >= FILTER_SLOTS) return;
-        filterSlots.setStackInSlot(slot, ItemStack.EMPTY);
+    public void setFilterItem(int filterIdx, int slot, ItemStack stack) {
+        InterfaceFilter filter = getFilter(filterIdx);
+        if (filter == null) return;
+        filter.setItem(slot, stack);
         setChanged();
         syncToClient();
     }
 
-    public ItemStack getFilter(int slot) {
-        if (slot < 0 || slot >= FILTER_SLOTS) return ItemStack.EMPTY;
-        return filterSlots.getStackInSlot(slot);
-    }
-
-    public ItemStackHandler getFilterSlots() {
-        return filterSlots;
-    }
-
-    public void setTextFilter(int slot, String text) {
-        if (slot < 0 || slot >= FILTER_SLOTS) return;
-        textFilters[slot] = text != null ? text : "";
+    public void clearFilterItem(int filterIdx, int slot) {
+        InterfaceFilter filter = getFilter(filterIdx);
+        if (filter == null) return;
+        filter.clearItem(slot);
         setChanged();
         syncToClient();
     }
 
-    public String getTextFilter(int slot) {
-        if (slot < 0 || slot >= FILTER_SLOTS) return "";
-        return textFilters[slot];
+    public void setFilterMode(int filterIdx, InterfaceFilter.FilterMode mode) {
+        InterfaceFilter filter = getFilter(filterIdx);
+        if (filter == null) return;
+        filter.setMode(mode);
+        setChanged();
+        syncToClient();
     }
 
-    public String[] getTextFilters() {
-        return textFilters;
+    public void setFilterText(int filterIdx, String text) {
+        InterfaceFilter filter = getFilter(filterIdx);
+        if (filter == null) return;
+        filter.setTextFilter(text);
+        setChanged();
+        syncToClient();
     }
 
-    // === Slot Selection ===
-
-    public Set<Integer> getSelectedSlots() {
-        return selectedSlots;
+    public void setFilterQuantity(int filterIdx, int quantity) {
+        InterfaceFilter filter = getFilter(filterIdx);
+        if (filter == null) return;
+        filter.setQuantity(quantity);
+        setChanged();
+        syncToClient();
     }
 
-    public void setSelectedSlots(Set<Integer> slots) {
-        selectedSlots.clear();
-        selectedSlots.addAll(slots);
+    public void setFilterSelectedSlots(int filterIdx, Set<Integer> slots) {
+        InterfaceFilter filter = getFilter(filterIdx);
+        if (filter == null) return;
+        filter.setSelectedSlots(slots);
+        setChanged();
+        syncToClient();
+    }
+
+    // === Global Selected Slots (used when 0 filters) ===
+
+    public Set<Integer> getGlobalSelectedSlots() {
+        return globalSelectedSlots;
+    }
+
+    public void setGlobalSelectedSlots(Set<Integer> slots) {
+        globalSelectedSlots.clear();
+        globalSelectedSlots.addAll(slots);
         setChanged();
         syncToClient();
     }
@@ -220,75 +235,19 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     // === Filter Matching ===
 
     /**
-     * Verifie si un item correspond aux filtres actifs.
-     * En mode ITEM: compare avec les ghost slots non-vides.
-     * En mode TEXT: parse #tag/@mod/texte.
-     *
-     * @param checkEmpty si true, retourne true quand il n'y a aucun filtre actif
+     * Verifie si un item correspond a au moins un filtre actif.
+     * Si aucun filtre, retourne checkEmpty.
      */
-    public boolean matchesFilter(ItemStack stack, boolean checkEmpty) {
-        if (filterMode == FilterMode.ITEM) {
-            return matchesItemFilter(stack, checkEmpty);
-        } else {
-            return matchesTextFilter(stack, checkEmpty);
-        }
-    }
-
-    private boolean matchesItemFilter(ItemStack stack, boolean checkEmpty) {
-        boolean hasAnyFilter = false;
-        for (int i = 0; i < FILTER_SLOTS; i++) {
-            ItemStack filter = filterSlots.getStackInSlot(i);
-            if (!filter.isEmpty()) {
-                hasAnyFilter = true;
-                if (ItemStack.isSameItemSameComponents(filter, stack)) {
-                    return true;
-                }
-            }
-        }
-        return !hasAnyFilter && checkEmpty;
-    }
-
-    private boolean matchesTextFilter(ItemStack stack, boolean checkEmpty) {
-        boolean hasAnyFilter = false;
-        for (int i = 0; i < FILTER_SLOTS; i++) {
-            String text = textFilters[i];
-            if (text == null || text.isEmpty()) continue;
-            hasAnyFilter = true;
-
-            if (text.startsWith("#")) {
-                String tagName = text.substring(1);
-                if (matchesTag(stack, tagName)) return true;
-            } else if (text.startsWith("@")) {
-                String namespace = text.substring(1);
-                String itemNs = stack.getItem().builtInRegistryHolder()
-                    .key().location().getNamespace();
-                if (itemNs.equals(namespace)) return true;
-            } else {
-                String displayName = stack.getHoverName().getString().toLowerCase();
-                if (displayName.contains(text.toLowerCase())) return true;
-            }
-        }
-        return !hasAnyFilter && checkEmpty;
-    }
-
-    private boolean matchesTag(ItemStack stack, String tagName) {
-        var tags = stack.getTags().toList();
-        for (var tag : tags) {
-            String fullPath = tag.location().toString();
-            String path = tag.location().getPath();
-            if (path.equals(tagName) || fullPath.equals(tagName)
-                || path.contains(tagName)) {
-                return true;
-            }
+    public boolean matchesAnyFilter(ItemStack stack, boolean checkEmpty) {
+        if (filters.isEmpty()) return checkEmpty;
+        for (InterfaceFilter filter : filters) {
+            if (filter.matches(stack, false)) return true;
         }
         return false;
     }
 
     // === Adjacent Inventory ===
 
-    /**
-     * Retourne la direction vers laquelle l'interface pointe (face du bloc).
-     */
     public Direction getFacing() {
         BlockState state = getBlockState();
         if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
@@ -297,17 +256,10 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         return Direction.NORTH;
     }
 
-    /**
-     * Retourne la position du bloc adjacent (inventaire cible).
-     * L'inventaire est derriere l'interface (opposite du facing, car le facing pointe vers le joueur).
-     */
     public BlockPos getAdjacentPos() {
         return worldPosition.relative(getFacing().getOpposite());
     }
 
-    /**
-     * Retourne l'inventaire adjacent comme Container, ou null.
-     */
     @Nullable
     protected Container getAdjacentInventory() {
         if (level == null) return null;
@@ -319,9 +271,10 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     }
 
     /**
-     * Retourne les slots operables (selectedSlots si non-vide, sinon tous).
+     * Retourne les slots operables pour un filtre donne.
+     * Si le filtre a des selectedSlots, les utilise; sinon tous.
      */
-    protected int[] getOperableSlots(Container container) {
+    protected int[] getOperableSlots(Container container, Set<Integer> selectedSlots) {
         if (selectedSlots.isEmpty()) {
             int[] all = new int[container.getContainerSize()];
             for (int i = 0; i < all.length; i++) all[i] = i;
@@ -333,19 +286,20 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             .toArray();
     }
 
+    /**
+     * Retourne les slots operables globaux (quand 0 filtres).
+     */
+    protected int[] getGlobalOperableSlots(Container container) {
+        return getOperableSlots(container, globalSelectedSlots);
+    }
+
     // === Pending Tasks ===
 
-    /**
-     * Genere une cle unique pour un item (pour le suivi des taches en cours).
-     */
     protected String itemKey(ItemStack stack) {
         return stack.getItem().builtInRegistryHolder().key().location().toString()
             + ":" + stack.getComponentsPatch().hashCode();
     }
 
-    /**
-     * Nettoie les taches qui ne sont plus en cours dans le delivery manager.
-     */
     protected void cleanupPendingTasks() {
         StorageControllerBlockEntity controller = getController();
         if (controller == null) {
@@ -364,7 +318,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         scanTimer++;
         guiCheckTimer++;
 
-        // Update hasAdjacentGui toutes les 100 ticks (~5 sec)
         if (guiCheckTimer >= 100) {
             guiCheckTimer = 0;
             boolean hadGui = hasAdjacentGui;
@@ -389,9 +342,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         }
     }
 
-    /**
-     * Methode abstraite: logique de scan specifique a l'import ou l'export.
-     */
     protected abstract void doScan(Container adjacent, StorageControllerBlockEntity controller);
 
     // === NBT ===
@@ -404,21 +354,20 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             tag.put("ControllerPos", NbtUtils.writeBlockPos(controllerPos));
         }
 
-        tag.put("FilterSlots", filterSlots.serializeNBT(registries));
-        tag.putString("FilterMode", filterMode.name());
-
-        ListTag textTag = new ListTag();
-        for (int i = 0; i < FILTER_SLOTS; i++) {
-            CompoundTag entry = new CompoundTag();
-            entry.putString("Text", textFilters[i]);
-            textTag.add(entry);
+        // Filters
+        ListTag filtersTag = new ListTag();
+        for (InterfaceFilter filter : filters) {
+            filtersTag.add(filter.save(registries));
         }
-        tag.put("TextFilters", textTag);
+        tag.put("Filters", filtersTag);
 
-        if (!selectedSlots.isEmpty()) {
-            tag.putIntArray("SelectedSlots", selectedSlots.stream().mapToInt(Integer::intValue).toArray());
+        // Global selected slots
+        if (!globalSelectedSlots.isEmpty()) {
+            tag.putIntArray("GlobalSelectedSlots",
+                globalSelectedSlots.stream().mapToInt(Integer::intValue).toArray());
         }
 
+        // Pending tasks
         if (!pendingTasks.isEmpty()) {
             ListTag tasksTag = new ListTag();
             for (Map.Entry<String, UUID> entry : pendingTasks.entrySet()) {
@@ -443,32 +392,26 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             controllerPos = null;
         }
 
-        if (tag.contains("FilterSlots")) {
-            filterSlots.deserializeNBT(registries, tag.getCompound("FilterSlots"));
-        }
-
-        if (tag.contains("FilterMode")) {
-            try {
-                filterMode = FilterMode.valueOf(tag.getString("FilterMode"));
-            } catch (IllegalArgumentException e) {
-                filterMode = FilterMode.ITEM;
+        // Filters
+        filters.clear();
+        if (tag.contains("Filters")) {
+            ListTag filtersTag = tag.getList("Filters", Tag.TAG_COMPOUND);
+            for (int i = 0; i < Math.min(filtersTag.size(), InterfaceFilter.MAX_FILTERS); i++) {
+                InterfaceFilter filter = new InterfaceFilter();
+                filter.load(filtersTag.getCompound(i), registries);
+                filters.add(filter);
             }
         }
 
-        if (tag.contains("TextFilters")) {
-            ListTag textTag = tag.getList("TextFilters", Tag.TAG_COMPOUND);
-            for (int i = 0; i < Math.min(textTag.size(), FILTER_SLOTS); i++) {
-                textFilters[i] = textTag.getCompound(i).getString("Text");
+        // Global selected slots
+        globalSelectedSlots.clear();
+        if (tag.contains("GlobalSelectedSlots")) {
+            for (int s : tag.getIntArray("GlobalSelectedSlots")) {
+                globalSelectedSlots.add(s);
             }
         }
 
-        selectedSlots.clear();
-        if (tag.contains("SelectedSlots")) {
-            for (int s : tag.getIntArray("SelectedSlots")) {
-                selectedSlots.add(s);
-            }
-        }
-
+        // Pending tasks
         pendingTasks.clear();
         if (tag.contains("PendingTasks")) {
             ListTag tasksTag = tag.getList("PendingTasks", Tag.TAG_COMPOUND);
@@ -481,14 +424,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         loadExtra(tag, registries);
     }
 
-    /**
-     * Hook pour les sous-classes: sauvegarder des donnees additionnelles.
-     */
     protected abstract void saveExtra(CompoundTag tag, HolderLookup.Provider registries);
-
-    /**
-     * Hook pour les sous-classes: charger des donnees additionnelles.
-     */
     protected abstract void loadExtra(CompoundTag tag, HolderLookup.Provider registries);
 
     // === Sync Client ===

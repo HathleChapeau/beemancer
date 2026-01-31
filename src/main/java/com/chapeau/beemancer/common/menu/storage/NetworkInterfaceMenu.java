@@ -1,16 +1,16 @@
 /**
  * ============================================================
  * [NetworkInterfaceMenu.java]
- * Description: Menu partage pour Import/Export Interface avec ghost slots et ContainerData
+ * Description: Menu partage pour Import/Export Interface avec ghost slots dynamiques
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
  * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
- * | NetworkInterfaceBlockEntity   | Source des donnees   | Filtres, controller, mode      |
- * | ImportInterfaceBlockEntity    | Detection import     | isImport flag                  |
- * | GhostSlot                    | Slots fantomes       | Filter slots 0-8               |
+ * | NetworkInterfaceBlockEntity   | Source des donnees   | Filtres, controller            |
+ * | InterfaceFilter               | Filtre individuel    | Ghost slots per-filter         |
+ * | GhostSlot                    | Slots fantomes       | Filter slots 0-14              |
  * | BeemancerMenus               | Type du menu         | Constructeur                   |
  * ------------------------------------------------------------
  *
@@ -23,8 +23,7 @@
  */
 package com.chapeau.beemancer.common.menu.storage;
 
-import com.chapeau.beemancer.common.blockentity.storage.ExportInterfaceBlockEntity;
-import com.chapeau.beemancer.common.blockentity.storage.ImportInterfaceBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.InterfaceFilter;
 import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
 import com.chapeau.beemancer.common.menu.BeemancerMenu;
 import com.chapeau.beemancer.common.menu.slot.GhostSlot;
@@ -46,29 +45,35 @@ import org.jetbrains.annotations.Nullable;
  * Menu partage pour Import et Export Interface.
  *
  * Slots Layout:
- * - 0-8:   Ghost filter slots (3x3)
- * - 9-35:  Player inventory (27)
- * - 36-44: Player hotbar (9)
+ * - 0-4:   Ghost filter slots pour filtre 0 (5 slots)
+ * - 5-9:   Ghost filter slots pour filtre 1 (5 slots)
+ * - 10-14: Ghost filter slots pour filtre 2 (5 slots)
+ * - 15-41: Player inventory (27)
+ * - 42-50: Player hotbar (9)
+ *
+ * Les ghost slots de filtres inactifs ont isActive=false.
  */
 public class NetworkInterfaceMenu extends BeemancerMenu {
 
-    // Slot ranges
+    public static final int SLOTS_PER_FILTER = InterfaceFilter.SLOTS_PER_FILTER;
+    public static final int MAX_FILTERS = InterfaceFilter.MAX_FILTERS;
+    public static final int TOTAL_GHOST_SLOTS = SLOTS_PER_FILTER * MAX_FILTERS;
+
     public static final int FILTER_START = 0;
-    public static final int FILTER_END = 9;
-    public static final int PLAYER_START = 9;
-    public static final int PLAYER_END = 45;
+    public static final int FILTER_END = TOTAL_GHOST_SLOTS;
+    public static final int PLAYER_START = TOTAL_GHOST_SLOTS;
+    public static final int PLAYER_END = PLAYER_START + 36;
 
     // ContainerData indices
     public static final int DATA_IS_IMPORT = 0;
     public static final int DATA_IS_LINKED = 1;
-    public static final int DATA_FILTER_MODE = 2;
-    public static final int DATA_HAS_ADJACENT_GUI = 3;
-    public static final int DATA_COUNT_VALUE = 4;
-    public static final int DATA_SIZE = 5;
+    public static final int DATA_FILTER_COUNT = 2;
+    public static final int DATA_SIZE = 3;
 
-    // Ghost slot positions
-    private static final int GHOST_X = 62;
-    private static final int GHOST_Y = 30;
+    // Ghost slot positions (matching screen layout)
+    private static final int GHOST_SLOTS_X = 23;
+    private static final int GHOST_SLOTS_BASE_Y = 21;
+    private static final int FILTER_LINE_H = 20;
 
     // Player inventory positions
     private static final int PLAYER_INV_X = 8;
@@ -79,6 +84,7 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
     private final NetworkInterfaceBlockEntity blockEntity;
     private final ContainerData data;
     private final ContainerLevelAccess access;
+    private final GhostSlot[] ghostSlots = new GhostSlot[TOTAL_GHOST_SLOTS];
 
     // Client constructor (from network)
     public NetworkInterfaceMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
@@ -106,13 +112,24 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
             this.access = ContainerLevelAccess.NULL;
         }
 
-        // Ghost filter slots (0-8)
-        ItemStackHandler filterHandler = be != null ? be.getFilterSlots() : new ItemStackHandler(9);
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                int index = col + row * 3;
-                addSlot(new GhostSlot(filterHandler, index,
-                    GHOST_X + col * 18, GHOST_Y + row * 18));
+        // Ghost filter slots (0-14): 3 filtres x 5 slots
+        // Positions fixes par ligne — seul isActive() controle la visibilite
+        for (int filterIdx = 0; filterIdx < MAX_FILTERS; filterIdx++) {
+            ItemStackHandler handler;
+            if (be != null && filterIdx < be.getFilterCount()) {
+                handler = be.getFilter(filterIdx).getItems();
+            } else {
+                handler = new ItemStackHandler(SLOTS_PER_FILTER);
+            }
+
+            for (int slot = 0; slot < SLOTS_PER_FILTER; slot++) {
+                int globalIdx = filterIdx * SLOTS_PER_FILTER + slot;
+                // Position fixe: SLOTS_X + slot * 18 + 1, FILTER_ZONE_Y + filterIdx * 20 + 4
+                int slotX = GHOST_SLOTS_X + slot * 18 + 1;
+                int slotY = GHOST_SLOTS_BASE_Y + filterIdx * FILTER_LINE_H + 1;
+                GhostSlot gs = new GhostSlot(handler, slot, slotX, slotY);
+                ghostSlots[globalIdx] = gs;
+                addSlot(gs);
             }
         }
 
@@ -121,6 +138,8 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
         addPlayerHotbar(playerInv, PLAYER_INV_X, HOTBAR_Y);
 
         addDataSlots(data);
+
+        updateFilterSlots();
     }
 
     @Nullable
@@ -139,16 +158,7 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
                 return switch (index) {
                     case DATA_IS_IMPORT -> be.isImport() ? 1 : 0;
                     case DATA_IS_LINKED -> be.isLinked() ? 1 : 0;
-                    case DATA_FILTER_MODE -> be.getFilterMode().ordinal();
-                    case DATA_HAS_ADJACENT_GUI -> be.hasAdjacentGui() ? 1 : 0;
-                    case DATA_COUNT_VALUE -> {
-                        if (be instanceof ImportInterfaceBlockEntity imp) {
-                            yield imp.getMaxCount();
-                        } else if (be instanceof ExportInterfaceBlockEntity exp) {
-                            yield exp.getMinKeep();
-                        }
-                        yield 0;
-                    }
+                    case DATA_FILTER_COUNT -> be.getFilterCount();
                     default -> 0;
                 };
             }
@@ -161,20 +171,54 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
         };
     }
 
+    /**
+     * Met a jour l'etat actif/inactif des ghost slots en fonction du nombre de filtres
+     * et de leur mode. Appele lors de l'ajout/suppression de filtres.
+     */
+    public void updateFilterSlots() {
+        if (blockEntity == null) return;
+
+        int filterCount = blockEntity.getFilterCount();
+
+        for (int filterIdx = 0; filterIdx < MAX_FILTERS; filterIdx++) {
+            boolean filterExists = filterIdx < filterCount;
+            InterfaceFilter filter = filterExists ? blockEntity.getFilter(filterIdx) : null;
+            boolean isItemMode = filter != null && filter.getMode() == InterfaceFilter.FilterMode.ITEM;
+
+            // Relier le handler au bon filtre si il existe
+            if (filter != null) {
+                for (int slot = 0; slot < SLOTS_PER_FILTER; slot++) {
+                    int globalIdx = filterIdx * SLOTS_PER_FILTER + slot;
+                    ghostSlots[globalIdx].setActive(isItemMode);
+                }
+            } else {
+                for (int slot = 0; slot < SLOTS_PER_FILTER; slot++) {
+                    int globalIdx = filterIdx * SLOTS_PER_FILTER + slot;
+                    ghostSlots[globalIdx].setActive(false);
+                }
+            }
+        }
+    }
+
     // === Ghost Slot Click Handling ===
 
     @Override
     public void clicked(int slotId, int button, net.minecraft.world.inventory.ClickType clickType,
                          Player player) {
-        if (slotId >= FILTER_START && slotId < FILTER_END && blockEntity != null
-                && blockEntity.getFilterMode() == NetworkInterfaceBlockEntity.FilterMode.ITEM) {
-            ItemStack carried = getCarried();
-            if (!carried.isEmpty()) {
-                blockEntity.setFilter(slotId, carried);
-            } else {
-                blockEntity.clearFilter(slotId);
+        if (slotId >= FILTER_START && slotId < FILTER_END && blockEntity != null) {
+            int filterIdx = slotId / SLOTS_PER_FILTER;
+            int slotInFilter = slotId % SLOTS_PER_FILTER;
+
+            InterfaceFilter filter = blockEntity.getFilter(filterIdx);
+            if (filter != null && filter.getMode() == InterfaceFilter.FilterMode.ITEM) {
+                ItemStack carried = getCarried();
+                if (!carried.isEmpty()) {
+                    blockEntity.setFilterItem(filterIdx, slotInFilter, carried);
+                } else {
+                    blockEntity.clearFilterItem(filterIdx, slotInFilter);
+                }
+                return;
             }
-            return;
         }
         super.clicked(slotId, button, clickType, player);
     }
@@ -183,7 +227,6 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int slotIndex) {
-        // Ghost slots: nothing to move
         if (slotIndex >= FILTER_START && slotIndex < FILTER_END) {
             return ItemStack.EMPTY;
         }
@@ -224,10 +267,13 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
 
     public boolean isImport() { return data.get(DATA_IS_IMPORT) != 0; }
     public boolean isLinked() { return data.get(DATA_IS_LINKED) != 0; }
-    public int getFilterModeOrdinal() { return data.get(DATA_FILTER_MODE); }
-    public boolean hasAdjacentGui() { return data.get(DATA_HAS_ADJACENT_GUI) != 0; }
-    public int getCountValue() { return data.get(DATA_COUNT_VALUE); }
+    public int getFilterCount() { return data.get(DATA_FILTER_COUNT); }
 
     @Nullable
     public NetworkInterfaceBlockEntity getBlockEntity() { return blockEntity; }
+
+    public GhostSlot getGhostSlot(int globalIndex) {
+        if (globalIndex < 0 || globalIndex >= TOTAL_GHOST_SLOTS) return null;
+        return ghostSlots[globalIndex];
+    }
 }
