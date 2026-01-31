@@ -71,16 +71,16 @@ public class AdjacentGuiOverlayRenderer {
         double mouseY = screen.getMinecraft().mouseHandler.ypos()
                 * screenHeight / screen.getMinecraft().getWindow().getHeight();
 
+        // 1) Fond noir plein ecran (flush le batch items, puis dessine par-dessus)
         g.drawManaged(() -> {
             g.pose().pushPose();
             g.pose().translate(-leftPos, -topPos, 400);
-
-            // Fond noir plein ecran
             g.fill(0, 0, screenWidth, screenHeight, COLOR_OVERLAY);
-
             g.pose().popPose();
+        });
 
-            // Boutons toggle par-dessus chaque slot du container (coordonnees relatives)
+        // 2) Boutons toggle par-dessus le fond noir (second drawManaged = nouveau batch)
+        g.drawManaged(() -> {
             var menu = screen.getMenu();
             for (int i = 0; i < menu.slots.size(); i++) {
                 Slot slot = menu.slots.get(i);
