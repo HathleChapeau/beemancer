@@ -9,7 +9,8 @@
  * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
  * | NetworkInterfaceScreen        | Flag openedFromDebug | Savoir quand afficher overlay  |
- * | ScreenEvent                   | Events NeoForge      | Render.Post, Closing           |
+ * | ContainerScreenEvent          | Event NeoForge       | Render.Foreground (apres items)|
+ * | ScreenEvent                   | Event NeoForge       | Closing (reset flag)           |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -24,11 +25,17 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 
 /**
  * Dessine un overlay (rectangle noir + icone abeille) par-dessus le GUI
  * d'un bloc adjacent quand il a ete ouvert depuis le bouton Debug de l'interface.
+ *
+ * Utilise ContainerScreenEvent.Render.Foreground qui est fire APRES le rendu
+ * des items dans les slots (ligne 118 de AbstractContainerScreen.render()).
+ * Le depth test est desactive pendant le rendu du container, donc le z-level
+ * est ignore — seul l'ordre d'appel compte.
  *
  * Le flag est pose par NetworkInterfaceScreen.openedFromDebugButton et reset
  * quand le screen se ferme.
@@ -38,18 +45,22 @@ public class AdjacentGuiOverlayRenderer {
     private static final ItemStack BEE_ICON = new ItemStack(Items.BEE_SPAWN_EGG);
 
     @SubscribeEvent
-    public static void onScreenRenderPost(ScreenEvent.Render.Post event) {
+    public static void onContainerForeground(ContainerScreenEvent.Render.Foreground event) {
         if (!NetworkInterfaceScreen.openedFromDebugButton) return;
-        if (!(event.getScreen() instanceof AbstractContainerScreen<?> screen)) return;
-        if (event.getScreen() instanceof NetworkInterfaceScreen) return;
+        AbstractContainerScreen<?> screen = event.getContainerScreen();
+        if (screen instanceof NetworkInterfaceScreen) return;
 
         GuiGraphics g = event.getGuiGraphics();
-        int screenWidth = event.getScreen().width;
-        int screenHeight = event.getScreen().height;
 
-        // Z=300 pour dessiner devant les items (z~200) mais derriere les tooltips (z~400)
+        // Les coordonnees sont relatives au container (deja translatees par leftPos/topPos).
+        // On annule la translation pour dessiner en coordonnees absolues ecran.
+        int leftPos = screen.getGuiLeft();
+        int topPos = screen.getGuiTop();
         g.pose().pushPose();
-        g.pose().translate(0, 0, 300);
+        g.pose().translate(-leftPos, -topPos, 0);
+
+        int screenWidth = screen.width;
+        int screenHeight = screen.height;
 
         // Rectangle noir couvrant la zone inventaire joueur (bas de l'ecran)
         int overlayTop = screenHeight / 2 + 20;
