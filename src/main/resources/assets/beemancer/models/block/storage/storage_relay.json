@@ -1,6 +1,7 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cross",
+  "render_type": "translucent",
   "textures": {
-    "all": "beemancer:block/storage_relay"
+    "cross": "beemancer:block/storage/relay"
   }
 }

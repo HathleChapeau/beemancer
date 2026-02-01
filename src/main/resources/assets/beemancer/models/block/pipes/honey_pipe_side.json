@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "pipe": "beemancer:block/plank"
+    "pipe": "beemancer:block/fluid/pipe_wood"
   },
   "elements": [
     {

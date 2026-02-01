@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "core": "beemancer:block/pipe_core_white",
-    "frame": "beemancer:block/stone"
+    "core": "minecraft:block/stone",
+    "frame": "beemancer:block/iron"
   },
   "elements": [
     {
