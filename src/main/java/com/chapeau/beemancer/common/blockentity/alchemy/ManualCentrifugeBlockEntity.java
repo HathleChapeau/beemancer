@@ -45,11 +45,15 @@ import java.util.Optional;
 public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProvider {
     private static final int PROCESS_TIME = 60; // Ticks to process (3 seconds of holding)
 
+    // Suivi du type d'item en entree pour reset de progression
+    private ItemStack previousInputType = ItemStack.EMPTY;
+
     // 1 slot d'entree
     private final ItemStackHandler inputSlot = new ItemStackHandler(1) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
+            checkInputChanged();
         }
     };
 
@@ -90,6 +94,18 @@ public class ManualCentrifugeBlockEntity extends BlockEntity implements MenuProv
 
     public ManualCentrifugeBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.MANUAL_CENTRIFUGE.get(), pos, state);
+    }
+
+    /**
+     * Verifie si l'item en entree a change de type ou est devenu vide.
+     * Reset la progression si c'est le cas.
+     */
+    private void checkInputChanged() {
+        ItemStack current = inputSlot.getStackInSlot(0);
+        if (current.isEmpty() || !ItemStack.isSameItemSameComponents(current, previousInputType)) {
+            progress = 0;
+        }
+        previousInputType = current.isEmpty() ? ItemStack.EMPTY : current.copyWithCount(1);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ManualCentrifugeBlockEntity be) {

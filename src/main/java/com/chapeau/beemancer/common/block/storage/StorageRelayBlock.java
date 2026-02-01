@@ -20,6 +20,8 @@
  */
 package com.chapeau.beemancer.common.block.storage;
 
+import com.chapeau.beemancer.common.blockentity.storage.INetworkNode;
+import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageRelayBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
@@ -94,6 +96,7 @@ public class StorageRelayBlock extends BaseEntityBlock {
         if (player.isShiftKeyDown()) {
             boolean nowEditing = relay.toggleEditMode(player.getUUID());
             if (nowEditing) {
+                validateFromRelay(relay, level);
                 StorageEditModeHandler.startEditing(player.getUUID(), pos);
                 player.displayClientMessage(
                     Component.translatable("message.beemancer.storage_relay.edit_mode_on"),
@@ -118,6 +121,35 @@ public class StorageRelayBlock extends BaseEntityBlock {
         );
 
         return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * Trouve le controller depuis un relay via BFS et valide les blocs du registre.
+     */
+    private static void validateFromRelay(StorageRelayBlockEntity relay, Level level) {
+        java.util.Set<BlockPos> visited = new java.util.HashSet<>();
+        java.util.Queue<BlockPos> queue = new java.util.LinkedList<>();
+        visited.add(relay.getNodePos());
+        for (BlockPos connected : relay.getConnectedNodes()) {
+            queue.add(connected);
+        }
+        while (!queue.isEmpty()) {
+            BlockPos nodePos = queue.poll();
+            if (!visited.add(nodePos)) continue;
+            if (!level.isLoaded(nodePos)) continue;
+            BlockEntity nodeBe = level.getBlockEntity(nodePos);
+            if (nodeBe instanceof StorageControllerBlockEntity controller) {
+                controller.validateNetworkBlocks();
+                return;
+            }
+            if (nodeBe instanceof INetworkNode node) {
+                for (BlockPos neighbor : node.getConnectedNodes()) {
+                    if (!visited.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+        }
     }
 
     @Override

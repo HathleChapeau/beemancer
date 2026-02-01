@@ -421,8 +421,56 @@ public class StorageDeliveryManager {
         return null;
     }
 
+    /**
+     * Valide que les blocs cibles d'une tache existent encore.
+     * Si un bloc a ete casse, le retire du registre et refuse la tache.
+     * Si une interface cible ne se considere plus liee, la retire du registre.
+     */
+    private boolean validateTaskTargets(DeliveryTask task, ServerLevel level) {
+        StorageNetworkRegistry registry = parent.getNetworkRegistry();
+
+        // Verifier le coffre cible
+        BlockPos targetChest = task.getTargetChest();
+        if (targetChest != null && level.isLoaded(targetChest)) {
+            BlockEntity targetBe = level.getBlockEntity(targetChest);
+            if (targetBe == null) {
+                registry.unregisterBlock(targetChest);
+                parent.setChanged();
+                return false;
+            }
+            // Si c'est une interface non liee, la retirer
+            if (targetBe instanceof NetworkInterfaceBlockEntity iface && iface.getControllerPos() == null) {
+                registry.unregisterBlock(targetChest);
+                parent.setChanged();
+                return false;
+            }
+        }
+
+        // Verifier le terminal/destination
+        BlockPos terminalPos = task.getTerminalPos();
+        if (terminalPos != null && !terminalPos.equals(parent.getBlockPos()) && level.isLoaded(terminalPos)) {
+            BlockEntity terminalBe = level.getBlockEntity(terminalPos);
+            if (terminalBe == null) {
+                registry.unregisterBlock(terminalPos);
+                parent.setChanged();
+                return false;
+            }
+            // Si c'est une interface non liee, la retirer
+            if (terminalBe instanceof NetworkInterfaceBlockEntity iface && iface.getControllerPos() == null) {
+                registry.unregisterBlock(terminalPos);
+                parent.setChanged();
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private boolean spawnDeliveryBee(DeliveryTask task) {
         if (!(parent.getLevel() instanceof ServerLevel serverLevel)) return false;
+
+        // Valider que les blocs cibles existent encore
+        if (!validateTaskTargets(task, serverLevel)) return false;
 
         BlockPos spawnPos;
         BlockPos returnPos;

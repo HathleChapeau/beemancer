@@ -119,6 +119,7 @@ public class StorageControllerBlock extends BaseEntityBlock {
         if (player.isShiftKeyDown()) {
             boolean nowEditing = controller.toggleEditMode(player.getUUID());
             if (nowEditing) {
+                controller.validateNetworkBlocks();
                 StorageEditModeHandler.startEditing(player.getUUID(), pos);
                 player.displayClientMessage(
                     Component.translatable("message.beemancer.storage_controller.edit_mode_on"),

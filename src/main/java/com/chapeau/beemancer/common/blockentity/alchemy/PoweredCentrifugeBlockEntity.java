@@ -63,12 +63,16 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
     private final int baseOutputCapacity;
     private final float processTimeMultiplier;
 
+    // Suivi du type d'item en entree pour reset de progression
+    private ItemStack previousInputType = ItemStack.EMPTY;
+
     // 1 slot d'entree
     private final ItemStackHandler inputSlot = new ItemStackHandler(1) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
             currentRecipe = null;
+            checkInputChanged();
         }
     };
 
@@ -145,6 +149,18 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
         return new PoweredCentrifugeBlockEntity(
             BeemancerBlockEntities.POWERED_CENTRIFUGE_TIER3.get(), pos, state,
             TIER3_HONEY_CONSUMPTION, TIER3_TANK_CAPACITY, 0.3f);
+    }
+
+    /**
+     * Verifie si l'item en entree a change de type ou est devenu vide.
+     * Reset la progression si c'est le cas.
+     */
+    private void checkInputChanged() {
+        ItemStack current = inputSlot.getStackInSlot(0);
+        if (current.isEmpty() || !ItemStack.isSameItemSameComponents(current, previousInputType)) {
+            progress = 0;
+        }
+        previousInputType = current.isEmpty() ? ItemStack.EMPTY : current.copyWithCount(1);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, PoweredCentrifugeBlockEntity be) {

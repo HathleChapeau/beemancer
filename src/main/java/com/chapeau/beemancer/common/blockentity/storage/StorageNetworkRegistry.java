@@ -50,16 +50,11 @@ public class StorageNetworkRegistry {
     private final Map<BlockPos, NetworkEntry> registry = new HashMap<>();
 
     /**
-     * Enregistre un bloc dans le reseau avec propriete exclusive.
-     * @return true si enregistre, false si deja possede par un autre noeud
+     * Enregistre un bloc dans le reseau.
+     * Si le bloc est deja possede par un autre noeud, il est transfere au nouveau proprietaire.
      */
-    public boolean registerBlock(BlockPos blockPos, BlockPos ownerNode, NetworkBlockType type) {
-        NetworkEntry existing = registry.get(blockPos);
-        if (existing != null && !existing.ownerNode().equals(ownerNode)) {
-            return false;
-        }
+    public void registerBlock(BlockPos blockPos, BlockPos ownerNode, NetworkBlockType type) {
         registry.put(blockPos, new NetworkEntry(ownerNode, type));
-        return true;
     }
 
     /**

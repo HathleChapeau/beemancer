@@ -49,6 +49,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
@@ -153,6 +154,54 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     public void onMultiblockBroken() { multiblockManager.onMultiblockBroken(); }
 
     public boolean tryFormStorage() { return multiblockManager.tryFormStorage(); }
+
+    // === Validation du reseau ===
+
+    /**
+     * Valide tous les blocs enregistres dans le registre central.
+     * Retire ceux qui ont ete casses ou dont l'interface s'est deliee.
+     * Appele a l'entree en mode edition.
+     */
+    public void validateNetworkBlocks() {
+        if (level == null || level.isClientSide()) return;
+
+        List<BlockPos> toRemove = new ArrayList<>();
+
+        for (Map.Entry<BlockPos, StorageNetworkRegistry.NetworkEntry> entry : networkRegistry.getAll().entrySet()) {
+            BlockPos pos = entry.getKey();
+            StorageNetworkRegistry.NetworkBlockType type = entry.getValue().type();
+
+            if (!level.isLoaded(pos)) continue;
+
+            BlockEntity be = level.getBlockEntity(pos);
+
+            switch (type) {
+                case CHEST -> {
+                    if (!com.chapeau.beemancer.core.util.StorageHelper.isStorageContainer(level.getBlockState(pos))) {
+                        toRemove.add(pos);
+                    }
+                }
+                case TERMINAL -> {
+                    if (!(be instanceof StorageTerminalBlockEntity terminal) || terminal.getControllerPos() == null) {
+                        toRemove.add(pos);
+                    }
+                }
+                case INTERFACE -> {
+                    if (!(be instanceof NetworkInterfaceBlockEntity iface) || iface.getControllerPos() == null) {
+                        toRemove.add(pos);
+                    }
+                }
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            for (BlockPos pos : toRemove) {
+                networkRegistry.unregisterBlock(pos);
+            }
+            setChanged();
+            syncToClient();
+        }
+    }
 
     // === Reseau: coffres, terminaux, interfaces (via registre) ===
 

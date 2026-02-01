@@ -104,7 +104,7 @@ public class StorageEvents {
     }
 
     /**
-     * Lie un terminal au reseau avec propriete exclusive.
+     * Lie un terminal au reseau. Si deja possede par un autre noeud, transfere la propriete.
      */
     private static void handleTerminalLink(Player player, Level level, INetworkNode node,
                                             StorageTerminalBlockEntity terminal, BlockPos clickedPos,
@@ -115,18 +115,8 @@ public class StorageEvents {
         BlockEntity ctrlBe = level.getBlockEntity(controllerPos);
         if (!(ctrlBe instanceof StorageControllerBlockEntity controller)) return;
 
-        // Propriete exclusive via le registre
-        boolean registered = controller.getNetworkRegistry().registerBlock(
+        controller.getNetworkRegistry().registerBlock(
                 clickedPos, node.getNodePos(), StorageNetworkRegistry.NetworkBlockType.TERMINAL);
-
-        if (!registered) {
-            player.displayClientMessage(
-                    Component.translatable("message.beemancer.storage_network.already_registered"),
-                    true);
-            event.setCanceled(true);
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            return;
-        }
 
         terminal.linkToController(controllerPos);
         controller.setChanged();
@@ -140,7 +130,7 @@ public class StorageEvents {
     }
 
     /**
-     * Lie une interface au reseau avec propriete exclusive.
+     * Lie une interface au reseau. Si deja possede par un autre noeud, transfere la propriete.
      */
     private static void handleInterfaceLink(Player player, Level level, INetworkNode node,
                                              NetworkInterfaceBlockEntity iface, BlockPos clickedPos,
@@ -151,18 +141,8 @@ public class StorageEvents {
         BlockEntity ctrlBe = level.getBlockEntity(controllerPos);
         if (!(ctrlBe instanceof StorageControllerBlockEntity controller)) return;
 
-        // Propriete exclusive via le registre
-        boolean registered = controller.getNetworkRegistry().registerBlock(
+        controller.getNetworkRegistry().registerBlock(
                 clickedPos, node.getNodePos(), StorageNetworkRegistry.NetworkBlockType.INTERFACE);
-
-        if (!registered) {
-            player.displayClientMessage(
-                    Component.translatable("message.beemancer.storage_network.already_registered"),
-                    true);
-            event.setCanceled(true);
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            return;
-        }
 
         iface.linkToController(controllerPos);
         controller.setChanged();
@@ -221,15 +201,11 @@ public class StorageEvents {
             if (controller != null) {
                 StorageNetworkRegistry registry = controller.getNetworkRegistry();
 
-                // Enregistrer les nouveaux coffres dans le registre
+                // Enregistrer les nouveaux coffres dans le registre (transfere si deja possede)
                 for (BlockPos added : newChests) {
                     if (!oldChests.contains(added)) {
-                        boolean ok = registry.registerBlock(added, node.getNodePos(),
+                        registry.registerBlock(added, node.getNodePos(),
                                 StorageNetworkRegistry.NetworkBlockType.CHEST);
-                        if (!ok) {
-                            // Deja possede par un autre noeud — retirer du chestManager local
-                            node.getChestManager().getRegisteredChestsMutable().remove(added);
-                        }
                     }
                 }
 
