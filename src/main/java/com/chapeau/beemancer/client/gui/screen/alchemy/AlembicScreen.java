@@ -30,7 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class AlembicScreen extends AbstractContainerScreen<AlembicMenu> {
-    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(83);
+    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
     private FluidGaugeWidget honeyGauge;
     private FluidGaugeWidget royalJellyGauge;
     private FluidGaugeWidget nectarGauge;
@@ -38,7 +38,8 @@ public class AlembicScreen extends AbstractContainerScreen<AlembicMenu> {
     public AlembicScreen(AlembicMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 166;
+        this.imageHeight = 170;
+        this.inventoryLabelY = -999;
     }
 
     @Override
@@ -66,8 +67,9 @@ public class AlembicScreen extends AbstractContainerScreen<AlembicMenu> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        GuiRenderHelper.renderContainerBackground(g, font, x, y, imageWidth, imageHeight,
-            "container.beemancer.alembic", 79);
+        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, imageWidth, 76);
+        g.drawString(font, Component.translatable("container.beemancer.alembic"),
+            x + 8, y + 6, 0x404040, false);
 
         // Fluid gauges
         honeyGauge.render(g, x, y);

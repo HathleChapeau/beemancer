@@ -35,12 +35,13 @@ public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTank
     private static final int GAUGE_Y = 17;
     private static final int GAUGE_W = 52;
     private static final int GAUGE_H = 52;
-    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(83);
+    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
 
     public MultiblockTankScreen(MultiblockTankMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 166;
+        this.imageHeight = 170;
+        this.inventoryLabelY = -999;
     }
 
     @Override
@@ -48,8 +49,9 @@ public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTank
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        GuiRenderHelper.renderContainerBackground(g, font, x, y, imageWidth, imageHeight,
-            "container.beemancer.multiblock_tank", 79);
+        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, imageWidth, 76);
+        g.drawString(font, Component.translatable("container.beemancer.multiblock_tank"),
+            x + 8, y + 6, 0x404040, false);
 
         // Bucket slot (26, 35)
         GuiRenderHelper.renderSlot(g, x + 25, y + 34);

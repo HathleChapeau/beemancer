@@ -41,8 +41,8 @@ public class IncubatorMenu extends BeemancerMenu {
         addSlot(new LarvaSlot(container, 0, 80, 35));
         
         // Player inventory
-        addPlayerInventory(playerInventory, 8, 84);
-        addPlayerHotbar(playerInventory, 8, 142);
+        addPlayerInventory(playerInventory, 8, 88);
+        addPlayerHotbar(playerInventory, 8, 146);
     }
 
     public int getIncubationProgress() {

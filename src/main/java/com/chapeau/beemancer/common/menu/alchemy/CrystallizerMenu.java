@@ -46,8 +46,8 @@ public class CrystallizerMenu extends BeemancerMenu {
         // Output slot (extraction seulement)
         addSlot(BeemancerSlot.output(blockEntity.getOutputSlot(), 0, 116, 35));
 
-        addPlayerInventory(playerInv, 8, 84);
-        addPlayerHotbar(playerInv, 8, 142);
+        addPlayerInventory(playerInv, 8, 88);
+        addPlayerHotbar(playerInv, 8, 146);
     }
 
     public CrystallizerBlockEntity getBlockEntity() { return blockEntity; }

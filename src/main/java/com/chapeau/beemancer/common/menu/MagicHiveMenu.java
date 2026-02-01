@@ -68,8 +68,8 @@ public class MagicHiveMenu extends BeemancerMenu {
         }
         
         // Player inventory
-        addPlayerInventory(playerInventory, 8, 108);
-        addPlayerHotbar(playerInventory, 8, 166);
+        addPlayerInventory(playerInventory, 8, 112);
+        addPlayerHotbar(playerInventory, 8, 170);
     }
 
     /**

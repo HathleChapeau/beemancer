@@ -3,26 +3,51 @@
 ################################################################################
 
 ================================================================================
-2026-02-01 - PlayerInventoryWidget: rendu inventaire joueur par texture
+2026-02-01 - PlayerInventoryWidget: refactorisation complète des 10 écrans
 ================================================================================
 
-Création d'un widget réutilisable pour le rendu de l'inventaire joueur via
-texture (blit) au lieu du rendu programmatique (GuiGraphics.fill()).
+Refactorisation majeure du système d'affichage d'inventaire joueur. Le widget
+PlayerInventoryWidget utilise désormais un paramètre startY (texture position
+from container top) au lieu de invY. Tous les 10 écrans restructurés: container
+background réduit à la zone machine (via renderContainerBackgroundNoTitle) avec
+4px gap avant le widget inventaire.
 
 WIDGET CRÉÉ (1):
 - client/gui/widget/PlayerInventoryWidget.java
   - Utilise textures/gui/inventory.png comme background
+  - Paramètre startY pour position texture depuis le haut du container
   - Remplace les appels à GuiRenderHelper.renderPlayerInventory()
   - Rendu texture-based via blit pour un rendu plus fidèle
 
 ASSET CRÉÉ (1):
 - textures/gui/inventory.png (background inventaire joueur)
 
-ÉCRANS MODIFIÉS (10):
-- Alchemy (8): AlembicScreen, InfuserScreen, ManualCentrifugeScreen,
+ÉCRANS REFACTORISÉS (10) — CHANGEMENTS STRUCTURE:
+
+Standard (8 screens) — imageHeight: 166→170, machine box height: 76px
+- AlembicScreen, InfuserScreen, ManualCentrifugeScreen,
   PoweredCentrifugeScreen, HoneyTankScreen, CreativeTankScreen,
   CrystallizerScreen, MultiblockTankScreen
-- Hive (2): MagicHiveScreen, IncubatorScreen
+- Slot Y positions: standard 84→88 (input/output), 142→146 (crafting/fuel)
+
+MagicHive (1 screen) — imageHeight: 190→194, machine box height: 100px
+- MagicHiveScreen
+- Slot Y positions: 108→112 (input), 166→170 (output)
+
+Hive (1 screen) — standard refactorisation
+- IncubatorScreen
+- Slot Y positions: 84→88 (input), 142→146 (output)
+
+MENUS MODIFIÉS (9):
+- ManualCentrifugeMenu, PoweredCentrifugeMenu, AlembicMenu, InfuserMenu,
+  CrystallizerMenu, HoneyTankMenu, MultiblockTankMenu, IncubatorMenu,
+  MagicHiveMenu
+- Slot Y positions mises à jour (+4px): 84→88/142→146 (standard),
+  108→112/166→170 (MagicHive)
+
+SUPPRESSION LABEL:
+- Inventory label suppressed via inventoryLabelY=-999 (rendu via texture)
+- La texture inventory.png inclut le label "Inventory"
 
 ================================================================================
 2026-01-31 - Storage Terminal GUI Layout Refonte (v2)

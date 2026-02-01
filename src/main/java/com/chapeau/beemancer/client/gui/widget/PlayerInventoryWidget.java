@@ -30,16 +30,15 @@ public class PlayerInventoryWidget {
 
     private static final int TEX_WIDTH = 176;
     private static final int TEX_HEIGHT = 90;
-    private static final int TOP_PADDING = 7;
 
-    private final int invY;
+    private final int startY;
 
     /**
-     * @param invY position Y de la premiere rangee d'inventaire relative au container
-     *             (83 pour les screens standard, 107 pour MagicHive)
+     * @param startY position Y ou la texture commence, relative au container.
+     *               Calcul: machineHeight + gap (ex: 80 pour standard, 104 pour MagicHive)
      */
-    public PlayerInventoryWidget(int invY) {
-        this.invY = invY;
+    public PlayerInventoryWidget(int startY) {
+        this.startY = startY;
     }
 
     /**
@@ -50,7 +49,6 @@ public class PlayerInventoryWidget {
      * @param screenY position Y du container a l'ecran
      */
     public void render(GuiGraphics g, int screenX, int screenY) {
-        int renderY = screenY + invY - TOP_PADDING;
-        g.blit(TEXTURE, screenX, renderY, 0, 0, TEX_WIDTH, TEX_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
+        g.blit(TEXTURE, screenX, screenY + startY, 0, 0, TEX_WIDTH, TEX_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
     }
 }

@@ -36,13 +36,13 @@ import java.util.List;
 public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
     private static final int ICON_SIZE = 12;
     private static final int ICON_SPACING = 2;
-    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(107);
+    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(104);
 
     public MagicHiveScreen(MagicHiveMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 190;
-        this.inventoryLabelY = this.imageHeight - 94;
+        this.imageHeight = 194;
+        this.inventoryLabelY = -999;
     }
 
     @Override
@@ -50,8 +50,9 @@ public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        GuiRenderHelper.renderContainerBackground(g, font, x, y, imageWidth, imageHeight,
-            "container.beemancer.magic_hive", 103);
+        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, imageWidth, 100);
+        g.drawString(font, Component.translatable("container.beemancer.magic_hive"),
+            x + 8, y + 6, 0x404040, false);
 
         // Bee assignment slots (5 slots at Y=20, starting X=44, spaced 18px)
         for (int i = 0; i < 5; i++) {

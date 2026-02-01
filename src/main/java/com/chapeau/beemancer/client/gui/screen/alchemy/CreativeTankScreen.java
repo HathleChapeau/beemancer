@@ -30,13 +30,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class CreativeTankScreen extends AbstractContainerScreen<CreativeTankMenu> {
-    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(83);
+    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
     private FluidGaugeWidget storageGauge;
 
     public CreativeTankScreen(CreativeTankMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 166;
+        this.imageHeight = 170;
+        this.inventoryLabelY = -999;
     }
 
     @Override
@@ -54,8 +55,9 @@ public class CreativeTankScreen extends AbstractContainerScreen<CreativeTankMenu
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        GuiRenderHelper.renderContainerBackground(g, font, x, y, imageWidth, imageHeight,
-            "container.beemancer.creative_tank", 79);
+        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, imageWidth, 76);
+        g.drawString(font, Component.translatable("container.beemancer.creative_tank"),
+            x + 8, y + 6, 0x404040, false);
 
         // Bucket slot (26, 35)
         GuiRenderHelper.renderSlot(g, x + 25, y + 34);

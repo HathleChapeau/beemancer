@@ -35,8 +35,8 @@ public class AlembicMenu extends BeemancerMenu {
         
         addDataSlots(data);
 
-        addPlayerInventory(playerInv, 8, 84);
-        addPlayerHotbar(playerInv, 8, 142);
+        addPlayerInventory(playerInv, 8, 88);
+        addPlayerHotbar(playerInv, 8, 146);
     }
 
     public AlembicBlockEntity getBlockEntity() { return blockEntity; }

@@ -63,8 +63,8 @@ public class ManualCentrifugeMenu extends BeemancerMenu {
         addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 3, 125, 44));
 
         // Player inventory
-        addPlayerInventory(playerInv, 8, 84);
-        addPlayerHotbar(playerInv, 8, 142);
+        addPlayerInventory(playerInv, 8, 88);
+        addPlayerHotbar(playerInv, 8, 146);
     }
 
     public ManualCentrifugeBlockEntity getBlockEntity() { return blockEntity; }
