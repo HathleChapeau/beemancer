@@ -19,18 +19,22 @@
  */
 package com.chapeau.beemancer.client.gui.screen.alchemy;
 
+import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.menu.alchemy.MultiblockTankMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.List;
 
 public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTankMenu> {
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/multiblock_tank.png");
     private static final int GAUGE_X = 62;
     private static final int GAUGE_Y = 17;
     private static final int GAUGE_W = 52;
@@ -49,7 +53,7 @@ public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTank
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, imageWidth, 76);
+        g.blit(TEXTURE, x, y, 0, 0, 176, 76, 176, 76);
         g.drawString(font, Component.translatable("container.beemancer.multiblock_tank"),
             x + 8, y + 6, 0x404040, false);
 

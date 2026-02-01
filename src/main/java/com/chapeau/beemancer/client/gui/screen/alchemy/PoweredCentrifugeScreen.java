@@ -20,6 +20,7 @@
  */
 package com.chapeau.beemancer.client.gui.screen.alchemy;
 
+import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.widget.FluidGaugeWidget;
 import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
@@ -27,9 +28,12 @@ import com.chapeau.beemancer.common.menu.alchemy.PoweredCentrifugeMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class PoweredCentrifugeScreen extends AbstractContainerScreen<PoweredCentrifugeMenu> {
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/powered_centrifuge.png");
     private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
     private FluidGaugeWidget fuelGauge;
     private FluidGaugeWidget outputGauge;
@@ -61,7 +65,7 @@ public class PoweredCentrifugeScreen extends AbstractContainerScreen<PoweredCent
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, imageWidth, 76);
+        g.blit(TEXTURE, x, y, 0, 0, 176, 76, 176, 76);
         g.drawString(font, Component.translatable("container.beemancer.powered_centrifuge"),
             x + 8, y + 6, 0x404040, false);
 

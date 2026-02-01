@@ -20,6 +20,7 @@
  */
 package com.chapeau.beemancer.client.gui.screen;
 
+import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
@@ -28,12 +29,15 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/magic_hive.png");
     private static final int ICON_SIZE = 12;
     private static final int ICON_SPACING = 2;
     private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(104);
@@ -50,7 +54,7 @@ public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, imageWidth, 100);
+        g.blit(TEXTURE, x, y, 0, 0, 176, 100, 176, 100);
         g.drawString(font, Component.translatable("container.beemancer.magic_hive"),
             x + 8, y + 6, 0x404040, false);
 

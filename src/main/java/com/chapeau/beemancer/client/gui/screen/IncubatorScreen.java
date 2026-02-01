@@ -19,15 +19,19 @@
  */
 package com.chapeau.beemancer.client.gui.screen;
 
+import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.menu.IncubatorMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class IncubatorScreen extends AbstractContainerScreen<IncubatorMenu> {
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/incubator.png");
     private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
 
     public IncubatorScreen(IncubatorMenu menu, Inventory playerInventory, Component title) {
@@ -42,7 +46,7 @@ public class IncubatorScreen extends AbstractContainerScreen<IncubatorMenu> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, imageWidth, 76);
+        g.blit(TEXTURE, x, y, 0, 0, 176, 76, 176, 76);
         g.drawString(font, Component.translatable("container.beemancer.incubator"),
             x + 8, y + 6, 0x404040, false);
 
