@@ -20,6 +20,7 @@
 package com.chapeau.beemancer.client.gui.screen.alchemy;
 
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
+import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.menu.alchemy.MultiblockTankMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -34,6 +35,7 @@ public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTank
     private static final int GAUGE_Y = 17;
     private static final int GAUGE_W = 52;
     private static final int GAUGE_H = 52;
+    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(83);
 
     public MultiblockTankScreen(MultiblockTankMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -61,7 +63,7 @@ public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTank
         g.drawString(font, (menu.getCapacity() / 1000) + "B", x + 120, y + 32, 0x404040, false);
 
         // Player inventory
-        GuiRenderHelper.renderPlayerInventory(g, x, y, 83, 141);
+        playerInventory.render(g, x, y);
     }
 
     private void renderFluidGauge(GuiGraphics g, int gx, int gy) {

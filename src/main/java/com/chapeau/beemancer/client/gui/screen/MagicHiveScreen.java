@@ -21,6 +21,7 @@
 package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
+import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import net.minecraft.ChatFormatting;
@@ -35,6 +36,7 @@ import java.util.List;
 public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
     private static final int ICON_SIZE = 12;
     private static final int ICON_SPACING = 2;
+    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(107);
 
     public MagicHiveScreen(MagicHiveMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -67,7 +69,7 @@ public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
         GuiRenderHelper.renderSlot(g, cx + 10, cy + 17);
 
         // Player inventory
-        GuiRenderHelper.renderPlayerInventory(g, x, y, 107, 165);
+        playerInventory.render(g, x, y);
     }
 
     @Override

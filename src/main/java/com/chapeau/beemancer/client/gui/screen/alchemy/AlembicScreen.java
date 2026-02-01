@@ -22,6 +22,7 @@ package com.chapeau.beemancer.client.gui.screen.alchemy;
 
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.widget.FluidGaugeWidget;
+import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.menu.alchemy.AlembicMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -29,6 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class AlembicScreen extends AbstractContainerScreen<AlembicMenu> {
+    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(83);
     private FluidGaugeWidget honeyGauge;
     private FluidGaugeWidget royalJellyGauge;
     private FluidGaugeWidget nectarGauge;
@@ -78,7 +80,7 @@ public class AlembicScreen extends AbstractContainerScreen<AlembicMenu> {
         GuiRenderHelper.renderProgressArrow(g, x + 68, y + 35, ratio);
 
         // Player inventory
-        GuiRenderHelper.renderPlayerInventory(g, x, y, 83, 141);
+        playerInventory.render(g, x, y);
     }
 
     @Override

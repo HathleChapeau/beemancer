@@ -16,7 +16,7 @@ Avantages:
 - Réduction des assets (suppression textures GUI)
 
 ================================================================================
-UTILITAIRE PARTAGÉ
+UTILITAIRES PARTAGÉS
 ================================================================================
 
 GuiRenderHelper.java (client/gui/):
@@ -24,6 +24,7 @@ GuiRenderHelper.java (client/gui/):
   + séparateur horizontal + labels (titre container + "Inventory")
 - renderSlot(): slot 18x18 avec effet inset (3 couleurs: shadow, highlight, fond)
 - renderPlayerInventory(): 27 slots (3x9) + 9 slots hotbar avec espacement
+  (DÉPRÉCIÉ: remplacé par PlayerInventoryWidget dans les 10 screens)
 - renderProgressArrow(): flèche 22x16 honey-gold (#E8A317) avec remplissage progressif
 - renderProgressBar(): barre horizontale avec fill ratio
 - getFluidName(): extraction nom depuis FluidStack
@@ -33,6 +34,12 @@ FluidGaugeWidget.java (client/gui/widget/):
 - Frame inset, fill basé sur ratio, graduations 25/50/75%
 - Tooltip avec nom fluide, montant, pourcentage
 - Couleurs par type de fluide (honey, royal_jelly, nectar)
+
+PlayerInventoryWidget.java (client/gui/widget/):
+- Widget réutilisable pour rendu inventaire joueur via texture (blit)
+- Texture: textures/gui/inventory.png
+- Remplace le rendu programmatique de GuiRenderHelper.renderPlayerInventory()
+- Intégré dans les 10 screens (8 alchemy + 2 hive)
 
 ================================================================================
 ÉCRANS CONVERTIS (10)
@@ -57,6 +64,10 @@ FICHIERS
 
 Créés:
 - client/gui/GuiRenderHelper.java
+- client/gui/widget/PlayerInventoryWidget.java
+
+Assets:
+- textures/gui/inventory.png
 
 Modifiés (10 screens):
 - client/gui/screen/MagicHiveScreen.java

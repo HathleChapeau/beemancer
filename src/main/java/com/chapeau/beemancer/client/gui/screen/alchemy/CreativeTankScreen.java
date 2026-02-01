@@ -22,6 +22,7 @@ package com.chapeau.beemancer.client.gui.screen.alchemy;
 
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.widget.FluidGaugeWidget;
+import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.menu.alchemy.CreativeTankMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -29,6 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class CreativeTankScreen extends AbstractContainerScreen<CreativeTankMenu> {
+    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(83);
     private FluidGaugeWidget storageGauge;
 
     public CreativeTankScreen(CreativeTankMenu menu, Inventory playerInventory, Component title) {
@@ -62,7 +64,7 @@ public class CreativeTankScreen extends AbstractContainerScreen<CreativeTankMenu
         storageGauge.render(g, x, y);
 
         // Player inventory
-        GuiRenderHelper.renderPlayerInventory(g, x, y, 83, 141);
+        playerInventory.render(g, x, y);
     }
 
     @Override

@@ -3,6 +3,28 @@
 ################################################################################
 
 ================================================================================
+2026-02-01 - PlayerInventoryWidget: rendu inventaire joueur par texture
+================================================================================
+
+Création d'un widget réutilisable pour le rendu de l'inventaire joueur via
+texture (blit) au lieu du rendu programmatique (GuiGraphics.fill()).
+
+WIDGET CRÉÉ (1):
+- client/gui/widget/PlayerInventoryWidget.java
+  - Utilise textures/gui/inventory.png comme background
+  - Remplace les appels à GuiRenderHelper.renderPlayerInventory()
+  - Rendu texture-based via blit pour un rendu plus fidèle
+
+ASSET CRÉÉ (1):
+- textures/gui/inventory.png (background inventaire joueur)
+
+ÉCRANS MODIFIÉS (10):
+- Alchemy (8): AlembicScreen, InfuserScreen, ManualCentrifugeScreen,
+  PoweredCentrifugeScreen, HoneyTankScreen, CreativeTankScreen,
+  CrystallizerScreen, MultiblockTankScreen
+- Hive (2): MagicHiveScreen, IncubatorScreen
+
+================================================================================
 2026-01-31 - Storage Terminal GUI Layout Refonte (v2)
 ================================================================================
 

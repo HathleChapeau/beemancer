@@ -70,6 +70,14 @@ client/gui/widget/
   - Tooltip avec montant et pourcentage
   - isMouseOver() pour détection survol
 
+- PlayerInventoryWidget.java: Widget de rendu inventaire joueur par texture
+  - Texture: textures/gui/inventory.png
+  - Remplace les appels programmatiques GuiRenderHelper.renderPlayerInventory()
+  - Rendu via blit (texture-based) au lieu de fill() programmatique
+  - Utilisé par: 10 screens (AlembicScreen, InfuserScreen, ManualCentrifugeScreen,
+    PoweredCentrifugeScreen, HoneyTankScreen, CreativeTankScreen, CrystallizerScreen,
+    MultiblockTankScreen, MagicHiveScreen, IncubatorScreen)
+
 ================================================================================
 client/gui/
 ================================================================================

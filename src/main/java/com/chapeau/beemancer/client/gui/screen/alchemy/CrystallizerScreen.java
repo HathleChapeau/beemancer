@@ -22,6 +22,7 @@ package com.chapeau.beemancer.client.gui.screen.alchemy;
 
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.widget.FluidGaugeWidget;
+import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.menu.alchemy.CrystallizerMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -29,6 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu> {
+    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(83);
     private FluidGaugeWidget inputGauge;
 
     public CrystallizerScreen(CrystallizerMenu menu, Inventory playerInventory, Component title) {
@@ -67,7 +69,7 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
         inputGauge.render(g, x, y);
 
         // Player inventory
-        GuiRenderHelper.renderPlayerInventory(g, x, y, 83, 141);
+        playerInventory.render(g, x, y);
     }
 
     @Override

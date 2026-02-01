@@ -20,6 +20,7 @@
 package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
+import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.menu.IncubatorMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -27,6 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class IncubatorScreen extends AbstractContainerScreen<IncubatorMenu> {
+    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(83);
 
     public IncubatorScreen(IncubatorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -49,7 +51,7 @@ public class IncubatorScreen extends AbstractContainerScreen<IncubatorMenu> {
         GuiRenderHelper.renderProgressArrow(g, x + 100, y + 35, menu.getProgressRatio());
 
         // Player inventory
-        GuiRenderHelper.renderPlayerInventory(g, x, y, 83, 141);
+        playerInventory.render(g, x, y);
     }
 
     @Override

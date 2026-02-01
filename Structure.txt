@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-01-31                     #
-#            (Storage Terminal Overhaul: tabs, crafting, tasks, noPhysics)    #
+#                         Dernière mise à jour: 2026-02-01                     #
+#            (PlayerInventoryWidget: texture-based player inventory)          #
 ################################################################################
 
 ================================================================================
