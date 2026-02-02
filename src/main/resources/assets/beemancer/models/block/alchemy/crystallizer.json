@@ -4,8 +4,7 @@
   "textures": {
     "dark_iron": "beemancer:block/iron",
     "amber_glass": "beemancer:block/honeyed_glass",
-    "dark_wood": "beemancer:block/stone",
-    "particle": "beemancer:block/stone"
+    "dark_wood": "beemancer:block/stone"
   },
   "elements": [
     {

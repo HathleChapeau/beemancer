@@ -55,7 +55,7 @@ public class StorageRelayBlock extends BaseEntityBlock {
 
     private static final VoxelShape SHAPE = Shapes.or(
         Block.box(0, 0, 0, 16, 5, 16),
-        Block.box(4, 2, 4, 12, 18, 12)
+        Block.box(4, 2, 4, 12, 16, 12)
     );
 
     public StorageRelayBlock(Properties properties) {

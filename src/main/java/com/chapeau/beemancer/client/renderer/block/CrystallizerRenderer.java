@@ -69,7 +69,7 @@ public class CrystallizerRenderer implements BlockEntityRenderer<CrystallizerBlo
             .getModel(CORE_MODEL_LOC);
 
         BlockState state = blockEntity.getBlockState();
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.solid());
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.translucent());
 
         boolean active = state.hasProperty(CrystallizerBlock.ACTIVE)
             && state.getValue(CrystallizerBlock.ACTIVE);
@@ -111,7 +111,7 @@ public class CrystallizerRenderer implements BlockEntityRenderer<CrystallizerBlo
         blockRenderer.getModelRenderer().tesselateBlock(
             blockEntity.getLevel(), coreModel, state, blockEntity.getBlockPos(),
             poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
+            packedLight, packedOverlay, ModelData.EMPTY, RenderType.translucent()
         );
         poseStack.popPose();
 
@@ -128,7 +128,7 @@ public class CrystallizerRenderer implements BlockEntityRenderer<CrystallizerBlo
         blockRenderer.getModelRenderer().tesselateBlock(
             blockEntity.getLevel(), coreModel, state, blockEntity.getBlockPos(),
             poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
+            packedLight, packedOverlay, ModelData.EMPTY, RenderType.translucent()
         );
         poseStack.popPose();
     }

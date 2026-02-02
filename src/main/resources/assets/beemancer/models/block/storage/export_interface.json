@@ -2,9 +2,9 @@
   "parent": "block/block",
   "render_type": "cutout",
   "textures": {
-    "side": "beemancer:block/storage/relay_side",
+    "side": "beemancer:block/storage/import_side",
     "crystal": "beemancer:block/storage/crystal",
-    "inner_top": "beemancer:block/storage/interface_innertop",
+    "inner_top": "beemancer:block/storage/export_interface_innertop",
     "particle": "beemancer:block/storage/crystal"
   },
   "elements": [

@@ -55,12 +55,18 @@ public class ExportInterfaceBlock extends BaseEntityBlock {
 
     public static final MapCodec<ExportInterfaceBlock> CODEC = simpleCodec(ExportInterfaceBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
-    private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 5, 16);
+
+    private static final VoxelShape SHAPE_DOWN  = Block.box(3, 0, 3, 13, 1, 13);
+    private static final VoxelShape SHAPE_UP    = Block.box(3, 15, 3, 13, 16, 13);
+    private static final VoxelShape SHAPE_NORTH = Block.box(3, 3, 0, 13, 13, 1);
+    private static final VoxelShape SHAPE_SOUTH = Block.box(3, 3, 15, 13, 13, 16);
+    private static final VoxelShape SHAPE_WEST  = Block.box(0, 3, 3, 1, 13, 13);
+    private static final VoxelShape SHAPE_EAST  = Block.box(15, 3, 3, 16, 13, 13);
 
     public ExportInterfaceBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(FACING, Direction.NORTH));
+            .setValue(FACING, Direction.DOWN));
     }
 
     @Override
@@ -75,7 +81,14 @@ public class ExportInterfaceBlock extends BaseEntityBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return switch (state.getValue(FACING)) {
+            case NORTH -> SHAPE_NORTH;
+            case SOUTH -> SHAPE_SOUTH;
+            case EAST  -> SHAPE_EAST;
+            case WEST  -> SHAPE_WEST;
+            case UP  -> SHAPE_UP;
+            default    -> SHAPE_DOWN;
+        };
     }
 
     @Override
@@ -87,7 +100,7 @@ public class ExportInterfaceBlock extends BaseEntityBlock {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState()
-            .setValue(FACING, context.getNearestLookingDirection());
+            .setValue(FACING, context.getClickedFace().getOpposite());
     }
 
     @Nullable

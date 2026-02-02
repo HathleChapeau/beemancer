@@ -19,6 +19,7 @@
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -47,10 +48,10 @@ public class TranslucentOutlineRenderer {
         BeemancerBlocks.CRYSTALLIZER.get()
     );
 
-    private static final float LINE_RED = 0f;
-    private static final float LINE_GREEN = 0f;
-    private static final float LINE_BLUE = 0f;
-    private static final float LINE_ALPHA = 0.4f;
+    private static final float LINE_RED = 0.16f;
+    private static final float LINE_GREEN = 0.16f;
+    private static final float LINE_BLUE = 0.16f;
+    private static final float LINE_ALPHA = 1f;
 
     @SubscribeEvent
     public static void onRenderBlockHighlight(RenderHighlightEvent.Block event) {
