@@ -77,6 +77,9 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
     public static final BooleanProperty EXTRACT_UP = BooleanProperty.create("extract_up");
     public static final BooleanProperty EXTRACT_DOWN = BooleanProperty.create("extract_down");
 
+    // Tint state — contrôle la texture du core (base vs white tintable)
+    public static final BooleanProperty TINTED = BooleanProperty.create("tinted");
+
     // Pre-computed VoxelShapes for all 64 direction combinations (6 bits)
     private static final VoxelShape CORE = Block.box(4, 4, 4, 12, 12, 12);
     private static final VoxelShape[] DIR_SHAPES = {
@@ -114,7 +117,8 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
             .setValue(UP, false).setValue(DOWN, false)
             .setValue(EXTRACT_NORTH, false).setValue(EXTRACT_SOUTH, false)
             .setValue(EXTRACT_EAST, false).setValue(EXTRACT_WEST, false)
-            .setValue(EXTRACT_UP, false).setValue(EXTRACT_DOWN, false));
+            .setValue(EXTRACT_UP, false).setValue(EXTRACT_DOWN, false)
+            .setValue(TINTED, false));
     }
 
     public int getTier() { return tier; }
@@ -123,6 +127,7 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN);
         builder.add(EXTRACT_NORTH, EXTRACT_SOUTH, EXTRACT_EAST, EXTRACT_WEST, EXTRACT_UP, EXTRACT_DOWN);
+        builder.add(TINTED);
     }
 
     @Override
@@ -151,7 +156,7 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
             if (isTintablePipe(be)) {
                 DyeColor color = dyeItem.getDyeColor();
                 applyTint(be, color.getTextureDiffuseColor());
-                level.setBlock(pos, state, 3);
+                level.setBlock(pos, state.setValue(TINTED, true), 3);
                 level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
                 player.displayClientMessage(Component.literal("Tinted: " + color.getName()), true);
                 return ItemInteractionResult.SUCCESS;
@@ -163,7 +168,7 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
             BlockEntity be = level.getBlockEntity(pos);
             if (hasTint(be)) {
                 applyTint(be, -1);
-                level.setBlock(pos, state, 3);
+                level.setBlock(pos, state.setValue(TINTED, false), 3);
                 level.playSound(null, pos, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 0.7f, 1.0f);
                 player.displayClientMessage(Component.literal("Tint removed"), true);
                 return ItemInteractionResult.SUCCESS;

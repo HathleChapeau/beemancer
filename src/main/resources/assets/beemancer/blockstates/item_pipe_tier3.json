@@ -1,6 +1,7 @@
 {
   "multipart": [
-    { "apply": { "model": "beemancer:block/pipes/item_pipe_core" } },
+    { "when": { "tinted": false }, "apply": { "model": "beemancer:block/pipes/item_pipe_core" } },
+    { "when": { "tinted": true }, "apply": { "model": "beemancer:block/pipes/item_pipe_core_tinted" } },
     { "when": { "north": true, "extract_north": false }, "apply": { "model": "beemancer:block/pipes/item_pipe_side", "y": 0 } },
     { "when": { "south": true, "extract_south": false }, "apply": { "model": "beemancer:block/pipes/item_pipe_side", "y": 180 } },
     { "when": { "east": true, "extract_east": false }, "apply": { "model": "beemancer:block/pipes/item_pipe_side", "y": 90 } },
