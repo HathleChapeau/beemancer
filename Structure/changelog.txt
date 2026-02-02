@@ -3,6 +3,22 @@
 ################################################################################
 
 ================================================================================
+2026-02-02 - Particle System: utilitaire statique de particules
+================================================================================
+
+Création de ParticleHelper.java dans core/util/ — classe utilitaire statique
+pour spawner des particules côté serveur et client.
+
+FICHIER CRÉÉ (1):
+- core/util/ParticleHelper.java
+  - EffectType enum: 11 types prédéfinis (SUCCESS, FAILURE, MAGIC, HEAL, HONEY,
+    SOUL, PORTAL, NATURE, FLAME, ELECTRIC, SCULK)
+  - Formes géométriques: burst, ring, spiral, line, sphere
+  - 3 niveaux de surcharge: EffectType, ParticleOptions, ResourceLocation
+  - Client-side: addParticle, addAlwaysVisible
+  - Résolution ResourceLocation via BuiltInRegistries.PARTICLE_TYPE
+
+================================================================================
 2026-02-01 - PlayerInventoryWidget: refactorisation complète des 10 écrans
 ================================================================================
 

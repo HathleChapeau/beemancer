@@ -32,6 +32,7 @@ import com.chapeau.beemancer.client.renderer.block.HoneyTankRenderer;
 import com.chapeau.beemancer.client.renderer.block.MultiblockTankRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageTerminalRenderer;
+import com.chapeau.beemancer.client.renderer.block.TranslucentOutlineRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.beemancer.client.renderer.debug.HiveDebugRenderer;
 import com.chapeau.beemancer.client.model.RideableBeeModel;
@@ -88,6 +89,9 @@ public class ClientSetup {
 
         // Overlay quand on ouvre un GUI adjacent depuis le bouton Debug de l'interface
         NeoForge.EVENT_BUS.register(com.chapeau.beemancer.client.gui.screen.storage.AdjacentGuiOverlayRenderer.class);
+
+        // Fix outline translucent pour blocs comme le Crystallizer
+        NeoForge.EVENT_BUS.register(TranslucentOutlineRenderer.class);
     }
 
     private static void registerScreens(final RegisterMenuScreensEvent event) {

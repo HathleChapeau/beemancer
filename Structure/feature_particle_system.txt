@@ -1,0 +1,65 @@
+################################################################################
+#                         FEATURE: Particle System                             #
+################################################################################
+
+FEATURE: Particle System
+Description: Classe utilitaire statique pour spawner des particules côté serveur et client
+Statut: COMPLET
+Scripts créés:
+  - core/util/ParticleHelper.java
+Dépendances: ParticleTypes (vanilla), BuiltInRegistries (vanilla)
+Registres modifiés: Aucun
+Assets: Aucun
+Référence: ServerLevel.sendParticles(), Level.addParticle()
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+ParticleHelper (classe statique, pas d'instanciation)
+├── EffectType (enum interne)
+│   ├── SUCCESS (HAPPY_VILLAGER + END_ROD)
+│   ├── FAILURE (SMOKE)
+│   ├── MAGIC (ENCHANT)
+│   ├── HEAL (HEART)
+│   ├── HONEY (DRIPPING_HONEY + FALLING_HONEY)
+│   ├── SOUL (SOUL_FIRE_FLAME)
+│   ├── PORTAL (PORTAL + REVERSE_PORTAL)
+│   ├── NATURE (SPORE_BLOSSOM_AIR + CHERRY_LEAVES)
+│   ├── FLAME (FLAME + SMALL_FLAME)
+│   ├── ELECTRIC (ELECTRIC_SPARK)
+│   └── SCULK (SCULK_SOUL)
+├── Effets prédéfinis (EffectType) — server-side
+│   ├── burst(ServerLevel, Vec3, EffectType, int count)
+│   ├── ring(ServerLevel, Vec3, double radius, EffectType, int count)
+│   ├── spiral(ServerLevel, Vec3, double radius, double height, EffectType, int count)
+│   ├── line(ServerLevel, Vec3 start, Vec3 end, EffectType, int count)
+│   └── sphere(ServerLevel, Vec3, double radius, EffectType, int count)
+├── Génériques (ParticleOptions) — server-side
+│   ├── spawnParticles(ServerLevel, ParticleOptions, Vec3, int, double spread, double speed)
+│   ├── spawnWithMotion(ServerLevel, ParticleOptions, Vec3, Vec3 motion, double speed)
+│   ├── spawnRing / spawnSpiral / spawnLine / spawnSphere
+├── Surcharges ResourceLocation — server-side
+│   ├── Même signatures que génériques, avec ResourceLocation au lieu de ParticleOptions
+│   └── Résolution via BuiltInRegistries.PARTICLE_TYPE + instanceof ParticleOptions
+├── Client-side (Level)
+│   ├── addParticle(Level, ParticleOptions/ResourceLocation, Vec3, Vec3 motion)
+│   └── addAlwaysVisible(Level, ParticleOptions/ResourceLocation, Vec3, Vec3 motion)
+└── resolveParticle(ResourceLocation) — méthode interne de résolution
+
+================================================================================
+UTILISATION
+================================================================================
+
+// Effet prédéfini
+ParticleHelper.burst(serverLevel, pos, EffectType.SUCCESS, 20);
+ParticleHelper.ring(serverLevel, pos, 2.0, EffectType.MAGIC, 30);
+
+// Particule spécifique
+ParticleHelper.spawnParticles(serverLevel, ParticleTypes.END_ROD, pos, 10, 0.5, 0.1);
+
+// Via ResourceLocation
+ParticleHelper.spawnRing(serverLevel, ResourceLocation.parse("minecraft:flame"), pos, 1.5, 20);
+
+// Client-side
+ParticleHelper.addParticle(level, ParticleTypes.HEART, pos, Vec3.ZERO);

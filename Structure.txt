@@ -86,6 +86,7 @@ Philosophie:
 │ common/block/hive/                    │                                        │
 │   HiveBeeLifecycleManager           │ Cycle de vie abeilles dans ruche     │
 │ client/gui/GuiRenderHelper.java      │ Rendu programmatique GUIs partagé    │
+│ core/util/ParticleHelper.java        │ Utilitaire statique spawn particules │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -260,6 +261,10 @@ LISTE DES FEATURES:
 → Storage Terminal Overhaul
   Fichier: Structure/feature_storage_terminal_overhaul.txt
   Description: Refonte complète du terminal (3 onglets, crafting, annulation tâches, GUI programmatique, noPhysics bees)
+
+→ Particle System
+  Fichier: Structure/feature_particle_system.txt
+  Description: Système de particules statique avec EffectTypes prédéfinis et surcharges ResourceLocation
 
 ================================================================================
 6. FEATURES EN COURS
