@@ -37,7 +37,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -49,6 +53,11 @@ import org.jetbrains.annotations.Nullable;
 public class StorageRelayBlock extends BaseEntityBlock {
     public static final MapCodec<StorageRelayBlock> CODEC = simpleCodec(StorageRelayBlock::new);
 
+    private static final VoxelShape SHAPE = Shapes.or(
+        Block.box(0, 0, 0, 16, 5, 16),
+        Block.box(4, 2, 4, 12, 18, 12)
+    );
+
     public StorageRelayBlock(Properties properties) {
         super(properties);
     }
@@ -56,6 +65,11 @@ public class StorageRelayBlock extends BaseEntityBlock {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
 
     @Override
