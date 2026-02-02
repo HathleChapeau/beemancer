@@ -57,7 +57,7 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
         addDataSlots(data);
 
         // Input slot (gauche)
-        addSlot(BeemancerSlot.combInput(blockEntity.getInputSlot(), 0, 44, 35)
+        addSlot(BeemancerSlot.combInput(blockEntity.getInputSlot(), 0, 33, 35)
             .withFilter(stack -> stack.is(Items.HONEYCOMB) ||
                                 stack.is(BeemancerItems.ROYAL_COMB.get()) ||
                                 stack.is(BeemancerItems.COMMON_COMB.get()) ||
@@ -65,10 +65,10 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
                                 stack.is(BeemancerItems.DILIGENT_COMB.get())));
 
         // Output slots (droite, 2x2)
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 0, 107, 26));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 1, 125, 26));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 2, 107, 44));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 3, 125, 44));
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 0, 109, 26));
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 1, 127, 26));
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 2, 109, 44));
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 3, 127, 44));
 
         // Player inventory
         addPlayerInventory(playerInv, 8, 88);

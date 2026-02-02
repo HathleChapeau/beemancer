@@ -122,7 +122,7 @@ public class BeemancerSlot extends SlotItemHandler {
      */
     public static BeemancerSlot combInput(IItemHandler handler, int index, int x, int y) {
         return new BeemancerSlot(handler, index, x, y,
-            ResourceLocation.fromNamespaceAndPath("beemancer", "item/empty_slot_comb"));
+            ResourceLocation.fromNamespaceAndPath("beemancer", "gui/empty_slot_comb"));
     }
 
     /**

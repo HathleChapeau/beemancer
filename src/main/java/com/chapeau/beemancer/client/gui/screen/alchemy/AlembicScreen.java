@@ -33,7 +33,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class AlembicScreen extends AbstractContainerScreen<AlembicMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/alembic.png");
+        Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
     private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
     private FluidGaugeWidget honeyGauge;
     private FluidGaugeWidget royalJellyGauge;
@@ -44,6 +44,7 @@ public class AlembicScreen extends AbstractContainerScreen<AlembicMenu> {
         this.imageWidth = 176;
         this.imageHeight = 170;
         this.inventoryLabelY = -999;
+        this.titleLabelY = -999;
     }
 
     @Override
@@ -73,7 +74,7 @@ public class AlembicScreen extends AbstractContainerScreen<AlembicMenu> {
 
         g.blit(TEXTURE, x, y, 0, 0, 176, 76, 176, 76);
         g.drawString(font, Component.translatable("container.beemancer.alembic"),
-            x + 8, y + 6, 0x404040, false);
+            x + 8, y + 7, 0xDDDDDD, false);
 
         // Fluid gauges
         honeyGauge.render(g, x, y);

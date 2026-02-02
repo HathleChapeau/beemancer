@@ -51,7 +51,7 @@ import org.joml.Matrix4f;
 public class StorageTerminalRenderer implements BlockEntityRenderer<StorageTerminalBlockEntity> {
 
     private static final ResourceLocation PORTAL_TEXTURE =
-        ResourceLocation.withDefaultNamespace("textures/block/honey_block_top.png");
+            ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "textures/block/honey2.png");
     private static final ResourceLocation OFF_TEXTURE =
         ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "textures/block/logistic/storage_terminal_off.png");
 

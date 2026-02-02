@@ -33,7 +33,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class CreativeTankScreen extends AbstractContainerScreen<CreativeTankMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/creative_tank.png");
+        Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
     private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
     private FluidGaugeWidget storageGauge;
 
@@ -42,6 +42,7 @@ public class CreativeTankScreen extends AbstractContainerScreen<CreativeTankMenu
         this.imageWidth = 176;
         this.imageHeight = 170;
         this.inventoryLabelY = -999;
+        this.titleLabelY = -999;
     }
 
     @Override
@@ -61,7 +62,7 @@ public class CreativeTankScreen extends AbstractContainerScreen<CreativeTankMenu
 
         g.blit(TEXTURE, x, y, 0, 0, 176, 76, 176, 76);
         g.drawString(font, Component.translatable("container.beemancer.creative_tank"),
-            x + 8, y + 6, 0x404040, false);
+            x + 8, y + 7, 0xDDDDDD, false);
 
         // Bucket slot (26, 35)
         GuiRenderHelper.renderSlot(g, x + 25, y + 34);

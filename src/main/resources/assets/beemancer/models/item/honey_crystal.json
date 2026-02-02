@@ -1,3 +1,6 @@
 {
-  "parent": "beemancer:block/altar/honey_crystal"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "beemancer:block/honey_crystal"
+  }
 }

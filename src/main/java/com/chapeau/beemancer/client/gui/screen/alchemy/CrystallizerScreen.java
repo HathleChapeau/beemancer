@@ -33,7 +33,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/crystallizer.png");
+        Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
     private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
     private FluidGaugeWidget inputGauge;
 
@@ -42,13 +42,14 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
         this.imageWidth = 176;
         this.imageHeight = 170;
         this.inventoryLabelY = -999;
+        this.titleLabelY = -999;
     }
 
     @Override
     protected void init() {
         super.init();
         inputGauge = new FluidGaugeWidget(
-            26, 17, 16, 52, 4000,
+            8, 17, 16, 52, 4000,
             () -> menu.getBlockEntity().getInputTank().getFluid(),
             menu::getFluidAmount
         );
@@ -61,15 +62,15 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
 
         g.blit(TEXTURE, x, y, 0, 0, 176, 76, 176, 76);
         g.drawString(font, Component.translatable("container.beemancer.crystallizer"),
-            x + 8, y + 6, 0x404040, false);
+            x + 8, y + 7, 0xDDDDDD, false);
 
         // Output slot (116, 35)
-        GuiRenderHelper.renderSlot(g, x + 115, y + 34);
+        GuiRenderHelper.renderSlot(g, x + imageWidth/2 - 9, y + 30);
 
         // Progress bar
         int processTime = menu.getProcessTime();
         float ratio = processTime > 0 ? (float) menu.getProgress() / processTime : 0;
-        GuiRenderHelper.renderProgressBar(g, x + 52, y + 39, 56, 6, ratio);
+        GuiRenderHelper.renderProgressBar(g, x + imageWidth/2 - 28, y + 55, 56, 6, ratio);
 
         // Input fluid gauge
         inputGauge.render(g, x, y);

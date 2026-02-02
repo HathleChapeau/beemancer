@@ -162,7 +162,7 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         blockRenderer.getModelRenderer().tesselateBlock(
             blockEntity.getLevel(), cubeBigModel, state, blockEntity.getBlockPos(),
             poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
+            packedLight, packedOverlay, ModelData.EMPTY, RenderType.translucent()
         );
         poseStack.popPose();
 
@@ -180,7 +180,7 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         blockRenderer.getModelRenderer().tesselateBlock(
             blockEntity.getLevel(), cubeModel, state, blockEntity.getBlockPos(),
             poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
+            packedLight, packedOverlay, ModelData.EMPTY, RenderType.translucent()//.solid()
         );
         poseStack.popPose();
 
@@ -190,7 +190,7 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         blockRenderer.getModelRenderer().tesselateBlock(
             blockEntity.getLevel(), cubeModel, state, blockEntity.getBlockPos(),
             poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
+            packedLight, packedOverlay, ModelData.EMPTY, RenderType.endPortal()//.solid()
         );
         poseStack.popPose();
 

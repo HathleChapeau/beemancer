@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/block",
-  "ambientocclusion": false,
+  "render_type": "translucent",
   "textures": {
     "all": "beemancer:block/honey",
     "particle": "beemancer:block/honey"

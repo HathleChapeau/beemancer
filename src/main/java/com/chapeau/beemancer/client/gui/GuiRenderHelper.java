@@ -84,7 +84,7 @@ public class GuiRenderHelper {
      */
     public static void renderProgressArrow(GuiGraphics g, int x, int y, float ratio) {
         int arrowWidth = 36;
-        int arrowHeight = 17;
+        int arrowHeight = 18;
 
         // Background groove
         g.fill(x, y, x + arrowWidth, y + arrowHeight, 0xFF8B8B8B);
@@ -105,6 +105,25 @@ public class GuiRenderHelper {
         int midY = y + arrowHeight / 2;
         for (int i = 0; i < 5; i++) {
             g.fill(tipX + i, midY - 4 + i, tipX + i + 1, midY + 5 - i, 0xFF8B8B8B);
+        }
+    }
+
+    public static void renderProgress(GuiGraphics g, int x, int y, float ratio) {
+        int arrowWidth = 36;
+        int arrowHeight = 18;
+
+        // Background groove
+        g.fill(x, y, x + arrowWidth, y + arrowHeight, 0xFF8B8B8B);
+        g.fill(x, y, x + arrowWidth, y + 1, 0xFF373737);
+        g.fill(x, y, x + 1, y + arrowHeight, 0xFF373737);
+        g.fill(x + 1, y + arrowHeight - 1, x + arrowWidth, y + arrowHeight, 0xFFFFFFFF);
+        g.fill(x + arrowWidth - 1, y + 1, x + arrowWidth, y + arrowHeight, 0xFFFFFFFF);
+
+        // Fill (honey gold)
+        int fillWidth = (int) (arrowWidth * ratio);
+        if (fillWidth > 0) {
+            g.fill(x + 1, y + 1, x + 1 + fillWidth, y + arrowHeight - 1, 0xFFD4A017);
+            g.fill(x + 1, y + 1, x + 1 + fillWidth, y + 2, 0xFFE8B830);
         }
     }
 

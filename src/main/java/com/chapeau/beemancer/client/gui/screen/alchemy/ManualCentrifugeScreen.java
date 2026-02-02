@@ -33,7 +33,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class ManualCentrifugeScreen extends AbstractContainerScreen<ManualCentrifugeMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/manual_centrifuge.png");
+        Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
     private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
     private FluidGaugeWidget fluidGauge;
 
@@ -42,6 +42,7 @@ public class ManualCentrifugeScreen extends AbstractContainerScreen<ManualCentri
         this.imageWidth = 176;
         this.imageHeight = 170;
         this.inventoryLabelY = -999;
+        this.titleLabelY = -999;
     }
 
     @Override
@@ -61,19 +62,19 @@ public class ManualCentrifugeScreen extends AbstractContainerScreen<ManualCentri
 
         g.blit(TEXTURE, x, y, 0, 0, 176, 76, 176, 76);
         g.drawString(font, Component.translatable("container.beemancer.manual_centrifuge"),
-            x + 8, y + 6, 0x404040, false);
+            x + 8, y + 7, 0xDDDDDD, false);
 
         // Input slot (44, 35)
-        GuiRenderHelper.renderSlot(g, x + 43, y + 34);
+        GuiRenderHelper.renderSlot(g, x + 32, y + 34);
 
         // Output slots 2x2
-        GuiRenderHelper.renderSlot(g, x + 106, y + 25);
-        GuiRenderHelper.renderSlot(g, x + 124, y + 25);
-        GuiRenderHelper.renderSlot(g, x + 106, y + 43);
-        GuiRenderHelper.renderSlot(g, x + 124, y + 43);
+        GuiRenderHelper.renderSlot(g, x + 108, y + 25);
+        GuiRenderHelper.renderSlot(g, x + 126, y + 25);
+        GuiRenderHelper.renderSlot(g, x + 108, y + 43);
+        GuiRenderHelper.renderSlot(g, x + 126, y + 43);
 
         // Progress arrow
-        GuiRenderHelper.renderProgressArrow(g, x + 65, y + 35, menu.getProgressRatio());
+        GuiRenderHelper.renderProgressBar(g, x + 54, y + 40, 50, 6, menu.getProgressRatio());
 
         // Fluid gauge
         fluidGauge.render(g, x, y);

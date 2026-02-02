@@ -1,8 +1,9 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "translucent",
   "textures": {
-    "frame": "beemancer:block/logistic/storage_terminal",
-    "particle": "beemancer:block/logistic/storage_terminal"
+    "frame": "beemancer:block/honey",
+    "particle": "beemancer:block/honey"
   },
   "elements": [
     {
