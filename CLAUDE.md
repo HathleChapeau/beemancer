@@ -381,6 +381,53 @@ Quand l'utilisateur signale un bug ou un comportement manquant:
 
 ---
 
+## Système de Particules — ParticleHelper (OBLIGATOIRE)
+
+### Règle
+**TOUJOURS** utiliser `ParticleHelper` (`core/util/ParticleHelper.java`) pour spawner des particules. **JAMAIS** appeler `level.addParticle()` ou `serverLevel.sendParticles()` directement dans le code métier.
+
+### Quand améliorer ParticleHelper
+Si un pattern de particules n'existe pas encore dans `ParticleHelper`:
+1. **Ajouter la méthode** dans `ParticleHelper` (server-side dans la section `Génériques`, client-side dans la section `Client-side`)
+2. **Documenter** la méthode avec Javadoc (paramètres, comportement)
+3. **Utiliser** la nouvelle méthode depuis le code appelant
+
+### API disponible
+
+#### Patterns géométriques (server-side, `ServerLevel`)
+| Méthode | Description |
+|---------|-------------|
+| `burst()` | Explosion de particules autour d'un point |
+| `ring()` / `spawnRing()` | Cercle statique de particules |
+| `orbitingRing()` | Cercle animé (rotation basée sur gameTime) |
+| `spiral()` / `spawnSpiral()` | Spirale ascendante |
+| `line()` / `spawnLine()` | Ligne entre deux points |
+| `sphere()` / `spawnSphere()` | Répartition sphérique |
+| `spawnParticles()` | Spawn générique avec spread/speed |
+| `spawnWithMotion()` | Spawn avec vecteur de mouvement |
+
+#### EffectType (presets thématiques)
+`SUCCESS`, `FAILURE`, `MAGIC`, `HEAL`, `HONEY`, `SOUL`, `PORTAL`, `NATURE`, `FLAME`, `ELECTRIC`, `SCULK`
+
+Utilisables avec les méthodes de haut niveau : `burst(level, center, EffectType, count)`, `ring(...)`, etc.
+
+#### Client-side (`Level`)
+| Méthode | Description |
+|---------|-------------|
+| `addParticle()` | Spawn client-side uniquement |
+| `addAlwaysVisible()` | Spawn client-side visible à longue distance |
+
+#### Résolution par ResourceLocation
+Toutes les méthodes ont une surcharge acceptant un `ResourceLocation` au lieu d'un `ParticleOptions`.
+
+### Bonnes pratiques
+- **Server-side** (dans `serverTick`, événements) : utiliser les méthodes `ServerLevel` — visibles par tous les joueurs
+- **Client-side** (dans renderers, si nécessaire) : utiliser `addParticle()` / `addAlwaysVisible()`
+- **Custom particles** (`DustParticleOptions`, etc.) : passer directement en `ParticleOptions` aux méthodes génériques
+- **Throttling** : toujours limiter la fréquence (ex: `gameTime % N == 0`) pour éviter le spam
+
+---
+
 ## Notes Importantes
 
 1. **Structure.txt est la source de vérité** — Toujours le consulter avant d'implémenter, toujours le mettre à jour après.

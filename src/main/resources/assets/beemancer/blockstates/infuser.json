@@ -1,6 +1,6 @@
 {
   "variants": {
     "working=false": { "model": "beemancer:block/alchemy/infuser" },
-    "working=true": { "model": "beemancer:block/alchemy/infuser_working" }
+    "working=true": { "model": "beemancer:block/alchemy/infuser" }
   }
 }

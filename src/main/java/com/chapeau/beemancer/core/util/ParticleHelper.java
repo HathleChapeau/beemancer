@@ -140,6 +140,29 @@ public class ParticleHelper {
         }
     }
 
+    /**
+     * Spawne des particules orbitant autour d'un centre, position basée sur le temps.
+     * Les particules tournent en continu à chaque appel grâce au gameTime.
+     *
+     * @param level     ServerLevel
+     * @param particle  Type de particule
+     * @param center    Centre de l'orbite
+     * @param radius    Rayon de l'orbite
+     * @param count     Nombre de particules uniformément réparties sur l'orbite
+     * @param speed     Vitesse angulaire (radians par tick)
+     */
+    public static void orbitingRing(ServerLevel level, ParticleOptions particle, Vec3 center,
+                                     double radius, int count, double speed) {
+        double time = level.getGameTime() * speed;
+        double angleStep = (2 * Math.PI) / count;
+        for (int i = 0; i < count; i++) {
+            double angle = time + (i * angleStep);
+            double x = center.x + Math.cos(angle) * radius;
+            double z = center.z + Math.sin(angle) * radius;
+            level.sendParticles(particle, x, center.y, z, 1, 0, 0, 0, 0);
+        }
+    }
+
     public static void spawnSphere(ServerLevel level, ParticleOptions particle, Vec3 center, double radius, int count) {
         for (int i = 0; i < count; i++) {
             double phi = Math.acos(1 - 2.0 * i / count);
