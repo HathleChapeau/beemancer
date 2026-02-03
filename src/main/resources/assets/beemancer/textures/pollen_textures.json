@@ -1,0 +1,17 @@
+{
+  "_comment": "Mapping pollen item -> texture for pollen pot fill. Default: minecraft:block/light_gray_concrete_powder",
+  "default": "minecraft:block/light_gray_concrete_powder",
+  "entries": {
+    "beemancer:flower_pollen": "minecraft:block/pink_concrete_powder",
+    "beemancer:mushroom_spore": "minecraft:block/brown_concrete_powder",
+    "beemancer:tree_pollen": "minecraft:block/green_concrete_powder",
+    "beemancer:crystal_pollen": "minecraft:block/light_blue_concrete_powder",
+    "beemancer:pollen_of_wind": "minecraft:block/light_gray_concrete_powder",
+    "beemancer:pollen_of_thunder": "minecraft:block/yellow_concrete_powder",
+    "beemancer:pollen_of_water": "minecraft:block/blue_concrete_powder",
+    "beemancer:pollen_of_fire": "minecraft:block/orange_concrete_powder",
+    "beemancer:pollen_of_light": "minecraft:block/white_concrete_powder",
+    "beemancer:pollen_of_darkness": "minecraft:block/purple_concrete_powder",
+    "beemancer:void_pollen": "minecraft:block/black_concrete_powder"
+  }
+}
