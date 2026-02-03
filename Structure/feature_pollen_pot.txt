@@ -56,27 +56,28 @@ Items inclus:
 - void_pollen
 
 ================================================================================
-COULEURS DES POLLENS
+TEXTURES DES POLLENS (Rendu dynamique)
 ================================================================================
 
-L'intérieur du pot est coloré selon le type de pollen stocké.
-Utilise le système de tinting de Minecraft (BlockColor).
+L'intérieur du pot affiche un cube texturé dont la hauteur est proportionnelle
+au nombre de pollens stockés (0-16). Utilise un BlockEntityRenderer + textures
+de concrete powder vanilla. Mapping défini dans PollenTextures.java et
+pollen_textures.json.
 
-| Pollen              | Couleur      | Hex      |
-|---------------------|--------------|----------|
-| pollen              | Jaune doré   | 0xFFD700 |
-| flower_pollen       | Rose vif     | 0xFF69B4 |
-| mushroom_spore      | Marron       | 0x8B4513 |
-| tree_pollen         | Vert forêt   | 0x228B22 |
-| crystal_pollen      | Cyan         | 0x00FFFF |
-| pollen_of_wind      | Bleu ciel    | 0xADD8E6 |
-| pollen_of_thunder   | Jaune élec.  | 0xFFFF00 |
-| pollen_of_water     | Bleu océan   | 0x1E90FF |
-| pollen_of_fire      | Orange feu   | 0xFF4500 |
-| pollen_of_light     | Jaune pâle   | 0xFFFACD |
-| pollen_of_darkness  | Indigo       | 0x4B0082 |
-| void_pollen         | Violet noir  | 0x1A0033 |
-| (pot vide)          | Gris         | 0x808080 |
+| Pollen              | Texture                              |
+|---------------------|--------------------------------------|
+| flower_pollen       | minecraft:block/pink_concrete_powder |
+| mushroom_spore      | minecraft:block/brown_concrete_powder|
+| tree_pollen         | minecraft:block/green_concrete_powder|
+| crystal_pollen      | minecraft:block/light_blue_concrete_powder |
+| pollen_of_wind      | minecraft:block/light_gray_concrete_powder |
+| pollen_of_thunder   | minecraft:block/yellow_concrete_powder|
+| pollen_of_water     | minecraft:block/blue_concrete_powder |
+| pollen_of_fire      | minecraft:block/orange_concrete_powder|
+| pollen_of_light     | minecraft:block/white_concrete_powder|
+| pollen_of_darkness  | minecraft:block/purple_concrete_powder|
+| void_pollen         | minecraft:block/black_concrete_powder|
+| (défaut)            | minecraft:block/light_gray_concrete_powder |
 
 ================================================================================
 ARCHITECTURE
@@ -104,10 +105,14 @@ FICHIERS:
 - core/registry/BeemancerTags.java
   - Définition du tag POLLENS pour items
 
-- client/color/PollenColors.java
-  - Mapping pollen -> couleur (12 couleurs définies)
-  - Couleur par défaut: jaune doré (0xFFD700)
-  - Couleur pot vide: gris (0x808080)
+- client/color/PollenTextures.java
+  - Mapping pollen -> texture (11 textures concrete powder)
+  - Texture par défaut: light_gray_concrete_powder
+
+- client/renderer/block/PollenPotRenderer.java
+  - BlockEntityRenderer avec cube texturé
+  - Hauteur dynamique proportionnelle au remplissage
+  - Utilise FluidCubeRenderer + PollenTextures
 
 REGISTRES:
 - BeemancerBlocks.POLLEN_POT

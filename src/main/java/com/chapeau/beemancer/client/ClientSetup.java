@@ -8,7 +8,6 @@ package com.chapeau.beemancer.client;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.camera.RidingCameraController;
-import com.chapeau.beemancer.client.color.PollenColors;
 import com.chapeau.beemancer.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.beemancer.client.gui.hud.RideableBeeDebugHud;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
@@ -33,6 +32,7 @@ import com.chapeau.beemancer.client.renderer.block.HoneyTankRenderer;
 import com.chapeau.beemancer.client.particle.HoneyPixelParticle;
 import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import com.chapeau.beemancer.client.renderer.block.MultiblockTankRenderer;
+import com.chapeau.beemancer.client.renderer.block.PollenPotRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageTerminalRenderer;
 import com.chapeau.beemancer.client.renderer.block.TranslucentOutlineRenderer;
@@ -43,7 +43,6 @@ import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.RideableBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.beemancer.client.renderer.item.MagicBeeItemRenderer;
-import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.ItemPipeBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
@@ -165,6 +164,9 @@ public class ClientSetup {
         // MultiblockTankRenderer - fluide dynamique multi-bloc
         event.registerBlockEntityRenderer(BeemancerBlockEntities.MULTIBLOCK_TANK.get(),
             MultiblockTankRenderer::new);
+        // PollenPotRenderer - cube texturé avec hauteur dynamique selon remplissage
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.POLLEN_POT.get(),
+            PollenPotRenderer::new);
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -233,22 +235,6 @@ public class ClientSetup {
     // =========================================================================
 
     private static void registerBlockColors(final RegisterColorHandlersEvent.Block event) {
-        // Pollen Pot - colore l'intérieur selon le type de pollen stocké
-        event.register((state, level, pos, tintIndex) -> {
-            if (tintIndex != 0 || level == null || pos == null) {
-                return 0xFFFFFFFF;
-            }
-
-            if (level.getBlockEntity(pos) instanceof PollenPotBlockEntity pot) {
-                if (pot.isEmpty()) {
-                    return PollenColors.EMPTY_COLOR;
-                }
-                return PollenColors.getColor(pot.getPollenItem());
-            }
-
-            return PollenColors.EMPTY_COLOR;
-        }, BeemancerBlocks.POLLEN_POT.get());
-
         // Item Pipes - teinte du core
         // Sans teinte = blanc (texture de base visible), avec teinte = couleur du colorant sur pipe_core_white
         event.register((state, level, pos, tintIndex) -> {

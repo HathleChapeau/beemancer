@@ -4,8 +4,7 @@
     "particle": "beemancer:block/honeyed_stone",
     "bottom": "beemancer:block/honeyed_stone",
     "side": "beemancer:block/honeyed_stone",
-    "top": "beemancer:block/honeyed_stone",
-    "inside": "minecraft:block/honey_block_top"
+    "top": "beemancer:block/honeyed_stone"
   },
   "elements": [
     {
@@ -31,14 +30,6 @@
         "south": {"texture": "#side"},
         "west": {"texture": "#side"},
         "down": {"texture": "#bottom"}
-      }
-    },
-    {
-      "name": "Inside",
-      "from": [3, 2, 3],
-      "to": [13, 10, 13],
-      "faces": {
-        "up": {"texture": "#inside", "tintindex": 0}
       }
     },
     {
