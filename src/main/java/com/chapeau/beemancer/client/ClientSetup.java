@@ -29,6 +29,7 @@ import com.chapeau.beemancer.client.renderer.block.CrankRenderer;
 import com.chapeau.beemancer.client.renderer.block.CrystallizerRenderer;
 import com.chapeau.beemancer.client.renderer.block.InfuserRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyTankRenderer;
+import com.chapeau.beemancer.client.renderer.block.IncubatorRenderer;
 import com.chapeau.beemancer.client.particle.HoneyPixelParticle;
 import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import com.chapeau.beemancer.client.renderer.block.MultiblockTankRenderer;
@@ -167,6 +168,9 @@ public class ClientSetup {
         // PollenPotRenderer - cube texturé avec hauteur dynamique selon remplissage
         event.registerBlockEntityRenderer(BeemancerBlockEntities.POLLEN_POT.get(),
             PollenPotRenderer::new);
+        // IncubatorRenderer - item flottant au centre de l'incubateur
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.INCUBATOR.get(),
+            IncubatorRenderer::new);
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
