@@ -105,7 +105,12 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
-        return ContainerHelper.takeItem(items, slot);
+        ItemStack result = ContainerHelper.takeItem(items, slot);
+        if (!result.isEmpty()) {
+            incubationProgress = 0;
+            setChanged();
+        }
+        return result;
     }
 
     @Override
