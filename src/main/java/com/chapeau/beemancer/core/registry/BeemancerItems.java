@@ -185,6 +185,8 @@ public class BeemancerItems {
             () -> new BlockItem(BeemancerBlocks.HONEYED_TRAPDOOR.get(), new Item.Properties()));
     public static final DeferredItem<DoubleHighBlockItem> HONEYED_DOOR = ITEMS.register("honeyed_door",
             () -> new DoubleHighBlockItem(BeemancerBlocks.HONEYED_DOOR.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> HONEYED_BUTTON = ITEMS.register("honeyed_button",
+            () -> new BlockItem(BeemancerBlocks.HONEYED_BUTTON.get(), new Item.Properties()));
 
     // --- BUILDING BLOCKS: HONEYED STONE ---
     public static final DeferredItem<BlockItem> HONEYED_STONE_WALL = ITEMS.register("honeyed_stone_wall",

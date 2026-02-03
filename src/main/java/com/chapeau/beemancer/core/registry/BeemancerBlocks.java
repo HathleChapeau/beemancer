@@ -26,6 +26,7 @@ import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
 import com.chapeau.beemancer.common.block.storage.StorageRelayBlock;
 import com.chapeau.beemancer.common.block.storage.StorageTerminalBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
@@ -369,6 +370,10 @@ public class BeemancerBlocks {
     public static final DeferredBlock<DoorBlock> HONEYED_DOOR = BLOCKS.register("honeyed_door",
             () -> new DoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
                     .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    public static final DeferredBlock<ButtonBlock> HONEYED_BUTTON = BLOCKS.register("honeyed_button",
+            () -> new ButtonBlock(BlockSetType.OAK, 30, BlockBehaviour.Properties.of()
+                    .strength(0.5f).sound(SoundType.WOOD).noCollission()));
 
     // --- BUILDING BLOCKS: HONEYED STONE ---
     public static final DeferredBlock<WallBlock> HONEYED_STONE_WALL = BLOCKS.register("honeyed_stone_wall",

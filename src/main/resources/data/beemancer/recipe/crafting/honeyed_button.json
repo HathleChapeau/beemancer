@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    { "item": "beemancer:honeyed_planks" }
+  ],
+  "result": {
+    "id": "beemancer:honeyed_button",
+    "count": 1
+  }
+}
