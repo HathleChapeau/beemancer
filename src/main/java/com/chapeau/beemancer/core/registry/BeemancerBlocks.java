@@ -230,19 +230,22 @@ public class BeemancerBlocks {
             () -> new InfuserBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.WOOD)
-                    .requiresCorrectToolForDrops()));
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(InfuserBlock.WORKING) ? 10 : 0)));
 
     public static final DeferredBlock<InfuserBlock> INFUSER_TIER2 = BLOCKS.register("infuser_tier2",
             () -> new InfuserBlock(BlockBehaviour.Properties.of()
                     .strength(3.5f)
                     .sound(SoundType.WOOD)
-                    .requiresCorrectToolForDrops(), 2));
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(InfuserBlock.WORKING) ? 10 : 0), 2));
 
     public static final DeferredBlock<InfuserBlock> INFUSER_TIER3 = BLOCKS.register("infuser_tier3",
             () -> new InfuserBlock(BlockBehaviour.Properties.of()
                     .strength(4.0f)
                     .sound(SoundType.WOOD)
-                    .requiresCorrectToolForDrops(), 3));
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(InfuserBlock.WORKING) ? 10 : 0), 3));
 
     public static final DeferredBlock<MultiblockTankBlock> MULTIBLOCK_TANK = BLOCKS.register("multiblock_tank",
             () -> new MultiblockTankBlock(BlockBehaviour.Properties.of()
