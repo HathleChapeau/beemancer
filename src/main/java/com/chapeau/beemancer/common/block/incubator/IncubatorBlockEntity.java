@@ -280,6 +280,22 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        loadAdditional(tag, registries);
+    }
+
+    @Override
+    public void onDataPacket(net.minecraft.network.Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+        CompoundTag tag = pkt.getTag();
+        if (tag != null) {
+            loadAdditional(tag, registries);
+        } else {
+            items.clear();
+            incubationProgress = 0;
+        }
+    }
+
     // --- Drop Contents ---
 
     public void dropContents() {
