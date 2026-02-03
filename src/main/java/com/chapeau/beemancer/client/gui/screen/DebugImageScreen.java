@@ -1,14 +1,14 @@
 /**
  * ============================================================
  * [DebugImageScreen.java]
- * Description: Ecran debug pour visualiser une image GUI a sa taille reelle
+ * Description: Ecran debug pour tester un cadre GUI dynamique avec textures tilees
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | Beemancer           | MOD_ID               | ResourceLocation texture       |
+ * | Beemancer           | MOD_ID               | ResourceLocation textures      |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -19,6 +19,8 @@
 package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -27,18 +29,34 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 /**
- * Ecran debug qui affiche une image de GUI a sa taille pixel reelle (1:1).
- * Utilise pour verifier le format et le rendu d'une texture GUI.
+ * Ecran debug qui affiche un cadre 300x200 construit dynamiquement
+ * avec codex_corner (coins) et codex_bar (barres) tiles et scales x2.
+ * Background uni #F3E1BB a l'interieur.
  */
 @OnlyIn(Dist.CLIENT)
 public class DebugImageScreen extends Screen {
 
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/codex_book.png"
+    private static final ResourceLocation CORNER_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "textures/gui/codex_corner.png"
+    );
+    private static final ResourceLocation BAR_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "textures/gui/codex_bar.png"
     );
 
-    private static final int IMAGE_WIDTH = 300;
-    private static final int IMAGE_HEIGHT = 204;
+    // Textures source
+    private static final int CORNER_SRC = 5;
+    private static final int BAR_SRC_W = 80;
+    private static final int BAR_SRC_H = 5;
+
+    // Rendu scale x2
+    private static final int BORDER = 10;
+
+    // Cadre
+    private static final int FRAME_WIDTH = 300;
+    private static final int FRAME_HEIGHT = 200;
+
+    // Background color #F3E1BB avec alpha opaque
+    private static final int BG_COLOR = 0xFFF3E1BB;
 
     public DebugImageScreen() {
         super(Component.literal("Debug Image Viewer"));
@@ -48,10 +66,104 @@ public class DebugImageScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics, mouseX, mouseY, partialTick);
 
-        int x = (width - IMAGE_WIDTH) / 2;
-        int y = (height - IMAGE_HEIGHT) / 2;
+        int frameX = (width - FRAME_WIDTH) / 2;
+        int frameY = (height - FRAME_HEIGHT) / 2;
 
-        graphics.blit(TEXTURE, x, y, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
+        // 1. Background uni
+        graphics.fill(frameX, frameY, frameX + FRAME_WIDTH, frameY + FRAME_HEIGHT, BG_COLOR);
+
+        // 2. Barres horizontales (haut et bas) - tilees
+        int barRenderW = BAR_SRC_W * 2; // 160px rendu
+        int innerLeft = frameX + BORDER;
+        int innerWidth = FRAME_WIDTH - BORDER * 2; // 280px
+
+        for (int offset = 0; offset < innerWidth; offset += barRenderW) {
+            int tileW = Math.min(barRenderW, innerWidth - offset);
+            int srcW = tileW / 2; // proportion dans la texture source
+
+            // Barre du haut
+            graphics.blit(BAR_TEXTURE,
+                    innerLeft + offset, frameY,
+                    tileW, BORDER,
+                    0, 0,
+                    srcW, BAR_SRC_H,
+                    BAR_SRC_W, BAR_SRC_H);
+
+            // Barre du bas (flip vertical via UV inversees)
+            graphics.blit(BAR_TEXTURE,
+                    innerLeft + offset, frameY + FRAME_HEIGHT - BORDER,
+                    tileW, BORDER,
+                    0, BAR_SRC_H,
+                    srcW, -BAR_SRC_H,
+                    BAR_SRC_W, BAR_SRC_H);
+        }
+
+        // 3. Barres verticales (gauche et droite) - bar tournee de 90°, tilees
+        int innerTop = frameY + BORDER;
+        int innerHeight = FRAME_HEIGHT - BORDER * 2; // 180px
+
+        for (int offset = 0; offset < innerHeight; offset += barRenderW) {
+            int tileH = Math.min(barRenderW, innerHeight - offset);
+            int srcW = tileH / 2;
+
+            // Barre gauche : rotation 90° antihoraire
+            PoseStack pose = graphics.pose();
+            pose.pushPose();
+            pose.translate(frameX, innerTop + offset + tileH, 0);
+            pose.mulPose(Axis.ZP.rotationDegrees(-90));
+            graphics.blit(BAR_TEXTURE,
+                    0, 0,
+                    tileH, BORDER,
+                    0, 0,
+                    srcW, BAR_SRC_H,
+                    BAR_SRC_W, BAR_SRC_H);
+            pose.popPose();
+
+            // Barre droite : rotation 90° horaire
+            pose.pushPose();
+            pose.translate(frameX + FRAME_WIDTH, innerTop + offset, 0);
+            pose.mulPose(Axis.ZP.rotationDegrees(90));
+            graphics.blit(BAR_TEXTURE,
+                    0, 0,
+                    tileH, BORDER,
+                    0, 0,
+                    srcW, BAR_SRC_H,
+                    BAR_SRC_W, BAR_SRC_H);
+            pose.popPose();
+        }
+
+        // 4. Coins (5x5 rendu en 10x10) - avec flips via UV
+        // Haut-gauche
+        graphics.blit(CORNER_TEXTURE,
+                frameX, frameY,
+                BORDER, BORDER,
+                0, 0,
+                CORNER_SRC, CORNER_SRC,
+                CORNER_SRC, CORNER_SRC);
+
+        // Haut-droit (flip horizontal)
+        graphics.blit(CORNER_TEXTURE,
+                frameX + FRAME_WIDTH - BORDER, frameY,
+                BORDER, BORDER,
+                CORNER_SRC, 0,
+                -CORNER_SRC, CORNER_SRC,
+                CORNER_SRC, CORNER_SRC);
+
+        // Bas-gauche (flip vertical)
+        graphics.blit(CORNER_TEXTURE,
+                frameX, frameY + FRAME_HEIGHT - BORDER,
+                BORDER, BORDER,
+                0, CORNER_SRC,
+                CORNER_SRC, -CORNER_SRC,
+                CORNER_SRC, CORNER_SRC);
+
+        // Bas-droit (flip horizontal + vertical)
+        graphics.blit(CORNER_TEXTURE,
+                frameX + FRAME_WIDTH - BORDER, frameY + FRAME_HEIGHT - BORDER,
+                BORDER, BORDER,
+                CORNER_SRC, CORNER_SRC,
+                -CORNER_SRC, -CORNER_SRC,
+                CORNER_SRC, CORNER_SRC);
     }
 
     @Override
