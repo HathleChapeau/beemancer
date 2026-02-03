@@ -99,7 +99,6 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
         if (!result.isEmpty()) {
             incubationProgress = 0;
             setChanged();
-            syncToClient();
         }
         return result;
     }
@@ -121,7 +120,9 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
         syncToClient();
     }
 
-    private void syncToClient() {
+    @Override
+    public void setChanged() {
+        super.setChanged();
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
