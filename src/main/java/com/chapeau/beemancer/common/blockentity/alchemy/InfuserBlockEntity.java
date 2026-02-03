@@ -31,6 +31,9 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -64,6 +67,9 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         protected void onContentsChanged(int slot) {
             setChanged();
             currentRecipe = null; // Invalidate cached recipe
+            if (level != null && !level.isClientSide()) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            }
         }
     };
 
@@ -257,5 +263,20 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         outputSlot.deserializeNBT(registries, tag.getCompound("Output"));
         honeyTank.readFromNBT(registries, tag.getCompound("HoneyTank"));
         progress = tag.getInt("Progress");
+    }
+
+    // --- Client sync pour le renderer (affichage item + particules) ---
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        tag.put("Input", inputSlot.serializeNBT(registries));
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 }

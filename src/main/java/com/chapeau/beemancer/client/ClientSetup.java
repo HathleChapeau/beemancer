@@ -28,6 +28,7 @@ import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.ControllerPipeRenderer;
 import com.chapeau.beemancer.client.renderer.block.CrankRenderer;
 import com.chapeau.beemancer.client.renderer.block.CrystallizerRenderer;
+import com.chapeau.beemancer.client.renderer.block.InfuserRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyTankRenderer;
 import com.chapeau.beemancer.client.renderer.block.MultiblockTankRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
@@ -147,6 +148,13 @@ public class ClientSetup {
         // CrystallizerRenderer - cores animés (rotation + scale)
         event.registerBlockEntityRenderer(BeemancerBlockEntities.CRYSTALLIZER.get(),
             CrystallizerRenderer::new);
+        // InfuserRenderer - item flottant + particules miel
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER.get(),
+            InfuserRenderer::new);
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER_TIER2.get(),
+            InfuserRenderer::new);
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER_TIER3.get(),
+            InfuserRenderer::new);
         // HoneyTankRenderer - fluide dynamique
         event.registerBlockEntityRenderer(BeemancerBlockEntities.HONEY_TANK.get(),
             HoneyTankRenderer::new);
