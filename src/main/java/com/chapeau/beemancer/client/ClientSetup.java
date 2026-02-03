@@ -42,6 +42,7 @@ import com.chapeau.beemancer.client.model.RideableBeeModel;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.RideableBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.DeliveryBeeRenderer;
+import com.chapeau.beemancer.client.renderer.item.CodexItemRenderer;
 import com.chapeau.beemancer.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.ItemPipeBlockEntity;
@@ -189,6 +190,19 @@ public class ClientSetup {
             }
         }, BeemancerItems.MAGIC_BEE.get());
 
+        // Codex item - texture differente en main vs inventaire
+        event.registerItem(new IClientItemExtensions() {
+            private CodexItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new CodexItemRenderer();
+                }
+                return renderer;
+            }
+        }, BeemancerItems.CODEX.get());
+
         // --- Fluid Extensions ---
         // Honey - blanc (pas de tint, la texture contient déjà la couleur)
         registerFluidExtension(event, BeemancerFluids.HONEY_FLUID_TYPE,
@@ -300,5 +314,9 @@ public class ClientSetup {
 
         // Modèle crank (rendu par BER avec rotation)
         event.register(CrankRenderer.CRANK_MODEL_LOC);
+
+        // Modèles Codex (BEWLR - main vs inventaire)
+        event.register(CodexItemRenderer.HAND_MODEL);
+        event.register(CodexItemRenderer.GUI_MODEL);
     }
 }

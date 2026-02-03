@@ -1,31 +1,3 @@
 {
-  "loader": "neoforge:separate_transforms",
-  "base": {
-    "parent": "minecraft:item/handheld",
-    "textures": {
-      "layer0": "beemancer:item/codex"
-    }
-  },
-  "perspectives": {
-    "gui": {
-      "parent": "minecraft:item/generated",
-      "ambientocclusion": false,
-      "gui_light": "front",
-      "textures": {
-        "layer0": "beemancer:item/codex_inv"
-      }
-    },
-    "ground": {
-      "parent": "minecraft:item/generated",
-      "textures": {
-        "layer0": "beemancer:item/codex"
-      }
-    },
-    "fixed": {
-      "parent": "minecraft:item/generated",
-      "textures": {
-        "layer0": "beemancer:item/codex"
-      }
-    }
-  }
+  "parent": "minecraft:builtin/entity"
 }
