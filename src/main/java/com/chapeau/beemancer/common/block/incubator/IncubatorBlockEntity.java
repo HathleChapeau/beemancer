@@ -99,6 +99,7 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
         if (!result.isEmpty()) {
             incubationProgress = 0;
             setChanged();
+            syncToClient();
         }
         return result;
     }
@@ -109,6 +110,7 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
         if (!result.isEmpty()) {
             incubationProgress = 0;
             setChanged();
+            syncToClient();
         }
         return result;
     }
@@ -122,11 +124,10 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
         // Reset progress when item changes
         incubationProgress = 0;
         setChanged();
+        syncToClient();
     }
 
-    @Override
-    public void setChanged() {
-        super.setChanged();
+    private void syncToClient() {
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
@@ -183,6 +184,8 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
             incubator.items.set(0, beeItem);
             incubator.incubationProgress = 0;
             incubator.currentIncubationTime = BASE_INCUBATION_TIME;
+            incubator.setChanged();
+            incubator.syncToClient();
         }
 
         incubator.setChanged();
