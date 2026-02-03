@@ -3,9 +3,9 @@
   "render_type": "translucent",
   "textures": {
     "glass": "beemancer:block/honeyed_glass",
-    "honey": "beemancer:block/alchemy/infuser_top",
+    "honey": "beemancer:block/wood",
     "iron": "beemancer:block/iron",
-    "particle": "beemancer:block/iron_incubator"
+    "particle": "beemancer:block/iron"
   },
   "elements": [
     {

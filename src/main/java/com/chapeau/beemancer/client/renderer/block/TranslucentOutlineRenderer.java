@@ -48,7 +48,8 @@ public class TranslucentOutlineRenderer {
         BeemancerBlocks.CRYSTALLIZER.get(),
         BeemancerBlocks.INFUSER.get(),
         BeemancerBlocks.HONEY_TANK.get(),
-        BeemancerBlocks.POLLEN_POT.get()
+        BeemancerBlocks.POLLEN_POT.get(),
+        BeemancerBlocks.INCUBATOR.get()
     );
 
     private static final float LINE_RED = 0.16f;

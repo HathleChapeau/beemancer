@@ -21,6 +21,7 @@ package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlockEntity;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -64,8 +65,8 @@ public class IncubatorRenderer implements BlockEntityRenderer<IncubatorBlockEnti
         if (isBee) {
             // Compenser les transforms du MagicBeeItemRenderer BEWLR (mode FIXED)
             // Le BEWLR fait: translate(0.5, 0.5, 0.5), scale(-1,-1,1), rotate Y 225, scale 0.9
-            poseStack.translate(0.8f, 1.0f + bob, 0.8f);
-            poseStack.scale(0.5f, 0.5f, 0.5f);
+            poseStack.translate(1.05f, 2.37f + bob, 1.05f);
+            poseStack.scale(1.1f, 1.1f, 1.1f);
             poseStack.translate(-0.5, -0.5, -0.5);
             poseStack.mulPose(Axis.YP.rotationDegrees(time * 1.5f));
         } else {
