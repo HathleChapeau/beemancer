@@ -184,7 +184,7 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
 
         // Particules jaune miel orbitant autour du bloc pendant le processing
         if (isWorking && level instanceof ServerLevel serverLevel && level.getGameTime() % 2 == 0) {
-            DustParticleOptions honeyParticle = new DustParticleOptions(new Vector3f(1.0f, 0.75f, 0.1f), 0.3f);
+            DustParticleOptions honeyParticle = new DustParticleOptions(new Vector3f(1.0f, 0.75f, 0.1f), 0.6f);
             Vec3 center = new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
             ParticleHelper.orbitingRing(serverLevel, honeyParticle, center, 0.35, 8, 0.08);
         }
