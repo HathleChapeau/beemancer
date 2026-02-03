@@ -67,7 +67,7 @@ public class ParticleHelper {
         }
     }
 
-    // ==================== Effets prédéfinis (EffectType) ====================
+    // ==================== Effets haut niveau (EffectType) ====================
 
     public static void burst(ServerLevel level, Vec3 center, EffectType type, int count) {
         for (ParticleOptions particle : type.getParticles()) {
@@ -97,6 +97,28 @@ public class ParticleHelper {
         for (ParticleOptions particle : type.getParticles()) {
             spawnSphere(level, particle, center, radius, count);
         }
+    }
+
+    // ==================== Effets haut niveau (ParticleOptions) ====================
+
+    public static void burst(ServerLevel level, Vec3 center, ParticleOptions particle, int count) {
+        spawnParticles(level, particle, center, count, 0.5, 0.1);
+    }
+
+    public static void ring(ServerLevel level, Vec3 center, double radius, ParticleOptions particle, int count) {
+        spawnRing(level, particle, center, radius, count);
+    }
+
+    public static void spiral(ServerLevel level, Vec3 base, double radius, double height, ParticleOptions particle, int count) {
+        spawnSpiral(level, particle, base, radius, height, count);
+    }
+
+    public static void line(ServerLevel level, Vec3 start, Vec3 end, ParticleOptions particle, int count) {
+        spawnLine(level, particle, start, end, count);
+    }
+
+    public static void sphere(ServerLevel level, Vec3 center, double radius, ParticleOptions particle, int count) {
+        spawnSphere(level, particle, center, radius, count);
     }
 
     // ==================== Génériques (ParticleOptions) ====================
