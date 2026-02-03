@@ -72,65 +72,72 @@ public class DebugImageScreen extends Screen {
         // 1. Background uni
         graphics.fill(frameX, frameY, frameX + FRAME_WIDTH, frameY + FRAME_HEIGHT, BG_COLOR);
 
-        // 2. Barres horizontales (haut et bas) - tilees
-        int barRenderW = BAR_SRC_W * 2; // 160px rendu
+        // 2. Barres horizontales (haut et bas) - tilees avec scissor pour masquer le depassement
+        int barRenderW = BAR_SRC_W * 2; // 160px rendu (scale x2)
         int innerLeft = frameX + BORDER;
+        int innerRight = frameX + FRAME_WIDTH - BORDER;
         int innerWidth = FRAME_WIDTH - BORDER * 2; // 280px
 
+        graphics.enableScissor(innerLeft, frameY, innerRight, frameY + BORDER);
         for (int offset = 0; offset < innerWidth; offset += barRenderW) {
-            int tileW = Math.min(barRenderW, innerWidth - offset);
-            int srcW = tileW / 2; // proportion dans la texture source
-
-            // Barre du haut
             graphics.blit(BAR_TEXTURE,
                     innerLeft + offset, frameY,
-                    tileW, BORDER,
+                    barRenderW, BORDER,
                     0, 0,
-                    srcW, BAR_SRC_H,
-                    BAR_SRC_W, BAR_SRC_H);
-
-            // Barre du bas (flip vertical via UV inversees)
-            graphics.blit(BAR_TEXTURE,
-                    innerLeft + offset, frameY + FRAME_HEIGHT - BORDER,
-                    tileW, BORDER,
-                    0, BAR_SRC_H,
-                    srcW, -BAR_SRC_H,
+                    BAR_SRC_W, BAR_SRC_H,
                     BAR_SRC_W, BAR_SRC_H);
         }
+        graphics.disableScissor();
 
-        // 3. Barres verticales (gauche et droite) - bar tournee de 90°, tilees
+        graphics.enableScissor(innerLeft, frameY + FRAME_HEIGHT - BORDER, innerRight, frameY + FRAME_HEIGHT);
+        for (int offset = 0; offset < innerWidth; offset += barRenderW) {
+            graphics.blit(BAR_TEXTURE,
+                    innerLeft + offset, frameY + FRAME_HEIGHT - BORDER,
+                    barRenderW, BORDER,
+                    0, BAR_SRC_H,
+                    BAR_SRC_W, -BAR_SRC_H,
+                    BAR_SRC_W, BAR_SRC_H);
+        }
+        graphics.disableScissor();
+
+        // 3. Barres verticales (gauche et droite) - bar tournee de 90°, tilees avec scissor
         int innerTop = frameY + BORDER;
+        int innerBottom = frameY + FRAME_HEIGHT - BORDER;
         int innerHeight = FRAME_HEIGHT - BORDER * 2; // 180px
 
+        // Barre gauche
+        graphics.enableScissor(frameX, innerTop, frameX + BORDER, innerBottom);
         for (int offset = 0; offset < innerHeight; offset += barRenderW) {
-            int tileH = Math.min(barRenderW, innerHeight - offset);
-            int srcW = tileH / 2;
-
-            // Barre gauche : rotation 90° antihoraire
             PoseStack pose = graphics.pose();
             pose.pushPose();
-            pose.translate(frameX, innerTop + offset + tileH, 0);
+            pose.translate(frameX, innerTop + offset + barRenderW, 0);
             pose.mulPose(Axis.ZP.rotationDegrees(-90));
             graphics.blit(BAR_TEXTURE,
                     0, 0,
-                    tileH, BORDER,
+                    barRenderW, BORDER,
                     0, 0,
-                    srcW, BAR_SRC_H,
+                    BAR_SRC_W, BAR_SRC_H,
                     BAR_SRC_W, BAR_SRC_H);
             pose.popPose();
+        }
+        graphics.disableScissor();
 
-            // Barre droite : rotation 90° horaire
+        // Barre droite
+        graphics.enableScissor(frameX + FRAME_WIDTH - BORDER, innerTop, frameX + FRAME_WIDTH, innerBottom);
+        for (int offset = 0; offset < innerHeight; offset += barRenderW) {
+            PoseStack pose = graphics.pose();
             pose.pushPose();
             pose.translate(frameX + FRAME_WIDTH, innerTop + offset, 0);
             pose.mulPose(Axis.ZP.rotationDegrees(90));
             graphics.blit(BAR_TEXTURE,
                     0, 0,
-                    tileH, BORDER,
+                    barRenderW, BORDER,
                     0, 0,
-                    srcW, BAR_SRC_H,
+                    BAR_SRC_W, BAR_SRC_H,
                     BAR_SRC_W, BAR_SRC_H);
             pose.popPose();
         }
+        graphics.disableScissor();
 
         // 4. Coins (5x5 rendu en 10x10) - avec flips via UV
         // Haut-gauche
