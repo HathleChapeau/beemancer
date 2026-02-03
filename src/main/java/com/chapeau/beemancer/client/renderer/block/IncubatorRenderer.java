@@ -52,7 +52,7 @@ public class IncubatorRenderer implements BlockEntityRenderer<IncubatorBlockEnti
 
         if (blockEntity.getLevel() == null) return;
 
-        ItemStack displayItem = blockEntity.getItem(0);
+        ItemStack displayItem = blockEntity.getItemHandler().getStackInSlot(0);
         if (displayItem.isEmpty()) return;
 
         poseStack.pushPose();

@@ -3,6 +3,23 @@
  * [IncubatorBlockEntity.java]
  * Description: BlockEntity incubateur avec timer d'incubation
  * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance                | Raison                | Utilisation                    |
+ * |---------------------------|----------------------|--------------------------------|
+ * | ItemStackHandler          | Gestion inventaire   | Slot unique avec sync auto     |
+ * | BeeLarvaItem              | Detection larve      | Lecture gene data              |
+ * | MagicBeeItem              | Creation abeille     | Resultat incubation            |
+ * | ParticleHelper            | Particules           | Effet visuel incubation        |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - IncubatorBlock.java (creation, ticker, drop)
+ * - IncubatorMenu.java (menu joueur)
+ * - IncubatorRenderer.java (rendu item flottant)
+ *
+ * ============================================================
  */
 package com.chapeau.beemancer.common.block.incubator;
 
@@ -18,7 +35,6 @@ import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.chapeau.beemancer.core.util.ParticleHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -26,7 +42,6 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -38,14 +53,30 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
-public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, net.minecraft.world.Container {
+public class IncubatorBlockEntity extends BlockEntity implements MenuProvider {
     public static final int SLOT_COUNT = 1;
     public static final int BASE_INCUBATION_TIME = 600; // 30 secondes (base tier I)
 
-    private final NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+    private final ItemStackHandler itemHandler = new ItemStackHandler(SLOT_COUNT) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            incubationProgress = 0;
+            setChanged();
+            if (level != null && !level.isClientSide()) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            }
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return 1;
+        }
+    };
+
     private int incubationProgress = 0;
     private int currentIncubationTime = BASE_INCUBATION_TIME;
 
@@ -71,84 +102,21 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
             return 2;
         }
     };
-    
+
     public IncubatorBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.INCUBATOR.get(), pos, state);
     }
 
-    // --- Container Implementation ---
+    // --- Accessors ---
 
-    @Override
-    public int getContainerSize() {
-        return SLOT_COUNT;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return items.stream().allMatch(ItemStack::isEmpty);
-    }
-
-    @Override
-    public ItemStack getItem(int slot) {
-        return items.get(slot);
-    }
-
-    @Override
-    public ItemStack removeItem(int slot, int amount) {
-        ItemStack result = ContainerHelper.removeItem(items, slot, amount);
-        if (!result.isEmpty()) {
-            incubationProgress = 0;
-            setChanged();
-            syncToClient();
-        }
-        return result;
-    }
-
-    @Override
-    public ItemStack removeItemNoUpdate(int slot) {
-        ItemStack result = ContainerHelper.takeItem(items, slot);
-        if (!result.isEmpty()) {
-            incubationProgress = 0;
-            setChanged();
-            syncToClient();
-        }
-        return result;
-    }
-
-    @Override
-    public void setItem(int slot, ItemStack stack) {
-        items.set(slot, stack);
-        if (stack.getCount() > getMaxStackSize()) {
-            stack.setCount(getMaxStackSize());
-        }
-        // Reset progress when item changes
-        incubationProgress = 0;
-        setChanged();
-        syncToClient();
-    }
-
-    private void syncToClient() {
-        if (level != null && !level.isClientSide()) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-        }
-    }
-
-    @Override
-    public boolean stillValid(Player player) {
-        return level != null && level.getBlockEntity(worldPosition) == this 
-                && player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) <= 64;
-    }
-
-    @Override
-    public void clearContent() {
-        items.clear();
-        incubationProgress = 0;
+    public ItemStackHandler getItemHandler() {
+        return itemHandler;
     }
 
     // --- Tick ---
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, IncubatorBlockEntity incubator) {
-        ItemStack stack = incubator.items.get(0);
+        ItemStack stack = incubator.itemHandler.getStackInSlot(0);
 
         // Only process larva items
         if (stack.isEmpty() || !stack.is(BeemancerItems.BEE_LARVA.get())) {
@@ -181,11 +149,10 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
             BeeGeneData geneData = BeeLarvaItem.getGeneData(stack);
             ItemStack beeItem = MagicBeeItem.createWithGenes(geneData);
 
-            incubator.items.set(0, beeItem);
+            incubator.itemHandler.setStackInSlot(0, beeItem);
             incubator.incubationProgress = 0;
             incubator.currentIncubationTime = BASE_INCUBATION_TIME;
             incubator.setChanged();
-            incubator.syncToClient();
         }
 
         incubator.setChanged();
@@ -239,7 +206,7 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        ContainerHelper.saveAllItems(tag, items, registries);
+        tag.put("Inventory", itemHandler.serializeNBT(registries));
         tag.putInt("Progress", incubationProgress);
         tag.putInt("IncubationTime", currentIncubationTime);
     }
@@ -247,7 +214,7 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        ContainerHelper.loadAllItems(tag, items, registries);
+        itemHandler.deserializeNBT(registries, tag.getCompound("Inventory"));
         incubationProgress = tag.getInt("Progress");
         currentIncubationTime = tag.getInt("IncubationTime");
         if (currentIncubationTime <= 0) currentIncubationTime = BASE_INCUBATION_TIME;
@@ -266,41 +233,29 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
         return new IncubatorMenu(containerId, playerInventory, this, containerData);
     }
 
-    // --- Synchronisation client (pour le renderer) ---
+    // --- Synchronisation client (comme l'infuser) ---
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
-        saveAdditional(tag, registries);
+        tag.put("Inventory", itemHandler.serializeNBT(registries));
         return tag;
     }
 
+    @Nullable
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    @Override
-    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
-        loadAdditional(tag, registries);
-    }
-
-    @Override
-    public void onDataPacket(net.minecraft.network.Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
-        CompoundTag tag = pkt.getTag();
-        if (tag != null) {
-            loadAdditional(tag, registries);
-        } else {
-            items.clear();
-            incubationProgress = 0;
-        }
     }
 
     // --- Drop Contents ---
 
     public void dropContents() {
         if (level != null && !level.isClientSide()) {
-            Containers.dropContents(level, worldPosition, this);
+            for (int i = 0; i < itemHandler.getSlots(); i++) {
+                Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
+                        itemHandler.getStackInSlot(i));
+            }
         }
     }
 }
