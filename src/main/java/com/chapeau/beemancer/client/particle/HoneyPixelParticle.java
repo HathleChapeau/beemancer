@@ -41,7 +41,7 @@ public class HoneyPixelParticle extends TextureSheetParticle {
         this.gCol = 0.75f;
         this.bCol = 0.1f;
         this.alpha = 1.0f;
-        this.quadSize = 0.04f;
+        this.quadSize = 0.02f;
         this.lifetime = 6;
         this.hasPhysics = false;
         this.xd = xSpeed;
