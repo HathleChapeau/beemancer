@@ -117,7 +117,6 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
         // Reset progress when item changes
         incubationProgress = 0;
         setChanged();
-        syncToClient();
     }
 
     @Override
@@ -179,7 +178,6 @@ public class IncubatorBlockEntity extends BlockEntity implements MenuProvider, n
             incubator.items.set(0, beeItem);
             incubator.incubationProgress = 0;
             incubator.currentIncubationTime = BASE_INCUBATION_TIME;
-            incubator.syncToClient();
         }
 
         incubator.setChanged();
