@@ -3,6 +3,26 @@
 ################################################################################
 
 ================================================================================
+2026-02-03 - Pollen Pot: refonte rendu (BlockEntityRenderer + textures)
+================================================================================
+
+Remplacement du système tintindex/BlockColor par un BlockEntityRenderer
+qui affiche un cube texturé (concrete powder) dont la hauteur monte avec
+le remplissage.
+
+FICHIERS CRÉÉS (2):
+- client/color/PollenTextures.java — mapping pollen → texture ResourceLocation
+- client/renderer/block/PollenPotRenderer.java — BER avec FluidCubeRenderer
+- assets/beemancer/textures/pollen_textures.json — données JSON du mapping
+
+FICHIERS MODIFIÉS (2):
+- client/ClientSetup.java — +enregistrement BER, -block color pollen pot
+- models/block/machines/pollen_pot.json — suppression élément Inside (tintindex)
+
+FICHIER SUPPRIMÉ (1):
+- client/color/PollenColors.java — remplacé par PollenTextures
+
+================================================================================
 2026-02-02 - Particle System: utilitaire statique de particules
 ================================================================================
 

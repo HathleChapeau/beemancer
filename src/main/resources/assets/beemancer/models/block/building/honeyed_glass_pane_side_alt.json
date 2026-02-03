@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:block/template_glass_pane_side_alt",
-  "render_type": "translucent",
+  "render_type": "cutout",
   "textures": {
     "pane": "beemancer:block/honeyed_glass",
-    "edge": "beemancer:block/honeyed_glass"
+    "edge": "beemancer:block/honeyed_plank"
   }
 }
