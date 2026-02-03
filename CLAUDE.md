@@ -428,6 +428,17 @@ Toutes les méthodes ont une surcharge acceptant un `ResourceLocation` au lieu d
 
 ---
 
+## Render Types — RÈGLE ABSOLUE
+
+**`translucent` et `cutout` sont deux options de rendering DIFFÉRENTES qui ne couvrent PAS les mêmes besoins. Ils ne sont PAS interchangeables.**
+
+- **`cutout`** : pixels 100% opaques ou 100% transparents (verre classique, feuilles, etc.)
+- **`translucent`** : pixels semi-transparents avec alpha blending (vitre teintée, miel, etc.)
+
+**INTERDIT**: Si un problème de rendu survient avec `translucent`, la solution n'est JAMAIS de passer en `cutout`. Chercher la vraie cause (UVs, blockstate, face culling, modèle). Si la solution n'est pas connue, **dire qu'on ne sait pas** et **chercher sur internet** plutôt que d'inventer un fix incorrect.
+
+---
+
 ## Notes Importantes
 
 1. **Structure.txt est la source de vérité** — Toujours le consulter avant d'implémenter, toujours le mettre à jour après.
@@ -439,3 +450,5 @@ Toutes les méthodes ont une surcharge acceptant un `ResourceLocation` au lieu d
 4. **Pas d'optimisation prématurée** — Code lisible d'abord, optimiser si profilage le justifie.
 
 5. **Demander clarification si doute** — Mieux vaut une question que du code inutile.
+
+6. **Ne pas inventer de solutions** — Si la cause d'un bug n'est pas claire, chercher sur internet (vanilla models, Mojira bug tracker, forums NeoForge) AVANT de proposer un fix. Admettre quand on ne sait pas.

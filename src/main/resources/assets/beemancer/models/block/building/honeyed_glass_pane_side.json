@@ -3,6 +3,6 @@
   "render_type": "translucent",
   "textures": {
     "pane": "beemancer:block/honeyed_glass",
-    "edge": "beemancer:block/honeyed_glass"
+    "edge": "beemancer:block/honeyed_glass_pane_top"
   }
 }
