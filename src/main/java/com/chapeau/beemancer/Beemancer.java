@@ -37,6 +37,7 @@ import com.chapeau.beemancer.core.breeding.BreedingManager;
 import com.chapeau.beemancer.core.gene.GeneRegistry;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.network.BeemancerNetwork;
+import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
 import com.chapeau.beemancer.core.recipe.BeemancerRecipeSerializers;
 import com.chapeau.beemancer.core.recipe.BeemancerRecipeTypes;
@@ -114,6 +115,9 @@ public class Beemancer {
         BeemancerFluids.register(modEventBus);
         BeemancerRecipeTypes.register(modEventBus);
         BeemancerRecipeSerializers.register(modEventBus);
+
+        // Particles
+        BeemancerParticles.register(modEventBus);
 
         // Network
         BeemancerNetwork.register(modEventBus);

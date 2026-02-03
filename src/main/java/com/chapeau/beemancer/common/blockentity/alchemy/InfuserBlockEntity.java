@@ -34,13 +34,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
-import org.joml.Vector3f;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -48,6 +46,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import javax.annotation.Nullable;
+import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import com.chapeau.beemancer.core.util.ParticleHelper;
 import java.util.Optional;
 
@@ -80,7 +79,12 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
 
     private final ItemStackHandler outputSlot = new ItemStackHandler(1) {
         @Override
-        protected void onContentsChanged(int slot) { setChanged(); }
+        protected void onContentsChanged(int slot) {
+            setChanged();
+            if (level != null && !level.isClientSide()) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            }
+        }
     };
 
     // Flag pour eviter l'invalidation de la recette quand la machine drain elle-meme
@@ -182,11 +186,10 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
             level.setBlock(pos, state.setValue(InfuserBlock.WORKING, isWorking), 3);
         }
 
-        // Particules jaune miel orbitant autour du bloc pendant le processing
+        // Particules pixel jaune miel orbitant autour du bloc pendant le processing
         if (isWorking && level instanceof ServerLevel serverLevel && level.getGameTime() % 2 == 0) {
-            DustParticleOptions honeyParticle = new DustParticleOptions(new Vector3f(1.0f, 0.75f, 0.1f), 0.6f);
             Vec3 center = new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-            ParticleHelper.orbitingRing(serverLevel, honeyParticle, center, 0.35, 8, 0.08);
+            ParticleHelper.orbitingRing(serverLevel, BeemancerParticles.HONEY_PIXEL.get(), center, 0.35, 8, 0.08);
         }
 
         be.setChanged();
@@ -283,6 +286,7 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         tag.put("Input", inputSlot.serializeNBT(registries));
+        tag.put("Output", outputSlot.serializeNBT(registries));
         return tag;
     }
 

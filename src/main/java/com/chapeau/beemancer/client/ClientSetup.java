@@ -30,6 +30,8 @@ import com.chapeau.beemancer.client.renderer.block.CrankRenderer;
 import com.chapeau.beemancer.client.renderer.block.CrystallizerRenderer;
 import com.chapeau.beemancer.client.renderer.block.InfuserRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyTankRenderer;
+import com.chapeau.beemancer.client.particle.HoneyPixelParticle;
+import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import com.chapeau.beemancer.client.renderer.block.MultiblockTankRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageTerminalRenderer;
@@ -58,6 +60,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -75,6 +78,7 @@ public class ClientSetup {
         modEventBus.addListener(ClientSetup::registerClientExtensions);
         modEventBus.addListener(ClientSetup::registerBlockColors);
         modEventBus.addListener(ClientSetup::registerAdditionalModels);
+        modEventBus.addListener(ClientSetup::registerParticleProviders);
 
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
@@ -214,6 +218,14 @@ public class ClientSetup {
             @Override
             public int getTintColor() { return tintColor; }
         }, fluidType.get());
+    }
+
+    // =========================================================================
+    // PARTICLES
+    // =========================================================================
+
+    private static void registerParticleProviders(final RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(BeemancerParticles.HONEY_PIXEL.get(), HoneyPixelParticle.Provider::new);
     }
 
     // =========================================================================

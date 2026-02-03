@@ -8,7 +8,7 @@
  * ------------------------------------------------------------
  * | Dépendance                | Raison                | Utilisation                    |
  * |---------------------------|----------------------|--------------------------------|
- * | InfuserBlockEntity        | Données item         | getInputSlot()                 |
+ * | InfuserBlockEntity        | Données item         | getInputSlot(), getOutputSlot()|
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -31,7 +31,8 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Renderer pour l'Infuser.
- * Affiche l'item d'input flottant au centre du bloc avec bobbing et rotation.
+ * Affiche l'item au centre du bloc avec bobbing et rotation.
+ * Priorité: input slot, sinon output slot (craft terminé).
  * Les particules sont gérées côté serveur via ParticleHelper dans InfuserBlockEntity.serverTick().
  */
 public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> {
@@ -48,8 +49,11 @@ public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> 
 
         if (blockEntity.getLevel() == null) return;
 
-        ItemStack inputItem = blockEntity.getInputSlot().getStackInSlot(0);
-        if (inputItem.isEmpty()) return;
+        ItemStack displayItem = blockEntity.getInputSlot().getStackInSlot(0);
+        if (displayItem.isEmpty()) {
+            displayItem = blockEntity.getOutputSlot().getStackInSlot(0);
+        }
+        if (displayItem.isEmpty()) return;
 
         poseStack.pushPose();
 
@@ -61,7 +65,7 @@ public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> 
         poseStack.scale(0.4f, 0.4f, 0.4f);
 
         itemRenderer.renderStatic(
-            inputItem,
+            displayItem,
             ItemDisplayContext.FIXED,
             packedLight,
             packedOverlay,
