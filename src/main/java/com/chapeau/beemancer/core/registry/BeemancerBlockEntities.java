@@ -14,7 +14,6 @@ import com.chapeau.beemancer.common.block.incubator.IncubatorBlockEntity;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.*;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
-import com.chapeau.beemancer.common.blockentity.altar.HoneyCrystalBlockEntity;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.block.statue.BeeStatueBlockEntity;
@@ -263,13 +262,6 @@ public class BeemancerBlockEntities {
                     ).build(null));
 
     // --- HONEY ALTAR ---
-    public static final Supplier<BlockEntityType<HoneyCrystalBlockEntity>> HONEY_CRYSTAL =
-            BLOCK_ENTITIES.register("honey_crystal",
-                    () -> BlockEntityType.Builder.of(
-                            HoneyCrystalBlockEntity::new,
-                            BeemancerBlocks.HONEY_CRYSTAL.get()
-                    ).build(null));
-
     public static final Supplier<BlockEntityType<HoneyReservoirBlockEntity>> HONEY_RESERVOIR =
             BLOCK_ENTITIES.register("honey_reservoir",
                     () -> BlockEntityType.Builder.of(

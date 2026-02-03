@@ -288,7 +288,7 @@ public class BeemancerBlocks {
             () -> new HoneyCrystalBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f)
                     .sound(SoundType.AMETHYST)
-                    .lightLevel(state -> state.getValue(HoneyCrystalBlock.FORMED) ? 15 : 10)
+                    .lightLevel(state -> 10)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 

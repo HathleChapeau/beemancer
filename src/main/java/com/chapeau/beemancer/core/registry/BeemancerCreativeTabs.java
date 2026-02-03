@@ -182,6 +182,7 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.HONEYED_FENCE_GATE.get());
         output.accept(BeemancerItems.HONEYED_TRAPDOOR.get());
         output.accept(BeemancerItems.HONEYED_DOOR.get());
+        output.accept(BeemancerItems.HONEYED_BUTTON.get());
 
         // Honeyed Stone
         output.accept(BeemancerItems.HONEYED_STONE_WALL.get());

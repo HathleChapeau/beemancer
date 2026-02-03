@@ -1,10 +1,7 @@
 {
   "variants": {
-    "formed=false": {
+    "": {
       "model": "beemancer:block/altar/honey_crystal"
-    },
-    "formed=true": {
-      "model": "beemancer:block/altar/honey_crystal_formed"
     }
   }
 }
