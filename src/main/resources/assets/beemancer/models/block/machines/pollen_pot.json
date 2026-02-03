@@ -1,10 +1,12 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "translucent",
   "textures": {
-    "particle": "beemancer:block/honeyed_stone",
-    "bottom": "beemancer:block/honeyed_stone",
-    "side": "beemancer:block/honeyed_stone",
-    "top": "beemancer:block/honeyed_stone"
+    "particle": "beemancer:block/honeyed_plank",
+    "bottom": "minecraft:block/honey_block_top",
+    "side": "minecraft:block/honey_block_top",
+    "top": "beemancer:block/honeyed_plank",
+    "inside": "minecraft:block/honey_block_top"
   },
   "elements": [
     {
@@ -16,7 +18,6 @@
         "east": {"texture": "#side"},
         "south": {"texture": "#side"},
         "west": {"texture": "#side"},
-        "up": {"texture": "#bottom"},
         "down": {"texture": "#bottom"}
       }
     },
@@ -29,13 +30,14 @@
         "east": {"texture": "#side"},
         "south": {"texture": "#side"},
         "west": {"texture": "#side"},
-        "down": {"texture": "#bottom"}
+        "down": {"texture": "#bottom"},
+        "up": {"texture": "#bottom"}
       }
     },
     {
       "name": "Rim",
-      "from": [1, 10, 1],
-      "to": [15, 12, 15],
+      "from": [3, 10, 3],
+      "to": [13, 12, 13],
       "faces": {
         "north": {"texture": "#top"},
         "east": {"texture": "#top"},

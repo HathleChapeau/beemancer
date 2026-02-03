@@ -45,7 +45,7 @@ public class PollenTextures {
         register(BeemancerItems.TREE_POLLEN.get(),
             ResourceLocation.withDefaultNamespace("block/green_concrete_powder"));
         register(BeemancerItems.CRYSTAL_POLLEN.get(),
-            ResourceLocation.withDefaultNamespace("block/light_blue_concrete_powder"));
+            ResourceLocation.withDefaultNamespace("block/magenta_concrete_powder"));
 
         // Pollens élémentaires
         register(BeemancerItems.POLLEN_OF_WIND.get(),

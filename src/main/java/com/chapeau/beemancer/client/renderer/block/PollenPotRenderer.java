@@ -47,7 +47,7 @@ public class PollenPotRenderer implements BlockEntityRenderer<PollenPotBlockEnti
     private static final float MIN_Z = 3f / 16f;
     private static final float MAX_Z = 13f / 16f;
     private static final float MIN_Y = 2f / 16f;
-    private static final float MAX_FILL_HEIGHT = 8f / 16f;
+    private static final float MAX_FILL_HEIGHT = 7.5f / 16f;
 
     public PollenPotRenderer(BlockEntityRendererProvider.Context context) {
     }

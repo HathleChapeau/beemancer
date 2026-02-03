@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/door_bottom_left",
   "textures": {
-    "bottom": "beemancer:block/honeyed_plank",
-    "top": "beemancer:block/honeyed_plank"
+    "bottom": "beemancer:block/building/honeyed_plank_door_bottom",
+    "top": "beemancer:block/building/honeyed_plank_door_bottom"
   }
 }

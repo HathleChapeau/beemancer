@@ -38,7 +38,7 @@
       "from": [0, 14, 0],
       "to": [16, 14, 16],
       "faces": {
-        "down": {"texture": "#top", "uv": [0, 0, 16, 16], "cullface": "down"}
+        "down": {"texture": "#top", "uv": [0, 0, 16, 16]}
       }
     },
     {

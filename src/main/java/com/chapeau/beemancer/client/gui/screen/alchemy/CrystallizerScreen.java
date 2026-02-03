@@ -65,12 +65,12 @@ public class CrystallizerScreen extends AbstractContainerScreen<CrystallizerMenu
             x + 8, y + 7, 0xDDDDDD, false);
 
         // Output slot (116, 35)
-        GuiRenderHelper.renderSlot(g, x + imageWidth/2 - 9, y + 30);
+        GuiRenderHelper.renderSlot(g, x + 88 - 9, y + 30);
 
         // Progress bar
         int processTime = menu.getProcessTime();
         float ratio = processTime > 0 ? (float) menu.getProgress() / processTime : 0;
-        GuiRenderHelper.renderProgressBar(g, x + imageWidth/2 - 28, y + 55, 56, 6, ratio);
+        GuiRenderHelper.renderProgressBar(g, x + 88 - 28, y + 55, 56, 6, ratio);
 
         // Input fluid gauge
         inputGauge.render(g, x, y);
