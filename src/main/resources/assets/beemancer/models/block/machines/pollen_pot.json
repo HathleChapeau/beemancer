@@ -5,8 +5,8 @@
     "particle": "beemancer:block/honeyed_plank",
     "bottom": "minecraft:block/honey_block_top",
     "side": "minecraft:block/honey_block_top",
-    "top": "beemancer:block/honeyed_plank",
-    "inside": "minecraft:block/honey_block_top"
+    "top": "beemancer:block/pollen_jar_top",
+    "inside": "beemancer:block/honeyed_plank"
   },
   "elements": [
     {
@@ -39,12 +39,12 @@
       "from": [3, 10, 3],
       "to": [13, 12, 13],
       "faces": {
-        "north": {"texture": "#top"},
-        "east": {"texture": "#top"},
-        "south": {"texture": "#top"},
-        "west": {"texture": "#top"},
+        "north": {"texture": "#inside"},
+        "east": {"texture": "#inside"},
+        "south": {"texture": "#inside"},
+        "west": {"texture": "#inside"},
         "up": {"texture": "#top"},
-        "down": {"texture": "#top"}
+        "down": {"texture": "#inside"}
       }
     }
   ]

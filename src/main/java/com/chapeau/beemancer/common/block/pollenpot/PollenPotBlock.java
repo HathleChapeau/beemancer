@@ -50,7 +50,7 @@ public class PollenPotBlock extends BaseEntityBlock {
     private static final VoxelShape SHAPE = Shapes.or(
             Block.box(3, 0, 3, 13, 1, 13),   // Base
             Block.box(2, 1, 2, 14, 10, 14),  // Corps
-            Block.box(1, 10, 1, 15, 12, 15)  // Rebord
+            Block.box(3, 10, 3, 13, 12, 13)  // Rebord
     );
 
     public PollenPotBlock(Properties properties) {
