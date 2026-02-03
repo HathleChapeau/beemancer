@@ -42,10 +42,10 @@ public class CrystallizerBlock extends BaseEntityBlock {
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
 
     private static final VoxelShape SHAPE = Shapes.or(
-        Block.box(0, 0, 0, 4, 16, 4),      // Pillar NW
-        Block.box(12, 0, 0, 16, 16, 4),     // Pillar NE
-        Block.box(0, 0, 12, 4, 16, 16),     // Pillar SW
-        Block.box(12, 0, 12, 16, 16, 16),   // Pillar SE
+        Block.box(0, 0, 0, 3, 16, 3),      // Pillar NW
+        Block.box(13, 0, 0, 16, 16, 3),     // Pillar NE
+        Block.box(0, 0, 13, 3, 16, 16),     // Pillar SW
+        Block.box(13, 0, 13, 16, 16, 16),   // Pillar SE
         Block.box(1, 1, 1, 15, 4, 15),      // Frame Bottom
         Block.box(1, 12, 1, 15, 15, 15),    // Frame Top
         Block.box(2, 2, 2, 14, 14, 14)      // Glass Core
