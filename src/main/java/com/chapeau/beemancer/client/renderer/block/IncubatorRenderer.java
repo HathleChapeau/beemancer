@@ -9,6 +9,7 @@
  * | Dependance                | Raison                | Utilisation                    |
  * |---------------------------|----------------------|--------------------------------|
  * | IncubatorBlockEntity      | Donnees item         | getItem(0)                     |
+ * | MagicBeeItem              | Detection abeille    | Rendu specifique BEWLR         |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -19,6 +20,7 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlockEntity;
+import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -31,8 +33,9 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Renderer pour l'Incubator.
- * Affiche l'item au centre du bloc avec bobbing et rotation,
- * meme style que l'InfuserRenderer.
+ * Affiche l'item au centre du bloc avec bobbing et rotation.
+ * Rendu specifique pour les abeilles (MagicBeeItem) qui utilisent un BEWLR
+ * avec des transforms internes a compenser.
  */
 public class IncubatorRenderer implements BlockEntityRenderer<IncubatorBlockEntity> {
 
@@ -56,9 +59,21 @@ public class IncubatorRenderer implements BlockEntityRenderer<IncubatorBlockEnti
         float time = blockEntity.getLevel().getGameTime() + partialTick;
         float bob = (float) Math.sin(time * 0.1) * 0.03f;
 
-        poseStack.translate(0.5, 0.5 + bob, 0.5);
-        poseStack.mulPose(Axis.YP.rotationDegrees(time * 1.5f));
-        poseStack.scale(0.4f, 0.4f, 0.4f);
+        boolean isBee = displayItem.getItem() instanceof MagicBeeItem;
+
+        if (isBee) {
+            // Compenser les transforms du MagicBeeItemRenderer BEWLR (mode FIXED)
+            // Le BEWLR fait: translate(0.5, 0.5, 0.5), scale(-1,-1,1), rotate Y 225, scale 0.9
+            poseStack.translate(0.8f, 1.0f + bob, 0.8f);
+            poseStack.scale(0.5f, 0.5f, 0.5f);
+            poseStack.translate(-0.5, -0.5, -0.5);
+            poseStack.mulPose(Axis.YP.rotationDegrees(time * 1.5f));
+        } else {
+            // Items normaux (larve, etc.)
+            poseStack.translate(0.5, 0.5 + bob, 0.5);
+            poseStack.mulPose(Axis.YP.rotationDegrees(time * 1.5f));
+            poseStack.scale(0.4f, 0.4f, 0.4f);
+        }
 
         itemRenderer.renderStatic(
                 displayItem,

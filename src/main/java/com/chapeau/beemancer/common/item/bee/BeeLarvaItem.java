@@ -86,25 +86,10 @@ public class BeeLarvaItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
 
-        if (net.minecraft.client.gui.screens.Screen.hasShiftDown()) {
-            BeeGeneData geneData = getGeneData(stack);
-
-            // Sort categories by display order
-            List<GeneCategory> categories = GeneRegistry.getAllCategories();
-            categories.sort(Comparator.comparingInt(GeneCategory::getDisplayOrder));
-
-            for (GeneCategory category : categories) {
-                Gene gene = geneData.getGene(category);
-                if (gene != null) {
-                    tooltip.add(Component.literal("")
-                            .append(category.getDisplayName())
-                            .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                            .append(gene.getDisplayName().copy().withStyle(ChatFormatting.WHITE)));
-                }
-            }
-        } else {
-            tooltip.add(Component.translatable("item.beemancer.bee_larva.shift_hint")
-                    .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+        BeeGeneData geneData = getGeneData(stack);
+        Gene speciesGene = geneData.getGene(GeneCategory.SPECIES);
+        if (speciesGene != null) {
+            tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
         }
     }
 }
