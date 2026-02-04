@@ -4,7 +4,7 @@
       "model": "beemancer:block/alchemy/alembic_heart"
     },
     "multiblock=alembic": {
-      "model": "beemancer:block/alchemy/alembic_heart"
+      "model": "beemancer:block/alchemy/alembic_heart_alembic"
     }
   }
 }

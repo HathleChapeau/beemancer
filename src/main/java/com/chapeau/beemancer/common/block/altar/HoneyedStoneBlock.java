@@ -37,21 +37,19 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
  */
 public class HoneyedStoneBlock extends Block {
 
-    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("altar", "extractor", "storage");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("altar");
     public static final IntegerProperty LAYER = IntegerProperty.create("layer", 0, 2);
-    public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 3);
 
     public HoneyedStoneBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(MULTIBLOCK, MultiblockProperty.NONE)
-            .setValue(LAYER, 0)
-            .setValue(FORMED_ROTATION, 0));
+            .setValue(LAYER, 0));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(MULTIBLOCK, LAYER, FORMED_ROTATION);
+        builder.add(MULTIBLOCK, LAYER);
     }
 
     @Override

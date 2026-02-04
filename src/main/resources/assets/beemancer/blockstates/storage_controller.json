@@ -4,7 +4,7 @@
       "model": "beemancer:block/storage/storage_controller"
     },
     "multiblock=storage": {
-      "model": "beemancer:block/storage/storage_controller_formed"
+      "model": "beemancer:block/storage/storage_controller_storage"
     }
   }
 }

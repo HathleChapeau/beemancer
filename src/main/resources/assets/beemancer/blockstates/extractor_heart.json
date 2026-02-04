@@ -4,7 +4,7 @@
       "model": "beemancer:block/machines/extractor_heart"
     },
     "multiblock=extractor": {
-      "model": "beemancer:block/machines/extractor_heart_formed"
+      "model": "beemancer:block/machines/extractor_heart_extractor"
     }
   }
 }

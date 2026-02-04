@@ -4,7 +4,7 @@
       "model": "beemancer:block/alchemy/infuser_heart"
     },
     "multiblock=infuser": {
-      "model": "beemancer:block/alchemy/infuser_heart"
+      "model": "beemancer:block/alchemy/infuser_heart_infuser"
     }
   }
 }

@@ -24,10 +24,8 @@ package com.chapeau.beemancer.common.blockentity.altar;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.altar.AltarHeartBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyCrystalConduitBlock;
-import com.chapeau.beemancer.common.block.altar.HoneyPedestalBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
-import com.chapeau.beemancer.common.block.altar.HoneyedStoneStairBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlockEntity;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
@@ -137,20 +135,6 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
 
         MultiblockProperty multiblockValue = formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE;
 
-        // === Pedestal à Y-2 ===
-        updateBlockMultiblock(worldPosition.offset(0, -2, 0), HoneyPedestalBlock.MULTIBLOCK, multiblockValue);
-
-        // === 4 Stairs à Y-2 ===
-        BlockPos[] stairOffsets = {
-            new BlockPos(0, -2, -1),  // N
-            new BlockPos(0, -2, 1),   // S
-            new BlockPos(1, -2, 0),   // E
-            new BlockPos(-1, -2, 0)   // W
-        };
-        for (BlockPos offset : stairOffsets) {
-            updateBlockMultiblock(worldPosition.offset(offset), HoneyedStoneStairBlock.MULTIBLOCK, multiblockValue);
-        }
-
         // === 4 Conduits cardinaux à Y+1 (orientés vers le centre) ===
         updateConduit(worldPosition.offset(0, 1, -1), formed, Direction.SOUTH);   // N pointe vers S
         updateConduit(worldPosition.offset(0, 1, 1), formed, Direction.NORTH);    // S pointe vers N
@@ -168,16 +152,6 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         updateReservoir(worldPosition.offset(0, 2, 1), formed, Direction.NORTH);   // S pointe vers N
         updateReservoir(worldPosition.offset(1, 2, 0), formed, Direction.WEST);    // E pointe vers W
         updateReservoir(worldPosition.offset(-1, 2, 0), formed, Direction.EAST);   // W pointe vers E
-    }
-
-    /**
-     * Met à jour la propriété MULTIBLOCK d'un bloc si elle existe.
-     */
-    private void updateBlockMultiblock(BlockPos pos, net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty> property, MultiblockProperty value) {
-        BlockState state = level.getBlockState(pos);
-        if (state.hasProperty(property)) {
-            level.setBlock(pos, state.setValue(property, value), 3);
-        }
     }
 
     /**

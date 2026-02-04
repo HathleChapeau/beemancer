@@ -4,7 +4,7 @@
       "model": "beemancer:block/altar/altar_heart"
     },
     "multiblock=altar": {
-      "model": "beemancer:block/altar/altar_heart_formed"
+      "model": "beemancer:block/altar/altar_heart_altar"
     }
   }
 }

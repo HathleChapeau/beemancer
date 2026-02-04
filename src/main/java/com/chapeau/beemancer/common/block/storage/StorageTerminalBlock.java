@@ -45,8 +45,6 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
-import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -67,7 +65,6 @@ import org.jetbrains.annotations.Nullable;
 public class StorageTerminalBlock extends BaseEntityBlock {
     public static final MapCodec<StorageTerminalBlock> CODEC = simpleCodec(StorageTerminalBlock::new);
 
-    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("storage");
     public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 3);
 
     // VoxelShapes pour chaque rotation (plaque 12×12×3 flush contre le controller)
@@ -83,13 +80,12 @@ public class StorageTerminalBlock extends BaseEntityBlock {
     public StorageTerminalBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(MULTIBLOCK, MultiblockProperty.NONE)
             .setValue(FORMED_ROTATION, 0));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(MULTIBLOCK, FORMED_ROTATION);
+        builder.add(FORMED_ROTATION);
     }
 
     @Override

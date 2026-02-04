@@ -63,7 +63,7 @@ import javax.annotation.Nullable;
 public class HoneyReservoirBlock extends BaseEntityBlock {
     public static final MapCodec<HoneyReservoirBlock> CODEC = simpleCodec(HoneyReservoirBlock::new);
 
-    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("altar", "extractor", "storage");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("altar");
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     // Forme carrée: réservoir 8x8x8 centré

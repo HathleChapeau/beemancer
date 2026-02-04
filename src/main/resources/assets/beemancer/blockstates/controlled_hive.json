@@ -1,12 +1,7 @@
 {
   "variants": {
-    "formed_rotation=0,multiblock=none": { "model": "beemancer:block/storage/controlled_hive" },
-    "formed_rotation=1,multiblock=none": { "model": "beemancer:block/storage/controlled_hive", "y": 90 },
-    "formed_rotation=2,multiblock=none": { "model": "beemancer:block/storage/controlled_hive", "y": 180 },
-    "formed_rotation=3,multiblock=none": { "model": "beemancer:block/storage/controlled_hive", "y": 270 },
-    "formed_rotation=0,multiblock=storage": { "model": "beemancer:block/storage/controlled_hive_formed" },
-    "formed_rotation=1,multiblock=storage": { "model": "beemancer:block/storage/controlled_hive_formed", "y": 90 },
-    "formed_rotation=2,multiblock=storage": { "model": "beemancer:block/storage/controlled_hive_formed", "y": 180 },
-    "formed_rotation=3,multiblock=storage": { "model": "beemancer:block/storage/controlled_hive_formed", "y": 270 }
+    "": {
+      "model": "beemancer:block/storage/controlled_hive"
+    }
   }
 }

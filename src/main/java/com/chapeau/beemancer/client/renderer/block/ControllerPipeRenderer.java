@@ -53,7 +53,7 @@ public class ControllerPipeRenderer implements BlockEntityRenderer<ControllerPip
 
     public static final ModelResourceLocation FORMED_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "block/storage/controller_pipe_formed"));
+            Beemancer.MOD_ID, "block/storage/controller_pipe_storage"));
 
     public ControllerPipeRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();

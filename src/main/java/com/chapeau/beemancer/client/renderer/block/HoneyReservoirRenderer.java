@@ -60,7 +60,7 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
 
     public static final ModelResourceLocation FORMED_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "block/altar/honey_reservoir_formed_render"));
+            Beemancer.MOD_ID, "block/altar/honey_reservoir_altar_render"));
 
     public HoneyReservoirRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
