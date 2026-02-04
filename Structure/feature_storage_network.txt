@@ -93,12 +93,15 @@ INTERFACE TERMINAL:
 - Inventaire joueur standard
 - Indicateur de requêtes en attente (badge orange)
 
-SYSTÈME DE FILE D'ATTENTE (PENDING REQUESTS):
-- Si les slots pickup sont pleins, items mis en file d'attente
-- Traitement automatique toutes les 10 ticks
-- Indicateur visuel: badge orange avec compteur
-- Tooltip: nombre d'items et types différents en attente
-- Persistance NBT (survit au restart)
+SYSTEME DE DEMANDES (RequestManager):
+- Interfaces et terminaux publient des InterfaceRequest (pas des DeliveryTask)
+- RequestManager centralise: fusion, validation, ordonnancement, annulation
+- IMPORT: coffre source → interface/terminal destination
+- EXPORT: source (adjacent/terminal) → coffre destination
+- Preloaded: terminal deposit pre-charge items sur la bee (skip source)
+- Recall: annulation rappelle la bee au controller (vol direct retour)
+- Identification par taskId (fiable meme si plusieurs bees transportent le meme item)
+- Voir: Structure/feature_delivery_refactoring.txt pour details complets
 
 SYNCHRONISATION:
 - GUI ouverte: Scan chaque tick
@@ -292,10 +295,14 @@ DÉPÔT INTELLIGENT:
 - Phase 2: Slots vides dans n'importe quel coffre
 - Évite dispersion des items identiques
 
-PENDING REQUESTS (StorageTerminalBlockEntity):
-- Queue<PendingRequest> persistante en NBT
-- serverTick() traite la queue toutes les 10 ticks
-- ContainerData sync le nombre d'items en attente vers client
-- StorageTerminalScreen affiche badge orange si queue non vide
+SYSTEME DE LIVRAISON (refactored):
+- RequestManager attache au StorageControllerBlockEntity
+- Interfaces/terminaux publient InterfaceRequest via publishRequest()
+- RequestManager convertit PENDING → DeliveryTask via processRequests()
+- StorageDeliveryManager spawn les bees, gere queue + recall
+- Flux unifie 6 phases: FLY_TO_SOURCE → WAIT → FLY_TO_CONTROLLER → FLY_TO_DEST → WAIT → FLY_HOME
+- Preloaded: bee spawn avec items, saute source (terminal deposit)
+- Recall: annulation → bee vole directement retour controller
+- Details complets: Structure/feature_delivery_refactoring.txt
 
 ################################################################################

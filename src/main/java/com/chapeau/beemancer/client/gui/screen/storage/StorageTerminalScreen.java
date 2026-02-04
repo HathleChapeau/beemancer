@@ -461,10 +461,16 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         g.drawString(font, "X", cancelX, cancelY,
             hoverCancel ? 0xFFFF4444 : 0xFFAA0000, false);
 
-        // Blocked reason
+        // Requester info (automation tasks) or blocked reason
         if (!task.blockedReason().isEmpty()) {
             Component reasonText = Component.translatable(task.blockedReason());
             g.drawString(font, reasonText, taskX + 18, currentY + 14, 0xFFFF6666, false);
+        } else if ("AUTOMATION".equals(task.origin()) && task.requesterPos() != null) {
+            String posStr = task.requesterType() + " @ "
+                + task.requesterPos().getX() + ", "
+                + task.requesterPos().getY() + ", "
+                + task.requesterPos().getZ();
+            g.drawString(font, posStr, taskX + 18, currentY + 14, 0xFF888888, false);
         }
     }
 

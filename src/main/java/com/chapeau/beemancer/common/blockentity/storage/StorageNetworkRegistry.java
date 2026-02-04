@@ -116,6 +116,26 @@ public class StorageNetworkRegistry {
             .filter(e -> e.type() == NetworkBlockType.CHEST).count();
     }
 
+    /**
+     * Trouve un bloc enregistre (INTERFACE ou TERMINAL) adjacent a la position donnee.
+     * Utile pour le pathfinding: le container adjacent a une interface n'est pas enregistre,
+     * mais l'interface elle-meme l'est.
+     *
+     * @return la position du bloc enregistre adjacent, ou null si aucun
+     */
+    @Nullable
+    public BlockPos findAdjacentRegisteredBlock(BlockPos pos) {
+        for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+            BlockPos neighbor = pos.relative(dir);
+            NetworkEntry entry = registry.get(neighbor);
+            if (entry != null && (entry.type() == NetworkBlockType.INTERFACE
+                    || entry.type() == NetworkBlockType.TERMINAL)) {
+                return neighbor;
+            }
+        }
+        return null;
+    }
+
     public Map<BlockPos, NetworkEntry> getAll() {
         return Collections.unmodifiableMap(registry);
     }

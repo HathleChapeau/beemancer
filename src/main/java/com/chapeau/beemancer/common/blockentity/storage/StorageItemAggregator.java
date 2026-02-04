@@ -142,7 +142,8 @@ public class StorageItemAggregator {
      * 1. Coffre contenant le même item exact (mergeable ou slot vide dans ce coffre)
      * 2. Coffre contenant un item partageant un tag commun (avec slot vide)
      * 3. Coffre contenant un item du même mod/namespace (avec slot vide)
-     * 4. N'importe quel coffre avec un slot vide
+     * 4. Coffre totalement vide
+     * 5. N'importe quel coffre avec un slot vide
      *
      * @return la position du coffre où déposer, ou null si aucun espace
      */
@@ -239,7 +240,23 @@ public class StorageItemAggregator {
             }
         }
 
-        // Priorité 4: N'importe quel coffre avec un slot vide
+        // Priorité 4: Coffre totalement vide
+        for (BlockPos chestPos : chests) {
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
+            if (be instanceof Container container) {
+                boolean allEmpty = true;
+                for (int i = 0; i < container.getContainerSize(); i++) {
+                    if (!container.getItem(i).isEmpty()) {
+                        allEmpty = false;
+                        break;
+                    }
+                }
+                if (allEmpty && container.getContainerSize() > 0) return chestPos;
+            }
+        }
+
+        // Priorité 5: N'importe quel coffre avec un slot vide
         for (BlockPos chestPos : chests) {
             if (!parent.getLevel().isLoaded(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);

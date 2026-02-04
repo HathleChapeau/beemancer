@@ -10,6 +10,7 @@
  * |----------------|----------------------|-------------------|
  * | ItemStack      | Template de l'item   | Affichage icône   |
  * | FriendlyByteBuf| Sérialisation réseau | Sync S->C         |
+ * | BlockPos       | Position requester   | Affichage origine |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -21,9 +22,11 @@
  */
 package com.chapeau.beemancer.common.block.storage;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -39,7 +42,9 @@ public record TaskDisplayData(
     String state,
     List<UUID> dependencyIds,
     String origin,
-    String blockedReason
+    String blockedReason,
+    @Nullable BlockPos requesterPos,
+    String requesterType
 ) {
 
     /**
@@ -56,6 +61,11 @@ public record TaskDisplayData(
         }
         buf.writeUtf(origin, 16);
         buf.writeUtf(blockedReason, 64);
+        buf.writeBoolean(requesterPos != null);
+        if (requesterPos != null) {
+            buf.writeLong(requesterPos.asLong());
+        }
+        buf.writeUtf(requesterType, 32);
     }
 
     /**
@@ -73,6 +83,9 @@ public record TaskDisplayData(
         }
         String origin = buf.readUtf(16);
         String blockedReason = buf.readUtf(64);
-        return new TaskDisplayData(taskId, template, count, state, deps, origin, blockedReason);
+        BlockPos reqPos = buf.readBoolean() ? BlockPos.of(buf.readLong()) : null;
+        String reqType = buf.readUtf(32);
+        return new TaskDisplayData(taskId, template, count, state, deps, origin,
+            blockedReason, reqPos, reqType);
     }
 }

@@ -37,6 +37,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import com.chapeau.beemancer.common.blockentity.storage.StorageNetworkRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -45,6 +46,7 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -224,28 +226,26 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
         BlockPos controllerPos = blockEntity.getBlockPos();
 
-        // Lignes vertes + outlines bleus vers TOUS les coffres du reseau
-        Set<BlockPos> chests = blockEntity.getAllNetworkChests();
-        for (BlockPos chestPos : chests) {
-            renderLineToChest(lineBuffer, matrix, controllerPos, chestPos);
-        }
-
         // Lignes magenta vers les noeuds connectes (relays)
         for (BlockPos nodePos : blockEntity.getConnectedNodes()) {
             renderBlockLink(lineBuffer, matrix, controllerPos, nodePos,
                     0.8f, 0.2f, 1.0f, 1.0f, 0.8f);
         }
 
-        // Lignes orange vers les interfaces liees (import/export)
-        for (BlockPos ifacePos : blockEntity.getLinkedInterfaces()) {
-            renderBlockLink(lineBuffer, matrix, controllerPos, ifacePos,
-                    1.0f, 0.6f, 0.1f, 1.0f, 0.8f);
-        }
+        // Filtrer: afficher seulement les blocs directement possedes par le controller
+        // Les blocs possedes par les relays sont visibles depuis le mode edition du relay
+        StorageNetworkRegistry registry = blockEntity.getNetworkRegistry();
+        for (Map.Entry<BlockPos, StorageNetworkRegistry.NetworkEntry> entry : registry.getAll().entrySet()) {
+            if (!entry.getValue().ownerNode().equals(controllerPos)) continue;
 
-        // Lignes cyan vers les terminaux lies
-        for (BlockPos termPos : blockEntity.getLinkedTerminals()) {
-            renderBlockLink(lineBuffer, matrix, controllerPos, termPos,
-                    0.1f, 0.8f, 0.9f, 1.0f, 0.8f);
+            BlockPos blockPos = entry.getKey();
+            switch (entry.getValue().type()) {
+                case CHEST -> renderLineToChest(lineBuffer, matrix, controllerPos, blockPos);
+                case INTERFACE -> renderBlockLink(lineBuffer, matrix, controllerPos, blockPos,
+                        1.0f, 0.6f, 0.1f, 1.0f, 0.8f);
+                case TERMINAL -> renderBlockLink(lineBuffer, matrix, controllerPos, blockPos,
+                        0.1f, 0.8f, 0.9f, 1.0f, 0.8f);
+            }
         }
 
         poseStack.popPose();

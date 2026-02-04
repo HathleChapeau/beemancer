@@ -126,8 +126,8 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             int toExport = Math.min(exportable, maxQuantity);
 
             InterfaceRequest request = new InterfaceRequest(
-                getAdjacentPos(), InterfaceRequest.RequestType.EXPORT, template,
-                toExport, InterfaceRequest.TaskOrigin.AUTOMATION
+                getAdjacentPos(), worldPosition, InterfaceRequest.RequestType.EXPORT,
+                template, toExport, InterfaceRequest.TaskOrigin.AUTOMATION
             );
             requestManager.publishRequest(request);
         }

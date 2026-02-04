@@ -164,8 +164,8 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
             needed = Math.min(needed, maxQuantity);
 
             InterfaceRequest request = new InterfaceRequest(
-                worldPosition, InterfaceRequest.RequestType.IMPORT, filterItem,
-                needed, InterfaceRequest.TaskOrigin.AUTOMATION
+                worldPosition, worldPosition, InterfaceRequest.RequestType.IMPORT,
+                filterItem, needed, InterfaceRequest.TaskOrigin.AUTOMATION
             );
             requestManager.publishRequest(request);
         }
@@ -195,8 +195,8 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
             needed = Math.min(needed, maxQuantity);
 
             InterfaceRequest request = new InterfaceRequest(
-                worldPosition, InterfaceRequest.RequestType.IMPORT, networkItem,
-                needed, InterfaceRequest.TaskOrigin.AUTOMATION
+                worldPosition, worldPosition, InterfaceRequest.RequestType.IMPORT,
+                networkItem, needed, InterfaceRequest.TaskOrigin.AUTOMATION
             );
             requestManager.publishRequest(request);
         }

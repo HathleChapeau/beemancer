@@ -55,6 +55,7 @@ public class InterfaceRequest {
 
     private final UUID requestId;
     private final BlockPos sourcePos;
+    private final BlockPos requesterPos;
     private final RequestType type;
     private final ItemStack template;
     private int count;
@@ -73,15 +74,16 @@ public class InterfaceRequest {
         AUTOMATION
     }
 
-    public InterfaceRequest(BlockPos sourcePos, RequestType type, ItemStack template,
-                            int count, TaskOrigin origin) {
-        this(sourcePos, type, template, count, origin, false);
+    public InterfaceRequest(BlockPos sourcePos, BlockPos requesterPos, RequestType type,
+                            ItemStack template, int count, TaskOrigin origin) {
+        this(sourcePos, requesterPos, type, template, count, origin, false);
     }
 
-    public InterfaceRequest(BlockPos sourcePos, RequestType type, ItemStack template,
-                            int count, TaskOrigin origin, boolean preloaded) {
+    public InterfaceRequest(BlockPos sourcePos, BlockPos requesterPos, RequestType type,
+                            ItemStack template, int count, TaskOrigin origin, boolean preloaded) {
         this.requestId = UUID.randomUUID();
         this.sourcePos = sourcePos;
+        this.requesterPos = requesterPos;
         this.type = type;
         this.template = template.copyWithCount(1);
         this.count = count;
@@ -95,12 +97,14 @@ public class InterfaceRequest {
     /**
      * Constructeur NBT interne.
      */
-    private InterfaceRequest(UUID requestId, BlockPos sourcePos, RequestType type,
-                             ItemStack template, int count, RequestStatus status,
-                             String blockedReason, @Nullable UUID assignedTaskId,
-                             TaskOrigin origin, boolean preloaded) {
+    private InterfaceRequest(UUID requestId, BlockPos sourcePos, BlockPos requesterPos,
+                             RequestType type, ItemStack template, int count,
+                             RequestStatus status, String blockedReason,
+                             @Nullable UUID assignedTaskId, TaskOrigin origin,
+                             boolean preloaded) {
         this.requestId = requestId;
         this.sourcePos = sourcePos;
+        this.requesterPos = requesterPos;
         this.type = type;
         this.template = template;
         this.count = count;
@@ -115,6 +119,7 @@ public class InterfaceRequest {
 
     public UUID getRequestId() { return requestId; }
     public BlockPos getSourcePos() { return sourcePos; }
+    public BlockPos getRequesterPos() { return requesterPos; }
     public RequestType getType() { return type; }
     public ItemStack getTemplate() { return template.copy(); }
     public int getCount() { return count; }
@@ -137,6 +142,7 @@ public class InterfaceRequest {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("RequestId", requestId);
         tag.putLong("SourcePos", sourcePos.asLong());
+        tag.putLong("RequesterPos", requesterPos.asLong());
         tag.putString("Type", type.name());
         tag.put("Template", template.saveOptional(registries));
         tag.putInt("Count", count);
@@ -153,6 +159,8 @@ public class InterfaceRequest {
     public static InterfaceRequest load(CompoundTag tag, HolderLookup.Provider registries) {
         UUID requestId = tag.getUUID("RequestId");
         BlockPos sourcePos = BlockPos.of(tag.getLong("SourcePos"));
+        BlockPos requesterPos = tag.contains("RequesterPos")
+            ? BlockPos.of(tag.getLong("RequesterPos")) : sourcePos;
         RequestType type = RequestType.valueOf(tag.getString("Type"));
         ItemStack template = ItemStack.parseOptional(registries, tag.getCompound("Template"));
         int count = tag.getInt("Count");
@@ -164,7 +172,7 @@ public class InterfaceRequest {
         UUID assignedTaskId = tag.contains("AssignedTaskId")
             ? tag.getUUID("AssignedTaskId") : null;
         boolean preloaded = tag.getBoolean("Preloaded");
-        return new InterfaceRequest(requestId, sourcePos, type, template, count,
-            status, blockedReason, assignedTaskId, origin, preloaded);
+        return new InterfaceRequest(requestId, sourcePos, requesterPos, type, template,
+            count, status, blockedReason, assignedTaskId, origin, preloaded);
     }
 }

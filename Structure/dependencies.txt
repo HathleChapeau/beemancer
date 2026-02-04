@@ -46,20 +46,61 @@ common/block/storage/
 ================================================================================
 
 - InterfaceRequest.java: Demande de livraison publiée par interfaces/terminaux
-  - Item et quantité demandés
-  - Source (interface/terminal UUID ou BlockPos)
-  - Type (IMPORT/EXPORT/TERMINAL)
+  - Item, quantité, type (IMPORT/EXPORT), origin (REQUEST/AUTOMATION)
+  - Source BlockPos (interface/terminal emetteur)
+  - preloaded flag (items pré-chargés sur la bee, ex: terminal deposit)
   - Comparaison par source + item pour regroupement
+
+- DeliveryTask.java: Tâche de livraison dans la queue du StorageDeliveryManager
+  - sourcePos (où l'abeille extrait), destPos (où elle dépose)
+  - preloaded flag (items pré-chargés, saute la phase source)
+  - priority + dependencies (UUID) pour ordonnancement
+  - splitting (division si quantité > capacité bee)
+  - DeliveryState: QUEUED → FLYING → COMPLETED/FAILED
+  - TaskOrigin: REQUEST (joueur), AUTOMATION (interface)
+
+- TaskDisplayData.java: Record léger pour sync réseau (affichage GUI)
+  - taskId, template, count, state, dependencyIds, origin, blockedReason
 
 ================================================================================
 common/blockentity/storage/
 ================================================================================
 
 - RequestManager.java: Gestionnaire central des demandes de livraison
-  - Registre des demandes en attente et complétées
-  - Validation, ordonnancement, et annulation des demandes
-  - Intégration avec StorageDeliveryManager pour exécution
-  - NBT persist/restore via "Requests"
+  - Registre des demandes en attente (LinkedHashMap UUID → InterfaceRequest)
+  - publishRequest(): fusion demandes identiques (source + type + item)
+  - processRequests(): PENDING → DeliveryTask (IMPORT: coffre→interface, EXPORT: source→coffre)
+  - cancelRequest(): annule demande + tâche associée, restitue items preloaded
+  - onTaskCompleted/onTaskFailed: callbacks depuis StorageDeliveryManager
+  - recheckBlockedRequests(): re-vérifie périodiquement les demandes BLOCKED
+  - NBT persist/restore via "Requests" (ASSIGNED sauvé comme PENDING)
+
+- StorageDeliveryManager.java: Queue livraison + spawn/recall bees
+  - addDeliveryTask(): ajoute à la queue avec priorité
+  - spawnDeliveryBee(): spawn avec waypoints multi-relais, preloaded support
+  - recallBeeForTask(): rappelle la bee par taskId (vol direct retour controller)
+  - killAllDeliveryBees(): kill immédiat avec restitution items (destruction controller)
+  - findChestWithItem/Space(): recherche dans tout le réseau
+  - findPathToChest(): BFS dans le graphe de nœuds pour waypoints relais
+  - Consommation miel depuis HoneyReservoirs du multibloc
+
+================================================================================
+common/entity/delivery/
+================================================================================
+
+- DeliveryBeeEntity.java: Abeille de livraison (extends Bee, skin vanilla)
+  - Invulnérable, silencieuse, sans collision, sans breeding, sans anger
+  - initDeliveryTask(): configure source/dest/waypoints/items
+  - recall(): rappelle vers controller (vol direct → restitution items → discard)
+  - returnCarriedItemsToNetwork(): restitue items au réseau
+  - Timeout: discard après 2400 ticks (2 min)
+  - NBT minimal: controllerPos + carriedItems (discard au reload)
+
+- DeliveryPhaseGoal.java: Goal unique de la DeliveryBee (FSM 6 phases)
+  - FLY_TO_SOURCE → WAIT_AT_SOURCE → FLY_TO_CONTROLLER → FLY_TO_DEST → WAIT_AT_DEST → FLY_HOME
+  - Preloaded: saute directement à FLY_TO_DEST
+  - Recalled: vol direct vers returnPos, restitution items
+  - navigateWaypoints(): navigation multi-relais avec index mutable
 
 ================================================================================
 core/breeding/

@@ -1,0 +1,196 @@
+################################################################################
+#              FEATURE: Delivery System Refactoring (5 phases)                #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Refonte complete du systeme de livraison du reseau de stockage en 5 phases
+incrementales. Remplace l'ancien systeme ou chaque interface creait ses propres
+DeliveryTask par un systeme centralise via RequestManager.
+
+Objectifs:
+- Flux unifie: toutes les livraisons suivent source → extraction → dest → depot
+- RequestManager centralise: interfaces/terminaux publient des demandes, pas des taches
+- Preloaded: terminal deposit pre-charge items sur la bee (fix bug items perdus)
+- Recall: annulation rappelle la bee au controller au lieu de la tuer
+- Identification fiable: bees identifiees par taskId, plus par template+count
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+FLUX DE LIVRAISON UNIFIE:
+
+  Interface/Terminal                  RequestManager                  StorageDeliveryManager
+       |                                  |                                  |
+       | publishRequest(InterfaceRequest) |                                  |
+       |--------------------------------->|                                  |
+       |                                  | processRequests()                |
+       |                                  |--- IMPORT: find chest source --->|
+       |                                  |--- EXPORT: find chest dest ----->|
+       |                                  |                                  |
+       |                                  | addDeliveryTask(DeliveryTask)    |
+       |                                  |--------------------------------->|
+       |                                  |                                  |
+       |                                  |            spawnDeliveryBee()    |
+       |                                  |                                  |
+       |                                  |            DeliveryBeeEntity     |
+       |                                  |            FLY_TO_SOURCE         |
+       |                                  |            WAIT_AT_SOURCE        |
+       |                                  |            FLY_TO_CONTROLLER     |
+       |                                  |            FLY_TO_DEST           |
+       |                                  |            WAIT_AT_DEST          |
+       |                                  |            FLY_HOME              |
+       |                                  |                                  |
+       |                                  | onTaskCompleted/onTaskFailed     |
+       |                                  |<---------------------------------|
+
+
+FLUX PRELOADED (terminal deposit):
+
+  Terminal retire items du slot → publie EXPORT request (preloaded=true)
+  → bee spawn avec items pre-charges → saute FLY_TO_SOURCE → FLY_TO_DEST direct
+
+
+FLUX RECALL (annulation):
+
+  cancelRequest → cancelTask → recallBeeForTask → bee.recall()
+  → bee vole directement vers returnPos → returnCarriedItemsToNetwork → discard
+
+================================================================================
+PHASES
+================================================================================
+
+PHASE 1: Cleanup + Utility Extraction
+- Creation ContainerHelper (insert, extract, count, space sur Container)
+- Extraction logique container depuis DeliveryBeeEntity/StorageDeliveryManager
+
+PHASE 2: InterfaceRequest + RequestManager
+- Creation InterfaceRequest: demande unitaire publiee par interfaces/terminaux
+- Creation RequestManager: gestionnaire central attache au controller
+- Import/Export/Terminal publient InterfaceRequest au lieu de creer DeliveryTask
+- Callbacks onTaskCompleted/onTaskFailed depuis StorageDeliveryManager
+- Suppression pendingTasks dans NetworkInterfaceBlockEntity
+
+PHASE 3: Suppression DeliveryType + Flux Unifie + Fix Terminal Export
+- Suppression DeliveryTask.DeliveryType enum (EXTRACT/DEPOSIT)
+- Renommage: targetPos → sourcePos, terminalPos → destPos, originPos supprime
+- Renommage: terminalWaypoints → destWaypoints
+- Renommage phases FSM: FLY_OUTBOUND → FLY_TO_SOURCE, etc.
+- Ajout preloaded flag: InterfaceRequest + DeliveryTask + DeliveryBeeEntity
+- Fix bug terminal export: items pre-charges sur la bee (skip source)
+- Suppression champ type dans TaskDisplayData
+
+PHASE 4: Fix Bee Identification + Recall + Item Recovery
+- Fix killBeeForTask: identification par taskId au lieu de template+count
+- Renommage killBeeForTask → recallBeeForTask: bee.recall() au lieu de discard
+- DeliveryBeeEntity.recall(): flag recalled + vol direct vers controller
+- DeliveryPhaseGoal.handleRecall(): interception tick, navigation directe returnPos
+- killAllDeliveryBees securise: returnCarriedItemsToNetwork avant discard
+
+PHASE 5: GUI Localization + Finalization
+- getStateLabel() localise avec Component.translatable()
+- Suppression DeliveryState.WAITING et RETURNING (jamais utilises)
+- Ajout cles i18n gui.beemancer.tasks.state.* (en_us + fr_fr)
+
+================================================================================
+FICHIERS CREES
+================================================================================
+
+- core/util/ContainerHelper.java: Operations generiques sur Container
+- common/block/storage/InterfaceRequest.java: Demande de livraison
+- common/blockentity/storage/RequestManager.java: Gestionnaire central demandes
+
+================================================================================
+FICHIERS MODIFIES
+================================================================================
+
+ENTITES:
+- common/entity/delivery/DeliveryBeeEntity.java
+  - Supprime: deliveryType, needsTerminalFlight(), targetPos, terminalPos
+  - Ajoute: sourcePos, destPos, destWaypoints, recalled, recall(), isRecalled()
+- common/entity/delivery/DeliveryPhaseGoal.java
+  - Renomme phases FSM, supprime branches DEPOSIT, ajoute preloaded + recall
+
+TACHES:
+- common/block/storage/DeliveryTask.java
+  - Supprime: DeliveryType enum, type field, originPos, WAITING/RETURNING states
+  - Ajoute: sourcePos, destPos, preloaded flag
+- common/block/storage/TaskDisplayData.java
+  - Supprime: type field
+
+MANAGERS:
+- common/blockentity/storage/StorageDeliveryManager.java
+  - Adapte spawn/cancel/validate au flux unifie, recallBeeForTask, item recovery
+- common/blockentity/storage/StorageControllerBlockEntity.java
+  - Ajoute RequestManager (field, tick, NBT, accesseur)
+- common/blockentity/storage/StorageTerminalBlockEntity.java
+  - requestItem/tryDeposit publient InterfaceRequest, exports preloaded=true
+
+INTERFACES:
+- common/blockentity/storage/ImportInterfaceBlockEntity.java
+  - Publie InterfaceRequest au lieu de creer DeliveryTask
+- common/blockentity/storage/ExportInterfaceBlockEntity.java
+  - Publie InterfaceRequest au lieu de creer DeliveryTask
+- common/blockentity/storage/NetworkInterfaceBlockEntity.java
+  - Supprime pendingTasks (remplace par RequestManager)
+
+GUI:
+- client/gui/screen/storage/StorageTerminalScreen.java
+  - Supprime indicateur type, ajoute indicateur origin, localise state labels
+
+LANG:
+- assets/beemancer/lang/en_us.json: +gui.beemancer.tasks.state.*
+- assets/beemancer/lang/fr_fr.json: +gui.beemancer.tasks.state.*
+
+================================================================================
+COMPATIBILITE NBT
+================================================================================
+
+DeliveryTask.load() accepte les anciens noms de champs:
+- "SourcePos" / "TargetPos" / "TargetChest" → sourcePos
+- "DestPos" / "TerminalPos" → destPos
+- "Origin" absent → TaskOrigin.REQUEST (defaut)
+- "Preloaded" absent → false (defaut)
+
+RequestManager sauvegarde les ASSIGNED comme PENDING (bees perdues au reload).
+
+================================================================================
+CLASSES CLES
+================================================================================
+
+InterfaceRequest:
+  - requestId (UUID), sourcePos, type (IMPORT/EXPORT), template, count
+  - status (PENDING/ASSIGNED/BLOCKED/CANCELLED), origin (REQUEST/AUTOMATION)
+  - preloaded (boolean), assignedTaskId, blockedReason
+
+DeliveryTask:
+  - taskId (UUID), template, count, sourcePos, destPos
+  - state (QUEUED/FLYING/COMPLETED/FAILED), origin, preloaded
+  - priority (int), dependencies (List<UUID>)
+  - splitRemaining(beeCapacity): divise si count > maxStackSize
+
+DeliveryBeeEntity:
+  - controllerPos, sourcePos, returnPos, destPos
+  - outbound/return/destWaypoints, carriedItems, template, requestCount
+  - flySpeed/searchSpeedMultiplier, recalled flag
+  - Invulnerable, silent, no collision, no breeding, no anger, no despawn
+
+DeliveryPhaseGoal (FSM):
+  - FLY_TO_SOURCE: outbound waypoints → sourcePos
+  - WAIT_AT_SOURCE: extraction items du coffre
+  - FLY_TO_CONTROLLER: return waypoints → returnPos
+  - FLY_TO_DEST: dest waypoints → destPos
+  - WAIT_AT_DEST: depot items (IDeliveryEndpoint ou Container)
+  - FLY_HOME: dest waypoints inverses → returnPos → discard
+
+RequestManager:
+  - publishRequest(): fusion si meme source+type+item
+  - processImportRequest(): find chest → DeliveryTask (coffre→interface)
+  - processExportRequest(): find space → DeliveryTask (source→coffre, preloaded)
+  - cancelRequest(): annule + restitue items preloaded
+  - recheckBlockedRequests(): re-verifie BLOCKED periodiquement
+
+################################################################################

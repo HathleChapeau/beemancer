@@ -25,6 +25,7 @@ package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
+import com.chapeau.beemancer.common.block.storage.InterfaceRequest;
 import com.chapeau.beemancer.common.block.storage.TaskDisplayData;
 import com.chapeau.beemancer.core.util.ContainerHelper;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
@@ -119,6 +120,15 @@ public class StorageDeliveryManager {
         // Utiliser getOwner() pour trouver le noeud proprietaire et BFS vers ce noeud
         List<BlockPos> registryPath = findPathToOwnerNode(chestPos);
         if (!registryPath.isEmpty()) return registryPath;
+
+        // Cas 2b: le bloc est adjacent a une interface/terminal enregistre
+        // (ex: container adjacent a un export interface → utiliser le owner de l'interface)
+        StorageNetworkRegistry registry = parent.getNetworkRegistry();
+        BlockPos adjacentRegistered = registry.findAdjacentRegisteredBlock(chestPos);
+        if (adjacentRegistered != null) {
+            List<BlockPos> adjacentPath = findPathToOwnerNode(adjacentRegistered);
+            if (!adjacentPath.isEmpty()) return adjacentPath;
+        }
 
         if (parent.getLevel() == null) return List.of();
 
@@ -685,6 +695,15 @@ public class StorageDeliveryManager {
     }
 
     private TaskDisplayData taskToDisplayData(DeliveryTask task) {
+        // Reverse lookup: trouver la request associee pour obtenir les infos requester
+        BlockPos requesterPos = null;
+        String requesterType = "";
+        InterfaceRequest request = parent.getRequestManager().findRequestByTaskId(task.getTaskId());
+        if (request != null) {
+            requesterPos = request.getRequesterPos();
+            requesterType = deriveRequesterType(request);
+        }
+
         return new TaskDisplayData(
             task.getTaskId(),
             task.getTemplate(),
@@ -692,8 +711,23 @@ public class StorageDeliveryManager {
             task.getState().name(),
             task.getDependencies(),
             task.getOrigin().name(),
-            computeBlockedReason(task)
+            computeBlockedReason(task),
+            requesterPos,
+            requesterType
         );
+    }
+
+    /**
+     * Derive le type de bloc demandeur depuis les champs de la request.
+     */
+    private String deriveRequesterType(InterfaceRequest request) {
+        if (request.getOrigin() == InterfaceRequest.TaskOrigin.REQUEST) {
+            return "Terminal";
+        }
+        return switch (request.getType()) {
+            case IMPORT -> "Import";
+            case EXPORT -> "Export";
+        };
     }
 
     /**

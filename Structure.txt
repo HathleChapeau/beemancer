@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-02-04                     #
-#     (Export Relay + Import Validation + Blocked Status - 2026-02-04)      #
+#     (Delivery System Refactoring Phase 1-5 Complete - 2026-02-04)            #
 ################################################################################
 
 ================================================================================
@@ -81,7 +81,8 @@ Philosophie:
 │ common/blockentity/storage/           │                                        │
 │   StorageChestManager               │ Gestion coffres réseau stockage      │
 │   StorageItemAggregator             │ Agrégation/dépôt/extraction items    │
-│   StorageDeliveryManager            │ Queue livraison + spawn bees         │
+│   StorageDeliveryManager            │ Queue livraison + spawn/recall bees  │
+│   RequestManager                    │ Demandes interfaces/terminaux        │
 │   StorageMultiblockManager          │ Formation/destruction multibloc      │
 │ common/block/hive/                    │                                        │
 │   HiveBeeLifecycleManager           │ Cycle de vie abeilles dans ruche     │
@@ -274,6 +275,10 @@ LISTE DES FEATURES:
 → Flywheel Test Bee
   Fichier: Structure/feature_flywheel_test_bee.txt
   Description: Proof of concept GPU instancing via Flywheel pour rendu abeilles
+
+→ Delivery System Refactoring (5 phases)
+  Fichier: Structure/feature_delivery_refactoring.txt
+  Description: Refonte complète du système de livraison: RequestManager, flux unifié, recall bees, localisation GUI
 
 ================================================================================
 6. FEATURES EN COURS

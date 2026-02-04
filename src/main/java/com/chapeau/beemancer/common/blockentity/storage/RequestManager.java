@@ -305,6 +305,19 @@ public class RequestManager {
     }
 
     /**
+     * Trouve la demande assignee a une tache de livraison donnee.
+     */
+    @javax.annotation.Nullable
+    public InterfaceRequest findRequestByTaskId(java.util.UUID taskId) {
+        for (InterfaceRequest request : activeRequests.values()) {
+            if (taskId.equals(request.getAssignedTaskId())) {
+                return request;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Verifie si une demande existe pour une source + type + item donnes.
      */
     public boolean hasRequestFor(BlockPos sourcePos, InterfaceRequest.RequestType type, ItemStack template) {

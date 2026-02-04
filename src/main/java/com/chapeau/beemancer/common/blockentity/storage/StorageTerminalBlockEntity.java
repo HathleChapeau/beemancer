@@ -192,8 +192,8 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         int toRequest = Math.min(count, maxQuantity);
 
         InterfaceRequest request = new InterfaceRequest(
-            worldPosition, InterfaceRequest.RequestType.IMPORT, template,
-            toRequest, InterfaceRequest.TaskOrigin.REQUEST
+            worldPosition, worldPosition, InterfaceRequest.RequestType.IMPORT,
+            template, toRequest, InterfaceRequest.TaskOrigin.REQUEST
         );
         controller.getRequestManager().publishRequest(request);
 
@@ -268,8 +268,8 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
             int toRequest = Math.min(request.count, maxQuantity);
 
             InterfaceRequest interfaceRequest = new InterfaceRequest(
-                worldPosition, InterfaceRequest.RequestType.IMPORT, request.item,
-                toRequest, InterfaceRequest.TaskOrigin.REQUEST
+                worldPosition, worldPosition, InterfaceRequest.RequestType.IMPORT,
+                request.item, toRequest, InterfaceRequest.TaskOrigin.REQUEST
             );
             requestManager.publishRequest(interfaceRequest);
 
@@ -338,8 +338,8 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
                 depositSlots.setStackInSlot(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
 
                 InterfaceRequest request = new InterfaceRequest(
-                    worldPosition, InterfaceRequest.RequestType.EXPORT, toSend,
-                    toDeposit, InterfaceRequest.TaskOrigin.REQUEST, true
+                    worldPosition, worldPosition, InterfaceRequest.RequestType.EXPORT,
+                    toSend, toDeposit, InterfaceRequest.TaskOrigin.REQUEST, true
                 );
                 controller.getRequestManager().publishRequest(request);
             }
