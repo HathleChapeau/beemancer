@@ -194,10 +194,11 @@ public class MagicBeeEntity extends Bee {
 
     @Override
     protected void registerGoals() {
-        // Ne PAS appeler super.registerGoals() — les goals vanilla du Bee
-        // (BeeGoToHiveGoal, BeePollinateGoal, BeeWanderGoal, etc.) entrent en
-        // conflit avec nos goals custom et causent du spinning frénétique.
-        // On réenregistre uniquement FloatGoal pour la survie dans l'eau.
+        // Appeler super pour initialiser les champs internes de Bee (beePollinateGoal, etc.)
+        // requis par BeeLookControl, puis vider les goal selectors et reenregistrer les notres.
+        super.registerGoals();
+        this.goalSelector.removeAllGoals(goal -> true);
+        this.targetSelector.removeAllGoals(goal -> true);
 
         this.goalSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.FloatGoal(this));
 
