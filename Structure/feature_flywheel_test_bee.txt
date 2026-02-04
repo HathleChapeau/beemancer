@@ -14,26 +14,34 @@ ARCHITECTURE
 
 Pipeline Flywheel:
   FlywheelTestBeeEntity (server)
-    |  speciesId, position, tickCount synced to client
+    |  speciesId synced via SynchedEntityData, position immobile
+    |  Pas de tick override (Entity.tick() par defaut)
     v
   FlywheelTestBeeVisual (client, 1 par entite)
     |  Cree InstanceTree depuis vanilla BeeModel (ModelLayers.BEE)
-    |  Material = SimpleMaterial(texture espece)
+    |  Material = SimpleMaterial(texture espece, cutout)
     v
   InstanceTree -> TransformedInstance par ModelPart cube
-    |  body, right_wing, left_wing, legs, etc.
+    |  bone > {body, right_wing, left_wing, legs, stinger}
     |  Chaque instance = matrice 4x4 sur GPU
     v
-  beginFrame() chaque frame:
-    1. Calcul pose (position interpolee + yaw + flip)
-    2. Animation ailes (zRot sinusoidal via InstanceTree)
-    3. updateInstances(pose) -> propage matrices dans l'arbre
-    4. Relight
+  beginFrame() chaque frame (pas de frustum check):
+    1. time = tickCount + partialTick (interpolation fluide)
+    2. Bobbing visuel: sin(time * 0.1) * 0.15 (purement client)
+    3. Pose: translate + yaw + flip (scale 1,-1,-1)
+    4. Animation ailes: zRot = sin(time * 2.5) * 0.5 rad
+    5. updateInstances(pose) -> propage matrices dans l'arbre
+    6. Relight par traversal
     v
   Flywheel batche automatiquement:
     - Meme mesh + meme material = 1 draw call
     - N abeilles meme espece = 1 draw call par partie (body, wings, etc.)
     - Especes differentes = draw calls separes (textures differentes)
+
+Decisions techniques:
+- Pas de frustum check (isVisible) : causait arret animation a proximite
+- Bobbing purement visuel (pas dans entity tick) : evite desync serveur/client
+- Entity immobile (noPhysics, pas de setPos dans tick) : position stable
 
 ================================================================================
 FICHIERS CREES (4 Java + 4 JSON)
@@ -41,7 +49,7 @@ FICHIERS CREES (4 Java + 4 JSON)
 
 | Fichier                                              | Role                          |
 |------------------------------------------------------|-------------------------------|
-| content/flywheeltest/FlywheelTestBeeEntity.java      | Entity test (pas Mob, zero AI)|
+| content/flywheeltest/FlywheelTestBeeEntity.java      | Entity test (pas Mob, zero AI, immobile)|
 | content/flywheeltest/BeeSpawnerBlock.java            | Bloc spawner (clic=spawn, shift=kill)|
 | client/visual/FlywheelTestBeeVisual.java             | Visual Flywheel (coeur test)  |
 | client/visual/FlywheelTestBeeVisualizer.java         | Registration visual Flywheel  |

@@ -7,13 +7,19 @@
 ================================================================================
 
 Systeme de test isole pour valider le rendu GPU instancie via Flywheel.
-Entite test legere, visual Flywheel avec animation ailes, bloc spawner.
+Entite test immobile, visual Flywheel avec animation ailes + bobbing, bloc spawner.
 
 CLASSES JAVA CREEES (4):
-- content/flywheeltest/FlywheelTestBeeEntity.java (Entity test sans AI)
-- content/flywheeltest/BeeSpawnerBlock.java (Bloc spawner test)
-- client/visual/FlywheelTestBeeVisual.java (Visual Flywheel GPU)
+- content/flywheeltest/FlywheelTestBeeEntity.java (Entity immobile, zero AI, speciesId synced)
+- content/flywheeltest/BeeSpawnerBlock.java (Bloc spawner test, clic/shift+clic)
+- client/visual/FlywheelTestBeeVisual.java (Visual Flywheel GPU, ailes + bobbing visuels)
 - client/visual/FlywheelTestBeeVisualizer.java (Registration Flywheel)
+
+CORRECTIONS POST-IMPLEMENTATION:
+- Entity: supprime tick()/startY (bobbing server causait teleportation)
+- Visual: bobbing deplace en visuel-only dans beginFrame()
+- Visual: retire isVisible(frustum) (bloquait animation a proximite)
+- Visual: frequence ailes acceleree (time * 2.5, amplitude 0.5 rad)
 
 REGISTRES MODIFIES:
 - BeemancerEntities: +FLYWHEEL_TEST_BEE
