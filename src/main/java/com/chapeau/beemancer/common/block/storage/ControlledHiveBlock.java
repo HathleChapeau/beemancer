@@ -24,7 +24,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 /**
@@ -35,19 +36,19 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
  */
 public class ControlledHiveBlock extends Block {
 
-    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("storage");
     public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 3);
 
     public ControlledHiveBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(FORMED, false)
+            .setValue(MULTIBLOCK, MultiblockProperty.NONE)
             .setValue(FORMED_ROTATION, 0));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED, FORMED_ROTATION);
+        builder.add(MULTIBLOCK, FORMED_ROTATION);
     }
 
     @Override

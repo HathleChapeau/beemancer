@@ -21,6 +21,7 @@ package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.storage.ControllerPipeBlock;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.blockentity.storage.ControllerPipeBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -64,7 +65,7 @@ public class ControllerPipeRenderer implements BlockEntityRenderer<ControllerPip
                        int packedLight, int packedOverlay) {
 
         BlockState state = blockEntity.getBlockState();
-        if (!state.getValue(ControllerPipeBlock.FORMED)) {
+        if (state.getValue(ControllerPipeBlock.MULTIBLOCK).equals(MultiblockProperty.NONE)) {
             return;
         }
 

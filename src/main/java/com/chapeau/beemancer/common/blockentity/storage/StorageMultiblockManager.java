@@ -29,6 +29,7 @@ import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
@@ -38,7 +39,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import org.jetbrains.annotations.Nullable;
 
@@ -76,7 +77,7 @@ public class StorageMultiblockManager {
         storageFormed = true;
         if (parent.getLevel() != null && !parent.getLevel().isClientSide()) {
             parent.getLevel().setBlock(parent.getBlockPos(),
-                parent.getBlockState().setValue(StorageControllerBlock.FORMED, true), 3);
+                parent.getBlockState().setValue(StorageControllerBlock.MULTIBLOCK, MultiblockProperty.STORAGE), 3);
             setFormedOnStructureBlocks(true);
             MultiblockEvents.registerActiveController(parent.getLevel(), parent.getBlockPos());
             parent.setChanged();
@@ -92,9 +93,9 @@ public class StorageMultiblockManager {
             setFormedOnStructureBlocks(false);
             multiblockRotation = 0;
             if (parent.getLevel().getBlockState(parent.getBlockPos())
-                .hasProperty(StorageControllerBlock.FORMED)) {
+                .hasProperty(StorageControllerBlock.MULTIBLOCK)) {
                 parent.getLevel().setBlock(parent.getBlockPos(),
-                    parent.getBlockState().setValue(StorageControllerBlock.FORMED, false), 3);
+                    parent.getBlockState().setValue(StorageControllerBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
             MultiblockEvents.unregisterController(parent.getBlockPos());
             parent.setChanged();
@@ -155,7 +156,7 @@ public class StorageMultiblockManager {
                     }
                 }
                 BlockState newState = state
-                    .setValue(ControllerPipeBlock.FORMED, formed)
+                    .setValue(ControllerPipeBlock.MULTIBLOCK, formed ? MultiblockProperty.STORAGE : MultiblockProperty.NONE)
                     .setValue(ControllerPipeBlock.FORMED_ROTATION, rotation);
                 if (!newState.equals(state)) {
                     parent.getLevel().setBlock(blockPos, newState, 3);
@@ -172,12 +173,13 @@ public class StorageMultiblockManager {
 
             boolean changed = false;
 
-            boolean skipFormed = (state.getBlock() instanceof HoneyedStoneBlock)
+            boolean skipMultiblock = (state.getBlock() instanceof HoneyedStoneBlock)
                 && originalOffset.getY() < 0;
 
-            BooleanProperty formedProp = findFormedProperty(state);
-            if (formedProp != null && !skipFormed && state.getValue(formedProp) != formed) {
-                state = state.setValue(formedProp, formed);
+            EnumProperty<MultiblockProperty> multiblockProp = findMultiblockProperty(state);
+            MultiblockProperty multiblockValue = formed ? MultiblockProperty.STORAGE : MultiblockProperty.NONE;
+            if (multiblockProp != null && !skipMultiblock && state.getValue(multiblockProp) != multiblockValue) {
+                state = state.setValue(multiblockProp, multiblockValue);
                 changed = true;
             }
 
@@ -210,10 +212,11 @@ public class StorageMultiblockManager {
     }
 
     @Nullable
-    private static BooleanProperty findFormedProperty(BlockState state) {
+    @SuppressWarnings("unchecked")
+    private static EnumProperty<MultiblockProperty> findMultiblockProperty(BlockState state) {
         for (var prop : state.getProperties()) {
-            if (prop.getName().equals("formed") && prop instanceof BooleanProperty boolProp) {
-                return boolProp;
+            if (prop.getName().equals("multiblock") && prop instanceof EnumProperty<?> enumProp) {
+                return (EnumProperty<MultiblockProperty>) enumProp;
             }
         }
         return null;

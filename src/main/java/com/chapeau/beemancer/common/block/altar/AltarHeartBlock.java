@@ -34,7 +34,8 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -48,19 +49,19 @@ import javax.annotation.Nullable;
  */
 public class AltarHeartBlock extends Block implements EntityBlock {
 
-    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("altar");
 
     // Forme: petit cube centré
     private static final VoxelShape SHAPE = Block.box(4, 4, 4, 12, 12, 12);
 
     public AltarHeartBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FORMED, false));
+        this.registerDefaultState(this.stateDefinition.any().setValue(MULTIBLOCK, MultiblockProperty.NONE));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED);
+        builder.add(MULTIBLOCK);
     }
 
     @Override
@@ -92,7 +93,7 @@ public class AltarHeartBlock extends Block implements EntityBlock {
         }
 
         // Tenter de former/vérifier l'altar
-        if (state.getValue(FORMED)) {
+        if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
             // Altar formé - tenter un craft
             heartBE.tryCraft();
             return InteractionResult.CONSUME;
@@ -119,7 +120,7 @@ public class AltarHeartBlock extends Block implements EntityBlock {
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
             // Le bloc est détruit - désactiver le multibloc
-            if (state.getValue(FORMED)) {
+            if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
                 BlockEntity be = level.getBlockEntity(pos);
                 if (be instanceof AltarHeartBlockEntity heartBE) {
                     heartBE.onMultiblockBroken();

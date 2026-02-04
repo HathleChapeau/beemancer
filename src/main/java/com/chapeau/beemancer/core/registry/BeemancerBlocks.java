@@ -12,6 +12,7 @@ import com.chapeau.beemancer.common.block.altar.*;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
 import com.chapeau.beemancer.common.block.extractor.ExtractorHeartBlock;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.block.hive.HiveMultiblockBlock;
 import com.chapeau.beemancer.common.block.statue.BeeStatueBlock;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlock;
@@ -308,7 +309,7 @@ public class BeemancerBlocks {
             () -> new AltarHeartBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.AMETHYST)
-                    .lightLevel(state -> state.getValue(AltarHeartBlock.FORMED) ? 15 : 8)
+                    .lightLevel(state -> state.getValue(AltarHeartBlock.MULTIBLOCK) != MultiblockProperty.NONE ? 15 : 8)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
@@ -331,7 +332,29 @@ public class BeemancerBlocks {
             () -> new ExtractorHeartBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.AMETHYST)
-                    .lightLevel(state -> state.getValue(ExtractorHeartBlock.FORMED) ? 12 : 6)
+                    .lightLevel(state -> state.getValue(ExtractorHeartBlock.MULTIBLOCK) != MultiblockProperty.NONE ? 12 : 6)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
+    // --- ALCHEMY HEARTS ---
+    public static final DeferredBlock<AlembicHeartBlock> ALEMBIC_HEART = BLOCKS.register("alembic_heart",
+            () -> new AlembicHeartBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.AMETHYST)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<InfuserHeartBlock> INFUSER_HEART = BLOCKS.register("infuser_heart",
+            () -> new InfuserHeartBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.AMETHYST)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<CentrifugeHeartBlock> CENTRIFUGE_HEART = BLOCKS.register("centrifuge_heart",
+            () -> new CentrifugeHeartBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.AMETHYST)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
@@ -480,6 +503,19 @@ public class BeemancerBlocks {
     public static final DeferredBlock<WallBlock> NECTAR_STONE_WALL = BLOCKS.register("nectar_stone_wall",
             () -> new WallBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    // --- MATERIAL STORAGE BLOCKS ---
+    public static final DeferredBlock<Block> HONEYED_IRON_BLOCK = BLOCKS.register("honeyed_iron_block",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(5.0f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> ROYAL_GOLD_BLOCK = BLOCKS.register("royal_gold_block",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(3.0f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> NECTAR_DIAMOND_BLOCK = BLOCKS.register("nectar_diamond_block",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .strength(5.0f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()));
 
     // --- FLUID BLOCKS ---
     public static final DeferredBlock<LiquidBlock> HONEY_FLUID_BLOCK = BLOCKS.register("honey",

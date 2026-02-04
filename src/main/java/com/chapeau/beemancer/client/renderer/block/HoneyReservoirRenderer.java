@@ -25,6 +25,7 @@ package com.chapeau.beemancer.client.renderer.block;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.renderer.util.FluidCubeRenderer;
 import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -70,7 +71,7 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
         BlockState state = blockEntity.getBlockState();
-        boolean formed = state.getValue(HoneyReservoirBlock.FORMED);
+        boolean formed = !state.getValue(HoneyReservoirBlock.MULTIBLOCK).equals(MultiblockProperty.NONE);
         float spreadX = blockEntity.getFormedSpreadX();
         float spreadZ = blockEntity.getFormedSpreadZ();
         boolean hasSpread = spreadX != 0.0f || spreadZ != 0.0f;

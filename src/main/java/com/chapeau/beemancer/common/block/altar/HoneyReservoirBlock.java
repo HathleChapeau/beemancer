@@ -41,7 +41,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -62,7 +63,7 @@ import javax.annotation.Nullable;
 public class HoneyReservoirBlock extends BaseEntityBlock {
     public static final MapCodec<HoneyReservoirBlock> CODEC = simpleCodec(HoneyReservoirBlock::new);
 
-    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("altar", "extractor", "storage");
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     // Forme carrée: réservoir 8x8x8 centré
@@ -71,7 +72,7 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
     public HoneyReservoirBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(FORMED, false)
+            .setValue(MULTIBLOCK, MultiblockProperty.NONE)
             .setValue(FACING, Direction.NORTH));
     }
 
@@ -82,7 +83,7 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED, FACING);
+        builder.add(MULTIBLOCK, FACING);
     }
 
     @Override

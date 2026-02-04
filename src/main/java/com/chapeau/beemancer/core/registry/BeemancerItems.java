@@ -166,6 +166,14 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> EXTRACTOR_HEART = ITEMS.register("extractor_heart",
             () -> new BlockItem(BeemancerBlocks.EXTRACTOR_HEART.get(), new Item.Properties()));
 
+    // --- ALCHEMY HEARTS ---
+    public static final DeferredItem<BlockItem> ALEMBIC_HEART = ITEMS.register("alembic_heart",
+            () -> new BlockItem(BeemancerBlocks.ALEMBIC_HEART.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> INFUSER_HEART = ITEMS.register("infuser_heart",
+            () -> new BlockItem(BeemancerBlocks.INFUSER_HEART.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> CENTRIFUGE_HEART = ITEMS.register("centrifuge_heart",
+            () -> new BlockItem(BeemancerBlocks.CENTRIFUGE_HEART.get(), new Item.Properties()));
+
     // --- BEE STATUE ---
     public static final DeferredItem<BlockItem> BEE_STATUE = ITEMS.register("bee_statue",
             () -> new BlockItem(BeemancerBlocks.BEE_STATUE.get(), new Item.Properties()));
@@ -249,6 +257,14 @@ public class BeemancerItems {
             () -> new BlockItem(BeemancerBlocks.NECTAR_STONE_SLAB.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> NECTAR_STONE_WALL = ITEMS.register("nectar_stone_wall",
             () -> new BlockItem(BeemancerBlocks.NECTAR_STONE_WALL.get(), new Item.Properties()));
+
+    // --- MATERIAL STORAGE BLOCKS ---
+    public static final DeferredItem<BlockItem> HONEYED_IRON_BLOCK = ITEMS.register("honeyed_iron_block",
+            () -> new BlockItem(BeemancerBlocks.HONEYED_IRON_BLOCK.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> ROYAL_GOLD_BLOCK = ITEMS.register("royal_gold_block",
+            () -> new BlockItem(BeemancerBlocks.ROYAL_GOLD_BLOCK.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> NECTAR_DIAMOND_BLOCK = ITEMS.register("nectar_diamond_block",
+            () -> new BlockItem(BeemancerBlocks.NECTAR_DIAMOND_BLOCK.get(), new Item.Properties()));
 
     // --- CRAFTING MATERIALS ---
     public static final DeferredItem<Item> HONEYED_IRON = ITEMS.register("honeyed_iron",

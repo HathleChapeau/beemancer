@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "multiblock=none": {
+      "model": "beemancer:block/alchemy/infuser_heart"
+    },
+    "multiblock=infuser": {
+      "model": "beemancer:block/alchemy/infuser_heart"
+    }
+  }
+}

@@ -34,7 +34,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -48,18 +49,18 @@ import javax.annotation.Nullable;
  */
 public class ExtractorHeartBlock extends Block implements EntityBlock {
 
-    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("extractor");
 
     private static final VoxelShape SHAPE = Block.box(2, 2, 2, 14, 14, 14);
 
     public ExtractorHeartBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FORMED, false));
+        this.registerDefaultState(this.stateDefinition.any().setValue(MULTIBLOCK, MultiblockProperty.NONE));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED);
+        builder.add(MULTIBLOCK);
     }
 
     @Override
@@ -96,7 +97,7 @@ public class ExtractorHeartBlock extends Block implements EntityBlock {
             return InteractionResult.PASS;
         }
 
-        if (state.getValue(FORMED)) {
+        if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
             player.displayClientMessage(
                 Component.translatable("message.beemancer.essence_extractor.already_formed"),
                 true
@@ -122,7 +123,7 @@ public class ExtractorHeartBlock extends Block implements EntityBlock {
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
-            if (state.getValue(FORMED)) {
+            if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
                 BlockEntity be = level.getBlockEntity(pos);
                 if (be instanceof ExtractorHeartBlockEntity extractorBE) {
                     extractorBE.onMultiblockBroken();

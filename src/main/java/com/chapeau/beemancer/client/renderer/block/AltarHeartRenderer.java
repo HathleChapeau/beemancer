@@ -24,6 +24,7 @@ package com.chapeau.beemancer.client.renderer.block;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.animation.AltarConduitAnimator;
 import com.chapeau.beemancer.common.block.altar.HoneyCrystalConduitBlock;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
@@ -63,9 +64,9 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     private static final ModelResourceLocation SMALL_RING_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring"));
 
-    // Modèle conduit formed via blockstate
+    // Modèle conduit formé via blockstate
     private static final ModelResourceLocation CONDUIT_FORMED_MODEL =
-        new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "honey_crystal_conduit"), "facing=north,formed=true");
+        new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "honey_crystal_conduit"), "facing=north,multiblock=altar");
 
     public AltarHeartRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
@@ -197,7 +198,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         // BlockState pour les propriétés
         BlockState conduitState = BeemancerBlocks.HONEY_CRYSTAL_CONDUIT.get().defaultBlockState()
-            .setValue(HoneyCrystalConduitBlock.FORMED, true)
+            .setValue(HoneyCrystalConduitBlock.MULTIBLOCK, MultiblockProperty.ALTAR)
             .setValue(HoneyCrystalConduitBlock.FACING, Direction.NORTH);
 
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.solid());

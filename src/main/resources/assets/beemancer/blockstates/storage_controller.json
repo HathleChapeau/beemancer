@@ -1,9 +1,9 @@
 {
   "variants": {
-    "formed=false": {
+    "multiblock=none": {
       "model": "beemancer:block/storage/storage_controller"
     },
-    "formed=true": {
+    "multiblock=storage": {
       "model": "beemancer:block/storage/storage_controller_formed"
     }
   }

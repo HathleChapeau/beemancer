@@ -299,6 +299,28 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.EXTRACTOR_HEART.get()
                     ).build(null));
 
+    // --- ALCHEMY HEARTS ---
+    public static final Supplier<BlockEntityType<AlembicHeartBlockEntity>> ALEMBIC_HEART =
+            BLOCK_ENTITIES.register("alembic_heart",
+                    () -> BlockEntityType.Builder.of(
+                            AlembicHeartBlockEntity::new,
+                            BeemancerBlocks.ALEMBIC_HEART.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<InfuserHeartBlockEntity>> INFUSER_HEART =
+            BLOCK_ENTITIES.register("infuser_heart",
+                    () -> BlockEntityType.Builder.of(
+                            InfuserHeartBlockEntity::new,
+                            BeemancerBlocks.INFUSER_HEART.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<CentrifugeHeartBlockEntity>> CENTRIFUGE_HEART =
+            BLOCK_ENTITIES.register("centrifuge_heart",
+                    () -> BlockEntityType.Builder.of(
+                            CentrifugeHeartBlockEntity::new,
+                            BeemancerBlocks.CENTRIFUGE_HEART.get()
+                    ).build(null));
+
     // --- BEE STATUE ---
     public static final Supplier<BlockEntityType<BeeStatueBlockEntity>> BEE_STATUE =
             BLOCK_ENTITIES.register("bee_statue",

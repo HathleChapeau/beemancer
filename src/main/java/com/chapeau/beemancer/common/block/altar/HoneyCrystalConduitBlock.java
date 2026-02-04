@@ -27,7 +27,8 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -39,7 +40,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class HoneyCrystalConduitBlock extends Block {
 
-    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("altar");
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     // Forme: pilier vertical fin
@@ -48,13 +49,13 @@ public class HoneyCrystalConduitBlock extends Block {
     public HoneyCrystalConduitBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(FORMED, false)
+            .setValue(MULTIBLOCK, MultiblockProperty.NONE)
             .setValue(FACING, Direction.NORTH));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED, FACING);
+        builder.add(MULTIBLOCK, FACING);
     }
 
     @Override
@@ -65,6 +66,6 @@ public class HoneyCrystalConduitBlock extends Block {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         // Quand formé: invisible (le renderer gère l'animation)
-        return state.getValue(FORMED) ? RenderShape.INVISIBLE : RenderShape.MODEL;
+        return state.getValue(MULTIBLOCK) != MultiblockProperty.NONE ? RenderShape.INVISIBLE : RenderShape.MODEL;
     }
 }

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "multiblock=none": {
+      "model": "beemancer:block/alchemy/alembic_heart"
+    },
+    "multiblock=alembic": {
+      "model": "beemancer:block/alchemy/alembic_heart"
+    }
+  }
+}

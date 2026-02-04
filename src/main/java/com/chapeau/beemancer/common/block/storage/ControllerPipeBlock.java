@@ -31,7 +31,8 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -46,7 +47,7 @@ import javax.annotation.Nullable;
 public class ControllerPipeBlock extends BaseEntityBlock {
     public static final MapCodec<ControllerPipeBlock> CODEC = simpleCodec(ControllerPipeBlock::new);
 
-    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("storage");
     public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 7);
 
     // Collision box: pipe core (4,4,4)→(12,12,12) matches the visual model
@@ -55,7 +56,7 @@ public class ControllerPipeBlock extends BaseEntityBlock {
     public ControllerPipeBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(FORMED, false)
+            .setValue(MULTIBLOCK, MultiblockProperty.NONE)
             .setValue(FORMED_ROTATION, 0));
     }
 
@@ -66,7 +67,7 @@ public class ControllerPipeBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED, FORMED_ROTATION);
+        builder.add(MULTIBLOCK, FORMED_ROTATION);
     }
 
     @Override
@@ -76,7 +77,7 @@ public class ControllerPipeBlock extends BaseEntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return state.getValue(FORMED) ? RenderShape.ENTITYBLOCK_ANIMATED : RenderShape.MODEL;
+        return !state.getValue(MULTIBLOCK).equals(MultiblockProperty.NONE) ? RenderShape.ENTITYBLOCK_ANIMATED : RenderShape.MODEL;
     }
 
     @Nullable

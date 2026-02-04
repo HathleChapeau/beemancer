@@ -1,12 +1,20 @@
 {
   "variants": {
-    "facing=north,formed=false": { "model": "beemancer:block/altar/honey_reservoir", "y": 90 },
-    "facing=south,formed=false": { "model": "beemancer:block/altar/honey_reservoir", "y": 270 },
-    "facing=east,formed=false": { "model": "beemancer:block/altar/honey_reservoir", "y": 180 },
-    "facing=west,formed=false": { "model": "beemancer:block/altar/honey_reservoir", "y": 0 },
-    "facing=north,formed=true": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 90 },
-    "facing=south,formed=true": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 270 },
-    "facing=east,formed=true": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 180 },
-    "facing=west,formed=true": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 0 }
+    "facing=north,multiblock=none": { "model": "beemancer:block/altar/honey_reservoir", "y": 90 },
+    "facing=south,multiblock=none": { "model": "beemancer:block/altar/honey_reservoir", "y": 270 },
+    "facing=east,multiblock=none": { "model": "beemancer:block/altar/honey_reservoir", "y": 180 },
+    "facing=west,multiblock=none": { "model": "beemancer:block/altar/honey_reservoir", "y": 0 },
+    "facing=north,multiblock=altar": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 90 },
+    "facing=south,multiblock=altar": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 270 },
+    "facing=east,multiblock=altar": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 180 },
+    "facing=west,multiblock=altar": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 0 },
+    "facing=north,multiblock=extractor": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 90 },
+    "facing=south,multiblock=extractor": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 270 },
+    "facing=east,multiblock=extractor": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 180 },
+    "facing=west,multiblock=extractor": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 0 },
+    "facing=north,multiblock=storage": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 90 },
+    "facing=south,multiblock=storage": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 270 },
+    "facing=east,multiblock=storage": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 180 },
+    "facing=west,multiblock=storage": { "model": "beemancer:block/altar/honey_reservoir_formed", "y": 0 }
   }
 }

@@ -1,9 +1,9 @@
 {
   "variants": {
-    "formed=false": {
+    "multiblock=none": {
       "model": "beemancer:block/altar/altar_heart"
     },
-    "formed=true": {
+    "multiblock=altar": {
       "model": "beemancer:block/altar/altar_heart_formed"
     }
   }

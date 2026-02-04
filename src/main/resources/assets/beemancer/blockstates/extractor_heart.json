@@ -1,9 +1,9 @@
 {
   "variants": {
-    "formed=false": {
+    "multiblock=none": {
       "model": "beemancer:block/machines/extractor_heart"
     },
-    "formed=true": {
+    "multiblock=extractor": {
       "model": "beemancer:block/machines/extractor_heart_formed"
     }
   }

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "multiblock=none": {
+      "model": "beemancer:block/alchemy/centrifuge_heart"
+    },
+    "multiblock=centrifuge": {
+      "model": "beemancer:block/alchemy/centrifuge_heart"
+    }
+  }
+}

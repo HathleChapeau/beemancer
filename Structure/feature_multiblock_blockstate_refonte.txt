@@ -1,0 +1,93 @@
+################################################################################
+#               FEATURE: Multibloc Blockstate Refonte                         #
+################################################################################
+
+FEATURE: Multibloc Blockstate Refonte
+Description: Remplacement de BooleanProperty FORMED par EnumProperty<MultiblockProperty>
+             MULTIBLOCK sur tous les blocs multiblocs, permettant a chaque bloc de
+             savoir a quel type de multibloc il appartient.
+Statut: COMPLET
+Date: 2026-02-04
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+MultiblockProperty (enum, StringRepresentable):
+- NONE       : bloc non forme (equivalent ancien formed=false)
+- ALTAR      : appartient au multibloc Honey Altar
+- EXTRACTOR  : appartient au multibloc Essence Extractor
+- STORAGE    : appartient au multibloc Storage Controller
+- HIVE       : appartient au multibloc Hive
+- ALEMBIC    : appartient au multibloc Alembic (nouveau)
+- INFUSER    : appartient au multibloc Infuser (nouveau)
+- CENTRIFUGE : appartient au multibloc Centrifuge (nouveau)
+
+Factory: MultiblockProperty.createProperty() retourne un EnumProperty<MultiblockProperty>
+
+================================================================================
+BLOCS MIS A JOUR (16 blocs existants)
+================================================================================
+
+| Bloc                   | Ancien state       | Nouveau state              |
+|------------------------|--------------------|----------------------------|
+| altar_heart            | formed=true/false  | multiblock=none/altar      |
+| extractor_heart        | formed=true/false  | multiblock=none/extractor  |
+| honey_pedestal         | formed=true/false  | multiblock=none/altar      |
+| honeyed_stone          | formed=true/false  | multiblock=none/altar/...  |
+| honeyed_stone_stair    | formed=true/false  | multiblock=none/altar/...  |
+| honey_crystal_conduit  | formed=true/false  | multiblock=none/altar      |
+| honey_reservoir        | formed=true/false  | multiblock=none/altar/...  |
+| honeyed_slab           | formed=true/false  | multiblock=none/...        |
+| hive_multiblock        | formed=true/false  | multiblock=none/hive       |
+| storage_controller     | formed=true/false  | multiblock=none/storage    |
+| controller_pipe        | formed=true/false  | multiblock=none/storage    |
+| storage_terminal       | formed=true/false  | multiblock=none/storage    |
+| controlled_hive        | formed=true/false  | multiblock=none/storage    |
+
+================================================================================
+NOUVEAUX BLOCS
+================================================================================
+
+--- Heart Blocks Alchemy (3) ---
+| Bloc              | Classe                 | BlockEntity                    |
+|-------------------|------------------------|--------------------------------|
+| alembic_heart     | AlembicHeartBlock      | AlembicHeartBlockEntity        |
+| infuser_heart     | InfuserHeartBlock      | InfuserHeartBlockEntity        |
+| centrifuge_heart  | CentrifugeHeartBlock   | CentrifugeHeartBlockEntity     |
+
+Chaque Heart block:
+- Possede MULTIBLOCK property (none + son type specifique)
+- BlockEntity minimal (prepare pour future logique multibloc)
+- Localisation: common/block/alchemy/ et common/blockentity/alchemy/
+
+--- Storage Material Blocks (3) ---
+| Bloc                 | Type         |
+|----------------------|--------------|
+| honeyed_iron_block   | Block simple |
+| royal_gold_block     | Block simple |
+| nectar_diamond_block | Block simple |
+
+================================================================================
+SCRIPTS CREES
+================================================================================
+
+| Fichier                                              | Role                          |
+|------------------------------------------------------|-------------------------------|
+| core/multiblock/MultiblockProperty.java              | Enum + factory property       |
+| common/block/alchemy/AlembicHeartBlock.java          | Heart block Alembic           |
+| common/block/alchemy/InfuserHeartBlock.java          | Heart block Infuser           |
+| common/block/alchemy/CentrifugeHeartBlock.java       | Heart block Centrifuge        |
+| common/blockentity/alchemy/AlembicHeartBlockEntity.java   | BE Alembic Heart         |
+| common/blockentity/alchemy/InfuserHeartBlockEntity.java   | BE Infuser Heart         |
+| common/blockentity/alchemy/CentrifugeHeartBlockEntity.java| BE Centrifuge Heart      |
+
+================================================================================
+DEPENDANCES
+================================================================================
+
+- MultiblockProperty est utilise par TOUS les blocs multiblocs
+- Les Heart blocks dependent de BeemancerBlocks et BeemancerBlockEntities
+- Les blockstate JSONs referencent les valeurs de l'enum
+
+################################################################################

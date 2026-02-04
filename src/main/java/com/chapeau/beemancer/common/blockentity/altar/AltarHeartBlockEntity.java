@@ -28,6 +28,7 @@ import com.chapeau.beemancer.common.block.altar.HoneyPedestalBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
 import com.chapeau.beemancer.common.block.altar.HoneyedStoneStairBlock;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlockEntity;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
@@ -101,7 +102,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         altarFormed = true;
         if (level != null && !level.isClientSide()) {
             // Mettre à jour le contrôleur
-            level.setBlock(worldPosition, getBlockState().setValue(AltarHeartBlock.FORMED, true), 3);
+            level.setBlock(worldPosition, getBlockState().setValue(AltarHeartBlock.MULTIBLOCK, MultiblockProperty.ALTAR), 3);
 
             // Mettre à jour tous les blocs du multibloc
             updateMultiblockBlocksState(true);
@@ -116,8 +117,8 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         altarFormed = false;
         if (level != null && !level.isClientSide()) {
             // Mettre à jour le contrôleur
-            if (level.getBlockState(worldPosition).hasProperty(AltarHeartBlock.FORMED)) {
-                level.setBlock(worldPosition, getBlockState().setValue(AltarHeartBlock.FORMED, false), 3);
+            if (level.getBlockState(worldPosition).hasProperty(AltarHeartBlock.MULTIBLOCK)) {
+                level.setBlock(worldPosition, getBlockState().setValue(AltarHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
 
             // Mettre à jour tous les blocs du multibloc
@@ -129,13 +130,15 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     }
 
     /**
-     * Met à jour l'état FORMED de tous les blocs du multibloc.
+     * Met à jour l'état MULTIBLOCK de tous les blocs du multibloc.
      */
     private void updateMultiblockBlocksState(boolean formed) {
         if (level == null) return;
 
+        MultiblockProperty multiblockValue = formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE;
+
         // === Pedestal à Y-2 ===
-        updateBlockFormed(worldPosition.offset(0, -2, 0), HoneyPedestalBlock.FORMED, formed);
+        updateBlockMultiblock(worldPosition.offset(0, -2, 0), HoneyPedestalBlock.MULTIBLOCK, multiblockValue);
 
         // === 4 Stairs à Y-2 ===
         BlockPos[] stairOffsets = {
@@ -145,7 +148,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
             new BlockPos(-1, -2, 0)   // W
         };
         for (BlockPos offset : stairOffsets) {
-            updateBlockFormed(worldPosition.offset(offset), HoneyedStoneStairBlock.FORMED, formed);
+            updateBlockMultiblock(worldPosition.offset(offset), HoneyedStoneStairBlock.MULTIBLOCK, multiblockValue);
         }
 
         // === 4 Conduits cardinaux à Y+1 (orientés vers le centre) ===
@@ -168,47 +171,47 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     }
 
     /**
-     * Met à jour la propriété FORMED d'un bloc si elle existe.
+     * Met à jour la propriété MULTIBLOCK d'un bloc si elle existe.
      */
-    private void updateBlockFormed(BlockPos pos, net.minecraft.world.level.block.state.properties.BooleanProperty property, boolean formed) {
+    private void updateBlockMultiblock(BlockPos pos, net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty> property, MultiblockProperty value) {
         BlockState state = level.getBlockState(pos);
         if (state.hasProperty(property)) {
-            level.setBlock(pos, state.setValue(property, formed), 3);
+            level.setBlock(pos, state.setValue(property, value), 3);
         }
     }
 
     /**
-     * Met à jour un HoneyedStoneBlock avec FORMED et LAYER.
+     * Met à jour un HoneyedStoneBlock avec MULTIBLOCK et LAYER.
      */
     private void updateHoneyedStone(BlockPos pos, boolean formed, int layer) {
         BlockState state = level.getBlockState(pos);
-        if (state.hasProperty(HoneyedStoneBlock.FORMED) && state.hasProperty(HoneyedStoneBlock.LAYER)) {
+        if (state.hasProperty(HoneyedStoneBlock.MULTIBLOCK) && state.hasProperty(HoneyedStoneBlock.LAYER)) {
             level.setBlock(pos, state
-                .setValue(HoneyedStoneBlock.FORMED, formed)
+                .setValue(HoneyedStoneBlock.MULTIBLOCK, formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE)
                 .setValue(HoneyedStoneBlock.LAYER, formed ? layer : 0), 3);
         }
     }
 
     /**
-     * Met à jour un HoneyReservoirBlock avec FORMED et FACING.
+     * Met à jour un HoneyReservoirBlock avec MULTIBLOCK et FACING.
      */
     private void updateReservoir(BlockPos pos, boolean formed, Direction facing) {
         BlockState state = level.getBlockState(pos);
-        if (state.hasProperty(HoneyReservoirBlock.FORMED) && state.hasProperty(HoneyReservoirBlock.FACING)) {
+        if (state.hasProperty(HoneyReservoirBlock.MULTIBLOCK) && state.hasProperty(HoneyReservoirBlock.FACING)) {
             level.setBlock(pos, state
-                .setValue(HoneyReservoirBlock.FORMED, formed)
+                .setValue(HoneyReservoirBlock.MULTIBLOCK, formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE)
                 .setValue(HoneyReservoirBlock.FACING, facing), 3);
         }
     }
 
     /**
-     * Met à jour un HoneyCrystalConduitBlock avec FORMED et FACING.
+     * Met à jour un HoneyCrystalConduitBlock avec MULTIBLOCK et FACING.
      */
     private void updateConduit(BlockPos pos, boolean formed, Direction facing) {
         BlockState state = level.getBlockState(pos);
-        if (state.hasProperty(HoneyCrystalConduitBlock.FORMED) && state.hasProperty(HoneyCrystalConduitBlock.FACING)) {
+        if (state.hasProperty(HoneyCrystalConduitBlock.MULTIBLOCK) && state.hasProperty(HoneyCrystalConduitBlock.FACING)) {
             level.setBlock(pos, state
-                .setValue(HoneyCrystalConduitBlock.FORMED, formed)
+                .setValue(HoneyCrystalConduitBlock.MULTIBLOCK, formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE)
                 .setValue(HoneyCrystalConduitBlock.FACING, facing), 3);
         }
     }

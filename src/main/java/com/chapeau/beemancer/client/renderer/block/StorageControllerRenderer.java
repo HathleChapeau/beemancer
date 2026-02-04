@@ -24,6 +24,7 @@ package com.chapeau.beemancer.client.renderer.block;
 import com.chapeau.beemancer.client.renderer.util.DebugRenderHelper;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -81,8 +82,8 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
                        int packedLight, int packedOverlay) {
 
         BlockState state = blockEntity.getBlockState();
-        boolean formed = state.hasProperty(StorageControllerBlock.FORMED) &&
-                         state.getValue(StorageControllerBlock.FORMED);
+        boolean formed = state.hasProperty(StorageControllerBlock.MULTIBLOCK) &&
+                         !state.getValue(StorageControllerBlock.MULTIBLOCK).equals(MultiblockProperty.NONE);
 
         if (formed) {
             renderFormedAnimation(blockEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay);

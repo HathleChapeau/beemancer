@@ -56,6 +56,16 @@
 --- BEE STATUE ---
 | bee_statue             | BeeStatueBlock            | Oui          | Bee Statue      |
 
+--- ALCHEMY HEART BLOCKS ---
+| alembic_heart          | AlembicHeartBlock         | Oui          | Alchemy         |
+| infuser_heart          | InfuserHeartBlock         | Oui          | Alchemy         |
+| centrifuge_heart       | CentrifugeHeartBlock      | Oui          | Alchemy         |
+
+--- STORAGE MATERIAL BLOCKS ---
+| honeyed_iron_block     | Block (simple)            | Non          | Storage         |
+| royal_gold_block       | Block (simple)            | Non          | Storage         |
+| nectar_diamond_block   | Block (simple)            | Non          | Storage         |
+
 --- FLUID BLOCKS ---
 | honey                  | LiquidBlock               | Non          | Fluids          |
 | royal_jelly            | LiquidBlock               | Non          | Fluids          |

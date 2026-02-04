@@ -24,6 +24,7 @@ package com.chapeau.beemancer.common.blockentity.extractor;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.extractor.ExtractorHeartBlock;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
@@ -327,7 +328,7 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     public void onMultiblockFormed() {
         extractorFormed = true;
         if (level != null && !level.isClientSide()) {
-            level.setBlock(worldPosition, getBlockState().setValue(ExtractorHeartBlock.FORMED, true), 3);
+            level.setBlock(worldPosition, getBlockState().setValue(ExtractorHeartBlock.MULTIBLOCK, MultiblockProperty.EXTRACTOR), 3);
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
             syncToClient();
@@ -338,8 +339,8 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     public void onMultiblockBroken() {
         extractorFormed = false;
         if (level != null && !level.isClientSide()) {
-            if (level.getBlockState(worldPosition).hasProperty(ExtractorHeartBlock.FORMED)) {
-                level.setBlock(worldPosition, getBlockState().setValue(ExtractorHeartBlock.FORMED, false), 3);
+            if (level.getBlockState(worldPosition).hasProperty(ExtractorHeartBlock.MULTIBLOCK)) {
+                level.setBlock(worldPosition, getBlockState().setValue(ExtractorHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
             MultiblockEvents.unregisterController(worldPosition);
             setChanged();

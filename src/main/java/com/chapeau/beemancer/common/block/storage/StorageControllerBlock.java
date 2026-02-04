@@ -39,7 +39,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -57,18 +58,18 @@ import org.jetbrains.annotations.Nullable;
 public class StorageControllerBlock extends BaseEntityBlock {
     public static final MapCodec<StorageControllerBlock> CODEC = simpleCodec(StorageControllerBlock::new);
 
-    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("storage");
 
     private static final VoxelShape SHAPE = Block.box(3, 3, 3, 13, 13, 13);
 
     public StorageControllerBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FORMED, false));
+        this.registerDefaultState(this.stateDefinition.any().setValue(MULTIBLOCK, MultiblockProperty.NONE));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED);
+        builder.add(MULTIBLOCK);
     }
 
     @Override
@@ -136,7 +137,7 @@ public class StorageControllerBlock extends BaseEntityBlock {
         }
 
         // Clic normal: tenter formation si pas formé, sinon afficher statut
-        if (!state.getValue(FORMED)) {
+        if (state.getValue(MULTIBLOCK).equals(MultiblockProperty.NONE)) {
             boolean success = controller.tryFormStorage();
             if (success) {
                 player.displayClientMessage(
@@ -160,7 +161,7 @@ public class StorageControllerBlock extends BaseEntityBlock {
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
-            if (state.getValue(FORMED)) {
+            if (!state.getValue(MULTIBLOCK).equals(MultiblockProperty.NONE)) {
                 BlockEntity be = level.getBlockEntity(pos);
                 if (be instanceof StorageControllerBlockEntity controller) {
                     controller.onMultiblockBroken();

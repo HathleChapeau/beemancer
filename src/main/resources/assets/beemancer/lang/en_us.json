@@ -496,6 +496,12 @@
   "block.beemancer.honey_reservoir": "Honey Reservoir",
   "block.beemancer.altar_heart": "Altar Heart",
   "block.beemancer.hive_multiblock": "Hive Block",
+  "block.beemancer.honeyed_iron_block": "Honeyed Iron Block",
+  "block.beemancer.royal_gold_block": "Royal Gold Block",
+  "block.beemancer.nectar_diamond_block": "Nectar Diamond Block",
+  "block.beemancer.alembic_heart": "Alembic Heart",
+  "block.beemancer.infuser_heart": "Infuser Heart",
+  "block.beemancer.centrifuge_heart": "Centrifuge Heart",
 
   "message.beemancer.honey_altar.formed": "The Honey Altar has been formed!",
   "message.beemancer.honey_altar.already_formed": "The Honey Altar is already active",

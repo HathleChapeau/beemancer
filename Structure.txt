@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-01                     #
-#            (PlayerInventoryWidget: texture-based player inventory)          #
+#                         Dernière mise à jour: 2026-02-04                     #
+#         (Multibloc Blockstate Refonte + New Alchemy Heart Blocks)          #
 ################################################################################
 
 ================================================================================
@@ -87,6 +87,7 @@ Philosophie:
 │   HiveBeeLifecycleManager           │ Cycle de vie abeilles dans ruche     │
 │ client/gui/GuiRenderHelper.java      │ Rendu programmatique GUIs partagé    │
 │ core/util/ParticleHelper.java        │ Utilitaire statique spawn particules │
+│ core/multiblock/MultiblockProperty.java│ Enum + factory blockstate property │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -265,6 +266,10 @@ LISTE DES FEATURES:
 → Particle System
   Fichier: Structure/feature_particle_system.txt
   Description: Système de particules statique avec EffectTypes prédéfinis et surcharges ResourceLocation
+
+→ Multibloc Blockstate Refonte
+  Fichier: Structure/feature_multiblock_blockstate_refonte.txt
+  Description: Remplacement BooleanProperty FORMED par EnumProperty<MultiblockProperty> sur 16 blocs + 3 nouveaux Heart blocks alchemy
 
 ================================================================================
 6. FEATURES EN COURS

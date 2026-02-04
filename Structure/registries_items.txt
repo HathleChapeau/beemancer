@@ -46,6 +46,16 @@
 | honey_crystal_conduit    | BlockItem        | Honey Altar     |
 | honey_crystal            | BlockItem        | Honey Altar     |
 
+--- ALCHEMY HEART BLOCKS ---
+| alembic_heart            | BlockItem        | Alchemy         |
+| infuser_heart            | BlockItem        | Alchemy         |
+| centrifuge_heart         | BlockItem        | Alchemy         |
+
+--- STORAGE MATERIAL BLOCKS ---
+| honeyed_iron_block       | BlockItem        | Storage         |
+| royal_gold_block         | BlockItem        | Storage         |
+| nectar_diamond_block     | BlockItem        | Storage         |
+
 --- POLLEN POT ---
 | pollen_pot               | BlockItem        | Pollen Pot      |
 

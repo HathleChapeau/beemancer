@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "beemancer:block/honeyed_iron_block"
+  }
+}

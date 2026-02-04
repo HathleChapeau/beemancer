@@ -29,9 +29,11 @@ import com.chapeau.beemancer.core.breeding.BreedingManager;
 import com.chapeau.beemancer.core.gene.BeeGeneData;
 import com.chapeau.beemancer.core.gene.Gene;
 import com.chapeau.beemancer.core.gene.GeneCategory;
+import com.chapeau.beemancer.common.block.altar.HoneyedSlabBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.core.multiblock.MultiblockValidator;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
@@ -140,10 +142,19 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     public void onMultiblockBroken() {
         if (isController && formed) {
             dropContents();
+            // Reset all structure blocks via onBroken
+            onBroken();
+            return;
         }
         formed = false;
         isController = false;
         controllerPos = null;
+        if (level != null) {
+            BlockState blockState = level.getBlockState(worldPosition);
+            if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
+                level.setBlock(worldPosition, blockState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
+            }
+        }
         setChanged();
     }
 
@@ -213,14 +224,23 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         formed = true;
         controllerPos = null;
 
-        // Notify only hive blocks in the structure (not slabs)
+        // Set MULTIBLOCK blockstate on the controller itself
+        BlockState controllerState = level.getBlockState(worldPosition);
+        if (controllerState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
+            level.setBlock(worldPosition, controllerState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE), 3);
+        }
+
+        // Set MULTIBLOCK on all structure blocks
         MultiblockPattern pattern = getPattern();
         for (Vec3i offset : pattern.getStructurePositions()) {
-            // Skip slabs (Y+3) - they don't have BlockEntities
-            if (offset.getY() >= 3) continue;
-
             BlockPos structurePos = worldPosition.offset(offset);
-            if (!structurePos.equals(worldPosition)) {
+            if (structurePos.equals(worldPosition)) continue;
+
+            BlockState blockState = level.getBlockState(structurePos);
+
+            // Hive blocks (have BlockEntities)
+            if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
+                level.setBlock(structurePos, blockState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE), 3);
                 BlockEntity be = level.getBlockEntity(structurePos);
                 if (be instanceof HiveMultiblockBlockEntity hive) {
                     hive.controllerPos = worldPosition;
@@ -228,6 +248,11 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                     hive.formed = true;
                     hive.setChanged();
                 }
+            }
+
+            // Slab blocks (no BlockEntity)
+            if (blockState.hasProperty(HoneyedSlabBlock.MULTIBLOCK)) {
+                level.setBlock(structurePos, blockState.setValue(HoneyedSlabBlock.MULTIBLOCK, MultiblockProperty.HIVE), 3);
             }
         }
 
@@ -249,14 +274,17 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
             // Drop all contents
             dropContents();
 
-            // Notify only hive blocks in the structure (not slabs)
+            // Reset MULTIBLOCK on all structure blocks
             MultiblockPattern pattern = getPattern();
             for (Vec3i offset : pattern.getStructurePositions()) {
-                // Skip slabs (Y+3) - they don't have BlockEntities
-                if (offset.getY() >= 3) continue;
-
                 BlockPos structurePos = worldPosition.offset(offset);
-                if (!structurePos.equals(worldPosition)) {
+                if (structurePos.equals(worldPosition)) continue;
+
+                BlockState blockState = level.getBlockState(structurePos);
+
+                // Hive blocks (have BlockEntities)
+                if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
+                    level.setBlock(structurePos, blockState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
                     BlockEntity be = level.getBlockEntity(structurePos);
                     if (be instanceof HiveMultiblockBlockEntity hive) {
                         hive.controllerPos = null;
@@ -265,6 +293,11 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                         hive.setChanged();
                     }
                 }
+
+                // Slab blocks (no BlockEntity)
+                if (blockState.hasProperty(HoneyedSlabBlock.MULTIBLOCK)) {
+                    level.setBlock(structurePos, blockState.setValue(HoneyedSlabBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
+                }
             }
 
             com.chapeau.beemancer.core.multiblock.MultiblockEvents.unregisterController(worldPosition);
@@ -272,7 +305,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
             // Notify the controller that structure is broken
             BlockEntity be = level.getBlockEntity(controllerPos);
             if (be instanceof HiveMultiblockBlockEntity controller) {
-                controller.onMultiblockBroken();
+                controller.onBroken();
             }
         }
 

@@ -23,7 +23,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 /**
@@ -36,21 +37,21 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
  */
 public class HoneyedStoneBlock extends Block {
 
-    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("altar", "extractor", "storage");
     public static final IntegerProperty LAYER = IntegerProperty.create("layer", 0, 2);
     public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 3);
 
     public HoneyedStoneBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(FORMED, false)
+            .setValue(MULTIBLOCK, MultiblockProperty.NONE)
             .setValue(LAYER, 0)
             .setValue(FORMED_ROTATION, 0));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FORMED, LAYER, FORMED_ROTATION);
+        builder.add(MULTIBLOCK, LAYER, FORMED_ROTATION);
     }
 
     @Override

@@ -3,6 +3,66 @@
 ################################################################################
 
 ================================================================================
+2026-02-04 - Multibloc Blockstate Refonte + New Alchemy Heart Blocks
+================================================================================
+
+Remplacement de BooleanProperty FORMED par EnumProperty<MultiblockProperty>
+MULTIBLOCK sur tous les blocs multiblocs. Ajout de 3 Heart blocks alchemy
+et 3 blocs de stockage matériau.
+
+SYSTÈME MULTIBLOCK PROPERTY:
+- MultiblockProperty enum: NONE, ALTAR, EXTRACTOR, STORAGE, HIVE, ALEMBIC,
+  INFUSER, CENTRIFUGE
+- Remplace BooleanProperty FORMED sur 16 blocs
+- Chaque bloc sait à quel multibloc il appartient quand formé
+
+FICHIERS CRÉÉS (7):
+
+1. core/multiblock/MultiblockProperty.java
+   - Enum implémentant StringRepresentable
+   - Factory method createProperty() retournant EnumProperty<MultiblockProperty>
+   - Valeurs: NONE, ALTAR, EXTRACTOR, STORAGE, HIVE, ALEMBIC, INFUSER, CENTRIFUGE
+
+2. common/block/alchemy/AlembicHeartBlock.java
+   - Heart block pour multibloc Alembic
+   - BlockState: MULTIBLOCK (none/alembic)
+
+3. common/block/alchemy/InfuserHeartBlock.java
+   - Heart block pour multibloc Infuser
+   - BlockState: MULTIBLOCK (none/infuser)
+
+4. common/block/alchemy/CentrifugeHeartBlock.java
+   - Heart block pour multibloc Centrifuge
+   - BlockState: MULTIBLOCK (none/centrifuge)
+
+5. common/blockentity/alchemy/AlembicHeartBlockEntity.java
+   - BlockEntity minimal pour Alembic Heart
+
+6. common/blockentity/alchemy/InfuserHeartBlockEntity.java
+   - BlockEntity minimal pour Infuser Heart
+
+7. common/blockentity/alchemy/CentrifugeHeartBlockEntity.java
+   - BlockEntity minimal pour Centrifuge Heart
+
+BLOCS SIMPLES AJOUTÉS (3):
+- honeyed_iron_block, royal_gold_block, nectar_diamond_block
+
+FICHIERS MODIFIÉS (~30+):
+- 16 blocs: altar_heart, extractor_heart, honey_pedestal, honeyed_stone,
+  honeyed_stone_stair, honey_crystal_conduit, honey_reservoir, honeyed_slab,
+  hive_multiblock, storage_controller, controller_pipe, storage_terminal,
+  controlled_hive (FORMED → MULTIBLOCK enum)
+- Tous les BlockEntities associés (formation/destruction code)
+- Tous les renderers associés
+- Tous les blockstate JSONs (formed=true/false → multiblock=none/xxx)
+
+REGISTRES:
+- BeemancerBlocks: +ALEMBIC_HEART, +INFUSER_HEART, +CENTRIFUGE_HEART,
+  +HONEYED_IRON_BLOCK, +ROYAL_GOLD_BLOCK, +NECTAR_DIAMOND_BLOCK
+- BeemancerItems: +6 BlockItems correspondants
+- BeemancerBlockEntities: +ALEMBIC_HEART, +INFUSER_HEART, +CENTRIFUGE_HEART
+
+================================================================================
 2026-02-03 - Pollen Pot: refonte rendu (BlockEntityRenderer + textures)
 ================================================================================
 
