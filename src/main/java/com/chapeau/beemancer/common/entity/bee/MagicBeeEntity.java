@@ -114,6 +114,9 @@ public class MagicBeeEntity extends Bee {
     public static final int DEFAULT_ENRAGED_DURATION = 200; // 10 secondes
     private int enragedTimer = 0;
 
+    // --- Hive Ping Timer (transient, not saved) ---
+    private int hivePingTimer = 0;
+
     public MagicBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
         // Forcer le contrôle de vol et désactiver la gravité
@@ -335,6 +338,27 @@ public class MagicBeeEntity extends Bee {
         }
     }
 
+    /**
+     * Ping la ruche assignee toutes les 40 ticks (2 secondes) pour valider le UUID.
+     * Si la ruche repond que ce bee est un doublon, se detruit silencieusement.
+     */
+    private void tickHivePing() {
+        if (!hasAssignedHive()) return;
+
+        hivePingTimer++;
+        if (hivePingTimer < 40) return;
+        hivePingTimer = 0;
+
+        if (assignedHivePos == null) return;
+        if (!(level().getBlockEntity(assignedHivePos) instanceof MagicHiveBlockEntity hive)) return;
+
+        boolean shouldSurvive = hive.handleBeePing(this);
+        if (!shouldSurvive) {
+            notifiedHiveOfRemoval = true;
+            discard();
+        }
+    }
+
     // --- Returning State ---
 
     public boolean isReturning() {
@@ -405,6 +429,8 @@ public class MagicBeeEntity extends Bee {
         if (!level().isClientSide()) {
             // Tick le timer enragé chaque tick
             tickEnragedTimer();
+            // Ping la ruche pour validation UUID
+            tickHivePing();
         }
 
         // Apply gene behaviors

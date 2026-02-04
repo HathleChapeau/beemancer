@@ -3,6 +3,28 @@
 ################################################################################
 
 ================================================================================
+2026-02-04 - Securite UUID Bee-Hive + Fix Velocite Sortie Ruche
+================================================================================
+
+Systeme de synchronisation UUID entre abeilles exterieures et leur ruche.
+Elimine les doublons d'abeilles et corrige le bug de velocite a la sortie.
+
+FICHIERS MODIFIES (3):
+- HiveBeeLifecycleManager.java: +handleBeePing(), +verifyOutsideBees(),
+  +resetSlotToInside(), canBeeEnter() + UUID check, releaseBee() + velocity fix
+- MagicHiveBlockEntity.java: +outsideVerifyTimer, +handleBeePing() delegation,
+  serverTick() verification periodique
+- MagicBeeEntity.java: +hivePingTimer, +tickHivePing(), tick() appel ping
+
+MECANISME:
+- Bee ping ruche toutes les 2s (40 ticks) pour valider UUID
+- UUID mismatch + slot OUTSIDE → doublon detruit
+- UUID mismatch + slot INSIDE → adopte bee exterieur
+- Ruche verifie ses OUTSIDE toutes les 2s, reset si entite absente
+- canBeeEnter() exige UUID match
+- setDeltaMovement(Vec3.ZERO) apres moveTo dans releaseBee()
+
+================================================================================
 2026-02-04 - Flywheel Test Bee (Proof of Concept GPU Instancing)
 ================================================================================
 

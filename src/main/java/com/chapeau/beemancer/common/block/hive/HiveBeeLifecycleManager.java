@@ -39,9 +39,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,6 +93,7 @@ public class HiveBeeLifecycleManager {
 
         BlockPos spawnPos = parent.getBlockPos().above();
         bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY() + 1, spawnPos.getZ() + 0.5, 0, 0);
+        bee.setDeltaMovement(Vec3.ZERO);
 
         BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
         bee.getGeneData().copyFrom(geneData);
@@ -112,8 +115,13 @@ public class HiveBeeLifecycleManager {
     public boolean canBeeEnter(MagicBeeEntity bee) {
         if (!bee.hasAssignedHive() || !parent.getBlockPos().equals(bee.getAssignedHivePos())) return false;
         int slot = bee.getAssignedSlot();
-        return slot >= 0 && slot < MagicHiveBlockEntity.BEE_SLOTS
-            && parent.getBeeSlots()[slot].isOutside();
+        if (slot < 0 || slot >= MagicHiveBlockEntity.BEE_SLOTS) return false;
+
+        HiveBeeSlot beeSlot = parent.getBeeSlots()[slot];
+        if (!beeSlot.isOutside()) return false;
+
+        UUID slotUUID = beeSlot.getBeeUUID();
+        return slotUUID != null && slotUUID.equals(bee.getUUID());
     }
 
     public void addBee(MagicBeeEntity bee) {
@@ -165,6 +173,88 @@ public class HiveBeeLifecycleManager {
                 return;
             }
         }
+    }
+
+    // === UUID Sync Security ===
+
+    /**
+     * Gere le ping periodique d'une abeille exterieure.
+     * Verifie que le UUID du bee correspond au slot de la ruche.
+     *
+     * @return true si le bee est valide et doit survivre, false si c'est un doublon a detruire
+     */
+    public boolean handleBeePing(MagicBeeEntity bee) {
+        int slot = bee.getAssignedSlot();
+        if (slot < 0 || slot >= MagicHiveBlockEntity.BEE_SLOTS) return false;
+
+        HiveBeeSlot beeSlot = parent.getBeeSlots()[slot];
+        UUID beeUUID = bee.getUUID();
+        UUID slotUUID = beeSlot.getBeeUUID();
+
+        if (beeSlot.isOutside()) {
+            if (slotUUID != null && slotUUID.equals(beeUUID)) {
+                return true;
+            }
+            verifyOutsideBees();
+            return false;
+        }
+
+        if (beeSlot.isInside()) {
+            beeSlot.setState(HiveBeeSlot.State.OUTSIDE);
+            beeSlot.setBeeUUID(beeUUID);
+            parent.setChanged();
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifie toutes les abeilles OUTSIDE de la ruche.
+     * Pour chaque slot OUTSIDE, si l'entite n'est plus trouvable dans le monde,
+     * remet le slot en INSIDE avec un cooldown de recuperation.
+     */
+    void verifyOutsideBees() {
+        if (!(parent.getLevel() instanceof ServerLevel serverLevel)) return;
+
+        HiveBeeSlot[] beeSlots = parent.getBeeSlots();
+        NonNullList<ItemStack> items = parent.getItems();
+
+        for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
+            if (!beeSlots[i].isOutside()) continue;
+
+            UUID uuid = beeSlots[i].getBeeUUID();
+            if (uuid == null) {
+                resetSlotToInside(i, beeSlots[i], items.get(i));
+                continue;
+            }
+
+            Entity entity = serverLevel.getEntity(uuid);
+            if (entity == null || entity.isRemoved() || !(entity instanceof MagicBeeEntity)) {
+                resetSlotToInside(i, beeSlots[i], items.get(i));
+            }
+        }
+    }
+
+    /**
+     * Remet un slot OUTSIDE en INSIDE avec un cooldown de recuperation.
+     * Utilise si l'entite associee n'est plus trouvable.
+     */
+    private void resetSlotToInside(int slot, HiveBeeSlot beeSlot, ItemStack beeItem) {
+        parent.returnAssignedFlower(slot);
+        beeSlot.setState(HiveBeeSlot.State.INSIDE);
+        beeSlot.setBeeUUID(null);
+
+        if (!beeItem.isEmpty()) {
+            BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
+            BeeBehaviorConfig config = BeeBehaviorManager.getConfig(getSpeciesId(geneData));
+            beeSlot.setCooldown(config.getRandomRestCooldown(
+                    parent.getLevel() != null ? parent.getLevel().getRandom() : RandomSource.create()));
+        } else {
+            beeSlot.setCooldown(200);
+        }
+
+        parent.setChanged();
     }
 
     // === Loot & Output ===

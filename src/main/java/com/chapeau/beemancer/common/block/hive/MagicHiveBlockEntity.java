@@ -88,6 +88,9 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     private boolean antibreedingMode = false;
     private int breedingCooldown = 0;
 
+    // UUID sync verification timer (transient, not saved)
+    private int outsideVerifyTimer = 0;
+
     // Conditions de ruche (pour GUI)
     private boolean hasFlowers = false;
     private boolean hasMushrooms = false;
@@ -399,6 +402,8 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     public void onBeeKilled(UUID beeUUID) { lifecycleManager.onBeeKilled(beeUUID); }
 
+    public boolean handleBeePing(MagicBeeEntity bee) { return lifecycleManager.handleBeePing(bee); }
+
     public void insertIntoOutputSlots(ItemStack stack) { lifecycleManager.insertIntoOutputSlots(stack); }
 
     // ==================== Tick ====================
@@ -417,6 +422,12 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         }
 
         hive.lifecycleManager.checkReturningBees(level, pos);
+
+        hive.outsideVerifyTimer++;
+        if (hive.outsideVerifyTimer >= 40) {
+            hive.outsideVerifyTimer = 0;
+            hive.lifecycleManager.verifyOutsideBees();
+        }
 
         if (!hive.antibreedingMode) {
             hive.lifecycleManager.tickBreeding(level.getRandom());

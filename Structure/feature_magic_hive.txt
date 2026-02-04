@@ -26,6 +26,18 @@ SYSTÈME D'ASSIGNATION
 - Retour ruche: Bee capturée, état INSIDE, loot déposé
 
 ================================================================================
+SÉCURITÉ UUID BEE-HIVE
+================================================================================
+
+- Bee ping ruche toutes les 2s (40 ticks) via tickHivePing() → handleBeePing()
+- UUID mismatch + slot OUTSIDE → doublon détruit (verifyOutsideBees() lancé)
+- UUID mismatch + slot INSIDE → bee adoptée, slot mis en OUTSIDE
+- Ruche vérifie ses slots OUTSIDE toutes les 2s (serverTick timer)
+- Entité absente → resetSlotToInside() avec cooldown récupération
+- canBeeEnter() exige UUID match en plus de l'assignation
+- releaseBee() reset la vélocité (setDeltaMovement(Vec3.ZERO))
+
+================================================================================
 DÉTECTION DE FLEURS
 ================================================================================
 
