@@ -167,7 +167,7 @@ public class DeliveryBeeEntity extends Bee {
      * Restitue les items transportes dans le reseau de stockage si possible.
      * Appele lors du discard pour eviter la perte d'items en transit.
      */
-    private void returnCarriedItemsToNetwork() {
+    public void returnCarriedItemsToNetwork() {
         if (carriedItems.isEmpty() || controllerPos == null || level() == null) return;
         if (!level().isLoaded(controllerPos)) return;
         BlockEntity be = level().getBlockEntity(controllerPos);
@@ -327,7 +327,7 @@ public class DeliveryBeeEntity extends Bee {
     /**
      * Notifie le controller que la tâche a échoué (timeout).
      */
-    private void notifyTaskFailed() {
+    public void notifyTaskFailed() {
         if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
         if (!level().isLoaded(controllerPos)) return;
         BlockEntity be = level().getBlockEntity(controllerPos);

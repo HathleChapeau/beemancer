@@ -265,6 +265,16 @@ public class StorageTerminalBlock extends BaseEntityBlock {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof StorageTerminalBlockEntity terminal) {
+                // Retirer du registre reseau avant de delinker
+                BlockPos ctrlPos = terminal.getControllerPos();
+                if (ctrlPos != null && level.isLoaded(ctrlPos)) {
+                    BlockEntity ctrlBe = level.getBlockEntity(ctrlPos);
+                    if (ctrlBe instanceof StorageControllerBlockEntity controller) {
+                        controller.getNetworkRegistry().unregisterBlock(pos);
+                        controller.setChanged();
+                        controller.syncNodeToClient();
+                    }
+                }
                 terminal.unlinkController();
 
                 for (int i = 0; i < terminal.getContainerSize(); i++) {

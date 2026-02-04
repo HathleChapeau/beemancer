@@ -187,7 +187,9 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
     }
 
     /**
-     * Met à jour la propriété MULTIBLOCK sur tous les blocs de la structure.
+     * Met a jour la propriete MULTIBLOCK sur tous les blocs de la structure.
+     * Les HoneyReservoir recoivent ALEMBIC_0 (Y-1) ou ALEMBIC_1 (Y+0) selon leur couche.
+     * Les autres blocs recoivent ALEMBIC.
      */
     private void setFormedOnStructureBlocks(boolean formed) {
         if (level == null) return;
@@ -200,7 +202,18 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
                     @SuppressWarnings("unchecked")
                     net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty> mbProp =
                         (net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty>) enumProp;
-                    MultiblockProperty value = formed ? MultiblockProperty.ALEMBIC : MultiblockProperty.NONE;
+                    MultiblockProperty value;
+                    if (!formed) {
+                        value = MultiblockProperty.NONE;
+                    } else {
+                        int yOffset = element.offset().getY();
+                        MultiblockProperty layerValue = (yOffset <= -1)
+                            ? MultiblockProperty.ALEMBIC_0
+                            : MultiblockProperty.ALEMBIC_1;
+                        value = mbProp.getPossibleValues().contains(layerValue)
+                            ? layerValue
+                            : MultiblockProperty.ALEMBIC;
+                    }
                     if (mbProp.getPossibleValues().contains(value) && state.getValue(mbProp) != value) {
                         level.setBlock(blockPos, state.setValue(mbProp, value), 3);
                     }

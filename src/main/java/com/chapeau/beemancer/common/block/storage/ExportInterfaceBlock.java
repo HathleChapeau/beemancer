@@ -21,6 +21,7 @@ package com.chapeau.beemancer.common.block.storage;
 
 import com.chapeau.beemancer.common.blockentity.storage.ExportInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -137,6 +138,15 @@ public class ExportInterfaceBlock extends BaseEntityBlock {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof NetworkInterfaceBlockEntity iface) {
+                BlockPos ctrlPos = iface.getControllerPos();
+                if (ctrlPos != null && level.isLoaded(ctrlPos)) {
+                    BlockEntity ctrlBe = level.getBlockEntity(ctrlPos);
+                    if (ctrlBe instanceof StorageControllerBlockEntity controller) {
+                        controller.getNetworkRegistry().unregisterBlock(pos);
+                        controller.setChanged();
+                        controller.syncNodeToClient();
+                    }
+                }
                 iface.unlinkController();
             }
         }

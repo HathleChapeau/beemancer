@@ -33,9 +33,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Import Interface: scanne l'inventaire adjacent et cree des taches EXTRACT
@@ -65,21 +63,24 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
         ItemStack remaining = items.copy();
 
-        // Determiner les slots cibles: union de tous les selectedSlots des filtres, ou global
+        // Determiner les slots cibles en trouvant le filtre correspondant a l'item livre
         int[] slots;
         if (filters.isEmpty()) {
             slots = getGlobalOperableSlots(adjacent);
         } else {
-            Set<Integer> allSlots = new HashSet<>();
+            InterfaceFilter matchingFilter = null;
             for (InterfaceFilter filter : filters) {
-                if (filter.getSelectedSlots().isEmpty()) {
-                    // Si un filtre n'a pas de slots, utiliser tous
-                    slots = getGlobalOperableSlots(adjacent);
-                    return insertIntoSlots(adjacent, remaining, slots);
+                if (filter.matches(items, false)) {
+                    matchingFilter = filter;
+                    break;
                 }
-                allSlots.addAll(filter.getSelectedSlots());
             }
-            slots = getOperableSlots(adjacent, allSlots);
+
+            if (matchingFilter != null && !matchingFilter.getSelectedSlots().isEmpty()) {
+                slots = getOperableSlots(adjacent, matchingFilter.getSelectedSlots());
+            } else {
+                slots = getGlobalOperableSlots(adjacent);
+            }
         }
 
         return insertIntoSlots(adjacent, remaining, slots);

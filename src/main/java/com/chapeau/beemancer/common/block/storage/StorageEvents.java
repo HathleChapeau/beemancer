@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import java.util.HashSet;
@@ -71,22 +72,21 @@ public class StorageEvents {
         if (!(nodeBe instanceof INetworkNode node)) return;
 
         BlockState clickedState = level.getBlockState(clickedPos);
+        BlockEntity be = level.getBlockEntity(clickedPos);
+
+        // Terminal: toggle link/unlink (en edit mode, pas besoin de shift)
+        if (be instanceof StorageTerminalBlockEntity terminal) {
+            handleTerminalToggle(player, level, node, terminal, clickedPos, event);
+            return;
+        }
+
+        // Interface: toggle link/unlink (en edit mode, pas besoin de shift)
+        if (be instanceof NetworkInterfaceBlockEntity iface) {
+            handleInterfaceToggle(player, level, node, iface, clickedPos, event);
+            return;
+        }
 
         if (player.isShiftKeyDown()) {
-            BlockEntity be = level.getBlockEntity(clickedPos);
-
-            // Shift+clic sur un terminal = lier au reseau via le noeud courant
-            if (be instanceof StorageTerminalBlockEntity terminal) {
-                handleTerminalLink(player, level, node, terminal, clickedPos, event);
-                return;
-            }
-
-            // Shift+clic sur une interface reseau = lier au reseau via le noeud courant
-            if (be instanceof NetworkInterfaceBlockEntity iface) {
-                handleInterfaceLink(player, level, node, iface, clickedPos, event);
-                return;
-            }
-
             // Shift+clic sur un autre noeud = enregistrer mutuellement
             if (be instanceof INetworkNode otherNode && !clickedPos.equals(nodePos)) {
                 handleNodeLink(player, node, otherNode, nodePos, clickedPos, event);
@@ -104,53 +104,75 @@ public class StorageEvents {
     }
 
     /**
-     * Lie un terminal au reseau. Si deja possede par un autre noeud, transfere la propriete.
+     * Toggle un terminal: si deja lie, delie; sinon, lie au reseau.
      */
-    private static void handleTerminalLink(Player player, Level level, INetworkNode node,
-                                            StorageTerminalBlockEntity terminal, BlockPos clickedPos,
-                                            PlayerInteractEvent.RightClickBlock event) {
+    private static void handleTerminalToggle(Player player, Level level, INetworkNode node,
+                                              StorageTerminalBlockEntity terminal, BlockPos clickedPos,
+                                              PlayerInteractEvent.RightClickBlock event) {
         BlockPos controllerPos = findControllerInNetwork(node, level);
         if (controllerPos == null) return;
 
         BlockEntity ctrlBe = level.getBlockEntity(controllerPos);
         if (!(ctrlBe instanceof StorageControllerBlockEntity controller)) return;
 
-        controller.getNetworkRegistry().registerBlock(
-                clickedPos, node.getNodePos(), StorageNetworkRegistry.NetworkBlockType.TERMINAL);
+        StorageNetworkRegistry registry = controller.getNetworkRegistry();
 
-        terminal.linkToController(controllerPos);
+        if (terminal.getControllerPos() != null) {
+            // Deja lie: delink
+            registry.unregisterBlock(clickedPos);
+            terminal.unlinkController();
+            player.displayClientMessage(
+                    Component.translatable("message.beemancer.storage_terminal.unlinked"),
+                    true);
+        } else {
+            // Pas lie: link
+            registry.registerBlock(
+                    clickedPos, node.getNodePos(), StorageNetworkRegistry.NetworkBlockType.TERMINAL);
+            terminal.linkToController(controllerPos);
+            player.displayClientMessage(
+                    Component.translatable("message.beemancer.storage_terminal.linked_manually"),
+                    true);
+        }
+
         controller.setChanged();
         controller.syncNodeToClient();
-
-        player.displayClientMessage(
-                Component.translatable("message.beemancer.storage_terminal.linked_manually"),
-                true);
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
     }
 
     /**
-     * Lie une interface au reseau. Si deja possede par un autre noeud, transfere la propriete.
+     * Toggle une interface: si deja liee, delie; sinon, lie au reseau.
      */
-    private static void handleInterfaceLink(Player player, Level level, INetworkNode node,
-                                             NetworkInterfaceBlockEntity iface, BlockPos clickedPos,
-                                             PlayerInteractEvent.RightClickBlock event) {
+    private static void handleInterfaceToggle(Player player, Level level, INetworkNode node,
+                                               NetworkInterfaceBlockEntity iface, BlockPos clickedPos,
+                                               PlayerInteractEvent.RightClickBlock event) {
         BlockPos controllerPos = findControllerInNetwork(node, level);
         if (controllerPos == null) return;
 
         BlockEntity ctrlBe = level.getBlockEntity(controllerPos);
         if (!(ctrlBe instanceof StorageControllerBlockEntity controller)) return;
 
-        controller.getNetworkRegistry().registerBlock(
-                clickedPos, node.getNodePos(), StorageNetworkRegistry.NetworkBlockType.INTERFACE);
+        StorageNetworkRegistry registry = controller.getNetworkRegistry();
 
-        iface.linkToController(controllerPos);
+        if (iface.getControllerPos() != null) {
+            // Deja liee: delink
+            registry.unregisterBlock(clickedPos);
+            iface.unlinkController();
+            player.displayClientMessage(
+                    Component.translatable("message.beemancer.network_interface.unlinked"),
+                    true);
+        } else {
+            // Pas liee: link
+            registry.registerBlock(
+                    clickedPos, node.getNodePos(), StorageNetworkRegistry.NetworkBlockType.INTERFACE);
+            iface.linkToController(controllerPos);
+            player.displayClientMessage(
+                    Component.translatable("message.beemancer.network_interface.linked_manually"),
+                    true);
+        }
+
         controller.setChanged();
         controller.syncNodeToClient();
-
-        player.displayClientMessage(
-                Component.translatable("message.beemancer.network_interface.linked_manually"),
-                true);
         event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
     }
@@ -270,6 +292,53 @@ public class StorageEvents {
             }
         }
         return null;
+    }
+
+    /**
+     * Quand un bloc est casse en mode edition, le retirer du registre reseau
+     * et de la liste de coffres du noeud si applicable.
+     */
+    @SubscribeEvent
+    public static void onBlockBreak(BlockEvent.BreakEvent event) {
+        Player player = event.getPlayer();
+        Level level = player.level();
+        BlockPos brokenPos = event.getPos();
+
+        if (level.isClientSide()) return;
+        if (!StorageEditModeHandler.isEditing(player, level)) return;
+
+        BlockPos nodePos = StorageEditModeHandler.getEditingNode(player.getUUID());
+        if (nodePos == null) return;
+
+        BlockEntity nodeBe = level.getBlockEntity(nodePos);
+        if (!(nodeBe instanceof INetworkNode node)) return;
+
+        BlockPos controllerPos = findControllerInNetwork(node, level);
+        if (controllerPos == null) return;
+
+        BlockEntity ctrlBe = level.getBlockEntity(controllerPos);
+        if (!(ctrlBe instanceof StorageControllerBlockEntity controller)) return;
+
+        StorageNetworkRegistry registry = controller.getNetworkRegistry();
+        StorageNetworkRegistry.NetworkEntry entry = registry.getEntry(brokenPos);
+        if (entry == null) return;
+
+        // Retirer du registre central
+        registry.unregisterBlock(brokenPos);
+
+        // Si c'est un coffre, retirer aussi de la liste du noeud proprietaire
+        if (entry.type() == StorageNetworkRegistry.NetworkBlockType.CHEST) {
+            BlockPos ownerPos = entry.ownerNode();
+            if (ownerPos != null && level.isLoaded(ownerPos)) {
+                BlockEntity ownerBe = level.getBlockEntity(ownerPos);
+                if (ownerBe instanceof INetworkNode ownerNode) {
+                    ownerNode.getChestManager().getRegisteredChestsMutable().remove(brokenPos);
+                }
+            }
+        }
+
+        controller.setChanged();
+        controller.syncNodeToClient();
     }
 
     @SubscribeEvent

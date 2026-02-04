@@ -77,6 +77,11 @@ public class StorageNetworkRegistry {
     }
 
     @Nullable
+    public NetworkEntry getEntry(BlockPos blockPos) {
+        return registry.get(blockPos);
+    }
+
+    @Nullable
     public BlockPos getOwner(BlockPos blockPos) {
         NetworkEntry entry = registry.get(blockPos);
         return entry != null ? entry.ownerNode() : null;

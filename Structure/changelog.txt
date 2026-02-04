@@ -3,6 +3,64 @@
 ################################################################################
 
 ================================================================================
+2026-02-04 - Delivery Bee Validation + Import Slot Fix + Edit Mode Fix + Alembic Layers
+================================================================================
+
+Corrections majeures sur les abeilles de livraison, import interface, edit mode et alembic.
+
+1. DELIVERY BEE TURN-AROUND VALIDATION
+- DeliveryBeeEntity: returnCarriedItemsToNetwork() et notifyTaskFailed() rendus public
+- DeliveryPhaseGoal: tickWaitAtTarget() abort si extraction vide ou depot echoue
+- DeliveryPhaseGoal: tickWaitAtTerminal() verifie isTerminalValid() avant livraison
+- isTerminalValid(): verifie interface active, linkee, inventaire adjacent existant
+- hasSpaceForItem(): verifie espace disponible dans container destination
+
+2. IMPORT INTERFACE SLOT TARGETING FIX
+- ImportInterfaceBlockEntity.receiveDeliveredItems(): utilise les slots du filtre matching
+  au lieu de l'union de tous les filtres (corrige items dans mauvais slots + bug quantite)
+- NetworkInterfaceBlockEntity.getAdjacentInventory() passe de protected a public
+
+3. TERMINAL GUI Z-ORDERING
+- StorageTerminalScreen.renderVirtualGrid(): 2 phases (items puis texte a z=200)
+- StorageTerminalScreen.renderRequestPopup(): panneau a z=400, texte a z=600
+
+4. EDIT MODE FIXES
+- StorageEvents: interface/terminal click droit hors shift en edit mode = toggle link/unlink
+- StorageEvents: +onBlockBreak() pour deregistrer les blocs casses du registre
+- ImportInterfaceBlock/ExportInterfaceBlock/StorageTerminalBlock: onRemove deregistre du
+  StorageNetworkRegistry
+- StorageNetworkRegistry: +getEntry(BlockPos)
+
+5. ALEMBIC RESERVOIR MODEL LAYERS
+- MultiblockProperty: +ALEMBIC_0, +ALEMBIC_1
+- HoneyReservoirBlock: MULTIBLOCK property inclut alembic_0, alembic_1
+- AlembicHeartBlockEntity.setFormedOnStructureBlocks(): layer-aware (Y-1=ALEMBIC_0, Y+0=ALEMBIC_1)
+- Blockstate honey_reservoir.json: +8 variants (alembic_0/alembic_1 x 4 facings)
+- Modeles: honey_reservoir_alembic_0.json, honey_reservoir_alembic_1.json
+
+6. UI: TOGGLE BUTTON REPOSITIONNE
+- NetworkInterfaceScreen: bouton toggle deplace a droite sous "Linked"/"Not Linked"
+
+FICHIERS MODIFIES (16):
+- DeliveryBeeEntity.java: methodes public
+- DeliveryPhaseGoal.java: +isTerminalValid(), +hasSpaceForItem(), abort logic
+- ImportInterfaceBlockEntity.java: receiveDeliveredItems() per-filter slots
+- NetworkInterfaceBlockEntity.java: getAdjacentInventory() public
+- NetworkInterfaceScreen.java: toggle button repositionne
+- StorageTerminalScreen.java: z-ordering grid + popup
+- StorageEvents.java: toggle link/unlink, +onBlockBreak()
+- ImportInterfaceBlock.java: onRemove unregister
+- ExportInterfaceBlock.java: onRemove unregister
+- StorageTerminalBlock.java: onRemove unregister
+- StorageNetworkRegistry.java: +getEntry()
+- MultiblockProperty.java: +ALEMBIC_0, +ALEMBIC_1
+- HoneyReservoirBlock.java: MULTIBLOCK +alembic_0, +alembic_1
+- AlembicHeartBlockEntity.java: layer-aware setFormedOnStructureBlocks
+- honey_reservoir.json (blockstate): +alembic_0/alembic_1 variants
+- honey_reservoir_alembic_0.json, honey_reservoir_alembic_1.json (modeles)
+- Lang en_us/fr_fr: +unlinked messages
+
+================================================================================
 2026-02-04 - Fix Import/Export Quantite + Fix Interface Pathfinding + Toggle Active
 ================================================================================
 

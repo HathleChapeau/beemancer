@@ -21,8 +21,9 @@
 package com.chapeau.beemancer.common.entity.delivery;
 
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
-import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.IDeliveryEndpoint;
+import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -148,8 +149,21 @@ public class DeliveryPhaseGoal extends Goal {
 
         if (bee.getDeliveryType() == DeliveryTask.DeliveryType.EXTRACT) {
             performExtraction(level);
+            // CAS 1: extraction echouee (items plus disponibles, bloc detruit, chunk decharge)
+            if (bee.getCarriedItems().isEmpty()) {
+                bee.notifyTaskFailed();
+                bee.discard();
+                return;
+            }
         } else {
             performDeposit(level);
+            // CAS 2: depot echoue (chest plein, detruit, chunk decharge)
+            if (!bee.getCarriedItems().isEmpty()) {
+                bee.returnCarriedItemsToNetwork();
+                bee.notifyTaskFailed();
+                bee.discard();
+                return;
+            }
         }
 
         phase = Phase.FLY_RETURN;
@@ -245,6 +259,15 @@ public class DeliveryPhaseGoal extends Goal {
         if (waitTimer > 0) return;
 
         if (!bee.level().isClientSide()) {
+            // CAS 3/4: verifier que l'endpoint est encore valide avant de livrer
+            if (!isTerminalValid()) {
+                bee.returnCarriedItemsToNetwork();
+                bee.notifyTaskFailed();
+                phase = Phase.FLY_HOME;
+                homeIndex = 0;
+                navigationStarted = false;
+                return;
+            }
             performDelivery();
         }
 
@@ -289,6 +312,51 @@ public class DeliveryPhaseGoal extends Goal {
                 bee.discard();
             }
         }
+    }
+
+    /**
+     * Verifie que le terminal (endpoint de livraison) est encore valide.
+     * Couvre les cas: interface desactivee/delinkee, inventaire adjacent detruit,
+     * coffre destination plein/detruit, chunk decharge.
+     */
+    private boolean isTerminalValid() {
+        Level level = bee.level();
+        BlockPos terminalPos = bee.getTerminalPos();
+        if (terminalPos == null || !level.isLoaded(terminalPos)) return false;
+
+        BlockEntity be = level.getBlockEntity(terminalPos);
+        if (be == null) return false;
+
+        if (be instanceof IDeliveryEndpoint) {
+            if (be instanceof NetworkInterfaceBlockEntity interfaceBe) {
+                if (!interfaceBe.isActive()) return false;
+                if (interfaceBe.getController() == null) return false;
+                if (interfaceBe.getAdjacentInventory() == null) return false;
+            }
+            return true;
+        }
+
+        if (be instanceof Container container) {
+            return hasSpaceForItem(container, bee.getCarriedItems());
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifie qu'un container a au moins un slot disponible pour l'item donne.
+     */
+    private boolean hasSpaceForItem(Container container, ItemStack stack) {
+        if (stack.isEmpty()) return true;
+        for (int i = 0; i < container.getContainerSize(); i++) {
+            ItemStack existing = container.getItem(i);
+            if (existing.isEmpty()) return true;
+            if (ItemStack.isSameItemSameComponents(existing, stack)
+                    && existing.getCount() < existing.getMaxStackSize()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

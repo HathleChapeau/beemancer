@@ -270,6 +270,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     private void renderVirtualGrid(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         int startIndex = scrollOffset * GRID_COLS;
 
+        // Phase 1: slots + items
         for (int row = 0; row < GRID_ROWS; row++) {
             for (int col = 0; col < GRID_COLS; col++) {
                 int index = startIndex + row * GRID_COLS + col;
@@ -279,9 +280,22 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
                 GuiRenderHelper.renderSlot(g, slotX, slotY);
 
                 if (index < displayedItems.size()) {
-                    ItemStack stack = displayedItems.get(index);
-                    g.renderItem(stack, slotX + 1, slotY + 1);
+                    g.renderItem(displayedItems.get(index), slotX + 1, slotY + 1);
+                }
+            }
+        }
 
+        // Phase 2: count text + hover (above items via z-offset)
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 200);
+        for (int row = 0; row < GRID_ROWS; row++) {
+            for (int col = 0; col < GRID_COLS; col++) {
+                int index = startIndex + row * GRID_COLS + col;
+                int slotX = x + GRID_X + col * SLOT_SIZE;
+                int slotY = y + GRID_Y + row * SLOT_SIZE;
+
+                if (index < displayedItems.size()) {
+                    ItemStack stack = displayedItems.get(index);
                     String countStr = formatCount(stack.getCount());
                     g.drawString(this.font, countStr,
                         slotX + 17 - this.font.width(countStr),
@@ -295,6 +309,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
                 }
             }
         }
+        g.pose().popPose();
     }
 
     private void renderScrollbar(GuiGraphics g, int x, int y) {
@@ -539,6 +554,10 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int popupX = (this.width - popupWidth) / 2;
         int popupY = (this.height - popupHeight) / 2;
 
+        // Render popup above all grid items
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 400);
+
         g.fill(popupX - 2, popupY - 2, popupX + popupWidth + 2, popupY + popupHeight + 2, 0xFF000000);
         g.fill(popupX, popupY, popupX + popupWidth, popupY + popupHeight, 0xFF3C3C3C);
 
@@ -546,6 +565,11 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         g.drawCenteredString(this.font, title, popupX + popupWidth / 2, popupY + 5, 0xFFFFFF);
 
         g.renderItem(requestItem, popupX + 10, popupY + 20);
+
+        // Text above the item icon
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 200);
+
         String name = requestItem.getHoverName().getString();
         if (name.length() > 14) name = name.substring(0, 12) + "..";
         g.drawString(this.font, name, popupX + 30, popupY + 24, 0xFFFFFF);
@@ -577,6 +601,9 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             cancelX, actionY, hoverCancel ? 0xFFFF8080 : 0xFFAAAAAA);
         g.drawString(this.font, Component.translatable("gui.beemancer.request"),
             requestXBtn, actionY, hoverRequest ? 0xFF80FF80 : 0xFFAAAAAA);
+
+        g.pose().popPose();
+        g.pose().popPose();
     }
 
     // === Main Render ===

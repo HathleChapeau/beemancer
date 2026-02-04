@@ -278,7 +278,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     }
 
     @Nullable
-    protected Container getAdjacentInventory() {
+    public Container getAdjacentInventory() {
         if (level == null) return null;
         BlockPos adjPos = getAdjacentPos();
         if (!level.isLoaded(adjPos)) return null;
