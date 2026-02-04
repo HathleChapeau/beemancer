@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "beemancer:block/building/honeyed_glass" }
+    "multiblock=none": { "model": "beemancer:block/building/honeyed_glass" },
+    "multiblock=alembic": { "model": "beemancer:block/building/honeyed_glass_alembic" }
   }
 }

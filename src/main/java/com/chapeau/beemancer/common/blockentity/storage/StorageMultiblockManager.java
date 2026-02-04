@@ -25,7 +25,6 @@ package com.chapeau.beemancer.common.blockentity.storage;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.beemancer.common.block.storage.ControllerPipeBlock;
-import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
@@ -173,12 +172,9 @@ public class StorageMultiblockManager {
 
             boolean changed = false;
 
-            boolean skipMultiblock = (state.getBlock() instanceof HoneyedStoneBlock)
-                && originalOffset.getY() < 0;
-
             EnumProperty<MultiblockProperty> multiblockProp = findMultiblockProperty(state);
             MultiblockProperty multiblockValue = formed ? MultiblockProperty.STORAGE : MultiblockProperty.NONE;
-            if (multiblockProp != null && !skipMultiblock && state.getValue(multiblockProp) != multiblockValue) {
+            if (multiblockProp != null && state.getValue(multiblockProp) != multiblockValue) {
                 state = state.setValue(multiblockProp, multiblockValue);
                 changed = true;
             }

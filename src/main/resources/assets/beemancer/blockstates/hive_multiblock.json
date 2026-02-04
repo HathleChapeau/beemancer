@@ -1,10 +1,6 @@
 {
   "variants": {
-    "multiblock=none": {
-      "model": "beemancer:block/machines/hive_multiblock"
-    },
-    "multiblock=hive": {
-      "model": "beemancer:block/machines/hive_multiblock"
-    }
+    "multiblock=none": { "model": "beemancer:block/machines/hive_multiblock" },
+    "multiblock=hive": { "model": "beemancer:block/machines/hive_multiblock_hive" }
   }
 }

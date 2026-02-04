@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "beemancer:block/royal_gold_block" }
+    "multiblock=none": { "model": "beemancer:block/royal_gold_block" },
+    "multiblock=alembic": { "model": "beemancer:block/royal_gold_block_alembic" }
   }
 }

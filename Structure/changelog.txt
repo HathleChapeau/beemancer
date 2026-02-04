@@ -3,6 +3,47 @@
 ################################################################################
 
 ================================================================================
+2026-02-04 - Multibloc Modeles Dedies + Suppression LAYER
+================================================================================
+
+Chaque bloc multibloc possede maintenant un modele JSON dedie par etat
+multibloc forme. Suppression de la propriete LAYER du HoneyedStoneBlock.
+
+CLASSES JAVA CREEES (3):
+- common/block/building/HoneyedStoneWallBlock.java (WallBlock + MULTIBLOCK)
+- common/block/building/HoneyedGlassBlock.java (TransparentBlock + MULTIBLOCK)
+- common/block/building/RoyalGoldBlock.java (Block + MULTIBLOCK)
+
+BLOCS JAVA MODIFIES (6):
+- HoneyedStoneBlock: supprime LAYER, MULTIBLOCK etendu (altar,extractor,infuser,centrifuge,storage)
+- HoneyReservoirBlock: MULTIBLOCK etendu (altar,extractor,storage,alembic)
+- HoneyedStoneStairBlock: +MULTIBLOCK (altar)
+- HoneyPedestalBlock: +MULTIBLOCK (altar,extractor)
+- ControlledHiveBlock: +MULTIBLOCK (storage)
+- StorageTerminalBlock: +MULTIBLOCK (storage)
+
+BLOCKENTITES MODIFIES (6):
+- AltarHeartBlockEntity: supprime LAYER, +updateGenericMultiblock pour stairs/pedestals
+- ExtractorHeartBlockEntity: +setFormedOnStructureBlocks (EXTRACTOR)
+- InfuserHeartBlockEntity: +setFormedOnStructureBlocks (INFUSER)
+- CentrifugeHeartBlockEntity: +setFormedOnStructureBlocks (CENTRIFUGE)
+- AlembicHeartBlockEntity: +setFormedOnStructureBlocks (ALEMBIC)
+- StorageMultiblockManager: supprime skipMultiblock HoneyedStone
+
+REGISTRE BeemancerBlocks.java:
+- HONEYED_STONE_WALL: WallBlock → HoneyedStoneWallBlock
+- HONEYED_GLASS: TransparentBlock → HoneyedGlassBlock
+- ROYAL_GOLD_BLOCK: Block → RoyalGoldBlock
+
+BLOCKSTATE JSONs MODIFIES (10):
+- honeyed_stone, honey_reservoir, hive_multiblock, honeyed_slab,
+  honeyed_stone_stair, honey_pedestal, honeyed_glass, royal_gold_block,
+  controlled_hive, storage_terminal
+
+MODELES JSON CREES (21): copies de base pour chaque etat multibloc forme
+MODELES JSON SUPPRIMES (3): honeyed_stone_altar_layer0/1/2.json
+
+================================================================================
 2026-02-04 - Multibloc Blockstate Refonte + New Alchemy Heart Blocks
 ================================================================================
 

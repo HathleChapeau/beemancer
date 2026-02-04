@@ -2,9 +2,9 @@
   "variants": {
     "multiblock=none,type=bottom": { "model": "beemancer:block/altar/honeyed_slab" },
     "multiblock=none,type=top": { "model": "beemancer:block/altar/honeyed_slab_top" },
-    "multiblock=none,type=double": { "model": "beemancer:block/honeyed_stone" },
-    "multiblock=hive,type=bottom": { "model": "beemancer:block/altar/honeyed_slab" },
-    "multiblock=hive,type=top": { "model": "beemancer:block/altar/honeyed_slab_top" },
-    "multiblock=hive,type=double": { "model": "beemancer:block/honeyed_stone" }
+    "multiblock=none,type=double": { "model": "beemancer:block/altar/honeyed_stone" },
+    "multiblock=hive,type=bottom": { "model": "beemancer:block/altar/honeyed_slab_hive" },
+    "multiblock=hive,type=top": { "model": "beemancer:block/altar/honeyed_slab_top_hive" },
+    "multiblock=hive,type=double": { "model": "beemancer:block/altar/honeyed_stone_hive" }
   }
 }

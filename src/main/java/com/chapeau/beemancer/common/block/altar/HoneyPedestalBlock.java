@@ -45,6 +45,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+
 import javax.annotation.Nullable;
 
 /**
@@ -52,8 +55,12 @@ import javax.annotation.Nullable;
  * Forme de colonne/piedestal avec hitbox personnalisee.
  * Clic droit avec item = place l'item sur le piedestal.
  * Clic droit sans item = retire l'item.
+ * Participe aux multiblocs Altar et Extractor.
  */
 public class HoneyPedestalBlock extends Block implements EntityBlock {
+
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK =
+        MultiblockProperty.create("altar", "extractor");
 
     // Forme: colonne centrale
     private static final VoxelShape SHAPE = Shapes.or(
@@ -67,6 +74,13 @@ public class HoneyPedestalBlock extends Block implements EntityBlock {
 
     public HoneyPedestalBlock(Properties properties) {
         super(properties);
+        this.registerDefaultState(this.stateDefinition.any()
+            .setValue(MULTIBLOCK, MultiblockProperty.NONE));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(MULTIBLOCK);
     }
 
     @Override

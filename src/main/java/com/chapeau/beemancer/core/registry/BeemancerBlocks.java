@@ -9,6 +9,9 @@ package com.chapeau.beemancer.core.registry;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.*;
 import com.chapeau.beemancer.common.block.altar.*;
+import com.chapeau.beemancer.common.block.building.HoneyedGlassBlock;
+import com.chapeau.beemancer.common.block.building.HoneyedStoneWallBlock;
+import com.chapeau.beemancer.common.block.building.RoyalGoldBlock;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
 import com.chapeau.beemancer.common.block.extractor.ExtractorHeartBlock;
@@ -380,13 +383,13 @@ public class BeemancerBlocks {
                     .strength(0.5f).sound(SoundType.WOOD).noCollission()));
 
     // --- BUILDING BLOCKS: HONEYED STONE ---
-    public static final DeferredBlock<WallBlock> HONEYED_STONE_WALL = BLOCKS.register("honeyed_stone_wall",
-            () -> new WallBlock(BlockBehaviour.Properties.of()
+    public static final DeferredBlock<HoneyedStoneWallBlock> HONEYED_STONE_WALL = BLOCKS.register("honeyed_stone_wall",
+            () -> new HoneyedStoneWallBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
 
     // --- BUILDING BLOCKS: HONEYED GLASS ---
-    public static final DeferredBlock<TransparentBlock> HONEYED_GLASS = BLOCKS.register("honeyed_glass",
-            () -> new TransparentBlock(BlockBehaviour.Properties.of()
+    public static final DeferredBlock<HoneyedGlassBlock> HONEYED_GLASS = BLOCKS.register("honeyed_glass",
+            () -> new HoneyedGlassBlock(BlockBehaviour.Properties.of()
                     .strength(0.3f).sound(SoundType.GLASS).noOcclusion()));
 
     public static final DeferredBlock<IronBarsBlock> HONEYED_GLASS_PANE = BLOCKS.register("honeyed_glass_pane",
@@ -490,8 +493,8 @@ public class BeemancerBlocks {
             () -> new Block(BlockBehaviour.Properties.of()
                     .strength(5.0f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()));
 
-    public static final DeferredBlock<Block> ROYAL_GOLD_BLOCK = BLOCKS.register("royal_gold_block",
-            () -> new Block(BlockBehaviour.Properties.of()
+    public static final DeferredBlock<RoyalGoldBlock> ROYAL_GOLD_BLOCK = BLOCKS.register("royal_gold_block",
+            () -> new RoyalGoldBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()));
 
     public static final DeferredBlock<Block> NECTAR_DIAMOND_BLOCK = BLOCKS.register("nectar_diamond_block",

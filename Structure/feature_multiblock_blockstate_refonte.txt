@@ -69,7 +69,80 @@ Chaque Heart block:
 | nectar_diamond_block | Block simple |
 
 ================================================================================
-SCRIPTS CREES
+PHASE 2: MODELES DEDIES PAR MULTIBLOC (2026-02-04)
+================================================================================
+
+Chaque bloc participant a un multibloc possede maintenant un modele dedie par
+etat multibloc (copie du modele de base, personnalisable plus tard).
+Suppression de la propriete LAYER du HoneyedStoneBlock.
+
+--- Nouvelles classes Java (3) ---
+| Fichier                                              | Role                          |
+|------------------------------------------------------|-------------------------------|
+| common/block/building/HoneyedStoneWallBlock.java     | WallBlock + MULTIBLOCK (infuser, centrifuge) |
+| common/block/building/HoneyedGlassBlock.java         | TransparentBlock + MULTIBLOCK (alembic)      |
+| common/block/building/RoyalGoldBlock.java            | Block + MULTIBLOCK (alembic)                 |
+
+--- Blocs Java modifies (6) ---
+| Bloc                   | Modification                                        |
+|------------------------|-----------------------------------------------------|
+| HoneyedStoneBlock      | Supprime LAYER, MULTIBLOCK etendu a 5 types         |
+| HoneyReservoirBlock    | MULTIBLOCK etendu a 4 types                          |
+| HoneyedStoneStairBlock | +MULTIBLOCK (altar)                                  |
+| HoneyPedestalBlock     | +MULTIBLOCK (altar, extractor)                       |
+| ControlledHiveBlock    | +MULTIBLOCK (storage)                                |
+| StorageTerminalBlock   | +MULTIBLOCK (storage)                                |
+
+--- Registre BeemancerBlocks.java ---
+| Ancien type         | Nouveau type              | Bloc               |
+|---------------------|---------------------------|---------------------|
+| WallBlock           | HoneyedStoneWallBlock     | HONEYED_STONE_WALL |
+| TransparentBlock    | HoneyedGlassBlock         | HONEYED_GLASS      |
+| Block               | RoyalGoldBlock            | ROYAL_GOLD_BLOCK   |
+
+--- BlockEntities modifies (6) ---
+| BlockEntity                    | Modification                              |
+|--------------------------------|-------------------------------------------|
+| AltarHeartBlockEntity          | Supprime LAYER, +updateGenericMultiblock  |
+| ExtractorHeartBlockEntity      | +setFormedOnStructureBlocks (EXTRACTOR)   |
+| InfuserHeartBlockEntity        | +setFormedOnStructureBlocks (INFUSER)     |
+| CentrifugeHeartBlockEntity     | +setFormedOnStructureBlocks (CENTRIFUGE)  |
+| AlembicHeartBlockEntity        | +setFormedOnStructureBlocks (ALEMBIC)     |
+| StorageMultiblockManager       | Supprime skipMultiblock HoneyedStone      |
+
+--- Blockstate JSONs modifies (10) ---
+| Fichier                    | Changement                                     |
+|----------------------------|-------------------------------------------------|
+| honeyed_stone.json         | 6 variants multibloc (supprime LAYER)            |
+| honey_reservoir.json       | 20 entries (4 facings x 5 multibloc)             |
+| hive_multiblock.json       | 2 variants (none, hive)                          |
+| honeyed_slab.json          | 6 entries (3 types x 2 multibloc)                |
+| honeyed_stone_stair.json   | 80 entries (40 none + 40 altar)                  |
+| honey_pedestal.json        | 3 variants (none, altar, extractor)              |
+| honeyed_glass.json         | 2 variants (none, alembic)                       |
+| royal_gold_block.json      | 2 variants (none, alembic)                       |
+| controlled_hive.json       | 2 variants (none, storage)                       |
+| storage_terminal.json      | 8 entries (4 rotations x 2 multibloc)            |
+
+--- Modeles JSON crees (21) ---
+Honeyed Stone: honeyed_stone_altar, _extractor, _infuser, _centrifuge, _storage, _hive
+Honey Reservoir: honey_reservoir_extractor, _storage, _alembic
+Hive Multiblock: hive_multiblock_hive
+Honeyed Slab: honeyed_slab_hive, honeyed_slab_top_hive
+Stairs: honeyed_stone_stair_altar, _inner_altar, _outer_altar
+Pedestal: honey_pedestal_altar, _extractor
+Glass: honeyed_glass_alembic
+Gold: royal_gold_block_alembic
+Controlled Hive: controlled_hive_storage
+Storage Terminal: storage_terminal_storage
+
+--- Modeles JSON supprimes (3) ---
+- honeyed_stone_altar_layer0.json
+- honeyed_stone_altar_layer1.json
+- honeyed_stone_altar_layer2.json
+
+================================================================================
+PHASE 1: SCRIPTS CREES (initial)
 ================================================================================
 
 | Fichier                                              | Role                          |
@@ -89,5 +162,7 @@ DEPENDANCES
 - MultiblockProperty est utilise par TOUS les blocs multiblocs
 - Les Heart blocks dependent de BeemancerBlocks et BeemancerBlockEntities
 - Les blockstate JSONs referencent les valeurs de l'enum
+- Chaque BlockEntity multibloc set MULTIBLOCK sur ses blocs participants via
+  setFormedOnStructureBlocks() ou updateGenericMultiblock()
 
 ################################################################################

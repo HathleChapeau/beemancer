@@ -142,27 +142,55 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         updateConduit(worldPosition.offset(-1, 1, 0), formed, Direction.EAST);    // W pointe vers E
 
         // === Honeyed Stone centre à Y+1 (layer 1: base avec colonne) ===
-        updateHoneyedStone(worldPosition.offset(0, 1, 0), formed, 1);
+        updateHoneyedStone(worldPosition.offset(0, 1, 0), formed);
 
         // === Honeyed Stone centre à Y+2 (layer 2: gros cube) ===
-        updateHoneyedStone(worldPosition.offset(0, 2, 0), formed, 2);
+        updateHoneyedStone(worldPosition.offset(0, 2, 0), formed);
 
         // === 4 Réservoirs à Y+2 (orientés vers le centre) ===
         updateReservoir(worldPosition.offset(0, 2, -1), formed, Direction.SOUTH);  // N pointe vers S
         updateReservoir(worldPosition.offset(0, 2, 1), formed, Direction.NORTH);   // S pointe vers N
         updateReservoir(worldPosition.offset(1, 2, 0), formed, Direction.WEST);    // E pointe vers W
         updateReservoir(worldPosition.offset(-1, 2, 0), formed, Direction.EAST);   // W pointe vers E
+
+        // === Pedestal at Y-2 ===
+        updateGenericMultiblock(worldPosition.offset(0, -2, 0), formed, MultiblockProperty.ALTAR);
+
+        // === 4 Stairs at Y-2 ===
+        updateGenericMultiblock(worldPosition.offset(0, -2, -1), formed, MultiblockProperty.ALTAR);
+        updateGenericMultiblock(worldPosition.offset(0, -2, 1), formed, MultiblockProperty.ALTAR);
+        updateGenericMultiblock(worldPosition.offset(1, -2, 0), formed, MultiblockProperty.ALTAR);
+        updateGenericMultiblock(worldPosition.offset(-1, -2, 0), formed, MultiblockProperty.ALTAR);
     }
 
     /**
-     * Met à jour un HoneyedStoneBlock avec MULTIBLOCK et LAYER.
+     * Met à jour un HoneyedStoneBlock avec MULTIBLOCK.
      */
-    private void updateHoneyedStone(BlockPos pos, boolean formed, int layer) {
+    private void updateHoneyedStone(BlockPos pos, boolean formed) {
         BlockState state = level.getBlockState(pos);
-        if (state.hasProperty(HoneyedStoneBlock.MULTIBLOCK) && state.hasProperty(HoneyedStoneBlock.LAYER)) {
+        if (state.hasProperty(HoneyedStoneBlock.MULTIBLOCK)) {
             level.setBlock(pos, state
-                .setValue(HoneyedStoneBlock.MULTIBLOCK, formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE)
-                .setValue(HoneyedStoneBlock.LAYER, formed ? layer : 0), 3);
+                .setValue(HoneyedStoneBlock.MULTIBLOCK, formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE), 3);
+        }
+    }
+
+    /**
+     * Met à jour la propriété MULTIBLOCK sur n'importe quel bloc qui la possède.
+     * Recherche dynamiquement la propriété "multiblock" par nom.
+     */
+    private void updateGenericMultiblock(BlockPos pos, boolean formed, MultiblockProperty type) {
+        BlockState state = level.getBlockState(pos);
+        for (var prop : state.getProperties()) {
+            if (prop.getName().equals("multiblock") && prop instanceof net.minecraft.world.level.block.state.properties.EnumProperty<?> enumProp) {
+                @SuppressWarnings("unchecked")
+                net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty> mbProp =
+                    (net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty>) enumProp;
+                MultiblockProperty value = formed ? type : MultiblockProperty.NONE;
+                if (mbProp.getPossibleValues().contains(value)) {
+                    level.setBlock(pos, state.setValue(mbProp, value), 3);
+                }
+                break;
+            }
         }
     }
 

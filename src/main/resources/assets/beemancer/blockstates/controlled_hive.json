@@ -1,7 +1,6 @@
 {
   "variants": {
-    "": {
-      "model": "beemancer:block/storage/controlled_hive"
-    }
+    "multiblock=none": { "model": "beemancer:block/storage/controlled_hive" },
+    "multiblock=storage": { "model": "beemancer:block/storage/controlled_hive_storage" }
   }
 }

@@ -27,6 +27,7 @@ package com.chapeau.beemancer.common.blockentity.alchemy;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.CentrifugeHeartBlock;
 import com.chapeau.beemancer.common.menu.alchemy.PoweredCentrifugeMenu;
+import com.chapeau.beemancer.core.multiblock.BlockMatcher;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
@@ -158,6 +159,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
             if (state.hasProperty(CentrifugeHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(CentrifugeHeartBlock.MULTIBLOCK, MultiblockProperty.CENTRIFUGE), 3);
             }
+            setFormedOnStructureBlocks(true);
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
         }
@@ -171,8 +173,33 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
             if (state.hasProperty(CentrifugeHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(CentrifugeHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
+            setFormedOnStructureBlocks(false);
             MultiblockEvents.unregisterController(worldPosition);
             setChanged();
+        }
+    }
+
+    /**
+     * Met à jour la propriété MULTIBLOCK sur tous les blocs de la structure.
+     */
+    private void setFormedOnStructureBlocks(boolean formed) {
+        if (level == null) return;
+        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
+            if (BlockMatcher.isAirMatcher(element.matcher())) continue;
+            BlockPos blockPos = worldPosition.offset(element.offset());
+            BlockState state = level.getBlockState(blockPos);
+            for (var prop : state.getProperties()) {
+                if (prop.getName().equals("multiblock") && prop instanceof net.minecraft.world.level.block.state.properties.EnumProperty<?> enumProp) {
+                    @SuppressWarnings("unchecked")
+                    net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty> mbProp =
+                        (net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty>) enumProp;
+                    MultiblockProperty value = formed ? MultiblockProperty.CENTRIFUGE : MultiblockProperty.NONE;
+                    if (mbProp.getPossibleValues().contains(value) && state.getValue(mbProp) != value) {
+                        level.setBlock(blockPos, state.setValue(mbProp, value), 3);
+                    }
+                    break;
+                }
+            }
         }
     }
 

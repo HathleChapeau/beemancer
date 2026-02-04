@@ -1,7 +1,7 @@
 {
   "variants": {
-    "": {
-      "model": "beemancer:block/altar/honey_pedestal"
-    }
+    "multiblock=none": { "model": "beemancer:block/altar/honey_pedestal" },
+    "multiblock=altar": { "model": "beemancer:block/altar/honey_pedestal_altar" },
+    "multiblock=extractor": { "model": "beemancer:block/altar/honey_pedestal_extractor" }
   }
 }

@@ -1,10 +1,10 @@
 {
   "variants": {
-    "layer=0,multiblock=none": { "model": "beemancer:block/altar/honeyed_stone" },
-    "layer=1,multiblock=none": { "model": "beemancer:block/altar/honeyed_stone" },
-    "layer=2,multiblock=none": { "model": "beemancer:block/altar/honeyed_stone" },
-    "layer=0,multiblock=altar": { "model": "beemancer:block/altar/honeyed_stone_altar_layer0" },
-    "layer=1,multiblock=altar": { "model": "beemancer:block/altar/honeyed_stone_altar_layer1" },
-    "layer=2,multiblock=altar": { "model": "beemancer:block/altar/honeyed_stone_altar_layer2" }
+    "multiblock=none": { "model": "beemancer:block/altar/honeyed_stone" },
+    "multiblock=altar": { "model": "beemancer:block/altar/honeyed_stone_altar" },
+    "multiblock=extractor": { "model": "beemancer:block/altar/honeyed_stone_extractor" },
+    "multiblock=infuser": { "model": "beemancer:block/altar/honeyed_stone_infuser" },
+    "multiblock=centrifuge": { "model": "beemancer:block/altar/honeyed_stone_centrifuge" },
+    "multiblock=storage": { "model": "beemancer:block/altar/honeyed_stone_storage" }
   }
 }
