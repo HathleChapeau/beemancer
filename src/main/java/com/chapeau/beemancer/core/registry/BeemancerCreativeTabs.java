@@ -141,6 +141,9 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.STORAGE_CRATE.get());
         output.accept(BeemancerItems.STORAGE_CONTROLLER.get());
         output.accept(BeemancerItems.STORAGE_TERMINAL.get());
+        output.accept(BeemancerItems.STORAGE_RELAY.get());
+        output.accept(BeemancerItems.IMPORT_INTERFACE.get());
+        output.accept(BeemancerItems.EXPORT_INTERFACE.get());
         output.accept(BeemancerItems.CONTROLLED_HIVE.get());
         output.accept(BeemancerItems.CONTROLLER_PIPE.get());
     }
@@ -224,9 +227,12 @@ public class BeemancerCreativeTabs {
 
     private static void addCraftingMaterials(CreativeModeTab.Output output) {
         output.accept(BeemancerItems.HONEYED_IRON.get());
+        output.accept(BeemancerItems.HONEYED_IRON_BLOCK.get());
         output.accept(BeemancerItems.ROYAL_CRYSTAL.get());
         output.accept(BeemancerItems.ROYAL_GOLD.get());
+        output.accept(BeemancerItems.ROYAL_GOLD_BLOCK.get());
         output.accept(BeemancerItems.NECTAR_DIAMOND.get());
+        output.accept(BeemancerItems.NECTAR_DIAMOND_BLOCK.get());
         output.accept(BeemancerItems.NECTAR_CRYSTAL.get());
     }
 
