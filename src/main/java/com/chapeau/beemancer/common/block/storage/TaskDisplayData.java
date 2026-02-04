@@ -38,7 +38,8 @@ public record TaskDisplayData(
     int count,
     String state,
     String type,
-    List<UUID> dependencyIds
+    List<UUID> dependencyIds,
+    String origin
 ) {
 
     /**
@@ -54,6 +55,7 @@ public record TaskDisplayData(
         for (UUID depId : dependencyIds) {
             buf.writeUUID(depId);
         }
+        buf.writeUtf(origin, 16);
     }
 
     /**
@@ -70,6 +72,7 @@ public record TaskDisplayData(
         for (int i = 0; i < depCount; i++) {
             deps.add(buf.readUUID());
         }
-        return new TaskDisplayData(taskId, template, count, state, type, deps);
+        String origin = buf.readUtf(16);
+        return new TaskDisplayData(taskId, template, count, state, type, deps, origin);
     }
 }

@@ -137,7 +137,7 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             // EXTRACT: abeille va a l'adjacent, extrait, puis vole au coffre destination
             DeliveryTask task = new DeliveryTask(
                 template, toExport, adjacentPos, destChest,
-                DeliveryTask.DeliveryType.EXTRACT
+                DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.AUTOMATION
             );
             controller.addDeliveryTask(task);
             pendingTasks.put(key, task.getTaskId());

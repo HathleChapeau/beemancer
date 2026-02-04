@@ -328,82 +328,131 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
     private void renderTasksTab(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         List<TaskDisplayData> tasks = menu.getTaskDisplayData();
-        int activeCount = menu.getActiveTaskCount();
-        int queuedCount = menu.getQueuedTaskCount();
+
+        List<TaskDisplayData> requestTasks = new ArrayList<>();
+        List<TaskDisplayData> automationTasks = new ArrayList<>();
+        for (TaskDisplayData task : tasks) {
+            if ("AUTOMATION".equals(task.origin())) {
+                automationTasks.add(task);
+            } else {
+                requestTasks.add(task);
+            }
+        }
 
         int currentY = y + TASK_LIST_Y;
-        int rightWidth = GUI_WIDTH - TASK_LIST_X;
-
-        // Active Tasks header
-        g.drawString(font, Component.translatable("gui.beemancer.tasks.active")
-            .append(" (" + activeCount + "/2)"),
-            x + TASK_LIST_X, currentY, 0xFFAA00, false);
-        currentY += 12;
-
         int maxVisible = 8;
         int rendered = 0;
+        int skipped = 0;
+        int totalEntries = getTotalTaskEntries(requestTasks, automationTasks);
 
-        for (int i = taskScrollOffset; i < tasks.size() && rendered < maxVisible; i++) {
-            TaskDisplayData task = tasks.get(i);
-            boolean isActive = task.state().equals("FLYING") || task.state().equals("WAITING")
-                || task.state().equals("RETURNING");
-
-            if (!isActive && rendered > 0 && i > 0) {
-                TaskDisplayData prev = tasks.get(i - 1);
-                boolean prevActive = prev.state().equals("FLYING") || prev.state().equals("WAITING")
-                    || prev.state().equals("RETURNING");
-                if (prevActive) {
-                    currentY += 4;
-                    g.drawString(font, Component.translatable("gui.beemancer.tasks.queued")
-                        .append(" (" + queuedCount + ")"),
-                        x + TASK_LIST_X, currentY, 0xAAAA00, false);
-                    currentY += 12;
-                }
-            }
-
-            // Dependency connector
-            if (!task.dependencyIds().isEmpty()) {
-                g.fill(x + TASK_LIST_X + 2, currentY - 2,
-                    x + TASK_LIST_X + 3, currentY + 8, 0xFF888888);
-                g.fill(x + TASK_LIST_X + 2, currentY + 7,
-                    x + TASK_LIST_X + 10, currentY + 8, 0xFF888888);
-            }
-
-            int taskX = x + TASK_LIST_X + (task.dependencyIds().isEmpty() ? 0 : 12);
-
-            if (!task.template().isEmpty()) {
-                g.renderItem(task.template(), taskX, currentY);
-            }
-
-            String itemName = task.template().getHoverName().getString();
-            if (itemName.length() > 16) itemName = itemName.substring(0, 14) + "..";
-            g.drawString(font, itemName + " x" + task.count(),
-                taskX + 18, currentY + 4, 0xFFFFFF, false);
-
-            int stateColor = getStateColor(task.state());
-            String stateLabel = getStateLabel(task.state());
-            int stateX = x + GUI_WIDTH - 60;
-            g.drawString(font, stateLabel, stateX, currentY + 4, stateColor, false);
-
-            String typeChar = task.type().equals("DEPOSIT") ? "\u2193" : "\u2191";
-            int typeColor = task.type().equals("DEPOSIT") ? 0xFF44AA44 : 0xFF4488FF;
-            g.drawString(font, typeChar, stateX - 10, currentY + 4, typeColor, false);
-
-            int cancelX = x + GUI_WIDTH - 18;
-            int cancelY = currentY + 2;
-            boolean hoverCancel = mouseX >= cancelX && mouseX < cancelX + TASK_CANCEL_SIZE &&
-                mouseY >= cancelY && mouseY < cancelY + TASK_CANCEL_SIZE;
-            g.drawString(font, "X", cancelX, cancelY,
-                hoverCancel ? 0xFFFF4444 : 0xFFAA0000, false);
-
-            currentY += TASK_ROW_HEIGHT;
+        // Requests header
+        if (skipped >= taskScrollOffset && rendered < maxVisible) {
+            g.drawString(font, Component.translatable("gui.beemancer.tasks.requests")
+                .append(" (" + requestTasks.size() + ")"),
+                x + TASK_LIST_X, currentY, 0xFFFFAA00, false);
+            currentY += 12;
             rendered++;
         }
+        skipped++;
 
-        if (tasks.isEmpty()) {
-            g.drawString(font, Component.translatable("gui.beemancer.tasks.empty"),
-                x + TASK_LIST_X, currentY, 0xFF888888, false);
+        if (requestTasks.isEmpty()) {
+            if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                g.drawString(font, Component.translatable("gui.beemancer.tasks.empty"),
+                    x + TASK_LIST_X + 4, currentY, 0xFF888888, false);
+                currentY += TASK_ROW_HEIGHT;
+                rendered++;
+            }
+            skipped++;
+        } else {
+            for (TaskDisplayData task : requestTasks) {
+                if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                    renderTaskRow(g, x, currentY, task, mouseX, mouseY);
+                    currentY += TASK_ROW_HEIGHT;
+                    rendered++;
+                }
+                skipped++;
+            }
         }
+
+        // Spacing
+        if (skipped >= taskScrollOffset && rendered < maxVisible) {
+            currentY += 4;
+        }
+
+        // Automation header
+        if (skipped >= taskScrollOffset && rendered < maxVisible) {
+            g.drawString(font, Component.translatable("gui.beemancer.tasks.automation")
+                .append(" (" + automationTasks.size() + ")"),
+                x + TASK_LIST_X, currentY, 0xFF44FF44, false);
+            currentY += 12;
+            rendered++;
+        }
+        skipped++;
+
+        if (automationTasks.isEmpty()) {
+            if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                g.drawString(font, Component.translatable("gui.beemancer.tasks.empty"),
+                    x + TASK_LIST_X + 4, currentY, 0xFF888888, false);
+                currentY += TASK_ROW_HEIGHT;
+                rendered++;
+            }
+            skipped++;
+        } else {
+            for (TaskDisplayData task : automationTasks) {
+                if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                    renderTaskRow(g, x, currentY, task, mouseX, mouseY);
+                    currentY += TASK_ROW_HEIGHT;
+                    rendered++;
+                }
+                skipped++;
+            }
+        }
+    }
+
+    private void renderTaskRow(GuiGraphics g, int x, int currentY, TaskDisplayData task,
+                                int mouseX, int mouseY) {
+        // Dependency connector
+        if (!task.dependencyIds().isEmpty()) {
+            g.fill(x + TASK_LIST_X + 2, currentY - 2,
+                x + TASK_LIST_X + 3, currentY + 8, 0xFF888888);
+            g.fill(x + TASK_LIST_X + 2, currentY + 7,
+                x + TASK_LIST_X + 10, currentY + 8, 0xFF888888);
+        }
+
+        int taskX = x + TASK_LIST_X + (task.dependencyIds().isEmpty() ? 0 : 12);
+
+        if (!task.template().isEmpty()) {
+            g.renderItem(task.template(), taskX, currentY);
+        }
+
+        String itemName = task.template().getHoverName().getString();
+        if (itemName.length() > 16) itemName = itemName.substring(0, 14) + "..";
+        g.drawString(font, itemName + " x" + task.count(),
+            taskX + 18, currentY + 4, 0xFFFFFF, false);
+
+        int stateColor = getStateColor(task.state());
+        String stateLabel = getStateLabel(task.state());
+        int stateX = x + GUI_WIDTH - 60;
+        g.drawString(font, stateLabel, stateX, currentY + 4, stateColor, false);
+
+        String typeChar = task.type().equals("DEPOSIT") ? "\u2193" : "\u2191";
+        int typeColor = task.type().equals("DEPOSIT") ? 0xFF44AA44 : 0xFF4488FF;
+        g.drawString(font, typeChar, stateX - 10, currentY + 4, typeColor, false);
+
+        int cancelX = x + GUI_WIDTH - 18;
+        int cancelY = currentY + 2;
+        boolean hoverCancel = mouseX >= cancelX && mouseX < cancelX + TASK_CANCEL_SIZE &&
+            mouseY >= cancelY && mouseY < cancelY + TASK_CANCEL_SIZE;
+        g.drawString(font, "X", cancelX, cancelY,
+            hoverCancel ? 0xFFFF4444 : 0xFFAA0000, false);
+    }
+
+    private int getTotalTaskEntries(List<TaskDisplayData> requestTasks,
+                                     List<TaskDisplayData> automationTasks) {
+        int total = 2; // 2 headers
+        total += requestTasks.isEmpty() ? 1 : requestTasks.size();
+        total += automationTasks.isEmpty() ? 1 : automationTasks.size();
+        return total;
     }
 
     private int getStateColor(String state) {
@@ -625,40 +674,88 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
     private boolean handleTasksCancelClick(double mouseX, double mouseY) {
         List<TaskDisplayData> tasks = menu.getTaskDisplayData();
+
+        List<TaskDisplayData> requestTasks = new ArrayList<>();
+        List<TaskDisplayData> automationTasks = new ArrayList<>();
+        for (TaskDisplayData task : tasks) {
+            if ("AUTOMATION".equals(task.origin())) {
+                automationTasks.add(task);
+            } else {
+                requestTasks.add(task);
+            }
+        }
+
         int x = this.leftPos;
         int y = this.topPos;
-        int currentY = y + TASK_LIST_Y + 12;
-
+        int currentY = y + TASK_LIST_Y;
         int maxVisible = 8;
         int rendered = 0;
+        int skipped = 0;
 
-        for (int i = taskScrollOffset; i < tasks.size() && rendered < maxVisible; i++) {
-            TaskDisplayData task = tasks.get(i);
-
-            if (rendered > 0 && i > 0) {
-                boolean isActive = task.state().equals("FLYING") || task.state().equals("WAITING")
-                    || task.state().equals("RETURNING");
-                TaskDisplayData prev = tasks.get(i - 1);
-                boolean prevActive = prev.state().equals("FLYING") || prev.state().equals("WAITING")
-                    || prev.state().equals("RETURNING");
-                if (!isActive && prevActive) {
-                    currentY += 16;
-                }
-            }
-
-            int cancelX = x + GUI_WIDTH - 18;
-            int cancelY = currentY + 2;
-
-            if (mouseX >= cancelX && mouseX < cancelX + TASK_CANCEL_SIZE &&
-                mouseY >= cancelY && mouseY < cancelY + TASK_CANCEL_SIZE) {
-                PacketDistributor.sendToServer(
-                    new StorageTaskCancelPacket(menu.getBlockPos(), task.taskId())
-                );
-                return true;
-            }
-
-            currentY += TASK_ROW_HEIGHT;
+        // Skip requests header
+        if (skipped >= taskScrollOffset && rendered < maxVisible) {
+            currentY += 12;
             rendered++;
+        }
+        skipped++;
+
+        // Request tasks (or empty placeholder)
+        List<TaskDisplayData> reqList = requestTasks.isEmpty()
+            ? java.util.Collections.emptyList() : requestTasks;
+        if (requestTasks.isEmpty()) {
+            if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                currentY += TASK_ROW_HEIGHT;
+                rendered++;
+            }
+            skipped++;
+        }
+        for (TaskDisplayData task : reqList) {
+            if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                if (checkCancelClick(mouseX, mouseY, x, currentY, task)) return true;
+                currentY += TASK_ROW_HEIGHT;
+                rendered++;
+            }
+            skipped++;
+        }
+
+        // Spacing
+        if (skipped >= taskScrollOffset && rendered < maxVisible) {
+            currentY += 4;
+        }
+
+        // Skip automation header
+        if (skipped >= taskScrollOffset && rendered < maxVisible) {
+            currentY += 12;
+            rendered++;
+        }
+        skipped++;
+
+        // Automation tasks (or empty placeholder)
+        if (automationTasks.isEmpty()) {
+            skipped++;
+        }
+        for (TaskDisplayData task : automationTasks) {
+            if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                if (checkCancelClick(mouseX, mouseY, x, currentY, task)) return true;
+                currentY += TASK_ROW_HEIGHT;
+                rendered++;
+            }
+            skipped++;
+        }
+
+        return false;
+    }
+
+    private boolean checkCancelClick(double mouseX, double mouseY, int x, int currentY,
+                                      TaskDisplayData task) {
+        int cancelX = x + GUI_WIDTH - 18;
+        int cancelY = currentY + 2;
+        if (mouseX >= cancelX && mouseX < cancelX + TASK_CANCEL_SIZE &&
+            mouseY >= cancelY && mouseY < cancelY + TASK_CANCEL_SIZE) {
+            PacketDistributor.sendToServer(
+                new StorageTaskCancelPacket(menu.getBlockPos(), task.taskId())
+            );
+            return true;
         }
         return false;
     }
@@ -767,7 +864,15 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
                 return true;
             }
             if (activeTab == StorageTab.TASKS) {
-                int maxTaskScroll = Math.max(0, menu.getTaskDisplayData().size() - 8);
+                List<TaskDisplayData> tasks = menu.getTaskDisplayData();
+                List<TaskDisplayData> reqTasks = new ArrayList<>();
+                List<TaskDisplayData> autoTasks = new ArrayList<>();
+                for (TaskDisplayData t : tasks) {
+                    if ("AUTOMATION".equals(t.origin())) autoTasks.add(t);
+                    else reqTasks.add(t);
+                }
+                int totalEntries = getTotalTaskEntries(reqTasks, autoTasks);
+                int maxTaskScroll = Math.max(0, totalEntries - 8);
                 taskScrollOffset = Mth.clamp(taskScrollOffset - (int) scrollY, 0, maxTaskScroll);
                 return true;
             }

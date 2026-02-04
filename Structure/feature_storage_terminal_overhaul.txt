@@ -79,6 +79,9 @@ TÂCHES:
 - Annulation via StorageTaskCancelPacket → controller.cancelTask(UUID)
 - Annulation récursive des dépendances
 - Pour DEPOSIT: remet les items dans le réseau
+- TaskOrigin: REQUEST (joueur via terminal) ou AUTOMATION (interfaces import/export)
+- DeliveryTask: targetChest renommé en targetPos (backwards compat NBT)
+- TaskDisplayData: inclut origin pour le rendu GUI
 
 GUI (layout v2 — deux panneaux):
 - Rendu 100% programmatique (GuiRenderHelper)
@@ -87,6 +90,7 @@ GUI (layout v2 — deux panneaux):
 - Panneau gauche: deposit 3x3 + craft 3x3 + result + pickup 3x3 (empilés)
 - Panneau droit: search box + grille virtuelle 9x5 + scrollbar
 - Inventaire joueur dans le panneau droit
+- Tasks: 2 sections "Requêtes" (jaune) et "Automatisation" (vert)
 - Tasks: connecteurs L pour dépendances, bouton X pour annuler
 - Controller: stats + 4 essence slots
 - Pas de flèche de progression (retirée)

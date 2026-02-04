@@ -3,6 +3,29 @@
 ################################################################################
 
 ================================================================================
+2026-02-04 - Refacto DeliveryTask: TaskOrigin + GUI Requests/Automation
+================================================================================
+
+Ajout de TaskOrigin (REQUEST/AUTOMATION) aux taches de livraison.
+Rename targetChest → targetPos. GUI Tasks separe en deux sections.
+
+FICHIERS MODIFIES (8):
+- DeliveryTask.java: +enum TaskOrigin (REQUEST/AUTOMATION), +champ origin,
+  rename targetChest→targetPos, constructeurs mis a jour, NBT backwards compat
+- TaskDisplayData.java: +champ origin dans le record, toNetwork/fromNetwork
+- StorageDeliveryManager.java: taskToDisplayData +origin, rename getTargetChest→getTargetPos
+- ImportInterfaceBlockEntity.java: 2 sites → TaskOrigin.AUTOMATION
+- ExportInterfaceBlockEntity.java: 1 site → TaskOrigin.AUTOMATION
+- StorageTerminalBlockEntity.java: 3 sites → TaskOrigin.REQUEST
+- StorageTerminalScreen.java: renderTasksTab split Requests/Automation,
+  +renderTaskRow(), +getTotalTaskEntries(), +checkCancelClick()
+- Lang en_us/fr_fr: tasks.requests, tasks.automation (remplace tasks.active/queued)
+
+NBT BACKWARDS COMPAT:
+- "TargetChest" lu en fallback si "TargetPos" absent
+- "Origin" absent → default REQUEST
+
+================================================================================
 2026-02-04 - Securite UUID Bee-Hive + Fix Velocite Sortie Ruche
 ================================================================================
 

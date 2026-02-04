@@ -200,7 +200,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         // Créer une tâche de livraison (extraction)
         DeliveryTask task = new DeliveryTask(
             template, toRequest, chestPos, worldPosition,
-            DeliveryTask.DeliveryType.EXTRACT
+            DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.REQUEST
         );
         controller.addDeliveryTask(task);
 
@@ -277,7 +277,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
             DeliveryTask task = new DeliveryTask(
                 request.item, toRequest, chestPos, worldPosition,
-                DeliveryTask.DeliveryType.EXTRACT
+                DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.REQUEST
             );
             controller.addDeliveryTask(task);
 
@@ -350,7 +350,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
                 DeliveryTask task = new DeliveryTask(
                     toSend, toDeposit, chestPos, worldPosition,
-                    DeliveryTask.DeliveryType.DEPOSIT
+                    DeliveryTask.DeliveryType.DEPOSIT, DeliveryTask.TaskOrigin.REQUEST
                 );
                 controller.addDeliveryTask(task);
             }

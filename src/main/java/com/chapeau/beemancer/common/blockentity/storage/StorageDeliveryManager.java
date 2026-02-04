@@ -429,18 +429,18 @@ public class StorageDeliveryManager {
     private boolean validateTaskTargets(DeliveryTask task, ServerLevel level) {
         StorageNetworkRegistry registry = parent.getNetworkRegistry();
 
-        // Verifier le coffre cible
-        BlockPos targetChest = task.getTargetChest();
-        if (targetChest != null && level.isLoaded(targetChest)) {
-            BlockEntity targetBe = level.getBlockEntity(targetChest);
+        // Verifier la position cible
+        BlockPos targetPos = task.getTargetPos();
+        if (targetPos != null && level.isLoaded(targetPos)) {
+            BlockEntity targetBe = level.getBlockEntity(targetPos);
             if (targetBe == null) {
-                registry.unregisterBlock(targetChest);
+                registry.unregisterBlock(targetPos);
                 parent.setChanged();
                 return false;
             }
             // Si c'est une interface non liee, la retirer
             if (targetBe instanceof NetworkInterfaceBlockEntity iface && iface.getControllerPos() == null) {
-                registry.unregisterBlock(targetChest);
+                registry.unregisterBlock(targetPos);
                 parent.setChanged();
                 return false;
             }
@@ -497,7 +497,7 @@ public class StorageDeliveryManager {
 
         bee.initDeliveryTask(
             parent.getBlockPos(),
-            task.getTargetChest(),
+            task.getTargetPos(),
             returnPos,
             task.getTerminalPos(),
             task.getTemplate(),
@@ -512,9 +512,9 @@ public class StorageDeliveryManager {
         // Calculer le chemin relay vers le coffre cible
         // findPathToChest trouve le relay dont les chests sont enregistres
         // Fallback: findPathToPosition pour les cibles non enregistrees (ex: adjacent d'une export interface)
-        List<BlockPos> relayPath = findPathToChest(task.getTargetChest());
+        List<BlockPos> relayPath = findPathToChest(task.getTargetPos());
         if (relayPath.isEmpty()) {
-            relayPath = findPathToPosition(task.getTargetChest());
+            relayPath = findPathToPosition(task.getTargetPos());
         }
         if (!relayPath.isEmpty()) {
             List<BlockPos> returnPath = new ArrayList<>(relayPath);
@@ -726,7 +726,8 @@ public class StorageDeliveryManager {
             task.getCount(),
             task.getState().name(),
             task.getType().name(),
-            task.getDependencies()
+            task.getDependencies(),
+            task.getOrigin().name()
         );
     }
 

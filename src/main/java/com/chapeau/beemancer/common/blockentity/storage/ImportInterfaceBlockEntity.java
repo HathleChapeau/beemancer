@@ -195,7 +195,7 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
             DeliveryTask task = new DeliveryTask(
                 filterItem, needed, chestPos, worldPosition,
-                DeliveryTask.DeliveryType.EXTRACT
+                DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.AUTOMATION
             );
             controller.addDeliveryTask(task);
             pendingTasks.put(key, task.getTaskId());
@@ -232,7 +232,7 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
             DeliveryTask task = new DeliveryTask(
                 networkItem, needed, chestPos, worldPosition,
-                DeliveryTask.DeliveryType.EXTRACT
+                DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.AUTOMATION
             );
             controller.addDeliveryTask(task);
             pendingTasks.put(key, task.getTaskId());
