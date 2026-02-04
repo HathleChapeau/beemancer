@@ -294,6 +294,140 @@ public class MultiblockPatterns {
             .build()
     );
 
+    // ==================== ALEMBIC ====================
+    // Structure 3x1x3 (ligne plate), contrôleur au centre Y+0
+    //
+    // Vue de face (axe X = gauche-droite):
+    //
+    // Étage 3 (Y+1):  [G][R][G]    G=Royal Gold Block, R=Reservoir
+    // Étage 2 (Y+0):  [R][H][R]    H=Alembic Heart (contrôleur)
+    // Étage 1 (Y-1):  [G][R][G]
+
+    public static final MultiblockPattern ALEMBIC_MULTIBLOCK = register(
+        MultiblockPattern.builder("alembic")
+            // Étage 1 (Y-1): Royal Gold + Reservoir + Royal Gold
+            .add(-1, -1, 0, block(BeemancerBlocks.ROYAL_GOLD_BLOCK))
+            .add(0, -1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))
+            .add(1, -1, 0, block(BeemancerBlocks.ROYAL_GOLD_BLOCK))
+
+            // Étage 2 (Y+0): Reservoir + Heart(skip) + Reservoir
+            .add(-1, 0, 0, block(BeemancerBlocks.HONEY_RESERVOIR))
+            // (0, 0, 0) = Alembic Heart - skip
+            .add(1, 0, 0, block(BeemancerBlocks.HONEY_RESERVOIR))
+
+            // Étage 3 (Y+1): Royal Gold + Reservoir + Royal Gold
+            .add(-1, 1, 0, block(BeemancerBlocks.ROYAL_GOLD_BLOCK))
+            .add(0, 1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))
+            .add(1, 1, 0, block(BeemancerBlocks.ROYAL_GOLD_BLOCK))
+
+            .build()
+    );
+
+    // ==================== INFUSER MULTIBLOCK ====================
+    // Structure 3x3x3, contrôleur au centre Y+0
+    // Front ouvert (z=-1, nord) pour accès visuel
+    //
+    // Étage 3 (Y+1): 3x3 Honeyed Stone plein
+    //         [S][S][S]
+    //         [S][S][S]
+    //         [S][S][S]
+    //
+    // Étage 2 (Y+0): Walls aux coins, Glass sur 3 côtés, front ouvert (air)
+    //         [W][ ][W]     W=Honeyed Stone Wall, G=Honeyed Glass
+    //         [G][H][G]     H=Infuser Heart (contrôleur), [ ]=Air
+    //         [W][G][W]
+    //
+    // Étage 1 (Y-1): 3x3 Honeyed Stone plein
+
+    public static final MultiblockPattern INFUSER_MULTIBLOCK = register(
+        MultiblockPattern.builder("infuser_multiblock")
+            // Étage 1 (Y-1): 3x3 Honeyed Stone
+            .add(-1, -1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, -1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, -1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(-1, -1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, -1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, -1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(-1, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
+
+            // Étage 2 (Y+0): Walls aux coins, Glass cardinaux (sauf front), Heart centre
+            .add(-1, 0, -1, block(BeemancerBlocks.HONEYED_STONE_WALL))  // Coin NO
+            .add(0, 0, -1, air())                                       // Front (ouvert)
+            .add(1, 0, -1, block(BeemancerBlocks.HONEYED_STONE_WALL))   // Coin NE
+            .add(-1, 0, 0, block(BeemancerBlocks.HONEYED_GLASS))        // Ouest (glass)
+            // (0, 0, 0) = Infuser Heart - skip
+            .add(1, 0, 0, block(BeemancerBlocks.HONEYED_GLASS))         // Est (glass)
+            .add(-1, 0, 1, block(BeemancerBlocks.HONEYED_STONE_WALL))   // Coin SO
+            .add(0, 0, 1, block(BeemancerBlocks.HONEYED_GLASS))         // Sud (glass)
+            .add(1, 0, 1, block(BeemancerBlocks.HONEYED_STONE_WALL))    // Coin SE
+
+            // Étage 3 (Y+1): 3x3 Honeyed Stone
+            .add(-1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, 1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(-1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(-1, 1, 1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, 1, 1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, 1, 1, block(BeemancerBlocks.HONEYED_STONE))
+
+            .build()
+    );
+
+    // ==================== CENTRIFUGE MULTIBLOCK ====================
+    // Structure 3x3x3, comme l'infuser mais SANS honeyed glass
+    // Front ouvert (z=-1, nord)
+    //
+    // Étage 3 (Y+1): 3x3 Honeyed Stone plein
+    //
+    // Étage 2 (Y+0): Walls aux coins, rest air
+    //         [W][ ][W]     W=Honeyed Stone Wall
+    //         [ ][H][ ]     H=Centrifuge Heart (contrôleur), [ ]=Air
+    //         [W][ ][W]
+    //
+    // Étage 1 (Y-1): 3x3 Honeyed Stone plein
+
+    public static final MultiblockPattern CENTRIFUGE_MULTIBLOCK = register(
+        MultiblockPattern.builder("centrifuge_multiblock")
+            // Étage 1 (Y-1): 3x3 Honeyed Stone
+            .add(-1, -1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, -1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, -1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(-1, -1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, -1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, -1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(-1, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
+
+            // Étage 2 (Y+0): Walls aux coins, rest air
+            .add(-1, 0, -1, block(BeemancerBlocks.HONEYED_STONE_WALL))  // Coin NO
+            .add(0, 0, -1, air())                                       // Front
+            .add(1, 0, -1, block(BeemancerBlocks.HONEYED_STONE_WALL))   // Coin NE
+            .add(-1, 0, 0, air())                                       // Ouest
+            // (0, 0, 0) = Centrifuge Heart - skip
+            .add(1, 0, 0, air())                                        // Est
+            .add(-1, 0, 1, block(BeemancerBlocks.HONEYED_STONE_WALL))   // Coin SO
+            .add(0, 0, 1, air())                                        // Sud
+            .add(1, 0, 1, block(BeemancerBlocks.HONEYED_STONE_WALL))    // Coin SE
+
+            // Étage 3 (Y+1): 3x3 Honeyed Stone
+            .add(-1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, 1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(-1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))
+            .add(-1, 1, 1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(0, 1, 1, block(BeemancerBlocks.HONEYED_STONE))
+            .add(1, 1, 1, block(BeemancerBlocks.HONEYED_STONE))
+
+            .build()
+    );
+
     private static MultiblockPattern register(MultiblockPattern pattern) {
         PATTERNS.put(pattern.getId(), pattern);
         return pattern;

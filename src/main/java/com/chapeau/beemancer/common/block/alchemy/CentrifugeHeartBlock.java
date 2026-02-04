@@ -8,8 +8,9 @@
  * ------------------------------------------------------------
  * | Dependance                  | Raison                | Utilisation           |
  * |-----------------------------|----------------------|-----------------------|
- * | CentrifugeHeartBlockEntity  | Stockage etat        | Multibloc forme       |
+ * | CentrifugeHeartBlockEntity  | Stockage etat        | Multibloc + processing|
  * | MultiblockProperty          | Etat multibloc       | Blockstate            |
+ * | BeemancerBlockEntities      | Type registration    | Ticker                |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -23,33 +24,44 @@ import com.chapeau.beemancer.common.blockentity.alchemy.CentrifugeHeartBlockEnti
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
 
 /**
  * Coeur de la Centrifugeuse multibloc.
- * Pattern a definir ulterieurement.
+ * Clic droit: forme le multibloc ou ouvre le menu si deja forme.
  */
 public class CentrifugeHeartBlock extends Block implements EntityBlock {
 
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("centrifuge");
+    public static final BooleanProperty WORKING = BooleanProperty.create("working");
 
     public CentrifugeHeartBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(MULTIBLOCK, MultiblockProperty.NONE));
+        this.registerDefaultState(this.stateDefinition.any()
+            .setValue(MULTIBLOCK, MultiblockProperty.NONE)
+            .setValue(WORKING, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(MULTIBLOCK);
+        builder.add(MULTIBLOCK, WORKING);
     }
 
     @Override
@@ -63,13 +75,59 @@ public class CentrifugeHeartBlock extends Block implements EntityBlock {
         return new CentrifugeHeartBlockEntity(pos, state);
     }
 
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide()) return null;
+        return type == BeemancerBlockEntities.CENTRIFUGE_HEART.get()
+            ? (lvl, pos, st, be) -> CentrifugeHeartBlockEntity.serverTick(lvl, pos, st, (CentrifugeHeartBlockEntity) be)
+            : null;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                                Player player, BlockHitResult hitResult) {
+        if (level.isClientSide()) {
+            return InteractionResult.SUCCESS;
+        }
+
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof CentrifugeHeartBlockEntity heartBE)) {
+            return InteractionResult.PASS;
+        }
+
+        if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
+            player.openMenu(heartBE);
+            return InteractionResult.CONSUME;
+        } else {
+            boolean success = heartBE.tryFormMultiblock();
+            if (success) {
+                player.displayClientMessage(
+                    Component.translatable("message.beemancer.centrifuge.formed"), true);
+            } else {
+                player.displayClientMessage(
+                    Component.translatable("message.beemancer.centrifuge.invalid_structure"), true);
+            }
+        }
+
+        return InteractionResult.CONSUME;
+    }
+
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
-            if (!state.getValue(MULTIBLOCK).equals(MultiblockProperty.NONE)) {
-                BlockEntity be = level.getBlockEntity(pos);
-                if (be instanceof CentrifugeHeartBlockEntity heartBE) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof CentrifugeHeartBlockEntity heartBE) {
+                if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
                     heartBE.onMultiblockBroken();
+                }
+                for (int i = 0; i < heartBE.getInputSlot().getSlots(); i++) {
+                    Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(),
+                        heartBE.getInputSlot().getStackInSlot(i));
+                }
+                for (int i = 0; i < heartBE.getOutputSlots().getSlots(); i++) {
+                    Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(),
+                        heartBE.getOutputSlots().getStackInSlot(i));
                 }
             }
         }
