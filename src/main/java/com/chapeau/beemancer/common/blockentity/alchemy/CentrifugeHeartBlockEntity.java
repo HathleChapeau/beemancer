@@ -183,13 +183,13 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     public boolean tryFormMultiblock() {
         if (level == null || level.isClientSide()) return false;
 
-        var result = MultiblockValidator.validateDetailed(getPattern(), level, worldPosition);
-        if (result.valid()) {
+        int rotation = MultiblockValidator.validateWithRotations(getPattern(), level, worldPosition);
+        if (rotation >= 0) {
             onMultiblockFormed();
             return true;
         }
 
-        Beemancer.LOGGER.debug("Centrifuge validation failed at {} - {}", result.failedAt(), result.reason());
+        Beemancer.LOGGER.debug("Centrifuge validation failed at {}", worldPosition);
         return false;
     }
 

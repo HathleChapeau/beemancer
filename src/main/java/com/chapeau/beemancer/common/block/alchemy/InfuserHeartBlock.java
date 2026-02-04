@@ -97,7 +97,7 @@ public class InfuserHeartBlock extends Block implements EntityBlock {
         }
 
         if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
-            player.openMenu(heartBE);
+            player.openMenu(heartBE, pos);
             return InteractionResult.CONSUME;
         } else {
             boolean success = heartBE.tryFormMultiblock();
