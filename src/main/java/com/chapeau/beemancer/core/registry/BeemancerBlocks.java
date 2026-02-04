@@ -9,6 +9,7 @@ package com.chapeau.beemancer.core.registry;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.*;
 import com.chapeau.beemancer.common.block.altar.*;
+import com.chapeau.beemancer.content.flywheeltest.BeeSpawnerBlock;
 import com.chapeau.beemancer.common.block.building.HoneyedGlassBlock;
 import com.chapeau.beemancer.common.block.building.HoneyedStoneWallBlock;
 import com.chapeau.beemancer.common.block.building.RoyalGoldBlock;
@@ -500,6 +501,12 @@ public class BeemancerBlocks {
     public static final DeferredBlock<Block> NECTAR_DIAMOND_BLOCK = BLOCKS.register("nectar_diamond_block",
             () -> new Block(BlockBehaviour.Properties.of()
                     .strength(5.0f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+
+    // --- FLYWHEEL TEST ---
+    public static final DeferredBlock<BeeSpawnerBlock> BEE_SPAWNER = BLOCKS.register("bee_spawner",
+            () -> new BeeSpawnerBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.METAL)));
 
     // --- FLUID BLOCKS ---
     public static final DeferredBlock<LiquidBlock> HONEY_FLUID_BLOCK = BLOCKS.register("honey",

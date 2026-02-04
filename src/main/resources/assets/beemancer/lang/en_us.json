@@ -2,7 +2,6 @@
   "itemGroup.beemancer": "Beemancer",
   "itemGroup.beemancer.main": "Beemancer",
   "itemGroup.beemancer.combs": "Beemancer - Combs & Resources",
-  
   "block.beemancer.storage_crate": "Storage Crate",
   "block.beemancer.storage_controller": "Storage Controller",
   "block.beemancer.storage_terminal": "Storage Terminal",
@@ -32,7 +31,6 @@
   "fluid.beemancer.honey": "Honey",
   "fluid.beemancer.royal_jelly": "Royal Jelly",
   "fluid.beemancer.nectar": "Nectar",
-  
   "item.beemancer.honey_bucket": "Honey Bucket",
   "item.beemancer.royal_jelly_bucket": "Royal Jelly Bucket",
   "item.beemancer.nectar_bucket": "Nectar Bucket",
@@ -172,7 +170,6 @@
   "item.beemancer.honey_crystal": "Honey Crystal",
   "item.beemancer.enriched_honey_crystal": "Enriched Honey Crystal",
   "item.beemancer.radiant_honey_crystal": "Radiant Honey Crystal",
-  
   "container.beemancer.storage_crate": "Storage Crate",
   "container.beemancer.storage_terminal": "Storage Terminal",
   "container.beemancer.bee_creator": "Bee Creator",
@@ -185,13 +182,10 @@
   "container.beemancer.crystallizer": "Crystallizer",
   "container.beemancer.alembic": "Alembic",
   "container.beemancer.infuser": "Infuser",
-  
   "entity.beemancer.magic_bee": "Magic Bee",
-  
   "item.beemancer.magic_bee": "Magic Bee",
   "item.beemancer.magic_bee.shift_hint": "Hold SHIFT for gene details",
   "item.beemancer.magic_bee.assigned_hive": "Assigned Hive",
-
   "tooltip.beemancer.species": "Species",
   "tooltip.beemancer.activity": "Activity",
   "tooltip.beemancer.activity.diurnal": "Diurnal",
@@ -212,29 +206,21 @@
   "tooltip.beemancer.foraging": "Foraging",
   "tooltip.beemancer.tolerance": "Tolerance",
   "tooltip.beemancer.shift_for_details": "Hold SHIFT for details",
-
   "item.beemancer.bee_larva": "Bee Larva",
   "item.beemancer.bee_larva.shift_hint": "Hold SHIFT for gene details",
-  
   "item.beemancer.building_wand": "Building Wand",
   "item.beemancer.debug_wand": "Debug Wand",
-  
   "item.beemancer.codex": "Beemancer Codex",
-  
   "gui.beemancer.bee_creator.edit": "Edit",
   "gui.beemancer.magic_hive.breeding_mode": "Breeding Mode Active",
-  
   "screen.beemancer.codex": "Beemancer Codex",
-  
   "codex.beemancer.page.bees": "Bee Tree",
   "codex.beemancer.page.bee": "Bees",
   "codex.beemancer.page.alchemy": "Alchemy",
   "codex.beemancer.page.logistics": "Logistics",
-  
   "codex.beemancer.locked": "???",
   "codex.beemancer.click_to_unlock": "Click to unlock",
   "codex.beemancer.unlock_parent_first": "Unlock the previous node first",
-  
   "codex.beemancer.bee.introduction.title": "Introduction to Beemancy",
   "codex.beemancer.bee.introduction.desc": "Begin your journey as a Beemancer",
   "codex.beemancer.bee.first_bee.title": "Your First Bee",
@@ -245,7 +231,6 @@
   "codex.beemancer.bee.breeding.desc": "Combine genes to create new bee species",
   "codex.beemancer.bee.gene_mastery.title": "Gene Mastery",
   "codex.beemancer.bee.gene_mastery.desc": "Master the art of genetic manipulation",
-  
   "codex.beemancer.alchemy.alchemy_basics.title": "Alchemy Basics",
   "codex.beemancer.alchemy.alchemy_basics.desc": "Learn the fundamentals of bee alchemy",
   "codex.beemancer.alchemy.honey_extraction.title": "Honey Extraction",
@@ -258,7 +243,6 @@
   "codex.beemancer.alchemy.bee_essence.desc": "Distill pure bee essence",
   "codex.beemancer.alchemy.transmutation.title": "Transmutation",
   "codex.beemancer.alchemy.transmutation.desc": "Transform materials using bee magic",
-  
   "codex.beemancer.logistics.logistics_intro.title": "Logistics Introduction",
   "codex.beemancer.logistics.logistics_intro.desc": "Organize your apiary efficiently",
   "codex.beemancer.logistics.storage_basics.title": "Storage Basics",
@@ -271,11 +255,9 @@
   "codex.beemancer.logistics.bee_pipes.desc": "Transport bees automatically",
   "codex.beemancer.logistics.automation.title": "Full Automation",
   "codex.beemancer.logistics.automation.desc": "Create a fully automated apiary",
-  
   "gene.category.beemancer.species": "Species",
   "gene.category.beemancer.environment": "Environment",
   "gene.category.beemancer.flower": "Flower",
-
   "species.beemancer.meadow": "Meadow Bee",
   "species.beemancer.forest": "Forest Bee",
   "species.beemancer.rocky": "Rocky Bee",
@@ -373,21 +355,18 @@
   "species.beemancer.void": "Void Bee",
   "species.beemancer.draconic": "Draconic Bee",
   "species.beemancer.stellar": "Stellar Bee",
-
   "gene.beemancer.environment.normal": "Normal",
   "gene.beemancer.environment.normal.desc": "Works in standard conditions",
   "gene.beemancer.environment.robust": "Robust",
   "gene.beemancer.environment.robust.desc": "Can work in rain",
   "gene.beemancer.environment.nocturnal": "Nocturnal",
   "gene.beemancer.environment.nocturnal.desc": "Can work at night",
-  
   "gene.beemancer.flower.flowers": "Flowers",
   "gene.beemancer.flower.flowers.desc": "Pollinates regular flowers",
   "gene.beemancer.flower.crops": "Crops",
   "gene.beemancer.flower.crops.desc": "Pollinates crop plants",
   "gene.beemancer.flower.cave_plants": "Cave Plants",
   "gene.beemancer.flower.cave_plants.desc": "Pollinates cave vegetation",
-
   "message.beemancer.storage_controller.edit_mode_on": "Edit mode enabled - Click chests to register",
   "message.beemancer.storage_controller.edit_mode_off": "Edit mode disabled",
   "message.beemancer.storage_controller.status": "Registered: %d chests, %d terminals",
@@ -395,7 +374,6 @@
   "message.beemancer.storage_controller.chests_registered": "%d chests registered",
   "message.beemancer.storage_controller.formed": "Storage Controller formed!",
   "message.beemancer.storage_controller.invalid_structure": "Invalid structure - check the storage pattern",
-
   "container.beemancer.storage_controller": "Storage Controller",
   "gui.beemancer.storage_controller.flight_speed": "Flight Speed",
   "gui.beemancer.storage_controller.search_speed": "Search Speed",
@@ -403,21 +381,17 @@
   "gui.beemancer.storage_controller.quantity": "Quantity",
   "gui.beemancer.storage_controller.honey_consumption": "Honey",
   "gui.beemancer.storage_controller.honey_efficiency": "Efficiency",
-
   "block.beemancer.storage_relay": "Storage Relay",
   "message.beemancer.storage_relay.edit_mode_on": "Relay edit mode enabled - Click chests or Shift+click nodes to link",
   "message.beemancer.storage_relay.edit_mode_off": "Relay edit mode disabled",
   "message.beemancer.storage_relay.info": "Relay: %d chests, %d connected nodes",
   "message.beemancer.storage_relay.node_linked": "Node linked!",
   "message.beemancer.storage_relay.out_of_range": "Target node is out of range",
-
   "entity.beemancer.delivery_bee": "Delivery Bee",
-
   "message.beemancer.storage_terminal.linked": "Linked to controller at (%d, %d, %d)",
   "message.beemancer.storage_terminal.not_linked": "Not linked to any controller",
   "message.beemancer.storage_terminal.auto_linked": "Terminal linked to controller!",
   "message.beemancer.storage_terminal.linked_manually": "Terminal linked to controller!",
-
   "gui.beemancer.storage_terminal.search": "Search...",
   "gui.beemancer.storage_terminal.request": "Request Items",
   "gui.beemancer.storage_terminal.pending_title": "Pending Requests",
@@ -425,7 +399,6 @@
   "gui.beemancer.storage_terminal.pending_types": "%d different types",
   "gui.beemancer.cancel": "Cancel",
   "gui.beemancer.request": "Request",
-
   "gui.beemancer.tab.storage": "Storage",
   "gui.beemancer.tab.tasks": "Tasks",
   "gui.beemancer.tab.controller": "Controller",
@@ -436,7 +409,6 @@
   "gui.beemancer.tasks.queued": "Queued Tasks",
   "gui.beemancer.tasks.empty": "No tasks",
   "gui.beemancer.terminal.essences": "Essences",
-
   "block.beemancer.import_interface": "Import Interface",
   "block.beemancer.export_interface": "Export Interface",
   "message.beemancer.network_interface.not_linked": "Not linked to any controller",
@@ -444,7 +416,6 @@
   "message.beemancer.network_interface.linked_manually": "Interface linked to controller!",
   "container.beemancer.import_interface": "Import Interface",
   "container.beemancer.export_interface": "Export Interface",
-
   "block.beemancer.honeyed_stone": "Honeyed Stone",
   "block.beemancer.honeyed_stone_stair": "Honeyed Stone Stairs",
   "block.beemancer.honey_pedestal": "Honey Pedestal",
@@ -498,32 +469,26 @@
   "block.beemancer.alembic_heart": "Alembic Heart",
   "block.beemancer.infuser_heart": "Infuser Heart",
   "block.beemancer.centrifuge_heart": "Centrifuge Heart",
-
   "message.beemancer.alembic.formed": "The Alembic has been formed!",
   "message.beemancer.alembic.invalid_structure": "Invalid structure - check the alembic pattern",
   "message.beemancer.infuser.formed": "The Infuser has been formed!",
   "message.beemancer.infuser.invalid_structure": "Invalid structure - check the infuser pattern",
   "message.beemancer.centrifuge.formed": "The Centrifuge has been formed!",
   "message.beemancer.centrifuge.invalid_structure": "Invalid structure - check the centrifuge pattern",
-
   "message.beemancer.honey_altar.formed": "The Honey Altar has been formed!",
   "message.beemancer.honey_altar.already_formed": "The Honey Altar is already active",
   "message.beemancer.honey_altar.invalid_structure": "Invalid structure - check the altar pattern",
-
   "message.beemancer.hive_multiblock.formed": "The Hive Multiblock has been formed!",
   "container.beemancer.hive_multiblock": "Hive Multiblock",
-
   "block.beemancer.pollen_pot": "Pollen Pot",
   "message.beemancer.pollen_pot.empty": "Pot is empty",
   "message.beemancer.pollen_pot.contents": "Contains %d/%d %s",
   "message.beemancer.pollen_pot.full": "Pot is full!",
   "message.beemancer.pollen_pot.wrong_type": "This pot already contains a different pollen type",
-
   "block.beemancer.extractor_heart": "Extractor Heart",
   "message.beemancer.essence_extractor.formed": "The Essence Extractor has been formed!",
   "message.beemancer.essence_extractor.already_formed": "The Essence Extractor is already active",
   "message.beemancer.essence_extractor.invalid_structure": "Invalid structure - check the extractor pattern",
-
   "item.beemancer.lesser_drop_essence": "Lesser Drop Essence",
   "item.beemancer.drop_essence": "Drop Essence",
   "item.beemancer.greater_drop_essence": "Greater Drop Essence",
@@ -543,7 +508,6 @@
   "item.beemancer.diurnal_essence": "Diurnal Essence",
   "item.beemancer.nocturnal_essence": "Nocturnal Essence",
   "item.beemancer.insomnia_essence": "Insomnia Essence",
-
   "item.beemancer.essence.type.drop": "Drop Level",
   "item.beemancer.essence.type.speed": "Flight Speed",
   "item.beemancer.essence.type.foraging": "Foraging Duration",
@@ -552,11 +516,9 @@
   "item.beemancer.essence.type.nocturnal": "Nocturnal",
   "item.beemancer.essence.type.insomnia": "Insomnia",
   "item.beemancer.essence.level": "Level %d",
-
   "block.beemancer.bee_statue": "Bee Statue",
   "message.beemancer.bee_statue.species_changed": "Species changed to %s (%d/%d)",
   "message.beemancer.bee_statue.bee_given": "You received a %s!",
-
   "codex.beemancer.bees.meadow_bee.title": "Meadow Bee",
   "codex.beemancer.bees.meadow_bee.desc": "A peaceful bee found in flower-filled meadows, producing sweet honeycomb.",
   "codex.beemancer.bees.forest_bee.title": "Forest Bee",
@@ -571,7 +533,6 @@
   "codex.beemancer.bees.nether_bee.desc": "Born in hellfire, this aggressive bee has adapted to extreme heat.",
   "codex.beemancer.bees.end_bee.title": "End Bee",
   "codex.beemancer.bees.end_bee.desc": "A mysterious bee from the void, touched by ender energy.",
-
   "codex.beemancer.bees.monsty_bee.title": "Monsty Bee",
   "codex.beemancer.bees.monsty_bee.desc": "A mischievous bee with a taste for monsters.",
   "codex.beemancer.bees.docile_bee.title": "Docile Bee",
@@ -584,7 +545,6 @@
   "codex.beemancer.bees.spark_bee.desc": "Creates tiny sparks as it flies, leaving flint in its comb.",
   "codex.beemancer.bees.cultural_bee.title": "Cultural Bee",
   "codex.beemancer.bees.cultural_bee.desc": "A civilized bee that learned from watching farmers.",
-
   "codex.beemancer.bees.carbon_bee.title": "Carbon Bee",
   "codex.beemancer.bees.carbon_bee.desc": "Nocturnal bee that gathers coal fragments in darkness.",
   "codex.beemancer.bees.cupric_bee.title": "Cupric Bee",
@@ -621,7 +581,6 @@
   "codex.beemancer.bees.gourd_bee.desc": "A festive bee that grows miniature pumpkins.",
   "codex.beemancer.bees.agrarian_bee.title": "Agrarian Bee",
   "codex.beemancer.bees.agrarian_bee.desc": "The farmer's friend, cultivating wheat with care.",
-
   "codex.beemancer.bees.prince_bee.title": "Prince Bee",
   "codex.beemancer.bees.prince_bee.desc": "A noble bee of royal lineage, spawned naturally.",
   "codex.beemancer.bees.flower_bee.title": "Flower Bee",
@@ -648,7 +607,6 @@
   "codex.beemancer.bees.igneous_bee.desc": "Forged in magma chambers, producing diorite.",
   "codex.beemancer.bees.rose_stone_bee.title": "Rose Stone Bee",
   "codex.beemancer.bees.rose_stone_bee.desc": "Attracted to pink minerals, creating granite.",
-
   "codex.beemancer.bees.infernalist_bee.title": "Infernalist Bee",
   "codex.beemancer.bees.infernalist_bee.desc": "A demonic bee spawned in the depths of the Nether.",
   "codex.beemancer.bees.swift_bee.title": "Swift Bee",
@@ -681,7 +639,6 @@
   "codex.beemancer.bees.geode_bee.desc": "Grows beautiful amethyst shards in its hive.",
   "codex.beemancer.bees.marsh_bee.title": "Marsh Bee",
   "codex.beemancer.bees.marsh_bee.desc": "Navigates murky swamps, gathering mangrove wood.",
-
   "codex.beemancer.bees.majestic_bee.title": "Majestic Bee",
   "codex.beemancer.bees.majestic_bee.desc": "The pride of any apiary, radiating regal beauty.",
   "codex.beemancer.bees.steady_bee.title": "Steady Bee",
@@ -708,7 +665,6 @@
   "codex.beemancer.bees.humus_bee.desc": "Enriches soil into podzol with its activities.",
   "codex.beemancer.bees.floral_bee.title": "Floral Bee",
   "codex.beemancer.bees.floral_bee.desc": "A royal gardener that spreads flowers everywhere.",
-
   "codex.beemancer.bees.treasure_bee.title": "Treasure Bee",
   "codex.beemancer.bees.treasure_bee.desc": "Legendary hoarder of precious materials.",
   "codex.beemancer.bees.siphoning_bee.title": "Siphoning Bee",
@@ -723,7 +679,6 @@
   "codex.beemancer.bees.insomnia_bee.desc": "Never sleeps, dropping phantom membranes.",
   "codex.beemancer.bees.blazing_bee.title": "Blazing Bee",
   "codex.beemancer.bees.blazing_bee.desc": "Burns with infernal fury, producing blaze rod fragments.",
-
   "codex.beemancer.bees.diamantine_bee.title": "Diamantine Bee",
   "codex.beemancer.bees.diamantine_bee.desc": "The ultimate gem collector, producing diamond dust.",
   "codex.beemancer.bees.venerable_bee.title": "Venerable Bee",
@@ -744,7 +699,6 @@
   "codex.beemancer.bees.dark_bee.desc": "Absorbs all light, bearing Pollen of Darkness.",
   "codex.beemancer.bees.imperial_bee.title": "Imperial Bee",
   "codex.beemancer.bees.imperial_bee.desc": "Rules over all other bees with absolute authority.",
-
   "codex.beemancer.bees.demonic_bee.title": "Demonic Bee",
   "codex.beemancer.bees.demonic_bee.desc": "A terrifying bee corrupted by dark forces.",
   "codex.beemancer.bees.paladin_bee.title": "Paladin Bee",
@@ -755,9 +709,10 @@
   "codex.beemancer.bees.ancient_bee.desc": "Primordial bee that produces netherite scrap dust.",
   "codex.beemancer.bees.void_bee.title": "Void Bee",
   "codex.beemancer.bees.void_bee.desc": "Exists between light and dark, carrying Void Pollen.",
-
   "codex.beemancer.bees.draconic_bee.title": "Draconic Bee",
   "codex.beemancer.bees.draconic_bee.desc": "Infused with dragon essence, producing dragon breath dust.",
   "codex.beemancer.bees.stellar_bee.title": "Stellar Bee",
-  "codex.beemancer.bees.stellar_bee.desc": "Born from a dying star, shedding nether star dust."
+  "codex.beemancer.bees.stellar_bee.desc": "Born from a dying star, shedding nether star dust.",
+  "block.beemancer.bee_spawner": "Flywheel Test Bee Spawner",
+  "entity.beemancer.flywheel_test_bee": "Test Bee"
 }

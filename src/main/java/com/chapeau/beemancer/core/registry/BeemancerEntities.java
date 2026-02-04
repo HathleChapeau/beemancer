@@ -10,6 +10,7 @@ import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
 import com.chapeau.beemancer.common.entity.mount.RideableBeeEntity;
+import com.chapeau.beemancer.content.flywheeltest.FlywheelTestBeeEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -44,6 +45,14 @@ public class BeemancerEntities {
                     .sized(1.05F, 0.9F)
                     .clientTrackingRange(10)
                     .build("rideable_bee"));
+
+    // --- FLYWHEEL TEST ---
+    public static final Supplier<EntityType<FlywheelTestBeeEntity>> FLYWHEEL_TEST_BEE =
+            ENTITIES.register("flywheel_test_bee",
+                    () -> EntityType.Builder.<FlywheelTestBeeEntity>of(FlywheelTestBeeEntity::new, MobCategory.MISC)
+                            .sized(0.7F, 0.6F)
+                            .clientTrackingRange(8)
+                            .build("flywheel_test_bee"));
 
     public static void register(IEventBus eventBus) {
         ENTITIES.register(eventBus);

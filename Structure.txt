@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-02-04                     #
-#     (Multibloc Modeles Dedies + Suppression LAYER - 2026-02-04)           #
+#     (Flywheel Test Bee PoC + Multibloc Refonte - 2026-02-04)              #
 ################################################################################
 
 ================================================================================
@@ -270,6 +270,10 @@ LISTE DES FEATURES:
 → Multibloc Blockstate Refonte
   Fichier: Structure/feature_multiblock_blockstate_refonte.txt
   Description: Remplacement BooleanProperty FORMED par EnumProperty<MultiblockProperty> sur 16 blocs + 3 nouveaux Heart blocks alchemy
+
+→ Flywheel Test Bee
+  Fichier: Structure/feature_flywheel_test_bee.txt
+  Description: Proof of concept GPU instancing via Flywheel pour rendu abeilles
 
 ================================================================================
 6. FEATURES EN COURS

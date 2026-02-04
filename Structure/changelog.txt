@@ -3,6 +3,39 @@
 ################################################################################
 
 ================================================================================
+2026-02-04 - Flywheel Test Bee (Proof of Concept GPU Instancing)
+================================================================================
+
+Systeme de test isole pour valider le rendu GPU instancie via Flywheel.
+Entite test legere, visual Flywheel avec animation ailes, bloc spawner.
+
+CLASSES JAVA CREEES (4):
+- content/flywheeltest/FlywheelTestBeeEntity.java (Entity test sans AI)
+- content/flywheeltest/BeeSpawnerBlock.java (Bloc spawner test)
+- client/visual/FlywheelTestBeeVisual.java (Visual Flywheel GPU)
+- client/visual/FlywheelTestBeeVisualizer.java (Registration Flywheel)
+
+REGISTRES MODIFIES:
+- BeemancerEntities: +FLYWHEEL_TEST_BEE
+- BeemancerBlocks: +BEE_SPAWNER
+- BeemancerItems: +BEE_SPAWNER (BlockItem)
+- BeemancerCreativeTabs: +addFlywheelTest()
+- ClientSetup: +NoopRenderer, +FlywheelTestBeeVisualizer
+
+ASSETS CREES (4):
+- blockstates/bee_spawner.json
+- models/block/test/bee_spawner.json
+- models/item/bee_spawner.json
+- data/beemancer/loot_table/blocks/bee_spawner.json
+
+LANG:
+- en_us.json: +2 entrees (bee_spawner, flywheel_test_bee)
+- fr_fr.json: +2 entrees
+
+REVERT:
+Supprimer 4 fichiers Java + 4 JSON + retirer lignes dans 5 registres + 4 lignes lang.
+
+================================================================================
 2026-02-04 - Multibloc Modeles Dedies + Suppression LAYER
 ================================================================================
 

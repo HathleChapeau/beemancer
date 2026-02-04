@@ -1,0 +1,124 @@
+################################################################################
+#               FEATURE: Flywheel Test Bee                                   #
+################################################################################
+
+FEATURE: Flywheel Test Bee
+Description: Proof of concept pour valider le rendu GPU instancie via Flywheel.
+             Entite test legere, visual Flywheel avec animation ailes, bloc spawner.
+Statut: COMPLET
+Date: 2026-02-04
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+Pipeline Flywheel:
+  FlywheelTestBeeEntity (server)
+    |  speciesId, position, tickCount synced to client
+    v
+  FlywheelTestBeeVisual (client, 1 par entite)
+    |  Cree InstanceTree depuis vanilla BeeModel (ModelLayers.BEE)
+    |  Material = SimpleMaterial(texture espece)
+    v
+  InstanceTree -> TransformedInstance par ModelPart cube
+    |  body, right_wing, left_wing, legs, etc.
+    |  Chaque instance = matrice 4x4 sur GPU
+    v
+  beginFrame() chaque frame:
+    1. Calcul pose (position interpolee + yaw + flip)
+    2. Animation ailes (zRot sinusoidal via InstanceTree)
+    3. updateInstances(pose) -> propage matrices dans l'arbre
+    4. Relight
+    v
+  Flywheel batche automatiquement:
+    - Meme mesh + meme material = 1 draw call
+    - N abeilles meme espece = 1 draw call par partie (body, wings, etc.)
+    - Especes differentes = draw calls separes (textures differentes)
+
+================================================================================
+FICHIERS CREES (4 Java + 4 JSON)
+================================================================================
+
+| Fichier                                              | Role                          |
+|------------------------------------------------------|-------------------------------|
+| content/flywheeltest/FlywheelTestBeeEntity.java      | Entity test (pas Mob, zero AI)|
+| content/flywheeltest/BeeSpawnerBlock.java            | Bloc spawner (clic=spawn, shift=kill)|
+| client/visual/FlywheelTestBeeVisual.java             | Visual Flywheel (coeur test)  |
+| client/visual/FlywheelTestBeeVisualizer.java         | Registration visual Flywheel  |
+
+| Asset JSON                                           | Role                          |
+|------------------------------------------------------|-------------------------------|
+| blockstates/bee_spawner.json                         | Blockstate une variante       |
+| models/block/test/bee_spawner.json                   | Modele cube (texture spawner) |
+| models/item/bee_spawner.json                         | Modele item (parent block)    |
+| data/beemancer/loot_table/blocks/bee_spawner.json    | Loot table drop self          |
+
+================================================================================
+REGISTRES MODIFIES
+================================================================================
+
+| Registre              | Ajout                                              |
+|-----------------------|----------------------------------------------------|
+| BeemancerEntities     | FLYWHEEL_TEST_BEE (Entity, MobCategory.MISC)       |
+| BeemancerBlocks       | BEE_SPAWNER (BeeSpawnerBlock)                      |
+| BeemancerItems        | BEE_SPAWNER (BlockItem)                            |
+| BeemancerCreativeTabs | addFlywheelTest() dans MAIN_TAB                    |
+| ClientSetup           | NoopRenderer + onClientSetup FlywheelTestBeeVisualizer |
+
+================================================================================
+UTILISATION EN JEU
+================================================================================
+
+1. Placer le Bee Spawner (onglet creatif principal)
+2. Clic droit: spawn 5-10 test bees avec especes aleatoires
+3. Abeilles rendues par Flywheel (GPU instancie, pas vanilla renderer)
+4. Ailes animees (battement sinusoidal via InstanceTree.zRot)
+5. Shift+clic droit: kill toutes les test bees dans 32 blocs
+
+================================================================================
+DEPENDANCES FLYWHEEL (API)
+================================================================================
+
+| Classe Flywheel                    | Package                                    |
+|------------------------------------|--------------------------------------------|
+| AbstractEntityVisual               | dev.engine_room.flywheel.lib.visual        |
+| SimpleDynamicVisual                | dev.engine_room.flywheel.lib.visual        |
+| InstanceTree                       | dev.engine_room.flywheel.lib.model.part    |
+| ModelTrees                         | dev.engine_room.flywheel.lib.model.part    |
+| SimpleMaterial                     | dev.engine_room.flywheel.lib.material      |
+| SimpleEntityVisualizer             | dev.engine_room.flywheel.lib.visualization |
+| TransformedInstance                | dev.engine_room.flywheel.lib.instance      |
+| CutoutShaders                      | dev.engine_room.flywheel.lib.material      |
+
+================================================================================
+REVERT (pour supprimer cette feature)
+================================================================================
+
+Fichiers a supprimer (8):
+- src/.../content/flywheeltest/FlywheelTestBeeEntity.java
+- src/.../content/flywheeltest/BeeSpawnerBlock.java
+- src/.../client/visual/FlywheelTestBeeVisual.java
+- src/.../client/visual/FlywheelTestBeeVisualizer.java
+- assets/beemancer/blockstates/bee_spawner.json
+- assets/beemancer/models/block/test/bee_spawner.json
+- assets/beemancer/models/item/bee_spawner.json
+- data/beemancer/loot_table/blocks/bee_spawner.json
+
+Lignes a retirer dans registres (5 fichiers):
+- BeemancerEntities.java: import + FLYWHEEL_TEST_BEE
+- BeemancerBlocks.java: import + BEE_SPAWNER
+- BeemancerItems.java: BEE_SPAWNER
+- BeemancerCreativeTabs.java: addFlywheelTest() appel + methode
+- ClientSetup.java: import + registerEntityRenderer line + onClientSetup method + listener
+
+Lignes lang a retirer (2 fichiers):
+- en_us.json: block.beemancer.bee_spawner + entity.beemancer.flywheel_test_bee
+- fr_fr.json: block.beemancer.bee_spawner + entity.beemancer.flywheel_test_bee
+
+Structure.txt a nettoyer:
+- Retirer entree feature section 5
+- Retirer entree changelog
+
+Zero impact sur le reste du mod.
+
+################################################################################

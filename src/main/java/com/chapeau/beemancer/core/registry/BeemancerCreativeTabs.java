@@ -48,6 +48,7 @@ public class BeemancerCreativeTabs {
                         addEssences(output);
                         addCrystalItems(output);
                         addBeeStatue(output);
+                        addFlywheelTest(output);
                         addBuildingBlocks(output);
                         addCraftingMaterials(output);
                     })
@@ -174,6 +175,10 @@ public class BeemancerCreativeTabs {
 
     private static void addBeeStatue(CreativeModeTab.Output output) {
         output.accept(BeemancerItems.BEE_STATUE.get());
+    }
+
+    private static void addFlywheelTest(CreativeModeTab.Output output) {
+        output.accept(BeemancerItems.BEE_SPAWNER.get());
     }
 
     private static void addBuildingBlocks(CreativeModeTab.Output output) {

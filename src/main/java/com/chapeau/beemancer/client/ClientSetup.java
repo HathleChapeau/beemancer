@@ -40,6 +40,7 @@ import com.chapeau.beemancer.client.renderer.block.TranslucentOutlineRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.beemancer.client.renderer.debug.HiveDebugRenderer;
 import com.chapeau.beemancer.client.model.RideableBeeModel;
+import com.chapeau.beemancer.client.visual.FlywheelTestBeeVisualizer;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.RideableBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.DeliveryBeeRenderer;
@@ -56,6 +57,7 @@ import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
@@ -79,6 +81,7 @@ public class ClientSetup {
         modEventBus.addListener(ClientSetup::registerBlockColors);
         modEventBus.addListener(ClientSetup::registerAdditionalModels);
         modEventBus.addListener(ClientSetup::registerParticleProviders);
+        modEventBus.addListener(ClientSetup::onClientSetup);
 
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
@@ -124,6 +127,9 @@ public class ClientSetup {
         event.registerEntityRenderer(BeemancerEntities.MAGIC_BEE.get(), MagicBeeRenderer::new);
         event.registerEntityRenderer(BeemancerEntities.RIDEABLE_BEE.get(), RideableBeeRenderer::new);
         event.registerEntityRenderer(BeemancerEntities.DELIVERY_BEE.get(), DeliveryBeeRenderer::new);
+        // Flywheel test bee - noop renderer (Flywheel handles rendering)
+        event.registerEntityRenderer(BeemancerEntities.FLYWHEEL_TEST_BEE.get(),
+            net.minecraft.client.renderer.entity.NoopRenderer::new);
 
         // Block Entity Renderers
         event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_CONTROLLER.get(),
@@ -303,5 +309,13 @@ public class ClientSetup {
         // Modèle crank (rendu par BER avec rotation)
         event.register(CrankRenderer.CRANK_MODEL_LOC);
 
+    }
+
+    // =========================================================================
+    // FLYWHEEL VISUALIZER REGISTRATION
+    // =========================================================================
+
+    private static void onClientSetup(final FMLClientSetupEvent event) {
+        event.enqueueWork(FlywheelTestBeeVisualizer::register);
     }
 }

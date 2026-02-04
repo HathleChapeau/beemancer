@@ -2,7 +2,6 @@
   "itemGroup.beemancer": "Beemancer",
   "itemGroup.beemancer.main": "Beemancer",
   "itemGroup.beemancer.combs": "Beemancer - Rayons & Ressources",
-  
   "block.beemancer.storage_crate": "Caisse de Stockage",
   "block.beemancer.storage_controller": "Contrôleur de Stockage",
   "block.beemancer.storage_terminal": "Terminal de Stockage",
@@ -32,7 +31,6 @@
   "fluid.beemancer.honey": "Miel",
   "fluid.beemancer.royal_jelly": "Gelée Royale",
   "fluid.beemancer.nectar": "Nectar",
-  
   "item.beemancer.honey_bucket": "Seau de Miel",
   "item.beemancer.royal_jelly_bucket": "Seau de Gelée Royale",
   "item.beemancer.nectar_bucket": "Seau de Nectar",
@@ -172,7 +170,6 @@
   "item.beemancer.honey_crystal": "Cristal de Miel",
   "item.beemancer.enriched_honey_crystal": "Cristal de Miel Enrichi",
   "item.beemancer.radiant_honey_crystal": "Cristal de Miel Radiant",
-  
   "container.beemancer.storage_crate": "Caisse de Stockage",
   "container.beemancer.storage_terminal": "Terminal de Stockage",
   "container.beemancer.bee_creator": "Créateur d'Abeilles",
@@ -185,13 +182,10 @@
   "container.beemancer.crystallizer": "Cristalliseur",
   "container.beemancer.alembic": "Alambic",
   "container.beemancer.infuser": "Infuseur",
-  
   "entity.beemancer.magic_bee": "Abeille Magique",
-  
   "item.beemancer.magic_bee": "Abeille Magique",
   "item.beemancer.magic_bee.shift_hint": "Maintenir SHIFT pour les détails des gènes",
   "item.beemancer.magic_bee.assigned_hive": "Ruche assignée",
-
   "tooltip.beemancer.species": "Espèce",
   "tooltip.beemancer.activity": "Activité",
   "tooltip.beemancer.activity.diurnal": "Diurne",
@@ -212,28 +206,20 @@
   "tooltip.beemancer.foraging": "Butinage",
   "tooltip.beemancer.tolerance": "Tolérance",
   "tooltip.beemancer.shift_for_details": "Maintenir SHIFT pour les détails",
-
   "item.beemancer.bee_larva": "Larve d'Abeille",
   "item.beemancer.bee_larva.shift_hint": "Maintenir SHIFT pour les détails des gènes",
-  
   "item.beemancer.building_wand": "Baguette de Construction",
   "item.beemancer.debug_wand": "Baguette de Debug",
-  
   "item.beemancer.codex": "Codex Beemancer",
-  
   "gui.beemancer.bee_creator.edit": "Modifier",
   "gui.beemancer.magic_hive.breeding_mode": "Mode Reproduction Actif",
-  
   "screen.beemancer.codex": "Codex Beemancer",
-  
   "codex.beemancer.page.bee": "Abeilles",
   "codex.beemancer.page.alchemy": "Alchimie",
   "codex.beemancer.page.logistics": "Logistique",
-  
   "codex.beemancer.locked": "???",
   "codex.beemancer.click_to_unlock": "Cliquez pour débloquer",
   "codex.beemancer.unlock_parent_first": "Débloquez d'abord le nœud précédent",
-  
   "codex.beemancer.bee.introduction.title": "Introduction à la Beemancy",
   "codex.beemancer.bee.introduction.desc": "Commencez votre voyage en tant que Beemancer",
   "codex.beemancer.bee.first_bee.title": "Votre Première Abeille",
@@ -244,7 +230,6 @@
   "codex.beemancer.bee.breeding.desc": "Combinez les gènes pour créer de nouvelles espèces",
   "codex.beemancer.bee.gene_mastery.title": "Maîtrise Génétique",
   "codex.beemancer.bee.gene_mastery.desc": "Maîtrisez l'art de la manipulation génétique",
-  
   "codex.beemancer.alchemy.alchemy_basics.title": "Bases de l'Alchimie",
   "codex.beemancer.alchemy.alchemy_basics.desc": "Apprenez les fondamentaux de l'alchimie apicole",
   "codex.beemancer.alchemy.honey_extraction.title": "Extraction de Miel",
@@ -257,7 +242,6 @@
   "codex.beemancer.alchemy.bee_essence.desc": "Distillez l'essence pure d'abeille",
   "codex.beemancer.alchemy.transmutation.title": "Transmutation",
   "codex.beemancer.alchemy.transmutation.desc": "Transformez les matériaux avec la magie apicole",
-  
   "codex.beemancer.logistics.logistics_intro.title": "Introduction à la Logistique",
   "codex.beemancer.logistics.logistics_intro.desc": "Organisez votre rucher efficacement",
   "codex.beemancer.logistics.storage_basics.title": "Bases du Stockage",
@@ -270,25 +254,21 @@
   "codex.beemancer.logistics.bee_pipes.desc": "Transportez les abeilles automatiquement",
   "codex.beemancer.logistics.automation.title": "Automatisation Complète",
   "codex.beemancer.logistics.automation.desc": "Créez un rucher entièrement automatisé",
-  
   "gene.category.beemancer.species": "Espèce",
   "gene.category.beemancer.environment": "Environnement",
   "gene.category.beemancer.flower": "Fleur",
-
   "gene.beemancer.environment.normal": "Normal",
   "gene.beemancer.environment.normal.desc": "Travaille dans des conditions standard",
   "gene.beemancer.environment.robust": "Robuste",
   "gene.beemancer.environment.robust.desc": "Peut travailler sous la pluie",
   "gene.beemancer.environment.nocturnal": "Nocturne",
   "gene.beemancer.environment.nocturnal.desc": "Peut travailler la nuit",
-  
   "gene.beemancer.flower.flowers": "Fleurs",
   "gene.beemancer.flower.flowers.desc": "Pollinise les fleurs normales",
   "gene.beemancer.flower.crops": "Cultures",
   "gene.beemancer.flower.crops.desc": "Pollinise les plantes cultivées",
   "gene.beemancer.flower.cave_plants": "Plantes de Caverne",
   "gene.beemancer.flower.cave_plants.desc": "Pollinise la végétation souterraine",
-
   "species.beemancer.meadow": "Abeille des Prés",
   "species.beemancer.forest": "Abeille Forestière",
   "species.beemancer.rocky": "Abeille des Roches",
@@ -386,7 +366,6 @@
   "species.beemancer.void": "Abeille du Vide",
   "species.beemancer.draconic": "Abeille Draconique",
   "species.beemancer.stellar": "Abeille Stellaire",
-
   "message.beemancer.storage_controller.edit_mode_on": "Mode édition activé - Cliquez sur les coffres pour les enregistrer",
   "message.beemancer.storage_controller.edit_mode_off": "Mode édition désactivé",
   "message.beemancer.storage_controller.status": "Enregistrés: %d coffres, %d terminaux",
@@ -394,7 +373,6 @@
   "message.beemancer.storage_controller.chests_registered": "%d coffres enregistrés",
   "message.beemancer.storage_controller.formed": "Contrôleur de Stockage formé !",
   "message.beemancer.storage_controller.invalid_structure": "Structure invalide - vérifiez le pattern de stockage",
-
   "container.beemancer.storage_controller": "Contrôleur de Stockage",
   "gui.beemancer.storage_controller.flight_speed": "Vitesse de vol",
   "gui.beemancer.storage_controller.search_speed": "Vitesse de recherche",
@@ -402,21 +380,17 @@
   "gui.beemancer.storage_controller.quantity": "Quantité",
   "gui.beemancer.storage_controller.honey_consumption": "Miel",
   "gui.beemancer.storage_controller.honey_efficiency": "Efficacité",
-
   "block.beemancer.storage_relay": "Relais de Stockage",
   "message.beemancer.storage_relay.edit_mode_on": "Mode édition relais activé - Cliquez sur les coffres ou Shift+clic sur les nœuds",
   "message.beemancer.storage_relay.edit_mode_off": "Mode édition relais désactivé",
   "message.beemancer.storage_relay.info": "Relais: %d coffres, %d nœuds connectés",
   "message.beemancer.storage_relay.node_linked": "Nœud connecté !",
   "message.beemancer.storage_relay.out_of_range": "Le nœud cible est hors de portée",
-
   "entity.beemancer.delivery_bee": "Abeille de livraison",
-
   "message.beemancer.storage_terminal.linked": "Lié au contrôleur en (%d, %d, %d)",
   "message.beemancer.storage_terminal.not_linked": "Non lié à un contrôleur",
   "message.beemancer.storage_terminal.auto_linked": "Terminal lié au contrôleur !",
   "message.beemancer.storage_terminal.linked_manually": "Terminal lié au contrôleur !",
-
   "gui.beemancer.storage_terminal.search": "Rechercher...",
   "gui.beemancer.storage_terminal.request": "Demander des Items",
   "gui.beemancer.storage_terminal.pending_title": "Requêtes en attente",
@@ -424,7 +398,6 @@
   "gui.beemancer.storage_terminal.pending_types": "%d types différents",
   "gui.beemancer.cancel": "Annuler",
   "gui.beemancer.request": "Demander",
-
   "gui.beemancer.tab.storage": "Stockage",
   "gui.beemancer.tab.tasks": "Tâches",
   "gui.beemancer.tab.controller": "Contrôleur",
@@ -435,7 +408,6 @@
   "gui.beemancer.tasks.queued": "Tâches en attente",
   "gui.beemancer.tasks.empty": "Aucune tâche",
   "gui.beemancer.terminal.essences": "Essences",
-
   "block.beemancer.import_interface": "Interface d'Import",
   "block.beemancer.export_interface": "Interface d'Export",
   "message.beemancer.network_interface.not_linked": "Non lié à un contrôleur",
@@ -443,7 +415,6 @@
   "message.beemancer.network_interface.linked_manually": "Interface liée au contrôleur !",
   "container.beemancer.import_interface": "Interface d'Import",
   "container.beemancer.export_interface": "Interface d'Export",
-
   "block.beemancer.honeyed_stone": "Pierre Miellée",
   "block.beemancer.honeyed_stone_stair": "Escalier en Pierre Miellée",
   "block.beemancer.honey_pedestal": "Piédestal de Miel",
@@ -494,32 +465,26 @@
   "block.beemancer.alembic_heart": "Coeur d'Alambic",
   "block.beemancer.infuser_heart": "Coeur d'Infuseur",
   "block.beemancer.centrifuge_heart": "Coeur de Centrifugeuse",
-
   "message.beemancer.alembic.formed": "L'Alambic a été formé !",
   "message.beemancer.alembic.invalid_structure": "Structure invalide - vérifiez le pattern de l'alambic",
   "message.beemancer.infuser.formed": "L'Infuseur a été formé !",
   "message.beemancer.infuser.invalid_structure": "Structure invalide - vérifiez le pattern de l'infuseur",
   "message.beemancer.centrifuge.formed": "La Centrifugeuse a été formée !",
   "message.beemancer.centrifuge.invalid_structure": "Structure invalide - vérifiez le pattern de la centrifugeuse",
-
   "message.beemancer.honey_altar.formed": "L'Autel de Miel a été formé !",
   "message.beemancer.honey_altar.already_formed": "L'Autel de Miel est déjà actif",
   "message.beemancer.honey_altar.invalid_structure": "Structure invalide - vérifiez le pattern de l'autel",
-
   "message.beemancer.hive_multiblock.formed": "Le Multibloc de Ruche a été formé !",
   "container.beemancer.hive_multiblock": "Multibloc de Ruche",
-
   "block.beemancer.pollen_pot": "Pot à Pollen",
   "message.beemancer.pollen_pot.empty": "Le pot est vide",
   "message.beemancer.pollen_pot.contents": "Contient %d/%d %s",
   "message.beemancer.pollen_pot.full": "Le pot est plein !",
   "message.beemancer.pollen_pot.wrong_type": "Ce pot contient déjà un autre type de pollen",
-
   "block.beemancer.extractor_heart": "Cœur d'Extracteur",
   "message.beemancer.essence_extractor.formed": "L'Extracteur d'Essence a été formé !",
   "message.beemancer.essence_extractor.already_formed": "L'Extracteur d'Essence est déjà actif",
   "message.beemancer.essence_extractor.invalid_structure": "Structure invalide - vérifiez le pattern de l'extracteur",
-
   "item.beemancer.lesser_drop_essence": "Essence de Drop Mineure",
   "item.beemancer.drop_essence": "Essence de Drop",
   "item.beemancer.greater_drop_essence": "Essence de Drop Supérieure",
@@ -539,7 +504,6 @@
   "item.beemancer.diurnal_essence": "Essence Diurne",
   "item.beemancer.nocturnal_essence": "Essence Nocturne",
   "item.beemancer.insomnia_essence": "Essence d'Insomnie",
-
   "item.beemancer.essence.type.drop": "Niveau de Drop",
   "item.beemancer.essence.type.speed": "Vitesse de Vol",
   "item.beemancer.essence.type.foraging": "Durée de Butinage",
@@ -548,8 +512,9 @@
   "item.beemancer.essence.type.nocturnal": "Nocturne",
   "item.beemancer.essence.type.insomnia": "Insomnie",
   "item.beemancer.essence.level": "Niveau %d",
-
   "block.beemancer.bee_statue": "Statue d'Abeille",
   "message.beemancer.bee_statue.species_changed": "Espèce changée vers %s (%d/%d)",
-  "message.beemancer.bee_statue.bee_given": "Vous avez reçu une %s !"
+  "message.beemancer.bee_statue.bee_given": "Vous avez reçu une %s !",
+  "block.beemancer.bee_spawner": "Spawner Test Flywheel",
+  "entity.beemancer.flywheel_test_bee": "Abeille Test"
 }

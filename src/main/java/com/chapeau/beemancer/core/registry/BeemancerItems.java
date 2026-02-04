@@ -650,6 +650,10 @@ public class BeemancerItems {
     public static final DeferredItem<Item> ROYAL_HONEY_CRYSTAL = ITEMS.register("royal_honey_crystal",
             () -> new Item(new Item.Properties()));
 
+    // --- FLYWHEEL TEST ---
+    public static final DeferredItem<BlockItem> BEE_SPAWNER = ITEMS.register("bee_spawner",
+            () -> new BlockItem(BeemancerBlocks.BEE_SPAWNER.get(), new Item.Properties()));
+
     // --- MOUNT ITEMS ---
     public static final DeferredItem<RideableBeeSpawnItem> RIDEABLE_BEE_SPAWN = ITEMS.register("rideable_bee_spawn",
             () -> new RideableBeeSpawnItem(new Item.Properties()));
