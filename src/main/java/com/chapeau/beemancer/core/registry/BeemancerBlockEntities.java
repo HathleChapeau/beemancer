@@ -142,13 +142,6 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.POWERED_CENTRIFUGE_TIER2.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<PoweredCentrifugeBlockEntity>> POWERED_CENTRIFUGE_TIER3 =
-            BLOCK_ENTITIES.register("powered_centrifuge_tier3",
-                    () -> BlockEntityType.Builder.of(
-                            PoweredCentrifugeBlockEntity::createTier3,
-                            BeemancerBlocks.POWERED_CENTRIFUGE_TIER3.get()
-                    ).build(null));
-
     public static final Supplier<BlockEntityType<HoneyTankBlockEntity>> HONEY_TANK =
             BLOCK_ENTITIES.register("honey_tank",
                     () -> BlockEntityType.Builder.of(
@@ -226,13 +219,6 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.CRYSTALLIZER.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<AlembicBlockEntity>> ALEMBIC = 
-            BLOCK_ENTITIES.register("alembic",
-                    () -> BlockEntityType.Builder.of(
-                            AlembicBlockEntity::new,
-                            BeemancerBlocks.ALEMBIC.get()
-                    ).build(null));
-
     public static final Supplier<BlockEntityType<InfuserBlockEntity>> INFUSER =
             BLOCK_ENTITIES.register("infuser",
                     () -> BlockEntityType.Builder.of(
@@ -245,13 +231,6 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             InfuserBlockEntity::createTier2,
                             BeemancerBlocks.INFUSER_TIER2.get()
-                    ).build(null));
-
-    public static final Supplier<BlockEntityType<InfuserBlockEntity>> INFUSER_TIER3 =
-            BLOCK_ENTITIES.register("infuser_tier3",
-                    () -> BlockEntityType.Builder.of(
-                            InfuserBlockEntity::createTier3,
-                            BeemancerBlocks.INFUSER_TIER3.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<MultiblockTankBlockEntity>> MULTIBLOCK_TANK =

@@ -59,9 +59,6 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
     public static final int TIER2_TANK_CAPACITY = 8000;
     public static final float TIER2_PROCESS_MULTIPLIER = 0.7f;
 
-    public static final int TIER3_TANK_CAPACITY = 16000;
-    public static final float TIER3_PROCESS_MULTIPLIER = 0.5f;
-
     private static final int DEFAULT_PROCESS_TIME = 200;
 
     private final int tankCapacity;
@@ -147,11 +144,6 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
     public static InfuserBlockEntity createTier2(BlockPos pos, BlockState state) {
         return new InfuserBlockEntity(BeemancerBlockEntities.INFUSER_TIER2.get(), pos, state,
             TIER2_TANK_CAPACITY, TIER2_PROCESS_MULTIPLIER);
-    }
-
-    public static InfuserBlockEntity createTier3(BlockPos pos, BlockState state) {
-        return new InfuserBlockEntity(BeemancerBlockEntities.INFUSER_TIER3.get(), pos, state,
-            TIER3_TANK_CAPACITY, TIER3_PROCESS_MULTIPLIER);
     }
 
     public int getTankCapacity() { return tankCapacity; }

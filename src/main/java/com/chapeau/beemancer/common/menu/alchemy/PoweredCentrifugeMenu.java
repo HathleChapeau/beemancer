@@ -1,19 +1,36 @@
 /**
  * ============================================================
  * [PoweredCentrifugeMenu.java]
- * Description: Menu pour la centrifugeuse automatique
+ * Description: Menu pour la centrifugeuse automatique (standalone et multibloc)
  * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance                      | Raison                | Utilisation           |
+ * |---------------------------------|----------------------|-----------------------|
+ * | PoweredCentrifugeBlockEntity    | Standalone centrifuge| Slots accesseurs      |
+ * | CentrifugeHeartBlockEntity      | Multibloc centrifuge | Slots accesseurs      |
+ * | BeemancerBlocks                 | Validation block     | stillValid            |
+ * | BeemancerMenus                  | Type menu            | Registration          |
+ * ------------------------------------------------------------
  *
  * SLOTS:
  * - 1 slot entree (index 0)
  * - 4 slots sortie (index 1-4)
  * - 27 slots inventaire (index 5-31)
  * - 9 slots hotbar (index 32-40)
+ *
+ * UTILISE PAR:
+ * - PoweredCentrifugeBlockEntity.java (createMenu)
+ * - CentrifugeHeartBlockEntity.java (createMenu)
+ * - PoweredCentrifugeScreen.java (client GUI)
+ *
  * ============================================================
  */
 package com.chapeau.beemancer.common.menu.alchemy;
 
 import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
+import com.chapeau.beemancer.common.blockentity.alchemy.CentrifugeHeartBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.PoweredCentrifugeBlockEntity;
 import com.chapeau.beemancer.common.menu.BeemancerMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
@@ -26,9 +43,13 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 public class PoweredCentrifugeMenu extends BeemancerMenu {
-    private final PoweredCentrifugeBlockEntity blockEntity;
+    private final BlockEntity blockEntity;
+    private final FluidTank fuelTank;
+    private final FluidTank outputTank;
     private final ContainerData data;
     private final ContainerLevelAccess access;
 
@@ -50,14 +71,29 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
     // Server constructor
     public PoweredCentrifugeMenu(int containerId, Inventory playerInv, BlockEntity be, ContainerData data) {
         super(BeemancerMenus.POWERED_CENTRIFUGE.get(), containerId);
-        this.blockEntity = (PoweredCentrifugeBlockEntity) be;
+        this.blockEntity = be;
         this.data = data;
         this.access = ContainerLevelAccess.create(be.getLevel(), be.getBlockPos());
+
+        ItemStackHandler inputHandler;
+        ItemStackHandler outputHandler;
+        if (be instanceof CentrifugeHeartBlockEntity heart) {
+            inputHandler = heart.getInputSlot();
+            outputHandler = heart.getOutputSlots();
+            this.fuelTank = heart.getFuelTank();
+            this.outputTank = heart.getOutputTank();
+        } else {
+            PoweredCentrifugeBlockEntity centrifuge = (PoweredCentrifugeBlockEntity) be;
+            inputHandler = centrifuge.getInputSlot();
+            outputHandler = centrifuge.getOutputSlots();
+            this.fuelTank = centrifuge.getFuelTank();
+            this.outputTank = centrifuge.getOutputTank();
+        }
 
         addDataSlots(data);
 
         // Input slot (gauche)
-        addSlot(BeemancerSlot.combInput(blockEntity.getInputSlot(), 0, 33, 35)
+        addSlot(BeemancerSlot.combInput(inputHandler, 0, 33, 35)
             .withFilter(stack -> stack.is(Items.HONEYCOMB) ||
                                 stack.is(BeemancerItems.ROYAL_COMB.get()) ||
                                 stack.is(BeemancerItems.COMMON_COMB.get()) ||
@@ -65,10 +101,10 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
                                 stack.is(BeemancerItems.DILIGENT_COMB.get())));
 
         // Output slots (droite, 2x2)
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 0, 109, 26));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 1, 127, 26));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 2, 109, 44));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 3, 127, 44));
+        addSlot(BeemancerSlot.output(outputHandler, 0, 109, 26));
+        addSlot(BeemancerSlot.output(outputHandler, 1, 127, 26));
+        addSlot(BeemancerSlot.output(outputHandler, 2, 109, 44));
+        addSlot(BeemancerSlot.output(outputHandler, 3, 127, 44));
 
         // Player inventory
         addPlayerInventory(playerInv, 8, 88);
@@ -85,7 +121,9 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
         return max > 0 ? (float) getProgress() / max : 0;
     }
 
-    public PoweredCentrifugeBlockEntity getBlockEntity() { return blockEntity; }
+    public BlockEntity getBlockEntity() { return blockEntity; }
+    public FluidTank getFuelTank() { return fuelTank; }
+    public FluidTank getOutputTank() { return outputTank; }
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
@@ -144,6 +182,7 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, BeemancerBlocks.POWERED_CENTRIFUGE.get());
+        return stillValid(access, player, BeemancerBlocks.POWERED_CENTRIFUGE.get())
+            || stillValid(access, player, BeemancerBlocks.CENTRIFUGE_HEART.get());
     }
 }

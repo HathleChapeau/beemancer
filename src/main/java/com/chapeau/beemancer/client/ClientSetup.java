@@ -157,8 +157,6 @@ public class ClientSetup {
             InfuserRenderer::new);
         event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER_TIER2.get(),
             InfuserRenderer::new);
-        event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER_TIER3.get(),
-            InfuserRenderer::new);
         // HoneyTankRenderer - fluide dynamique
         event.registerBlockEntityRenderer(BeemancerBlockEntities.HONEY_TANK.get(),
             HoneyTankRenderer::new);

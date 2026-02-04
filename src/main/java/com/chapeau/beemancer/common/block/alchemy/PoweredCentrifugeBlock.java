@@ -65,7 +65,6 @@ public class PoweredCentrifugeBlock extends BaseEntityBlock {
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return switch (tier) {
             case 2 -> PoweredCentrifugeBlockEntity.createTier2(pos, state);
-            case 3 -> PoweredCentrifugeBlockEntity.createTier3(pos, state);
             default -> new PoweredCentrifugeBlockEntity(pos, state);
         };
     }
@@ -76,7 +75,6 @@ public class PoweredCentrifugeBlock extends BaseEntityBlock {
         if (level.isClientSide()) return null;
         BlockEntityType<?> expectedType = switch (tier) {
             case 2 -> BeemancerBlockEntities.POWERED_CENTRIFUGE_TIER2.get();
-            case 3 -> BeemancerBlockEntities.POWERED_CENTRIFUGE_TIER3.get();
             default -> BeemancerBlockEntities.POWERED_CENTRIFUGE.get();
         };
         return createTickerHelper(type, (BlockEntityType<PoweredCentrifugeBlockEntity>) expectedType,

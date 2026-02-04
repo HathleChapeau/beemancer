@@ -102,12 +102,12 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.MANUAL_CENTRIFUGE.get());
         output.accept(BeemancerItems.POWERED_CENTRIFUGE.get());
         output.accept(BeemancerItems.POWERED_CENTRIFUGE_TIER2.get());
-        output.accept(BeemancerItems.POWERED_CENTRIFUGE_TIER3.get());
+        output.accept(BeemancerItems.CENTRIFUGE_HEART.get());
         output.accept(BeemancerItems.CRYSTALLIZER.get());
-        output.accept(BeemancerItems.ALEMBIC.get());
+        output.accept(BeemancerItems.ALEMBIC_HEART.get());
         output.accept(BeemancerItems.INFUSER.get());
         output.accept(BeemancerItems.INFUSER_TIER2.get());
-        output.accept(BeemancerItems.INFUSER_TIER3.get());
+        output.accept(BeemancerItems.INFUSER_HEART.get());
         output.accept(BeemancerItems.POLLEN_POT.get());
         output.accept(BeemancerItems.CRANK.get());
     }

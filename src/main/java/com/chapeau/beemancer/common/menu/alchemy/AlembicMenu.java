@@ -1,12 +1,27 @@
 /**
  * ============================================================
  * [AlembicMenu.java]
- * Description: Menu pour l'alambic
+ * Description: Menu pour l'alambic multibloc
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance                  | Raison                | Utilisation           |
+ * |-----------------------------|----------------------|-----------------------|
+ * | AlembicHeartBlockEntity     | Stockage etat        | Accesseurs tanks/data |
+ * | BeemancerBlocks             | Validation block     | stillValid            |
+ * | BeemancerMenus              | Type menu            | Registration          |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - AlembicHeartBlockEntity.java (createMenu)
+ * - AlembicScreen.java (client GUI)
+ *
  * ============================================================
  */
 package com.chapeau.beemancer.common.menu.alchemy;
 
-import com.chapeau.beemancer.common.blockentity.alchemy.AlembicBlockEntity;
+import com.chapeau.beemancer.common.blockentity.alchemy.AlembicHeartBlockEntity;
 import com.chapeau.beemancer.common.menu.BeemancerMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -18,7 +33,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 public class AlembicMenu extends BeemancerMenu {
-    private final AlembicBlockEntity blockEntity;
+    private final AlembicHeartBlockEntity blockEntity;
     private final ContainerLevelAccess access;
     private final ContainerData data;
 
@@ -29,17 +44,17 @@ public class AlembicMenu extends BeemancerMenu {
 
     public AlembicMenu(int containerId, Inventory playerInv, BlockEntity be, ContainerData data) {
         super(BeemancerMenus.ALEMBIC.get(), containerId);
-        this.blockEntity = (AlembicBlockEntity) be;
+        this.blockEntity = (AlembicHeartBlockEntity) be;
         this.access = ContainerLevelAccess.create(be.getLevel(), be.getBlockPos());
         this.data = data;
-        
+
         addDataSlots(data);
 
         addPlayerInventory(playerInv, 8, 88);
         addPlayerHotbar(playerInv, 8, 146);
     }
 
-    public AlembicBlockEntity getBlockEntity() { return blockEntity; }
+    public AlembicHeartBlockEntity getBlockEntity() { return blockEntity; }
     public int getProgress() { return data.get(0); }
     public int getProcessTime() { return data.get(1); }
     public int getHoneyAmount() { return data.get(2); }
@@ -62,6 +77,6 @@ public class AlembicMenu extends BeemancerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, BeemancerBlocks.ALEMBIC.get());
+        return stillValid(access, player, BeemancerBlocks.ALEMBIC_HEART.get());
     }
 }

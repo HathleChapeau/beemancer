@@ -50,7 +50,7 @@ public class InfuserScreen extends AbstractContainerScreen<InfuserMenu> {
         super.init();
         honeyGauge = new FluidGaugeWidget(
             17, 17, 16, 52, 4000,
-            () -> menu.getBlockEntity().getHoneyTank().getFluid(),
+            () -> menu.getHoneyTank().getFluid(),
             menu::getHoneyAmount
         );
     }

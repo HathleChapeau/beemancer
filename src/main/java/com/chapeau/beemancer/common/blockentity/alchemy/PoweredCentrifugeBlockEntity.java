@@ -54,10 +54,6 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
     public static final int TIER2_PROCESS_TIME = 60;
     public static final int TIER2_TANK_CAPACITY = 16000;
 
-    public static final int TIER3_HONEY_CONSUMPTION = 25;
-    public static final int TIER3_PROCESS_TIME = 30;
-    public static final int TIER3_TANK_CAPACITY = 32000;
-
     private final int honeyConsumption;
     private final int baseFuelCapacity;
     private final int baseOutputCapacity;
@@ -143,12 +139,6 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
         return new PoweredCentrifugeBlockEntity(
             BeemancerBlockEntities.POWERED_CENTRIFUGE_TIER2.get(), pos, state,
             TIER2_HONEY_CONSUMPTION, TIER2_TANK_CAPACITY, 0.6f);
-    }
-
-    public static PoweredCentrifugeBlockEntity createTier3(BlockPos pos, BlockState state) {
-        return new PoweredCentrifugeBlockEntity(
-            BeemancerBlockEntities.POWERED_CENTRIFUGE_TIER3.get(), pos, state,
-            TIER3_HONEY_CONSUMPTION, TIER3_TANK_CAPACITY, 0.3f);
     }
 
     /**

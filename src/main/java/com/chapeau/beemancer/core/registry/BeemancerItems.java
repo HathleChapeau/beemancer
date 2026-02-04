@@ -79,9 +79,6 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> POWERED_CENTRIFUGE_TIER2 = ITEMS.register("powered_centrifuge_tier2",
             () -> new BlockItem(BeemancerBlocks.POWERED_CENTRIFUGE_TIER2.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> POWERED_CENTRIFUGE_TIER3 = ITEMS.register("powered_centrifuge_tier3",
-            () -> new BlockItem(BeemancerBlocks.POWERED_CENTRIFUGE_TIER3.get(), new Item.Properties()));
-
     public static final DeferredItem<BlockItem> HONEY_TANK = ITEMS.register("honey_tank",
             () -> new BlockItem(BeemancerBlocks.HONEY_TANK.get(), new Item.Properties()));
 
@@ -115,17 +112,11 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> CRYSTALLIZER = ITEMS.register("crystallizer",
             () -> new BlockItem(BeemancerBlocks.CRYSTALLIZER.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> ALEMBIC = ITEMS.register("alembic",
-            () -> new BlockItem(BeemancerBlocks.ALEMBIC.get(), new Item.Properties()));
-
     public static final DeferredItem<BlockItem> INFUSER = ITEMS.register("infuser",
             () -> new BlockItem(BeemancerBlocks.INFUSER.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> INFUSER_TIER2 = ITEMS.register("infuser_tier2",
             () -> new BlockItem(BeemancerBlocks.INFUSER_TIER2.get(), new Item.Properties()));
-
-    public static final DeferredItem<BlockItem> INFUSER_TIER3 = ITEMS.register("infuser_tier3",
-            () -> new BlockItem(BeemancerBlocks.INFUSER_TIER3.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> MULTIBLOCK_TANK = ITEMS.register("multiblock_tank",
             () -> new BlockItem(BeemancerBlocks.MULTIBLOCK_TANK.get(), new Item.Properties()));

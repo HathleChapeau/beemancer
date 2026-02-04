@@ -149,12 +149,6 @@ public class BeemancerBlocks {
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops(), 2));
 
-    public static final DeferredBlock<PoweredCentrifugeBlock> POWERED_CENTRIFUGE_TIER3 = BLOCKS.register("powered_centrifuge_tier3",
-            () -> new PoweredCentrifugeBlock(BlockBehaviour.Properties.of()
-                    .strength(4.5f)
-                    .sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops(), 3));
-
     public static final DeferredBlock<HoneyTankBlock> HONEY_TANK = BLOCKS.register("honey_tank",
             () -> new HoneyTankBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
@@ -222,12 +216,6 @@ public class BeemancerBlocks {
                     .lightLevel(state -> state.getValue(CrystallizerBlock.ACTIVE) ? 10 : 4)
                     .requiresCorrectToolForDrops()));
 
-    public static final DeferredBlock<AlembicBlock> ALEMBIC = BLOCKS.register("alembic",
-            () -> new AlembicBlock(BlockBehaviour.Properties.of()
-                    .strength(3.0f)
-                    .sound(SoundType.COPPER)
-                    .requiresCorrectToolForDrops()));
-
     public static final DeferredBlock<InfuserBlock> INFUSER = BLOCKS.register("infuser",
             () -> new InfuserBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
@@ -241,13 +229,6 @@ public class BeemancerBlocks {
                     .sound(SoundType.WOOD)
                     .requiresCorrectToolForDrops()
                     .lightLevel(state -> state.getValue(InfuserBlock.WORKING) ? 10 : 0), 2));
-
-    public static final DeferredBlock<InfuserBlock> INFUSER_TIER3 = BLOCKS.register("infuser_tier3",
-            () -> new InfuserBlock(BlockBehaviour.Properties.of()
-                    .strength(4.0f)
-                    .sound(SoundType.WOOD)
-                    .requiresCorrectToolForDrops()
-                    .lightLevel(state -> state.getValue(InfuserBlock.WORKING) ? 10 : 0), 3));
 
     public static final DeferredBlock<MultiblockTankBlock> MULTIBLOCK_TANK = BLOCKS.register("multiblock_tank",
             () -> new MultiblockTankBlock(BlockBehaviour.Properties.of()

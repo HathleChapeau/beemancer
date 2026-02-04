@@ -16,7 +16,6 @@
   "block.beemancer.crank": "Crank",
   "block.beemancer.powered_centrifuge": "Powered Centrifuge",
   "block.beemancer.powered_centrifuge_tier2": "Powered Centrifuge Tier 2",
-  "block.beemancer.powered_centrifuge_tier3": "Powered Centrifuge Tier 3",
   "block.beemancer.honey_tank": "Honey Tank",
   "block.beemancer.multiblock_tank": "Fluid Tank",
   "block.beemancer.honey_pipe": "Honey Pipe",
@@ -28,11 +27,8 @@
   "block.beemancer.item_pipe_tier3": "Item Pipe Tier 3",
   "block.beemancer.item_pipe_tier4": "Item Pipe Tier 4",
   "block.beemancer.crystallizer": "Crystallizer",
-  "block.beemancer.alembic": "Alembic",
   "block.beemancer.infuser": "Infuser",
   "block.beemancer.infuser_tier2": "Infuser Tier 2",
-  "block.beemancer.infuser_tier3": "Infuser Tier 3",
-
   "fluid.beemancer.honey": "Honey",
   "fluid.beemancer.royal_jelly": "Royal Jelly",
   "fluid.beemancer.nectar": "Nectar",
@@ -502,6 +498,13 @@
   "block.beemancer.alembic_heart": "Alembic Heart",
   "block.beemancer.infuser_heart": "Infuser Heart",
   "block.beemancer.centrifuge_heart": "Centrifuge Heart",
+
+  "message.beemancer.alembic.formed": "The Alembic has been formed!",
+  "message.beemancer.alembic.invalid_structure": "Invalid structure - check the alembic pattern",
+  "message.beemancer.infuser.formed": "The Infuser has been formed!",
+  "message.beemancer.infuser.invalid_structure": "Invalid structure - check the infuser pattern",
+  "message.beemancer.centrifuge.formed": "The Centrifuge has been formed!",
+  "message.beemancer.centrifuge.invalid_structure": "Invalid structure - check the centrifuge pattern",
 
   "message.beemancer.honey_altar.formed": "The Honey Altar has been formed!",
   "message.beemancer.honey_altar.already_formed": "The Honey Altar is already active",

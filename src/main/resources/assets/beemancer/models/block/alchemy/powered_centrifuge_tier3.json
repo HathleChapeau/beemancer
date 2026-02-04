@@ -1,9 +1,0 @@
-{
-  "parent": "beemancer:block/powered_centrifuge",
-  "textures": {
-    "dark_iron": "beemancer:block/alchemy/powered_centrifuge_tier3_side",
-    "dark_wood": "beemancer:block/alchemy/powered_centrifuge_tier3_bottom",
-    "drum_end": "beemancer:block/alchemy/powered_centrifuge_tier3_top",
-    "particle": "beemancer:block/alchemy/powered_centrifuge_tier3_side"
-  }
-}

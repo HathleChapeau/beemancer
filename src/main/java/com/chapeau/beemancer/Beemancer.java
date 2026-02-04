@@ -264,14 +264,29 @@ public class Beemancer {
                 (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getFuelTank()
         );
 
+        // Alembic Heart multibloc
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
-                BeemancerBlockEntities.ALEMBIC.get(),
+                BeemancerBlockEntities.ALEMBIC_HEART.get(),
                 (be, side) -> {
                     if (side == Direction.DOWN) return be.getNectarTank();
                     if (side == Direction.UP) return be.getRoyalJellyTank();
                     return be.getHoneyTank();
                 }
+        );
+
+        // Infuser Heart multibloc
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                BeemancerBlockEntities.INFUSER_HEART.get(),
+                (be, side) -> be.getHoneyTank()
+        );
+
+        // Centrifuge Heart multibloc
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                BeemancerBlockEntities.CENTRIFUGE_HEART.get(),
+                (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getFuelTank()
         );
     }
 

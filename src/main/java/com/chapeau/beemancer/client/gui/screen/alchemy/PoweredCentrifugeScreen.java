@@ -52,12 +52,12 @@ public class PoweredCentrifugeScreen extends AbstractContainerScreen<PoweredCent
         super.init();
         fuelGauge = new FluidGaugeWidget(
             8, 17, 16, 52, 8000,
-            () -> menu.getBlockEntity().getFuelTank().getFluid(),
+            () -> menu.getFuelTank().getFluid(),
             menu::getFuelAmount
         );
         outputGauge = new FluidGaugeWidget(
             152, 17, 16, 52, 8000,
-            () -> menu.getBlockEntity().getOutputTank().getFluid(),
+            () -> menu.getOutputTank().getFluid(),
             menu::getOutputAmount
         );
     }
@@ -103,7 +103,7 @@ public class PoweredCentrifugeScreen extends AbstractContainerScreen<PoweredCent
             g.renderComponentTooltip(font, fuelGauge.getTooltip("Fuel"), mouseX, mouseY);
         }
         if (outputGauge.isMouseOver(x, y, mouseX, mouseY)) {
-            String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getOutputTank().getFluid());
+            String name = GuiRenderHelper.getFluidName(menu.getOutputTank().getFluid());
             g.renderComponentTooltip(font, outputGauge.getTooltip(name), mouseX, mouseY);
         }
     }
