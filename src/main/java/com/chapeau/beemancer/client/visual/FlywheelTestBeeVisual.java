@@ -73,9 +73,10 @@ public class FlywheelTestBeeVisual extends AbstractEntityVisual<FlywheelTestBeeE
         }
 
         var visualPos = getVisualPosition(ctx.partialTick());
+        float bob = Mth.sin((entity.tickCount + ctx.partialTick()) * 0.1f) * 0.15f;
 
         Matrix4f pose = new Matrix4f();
-        pose.translate(visualPos.x, visualPos.y, visualPos.z);
+        pose.translate(visualPos.x, visualPos.y + bob, visualPos.z);
 
         float yaw = Mth.lerp(ctx.partialTick(), entity.yRotO, entity.getYRot());
         pose.rotateY(-yaw * Mth.DEG_TO_RAD);

@@ -82,7 +82,6 @@ public class BeeSpawnerBlock extends Block {
             double z = pos.getZ() + 0.5 + (level.random.nextDouble() - 0.5) * 6.0;
 
             bee.setPos(x, y, z);
-            bee.setStartY(y);
             bee.setYRot(level.random.nextFloat() * 360.0f);
             level.addFreshEntity(bee);
         }
