@@ -32,12 +32,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -54,11 +57,13 @@ public class RequestManager {
 
     private static final int PROCESS_INTERVAL = 10;
     private static final int BLOCKED_RECHECK_INTERVAL = 60;
+    private static final int SOURCE_VALIDATION_INTERVAL = 100;
 
     private final StorageControllerBlockEntity parent;
     private final Map<UUID, InterfaceRequest> activeRequests = new LinkedHashMap<>();
     private int processTimer = 0;
     private int blockedRecheckTimer = 0;
+    private int sourceValidationTimer = 0;
 
     public RequestManager(StorageControllerBlockEntity parent) {
         this.parent = parent;
@@ -119,6 +124,22 @@ public class RequestManager {
         List<UUID> toCancel = new ArrayList<>();
         for (InterfaceRequest request : activeRequests.values()) {
             if (request.getSourcePos().equals(sourcePos)) {
+                toCancel.add(request.getRequestId());
+            }
+        }
+        for (UUID id : toCancel) {
+            cancelRequest(id);
+        }
+    }
+
+    /**
+     * Annule toutes les demandes emises par un requester donne (position de l'interface/terminal).
+     * Utilise requesterPos au lieu de sourcePos car pour les exports, sourcePos = adjacent container.
+     */
+    public void cancelRequestsFromRequester(BlockPos requesterPos) {
+        List<UUID> toCancel = new ArrayList<>();
+        for (InterfaceRequest request : activeRequests.values()) {
+            if (request.getRequesterPos().equals(requesterPos)) {
                 toCancel.add(request.getRequestId());
             }
         }
@@ -228,7 +249,7 @@ public class RequestManager {
         DeliveryTask task = new DeliveryTask(
             request.getTemplate(), request.getCount(),
             chestPos, request.getSourcePos(),
-            taskOrigin
+            taskOrigin, request.getRequesterPos()
         );
 
         delivery.addDeliveryTask(task);
@@ -244,7 +265,8 @@ public class RequestManager {
      * Pour les exports non-preloaded (interface), la bee va a la source, extrait, puis depose.
      */
     private void processExportRequest(InterfaceRequest request, StorageDeliveryManager delivery) {
-        BlockPos destChest = delivery.findChestWithSpace(request.getTemplate(), request.getCount());
+        // Utiliser findSlotForItem pour un placement intelligent (meme item > meme tag > meme mod > vide)
+        BlockPos destChest = parent.getItemAggregator().findSlotForItem(request.getTemplate());
         if (destChest == null) {
             request.setStatus(InterfaceRequest.RequestStatus.BLOCKED);
             request.setBlockedReason("gui.beemancer.tasks.blocked.no_space");
@@ -260,7 +282,8 @@ public class RequestManager {
         DeliveryTask task = new DeliveryTask(
             request.getTemplate(), request.getCount(),
             request.getSourcePos(), destChest,
-            taskOrigin, request.isPreloaded()
+            taskOrigin, request.isPreloaded(),
+            request.getRequesterPos()
         );
 
         delivery.addDeliveryTask(task);
@@ -286,7 +309,7 @@ public class RequestManager {
                     request.setBlockedReason("");
                 }
             } else {
-                BlockPos destChest = delivery.findChestWithSpace(request.getTemplate(), request.getCount());
+                BlockPos destChest = parent.getItemAggregator().findSlotForItem(request.getTemplate());
                 if (destChest != null) {
                     request.setStatus(InterfaceRequest.RequestStatus.PENDING);
                     request.setBlockedReason("");
@@ -348,6 +371,56 @@ public class RequestManager {
         return total;
     }
 
+    /**
+     * Valide que les sources des demandes actives existent encore et sont operationnelles.
+     * Annule les demandes dont l'interface/terminal source a ete detruite ou desactivee.
+     */
+    private void validateRequestSources() {
+        if (parent.getLevel() == null) return;
+
+        List<UUID> toCancel = new ArrayList<>();
+        Set<BlockPos> checkedPositions = new HashSet<>();
+
+        for (InterfaceRequest request : activeRequests.values()) {
+            if (request.getStatus() == InterfaceRequest.RequestStatus.CANCELLED) continue;
+
+            BlockPos reqPos = request.getRequesterPos();
+            if (checkedPositions.contains(reqPos)) continue;
+            checkedPositions.add(reqPos);
+
+            if (!parent.getLevel().isLoaded(reqPos)) continue;
+
+            BlockEntity be = parent.getLevel().getBlockEntity(reqPos);
+
+            // Interface detruite
+            if (be == null) {
+                for (InterfaceRequest r : activeRequests.values()) {
+                    if (r.getRequesterPos().equals(reqPos)
+                            && r.getStatus() != InterfaceRequest.RequestStatus.CANCELLED) {
+                        toCancel.add(r.getRequestId());
+                    }
+                }
+                continue;
+            }
+
+            // Interface desactivee ou delinkee
+            if (be instanceof NetworkInterfaceBlockEntity iface) {
+                if (!iface.isActive() || !iface.isLinked()) {
+                    for (InterfaceRequest r : activeRequests.values()) {
+                        if (r.getRequesterPos().equals(reqPos)
+                                && r.getStatus() != InterfaceRequest.RequestStatus.CANCELLED) {
+                            toCancel.add(r.getRequestId());
+                        }
+                    }
+                }
+            }
+        }
+
+        for (UUID id : toCancel) {
+            cancelRequest(id);
+        }
+    }
+
     // === Tick ===
 
     public void tick() {
@@ -361,6 +434,12 @@ public class RequestManager {
         if (blockedRecheckTimer >= BLOCKED_RECHECK_INTERVAL) {
             blockedRecheckTimer = 0;
             recheckBlockedRequests();
+        }
+
+        sourceValidationTimer++;
+        if (sourceValidationTimer >= SOURCE_VALIDATION_INTERVAL) {
+            sourceValidationTimer = 0;
+            validateRequestSources();
         }
     }
 

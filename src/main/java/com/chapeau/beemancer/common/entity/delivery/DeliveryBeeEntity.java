@@ -78,11 +78,11 @@ public class DeliveryBeeEntity extends Bee {
 
     // Waypoints pour le trajet multi-relais
     // outboundWaypoints: controller → relay1 → relay2 → ... → source
-    // returnWaypoints: source → ... → relay2 → relay1 → controller
-    // destWaypoints: controller → relay1 → ... → dest (pour livraison a une interface/coffre)
+    // transitWaypoints: source → ... → LCA → ... → dest (chemin direct via ancetre commun)
+    // homeWaypoints: dest → ... → relay1 → controller
     private List<BlockPos> outboundWaypoints = new ArrayList<>();
-    private List<BlockPos> returnWaypoints = new ArrayList<>();
-    private List<BlockPos> destWaypoints = new ArrayList<>();
+    private List<BlockPos> transitWaypoints = new ArrayList<>();
+    private List<BlockPos> homeWaypoints = new ArrayList<>();
 
     public DeliveryBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
@@ -119,6 +119,8 @@ public class DeliveryBeeEntity extends Bee {
      * Initialise la tache de livraison apres le spawn.
      * Doit etre appele immediatement apres avoir spawn l'entite.
      */
+    private DeliveryPhaseGoal deliveryGoal;
+
     public void initDeliveryTask(BlockPos controllerPos, BlockPos sourcePos, BlockPos returnPos,
                                   BlockPos destPos, ItemStack template, int requestCount,
                                   ItemStack carriedItems,
@@ -135,7 +137,13 @@ public class DeliveryBeeEntity extends Bee {
         this.searchSpeedMultiplier = searchSpeedMultiplier;
         this.taskId = taskId;
 
-        this.goalSelector.addGoal(0, new DeliveryPhaseGoal(this));
+        this.deliveryGoal = new DeliveryPhaseGoal(this);
+        this.goalSelector.addGoal(0, deliveryGoal);
+    }
+
+    @Nullable
+    public DeliveryPhaseGoal getDeliveryGoal() {
+        return deliveryGoal;
     }
 
     @Override
@@ -349,16 +357,13 @@ public class DeliveryBeeEntity extends Bee {
     public UUID getTaskId() { return taskId; }
     public BlockPos getControllerPos() { return controllerPos; }
     public List<BlockPos> getOutboundWaypoints() { return outboundWaypoints; }
-    public List<BlockPos> getReturnWaypoints() { return returnWaypoints; }
-    public List<BlockPos> getDestWaypoints() { return destWaypoints; }
+    public List<BlockPos> getTransitWaypoints() { return transitWaypoints; }
+    public List<BlockPos> getHomeWaypoints() { return homeWaypoints; }
 
-    public void setWaypoints(List<BlockPos> outbound, List<BlockPos> returnPath) {
+    public void setAllWaypoints(List<BlockPos> outbound, List<BlockPos> transit, List<BlockPos> home) {
         this.outboundWaypoints = new ArrayList<>(outbound);
-        this.returnWaypoints = new ArrayList<>(returnPath);
-    }
-
-    public void setDestWaypoints(List<BlockPos> destPath) {
-        this.destWaypoints = new ArrayList<>(destPath);
+        this.transitWaypoints = new ArrayList<>(transit);
+        this.homeWaypoints = new ArrayList<>(home);
     }
 
     public BlockPos getSourcePos() { return sourcePos; }

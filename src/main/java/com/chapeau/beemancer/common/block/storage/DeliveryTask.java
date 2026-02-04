@@ -28,6 +28,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -64,6 +65,7 @@ public class DeliveryTask {
     private int count;
     private final BlockPos sourcePos;
     private final BlockPos destPos;
+    @Nullable private final BlockPos requesterPos;
     private final TaskOrigin origin;
     private final boolean preloaded;
     private DeliveryState state;
@@ -74,16 +76,20 @@ public class DeliveryTask {
      * Constructeur standard (priorite 0, pas de dependances, pas de preload).
      */
     public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
-                        BlockPos destPos, TaskOrigin origin) {
-        this(template, count, sourcePos, destPos, 0, Collections.emptyList(), origin, false);
+                        BlockPos destPos, TaskOrigin origin,
+                        @Nullable BlockPos requesterPos) {
+        this(template, count, sourcePos, destPos, 0, Collections.emptyList(),
+            origin, false, requesterPos);
     }
 
     /**
      * Constructeur avec preloaded.
      */
     public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
-                        BlockPos destPos, TaskOrigin origin, boolean preloaded) {
-        this(template, count, sourcePos, destPos, 0, Collections.emptyList(), origin, preloaded);
+                        BlockPos destPos, TaskOrigin origin, boolean preloaded,
+                        @Nullable BlockPos requesterPos) {
+        this(template, count, sourcePos, destPos, 0, Collections.emptyList(),
+            origin, preloaded, requesterPos);
     }
 
     /**
@@ -91,12 +97,14 @@ public class DeliveryTask {
      */
     public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
                         BlockPos destPos, int priority, List<UUID> dependencies,
-                        TaskOrigin origin, boolean preloaded) {
+                        TaskOrigin origin, boolean preloaded,
+                        @Nullable BlockPos requesterPos) {
         this.taskId = UUID.randomUUID();
         this.template = template.copy();
         this.count = count;
         this.sourcePos = sourcePos;
         this.destPos = destPos;
+        this.requesterPos = requesterPos;
         this.origin = origin;
         this.preloaded = preloaded;
         this.state = DeliveryState.QUEUED;
@@ -108,14 +116,15 @@ public class DeliveryTask {
      * Constructeur interne (pour load NBT).
      */
     private DeliveryTask(UUID taskId, ItemStack template, int count, BlockPos sourcePos,
-                         BlockPos destPos, DeliveryState state,
-                         int priority, List<UUID> dependencies,
+                         BlockPos destPos, @Nullable BlockPos requesterPos,
+                         DeliveryState state, int priority, List<UUID> dependencies,
                          TaskOrigin origin, boolean preloaded) {
         this.taskId = taskId;
         this.template = template;
         this.count = count;
         this.sourcePos = sourcePos;
         this.destPos = destPos;
+        this.requesterPos = requesterPos;
         this.origin = origin;
         this.preloaded = preloaded;
         this.state = state;
@@ -132,6 +141,7 @@ public class DeliveryTask {
     public BlockPos getDestPos() { return destPos; }
     public TaskOrigin getOrigin() { return origin; }
     public boolean isPreloaded() { return preloaded; }
+    @Nullable public BlockPos getRequesterPos() { return requesterPos; }
     public DeliveryState getState() { return state; }
     public int getPriority() { return priority; }
     public List<UUID> getDependencies() { return Collections.unmodifiableList(dependencies); }
@@ -168,7 +178,7 @@ public class DeliveryTask {
 
         DeliveryTask splitTask = new DeliveryTask(
             template.copy(), remaining, sourcePos, destPos,
-            priority, dependencies, origin, preloaded
+            priority, dependencies, origin, preloaded, requesterPos
         );
         return splitTask;
     }
@@ -184,6 +194,9 @@ public class DeliveryTask {
         tag.putLong("DestPos", destPos.asLong());
         tag.putString("Origin", origin.name());
         tag.putBoolean("Preloaded", preloaded);
+        if (requesterPos != null) {
+            tag.putLong("RequesterPos", requesterPos.asLong());
+        }
         tag.putString("State", state.name());
         tag.putInt("Priority", priority);
 
@@ -231,6 +244,8 @@ public class DeliveryTask {
             : TaskOrigin.REQUEST;
 
         boolean preloaded = tag.getBoolean("Preloaded");
+        BlockPos requesterPos = tag.contains("RequesterPos")
+            ? BlockPos.of(tag.getLong("RequesterPos")) : null;
 
         List<UUID> dependencies = new ArrayList<>();
         if (tag.contains("Dependencies")) {
@@ -240,7 +255,7 @@ public class DeliveryTask {
             }
         }
 
-        return new DeliveryTask(id, template, count, source, dest, state,
-            priority, dependencies, origin, preloaded);
+        return new DeliveryTask(id, template, count, source, dest, requesterPos,
+            state, priority, dependencies, origin, preloaded);
     }
 }

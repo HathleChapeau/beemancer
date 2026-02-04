@@ -108,9 +108,11 @@ public class StorageDeliveryManager {
      * Supporte les coffres (via getRegisteredChests) et les blocs du NetworkRegistry
      * (interfaces, terminaux) via getOwner().
      *
+     * @param chestPos position du coffre ou bloc cible
+     * @param requesterPos position de l'interface/terminal emetteur (hint pour relay routing)
      * @return liste ordonnee des positions de relais (vide si le bloc est sur le controller)
      */
-    private List<BlockPos> findPathToChest(BlockPos chestPos) {
+    private List<BlockPos> findPathToChest(BlockPos chestPos, @Nullable BlockPos requesterPos) {
         // Cas 1: coffre enregistre directement sur le controller
         if (parent.getChestManager().getRegisteredChests().contains(chestPos)) {
             return List.of();
@@ -121,13 +123,11 @@ public class StorageDeliveryManager {
         List<BlockPos> registryPath = findPathToOwnerNode(chestPos);
         if (!registryPath.isEmpty()) return registryPath;
 
-        // Cas 2b: le bloc est adjacent a une interface/terminal enregistre
-        // (ex: container adjacent a un export interface → utiliser le owner de l'interface)
-        StorageNetworkRegistry registry = parent.getNetworkRegistry();
-        BlockPos adjacentRegistered = registry.findAdjacentRegisteredBlock(chestPos);
-        if (adjacentRegistered != null) {
-            List<BlockPos> adjacentPath = findPathToOwnerNode(adjacentRegistered);
-            if (!adjacentPath.isEmpty()) return adjacentPath;
+        // Cas 2b: utiliser le requesterPos (position exacte de l'interface) pour trouver le relay
+        // Cela resout le cas ou sourcePos est un container adjacent et non enregistre directement
+        if (requesterPos != null) {
+            List<BlockPos> requesterPath = findPathToOwnerNode(requesterPos);
+            if (!requesterPath.isEmpty()) return requesterPath;
         }
 
         if (parent.getLevel() == null) return List.of();
@@ -220,6 +220,44 @@ public class StorageDeliveryManager {
         }
 
         return List.of();
+    }
+
+    /**
+     * Calcule les waypoints de transit source → dest en passant par l'ancetre commun (LCA).
+     * Evite le passage par le controller quand source et dest partagent des relais.
+     *
+     * Algorithme:
+     * 1. Trouver le prefixe commun de pathToSource et pathToDest
+     * 2. Transit = reversed(pathToSource suffixe unique) + pathToDest suffixe unique
+     *
+     * Exemple: pathToSource=[R1,R2,R3], pathToDest=[R1,R4,R5]
+     *   Prefixe commun=[R1], transit=[R3,R2,R1,R4,R5]
+     */
+    private List<BlockPos> computeTransitWaypoints(List<BlockPos> pathToSource, List<BlockPos> pathToDest) {
+        // Trouver la longueur du prefixe commun
+        int commonLen = 0;
+        int minLen = Math.min(pathToSource.size(), pathToDest.size());
+        while (commonLen < minLen && pathToSource.get(commonLen).equals(pathToDest.get(commonLen))) {
+            commonLen++;
+        }
+
+        // Suffixe unique de pathToSource (apres le prefixe commun), inverse
+        List<BlockPos> transit = new ArrayList<>();
+        for (int i = pathToSource.size() - 1; i >= commonLen; i--) {
+            transit.add(pathToSource.get(i));
+        }
+
+        // Si les deux chemins divergent, ajouter le dernier noeud commun comme pivot
+        if (commonLen > 0 && commonLen < pathToSource.size()) {
+            transit.add(pathToSource.get(commonLen - 1));
+        }
+
+        // Suffixe unique de pathToDest (apres le prefixe commun)
+        for (int i = commonLen; i < pathToDest.size(); i++) {
+            transit.add(pathToDest.get(i));
+        }
+
+        return transit;
     }
 
     /**
@@ -486,22 +524,22 @@ public class StorageDeliveryManager {
             task.getTaskId()
         );
 
-        // Calculer les waypoints outbound (controller → source) sauf si preloaded
+        // Calculer les waypoints: outbound (→source), transit (source→dest), home (dest→controller)
+        List<BlockPos> pathToSource = List.of();
+        List<BlockPos> pathToDest = List.of();
+
         if (!task.isPreloaded()) {
-            List<BlockPos> relayPath = findPathToChest(task.getSourcePos());
-            if (!relayPath.isEmpty()) {
-                List<BlockPos> returnPath = new ArrayList<>(relayPath);
-                Collections.reverse(returnPath);
-                bee.setWaypoints(relayPath, returnPath);
-            }
+            pathToSource = findPathToChest(task.getSourcePos(), task.getRequesterPos());
+        }
+        if (task.getDestPos() != null && !task.getDestPos().equals(parent.getBlockPos())) {
+            pathToDest = findPathToChest(task.getDestPos(), task.getRequesterPos());
         }
 
-        // Calculer les waypoints dest (controller → destination)
-        if (task.getDestPos() != null
-                && !task.getDestPos().equals(parent.getBlockPos())) {
-            List<BlockPos> destPath = findPathToChest(task.getDestPos());
-            bee.setDestWaypoints(destPath);
-        }
+        List<BlockPos> transitWaypoints = computeTransitWaypoints(pathToSource, pathToDest);
+        List<BlockPos> homeWaypoints = new ArrayList<>(pathToDest);
+        Collections.reverse(homeWaypoints);
+
+        bee.setAllWaypoints(pathToSource, transitWaypoints, homeWaypoints);
 
         serverLevel.addFreshEntity(bee);
         return true;

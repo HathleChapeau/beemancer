@@ -3,6 +3,51 @@
 ################################################################################
 
 ================================================================================
+2026-02-05 - Bugfixes + Optimisations Reseau de Stockage
+================================================================================
+
+Corrections de bugs dans le systeme de livraison et optimisations de routing.
+
+BUGFIXES:
+- Interface detruite: override setRemoved() pour annuler les demandes et rappeler
+  les abeilles en vol (cancelRequestsFromRequester via requesterPos)
+- Interface toggle off: setActive(false) annule maintenant les demandes existantes
+- Mauvais relay: ajout requesterPos sur DeliveryTask pour identifier le bon relay
+  quand 2 interfaces pointent sur le meme bloc adjacent
+  Supprime findAdjacentRegisteredBlock (approche flawed)
+- Validation periodique des sources: RequestManager.validateRequestSources() verifie
+  toutes les 100 ticks que les interfaces emettrices existent et sont actives
+- Placement intelligent: processExportRequest utilise findSlotForItem (5 priorites)
+  au lieu de findChestWithSpace (scan lineaire)
+
+OPTIMISATION ROUTING:
+- Supprime la phase FLY_TO_CONTROLLER: les abeilles passent directement de la source
+  a la destination via le relay ancetre commun (algorithme LCA)
+- computeTransitWaypoints(): calcule le chemin transit source→dest en trouvant le
+  prefixe commun des chemins controller→source et controller→dest
+- Waypoints reorganises: outbound (→source), transit (source→dest), home (dest→controller)
+- Supprime returnWaypoints/destWaypoints, remplace par transitWaypoints/homeWaypoints
+
+DEBUG:
+- DeliveryBeeRenderer affiche la phase courante (FLY_TO_SOURCE, FLY_TO_DEST, etc.)
+  au-dessus de la tete quand DebugWandItem.displayDebug est actif
+- Texte jaune avec fond semi-transparent, billboard face camera, SEE_THROUGH
+
+FICHIERS MODIFIES (8):
+- RequestManager.java: +cancelRequestsFromRequester(), +validateRequestSources(),
+  utilise findSlotForItem pour export, import BlockEntity/Set/HashSet
+- NetworkInterfaceBlockEntity.java: override setRemoved(), setActive() annule demandes
+- DeliveryTask.java: +requesterPos (nullable), MAJ constructeurs/NBT/splitRemaining
+- StorageDeliveryManager.java: findPathToChest accepte requesterPos hint,
+  +computeTransitWaypoints() LCA, MAJ spawnDeliveryBee waypoints
+- StorageNetworkRegistry.java: -findAdjacentRegisteredBlock()
+- DeliveryBeeEntity.java: outbound/transit/home waypoints, +deliveryGoal getter,
+  +setAllWaypoints()
+- DeliveryPhaseGoal.java: -FLY_TO_CONTROLLER, Phase enum public, +getPhase(),
+  transitIdx remplace returnIdx/destIdx
+- DeliveryBeeRenderer.java: +render() override avec debug phase text
+
+================================================================================
 2026-02-04 - Phase 5: GUI Localization + Finalization
 ================================================================================
 

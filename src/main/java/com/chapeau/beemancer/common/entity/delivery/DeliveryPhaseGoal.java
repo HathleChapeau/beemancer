@@ -39,12 +39,13 @@ import java.util.List;
  * Goal de livraison unifie multi-relais.
  *
  * Flux normal (non-preloaded):
- *   FLY_TO_SOURCE → WAIT_AT_SOURCE (extract) → FLY_TO_CONTROLLER → FLY_TO_DEST → WAIT_AT_DEST (deposit) → FLY_HOME
+ *   FLY_TO_SOURCE → WAIT_AT_SOURCE (extract) → FLY_TO_DEST (via transit) → WAIT_AT_DEST (deposit) → FLY_HOME
  *
  * Flux preloaded (items deja charges):
  *   FLY_TO_DEST → WAIT_AT_DEST (deposit) → FLY_HOME
  *
- * Si pas de waypoints, vol direct.
+ * Le chemin transit passe par l'ancetre commun (LCA) des relais source et dest,
+ * sans repasser par le controller si ce n'est pas necessaire.
  */
 public class DeliveryPhaseGoal extends Goal {
 
@@ -53,10 +54,9 @@ public class DeliveryPhaseGoal extends Goal {
 
     private final DeliveryBeeEntity bee;
 
-    private enum Phase {
+    public enum Phase {
         FLY_TO_SOURCE,
         WAIT_AT_SOURCE,
-        FLY_TO_CONTROLLER,
         FLY_TO_DEST,
         WAIT_AT_DEST,
         FLY_HOME
@@ -68,13 +68,16 @@ public class DeliveryPhaseGoal extends Goal {
 
     // Index courant dans la liste de waypoints (mutable int wrapper for helper)
     private final int[] outboundIdx = {0};
-    private final int[] returnIdx = {0};
-    private final int[] destIdx = {0};
+    private final int[] transitIdx = {0};
     private final int[] homeIdx = {0};
 
     public DeliveryPhaseGoal(DeliveryBeeEntity bee) {
         this.bee = bee;
         this.setFlags(EnumSet.of(Flag.MOVE));
+    }
+
+    public Phase getPhase() {
+        return phase;
     }
 
     @Override
@@ -92,12 +95,12 @@ public class DeliveryPhaseGoal extends Goal {
         if (!bee.getCarriedItems().isEmpty()) {
             // Preloaded: sauter source, aller directement a dest
             phase = Phase.FLY_TO_DEST;
-            destIdx[0] = 0;
+            transitIdx[0] = 0;
         } else {
             phase = Phase.FLY_TO_SOURCE;
             outboundIdx[0] = 0;
         }
-        returnIdx[0] = 0;
+        homeIdx[0] = 0;
         navigationStarted = false;
     }
 
@@ -110,7 +113,6 @@ public class DeliveryPhaseGoal extends Goal {
         switch (phase) {
             case FLY_TO_SOURCE -> tickFlyToSource();
             case WAIT_AT_SOURCE -> tickWaitAtSource();
-            case FLY_TO_CONTROLLER -> tickFlyToController();
             case FLY_TO_DEST -> tickFlyToDest();
             case WAIT_AT_DEST -> tickWaitAtDest();
             case FLY_HOME -> tickFlyHome();
@@ -200,27 +202,17 @@ public class DeliveryPhaseGoal extends Goal {
             return;
         }
 
-        phase = Phase.FLY_TO_CONTROLLER;
-        returnIdx[0] = 0;
+        phase = Phase.FLY_TO_DEST;
+        transitIdx[0] = 0;
         navigationStarted = false;
     }
 
     /**
-     * Navigue de la source vers le controller via les waypoints retour.
-     */
-    private void tickFlyToController() {
-        if (navigateWaypoints(bee.getReturnWaypoints(), returnIdx, bee.getReturnPos())) {
-            phase = Phase.FLY_TO_DEST;
-            destIdx[0] = 0;
-            navigationStarted = false;
-        }
-    }
-
-    /**
-     * Navigue du controller vers la destination via les waypoints dest.
+     * Navigue de la source vers la destination via les waypoints transit (LCA).
+     * Passe par l'ancetre commun des relais source et dest sans repasser par le controller.
      */
     private void tickFlyToDest() {
-        if (navigateWaypoints(bee.getDestWaypoints(), destIdx, bee.getDestPos())) {
+        if (navigateWaypoints(bee.getTransitWaypoints(), transitIdx, bee.getDestPos())) {
             phase = Phase.WAIT_AT_DEST;
             waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
         }
@@ -252,11 +244,10 @@ public class DeliveryPhaseGoal extends Goal {
     }
 
     /**
-     * Retour de la destination vers le controller via les waypoints dest inverses.
+     * Retour de la destination vers le controller via les waypoints home.
      */
     private void tickFlyHome() {
-        List<BlockPos> reversed = bee.getDestWaypoints().reversed();
-        if (navigateWaypoints(reversed, homeIdx, bee.getReturnPos())) {
+        if (navigateWaypoints(bee.getHomeWaypoints(), homeIdx, bee.getReturnPos())) {
             bee.notifyTaskCompleted();
             bee.discard();
         }

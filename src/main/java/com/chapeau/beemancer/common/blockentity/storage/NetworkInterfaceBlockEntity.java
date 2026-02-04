@@ -220,9 +220,18 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     }
 
     public void setActive(boolean active) {
+        boolean wasActive = this.active;
         this.active = active;
         setChanged();
         syncToClient();
+
+        // Si desactive, annuler toutes les demandes en cours (rappelle les abeilles en vol)
+        if (wasActive && !active) {
+            StorageControllerBlockEntity controller = getController();
+            if (controller != null) {
+                controller.getRequestManager().cancelRequestsFromRequester(worldPosition);
+            }
+        }
     }
 
     // === MenuProvider ===
@@ -445,5 +454,19 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    // === Destruction ===
+
+    @Override
+    public void setRemoved() {
+        // Annuler toutes les demandes et rappeler les abeilles en vol avant suppression
+        if (level != null && !level.isClientSide()) {
+            StorageControllerBlockEntity controller = getController();
+            if (controller != null) {
+                controller.getRequestManager().cancelRequestsFromRequester(worldPosition);
+            }
+        }
+        super.setRemoved();
     }
 }
