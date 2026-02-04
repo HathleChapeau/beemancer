@@ -68,10 +68,6 @@ public class FlywheelTestBeeVisual extends AbstractEntityVisual<FlywheelTestBeeE
 
     @Override
     public void beginFrame(DynamicVisual.Context ctx) {
-        if (!isVisible(ctx.frustum())) {
-            return;
-        }
-
         float time = entity.tickCount + ctx.partialTick();
 
         var visualPos = getVisualPosition(ctx.partialTick());
