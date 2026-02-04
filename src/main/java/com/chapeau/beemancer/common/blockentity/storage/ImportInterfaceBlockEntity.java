@@ -24,7 +24,8 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
-import com.chapeau.beemancer.common.block.storage.DeliveryTask;
+import com.chapeau.beemancer.common.block.storage.InterfaceRequest;
+import com.chapeau.beemancer.core.util.ContainerHelper;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -87,33 +88,7 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
     }
 
     private ItemStack insertIntoSlots(Container adjacent, ItemStack remaining, int[] slots) {
-        // Phase 1: merger dans les stacks existants du meme type
-        for (int slot : slots) {
-            if (remaining.isEmpty()) break;
-            ItemStack existing = adjacent.getItem(slot);
-            if (!existing.isEmpty() && ItemStack.isSameItemSameComponents(existing, remaining)) {
-                int space = existing.getMaxStackSize() - existing.getCount();
-                int toTransfer = Math.min(space, remaining.getCount());
-                if (toTransfer > 0) {
-                    existing.grow(toTransfer);
-                    remaining.shrink(toTransfer);
-                }
-            }
-        }
-
-        // Phase 2: remplir les slots vides
-        for (int slot : slots) {
-            if (remaining.isEmpty()) break;
-            if (adjacent.getItem(slot).isEmpty()) {
-                int toPlace = Math.min(remaining.getCount(), remaining.getMaxStackSize());
-                adjacent.setItem(slot, remaining.copyWithCount(toPlace));
-                remaining.shrink(toPlace);
-            }
-        }
-
-        if (remaining.getCount() != remaining.getMaxStackSize()) {
-            adjacent.setChanged();
-        }
+        remaining = ContainerHelper.insertItem(adjacent, remaining, slots);
 
         // Si reste non-insere, remettre dans le reseau
         if (!remaining.isEmpty()) {
@@ -167,87 +142,68 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
     private void scanItemMode(Container adjacent, StorageControllerBlockEntity controller,
                                InterfaceFilter filter, int[] slots, int maxQuantity, int targetQty) {
+        RequestManager requestManager = controller.getRequestManager();
+
         for (int i = 0; i < InterfaceFilter.SLOTS_PER_FILTER; i++) {
             ItemStack filterItem = filter.getItem(i);
             if (filterItem.isEmpty()) continue;
 
-            String key = itemKey(filterItem);
-            int pendingCount = getPendingCount(key);
-
+            int requestedCount = requestManager.getRequestedCount(
+                worldPosition, InterfaceRequest.RequestType.IMPORT, filterItem);
             int currentCount = countInSlots(adjacent, filterItem, slots);
 
             int needed;
             if (targetQty == 0) {
                 int capacity = calculateCapacity(adjacent, filterItem, slots);
-                needed = capacity - currentCount - pendingCount;
+                needed = capacity - currentCount - requestedCount;
             } else {
-                needed = targetQty - currentCount - pendingCount;
+                needed = targetQty - currentCount - requestedCount;
             }
 
             if (needed <= 0) continue;
             needed = Math.min(needed, maxQuantity);
 
-            BlockPos chestPos = controller.findChestWithItem(filterItem, 1);
-            if (chestPos == null) continue;
-
-            // Loop prevention: ne pas creer de tache si la source est le meme bloc que la destination
-            if (chestPos.equals(getAdjacentPos())) continue;
-
-            DeliveryTask task = new DeliveryTask(
-                filterItem, needed, chestPos, worldPosition,
-                DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.AUTOMATION
+            InterfaceRequest request = new InterfaceRequest(
+                worldPosition, InterfaceRequest.RequestType.IMPORT, filterItem,
+                needed, InterfaceRequest.TaskOrigin.AUTOMATION
             );
-            controller.addDeliveryTask(task);
-            pendingTasks.put(key, new PendingTaskInfo(task.getTaskId(), needed));
+            requestManager.publishRequest(request);
         }
     }
 
     private void scanTextMode(Container adjacent, StorageControllerBlockEntity controller,
                                InterfaceFilter filter, int[] slots, int maxQuantity, int targetQty) {
+        RequestManager requestManager = controller.getRequestManager();
         List<ItemStack> networkItems = controller.getAggregatedItems();
+
         for (ItemStack networkItem : networkItems) {
             if (!filter.matches(networkItem, false)) continue;
 
-            String key = itemKey(networkItem);
-            int pendingCount = getPendingCount(key);
-
+            int requestedCount = requestManager.getRequestedCount(
+                worldPosition, InterfaceRequest.RequestType.IMPORT, networkItem);
             int currentCount = countInSlots(adjacent, networkItem, slots);
 
             int needed;
             if (targetQty == 0) {
                 int capacity = calculateCapacity(adjacent, networkItem, slots);
-                needed = capacity - currentCount - pendingCount;
+                needed = capacity - currentCount - requestedCount;
             } else {
-                needed = targetQty - currentCount - pendingCount;
+                needed = targetQty - currentCount - requestedCount;
             }
 
             if (needed <= 0) continue;
             needed = Math.min(needed, maxQuantity);
 
-            BlockPos chestPos = controller.findChestWithItem(networkItem, 1);
-            if (chestPos == null) continue;
-
-            // Loop prevention: ne pas creer de tache si la source est le meme bloc que la destination
-            if (chestPos.equals(getAdjacentPos())) continue;
-
-            DeliveryTask task = new DeliveryTask(
-                networkItem, needed, chestPos, worldPosition,
-                DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.AUTOMATION
+            InterfaceRequest request = new InterfaceRequest(
+                worldPosition, InterfaceRequest.RequestType.IMPORT, networkItem,
+                needed, InterfaceRequest.TaskOrigin.AUTOMATION
             );
-            controller.addDeliveryTask(task);
-            pendingTasks.put(key, new PendingTaskInfo(task.getTaskId(), needed));
+            requestManager.publishRequest(request);
         }
     }
 
     private int countInSlots(Container container, ItemStack template, int[] slots) {
-        int count = 0;
-        for (int slot : slots) {
-            ItemStack existing = container.getItem(slot);
-            if (ItemStack.isSameItemSameComponents(existing, template)) {
-                count += existing.getCount();
-            }
-        }
-        return count;
+        return ContainerHelper.countItem(container, template, slots);
     }
 
     /**

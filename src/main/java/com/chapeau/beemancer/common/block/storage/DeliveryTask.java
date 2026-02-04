@@ -1,20 +1,21 @@
 /**
  * ============================================================
  * [DeliveryTask.java]
- * Description: Tâche de livraison avec origine, priorité, dépendances et splitting
+ * Description: Tache de livraison avec origine, priorite, dependances et splitting
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance     | Raison                | Utilisation                    |
+ * | Dependance     | Raison                | Utilisation                    |
  * |----------------|----------------------|--------------------------------|
- * | BlockPos       | Positions cibles     | Target et terminal             |
- * | ItemStack      | Template item        | Item à transporter             |
+ * | BlockPos       | Positions source/dest| Source et destination           |
+ * | ItemStack      | Template item        | Item a transporter             |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
- * - StorageControllerBlockEntity.java (queue de livraison)
- * - DeliveryBeeEntity.java (exécution de la tâche)
+ * UTILISE PAR:
+ * - StorageDeliveryManager.java (queue de livraison, spawn bees)
+ * - RequestManager.java (creation taches depuis demandes)
+ * - DeliveryBeeEntity.java (execution de la tache)
  *
  * ============================================================
  */
@@ -34,29 +35,21 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Représente une tâche de livraison dans le réseau de stockage.
- * Chaque tâche décrit un transfert d'items entre une position cible et un terminal,
- * exécuté par une DeliveryBee.
+ * Represente une tache de livraison dans le reseau de stockage.
+ * Flux unifie: abeille vole a sourcePos (extraction), puis a destPos (depot).
  *
  * Supporte:
  * - Origine (REQUEST = joueur, AUTOMATION = interface)
- * - Priorité (lower = higher priority, default 0)
- * - Dépendances (task IDs qui doivent être complétées avant exécution)
- * - Splitting (division en sous-tâches quand la quantité dépasse la capacité d'une abeille)
- * - Assignation à une abeille spécifique
+ * - Priorite (lower = higher priority, default 0)
+ * - Dependances (task IDs qui doivent etre completees avant execution)
+ * - Splitting (division en sous-taches quand la quantite depasse la capacite d'une abeille)
+ * - Preloaded (items pre-charges sur l'abeille, saute la phase source)
  */
 public class DeliveryTask {
-
-    public enum DeliveryType {
-        EXTRACT,
-        DEPOSIT
-    }
 
     public enum DeliveryState {
         QUEUED,
         FLYING,
-        WAITING,
-        RETURNING,
         COMPLETED,
         FAILED
     }
@@ -69,60 +62,65 @@ public class DeliveryTask {
     private final UUID taskId;
     private final ItemStack template;
     private int count;
-    private final BlockPos targetPos;
-    private final BlockPos terminalPos;
-    private final DeliveryType type;
+    private final BlockPos sourcePos;
+    private final BlockPos destPos;
     private final TaskOrigin origin;
+    private final boolean preloaded;
     private DeliveryState state;
     private int priority;
     private final List<UUID> dependencies;
-    private UUID assignedBeeId;
 
     /**
-     * Constructeur standard (priorité 0, pas de dépendances).
+     * Constructeur standard (priorite 0, pas de dependances, pas de preload).
      */
-    public DeliveryTask(ItemStack template, int count, BlockPos targetPos,
-                        BlockPos terminalPos, DeliveryType type, TaskOrigin origin) {
-        this(template, count, targetPos, terminalPos, type, 0, Collections.emptyList(), origin);
+    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
+                        BlockPos destPos, TaskOrigin origin) {
+        this(template, count, sourcePos, destPos, 0, Collections.emptyList(), origin, false);
     }
 
     /**
-     * Constructeur avec priorité et dépendances.
+     * Constructeur avec preloaded.
      */
-    public DeliveryTask(ItemStack template, int count, BlockPos targetPos,
-                        BlockPos terminalPos, DeliveryType type,
-                        int priority, List<UUID> dependencies, TaskOrigin origin) {
+    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
+                        BlockPos destPos, TaskOrigin origin, boolean preloaded) {
+        this(template, count, sourcePos, destPos, 0, Collections.emptyList(), origin, preloaded);
+    }
+
+    /**
+     * Constructeur complet.
+     */
+    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
+                        BlockPos destPos, int priority, List<UUID> dependencies,
+                        TaskOrigin origin, boolean preloaded) {
         this.taskId = UUID.randomUUID();
         this.template = template.copy();
         this.count = count;
-        this.targetPos = targetPos;
-        this.terminalPos = terminalPos;
-        this.type = type;
+        this.sourcePos = sourcePos;
+        this.destPos = destPos;
         this.origin = origin;
+        this.preloaded = preloaded;
         this.state = DeliveryState.QUEUED;
         this.priority = priority;
         this.dependencies = new ArrayList<>(dependencies);
-        this.assignedBeeId = null;
     }
 
     /**
-     * Constructeur complet (pour load NBT).
+     * Constructeur interne (pour load NBT).
      */
-    private DeliveryTask(UUID taskId, ItemStack template, int count, BlockPos targetPos,
-                         BlockPos terminalPos, DeliveryType type, DeliveryState state,
-                         int priority, List<UUID> dependencies, UUID assignedBeeId,
-                         TaskOrigin origin) {
+    private DeliveryTask(UUID taskId, ItemStack template, int count, BlockPos sourcePos,
+                         BlockPos destPos, DeliveryState state,
+                         int priority, List<UUID> dependencies,
+                         TaskOrigin origin, boolean preloaded) {
         this.taskId = taskId;
         this.template = template;
         this.count = count;
-        this.targetPos = targetPos;
-        this.terminalPos = terminalPos;
-        this.type = type;
+        this.sourcePos = sourcePos;
+        this.destPos = destPos;
         this.origin = origin;
+        this.preloaded = preloaded;
         this.state = state;
         this.priority = priority;
         this.dependencies = new ArrayList<>(dependencies);
-        this.assignedBeeId = assignedBeeId;
     }
 
     // === Getters ===
@@ -130,34 +128,28 @@ public class DeliveryTask {
     public UUID getTaskId() { return taskId; }
     public ItemStack getTemplate() { return template.copy(); }
     public int getCount() { return count; }
-    public BlockPos getTargetPos() { return targetPos; }
-    public BlockPos getTerminalPos() { return terminalPos; }
-    public DeliveryType getType() { return type; }
+    public BlockPos getSourcePos() { return sourcePos; }
+    public BlockPos getDestPos() { return destPos; }
     public TaskOrigin getOrigin() { return origin; }
+    public boolean isPreloaded() { return preloaded; }
     public DeliveryState getState() { return state; }
     public int getPriority() { return priority; }
     public List<UUID> getDependencies() { return Collections.unmodifiableList(dependencies); }
-    public UUID getAssignedBeeId() { return assignedBeeId; }
 
     // === Setters ===
 
     public void setState(DeliveryState state) { this.state = state; }
     public void setCount(int count) { this.count = count; }
     public void setPriority(int priority) { this.priority = priority; }
-    public void setAssignedBeeId(UUID beeId) { this.assignedBeeId = beeId; }
 
     // === Logic ===
 
     public boolean isActive() {
-        return state == DeliveryState.FLYING || state == DeliveryState.WAITING
-            || state == DeliveryState.RETURNING;
+        return state == DeliveryState.FLYING;
     }
 
     /**
-     * Vérifie si toutes les dépendances de cette tâche sont complétées.
-     *
-     * @param completedTaskIds ensemble des IDs de tâches complétées
-     * @return true si prête à être exécutée
+     * Verifie si toutes les dependances de cette tache sont completees.
      */
     public boolean isReady(Set<UUID> completedTaskIds) {
         if (dependencies.isEmpty()) return true;
@@ -165,11 +157,8 @@ public class DeliveryTask {
     }
 
     /**
-     * Divise cette tâche: réduit le count à beeCapacity et retourne
-     * une nouvelle tâche avec le reste des items.
-     *
-     * @param beeCapacity quantité max que l'abeille peut transporter
-     * @return nouvelle tâche avec les items restants, ou null si pas de split nécessaire
+     * Divise cette tache: reduit le count a beeCapacity et retourne
+     * une nouvelle tache avec le reste des items.
      */
     public DeliveryTask splitRemaining(int beeCapacity) {
         if (count <= beeCapacity) return null;
@@ -178,8 +167,8 @@ public class DeliveryTask {
         this.count = beeCapacity;
 
         DeliveryTask splitTask = new DeliveryTask(
-            template.copy(), remaining, targetPos, terminalPos, type,
-            priority, dependencies, origin
+            template.copy(), remaining, sourcePos, destPos,
+            priority, dependencies, origin, preloaded
         );
         return splitTask;
     }
@@ -191,10 +180,10 @@ public class DeliveryTask {
         tag.putUUID("TaskId", taskId);
         tag.put("Template", template.saveOptional(registries));
         tag.putInt("Count", count);
-        tag.putLong("TargetPos", targetPos.asLong());
-        tag.putLong("TerminalPos", terminalPos.asLong());
-        tag.putString("Type", type.name());
+        tag.putLong("SourcePos", sourcePos.asLong());
+        tag.putLong("DestPos", destPos.asLong());
         tag.putString("Origin", origin.name());
+        tag.putBoolean("Preloaded", preloaded);
         tag.putString("State", state.name());
         tag.putInt("Priority", priority);
 
@@ -208,10 +197,6 @@ public class DeliveryTask {
             tag.put("Dependencies", depTag);
         }
 
-        if (assignedBeeId != null) {
-            tag.putUUID("AssignedBeeId", assignedBeeId);
-        }
-
         return tag;
     }
 
@@ -220,21 +205,32 @@ public class DeliveryTask {
         ItemStack template = ItemStack.parseOptional(registries, tag.getCompound("Template"));
         int count = tag.getInt("Count");
 
-        BlockPos target;
-        if (tag.contains("TargetPos")) {
-            target = BlockPos.of(tag.getLong("TargetPos"));
+        // Backward compat: accepter TargetPos ou SourcePos
+        BlockPos source;
+        if (tag.contains("SourcePos")) {
+            source = BlockPos.of(tag.getLong("SourcePos"));
+        } else if (tag.contains("TargetPos")) {
+            source = BlockPos.of(tag.getLong("TargetPos"));
         } else {
-            target = BlockPos.of(tag.getLong("TargetChest"));
+            source = BlockPos.of(tag.getLong("TargetChest"));
         }
 
-        BlockPos terminal = BlockPos.of(tag.getLong("TerminalPos"));
-        DeliveryType type = DeliveryType.valueOf(tag.getString("Type"));
+        // Backward compat: accepter DestPos ou TerminalPos
+        BlockPos dest;
+        if (tag.contains("DestPos")) {
+            dest = BlockPos.of(tag.getLong("DestPos"));
+        } else {
+            dest = BlockPos.of(tag.getLong("TerminalPos"));
+        }
+
         DeliveryState state = DeliveryState.valueOf(tag.getString("State"));
         int priority = tag.getInt("Priority");
 
         TaskOrigin origin = tag.contains("Origin")
             ? TaskOrigin.valueOf(tag.getString("Origin"))
             : TaskOrigin.REQUEST;
+
+        boolean preloaded = tag.getBoolean("Preloaded");
 
         List<UUID> dependencies = new ArrayList<>();
         if (tag.contains("Dependencies")) {
@@ -244,9 +240,7 @@ public class DeliveryTask {
             }
         }
 
-        UUID assignedBeeId = tag.contains("AssignedBeeId") ? tag.getUUID("AssignedBeeId") : null;
-
-        return new DeliveryTask(id, template, count, target, terminal, type, state,
-            priority, dependencies, assignedBeeId, origin);
+        return new DeliveryTask(id, template, count, source, dest, state,
+            priority, dependencies, origin, preloaded);
     }
 }

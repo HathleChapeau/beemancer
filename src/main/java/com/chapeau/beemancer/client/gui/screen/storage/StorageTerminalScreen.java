@@ -102,7 +102,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     // Tasks tab
     private static final int TASK_LIST_X = 82;
     private static final int TASK_LIST_Y = 6;
-    private static final int TASK_ROW_HEIGHT = 18;
+    private static final int TASK_ROW_HEIGHT = 26;
     private static final int TASK_CANCEL_SIZE = 10;
 
     // State
@@ -355,7 +355,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         }
 
         int currentY = y + TASK_LIST_Y;
-        int maxVisible = 8;
+        int maxVisible = 6;
         int rendered = 0;
         int skipped = 0;
         int totalEntries = getTotalTaskEntries(requestTasks, automationTasks);
@@ -450,9 +450,9 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int stateX = x + GUI_WIDTH - 60;
         g.drawString(font, stateLabel, stateX, currentY + 4, stateColor, false);
 
-        String typeChar = task.type().equals("DEPOSIT") ? "\u2193" : "\u2191";
-        int typeColor = task.type().equals("DEPOSIT") ? 0xFF44AA44 : 0xFF4488FF;
-        g.drawString(font, typeChar, stateX - 10, currentY + 4, typeColor, false);
+        String originChar = task.origin().equals("REQUEST") ? "\u2191" : "\u2699";
+        int originColor = task.origin().equals("REQUEST") ? 0xFF4488FF : 0xFF44AA44;
+        g.drawString(font, originChar, stateX - 10, currentY + 4, originColor, false);
 
         int cancelX = x + GUI_WIDTH - 18;
         int cancelY = currentY + 2;
@@ -460,6 +460,12 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             mouseY >= cancelY && mouseY < cancelY + TASK_CANCEL_SIZE;
         g.drawString(font, "X", cancelX, cancelY,
             hoverCancel ? 0xFFFF4444 : 0xFFAA0000, false);
+
+        // Blocked reason
+        if (!task.blockedReason().isEmpty()) {
+            Component reasonText = Component.translatable(task.blockedReason());
+            g.drawString(font, reasonText, taskX + 18, currentY + 14, 0xFFFF6666, false);
+        }
     }
 
     private int getTotalTaskEntries(List<TaskDisplayData> requestTasks,
@@ -473,8 +479,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     private int getStateColor(String state) {
         return switch (state) {
             case "FLYING" -> 0xFF44AAFF;
-            case "WAITING" -> 0xFFFFAA00;
-            case "RETURNING" -> 0xFF44FF44;
             case "QUEUED" -> 0xFFAAAAAA;
             case "COMPLETED" -> 0xFF00FF00;
             case "FAILED" -> 0xFFFF0000;
@@ -484,12 +488,10 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
     private String getStateLabel(String state) {
         return switch (state) {
-            case "FLYING" -> "Flying";
-            case "WAITING" -> "Working";
-            case "RETURNING" -> "Return";
-            case "QUEUED" -> "Queued";
-            case "COMPLETED" -> "Done";
-            case "FAILED" -> "Failed";
+            case "FLYING" -> Component.translatable("gui.beemancer.tasks.state.flying").getString();
+            case "QUEUED" -> Component.translatable("gui.beemancer.tasks.state.queued").getString();
+            case "COMPLETED" -> Component.translatable("gui.beemancer.tasks.state.completed").getString();
+            case "FAILED" -> Component.translatable("gui.beemancer.tasks.state.failed").getString();
             default -> state;
         };
     }
@@ -715,7 +717,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int x = this.leftPos;
         int y = this.topPos;
         int currentY = y + TASK_LIST_Y;
-        int maxVisible = 8;
+        int maxVisible = 6;
         int rendered = 0;
         int skipped = 0;
 

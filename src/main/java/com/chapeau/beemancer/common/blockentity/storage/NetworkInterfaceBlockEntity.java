@@ -11,7 +11,7 @@
  * | StorageControllerBlockEntity  | Controller lie       | Acces reseau de stockage       |
  * | INetworkNode                  | Interface reseau     | Recherche controller           |
  * | InterfaceFilter               | Filtre individuel    | Systeme de filtres par ligne   |
- * | DeliveryTask                  | Taches livraison     | Creation taches                |
+ * | RequestManager                | Gestionnaire demandes| Publication demandes           |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -47,12 +47,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Parent abstrait pour les Import et Export Interface.
@@ -61,7 +58,6 @@ import java.util.UUID;
  * - Liaison a un controller (via edit mode shift+clic)
  * - Jusqu'a 3 filtres individuels (InterfaceFilter)
  * - globalSelectedSlots utilise quand 0 filtres
- * - Suivi des taches en cours (pendingTasks)
  * - Scan periodique de l'inventaire adjacent
  */
 public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements MenuProvider {
@@ -73,9 +69,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     protected final List<InterfaceFilter> filters = new ArrayList<>();
     protected final Set<Integer> globalSelectedSlots = new HashSet<>();
-    protected record PendingTaskInfo(UUID taskId, int count) {}
-
-    protected final Map<String, PendingTaskInfo> pendingTasks = new HashMap<>();
     protected boolean active = false;
     protected boolean hasAdjacentGui = false;
     protected int scanTimer = 0;
@@ -96,7 +89,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     public void unlinkController() {
         this.controllerPos = null;
-        pendingTasks.clear();
         setChanged();
         syncToClient();
     }
@@ -312,37 +304,11 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         return getOperableSlots(container, globalSelectedSlots);
     }
 
-    // === Pending Tasks ===
+    // === Utilities ===
 
     protected String itemKey(ItemStack stack) {
         return stack.getItem().builtInRegistryHolder().key().location().toString()
             + ":" + stack.getComponentsPatch().hashCode();
-    }
-
-    protected void cleanupPendingTasks() {
-        StorageControllerBlockEntity controller = getController();
-        if (controller == null) {
-            pendingTasks.clear();
-            return;
-        }
-        pendingTasks.entrySet().removeIf(entry ->
-            !controller.getDeliveryManager().isTaskPending(entry.getValue().taskId()));
-    }
-
-    /**
-     * Retourne le nombre d'items en vol pour une cle donnee.
-     * Si la tache n'existe plus, retourne 0 et nettoie l'entree.
-     */
-    protected int getPendingCount(String key) {
-        PendingTaskInfo info = pendingTasks.get(key);
-        if (info == null) return 0;
-        StorageControllerBlockEntity controller = getController();
-        if (controller == null) return 0;
-        if (!controller.getDeliveryManager().isTaskPending(info.taskId())) {
-            pendingTasks.remove(key);
-            return 0;
-        }
-        return info.count();
     }
 
     // === Server Tick ===
@@ -369,8 +335,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             scanTimer = 0;
 
             if (!active) return;
-
-            cleanupPendingTasks();
 
             StorageControllerBlockEntity controller = getController();
             if (controller == null) return;
@@ -409,19 +373,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
                     globalSelectedSlots.stream().mapToInt(Integer::intValue).toArray());
             }
 
-            // Pending tasks
-            if (!pendingTasks.isEmpty()) {
-                ListTag tasksTag = new ListTag();
-                for (Map.Entry<String, PendingTaskInfo> entry : pendingTasks.entrySet()) {
-                    CompoundTag taskEntry = new CompoundTag();
-                    taskEntry.putString("Key", entry.getKey());
-                    taskEntry.putUUID("TaskId", entry.getValue().taskId());
-                    taskEntry.putInt("Count", entry.getValue().count());
-                    tasksTag.add(taskEntry);
-                }
-                tag.put("PendingTasks", tasksTag);
-            }
-
             tag.putBoolean("Active", active);
             tag.putBoolean("HasAdjacentGui", hasAdjacentGui);
 
@@ -457,19 +408,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         if (tag.contains("GlobalSelectedSlots")) {
             for (int s : tag.getIntArray("GlobalSelectedSlots")) {
                 globalSelectedSlots.add(s);
-            }
-        }
-
-        // Pending tasks
-        pendingTasks.clear();
-        if (tag.contains("PendingTasks")) {
-            ListTag tasksTag = tag.getList("PendingTasks", Tag.TAG_COMPOUND);
-            for (int i = 0; i < tasksTag.size(); i++) {
-                CompoundTag taskEntry = tasksTag.getCompound(i);
-                UUID taskId = taskEntry.getUUID("TaskId");
-                int count = taskEntry.contains("Count") ? taskEntry.getInt("Count") : 1;
-                pendingTasks.put(taskEntry.getString("Key"),
-                    new PendingTaskInfo(taskId, count));
             }
         }
 

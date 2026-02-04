@@ -29,11 +29,37 @@ core/util/
 - FlowerSearchHelper.java: Recherche de fleurs dans un rayon
 - HarvestHelper.java: Logique de récolte par type de bloc (CROP, NETHER_WART, MUSHROOM, CRYSTAL, FLOWER, TREE)
 - StorageHelper.java: Vérification des conteneurs de stockage supportés (Chest, Trapped Chest, Barrel)
+- ContainerHelper.java: Operations generiques sur Container (insert, extract, count, space)
+  - insertItem(Container, ItemStack) / insertItem(Container, ItemStack, int[])
+  - extractItem(Container, ItemStack, int)
+  - countItem(Container, ItemStack) / countItem(Container, ItemStack, int[])
+  - hasSpaceFor(Container, ItemStack, int), availableSpace(Container, ItemStack)
+  - Utilise par: StorageDeliveryManager, DeliveryPhaseGoal, ImportInterfaceBlockEntity, StorageItemAggregator
 - ParticleHelper.java: Utilitaire statique de spawn de particules (server/client)
   - EffectType enum: SUCCESS, FAILURE, MAGIC, HEAL, HONEY, SOUL, PORTAL, NATURE, FLAME, ELECTRIC, SCULK
   - Formes: burst, ring, spiral, line, sphere
   - Surcharges: ParticleOptions, ResourceLocation, EffectType
   - Client-side: addParticle, addAlwaysVisible
+
+================================================================================
+common/block/storage/
+================================================================================
+
+- InterfaceRequest.java: Demande de livraison publiée par interfaces/terminaux
+  - Item et quantité demandés
+  - Source (interface/terminal UUID ou BlockPos)
+  - Type (IMPORT/EXPORT/TERMINAL)
+  - Comparaison par source + item pour regroupement
+
+================================================================================
+common/blockentity/storage/
+================================================================================
+
+- RequestManager.java: Gestionnaire central des demandes de livraison
+  - Registre des demandes en attente et complétées
+  - Validation, ordonnancement, et annulation des demandes
+  - Intégration avec StorageDeliveryManager pour exécution
+  - NBT persist/restore via "Requests"
 
 ================================================================================
 core/breeding/

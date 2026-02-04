@@ -10,7 +10,8 @@
  * |-------------------------------|----------------------|--------------------------------|
  * | DeliveryBeeEntity             | Entite porteuse      | Acces donnees tache            |
  * | StorageControllerBlockEntity  | Controller parent    | Extraction/depot items         |
- * | StorageTerminalBlockEntity    | Terminal cible       | Insertion items pickup         |
+ * | IDeliveryEndpoint             | Interface livraison  | Depot polymorphe               |
+ * | ContainerHelper               | Utilitaire container | Insertion items                |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -20,10 +21,10 @@
  */
 package com.chapeau.beemancer.common.entity.delivery;
 
-import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.blockentity.storage.IDeliveryEndpoint;
 import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
+import com.chapeau.beemancer.core.util.ContainerHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -35,13 +36,15 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Goal de livraison multi-relais.
+ * Goal de livraison unifie multi-relais.
  *
- * Outbound: waypoint0 → waypoint1 → ... → target (chest)
- * Wait: extraction ou depot au chest
- * Return: waypoint0 → waypoint1 → ... → returnPos (controller)
+ * Flux normal (non-preloaded):
+ *   FLY_TO_SOURCE → WAIT_AT_SOURCE (extract) → FLY_TO_CONTROLLER → FLY_TO_DEST → WAIT_AT_DEST (deposit) → FLY_HOME
  *
- * Si pas de waypoints, fonctionne comme avant (vol direct).
+ * Flux preloaded (items deja charges):
+ *   FLY_TO_DEST → WAIT_AT_DEST (deposit) → FLY_HOME
+ *
+ * Si pas de waypoints, vol direct.
  */
 public class DeliveryPhaseGoal extends Goal {
 
@@ -51,23 +54,23 @@ public class DeliveryPhaseGoal extends Goal {
     private final DeliveryBeeEntity bee;
 
     private enum Phase {
-        FLY_OUTBOUND,
-        WAIT_AT_TARGET,
-        FLY_RETURN,
-        FLY_TO_TERMINAL,
-        WAIT_AT_TERMINAL,
+        FLY_TO_SOURCE,
+        WAIT_AT_SOURCE,
+        FLY_TO_CONTROLLER,
+        FLY_TO_DEST,
+        WAIT_AT_DEST,
         FLY_HOME
     }
 
-    private Phase phase = Phase.FLY_OUTBOUND;
+    private Phase phase = Phase.FLY_TO_SOURCE;
     private int waitTimer;
     private boolean navigationStarted = false;
 
-    // Index courant dans la liste de waypoints
-    private int outboundIndex = 0;
-    private int returnIndex = 0;
-    private int terminalIndex = 0;
-    private int homeIndex = 0;
+    // Index courant dans la liste de waypoints (mutable int wrapper for helper)
+    private final int[] outboundIdx = {0};
+    private final int[] returnIdx = {0};
+    private final int[] destIdx = {0};
+    private final int[] homeIdx = {0};
 
     public DeliveryPhaseGoal(DeliveryBeeEntity bee) {
         this.bee = bee;
@@ -76,7 +79,7 @@ public class DeliveryPhaseGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return bee.getTargetPos() != null && bee.getReturnPos() != null;
+        return bee.getSourcePos() != null && bee.getReturnPos() != null;
     }
 
     @Override
@@ -86,35 +89,66 @@ public class DeliveryPhaseGoal extends Goal {
 
     @Override
     public void start() {
-        phase = Phase.FLY_OUTBOUND;
-        outboundIndex = 0;
-        returnIndex = 0;
+        if (!bee.getCarriedItems().isEmpty()) {
+            // Preloaded: sauter source, aller directement a dest
+            phase = Phase.FLY_TO_DEST;
+            destIdx[0] = 0;
+        } else {
+            phase = Phase.FLY_TO_SOURCE;
+            outboundIdx[0] = 0;
+        }
+        returnIdx[0] = 0;
         navigationStarted = false;
     }
 
     @Override
     public void tick() {
+        if (bee.isRecalled()) {
+            handleRecall();
+            return;
+        }
         switch (phase) {
-            case FLY_OUTBOUND -> tickFlyOutbound();
-            case WAIT_AT_TARGET -> tickWaitAtTarget();
-            case FLY_RETURN -> tickFlyReturn();
-            case FLY_TO_TERMINAL -> tickFlyToTerminal();
-            case WAIT_AT_TERMINAL -> tickWaitAtTerminal();
+            case FLY_TO_SOURCE -> tickFlyToSource();
+            case WAIT_AT_SOURCE -> tickWaitAtSource();
+            case FLY_TO_CONTROLLER -> tickFlyToController();
+            case FLY_TO_DEST -> tickFlyToDest();
+            case WAIT_AT_DEST -> tickWaitAtDest();
             case FLY_HOME -> tickFlyHome();
         }
     }
 
     /**
-     * Navigue a travers les waypoints outbound puis vers le target.
+     * Gere le recall: force la bee a voler directement vers le controller (returnPos),
+     * restitue les items au reseau, notifie l'echec, puis discard.
      */
-    private void tickFlyOutbound() {
-        List<BlockPos> waypoints = bee.getOutboundWaypoints();
-        BlockPos currentTarget;
+    private void handleRecall() {
+        if (phase != Phase.FLY_HOME) {
+            phase = Phase.FLY_HOME;
+            homeIdx[0] = 0;
+            navigationStarted = false;
+        }
+        if (navigateWaypoints(List.of(), homeIdx, bee.getReturnPos())) {
+            bee.returnCarriedItemsToNetwork();
+            bee.notifyTaskFailed();
+            bee.discard();
+        }
+    }
 
-        if (outboundIndex < waypoints.size()) {
-            currentTarget = waypoints.get(outboundIndex);
+    /**
+     * Navigue a travers une liste de waypoints puis vers une destination finale.
+     * Retourne true quand la destination finale est atteinte.
+     *
+     * @param waypoints liste ordonnee de waypoints intermediaires
+     * @param indexRef tableau mutable de taille 1 contenant l'index courant
+     * @param finalTarget destination finale apres tous les waypoints
+     * @return true si la destination finale est atteinte
+     */
+    private boolean navigateWaypoints(List<BlockPos> waypoints, int[] indexRef, BlockPos finalTarget) {
+        BlockPos currentTarget;
+        if (indexRef[0] < waypoints.size()) {
+            currentTarget = waypoints.get(indexRef[0]);
         } else {
-            currentTarget = bee.getTargetPos();
+            currentTarget = finalTarget;
         }
 
         if (!navigationStarted || bee.getNavigation().isDone()) {
@@ -129,202 +163,116 @@ public class DeliveryPhaseGoal extends Goal {
             bee.getNavigation().stop();
             navigationStarted = false;
 
-            if (outboundIndex < waypoints.size()) {
-                // Waypoint relay atteint, passer au suivant
-                outboundIndex++;
-            } else {
-                // Target (chest) atteint, passer en attente
-                phase = Phase.WAIT_AT_TARGET;
-                waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
+            if (indexRef[0] < waypoints.size()) {
+                indexRef[0]++;
+                return false;
             }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Navigue vers la source via les waypoints outbound.
+     */
+    private void tickFlyToSource() {
+        if (navigateWaypoints(bee.getOutboundWaypoints(), outboundIdx, bee.getSourcePos())) {
+            phase = Phase.WAIT_AT_SOURCE;
+            waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
         }
     }
 
-    private void tickWaitAtTarget() {
+    /**
+     * Attente a la source: extraction des items.
+     */
+    private void tickWaitAtSource() {
         waitTimer--;
         if (waitTimer > 0) return;
 
         Level level = bee.level();
         if (level.isClientSide()) return;
 
-        if (bee.getDeliveryType() == DeliveryTask.DeliveryType.EXTRACT) {
-            performExtraction(level);
-            // CAS 1: extraction echouee (items plus disponibles, bloc detruit, chunk decharge)
-            if (bee.getCarriedItems().isEmpty()) {
-                bee.notifyTaskFailed();
-                bee.discard();
-                return;
-            }
-        } else {
-            performDeposit(level);
-            // CAS 2: depot echoue (chest plein, detruit, chunk decharge)
-            if (!bee.getCarriedItems().isEmpty()) {
-                bee.returnCarriedItemsToNetwork();
-                bee.notifyTaskFailed();
-                bee.discard();
-                return;
-            }
+        performExtraction(level);
+
+        if (bee.getCarriedItems().isEmpty()) {
+            bee.notifyTaskFailed();
+            bee.discard();
+            return;
         }
 
-        phase = Phase.FLY_RETURN;
-        returnIndex = 0;
+        phase = Phase.FLY_TO_CONTROLLER;
+        returnIdx[0] = 0;
         navigationStarted = false;
     }
 
     /**
-     * Navigue a travers les waypoints retour puis vers le returnPos.
+     * Navigue de la source vers le controller via les waypoints retour.
      */
-    private void tickFlyReturn() {
-        List<BlockPos> waypoints = bee.getReturnWaypoints();
-        BlockPos currentTarget;
-
-        if (returnIndex < waypoints.size()) {
-            currentTarget = waypoints.get(returnIndex);
-        } else {
-            currentTarget = bee.getReturnPos();
-        }
-
-        if (!navigationStarted || bee.getNavigation().isDone()) {
-            bee.getNavigation().moveTo(
-                currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5,
-                1.0 * bee.getFlySpeedMultiplier()
-            );
-            navigationStarted = true;
-        }
-
-        if (bee.distanceToSqr(currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5) < ARRIVAL_DISTANCE_SQ) {
-            bee.getNavigation().stop();
+    private void tickFlyToController() {
+        if (navigateWaypoints(bee.getReturnWaypoints(), returnIdx, bee.getReturnPos())) {
+            phase = Phase.FLY_TO_DEST;
+            destIdx[0] = 0;
             navigationStarted = false;
-
-            if (returnIndex < waypoints.size()) {
-                // Waypoint relay atteint, passer au suivant
-                returnIndex++;
-            } else {
-                // Arrivee au controller
-                if (bee.needsTerminalFlight()) {
-                    // Tache EXTRACT avec terminal distant: voler jusqu'au terminal
-                    phase = Phase.FLY_TO_TERMINAL;
-                    terminalIndex = 0;
-                    navigationStarted = false;
-                } else {
-                    // Livraison directe et discard
-                    performDelivery();
-                    bee.notifyTaskCompleted();
-                    bee.discard();
-                }
-            }
         }
     }
 
     /**
-     * Navigue du controller vers le terminal (import interface) via les waypoints terminaux.
+     * Navigue du controller vers la destination via les waypoints dest.
      */
-    private void tickFlyToTerminal() {
-        List<BlockPos> waypoints = bee.getTerminalWaypoints();
-        BlockPos currentTarget;
-
-        if (terminalIndex < waypoints.size()) {
-            currentTarget = waypoints.get(terminalIndex);
-        } else {
-            currentTarget = bee.getTerminalPos();
-        }
-
-        if (!navigationStarted || bee.getNavigation().isDone()) {
-            bee.getNavigation().moveTo(
-                currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5,
-                1.0 * bee.getFlySpeedMultiplier()
-            );
-            navigationStarted = true;
-        }
-
-        if (bee.distanceToSqr(currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5) < ARRIVAL_DISTANCE_SQ) {
-            bee.getNavigation().stop();
-            navigationStarted = false;
-
-            if (terminalIndex < waypoints.size()) {
-                terminalIndex++;
-            } else {
-                // Arrivee au terminal, passer en attente pour livraison
-                phase = Phase.WAIT_AT_TERMINAL;
-                waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
-            }
+    private void tickFlyToDest() {
+        if (navigateWaypoints(bee.getDestWaypoints(), destIdx, bee.getDestPos())) {
+            phase = Phase.WAIT_AT_DEST;
+            waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
         }
     }
 
     /**
-     * Attente au terminal: livraison puis retour au controller.
+     * Attente a destination: depot des items puis retour au controller.
      */
-    private void tickWaitAtTerminal() {
+    private void tickWaitAtDest() {
         waitTimer--;
         if (waitTimer > 0) return;
 
         if (!bee.level().isClientSide()) {
-            // CAS 3/4: verifier que l'endpoint est encore valide avant de livrer
-            if (!isTerminalValid()) {
+            if (!isDestValid()) {
                 bee.returnCarriedItemsToNetwork();
                 bee.notifyTaskFailed();
                 phase = Phase.FLY_HOME;
-                homeIndex = 0;
+                homeIdx[0] = 0;
                 navigationStarted = false;
                 return;
             }
             performDelivery();
         }
 
-        // Retour au controller via les waypoints terminaux inverses
+        // Retour au controller via les waypoints dest inverses
         phase = Phase.FLY_HOME;
-        homeIndex = 0;
+        homeIdx[0] = 0;
         navigationStarted = false;
     }
 
     /**
-     * Retour du terminal vers le controller via les waypoints terminaux inverses.
+     * Retour de la destination vers le controller via les waypoints dest inverses.
      */
     private void tickFlyHome() {
-        List<BlockPos> terminalWaypoints = bee.getTerminalWaypoints();
-        BlockPos currentTarget;
-
-        // Parcourir les waypoints terminaux en sens inverse
-        int reverseIdx = terminalWaypoints.size() - 1 - homeIndex;
-        if (reverseIdx >= 0 && homeIndex < terminalWaypoints.size()) {
-            currentTarget = terminalWaypoints.get(reverseIdx);
-        } else {
-            currentTarget = bee.getReturnPos();
-        }
-
-        if (!navigationStarted || bee.getNavigation().isDone()) {
-            bee.getNavigation().moveTo(
-                currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5,
-                1.0 * bee.getFlySpeedMultiplier()
-            );
-            navigationStarted = true;
-        }
-
-        if (bee.distanceToSqr(currentTarget.getX() + 0.5, currentTarget.getY() + 0.5, currentTarget.getZ() + 0.5) < ARRIVAL_DISTANCE_SQ) {
-            bee.getNavigation().stop();
-            navigationStarted = false;
-
-            if (homeIndex < terminalWaypoints.size()) {
-                homeIndex++;
-            } else {
-                // Arrivee au controller, fin de tache
-                bee.notifyTaskCompleted();
-                bee.discard();
-            }
+        List<BlockPos> reversed = bee.getDestWaypoints().reversed();
+        if (navigateWaypoints(reversed, homeIdx, bee.getReturnPos())) {
+            bee.notifyTaskCompleted();
+            bee.discard();
         }
     }
 
     /**
-     * Verifie que le terminal (endpoint de livraison) est encore valide.
+     * Verifie que la destination (endpoint de livraison) est encore valide.
      * Couvre les cas: interface desactivee/delinkee, inventaire adjacent detruit,
      * coffre destination plein/detruit, chunk decharge.
      */
-    private boolean isTerminalValid() {
+    private boolean isDestValid() {
         Level level = bee.level();
-        BlockPos terminalPos = bee.getTerminalPos();
-        if (terminalPos == null || !level.isLoaded(terminalPos)) return false;
+        BlockPos destPos = bee.getDestPos();
+        if (destPos == null || !level.isLoaded(destPos)) return false;
 
-        BlockEntity be = level.getBlockEntity(terminalPos);
+        BlockEntity be = level.getBlockEntity(destPos);
         if (be == null) return false;
 
         if (be instanceof IDeliveryEndpoint) {
@@ -348,19 +296,11 @@ public class DeliveryPhaseGoal extends Goal {
      */
     private boolean hasSpaceForItem(Container container, ItemStack stack) {
         if (stack.isEmpty()) return true;
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            ItemStack existing = container.getItem(i);
-            if (existing.isEmpty()) return true;
-            if (ItemStack.isSameItemSameComponents(existing, stack)
-                    && existing.getCount() < existing.getMaxStackSize()) {
-                return true;
-            }
-        }
-        return false;
+        return ContainerHelper.hasSpaceFor(container, stack, 1);
     }
 
     /**
-     * EXTRACT: le controller extrait l'item du coffre, l'abeille le transporte.
+     * Extraction a la source: le controller extrait l'item du coffre/container.
      */
     private void performExtraction(Level level) {
         BlockEntity be = level.getBlockEntity(bee.getControllerPos());
@@ -370,29 +310,13 @@ public class DeliveryPhaseGoal extends Goal {
         }
 
         ItemStack extracted = controller.extractItemForDelivery(
-            bee.getTemplate(), bee.getRequestCount(), bee.getTargetPos()
+            bee.getTemplate(), bee.getRequestCount(), bee.getSourcePos()
         );
         bee.setCarriedItems(extracted);
     }
 
     /**
-     * DEPOSIT: l'abeille depose ses items dans le coffre via le controller.
-     */
-    private void performDeposit(Level level) {
-        BlockEntity be = level.getBlockEntity(bee.getControllerPos());
-        if (!(be instanceof StorageControllerBlockEntity controller)) {
-            bee.discard();
-            return;
-        }
-
-        ItemStack remaining = controller.depositItemForDelivery(
-            bee.getCarriedItems(), bee.getTargetPos()
-        );
-        bee.setCarriedItems(remaining);
-    }
-
-    /**
-     * Livraison au terminal: insere les items dans un IDeliveryEndpoint (import interface,
+     * Livraison a destination: insere les items dans un IDeliveryEndpoint (import interface,
      * terminal) ou directement dans un Container (coffre du reseau pour export).
      */
     private void performDelivery() {
@@ -402,13 +326,13 @@ public class DeliveryPhaseGoal extends Goal {
         ItemStack carried = bee.getCarriedItems();
         if (carried.isEmpty()) return;
 
-        BlockEntity terminalBe = level.getBlockEntity(bee.getTerminalPos());
+        BlockEntity destBe = level.getBlockEntity(bee.getDestPos());
 
         ItemStack remaining;
-        if (terminalBe instanceof IDeliveryEndpoint endpoint) {
+        if (destBe instanceof IDeliveryEndpoint endpoint) {
             remaining = endpoint.receiveDeliveredItems(carried);
-        } else if (terminalBe instanceof Container container) {
-            remaining = depositIntoContainer(container, carried);
+        } else if (destBe instanceof Container container) {
+            remaining = ContainerHelper.insertItem(container, carried);
         } else {
             remaining = carried;
         }
@@ -421,35 +345,5 @@ public class DeliveryPhaseGoal extends Goal {
         }
 
         bee.setCarriedItems(ItemStack.EMPTY);
-    }
-
-    /**
-     * Depose des items dans un Container (coffre): merge dans stacks existants, puis slots vides.
-     */
-    private ItemStack depositIntoContainer(Container container, ItemStack stack) {
-        ItemStack remaining = stack.copy();
-
-        for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
-            ItemStack existing = container.getItem(i);
-            if (ItemStack.isSameItemSameComponents(existing, remaining)) {
-                int space = existing.getMaxStackSize() - existing.getCount();
-                int toTransfer = Math.min(space, remaining.getCount());
-                if (toTransfer > 0) {
-                    existing.grow(toTransfer);
-                    remaining.shrink(toTransfer);
-                }
-            }
-        }
-
-        for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
-            if (container.getItem(i).isEmpty()) {
-                int toPlace = Math.min(remaining.getCount(), remaining.getMaxStackSize());
-                container.setItem(i, remaining.copyWithCount(toPlace));
-                remaining.shrink(toPlace);
-            }
-        }
-
-        container.setChanged();
-        return remaining;
     }
 }

@@ -26,6 +26,7 @@ package com.chapeau.beemancer.common.blockentity.storage;
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.block.storage.TaskDisplayData;
+import com.chapeau.beemancer.core.util.ContainerHelper;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
@@ -92,13 +93,8 @@ public class StorageDeliveryManager {
             if (!parent.getLevel().isLoaded(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
-                int found = 0;
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack existing = container.getItem(i);
-                    if (ItemStack.isSameItemSameComponents(existing, template)) {
-                        found += existing.getCount();
-                        if (found >= minCount) return chestPos;
-                    }
+                if (ContainerHelper.countItem(container, template) >= minCount) {
+                    return chestPos;
                 }
             }
         }
@@ -217,6 +213,17 @@ public class StorageDeliveryManager {
     }
 
     /**
+     * Compte le nombre d'items d'un type donne dans un coffre specifique.
+     */
+    public int countItemInChest(ItemStack template, BlockPos chestPos) {
+        if (parent.getLevel() == null || template.isEmpty()) return 0;
+        if (!parent.getLevel().isLoaded(chestPos)) return 0;
+        BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
+        if (!(be instanceof Container container)) return 0;
+        return ContainerHelper.countItem(container, template);
+    }
+
+    /**
      * Trouve un coffre du reseau qui a de la place pour l'item donne.
      * @return la position du coffre, ou null si aucun n'a de place
      */
@@ -228,15 +235,8 @@ public class StorageDeliveryManager {
             if (!parent.getLevel().isLoaded(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
-                int available = 0;
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack existing = container.getItem(i);
-                    if (existing.isEmpty()) {
-                        available += template.getMaxStackSize();
-                    } else if (ItemStack.isSameItemSameComponents(existing, template)) {
-                        available += existing.getMaxStackSize() - existing.getCount();
-                    }
-                    if (available >= count) return chestPos;
+                if (ContainerHelper.availableSpace(container, template) >= count) {
+                    return chestPos;
                 }
             }
         }
@@ -253,25 +253,7 @@ public class StorageDeliveryManager {
         BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
         if (!(be instanceof Container container)) return ItemStack.EMPTY;
 
-        ItemStack result = template.copy();
-        result.setCount(0);
-        int needed = count;
-
-        for (int i = 0; i < container.getContainerSize(); i++) {
-            ItemStack existing = container.getItem(i);
-            if (ItemStack.isSameItemSameComponents(existing, template)) {
-                int toTake = Math.min(needed, existing.getCount());
-                existing.shrink(toTake);
-                result.grow(toTake);
-                needed -= toTake;
-                container.setChanged();
-                if (existing.isEmpty()) {
-                    container.setItem(i, ItemStack.EMPTY);
-                }
-            }
-            if (needed <= 0) break;
-        }
-
+        ItemStack result = ContainerHelper.extractItem(container, template, count);
         parent.getItemAggregator().setNeedsSync(true);
         return result;
     }
@@ -296,32 +278,7 @@ public class StorageDeliveryManager {
         BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
         if (!(be instanceof Container container)) return stack;
 
-        ItemStack remaining = stack.copy();
-
-        for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
-            ItemStack existing = container.getItem(i);
-            if (ItemStack.isSameItemSameComponents(existing, remaining)) {
-                int space = existing.getMaxStackSize() - existing.getCount();
-                int toTransfer = Math.min(space, remaining.getCount());
-                if (toTransfer > 0) {
-                    existing.grow(toTransfer);
-                    remaining.shrink(toTransfer);
-                    container.setChanged();
-                }
-            }
-        }
-
-        for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
-            if (container.getItem(i).isEmpty()) {
-                int toTransfer = Math.min(remaining.getMaxStackSize(), remaining.getCount());
-                ItemStack toPlace = remaining.copy();
-                toPlace.setCount(toTransfer);
-                container.setItem(i, toPlace);
-                remaining.shrink(toTransfer);
-                container.setChanged();
-            }
-        }
-
+        ItemStack remaining = ContainerHelper.insertItem(container, stack);
         parent.getItemAggregator().setNeedsSync(true);
         return remaining;
     }
@@ -414,7 +371,6 @@ public class StorageDeliveryManager {
             boolean spawned = spawnDeliveryBee(eligible);
             if (spawned) {
                 eligible.setState(DeliveryTask.DeliveryState.FLYING);
-                eligible.setAssignedBeeId(null);
                 activeTasks.add(eligible);
             } else {
                 eligible.setState(DeliveryTask.DeliveryState.FAILED);
@@ -440,35 +396,35 @@ public class StorageDeliveryManager {
     private boolean validateTaskTargets(DeliveryTask task, ServerLevel level) {
         StorageNetworkRegistry registry = parent.getNetworkRegistry();
 
-        // Verifier la position cible
-        BlockPos targetPos = task.getTargetPos();
-        if (targetPos != null && level.isLoaded(targetPos)) {
-            BlockEntity targetBe = level.getBlockEntity(targetPos);
-            if (targetBe == null) {
-                registry.unregisterBlock(targetPos);
-                parent.setChanged();
-                return false;
-            }
-            // Si c'est une interface non liee, la retirer
-            if (targetBe instanceof NetworkInterfaceBlockEntity iface && iface.getControllerPos() == null) {
-                registry.unregisterBlock(targetPos);
-                parent.setChanged();
-                return false;
+        // Verifier la source (sauf si preloaded: pas de source a atteindre)
+        if (!task.isPreloaded()) {
+            BlockPos sourcePos = task.getSourcePos();
+            if (sourcePos != null && level.isLoaded(sourcePos)) {
+                BlockEntity sourceBe = level.getBlockEntity(sourcePos);
+                if (sourceBe == null) {
+                    registry.unregisterBlock(sourcePos);
+                    parent.setChanged();
+                    return false;
+                }
+                if (sourceBe instanceof NetworkInterfaceBlockEntity iface && iface.getControllerPos() == null) {
+                    registry.unregisterBlock(sourcePos);
+                    parent.setChanged();
+                    return false;
+                }
             }
         }
 
-        // Verifier le terminal/destination
-        BlockPos terminalPos = task.getTerminalPos();
-        if (terminalPos != null && !terminalPos.equals(parent.getBlockPos()) && level.isLoaded(terminalPos)) {
-            BlockEntity terminalBe = level.getBlockEntity(terminalPos);
-            if (terminalBe == null) {
-                registry.unregisterBlock(terminalPos);
+        // Verifier la destination
+        BlockPos destPos = task.getDestPos();
+        if (destPos != null && !destPos.equals(parent.getBlockPos()) && level.isLoaded(destPos)) {
+            BlockEntity destBe = level.getBlockEntity(destPos);
+            if (destBe == null) {
+                registry.unregisterBlock(destPos);
                 parent.setChanged();
                 return false;
             }
-            // Si c'est une interface non liee, la retirer
-            if (terminalBe instanceof NetworkInterfaceBlockEntity iface && iface.getControllerPos() == null) {
-                registry.unregisterBlock(terminalPos);
+            if (destBe instanceof NetworkInterfaceBlockEntity iface && iface.getControllerPos() == null) {
+                registry.unregisterBlock(destPos);
                 parent.setChanged();
                 return false;
             }
@@ -483,17 +439,17 @@ public class StorageDeliveryManager {
         // Valider que les blocs cibles existent encore
         if (!validateTaskTargets(task, serverLevel)) return false;
 
-        BlockPos spawnPos;
-        BlockPos returnPos;
-
-        if (task.getType() == DeliveryTask.DeliveryType.EXTRACT) {
-            spawnPos = getSpawnPosBottom();
-            returnPos = getSpawnPosTop();
-        } else {
-            spawnPos = getSpawnPosTop();
-            returnPos = getSpawnPosBottom();
+        // Pour les taches non-preloaded, re-valider la disponibilite des items a la source
+        if (!task.isPreloaded()) {
+            int available = countItemInChest(task.getTemplate(), task.getSourcePos());
+            if (available <= 0) return false;
+            if (available < task.getCount()) {
+                task.setCount(available);
+            }
         }
 
+        BlockPos spawnPos = getSpawnPosBottom();
+        BlockPos returnPos = getSpawnPosTop();
         if (spawnPos == null || returnPos == null) return false;
 
         DeliveryBeeEntity bee = BeemancerEntities.DELIVERY_BEE.get().create(serverLevel);
@@ -501,39 +457,40 @@ public class StorageDeliveryManager {
 
         bee.setPos(spawnPos.getX() + 0.5, spawnPos.getY() + 0.5, spawnPos.getZ() + 0.5);
 
+        // Pre-charger les items si la tache est preloaded (terminal deposit)
         ItemStack carried = ItemStack.EMPTY;
-        if (task.getType() == DeliveryTask.DeliveryType.DEPOSIT) {
+        if (task.isPreloaded()) {
             carried = task.getTemplate().copyWithCount(task.getCount());
         }
 
         bee.initDeliveryTask(
             parent.getBlockPos(),
-            task.getTargetPos(),
+            task.getSourcePos(),
             returnPos,
-            task.getTerminalPos(),
+            task.getDestPos(),
             task.getTemplate(),
             task.getCount(),
-            task.getType(),
             carried,
             ControllerStats.getFlightSpeedMultiplier(parent.getEssenceSlots()),
             ControllerStats.getSearchSpeedMultiplier(parent.getEssenceSlots()),
             task.getTaskId()
         );
 
-        // Calculer le chemin relay vers le coffre cible
-        // findPathToChest supporte: coffres (via getRegisteredChests), interfaces/terminaux (via NetworkRegistry)
-        List<BlockPos> relayPath = findPathToChest(task.getTargetPos());
-        if (!relayPath.isEmpty()) {
-            List<BlockPos> returnPath = new ArrayList<>(relayPath);
-            Collections.reverse(returnPath);
-            bee.setWaypoints(relayPath, returnPath);
+        // Calculer les waypoints outbound (controller → source) sauf si preloaded
+        if (!task.isPreloaded()) {
+            List<BlockPos> relayPath = findPathToChest(task.getSourcePos());
+            if (!relayPath.isEmpty()) {
+                List<BlockPos> returnPath = new ArrayList<>(relayPath);
+                Collections.reverse(returnPath);
+                bee.setWaypoints(relayPath, returnPath);
+            }
         }
 
-        // Calculer les waypoints terminaux pour les taches avec terminal distant
-        if (task.getTerminalPos() != null
-                && !task.getTerminalPos().equals(parent.getBlockPos())) {
-            List<BlockPos> terminalPath = findPathToChest(task.getTerminalPos());
-            bee.setTerminalWaypoints(terminalPath);
+        // Calculer les waypoints dest (controller → destination)
+        if (task.getDestPos() != null
+                && !task.getDestPos().equals(parent.getBlockPos())) {
+            List<BlockPos> destPath = findPathToChest(task.getDestPos());
+            bee.setDestWaypoints(destPath);
         }
 
         serverLevel.addFreshEntity(bee);
@@ -557,7 +514,8 @@ public class StorageDeliveryManager {
     // === Bee Cleanup ===
 
     /**
-     * Tue toutes les DeliveryBeeEntity liées à ce controller.
+     * Tue toutes les DeliveryBeeEntity liees a ce controller.
+     * Restitue les items transportes au reseau avant de discard.
      */
     public void killAllDeliveryBees() {
         if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
@@ -568,6 +526,7 @@ public class StorageDeliveryManager {
             bee -> parent.getBlockPos().equals(bee.getControllerPos())
         );
         for (DeliveryBeeEntity bee : bees) {
+            bee.returnCarriedItemsToNetwork();
             bee.discard();
         }
     }
@@ -588,18 +547,7 @@ public class StorageDeliveryManager {
      * Appelé par la DeliveryBeeEntity quand elle termine sa livraison.
      */
     public void completeTask(UUID taskId) {
-        Iterator<DeliveryTask> it = activeTasks.iterator();
-        while (it.hasNext()) {
-            DeliveryTask task = it.next();
-            if (task.getTaskId().equals(taskId)) {
-                task.setState(DeliveryTask.DeliveryState.COMPLETED);
-                completedTaskIds.add(taskId);
-                it.remove();
-                parent.setChanged();
-                parent.getItemAggregator().setNeedsSync(true);
-                return;
-            }
-        }
+        finishTask(taskId, DeliveryTask.DeliveryState.COMPLETED);
     }
 
     /**
@@ -607,11 +555,25 @@ public class StorageDeliveryManager {
      * Appelé par la DeliveryBeeEntity en cas de timeout.
      */
     public void failTask(UUID taskId) {
+        finishTask(taskId, DeliveryTask.DeliveryState.FAILED);
+    }
+
+    /**
+     * Termine une tache active: met a jour l'etat, retire de la liste, marque pour sync.
+     * Notifie le RequestManager du resultat.
+     */
+    private void finishTask(UUID taskId, DeliveryTask.DeliveryState state) {
         Iterator<DeliveryTask> it = activeTasks.iterator();
         while (it.hasNext()) {
             DeliveryTask task = it.next();
             if (task.getTaskId().equals(taskId)) {
-                task.setState(DeliveryTask.DeliveryState.FAILED);
+                task.setState(state);
+                if (state == DeliveryTask.DeliveryState.COMPLETED) {
+                    completedTaskIds.add(taskId);
+                    parent.getRequestManager().onTaskCompleted(taskId);
+                } else if (state == DeliveryTask.DeliveryState.FAILED) {
+                    parent.getRequestManager().onTaskFailed(taskId);
+                }
                 it.remove();
                 parent.setChanged();
                 parent.getItemAggregator().setNeedsSync(true);
@@ -647,7 +609,7 @@ public class StorageDeliveryManager {
         for (DeliveryTask task : activeTasks) {
             if (task.getTaskId().equals(taskId)) {
                 task.setState(DeliveryTask.DeliveryState.FAILED);
-                killBeeForTask(task);
+                recallBeeForTask(task);
                 handleCancelledTask(task);
                 cancelDependentTasks(taskId);
                 parent.setChanged();
@@ -675,20 +637,22 @@ public class StorageDeliveryManager {
     }
 
     /**
-     * Gère les conséquences de l'annulation d'une tâche.
-     * Pour DEPOSIT: remet les items dans le réseau.
+     * Gere les consequences de l'annulation d'une tache.
+     * Pour les taches preloaded: remet les items dans le reseau.
      */
     private void handleCancelledTask(DeliveryTask task) {
-        if (task.getType() == DeliveryTask.DeliveryType.DEPOSIT) {
+        if (task.isPreloaded()) {
             parent.getItemAggregator().depositItem(
                 task.getTemplate().copyWithCount(task.getCount()));
         }
     }
 
     /**
-     * Tue la bee assignée à une tâche active.
+     * Rappelle la bee assignee a une tache active.
+     * La bee volera directement vers le controller, restituera ses items, puis se discard.
+     * Identifie la bee par taskId (fiable meme si plusieurs bees transportent le meme item).
      */
-    private void killBeeForTask(DeliveryTask task) {
+    private void recallBeeForTask(DeliveryTask task) {
         if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
 
         List<DeliveryBeeEntity> bees = parent.getLevel().getEntitiesOfClass(
@@ -697,10 +661,8 @@ public class StorageDeliveryManager {
             bee -> parent.getBlockPos().equals(bee.getControllerPos())
         );
         for (DeliveryBeeEntity bee : bees) {
-            if (bee.getTemplate() != null &&
-                ItemStack.isSameItemSameComponents(bee.getTemplate(), task.getTemplate()) &&
-                bee.getRequestCount() == task.getCount()) {
-                bee.discard();
+            if (task.getTaskId().equals(bee.getTaskId())) {
+                bee.recall();
                 break;
             }
         }
@@ -728,10 +690,39 @@ public class StorageDeliveryManager {
             task.getTemplate(),
             task.getCount(),
             task.getState().name(),
-            task.getType().name(),
             task.getDependencies(),
-            task.getOrigin().name()
+            task.getOrigin().name(),
+            computeBlockedReason(task)
         );
+    }
+
+    /**
+     * Calcule la raison de blocage d'une tache QUEUED.
+     * Retourne une cle de langue ou une chaine vide si non bloquee.
+     */
+    private String computeBlockedReason(DeliveryTask task) {
+        if (task.getState() != DeliveryTask.DeliveryState.QUEUED) return "";
+
+        if (honeyDepleted) return "gui.beemancer.tasks.blocked.honey_depleted";
+
+        if (activeTasks.size() >= MAX_ACTIVE_BEES) return "gui.beemancer.tasks.blocked.no_bee_slot";
+
+        if (!task.isReady(completedTaskIds)) return "gui.beemancer.tasks.blocked.dependency_pending";
+
+        // Pour les taches non-preloaded, verifier la disponibilite a la source
+        if (!task.isPreloaded()) {
+            int available = countItemInChest(task.getTemplate(), task.getSourcePos());
+            if (available <= 0) return "gui.beemancer.tasks.blocked.items_unavailable";
+        }
+
+        // Verifier que la source existe encore (sauf preloaded)
+        if (!task.isPreloaded() && parent.getLevel() != null && task.getSourcePos() != null
+                && parent.getLevel().isLoaded(task.getSourcePos())) {
+            BlockEntity be = parent.getLevel().getBlockEntity(task.getSourcePos());
+            if (be == null) return "gui.beemancer.tasks.blocked.target_missing";
+        }
+
+        return "";
     }
 
     /**
@@ -799,7 +790,6 @@ public class StorageDeliveryManager {
         for (DeliveryTask task : activeTasks) {
             CompoundTag taskTag = task.save(registries);
             taskTag.putString("State", DeliveryTask.DeliveryState.QUEUED.name());
-            taskTag.remove("AssignedBeeId");
             queueTag.add(taskTag);
         }
         tag.put("DeliveryQueue", queueTag);

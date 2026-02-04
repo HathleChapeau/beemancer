@@ -22,7 +22,7 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
-import com.chapeau.beemancer.common.block.storage.DeliveryTask;
+import com.chapeau.beemancer.common.block.storage.InterfaceRequest;
 import com.chapeau.beemancer.common.menu.storage.StorageTerminalMenu;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -179,32 +179,25 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     }
 
     /**
-     * Demande des items au réseau.
-     * Si pas assez de place dans les slots pickup, les items restants
-     * sont mis en file d'attente.
+     * Demande des items au réseau via le RequestManager.
+     * Si la demande depasse la quantite max, le surplus est mis en file d'attente.
      *
-     * @return les items extraits immédiatement (peut être moins que demandé)
+     * @return toujours EMPTY (les items arrivent via la bee)
      */
     public ItemStack requestItem(ItemStack template, int count) {
         StorageControllerBlockEntity controller = getController();
         if (controller == null) return ItemStack.EMPTY;
 
-        // Limiter par la quantité max du controller
         int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
         int toRequest = Math.min(count, maxQuantity);
 
-        // Trouver un coffre contenant l'item
-        BlockPos chestPos = controller.findChestWithItem(template, 1);
-        if (chestPos == null) return ItemStack.EMPTY;
-
-        // Créer une tâche de livraison (extraction)
-        DeliveryTask task = new DeliveryTask(
-            template, toRequest, chestPos, worldPosition,
-            DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.REQUEST
+        InterfaceRequest request = new InterfaceRequest(
+            worldPosition, InterfaceRequest.RequestType.IMPORT, template,
+            toRequest, InterfaceRequest.TaskOrigin.REQUEST
         );
-        controller.addDeliveryTask(task);
+        controller.getRequestManager().publishRequest(request);
 
-        // Ajouter le reste à la file d'attente si demande > max quantité
+        // Ajouter le reste a la file d'attente si demande > max quantite
         int pendingCount = count - toRequest;
         if (pendingCount > 0) {
             addToPendingQueue(template.copy(), pendingCount);
@@ -257,6 +250,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     /**
      * Traite les requêtes en attente quand de la place se libère.
+     * Publie des InterfaceRequests via le RequestManager.
      */
     private void processPendingRequests() {
         if (level == null || level.isClientSide()) return;
@@ -266,20 +260,18 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         if (controller == null) return;
 
         int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
+        RequestManager requestManager = controller.getRequestManager();
 
         List<PendingRequest> toRemove = new ArrayList<>();
 
         for (PendingRequest request : pendingRequests) {
             int toRequest = Math.min(request.count, maxQuantity);
 
-            BlockPos chestPos = controller.findChestWithItem(request.item, 1);
-            if (chestPos == null) continue;
-
-            DeliveryTask task = new DeliveryTask(
-                request.item, toRequest, chestPos, worldPosition,
-                DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.REQUEST
+            InterfaceRequest interfaceRequest = new InterfaceRequest(
+                worldPosition, InterfaceRequest.RequestType.IMPORT, request.item,
+                toRequest, InterfaceRequest.TaskOrigin.REQUEST
             );
-            controller.addDeliveryTask(task);
+            requestManager.publishRequest(interfaceRequest);
 
             request.count -= toRequest;
             if (request.count <= 0) {
@@ -322,7 +314,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     }
 
     /**
-     * Tente de déposer un item du slot deposit vers le réseau.
+     * Tente de deposer un item du slot deposit vers le reseau via RequestManager.
      */
     private void tryDepositToNetwork(int slot) {
         if (level == null || level.isClientSide()) return;
@@ -340,19 +332,16 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
                 int toDeposit = Math.min(stack.getCount(), maxQuantity);
 
-                BlockPos chestPos = controller.findSlotForItem(stack);
-                if (chestPos == null) break;
-
                 ItemStack toSend = stack.copy();
                 toSend.setCount(toDeposit);
                 stack.shrink(toDeposit);
                 depositSlots.setStackInSlot(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
 
-                DeliveryTask task = new DeliveryTask(
-                    toSend, toDeposit, chestPos, worldPosition,
-                    DeliveryTask.DeliveryType.DEPOSIT, DeliveryTask.TaskOrigin.REQUEST
+                InterfaceRequest request = new InterfaceRequest(
+                    worldPosition, InterfaceRequest.RequestType.EXPORT, toSend,
+                    toDeposit, InterfaceRequest.TaskOrigin.REQUEST, true
                 );
-                controller.addDeliveryTask(task);
+                controller.getRequestManager().publishRequest(request);
             }
         } finally {
             isDepositing = false;

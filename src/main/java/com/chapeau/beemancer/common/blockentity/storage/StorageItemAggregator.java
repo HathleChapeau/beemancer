@@ -22,6 +22,7 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.TaskDisplayData;
+import com.chapeau.beemancer.core.util.ContainerHelper;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageTasksSyncPacket;
 import net.minecraft.core.BlockPos;
@@ -266,66 +267,27 @@ public class StorageItemAggregator {
         Set<BlockPos> chests = parent.getAllNetworkChests();
         ItemStack remaining = stack.copy();
 
+        // Pass 1: deposit in chests that already contain the same item
         for (BlockPos chestPos : chests) {
             if (remaining.isEmpty()) break;
             if (!parent.getLevel().isLoaded(chestPos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
-                boolean hasItem = false;
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    if (ItemStack.isSameItemSameComponents(container.getItem(i), remaining)) {
-                        hasItem = true;
-                        break;
-                    }
-                }
-
-                if (hasItem) {
-                    for (int i = 0; i < container.getContainerSize(); i++) {
-                        ItemStack existing = container.getItem(i);
-                        if (ItemStack.isSameItemSameComponents(existing, remaining)) {
-                            int space = existing.getMaxStackSize() - existing.getCount();
-                            int toTransfer = Math.min(space, remaining.getCount());
-                            if (toTransfer > 0) {
-                                existing.grow(toTransfer);
-                                remaining.shrink(toTransfer);
-                                container.setChanged();
-                            }
-                        }
-                        if (remaining.isEmpty()) break;
-                    }
-
-                    for (int i = 0; i < container.getContainerSize() && !remaining.isEmpty(); i++) {
-                        if (container.getItem(i).isEmpty()) {
-                            int toTransfer = Math.min(remaining.getMaxStackSize(), remaining.getCount());
-                            ItemStack toPlace = remaining.copy();
-                            toPlace.setCount(toTransfer);
-                            container.setItem(i, toPlace);
-                            remaining.shrink(toTransfer);
-                            container.setChanged();
-                        }
-                    }
+                if (ContainerHelper.countItem(container, remaining) > 0) {
+                    remaining = ContainerHelper.insertItem(container, remaining);
                 }
             }
         }
 
+        // Pass 2: deposit in any chest with empty slots
         for (BlockPos chestPos : chests) {
             if (remaining.isEmpty()) break;
             if (!parent.getLevel().isLoaded(chestPos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    if (container.getItem(i).isEmpty()) {
-                        int toTransfer = Math.min(remaining.getMaxStackSize(), remaining.getCount());
-                        ItemStack toPlace = remaining.copy();
-                        toPlace.setCount(toTransfer);
-                        container.setItem(i, toPlace);
-                        remaining.shrink(toTransfer);
-                        container.setChanged();
-                    }
-                    if (remaining.isEmpty()) break;
-                }
+                remaining = ContainerHelper.insertItem(container, remaining);
             }
         }
 
@@ -352,20 +314,10 @@ public class StorageItemAggregator {
 
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack existing = container.getItem(i);
-                    if (ItemStack.isSameItemSameComponents(existing, template)) {
-                        int toTake = Math.min(needed, existing.getCount());
-                        existing.shrink(toTake);
-                        result.grow(toTake);
-                        needed -= toTake;
-                        container.setChanged();
-
-                        if (existing.isEmpty()) {
-                            container.setItem(i, ItemStack.EMPTY);
-                        }
-                    }
-                    if (needed <= 0) break;
+                ItemStack extracted = ContainerHelper.extractItem(container, template, needed);
+                if (!extracted.isEmpty()) {
+                    result.grow(extracted.getCount());
+                    needed -= extracted.getCount();
                 }
             }
         }

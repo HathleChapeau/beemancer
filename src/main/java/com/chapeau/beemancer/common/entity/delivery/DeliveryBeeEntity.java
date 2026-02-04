@@ -1,28 +1,26 @@
 /**
  * ============================================================
  * [DeliveryBeeEntity.java]
- * Description: Abeille visuelle de livraison pour le réseau de stockage
+ * Description: Abeille visuelle de livraison pour le reseau de stockage
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance                    | Raison                | Utilisation                    |
+ * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
- * | Bee                           | Entité parent        | Skin vanilla                   |
- * | DeliveryTask                  | Tâche assignée       | Navigation et logique          |
- * | StorageControllerBlockEntity  | Controller parent    | Extraction/dépôt items         |
+ * | Bee                           | Entite parent        | Skin vanilla                   |
+ * | StorageControllerBlockEntity  | Controller parent    | Extraction/depot items         |
  * | DeliveryPhaseGoal             | AI unique            | Vol → attente → retour         |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
- * - StorageControllerBlockEntity.java (spawn)
+ * UTILISE PAR:
+ * - StorageDeliveryManager.java (spawn)
  * - ClientSetup.java (renderer = vanilla BeeRenderer)
  *
  * ============================================================
  */
 package com.chapeau.beemancer.common.entity.delivery;
 
-import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,38 +48,41 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Abeille de livraison pour le réseau de stockage.
+ * Abeille de livraison pour le reseau de stockage.
  * Purement visuelle: skin de Bee vanilla avec pathfinding volant.
  * Tous les comportements vanilla (anger, sting, pollination, hive, breeding,
- * sons, drops, interactions) sont neutralisés.
+ * sons, drops, interactions) sont neutralises.
  *
- * Timeout: se discard après 2400 ticks (2 min).
- * Vérifie chaque tick que le controller est encore formé.
+ * Flux unifie: source → extraction → controller → dest → depot → controller.
+ * Si preloaded (items deja charges), saute la phase source.
+ *
+ * Timeout: se discard apres 2400 ticks (2 min).
+ * Verifie chaque tick que le controller est encore forme.
  */
 public class DeliveryBeeEntity extends Bee {
 
     private static final int TIMEOUT_TICKS = 2400;
 
     private BlockPos controllerPos;
-    private BlockPos targetPos;
+    private BlockPos sourcePos;
     private BlockPos returnPos;
-    private BlockPos terminalPos;
+    private BlockPos destPos;
     private ItemStack template = ItemStack.EMPTY;
     private int requestCount;
     private ItemStack carriedItems = ItemStack.EMPTY;
-    private DeliveryTask.DeliveryType deliveryType;
     private UUID taskId;
     private float flySpeedMultiplier = 1.0f;
     private float searchSpeedMultiplier = 1.0f;
     private int ticksAlive = 0;
+    private boolean recalled = false;
 
     // Waypoints pour le trajet multi-relais
-    // outboundWaypoints: controller → relay1 → relay2 → ... → target
-    // returnWaypoints: target → ... → relay2 → relay1 → controller
-    // terminalWaypoints: controller → relay1 → ... → terminal (pour livraison EXTRACT a une interface)
+    // outboundWaypoints: controller → relay1 → relay2 → ... → source
+    // returnWaypoints: source → ... → relay2 → relay1 → controller
+    // destWaypoints: controller → relay1 → ... → dest (pour livraison a une interface/coffre)
     private List<BlockPos> outboundWaypoints = new ArrayList<>();
     private List<BlockPos> returnWaypoints = new ArrayList<>();
-    private List<BlockPos> terminalWaypoints = new ArrayList<>();
+    private List<BlockPos> destWaypoints = new ArrayList<>();
 
     public DeliveryBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
@@ -115,21 +116,20 @@ public class DeliveryBeeEntity extends Bee {
     }
 
     /**
-     * Initialise la tâche de livraison après le spawn.
-     * Doit être appelé immédiatement après avoir spawn l'entité.
+     * Initialise la tache de livraison apres le spawn.
+     * Doit etre appele immediatement apres avoir spawn l'entite.
      */
-    public void initDeliveryTask(BlockPos controllerPos, BlockPos targetPos, BlockPos returnPos,
-                                  BlockPos terminalPos, ItemStack template, int requestCount,
-                                  DeliveryTask.DeliveryType type, ItemStack carriedItems,
+    public void initDeliveryTask(BlockPos controllerPos, BlockPos sourcePos, BlockPos returnPos,
+                                  BlockPos destPos, ItemStack template, int requestCount,
+                                  ItemStack carriedItems,
                                   float flySpeedMultiplier, float searchSpeedMultiplier,
                                   UUID taskId) {
         this.controllerPos = controllerPos;
-        this.targetPos = targetPos;
+        this.sourcePos = sourcePos;
         this.returnPos = returnPos;
-        this.terminalPos = terminalPos;
+        this.destPos = destPos;
         this.template = template.copy();
         this.requestCount = requestCount;
-        this.deliveryType = type;
         this.carriedItems = carriedItems.copy();
         this.flySpeedMultiplier = flySpeedMultiplier;
         this.searchSpeedMultiplier = searchSpeedMultiplier;
@@ -188,7 +188,7 @@ public class DeliveryBeeEntity extends Bee {
     }
 
     // =========================================================================
-    // INVULNÉRABILITÉ — Aucun dégât, aucune mort, aucun loot
+    // INVULNERABILITE — Aucun degat, aucune mort, aucun loot
     // =========================================================================
 
     @Override
@@ -226,7 +226,7 @@ public class DeliveryBeeEntity extends Bee {
     public boolean canBeLeashed() { return false; }
 
     // =========================================================================
-    // DESPAWN — Ne despawn jamais (géré par timeout interne)
+    // DESPAWN — Ne despawn jamais (gere par timeout interne)
     // =========================================================================
 
     @Override
@@ -248,7 +248,7 @@ public class DeliveryBeeEntity extends Bee {
     }
 
     // =========================================================================
-    // ANGER / STING — Désactivés
+    // ANGER / STING — Desactives
     // =========================================================================
 
     @Override
@@ -267,7 +267,7 @@ public class DeliveryBeeEntity extends Bee {
     public boolean doHurtTarget(Entity target) { return false; }
 
     // =========================================================================
-    // POLLINATION / HIVE / NECTAR — Désactivés
+    // POLLINATION / HIVE / NECTAR — Desactives
     // =========================================================================
 
     @Override
@@ -299,7 +299,7 @@ public class DeliveryBeeEntity extends Bee {
     protected float getSoundVolume() { return 0.0f; }
 
     // =========================================================================
-    // BREEDING — Désactivé
+    // BREEDING — Desactive
     // =========================================================================
 
     @Override
@@ -313,7 +313,7 @@ public class DeliveryBeeEntity extends Bee {
     // =========================================================================
 
     /**
-     * Notifie le controller que la tâche est complétée.
+     * Notifie le controller que la tache est completee.
      */
     public void notifyTaskCompleted() {
         if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
@@ -325,7 +325,7 @@ public class DeliveryBeeEntity extends Bee {
     }
 
     /**
-     * Notifie le controller que la tâche a échoué (timeout).
+     * Notifie le controller que la tache a echoue (timeout).
      */
     public void notifyTaskFailed() {
         if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
@@ -336,37 +336,36 @@ public class DeliveryBeeEntity extends Bee {
         }
     }
 
+    /**
+     * Rappelle la bee vers le controller. Elle volera directement vers returnPos,
+     * restituera ses items au reseau, puis se discard.
+     */
+    public void recall() {
+        this.recalled = true;
+    }
+
+    public boolean isRecalled() { return recalled; }
+
     public UUID getTaskId() { return taskId; }
     public BlockPos getControllerPos() { return controllerPos; }
     public List<BlockPos> getOutboundWaypoints() { return outboundWaypoints; }
     public List<BlockPos> getReturnWaypoints() { return returnWaypoints; }
-    public List<BlockPos> getTerminalWaypoints() { return terminalWaypoints; }
+    public List<BlockPos> getDestWaypoints() { return destWaypoints; }
 
     public void setWaypoints(List<BlockPos> outbound, List<BlockPos> returnPath) {
         this.outboundWaypoints = new ArrayList<>(outbound);
         this.returnWaypoints = new ArrayList<>(returnPath);
     }
 
-    public void setTerminalWaypoints(List<BlockPos> terminalPath) {
-        this.terminalWaypoints = new ArrayList<>(terminalPath);
+    public void setDestWaypoints(List<BlockPos> destPath) {
+        this.destWaypoints = new ArrayList<>(destPath);
     }
 
-    /**
-     * Verifie si l'abeille doit voler jusqu'au terminal apres le retour au controller.
-     * Vrai pour les taches EXTRACT ou le terminal (import interface) est distinct du controller.
-     */
-    public boolean needsTerminalFlight() {
-        return deliveryType == DeliveryTask.DeliveryType.EXTRACT
-            && terminalPos != null
-            && controllerPos != null
-            && !terminalPos.equals(controllerPos);
-    }
-    public BlockPos getTargetPos() { return targetPos; }
+    public BlockPos getSourcePos() { return sourcePos; }
     public BlockPos getReturnPos() { return returnPos; }
-    public BlockPos getTerminalPos() { return terminalPos; }
+    public BlockPos getDestPos() { return destPos; }
     public ItemStack getTemplate() { return template; }
     public int getRequestCount() { return requestCount; }
-    public DeliveryTask.DeliveryType getDeliveryType() { return deliveryType; }
     public ItemStack getCarriedItems() { return carriedItems; }
     public float getFlySpeedMultiplier() { return flySpeedMultiplier; }
     public float getSearchSpeedMultiplier() { return searchSpeedMultiplier; }
@@ -376,7 +375,7 @@ public class DeliveryBeeEntity extends Bee {
     }
 
     // =========================================================================
-    // NBT — Éphémère, discard au rechargement
+    // NBT — Ephemere, discard au rechargement
     // =========================================================================
 
     @Override

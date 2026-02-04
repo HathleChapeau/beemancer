@@ -37,9 +37,9 @@ public record TaskDisplayData(
     ItemStack template,
     int count,
     String state,
-    String type,
     List<UUID> dependencyIds,
-    String origin
+    String origin,
+    String blockedReason
 ) {
 
     /**
@@ -50,12 +50,12 @@ public record TaskDisplayData(
         ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, template);
         buf.writeInt(count);
         buf.writeUtf(state, 32);
-        buf.writeUtf(type, 16);
         buf.writeInt(dependencyIds.size());
         for (UUID depId : dependencyIds) {
             buf.writeUUID(depId);
         }
         buf.writeUtf(origin, 16);
+        buf.writeUtf(blockedReason, 64);
     }
 
     /**
@@ -66,13 +66,13 @@ public record TaskDisplayData(
         ItemStack template = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
         int count = buf.readInt();
         String state = buf.readUtf(32);
-        String type = buf.readUtf(16);
         int depCount = buf.readInt();
         List<UUID> deps = new ArrayList<>(depCount);
         for (int i = 0; i < depCount; i++) {
             deps.add(buf.readUUID());
         }
         String origin = buf.readUtf(16);
-        return new TaskDisplayData(taskId, template, count, state, type, deps, origin);
+        String blockedReason = buf.readUtf(64);
+        return new TaskDisplayData(taskId, template, count, state, deps, origin, blockedReason);
     }
 }

@@ -3,6 +3,207 @@
 ################################################################################
 
 ================================================================================
+2026-02-04 - Phase 5: GUI Localization + Finalization
+================================================================================
+
+Phase finale du refactoring du systeme de livraison (5/5).
+
+LOCALIZATION:
+- getStateLabel() dans StorageTerminalScreen utilise maintenant des cles i18n
+- Ajout cles gui.beemancer.tasks.state.* dans en_us.json et fr_fr.json
+  (flying, queued, completed, failed)
+
+CLEANUP:
+- Supprime DeliveryState.WAITING et RETURNING (jamais utilises)
+- Simplifie isActive() → verifie uniquement FLYING
+- Supprime cases WAITING/RETURNING dans getStateColor/getStateLabel
+
+FICHIERS MODIFIES (4):
+- DeliveryTask.java: simplifie DeliveryState enum
+- StorageTerminalScreen.java: localise state labels, supprime dead states
+- en_us.json: ajout 4 cles state
+- fr_fr.json: ajout 4 cles state
+
+================================================================================
+2026-02-04 - Phase 4: Fix Bee Identification + Recall Mechanism + Item Recovery
+================================================================================
+
+Refactoring Phase 4 du systeme de livraison (5 phases prevues).
+
+BUGS FIXES:
+- killBeeForTask identifiait les bees par template+count (fragile) → maintenant par taskId
+- Items en vol perdus lors de l'annulation d'une tache active → maintenant restitues
+- killAllDeliveryBees ne restituait pas les items transportes → maintenant oui
+
+AJOUTS:
+- DeliveryBeeEntity.recalled flag + recall() + isRecalled(): mecanisme de rappel
+- DeliveryPhaseGoal.handleRecall(): vol direct vers returnPos, restitution items, discard
+- recallBeeForTask() remplace killBeeForTask(): identification par taskId + recall au lieu de kill
+
+FICHIERS MODIFIES (3):
+- DeliveryBeeEntity.java: ajout recalled flag, recall(), isRecalled()
+- DeliveryPhaseGoal.java: ajout handleRecall(), check isRecalled() dans tick()
+- StorageDeliveryManager.java: killBeeForTask → recallBeeForTask (taskId), killAllDeliveryBees securise
+
+COMPORTEMENT:
+- Annulation tache en queue: tache retiree, aucune bee a rappeler
+- Annulation tache active: bee rappellee, vole directement vers controller, restitue items, discard
+- Destruction controller: toutes bees tuees immediatement avec restitution items
+
+================================================================================
+2026-02-04 - Phase 3: Suppression DeliveryType + Flux Unifié + Fix Terminal Export
+================================================================================
+
+Refactoring Phase 3 du système de livraison (5 phases prévues).
+
+SUPPRESSIONS:
+- DeliveryTask.DeliveryType enum (EXTRACT/DEPOSIT) supprimé
+- DeliveryBeeEntity.deliveryType, needsTerminalFlight() supprimés
+- Branches DEPOSIT dans DeliveryPhaseGoal supprimées
+- TaskDisplayData.type field supprimé
+
+RENOMMAGES:
+- DeliveryTask: targetPos → sourcePos, terminalPos → destPos, originPos supprimé
+- DeliveryBeeEntity: targetPos → sourcePos, terminalPos → destPos
+- DeliveryBeeEntity: terminalWaypoints → destWaypoints, setTerminalWaypoints → setDestWaypoints
+- DeliveryPhaseGoal phases: FLY_OUTBOUND → FLY_TO_SOURCE, WAIT_AT_TARGET → WAIT_AT_SOURCE,
+  FLY_RETURN → FLY_TO_CONTROLLER, FLY_TO_TERMINAL → FLY_TO_DEST,
+  WAIT_AT_TERMINAL → WAIT_AT_DEST, terminalIdx → destIdx
+
+AJOUTS:
+- DeliveryTask.preloaded: flag indiquant que les items sont pré-chargés sur la bee
+- InterfaceRequest.preloaded: propagé depuis le terminal deposit
+- DeliveryPhaseGoal: si preloaded, saute directement à FLY_TO_DEST (skip source)
+- StorageDeliveryManager: spawnDeliveryBee pré-charge les items si task.isPreloaded()
+- RequestManager.cancelRequest: remet items dans le réseau pour demandes preloaded non assignées
+
+FIX BUG TERMINAL EXPORT:
+- Avant: terminal retirait items du slot, publiait EXPORT, bee arrivait au terminal → rien à extraire → échec
+- Après: terminal marque la request preloaded=true, bee spawn avec items pré-chargés, saute la source
+
+FICHIERS MODIFIÉS (8):
+- DeliveryTask.java: supprimé DeliveryType, renommé champs, ajouté preloaded
+- DeliveryBeeEntity.java: supprimé deliveryType, renommé champs/waypoints
+- DeliveryPhaseGoal.java: renommé phases, supprimé branches DEPOSIT, géré preloaded
+- StorageDeliveryManager.java: adapté spawn/cancel/validate/blockedReason au flux unifié
+- RequestManager.java: adapté constructeurs DeliveryTask, géré preloaded cancel
+- StorageTerminalBlockEntity.java: marqué exports preloaded=true
+- TaskDisplayData.java: supprimé champ type, adapté serialisation
+- StorageTerminalScreen.java: remplacé indicateur type par indicateur origin
+
+NBT BACKWARDS COMPAT:
+- DeliveryTask.load: accepte SourcePos/TargetPos/TargetChest et DestPos/TerminalPos
+
+================================================================================
+2026-02-04 - Phase 2: Système de Demandes (InterfaceRequest + RequestManager)
+================================================================================
+
+Refactoring Phase 2 du système de livraison (5 phases prévues).
+
+ARCHITECTURE ENTITÉS:
+- InterfaceRequest: demande publiée par interfaces/terminaux (item, quantité, source, type)
+- RequestManager: gestionnaire central des demandes attaché au StorageController
+
+FICHIERS CRÉÉS (2):
+- common/block/storage/InterfaceRequest.java: classe simple immutable
+- common/blockentity/storage/RequestManager.java: registre + résolution demandes
+
+FICHIERS MODIFIÉS (6):
+- ImportInterfaceBlockEntity: publie InterfaceRequest au lieu de créer DeliveryTask directement
+- ExportInterfaceBlockEntity: publie InterfaceRequest au lieu de créer DeliveryTask directement
+- StorageTerminalBlockEntity: requestItem() et tryDepositToNetwork() publient InterfaceRequest
+- StorageControllerBlockEntity: ajout RequestManager (field, tick, NBT, accesseur)
+- StorageDeliveryManager: finishTask notifie RequestManager (onTaskCompleted/onTaskFailed)
+- NetworkInterfaceBlockEntity: suppression pendingTasks (remplacé par RequestManager)
+  - unlinkTerminal/unlinkInterface annulent les demandes via cancelRequestsFromSource()
+
+NBT BACKWARDS COMPAT:
+- RequestManager sauvegarde/charge queue via "Requests" (List de requêtes)
+- NetworkInterfaceBlockEntity: "PendingTasks" deprecated mais toujours chargé
+
+INTÉGRATION COMPLÈTE:
+- Cycle: Interface → InterfaceRequest → RequestManager → StorageDeliveryManager
+- RequestManager valide, ordonnance, et annule demandes centralement
+- Tous les types de demandes (Import/Export/Terminal) passent par le même système
+
+================================================================================
+2026-02-04 - Phase 1: Nettoyage Delivery System + ContainerHelper
+================================================================================
+
+Refactoring Phase 1 du systeme de livraison (5 phases prevues).
+
+1. DEAD CODE REMOVAL
+- DeliveryTask: suppression champ assignedBeeId (jamais lu avec valeur non-null)
+- DeliveryTask: suppression getter/setter/NBT pour assignedBeeId
+- StorageDeliveryManager: suppression setAssignedBeeId(null) et taskTag.remove("AssignedBeeId")
+- StorageControllerBlockEntity: migrateOldNetworkData() marquee @Deprecated
+
+2. EXTRACTION ContainerHelper (core/util/ContainerHelper.java) — NOUVEAU
+- insertItem(Container, ItemStack) / insertItem(Container, ItemStack, int[])
+- extractItem(Container, ItemStack, int)
+- countItem(Container, ItemStack) / countItem(Container, ItemStack, int[])
+- hasSpaceFor(Container, ItemStack, int)
+- availableSpace(Container, ItemStack)
+
+Fichiers refactores:
+- StorageDeliveryManager: depositIntoChest, extractItemForDelivery, countItemInChest,
+  findChestWithItem, findChestWithSpace → utilisent ContainerHelper
+- DeliveryPhaseGoal: depositIntoContainer, hasSpaceForItem → utilisent ContainerHelper
+- ImportInterfaceBlockEntity: insertIntoSlots, countInSlots → utilisent ContainerHelper
+- StorageItemAggregator: depositItem, extractItem → utilisent ContainerHelper
+
+3. MERGE completeTask/failTask → finishTask
+- StorageDeliveryManager: nouvelle methode privee finishTask(UUID, DeliveryState)
+- completeTask() et failTask() delegent a finishTask()
+
+4. EXTRACTION NAVIGATION HELPER (DeliveryPhaseGoal)
+- Nouvelle methode navigateWaypoints(List<BlockPos>, int[], BlockPos) → boolean
+- tickFlyOutbound, tickFlyReturn, tickFlyToTerminal, tickFlyHome simplifies
+- Remplacement de 4x ~20 lignes par 4x ~5 lignes + 1x helper ~25 lignes
+
+5. FIX BUG container.setChanged()
+- ImportInterfaceBlockEntity.insertIntoSlots: condition incorrecte
+  (remaining.getCount() != remaining.getMaxStackSize()) corrigee par
+  remplacement total via ContainerHelper.insertItem()
+
+================================================================================
+2026-02-04 - Export Relay Routing + Import Item Validation + Task Blocked Status
+================================================================================
+
+Corrections de 3 bugs majeurs sur le systeme de livraison.
+
+1. EXPORT BEES NE PASSENT PAS PAR LES RELAYS
+- DeliveryTask: +champ originPos (nullable, NBT compat) pour tracer l'interface source
+- ExportInterfaceBlockEntity: passe worldPosition comme originPos
+- StorageDeliveryManager.spawnDeliveryBee(): fallback findPathToOwnerNode(originPos)
+  quand findPathToChest(targetPos) echoue
+
+2. IMPORT CREE DES TACHES SANS VERIFIER LA DISPONIBILITE
+- ImportInterfaceBlockEntity: findChestWithItem(item, needed) au lieu de (item, 1)
+  avec fallback + ajustement du count reel via countItemInChest()
+- StorageDeliveryManager.spawnDeliveryBee(): re-validation EXTRACT au spawn,
+  ajuste le count ou fail si items disparus
+- StorageDeliveryManager: +countItemInChest()
+- StorageControllerBlockEntity: +delegation countItemInChest()
+
+3. AFFICHAGE RAISON DE BLOCAGE DES TACHES
+- TaskDisplayData: +champ blockedReason (String, network encode/decode)
+- StorageDeliveryManager: +computeBlockedReason() (honey, bees, dependency, items, space, target)
+- StorageTerminalScreen: affiche raison sous la ligne de tache en rouge
+- TASK_ROW_HEIGHT: 18 → 26, maxVisible: 8 → 6
+- Lang en_us/fr_fr: 6 cles de blocage
+
+FICHIERS MODIFIES (9):
+- DeliveryTask.java: +originPos, constructeurs, NBT, splitRemaining
+- StorageDeliveryManager.java: +countItemInChest, relay fallback, spawn validation, computeBlockedReason
+- StorageControllerBlockEntity.java: +delegation countItemInChest
+- ExportInterfaceBlockEntity.java: passe originPos
+- ImportInterfaceBlockEntity.java: verification count reel
+- TaskDisplayData.java: +blockedReason
+- StorageTerminalScreen.java: rendu blocked reason, row height 26
+- Lang en_us/fr_fr: +6 cles blocked
+
+================================================================================
 2026-02-04 - Delivery Bee Validation + Import Slot Fix + Edit Mode Fix + Alembic Layers
 ================================================================================
 

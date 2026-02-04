@@ -22,7 +22,7 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
-import com.chapeau.beemancer.common.block.storage.DeliveryTask;
+import com.chapeau.beemancer.common.block.storage.InterfaceRequest;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -75,7 +75,7 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
     private void doScanNoFilter(Container adjacent, StorageControllerBlockEntity controller,
                                  int maxQuantity) {
         int[] slots = getGlobalOperableSlots(adjacent);
-        createExportTasks(adjacent, controller, slots, 0, maxQuantity, null);
+        createExportRequests(adjacent, controller, slots,0, maxQuantity, null);
     }
 
     /**
@@ -85,20 +85,20 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
                                    InterfaceFilter filter, int maxQuantity) {
         int[] slots = getOperableSlots(adjacent, filter.getSelectedSlots());
         int keepQty = filter.getQuantity();
-        createExportTasks(adjacent, controller, slots, keepQty, maxQuantity, filter);
+        createExportRequests(adjacent, controller, slots,keepQty, maxQuantity, filter);
     }
 
     /**
-     * Cree des taches EXTRACT pour chaque type d'item a exporter.
-     * L'abeille va a l'inventaire adjacent, prend les items, puis vole
-     * jusqu'au coffre destination dans le reseau pour les deposer.
+     * Publie des demandes EXPORT pour chaque type d'item a exporter.
+     * Le controller (via RequestManager) decidera ou envoyer les items.
      *
      * @param filter si non-null, seuls les items matchant ce filtre sont exportes
      * @param keepQty 0=tout exporter, N=garder N items
      */
-    private void createExportTasks(Container adjacent, StorageControllerBlockEntity controller,
-                                    int[] slots, int keepQty, int maxQuantity,
-                                    InterfaceFilter filter) {
+    private void createExportRequests(Container adjacent, StorageControllerBlockEntity controller,
+                                       int[] slots, int keepQty, int maxQuantity,
+                                       InterfaceFilter filter) {
+        RequestManager requestManager = controller.getRequestManager();
         Map<String, ItemStack> templatesByKey = new LinkedHashMap<>();
         Map<String, Integer> totalCountsByKey = new LinkedHashMap<>();
 
@@ -113,34 +113,23 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             totalCountsByKey.merge(key, stack.getCount(), Integer::sum);
         }
 
-        BlockPos adjacentPos = getAdjacentPos();
-
         for (Map.Entry<String, ItemStack> entry : templatesByKey.entrySet()) {
-            String key = entry.getKey();
             ItemStack template = entry.getValue();
 
-            int pendingExportCount = getPendingCount(key);
+            int requestedCount = requestManager.getRequestedCount(
+                worldPosition, InterfaceRequest.RequestType.EXPORT, template);
 
-            int totalCount = totalCountsByKey.get(key);
-            int exportable = totalCount - keepQty - pendingExportCount;
+            int totalCount = totalCountsByKey.get(entry.getKey());
+            int exportable = totalCount - keepQty - requestedCount;
             if (exportable <= 0) continue;
 
             int toExport = Math.min(exportable, maxQuantity);
 
-            // Trouver un coffre du reseau avec de la place
-            BlockPos destChest = controller.findChestWithSpace(template, toExport);
-            if (destChest == null) continue;
-
-            // Loop prevention: ne pas exporter vers le bloc adjacent lui-meme
-            if (destChest.equals(adjacentPos)) continue;
-
-            // EXTRACT: abeille va a l'adjacent, extrait, puis vole au coffre destination
-            DeliveryTask task = new DeliveryTask(
-                template, toExport, adjacentPos, destChest,
-                DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.AUTOMATION
+            InterfaceRequest request = new InterfaceRequest(
+                getAdjacentPos(), InterfaceRequest.RequestType.EXPORT, template,
+                toExport, InterfaceRequest.TaskOrigin.AUTOMATION
             );
-            controller.addDeliveryTask(task);
-            pendingTasks.put(key, new PendingTaskInfo(task.getTaskId(), toExport));
+            requestManager.publishRequest(request);
         }
     }
 

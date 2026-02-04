@@ -79,6 +79,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     private final StorageMultiblockManager multiblockManager = new StorageMultiblockManager(this);
     private final StorageItemAggregator itemAggregator = new StorageItemAggregator(this);
     private final StorageDeliveryManager deliveryManager = new StorageDeliveryManager(this);
+    private final RequestManager requestManager = new RequestManager(this);
 
     // === Essence slots ===
     private final ItemStackHandler essenceSlots = new ItemStackHandler(4) {
@@ -131,6 +132,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     public StorageMultiblockManager getMultiblockManager() { return multiblockManager; }
     public StorageItemAggregator getItemAggregator() { return itemAggregator; }
     public StorageDeliveryManager getDeliveryManager() { return deliveryManager; }
+    public RequestManager getRequestManager() { return requestManager; }
     public ItemStackHandler getEssenceSlots() { return essenceSlots; }
 
     // === MultiblockController Interface (delegue) ===
@@ -238,10 +240,12 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     /**
      * Retire un terminal du registre du reseau.
+     * Annule les demandes en cours depuis ce terminal.
      */
     public void unlinkTerminal(BlockPos terminalPos) {
         networkRegistry.unregisterBlock(terminalPos);
         itemAggregator.removeViewersForTerminal(terminalPos);
+        requestManager.cancelRequestsFromSource(terminalPos);
         setChanged();
         syncToClient();
     }
@@ -258,9 +262,11 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     /**
      * Retire une interface du registre du reseau.
+     * Annule les demandes en cours depuis cette interface.
      */
     public void unlinkInterface(BlockPos interfacePos) {
         networkRegistry.unregisterBlock(interfacePos);
+        requestManager.cancelRequestsFromSource(interfacePos);
         setChanged();
         syncToClient();
     }
@@ -296,6 +302,10 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         return deliveryManager.findChestWithSpace(template, count);
     }
 
+    public int countItemInChest(ItemStack template, BlockPos chestPos) {
+        return deliveryManager.countItemInChest(template, chestPos);
+    }
+
     public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
         return deliveryManager.extractItemForDelivery(template, count, chestPos);
     }
@@ -321,6 +331,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             be.deliveryManager.tickHoneyConsumption();
         }
 
+        be.requestManager.tick();
         be.deliveryManager.tickDelivery();
         be.tickEditMode();
         be.itemAggregator.cleanupViewers();
@@ -373,6 +384,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             // Managers specifiques au controller
             multiblockManager.save(tag);
             deliveryManager.save(tag, registries);
+            requestManager.save(tag, registries);
 
             // Essence slots
             tag.put("EssenceSlots", essenceSlots.serializeNBT(registries));
@@ -391,6 +403,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         // Managers specifiques au controller
         multiblockManager.load(tag);
         deliveryManager.load(tag, registries);
+        requestManager.load(tag, registries);
 
         // Essence slots
         if (tag.contains("EssenceSlots")) {
@@ -410,7 +423,9 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
      * Lit les anciennes listes LinkedTerminals, LinkedInterfaces et les coffres
      * du chestManager, puis les enregistre dans le registre avec le controller
      * comme proprietaire.
+     * @deprecated Kept for backward compatibility with pre-registry saves. Will be removed in a future version.
      */
+    @Deprecated
     private void migrateOldNetworkData(CompoundTag tag) {
         // Migrer les coffres du chestManager vers le registre
         for (BlockPos chestPos : getChestManager().getRegisteredChests()) {
