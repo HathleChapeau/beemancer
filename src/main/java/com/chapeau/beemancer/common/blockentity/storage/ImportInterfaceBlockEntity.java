@@ -171,17 +171,16 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
             if (filterItem.isEmpty()) continue;
 
             String key = itemKey(filterItem);
-            if (pendingTasks.containsKey(key)) continue;
+            int pendingCount = getPendingCount(key);
 
             int currentCount = countInSlots(adjacent, filterItem, slots);
 
             int needed;
             if (targetQty == 0) {
-                // Illimite: remplir autant que possible (stack size * slots disponibles)
                 int capacity = calculateCapacity(adjacent, filterItem, slots);
-                needed = capacity - currentCount;
+                needed = capacity - currentCount - pendingCount;
             } else {
-                needed = targetQty - currentCount;
+                needed = targetQty - currentCount - pendingCount;
             }
 
             if (needed <= 0) continue;
@@ -198,7 +197,7 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
                 DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.AUTOMATION
             );
             controller.addDeliveryTask(task);
-            pendingTasks.put(key, task.getTaskId());
+            pendingTasks.put(key, new PendingTaskInfo(task.getTaskId(), needed));
         }
     }
 
@@ -209,16 +208,16 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
             if (!filter.matches(networkItem, false)) continue;
 
             String key = itemKey(networkItem);
-            if (pendingTasks.containsKey(key)) continue;
+            int pendingCount = getPendingCount(key);
 
             int currentCount = countInSlots(adjacent, networkItem, slots);
 
             int needed;
             if (targetQty == 0) {
                 int capacity = calculateCapacity(adjacent, networkItem, slots);
-                needed = capacity - currentCount;
+                needed = capacity - currentCount - pendingCount;
             } else {
-                needed = targetQty - currentCount;
+                needed = targetQty - currentCount - pendingCount;
             }
 
             if (needed <= 0) continue;
@@ -235,7 +234,7 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
                 DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.AUTOMATION
             );
             controller.addDeliveryTask(task);
-            pendingTasks.put(key, task.getTaskId());
+            pendingTasks.put(key, new PendingTaskInfo(task.getTaskId(), needed));
         }
     }
 

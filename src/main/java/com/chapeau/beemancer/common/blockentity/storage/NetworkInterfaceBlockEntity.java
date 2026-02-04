@@ -73,7 +73,10 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     protected final List<InterfaceFilter> filters = new ArrayList<>();
     protected final Set<Integer> globalSelectedSlots = new HashSet<>();
-    protected final Map<String, UUID> pendingTasks = new HashMap<>();
+    protected record PendingTaskInfo(UUID taskId, int count) {}
+
+    protected final Map<String, PendingTaskInfo> pendingTasks = new HashMap<>();
+    protected boolean active = false;
     protected boolean hasAdjacentGui = false;
     protected int scanTimer = 0;
     private int guiCheckTimer = 0;
@@ -218,6 +221,18 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         return this instanceof ImportInterfaceBlockEntity;
     }
 
+    // === Active Toggle ===
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+        setChanged();
+        syncToClient();
+    }
+
     // === MenuProvider ===
 
     @Override
@@ -311,7 +326,23 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             return;
         }
         pendingTasks.entrySet().removeIf(entry ->
-            !controller.getDeliveryManager().isTaskPending(entry.getValue()));
+            !controller.getDeliveryManager().isTaskPending(entry.getValue().taskId()));
+    }
+
+    /**
+     * Retourne le nombre d'items en vol pour une cle donnee.
+     * Si la tache n'existe plus, retourne 0 et nettoie l'entree.
+     */
+    protected int getPendingCount(String key) {
+        PendingTaskInfo info = pendingTasks.get(key);
+        if (info == null) return 0;
+        StorageControllerBlockEntity controller = getController();
+        if (controller == null) return 0;
+        if (!controller.getDeliveryManager().isTaskPending(info.taskId())) {
+            pendingTasks.remove(key);
+            return 0;
+        }
+        return info.count();
     }
 
     // === Server Tick ===
@@ -336,6 +367,9 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
         if (scanTimer >= SCAN_INTERVAL) {
             scanTimer = 0;
+
+            if (!active) return;
+
             cleanupPendingTasks();
 
             StorageControllerBlockEntity controller = getController();
@@ -378,15 +412,17 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             // Pending tasks
             if (!pendingTasks.isEmpty()) {
                 ListTag tasksTag = new ListTag();
-                for (Map.Entry<String, UUID> entry : pendingTasks.entrySet()) {
+                for (Map.Entry<String, PendingTaskInfo> entry : pendingTasks.entrySet()) {
                     CompoundTag taskEntry = new CompoundTag();
                     taskEntry.putString("Key", entry.getKey());
-                    taskEntry.putUUID("TaskId", entry.getValue());
+                    taskEntry.putUUID("TaskId", entry.getValue().taskId());
+                    taskEntry.putInt("Count", entry.getValue().count());
                     tasksTag.add(taskEntry);
                 }
                 tag.put("PendingTasks", tasksTag);
             }
 
+            tag.putBoolean("Active", active);
             tag.putBoolean("HasAdjacentGui", hasAdjacentGui);
 
             saveExtra(tag, registries);
@@ -430,10 +466,14 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             ListTag tasksTag = tag.getList("PendingTasks", Tag.TAG_COMPOUND);
             for (int i = 0; i < tasksTag.size(); i++) {
                 CompoundTag taskEntry = tasksTag.getCompound(i);
-                pendingTasks.put(taskEntry.getString("Key"), taskEntry.getUUID("TaskId"));
+                UUID taskId = taskEntry.getUUID("TaskId");
+                int count = taskEntry.contains("Count") ? taskEntry.getInt("Count") : 1;
+                pendingTasks.put(taskEntry.getString("Key"),
+                    new PendingTaskInfo(taskId, count));
             }
         }
 
+        active = tag.getBoolean("Active");
         hasAdjacentGui = tag.getBoolean("HasAdjacentGui");
 
         loadExtra(tag, registries);

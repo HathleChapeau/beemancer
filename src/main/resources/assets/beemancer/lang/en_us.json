@@ -714,5 +714,7 @@
   "codex.beemancer.bees.stellar_bee.title": "Stellar Bee",
   "codex.beemancer.bees.stellar_bee.desc": "Born from a dying star, shedding nether star dust.",
   "block.beemancer.bee_spawner": "Flywheel Test Bee Spawner",
-  "entity.beemancer.flywheel_test_bee": "Test Bee"
+  "entity.beemancer.flywheel_test_bee": "Test Bee",
+  "gui.beemancer.interface.active": "Active",
+  "gui.beemancer.interface.inactive": "Inactive"
 }

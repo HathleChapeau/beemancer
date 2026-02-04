@@ -3,6 +3,42 @@
 ################################################################################
 
 ================================================================================
+2026-02-04 - Fix Import/Export Quantite + Fix Interface Pathfinding + Toggle Active
+================================================================================
+
+Correction de 3 bugs sur les Import/Export Interfaces:
+
+BUG 1: Import/Export enchainait les taches au lieu de respecter la quantite
+- pendingTasks passe de Map<String, UUID> a Map<String, PendingTaskInfo>
+- PendingTaskInfo record contient taskId + count
+- getPendingCount() verifie si la tache existe toujours et retourne le count
+- Import: needed -= pendingCount (scanItemMode + scanTextMode)
+- Export: exportable -= pendingExportCount
+- NBT backwards compat: "Count" absent → default 1
+
+BUG 2: Interface pathfinding ignorait les relays
+- Ajout findPathToOwnerNode() utilisant StorageNetworkRegistry.getOwner()
+- findPathToChest() essaie d'abord NetworkRegistry avant le BFS par chests
+- Suppression de findPathToPosition() (fallback distance avec seuil 15 blocs)
+- Les interfaces sont maintenant routees via leur relay proprietaire
+
+BUG 3: Toggle d'activation sur les interfaces
+- Champ active (defaut false) avec getter/setter + NBT
+- ACTION_TOGGLE_ACTIVE (8) dans InterfaceActionPacket
+- serverTick() skip le scan si !active
+- Bouton ON/OFF vert/rouge dans NetworkInterfaceScreen
+
+FICHIERS MODIFIES (7):
+- NetworkInterfaceBlockEntity.java: +PendingTaskInfo, +active, +getPendingCount(), NBT
+- InterfaceActionPacket.java: +ACTION_TOGGLE_ACTIVE (8), handler
+- ImportInterfaceBlockEntity.java: needed -= pendingCount (2 sites)
+- ExportInterfaceBlockEntity.java: exportable -= pendingExportCount
+- StorageDeliveryManager.java: +findPathToOwnerNode(), findPathToChest() refacto,
+  -findPathToPosition(), spawnDeliveryBee() simplifie
+- NetworkInterfaceScreen.java: +bouton ON/OFF toggle, renderStatus + mouseClicked
+- Lang en_us/fr_fr: +gui.beemancer.interface.active/inactive
+
+================================================================================
 2026-02-04 - Refacto DeliveryTask: TaskOrigin + GUI Requests/Automation
 ================================================================================
 

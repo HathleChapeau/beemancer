@@ -265,8 +265,8 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         GuiRenderHelper.renderContainerBackground(g, font, x, y, BG_WIDTH, BG_HEIGHT,
             titleKey, PLAYER_INV_Y - 2);
 
-        // Status: Linked / Not Linked (top right)
-        renderStatus(g, x, y);
+        // Status: ON/OFF toggle + Linked / Not Linked
+        renderStatus(g, x, y, mouseX, mouseY);
 
         // Adjacent block info + Debug button
         renderAdjacentBlock(g, x, y, mouseX, mouseY);
@@ -300,7 +300,27 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         GuiRenderHelper.renderPlayerInventory(g, x, y, PLAYER_INV_Y - 1, HOTBAR_Y - 1);
     }
 
-    private void renderStatus(GuiGraphics g, int x, int y) {
+    private static final int TOGGLE_ACTIVE_X = 7;
+    private static final int TOGGLE_ACTIVE_Y = 6;
+    private static final int TOGGLE_ACTIVE_W = 24;
+    private static final int TOGGLE_ACTIVE_H = 10;
+
+    private void renderStatus(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
+        // ON/OFF toggle button (top left, after title area)
+        NetworkInterfaceBlockEntity be = menu.getBlockEntity();
+        boolean isActive = be != null && be.isActive();
+        String toggleLabel = isActive ? "ON" : "OFF";
+        boolean toggleHovered = isMouseOver(mouseX, mouseY,
+            x + TOGGLE_ACTIVE_X, y + TOGGLE_ACTIVE_Y, TOGGLE_ACTIVE_W, TOGGLE_ACTIVE_H);
+        int bgColor = isActive ? 0xFF44AA44 : 0xFFAA4444;
+        g.fill(x + TOGGLE_ACTIVE_X, y + TOGGLE_ACTIVE_Y,
+            x + TOGGLE_ACTIVE_X + TOGGLE_ACTIVE_W, y + TOGGLE_ACTIVE_Y + TOGGLE_ACTIVE_H,
+            toggleHovered ? (bgColor + 0x222222) : bgColor);
+        int textX = x + TOGGLE_ACTIVE_X + (TOGGLE_ACTIVE_W - font.width(toggleLabel)) / 2;
+        int textY = y + TOGGLE_ACTIVE_Y + (TOGGLE_ACTIVE_H - 8) / 2;
+        g.drawString(font, toggleLabel, textX, textY, 0xFFFFFF, false);
+
+        // Linked / Not Linked status (top right)
         String statusText;
         int statusColor;
         if (menu.isLinked()) {
@@ -545,6 +565,17 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         int y = topPos;
         NetworkInterfaceBlockEntity be = menu.getBlockEntity();
         int filterCount = be != null ? be.getFilterCount() : 0;
+
+        // ON/OFF toggle button
+        if (isMouseOver(mouseX, mouseY, x + TOGGLE_ACTIVE_X, y + TOGGLE_ACTIVE_Y,
+                TOGGLE_ACTIVE_W, TOGGLE_ACTIVE_H)) {
+            PacketDistributor.sendToServer(new InterfaceActionPacket(
+                menu.containerId, InterfaceActionPacket.ACTION_TOGGLE_ACTIVE, 0, ""));
+            if (be != null) {
+                be.setActive(!be.isActive());
+            }
+            return true;
+        }
 
         // Check filter line buttons
         for (int i = 0; i < filterCount; i++) {

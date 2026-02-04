@@ -516,5 +516,7 @@
   "message.beemancer.bee_statue.species_changed": "Espèce changée vers %s (%d/%d)",
   "message.beemancer.bee_statue.bee_given": "Vous avez reçu une %s !",
   "block.beemancer.bee_spawner": "Spawner Test Flywheel",
-  "entity.beemancer.flywheel_test_bee": "Abeille Test"
+  "entity.beemancer.flywheel_test_bee": "Abeille Test",
+  "gui.beemancer.interface.active": "Actif",
+  "gui.beemancer.interface.inactive": "Inactif"
 }

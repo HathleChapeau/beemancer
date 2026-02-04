@@ -119,10 +119,10 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             String key = entry.getKey();
             ItemStack template = entry.getValue();
 
-            if (pendingTasks.containsKey(key)) continue;
+            int pendingExportCount = getPendingCount(key);
 
             int totalCount = totalCountsByKey.get(key);
-            int exportable = totalCount - keepQty;
+            int exportable = totalCount - keepQty - pendingExportCount;
             if (exportable <= 0) continue;
 
             int toExport = Math.min(exportable, maxQuantity);
@@ -140,7 +140,7 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
                 DeliveryTask.DeliveryType.EXTRACT, DeliveryTask.TaskOrigin.AUTOMATION
             );
             controller.addDeliveryTask(task);
-            pendingTasks.put(key, task.getTaskId());
+            pendingTasks.put(key, new PendingTaskInfo(task.getTaskId(), toExport));
         }
     }
 

@@ -55,6 +55,7 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
     public static final int ACTION_SET_SELECTED_SLOTS = 5;
     public static final int ACTION_SET_GLOBAL_SELECTED_SLOTS = 6;
     public static final int ACTION_OPEN_ADJACENT_GUI = 7;
+    public static final int ACTION_TOGGLE_ACTIVE = 8;
 
     public static final Type<InterfaceActionPacket> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "interface_action"));
@@ -186,6 +187,9 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
                     if (adjBe instanceof net.minecraft.world.MenuProvider menuProvider) {
                         player.openMenu(menuProvider, adjPos);
                     }
+                }
+                case ACTION_TOGGLE_ACTIVE -> {
+                    be.setActive(!be.isActive());
                 }
             }
         });

@@ -108,15 +108,25 @@ public class StorageDeliveryManager {
     /**
      * Trouve le chemin de relais entre le controller et le noeud qui possede un coffre donne.
      * BFS a travers le graphe de noeuds connectes.
+     * Supporte les coffres (via getRegisteredChests) et les blocs du NetworkRegistry
+     * (interfaces, terminaux) via getOwner().
      *
-     * @return liste ordonnee des positions de relais (vide si le coffre est sur le controller)
+     * @return liste ordonnee des positions de relais (vide si le bloc est sur le controller)
      */
     private List<BlockPos> findPathToChest(BlockPos chestPos) {
+        // Cas 1: coffre enregistre directement sur le controller
         if (parent.getChestManager().getRegisteredChests().contains(chestPos)) {
             return List.of();
         }
+
+        // Cas 2: bloc enregistre dans le NetworkRegistry (interface, terminal)
+        // Utiliser getOwner() pour trouver le noeud proprietaire et BFS vers ce noeud
+        List<BlockPos> registryPath = findPathToOwnerNode(chestPos);
+        if (!registryPath.isEmpty()) return registryPath;
+
         if (parent.getLevel() == null) return List.of();
 
+        // Cas 3: BFS standard cherchant le noeud qui possede ce coffre dans ses chests
         Set<BlockPos> visited = new HashSet<>();
         visited.add(parent.getBlockPos());
 
@@ -153,26 +163,28 @@ public class StorageDeliveryManager {
     }
 
     /**
-     * Trouve le chemin de relais du controller vers une position arbitraire (ex: import interface).
-     * BFS a travers le graphe de noeuds; retourne le chemin vers le noeud le plus proche
-     * de la position cible (dans un rayon de 15 blocs), ou une liste vide (vol direct).
+     * Trouve le chemin de relais vers le noeud proprietaire d'une position enregistree
+     * dans le NetworkRegistry (interface, terminal). BFS dans le graphe de noeuds.
+     *
+     * @return liste ordonnee des relais, ou liste vide si le owner est le controller ou introuvable
      */
-    private List<BlockPos> findPathToPosition(BlockPos targetPos) {
+    private List<BlockPos> findPathToOwnerNode(BlockPos targetPos) {
+        StorageNetworkRegistry registry = parent.getNetworkRegistry();
+        BlockPos ownerNode = registry.getOwner(targetPos);
+        if (ownerNode == null) return List.of();
+
+        // Si le owner est le controller lui-meme, pas de relais
+        if (ownerNode.equals(parent.getBlockPos())) return List.of();
+
         if (parent.getLevel() == null) return List.of();
 
-        // Si le target est proche du controller, vol direct
-        double directDistSq = parent.getBlockPos().distSqr(targetPos);
-        if (directDistSq <= 15 * 15) return List.of();
-
-        // BFS a travers les relais pour trouver le plus proche du target
+        // BFS pour trouver le chemin vers le ownerNode
         Set<BlockPos> visited = new HashSet<>();
         visited.add(parent.getBlockPos());
 
-        List<BlockPos> bestPath = List.of();
-        double bestDistSq = directDistSq;
-
         Queue<Map.Entry<BlockPos, List<BlockPos>>> queue = new LinkedList<>();
         for (BlockPos neighbor : parent.getConnectedNodes()) {
+            if (neighbor.equals(ownerNode)) return List.of(neighbor);
             queue.add(Map.entry(neighbor, new ArrayList<>(List.of(neighbor))));
         }
 
@@ -187,13 +199,12 @@ public class StorageDeliveryManager {
             BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
             if (!(be instanceof INetworkNode node)) continue;
 
-            double distSq = nodePos.distSqr(targetPos);
-            if (distSq < bestDistSq) {
-                bestDistSq = distSq;
-                bestPath = path;
-            }
-
             for (BlockPos neighbor : node.getConnectedNodes()) {
+                if (neighbor.equals(ownerNode)) {
+                    List<BlockPos> result = new ArrayList<>(path);
+                    result.add(neighbor);
+                    return result;
+                }
                 if (!visited.contains(neighbor)) {
                     List<BlockPos> newPath = new ArrayList<>(path);
                     newPath.add(neighbor);
@@ -202,7 +213,7 @@ public class StorageDeliveryManager {
             }
         }
 
-        return bestPath;
+        return List.of();
     }
 
     /**
@@ -510,12 +521,8 @@ public class StorageDeliveryManager {
         );
 
         // Calculer le chemin relay vers le coffre cible
-        // findPathToChest trouve le relay dont les chests sont enregistres
-        // Fallback: findPathToPosition pour les cibles non enregistrees (ex: adjacent d'une export interface)
+        // findPathToChest supporte: coffres (via getRegisteredChests), interfaces/terminaux (via NetworkRegistry)
         List<BlockPos> relayPath = findPathToChest(task.getTargetPos());
-        if (relayPath.isEmpty()) {
-            relayPath = findPathToPosition(task.getTargetPos());
-        }
         if (!relayPath.isEmpty()) {
             List<BlockPos> returnPath = new ArrayList<>(relayPath);
             Collections.reverse(returnPath);
@@ -525,11 +532,7 @@ public class StorageDeliveryManager {
         // Calculer les waypoints terminaux pour les taches avec terminal distant
         if (task.getTerminalPos() != null
                 && !task.getTerminalPos().equals(parent.getBlockPos())) {
-            // Utiliser findPathToChest si le terminal est un coffre enregistre, sinon findPathToPosition
             List<BlockPos> terminalPath = findPathToChest(task.getTerminalPos());
-            if (terminalPath.isEmpty()) {
-                terminalPath = findPathToPosition(task.getTerminalPos());
-            }
             bee.setTerminalWaypoints(terminalPath);
         }
 
