@@ -72,8 +72,10 @@ public class FlywheelTestBeeVisual extends AbstractEntityVisual<FlywheelTestBeeE
             return;
         }
 
+        float time = entity.tickCount + ctx.partialTick();
+
         var visualPos = getVisualPosition(ctx.partialTick());
-        float bob = Mth.sin((entity.tickCount + ctx.partialTick()) * 0.1f) * 0.15f;
+        float bob = Mth.sin(time * 0.1f) * 0.15f;
 
         Matrix4f pose = new Matrix4f();
         pose.translate(visualPos.x, visualPos.y + bob, visualPos.z);
@@ -84,7 +86,7 @@ public class FlywheelTestBeeVisual extends AbstractEntityVisual<FlywheelTestBeeE
         pose.translate(0.0f, -1.5f, 0.0f);
         pose.scale(1.0f, -1.0f, -1.0f);
 
-        float wingAngle = Mth.sin(entity.tickCount + ctx.partialTick()) * 0.4f;
+        float wingAngle = Mth.sin(time * 2.5f) * 0.5f;
         rightWing.zRot(wingAngle);
         leftWing.zRot(-wingAngle);
 
