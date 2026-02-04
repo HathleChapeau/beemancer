@@ -317,7 +317,7 @@ public class MultiblockPatterns {
 
             // Étage 3 (Y+1): Royal Gold + Reservoir + Royal Gold
             .add(-1, 1, 0, block(BeemancerBlocks.ROYAL_GOLD_BLOCK))
-            .add(0, 1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))
+            .add(0, 1, 0, block(BeemancerBlocks.HONEYED_GLASS))
             .add(1, 1, 0, block(BeemancerBlocks.ROYAL_GOLD_BLOCK))
 
             .build()
