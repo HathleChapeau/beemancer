@@ -53,7 +53,10 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     // Only for master: connected blocks and fluid storage
     private final Set<BlockPos> connectedBlocks = new HashSet<>();
     private FluidTank fluidTank;
-    private boolean validCuboid = true;
+    private boolean validCuboid = false;
+
+    // Flag local synchronisé: true si ce bloc fait partie d'un multibloc formé
+    private boolean formed = false;
 
     // Deferred validation: onLoad() ne peut pas valider car les voisins ne sont pas encore charges
     private boolean needsLoadValidation = false;
@@ -102,7 +105,8 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         this.connectedBlocks.clear();
         this.connectedBlocks.add(worldPosition);
         this.fluidTank = createFluidTank(CAPACITY_PER_BLOCK);
-        this.validCuboid = true;
+        this.validCuboid = false;  // Un seul bloc = pas un cube valide
+        this.formed = false;
     }
 
     private FluidTank createFluidTank(int capacity) {
@@ -157,6 +161,14 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     public boolean isValidCuboid() {
         MultiblockTankBlockEntity master = getMaster();
         return master != null && master.validCuboid;
+    }
+
+    /**
+     * Retourne true si ce bloc fait partie d'un multibloc formé.
+     * Utilise le flag local synchronisé (pas de dépendance au master).
+     */
+    public boolean isFormed() {
+        return formed;
     }
 
     /**
@@ -227,6 +239,10 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         if (found.size() == 1) {
             initializeAsMaster();
             recalculateStructure();
+            // Sync au client
+            if (level != null) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            }
             return;
         }
 
@@ -267,7 +283,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             newMaster.fluidTank.fill(new FluidStack(totalFluid.getFluid(), toFill), IFluidHandler.FluidAction.EXECUTE);
         }
 
-        // Configurer les slaves
+        // Configurer les slaves (formed sera mis à jour par recalculateStructure)
         for (BlockPos pos : found) {
             if (pos.equals(newMasterPos)) continue;
             BlockEntity be = level.getBlockEntity(pos);
@@ -276,6 +292,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                 slave.fluidTank = null;
                 slave.connectedBlocks.clear();
                 slave.needsLoadValidation = false;
+                slave.formed = false; // Sera mis à jour par recalculateStructure
                 slave.setChanged();
             }
         }
@@ -348,23 +365,17 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
 
         // Validate cuboid shape
         validCuboid = validateCuboid();
+        boolean isFormed = validCuboid && connectedBlocks.size() >= 8; // min 2x2x2 = 8 blocs
 
-        // Update blockstate connection properties on all connected blocks
+        // Update le flag 'formed' sur TOUS les blocs et sync au client
         if (level != null) {
-            boolean formed = validCuboid && connectedBlocks.size() > 1;
             for (BlockPos pos : connectedBlocks) {
-                BlockState currentState = level.getBlockState(pos);
-                if (!(currentState.getBlock() instanceof MultiblockTankBlock)) continue;
-
-                BlockState newState = currentState;
-                for (Direction dir : Direction.values()) {
-                    boolean connected = formed && connectedBlocks.contains(pos.relative(dir));
-                    newState = newState.setValue(MultiblockTankBlock.getPropertyForDirection(dir), connected);
+                BlockEntity be = level.getBlockEntity(pos);
+                if (be instanceof MultiblockTankBlockEntity tank) {
+                    tank.formed = isFormed;
+                    tank.setChanged();
+                    level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
                 }
-                if (newState != currentState) {
-                    level.setBlock(pos, newState, 3);
-                }
-                level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
             }
         }
 
@@ -511,6 +522,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         super.saveAdditional(tag, registries);
 
         tag.putBoolean("IsMaster", isMaster());
+        tag.putBoolean("Formed", formed);
 
         if (isMaster()) {
             // Save master data
@@ -535,6 +547,9 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+
+        // Toujours charger le flag formed
+        this.formed = tag.getBoolean("Formed");
 
         boolean isMaster = tag.getBoolean("IsMaster");
 
@@ -651,6 +666,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         tag.putBoolean("IsMaster", isMaster());
+        tag.putBoolean("Formed", formed);  // Toujours sync le flag formed
 
         if (isMaster()) {
             if (fluidTank != null) {

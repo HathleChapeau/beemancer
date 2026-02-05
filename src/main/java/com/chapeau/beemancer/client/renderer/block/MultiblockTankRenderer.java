@@ -68,7 +68,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
         // Cas 1: Non formé → afficher le bloc simple
-        if (!blockEntity.isValidCuboid()) {
+        if (!blockEntity.isFormed()) {
             renderSingleBlock(poseStack, buffer, packedLight);
             return;
         }
@@ -78,7 +78,11 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
 
         // Cas 3: Formé et master → afficher le modèle scalé + fluide
         int cubeSize = blockEntity.getCubeSize();
-        if (cubeSize < 2) return;
+        if (cubeSize < 2) {
+            // Fallback: si cubeSize pas encore synced, afficher bloc simple
+            renderSingleBlock(poseStack, buffer, packedLight);
+            return;
+        }
 
         poseStack.pushPose();
 
@@ -202,7 +206,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
 
     @Override
     public AABB getRenderBoundingBox(MultiblockTankBlockEntity blockEntity) {
-        if (!blockEntity.isMaster() || !blockEntity.isValidCuboid()) {
+        if (!blockEntity.isMaster() || !blockEntity.isFormed()) {
             return AABB.unitCubeFromLowerCorner(blockEntity.getBlockPos().getCenter());
         }
 
