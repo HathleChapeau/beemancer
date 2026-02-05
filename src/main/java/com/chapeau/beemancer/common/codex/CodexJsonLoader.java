@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [CodexJsonLoader.java]
- * Description: Charge les nodes du Codex depuis codex.json avec positions normalisées
+ * Description: Charge les nodes du Codex depuis codex.json avec positions de grille
  * ============================================================
  *
  * DÉPENDANCES:
@@ -34,8 +34,8 @@ import java.util.*;
 
 /**
  * Charge les nodes depuis codex.json à la racine du projet.
- * Les positions JSON (basées sur un écran full HD) sont normalisées
- * pour être utilisables dans n'importe quelle taille de fenêtre.
+ * Les positions JSON sont converties en positions de grille
+ * relatives au node bleu (header) de chaque tab.
  */
 public class CodexJsonLoader {
     private static final Gson GSON = new Gson();
@@ -57,49 +57,32 @@ public class CodexJsonLoader {
         "Obtain Craft by Unlock"
     );
 
+    // Couleur du node header (bleu)
+    private static final String HEADER_COLOR = "#3498db";
+
+    // Facteur de conversion: pixels JSON -> unités de grille
+    // ~100 pixels JSON = 1 unité de grille (comme BEES)
+    private static final float GRID_SCALE = 100.0f;
+
     /**
      * Données d'un node chargé depuis JSON.
      */
     public static class JsonNodeData {
         public final String name;
         public final CodexPage page;
-        public final float rawX;
-        public final float rawY;
-        public final float normalizedX;
-        public final float normalizedY;
+        public final int gridX;
+        public final int gridY;
+        public final boolean isHeader;
         @Nullable
         public final String parentName;
 
-        public JsonNodeData(String name, CodexPage page, float rawX, float rawY,
-                          float normalizedX, float normalizedY, @Nullable String parentName) {
+        public JsonNodeData(String name, CodexPage page, int gridX, int gridY, boolean isHeader, @Nullable String parentName) {
             this.name = name;
             this.page = page;
-            this.rawX = rawX;
-            this.rawY = rawY;
-            this.normalizedX = normalizedX;
-            this.normalizedY = normalizedY;
+            this.gridX = gridX;
+            this.gridY = gridY;
+            this.isHeader = isHeader;
             this.parentName = parentName;
-        }
-    }
-
-    /**
-     * Bounds d'un tab pour le scroll.
-     */
-    public static class TabBounds {
-        public final float minX;
-        public final float maxX;
-        public final float minY;
-        public final float maxY;
-        public final float width;
-        public final float height;
-
-        public TabBounds(float minX, float maxX, float minY, float maxY) {
-            this.minX = minX;
-            this.maxX = maxX;
-            this.minY = minY;
-            this.maxY = maxY;
-            this.width = maxX - minX;
-            this.height = maxY - minY;
         }
     }
 
@@ -109,13 +92,11 @@ public class CodexJsonLoader {
     public static class TabData {
         public final CodexPage page;
         public final List<JsonNodeData> nodes;
-        public final TabBounds bounds;
         public final Map<String, List<String>> links;
 
-        public TabData(CodexPage page, List<JsonNodeData> nodes, TabBounds bounds, Map<String, List<String>> links) {
+        public TabData(CodexPage page, List<JsonNodeData> nodes, Map<String, List<String>> links) {
             this.page = page;
             this.nodes = nodes;
-            this.bounds = bounds;
             this.links = links;
         }
     }
@@ -128,9 +109,11 @@ public class CodexJsonLoader {
     public static void load() {
         loadedTabs = new EnumMap<>(CodexPage.class);
 
-        Path codexPath = Path.of("codex.json");
-        if (!Files.exists(codexPath)) {
-            Beemancer.LOGGER.warn("codex.json not found at project root");
+        // Chercher codex.json dans plusieurs emplacements
+        Path codexPath = findCodexJson();
+        if (codexPath == null) {
+            Beemancer.LOGGER.warn("codex.json not found, using fallback data");
+            loadFallbackData();
             return;
         }
 
@@ -143,73 +126,167 @@ public class CodexJsonLoader {
                 String tabName = tabJson.get("name").getAsString();
                 CodexPage page = TAB_MAPPING.get(tabName);
 
-                if (page == null) {
-                    Beemancer.LOGGER.warn("Unknown tab in codex.json: {}", tabName);
+                if (page == null || page == CodexPage.BEES) {
+                    // BEES utilise son propre système
                     continue;
                 }
 
-                List<JsonNodeData> rawNodes = new ArrayList<>();
-                JsonArray items = tabJson.getAsJsonArray("items");
-
-                // Première passe: collecter les nodes bruts
-                float minX = Float.MAX_VALUE, maxX = Float.MIN_VALUE;
-                float minY = Float.MAX_VALUE, maxY = Float.MIN_VALUE;
-
-                for (JsonElement itemElement : items) {
-                    JsonObject itemJson = itemElement.getAsJsonObject();
-                    String text = itemJson.get("text").getAsString();
-                    String nodeName = extractNodeName(text);
-
-                    if (IGNORED_NODES.contains(nodeName)) {
-                        continue;
-                    }
-
-                    float x = itemJson.get("x").getAsFloat();
-                    float y = itemJson.get("y").getAsFloat();
-
-                    minX = Math.min(minX, x);
-                    maxX = Math.max(maxX, x);
-                    minY = Math.min(minY, y);
-                    maxY = Math.max(maxY, y);
-
-                    rawNodes.add(new JsonNodeData(nodeName, page, x, y, 0, 0, null));
-                }
-
-                if (rawNodes.isEmpty()) {
-                    continue;
-                }
-
-                // Ajouter des marges
-                float margin = 50;
-                minX -= margin;
-                maxX += margin;
-                minY -= margin;
-                maxY += margin;
-
-                TabBounds bounds = new TabBounds(minX, maxX, minY, maxY);
-
-                // Deuxième passe: normaliser les positions (0 à 1)
-                List<JsonNodeData> normalizedNodes = new ArrayList<>();
-                for (JsonNodeData raw : rawNodes) {
-                    float normalizedX = (raw.rawX - minX) / bounds.width;
-                    float normalizedY = (raw.rawY - minY) / bounds.height;
-                    normalizedNodes.add(new JsonNodeData(
-                        raw.name, raw.page, raw.rawX, raw.rawY,
-                        normalizedX, normalizedY, null
-                    ));
-                }
-
-                // Créer les liens logiques
-                Map<String, List<String>> links = createLinks(page, normalizedNodes);
-
-                loadedTabs.put(page, new TabData(page, normalizedNodes, bounds, links));
+                loadTab(page, tabJson);
             }
 
             Beemancer.LOGGER.info("Loaded codex.json: {} tabs", loadedTabs.size());
 
         } catch (Exception e) {
             Beemancer.LOGGER.error("Failed to load codex.json: {}", e.getMessage());
+            loadFallbackData();
         }
+    }
+
+    private static Path findCodexJson() {
+        // Essayer plusieurs chemins
+        String[] paths = {
+            "codex.json",
+            "../codex.json",
+            "run/codex.json",
+            "../run/codex.json"
+        };
+
+        for (String pathStr : paths) {
+            Path path = Path.of(pathStr);
+            if (Files.exists(path)) {
+                Beemancer.LOGGER.info("Found codex.json at: {}", path.toAbsolutePath());
+                return path;
+            }
+        }
+        return null;
+    }
+
+    private static void loadTab(CodexPage page, JsonObject tabJson) {
+        JsonArray items = tabJson.getAsJsonArray("items");
+
+        // Première passe: trouver le node header (bleu) et collecter tous les nodes
+        float headerX = 0, headerY = 0;
+        boolean foundHeader = false;
+        List<RawNode> rawNodes = new ArrayList<>();
+
+        for (JsonElement itemElement : items) {
+            JsonObject itemJson = itemElement.getAsJsonObject();
+            String text = itemJson.get("text").getAsString();
+            String nodeName = extractNodeName(text);
+
+            if (IGNORED_NODES.contains(nodeName)) {
+                continue;
+            }
+
+            float x = itemJson.get("x").getAsFloat();
+            float y = itemJson.get("y").getAsFloat();
+            String borderColor = itemJson.has("border_color") ? itemJson.get("border_color").getAsString() : "";
+            boolean isHeader = HEADER_COLOR.equalsIgnoreCase(borderColor);
+
+            if (isHeader && !foundHeader) {
+                headerX = x;
+                headerY = y;
+                foundHeader = true;
+            }
+
+            rawNodes.add(new RawNode(nodeName, x, y, isHeader));
+        }
+
+        if (rawNodes.isEmpty()) {
+            return;
+        }
+
+        // Si pas de header trouvé, utiliser le premier node comme référence
+        if (!foundHeader && !rawNodes.isEmpty()) {
+            headerX = rawNodes.get(0).x;
+            headerY = rawNodes.get(0).y;
+        }
+
+        // Deuxième passe: convertir en positions de grille relatives au header
+        List<JsonNodeData> nodes = new ArrayList<>();
+        for (RawNode raw : rawNodes) {
+            int gridX = Math.round((raw.x - headerX) / GRID_SCALE);
+            int gridY = Math.round((raw.y - headerY) / GRID_SCALE);
+            nodes.add(new JsonNodeData(raw.name, page, gridX, gridY, raw.isHeader, null));
+        }
+
+        // Créer les liens
+        Map<String, List<String>> links = createLinks(page, nodes);
+
+        loadedTabs.put(page, new TabData(page, nodes, links));
+    }
+
+    private static class RawNode {
+        final String name;
+        final float x, y;
+        final boolean isHeader;
+
+        RawNode(String name, float x, float y, boolean isHeader) {
+            this.name = name;
+            this.x = x;
+            this.y = y;
+            this.isHeader = isHeader;
+        }
+    }
+
+    /**
+     * Données de fallback si codex.json n'est pas trouvé.
+     */
+    private static void loadFallbackData() {
+        // APICA - centré sur "The Beginning"
+        List<JsonNodeData> apicaNodes = List.of(
+            new JsonNodeData("The Beginning", CodexPage.APICA, 0, 0, true, null),
+            new JsonNodeData("1st bee", CodexPage.APICA, 0, -2, false, null),
+            new JsonNodeData("Hive", CodexPage.APICA, 2, -1, false, null),
+            new JsonNodeData("Manual Centrifuge", CodexPage.APICA, 2, 1, false, null),
+            new JsonNodeData("Crystallyzer", CodexPage.APICA, 0, 2, false, null),
+            new JsonNodeData("Altar", CodexPage.APICA, -2, 1, false, null),
+            new JsonNodeData("Hive Multibloc", CodexPage.APICA, -2, -1, false, null)
+        );
+        loadedTabs.put(CodexPage.APICA, new TabData(CodexPage.APICA, apicaNodes, createLinks(CodexPage.APICA, apicaNodes)));
+
+        // ALCHEMY - centré sur "Manual Centrifuge"
+        List<JsonNodeData> alchemyNodes = List.of(
+            new JsonNodeData("Manual Centrifuge", CodexPage.ALCHEMY, 0, 0, true, null),
+            new JsonNodeData("Honey Pipe", CodexPage.ALCHEMY, 2, 2, false, null),
+            new JsonNodeData("Centrifuge T1", CodexPage.ALCHEMY, -2, 0, false, null),
+            new JsonNodeData("Centrifuge T2", CodexPage.ALCHEMY, -3, 2, false, null),
+            new JsonNodeData("Centrifuge T3", CodexPage.ALCHEMY, -3, 4, false, null),
+            new JsonNodeData("Portable Tank", CodexPage.ALCHEMY, -2, -2, false, null),
+            new JsonNodeData("Tank", CodexPage.ALCHEMY, -2, -3, false, null),
+            new JsonNodeData("Crystallyzer", CodexPage.ALCHEMY, 2, 0, false, null),
+            new JsonNodeData("Infuser T1", CodexPage.ALCHEMY, 2, -1, false, null),
+            new JsonNodeData("Infuser T2", CodexPage.ALCHEMY, 4, -2, false, null),
+            new JsonNodeData("Infuser T3", CodexPage.ALCHEMY, 6, -2, false, null),
+            new JsonNodeData("Alembic", CodexPage.ALCHEMY, 0, 2, false, null),
+            new JsonNodeData("Incubator", CodexPage.ALCHEMY, 0, -3, false, null)
+        );
+        loadedTabs.put(CodexPage.ALCHEMY, new TabData(CodexPage.ALCHEMY, alchemyNodes, createLinks(CodexPage.ALCHEMY, alchemyNodes)));
+
+        // ARTIFACTS - centré sur "Altar"
+        List<JsonNodeData> artifactsNodes = List.of(
+            new JsonNodeData("Altar", CodexPage.ARTIFACTS, 0, 0, true, null),
+            new JsonNodeData("Extractor", CodexPage.ARTIFACTS, 2, -2, false, null),
+            new JsonNodeData("Anti Breeding Crystal", CodexPage.ARTIFACTS, -1, -3, false, null)
+        );
+        loadedTabs.put(CodexPage.ARTIFACTS, new TabData(CodexPage.ARTIFACTS, artifactsNodes, createLinks(CodexPage.ARTIFACTS, artifactsNodes)));
+
+        // LOGISTICS - centré sur "Crystallyzer"
+        List<JsonNodeData> logisticsNodes = List.of(
+            new JsonNodeData("Crystallyzer", CodexPage.LOGISTICS, 0, 0, true, null),
+            new JsonNodeData("Storage Controller Heart", CodexPage.LOGISTICS, 2, -1, false, null),
+            new JsonNodeData("Relay", CodexPage.LOGISTICS, 2, -3, false, null),
+            new JsonNodeData("Interface", CodexPage.LOGISTICS, 5, -4, false, null),
+            new JsonNodeData("Import", CodexPage.LOGISTICS, 5, -6, false, null),
+            new JsonNodeData("Export", CodexPage.LOGISTICS, 7, -5, false, null),
+            new JsonNodeData("Craft Auto", CodexPage.LOGISTICS, 8, -4, false, null),
+            new JsonNodeData("Pipe T2", CodexPage.LOGISTICS, 0, 3, false, null),
+            new JsonNodeData("Pipe T3", CodexPage.LOGISTICS, 0, 4, false, null),
+            new JsonNodeData("Pipe T4", CodexPage.LOGISTICS, 0, 5, false, null),
+            new JsonNodeData("Honey Pipe", CodexPage.LOGISTICS, 1, 2, false, null),
+            new JsonNodeData("Item Pipe", CodexPage.LOGISTICS, -1, 2, false, null)
+        );
+        loadedTabs.put(CodexPage.LOGISTICS, new TabData(CodexPage.LOGISTICS, logisticsNodes, createLinks(CodexPage.LOGISTICS, logisticsNodes)));
     }
 
     /**
