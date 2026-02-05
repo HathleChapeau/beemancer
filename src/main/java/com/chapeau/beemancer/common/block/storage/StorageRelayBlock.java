@@ -20,13 +20,16 @@
  */
 package com.chapeau.beemancer.common.block.storage;
 
+import com.chapeau.beemancer.client.particle.ParticleEmitter;
 import com.chapeau.beemancer.common.blockentity.storage.INetworkNode;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageRelayBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
+import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -164,6 +167,21 @@ public class StorageRelayBlock extends BaseEntityBlock {
                 }
             }
         }
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        new ParticleEmitter(BeemancerParticles.RUNE.get())
+            .at(pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5)
+            .speed(0, 0.01, 0)
+            .spread(0.25, 0.15, 0.25)
+            .speedVariance(0.01, 0.01, 0.01)
+            .count(2)
+            .lifetime(10)
+            .gravity(-0.001f)
+            .scale(0.05f)
+            .fadeOut()
+            .spawn(level);
     }
 
     @Override

@@ -50,18 +50,26 @@ import net.minecraft.world.level.Level;
 public class ParticleEmitter {
 
     private final ParticleOptions type;
-    private double x, y, z;
-    private double xSpeed, ySpeed, zSpeed;
+    private double x = 0;
+    private double y = 0;
+    private double z = 0;
+    private double xSpeed = 0;
+    private double ySpeed = 0;
+    private double zSpeed = 0;
     private int count = 1;
-    private double spreadX, spreadY, spreadZ;
-    private double speedVarX, speedVarY, speedVarZ;
+    private double spreadX = 0;
+    private double spreadY = 0;
+    private double spreadZ = 0;
+    private double speedVarX = 0;
+    private double speedVarY = 0;
+    private double speedVarZ = 0;
 
-    private Integer lifetimeOverride;
-    private Float gravityOverride;
-    private Float scaleOverride;
-    private Float alphaOverride;
-    private boolean fadeOut;
-    private float[] colorOverride;
+    private int lifetimeOverride = -1;
+    private float gravityOverride = Float.NaN;
+    private float scaleOverride = Float.NaN;
+    private float alphaOverride = Float.NaN;
+    private boolean fadeOut = false;
+    private float[] colorOverride = null;
 
     public ParticleEmitter(ParticleOptions type) {
         this.type = type;
@@ -151,14 +159,14 @@ public class ParticleEmitter {
             Particle p = engine.createParticle(type, px, py, pz, sx, sy, sz);
             if (p == null) continue;
 
-            if (lifetimeOverride != null) {
+            if (lifetimeOverride >= 0) {
                 p.setLifetime(lifetimeOverride);
             }
 
             if (p instanceof ConfigurableParticle cp) {
-                if (gravityOverride != null) cp.setParticleGravity(gravityOverride);
-                if (scaleOverride != null) cp.setParticleScale(scaleOverride);
-                if (alphaOverride != null) cp.setParticleAlpha(alphaOverride);
+                if (!Float.isNaN(gravityOverride)) cp.setParticleGravity(gravityOverride);
+                if (!Float.isNaN(scaleOverride)) cp.setParticleScale(scaleOverride);
+                if (!Float.isNaN(alphaOverride)) cp.setParticleAlpha(alphaOverride);
                 if (fadeOut) cp.setParticleFadeOut(true);
                 if (colorOverride != null) cp.setParticleColor(colorOverride[0], colorOverride[1], colorOverride[2]);
             }
