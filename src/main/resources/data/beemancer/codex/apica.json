@@ -1,0 +1,11 @@
+{
+  "nodes": [
+    {"id": "the_beginning", "position": {"x": 0, "y": 0}, "icon": "beemancer:textures/item/codex.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false},
+    {"id": "1st_bee", "position": {"x": 0, "y": -2}, "icon": "beemancer:textures/item/bee_jar.png", "category": "NORMAL", "parent": "the_beginning", "hidden_until_parent_unlocked": false},
+    {"id": "hive", "position": {"x": 2, "y": -1}, "icon": "beemancer:textures/block/controlled_hive.png", "category": "NORMAL", "parent": "1st_bee", "hidden_until_parent_unlocked": false},
+    {"id": "hive_multibloc", "position": {"x": -2, "y": -1}, "icon": "beemancer:textures/block/magic_hive.png", "category": "NORMAL", "parent": "hive", "hidden_until_parent_unlocked": false},
+    {"id": "manual_centrifuge", "position": {"x": 2, "y": 1}, "icon": "beemancer:textures/block/manual_centrifuge.png", "category": "NORMAL", "parent": "hive", "hidden_until_parent_unlocked": false},
+    {"id": "crystallyzer", "position": {"x": 0, "y": 2}, "icon": "beemancer:textures/block/crystallizer.png", "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false},
+    {"id": "altar", "position": {"x": -2, "y": 1}, "icon": "beemancer:textures/block/altar.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false}
+  ]
+}

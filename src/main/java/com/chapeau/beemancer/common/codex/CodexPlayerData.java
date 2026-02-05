@@ -39,30 +39,13 @@ public class CodexPlayerData {
         ).apply(instance, list -> {
             CodexPlayerData data = new CodexPlayerData();
             data.unlockedNodes.addAll(list);
-            data.ensureDefaultNodesUnlocked();
             return data;
         })
-    );
-
-    // IDs des nodes headers (bleus) qui sont débloqués par défaut
-    private static final Set<String> DEFAULT_UNLOCKED_NODES = Set.of(
-        "apica:the_beginning",      // APICA header
-        "alchemy:manual_centrifuge", // ALCHEMY header
-        "artifacts:altar",           // ARTIFACTS header
-        "logistics:crystallyzer"     // LOGISTICS header
     );
 
     private final Set<String> unlockedNodes = new HashSet<>();
 
     public CodexPlayerData() {
-        ensureDefaultNodesUnlocked();
-    }
-
-    /**
-     * S'assure que les nodes par défaut (headers bleus) sont débloqués.
-     */
-    public void ensureDefaultNodesUnlocked() {
-        unlockedNodes.addAll(DEFAULT_UNLOCKED_NODES);
     }
 
     public Set<String> getUnlockedNodes() {
@@ -129,22 +112,12 @@ public class CodexPlayerData {
                 data.unlockedNodes.add(list.getString(i));
             }
         }
-        // S'assurer que les nodes par défaut sont toujours débloqués
-        data.ensureDefaultNodesUnlocked();
         return data;
     }
 
     public CodexPlayerData copy() {
         CodexPlayerData copy = new CodexPlayerData();
         copy.unlockedNodes.addAll(this.unlockedNodes);
-        copy.ensureDefaultNodesUnlocked();
         return copy;
-    }
-
-    /**
-     * Vérifie si un node est un header (débloqué par défaut).
-     */
-    public static boolean isDefaultNode(String fullNodeId) {
-        return DEFAULT_UNLOCKED_NODES.contains(fullNodeId);
     }
 }

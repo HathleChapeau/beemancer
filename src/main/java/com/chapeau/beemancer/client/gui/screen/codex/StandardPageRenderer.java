@@ -10,7 +10,6 @@
  * |---------------------|----------------------|--------------------------------|
  * | CodexNodeWidget     | Widget standard      | Rendu des nodes                |
  * | CodexManager        | Visibilite nodes     | Filtrage des nodes visibles    |
- * | CodexJsonLoader     | Donnees JSON         | Liens entre nodes              |
  * | LineDrawingHelper   | Dessin lignes        | Rendu des connexions           |
  * ------------------------------------------------------------
  *
@@ -34,7 +33,6 @@ public class StandardPageRenderer implements CodexPageRenderer {
 
     private final List<CodexNodeWidget> widgets = new ArrayList<>();
     private final Map<String, int[]> nodePositions = new HashMap<>();
-    private CodexJsonLoader.TabData currentTabData = null;
 
     // Couleurs des lignes - style sépia/encre pour le codex
     private static final int LINE_COLOR_UNLOCKED = 0xFF6B4423;   // Marron sépia foncé
@@ -46,25 +44,21 @@ public class StandardPageRenderer implements CodexPageRenderer {
         widgets.clear();
         nodePositions.clear();
 
-        // Récupérer les données du tab pour les liens
-        if (!nodes.isEmpty()) {
-            currentTabData = CodexJsonLoader.getTabData(nodes.get(0).getPage());
-        }
-
         int halfNode = CodexNodeWidget.NODE_SIZE / 2;
 
         for (CodexNode node : nodes) {
-            // Vérifier si c'est un node header (débloqué par défaut)
-            boolean isHeader = CodexPlayerData.isDefaultNode(node.getFullId());
+            if (!CodexManager.isVisible(node, unlockedNodes)) {
+                continue;
+            }
 
-            boolean unlocked = playerData.isUnlocked(node) || isHeader;
+            boolean unlocked = playerData.isUnlocked(node);
             boolean canUnlock = CodexManager.canUnlock(node, unlockedNodes);
 
             // Centrer le node sur le point calculé
             int nodeScreenX = contentX + node.getX() * nodeSpacing + (int) scrollX - halfNode;
             int nodeScreenY = contentY + node.getY() * nodeSpacing + (int) scrollY - halfNode;
 
-            CodexNodeWidget widget = new CodexNodeWidget(node, nodeScreenX, nodeScreenY, unlocked, canUnlock, isHeader);
+            CodexNodeWidget widget = new CodexNodeWidget(node, nodeScreenX, nodeScreenY, unlocked, canUnlock);
             widgets.add(widget);
 
             nodePositions.put(node.getId(), new int[]{nodeScreenX, nodeScreenY});
@@ -90,13 +84,7 @@ public class StandardPageRenderer implements CodexPageRenderer {
 
     @Override
     public void renderConnections(GuiGraphics graphics) {
-        // Utiliser les liens du JSON si disponibles
-        if (currentTabData != null && currentTabData.links != null) {
-            renderJsonLinks(graphics);
-            return;
-        }
-
-        // Fallback: liens parent-enfant classiques
+        // Liens parent-enfant (même logique que BeeTreePageRenderer)
         for (CodexNodeWidget widget : widgets) {
             CodexNode node = widget.getNode();
             String parentId = node.getParentId();
@@ -106,26 +94,6 @@ public class StandardPageRenderer implements CodexPageRenderer {
                 if (parentWidget != null) {
                     renderConnection(graphics, parentWidget, widget);
                 }
-            }
-        }
-    }
-
-    private void renderJsonLinks(GuiGraphics graphics) {
-        Map<String, List<String>> links = currentTabData.links;
-        if (links == null) return;
-
-        for (Map.Entry<String, List<String>> entry : links.entrySet()) {
-            String fromName = entry.getKey();
-            List<String> toNames = entry.getValue();
-
-            CodexNodeWidget fromWidget = findWidgetByName(fromName);
-            if (fromWidget == null) continue;
-
-            for (String toName : toNames) {
-                CodexNodeWidget toWidget = findWidgetByName(toName);
-                if (toWidget == null) continue;
-
-                renderConnection(graphics, fromWidget, toWidget);
             }
         }
     }
@@ -211,16 +179,6 @@ public class StandardPageRenderer implements CodexPageRenderer {
     private CodexNodeWidget findWidgetByNodeId(String nodeId) {
         for (CodexNodeWidget widget : widgets) {
             if (widget.getNode().getId().equals(nodeId)) {
-                return widget;
-            }
-        }
-        return null;
-    }
-
-    private CodexNodeWidget findWidgetByName(String name) {
-        String normalizedName = name.toLowerCase().replace(" ", "_");
-        for (CodexNodeWidget widget : widgets) {
-            if (widget.getNode().getId().equals(normalizedName)) {
                 return widget;
             }
         }

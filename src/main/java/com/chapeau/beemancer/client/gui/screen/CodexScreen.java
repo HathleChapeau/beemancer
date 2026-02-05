@@ -11,7 +11,7 @@
  * | CodexPageRenderer   | Interface renderers  | Delegation par page            |
  * | BeeTreePageRenderer | Page BEES            | Rendu abeilles 3D              |
  * | StandardPageRenderer| Pages standard       | Rendu nodes classiques         |
- * | CodexJsonLoader     | Donnees JSON         | Positions des nodes            |
+ * | CodexManager        | Donnees nodes        | Chargement des nodes           |
  * | BeemancerSounds     | Sons                 | Feedback audio                 |
  * ------------------------------------------------------------
  *
@@ -107,11 +107,6 @@ public class CodexScreen extends Screen {
     protected void init() {
         super.init();
 
-        // Charger les données JSON
-        if (!CodexJsonLoader.isLoaded()) {
-            CodexJsonLoader.load();
-        }
-
         // Position de la frame (centrée, avec espace pour les tabs au-dessus)
         frameX = (width - FRAME_WIDTH) / 2;
         frameY = (height - FRAME_HEIGHT - TAB_HEIGHT - TAB_SPACING) / 2 + TAB_HEIGHT + TAB_SPACING;
@@ -182,36 +177,9 @@ public class CodexScreen extends Screen {
         CodexPlayerData playerData = getPlayerData();
         Set<String> unlockedNodes = playerData.getUnlockedNodes();
 
-        // Pour BEES, utiliser le système existant
-        if (currentPage == CodexPage.BEES) {
-            List<CodexNode> nodes = CodexManager.getNodesForPage(currentPage);
+        // Utiliser CodexManager pour TOUTES les pages (même système que BEES)
+        List<CodexNode> nodes = CodexManager.getNodesForPage(currentPage);
 
-            currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData,
-                    contentX + contentWidth / 2, contentY + contentHeight / 2, NODE_SPACING, scrollX, scrollY);
-
-            for (Object widget : currentRenderer.getWidgets()) {
-                if (widget instanceof AbstractWidget abstractWidget) {
-                    addRenderableWidget(abstractWidget);
-                }
-            }
-            return;
-        }
-
-        // Pour les autres pages, utiliser CodexJsonLoader avec positions de grille
-        CodexJsonLoader.TabData tabData = CodexJsonLoader.getTabData(currentPage);
-        if (tabData == null) {
-            return;
-        }
-
-        // Convertir les JsonNodeData en CodexNodes avec positions de grille
-        List<CodexNode> nodes = new ArrayList<>();
-        for (CodexJsonLoader.JsonNodeData jsonNode : tabData.nodes) {
-            // Utiliser directement gridX et gridY (déjà relatifs au node header)
-            CodexNode node = createNodeFromJson(jsonNode, jsonNode.gridX, jsonNode.gridY);
-            nodes.add(node);
-        }
-
-        // Utiliser le même nodeSpacing que BEES, centré dans le contenu
         currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData,
                 contentX + contentWidth / 2, contentY + contentHeight / 2, NODE_SPACING, scrollX, scrollY);
 
@@ -220,20 +188,6 @@ public class CodexScreen extends Screen {
                 addRenderableWidget(abstractWidget);
             }
         }
-    }
-
-    private CodexNode createNodeFromJson(CodexJsonLoader.JsonNodeData jsonNode, int x, int y) {
-        String id = jsonNode.name.toLowerCase().replace(" ", "_");
-        ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/codex_node_default.png"
-        );
-
-        return new CodexNode(
-            id, jsonNode.page, x, y, icon,
-            CodexNodeCategory.NORMAL, null, false,
-            new com.google.gson.JsonObject(), new com.google.gson.JsonObject(),
-            null, null
-        );
     }
 
     private void clearCurrentWidgets() {
@@ -375,9 +329,9 @@ public class CodexScreen extends Screen {
     }
 
     private void renderProgress(GuiGraphics graphics) {
-        CodexJsonLoader.TabData tabData = CodexJsonLoader.getTabData(currentPage);
-        int total = tabData != null ? tabData.nodes.size() : 0;
-        int unlocked = 0;
+        CodexPlayerData playerData = getPlayerData();
+        int total = CodexManager.getNodesForPage(currentPage).size();
+        int unlocked = playerData.getUnlockedCountForPage(currentPage);
 
         String progress = unlocked + "/" + total;
         graphics.drawString(font, progress, frameX + FRAME_WIDTH - font.width(progress) - 8,

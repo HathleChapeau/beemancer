@@ -1,0 +1,7 @@
+{
+  "nodes": [
+    {"id": "altar", "position": {"x": 0, "y": 0}, "icon": "beemancer:textures/block/altar.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false},
+    {"id": "extractor", "position": {"x": 2, "y": -2}, "icon": "beemancer:textures/block/extractor.png", "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "anti_breeding_crystal", "position": {"x": -1, "y": -3}, "icon": "beemancer:textures/item/anti_breeding_crystal.png", "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false}
+  ]
+}
