@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [BeeTreePageRenderer.java]
- * Description: Renderer pour la page BEES avec modeles 3D et liens manuscrits
+ * Description: Renderer pour la page BEES avec modeles 3D
  * ============================================================
  *
  * DEPENDANCES:
@@ -21,8 +21,7 @@
 package com.chapeau.beemancer.client.gui.screen.codex;
 
 import com.chapeau.beemancer.client.gui.util.LineDrawingHelper;
-import com.chapeau.beemancer.client.gui.util.LineDrawingHelper.LineStyle;
-import com.chapeau.beemancer.client.gui.util.LineDrawingHelper.ArrowStyle;
+import com.chapeau.beemancer.client.gui.util.LineDrawingHelper.ConnectionMode;
 import com.chapeau.beemancer.client.gui.widget.BeeNodeWidget;
 import com.chapeau.beemancer.common.codex.CodexManager;
 import com.chapeau.beemancer.common.codex.CodexNode;
@@ -36,10 +35,6 @@ import java.util.Set;
 public class BeeTreePageRenderer implements CodexPageRenderer {
 
     private final List<BeeNodeWidget> widgets = new ArrayList<>();
-
-    // Couleurs des lignes - style encre/parchemin (meme que StandardPageRenderer)
-    private static final int LINE_COLOR_UNLOCKED = 0xFF5D4037;   // Marron chocolat
-    private static final int LINE_COLOR_LOCKED = 0xFFA1887F;     // Marron gris clair
 
     @Override
     public void rebuildWidgets(List<CodexNode> nodes, Set<String> unlockedNodes, CodexPlayerData playerData,
@@ -55,7 +50,6 @@ public class BeeTreePageRenderer implements CodexPageRenderer {
             boolean unlocked = playerData.isUnlocked(node);
             boolean canUnlock = CodexManager.canUnlock(node, unlockedNodes);
 
-            // Centrer le node sur le point calculé
             int nodeScreenX = contentX + node.getX() * nodeSpacing + (int) scrollX - halfNode;
             int nodeScreenY = contentY + node.getY() * nodeSpacing + (int) scrollY - halfNode;
 
@@ -70,7 +64,6 @@ public class BeeTreePageRenderer implements CodexPageRenderer {
 
         for (BeeNodeWidget widget : widgets) {
             CodexNode node = widget.getNode();
-            // Centrer le node sur le point calculé
             int nodeScreenX = contentX + node.getX() * nodeSpacing + (int) scrollX - halfNode;
             int nodeScreenY = contentY + node.getY() * nodeSpacing + (int) scrollY - halfNode;
             widget.setX(nodeScreenX);
@@ -80,6 +73,7 @@ public class BeeTreePageRenderer implements CodexPageRenderer {
 
     @Override
     public void renderConnections(GuiGraphics graphics) {
+        // Premier pass: connexions non debloquees (gris)
         for (BeeNodeWidget widget : widgets) {
             CodexNode node = widget.getNode();
             String parentId = node.getParentId();
@@ -87,50 +81,49 @@ public class BeeTreePageRenderer implements CodexPageRenderer {
             if (parentId != null) {
                 BeeNodeWidget parentWidget = findWidgetByNodeId(parentId);
                 if (parentWidget != null) {
-                    renderConnection(graphics, parentWidget, widget);
+                    boolean bothUnlocked = parentWidget.isUnlocked() && widget.isUnlocked();
+                    if (!bothUnlocked) {
+                        renderConnection(graphics, parentWidget, widget, false);
+                    }
+                }
+            }
+        }
+
+        // Deuxieme pass: connexions debloquees (ambre) - dessinees par-dessus
+        for (BeeNodeWidget widget : widgets) {
+            CodexNode node = widget.getNode();
+            String parentId = node.getParentId();
+
+            if (parentId != null) {
+                BeeNodeWidget parentWidget = findWidgetByNodeId(parentId);
+                if (parentWidget != null) {
+                    boolean bothUnlocked = parentWidget.isUnlocked() && widget.isUnlocked();
+                    if (bothUnlocked) {
+                        renderConnection(graphics, parentWidget, widget, true);
+                    }
                 }
             }
         }
     }
 
     /**
-     * Dessine une connexion entre deux nodes avec l'utilitaire LineDrawingHelper.
+     * Dessine une connexion en 3 segments entre deux nodes.
      */
-    private void renderConnection(GuiGraphics graphics, BeeNodeWidget fromWidget, BeeNodeWidget toWidget) {
+    private void renderConnection(GuiGraphics graphics, BeeNodeWidget fromWidget, BeeNodeWidget toWidget, boolean unlocked) {
         int nodeSize = BeeNodeWidget.NODE_SIZE;
 
-        // Centres des nodes
         int fromX = fromWidget.getX() + nodeSize / 2;
         int fromY = fromWidget.getY() + nodeSize / 2;
         int toX = toWidget.getX() + nodeSize / 2;
         int toY = toWidget.getY() + nodeSize / 2;
 
-        // Direction
-        float dx = toX - fromX;
-        float dy = toY - fromY;
-        float length = (float) Math.sqrt(dx * dx + dy * dy);
-        if (length < 1) return;
+        int dx = Math.abs(toX - fromX);
+        int dy = Math.abs(toY - fromY);
 
-        float nx = dx / length;
-        float ny = dy / length;
+        ConnectionMode mode = (dx >= dy) ? ConnectionMode.HORIZONTAL : ConnectionMode.VERTICAL;
+        float turnPercent = 0.5f;
 
-        // Points de départ/arrivée aux bords des nodes
-        int offset = nodeSize / 2 + 3;
-        int startX = (int) (fromX + nx * offset);
-        int startY = (int) (fromY + ny * offset);
-        int endX = (int) (toX - nx * (offset + 6));
-        int endY = (int) (toY - ny * (offset + 6));
-
-        // Couleur et style selon état de déblocage
-        boolean bothUnlocked = fromWidget.isUnlocked() && toWidget.isUnlocked();
-        int color = bothUnlocked ? LINE_COLOR_UNLOCKED : LINE_COLOR_LOCKED;
-
-        // Style simple pour performance optimale
-        LineDrawingHelper.drawArrow(graphics,
-                startX, startY, endX, endY,
-                color, 2,
-                LineStyle.STRAIGHT, ArrowStyle.SIMPLE,
-                6, 0.4f, 0f);
+        LineDrawingHelper.drawConnection(graphics, fromX, fromY, toX, toY, mode, turnPercent, unlocked);
     }
 
     @Override
