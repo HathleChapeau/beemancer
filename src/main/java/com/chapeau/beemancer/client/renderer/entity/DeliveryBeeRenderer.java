@@ -31,6 +31,8 @@ import net.minecraft.client.renderer.entity.BeeRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.animal.Bee;
 import org.joml.Matrix4f;
+import org.slf4j.Logger;                                                                                                                             import com.mojang.logging.LogUtils;
+
 
 /**
  * Renderer pour les abeilles de livraison.
@@ -39,6 +41,7 @@ import org.joml.Matrix4f;
  */
 public class DeliveryBeeRenderer extends BeeRenderer {
 
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final float DELIVERY_BEE_SCALE = 0.4f;
 
     public DeliveryBeeRenderer(EntityRendererProvider.Context context) {
@@ -55,13 +58,15 @@ public class DeliveryBeeRenderer extends BeeRenderer {
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         super.render(bee, entityYaw, partialTicks, poseStack, buffer, packedLight);
 
+        //LOGGER.warn("phase : {}{}", DebugWandItem.displayDebug, !(bee instanceof DeliveryBeeEntity deliveryBee));
+
         if (!DebugWandItem.displayDebug) return;
         if (!(bee instanceof DeliveryBeeEntity deliveryBee)) return;
 
         DeliveryPhaseGoal goal = deliveryBee.getDeliveryGoal();
-        if (goal == null) return;
-
-        String phaseText = goal.getPhase().name();
+        String phaseText = "";
+        if (goal == null) phaseText = "null";
+        else phaseText = goal.getPhase().name();
 
         poseStack.pushPose();
 
@@ -77,6 +82,8 @@ public class DeliveryBeeRenderer extends BeeRenderer {
         int bgColor = (int)(0.5f * 255.0f) << 24;
         Matrix4f matrix = poseStack.last().pose();
 
+        //LOGGER.warn(phaseText);
+
         font.drawInBatch(
             phaseText,
             -textWidth / 2,
@@ -85,7 +92,7 @@ public class DeliveryBeeRenderer extends BeeRenderer {
             false,
             matrix,
             buffer,
-            Font.DisplayMode.SEE_THROUGH,
+            Font.DisplayMode.NORMAL,
             bgColor,
             packedLight
         );

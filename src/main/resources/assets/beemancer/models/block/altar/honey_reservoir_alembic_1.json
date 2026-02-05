@@ -1,90 +1,47 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "translucent",
   "textures": {
-    "dark_iron": "beemancer:block/altar/reservoir_cap",
-    "amber_glass": "beemancer:block/altar/reservoir_body",
-    "particle": "beemancer:block/altar/reservoir_cap"
+    "gold": "beemancer:block/nectar_diamond_block",
+    "reservoir": "beemancer:block/altar/reservoir_alembic",
+    "particle": "beemancer:block/honeyed_glass"
   },
   "elements": [
     {
-      "name": "Cap Left Iron",
-      "from": [4, 4, 4],
-      "to": [6, 12, 12],
+      "name": "Glass",
+      "from": [2, 4, 2],
+      "to": [14, 24, 14],
       "faces": {
-        "north": {"texture": "#dark_iron", "uv": [10, 4, 12, 12]},
-        "east": {"texture": "#dark_iron", "uv": [4, 4, 12, 12]},
-        "south": {"texture": "#dark_iron", "uv": [4, 4, 6, 12]},
-        "west": {"texture": "#dark_iron", "uv": [4, 4, 12, 12]},
-        "up": {"texture": "#dark_iron", "uv": [4, 4, 6, 12]},
-        "down": {"texture": "#dark_iron", "uv": [4, 4, 6, 12]}
+        "north": {"texture": "#reservoir", "uv": [0,0,12,16]},
+        "east": {"texture": "#reservoir", "uv": [0,0,12,16]},
+        "south": {"texture": "#reservoir", "uv": [0,0,12,16]},
+        "west": {"texture": "#reservoir", "uv": [0,0,12,16]}
       }
     },
     {
-      "name": "Glass Body",
-      "from": [6, 4, 4],
-      "to": [10, 12, 12],
+      "name": "Bottom",
+      "from": [1, 2, 1],
+      "to": [15, 4, 15],
       "faces": {
-        "north": {"texture": "#amber_glass", "uv": [6, 4, 10, 12]},
-        "south": {"texture": "#amber_glass", "uv": [6, 4, 10, 12]},
-        "up": {"texture": "#amber_glass", "uv": [6, 4, 10, 12]},
-        "down": {"texture": "#amber_glass", "uv": [6, 4, 10, 12]}
+        "north": {"texture": "#gold"},
+        "east": {"texture": "#gold"},
+        "south": {"texture": "#gold"},
+        "west": {"texture": "#gold"},
+        "up": {"texture": "#gold"},
+        "down": {"texture": "#gold"}
       }
     },
     {
-      "name": "Cap Right Iron",
-      "from": [10, 4, 4],
-      "to": [12, 12, 12],
+      "name": "Top",
+      "from": [1, 24, 1],
+      "to": [15, 26, 15],
       "faces": {
-        "north": {"texture": "#dark_iron", "uv": [4, 4, 6, 12]},
-        "east": {"texture": "#dark_iron", "uv": [4, 4, 12, 12]},
-        "south": {"texture": "#dark_iron", "uv": [10, 4, 12, 12]},
-        "west": {"texture": "#dark_iron", "uv": [4, 4, 12, 12]},
-        "up": {"texture": "#dark_iron", "uv": [10, 4, 12, 12]},
-        "down": {"texture": "#dark_iron", "uv": [10, 4, 12, 12]}
-      }
-    },
-    {
-      "name": "Rivet Top Left",
-      "from": [4, 11, 6],
-      "to": [5, 12, 10],
-      "faces": {
-        "north": {"texture": "#dark_iron", "uv": [0, 0, 1, 1]},
-        "south": {"texture": "#dark_iron", "uv": [0, 0, 1, 1]},
-        "west": {"texture": "#dark_iron", "uv": [0, 0, 4, 1]},
-        "up": {"texture": "#dark_iron", "uv": [0, 0, 1, 4]}
-      }
-    },
-    {
-      "name": "Rivet Top Right",
-      "from": [11, 11, 6],
-      "to": [12, 12, 10],
-      "faces": {
-        "north": {"texture": "#dark_iron", "uv": [0, 0, 1, 1]},
-        "south": {"texture": "#dark_iron", "uv": [0, 0, 1, 1]},
-        "east": {"texture": "#dark_iron", "uv": [0, 0, 4, 1]},
-        "up": {"texture": "#dark_iron", "uv": [0, 0, 1, 4]}
-      }
-    },
-    {
-      "name": "Rivet Bottom Left",
-      "from": [4, 4, 6],
-      "to": [5, 5, 10],
-      "faces": {
-        "north": {"texture": "#dark_iron", "uv": [0, 0, 1, 1]},
-        "south": {"texture": "#dark_iron", "uv": [0, 0, 1, 1]},
-        "west": {"texture": "#dark_iron", "uv": [0, 0, 4, 1]},
-        "down": {"texture": "#dark_iron", "uv": [0, 0, 1, 4]}
-      }
-    },
-    {
-      "name": "Rivet Bottom Right",
-      "from": [11, 4, 6],
-      "to": [12, 5, 10],
-      "faces": {
-        "north": {"texture": "#dark_iron", "uv": [0, 0, 1, 1]},
-        "south": {"texture": "#dark_iron", "uv": [0, 0, 1, 1]},
-        "east": {"texture": "#dark_iron", "uv": [0, 0, 4, 1]},
-        "down": {"texture": "#dark_iron", "uv": [0, 0, 1, 4]}
+        "north": {"texture": "#gold", "uv": [1,13,15,15]},
+        "east": {"texture": "#gold", "uv": [1,13,15,15]},
+        "south": {"texture": "#gold", "uv": [1,13,15,15]},
+        "west": {"texture": "#gold", "uv": [1,13,15,15]},
+        "up": {"texture": "#gold"},
+        "down": {"texture": "#gold"}
       }
     }
   ]

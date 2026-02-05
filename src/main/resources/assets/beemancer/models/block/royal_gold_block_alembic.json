@@ -1,6 +1,7 @@
 {
   "parent": "minecraft:block/cube_all",
+  "render_type": "cutout",
   "textures": {
-    "all": "beemancer:block/royal_gold_block"
+    "all": "beemancer:block/invisible"
   }
 }

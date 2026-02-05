@@ -1,7 +1,71 @@
 {
-  "parent": "minecraft:block/cube_all",
-  "render_type": "translucent",
+  "parent": "minecraft:block/block",
   "textures": {
-    "all": "beemancer:block/honeyed_glass"
-  }
+    "frame": "beemancer:block/royal_gold_block",
+    "gold": "beemancer:block/royal_gold_block",
+    "particle": "beemancer:block/honeyed_glass"
+  },
+  "elements": [
+    {
+      "name": "Tube1",
+      "from": [-10, 10, 6],
+      "to": [-6, 12, 10],
+      "faces": {
+        "north": {"texture": "#gold", "uv": [6,7,10,9]},
+        "east": {"texture": "#gold", "uv": [6,7,10,9]},
+        "south": {"texture": "#gold", "uv": [6,7,10,9]},
+        "west": {"texture": "#gold", "uv": [6,7,10,9]}
+      }
+    },
+    {
+      "name": "Tube2",
+      "from": [-10, 12, 6],
+      "to": [3, 16, 10],
+      "faces": {
+        "north": {"texture": "#gold", "uv": [1,6,14,10]},
+        "south": {"texture": "#gold", "uv": [1,6,14,10]},
+        "east": {"texture": "#gold", "uv": [6,6,10,10]},
+        "west": {"texture": "#gold", "uv": [6,6,10,10]},
+        "up": {"texture": "#gold", "uv": [1,6,14,10]},
+        "down": {"texture": "#gold", "uv": [1,6,14,10]}
+      }
+    },
+    {
+      "name": "Tube3",
+      "from": [13, 12, 6],
+      "to": [26, 16, 10],
+      "faces": {
+        "north": {"texture": "#gold", "uv": [1,6,14,10]},
+        "south": {"texture": "#gold", "uv": [1,6,14,10]},
+        "east": {"texture": "#gold", "uv": [6,6,10,10]},
+        "west": {"texture": "#gold", "uv": [6,6,10,10]},
+        "up": {"texture": "#gold", "uv": [1,6,14,10]},
+        "down": {"texture": "#gold", "uv": [1,6,14,10]}
+      }
+    },
+    {
+      "name": "Tube4",
+      "from": [22, 10, 6],
+      "to": [26, 12, 10],
+      "faces": {
+        "north": {"texture": "#gold", "uv": [6,7,10,9]},
+        "east": {"texture": "#gold", "uv": [6,7,10,9]},
+        "south": {"texture": "#gold", "uv": [6,7,10,9]},
+        "west": {"texture": "#gold", "uv": [6,7,10,9]}
+      }
+    },
+    {
+      "name": "Tube5",
+      "from": [3, 11, 5],
+      "to": [13, 17, 11],
+      "faces": {
+        "north": {"texture": "#frame", "uv": [3,5,13,11]},
+        "south": {"texture": "#frame", "uv": [3,5,13,11]},
+        "east": {"texture": "#frame", "uv": [5,5,11,11]},
+        "west": {"texture": "#frame", "uv": [5,5,11,11]},
+        "up": {"texture": "#frame", "uv": [3,5,13,11]},
+        "down": {"texture": "#frame", "uv": [3,5,13,11]}
+      }
+    }
+  ]
 }
