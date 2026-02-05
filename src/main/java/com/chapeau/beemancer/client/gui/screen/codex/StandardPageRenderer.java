@@ -21,10 +21,7 @@
 package com.chapeau.beemancer.client.gui.screen.codex;
 
 import com.chapeau.beemancer.client.gui.widget.CodexNodeWidget;
-import com.chapeau.beemancer.common.codex.CodexJsonLoader;
-import com.chapeau.beemancer.common.codex.CodexManager;
-import com.chapeau.beemancer.common.codex.CodexNode;
-import com.chapeau.beemancer.common.codex.CodexPlayerData;
+import com.chapeau.beemancer.common.codex.*;
 import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.*;
@@ -53,15 +50,11 @@ public class StandardPageRenderer implements CodexPageRenderer {
         int halfNode = CodexNodeWidget.NODE_SIZE / 2;
 
         for (CodexNode node : nodes) {
-            boolean unlocked = playerData.isUnlocked(node);
-            boolean canUnlock = CodexManager.canUnlock(node, unlockedNodes);
+            // Vérifier si c'est un node header (débloqué par défaut)
+            boolean isHeader = CodexPlayerData.isDefaultNode(node.getFullId());
 
-            // Vérifier si c'est le node header (position 0,0)
-            boolean isHeader = (node.getX() == 0 && node.getY() == 0);
-            // Le header est toujours débloqué par défaut
-            if (isHeader) {
-                unlocked = true;
-            }
+            boolean unlocked = playerData.isUnlocked(node) || isHeader;
+            boolean canUnlock = CodexManager.canUnlock(node, unlockedNodes);
 
             // Centrer le node sur le point calculé
             int nodeScreenX = contentX + node.getX() * nodeSpacing + (int) scrollX - halfNode;
