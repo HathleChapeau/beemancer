@@ -70,8 +70,8 @@ public class CodexScreen extends Screen {
     // Background color #F3E1BB (couleur unie, pas de tiling)
     private static final int BG_COLOR = 0xFFF3E1BB;
 
-    // Facteur de réduction pour adapter les coordonnées JSON à l'écran
-    private static final float JSON_SCALE = 0.25f;
+    // Espacement entre nodes (comme BEES)
+    private static final int NODE_SPACING = 30;
 
     private CodexPage currentPage = CodexPage.APICA;
     private final Map<CodexPage, Button> tabButtons = new EnumMap<>(CodexPage.class);
@@ -179,14 +179,15 @@ public class CodexScreen extends Screen {
     private void rebuildNodeWidgets() {
         clearCurrentWidgets();
 
+        CodexPlayerData playerData = getPlayerData();
+        Set<String> unlockedNodes = playerData.getUnlockedNodes();
+
         // Pour BEES, utiliser le système existant
         if (currentPage == CodexPage.BEES) {
-            CodexPlayerData playerData = getPlayerData();
-            Set<String> unlockedNodes = playerData.getUnlockedNodes();
             List<CodexNode> nodes = CodexManager.getNodesForPage(currentPage);
 
             currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData,
-                    contentX, contentY, 30, scrollX, scrollY);
+                    contentX + contentWidth / 2, contentY + contentHeight / 2, NODE_SPACING, scrollX, scrollY);
 
             for (Object widget : currentRenderer.getWidgets()) {
                 if (widget instanceof AbstractWidget abstractWidget) {
@@ -196,33 +197,23 @@ public class CodexScreen extends Screen {
             return;
         }
 
-        // Pour les autres pages, utiliser CodexJsonLoader
+        // Pour les autres pages, utiliser CodexJsonLoader avec positions de grille
         CodexJsonLoader.TabData tabData = CodexJsonLoader.getTabData(currentPage);
         if (tabData == null) {
             return;
         }
 
-        CodexPlayerData playerData = getPlayerData();
-        Set<String> unlockedNodes = playerData.getUnlockedNodes();
-
-        // Calculer le centre des nodes JSON pour centrer le contenu
-        float centerJsonX = (tabData.bounds.minX + tabData.bounds.maxX) / 2;
-        float centerJsonY = (tabData.bounds.minY + tabData.bounds.maxY) / 2;
-
-        // Convertir les JsonNodeData en CodexNodes
+        // Convertir les JsonNodeData en CodexNodes avec positions de grille
         List<CodexNode> nodes = new ArrayList<>();
         for (CodexJsonLoader.JsonNodeData jsonNode : tabData.nodes) {
-            // Position relative au centre, mise à l'échelle
-            int nodeX = (int)((jsonNode.rawX - centerJsonX) * JSON_SCALE);
-            int nodeY = (int)((jsonNode.rawY - centerJsonY) * JSON_SCALE);
-
-            CodexNode node = createNodeFromJson(jsonNode, nodeX, nodeY);
+            // Utiliser directement gridX et gridY (déjà relatifs au node header)
+            CodexNode node = createNodeFromJson(jsonNode, jsonNode.gridX, jsonNode.gridY);
             nodes.add(node);
         }
 
-        // Le renderer positionnera les nodes par rapport au centre du contenu
+        // Utiliser le même nodeSpacing que BEES, centré dans le contenu
         currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData,
-                contentX + contentWidth / 2, contentY + contentHeight / 2, 1, scrollX, scrollY);
+                contentX + contentWidth / 2, contentY + contentHeight / 2, NODE_SPACING, scrollX, scrollY);
 
         for (Object widget : currentRenderer.getWidgets()) {
             if (widget instanceof AbstractWidget abstractWidget) {
@@ -449,11 +440,8 @@ public class CodexScreen extends Screen {
     }
 
     private void updateNodePositions() {
-        if (currentPage == CodexPage.BEES) {
-            currentRenderer.updatePositions(contentX, contentY, 30, scrollX, scrollY);
-        } else {
-            currentRenderer.updatePositions(contentX + contentWidth / 2, contentY + contentHeight / 2, 1, scrollX, scrollY);
-        }
+        // Même système pour toutes les pages: centré avec NODE_SPACING
+        currentRenderer.updatePositions(contentX + contentWidth / 2, contentY + contentHeight / 2, NODE_SPACING, scrollX, scrollY);
     }
 
     private boolean isInContentArea(double mouseX, double mouseY) {
