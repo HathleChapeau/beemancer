@@ -303,26 +303,59 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
 
     /**
      * Appele quand un bloc est casse. Detruit le fluide et
-     * reforme la structure restante via BFS depuis un voisin.
+     * reset TOUS les blocs de la structure, puis reforme si possible.
      */
     public void onBroken() {
         if (level == null || level.isClientSide()) return;
 
-        MultiblockTankBlockEntity master = getMaster();
-        if (master == null) return;
+        // Si on est le master, reset tous les blocs de la structure
+        if (isMaster() && formed) {
+            // Destroy all fluid (as per spec)
+            if (fluidTank != null) {
+                fluidTank.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
+            }
 
-        // Destroy all fluid (as per spec)
-        if (master.fluidTank != null) {
-            master.fluidTank.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
-        }
+            // Copier la liste car on va la modifier
+            Set<BlockPos> blocksToReset = new HashSet<>(connectedBlocks);
 
-        // Find a remaining neighbor to trigger reformation
-        BlockPos reformFrom = null;
-        for (Direction dir : Direction.values()) {
-            BlockPos neighbor = worldPosition.relative(dir);
-            if (level.getBlockEntity(neighbor) instanceof MultiblockTankBlockEntity) {
-                reformFrom = neighbor;
-                break;
+            // Reset TOUS les blocs de la structure
+            for (BlockPos pos : blocksToReset) {
+                if (pos.equals(worldPosition)) continue; // Skip self (being broken)
+                BlockEntity be = level.getBlockEntity(pos);
+                if (be instanceof MultiblockTankBlockEntity tank) {
+                    tank.masterPos = null;
+                    tank.formed = false;
+                    tank.connectedBlocks.clear();
+                    tank.connectedBlocks.add(pos);
+                    tank.fluidTank = tank.createFluidTank(CAPACITY_PER_BLOCK);
+                    tank.validCuboid = false;
+                    tank.setChanged();
+                    level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
+                }
+            }
+
+            // Trouver un voisin restant pour reformer
+            BlockPos reformFrom = null;
+            for (Direction dir : Direction.values()) {
+                BlockPos neighbor = worldPosition.relative(dir);
+                if (blocksToReset.contains(neighbor) && level.getBlockEntity(neighbor) instanceof MultiblockTankBlockEntity) {
+                    reformFrom = neighbor;
+                    break;
+                }
+            }
+
+            // Reformer depuis un voisin
+            if (reformFrom != null) {
+                BlockEntity be = level.getBlockEntity(reformFrom);
+                if (be instanceof MultiblockTankBlockEntity neighbor) {
+                    neighbor.reformMultiblock();
+                }
+            }
+        } else if (masterPos != null) {
+            // Si on est un slave, notifier le master
+            BlockEntity be = level.getBlockEntity(masterPos);
+            if (be instanceof MultiblockTankBlockEntity master) {
+                master.onBroken();
             }
         }
 
@@ -330,14 +363,8 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         this.masterPos = null;
         this.connectedBlocks.clear();
         this.fluidTank = null;
-
-        // Trigger reformation from a remaining neighbor
-        if (reformFrom != null) {
-            BlockEntity be = level.getBlockEntity(reformFrom);
-            if (be instanceof MultiblockTankBlockEntity neighbor) {
-                neighbor.reformMultiblock();
-            }
-        }
+        this.formed = false;
+        this.validCuboid = false;
     }
 
     private int comparePositions(BlockPos a, BlockPos b) {
