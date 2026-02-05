@@ -28,6 +28,9 @@ import java.util.UUID;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -62,6 +65,8 @@ import org.jetbrains.annotations.Nullable;
 public class DeliveryBeeEntity extends Bee {
 
     private static final int TIMEOUT_TICKS = 2400;
+    private static final EntityDataAccessor<String> DATA_PHASE = SynchedEntityData.defineId(
+        DeliveryBeeEntity.class, EntityDataSerializers.STRING);
 
     private BlockPos controllerPos;
     private BlockPos sourcePos;
@@ -88,6 +93,12 @@ public class DeliveryBeeEntity extends Bee {
         super(entityType, level);
         this.moveControl = new FlyingMoveControl(this, 20, true);
         this.setNoGravity(true);
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PHASE, "");
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -144,6 +155,20 @@ public class DeliveryBeeEntity extends Bee {
     @Nullable
     public DeliveryPhaseGoal getDeliveryGoal() {
         return deliveryGoal;
+    }
+
+    /**
+     * Met a jour la phase synchronisee (appele par DeliveryPhaseGoal cote serveur).
+     */
+    public void setSyncedPhase(String phase) {
+        this.entityData.set(DATA_PHASE, phase);
+    }
+
+    /**
+     * Retourne la phase synchronisee (lisible cote client pour le renderer).
+     */
+    public String getSyncedPhase() {
+        return this.entityData.get(DATA_PHASE);
     }
 
     @Override

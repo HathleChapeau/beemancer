@@ -80,6 +80,14 @@ public class DeliveryPhaseGoal extends Goal {
         return phase;
     }
 
+    /**
+     * Change la phase et synchronise vers le client via SynchedEntityData.
+     */
+    private void setPhase(Phase newPhase) {
+        this.phase = newPhase;
+        bee.setSyncedPhase(newPhase.name());
+    }
+
     @Override
     public boolean canUse() {
         return bee.getSourcePos() != null && bee.getReturnPos() != null;
@@ -94,10 +102,10 @@ public class DeliveryPhaseGoal extends Goal {
     public void start() {
         if (!bee.getCarriedItems().isEmpty()) {
             // Preloaded: sauter source, aller directement a dest
-            phase = Phase.FLY_TO_DEST;
+            setPhase(Phase.FLY_TO_DEST);
             transitIdx[0] = 0;
         } else {
-            phase = Phase.FLY_TO_SOURCE;
+            setPhase(Phase.FLY_TO_SOURCE);
             outboundIdx[0] = 0;
         }
         homeIdx[0] = 0;
@@ -125,7 +133,7 @@ public class DeliveryPhaseGoal extends Goal {
      */
     private void handleRecall() {
         if (phase != Phase.FLY_HOME) {
-            phase = Phase.FLY_HOME;
+            setPhase(Phase.FLY_HOME);
             homeIdx[0] = 0;
             navigationStarted = false;
         }
@@ -179,7 +187,7 @@ public class DeliveryPhaseGoal extends Goal {
      */
     private void tickFlyToSource() {
         if (navigateWaypoints(bee.getOutboundWaypoints(), outboundIdx, bee.getSourcePos())) {
-            phase = Phase.WAIT_AT_SOURCE;
+            setPhase(Phase.WAIT_AT_SOURCE);
             waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
         }
     }
@@ -202,7 +210,7 @@ public class DeliveryPhaseGoal extends Goal {
             return;
         }
 
-        phase = Phase.FLY_TO_DEST;
+        setPhase(Phase.FLY_TO_DEST);
         transitIdx[0] = 0;
         navigationStarted = false;
     }
@@ -213,7 +221,7 @@ public class DeliveryPhaseGoal extends Goal {
      */
     private void tickFlyToDest() {
         if (navigateWaypoints(bee.getTransitWaypoints(), transitIdx, bee.getDestPos())) {
-            phase = Phase.WAIT_AT_DEST;
+            setPhase(Phase.WAIT_AT_DEST);
             waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
         }
     }
@@ -229,7 +237,7 @@ public class DeliveryPhaseGoal extends Goal {
             if (!isDestValid()) {
                 bee.returnCarriedItemsToNetwork();
                 bee.notifyTaskFailed();
-                phase = Phase.FLY_HOME;
+                setPhase(Phase.FLY_HOME);
                 homeIdx[0] = 0;
                 navigationStarted = false;
                 return;
@@ -237,8 +245,8 @@ public class DeliveryPhaseGoal extends Goal {
             performDelivery();
         }
 
-        // Retour au controller via les waypoints dest inverses
-        phase = Phase.FLY_HOME;
+        // Retour au controller via les waypoints home
+        setPhase(Phase.FLY_HOME);
         homeIdx[0] = 0;
         navigationStarted = false;
     }

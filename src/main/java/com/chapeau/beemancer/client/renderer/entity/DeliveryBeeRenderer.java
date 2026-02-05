@@ -21,7 +21,6 @@
 package com.chapeau.beemancer.client.renderer.entity;
 
 import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
-import com.chapeau.beemancer.common.entity.delivery.DeliveryPhaseGoal;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -31,8 +30,6 @@ import net.minecraft.client.renderer.entity.BeeRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.animal.Bee;
 import org.joml.Matrix4f;
-import org.slf4j.Logger;                                                                                                                             import com.mojang.logging.LogUtils;
-
 
 /**
  * Renderer pour les abeilles de livraison.
@@ -41,7 +38,6 @@ import org.slf4j.Logger;                                                        
  */
 public class DeliveryBeeRenderer extends BeeRenderer {
 
-    private static final Logger LOGGER = LogUtils.getLogger();
     private static final float DELIVERY_BEE_SCALE = 0.4f;
 
     public DeliveryBeeRenderer(EntityRendererProvider.Context context) {
@@ -58,15 +54,11 @@ public class DeliveryBeeRenderer extends BeeRenderer {
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         super.render(bee, entityYaw, partialTicks, poseStack, buffer, packedLight);
 
-        //LOGGER.warn("phase : {}{}", DebugWandItem.displayDebug, !(bee instanceof DeliveryBeeEntity deliveryBee));
-
         if (!DebugWandItem.displayDebug) return;
         if (!(bee instanceof DeliveryBeeEntity deliveryBee)) return;
 
-        DeliveryPhaseGoal goal = deliveryBee.getDeliveryGoal();
-        String phaseText = "";
-        if (goal == null) phaseText = "null";
-        else phaseText = goal.getPhase().name();
+        String phaseText = deliveryBee.getSyncedPhase();
+        if (phaseText.isEmpty()) return;
 
         poseStack.pushPose();
 
@@ -81,8 +73,6 @@ public class DeliveryBeeRenderer extends BeeRenderer {
         float textWidth = font.width(phaseText);
         int bgColor = (int)(0.5f * 255.0f) << 24;
         Matrix4f matrix = poseStack.last().pose();
-
-        //LOGGER.warn(phaseText);
 
         font.drawInBatch(
             phaseText,
