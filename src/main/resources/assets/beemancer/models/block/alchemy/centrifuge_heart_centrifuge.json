@@ -7,8 +7,8 @@
   "elements": [
     {
       "name": "Bottom",
-      "from": [-16, -16, -16],
-      "to": [32, -4, 32],
+      "from": [-12, -16, -12],
+      "to": [28, -4, 28],
       "faces": {
         "north": {"texture": "#frame", "uv": [0, 0, 16, 12]},
         "south": {"texture": "#frame", "uv": [0, 0, 16, 12]},
@@ -20,8 +20,8 @@
     },
     {
       "name": "Top",
-      "from": [-16, 20, -16],
-      "to": [32, 32, 32],
+      "from": [-12, 20, -12],
+      "to": [28, 32, 28],
       "faces": {
         "north": {"texture": "#frame", "uv": [0, 0, 16, 12]},
         "south": {"texture": "#frame", "uv": [0, 0, 16, 12]},
