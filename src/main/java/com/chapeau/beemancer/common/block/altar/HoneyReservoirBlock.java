@@ -46,6 +46,7 @@ import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -70,6 +71,20 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
     // Forme carrée: réservoir 8x8x8 centré
     private static final VoxelShape SHAPE = Block.box(4, 4, 4, 12, 12, 12);
 
+    // Alembic: colonne de verre + base dorée
+    private static final VoxelShape SHAPE_ALEMBIC_BASE = Shapes.or(
+        Block.box(1, 2, 1, 15, 4, 15),
+        Block.box(2, 4, 2, 14, 16, 14)
+    );
+    // Alembic_0: base + cadres latéraux (côtés est/ouest)
+    private static final VoxelShape SHAPE_ALEMBIC_0 = Shapes.or(
+        SHAPE_ALEMBIC_BASE,
+        Block.box(0, 4, 4, 3, 12, 12),
+        Block.box(13, 4, 4, 16, 12, 12)
+    );
+    // Alembic_1: même colonne que alembic (réservoir du bas)
+    private static final VoxelShape SHAPE_ALEMBIC_1 = SHAPE_ALEMBIC_BASE;
+
     public HoneyReservoirBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
@@ -89,7 +104,13 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        MultiblockProperty mb = state.getValue(MULTIBLOCK);
+        return switch (mb) {
+            case ALEMBIC -> SHAPE_ALEMBIC_BASE;
+            case ALEMBIC_0 -> SHAPE_ALEMBIC_0;
+            case ALEMBIC_1 -> SHAPE_ALEMBIC_1;
+            default -> SHAPE;
+        };
     }
 
     @Override

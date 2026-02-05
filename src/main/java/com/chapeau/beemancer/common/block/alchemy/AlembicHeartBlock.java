@@ -27,6 +27,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -39,6 +40,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
@@ -51,6 +54,8 @@ public class AlembicHeartBlock extends Block implements EntityBlock {
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("alembic");
     public static final BooleanProperty DISTILLING = BooleanProperty.create("distilling");
 
+    private static final VoxelShape SHAPE_ALEMBIC = Block.box(1, 14, 1, 15, 18, 15);
+
     public AlembicHeartBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
@@ -61,6 +66,14 @@ public class AlembicHeartBlock extends Block implements EntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(MULTIBLOCK, DISTILLING);
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
+            return SHAPE_ALEMBIC;
+        }
+        return super.getShape(state, level, pos, context);
     }
 
     @Override

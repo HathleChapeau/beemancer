@@ -21,10 +21,15 @@
 package com.chapeau.beemancer.common.block.building;
 
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * Bloc d'or royal.
@@ -43,5 +48,21 @@ public class RoyalGoldBlock extends Block {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(MULTIBLOCK);
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
+            return Shapes.empty();
+        }
+        return super.getShape(state, level, pos, context);
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
+            return Shapes.empty();
+        }
+        return super.getCollisionShape(state, level, pos, context);
     }
 }
