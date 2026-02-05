@@ -90,6 +90,13 @@ public class CodexScreen extends Screen {
     private double scrollY = 0;
     private boolean isDragging = false;
 
+    // Scroll bounds (calculated from node positions)
+    private double minScrollX = 0;
+    private double maxScrollX = 0;
+    private double minScrollY = 0;
+    private double maxScrollY = 0;
+    private static final int SCROLL_MARGIN = 40; // Marge autour des nodes extremes
+
     public CodexScreen() {
         super(Component.translatable("screen.beemancer.codex"));
         initRenderers();
@@ -182,6 +189,10 @@ public class CodexScreen extends Screen {
 
         // Utiliser CodexManager pour TOUTES les pages (même système que BEES)
         List<CodexNode> nodes = CodexManager.getNodesForPage(currentPage);
+
+        // Calculer les bornes de scroll AVANT de positionner les widgets
+        calculateScrollBounds();
+        clampScroll();
 
         currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData,
                 contentX + contentWidth / 2, contentY + contentHeight / 2, NODE_SPACING, scrollX, scrollY);
@@ -380,6 +391,7 @@ public class CodexScreen extends Screen {
         if (isDragging && button == 0) {
             scrollX += dragX;
             scrollY += dragY;
+            clampScroll();
             updateNodePositions();
             return true;
         }
@@ -390,6 +402,7 @@ public class CodexScreen extends Screen {
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollXDelta, double scrollYDelta) {
         if (isInContentArea(mouseX, mouseY)) {
             this.scrollY += scrollYDelta * 20;
+            clampScroll();
             updateNodePositions();
             return true;
         }
@@ -399,6 +412,73 @@ public class CodexScreen extends Screen {
     private void updateNodePositions() {
         // Même système pour toutes les pages: centré avec NODE_SPACING
         currentRenderer.updatePositions(contentX + contentWidth / 2, contentY + contentHeight / 2, NODE_SPACING, scrollX, scrollY);
+    }
+
+    /**
+     * Calcule les limites de scroll basées sur les positions des nodes.
+     * Les bornes permettent de voir tous les nodes mais empechent de scroller a l'infini.
+     */
+    private void calculateScrollBounds() {
+        List<CodexNode> nodes = CodexManager.getNodesForPage(currentPage);
+        if (nodes.isEmpty()) {
+            minScrollX = maxScrollX = 0;
+            minScrollY = maxScrollY = 0;
+            return;
+        }
+
+        // Trouver les positions extremes des nodes (en coordonnees grille)
+        int gridMinX = Integer.MAX_VALUE;
+        int gridMaxX = Integer.MIN_VALUE;
+        int gridMinY = Integer.MAX_VALUE;
+        int gridMaxY = Integer.MIN_VALUE;
+
+        for (CodexNode node : nodes) {
+            gridMinX = Math.min(gridMinX, node.getX());
+            gridMaxX = Math.max(gridMaxX, node.getX());
+            gridMinY = Math.min(gridMinY, node.getY());
+            gridMaxY = Math.max(gridMaxY, node.getY());
+        }
+
+        // Convertir en pixels (par rapport au centre de la zone de contenu)
+        // Quand scroll = 0, le node en (0,0) est au centre
+        // Pour voir le node le plus a gauche (gridMinX), il faut scroller a droite (scrollX positif)
+        // Pour voir le node le plus a droite (gridMaxX), il faut scroller a gauche (scrollX negatif)
+        int pixelMinX = gridMinX * NODE_SPACING;
+        int pixelMaxX = gridMaxX * NODE_SPACING;
+        int pixelMinY = gridMinY * NODE_SPACING;
+        int pixelMaxY = gridMaxY * NODE_SPACING;
+
+        // Demi-largeur et demi-hauteur de la zone de contenu
+        int halfContentW = contentWidth / 2;
+        int halfContentH = contentHeight / 2;
+
+        // Bornes de scroll:
+        // - Pour voir le node le plus a gauche, scrollX doit etre assez positif
+        //   pour que pixelMinX + scrollX >= -halfContentW + margin
+        // - Pour voir le node le plus a droite, scrollX doit etre assez negatif
+        //   pour que pixelMaxX + scrollX <= halfContentW - margin
+        minScrollX = -(pixelMaxX - halfContentW + SCROLL_MARGIN);
+        maxScrollX = -(pixelMinX + halfContentW - SCROLL_MARGIN);
+        minScrollY = -(pixelMaxY - halfContentH + SCROLL_MARGIN);
+        maxScrollY = -(pixelMinY + halfContentH - SCROLL_MARGIN);
+
+        // S'assurer que min <= max (si le contenu est plus petit que la zone)
+        if (minScrollX > maxScrollX) {
+            double center = (minScrollX + maxScrollX) / 2;
+            minScrollX = maxScrollX = center;
+        }
+        if (minScrollY > maxScrollY) {
+            double center = (minScrollY + maxScrollY) / 2;
+            minScrollY = maxScrollY = center;
+        }
+    }
+
+    /**
+     * Limite les valeurs de scroll aux bornes calculees.
+     */
+    private void clampScroll() {
+        scrollX = Math.max(minScrollX, Math.min(maxScrollX, scrollX));
+        scrollY = Math.max(minScrollY, Math.min(maxScrollY, scrollY));
     }
 
     private boolean isInContentArea(double mouseX, double mouseY) {
