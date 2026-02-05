@@ -82,7 +82,10 @@ public class MultiblockTankBlock extends BaseEntityBlock {
     protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
 
     @Override
-    public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
+    public RenderShape getRenderShape(BlockState state) {
+        // Le renderer gère tout (modèle + fluide)
+        return RenderShape.ENTITYBLOCK_ANIMATED;
+    }
 
     @Nullable
     @Override

@@ -1,0 +1,50 @@
+{
+  "credit": "Beemancer - Multiblock Tank (3 cubes)",
+  "texture_size": [32, 32],
+  "textures": {
+    "frame": "beemancer:block/alchemy/tank_frame",
+    "glass": "beemancer:block/alchemy/tank_glass",
+    "particle": "beemancer:block/alchemy/tank_frame"
+  },
+  "elements": [
+    {
+      "name": "base",
+      "from": [1, 0, 1],
+      "to": [15, 4, 15],
+      "faces": {
+        "north": {"uv": [0, 0, 14, 4], "texture": "#frame"},
+        "east": {"uv": [0, 0, 14, 4], "texture": "#frame"},
+        "south": {"uv": [0, 0, 14, 4], "texture": "#frame"},
+        "west": {"uv": [0, 0, 14, 4], "texture": "#frame"},
+        "up": {"uv": [0, 0, 14, 14], "texture": "#glass"},
+        "down": {"uv": [0, 0, 14, 14], "texture": "#frame"}
+      }
+    },
+    {
+      "name": "middle",
+      "from": [3, 4, 3],
+      "to": [13, 12, 13],
+      "faces": {
+        "north": {"uv": [0, 0, 10, 8], "texture": "#glass"},
+        "east": {"uv": [0, 0, 10, 8], "texture": "#glass"},
+        "south": {"uv": [0, 0, 10, 8], "texture": "#glass"},
+        "west": {"uv": [0, 0, 10, 8], "texture": "#glass"},
+        "up": {"uv": [0, 0, 10, 10], "texture": "#glass"},
+        "down": {"uv": [0, 0, 10, 10], "texture": "#glass"}
+      }
+    },
+    {
+      "name": "top",
+      "from": [5, 12, 5],
+      "to": [11, 16, 11],
+      "faces": {
+        "north": {"uv": [0, 0, 6, 4], "texture": "#frame"},
+        "east": {"uv": [0, 0, 6, 4], "texture": "#frame"},
+        "south": {"uv": [0, 0, 6, 4], "texture": "#frame"},
+        "west": {"uv": [0, 0, 6, 4], "texture": "#frame"},
+        "up": {"uv": [0, 0, 6, 6], "texture": "#frame"},
+        "down": {"uv": [0, 0, 6, 6], "texture": "#glass"}
+      }
+    }
+  ]
+}
