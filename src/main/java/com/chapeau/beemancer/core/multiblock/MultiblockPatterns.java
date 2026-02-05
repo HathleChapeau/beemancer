@@ -353,15 +353,15 @@ public class MultiblockPatterns {
             .add(1, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
 
             // Étage 2 (Y+0): Walls aux coins, rest air, Heart centre
-            .add(-1, 0, -1, block(BeemancerBlocks.HONEYED_STONE_WALL))  // Coin NO
+            .add(-1, 0, -1, air())  // Coin NO
             .add(0, 0, -1, air())                                       // Front (ouvert)
-            .add(1, 0, -1, block(BeemancerBlocks.HONEYED_STONE_WALL))   // Coin NE
+            .add(1, 0, -1, air())   // Coin NE
             .add(-1, 0, 0, air())                                       // Ouest
             // (0, 0, 0) = Infuser Heart - skip
             .add(1, 0, 0, air())                                        // Est
-            .add(-1, 0, 1, block(BeemancerBlocks.HONEYED_STONE_WALL))   // Coin SO
+            .add(-1, 0, 1, air())   // Coin SO
             .add(0, 0, 1, air())                                        // Sud
-            .add(1, 0, 1, block(BeemancerBlocks.HONEYED_STONE_WALL))    // Coin SE
+            .add(1, 0, 1, air())    // Coin SE
 
             // Étage 3 (Y+1): 3x3 Honeyed Stone
             .add(-1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))
@@ -404,15 +404,15 @@ public class MultiblockPatterns {
             .add(1, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
 
             // Étage 2 (Y+0): Walls aux coins, rest air
-            .add(-1, 0, -1, block(BeemancerBlocks.HONEYED_STONE_WALL))  // Coin NO
+            .add(-1, 0, -1, air())  // Coin NO
             .add(0, 0, -1, air())                                       // Front
-            .add(1, 0, -1, block(BeemancerBlocks.HONEYED_STONE_WALL))   // Coin NE
+            .add(1, 0, -1, air())   // Coin NE
             .add(-1, 0, 0, air())                                       // Ouest
             // (0, 0, 0) = Centrifuge Heart - skip
             .add(1, 0, 0, air())                                        // Est
-            .add(-1, 0, 1, block(BeemancerBlocks.HONEYED_STONE_WALL))   // Coin SO
+            .add(-1, 0, 1, air())   // Coin SO
             .add(0, 0, 1, air())                                        // Sud
-            .add(1, 0, 1, block(BeemancerBlocks.HONEYED_STONE_WALL))    // Coin SE
+            .add(1, 0, 1, air())    // Coin SE
 
             // Étage 3 (Y+1): 3x3 Honeyed Stone
             .add(-1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))

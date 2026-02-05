@@ -1,21 +1,112 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "beemancer:block/honey_crystal",
-    "all": "beemancer:block/honey_crystal"
+    "frame": "beemancer:block/honeyed_stone",
+    "particle": "beemancer:block/honeyed_stone"
   },
   "elements": [
     {
-      "name": "Core",
-      "from": [4, 4, 4],
-      "to": [12, 12, 12],
+      "name": "Bottom",
+      "from": [-12, -16, -12],
+      "to": [28, -4, 28],
       "faces": {
-        "north": {"texture": "#all", "uv": [4, 4, 12, 12]},
-        "south": {"texture": "#all", "uv": [4, 4, 12, 12]},
-        "east": {"texture": "#all", "uv": [4, 4, 12, 12]},
-        "west": {"texture": "#all", "uv": [4, 4, 12, 12]},
-        "up": {"texture": "#all", "uv": [4, 4, 12, 12]},
-        "down": {"texture": "#all", "uv": [4, 4, 12, 12]}
+        "north": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "east": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "west": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Top",
+      "from": [-12, 20, -12],
+      "to": [28, 32, 28],
+      "faces": {
+        "north": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "east": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "west": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Center 1",
+      "from": [-4, -4, -4],
+      "to": [20, 20, 20],
+      "faces": {
+        "north": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "east": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "west": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Center 2",
+      "from": [-4, -4, -4],
+      "to": [20, 20, 20],
+      "faces": {
+        "north": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "east": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "west": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Pillar 1",
+      "from": [-11, -4, -11],
+      "to": [-9, 20, -9],
+      "faces": {
+        "north": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "east": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "west": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Pillar 2",
+      "from": [-11, -4, 25],
+      "to": [-9, 20, 27],
+      "faces": {
+        "north": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "east": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "west": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Pillar 3",
+      "from": [25, -4, -11],
+      "to": [27, 20, -9],
+      "faces": {
+        "north": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "east": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "west": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Pillar 4",
+      "from": [25, -4, 25],
+      "to": [27, 20, 27],
+      "faces": {
+        "north": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "east": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "west": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
+        "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
       }
     }
   ]

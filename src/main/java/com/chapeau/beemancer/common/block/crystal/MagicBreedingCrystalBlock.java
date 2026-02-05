@@ -53,7 +53,7 @@ public class MagicBreedingCrystalBlock extends Block {
             double y = pos.getY() + 0.1 + random.nextDouble() * 0.3;
             double z = pos.getZ() + 0.25 + random.nextDouble() * 0.5;
             double xSpeed = (random.nextDouble() - 0.5) * 0.02;
-            double ySpeed = 0.02 + random.nextDouble() * 0.03;
+            double ySpeed = 0.02 + random.nextDouble() * 0.01;
             double zSpeed = (random.nextDouble() - 0.5) * 0.02;
 
             level.addParticle(BeemancerParticles.RUNE.get(), x, y, z, xSpeed, ySpeed, zSpeed);
