@@ -20,7 +20,6 @@
 package com.chapeau.beemancer.client.input;
 
 import com.chapeau.beemancer.client.gui.hud.DebugPanelRenderer;
-import com.chapeau.beemancer.client.gui.screen.DebugImageScreen;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
@@ -59,12 +58,6 @@ public class DebugKeyHandler {
 
         // Ne pas traiter si un écran est ouvert (chat, inventaire, etc.)
         if (mc.screen != null) return;
-
-        // T — ouvrir l'écran debug image (pas besoin de debug wand)
-        if (event.getKey() == GLFW.GLFW_KEY_T) {
-            mc.setScreen(new DebugImageScreen());
-            return;
-        }
 
         // Vérifier si le joueur tient la debug wand (pour le reste des touches)
         if (!DebugPanelRenderer.isHoldingDebugWand(player)) return;

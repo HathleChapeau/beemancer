@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [StandardPageRenderer.java]
- * Description: Renderer pour les pages standard du Codex
+ * Description: Renderer pour les pages standard du Codex avec noms de nodes
  * ============================================================
  *
  * DEPENDANCES:
@@ -10,39 +10,43 @@
  * |---------------------|----------------------|--------------------------------|
  * | CodexNodeWidget     | Widget standard      | Rendu des nodes                |
  * | CodexManager        | Visibilite nodes     | Filtrage des nodes visibles    |
+ * | CodexJsonLoader     | Donnees JSON         | Liens entre nodes              |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - CodexScreen (pages BEE, ALCHEMY, LOGISTICS)
+ * - CodexScreen (pages APICA, ALCHEMY, ARTIFACTS, LOGISTICS)
  *
  * ============================================================
  */
 package com.chapeau.beemancer.client.gui.screen.codex;
 
 import com.chapeau.beemancer.client.gui.widget.CodexNodeWidget;
+import com.chapeau.beemancer.common.codex.CodexJsonLoader;
 import com.chapeau.beemancer.common.codex.CodexManager;
 import com.chapeau.beemancer.common.codex.CodexNode;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import net.minecraft.client.gui.GuiGraphics;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class StandardPageRenderer implements CodexPageRenderer {
 
     private final List<CodexNodeWidget> widgets = new ArrayList<>();
+    private final Map<String, int[]> nodePositions = new HashMap<>();
+    private CodexJsonLoader.TabData currentTabData = null;
 
     @Override
     public void rebuildWidgets(List<CodexNode> nodes, Set<String> unlockedNodes, CodexPlayerData playerData,
                                int contentX, int contentY, int nodeSpacing, double scrollX, double scrollY) {
         widgets.clear();
+        nodePositions.clear();
+
+        // Récupérer les données du tab pour les liens
+        if (!nodes.isEmpty()) {
+            currentTabData = CodexJsonLoader.getTabData(nodes.get(0).getPage());
+        }
 
         for (CodexNode node : nodes) {
-            if (!CodexManager.isVisible(node, unlockedNodes)) {
-                continue;
-            }
-
             boolean unlocked = playerData.isUnlocked(node);
             boolean canUnlock = CodexManager.canUnlock(node, unlockedNodes);
 
@@ -51,22 +55,36 @@ public class StandardPageRenderer implements CodexPageRenderer {
 
             CodexNodeWidget widget = new CodexNodeWidget(node, nodeScreenX, nodeScreenY, unlocked, canUnlock);
             widgets.add(widget);
+
+            // Stocker la position pour le rendu des liens
+            nodePositions.put(node.getId(), new int[]{nodeScreenX, nodeScreenY});
         }
     }
 
     @Override
     public void updatePositions(int contentX, int contentY, int nodeSpacing, double scrollX, double scrollY) {
+        nodePositions.clear();
+
         for (CodexNodeWidget widget : widgets) {
             CodexNode node = widget.getNode();
             int nodeScreenX = contentX + node.getX() * nodeSpacing + (int) scrollX;
             int nodeScreenY = contentY + node.getY() * nodeSpacing + (int) scrollY;
             widget.setX(nodeScreenX);
             widget.setY(nodeScreenY);
+
+            nodePositions.put(node.getId(), new int[]{nodeScreenX, nodeScreenY});
         }
     }
 
     @Override
     public void renderConnections(GuiGraphics graphics) {
+        // Utiliser les liens du JSON si disponibles
+        if (currentTabData != null && currentTabData.links != null) {
+            renderJsonLinks(graphics);
+            return;
+        }
+
+        // Fallback: liens parent-enfant classiques
         for (CodexNodeWidget widget : widgets) {
             CodexNode node = widget.getNode();
             String parentId = node.getParentId();
@@ -74,10 +92,10 @@ public class StandardPageRenderer implements CodexPageRenderer {
             if (parentId != null) {
                 CodexNodeWidget parentWidget = findWidgetByNodeId(parentId);
                 if (parentWidget != null) {
-                    int startX = parentWidget.getX() + CodexNodeWidget.NODE_SIZE / 2;
-                    int startY = parentWidget.getY() + CodexNodeWidget.NODE_SIZE / 2;
-                    int endX = widget.getX() + CodexNodeWidget.NODE_SIZE / 2;
-                    int endY = widget.getY() + CodexNodeWidget.NODE_SIZE / 2;
+                    int startX = parentWidget.getX() + CodexNodeWidget.NODE_WIDTH / 2;
+                    int startY = parentWidget.getY() + CodexNodeWidget.NODE_HEIGHT / 2;
+                    int endX = widget.getX() + CodexNodeWidget.NODE_WIDTH / 2;
+                    int endY = widget.getY() + CodexNodeWidget.NODE_HEIGHT / 2;
 
                     int lineColor = widget.isUnlocked() ? 0xFF00FF00 : 0xFF666666;
 
@@ -86,6 +104,48 @@ public class StandardPageRenderer implements CodexPageRenderer {
                     graphics.fill(midX - 1, startY, midX + 1, endY, lineColor);
                     graphics.fill(midX, endY - 1, endX, endY + 1, lineColor);
                 }
+            }
+        }
+    }
+
+    private void renderJsonLinks(GuiGraphics graphics) {
+        Map<String, List<String>> links = currentTabData.links;
+        if (links == null) return;
+
+        for (Map.Entry<String, List<String>> entry : links.entrySet()) {
+            String fromName = entry.getKey();
+            List<String> toNames = entry.getValue();
+
+            CodexNodeWidget fromWidget = findWidgetByName(fromName);
+            if (fromWidget == null) continue;
+
+            for (String toName : toNames) {
+                CodexNodeWidget toWidget = findWidgetByName(toName);
+                if (toWidget == null) continue;
+
+                int startX = fromWidget.getX() + CodexNodeWidget.NODE_WIDTH / 2;
+                int startY = fromWidget.getY() + CodexNodeWidget.NODE_HEIGHT / 2;
+                int endX = toWidget.getX() + CodexNodeWidget.NODE_WIDTH / 2;
+                int endY = toWidget.getY() + CodexNodeWidget.NODE_HEIGHT / 2;
+
+                // Couleur basée sur l'état de déblocage
+                int lineColor = (fromWidget.isUnlocked() && toWidget.isUnlocked())
+                    ? 0xFFF1C40F  // Doré si les deux sont débloqués
+                    : 0xFF666666; // Gris sinon
+
+                // Dessiner une ligne en 3 segments (horizontal - vertical - horizontal)
+                int midX = (startX + endX) / 2;
+                int lineWidth = 2;
+
+                // Segment horizontal depuis le parent
+                graphics.fill(Math.min(startX, midX), startY - lineWidth / 2,
+                        Math.max(startX, midX), startY + lineWidth / 2, lineColor);
+                // Segment vertical
+                graphics.fill(midX - lineWidth / 2, Math.min(startY, endY),
+                        midX + lineWidth / 2, Math.max(startY, endY), lineColor);
+                // Segment horizontal vers l'enfant
+                graphics.fill(Math.min(midX, endX), endY - lineWidth / 2,
+                        Math.max(midX, endX), endY + lineWidth / 2, lineColor);
             }
         }
     }
@@ -115,6 +175,7 @@ public class StandardPageRenderer implements CodexPageRenderer {
     @Override
     public void clearWidgets() {
         widgets.clear();
+        nodePositions.clear();
     }
 
     @Override
@@ -125,6 +186,16 @@ public class StandardPageRenderer implements CodexPageRenderer {
     private CodexNodeWidget findWidgetByNodeId(String nodeId) {
         for (CodexNodeWidget widget : widgets) {
             if (widget.getNode().getId().equals(nodeId)) {
+                return widget;
+            }
+        }
+        return null;
+    }
+
+    private CodexNodeWidget findWidgetByName(String name) {
+        String normalizedName = name.toLowerCase().replace(" ", "_");
+        for (CodexNodeWidget widget : widgets) {
+            if (widget.getNode().getId().equals(normalizedName)) {
                 return widget;
             }
         }

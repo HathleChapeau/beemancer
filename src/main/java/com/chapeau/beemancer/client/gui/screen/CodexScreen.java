@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [CodexScreen.java]
- * Description: Screen principal du Codex avec onglets et delegation
+ * Description: Screen principal du Codex avec frame dynamique et scroll
  * ============================================================
  *
  * DEPENDANCES:
@@ -11,6 +11,7 @@
  * | CodexPageRenderer   | Interface renderers  | Delegation par page            |
  * | BeeTreePageRenderer | Page BEES            | Rendu abeilles 3D              |
  * | StandardPageRenderer| Pages standard       | Rendu nodes classiques         |
+ * | CodexJsonLoader     | Donnees JSON         | Positions des nodes            |
  * | BeemancerSounds     | Sons                 | Feedback audio                 |
  * ------------------------------------------------------------
  *
@@ -29,6 +30,8 @@ import com.chapeau.beemancer.common.codex.*;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
 import com.chapeau.beemancer.core.registry.BeemancerAttachments;
 import com.chapeau.beemancer.core.registry.BeemancerSounds;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -41,27 +44,42 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.*;
 
 public class CodexScreen extends Screen {
+    // Textures pour la frame
+    private static final ResourceLocation CORNER_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "textures/gui/codex_corner.png"
+    );
+    private static final ResourceLocation BAR_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "textures/gui/codex_bar.png"
+    );
     private static final ResourceLocation BACKGROUND_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Beemancer.MOD_ID, "textures/gui/codex_background.png"
     );
-    private static final ResourceLocation WINDOW_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/codex_window.png"
-    );
 
-    private static final int WINDOW_WIDTH = 252;
-    private static final int WINDOW_HEIGHT = 200;
-    private static final int TAB_WIDTH = 60;
-    private static final int TAB_HEIGHT = 20;
-    private static final int CONTENT_PADDING = 9;
-    private static final int NODE_SPACING = 30;
+    // Textures source
+    private static final int CORNER_SRC = 5;
+    private static final int BAR_SRC_W = 80;
+    private static final int BAR_SRC_H = 5;
 
-    private CodexPage currentPage = CodexPage.BEES;
+    // Rendu scale x3
+    private static final int SCALE = 3;
+    private static final int BORDER = CORNER_SRC * SCALE; // 15px
+
+    // Dimensions de la frame
+    private static final int FRAME_WIDTH = 350;
+    private static final int FRAME_HEIGHT = 250;
+    private static final int TAB_HEIGHT = 22;
+    private static final int TAB_SPACING = 4;
+
+    // Background color #F3E1BB
+    private static final int BG_COLOR = 0xFFF3E1BB;
+
+    private CodexPage currentPage = CodexPage.APICA;
     private final Map<CodexPage, Button> tabButtons = new EnumMap<>(CodexPage.class);
     private final Map<CodexPage, CodexPageRenderer> pageRenderers = new EnumMap<>(CodexPage.class);
     private CodexPageRenderer currentRenderer;
 
-    private int windowX;
-    private int windowY;
+    private int frameX;
+    private int frameY;
     private int contentX;
     private int contentY;
     private int contentWidth;
@@ -70,6 +88,10 @@ public class CodexScreen extends Screen {
     // Scrolling
     private double scrollX = 0;
     private double scrollY = 0;
+    private double scrollMinX = 0;
+    private double scrollMaxX = 0;
+    private double scrollMinY = 0;
+    private double scrollMaxY = 0;
     private boolean isDragging = false;
 
     public CodexScreen() {
@@ -78,9 +100,10 @@ public class CodexScreen extends Screen {
     }
 
     private void initRenderers() {
+        pageRenderers.put(CodexPage.APICA, new StandardPageRenderer());
         pageRenderers.put(CodexPage.BEES, new BeeTreePageRenderer());
-        pageRenderers.put(CodexPage.BEE, new StandardPageRenderer());
         pageRenderers.put(CodexPage.ALCHEMY, new StandardPageRenderer());
+        pageRenderers.put(CodexPage.ARTIFACTS, new StandardPageRenderer());
         pageRenderers.put(CodexPage.LOGISTICS, new StandardPageRenderer());
     }
 
@@ -88,29 +111,40 @@ public class CodexScreen extends Screen {
     protected void init() {
         super.init();
 
-        windowX = (width - WINDOW_WIDTH) / 2;
-        windowY = (height - WINDOW_HEIGHT) / 2;
-        contentX = windowX + CONTENT_PADDING;
-        contentY = windowY + CONTENT_PADDING + TAB_HEIGHT + 8;
-        contentWidth = WINDOW_WIDTH - CONTENT_PADDING * 2;
-        contentHeight = WINDOW_HEIGHT - CONTENT_PADDING * 2 - TAB_HEIGHT - 12;
+        // Charger les données JSON
+        if (!CodexJsonLoader.isLoaded()) {
+            CodexJsonLoader.load();
+        }
 
-        // Create node widgets first
+        // Position de la frame (centrée, avec espace pour les tabs au-dessus)
+        frameX = (width - FRAME_WIDTH) / 2;
+        frameY = (height - FRAME_HEIGHT - TAB_HEIGHT - TAB_SPACING) / 2 + TAB_HEIGHT + TAB_SPACING;
+
+        // Zone de contenu (à l'intérieur de la frame)
+        contentX = frameX + BORDER;
+        contentY = frameY + BORDER;
+        contentWidth = FRAME_WIDTH - BORDER * 2;
+        contentHeight = FRAME_HEIGHT - BORDER * 2;
+
+        // Créer les boutons de tab
+        createTabButtons();
+
+        // Calculer les limites de scroll pour la page courante
+        calculateScrollBounds();
+
+        // Créer les widgets de nodes
         currentRenderer = pageRenderers.get(currentPage);
         rebuildNodeWidgets();
-
-        // Create tab buttons LAST so they render on top
-        createTabButtons();
     }
 
     private void createTabButtons() {
         tabButtons.clear();
 
-        // Position tabs horizontally centered at top of window (inside the GUI)
         CodexPage[] pages = CodexPage.values();
-        int totalWidth = pages.length * TAB_WIDTH + (pages.length - 1) * 4;
+        int tabWidth = 60;
+        int totalWidth = pages.length * tabWidth + (pages.length - 1) * TAB_SPACING;
         int tabX = (width - totalWidth) / 2;
-        int tabY = windowY + CONTENT_PADDING;
+        int tabY = frameY - TAB_HEIGHT - TAB_SPACING;
 
         for (CodexPage page : pages) {
             final CodexPage currentPageRef = page;
@@ -119,38 +153,27 @@ public class CodexScreen extends Screen {
                     playSound(BeemancerSounds.CODEX_PAGE_TURN.get());
                     switchToPage(currentPageRef);
                 }
-            }).bounds(tabX, tabY, TAB_WIDTH, TAB_HEIGHT).build();
+            }).bounds(tabX, tabY, tabWidth, TAB_HEIGHT).build();
 
             tabButtons.put(page, tabButton);
             addRenderableWidget(tabButton);
-            tabX += TAB_WIDTH + 4;
+            tabX += tabWidth + TAB_SPACING;
         }
 
         updateTabButtonStyles();
     }
 
     private void switchToPage(CodexPage page) {
-        // Clear current widgets and tab buttons
         clearCurrentWidgets();
-        clearTabButtons();
 
         currentPage = page;
         currentRenderer = pageRenderers.get(currentPage);
         scrollX = 0;
         scrollY = 0;
 
-        // Rebuild node widgets first
+        calculateScrollBounds();
         rebuildNodeWidgets();
-
-        // Recreate tab buttons LAST so they render on top
-        createTabButtons();
-    }
-
-    private void clearTabButtons() {
-        for (Button btn : tabButtons.values()) {
-            removeWidget(btn);
-        }
-        tabButtons.clear();
+        updateTabButtonStyles();
     }
 
     private void updateTabButtonStyles() {
@@ -161,22 +184,89 @@ public class CodexScreen extends Screen {
         }
     }
 
+    private void calculateScrollBounds() {
+        CodexJsonLoader.TabData tabData = CodexJsonLoader.getTabData(currentPage);
+        if (tabData == null || tabData.nodes.isEmpty()) {
+            scrollMinX = 0;
+            scrollMaxX = 0;
+            scrollMinY = 0;
+            scrollMaxY = 0;
+            return;
+        }
+
+        // Les positions normalisées vont de 0 à 1
+        // On calcule la taille totale du contenu en pixels
+        float contentScale = Math.min(contentWidth, contentHeight) * 2;
+
+        scrollMinX = -contentScale / 2;
+        scrollMaxX = contentScale / 2;
+        scrollMinY = -contentScale / 2;
+        scrollMaxY = contentScale / 2;
+    }
+
     private void rebuildNodeWidgets() {
         clearCurrentWidgets();
 
+        // Pour BEES, utiliser le système existant
+        if (currentPage == CodexPage.BEES) {
+            CodexPlayerData playerData = getPlayerData();
+            Set<String> unlockedNodes = playerData.getUnlockedNodes();
+            List<CodexNode> nodes = CodexManager.getNodesForPage(currentPage);
+
+            currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData,
+                    contentX, contentY, 30, scrollX, scrollY);
+
+            for (Object widget : currentRenderer.getWidgets()) {
+                if (widget instanceof AbstractWidget abstractWidget) {
+                    addRenderableWidget(abstractWidget);
+                }
+            }
+            return;
+        }
+
+        // Pour les autres pages, utiliser CodexJsonLoader
+        CodexJsonLoader.TabData tabData = CodexJsonLoader.getTabData(currentPage);
+        if (tabData == null) {
+            return;
+        }
+
         CodexPlayerData playerData = getPlayerData();
         Set<String> unlockedNodes = playerData.getUnlockedNodes();
-        List<CodexNode> nodes = CodexManager.getNodesForPage(currentPage);
+
+        // Convertir les JsonNodeData en CodexNodes fictifs pour le renderer
+        List<CodexNode> nodes = new ArrayList<>();
+        for (CodexJsonLoader.JsonNodeData jsonNode : tabData.nodes) {
+            // Calculer la position écran depuis la position normalisée
+            int nodeX = (int)((jsonNode.normalizedX - 0.5f) * contentWidth + scrollX);
+            int nodeY = (int)((jsonNode.normalizedY - 0.5f) * contentHeight + scrollY);
+
+            // Créer un CodexNode avec les données du JSON
+            CodexNode node = createNodeFromJson(jsonNode, nodeX, nodeY);
+            nodes.add(node);
+        }
 
         currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData,
-                contentX, contentY, NODE_SPACING, scrollX, scrollY);
+                contentX + contentWidth / 2, contentY + contentHeight / 2, 1, scrollX, scrollY);
 
-        // Add widgets to screen
         for (Object widget : currentRenderer.getWidgets()) {
             if (widget instanceof AbstractWidget abstractWidget) {
                 addRenderableWidget(abstractWidget);
             }
         }
+    }
+
+    private CodexNode createNodeFromJson(CodexJsonLoader.JsonNodeData jsonNode, int x, int y) {
+        String id = jsonNode.name.toLowerCase().replace(" ", "_");
+        ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "textures/gui/codex_node_default.png"
+        );
+
+        return new CodexNode(
+            id, jsonNode.page, x, y, icon,
+            CodexNodeCategory.NORMAL, null, false,
+            new com.google.gson.JsonObject(), new com.google.gson.JsonObject(),
+            null, null
+        );
     }
 
     private void clearCurrentWidgets() {
@@ -193,26 +283,38 @@ public class CodexScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics, mouseX, mouseY, partialTick);
+
+        // 1. Rendu du background uni
+        graphics.fill(frameX, frameY, frameX + FRAME_WIDTH, frameY + FRAME_HEIGHT, BG_COLOR);
+
+        // 2. Rendu du contenu avec scissor (clippe aux bords)
+        graphics.enableScissor(contentX, contentY, contentX + contentWidth, contentY + contentHeight);
+
+        // Background tilé
         renderTiledBackground(graphics);
 
-        graphics.blit(WINDOW_TEXTURE, windowX, windowY, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-        // Render content nodes with scissor (clipped to content area)
-        graphics.enableScissor(contentX, contentY, contentX + contentWidth, contentY + contentHeight);
+        // Connexions et nodes
         currentRenderer.renderConnections(graphics);
         for (Object widget : currentRenderer.getWidgets()) {
             if (widget instanceof AbstractWidget aw) {
                 aw.render(graphics, mouseX, mouseY, partialTick);
             }
         }
+
         graphics.disableScissor();
 
-        // Render tab buttons OUTSIDE scissor so they're visible
+        // 3. Rendu de la frame PAR-DESSUS le contenu
+        renderFrame(graphics);
+
+        // 4. Rendu des boutons de tab (déjà en dehors de la frame)
         for (Button btn : tabButtons.values()) {
             btn.render(graphics, mouseX, mouseY, partialTick);
         }
 
+        // 5. Tooltips
         currentRenderer.renderTooltips(graphics, mouseX, mouseY);
+
+        // 6. Progress
         renderProgress(graphics);
     }
 
@@ -228,14 +330,106 @@ public class CodexScreen extends Screen {
         }
     }
 
+    private void renderFrame(GuiGraphics graphics) {
+        PoseStack pose = graphics.pose();
+        int barRenderW = BAR_SRC_W * SCALE;
+        int innerLeft = frameX + BORDER;
+        int innerRight = frameX + FRAME_WIDTH - BORDER;
+        int innerWidth = FRAME_WIDTH - BORDER * 2;
+        int innerTop = frameY + BORDER;
+        int innerBottom = frameY + FRAME_HEIGHT - BORDER;
+        int innerHeight = FRAME_HEIGHT - BORDER * 2;
+
+        // Barres horizontales
+        // Barre du haut
+        graphics.enableScissor(innerLeft, frameY, innerRight, frameY + BORDER);
+        for (int offset = 0; offset < innerWidth; offset += barRenderW) {
+            pose.pushPose();
+            pose.translate(innerLeft + offset, frameY, 0);
+            pose.scale(SCALE, SCALE, 1);
+            graphics.blit(BAR_TEXTURE, 0, 0, 0, 0, BAR_SRC_W, BAR_SRC_H, BAR_SRC_W, BAR_SRC_H);
+            pose.popPose();
+        }
+        graphics.disableScissor();
+
+        // Barre du bas
+        graphics.enableScissor(innerLeft, frameY + FRAME_HEIGHT - BORDER, innerRight, frameY + FRAME_HEIGHT);
+        for (int offset = 0; offset < innerWidth; offset += barRenderW) {
+            pose.pushPose();
+            pose.translate(innerLeft + offset, frameY + FRAME_HEIGHT - BORDER, 0);
+            pose.scale(SCALE, SCALE, 1);
+            graphics.blit(BAR_TEXTURE, 0, 0, BAR_SRC_W, BAR_SRC_H,
+                    0, BAR_SRC_H, BAR_SRC_W, -BAR_SRC_H, BAR_SRC_W, BAR_SRC_H);
+            pose.popPose();
+        }
+        graphics.disableScissor();
+
+        // Barres verticales
+        // Barre gauche
+        graphics.enableScissor(frameX, innerTop, frameX + BORDER, innerBottom);
+        for (int offset = 0; offset < innerHeight; offset += barRenderW) {
+            pose.pushPose();
+            pose.translate(frameX, innerTop + offset + barRenderW, 0);
+            pose.mulPose(Axis.ZP.rotationDegrees(-90));
+            pose.scale(SCALE, SCALE, 1);
+            graphics.blit(BAR_TEXTURE, 0, 0, 0, 0, BAR_SRC_W, BAR_SRC_H, BAR_SRC_W, BAR_SRC_H);
+            pose.popPose();
+        }
+        graphics.disableScissor();
+
+        // Barre droite
+        graphics.enableScissor(frameX + FRAME_WIDTH - BORDER, innerTop, frameX + FRAME_WIDTH, innerBottom);
+        for (int offset = 0; offset < innerHeight; offset += barRenderW) {
+            pose.pushPose();
+            pose.translate(frameX + FRAME_WIDTH, innerTop + offset, 0);
+            pose.mulPose(Axis.ZP.rotationDegrees(90));
+            pose.scale(SCALE, SCALE, 1);
+            graphics.blit(BAR_TEXTURE, 0, 0, 0, 0, BAR_SRC_W, BAR_SRC_H, BAR_SRC_W, BAR_SRC_H);
+            pose.popPose();
+        }
+        graphics.disableScissor();
+
+        // Coins
+        // Haut-gauche
+        pose.pushPose();
+        pose.translate(frameX, frameY, 0);
+        pose.scale(SCALE, SCALE, 1);
+        graphics.blit(CORNER_TEXTURE, 0, 0, 0, 0, CORNER_SRC, CORNER_SRC, CORNER_SRC, CORNER_SRC);
+        pose.popPose();
+
+        // Haut-droit
+        pose.pushPose();
+        pose.translate(frameX + FRAME_WIDTH - BORDER, frameY, 0);
+        pose.scale(SCALE, SCALE, 1);
+        graphics.blit(CORNER_TEXTURE, 0, 0, CORNER_SRC, CORNER_SRC,
+                CORNER_SRC, 0, -CORNER_SRC, CORNER_SRC, CORNER_SRC, CORNER_SRC);
+        pose.popPose();
+
+        // Bas-gauche
+        pose.pushPose();
+        pose.translate(frameX, frameY + FRAME_HEIGHT - BORDER, 0);
+        pose.scale(SCALE, SCALE, 1);
+        graphics.blit(CORNER_TEXTURE, 0, 0, CORNER_SRC, CORNER_SRC,
+                0, CORNER_SRC, CORNER_SRC, -CORNER_SRC, CORNER_SRC, CORNER_SRC);
+        pose.popPose();
+
+        // Bas-droit
+        pose.pushPose();
+        pose.translate(frameX + FRAME_WIDTH - BORDER, frameY + FRAME_HEIGHT - BORDER, 0);
+        pose.scale(SCALE, SCALE, 1);
+        graphics.blit(CORNER_TEXTURE, 0, 0, CORNER_SRC, CORNER_SRC,
+                CORNER_SRC, CORNER_SRC, -CORNER_SRC, -CORNER_SRC, CORNER_SRC, CORNER_SRC);
+        pose.popPose();
+    }
+
     private void renderProgress(GuiGraphics graphics) {
-        CodexPlayerData data = getPlayerData();
-        int unlocked = data.getUnlockedCountForPage(currentPage);
-        int total = CodexManager.getNodesForPage(currentPage).size();
+        CodexJsonLoader.TabData tabData = CodexJsonLoader.getTabData(currentPage);
+        int total = tabData != null ? tabData.nodes.size() : 0;
+        int unlocked = 0; // Pour l'instant tout est verrouillé
 
         String progress = unlocked + "/" + total;
-        graphics.drawString(font, progress, windowX + WINDOW_WIDTH - font.width(progress) - 8,
-                windowY + WINDOW_HEIGHT - 14, 0xAAAAAA);
+        graphics.drawString(font, progress, frameX + FRAME_WIDTH - font.width(progress) - 8,
+                frameY + FRAME_HEIGHT - 14, 0xAAAAAA);
     }
 
     @Override
@@ -277,7 +471,12 @@ public class CodexScreen extends Screen {
         if (isDragging && button == 0) {
             scrollX += dragX;
             scrollY += dragY;
-            currentRenderer.updatePositions(contentX, contentY, NODE_SPACING, scrollX, scrollY);
+
+            // Limiter le scroll
+            scrollX = Math.max(scrollMinX, Math.min(scrollX, scrollMaxX));
+            scrollY = Math.max(scrollMinY, Math.min(scrollY, scrollMaxY));
+
+            updateNodePositions();
             return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
@@ -287,10 +486,22 @@ public class CodexScreen extends Screen {
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollXDelta, double scrollYDelta) {
         if (isInContentArea(mouseX, mouseY)) {
             this.scrollY += scrollYDelta * 20;
-            currentRenderer.updatePositions(contentX, contentY, NODE_SPACING, scrollX, scrollY);
+
+            // Limiter le scroll
+            scrollY = Math.max(scrollMinY, Math.min(scrollY, scrollMaxY));
+
+            updateNodePositions();
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollXDelta, scrollYDelta);
+    }
+
+    private void updateNodePositions() {
+        if (currentPage == CodexPage.BEES) {
+            currentRenderer.updatePositions(contentX, contentY, 30, scrollX, scrollY);
+        } else {
+            currentRenderer.updatePositions(contentX + contentWidth / 2, contentY + contentHeight / 2, 1, scrollX, scrollY);
+        }
     }
 
     private boolean isInContentArea(double mouseX, double mouseY) {

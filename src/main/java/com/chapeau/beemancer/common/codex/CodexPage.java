@@ -25,9 +25,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public enum CodexPage {
+    APICA("apica", 0xF1C40F, false),
     BEES("bees", 0xFFAA00, true),
-    BEE("bee", 0xFFD700, false),
     ALCHEMY("alchemy", 0x9932CC, false),
+    ARTIFACTS("artifacts", 0xE74C3C, false),
     LOGISTICS("logistics", 0x4169E1, false);
 
     private final String id;
@@ -70,6 +71,6 @@ public enum CodexPage {
                 return page;
             }
         }
-        return BEE;
+        return APICA;
     }
 }
