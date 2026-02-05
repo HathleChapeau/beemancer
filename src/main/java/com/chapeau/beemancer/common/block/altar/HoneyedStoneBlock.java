@@ -19,11 +19,16 @@
  */
 package com.chapeau.beemancer.common.block.altar;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 
 /**
@@ -34,6 +39,9 @@ public class HoneyedStoneBlock extends Block {
 
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK =
         MultiblockProperty.create("altar", "extractor", "infuser", "centrifuge", "storage");
+
+    // VoxelShape réduite pour le multibloc Centrifuge (12x12x12 centré)
+    private static final VoxelShape SHAPE_CENTRIFUGE = Block.box(2, 2, 2, 14, 14, 14);
 
     public HoneyedStoneBlock(Properties properties) {
         super(properties);
@@ -49,5 +57,21 @@ public class HoneyedStoneBlock extends Block {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(MULTIBLOCK) == MultiblockProperty.CENTRIFUGE) {
+            return SHAPE_CENTRIFUGE;
+        }
+        return Shapes.block();
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(MULTIBLOCK) == MultiblockProperty.CENTRIFUGE) {
+            return SHAPE_CENTRIFUGE;
+        }
+        return Shapes.block();
     }
 }
