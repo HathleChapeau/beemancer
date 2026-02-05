@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "frame": "beemancer:block/nectar_diamond_block",
+    "frame": "minecraft:block/gold_block",
     "gold": "beemancer:block/royal_gold_block",
     "glass": "beemancer:block/royal_gold_block",
     "particle": "beemancer:block/honeyed_glass"

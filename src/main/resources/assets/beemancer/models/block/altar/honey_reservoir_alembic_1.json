@@ -2,7 +2,7 @@
   "parent": "minecraft:block/block",
   "render_type": "translucent",
   "textures": {
-    "gold": "beemancer:block/nectar_diamond_block",
+    "gold": "minecraft:block/gold_block",
     "reservoir": "beemancer:block/altar/reservoir_alembic",
     "particle": "beemancer:block/honeyed_glass"
   },
