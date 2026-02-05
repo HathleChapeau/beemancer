@@ -318,8 +318,9 @@ public class ClientSetup {
         // Modèle core du centrifuge heart (cubes animés)
         event.register(CentrifugeHeartRenderer.CORE_MODEL_LOC);
 
-        // Modèle multiblock tank (3 cubes scalés)
-        event.register(MultiblockTankRenderer.MODEL_LOC);
+        // Modèles multiblock tank
+        event.register(MultiblockTankRenderer.FORMED_MODEL_LOC);  // Formé (scalé)
+        event.register(MultiblockTankRenderer.SINGLE_MODEL_LOC);  // Non formé (bloc simple)
     }
 
     // =========================================================================

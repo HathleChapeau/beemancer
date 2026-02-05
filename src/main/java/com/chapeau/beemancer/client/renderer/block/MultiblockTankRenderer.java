@@ -50,8 +50,13 @@ import net.minecraft.world.phys.AABB;
  */
 public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTankBlockEntity> {
 
-    public static final ModelResourceLocation MODEL_LOC = ModelResourceLocation.standalone(
-        ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/alchemy/multiblock_tank_model"));
+    // Modèle formé (scalé par le renderer)
+    public static final ModelResourceLocation FORMED_MODEL_LOC = ModelResourceLocation.standalone(
+        ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/alchemy/multiblock_tank_formed"));
+
+    // Modèle bloc simple (non formé)
+    public static final ModelResourceLocation SINGLE_MODEL_LOC = ModelResourceLocation.standalone(
+        ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/alchemy/multiblock_tank_single"));
 
     private static final float FLUID_INSET = 2f / 16f;
 
@@ -62,19 +67,27 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
     public void render(MultiblockTankBlockEntity blockEntity, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
-        if (!blockEntity.isMaster()) return;
-        if (!blockEntity.isValidCuboid()) return;
+        // Cas 1: Non formé → afficher le bloc simple
+        if (!blockEntity.isValidCuboid()) {
+            renderSingleBlock(poseStack, buffer, packedLight);
+            return;
+        }
 
+        // Cas 2: Formé mais pas master → invisible (le master gère tout)
+        if (!blockEntity.isMaster()) return;
+
+        // Cas 3: Formé et master → afficher le modèle scalé + fluide
         int cubeSize = blockEntity.getCubeSize();
         if (cubeSize < 2) return;
 
         poseStack.pushPose();
 
-        // Scale tout par la taille du cube
-        poseStack.scale(cubeSize, cubeSize, cubeSize);
+        // Le modèle fait 32 pixels (2 blocs), donc scale = cubeSize / 2
+        float scale = cubeSize / 2.0f;
+        poseStack.scale(scale, scale, scale);
 
-        // Render le modèle JSON
-        renderModel(poseStack, buffer, packedLight);
+        // Render le modèle formé
+        renderFormedModel(poseStack, buffer, packedLight);
 
         // Render le fluide
         renderFluid(blockEntity, poseStack, buffer);
@@ -82,10 +95,33 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
         poseStack.popPose();
     }
 
-    private void renderModel(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+    private void renderSingleBlock(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         var minecraft = Minecraft.getInstance();
         var modelManager = minecraft.getModelManager();
-        BakedModel model = modelManager.getModel(MODEL_LOC);
+        BakedModel model = modelManager.getModel(SINGLE_MODEL_LOC);
+
+        if (model == null || model == modelManager.getMissingModel()) return;
+
+        var blockRenderer = minecraft.getBlockRenderer().getModelRenderer();
+
+        VertexConsumer consumer = buffer.getBuffer(RenderType.solid());
+        blockRenderer.renderModel(
+            poseStack.last(),
+            consumer,
+            null,
+            model,
+            1f, 1f, 1f,
+            packedLight,
+            OverlayTexture.NO_OVERLAY,
+            ModelData.EMPTY,
+            RenderType.solid()
+        );
+    }
+
+    private void renderFormedModel(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+        var minecraft = Minecraft.getInstance();
+        var modelManager = minecraft.getModelManager();
+        BakedModel model = modelManager.getModel(FORMED_MODEL_LOC);
 
         if (model == null || model == modelManager.getMissingModel()) return;
 
@@ -137,13 +173,16 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
 
-        // Cube de fluide (coordonnées normalisées 0-1, déjà scalé par poseStack)
-        float minX = FLUID_INSET;
-        float minZ = FLUID_INSET;
-        float maxX = 1f - FLUID_INSET;
-        float maxZ = 1f - FLUID_INSET;
-        float minY = FLUID_INSET;
-        float maxY = FLUID_INSET + (1f - 2f * FLUID_INSET) * fillRatio;
+        // Coordonnées du fluide dans l'espace du modèle (0-2 blocs)
+        // Le modèle: base=0-9, middle=9-10, top(glass)=10-32 (en pixels, /16 pour blocs)
+        // Fluide remplit l'intérieur du glass (top): x=4-28, y=11-31, z=4-28
+        float minX = 4f / 16f;   // 0.25
+        float maxX = 28f / 16f;  // 1.75
+        float minZ = 4f / 16f;
+        float maxZ = 28f / 16f;
+        float minY = 11f / 16f;  // Juste au-dessus du bord du glass
+        float maxYFull = 31f / 16f;  // Juste en dessous du top
+        float maxY = minY + (maxYFull - minY) * fillRatio;
 
         var pose = poseStack.last();
         FluidCubeRenderer.renderFluidCube(consumer, pose, sprite,

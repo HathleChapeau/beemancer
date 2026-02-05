@@ -1,5 +1,5 @@
 {
-  "credit": "Beemancer - Multiblock Tank (3 cubes)",
+  "credit": "Beemancer - Multiblock Tank Formed (scaled by renderer)",
   "textures": {
     "frame": "beemancer:block/iron",
     "glass": "beemancer:block/honeyed_glass",
