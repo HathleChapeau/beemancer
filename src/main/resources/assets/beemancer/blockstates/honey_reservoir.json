@@ -28,9 +28,9 @@
     "facing=south,multiblock=alembic_1": { "model": "beemancer:block/altar/honey_reservoir_alembic_1", "y": 270 },
     "facing=east,multiblock=alembic_1": { "model": "beemancer:block/altar/honey_reservoir_alembic_1", "y": 180 },
     "facing=west,multiblock=alembic_1": { "model": "beemancer:block/altar/honey_reservoir_alembic_1", "y": 0 },
-    "facing=north,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir", "y": 90 },
-    "facing=south,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir", "y": 270 },
-    "facing=east,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir", "y": 180 },
-    "facing=west,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir", "y": 0 }
+    "facing=north,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir_centrifuge" },
+    "facing=south,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir_centrifuge" },
+    "facing=east,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir_centrifuge" },
+    "facing=west,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir_centrifuge" }
   }
 }

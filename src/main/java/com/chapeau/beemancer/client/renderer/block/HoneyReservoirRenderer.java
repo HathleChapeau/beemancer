@@ -71,10 +71,16 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
         BlockState state = blockEntity.getBlockState();
-        boolean formed = !state.getValue(HoneyReservoirBlock.MULTIBLOCK).equals(MultiblockProperty.NONE);
+        MultiblockProperty multiblock = state.getValue(HoneyReservoirBlock.MULTIBLOCK);
+        boolean formed = !multiblock.equals(MultiblockProperty.NONE);
         float spreadX = blockEntity.getFormedSpreadX();
         float spreadZ = blockEntity.getFormedSpreadZ();
         boolean hasSpread = spreadX != 0.0f || spreadZ != 0.0f;
+
+        // Ne rien rendre pour les reservoirs de la centrifuge (invisible)
+        if (multiblock == MultiblockProperty.CENTRIFUGE) {
+            return;
+        }
 
         // Rendre le modèle formé avec spread via renderer (le blockstate formed model est vide)
         if (formed && hasSpread) {
