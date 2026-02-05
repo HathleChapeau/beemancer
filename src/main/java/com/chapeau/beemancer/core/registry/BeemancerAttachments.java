@@ -45,7 +45,7 @@ public class BeemancerAttachments {
 
     public static final Supplier<AttachmentType<QuestPlayerData>> QUEST_DATA = ATTACHMENTS.register(
         "quest_data",
-        () -> AttachmentType.builder(QuestPlayerData::new)
+        () -> AttachmentType.builder(() -> new QuestPlayerData())
             .serialize(QuestPlayerData.CODEC)
             .copyOnDeath()
             .build()

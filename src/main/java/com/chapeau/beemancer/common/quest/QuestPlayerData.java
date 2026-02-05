@@ -43,7 +43,7 @@ public class QuestPlayerData {
                     Codec.STRING.listOf()
                             .xmap(HashSet::new, list -> list.stream().toList())
                             .fieldOf("completed_quests")
-                            .forGetter(data -> data.completedQuests)
+                            .forGetter(data -> new HashSet<>(data.completedQuests))
             ).apply(instance, QuestPlayerData::new)
     );
 
