@@ -18,6 +18,7 @@
  */
 package com.chapeau.beemancer.common.block.crystal;
 
+import com.chapeau.beemancer.client.particle.ParticleEmitter;
 import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -48,15 +49,16 @@ public class MagicBreedingCrystalBlock extends Block {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        for (int i = 0; i < 3; i++) {
-            double x = pos.getX() + 0.25 + random.nextDouble() * 0.5;
-            double y = pos.getY() + 0.1 + random.nextDouble() * 0.3;
-            double z = pos.getZ() + 0.25 + random.nextDouble() * 0.5;
-            double xSpeed = (random.nextDouble() - 0.5) * 0.02;
-            double ySpeed = 0.02 + random.nextDouble() * 0.01;
-            double zSpeed = (random.nextDouble() - 0.5) * 0.02;
-
-            level.addParticle(BeemancerParticles.RUNE.get(), x, y, z, xSpeed, ySpeed, zSpeed);
-        }
+        new ParticleEmitter(BeemancerParticles.RUNE.get())
+            .at(pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5)
+            .speed(0, 0.03, 0)
+            .spread(0.25, 0.15, 0.25)
+            .speedVariance(0.01, 0.01, 0.01)
+            .count(3)
+            .lifetime(15)
+            .gravity(-0.03f)
+            .scale(0.04f)
+            .fadeOut()
+            .spawn(level);
     }
 }

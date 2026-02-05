@@ -9,11 +9,12 @@
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | BeemancerParticles      | Type enregistre      | RUNE                           |
+ * | ConfigurableParticle    | Interface configurable| Overrides via ParticleEmitter  |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
  * - ClientSetup.java (enregistrement provider)
- * - MagicBreedingCrystalBlock.java (animateTick)
+ * - MagicBreedingCrystalBlock.java (animateTick via ParticleEmitter)
  *
  * ============================================================
  */
@@ -30,8 +31,11 @@ import net.minecraft.core.particles.SimpleParticleType;
 /**
  * Particule de glyphe d'enchantement (SGA) avec gravite inversee.
  * Monte continuellement sans retomber. Sprites vanilla enchantement.
+ * Configurable via {@link ParticleEmitter} et {@link ConfigurableParticle}.
  */
-public class RuneParticle extends TextureSheetParticle {
+public class RuneParticle extends TextureSheetParticle implements ConfigurableParticle {
+
+    private boolean fadeOut = true;
 
     protected RuneParticle(ClientLevel level, double x, double y, double z,
                             double xSpeed, double ySpeed, double zSpeed,
@@ -46,6 +50,46 @@ public class RuneParticle extends TextureSheetParticle {
         this.zd = zSpeed;
         this.gravity = -0.03f;
     }
+
+    // =========================================================================
+    // ConfigurableParticle
+    // =========================================================================
+
+    @Override
+    public RuneParticle setParticleGravity(float gravity) {
+        this.gravity = gravity;
+        return this;
+    }
+
+    @Override
+    public RuneParticle setParticleScale(float scale) {
+        this.quadSize = scale;
+        return this;
+    }
+
+    @Override
+    public RuneParticle setParticleAlpha(float alpha) {
+        this.alpha = alpha;
+        return this;
+    }
+
+    @Override
+    public RuneParticle setParticleFadeOut(boolean fadeOut) {
+        this.fadeOut = fadeOut;
+        return this;
+    }
+
+    @Override
+    public RuneParticle setParticleColor(float r, float g, float b) {
+        this.rCol = r;
+        this.gCol = g;
+        this.bCol = b;
+        return this;
+    }
+
+    // =========================================================================
+    // Rendering
+    // =========================================================================
 
     @Override
     public ParticleRenderType getRenderType() {
@@ -65,7 +109,9 @@ public class RuneParticle extends TextureSheetParticle {
         this.move(this.xd, this.yd, this.zd);
         this.xd *= 0.95;
         this.zd *= 0.95;
-        this.alpha = 1.0f - ((float) this.age / (float) this.lifetime);
+        if (fadeOut) {
+            this.alpha = 1.0f - ((float) this.age / (float) this.lifetime);
+        }
     }
 
     public static class Provider implements ParticleProvider<SimpleParticleType> {

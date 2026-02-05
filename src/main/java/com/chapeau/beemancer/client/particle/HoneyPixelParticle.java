@@ -1,17 +1,18 @@
 /**
  * ============================================================
  * [HoneyPixelParticle.java]
- * Description: Particule carrée minuscule couleur miel
+ * Description: Particule carree minuscule couleur miel
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance              | Raison                | Utilisation                    |
+ * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
- * | BeemancerParticles      | Type enregistré      | HONEY_PIXEL                    |
+ * | BeemancerParticles      | Type enregistre      | HONEY_PIXEL                    |
+ * | ConfigurableParticle    | Interface configurable| Overrides via ParticleEmitter  |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - ClientSetup.java (enregistrement provider)
  *
  * ============================================================
@@ -27,10 +28,13 @@ import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.particles.SimpleParticleType;
 
 /**
- * Particule pixel carrée couleur jaune miel.
- * Taille fixe très petite, pas de fade, durée de vie courte.
+ * Particule pixel carree couleur jaune miel.
+ * Taille fixe tres petite, pas de fade, duree de vie courte.
+ * Configurable via {@link ParticleEmitter} et {@link ConfigurableParticle}.
  */
-public class HoneyPixelParticle extends TextureSheetParticle {
+public class HoneyPixelParticle extends TextureSheetParticle implements ConfigurableParticle {
+
+    private boolean fadeOut = false;
 
     protected HoneyPixelParticle(ClientLevel level, double x, double y, double z,
                                   double xSpeed, double ySpeed, double zSpeed,
@@ -50,6 +54,46 @@ public class HoneyPixelParticle extends TextureSheetParticle {
         this.gravity = 0.0f;
     }
 
+    // =========================================================================
+    // ConfigurableParticle
+    // =========================================================================
+
+    @Override
+    public HoneyPixelParticle setParticleGravity(float gravity) {
+        this.gravity = gravity;
+        return this;
+    }
+
+    @Override
+    public HoneyPixelParticle setParticleScale(float scale) {
+        this.quadSize = scale;
+        return this;
+    }
+
+    @Override
+    public HoneyPixelParticle setParticleAlpha(float alpha) {
+        this.alpha = alpha;
+        return this;
+    }
+
+    @Override
+    public HoneyPixelParticle setParticleFadeOut(boolean fadeOut) {
+        this.fadeOut = fadeOut;
+        return this;
+    }
+
+    @Override
+    public HoneyPixelParticle setParticleColor(float r, float g, float b) {
+        this.rCol = r;
+        this.gCol = g;
+        this.bCol = b;
+        return this;
+    }
+
+    // =========================================================================
+    // Rendering
+    // =========================================================================
+
     @Override
     public ParticleRenderType getRenderType() {
         return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
@@ -65,6 +109,9 @@ public class HoneyPixelParticle extends TextureSheetParticle {
             return;
         }
         this.move(this.xd, this.yd, this.zd);
+        if (fadeOut) {
+            this.alpha = 1.0f - ((float) this.age / (float) this.lifetime);
+        }
     }
 
     public static class Provider implements ParticleProvider<SimpleParticleType> {
