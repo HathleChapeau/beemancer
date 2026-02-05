@@ -48,10 +48,9 @@ public class CrankBlock extends BaseEntityBlock {
     public static final MapCodec<CrankBlock> CODEC = simpleCodec(CrankBlock::new);
 
     private static final VoxelShape SHAPE = Shapes.or(
-        Block.box(7, 0, 7, 9, 2, 9),     // Tige centrale
-        Block.box(4, 2, 7, 6, 8, 9),     // Poignee gauche
-        Block.box(5, 6, 7, 11, 8, 9),    // Bras horizontal
-        Block.box(10, 8, 7, 12, 14, 9)   // Poignee droite
+        Block.box(7, 0, 7, 9, 5, 9),     // Handle Left
+        Block.box(7, 5, 7, 14, 7, 9),    // Arm Horizontal
+        Block.box(12, 7, 7, 14, 12, 9)   // Handle Right
     );
 
     public CrankBlock(Properties properties) {
