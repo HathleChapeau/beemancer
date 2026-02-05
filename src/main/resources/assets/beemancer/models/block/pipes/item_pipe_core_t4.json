@@ -1,0 +1,6 @@
+{
+  "parent": "beemancer:block/pipes/item_pipe_core",
+  "textures": {
+    "frame": "beemancer:block/honey_pipe_tier4"
+  }
+}
