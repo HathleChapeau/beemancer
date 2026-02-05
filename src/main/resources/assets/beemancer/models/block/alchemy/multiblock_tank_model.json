@@ -1,10 +1,9 @@
 {
   "credit": "Beemancer - Multiblock Tank (3 cubes)",
-  "texture_size": [32, 32],
   "textures": {
-    "frame": "beemancer:block/alchemy/tank_frame",
-    "glass": "beemancer:block/alchemy/tank_glass",
-    "particle": "beemancer:block/alchemy/tank_frame"
+    "frame": "beemancer:block/honeyed_stone",
+    "glass": "beemancer:block/honeyed_glass",
+    "particle": "beemancer:block/honeyed_stone"
   },
   "elements": [
     {

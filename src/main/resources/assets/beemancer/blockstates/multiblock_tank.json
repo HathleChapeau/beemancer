@@ -1,55 +1,7 @@
 {
-  "multipart": [
-    {
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/base" }
-    },
-    {
-      "when": { "down": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/frame_bottom" }
-    },
-    {
-      "when": { "up": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/frame_top" }
-    },
-    {
-      "when": { "north": "false", "west": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/pillar_nw" }
-    },
-    {
-      "when": { "north": "false", "east": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/pillar_ne" }
-    },
-    {
-      "when": { "south": "false", "west": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/pillar_sw" }
-    },
-    {
-      "when": { "south": "false", "east": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/pillar_se" }
-    },
-    {
-      "when": { "north": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/glass_north" }
-    },
-    {
-      "when": { "south": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/glass_south" }
-    },
-    {
-      "when": { "east": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/glass_east" }
-    },
-    {
-      "when": { "west": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/glass_west" }
-    },
-    {
-      "when": { "up": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/glass_up" }
-    },
-    {
-      "when": { "down": "false" },
-      "apply": { "model": "beemancer:block/alchemy/multiblock_tank/glass_down" }
+  "variants": {
+    "": {
+      "model": "minecraft:block/air"
     }
-  ]
+  }
 }
