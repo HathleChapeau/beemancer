@@ -30,8 +30,8 @@ import net.minecraft.network.chat.Component;
 
 public class CodexNodeWidget extends AbstractWidget {
     public static final int NODE_SIZE = 20;
-    public static final int NODE_WIDTH = 80;
-    public static final int NODE_HEIGHT = 30;
+    public static final int NODE_WIDTH = 60;
+    public static final int NODE_HEIGHT = 20;
 
     private final CodexNode node;
     private final String displayName;

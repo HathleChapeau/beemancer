@@ -51,9 +51,6 @@ public class CodexScreen extends Screen {
     private static final ResourceLocation BAR_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Beemancer.MOD_ID, "textures/gui/codex_bar.png"
     );
-    private static final ResourceLocation BACKGROUND_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/codex_background.png"
-    );
 
     // Textures source
     private static final int CORNER_SRC = 5;
@@ -65,13 +62,16 @@ public class CodexScreen extends Screen {
     private static final int BORDER = CORNER_SRC * SCALE; // 15px
 
     // Dimensions de la frame
-    private static final int FRAME_WIDTH = 350;
-    private static final int FRAME_HEIGHT = 250;
-    private static final int TAB_HEIGHT = 22;
+    private static final int FRAME_WIDTH = 300;
+    private static final int FRAME_HEIGHT = 200;
+    private static final int TAB_HEIGHT = 20;
     private static final int TAB_SPACING = 4;
 
-    // Background color #F3E1BB
+    // Background color #F3E1BB (couleur unie, pas de tiling)
     private static final int BG_COLOR = 0xFFF3E1BB;
+
+    // Facteur de réduction pour adapter les coordonnées JSON à l'écran
+    private static final float JSON_SCALE = 0.25f;
 
     private CodexPage currentPage = CodexPage.APICA;
     private final Map<CodexPage, Button> tabButtons = new EnumMap<>(CodexPage.class);
@@ -88,10 +88,6 @@ public class CodexScreen extends Screen {
     // Scrolling
     private double scrollX = 0;
     private double scrollY = 0;
-    private double scrollMinX = 0;
-    private double scrollMaxX = 0;
-    private double scrollMinY = 0;
-    private double scrollMaxY = 0;
     private boolean isDragging = false;
 
     public CodexScreen() {
@@ -129,9 +125,6 @@ public class CodexScreen extends Screen {
         // Créer les boutons de tab
         createTabButtons();
 
-        // Calculer les limites de scroll pour la page courante
-        calculateScrollBounds();
-
         // Créer les widgets de nodes
         currentRenderer = pageRenderers.get(currentPage);
         rebuildNodeWidgets();
@@ -141,7 +134,7 @@ public class CodexScreen extends Screen {
         tabButtons.clear();
 
         CodexPage[] pages = CodexPage.values();
-        int tabWidth = 60;
+        int tabWidth = 55;
         int totalWidth = pages.length * tabWidth + (pages.length - 1) * TAB_SPACING;
         int tabX = (width - totalWidth) / 2;
         int tabY = frameY - TAB_HEIGHT - TAB_SPACING;
@@ -171,7 +164,6 @@ public class CodexScreen extends Screen {
         scrollX = 0;
         scrollY = 0;
 
-        calculateScrollBounds();
         rebuildNodeWidgets();
         updateTabButtonStyles();
     }
@@ -182,26 +174,6 @@ public class CodexScreen extends Screen {
             boolean isActive = entry.getKey() == currentPage;
             btn.active = !isActive;
         }
-    }
-
-    private void calculateScrollBounds() {
-        CodexJsonLoader.TabData tabData = CodexJsonLoader.getTabData(currentPage);
-        if (tabData == null || tabData.nodes.isEmpty()) {
-            scrollMinX = 0;
-            scrollMaxX = 0;
-            scrollMinY = 0;
-            scrollMaxY = 0;
-            return;
-        }
-
-        // Les positions normalisées vont de 0 à 1
-        // On calcule la taille totale du contenu en pixels
-        float contentScale = Math.min(contentWidth, contentHeight) * 2;
-
-        scrollMinX = -contentScale / 2;
-        scrollMaxX = contentScale / 2;
-        scrollMinY = -contentScale / 2;
-        scrollMaxY = contentScale / 2;
     }
 
     private void rebuildNodeWidgets() {
@@ -233,18 +205,22 @@ public class CodexScreen extends Screen {
         CodexPlayerData playerData = getPlayerData();
         Set<String> unlockedNodes = playerData.getUnlockedNodes();
 
-        // Convertir les JsonNodeData en CodexNodes fictifs pour le renderer
+        // Calculer le centre des nodes JSON pour centrer le contenu
+        float centerJsonX = (tabData.bounds.minX + tabData.bounds.maxX) / 2;
+        float centerJsonY = (tabData.bounds.minY + tabData.bounds.maxY) / 2;
+
+        // Convertir les JsonNodeData en CodexNodes
         List<CodexNode> nodes = new ArrayList<>();
         for (CodexJsonLoader.JsonNodeData jsonNode : tabData.nodes) {
-            // Calculer la position écran depuis la position normalisée
-            int nodeX = (int)((jsonNode.normalizedX - 0.5f) * contentWidth + scrollX);
-            int nodeY = (int)((jsonNode.normalizedY - 0.5f) * contentHeight + scrollY);
+            // Position relative au centre, mise à l'échelle
+            int nodeX = (int)((jsonNode.rawX - centerJsonX) * JSON_SCALE);
+            int nodeY = (int)((jsonNode.rawY - centerJsonY) * JSON_SCALE);
 
-            // Créer un CodexNode avec les données du JSON
             CodexNode node = createNodeFromJson(jsonNode, nodeX, nodeY);
             nodes.add(node);
         }
 
+        // Le renderer positionnera les nodes par rapport au centre du contenu
         currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData,
                 contentX + contentWidth / 2, contentY + contentHeight / 2, 1, scrollX, scrollY);
 
@@ -284,14 +260,11 @@ public class CodexScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics, mouseX, mouseY, partialTick);
 
-        // 1. Rendu du background uni
+        // 1. Rendu du background uni (pas de tiling!)
         graphics.fill(frameX, frameY, frameX + FRAME_WIDTH, frameY + FRAME_HEIGHT, BG_COLOR);
 
         // 2. Rendu du contenu avec scissor (clippe aux bords)
         graphics.enableScissor(contentX, contentY, contentX + contentWidth, contentY + contentHeight);
-
-        // Background tilé
-        renderTiledBackground(graphics);
 
         // Connexions et nodes
         currentRenderer.renderConnections(graphics);
@@ -306,7 +279,7 @@ public class CodexScreen extends Screen {
         // 3. Rendu de la frame PAR-DESSUS le contenu
         renderFrame(graphics);
 
-        // 4. Rendu des boutons de tab (déjà en dehors de la frame)
+        // 4. Rendu des boutons de tab (en dehors de la frame)
         for (Button btn : tabButtons.values()) {
             btn.render(graphics, mouseX, mouseY, partialTick);
         }
@@ -316,18 +289,6 @@ public class CodexScreen extends Screen {
 
         // 6. Progress
         renderProgress(graphics);
-    }
-
-    private void renderTiledBackground(GuiGraphics graphics) {
-        int tileSize = 16;
-        for (int x = contentX; x < contentX + contentWidth; x += tileSize) {
-            for (int y = contentY; y < contentY + contentHeight; y += tileSize) {
-                graphics.blit(BACKGROUND_TEXTURE, x, y, 0, 0,
-                        Math.min(tileSize, contentX + contentWidth - x),
-                        Math.min(tileSize, contentY + contentHeight - y),
-                        tileSize, tileSize);
-            }
-        }
     }
 
     private void renderFrame(GuiGraphics graphics) {
@@ -425,11 +386,11 @@ public class CodexScreen extends Screen {
     private void renderProgress(GuiGraphics graphics) {
         CodexJsonLoader.TabData tabData = CodexJsonLoader.getTabData(currentPage);
         int total = tabData != null ? tabData.nodes.size() : 0;
-        int unlocked = 0; // Pour l'instant tout est verrouillé
+        int unlocked = 0;
 
         String progress = unlocked + "/" + total;
         graphics.drawString(font, progress, frameX + FRAME_WIDTH - font.width(progress) - 8,
-                frameY + FRAME_HEIGHT - 14, 0xAAAAAA);
+                frameY + FRAME_HEIGHT - 14, 0x805030);
     }
 
     @Override
@@ -471,11 +432,6 @@ public class CodexScreen extends Screen {
         if (isDragging && button == 0) {
             scrollX += dragX;
             scrollY += dragY;
-
-            // Limiter le scroll
-            scrollX = Math.max(scrollMinX, Math.min(scrollX, scrollMaxX));
-            scrollY = Math.max(scrollMinY, Math.min(scrollY, scrollMaxY));
-
             updateNodePositions();
             return true;
         }
@@ -486,10 +442,6 @@ public class CodexScreen extends Screen {
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollXDelta, double scrollYDelta) {
         if (isInContentArea(mouseX, mouseY)) {
             this.scrollY += scrollYDelta * 20;
-
-            // Limiter le scroll
-            scrollY = Math.max(scrollMinY, Math.min(scrollY, scrollMaxY));
-
             updateNodePositions();
             return true;
         }
