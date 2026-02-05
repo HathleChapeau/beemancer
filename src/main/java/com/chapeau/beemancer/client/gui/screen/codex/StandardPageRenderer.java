@@ -11,6 +11,7 @@
  * | CodexNodeWidget     | Widget standard      | Rendu des nodes                |
  * | CodexManager        | Visibilite nodes     | Filtrage des nodes visibles    |
  * | CodexJsonLoader     | Donnees JSON         | Liens entre nodes              |
+ * | LineDrawingHelper   | Dessin lignes        | Rendu des connexions           |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -20,6 +21,9 @@
  */
 package com.chapeau.beemancer.client.gui.screen.codex;
 
+import com.chapeau.beemancer.client.gui.util.LineDrawingHelper;
+import com.chapeau.beemancer.client.gui.util.LineDrawingHelper.LineStyle;
+import com.chapeau.beemancer.client.gui.util.LineDrawingHelper.ArrowStyle;
 import com.chapeau.beemancer.client.gui.widget.CodexNodeWidget;
 import com.chapeau.beemancer.common.codex.*;
 import net.minecraft.client.gui.GuiGraphics;
@@ -32,9 +36,9 @@ public class StandardPageRenderer implements CodexPageRenderer {
     private final Map<String, int[]> nodePositions = new HashMap<>();
     private CodexJsonLoader.TabData currentTabData = null;
 
-    // Couleurs des lignes
-    private static final int LINE_COLOR_UNLOCKED = 0xFF805030;   // Marron/sépia pour effet encre
-    private static final int LINE_COLOR_LOCKED = 0xFF504030;     // Gris-marron pour verrouillé
+    // Couleurs des lignes - style sépia/encre pour le codex
+    private static final int LINE_COLOR_UNLOCKED = 0xFF6B4423;   // Marron sépia foncé
+    private static final int LINE_COLOR_LOCKED = 0xFF8B7355;     // Marron clair
 
     @Override
     public void rebuildWidgets(List<CodexNode> nodes, Set<String> unlockedNodes, CodexPlayerData playerData,
@@ -100,7 +104,7 @@ public class StandardPageRenderer implements CodexPageRenderer {
             if (parentId != null) {
                 CodexNodeWidget parentWidget = findWidgetByNodeId(parentId);
                 if (parentWidget != null) {
-                    renderHandDrawnArrow(graphics, parentWidget, widget);
+                    renderConnection(graphics, parentWidget, widget);
                 }
             }
         }
@@ -121,166 +125,54 @@ public class StandardPageRenderer implements CodexPageRenderer {
                 CodexNodeWidget toWidget = findWidgetByName(toName);
                 if (toWidget == null) continue;
 
-                renderHandDrawnArrow(graphics, fromWidget, toWidget);
+                renderConnection(graphics, fromWidget, toWidget);
             }
         }
     }
 
     /**
-     * Dessine une ligne droite style manuscrit avec flèche.
+     * Dessine une connexion entre deux nodes avec l'utilitaire LineDrawingHelper.
      */
-    private void renderHandDrawnArrow(GuiGraphics graphics, CodexNodeWidget fromWidget, CodexNodeWidget toWidget) {
+    private void renderConnection(GuiGraphics graphics, CodexNodeWidget fromWidget, CodexNodeWidget toWidget) {
         int nodeSize = CodexNodeWidget.NODE_SIZE;
 
-        // Points de départ et d'arrivée (centres des nodes)
-        int startX = fromWidget.getX() + nodeSize / 2;
-        int startY = fromWidget.getY() + nodeSize / 2;
-        int endX = toWidget.getX() + nodeSize / 2;
-        int endY = toWidget.getY() + nodeSize / 2;
+        // Centres des nodes
+        int fromX = fromWidget.getX() + nodeSize / 2;
+        int fromY = fromWidget.getY() + nodeSize / 2;
+        int toX = toWidget.getX() + nodeSize / 2;
+        int toY = toWidget.getY() + nodeSize / 2;
 
-        // Décaler les points pour partir/arriver au bord des nodes
-        float dx = endX - startX;
-        float dy = endY - startY;
+        // Direction
+        float dx = toX - fromX;
+        float dy = toY - fromY;
         float length = (float) Math.sqrt(dx * dx + dy * dy);
         if (length < 1) return;
 
         float nx = dx / length;
         float ny = dy / length;
 
-        // Décaler depuis le bord du node (rayon = nodeSize/2)
-        int offset = nodeSize / 2 + 2;
-        int arrowOffset = offset + 6; // La flèche est un peu avant le node
+        // Points de départ/arrivée aux bords des nodes
+        int offset = nodeSize / 2 + 3;
+        int startX = (int) (fromX + nx * offset);
+        int startY = (int) (fromY + ny * offset);
+        int endX = (int) (toX - nx * (offset + 6)); // +6 pour la flèche
+        int endY = (int) (toY - ny * (offset + 6));
 
-        int lineStartX = (int) (startX + nx * offset);
-        int lineStartY = (int) (startY + ny * offset);
-        int lineEndX = (int) (endX - nx * arrowOffset);
-        int lineEndY = (int) (endY - ny * arrowOffset);
+        // Couleur et style selon état de déblocage
+        boolean bothUnlocked = fromWidget.isUnlocked() && toWidget.isUnlocked();
+        int color = bothUnlocked ? LINE_COLOR_UNLOCKED : LINE_COLOR_LOCKED;
 
-        // Couleur basée sur l'état de déblocage
-        int lineColor = (fromWidget.isUnlocked() && toWidget.isUnlocked())
-            ? LINE_COLOR_UNLOCKED
-            : LINE_COLOR_LOCKED;
+        // Style de ligne et flèche
+        LineStyle lineStyle = bothUnlocked ? LineStyle.HAND_DRAWN : LineStyle.STRAIGHT;
+        ArrowStyle arrowStyle = bothUnlocked ? ArrowStyle.HAND_DRAWN : ArrowStyle.SIMPLE;
+        float roughness = bothUnlocked ? 0.4f : 0.2f;
 
-        // Dessiner la ligne principale avec effet manuscrit (léger tremblé)
-        drawHandDrawnLine(graphics, lineStartX, lineStartY, lineEndX, lineEndY, lineColor);
-
-        // Dessiner la flèche au bout
-        drawArrowHead(graphics, lineEndX, lineEndY, nx, ny, lineColor);
-    }
-
-    /**
-     * Dessine une ligne avec un léger effet manuscrit/tremblé.
-     */
-    private void drawHandDrawnLine(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color) {
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        float length = (float) Math.sqrt(dx * dx + dy * dy);
-        if (length < 1) return;
-
-        // Normaliser
-        float nx = dx / length;
-        float ny = dy / length;
-
-        // Perpendiculaire pour le tremblé
-        float px = -ny;
-        float py = nx;
-
-        // Nombre de segments pour l'effet manuscrit
-        int segments = Math.max(3, (int) (length / 8));
-
-        // Seed basé sur les coordonnées pour un tremblé consistant
-        long seed = (long) x1 * 31 + y1 * 17 + x2 * 13 + y2 * 7;
-        Random rand = new Random(seed);
-
-        int prevX = x1;
-        int prevY = y1;
-
-        for (int i = 1; i <= segments; i++) {
-            float t = (float) i / segments;
-            int baseX = (int) (x1 + dx * t);
-            int baseY = (int) (y1 + dy * t);
-
-            // Ajouter un léger tremblé perpendiculaire (sauf aux extrémités)
-            int wobble = 0;
-            if (i > 0 && i < segments) {
-                wobble = (int) ((rand.nextFloat() - 0.5f) * 3);
-            }
-
-            int curX = (int) (baseX + px * wobble);
-            int curY = (int) (baseY + py * wobble);
-
-            // Dessiner le segment (ligne de 2px d'épaisseur)
-            drawThickLine(graphics, prevX, prevY, curX, curY, color, 2);
-
-            prevX = curX;
-            prevY = curY;
-        }
-    }
-
-    /**
-     * Dessine une ligne épaisse entre deux points.
-     */
-    private void drawThickLine(GuiGraphics graphics, int x1, int y1, int x2, int y2, int color, int thickness) {
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        float length = (float) Math.sqrt(dx * dx + dy * dy);
-
-        if (length < 0.5f) {
-            // Point unique
-            graphics.fill(x1 - thickness / 2, y1 - thickness / 2,
-                         x1 + thickness / 2, y1 + thickness / 2, color);
-            return;
-        }
-
-        // Perpendiculaire normalisée
-        float px = -dy / length;
-        float py = dx / length;
-
-        // Dessiner plusieurs lignes parallèles pour l'épaisseur
-        for (int t = -thickness / 2; t <= thickness / 2; t++) {
-            int offsetX = (int) (px * t);
-            int offsetY = (int) (py * t);
-
-            // Bresenham-style drawing avec fill pour chaque point
-            int steps = (int) Math.max(Math.abs(dx), Math.abs(dy));
-            if (steps == 0) steps = 1;
-
-            for (int s = 0; s <= steps; s++) {
-                float progress = (float) s / steps;
-                int drawX = (int) (x1 + dx * progress + offsetX);
-                int drawY = (int) (y1 + dy * progress + offsetY);
-                graphics.fill(drawX, drawY, drawX + 1, drawY + 1, color);
-            }
-        }
-    }
-
-    /**
-     * Dessine une tête de flèche manuscrite.
-     */
-    private void drawArrowHead(GuiGraphics graphics, int tipX, int tipY, float dirX, float dirY, int color) {
-        // Longueur et angle des branches de la flèche
-        int arrowLength = 8;
-        float arrowAngle = 0.5f; // ~30 degrés
-
-        // Calculer les deux branches de la flèche
-        float cos = (float) Math.cos(arrowAngle);
-        float sin = (float) Math.sin(arrowAngle);
-
-        // Branche gauche
-        float leftDirX = dirX * cos + dirY * sin;
-        float leftDirY = -dirX * sin + dirY * cos;
-        int leftX = (int) (tipX - leftDirX * arrowLength);
-        int leftY = (int) (tipY - leftDirY * arrowLength);
-
-        // Branche droite
-        float rightDirX = dirX * cos - dirY * sin;
-        float rightDirY = dirX * sin + dirY * cos;
-        int rightX = (int) (tipX - rightDirX * arrowLength);
-        int rightY = (int) (tipY - rightDirY * arrowLength);
-
-        // Dessiner les deux branches avec un léger effet manuscrit
-        drawThickLine(graphics, tipX, tipY, leftX, leftY, color, 2);
-        drawThickLine(graphics, tipX, tipY, rightX, rightY, color, 2);
+        // Dessiner avec l'utilitaire
+        LineDrawingHelper.drawArrow(graphics,
+                startX, startY, endX, endY,
+                color, 2,
+                lineStyle, arrowStyle,
+                8, 0.5f, roughness);
     }
 
     @Override
