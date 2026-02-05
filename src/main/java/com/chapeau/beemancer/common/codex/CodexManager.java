@@ -42,11 +42,20 @@ public class CodexManager {
     private static final Map<String, CodexNode> NODES_BY_ID = new HashMap<>();
     private static boolean loaded = false;
 
+    /**
+     * Charge depuis le serveur (appelé au démarrage serveur).
+     */
     public static void load(MinecraftServer server) {
+        load(server.getResourceManager());
+    }
+
+    /**
+     * Charge depuis un ResourceManager (client ou serveur).
+     * Appelé automatiquement côté client si nécessaire.
+     */
+    public static void load(ResourceManager resourceManager) {
         NODES_BY_PAGE.clear();
         NODES_BY_ID.clear();
-
-        ResourceManager resourceManager = server.getResourceManager();
 
         for (CodexPage page : CodexPage.values()) {
             List<CodexNode> nodes = loadPage(resourceManager, page);
@@ -126,6 +135,19 @@ public class CodexManager {
 
     public static boolean isLoaded() {
         return loaded;
+    }
+
+    /**
+     * S'assure que les données sont chargées côté client.
+     * Appelé par CodexScreen à l'ouverture.
+     */
+    public static void ensureClientLoaded() {
+        if (!loaded) {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc != null && mc.getResourceManager() != null) {
+                load(mc.getResourceManager());
+            }
+        }
     }
 
     public static List<CodexNode> getRootNodes(CodexPage page) {

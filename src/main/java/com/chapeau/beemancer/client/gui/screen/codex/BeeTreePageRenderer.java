@@ -125,17 +125,12 @@ public class BeeTreePageRenderer implements CodexPageRenderer {
         boolean bothUnlocked = fromWidget.isUnlocked() && toWidget.isUnlocked();
         int color = bothUnlocked ? LINE_COLOR_UNLOCKED : LINE_COLOR_LOCKED;
 
-        // Style de ligne et flèche - légèrement différent pour les abeilles
-        LineStyle lineStyle = bothUnlocked ? LineStyle.HAND_DRAWN : LineStyle.STRAIGHT;
-        ArrowStyle arrowStyle = bothUnlocked ? ArrowStyle.FILLED : ArrowStyle.SIMPLE;
-        float roughness = bothUnlocked ? 0.3f : 0.15f;
-
-        // Dessiner avec l'utilitaire
+        // Style simple pour performance optimale
         LineDrawingHelper.drawArrow(graphics,
                 startX, startY, endX, endY,
                 color, 2,
-                lineStyle, arrowStyle,
-                7, 0.45f, roughness);
+                LineStyle.STRAIGHT, ArrowStyle.SIMPLE,
+                6, 0.4f, 0f);
     }
 
     @Override

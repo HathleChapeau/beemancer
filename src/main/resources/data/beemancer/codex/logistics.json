@@ -1,64 +1,16 @@
 {
   "nodes": [
-    {
-      "id": "logistics_intro",
-      "position": { "x": 0, "y": 2 },
-      "icon": "beemancer:textures/block/storage_crate.png",
-      "category": "ROOT",
-      "parent": null,
-      "hidden_until_parent_unlocked": false,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
-      "id": "storage_basics",
-      "position": { "x": 1, "y": 1 },
-      "icon": "minecraft:textures/block/chest_front.png",
-      "category": "NORMAL",
-      "parent": "logistics_intro",
-      "hidden_until_parent_unlocked": false,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
-      "id": "item_transport",
-      "position": { "x": 1, "y": 3 },
-      "icon": "minecraft:textures/block/hopper_top.png",
-      "category": "NORMAL",
-      "parent": "logistics_intro",
-      "hidden_until_parent_unlocked": false,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
-      "id": "incubator",
-      "position": { "x": 2, "y": 1 },
-      "icon": "beemancer:textures/block/incubator.png",
-      "category": "GOAL",
-      "parent": "storage_basics",
-      "hidden_until_parent_unlocked": false,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
-      "id": "bee_pipes",
-      "position": { "x": 2, "y": 3 },
-      "icon": "minecraft:textures/item/ender_pearl.png",
-      "category": "NORMAL",
-      "parent": "item_transport",
-      "hidden_until_parent_unlocked": true,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
-      "id": "automation",
-      "position": { "x": 3, "y": 2 },
-      "icon": "minecraft:textures/block/redstone_block.png",
-      "category": "CHALLENGE",
-      "parent": "incubator",
-      "hidden_until_parent_unlocked": true,
-      "unlock_condition": {},
-      "rewards": {}
-    }
+    {"id": "crystallyzer", "position": {"x": 0, "y": 0}, "icon": "beemancer:textures/block/crystallizer.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false},
+    {"id": "honey_pipe", "position": {"x": 1, "y": 2}, "icon": "beemancer:textures/block/honey_pipe.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "item_pipe", "position": {"x": -1, "y": 2}, "icon": "beemancer:textures/block/item_pipe.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "storage_controller_heart", "position": {"x": 2, "y": -1}, "icon": "beemancer:textures/block/storage_controller.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "relay", "position": {"x": 2, "y": -3}, "icon": "beemancer:textures/block/storage_relay.png", "category": "NORMAL", "parent": "storage_controller_heart", "hidden_until_parent_unlocked": false},
+    {"id": "interface", "position": {"x": 5, "y": -4}, "icon": "beemancer:textures/block/storage_terminal.png", "category": "NORMAL", "parent": "relay", "hidden_until_parent_unlocked": false},
+    {"id": "import", "position": {"x": 5, "y": -6}, "icon": "beemancer:textures/block/import_interface.png", "category": "NORMAL", "parent": "interface", "hidden_until_parent_unlocked": false},
+    {"id": "export", "position": {"x": 7, "y": -5}, "icon": "beemancer:textures/block/export_interface.png", "category": "NORMAL", "parent": "interface", "hidden_until_parent_unlocked": false},
+    {"id": "craft_auto", "position": {"x": 8, "y": -4}, "icon": "beemancer:textures/block/auto_crafter.png", "category": "GOAL", "parent": "interface", "hidden_until_parent_unlocked": false},
+    {"id": "pipe_t2", "position": {"x": 0, "y": 3}, "icon": "beemancer:textures/block/controller_pipe.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": true},
+    {"id": "pipe_t3", "position": {"x": 0, "y": 4}, "icon": "beemancer:textures/block/controller_pipe.png", "category": "NORMAL", "parent": "pipe_t2", "hidden_until_parent_unlocked": true},
+    {"id": "pipe_t4", "position": {"x": 0, "y": 5}, "icon": "beemancer:textures/block/controller_pipe.png", "category": "GOAL", "parent": "pipe_t3", "hidden_until_parent_unlocked": true}
   ]
 }

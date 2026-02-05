@@ -107,6 +107,9 @@ public class CodexScreen extends Screen {
     protected void init() {
         super.init();
 
+        // S'assurer que les données du Codex sont chargées côté client
+        CodexManager.ensureClientLoaded();
+
         // Position de la frame (centrée, avec espace pour les tabs au-dessus)
         frameX = (width - FRAME_WIDTH) / 2;
         frameY = (height - FRAME_HEIGHT - TAB_HEIGHT - TAB_SPACING) / 2 + TAB_HEIGHT + TAB_SPACING;

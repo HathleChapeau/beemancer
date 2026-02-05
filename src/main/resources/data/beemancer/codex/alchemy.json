@@ -1,64 +1,17 @@
 {
   "nodes": [
-    {
-      "id": "alchemy_basics",
-      "position": { "x": 0, "y": 2 },
-      "icon": "minecraft:textures/item/glass_bottle.png",
-      "category": "ROOT",
-      "parent": null,
-      "hidden_until_parent_unlocked": false,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
-      "id": "honey_extraction",
-      "position": { "x": 1, "y": 1 },
-      "icon": "minecraft:textures/item/honey_bottle.png",
-      "category": "NORMAL",
-      "parent": "alchemy_basics",
-      "hidden_until_parent_unlocked": false,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
-      "id": "bee_products",
-      "position": { "x": 1, "y": 3 },
-      "icon": "minecraft:textures/item/honeycomb.png",
-      "category": "NORMAL",
-      "parent": "alchemy_basics",
-      "hidden_until_parent_unlocked": false,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
-      "id": "royal_jelly",
-      "position": { "x": 2, "y": 1 },
-      "icon": "minecraft:textures/item/glistering_melon_slice.png",
-      "category": "GOAL",
-      "parent": "honey_extraction",
-      "hidden_until_parent_unlocked": true,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
-      "id": "bee_essence",
-      "position": { "x": 2, "y": 3 },
-      "icon": "minecraft:textures/item/experience_bottle.png",
-      "category": "NORMAL",
-      "parent": "bee_products",
-      "hidden_until_parent_unlocked": true,
-      "unlock_condition": {},
-      "rewards": {}
-    },
-    {
-      "id": "transmutation",
-      "position": { "x": 3, "y": 2 },
-      "icon": "minecraft:textures/item/nether_star.png",
-      "category": "CHALLENGE",
-      "parent": "royal_jelly",
-      "hidden_until_parent_unlocked": true,
-      "unlock_condition": {},
-      "rewards": {}
-    }
+    {"id": "manual_centrifuge", "position": {"x": 0, "y": 0}, "icon": "beemancer:textures/block/manual_centrifuge.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false},
+    {"id": "honey_pipe", "position": {"x": 2, "y": 2}, "icon": "beemancer:textures/block/honey_pipe.png", "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false},
+    {"id": "crystallyzer", "position": {"x": 2, "y": 0}, "icon": "beemancer:textures/block/crystallizer.png", "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false},
+    {"id": "centrifuge_t1", "position": {"x": -2, "y": 0}, "icon": "beemancer:textures/block/centrifuge.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "centrifuge_t2", "position": {"x": -3, "y": 2}, "icon": "beemancer:textures/block/centrifuge.png", "category": "NORMAL", "parent": "centrifuge_t1", "hidden_until_parent_unlocked": true},
+    {"id": "centrifuge_t3", "position": {"x": -3, "y": 4}, "icon": "beemancer:textures/block/centrifuge.png", "category": "GOAL", "parent": "centrifuge_t2", "hidden_until_parent_unlocked": true},
+    {"id": "portable_tank", "position": {"x": -2, "y": -2}, "icon": "beemancer:textures/block/portable_tank.png", "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false},
+    {"id": "tank", "position": {"x": -2, "y": -3}, "icon": "beemancer:textures/block/tank.png", "category": "NORMAL", "parent": "portable_tank", "hidden_until_parent_unlocked": true},
+    {"id": "infuser_t1", "position": {"x": 2, "y": -1}, "icon": "beemancer:textures/block/infuser.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "infuser_t2", "position": {"x": 4, "y": -2}, "icon": "beemancer:textures/block/infuser.png", "category": "NORMAL", "parent": "infuser_t1", "hidden_until_parent_unlocked": true},
+    {"id": "infuser_t3", "position": {"x": 6, "y": -2}, "icon": "beemancer:textures/block/infuser.png", "category": "GOAL", "parent": "infuser_t2", "hidden_until_parent_unlocked": true},
+    {"id": "alembic", "position": {"x": 0, "y": 2}, "icon": "beemancer:textures/block/alembic.png", "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": true},
+    {"id": "incubator", "position": {"x": 0, "y": -3}, "icon": "beemancer:textures/block/incubator.png", "category": "NORMAL", "parent": "infuser_t1", "hidden_until_parent_unlocked": false}
   ]
 }

@@ -130,17 +130,13 @@ public class StandardPageRenderer implements CodexPageRenderer {
         boolean bothUnlocked = fromWidget.isUnlocked() && toWidget.isUnlocked();
         int color = bothUnlocked ? LINE_COLOR_UNLOCKED : LINE_COLOR_LOCKED;
 
-        // Style de ligne et flèche
-        LineStyle lineStyle = bothUnlocked ? LineStyle.HAND_DRAWN : LineStyle.STRAIGHT;
-        ArrowStyle arrowStyle = bothUnlocked ? ArrowStyle.HAND_DRAWN : ArrowStyle.SIMPLE;
-        float roughness = bothUnlocked ? 0.4f : 0.2f;
-
-        // Dessiner avec l'utilitaire
+        // Style simple pour performance optimale
+        // STRAIGHT + SIMPLE = rendu rapide sans calculs complexes
         LineDrawingHelper.drawArrow(graphics,
                 startX, startY, endX, endY,
                 color, 2,
-                lineStyle, arrowStyle,
-                8, 0.5f, roughness);
+                LineStyle.STRAIGHT, ArrowStyle.SIMPLE,
+                6, 0.4f, 0f);
     }
 
     @Override
