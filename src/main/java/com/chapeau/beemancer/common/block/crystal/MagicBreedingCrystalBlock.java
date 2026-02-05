@@ -51,13 +51,13 @@ public class MagicBreedingCrystalBlock extends Block {
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         new ParticleEmitter(BeemancerParticles.RUNE.get())
             .at(pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5)
-            .speed(0, 0.03, 0)
+            .speed(0, 0.01, 0)
             .spread(0.25, 0.15, 0.25)
             .speedVariance(0.01, 0.01, 0.01)
-            .count(3)
-            .lifetime(15)
-            .gravity(-0.03f)
-            .scale(0.04f)
+            .count(2)
+            .lifetime(10)
+            .gravity(-0.001f)
+            .scale(0.05f)
             .fadeOut()
             .spawn(level);
     }
