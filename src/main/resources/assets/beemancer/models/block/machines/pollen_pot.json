@@ -5,7 +5,7 @@
     "particle": "beemancer:block/honeyed_plank",
     "bottom": "minecraft:block/honey_block_top",
     "side": "minecraft:block/honey_block_top",
-    "top": "beemancer:block/pollen_jar_top",
+    "top": "beemancer:block/pollen_jar_top2",
     "inside": "beemancer:block/honeyed_plank"
   },
   "elements": [
