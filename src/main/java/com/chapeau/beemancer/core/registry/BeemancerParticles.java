@@ -37,6 +37,10 @@ public class BeemancerParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> HONEY_PIXEL =
         PARTICLES.register("honey_pixel", () -> new SimpleParticleType(false));
 
+    // --- Rune particles (glyphes enchantement, gravite inversee) ---
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> RUNE =
+        PARTICLES.register("rune", () -> new SimpleParticleType(false));
+
     public static void register(IEventBus bus) {
         PARTICLES.register(bus);
     }

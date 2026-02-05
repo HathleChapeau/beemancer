@@ -31,6 +31,7 @@ import com.chapeau.beemancer.client.renderer.block.InfuserRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyTankRenderer;
 import com.chapeau.beemancer.client.renderer.block.IncubatorRenderer;
 import com.chapeau.beemancer.client.particle.HoneyPixelParticle;
+import com.chapeau.beemancer.client.particle.RuneParticle;
 import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import com.chapeau.beemancer.client.renderer.block.MultiblockTankRenderer;
 import com.chapeau.beemancer.client.renderer.block.PollenPotRenderer;
@@ -236,6 +237,7 @@ public class ClientSetup {
 
     private static void registerParticleProviders(final RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(BeemancerParticles.HONEY_PIXEL.get(), HoneyPixelParticle.Provider::new);
+        event.registerSpriteSet(BeemancerParticles.RUNE.get(), RuneParticle.Provider::new);
     }
 
     // =========================================================================
