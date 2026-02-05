@@ -185,6 +185,37 @@ public class CodexNodeWidget extends AbstractWidget {
         if (hovered && canUnlock && !unlocked) {
             renderGlow(graphics);
         }
+
+        // Badge "New" si DISCOVERED
+        if (nodeState == NodeState.DISCOVERED) {
+            renderNewBadge(graphics);
+        }
+    }
+
+    private void renderNewBadge(GuiGraphics graphics) {
+        Font font = Minecraft.getInstance().font;
+        String text = "New";
+        int badgeX = getX() + NODE_SIZE - 2;
+        int badgeY = getY() - 4;
+
+        // Encadré vert
+        int textWidth = font.width(text);
+        int padding = 2;
+        int bgColor = 0xFF228B22; // Vert forêt
+        int borderColor = 0xFF32CD32; // Vert lime
+
+        graphics.pose().pushPose();
+        graphics.pose().translate(badgeX, badgeY, 0);
+        graphics.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(15)); // Penché
+
+        // Fond + bordure
+        graphics.fill(-padding, -padding, textWidth + padding, font.lineHeight + padding, borderColor);
+        graphics.fill(-padding + 1, -padding + 1, textWidth + padding - 1, font.lineHeight + padding - 1, bgColor);
+
+        // Texte
+        graphics.drawString(font, text, 0, 0, 0xFFFFFFFF, false);
+
+        graphics.pose().popPose();
     }
 
     private void renderBackground(GuiGraphics graphics) {
@@ -267,23 +298,12 @@ public class CodexNodeWidget extends AbstractWidget {
         if (hovered) {
             Minecraft mc = Minecraft.getInstance();
 
-            if (unlocked) {
-                graphics.renderTooltip(mc.font, java.util.List.of(
-                    displayTitle.copy().withStyle(style -> style.withBold(true)),
-                    displayDescription
-                ), java.util.Optional.empty(), mouseX, mouseY);
-            } else if (canUnlock) {
-                graphics.renderTooltip(mc.font, java.util.List.of(
-                    displayTitle,
-                    Component.translatable("codex.beemancer.click_to_unlock").withStyle(style -> style.withColor(0xAAAAAAFF))
-                ), java.util.Optional.empty(), mouseX, mouseY);
-            } else {
-                // Node LOCKED - afficher "???" si SECRET, sinon le titre
-                graphics.renderTooltip(mc.font, java.util.List.of(
-                    displayTitle,
-                    Component.translatable("codex.beemancer.complete_quest_first").withStyle(style -> style.withColor(0xFF6666))
-                ), java.util.Optional.empty(), mouseX, mouseY);
-            }
+            // Simple: titre (bold si unlocked) + description
+            // displayTitle/displayDescription sont déjà "???" si SECRET et LOCKED
+            graphics.renderTooltip(mc.font, java.util.List.of(
+                displayTitle.copy().withStyle(style -> style.withBold(unlocked)),
+                displayDescription
+            ), java.util.Optional.empty(), mouseX, mouseY);
         }
     }
 

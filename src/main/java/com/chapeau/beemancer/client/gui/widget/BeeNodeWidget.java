@@ -134,6 +134,37 @@ public class BeeNodeWidget extends AbstractWidget {
         if (hovered && canUnlock && !unlocked) {
             renderGlow(graphics);
         }
+
+        // Badge "New" si DISCOVERED
+        if (nodeState == NodeState.DISCOVERED) {
+            renderNewBadge(graphics);
+        }
+    }
+
+    private void renderNewBadge(GuiGraphics graphics) {
+        net.minecraft.client.gui.Font font = Minecraft.getInstance().font;
+        String text = "New";
+        int badgeX = getX() + NODE_SIZE - 2;
+        int badgeY = getY() - 4;
+
+        // Encadré vert
+        int textWidth = font.width(text);
+        int padding = 2;
+        int bgColor = 0xFF228B22; // Vert forêt
+        int borderColor = 0xFF32CD32; // Vert lime
+
+        graphics.pose().pushPose();
+        graphics.pose().translate(badgeX, badgeY, 0);
+        graphics.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(15)); // Penché
+
+        // Fond + bordure
+        graphics.fill(-padding, -padding, textWidth + padding, font.lineHeight + padding, borderColor);
+        graphics.fill(-padding + 1, -padding + 1, textWidth + padding - 1, font.lineHeight + padding - 1, bgColor);
+
+        // Texte
+        graphics.drawString(font, text, 0, 0, 0xFFFFFFFF, false);
+
+        graphics.pose().popPose();
     }
 
     private void renderFrame(GuiGraphics graphics) {
@@ -213,43 +244,31 @@ public class BeeNodeWidget extends AbstractWidget {
         if (hovered) {
             Minecraft mc = Minecraft.getInstance();
 
-            if (unlocked) {
-                List<Component> tooltipLines = new ArrayList<>();
-                tooltipLines.add(displayTitle.copy().withStyle(style -> style.withBold(true)));
+            List<Component> tooltipLines = new ArrayList<>();
 
-                // Add breeding parents line if bee has parents
-                Component breedingLine = getBreedingParentsLine();
-                if (breedingLine != null) {
-                    tooltipLines.add(breedingLine);
-                }
+            // Titre (bold si unlocked)
+            tooltipLines.add(displayTitle.copy().withStyle(style -> style.withBold(unlocked)));
 
-                tooltipLines.add(displayDescription);
-
-                graphics.renderTooltip(mc.font, tooltipLines, java.util.Optional.empty(), mouseX, mouseY);
-            } else if (canUnlock) {
-                List<Component> tooltipLines = new ArrayList<>();
-                tooltipLines.add(displayTitle);
-
-                // Add breeding parents line if bee has parents
-                Component breedingLine = getBreedingParentsLine();
-                if (breedingLine != null) {
-                    tooltipLines.add(breedingLine);
-                }
-
-                tooltipLines.add(Component.translatable("codex.beemancer.click_to_unlock"));
-
-                graphics.renderTooltip(mc.font, tooltipLines, java.util.Optional.empty(), mouseX, mouseY);
-            } else {
-                // Node LOCKED - afficher "???" si SECRET, sinon le titre
-                graphics.renderTooltip(mc.font, java.util.List.of(
-                    displayTitle,
-                    Component.translatable("codex.beemancer.complete_quest_first").withStyle(style -> style.withColor(0xFF6666))
-                ), java.util.Optional.empty(), mouseX, mouseY);
+            // Parents (toujours affichés si disponibles, sauf si SECRET+LOCKED)
+            Component breedingLine = getBreedingParentsLine();
+            if (breedingLine != null) {
+                tooltipLines.add(breedingLine);
             }
+
+            // Description
+            tooltipLines.add(displayDescription);
+
+            graphics.renderTooltip(mc.font, tooltipLines, java.util.Optional.empty(), mouseX, mouseY);
         }
     }
 
     private Component getBreedingParentsLine() {
+        // Ne pas afficher les parents si SECRET et LOCKED (affiche "???")
+        if (node.getVisibility() == com.chapeau.beemancer.common.quest.NodeVisibility.SECRET
+                && nodeState == NodeState.LOCKED) {
+            return null;
+        }
+
         String parent1 = node.getBreedingParent1();
         String parent2 = node.getBreedingParent2();
 
