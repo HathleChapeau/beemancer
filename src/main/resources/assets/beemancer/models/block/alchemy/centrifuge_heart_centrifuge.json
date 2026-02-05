@@ -33,8 +33,8 @@
     },
     {
       "name": "Pillar NO",
-      "from": [-15, -4, -15],
-      "to": [-12, 20, -12],
+      "from": [-11, -4, -11],
+      "to": [-8, 20, -8],
       "faces": {
         "north": {"texture": "#frame", "uv": [0, 0, 3, 16]},
         "south": {"texture": "#frame", "uv": [0, 0, 3, 16]},
@@ -46,8 +46,8 @@
     },
     {
       "name": "Pillar NE",
-      "from": [28, -4, -15],
-      "to": [31, 20, -12],
+      "from": [24, -4, -11],
+      "to": [27, 20, -8],
       "faces": {
         "north": {"texture": "#frame", "uv": [0, 0, 3, 16]},
         "south": {"texture": "#frame", "uv": [0, 0, 3, 16]},
@@ -59,8 +59,8 @@
     },
     {
       "name": "Pillar SO",
-      "from": [-15, -4, 28],
-      "to": [-12, 20, 31],
+      "from": [-11, -4, 24],
+      "to": [-8, 20, 27],
       "faces": {
         "north": {"texture": "#frame", "uv": [0, 0, 3, 16]},
         "south": {"texture": "#frame", "uv": [0, 0, 3, 16]},
@@ -72,8 +72,8 @@
     },
     {
       "name": "Pillar SE",
-      "from": [28, -4, 28],
-      "to": [31, 20, 31],
+      "from": [24, -4, 24],
+      "to": [27, 20, 27],
       "faces": {
         "north": {"texture": "#frame", "uv": [0, 0, 3, 16]},
         "south": {"texture": "#frame", "uv": [0, 0, 3, 16]},
