@@ -1,6 +1,6 @@
 {
   "parent": "beemancer:block/pipes/item_pipe_core",
   "textures": {
-    "frame": "beemancer:block/honey_pipe_tier4"
+    "frame": "beemancer:block/nectar_diamond_block"
   }
 }
