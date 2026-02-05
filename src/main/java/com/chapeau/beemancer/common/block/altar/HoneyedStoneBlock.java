@@ -19,16 +19,22 @@
  */
 package com.chapeau.beemancer.common.block.altar;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 
 /**
  * Bloc décoratif de pierre miellée.
  * Participe à plusieurs multiblocs: Altar, Extractor, Infuser, Centrifuge, Storage.
+ * Quand formé en Centrifuge, la collision est gérée par le CentrifugeHeartBlock.
  */
 public class HoneyedStoneBlock extends Block {
 
@@ -49,5 +55,21 @@ public class HoneyedStoneBlock extends Block {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(MULTIBLOCK) == MultiblockProperty.CENTRIFUGE) {
+            return Shapes.empty();
+        }
+        return Shapes.block();
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(MULTIBLOCK) == MultiblockProperty.CENTRIFUGE) {
+            return Shapes.empty();
+        }
+        return Shapes.block();
     }
 }
