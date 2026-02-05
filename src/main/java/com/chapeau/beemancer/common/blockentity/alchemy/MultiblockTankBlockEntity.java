@@ -159,6 +159,29 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         return master != null && master.validCuboid;
     }
 
+    /**
+     * Retourne la taille du cube (côté).
+     * Si le cube n'est pas valide, retourne 0.
+     * Utilise le cache client si disponible.
+     */
+    public int getCubeSize() {
+        // Utiliser le cache client si on est sur le client et qu'il est défini
+        if (level != null && level.isClientSide() && isMaster() && clientCubeSize > 0) {
+            return clientCubeSize;
+        }
+
+        MultiblockTankBlockEntity master = getMaster();
+        if (master == null || !master.validCuboid) return 0;
+
+        // Cache client du master
+        if (level != null && level.isClientSide() && master.clientCubeSize > 0) {
+            return master.clientCubeSize;
+        }
+
+        int[] bb = master.getBoundingBox();
+        return bb[3] - bb[0] + 1; // maxX - minX + 1
+    }
+
     public ItemStackHandler getBucketSlot() {
         MultiblockTankBlockEntity master = getMaster();
         return master != null ? master.bucketSlot : bucketSlot;
@@ -348,9 +371,16 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         setChanged();
     }
 
+    /**
+     * Valide que la structure forme un CUBE parfait (h = l = p).
+     * Minimum 2x2x2 pour être valide.
+     * Un bloc seul n'est pas valide (trop petit).
+     */
     private boolean validateCuboid() {
-        if (connectedBlocks.isEmpty()) return true;
-        if (connectedBlocks.size() == 1) return true;
+        if (connectedBlocks.isEmpty()) return false;
+
+        // Un bloc seul n'est pas valide (min 2x2x2)
+        if (connectedBlocks.size() == 1) return false;
 
         // Calculate bounding box
         int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
@@ -366,8 +396,19 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             maxZ = Math.max(maxZ, pos.getZ());
         }
 
+        // Calculate dimensions
+        int sizeX = maxX - minX + 1;
+        int sizeY = maxY - minY + 1;
+        int sizeZ = maxZ - minZ + 1;
+
+        // CUBE: toutes les dimensions doivent être égales
+        if (sizeX != sizeY || sizeY != sizeZ) return false;
+
+        // Minimum 2x2x2
+        if (sizeX < 2) return false;
+
         // Calculate expected volume
-        int expectedSize = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
+        int expectedSize = sizeX * sizeY * sizeZ;
 
         // Check if we have exactly the right number of blocks
         if (connectedBlocks.size() != expectedSize) return false;
@@ -532,6 +573,11 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                     this.clientBoundingBox = null;
                 }
             }
+
+            // Charger taille du cube pour le client
+            if (tag.contains("CubeSize")) {
+                this.clientCubeSize = tag.getInt("CubeSize");
+            }
         } else {
             // Load slave data
             if (tag.contains("MasterPos")) {
@@ -566,6 +612,9 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
 
     // Bounding box cache pour le client (charge via updateTag)
     private int[] clientBoundingBox = null;
+
+    // Taille du cube cache pour le client
+    private int clientCubeSize = 0;
 
     public int[] getClientBoundingBox() {
         if (clientBoundingBox != null) return clientBoundingBox;
@@ -613,6 +662,10 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             // Bounding box pour le rendu client du fluide
             int[] bb = getBoundingBox();
             tag.putIntArray("BoundingBox", bb);
+
+            // Taille du cube pour le renderer
+            int cubeSize = validCuboid ? (bb[3] - bb[0] + 1) : 0;
+            tag.putInt("CubeSize", cubeSize);
         } else if (masterPos != null) {
             tag.put("MasterPos", NbtUtils.writeBlockPos(masterPos));
         }

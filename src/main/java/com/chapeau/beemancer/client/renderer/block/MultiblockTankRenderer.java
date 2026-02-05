@@ -1,17 +1,16 @@
 /**
  * ============================================================
  * [MultiblockTankRenderer.java]
- * Description: Renderer pour le fluide du multiblock tank (rendu par bloc)
+ * Description: Renderer pour le multiblock tank avec scale automatique
  * ============================================================
  *
  * DÉPENDANCES:
  * ------------------------------------------------------------
  * | Dépendance                     | Raison                | Utilisation               |
  * |-------------------------------|----------------------|---------------------------|
- * | MultiblockTankBlockEntity     | Données fluide       | getFluidTank(), fillRatio |
- * | MultiblockTankBlock           | Connection props     | Face culling              |
- * | IClientFluidTypeExtensions    | Texture atlas        | getStillTexture()         |
+ * | MultiblockTankBlockEntity     | Données fluide/taille| getFluidTank(), getCubeSize |
  * | FluidCubeRenderer             | Rendu cube fluide    | renderFluidCube()         |
+ * | IClientFluidTypeExtensions    | Texture atlas        | getStillTexture()         |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -22,7 +21,6 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.client.renderer.util.FluidCubeRenderer;
-import com.chapeau.beemancer.common.block.alchemy.MultiblockTankBlock;
 import com.chapeau.beemancer.common.blockentity.alchemy.MultiblockTankBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -34,16 +32,17 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.minecraft.world.phys.AABB;
 
 /**
- * Renderer pour le fluide a l'interieur du multiblock tank.
- * Chaque bloc rend sa propre portion de fluide selon sa position Y
- * et le niveau de remplissage global du multibloc.
+ * Renderer pour le multiblock tank.
+ * Rendu uniquement sur le master (coin min X/Y/Z).
+ * Scale automatiquement selon la taille du cube.
+ * Le fluide remplit un cube simple de 0-1 (scalé par cubeSize).
  */
 public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTankBlockEntity> {
 
@@ -56,16 +55,19 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
     public void render(MultiblockTankBlockEntity blockEntity, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
-        MultiblockTankBlockEntity master = blockEntity.getMaster();
-        if (master == null) return;
+        if (!blockEntity.isMaster()) return;
+        if (!blockEntity.isValidCuboid()) return;
 
-        FluidTank tank = master.getFluidTank();
+        int cubeSize = blockEntity.getCubeSize();
+        if (cubeSize < 2) return;
+
+        FluidTank tank = blockEntity.getFluidTank();
         if (tank == null || tank.isEmpty()) return;
 
-        float fillRatio = blockEntity.getFluidFillRatioForBlock(blockEntity.getBlockPos());
+        FluidStack fluidStack = tank.getFluid();
+        float fillRatio = (float) tank.getFluidAmount() / tank.getCapacity();
         if (fillRatio <= 0f) return;
 
-        FluidStack fluidStack = tank.getFluid();
         Fluid fluid = fluidStack.getFluid();
         IClientFluidTypeExtensions fluidExtensions = IClientFluidTypeExtensions.of(fluid);
         ResourceLocation stillTexture = fluidExtensions.getStillTexture();
@@ -73,45 +75,54 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
             .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
             .apply(stillTexture);
 
-        // Read connection properties from blockstate
-        BlockState state = blockEntity.getBlockState();
-        boolean connNorth = state.getValue(MultiblockTankBlock.NORTH);
-        boolean connSouth = state.getValue(MultiblockTankBlock.SOUTH);
-        boolean connEast = state.getValue(MultiblockTankBlock.EAST);
-        boolean connWest = state.getValue(MultiblockTankBlock.WEST);
-        boolean connUp = state.getValue(MultiblockTankBlock.UP);
-        boolean connDown = state.getValue(MultiblockTankBlock.DOWN);
-
-        // Fluid bounds: extend to block edge if connected, inset 2px if exposed
-        float minX = connWest ? 0f : INSET;
-        float maxX = connEast ? 1f : (1f - INSET);
-        float minZ = connNorth ? 0f : INSET;
-        float maxZ = connSouth ? 1f : (1f - INSET);
-        float minY = connDown ? 0f : INSET;
-        float maxYFull = connUp ? 1f : (1f - INSET);
-
-        // Scale Y by fill ratio
-        float fluidHeight = maxYFull - minY;
-        float maxY = minY + (fluidHeight * fillRatio);
-
-        // Face culling: skip faces that connect to adjacent tanks (avoid double-alpha)
-        boolean renderUp = !connUp || fillRatio < 1f;
-        boolean renderDown = !connDown;
-        boolean renderNorth = !connNorth;
-        boolean renderSouth = !connSouth;
-        boolean renderWest = !connWest;
-        boolean renderEast = !connEast;
-
         VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
-        var pose = poseStack.last();
 
+        poseStack.pushPose();
+
+        // Scale par la taille du cube
+        poseStack.scale(cubeSize, cubeSize, cubeSize);
+
+        // Cube de fluide simple (coordonnées normalisées 0-1)
+        float minX = INSET;
+        float minZ = INSET;
+        float maxX = 1f - INSET;
+        float maxZ = 1f - INSET;
+        float minY = INSET;
+        float maxY = INSET + (1f - 2f * INSET) * fillRatio;
+
+        var pose = poseStack.last();
         FluidCubeRenderer.renderFluidCube(consumer, pose, sprite,
             minX, minY, minZ, maxX, maxY, maxZ,
-            renderUp, renderDown, renderNorth, renderSouth, renderWest, renderEast);
+            true, true, true, true, true, true);
+
+        poseStack.popPose();
     }
 
     @Override
     public int getViewDistance() {
         return 64;
+    }
+
+    @Override
+    public boolean shouldRenderOffScreen(MultiblockTankBlockEntity blockEntity) {
+        return true;
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(MultiblockTankBlockEntity blockEntity) {
+        if (!blockEntity.isMaster() || !blockEntity.isValidCuboid()) {
+            return AABB.unitCubeFromLowerCorner(blockEntity.getBlockPos().getCenter());
+        }
+
+        int cubeSize = blockEntity.getCubeSize();
+        if (cubeSize < 2) {
+            return AABB.unitCubeFromLowerCorner(blockEntity.getBlockPos().getCenter());
+        }
+
+        var pos = blockEntity.getBlockPos();
+        return new AABB(
+            pos.getX(), pos.getY(), pos.getZ(),
+            pos.getX() + cubeSize, pos.getY() + cubeSize, pos.getZ() + cubeSize
+        );
     }
 }

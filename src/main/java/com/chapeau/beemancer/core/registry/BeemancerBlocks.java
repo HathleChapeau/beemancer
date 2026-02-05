@@ -71,6 +71,7 @@ public class BeemancerBlocks {
             () -> new StorageRelayBlock(BlockBehaviour.Properties.of()
                     .strength(2.5f)
                     .sound(SoundType.METAL)
+                    .lightLevel(state -> 7)
                     .requiresCorrectToolForDrops()));
 
     public static final DeferredBlock<StorageTerminalBlock> STORAGE_TERMINAL = BLOCKS.register("storage_terminal",
