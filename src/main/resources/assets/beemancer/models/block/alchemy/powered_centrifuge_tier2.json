@@ -1,9 +1,8 @@
 {
-  "parent": "beemancer:block/powered_centrifuge",
+  "parent": "minecraft:block/cube_bottom_top",
   "textures": {
-    "dark_iron": "beemancer:block/alchemy/powered_centrifuge_tier2_side",
-    "dark_wood": "beemancer:block/alchemy/powered_centrifuge_tier2_bottom",
-    "drum_end": "beemancer:block/alchemy/powered_centrifuge_tier2_top",
-    "particle": "beemancer:block/alchemy/powered_centrifuge_tier2_side"
+    "top": "beemancer:block/alchemy/powered_centrifuge_tier2_top",
+    "bottom": "beemancer:block/alchemy/powered_centrifuge_tier2_bottom",
+    "side": "beemancer:block/alchemy/powered_centrifuge_tier2_side"
   }
 }

@@ -6,55 +6,42 @@
   },
   "elements": [
     {
-      "name": "Shaft",
-      "from": [7, 0, 7],
-      "to": [9, 2, 9],
-      "faces": {
-        "north": {"texture": "#wood", "uv": [7, 14, 9, 16]},
-        "east":  {"texture": "#wood", "uv": [7, 14, 9, 16]},
-        "south": {"texture": "#wood", "uv": [7, 14, 9, 16]},
-        "west":  {"texture": "#wood", "uv": [7, 14, 9, 16]},
-        "up":    {"texture": "#wood", "uv": [7, 7, 9, 9]},
-        "down":  {"texture": "#wood", "uv": [7, 7, 9, 9]}
-      }
-    },
-    {
       "name": "Handle Left",
-      "from": [4, 2, 7],
-      "to": [6, 8, 9],
+      "from": [7, 0, 7],
+      "to": [9, 5, 9],
       "faces": {
-        "north": {"texture": "#wood", "uv": [4, 8, 6, 14]},
-        "east":  {"texture": "#wood", "uv": [7, 8, 9, 14]},
-        "south": {"texture": "#wood", "uv": [10, 8, 12, 14]},
-        "west":  {"texture": "#wood", "uv": [7, 8, 9, 14]},
-        "up":    {"texture": "#wood", "uv": [4, 7, 6, 9]},
-        "down":  {"texture": "#wood", "uv": [4, 7, 6, 9]}
+        "north": {"texture": "#wood"},
+        "east":  {"texture": "#wood"},
+        "south": {"texture": "#wood"},
+        "west":  {"texture": "#wood"},
+        "up":    {"texture": "#wood"},
+        "down":  {"texture": "#wood"}
       }
     },
     {
       "name": "Arm Horizontal",
-      "from": [5, 6, 7],
-      "to": [11, 8, 9],
+      "from": [7, 5, 7],
+      "to": [14, 7, 9],
       "faces": {
-        "north": {"texture": "#wood", "uv": [5, 8, 11, 10]},
-        "east":  {"texture": "#wood", "uv": [7, 8, 9, 10]},
-        "south": {"texture": "#wood", "uv": [5, 8, 11, 10]},
-        "west":  {"texture": "#wood", "uv": [7, 8, 9, 10]},
-        "up":    {"texture": "#wood", "uv": [5, 7, 11, 9]},
-        "down":  {"texture": "#wood", "uv": [5, 7, 11, 9]}
+        "north": {"texture": "#wood"},
+        "east":  {"texture": "#wood"},
+        "south": {"texture": "#wood"},
+        "west":  {"texture": "#wood"},
+        "up":    {"texture": "#wood"},
+        "down":  {"texture": "#wood"}
       }
     },
     {
       "name": "Handle Right",
-      "from": [10, 8, 7],
-      "to": [12, 14, 9],
+      "from": [12, 7, 7],
+      "to": [14, 12, 9],
       "faces": {
-        "north": {"texture": "#wood", "uv": [10, 2, 12, 8]},
-        "east":  {"texture": "#wood", "uv": [7, 2, 9, 8]},
-        "south": {"texture": "#wood", "uv": [4, 2, 6, 8]},
-        "west":  {"texture": "#wood", "uv": [7, 2, 9, 8]},
-        "up":    {"texture": "#wood", "uv": [10, 7, 12, 9]},
-        "down":  {"texture": "#wood", "uv": [10, 7, 12, 9]}
+        "north": {"texture": "#wood"},
+        "east":  {"texture": "#wood"},
+        "south": {"texture": "#wood"},
+        "west":  {"texture": "#wood"},
+        "up":    {"texture": "#wood"},
+        "down":  {"texture": "#wood"}
       }
     }
   ]

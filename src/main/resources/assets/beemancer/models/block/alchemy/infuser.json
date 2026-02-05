@@ -6,7 +6,7 @@
     "top": "beemancer:block/alchemy/infuser_top",
     "frame": "beemancer:block/alchemy/powered_centrifuge_side",
     "glass": "beemancer:block/honeyed_glass",
-    "particle": "beemancer:block/stone"
+    "particle": "beemancer:block/honeyed_iron"
   },
   "elements": [
     {

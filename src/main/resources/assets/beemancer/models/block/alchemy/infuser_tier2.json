@@ -1,8 +1,8 @@
 {
-  "parent": "minecraft:block/cube_bottom_top",
+  "parent": "beemancer:block/alchemy/infuser",
   "textures": {
     "top": "beemancer:block/alchemy/infuser_tier2_top",
-    "bottom": "beemancer:block/alchemy/infuser_tier2_bottom",
-    "side": "beemancer:block/alchemy/infuser_tier2_side"
+    "bottom": "beemancer:block/alchemy/powered_centrifuge_tier2_bottom",
+    "frame": "beemancer:block/alchemy/powered_centrifuge_tier2_side"
   }
 }
