@@ -378,35 +378,35 @@ public class MultiblockPatterns {
     );
 
     // ==================== CENTRIFUGE MULTIBLOCK ====================
-    // Structure 3x3x3 avec reservoirs aux coins
+    // Structure 3x3x3 avec reservoirs aux cardinaux
     //
-    // Étage 3 (Y+1): Reservoirs aux coins (output), Honeyed Stone cardinaux + centre
-    //         [R][S][R]     R=Reservoir (output), S=Honeyed Stone
-    //         [S][S][S]
+    // Étage 3 (Y+1): Reservoirs cardinaux (output), Honeyed Stone coins + centre
+    //         [S][R][S]     R=Reservoir (output), S=Honeyed Stone
     //         [R][S][R]
+    //         [S][R][S]
     //
     // Étage 2 (Y+0): Air autour du coeur
     //         [ ][ ][ ]
     //         [ ][H][ ]     H=Centrifuge Heart (contrôleur), [ ]=Air
     //         [ ][ ][ ]
     //
-    // Étage 1 (Y-1): Reservoirs aux coins (fuel), Honeyed Stone cardinaux + centre
-    //         [R][S][R]     R=Reservoir (fuel), S=Honeyed Stone
-    //         [S][S][S]
+    // Étage 1 (Y-1): Reservoirs cardinaux (fuel), Honeyed Stone coins + centre
+    //         [S][R][S]     R=Reservoir (fuel), S=Honeyed Stone
     //         [R][S][R]
+    //         [S][R][S]
 
     public static final MultiblockPattern CENTRIFUGE_MULTIBLOCK = register(
         MultiblockPattern.builder("centrifuge_multiblock")
-            // Étage 1 (Y-1): Reservoirs aux coins, Honeyed Stone au centre et cardinaux
-            .add(-1, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))  // Coin NO - fuel
-            .add(0, -1, -1, block(BeemancerBlocks.HONEYED_STONE))     // Nord
-            .add(1, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin NE - fuel
-            .add(-1, -1, 0, block(BeemancerBlocks.HONEYED_STONE))     // Ouest
+            // Étage 1 (Y-1): Honeyed Stone coins + centre, Reservoirs cardinaux
+            .add(-1, -1, -1, block(BeemancerBlocks.HONEYED_STONE))    // Coin NO
+            .add(0, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Nord - fuel
+            .add(1, -1, -1, block(BeemancerBlocks.HONEYED_STONE))     // Coin NE
+            .add(-1, -1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))   // Ouest - fuel
             .add(0, -1, 0, block(BeemancerBlocks.HONEYED_STONE))      // Centre
-            .add(1, -1, 0, block(BeemancerBlocks.HONEYED_STONE))      // Est
-            .add(-1, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin SO - fuel
-            .add(0, -1, 1, block(BeemancerBlocks.HONEYED_STONE))      // Sud
-            .add(1, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin SE - fuel
+            .add(1, -1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))    // Est - fuel
+            .add(-1, -1, 1, block(BeemancerBlocks.HONEYED_STONE))     // Coin SO
+            .add(0, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Sud - fuel
+            .add(1, -1, 1, block(BeemancerBlocks.HONEYED_STONE))      // Coin SE
 
             // Étage 2 (Y+0): Air autour du coeur
             .add(-1, 0, -1, air())
@@ -419,16 +419,16 @@ public class MultiblockPatterns {
             .add(0, 0, 1, air())
             .add(1, 0, 1, air())
 
-            // Étage 3 (Y+1): Reservoirs aux coins, Honeyed Stone au centre et cardinaux
-            .add(-1, 1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin NO - output
-            .add(0, 1, -1, block(BeemancerBlocks.HONEYED_STONE))      // Nord
-            .add(1, 1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin NE - output
-            .add(-1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))      // Ouest
+            // Étage 3 (Y+1): Honeyed Stone coins + centre, Reservoirs cardinaux
+            .add(-1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))     // Coin NO
+            .add(0, 1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Nord - output
+            .add(1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))      // Coin NE
+            .add(-1, 1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))    // Ouest - output
             .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))       // Centre
-            .add(1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))       // Est
-            .add(-1, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin SO - output
-            .add(0, 1, 1, block(BeemancerBlocks.HONEYED_STONE))       // Sud
-            .add(1, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))     // Coin SE - output
+            .add(1, 1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))     // Est - output
+            .add(-1, 1, 1, block(BeemancerBlocks.HONEYED_STONE))      // Coin SO
+            .add(0, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))     // Sud - output
+            .add(1, 1, 1, block(BeemancerBlocks.HONEYED_STONE))       // Coin SE
 
             .build()
     );

@@ -84,19 +84,19 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     private static final float ACCELERATION = 0.15f;
 
     // Positions des reservoirs (relatif au coeur)
-    // Bottom (Y-1): coins pour le fuel tank
+    // Bottom (Y-1): cardinaux pour le fuel tank
     private static final BlockPos[] FUEL_RESERVOIR_OFFSETS = {
-        new BlockPos(-1, -1, -1),
-        new BlockPos(1, -1, -1),
-        new BlockPos(-1, -1, 1),
-        new BlockPos(1, -1, 1)
+        new BlockPos(0, -1, -1),   // Nord
+        new BlockPos(-1, -1, 0),   // Ouest
+        new BlockPos(1, -1, 0),    // Est
+        new BlockPos(0, -1, 1)     // Sud
     };
-    // Top (Y+1): coins pour le output tank
+    // Top (Y+1): cardinaux pour le output tank
     private static final BlockPos[] OUTPUT_RESERVOIR_OFFSETS = {
-        new BlockPos(-1, 1, -1),
-        new BlockPos(1, 1, -1),
-        new BlockPos(-1, 1, 1),
-        new BlockPos(1, 1, 1)
+        new BlockPos(0, 1, -1),    // Nord
+        new BlockPos(-1, 1, 0),    // Ouest
+        new BlockPos(1, 1, 0),     // Est
+        new BlockPos(0, 1, 1)      // Sud
     };
 
     private boolean formed = false;
