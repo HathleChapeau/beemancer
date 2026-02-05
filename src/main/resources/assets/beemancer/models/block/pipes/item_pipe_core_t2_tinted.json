@@ -1,0 +1,6 @@
+{
+  "parent": "beemancer:block/pipes/item_pipe_core_t2",
+  "textures": {
+    "core": "beemancer:block/pipe_core_white"
+  }
+}
