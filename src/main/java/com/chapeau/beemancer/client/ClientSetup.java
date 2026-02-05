@@ -25,6 +25,7 @@ import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyPedestalRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.ControllerPipeRenderer;
+import com.chapeau.beemancer.client.renderer.block.CentrifugeHeartRenderer;
 import com.chapeau.beemancer.client.renderer.block.CrankRenderer;
 import com.chapeau.beemancer.client.renderer.block.CrystallizerRenderer;
 import com.chapeau.beemancer.client.renderer.block.InfuserRenderer;
@@ -176,6 +177,9 @@ public class ClientSetup {
         // IncubatorRenderer - item flottant au centre de l'incubateur
         event.registerBlockEntityRenderer(BeemancerBlockEntities.INCUBATOR.get(),
             IncubatorRenderer::new);
+        // CentrifugeHeartRenderer - cubes centraux animés de la centrifuge multibloc
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.CENTRIFUGE_HEART.get(),
+            CentrifugeHeartRenderer::new);
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -311,6 +315,8 @@ public class ClientSetup {
         // Modèle crank (rendu par BER avec rotation)
         event.register(CrankRenderer.CRANK_MODEL_LOC);
 
+        // Modèle core du centrifuge heart (cubes animés)
+        event.register(CentrifugeHeartRenderer.CORE_MODEL_LOC);
     }
 
     // =========================================================================

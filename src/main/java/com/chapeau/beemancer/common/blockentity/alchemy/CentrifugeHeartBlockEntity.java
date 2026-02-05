@@ -78,8 +78,17 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     private static final float PROCESS_TIME_MULTIPLIER = 0.3f;
     private static final int DEFAULT_PROCESS_TIME = 100;
 
+    // Animation cubes centraux
+    private static final float MAX_ROTATION_SPEED = 8.0f;
+    private static final float ACCELERATION = 0.15f;
+
     private boolean formed = false;
     private ItemStack previousInputType = ItemStack.EMPTY;
+
+    // Animation (client-side principalement)
+    private float rotation = 0.0f;
+    private float velocity = 0.0f;
+    private float prevRotation = 0.0f;
 
     private final ItemStackHandler inputSlot = new ItemStackHandler(1) {
         @Override
@@ -218,6 +227,44 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
 
         Beemancer.LOGGER.debug("Centrifuge validation failed at {}", worldPosition);
         return false;
+    }
+
+    // ==================== Animation ====================
+
+    /**
+     * Tick client pour l'animation des cubes centraux.
+     * La velocity accélère quand WORKING=true, décélère sinon.
+     */
+    public static void clientTick(Level level, BlockPos pos, BlockState state, CentrifugeHeartBlockEntity be) {
+        be.prevRotation = be.rotation;
+
+        boolean working = state.hasProperty(CentrifugeHeartBlock.WORKING)
+            && state.getValue(CentrifugeHeartBlock.WORKING);
+
+        if (working) {
+            be.velocity += ACCELERATION;
+        } else {
+            be.velocity -= ACCELERATION;
+        }
+
+        be.velocity = Math.max(0.0f, Math.min(be.velocity, MAX_ROTATION_SPEED));
+
+        be.rotation += be.velocity;
+        if (be.rotation >= 360.0f) {
+            be.rotation -= 360.0f;
+            be.prevRotation -= 360.0f;
+        }
+    }
+
+    /**
+     * Retourne l'angle de rotation interpolé pour le rendu smooth.
+     */
+    public float getClientRotation(float partialTick) {
+        float interpRotation = prevRotation + (rotation - prevRotation) * partialTick;
+        if (interpRotation < 0) {
+            interpRotation += 360.0f;
+        }
+        return interpRotation;
     }
 
     // ==================== Processing ====================

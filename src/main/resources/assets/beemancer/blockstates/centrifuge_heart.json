@@ -1,9 +1,15 @@
 {
   "variants": {
-    "multiblock=none": {
+    "multiblock=none,working=false": {
       "model": "beemancer:block/alchemy/centrifuge_heart"
     },
-    "multiblock=centrifuge": {
+    "multiblock=none,working=true": {
+      "model": "beemancer:block/alchemy/centrifuge_heart"
+    },
+    "multiblock=centrifuge,working=false": {
+      "model": "beemancer:block/alchemy/centrifuge_heart_centrifuge"
+    },
+    "multiblock=centrifuge,working=true": {
       "model": "beemancer:block/alchemy/centrifuge_heart_centrifuge"
     }
   }
