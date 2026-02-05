@@ -13,7 +13,11 @@
  *   -> Minimiser les draw calls
  * - RenderUtils Gist: https://gist.github.com/ItziSpyder/c06c34f28e406c04be63d593f0a0d0c1
  *   -> Utiliser fillRect pour lignes simples
- *   -> Batch rendering avec beginRendering/finishRendering
+ *
+ * STYLE VISUEL:
+ * - Lignes en L (orthogonales) pour les connexions diagonales
+ * - Effet d'ombre subtil pour la profondeur
+ * - Fleches chevron elegantes
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
@@ -36,14 +40,14 @@ import net.minecraft.client.gui.GuiGraphics;
  * Classe utilitaire OPTIMISEE pour dessiner des lignes et fleches.
  *
  * PRINCIPE D'OPTIMISATION:
- * - UNE ligne = UN ou DEUX appels graphics.fill() maximum
- * - Pas de boucle pixel par pixel (Bresenham est trop lent pour GUI)
- * - Les lignes diagonales sont dessinees comme des rectangles fins
+ * - Lignes orthogonales (H+V) = 2 appels fill() maximum
+ * - Effet d'ombre = +2 appels fill() (optionnel)
+ * - Fleche chevron = 2 appels fill()
  */
 public class LineDrawingHelper {
 
     // ============================================================
-    // STYLES DE LIGNE (simplifies pour performance)
+    // STYLES DE LIGNE
     // ============================================================
 
     public enum LineStyle {
@@ -56,13 +60,13 @@ public class LineDrawingHelper {
     }
 
     // ============================================================
-    // STYLES DE FLECHE (simplifies pour performance)
+    // STYLES DE FLECHE
     // ============================================================
 
     public enum ArrowStyle {
         /** Pas de fleche */
         NONE,
-        /** Fleche simple (deux lignes) - RAPIDE */
+        /** Fleche chevron (V) - ELEGANT */
         SIMPLE,
         /** Fleche triangulaire pleine */
         FILLED
@@ -73,8 +77,12 @@ public class LineDrawingHelper {
     // ============================================================
 
     public static final int DEFAULT_THICKNESS = 2;
-    public static final int DEFAULT_ARROW_LENGTH = 6;
-    public static final float DEFAULT_ARROW_ANGLE = 0.5f;
+    public static final int DEFAULT_ARROW_LENGTH = 8;
+    public static final float DEFAULT_ARROW_ANGLE = 0.45f;
+
+    // Couleur d'ombre (noir semi-transparent)
+    private static final int SHADOW_COLOR = 0x40000000;
+    private static final int SHADOW_OFFSET = 1;
 
     // ============================================================
     // METHODE PRINCIPALE - LIGNE AVEC FLECHE
@@ -82,7 +90,8 @@ public class LineDrawingHelper {
 
     /**
      * Dessine une ligne avec fleche - VERSION OPTIMISEE.
-     * Maximum 3-4 appels fill() au total.
+     * Utilise un routage en L pour les lignes diagonales (plus propre visuellement).
+     * Maximum 6-8 appels fill() au total (avec ombre).
      */
     public static void drawArrow(GuiGraphics graphics,
                                   int x1, int y1, int x2, int y2,
@@ -90,7 +99,6 @@ public class LineDrawingHelper {
                                   LineStyle lineStyle, ArrowStyle arrowStyle,
                                   int arrowLength, float arrowAngle, float unused) {
 
-        // Calcul direction
         float dx = x2 - x1;
         float dy = y2 - y1;
         float length = (float) Math.sqrt(dx * dx + dy * dy);
@@ -107,16 +115,21 @@ public class LineDrawingHelper {
             lineEndY = (int) (y2 - ny * arrowLength);
         }
 
-        // Dessiner la ligne
-        switch (lineStyle) {
-            case STRAIGHT -> drawLineOptimized(graphics, x1, y1, lineEndX, lineEndY, color, thickness);
-            case DASHED -> drawDashedLineOptimized(graphics, x1, y1, lineEndX, lineEndY, color, thickness);
-            case DOTTED -> drawDottedLineOptimized(graphics, x1, y1, lineEndX, lineEndY, color, thickness);
+        // Dessiner la ligne avec routage intelligent
+        boolean isHorizontal = y1 == y2;
+        boolean isVertical = x1 == x2;
+
+        if (isHorizontal || isVertical) {
+            // Ligne droite H ou V - simple et rapide
+            drawStraightLineWithShadow(graphics, x1, y1, lineEndX, lineEndY, color, thickness, lineStyle);
+        } else {
+            // Ligne diagonale - utiliser routage en L
+            drawLShapedLine(graphics, x1, y1, lineEndX, lineEndY, color, thickness, lineStyle);
         }
 
         // Dessiner la fleche
         if (arrowStyle != ArrowStyle.NONE) {
-            drawArrowHeadOptimized(graphics, x2, y2, nx, ny, color, thickness, arrowStyle, arrowLength, arrowAngle);
+            drawChevronArrow(graphics, x2, y2, nx, ny, color, thickness, arrowLength, arrowAngle);
         }
     }
 
@@ -132,100 +145,183 @@ public class LineDrawingHelper {
     }
 
     // ============================================================
-    // DESSIN DE LIGNES OPTIMISE
+    // DESSIN DE LIGNES - NOUVELLES METHODES VISUELLES
     // ============================================================
 
     /**
-     * Dessine une ligne droite - OPTIMISE.
-     * Utilise UN SEUL appel fill() pour les lignes H/V,
-     * et approximation rectangulaire pour les diagonales.
+     * Dessine une ligne droite (H ou V) avec effet d'ombre subtil.
+     */
+    private static void drawStraightLineWithShadow(GuiGraphics graphics,
+                                                    int x1, int y1, int x2, int y2,
+                                                    int color, int thickness, LineStyle style) {
+        int halfT = thickness / 2;
+
+        if (y1 == y2) {
+            // Ligne horizontale
+            int minX = Math.min(x1, x2);
+            int maxX = Math.max(x1, x2);
+            // Ombre
+            graphics.fill(minX + SHADOW_OFFSET, y1 - halfT + SHADOW_OFFSET,
+                         maxX + SHADOW_OFFSET, y1 - halfT + thickness + SHADOW_OFFSET, SHADOW_COLOR);
+            // Ligne principale
+            graphics.fill(minX, y1 - halfT, maxX, y1 - halfT + thickness, color);
+        } else {
+            // Ligne verticale
+            int minY = Math.min(y1, y2);
+            int maxY = Math.max(y1, y2);
+            // Ombre
+            graphics.fill(x1 - halfT + SHADOW_OFFSET, minY + SHADOW_OFFSET,
+                         x1 - halfT + thickness + SHADOW_OFFSET, maxY + SHADOW_OFFSET, SHADOW_COLOR);
+            // Ligne principale
+            graphics.fill(x1 - halfT, minY, x1 - halfT + thickness, maxY, color);
+        }
+    }
+
+    /**
+     * Dessine une ligne en forme de L (routage orthogonal).
+     * Le coude est place au milieu du trajet vertical.
+     * Beaucoup plus elegant que les diagonales en escalier.
+     */
+    private static void drawLShapedLine(GuiGraphics graphics,
+                                         int x1, int y1, int x2, int y2,
+                                         int color, int thickness, LineStyle style) {
+        int halfT = thickness / 2;
+
+        // Point de coude: vertical d'abord, puis horizontal
+        // Le coude est au niveau Y du point de depart, X du point d'arrivee
+        int midX = x1;
+        int midY = y2;
+
+        // Segment 1: vertical (de y1 vers y2)
+        int minY = Math.min(y1, midY);
+        int maxY = Math.max(y1, midY);
+
+        // Ombre segment vertical
+        graphics.fill(x1 - halfT + SHADOW_OFFSET, minY + SHADOW_OFFSET,
+                     x1 - halfT + thickness + SHADOW_OFFSET, maxY + halfT + SHADOW_OFFSET, SHADOW_COLOR);
+        // Segment vertical
+        graphics.fill(x1 - halfT, minY, x1 - halfT + thickness, maxY + halfT, color);
+
+        // Segment 2: horizontal (de x1 vers x2)
+        int minX = Math.min(x1, x2);
+        int maxX = Math.max(x1, x2);
+
+        // Ombre segment horizontal
+        graphics.fill(minX - halfT + SHADOW_OFFSET, midY - halfT + SHADOW_OFFSET,
+                     maxX + SHADOW_OFFSET, midY - halfT + thickness + SHADOW_OFFSET, SHADOW_COLOR);
+        // Segment horizontal
+        graphics.fill(minX - halfT, midY - halfT, maxX, midY - halfT + thickness, color);
+
+        // Petit carre au coude pour lisser la jonction
+        graphics.fill(x1 - halfT, midY - halfT, x1 + halfT, midY + halfT, color);
+    }
+
+    /**
+     * Dessine une fleche chevron elegante (forme V).
+     */
+    private static void drawChevronArrow(GuiGraphics graphics,
+                                          int tipX, int tipY,
+                                          float dirX, float dirY,
+                                          int color, int thickness,
+                                          int length, float angle) {
+        float cos = (float) Math.cos(angle);
+        float sin = (float) Math.sin(angle);
+
+        // Calcul des branches du chevron
+        float leftDirX = dirX * cos + dirY * sin;
+        float leftDirY = -dirX * sin + dirY * cos;
+        int leftX = (int) (tipX - leftDirX * length);
+        int leftY = (int) (tipY - leftDirY * length);
+
+        float rightDirX = dirX * cos - dirY * sin;
+        float rightDirY = dirX * sin + dirY * cos;
+        int rightX = (int) (tipX - rightDirX * length);
+        int rightY = (int) (tipY - rightDirY * length);
+
+        int halfT = thickness / 2;
+
+        // Ombre branche gauche
+        drawSimpleLine(graphics, tipX + SHADOW_OFFSET, tipY + SHADOW_OFFSET,
+                       leftX + SHADOW_OFFSET, leftY + SHADOW_OFFSET, SHADOW_COLOR, thickness);
+        // Ombre branche droite
+        drawSimpleLine(graphics, tipX + SHADOW_OFFSET, tipY + SHADOW_OFFSET,
+                       rightX + SHADOW_OFFSET, rightY + SHADOW_OFFSET, SHADOW_COLOR, thickness);
+
+        // Branche gauche
+        drawSimpleLine(graphics, tipX, tipY, leftX, leftY, color, thickness);
+        // Branche droite
+        drawSimpleLine(graphics, tipX, tipY, rightX, rightY, color, thickness);
+
+        // Point central pour fermer le chevron
+        graphics.fill(tipX - halfT, tipY - halfT, tipX + halfT + 1, tipY + halfT + 1, color);
+    }
+
+    /**
+     * Dessine une ligne simple (utilisee pour les branches de fleche).
+     * Pas d'ombre, juste un rectangle.
+     */
+    private static void drawSimpleLine(GuiGraphics graphics,
+                                        int x1, int y1, int x2, int y2,
+                                        int color, int thickness) {
+        int halfT = thickness / 2;
+
+        // Ligne horizontale
+        if (y1 == y2) {
+            int minX = Math.min(x1, x2);
+            int maxX = Math.max(x1, x2);
+            graphics.fill(minX, y1 - halfT, maxX, y1 + halfT + 1, color);
+            return;
+        }
+
+        // Ligne verticale
+        if (x1 == x2) {
+            int minY = Math.min(y1, y2);
+            int maxY = Math.max(y1, y2);
+            graphics.fill(x1 - halfT, minY, x1 + halfT + 1, maxY, color);
+            return;
+        }
+
+        // Diagonale: dessiner comme rectangle incline (approximation simple)
+        int dx = x2 - x1;
+        int dy = y2 - y1;
+        int steps = Math.max(Math.abs(dx), Math.abs(dy)) / 2;
+        steps = Math.max(2, Math.min(steps, 8)); // Entre 2 et 8 segments
+
+        for (int i = 0; i < steps; i++) {
+            float t1 = (float) i / steps;
+            float t2 = (float) (i + 1) / steps;
+            int sx = (int) (x1 + dx * t1);
+            int sy = (int) (y1 + dy * t1);
+            int ex = (int) (x1 + dx * t2);
+            int ey = (int) (y1 + dy * t2);
+
+            int minX = Math.min(sx, ex) - halfT;
+            int maxX = Math.max(sx, ex) + halfT + 1;
+            int minY = Math.min(sy, ey) - halfT;
+            int maxY = Math.max(sy, ey) + halfT + 1;
+            graphics.fill(minX, minY, maxX, maxY, color);
+        }
+    }
+
+    // ============================================================
+    // METHODES LEGACY (compatibilite)
+    // ============================================================
+
+    /**
+     * Dessine une ligne droite - VERSION LEGACY.
      */
     public static void drawLineOptimized(GuiGraphics graphics,
                                           int x1, int y1, int x2, int y2,
                                           int color, int thickness) {
-        // Cas special: ligne horizontale - UN SEUL fill()
-        if (y1 == y2) {
-            int minX = Math.min(x1, x2);
-            int maxX = Math.max(x1, x2);
-            int halfT = thickness / 2;
-            graphics.fill(minX, y1 - halfT, maxX, y1 - halfT + thickness, color);
-            return;
-        }
-
-        // Cas special: ligne verticale - UN SEUL fill()
-        if (x1 == x2) {
-            int minY = Math.min(y1, y2);
-            int maxY = Math.max(y1, y2);
-            int halfT = thickness / 2;
-            graphics.fill(x1 - halfT, minY, x1 - halfT + thickness, maxY, color);
-            return;
-        }
-
-        // Ligne diagonale: dessiner comme une serie de petits rectangles
-        // Beaucoup plus rapide que Bresenham pixel par pixel
-        drawDiagonalLineAsStepped(graphics, x1, y1, x2, y2, color, thickness);
-    }
-
-    /**
-     * Dessine une ligne diagonale en "escalier" - RAPIDE.
-     * Au lieu de dessiner pixel par pixel, on dessine des segments
-     * horizontaux ou verticaux selon la pente.
-     */
-    private static void drawDiagonalLineAsStepped(GuiGraphics graphics,
-                                                   int x1, int y1, int x2, int y2,
-                                                   int color, int thickness) {
-        int dx = Math.abs(x2 - x1);
-        int dy = Math.abs(y2 - y1);
-        int sx = x1 < x2 ? 1 : -1;
-        int sy = y1 < y2 ? 1 : -1;
-
-        int halfT = thickness / 2;
-
-        // Choisir la direction principale (moins de segments = plus rapide)
-        if (dx >= dy) {
-            // Principalement horizontal - dessiner des segments horizontaux
-            int steps = Math.max(1, dx / 4); // ~4 pixels par segment
-            float stepX = (float)(x2 - x1) / steps;
-            float stepY = (float)(y2 - y1) / steps;
-
-            for (int i = 0; i < steps; i++) {
-                int segX1 = (int)(x1 + stepX * i);
-                int segY1 = (int)(y1 + stepY * i);
-                int segX2 = (int)(x1 + stepX * (i + 1));
-                int segY2 = (int)(y1 + stepY * (i + 1));
-
-                // Rectangle couvrant ce segment
-                int minX = Math.min(segX1, segX2);
-                int maxX = Math.max(segX1, segX2) + 1;
-                int minY = Math.min(segY1, segY2) - halfT;
-                int maxY = Math.max(segY1, segY2) + halfT + 1;
-
-                graphics.fill(minX, minY, maxX, maxY, color);
-            }
+        if (y1 == y2 || x1 == x2) {
+            drawStraightLineWithShadow(graphics, x1, y1, x2, y2, color, thickness, LineStyle.STRAIGHT);
         } else {
-            // Principalement vertical - dessiner des segments verticaux
-            int steps = Math.max(1, dy / 4);
-            float stepX = (float)(x2 - x1) / steps;
-            float stepY = (float)(y2 - y1) / steps;
-
-            for (int i = 0; i < steps; i++) {
-                int segX1 = (int)(x1 + stepX * i);
-                int segY1 = (int)(y1 + stepY * i);
-                int segX2 = (int)(x1 + stepX * (i + 1));
-                int segY2 = (int)(y1 + stepY * (i + 1));
-
-                int minX = Math.min(segX1, segX2) - halfT;
-                int maxX = Math.max(segX1, segX2) + halfT + 1;
-                int minY = Math.min(segY1, segY2);
-                int maxY = Math.max(segY1, segY2) + 1;
-
-                graphics.fill(minX, minY, maxX, maxY, color);
-            }
+            drawLShapedLine(graphics, x1, y1, x2, y2, color, thickness, LineStyle.STRAIGHT);
         }
     }
 
     /**
-     * Ligne pointillee - OPTIMISE.
+     * Ligne pointillee - pour compatibilite.
      */
     public static void drawDashedLineOptimized(GuiGraphics graphics,
                                                 int x1, int y1, int x2, int y2,
@@ -238,7 +334,7 @@ public class LineDrawingHelper {
         float nx = dx / length;
         float ny = dy / length;
 
-        int dashLen = 8;
+        int dashLen = 6;
         int gapLen = 4;
         int halfT = thickness / 2;
 
@@ -255,11 +351,10 @@ public class LineDrawingHelper {
                 int ex = (int) (x1 + nx * endPos);
                 int ey = (int) (y1 + ny * endPos);
 
-                // Un seul rectangle par tiret
                 int minX = Math.min(sx, ex) - halfT;
-                int maxX = Math.max(sx, ex) + halfT;
+                int maxX = Math.max(sx, ex) + halfT + 1;
                 int minY = Math.min(sy, ey) - halfT;
-                int maxY = Math.max(sy, ey) + halfT;
+                int maxY = Math.max(sy, ey) + halfT + 1;
                 graphics.fill(minX, minY, maxX, maxY, color);
             }
 
@@ -269,7 +364,7 @@ public class LineDrawingHelper {
     }
 
     /**
-     * Ligne en pointilles - OPTIMISE.
+     * Ligne en pointilles - pour compatibilite.
      */
     public static void drawDottedLineOptimized(GuiGraphics graphics,
                                                 int x1, int y1, int x2, int y2,
@@ -279,86 +374,22 @@ public class LineDrawingHelper {
         float length = (float) Math.sqrt(dx * dx + dy * dy);
         if (length < 1) return;
 
-        float nx = dx / length;
-        float ny = dy / length;
-
-        int spacing = 6;
-        int dotSize = thickness;
+        int spacing = 5;
+        int dotSize = thickness + 1;
         int numDots = (int) (length / spacing);
 
         for (int i = 0; i <= numDots; i++) {
             float t = (float) i / Math.max(1, numDots);
             int px = (int) (x1 + dx * t);
             int py = (int) (y1 + dy * t);
-            // Un carre par point
             graphics.fill(px - dotSize/2, py - dotSize/2,
                          px + dotSize/2 + 1, py + dotSize/2 + 1, color);
         }
     }
 
-    // ============================================================
-    // DESSIN DE FLECHES OPTIMISE
-    // ============================================================
-
     /**
-     * Dessine une tete de fleche - OPTIMISE.
-     * Maximum 2-3 appels fill().
+     * Methode legacy pour compatibilite.
      */
-    private static void drawArrowHeadOptimized(GuiGraphics graphics,
-                                                int tipX, int tipY,
-                                                float dirX, float dirY,
-                                                int color, int thickness,
-                                                ArrowStyle style,
-                                                int length, float angle) {
-        float cos = (float) Math.cos(angle);
-        float sin = (float) Math.sin(angle);
-
-        // Calcul des branches
-        float leftDirX = dirX * cos + dirY * sin;
-        float leftDirY = -dirX * sin + dirY * cos;
-        int leftX = (int) (tipX - leftDirX * length);
-        int leftY = (int) (tipY - leftDirY * length);
-
-        float rightDirX = dirX * cos - dirY * sin;
-        float rightDirY = dirX * sin + dirY * cos;
-        int rightX = (int) (tipX - rightDirX * length);
-        int rightY = (int) (tipY - rightDirY * length);
-
-        if (style == ArrowStyle.SIMPLE) {
-            // Deux lignes simples
-            drawLineOptimized(graphics, tipX, tipY, leftX, leftY, color, thickness);
-            drawLineOptimized(graphics, tipX, tipY, rightX, rightY, color, thickness);
-        } else if (style == ArrowStyle.FILLED) {
-            // Triangle rempli - 3 rectangles pour approximer
-            fillTriangleFast(graphics, tipX, tipY, leftX, leftY, rightX, rightY, color);
-        }
-    }
-
-    /**
-     * Remplit un triangle de maniere RAPIDE.
-     * Utilise une approximation avec quelques rectangles au lieu de scanline.
-     */
-    private static void fillTriangleFast(GuiGraphics graphics,
-                                          int x1, int y1, int x2, int y2, int x3, int y3,
-                                          int color) {
-        // Centre du triangle
-        int cx = (x1 + x2 + x3) / 3;
-        int cy = (y1 + y2 + y3) / 3;
-
-        // Dessiner 3 lignes epaisses du centre vers chaque sommet
-        // C'est une approximation mais tres rapide
-        drawLineOptimized(graphics, cx, cy, x1, y1, color, 3);
-        drawLineOptimized(graphics, cx, cy, x2, y2, color, 3);
-        drawLineOptimized(graphics, cx, cy, x3, y3, color, 3);
-
-        // Petit carre au centre pour remplir
-        graphics.fill(cx - 2, cy - 2, cx + 2, cy + 2, color);
-    }
-
-    // ============================================================
-    // METHODES LEGACY (pour compatibilite)
-    // ============================================================
-
     public static void drawLine(GuiGraphics graphics,
                                  int x1, int y1, int x2, int y2,
                                  int color, int thickness,

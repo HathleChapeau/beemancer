@@ -34,9 +34,9 @@ public class StandardPageRenderer implements CodexPageRenderer {
     private final List<CodexNodeWidget> widgets = new ArrayList<>();
     private final Map<String, int[]> nodePositions = new HashMap<>();
 
-    // Couleurs des lignes - style sépia/encre pour le codex
-    private static final int LINE_COLOR_UNLOCKED = 0xFF6B4423;   // Marron sépia foncé
-    private static final int LINE_COLOR_LOCKED = 0xFF8B7355;     // Marron clair
+    // Couleurs des lignes - style encre/parchemin pour le codex
+    private static final int LINE_COLOR_UNLOCKED = 0xFF5D4037;   // Marron chocolat
+    private static final int LINE_COLOR_LOCKED = 0xFFA1887F;     // Marron gris clair
 
     @Override
     public void rebuildWidgets(List<CodexNode> nodes, Set<String> unlockedNodes, CodexPlayerData playerData,

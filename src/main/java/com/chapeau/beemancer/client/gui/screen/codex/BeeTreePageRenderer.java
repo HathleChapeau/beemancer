@@ -37,9 +37,9 @@ public class BeeTreePageRenderer implements CodexPageRenderer {
 
     private final List<BeeNodeWidget> widgets = new ArrayList<>();
 
-    // Couleurs des lignes pour les abeilles - thème miel/doré
-    private static final int LINE_COLOR_UNLOCKED = 0xFFD4A017;  // Doré miel
-    private static final int LINE_COLOR_LOCKED = 0xFF6B5B3D;    // Marron foncé
+    // Couleurs des lignes pour les abeilles - theme miel/ambre
+    private static final int LINE_COLOR_UNLOCKED = 0xFFE6A700;  // Ambre dore
+    private static final int LINE_COLOR_LOCKED = 0xFF8D6E63;    // Marron chaud
 
     @Override
     public void rebuildWidgets(List<CodexNode> nodes, Set<String> unlockedNodes, CodexPlayerData playerData,
