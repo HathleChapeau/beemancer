@@ -33,6 +33,7 @@ import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.blockentity.alchemy.CentrifugeHeartBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.PoweredCentrifugeBlockEntity;
 import com.chapeau.beemancer.common.menu.BeemancerMenu;
+import com.chapeau.beemancer.common.quest.QuestEvents;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -100,11 +101,15 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
                                 stack.is(BeemancerItems.NOBLE_COMB.get()) ||
                                 stack.is(BeemancerItems.DILIGENT_COMB.get())));
 
-        // Output slots (droite, 2x2)
-        addSlot(BeemancerSlot.output(outputHandler, 0, 109, 26));
-        addSlot(BeemancerSlot.output(outputHandler, 1, 127, 26));
-        addSlot(BeemancerSlot.output(outputHandler, 2, 109, 44));
-        addSlot(BeemancerSlot.output(outputHandler, 3, 127, 44));
+        // Output slots (droite, 2x2) avec callback pour les quêtes
+        addSlot(BeemancerSlot.output(outputHandler, 0, 109, 26)
+                .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
+        addSlot(BeemancerSlot.output(outputHandler, 1, 127, 26)
+                .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
+        addSlot(BeemancerSlot.output(outputHandler, 2, 109, 44)
+                .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
+        addSlot(BeemancerSlot.output(outputHandler, 3, 127, 44)
+                .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
 
         // Player inventory
         addPlayerInventory(playerInv, 8, 88);

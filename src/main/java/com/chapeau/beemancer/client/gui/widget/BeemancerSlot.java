@@ -30,6 +30,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 import javax.annotation.Nullable;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 public class BeemancerSlot extends SlotItemHandler {
@@ -39,6 +40,8 @@ public class BeemancerSlot extends SlotItemHandler {
     private final ResourceLocation backgroundAtlas;
     @Nullable
     private Predicate<ItemStack> filter;
+    @Nullable
+    private BiConsumer<net.minecraft.world.entity.player.Player, ItemStack> onExtractCallback;
     private boolean canInsert = true;
     private boolean canExtract = true;
 
@@ -93,6 +96,23 @@ public class BeemancerSlot extends SlotItemHandler {
     public BeemancerSlot inputOnly() {
         this.canExtract = false;
         return this;
+    }
+
+    /**
+     * Definit un callback appele quand un joueur extrait un item du slot.
+     * @param callback BiConsumer(Player, ItemStack) appele a l'extraction
+     */
+    public BeemancerSlot withOnExtract(BiConsumer<net.minecraft.world.entity.player.Player, ItemStack> callback) {
+        this.onExtractCallback = callback;
+        return this;
+    }
+
+    @Override
+    public void onTake(net.minecraft.world.entity.player.Player player, ItemStack stack) {
+        super.onTake(player, stack);
+        if (onExtractCallback != null && !stack.isEmpty()) {
+            onExtractCallback.accept(player, stack);
+        }
     }
 
     @Override

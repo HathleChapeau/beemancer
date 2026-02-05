@@ -220,6 +220,7 @@
   "codex.beemancer.locked": "???",
   "codex.beemancer.click_to_unlock": "Cliquez pour débloquer",
   "codex.beemancer.unlock_parent_first": "Débloquez d'abord le nœud précédent",
+  "codex.beemancer.complete_quest_first": "Complétez la quête pour découvrir ce nœud",
   "codex.beemancer.bee.introduction.title": "Introduction à la Beemancy",
   "codex.beemancer.bee.introduction.desc": "Commencez votre voyage en tant que Beemancer",
   "codex.beemancer.bee.first_bee.title": "Votre Première Abeille",

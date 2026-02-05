@@ -8,6 +8,12 @@ package com.chapeau.beemancer.common.menu;
 
 import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlockEntity;
+import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
+import com.chapeau.beemancer.common.quest.QuestEvents;
+import com.chapeau.beemancer.content.gene.species.DataDrivenSpeciesGene;
+import com.chapeau.beemancer.core.gene.BeeGeneData;
+import com.chapeau.beemancer.core.gene.Gene;
+import com.chapeau.beemancer.core.gene.GeneCategory;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -51,7 +57,8 @@ public class IncubatorMenu extends BeemancerMenu {
 
         // Single slot - accepts larva, allows extracting bee
         addSlot(new BeemancerSlot(blockEntity.getItemHandler(), 0, 80, 35)
-                .withFilter(stack -> stack.is(BeemancerItems.BEE_LARVA.get())));
+                .withFilter(stack -> stack.is(BeemancerItems.BEE_LARVA.get()))
+                .withOnExtract(this::onBeeExtracted));
 
         // Player inventory
         addPlayerInventory(playerInventory, 8, 88);
@@ -117,5 +124,20 @@ public class IncubatorMenu extends BeemancerMenu {
     @Override
     public boolean stillValid(Player player) {
         return stillValid(access, player, BeemancerBlocks.INCUBATOR.get());
+    }
+
+    /**
+     * Callback quand un joueur extrait une abeille du slot.
+     * Detecte l'espece et complete la quete BEE_INCUBATOR correspondante.
+     */
+    private void onBeeExtracted(Player player, ItemStack stack) {
+        if (stack.is(BeemancerItems.MAGIC_BEE.get())) {
+            BeeGeneData geneData = MagicBeeItem.getGeneData(stack);
+            Gene speciesGene = geneData.getGene(GeneCategory.SPECIES);
+            if (speciesGene instanceof DataDrivenSpeciesGene ddGene) {
+                String speciesId = ddGene.getId();
+                QuestEvents.onBeeIncubatorExtract(player, speciesId);
+            }
+        }
     }
 }

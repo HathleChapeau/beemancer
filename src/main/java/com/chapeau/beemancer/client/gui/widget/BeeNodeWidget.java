@@ -20,8 +20,10 @@
 package com.chapeau.beemancer.client.gui.widget;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.codex.CodexManager;
 import com.chapeau.beemancer.common.codex.CodexNode;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
+import com.chapeau.beemancer.common.quest.NodeState;
 import com.chapeau.beemancer.core.registry.BeemancerAttachments;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -58,6 +60,9 @@ public class BeeNodeWidget extends AbstractWidget {
 
     private final CodexNode node;
     private final String speciesId;
+    private final Component displayTitle;
+    private final Component displayDescription;
+    private final NodeState nodeState;
     private boolean unlocked;
     private boolean canUnlock;
     private boolean hovered;
@@ -65,10 +70,19 @@ public class BeeNodeWidget extends AbstractWidget {
     private static BeeModel<?> beeModel;
 
     public BeeNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock) {
+        this(node, screenX, screenY, unlocked, canUnlock, null);
+    }
+
+    public BeeNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock, NodeState state) {
         super(screenX, screenY, NODE_SIZE, NODE_SIZE, node.getTitle());
         this.node = node;
         this.unlocked = unlocked;
         this.canUnlock = canUnlock;
+        this.nodeState = state != null ? state : (unlocked ? NodeState.UNLOCKED : (canUnlock ? NodeState.DISCOVERED : NodeState.LOCKED));
+
+        // Calculer le texte à afficher (??? si SECRET et LOCKED)
+        this.displayTitle = CodexManager.getDisplayTitle(node, this.nodeState);
+        this.displayDescription = CodexManager.getDisplayDescription(node, this.nodeState);
 
         // Extract species ID from node ID (e.g., "meadow_bee" -> "meadow")
         String nodeId = node.getId();
@@ -199,12 +213,9 @@ public class BeeNodeWidget extends AbstractWidget {
         if (hovered) {
             Minecraft mc = Minecraft.getInstance();
 
-            // Format species name nicely
-            String displayName = speciesId.substring(0, 1).toUpperCase() + speciesId.substring(1) + " Bee";
-
             if (unlocked) {
                 List<Component> tooltipLines = new ArrayList<>();
-                tooltipLines.add(Component.literal(displayName));
+                tooltipLines.add(displayTitle.copy().withStyle(style -> style.withBold(true)));
 
                 // Add breeding parents line if bee has parents
                 Component breedingLine = getBreedingParentsLine();
@@ -212,12 +223,12 @@ public class BeeNodeWidget extends AbstractWidget {
                     tooltipLines.add(breedingLine);
                 }
 
-                tooltipLines.add(node.getDescription());
+                tooltipLines.add(displayDescription);
 
                 graphics.renderTooltip(mc.font, tooltipLines, java.util.Optional.empty(), mouseX, mouseY);
             } else if (canUnlock) {
                 List<Component> tooltipLines = new ArrayList<>();
-                tooltipLines.add(Component.literal(displayName));
+                tooltipLines.add(displayTitle);
 
                 // Add breeding parents line if bee has parents
                 Component breedingLine = getBreedingParentsLine();
@@ -229,9 +240,10 @@ public class BeeNodeWidget extends AbstractWidget {
 
                 graphics.renderTooltip(mc.font, tooltipLines, java.util.Optional.empty(), mouseX, mouseY);
             } else {
+                // Node LOCKED - afficher "???" si SECRET, sinon le titre
                 graphics.renderTooltip(mc.font, java.util.List.of(
-                    Component.translatable("codex.beemancer.locked"),
-                    Component.translatable("codex.beemancer.unlock_parent_first")
+                    displayTitle,
+                    Component.translatable("codex.beemancer.complete_quest_first").withStyle(style -> style.withColor(0xFF6666))
                 ), java.util.Optional.empty(), mouseX, mouseY);
             }
         }

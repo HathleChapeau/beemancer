@@ -16,6 +16,7 @@ package com.chapeau.beemancer.common.menu.alchemy;
 import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.blockentity.alchemy.ManualCentrifugeBlockEntity;
 import com.chapeau.beemancer.common.menu.BeemancerMenu;
+import com.chapeau.beemancer.common.quest.QuestEvents;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.network.FriendlyByteBuf;
@@ -56,11 +57,15 @@ public class ManualCentrifugeMenu extends BeemancerMenu {
         addSlot(BeemancerSlot.combInput(blockEntity.getInputSlot(), 0, 33, 35)
             .withFilter(stack -> blockEntity.isValidComb(stack)));
 
-        // Output slots (droite, 2x2)
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 0, 109, 26));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 1, 127, 26));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 2, 109, 44));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 3, 127, 44));
+        // Output slots (droite, 2x2) avec callback pour les quêtes
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 0, 109, 26)
+                .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 1, 127, 26)
+                .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 2, 109, 44)
+                .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 3, 127, 44)
+                .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
 
         // Player inventory
         addPlayerInventory(playerInv, 8, 88);

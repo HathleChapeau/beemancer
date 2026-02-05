@@ -1,0 +1,71 @@
+{
+  "quests": [
+    {
+      "id": "obtain_magic_bee",
+      "node": "apica:1st_bee",
+      "type": "OBTAIN",
+      "item": "beemancer:magic_bee"
+    },
+    {
+      "id": "obtain_controlled_hive",
+      "node": "apica:hive",
+      "type": "OBTAIN",
+      "item": "beemancer:controlled_hive"
+    },
+    {
+      "id": "obtain_manual_centrifuge",
+      "node": "apica:manual_centrifuge",
+      "type": "OBTAIN",
+      "item": "beemancer:manual_centrifuge"
+    },
+    {
+      "id": "crystallizer_output",
+      "node": "apica:crystallyzer",
+      "type": "MACHINE_OUTPUT",
+      "machine": "crystallizer",
+      "item": "beemancer:honey_crystal"
+    },
+    {
+      "id": "meadow_bee_incubator",
+      "node": "bees:meadow_bee",
+      "type": "BEE_INCUBATOR",
+      "species": "meadow"
+    },
+    {
+      "id": "forest_bee_incubator",
+      "node": "bees:forest_bee",
+      "type": "BEE_INCUBATOR",
+      "species": "forest"
+    },
+    {
+      "id": "rocky_bee_incubator",
+      "node": "bees:rocky_bee",
+      "type": "BEE_INCUBATOR",
+      "species": "rocky"
+    },
+    {
+      "id": "river_bee_incubator",
+      "node": "bees:river_bee",
+      "type": "BEE_INCUBATOR",
+      "species": "river"
+    },
+    {
+      "id": "dune_bee_incubator",
+      "node": "bees:dune_bee",
+      "type": "BEE_INCUBATOR",
+      "species": "dune"
+    },
+    {
+      "id": "nether_bee_incubator",
+      "node": "bees:nether_bee",
+      "type": "BEE_INCUBATOR",
+      "species": "nether"
+    },
+    {
+      "id": "end_bee_incubator",
+      "node": "bees:end_bee",
+      "type": "BEE_INCUBATOR",
+      "species": "end"
+    }
+  ]
+}

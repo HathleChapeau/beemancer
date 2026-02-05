@@ -35,7 +35,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.util.HashSet;
 import java.util.Set;
 
-public record CodexSyncPacket(Set<String> unlockedNodes) implements CustomPacketPayload {
+public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredNodes) implements CustomPacketPayload {
 
     public static final Type<CodexSyncPacket> TYPE = new Type<>(
         ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "codex_sync"));
@@ -43,12 +43,19 @@ public record CodexSyncPacket(Set<String> unlockedNodes) implements CustomPacket
     public static final StreamCodec<FriendlyByteBuf, CodexSyncPacket> STREAM_CODEC = new StreamCodec<>() {
         @Override
         public CodexSyncPacket decode(FriendlyByteBuf buf) {
-            int size = buf.readVarInt();
-            Set<String> nodes = new HashSet<>(size);
-            for (int i = 0; i < size; i++) {
-                nodes.add(buf.readUtf());
+            int unlockedSize = buf.readVarInt();
+            Set<String> unlocked = new HashSet<>(unlockedSize);
+            for (int i = 0; i < unlockedSize; i++) {
+                unlocked.add(buf.readUtf());
             }
-            return new CodexSyncPacket(nodes);
+
+            int discoveredSize = buf.readVarInt();
+            Set<String> discovered = new HashSet<>(discoveredSize);
+            for (int i = 0; i < discoveredSize; i++) {
+                discovered.add(buf.readUtf());
+            }
+
+            return new CodexSyncPacket(unlocked, discovered);
         }
 
         @Override
@@ -57,11 +64,16 @@ public record CodexSyncPacket(Set<String> unlockedNodes) implements CustomPacket
             for (String nodeId : packet.unlockedNodes) {
                 buf.writeUtf(nodeId);
             }
+
+            buf.writeVarInt(packet.discoveredNodes.size());
+            for (String nodeId : packet.discoveredNodes) {
+                buf.writeUtf(nodeId);
+            }
         }
     };
 
     public CodexSyncPacket(CodexPlayerData data) {
-        this(new HashSet<>(data.getUnlockedNodes()));
+        this(new HashSet<>(data.getUnlockedNodes()), new HashSet<>(data.getDiscoveredNodes()));
     }
 
     @Override
@@ -76,7 +88,10 @@ public record CodexSyncPacket(Set<String> unlockedNodes) implements CustomPacket
                 CodexPlayerData data = player.getData(BeemancerAttachments.CODEX_DATA);
                 data.getUnlockedNodes().clear();
                 data.getUnlockedNodes().addAll(packet.unlockedNodes);
-                Beemancer.LOGGER.debug("Synced {} codex nodes from server", packet.unlockedNodes.size());
+                data.getDiscoveredNodes().clear();
+                data.getDiscoveredNodes().addAll(packet.discoveredNodes);
+                Beemancer.LOGGER.debug("Synced {} unlocked, {} discovered nodes from server",
+                    packet.unlockedNodes.size(), packet.discoveredNodes.size());
             }
         });
     }

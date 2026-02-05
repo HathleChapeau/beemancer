@@ -222,6 +222,7 @@
   "codex.beemancer.locked": "???",
   "codex.beemancer.click_to_unlock": "Click to unlock",
   "codex.beemancer.unlock_parent_first": "Unlock the previous node first",
+  "codex.beemancer.complete_quest_first": "Complete the quest to discover this node",
   "codex.beemancer.bee.introduction.title": "Introduction to Beemancy",
   "codex.beemancer.bee.introduction.desc": "Begin your journey as a Beemancer",
   "codex.beemancer.bee.first_bee.title": "Your First Bee",

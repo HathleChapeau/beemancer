@@ -32,8 +32,10 @@ public interface CodexPageRenderer {
 
     /**
      * Reconstruit les widgets pour la page
+     * @param completedQuests Set des IDs de quêtes complétées
      */
     void rebuildWidgets(List<CodexNode> nodes, Set<String> unlockedNodes, CodexPlayerData playerData,
+                        Set<String> completedQuests,
                         int contentX, int contentY, int nodeSpacing, double scrollX, double scrollY);
 
     /**

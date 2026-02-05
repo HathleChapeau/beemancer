@@ -27,6 +27,7 @@ import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.blockentity.alchemy.InfuserBlockEntity;
 import com.chapeau.beemancer.common.blockentity.alchemy.InfuserHeartBlockEntity;
 import com.chapeau.beemancer.common.menu.BeemancerMenu;
+import com.chapeau.beemancer.common.quest.QuestEvents;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.network.FriendlyByteBuf;
@@ -81,8 +82,9 @@ public class InfuserMenu extends BeemancerMenu {
         // Input slot - accepte tout item valide pour une recette d'infusion
         addSlot(new BeemancerSlot(inputHandler, 0, 44, 35));
 
-        // Output slot (extraction seulement)
-        addSlot(BeemancerSlot.output(outputHandler, 0, 116, 35));
+        // Output slot (extraction seulement) avec callback pour les quêtes
+        addSlot(BeemancerSlot.output(outputHandler, 0, 116, 35)
+                .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "infuser", s)));
 
         addPlayerInventory(playerInv, 8, 88);
         addPlayerHotbar(playerInv, 8, 146);

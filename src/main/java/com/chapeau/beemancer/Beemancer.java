@@ -21,6 +21,7 @@ import com.chapeau.beemancer.client.ClientSetup;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotEvents;
 import com.chapeau.beemancer.common.block.storage.StorageEvents;
 import com.chapeau.beemancer.common.codex.CodexManager;
+import com.chapeau.beemancer.common.quest.QuestManager;
 import com.chapeau.beemancer.core.command.BeemancerCommands;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
@@ -39,6 +40,8 @@ import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.network.BeemancerNetwork;
 import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
+import com.chapeau.beemancer.core.network.packets.QuestSyncPacket;
+import com.chapeau.beemancer.common.quest.QuestPlayerData;
 import com.chapeau.beemancer.core.recipe.BeemancerRecipeSerializers;
 import com.chapeau.beemancer.core.recipe.BeemancerRecipeTypes;
 import com.chapeau.beemancer.core.registry.*;
@@ -184,6 +187,7 @@ public class Beemancer {
     private void onPlayerLoggedIn(final PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             syncCodexDataToPlayer(player);
+            syncQuestDataToPlayer(player);
         }
     }
 
@@ -318,6 +322,7 @@ public class Beemancer {
         BeeBehaviorManager.load(server);
         // RidingSettingsLoader remplacé par HorseSettings (système Cobblemon)
         CodexManager.load(server);
+        QuestManager.load(server);
     }
 
     // =========================================================================
@@ -328,5 +333,11 @@ public class Beemancer {
         CodexPlayerData data = player.getData(BeemancerAttachments.CODEX_DATA);
         PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
         LOGGER.debug("Synced codex data to player {}", player.getName().getString());
+    }
+
+    private void syncQuestDataToPlayer(ServerPlayer player) {
+        QuestPlayerData data = player.getData(BeemancerAttachments.QUEST_DATA);
+        PacketDistributor.sendToPlayer(player, new QuestSyncPacket(data));
+        LOGGER.debug("Synced quest data to player {}", player.getName().getString());
     }
 }

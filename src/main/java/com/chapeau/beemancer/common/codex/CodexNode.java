@@ -23,6 +23,7 @@
 package com.chapeau.beemancer.common.codex;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.quest.NodeVisibility;
 import com.google.gson.JsonObject;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -48,12 +49,16 @@ public class CodexNode {
     private final String breedingParent1;
     @Nullable
     private final String breedingParent2;
+    private final NodeVisibility visibility;
+    @Nullable
+    private final String questId;
 
     public CodexNode(String id, CodexPage page, int x, int y,
                      ResourceLocation icon, CodexNodeCategory category,
                      @Nullable String parentId, boolean hiddenUntilParentUnlocked,
                      JsonObject unlockCondition, JsonObject rewards,
-                     @Nullable String breedingParent1, @Nullable String breedingParent2) {
+                     @Nullable String breedingParent1, @Nullable String breedingParent2,
+                     NodeVisibility visibility, @Nullable String questId) {
         this.id = id;
         this.page = page;
         this.x = x;
@@ -67,6 +72,8 @@ public class CodexNode {
         this.rewards = rewards;
         this.breedingParent1 = breedingParent1;
         this.breedingParent2 = breedingParent2;
+        this.visibility = visibility;
+        this.questId = questId;
     }
 
     public String getId() {
@@ -150,6 +157,19 @@ public class CodexNode {
         return breedingParent1 != null && breedingParent2 != null;
     }
 
+    public NodeVisibility getVisibility() {
+        return visibility;
+    }
+
+    @Nullable
+    public String getQuestId() {
+        return questId;
+    }
+
+    public boolean hasQuest() {
+        return questId != null && !questId.isEmpty();
+    }
+
     public static CodexNode fromJson(JsonObject json, CodexPage page) {
         String id = json.get("id").getAsString();
 
@@ -186,7 +206,14 @@ public class CodexNode {
             ? json.get("breeding_parent2").getAsString()
             : null;
 
+        String visibilityStr = json.has("visibility") ? json.get("visibility").getAsString() : "VISIBLE";
+        NodeVisibility visibility = NodeVisibility.fromString(visibilityStr);
+
+        String questId = json.has("quest_id") && !json.get("quest_id").isJsonNull()
+            ? json.get("quest_id").getAsString()
+            : null;
+
         return new CodexNode(id, page, x, y, icon, category, parentId, hidden, unlockCondition, rewards,
-                breedingParent1, breedingParent2);
+                breedingParent1, breedingParent2, visibility, questId);
     }
 }

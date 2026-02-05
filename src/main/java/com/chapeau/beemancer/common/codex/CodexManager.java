@@ -23,10 +23,13 @@
 package com.chapeau.beemancer.common.codex;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.quest.NodeState;
+import com.chapeau.beemancer.common.quest.NodeVisibility;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.Resource;
@@ -182,5 +185,103 @@ public class CodexManager {
         }
         String fullParentId = node.getPage().getId() + ":" + parentId;
         return unlockedNodes.contains(fullParentId);
+    }
+
+    // ============================================================
+    // CALCUL DE L'ETAT DES NODES
+    // ============================================================
+
+    /**
+     * Calcule l'état d'un node pour un joueur.
+     * @param node Le node à évaluer
+     * @param playerData Les données du joueur
+     * @param completedQuests Set des quêtes complétées
+     * @return L'état du node (LOCKED, DISCOVERED, UNLOCKED)
+     */
+    public static NodeState getNodeState(CodexNode node, CodexPlayerData playerData, Set<String> completedQuests) {
+        String fullId = node.getFullId();
+
+        // Déjà débloqué
+        if (playerData.isUnlocked(fullId)) {
+            return NodeState.UNLOCKED;
+        }
+
+        // Vérifier si le parent est débloqué (sauf root)
+        if (!node.isRoot()) {
+            String parentId = node.getParentId();
+            if (parentId != null) {
+                String fullParentId = node.getPage().getId() + ":" + parentId;
+                if (!playerData.isUnlocked(fullParentId)) {
+                    return NodeState.LOCKED;
+                }
+            }
+        }
+
+        // Vérifier si la quête est complétée
+        String questId = node.getQuestId();
+        if (questId != null && !questId.isEmpty()) {
+            if (completedQuests.contains(questId)) {
+                return NodeState.DISCOVERED;
+            }
+            return NodeState.LOCKED;
+        }
+
+        // Pas de quête = directement disponible si parent débloqué
+        return NodeState.DISCOVERED;
+    }
+
+    /**
+     * Détermine si un node doit être affiché.
+     * @param node Le node à évaluer
+     * @param state L'état calculé du node
+     * @param playerData Les données du joueur
+     * @return true si le node doit être visible
+     */
+    public static boolean isNodeVisible(CodexNode node, NodeState state, CodexPlayerData playerData) {
+        NodeVisibility visibility = node.getVisibility();
+
+        // HIDDEN: invisible tant que pas discovered ou unlocked
+        if (visibility == NodeVisibility.HIDDEN) {
+            return state == NodeState.DISCOVERED || state == NodeState.UNLOCKED;
+        }
+
+        // VISIBLE et SECRET: visible si parent débloqué (ou root)
+        if (node.isRoot()) {
+            return true;
+        }
+
+        String parentId = node.getParentId();
+        if (parentId == null) {
+            return true;
+        }
+
+        String fullParentId = node.getPage().getId() + ":" + parentId;
+        return playerData.isUnlocked(fullParentId);
+    }
+
+    /**
+     * Retourne le texte à afficher pour le titre d'un node.
+     * @param node Le node
+     * @param state L'état du node
+     * @return Le titre ou "???" si SECRET et LOCKED
+     */
+    public static Component getDisplayTitle(CodexNode node, NodeState state) {
+        if (node.getVisibility() == NodeVisibility.SECRET && state == NodeState.LOCKED) {
+            return Component.literal("???");
+        }
+        return node.getTitle();
+    }
+
+    /**
+     * Retourne le texte à afficher pour la description d'un node.
+     * @param node Le node
+     * @param state L'état du node
+     * @return La description ou "???" si SECRET et LOCKED
+     */
+    public static Component getDisplayDescription(CodexNode node, NodeState state) {
+        if (node.getVisibility() == NodeVisibility.SECRET && state == NodeState.LOCKED) {
+            return Component.literal("???");
+        }
+        return node.getDescription();
     }
 }

@@ -23,6 +23,7 @@ package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
+import com.chapeau.beemancer.common.quest.QuestPlayerData;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -38,6 +39,14 @@ public class BeemancerAttachments {
         "codex_data",
         () -> AttachmentType.builder(CodexPlayerData::new)
             .serialize(CodexPlayerData.CODEC)
+            .copyOnDeath()
+            .build()
+    );
+
+    public static final Supplier<AttachmentType<QuestPlayerData>> QUEST_DATA = ATTACHMENTS.register(
+        "quest_data",
+        () -> AttachmentType.builder(QuestPlayerData::new)
+            .serialize(QuestPlayerData.CODEC)
             .copyOnDeath()
             .build()
     );

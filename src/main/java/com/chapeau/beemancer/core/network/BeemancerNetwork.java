@@ -10,6 +10,7 @@ import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.core.network.packets.BeeCreatorActionPacket;
 import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
+import com.chapeau.beemancer.core.network.packets.QuestSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageRequestPacket;
 import com.chapeau.beemancer.core.network.packets.InterfaceActionPacket;
@@ -75,6 +76,12 @@ public class BeemancerNetwork {
                 StorageTasksSyncPacket.TYPE,
                 StorageTasksSyncPacket.STREAM_CODEC,
                 StorageTasksSyncPacket::handle
+        );
+
+        registrar.playToClient(
+                QuestSyncPacket.TYPE,
+                QuestSyncPacket.STREAM_CODEC,
+                QuestSyncPacket::handle
         );
     }
 

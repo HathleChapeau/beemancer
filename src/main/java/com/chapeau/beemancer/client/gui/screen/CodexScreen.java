@@ -27,6 +27,8 @@ import com.chapeau.beemancer.client.gui.screen.codex.BeeTreePageRenderer;
 import com.chapeau.beemancer.client.gui.screen.codex.CodexPageRenderer;
 import com.chapeau.beemancer.client.gui.screen.codex.StandardPageRenderer;
 import com.chapeau.beemancer.common.codex.*;
+import com.chapeau.beemancer.common.quest.QuestManager;
+import com.chapeau.beemancer.common.quest.QuestPlayerData;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
 import com.chapeau.beemancer.core.registry.BeemancerAttachments;
 import com.chapeau.beemancer.core.registry.BeemancerSounds;
@@ -114,8 +116,14 @@ public class CodexScreen extends Screen {
     protected void init() {
         super.init();
 
-        // S'assurer que les données du Codex sont chargées côté client
+        // S'assurer que les données du Codex et des quêtes sont chargées côté client
         CodexManager.ensureClientLoaded();
+        QuestManager.ensureClientLoaded();
+
+        // Vérifier les quêtes OBTAIN (items dans l'inventaire)
+        if (Minecraft.getInstance().player != null) {
+            QuestManager.checkObtainQuests(Minecraft.getInstance().player);
+        }
 
         // Position de la frame (centrée, avec espace pour les tabs au-dessus)
         frameX = (width - FRAME_WIDTH) / 2;
@@ -186,6 +194,7 @@ public class CodexScreen extends Screen {
 
         CodexPlayerData playerData = getPlayerData();
         Set<String> unlockedNodes = playerData.getUnlockedNodes();
+        Set<String> completedQuests = getCompletedQuests();
 
         // Utiliser CodexManager pour TOUTES les pages (même système que BEES)
         List<CodexNode> nodes = CodexManager.getNodesForPage(currentPage);
@@ -194,7 +203,7 @@ public class CodexScreen extends Screen {
         calculateScrollBounds();
         clampScroll();
 
-        currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData,
+        currentRenderer.rebuildWidgets(nodes, unlockedNodes, playerData, completedQuests,
                 contentX + contentWidth / 2, contentY + contentHeight / 2, NODE_SPACING, scrollX, scrollY);
 
         for (Object widget : currentRenderer.getWidgets()) {
@@ -495,6 +504,14 @@ public class CodexScreen extends Screen {
             return Minecraft.getInstance().player.getData(BeemancerAttachments.CODEX_DATA);
         }
         return new CodexPlayerData();
+    }
+
+    private Set<String> getCompletedQuests() {
+        if (Minecraft.getInstance().player != null) {
+            QuestPlayerData questData = Minecraft.getInstance().player.getData(BeemancerAttachments.QUEST_DATA);
+            return questData.getCompletedQuests();
+        }
+        return new HashSet<>();
     }
 
     @Override

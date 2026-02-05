@@ -9,6 +9,7 @@ package com.chapeau.beemancer.common.menu.alchemy;
 import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.blockentity.alchemy.CrystallizerBlockEntity;
 import com.chapeau.beemancer.common.menu.BeemancerMenu;
+import com.chapeau.beemancer.common.quest.QuestEvents;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.network.FriendlyByteBuf;
@@ -43,8 +44,9 @@ public class CrystallizerMenu extends BeemancerMenu {
         
         addDataSlots(data);
 
-        // Output slot (extraction seulement)
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlot(), 0, 89 - 9, 31));
+        // Output slot (extraction seulement) avec callback pour les quêtes
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlot(), 0, 89 - 9, 31)
+                .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "crystallizer", s)));
 
         addPlayerInventory(playerInv, 8, 88);
         addPlayerHotbar(playerInv, 8, 146);

@@ -24,6 +24,7 @@ import com.chapeau.beemancer.client.gui.util.LineDrawingHelper;
 import com.chapeau.beemancer.client.gui.util.LineDrawingHelper.ConnectionMode;
 import com.chapeau.beemancer.client.gui.widget.CodexNodeWidget;
 import com.chapeau.beemancer.common.codex.*;
+import com.chapeau.beemancer.common.quest.NodeState;
 import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.*;
@@ -35,6 +36,7 @@ public class StandardPageRenderer implements CodexPageRenderer {
 
     @Override
     public void rebuildWidgets(List<CodexNode> nodes, Set<String> unlockedNodes, CodexPlayerData playerData,
+                               Set<String> completedQuests,
                                int contentX, int contentY, int nodeSpacing, double scrollX, double scrollY) {
         widgets.clear();
         nodePositions.clear();
@@ -42,17 +44,22 @@ public class StandardPageRenderer implements CodexPageRenderer {
         int halfNode = CodexNodeWidget.NODE_SIZE / 2;
 
         for (CodexNode node : nodes) {
-            if (!CodexManager.isVisible(node, unlockedNodes)) {
+            // Calculer l'état du node
+            NodeState state = CodexManager.getNodeState(node, playerData, completedQuests);
+
+            // Vérifier la visibilité avec le nouveau système
+            if (!CodexManager.isNodeVisible(node, state, playerData)) {
                 continue;
             }
 
-            boolean unlocked = playerData.isUnlocked(node);
-            boolean canUnlock = CodexManager.canUnlock(node, unlockedNodes);
+            boolean unlocked = (state == NodeState.UNLOCKED);
+            // canUnlock = DISCOVERED (quête complétée, parent débloqué)
+            boolean canUnlock = (state == NodeState.DISCOVERED);
 
             int nodeScreenX = contentX + node.getX() * nodeSpacing + (int) scrollX - halfNode;
             int nodeScreenY = contentY + node.getY() * nodeSpacing + (int) scrollY - halfNode;
 
-            CodexNodeWidget widget = new CodexNodeWidget(node, nodeScreenX, nodeScreenY, unlocked, canUnlock);
+            CodexNodeWidget widget = new CodexNodeWidget(node, nodeScreenX, nodeScreenY, unlocked, canUnlock, state);
             widgets.add(widget);
 
             nodePositions.put(node.getId(), new int[]{nodeScreenX, nodeScreenY});

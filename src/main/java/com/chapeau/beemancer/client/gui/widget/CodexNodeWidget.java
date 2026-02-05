@@ -21,7 +21,9 @@
 package com.chapeau.beemancer.client.gui.widget;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.codex.CodexManager;
 import com.chapeau.beemancer.common.codex.CodexNode;
+import com.chapeau.beemancer.common.quest.NodeState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -80,23 +82,39 @@ public class CodexNodeWidget extends AbstractWidget {
 
     private final CodexNode node;
     private final String displayName;
+    private final Component displayTitle;
+    private final Component displayDescription;
     private final ItemStack iconItem;
     private final ResourceLocation iconTexture;
     private boolean unlocked;
     private boolean canUnlock;
     private boolean hovered;
     private final boolean isHeader;
+    private final NodeState nodeState;
 
     public CodexNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock) {
-        this(node, screenX, screenY, unlocked, canUnlock, false);
+        this(node, screenX, screenY, unlocked, canUnlock, false, null);
+    }
+
+    public CodexNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock, NodeState state) {
+        this(node, screenX, screenY, unlocked, canUnlock, false, state);
     }
 
     public CodexNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock, boolean isHeader) {
+        this(node, screenX, screenY, unlocked, canUnlock, isHeader, null);
+    }
+
+    public CodexNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock, boolean isHeader, NodeState state) {
         super(screenX, screenY, NODE_SIZE, NODE_SIZE, node.getTitle());
         this.node = node;
         this.unlocked = unlocked;
         this.canUnlock = canUnlock;
         this.isHeader = isHeader;
+        this.nodeState = state != null ? state : (unlocked ? NodeState.UNLOCKED : (canUnlock ? NodeState.DISCOVERED : NodeState.LOCKED));
+
+        // Calculer le texte à afficher (??? si SECRET et LOCKED)
+        this.displayTitle = CodexManager.getDisplayTitle(node, this.nodeState);
+        this.displayDescription = CodexManager.getDisplayDescription(node, this.nodeState);
 
         String id = node.getId();
         this.displayName = formatDisplayName(id);
@@ -251,18 +269,19 @@ public class CodexNodeWidget extends AbstractWidget {
 
             if (unlocked) {
                 graphics.renderTooltip(mc.font, java.util.List.of(
-                    Component.literal(displayName).withStyle(style -> style.withBold(true)),
-                    node.getDescription()
+                    displayTitle.copy().withStyle(style -> style.withBold(true)),
+                    displayDescription
                 ), java.util.Optional.empty(), mouseX, mouseY);
             } else if (canUnlock) {
                 graphics.renderTooltip(mc.font, java.util.List.of(
-                    Component.literal(displayName),
+                    displayTitle,
                     Component.translatable("codex.beemancer.click_to_unlock").withStyle(style -> style.withColor(0xAAAAAAFF))
                 ), java.util.Optional.empty(), mouseX, mouseY);
             } else {
+                // Node LOCKED - afficher "???" si SECRET, sinon le titre
                 graphics.renderTooltip(mc.font, java.util.List.of(
-                    Component.translatable("codex.beemancer.locked"),
-                    Component.translatable("codex.beemancer.unlock_parent_first").withStyle(style -> style.withColor(0xFF6666))
+                    displayTitle,
+                    Component.translatable("codex.beemancer.complete_quest_first").withStyle(style -> style.withColor(0xFF6666))
                 ), java.util.Optional.empty(), mouseX, mouseY);
             }
         }
