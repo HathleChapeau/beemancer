@@ -378,52 +378,57 @@ public class MultiblockPatterns {
     );
 
     // ==================== CENTRIFUGE MULTIBLOCK ====================
-    // Structure 3x3x3, comme l'infuser mais SANS honeyed glass
-    // Front ouvert (z=-1, nord)
+    // Structure 3x3x3 avec reservoirs aux coins
     //
-    // Étage 3 (Y+1): 3x3 Honeyed Stone plein
+    // Étage 3 (Y+1): Reservoirs aux coins (output), Honeyed Stone cardinaux + centre
+    //         [R][S][R]     R=Reservoir (output), S=Honeyed Stone
+    //         [S][S][S]
+    //         [R][S][R]
     //
-    // Étage 2 (Y+0): Walls aux coins, rest air
-    //         [W][ ][W]     W=Honeyed Stone Wall
+    // Étage 2 (Y+0): Air autour du coeur
+    //         [ ][ ][ ]
     //         [ ][H][ ]     H=Centrifuge Heart (contrôleur), [ ]=Air
-    //         [W][ ][W]
+    //         [ ][ ][ ]
     //
-    // Étage 1 (Y-1): 3x3 Honeyed Stone plein
+    // Étage 1 (Y-1): Reservoirs aux coins (fuel), Honeyed Stone cardinaux + centre
+    //         [R][S][R]     R=Reservoir (fuel), S=Honeyed Stone
+    //         [S][S][S]
+    //         [R][S][R]
 
     public static final MultiblockPattern CENTRIFUGE_MULTIBLOCK = register(
         MultiblockPattern.builder("centrifuge_multiblock")
-            // Étage 1 (Y-1): 3x3 Honeyed Stone
-            .add(-1, -1, -1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(0, -1, -1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(1, -1, -1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(-1, -1, 0, block(BeemancerBlocks.HONEYED_STONE))
-            .add(0, -1, 0, block(BeemancerBlocks.HONEYED_STONE))
-            .add(1, -1, 0, block(BeemancerBlocks.HONEYED_STONE))
-            .add(-1, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(0, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(1, -1, 1, block(BeemancerBlocks.HONEYED_STONE))
+            // Étage 1 (Y-1): Reservoirs aux coins, Honeyed Stone au centre et cardinaux
+            .add(-1, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))  // Coin NO - fuel
+            .add(0, -1, -1, block(BeemancerBlocks.HONEYED_STONE))     // Nord
+            .add(1, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin NE - fuel
+            .add(-1, -1, 0, block(BeemancerBlocks.HONEYED_STONE))     // Ouest
+            .add(0, -1, 0, block(BeemancerBlocks.HONEYED_STONE))      // Centre
+            .add(1, -1, 0, block(BeemancerBlocks.HONEYED_STONE))      // Est
+            .add(-1, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin SO - fuel
+            .add(0, -1, 1, block(BeemancerBlocks.HONEYED_STONE))      // Sud
+            .add(1, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin SE - fuel
 
-            // Étage 2 (Y+0): Walls aux coins, rest air
-            .add(-1, 0, -1, air())  // Coin NO
-            .add(0, 0, -1, air())                                       // Front
-            .add(1, 0, -1, air())   // Coin NE
-            .add(-1, 0, 0, air())                                       // Ouest
+            // Étage 2 (Y+0): Air autour du coeur
+            .add(-1, 0, -1, air())
+            .add(0, 0, -1, air())
+            .add(1, 0, -1, air())
+            .add(-1, 0, 0, air())
             // (0, 0, 0) = Centrifuge Heart - skip
-            .add(1, 0, 0, air())                                        // Est
-            .add(-1, 0, 1, air())   // Coin SO
-            .add(0, 0, 1, air())                                        // Sud
-            .add(1, 0, 1, air())    // Coin SE
+            .add(1, 0, 0, air())
+            .add(-1, 0, 1, air())
+            .add(0, 0, 1, air())
+            .add(1, 0, 1, air())
 
-            // Étage 3 (Y+1): 3x3 Honeyed Stone
-            .add(-1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(0, 1, -1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(1, 1, -1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(-1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))
-            .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))
-            .add(1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))
-            .add(-1, 1, 1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(0, 1, 1, block(BeemancerBlocks.HONEYED_STONE))
-            .add(1, 1, 1, block(BeemancerBlocks.HONEYED_STONE))
+            // Étage 3 (Y+1): Reservoirs aux coins, Honeyed Stone au centre et cardinaux
+            .add(-1, 1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin NO - output
+            .add(0, 1, -1, block(BeemancerBlocks.HONEYED_STONE))      // Nord
+            .add(1, 1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin NE - output
+            .add(-1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))      // Ouest
+            .add(0, 1, 0, block(BeemancerBlocks.HONEYED_STONE))       // Centre
+            .add(1, 1, 0, block(BeemancerBlocks.HONEYED_STONE))       // Est
+            .add(-1, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin SO - output
+            .add(0, 1, 1, block(BeemancerBlocks.HONEYED_STONE))       // Sud
+            .add(1, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))     // Coin SE - output
 
             .build()
     );

@@ -26,6 +26,7 @@ package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.CentrifugeHeartBlock;
+import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.menu.alchemy.PoweredCentrifugeMenu;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
@@ -81,6 +82,22 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     // Animation cubes centraux
     private static final float MAX_ROTATION_SPEED = 8.0f;
     private static final float ACCELERATION = 0.15f;
+
+    // Positions des reservoirs (relatif au coeur)
+    // Bottom (Y-1): coins pour le fuel tank
+    private static final BlockPos[] FUEL_RESERVOIR_OFFSETS = {
+        new BlockPos(-1, -1, -1),
+        new BlockPos(1, -1, -1),
+        new BlockPos(-1, -1, 1),
+        new BlockPos(1, -1, 1)
+    };
+    // Top (Y+1): coins pour le output tank
+    private static final BlockPos[] OUTPUT_RESERVOIR_OFFSETS = {
+        new BlockPos(-1, 1, -1),
+        new BlockPos(1, 1, -1),
+        new BlockPos(-1, 1, 1),
+        new BlockPos(1, 1, 1)
+    };
 
     private boolean formed = false;
     private ItemStack previousInputType = ItemStack.EMPTY;
@@ -307,7 +324,54 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
             level.setBlock(pos, state.setValue(CentrifugeHeartBlock.WORKING, isWorking), 3);
         }
 
+        // Mise à jour des niveaux visuels des reservoirs (toutes les 10 ticks)
+        if (level.getGameTime() % 10 == 0) {
+            be.updateReservoirLevels();
+        }
+
         be.setChanged();
+    }
+
+    /**
+     * Met à jour les niveaux visuels des reservoirs du multibloc.
+     * - Reservoirs du bas (Y-1): affichent le niveau du fuelTank
+     * - Reservoirs du haut (Y+1): affichent le niveau du outputTank
+     * Chaque reservoir affiche 1/4 de la capacité totale du tank.
+     */
+    private void updateReservoirLevels() {
+        if (level == null) return;
+
+        // Calcul des quantités par reservoir (4 reservoirs par tank)
+        int fuelPerReservoir = fuelTank.getFluidAmount() / 4;
+        int outputPerReservoir = outputTank.getFluidAmount() / 4;
+
+        // Mise à jour des reservoirs fuel (bas)
+        for (BlockPos offset : FUEL_RESERVOIR_OFFSETS) {
+            BlockPos reservoirPos = worldPosition.offset(offset);
+            if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
+                FluidTank tank = reservoir.getFluidTank();
+                FluidStack currentFluid = fuelTank.getFluid();
+
+                // Synchronise le niveau visuel
+                tank.setFluid(currentFluid.isEmpty()
+                    ? FluidStack.EMPTY
+                    : currentFluid.copyWithAmount(Math.min(fuelPerReservoir, HoneyReservoirBlockEntity.CAPACITY)));
+            }
+        }
+
+        // Mise à jour des reservoirs output (haut)
+        for (BlockPos offset : OUTPUT_RESERVOIR_OFFSETS) {
+            BlockPos reservoirPos = worldPosition.offset(offset);
+            if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
+                FluidTank tank = reservoir.getFluidTank();
+                FluidStack currentFluid = outputTank.getFluid();
+
+                // Synchronise le niveau visuel
+                tank.setFluid(currentFluid.isEmpty()
+                    ? FluidStack.EMPTY
+                    : currentFluid.copyWithAmount(Math.min(outputPerReservoir, HoneyReservoirBlockEntity.CAPACITY)));
+            }
+        }
     }
 
     private void findValidRecipe(Level level) {

@@ -42,7 +42,6 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
@@ -51,30 +50,22 @@ import javax.annotation.Nullable;
  * Coeur de la Centrifugeuse multibloc.
  * Clic droit: forme le multibloc ou ouvre le menu si deja forme.
  *
- * Multibloc 3x3x3: Le coeur est au centre (Y+0), avec Honeyed Stone autour.
- * Etage Y-1: 3x3 Honeyed Stone
+ * Multibloc 3x3x3:
+ * Etage Y-1: Reservoirs aux coins (fuel) + Honeyed Stone
  * Etage Y+0: Coeur au centre, air autour
- * Etage Y+1: 3x3 Honeyed Stone
+ * Etage Y+1: Reservoirs aux coins (output) + Honeyed Stone
  */
 public class CentrifugeHeartBlock extends Block implements EntityBlock {
 
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("centrifuge");
     public static final BooleanProperty WORKING = BooleanProperty.create("working");
 
-    // VoxelShape pour le coeur seul (non-forme)
+    // VoxelShape pour le coeur seul (non-forme): petit cube 8x8x8
     private static final VoxelShape SHAPE_CORE = Block.box(4, 4, 4, 12, 12, 12);
 
-    // VoxelShape complete du multibloc forme (3x3x3 blocs)
-    // Le coeur est au centre, donc la shape va de -1 bloc a +2 blocs sur chaque axe
-    // En pixels: -16 a 32 sur X/Z, -16 a 32 sur Y
-    private static final VoxelShape SHAPE_FORMED = Shapes.or(
-        // Etage Y-1 (sol): 3x3 blocs pleins, Y de -16 a 0
-        Block.box(-16, -16, -16, 32, 0, 32),
-        // Etage Y+0 (coeur): seulement le cube central visible, rendu par BER
-        SHAPE_CORE,
-        // Etage Y+1 (toit): 3x3 blocs pleins, Y de 16 a 32
-        Block.box(-16, 16, -16, 32, 32, 32)
-    );
+    // VoxelShape pour les 2 cubes centraux du multibloc forme: 24x24x24 centré
+    // De -4 à 20 sur chaque axe (24 pixels = 1.5 bloc)
+    private static final VoxelShape SHAPE_CUBES = Block.box(-4, -4, -4, 20, 20, 20);
 
     public CentrifugeHeartBlock(Properties properties) {
         super(properties);
@@ -96,7 +87,7 @@ public class CentrifugeHeartBlock extends Block implements EntityBlock {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
-            return SHAPE_FORMED;
+            return SHAPE_CUBES;
         }
         return SHAPE_CORE;
     }
@@ -104,7 +95,7 @@ public class CentrifugeHeartBlock extends Block implements EntityBlock {
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
-            return SHAPE_FORMED;
+            return SHAPE_CUBES;
         }
         return SHAPE_CORE;
     }
