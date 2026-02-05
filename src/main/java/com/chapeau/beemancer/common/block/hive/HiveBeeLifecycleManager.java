@@ -57,7 +57,7 @@ import java.util.UUID;
 public class HiveBeeLifecycleManager {
     private final MagicHiveBlockEntity parent;
 
-    private static final double AUTO_BREEDING_CHANCE = 0.05;
+    private static final double BREEDING_CHANCE_ON_ENTRY = 0.15; // 15% quand une abeille rentre
 
     public HiveBeeLifecycleManager(MagicHiveBlockEntity parent) {
         this.parent = parent;
@@ -294,21 +294,30 @@ public class HiveBeeLifecycleManager {
 
     // === Breeding ===
 
+    /**
+     * Tente le breeding quand une abeille rentre dans la ruche.
+     * - 15% de chance si une autre abeille est INSIDE
+     * - Sélection aléatoire du partenaire si plusieurs abeilles INSIDE
+     */
     void tryAutoBreeding(int enteringSlot, RandomSource random) {
-        if (random.nextDouble() >= AUTO_BREEDING_CHANCE) return;
+        if (random.nextDouble() >= BREEDING_CHANCE_ON_ENTRY) return;
 
         HiveBeeSlot[] beeSlots = parent.getBeeSlots();
         NonNullList<ItemStack> items = parent.getItems();
 
-        int partnerSlot = -1;
+        // Collecter toutes les abeilles INSIDE (sauf celle qui rentre)
+        List<Integer> insidePartners = new ArrayList<>();
         for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
             if (i != enteringSlot && beeSlots[i].isInside() && !items.get(i).isEmpty()) {
-                partnerSlot = i;
-                break;
+                insidePartners.add(i);
             }
         }
-        if (partnerSlot < 0) return;
+        if (insidePartners.isEmpty()) return;
 
+        // Sélection aléatoire du partenaire
+        int partnerSlot = insidePartners.get(random.nextInt(insidePartners.size()));
+
+        // Trouver un slot de sortie libre
         int outputSlot = -1;
         for (int i = MagicHiveBlockEntity.BEE_SLOTS; i < MagicHiveBlockEntity.TOTAL_SLOTS; i++) {
             if (items.get(i).isEmpty()) {
@@ -318,52 +327,14 @@ public class HiveBeeLifecycleManager {
         }
         if (outputSlot < 0) return;
 
-        BeeGeneData parent1 = MagicBeeItem.getGeneData(items.get(enteringSlot));
-        BeeGeneData parent2 = MagicBeeItem.getGeneData(items.get(partnerSlot));
-
-        Gene species1 = parent1.getGene(GeneCategory.SPECIES);
-        Gene species2 = parent2.getGene(GeneCategory.SPECIES);
-        if (species1 == null || species2 == null) return;
-
-        String offspringSpecies = BreedingManager.resolveOffspringSpecies(species1.getId(), species2.getId(), random);
-        if ("nothing".equals(offspringSpecies)) return;
-
-        BeeGeneData offspringData = BreedingManager.createOffspringGeneData(parent1, parent2, offspringSpecies, random);
-        items.set(outputSlot, BeeLarvaItem.createWithGenes(offspringData));
-    }
-
-    void attemptBreeding(RandomSource random) {
-        HiveBeeSlot[] beeSlots = parent.getBeeSlots();
-        NonNullList<ItemStack> items = parent.getItems();
-
-        List<Integer> insideBees = new ArrayList<>();
-        for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
-            if (beeSlots[i].isInside() && !items.get(i).isEmpty()) {
-                insideBees.add(i);
-            }
-        }
-        if (insideBees.size() < 2) return;
-
-        int outputSlot = -1;
-        for (int i = MagicHiveBlockEntity.BEE_SLOTS; i < MagicHiveBlockEntity.TOTAL_SLOTS; i++) {
-            if (items.get(i).isEmpty()) { outputSlot = i; break; }
-        }
-        if (outputSlot < 0) return;
-
-        int idx1 = random.nextInt(insideBees.size());
-        int idx2;
-        do { idx2 = random.nextInt(insideBees.size()); } while (idx2 == idx1);
-
-        int slot1 = insideBees.get(idx1), slot2 = insideBees.get(idx2);
-        BeeGeneData parent1Data = MagicBeeItem.getGeneData(items.get(slot1));
-        BeeGeneData parent2Data = MagicBeeItem.getGeneData(items.get(slot2));
+        BeeGeneData parent1Data = MagicBeeItem.getGeneData(items.get(enteringSlot));
+        BeeGeneData parent2Data = MagicBeeItem.getGeneData(items.get(partnerSlot));
 
         Gene species1 = parent1Data.getGene(GeneCategory.SPECIES);
         Gene species2 = parent2Data.getGene(GeneCategory.SPECIES);
         if (species1 == null || species2 == null) return;
 
         String offspringSpecies = BreedingManager.resolveOffspringSpecies(species1.getId(), species2.getId(), random);
-        if ("nothing".equals(offspringSpecies)) return;
 
         BeeGeneData offspringData = BreedingManager.createOffspringGeneData(parent1Data, parent2Data, offspringSpecies, random);
         items.set(outputSlot, BeeLarvaItem.createWithGenes(offspringData));
@@ -406,18 +377,6 @@ public class HiveBeeLifecycleManager {
                 addBee(bee);
                 bee.discard();
             }
-        }
-    }
-
-    void tickBreeding(RandomSource random) {
-        if (!parent.isAntibreedingMode() && parent.getBreedingCooldown() <= 0) {
-            if (random.nextDouble() < BreedingManager.BREEDING_CHANCE_PER_SECOND) {
-                attemptBreeding(random);
-            }
-            parent.setBreedingCooldown(20);
-        }
-        if (parent.getBreedingCooldown() > 0) {
-            parent.setBreedingCooldown(parent.getBreedingCooldown() - 1);
         }
     }
 }

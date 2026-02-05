@@ -549,8 +549,54 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         bee.setEnraged(false);
         bee.setReturning(false);
 
+        // Tenter le breeding à l'entrée
+        if (level != null) {
+            tryBreedingOnEntry(slot, level.getRandom());
+        }
+
         triggerFlowerScan();
         setChanged();
+    }
+
+    /**
+     * Tente le breeding quand une abeille rentre (15% de chance).
+     */
+    private void tryBreedingOnEntry(int enteringSlot, RandomSource random) {
+        if (random.nextDouble() >= 0.15) return;
+
+        // Collecter les abeilles INSIDE (sauf celle qui rentre)
+        java.util.List<Integer> insidePartners = new java.util.ArrayList<>();
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            if (i != enteringSlot && beeSlots[i].isInside() && !items.get(i).isEmpty()) {
+                insidePartners.add(i);
+            }
+        }
+        if (insidePartners.isEmpty()) return;
+
+        // Sélection aléatoire du partenaire
+        int partnerSlot = insidePartners.get(random.nextInt(insidePartners.size()));
+
+        // Trouver un slot de sortie libre
+        int outputSlot = -1;
+        for (int i = BEE_SLOTS; i < TOTAL_SLOTS; i++) {
+            if (items.get(i).isEmpty()) {
+                outputSlot = i;
+                break;
+            }
+        }
+        if (outputSlot < 0) return;
+
+        BeeGeneData parent1Data = MagicBeeItem.getGeneData(items.get(enteringSlot));
+        BeeGeneData parent2Data = MagicBeeItem.getGeneData(items.get(partnerSlot));
+
+        Gene species1 = parent1Data.getGene(GeneCategory.SPECIES);
+        Gene species2 = parent2Data.getGene(GeneCategory.SPECIES);
+        if (species1 == null || species2 == null) return;
+
+        String offspringSpecies = BreedingManager.resolveOffspringSpecies(species1.getId(), species2.getId(), random);
+
+        BeeGeneData offspringData = BreedingManager.createOffspringGeneData(parent1Data, parent2Data, offspringSpecies, random);
+        items.set(outputSlot, BeeLarvaItem.createWithGenes(offspringData));
     }
 
     public void onBeeKilled(UUID beeUUID) {
@@ -600,42 +646,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
     // ==================== Breeding ====================
 
-    private void attemptBreeding(RandomSource random) {
-        List<Integer> insideBees = new ArrayList<>();
-        for (int i = 0; i < BEE_SLOTS; i++) {
-            if (beeSlots[i].isInside() && !items.get(i).isEmpty()) {
-                insideBees.add(i);
-            }
-        }
-        if (insideBees.size() < 2) return;
-
-        int outputSlot = -1;
-        for (int i = BEE_SLOTS; i < TOTAL_SLOTS; i++) {
-            if (items.get(i).isEmpty()) { outputSlot = i; break; }
-        }
-        if (outputSlot < 0) return;
-
-        int idx1 = random.nextInt(insideBees.size());
-        int idx2;
-        do { idx2 = random.nextInt(insideBees.size()); } while (idx2 == idx1);
-
-        int slot1 = insideBees.get(idx1), slot2 = insideBees.get(idx2);
-        BeeGeneData parent1 = MagicBeeItem.getGeneData(items.get(slot1));
-        BeeGeneData parent2 = MagicBeeItem.getGeneData(items.get(slot2));
-
-        Gene species1 = parent1.getGene(GeneCategory.SPECIES);
-        Gene species2 = parent2.getGene(GeneCategory.SPECIES);
-        if (species1 == null || species2 == null) return;
-
-        String offspringSpecies = BreedingManager.resolveOffspringSpecies(species1.getId(), species2.getId(), random);
-
-        if ("nothing".equals(offspringSpecies)) return;
-
-        BeeGeneData offspringData = BreedingManager.createOffspringGeneData(parent1, parent2, offspringSpecies, random);
-        items.set(outputSlot, BeeLarvaItem.createWithGenes(offspringData));
-        setChanged();
-    }
-
     // ==================== Tick ====================
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HiveMultiblockBlockEntity hive) {
@@ -654,7 +664,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         }
 
         hive.checkReturningBees(level, pos);
-        hive.tickBreeding(level.getRandom());
+        // Breeding géré à l'entrée des abeilles (voir addBee)
     }
 
     private void tickBeeSlot(int slot) {
@@ -692,16 +702,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                 bee.discard();
             }
         }
-    }
-
-    private void tickBreeding(RandomSource random) {
-        if (breedingMode && breedingCooldown <= 0) {
-            if (random.nextDouble() < BreedingManager.BREEDING_CHANCE_PER_SECOND) {
-                attemptBreeding(random);
-            }
-            breedingCooldown = 20;
-        }
-        if (breedingCooldown > 0) breedingCooldown--;
     }
 
     // ==================== Helpers ====================

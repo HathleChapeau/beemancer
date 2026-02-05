@@ -429,9 +429,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             hive.lifecycleManager.verifyOutsideBees();
         }
 
-        if (!hive.antibreedingMode) {
-            hive.lifecycleManager.tickBreeding(level.getRandom());
-        }
+        // Breeding géré uniquement à l'entrée des abeilles (voir addBee)
     }
 
     private void updateHiveConditions(Level level, BlockPos pos) {

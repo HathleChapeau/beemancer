@@ -42,10 +42,7 @@ import java.util.*;
 
 public class BreedingManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(BreedingManager.class);
-    
-    // Config parameters
-    public static final double BREEDING_CHANCE_PER_SECOND = 0.05; // 5% par seconde
-    
+
     // Breeding combinations cache
     private static final Map<String, List<BreedingResult>> combinations = new HashMap<>();
     private static List<BreedingResult> defaultResults = new ArrayList<>();
@@ -129,31 +126,60 @@ public class BreedingManager {
     }
     
     /**
-     * Résout l'espèce de l'offspring basé sur deux parents
-     * @return ID de l'espèce résultante, ou "nothing" si pas d'offspring
+     * Résout l'espèce de l'offspring basé sur deux parents.
+     *
+     * Règles:
+     * - Si la combinaison peut donner une nouvelle espèce:
+     *   - 80% chance d'être une des 2 espèces parentales (40% chaque)
+     *   - 20% chance d'être la nouvelle espèce
+     * - Si pas de nouvelle espèce possible (pas de combinaison définie):
+     *   - 100% chance d'être une des 2 espèces parentales (50% chaque)
+     *
+     * @return ID de l'espèce résultante (jamais "nothing")
      */
     public static String resolveOffspringSpecies(String species1, String species2, RandomSource random) {
         if (!loaded) {
             LOGGER.warn("BreedingManager not loaded, using defaults");
             setupDefaults();
         }
-        
+
         String key = createKey(species1, species2);
-        List<BreedingResult> results = combinations.getOrDefault(key, defaultResults);
-        
-        // Tirer au sort selon les probabilités
-        int roll = random.nextInt(100);
-        int cumulative = 0;
-        
+
+        // Chercher si une nouvelle espèce est possible pour cette combinaison
+        String newSpecies = findNewSpeciesForCombination(key, species1, species2);
+
+        if (newSpecies != null) {
+            // Nouvelle espèce possible: 80% parents, 20% nouvelle
+            int roll = random.nextInt(100);
+            if (roll < 40) {
+                return species1;
+            } else if (roll < 80) {
+                return species2;
+            } else {
+                return newSpecies;
+            }
+        } else {
+            // Pas de nouvelle espèce: 100% parents (50/50)
+            return random.nextBoolean() ? species1 : species2;
+        }
+    }
+
+    /**
+     * Trouve la nouvelle espèce possible pour une combinaison donnée.
+     * @return L'ID de la nouvelle espèce, ou null si aucune nouvelle espèce possible
+     */
+    private static String findNewSpeciesForCombination(String key, String parent1, String parent2) {
+        List<BreedingResult> results = combinations.get(key);
+        if (results == null) return null;
+
         for (BreedingResult result : results) {
-            cumulative += result.chance();
-            if (roll < cumulative) {
-                return result.species();
+            String species = result.species();
+            // Une nouvelle espèce est une espèce qui n'est ni parent1, ni parent2, ni "nothing"
+            if (!species.equals(parent1) && !species.equals(parent2) && !"nothing".equals(species)) {
+                return species;
             }
         }
-        
-        // Fallback
-        return "nothing";
+        return null;
     }
     
     /**
