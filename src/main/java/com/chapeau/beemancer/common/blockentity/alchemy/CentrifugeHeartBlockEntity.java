@@ -298,15 +298,23 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     @Override
     @Nullable
     public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
-        if (!formed) return null;
+        if (!formed) {
+            Beemancer.LOGGER.warn("[CENTRIFUGE] getFluidHandler: NOT FORMED");
+            return null;
+        }
         IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face);
+        Beemancer.LOGGER.warn("[CENTRIFUGE] getFluidHandler: controllerPos={} queriedPos={} face={} offset={} mode={}",
+            worldPosition, worldPos, face, worldPos.subtract(worldPosition), mode);
         if (mode == null || mode == IOMode.NONE) return null;
-        return switch (mode) {
+        var result = switch (mode) {
             case INPUT -> SplitFluidHandler.inputOnly(fuelTank);
             case OUTPUT -> SplitFluidHandler.outputOnly(outputTank);
             case BOTH -> splitFluidHandler;
             default -> null;
         };
+        Beemancer.LOGGER.warn("[CENTRIFUGE] getFluidHandler: returning {} (fuelTank={}/{}mB)",
+            result != null ? "handler" : "null", fuelTank.getFluidAmount(), fuelTank.getCapacity());
+        return result;
     }
 
     @Override

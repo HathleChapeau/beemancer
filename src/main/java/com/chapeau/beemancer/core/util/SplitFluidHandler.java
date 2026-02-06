@@ -21,6 +21,7 @@
  */
 package com.chapeau.beemancer.core.util;
 
+import com.chapeau.beemancer.Beemancer;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
@@ -88,7 +89,12 @@ public class SplitFluidHandler implements IFluidHandler {
             @Override public FluidStack getFluidInTank(int t) { return tank.getFluid(); }
             @Override public int getTankCapacity(int t) { return tank.getCapacity(); }
             @Override public boolean isFluidValid(int t, FluidStack s) { return tank.isFluidValid(s); }
-            @Override public int fill(FluidStack resource, FluidAction action) { return tank.fill(resource, action); }
+            @Override public int fill(FluidStack resource, FluidAction action) {
+                int result = tank.fill(resource, action);
+                Beemancer.LOGGER.warn("[INPUT_ONLY] fill({} {}mB, {}) -> {} (tank now {}/{}mB)",
+                    resource.getFluid(), resource.getAmount(), action, result, tank.getFluidAmount(), tank.getCapacity());
+                return result;
+            }
             @Override public FluidStack drain(FluidStack resource, FluidAction action) { return FluidStack.EMPTY; }
             @Override public FluidStack drain(int maxDrain, FluidAction action) { return FluidStack.EMPTY; }
         };

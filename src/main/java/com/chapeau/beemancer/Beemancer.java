@@ -258,8 +258,11 @@ public class Beemancer {
                     if (be.getControllerPos() != null) {
                         var provider = be.findCapabilityProvider();
                         if (provider != null) {
-                            return provider.getFluidHandlerForBlock(be.getBlockPos(), side);
+                            var handler = provider.getFluidHandlerForBlock(be.getBlockPos(), side);
+                            LOGGER.warn("[RESERVOIR] pos={} side={} controllerPos={} -> delegated handler={}", be.getBlockPos(), side, be.getControllerPos(), handler != null ? handler.getClass().getSimpleName() : "null");
+                            return handler;
                         }
+                        LOGGER.warn("[RESERVOIR] pos={} side={} controllerPos={} -> provider null (controller not formed?)", be.getBlockPos(), side, be.getControllerPos());
                         // Lié mais controleur indisponible: ne PAS exposer le tank propre
                         return null;
                     }
