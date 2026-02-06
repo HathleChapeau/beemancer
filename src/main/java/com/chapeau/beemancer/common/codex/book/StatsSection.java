@@ -55,8 +55,9 @@ public class StatsSection extends CodexBookSection {
     @Override
     public int getHeight(Font font, int pageWidth) {
         int lineH = font.lineHeight + LINE_SPACING;
-        // Info line + separator + 6 stat lines + separator + loot + traits + padding
-        return lineH * 10 + 2 + 2 + PADDING_BOTTOM;
+        // Tier + Activity + Flower + sep + 6 stats + sep + Loot + sep + 3 traits + padding
+        // 3 + 6 + 1 + 3 = 13 lines + 3 separators (3px each)
+        return lineH * 13 + 3 + 3 + 3 + PADDING_BOTTOM;
     }
 
     @Override
@@ -72,10 +73,16 @@ public class StatsSection extends CodexBookSection {
         int lineH = font.lineHeight + LINE_SPACING;
         int currentY = y;
 
-        // Info line: "Tier I  •  Day  •  Flower"
-        String activity = formatActivity(data.dayNight);
-        String infoLine = "Tier " + data.tier + "  \u2022  " + activity + "  \u2022  " + capitalize(data.flowerType);
-        graphics.drawString(font, infoLine, x, currentY, INFO_COLOR, false);
+        // Tier
+        graphics.drawString(font, "Tier " + data.tier, x, currentY, INFO_COLOR, false);
+        currentY += lineH;
+
+        // Activity
+        graphics.drawString(font, "Activity: " + formatActivity(data.dayNight), x, currentY, INFO_COLOR, false);
+        currentY += lineH;
+
+        // Flower
+        graphics.drawString(font, "Flower: " + capitalize(data.flowerType), x, currentY, INFO_COLOR, false);
         currentY += lineH;
 
         // Separator
@@ -100,15 +107,26 @@ public class StatsSection extends CodexBookSection {
         graphics.fill(x, currentY, x + pageWidth, currentY + 1, SEPARATOR_COLOR);
         currentY += 3;
 
-        // Loot line
-        String lootName = formatItemName(data.lootItem);
-        String lootLine = "Loot: " + lootName;
-        graphics.drawString(font, lootLine, x, currentY, INFO_COLOR, false);
+        // Loot
+        graphics.drawString(font, "Loot: " + formatItemName(data.lootItem), x, currentY, INFO_COLOR, false);
         currentY += lineH;
 
-        // Traits line
-        String traits = formatTraits(data);
-        graphics.drawString(font, "Traits: " + traits, x, currentY, INFO_COLOR, false);
+        // Separator
+        graphics.fill(x, currentY, x + pageWidth, currentY + 1, SEPARATOR_COLOR);
+        currentY += 3;
+
+        // Traits (one per line)
+        String yesNo;
+        yesNo = data.aggressiveToPlayers ? "Yes" : "No";
+        renderTraitLine(graphics, font, x, currentY, "Aggressive to Players", yesNo);
+        currentY += lineH;
+
+        yesNo = data.aggressiveToHostileMobs ? "Yes" : "No";
+        renderTraitLine(graphics, font, x, currentY, "Aggressive to Hostiles", yesNo);
+        currentY += lineH;
+
+        yesNo = data.aggressiveToPassiveMobs ? "Yes" : "No";
+        renderTraitLine(graphics, font, x, currentY, "Aggressive to Passives", yesNo);
     }
 
     private void renderStatLine(GuiGraphics graphics, Font font,
@@ -149,18 +167,12 @@ public class StatsSection extends CodexBookSection {
         return capitalize(name.replace('_', ' '));
     }
 
-    private static String formatTraits(BeeSpeciesData data) {
-        StringBuilder sb = new StringBuilder();
-        if (data.aggressiveToPlayers) sb.append("Aggressive");
-        if (data.aggressiveToHostileMobs) {
-            if (!sb.isEmpty()) sb.append(", ");
-            sb.append("Anti-Hostile");
-        }
-        if (data.aggressiveToPassiveMobs) {
-            if (!sb.isEmpty()) sb.append(", ");
-            sb.append("Anti-Passive");
-        }
-        return sb.isEmpty() ? "Passive" : sb.toString();
+    private void renderTraitLine(GuiGraphics graphics, Font font,
+                                 int x, int y, String label, String value) {
+        graphics.drawString(font, label + ": ", x, y, LABEL_COLOR, false);
+        int valueX = x + font.width(label + ": ");
+        int valueColor = "Yes".equals(value) ? STAR_FILLED_COLOR : STAR_EMPTY_COLOR;
+        graphics.drawString(font, value, valueX, y, valueColor, false);
     }
 
     private static String capitalize(String str) {
