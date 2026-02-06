@@ -59,6 +59,7 @@ public class CodexBookScreen extends Screen {
     private static final int SPINE_WIDTH = 10;
 
     private static final int PAGE_PADDING = 4;
+    private static final float CONTENT_SCALE = 0.85f;
     private static final int ARROW_DISABLED_COLOR = 0xFF9C8A70;
 
     private final CodexNode node;
@@ -201,11 +202,20 @@ public class CodexBookScreen extends Screen {
 
     private void renderPageSections(GuiGraphics graphics, List<CodexBookSection> sections,
                                      int pageX, int pageY, String nodeTitle, long relativeDay) {
-        int currentY = pageY;
+        graphics.pose().pushPose();
+        graphics.pose().scale(CONTENT_SCALE, CONTENT_SCALE, 1.0f);
+
+        int scaledX = Math.round(pageX / CONTENT_SCALE);
+        int scaledY = Math.round(pageY / CONTENT_SCALE);
+        int scaledWidth = Math.round(pageWidth / CONTENT_SCALE);
+
+        int currentY = scaledY;
         for (CodexBookSection section : sections) {
-            section.render(graphics, font, pageX, currentY, pageWidth, nodeTitle, relativeDay);
-            currentY += section.getHeight(font, pageWidth);
+            section.render(graphics, font, scaledX, currentY, scaledWidth, nodeTitle, relativeDay);
+            currentY += section.getHeight(font, scaledWidth);
         }
+
+        graphics.pose().popPose();
     }
 
     private CodexPlayerData getPlayerData() {
