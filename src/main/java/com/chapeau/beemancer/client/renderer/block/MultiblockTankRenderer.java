@@ -111,7 +111,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
 
         var blockRenderer = minecraft.getBlockRenderer().getModelRenderer();
 
-        VertexConsumer consumer = buffer.getBuffer(RenderType.solid());
+        VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
         blockRenderer.renderModel(
             poseStack.last(),
             consumer,
@@ -121,7 +121,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
             packedLight,
             OverlayTexture.NO_OVERLAY,
             ModelData.EMPTY,
-            RenderType.solid()
+            RenderType.translucent()
         );
     }
 
