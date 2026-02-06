@@ -65,7 +65,7 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
     // Client constructor
     public PoweredCentrifugeMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
         this(containerId, playerInv, playerInv.player.level().getBlockEntity(buf.readBlockPos()),
-             new SimpleContainerData(4));
+             new SimpleContainerData(6));
     }
 
     // Server constructor
@@ -115,6 +115,8 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
     public int getMaxProgress() { return data.get(1); }
     public int getFuelAmount() { return data.get(2); }
     public int getOutputAmount() { return data.get(3); }
+    public int getFuelCapacity() { int c = data.get(4); return c > 0 ? c : 8000; }
+    public int getOutputCapacity() { int c = data.get(5); return c > 0 ? c : 8000; }
 
     public float getProgressRatio() {
         int max = getMaxProgress();

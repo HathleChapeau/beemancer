@@ -51,12 +51,12 @@ public class PoweredCentrifugeScreen extends AbstractContainerScreen<PoweredCent
     protected void init() {
         super.init();
         fuelGauge = new FluidGaugeWidget(
-            8, 17, 16, 52, 8000,
+            8, 17, 16, 52, menu::getFuelCapacity,
             () -> menu.getFuelTank().getFluid(),
             menu::getFuelAmount
         );
         outputGauge = new FluidGaugeWidget(
-            152, 17, 16, 52, 8000,
+            152, 17, 16, 52, menu::getOutputCapacity,
             () -> menu.getOutputTank().getFluid(),
             menu::getOutputAmount
         );

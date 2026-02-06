@@ -94,6 +94,8 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
                 case 1 -> currentProcessTime;
                 case 2 -> fuelTank.getFluidAmount();
                 case 3 -> outputTank.getFluidAmount();
+                case 4 -> fuelTank.getCapacity();
+                case 5 -> outputTank.getCapacity();
                 default -> 0;
             };
         }
@@ -103,7 +105,7 @@ public class PoweredCentrifugeBlockEntity extends BlockEntity implements MenuPro
             if (index == 1) currentProcessTime = value;
         }
         @Override
-        public int getCount() { return 4; }
+        public int getCount() { return 6; }
     };
 
     public PoweredCentrifugeBlockEntity(BlockPos pos, BlockState state) {

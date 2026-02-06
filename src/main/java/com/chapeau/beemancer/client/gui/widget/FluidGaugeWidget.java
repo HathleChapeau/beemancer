@@ -42,7 +42,7 @@ public class FluidGaugeWidget {
     private final int y;
     private final int width;
     private final int height;
-    private final int capacity;
+    private final Supplier<Integer> capacitySupplier;
     private final Supplier<FluidStack> fluidSupplier;
     private final Supplier<Integer> amountSupplier;
 
@@ -53,11 +53,16 @@ public class FluidGaugeWidget {
 
     public FluidGaugeWidget(int x, int y, int width, int height, int capacity,
                             Supplier<FluidStack> fluidSupplier, Supplier<Integer> amountSupplier) {
+        this(x, y, width, height, () -> capacity, fluidSupplier, amountSupplier);
+    }
+
+    public FluidGaugeWidget(int x, int y, int width, int height, Supplier<Integer> capacitySupplier,
+                            Supplier<FluidStack> fluidSupplier, Supplier<Integer> amountSupplier) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.capacity = capacity;
+        this.capacitySupplier = capacitySupplier;
         this.fluidSupplier = fluidSupplier;
         this.amountSupplier = amountSupplier;
     }
@@ -71,7 +76,7 @@ public class FluidGaugeWidget {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.capacity = capacity;
+        this.capacitySupplier = () -> capacity;
         this.fluidSupplier = null;
         this.amountSupplier = amountSupplier;
     }
@@ -88,8 +93,9 @@ public class FluidGaugeWidget {
 
         // Calculer la hauteur du fluide
         int amount = amountSupplier.get();
-        if (amount > 0 && capacity > 0) {
-            int fluidHeight = (int) ((float) amount / capacity * (height - 2));
+        int cap = capacitySupplier.get();
+        if (amount > 0 && cap > 0) {
+            int fluidHeight = (int) ((float) amount / cap * (height - 2));
             if (fluidHeight > 0) {
                 renderFluidBar(graphics, gaugeX + 1, gaugeY + height - 1 - fluidHeight,
                                width - 2, fluidHeight);
@@ -206,9 +212,10 @@ public class FluidGaugeWidget {
      */
     public List<Component> getTooltip(String fluidName) {
         int amount = amountSupplier.get();
+        int cap = capacitySupplier.get();
         return List.of(
-            Component.literal(fluidName + ": " + amount + " / " + capacity + " mB"),
-            Component.literal(String.format("%.1f%%", (float) amount / capacity * 100))
+            Component.literal(fluidName + ": " + amount + " / " + cap + " mB"),
+            Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
                 .withStyle(style -> style.withColor(0xAAAAAA))
         );
     }

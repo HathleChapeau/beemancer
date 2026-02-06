@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-02-06                     #
-#     (Multiblock Capability Delegation + Sticky Notes - 2026-02-06)           #
+#     (Multiblock IO Config System + Centrifuge IO Inversion - 2026-02-06)     #
 ################################################################################
 
 ================================================================================
@@ -90,8 +90,11 @@ Philosophie:
 │ core/util/ParticleHelper.java        │ Utilitaire statique spawn particules │
 │ core/multiblock/MultiblockProperty.java│ Enum + factory blockstate property │
 │ core/multiblock/MultiblockCapabilityProvider│ Interface délégation caps multibloc│
-│ core/util/SplitFluidHandler.java      │ Wrapper fill→input, drain→output   │
-│ core/util/SplitItemHandler.java       │ Wrapper insert→input, extract→output│
+│ core/multiblock/IOMode.java            │ Enum NONE/INPUT/OUTPUT/BOTH        │
+│ core/multiblock/BlockIORule.java       │ Règles IO per-face pour un bloc    │
+│ core/multiblock/MultiblockIOConfig.java│ Config IO complète d'un multibloc  │
+│ core/util/SplitFluidHandler.java      │ Wrapper fill→input, drain→output + factories│
+│ core/util/SplitItemHandler.java       │ Wrapper insert→input, extract→output + factories│
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -283,12 +286,12 @@ LISTE DES FEATURES:
   Fichier: Structure/feature_delivery_refactoring.txt
   Description: Refonte complète du système de livraison: RequestManager, flux unifié, recall bees, localisation GUI
 
-→ Multiblock Capability Delegation
-  Description: Système polyvalent de délégation de capabilities (fluid+item) des blocs structurels vers le contrôleur multibloc
-  Scripts créés: MultiblockCapabilityProvider.java, SplitFluidHandler.java, SplitItemHandler.java
-  Scripts modifiés: CentrifugeHeartBlockEntity.java, HoneyReservoirBlockEntity.java, Beemancer.java
-  Dépendances: MultiblockController, IFluidHandler, IItemHandler
-  Registres modifiés: Capabilities (fluid+item) pour HONEY_RESERVOIR et CENTRIFUGE_HEART
+→ Multiblock Capability Delegation + IO Config System
+  Description: Système déclaratif de délégation de capabilities (fluid+item) des blocs structurels vers le contrôleur multibloc, avec configuration IO per-face per-position
+  Scripts créés: MultiblockCapabilityProvider.java, IOMode.java, BlockIORule.java, MultiblockIOConfig.java
+  Scripts modifiés: SplitFluidHandler.java (+inputOnly/outputOnly factories), SplitItemHandler.java (+inputOnly/outputOnly factories), CentrifugeHeartBlockEntity.java (IO_CONFIG déclaratif, top=INPUT/bottom=OUTPUT), AlembicHeartBlockEntity.java (+MultiblockCapabilityProvider, IO_CONFIG, reservoir linking), Beemancer.java (Alembic delegation, Infuser item capability)
+  Dépendances: MultiblockController, IFluidHandler, IItemHandler, HoneyReservoirBlockEntity
+  Registres modifiés: Capabilities (fluid+item) pour HONEY_RESERVOIR, CENTRIFUGE_HEART, ALEMBIC_HEART, INFUSER_HEART
 
 → Codex Book V1 (Sections + Sticky Notes)
   Description: Système de livre modulaire avec sections (header, text, model, stats) et sticky notes en overlay

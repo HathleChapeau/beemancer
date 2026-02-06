@@ -3,6 +3,54 @@
 ################################################################################
 
 ================================================================================
+2026-02-06 - Multiblock IO Config System + Centrifuge IO Inversion
+================================================================================
+
+SYSTÈME IO DÉCLARATIF (3 nouveaux fichiers):
+- IOMode.java: enum NONE/INPUT/OUTPUT/BOTH avec allowsInput()/allowsOutput()
+- BlockIORule.java: règles IO per-face (EnumMap<Direction, IOMode>), builder + factories
+  (allFaces, sides), configurable via .face()/.sides()/.up()/.down()
+- MultiblockIOConfig.java: config IO complète mappant Vec3i offsets → BlockIORule
+  pour fluid et item, avec lookup getFluidMode()/getItemMode()
+
+FACTORIES UNIDIRECTIONNELLES:
+- SplitFluidHandler: +inputOnly(FluidTank) — fill only, drain blocked
+- SplitFluidHandler: +outputOnly(FluidTank) — drain only, fill blocked
+- SplitItemHandler: +inputOnly(IItemHandler) — insert only, extract blocked
+- SplitItemHandler: +outputOnly(IItemHandler) — extract only, insert blocked
+
+CENTRIFUGE HEART:
+- Migration vers IO_CONFIG déclaratif (remplace face filtering hardcodé)
+- Inversion entrées/sorties: TOP (Y+1) = INPUT (miel+items), BOTTOM (Y-1) = OUTPUT (produits)
+- Vitesse rotation animation: 8.0 → 12.0 (×1.5)
+- Suppression debug logging (3 LOGGER.warn dans getFluidHandlerForBlock)
+
+ALEMBIC HEART:
+- Implémente MultiblockCapabilityProvider (nouveau)
+- IO_CONFIG: heart per-face (DOWN=nectar OUTPUT, UP=royal jelly INPUT, SIDES=honey INPUT)
+- Réservoirs: bas=nectar OUTPUT, gauche=honey INPUT, droit=royal jelly INPUT
+- linkReservoirControllers(): lie/délie réservoirs au contrôleur
+- invalidateAllCapabilities(): force NeoForge à re-query les capabilities
+- onMultiblockFormed/Broken: link → blockstates → invalidate (ordre correct)
+
+BEEMANCER.java:
+- ALEMBIC_HEART fluid: délègue via getFluidHandlerForBlock quand formé
+- INFUSER_HEART item: nouvelle capability (DOWN=outputOnly, autres=inputOnly)
+- HONEY_RESERVOIR: suppression debug logging
+
+FICHIERS CRÉÉS (3):
+- core/multiblock/IOMode.java
+- core/multiblock/BlockIORule.java
+- core/multiblock/MultiblockIOConfig.java
+
+FICHIERS MODIFIÉS (5):
+- core/util/SplitFluidHandler.java (+inputOnly, +outputOnly, -debug import)
+- core/util/SplitItemHandler.java (+inputOnly, +outputOnly)
+- common/blockentity/alchemy/CentrifugeHeartBlockEntity.java (IO_CONFIG, inversion, rotation)
+- common/blockentity/alchemy/AlembicHeartBlockEntity.java (+MultiblockCapabilityProvider)
+- Beemancer.java (Alembic delegation, Infuser item cap, -debug logs)
+
+================================================================================
 2026-02-06 - Multiblock Capability Delegation + Codex Book Features
 ================================================================================
 
