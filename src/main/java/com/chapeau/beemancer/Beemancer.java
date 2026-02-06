@@ -21,6 +21,7 @@ import com.chapeau.beemancer.client.ClientSetup;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotEvents;
 import com.chapeau.beemancer.common.block.storage.StorageEvents;
 import com.chapeau.beemancer.common.codex.CodexManager;
+import com.chapeau.beemancer.common.codex.book.CodexBookManager;
 import com.chapeau.beemancer.common.quest.QuestManager;
 import com.chapeau.beemancer.core.command.BeemancerCommands;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
@@ -322,6 +323,7 @@ public class Beemancer {
         BeeBehaviorManager.load(server);
         // RidingSettingsLoader remplacé par HorseSettings (système Cobblemon)
         CodexManager.load(server);
+        CodexBookManager.load(server);
         QuestManager.load(server);
     }
 

@@ -31,6 +31,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
+import net.minecraft.server.MinecraftServer;
+
 import java.io.InputStreamReader;
 import java.util.*;
 
@@ -39,6 +41,14 @@ public class CodexBookManager {
     private static final Gson GSON = new Gson();
     private static final Map<String, CodexBookContent> CONTENTS = new HashMap<>();
     private static boolean loaded = false;
+
+    /**
+     * Charge depuis le serveur (accès aux data packs).
+     * Doit être appelé APRÈS CodexManager.load().
+     */
+    public static void load(MinecraftServer server) {
+        load(server.getResourceManager());
+    }
 
     /**
      * Charge le contenu des pages du livre depuis les fichiers JSON.
