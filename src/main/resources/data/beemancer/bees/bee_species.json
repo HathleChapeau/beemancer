@@ -9,7 +9,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Meadow_Bee"
     },
@@ -21,7 +21,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Forest_Bee"
     },
@@ -33,7 +33,7 @@
       "stats": { "attack": 2, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:cobblestone", "in_comb": false },
+      "loot": { "item": "minecraft:cobblestone" },
       "pollen": null,
       "texture": "Rocky_Bee"
     },
@@ -45,7 +45,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "River_Bee"
     },
@@ -57,7 +57,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:sand", "in_comb": false },
+      "loot": { "item": "minecraft:sand" },
       "pollen": null,
       "texture": "Dune_Bee"
     },
@@ -69,7 +69,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Neither_Bee"
     },
@@ -81,7 +81,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "End_Bee"
     },
@@ -93,7 +93,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Monsty_Bee"
     },
@@ -105,7 +105,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Docile_Bee"
     },
@@ -117,7 +117,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:dirt", "in_comb": false },
+      "loot": { "item": "minecraft:dirt" },
       "pollen": null,
       "texture": "Loam_Bee"
     },
@@ -129,7 +129,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:gravel", "in_comb": false },
+      "loot": { "item": "minecraft:gravel" },
       "pollen": null,
       "texture": "Sediment_Bee"
     },
@@ -141,7 +141,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:flint", "in_comb": true },
+      "loot": { "item": "minecraft:flint" },
       "pollen": null,
       "texture": "Spark_Bee"
     },
@@ -153,7 +153,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Cultural_Bee"
     },
@@ -165,7 +165,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "beemancer:coal_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:coal_fragment" },
       "pollen": null,
       "texture": "Carbon_Bee"
     },
@@ -177,7 +177,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "beemancer:raw_copper_shard", "in_comb": true },
+      "loot": { "item": "beemancer:raw_copper_shard" },
       "pollen": null,
       "texture": "Cupric_Bee"
     },
@@ -189,7 +189,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:rotten_flesh", "in_comb": true },
+      "loot": { "item": "minecraft:rotten_flesh" },
       "pollen": null,
       "texture": "Festering_Bee"
     },
@@ -201,7 +201,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:bone", "in_comb": true },
+      "loot": { "item": "minecraft:bone" },
       "pollen": null,
       "texture": "Skeletal_Bee"
     },
@@ -213,7 +213,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:string", "in_comb": false },
+      "loot": { "item": "minecraft:string" },
       "pollen": null,
       "texture": "Silken_Bee"
     },
@@ -225,7 +225,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:spider_eye", "in_comb": true },
+      "loot": { "item": "minecraft:spider_eye" },
       "pollen": null,
       "texture": "Arachnid_Bee"
     },
@@ -237,7 +237,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:leather_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:leather_fragment" },
       "pollen": null,
       "texture": "Tanner_Bee"
     },
@@ -249,7 +249,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:feather", "in_comb": false },
+      "loot": { "item": "minecraft:feather" },
       "pollen": null,
       "texture": "Plume_Bee"
     },
@@ -261,7 +261,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:oak_log_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:oak_log_fragment" },
       "pollen": null,
       "texture": "Quercus_Bee"
     },
@@ -273,7 +273,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:spruce_log_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:spruce_log_fragment" },
       "pollen": null,
       "texture": "Boreal_Bee"
     },
@@ -285,7 +285,7 @@
       "stats": { "attack": 2, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:jungle_log_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:jungle_log_fragment" },
       "pollen": null,
       "texture": "Tropical_Bee"
     },
@@ -297,7 +297,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:birch_log_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:birch_log_fragment" },
       "pollen": null,
       "texture": "Paperbark_Bee"
     },
@@ -309,7 +309,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 2 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:sugar_cane", "in_comb": true },
+      "loot": { "item": "minecraft:sugar_cane" },
       "pollen": null,
       "texture": "Reed_Bee"
     },
@@ -321,7 +321,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:carrot", "in_comb": false },
+      "loot": { "item": "minecraft:carrot" },
       "pollen": null,
       "texture": "Karot_Bee"
     },
@@ -333,7 +333,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 2 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:potato", "in_comb": false },
+      "loot": { "item": "minecraft:potato" },
       "pollen": null,
       "texture": "Tuber_Bee"
     },
@@ -345,7 +345,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:melon_slice", "in_comb": false },
+      "loot": { "item": "minecraft:melon_slice" },
       "pollen": null,
       "texture": "Juicy_Bee"
     },
@@ -357,7 +357,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:pumpkin", "in_comb": false },
+      "loot": { "item": "minecraft:pumpkin" },
       "pollen": null,
       "texture": "Gourd_Bee"
     },
@@ -369,7 +369,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:wheat", "in_comb": false },
+      "loot": { "item": "minecraft:wheat" },
       "pollen": null,
       "texture": "Agrarian_Bee"
     },
@@ -381,7 +381,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": true, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Prince_Bee"
     },
@@ -393,7 +393,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "flower_pollen",
       "texture": "Flower_Bee"
     },
@@ -405,7 +405,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "mushroom_spore",
       "texture": "Mushroom_Bee"
     },
@@ -417,7 +417,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "tree_pollen",
       "texture": "Tree_Bee"
     },
@@ -429,7 +429,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 2 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "crystal_pollen",
       "texture": "Crystal_Bee"
     },
@@ -441,7 +441,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:clay_ball", "in_comb": true },
+      "loot": { "item": "minecraft:clay_ball" },
       "pollen": null,
       "texture": "Argil_Bee"
     },
@@ -453,7 +453,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:dark_oak_log_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:dark_oak_log_fragment" },
       "pollen": null,
       "texture": "Umbra_Bee"
     },
@@ -465,7 +465,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:acacia_log_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:acacia_log_fragment" },
       "pollen": null,
       "texture": "Savanna_Bee"
     },
@@ -477,7 +477,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 2 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:ice_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:ice_fragment" },
       "pollen": null,
       "texture": "Frost_Bee"
     },
@@ -489,7 +489,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:gunpowder_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:gunpowder_fragment" },
       "pollen": null,
       "texture": "Volatile_Bee"
     },
@@ -501,7 +501,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:andesite", "in_comb": false },
+      "loot": { "item": "minecraft:andesite" },
       "pollen": null,
       "texture": "Ashen_Bee"
     },
@@ -513,7 +513,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:diorite", "in_comb": false },
+      "loot": { "item": "minecraft:diorite" },
       "pollen": null,
       "texture": "Igneous_Bee"
     },
@@ -525,7 +525,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:granite", "in_comb": false },
+      "loot": { "item": "minecraft:granite" },
       "pollen": null,
       "texture": "Rose_Stone_Bee"
     },
@@ -537,7 +537,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 2 },
       "aggression": { "players": false, "passive_mobs": true, "hostile_mobs": true },
       "day_night": "both",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": false },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Infernalist_Bee"
     },
@@ -549,7 +549,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 3, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Swift_Bee"
     },
@@ -561,7 +561,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:royal_comb", "in_comb": true },
+      "loot": { "item": "beemancer:royal_comb" },
       "pollen": null,
       "texture": "Royal_Bee"
     },
@@ -573,7 +573,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": true },
       "day_night": "night",
-      "loot": { "item": "beemancer:raw_iron_shard", "in_comb": true },
+      "loot": { "item": "beemancer:raw_iron_shard" },
       "pollen": null,
       "texture": "Ferrous_Bee"
     },
@@ -585,7 +585,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:redstone", "in_comb": true },
+      "loot": { "item": "minecraft:redstone" },
       "pollen": null,
       "texture": "Flux_Bee"
     },
@@ -597,7 +597,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "beemancer:lapis_lazuli_shard", "in_comb": true },
+      "loot": { "item": "beemancer:lapis_lazuli_shard" },
       "pollen": null,
       "texture": "Lazuli_Bee"
     },
@@ -609,7 +609,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 3 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "both",
-      "loot": { "item": "beemancer:quartz_shard", "in_comb": true },
+      "loot": { "item": "beemancer:quartz_shard" },
       "pollen": null,
       "texture": "Quartzose_Bee"
     },
@@ -621,7 +621,7 @@
       "stats": { "attack": 2, "health": 3, "drop_level": 1, "flying_speed": 1, "foraging_duration": 2, "tolerance": 2 },
       "aggression": { "players": false, "passive_mobs": true, "hostile_mobs": true },
       "day_night": "both",
-      "loot": { "item": "minecraft:glowstone_dust", "in_comb": true },
+      "loot": { "item": "minecraft:glowstone_dust" },
       "pollen": null,
       "texture": "Luminous_Bee"
     },
@@ -633,7 +633,7 @@
       "stats": { "attack": 3, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": true },
       "day_night": "night",
-      "loot": { "item": "minecraft:blackstone", "in_comb": false },
+      "loot": { "item": "minecraft:blackstone" },
       "pollen": null,
       "texture": "Grim_Bee"
     },
@@ -645,7 +645,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:basalt", "in_comb": false },
+      "loot": { "item": "minecraft:basalt" },
       "pollen": null,
       "texture": "Columnar_Bee"
     },
@@ -657,7 +657,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 3 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "beemancer:slime_ball_shard", "in_comb": true },
+      "loot": { "item": "beemancer:slime_ball_shard" },
       "pollen": null,
       "texture": "Viscous_Bee"
     },
@@ -669,7 +669,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:ink_sac", "in_comb": true },
+      "loot": { "item": "minecraft:ink_sac" },
       "pollen": null,
       "texture": "Inky_Bee"
     },
@@ -681,7 +681,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:white_wool", "in_comb": false },
+      "loot": { "item": "minecraft:white_wool" },
       "pollen": null,
       "texture": "Fleece_Bee"
     },
@@ -693,7 +693,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:terracotta", "in_comb": false },
+      "loot": { "item": "minecraft:terracotta" },
       "pollen": null,
       "texture": "Adobe_Bee"
     },
@@ -705,7 +705,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:amethyst_shard", "in_comb": true },
+      "loot": { "item": "minecraft:amethyst_shard" },
       "pollen": null,
       "texture": "Geode_Bee"
     },
@@ -717,7 +717,7 @@
       "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "beemancer:mangrove_log_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:mangrove_log_fragment" },
       "pollen": null,
       "texture": "Marsh_Bee"
     },
@@ -729,7 +729,7 @@
       "stats": { "attack": 2, "health": 3, "drop_level": 1, "flying_speed": 1, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Majestic_Bee"
     },
@@ -741,7 +741,7 @@
       "stats": { "attack": 4, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 4 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": true },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Steady_Bee"
     },
@@ -753,7 +753,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 3 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": false },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "pollen_of_wind",
       "texture": "Wind_Bee"
     },
@@ -765,7 +765,7 @@
       "stats": { "attack": 3, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": false },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "pollen_of_thunder",
       "texture": "Thunder_Bee"
     },
@@ -777,7 +777,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": false },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "pollen_of_water",
       "texture": "Water_Bee"
     },
@@ -789,7 +789,7 @@
       "stats": { "attack": 2, "health": 1, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": false },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "pollen_of_fire",
       "texture": "Fire_Bee"
     },
@@ -801,7 +801,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 1, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "beemancer:raw_gold_shard", "in_comb": true },
+      "loot": { "item": "beemancer:raw_gold_shard" },
       "pollen": null,
       "texture": "Auric_Bee"
     },
@@ -813,7 +813,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 2 },
       "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "both",
-      "loot": { "item": "beemancer:magma_cream_shard", "in_comb": true },
+      "loot": { "item": "beemancer:magma_cream_shard" },
       "pollen": null,
       "texture": "Magmatic_Bee"
     },
@@ -825,7 +825,7 @@
       "stats": { "attack": 1, "health": 3, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "both",
-      "loot": { "item": "minecraft:soul_sand", "in_comb": false },
+      "loot": { "item": "minecraft:soul_sand" },
       "pollen": null,
       "texture": "Spirit_Bee"
     },
@@ -837,7 +837,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "both",
-      "loot": { "item": "minecraft:nether_wart", "in_comb": true },
+      "loot": { "item": "minecraft:nether_wart" },
       "pollen": null,
       "texture": "Crimson_Bee"
     },
@@ -849,7 +849,7 @@
       "stats": { "attack": 2, "health": 1, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:mycelium", "in_comb": false },
+      "loot": { "item": "minecraft:mycelium" },
       "pollen": null,
       "texture": "Mycelial_Bee"
     },
@@ -861,7 +861,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:podzol", "in_comb": false },
+      "loot": { "item": "minecraft:podzol" },
       "pollen": null,
       "texture": "Humus_Bee"
     },
@@ -873,7 +873,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 3 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "#minecraft:small_flowers", "in_comb": false },
+      "loot": { "item": "#minecraft:small_flowers" },
       "pollen": null,
       "texture": "Floral_Bee"
     },
@@ -885,7 +885,7 @@
       "stats": { "attack": 1, "health": 2, "drop_level": 3, "flying_speed": 1, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Treasure_Bee"
     },
@@ -897,7 +897,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 4, "tolerance": 2 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Siphoning_Bee"
     },
@@ -909,7 +909,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 4, "foraging_duration": 3, "tolerance": 2 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Zephyr_Bee"
     },
@@ -921,7 +921,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:prismarine_shard", "in_comb": true },
+      "loot": { "item": "minecraft:prismarine_shard" },
       "pollen": null,
       "texture": "Prismatic_Bee"
     },
@@ -933,7 +933,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:prismarine_crystals", "in_comb": true },
+      "loot": { "item": "minecraft:prismarine_crystals" },
       "pollen": null,
       "texture": "Crystalline_Bee"
     },
@@ -945,7 +945,7 @@
       "stats": { "attack": 2, "health": 3, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:phantom_membrane", "in_comb": false },
+      "loot": { "item": "minecraft:phantom_membrane" },
       "pollen": null,
       "texture": "Insomnia_Bee"
     },
@@ -957,7 +957,7 @@
       "stats": { "attack": 1, "health": 2, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "beemancer:blaze_rod_fragment", "in_comb": true },
+      "loot": { "item": "beemancer:blaze_rod_fragment" },
       "pollen": null,
       "texture": "Blazing_Bee"
     },
@@ -969,7 +969,7 @@
       "stats": { "attack": 3, "health": 1, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "beemancer:diamond_dust", "in_comb": true },
+      "loot": { "item": "beemancer:diamond_dust" },
       "pollen": null,
       "texture": "Diamantine_Bee"
     },
@@ -981,7 +981,7 @@
       "stats": { "attack": 2, "health": 3, "drop_level": 2, "flying_speed": 2, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "beemancer:emerald_dust", "in_comb": true },
+      "loot": { "item": "beemancer:emerald_dust" },
       "pollen": null,
       "texture": "Venerable_Bee"
     },
@@ -993,7 +993,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 3 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "beemancer:obsidian_dust", "in_comb": true },
+      "loot": { "item": "beemancer:obsidian_dust" },
       "pollen": null,
       "texture": "Volcanic_Bee"
     },
@@ -1005,7 +1005,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "both",
-      "loot": { "item": "minecraft:end_stone", "in_comb": false },
+      "loot": { "item": "minecraft:end_stone" },
       "pollen": null,
       "texture": "Xenolith_Bee"
     },
@@ -1017,7 +1017,7 @@
       "stats": { "attack": 1, "health": 2, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 2 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "both",
-      "loot": { "item": "beemancer:ender_pearl_dust", "in_comb": true },
+      "loot": { "item": "beemancer:ender_pearl_dust" },
       "pollen": null,
       "texture": "Traveler_Bee"
     },
@@ -1029,7 +1029,7 @@
       "stats": { "attack": 3, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "both",
-      "loot": { "item": "beemancer:ghast_tear_shard", "in_comb": true },
+      "loot": { "item": "beemancer:ghast_tear_shard" },
       "pollen": null,
       "texture": "Sorrow_Bee"
     },
@@ -1041,7 +1041,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:sponge", "in_comb": false },
+      "loot": { "item": "minecraft:sponge" },
       "pollen": null,
       "texture": "Absorbent_Bee"
     },
@@ -1053,7 +1053,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 3, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "pollen_of_light",
       "texture": "Light_Bee"
     },
@@ -1065,7 +1065,7 @@
       "stats": { "attack": 2, "health": 3, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "pollen_of_darkness",
       "texture": "Dark_Bee"
     },
@@ -1077,7 +1077,7 @@
       "stats": { "attack": 2, "health": 2, "drop_level": 4, "flying_speed": 2, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Imperial_Bee"
     },
@@ -1089,7 +1089,7 @@
       "stats": { "attack": 4, "health": 4, "drop_level": 1, "flying_speed": 3, "foraging_duration": 1, "tolerance": 3 },
       "aggression": { "players": false, "passive_mobs": true, "hostile_mobs": false },
       "day_night": "night",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Demonic_Bee"
     },
@@ -1101,7 +1101,7 @@
       "stats": { "attack": 4, "health": 4, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": true },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": null,
       "texture": "Paladin_Bee"
     },
@@ -1113,7 +1113,7 @@
       "stats": { "attack": 3, "health": 3, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
       "day_night": "both",
-      "loot": { "item": "minecraft:chorus_fruit", "in_comb": false },
+      "loot": { "item": "minecraft:chorus_fruit" },
       "pollen": null,
       "texture": "Chorus_Bee"
     },
@@ -1125,7 +1125,7 @@
       "stats": { "attack": 3, "health": 3, "drop_level": 3, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
       "day_night": "both",
-      "loot": { "item": "beemancer:netherite_scrap_dust", "in_comb": true },
+      "loot": { "item": "beemancer:netherite_scrap_dust" },
       "pollen": null,
       "texture": "Ancient_Bee"
     },
@@ -1137,7 +1137,7 @@
       "stats": { "attack": 3, "health": 3, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
       "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
       "day_night": "both",
-      "loot": { "item": "minecraft:honeycomb", "in_comb": true },
+      "loot": { "item": "minecraft:honeycomb" },
       "pollen": "void_pollen",
       "texture": "Void_Bee"
     },
@@ -1149,7 +1149,7 @@
       "stats": { "attack": 4, "health": 3, "drop_level": 3, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
       "day_night": "both",
-      "loot": { "item": "beemancer:dragon_breath_dust", "in_comb": true },
+      "loot": { "item": "beemancer:dragon_breath_dust" },
       "pollen": null,
       "texture": "Draconic_Bee"
     },
@@ -1161,7 +1161,7 @@
       "stats": { "attack": 4, "health": 3, "drop_level": 3, "flying_speed": 3, "foraging_duration": 3, "tolerance": 4 },
       "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
       "day_night": "both",
-      "loot": { "item": "beemancer:nether_star_dust", "in_comb": true },
+      "loot": { "item": "beemancer:nether_star_dust" },
       "pollen": null,
       "texture": "Stellar_Bee"
     }

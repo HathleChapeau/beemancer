@@ -218,7 +218,6 @@ public class BeeSpeciesManager {
         if (json.has("loot")) {
             JsonObject loot = json.getAsJsonObject("loot");
             data.lootItem = loot.has("item") ? loot.get("item").getAsString() : "minecraft:honeycomb";
-            data.inComb = loot.has("in_comb") && loot.get("in_comb").getAsBoolean();
         }
 
         return data;
@@ -390,7 +389,6 @@ public class BeeSpeciesManager {
 
         // Loot
         public String lootItem = "minecraft:honeycomb";
-        public boolean inComb = true;
 
         public BeeSpeciesData(String id) {
             this.id = id;
