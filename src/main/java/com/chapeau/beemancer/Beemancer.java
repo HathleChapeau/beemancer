@@ -253,12 +253,16 @@ public class Beemancer {
                 Capabilities.FluidHandler.BLOCK,
                 BeemancerBlockEntities.HONEY_RESERVOIR.get(),
                 (be, side) -> {
-                    var provider = be.findCapabilityProvider();
-                    if (provider != null) {
-                        // Reservoir fait partie d'un multibloc: le controleur decide tout
-                        // Retourne null si la face n'est pas autorisee (pas de fallback sur le tank propre)
-                        return provider.getFluidHandlerForBlock(be.getBlockPos(), side);
+                    // Si le reservoir est lié à un controleur multibloc, déléguer entièrement
+                    if (be.getControllerPos() != null) {
+                        var provider = be.findCapabilityProvider();
+                        if (provider != null) {
+                            return provider.getFluidHandlerForBlock(be.getBlockPos(), side);
+                        }
+                        // Lié mais controleur indisponible: ne PAS exposer le tank propre
+                        return null;
                     }
+                    // Reservoir standalone (altar, etc.): expose son propre tank
                     return be;
                 }
         );
@@ -295,11 +299,11 @@ public class Beemancer {
                 (be, side) -> be.getHoneyTank()
         );
 
-        // Centrifuge Heart multibloc
+        // Centrifuge Heart multibloc: pas de capability directe (pipes passent par les reservoirs)
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 BeemancerBlockEntities.CENTRIFUGE_HEART.get(),
-                (be, side) -> be.isFormed() ? be.getSplitFluidHandler() : null
+                (be, side) -> null
         );
     }
 
@@ -322,19 +326,22 @@ public class Beemancer {
                 Capabilities.ItemHandler.BLOCK,
                 BeemancerBlockEntities.HONEY_RESERVOIR.get(),
                 (be, side) -> {
-                    var provider = be.findCapabilityProvider();
-                    if (provider != null) {
-                        return provider.getItemHandlerForBlock(be.getBlockPos(), side);
+                    if (be.getControllerPos() != null) {
+                        var provider = be.findCapabilityProvider();
+                        if (provider != null) {
+                            return provider.getItemHandlerForBlock(be.getBlockPos(), side);
+                        }
+                        return null;
                     }
                     return null;
                 }
         );
 
-        // Centrifuge Heart: split item handler quand formé
+        // Centrifuge Heart: pas de capability directe (pipes passent par les reservoirs)
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 BeemancerBlockEntities.CENTRIFUGE_HEART.get(),
-                (be, side) -> be.isFormed() ? be.getSplitItemHandler() : null
+                (be, side) -> null
         );
     }
 

@@ -195,12 +195,19 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     public void onMultiblockFormed() {
         formed = true;
         if (level != null && !level.isClientSide()) {
+            // 1. Link réservoirs AU CONTROLLER d'abord (avant que les blockstates ne déclenchent updateShape)
+            linkReservoirControllers(true);
+
+            // 2. Puis changer les blockstates (déclenche updateShape sur les pipes voisines)
             BlockState state = level.getBlockState(worldPosition);
             if (state.hasProperty(CentrifugeHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(CentrifugeHeartBlock.MULTIBLOCK, MultiblockProperty.CENTRIFUGE), 3);
             }
             setFormedOnStructureBlocks(true);
-            linkReservoirControllers(true);
+
+            // 3. Invalider les capabilities de TOUS les blocs du multibloc
+            invalidateAllCapabilities();
+
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
         }
@@ -210,12 +217,19 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     public void onMultiblockBroken() {
         formed = false;
         if (level != null && !level.isClientSide()) {
+            // 1. Changer les blockstates d'abord
             BlockState state = level.getBlockState(worldPosition);
             if (state.hasProperty(CentrifugeHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(CentrifugeHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
-            linkReservoirControllers(false);
             setFormedOnStructureBlocks(false);
+
+            // 2. Unlink réservoirs (controllerPos = null)
+            linkReservoirControllers(false);
+
+            // 3. Invalider les capabilities de TOUS les blocs du multibloc
+            invalidateAllCapabilities();
+
             MultiblockEvents.unregisterController(worldPosition);
             setChanged();
         }
@@ -282,6 +296,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
 
     /**
      * Lie ou délie les réservoirs au contrôleur pour la délégation de capabilities.
+     * Ne déclenche PAS invalidateCapabilities ici (fait séparément dans invalidateAllCapabilities).
      */
     private void linkReservoirControllers(boolean link) {
         if (level == null) return;
@@ -290,9 +305,24 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
             for (BlockPos offset : offsets) {
                 BlockPos reservoirPos = worldPosition.offset(offset);
                 if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
-                    reservoir.setControllerPos(link ? worldPosition : null);
+                    reservoir.setControllerPosQuiet(link ? worldPosition : null);
                 }
             }
+        }
+    }
+
+    /**
+     * Invalide les capabilities de TOUS les blocs du multibloc (coeur + réservoirs + structure).
+     * Force NeoForge à re-query les lambdas de capabilities pour chaque bloc.
+     */
+    private void invalidateAllCapabilities() {
+        if (level == null) return;
+        // Invalider le coeur
+        level.invalidateCapabilities(worldPosition);
+        // Invalider tous les blocs structurels (réservoirs, honeyed stone)
+        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
+            BlockPos blockPos = worldPosition.offset(element.offset());
+            level.invalidateCapabilities(blockPos);
         }
     }
 

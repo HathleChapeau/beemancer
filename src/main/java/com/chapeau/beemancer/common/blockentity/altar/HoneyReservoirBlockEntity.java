@@ -102,6 +102,18 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
         }
     }
 
+    /**
+     * Set le controllerPos sans déclencher invalidateCapabilities.
+     * Utilisé par le contrôleur multibloc qui fait l'invalidation globale après coup.
+     */
+    public void setControllerPosQuiet(@Nullable BlockPos pos) {
+        this.controllerPos = pos;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
     @Nullable
     public BlockPos getControllerPos() {
         return controllerPos;
