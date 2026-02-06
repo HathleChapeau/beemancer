@@ -24,6 +24,7 @@ package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.screen.codex.BeeTreePageRenderer;
+import com.chapeau.beemancer.client.gui.screen.codex.CodexDecorationRenderer;
 import com.chapeau.beemancer.client.gui.screen.codex.CodexPageRenderer;
 import com.chapeau.beemancer.client.gui.screen.codex.StandardPageRenderer;
 import com.chapeau.beemancer.common.codex.*;
@@ -88,6 +89,9 @@ public class CodexScreen extends Screen {
     private int contentWidth;
     private int contentHeight;
 
+    // Décorations background (cracks, stains, borders)
+    private List<CodexDecorationRenderer.Decoration> currentDecorations;
+
     // Scrolling
     private double scrollX = 0;
     private double scrollY = 0;
@@ -147,6 +151,10 @@ public class CodexScreen extends Screen {
         contentWidth = FRAME_WIDTH - BORDER * 2;
         contentHeight = FRAME_HEIGHT - BORDER * 2;
 
+        // Générer les décorations pour le tab courant
+        currentDecorations = CodexDecorationRenderer.generate(
+                currentPage, frameX, frameY, FRAME_WIDTH, FRAME_HEIGHT, BORDER);
+
         // Créer les boutons de tab
         createTabButtons();
 
@@ -188,6 +196,9 @@ public class CodexScreen extends Screen {
         currentRenderer = pageRenderers.get(currentPage);
         scrollX = 0;
         scrollY = 0;
+
+        currentDecorations = CodexDecorationRenderer.generate(
+                currentPage, frameX, frameY, FRAME_WIDTH, FRAME_HEIGHT, BORDER);
 
         rebuildNodeWidgets();
         updateTabButtonStyles();
@@ -242,6 +253,9 @@ public class CodexScreen extends Screen {
 
         // 1. Rendu du background uni (pas de tiling!)
         graphics.fill(frameX, frameY, frameX + FRAME_WIDTH, frameY + FRAME_HEIGHT, BG_COLOR);
+
+        // 1.5 Décorations (cracks, stains, borders)
+        CodexDecorationRenderer.render(graphics, currentDecorations);
 
         // 2. Rendu du contenu avec scissor (clippe aux bords)
         graphics.enableScissor(contentX, contentY, contentX + contentWidth, contentY + contentHeight);
