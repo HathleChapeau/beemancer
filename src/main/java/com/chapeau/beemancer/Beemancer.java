@@ -291,11 +291,11 @@ public class Beemancer {
                     : be.getHoneyTank()
         );
 
-        // Infuser Heart multibloc
+        // Infuser Heart multibloc: pas de capability directe quand forme (pipes passent par les reservoirs)
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 BeemancerBlockEntities.INFUSER_HEART.get(),
-                (be, side) -> be.getHoneyTank()
+                (be, side) -> be.isFormed() ? null : be.getHoneyTank()
         );
 
         // Centrifuge Heart multibloc: pas de capability directe (pipes passent par les reservoirs)
@@ -343,15 +343,11 @@ public class Beemancer {
                 (be, side) -> null
         );
 
-        // Infuser Heart: item input sur les cotes et le haut, output par le bas
+        // Infuser Heart: pas de capability directe quand forme (pipes passent par les reservoirs)
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 BeemancerBlockEntities.INFUSER_HEART.get(),
-                (be, side) -> {
-                    if (!be.isFormed()) return null;
-                    if (side == Direction.DOWN) return SplitItemHandler.outputOnly(be.getOutputSlot());
-                    return SplitItemHandler.inputOnly(be.getInputSlot());
-                }
+                (be, side) -> null
         );
     }
 

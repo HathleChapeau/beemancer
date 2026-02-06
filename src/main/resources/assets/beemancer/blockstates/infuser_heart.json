@@ -1,9 +1,15 @@
 {
   "variants": {
-    "multiblock=none": {
+    "multiblock=none,working=false": {
       "model": "beemancer:block/alchemy/infuser_heart"
     },
-    "multiblock=infuser": {
+    "multiblock=none,working=true": {
+      "model": "beemancer:block/alchemy/infuser_heart"
+    },
+    "multiblock=infuser,working=false": {
+      "model": "beemancer:block/alchemy/infuser_heart_infuser"
+    },
+    "multiblock=infuser,working=true": {
       "model": "beemancer:block/alchemy/infuser_heart_infuser"
     }
   }

@@ -8,23 +8,9 @@
     "iron8l": "beemancer:block/iron8x8light",
     "frame": "beemancer:block/iron40x40_no_light",
     "pillar": "beemancer:block/iron3x20",
-    "honey": "beemancer:block/alchemy/powered_centrifuge_heart",
     "particle": "beemancer:block/iron"
   },
   "elements": [
-    {
-      "name": "Core",
-      "from": [-4, -4, -4],
-      "to": [20, 20, 20],
-      "faces": {
-        "north": {"texture": "#honey", "uv": [0, 0, 16, 16]},
-        "east":  {"texture": "#honey", "uv": [0, 0, 16, 16]},
-        "south": {"texture": "#honey", "uv": [0, 0, 16, 16]},
-        "west":  {"texture": "#honey", "uv": [0, 0, 16, 16]},
-        "up":    {"texture": "#honey", "uv": [0, 0, 16, 16]},
-        "down":  {"texture": "#honey", "uv": [0, 0, 16, 16]}
-      }
-    },
     {
       "name": "Bottom",
       "from": [-12, -16, -12],

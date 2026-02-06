@@ -27,6 +27,7 @@ import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.beemancer.client.renderer.block.ControllerPipeRenderer;
 import com.chapeau.beemancer.client.renderer.block.CentrifugeHeartRenderer;
 import com.chapeau.beemancer.client.renderer.block.CrankRenderer;
+import com.chapeau.beemancer.client.renderer.block.InfuserHeartRenderer;
 import com.chapeau.beemancer.client.renderer.block.CrystallizerRenderer;
 import com.chapeau.beemancer.client.renderer.block.InfuserRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyTankRenderer;
@@ -180,6 +181,9 @@ public class ClientSetup {
         // CentrifugeHeartRenderer - cubes centraux animés de la centrifuge multibloc
         event.registerBlockEntityRenderer(BeemancerBlockEntities.CENTRIFUGE_HEART.get(),
             CentrifugeHeartRenderer::new);
+        // InfuserHeartRenderer - cubes centraux statiques de l'infuser multibloc
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER_HEART.get(),
+            InfuserHeartRenderer::new);
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -318,6 +322,9 @@ public class ClientSetup {
         // Modèles core du centrifuge heart (cubes animés)
         event.register(CentrifugeHeartRenderer.CORE_MODEL_LOC);
         event.register(CentrifugeHeartRenderer.CORE_WORKING_MODEL_LOC);
+
+        // Modèle core de l'infuser heart (cubes statiques)
+        event.register(InfuserHeartRenderer.CORE_MODEL_LOC);
 
         // Modèles multiblock tank
         event.register(MultiblockTankRenderer.FORMED_MODEL_LOC);  // Formé (scalé)

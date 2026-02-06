@@ -28,6 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -40,17 +41,31 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
 
 /**
  * Coeur de l'Infuser multibloc.
  * Clic droit: forme le multibloc ou ouvre le menu si deja forme.
+ *
+ * Multibloc 3x3x3 (meme layout que la centrifuge):
+ * Etage Y-1: Reservoirs aux cardinaux (output) + Honeyed Stone coins/centre
+ * Etage Y+0: Coeur au centre, air autour
+ * Etage Y+1: Reservoirs aux cardinaux (input) + Honeyed Stone coins/centre
  */
 public class InfuserHeartBlock extends Block implements EntityBlock {
 
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("infuser");
     public static final BooleanProperty WORKING = BooleanProperty.create("working");
+
+    // VoxelShape pour le coeur seul (non-forme): petit cube 8x8x8
+    private static final VoxelShape SHAPE_CORE = Block.box(4, 4, 4, 12, 12, 12);
+
+    // VoxelShape pour les 2 cubes centraux du multibloc forme: 24x24x24 centre
+    // De -4 a 20 sur chaque axe (24 pixels = 1.5 bloc)
+    private static final VoxelShape SHAPE_CUBES = Block.box(-4, -4, -4, 20, 20, 20);
 
     public InfuserHeartBlock(Properties properties) {
         super(properties);
@@ -66,7 +81,24 @@ public class InfuserHeartBlock extends Block implements EntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
+        // Quand forme: le BER rend le core, le blockstate model rend le frame
         return RenderShape.MODEL;
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
+            return SHAPE_CUBES;
+        }
+        return SHAPE_CORE;
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
+            return SHAPE_CUBES;
+        }
+        return SHAPE_CORE;
     }
 
     @Nullable

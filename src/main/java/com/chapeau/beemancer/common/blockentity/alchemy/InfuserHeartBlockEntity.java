@@ -6,20 +6,24 @@
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance              | Raison                | Utilisation                    |
- * |-------------------------|----------------------|--------------------------------|
- * | MultiblockController    | Interface controleur | Formation/destruction          |
- * | MultiblockPatterns      | Definition pattern   | INFUSER_MULTIBLOCK             |
- * | MultiblockValidator     | Validation           | tryFormMultiblock()            |
- * | MultiblockEvents        | Enregistrement       | Detection destruction          |
- * | BeemancerBlockEntities  | Type registration    | Constructor                    |
- * | BeemancerRecipeTypes    | Recettes infusing    | Processing                     |
- * | BeemancerFluids         | Validation fluides   | Tank filtering                 |
- * | ParticleHelper          | Effets visuels       | Particules processing          |
+ * | Dependance                    | Raison                | Utilisation                    |
+ * |-------------------------------|----------------------|--------------------------------|
+ * | MultiblockController          | Interface controleur | Formation/destruction          |
+ * | MultiblockCapabilityProvider  | Delegation caps      | Capabilities sur reservoirs    |
+ * | MultiblockPatterns            | Definition pattern   | INFUSER_MULTIBLOCK             |
+ * | MultiblockValidator           | Validation           | tryFormMultiblock()            |
+ * | MultiblockEvents              | Enregistrement       | Detection destruction          |
+ * | SplitFluidHandler             | Split fill/drain     | Capability fluid               |
+ * | SplitItemHandler              | Split insert/extract | Capability item                |
+ * | BeemancerBlockEntities        | Type registration    | Constructor                    |
+ * | BeemancerRecipeTypes          | Recettes infusing    | Processing                     |
+ * | BeemancerFluids               | Validation fluides   | Tank filtering                 |
+ * | ParticleHelper                | Effets visuels       | Particules processing          |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
  * - InfuserHeartBlock.java (creation BlockEntity, ticker)
+ * - Beemancer.java (capability registration)
  *
  * ============================================================
  */
@@ -27,10 +31,15 @@ package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.InfuserHeartBlock;
+import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.menu.alchemy.InfuserMenu;
+import com.chapeau.beemancer.core.multiblock.BlockIORule;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
+import com.chapeau.beemancer.core.multiblock.IOMode;
+import com.chapeau.beemancer.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
+import com.chapeau.beemancer.core.multiblock.MultiblockIOConfig;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
@@ -41,7 +50,10 @@ import com.chapeau.beemancer.core.recipe.type.InfusingRecipe;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.util.ParticleHelper;
+import com.chapeau.beemancer.core.util.SplitFluidHandler;
+import com.chapeau.beemancer.core.util.SplitItemHandler;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
@@ -64,6 +76,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.joml.Vector3f;
 
@@ -74,12 +87,47 @@ import java.util.Optional;
  * BlockEntity du Coeur de l'Infuser multibloc.
  * Equivalent a l'InfuserBlockEntity TIER3 (16000mB, 0.5x process time).
  * Ne process que lorsque le multibloc est forme.
+ *
+ * Meme layout que la centrifuge:
+ * - Y+1: 4 reservoirs cardinaux (INPUT miel + items)
+ * - Y+0: Coeur au centre
+ * - Y-1: 4 reservoirs cardinaux (OUTPUT produits)
  */
-public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockController, MenuProvider {
+public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockController, MultiblockCapabilityProvider, MenuProvider {
 
     private static final int TANK_CAPACITY = 16000;
     private static final float PROCESS_TIME_MULTIPLIER = 0.5f;
     private static final int DEFAULT_PROCESS_TIME = 200;
+
+    // Positions des reservoirs (relatif au coeur)
+    // Top (Y+1): cardinaux pour l'entree (miel + items)
+    private static final BlockPos[] INPUT_RESERVOIR_OFFSETS = {
+        new BlockPos(0, 1, -1),    // Nord
+        new BlockPos(-1, 1, 0),    // Ouest
+        new BlockPos(1, 1, 0),     // Est
+        new BlockPos(0, 1, 1)      // Sud
+    };
+    // Bottom (Y-1): cardinaux pour la sortie (produits)
+    private static final BlockPos[] OUTPUT_RESERVOIR_OFFSETS = {
+        new BlockPos(0, -1, -1),   // Nord
+        new BlockPos(-1, -1, 0),   // Ouest
+        new BlockPos(1, -1, 0),    // Est
+        new BlockPos(0, -1, 1)     // Sud
+    };
+
+    // Configuration IO declarative : quelles faces exposent quoi
+    private static final MultiblockIOConfig IO_CONFIG = MultiblockIOConfig.builder()
+        // Top reservoirs (Y+1): fuel/items INPUT sur les cotes uniquement
+        .position(0, 1, -1, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        .position(-1, 1, 0, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        .position(1, 1, 0, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        .position(0, 1, 1, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        // Bottom reservoirs (Y-1): product OUTPUT sur les cotes uniquement
+        .position(0, -1, -1, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .position(-1, -1, 0, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .position(1, -1, 0, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .position(0, -1, 1, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .build();
 
     private boolean formed = false;
     private boolean isProcessingDrain = false;
@@ -164,11 +212,19 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
     public void onMultiblockFormed() {
         formed = true;
         if (level != null && !level.isClientSide()) {
+            // 1. Link reservoirs au controller d'abord
+            linkReservoirControllers(true);
+
+            // 2. Changer les blockstates
             BlockState state = level.getBlockState(worldPosition);
             if (state.hasProperty(InfuserHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(InfuserHeartBlock.MULTIBLOCK, MultiblockProperty.INFUSER), 3);
             }
             setFormedOnStructureBlocks(true);
+
+            // 3. Invalider les capabilities de tous les blocs du multibloc
+            invalidateAllCapabilities();
+
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
         }
@@ -178,18 +234,26 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
     public void onMultiblockBroken() {
         formed = false;
         if (level != null && !level.isClientSide()) {
+            // 1. Changer les blockstates d'abord
             BlockState state = level.getBlockState(worldPosition);
             if (state.hasProperty(InfuserHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(InfuserHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
             setFormedOnStructureBlocks(false);
+
+            // 2. Unlink reservoirs
+            linkReservoirControllers(false);
+
+            // 3. Invalider les capabilities de tous les blocs du multibloc
+            invalidateAllCapabilities();
+
             MultiblockEvents.unregisterController(worldPosition);
             setChanged();
         }
     }
 
     /**
-     * Met à jour la propriété MULTIBLOCK sur tous les blocs de la structure.
+     * Met a jour la propriete MULTIBLOCK sur tous les blocs de la structure.
      */
     private void setFormedOnStructureBlocks(boolean formed) {
         if (level == null) return;
@@ -227,6 +291,64 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
 
         Beemancer.LOGGER.debug("Infuser validation failed at {}", worldPosition);
         return false;
+    }
+
+    // ==================== MultiblockCapabilityProvider ====================
+
+    @Override
+    @Nullable
+    public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
+        if (!formed) return null;
+        IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face);
+        if (mode == null || mode == IOMode.NONE) return null;
+        return switch (mode) {
+            case INPUT -> SplitFluidHandler.inputOnly(honeyTank);
+            case OUTPUT -> SplitFluidHandler.outputOnly(honeyTank);
+            case BOTH -> honeyTank;
+            default -> null;
+        };
+    }
+
+    @Override
+    @Nullable
+    public IItemHandler getItemHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
+        if (!formed) return null;
+        IOMode mode = IO_CONFIG.getItemMode(worldPosition, worldPos, face);
+        if (mode == null || mode == IOMode.NONE) return null;
+        return switch (mode) {
+            case INPUT -> SplitItemHandler.inputOnly(inputSlot);
+            case OUTPUT -> SplitItemHandler.outputOnly(outputSlot);
+            case BOTH -> inputSlot;
+            default -> null;
+        };
+    }
+
+    /**
+     * Lie ou delie les reservoirs au controleur pour la delegation de capabilities.
+     */
+    private void linkReservoirControllers(boolean link) {
+        if (level == null) return;
+        BlockPos[][] allOffsets = { INPUT_RESERVOIR_OFFSETS, OUTPUT_RESERVOIR_OFFSETS };
+        for (BlockPos[] offsets : allOffsets) {
+            for (BlockPos offset : offsets) {
+                BlockPos reservoirPos = worldPosition.offset(offset);
+                if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
+                    reservoir.setControllerPosQuiet(link ? worldPosition : null);
+                }
+            }
+        }
+    }
+
+    /**
+     * Invalide les capabilities de tous les blocs du multibloc.
+     */
+    private void invalidateAllCapabilities() {
+        if (level == null) return;
+        level.invalidateCapabilities(worldPosition);
+        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
+            BlockPos blockPos = worldPosition.offset(element.offset());
+            level.invalidateCapabilities(blockPos);
+        }
     }
 
     // ==================== Processing ====================
@@ -269,7 +391,44 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
             ParticleHelper.orbitingRing(serverLevel, honeyParticle, center, 0.35, 8, 0.08);
         }
 
+        // Mise a jour des niveaux visuels des reservoirs (toutes les 10 ticks)
+        if (level.getGameTime() % 10 == 0) {
+            be.updateReservoirLevels();
+        }
+
         be.setChanged();
+    }
+
+    /**
+     * Met a jour les niveaux visuels des reservoirs du multibloc.
+     * - Reservoirs du haut (Y+1): affichent le niveau du honeyTank (entree)
+     * - Reservoirs du bas (Y-1): vides (l'infuser n'a pas de tank de sortie fluide)
+     * Chaque reservoir affiche 1/4 de la capacite totale du tank.
+     */
+    private void updateReservoirLevels() {
+        if (level == null) return;
+
+        int honeyPerReservoir = honeyTank.getFluidAmount() / 4;
+
+        // Mise a jour des reservoirs input (haut): affichent le miel
+        for (BlockPos offset : INPUT_RESERVOIR_OFFSETS) {
+            BlockPos reservoirPos = worldPosition.offset(offset);
+            if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
+                FluidTank tank = reservoir.getFluidTank();
+                FluidStack currentFluid = honeyTank.getFluid();
+                tank.setFluid(currentFluid.isEmpty()
+                    ? FluidStack.EMPTY
+                    : currentFluid.copyWithAmount(Math.min(honeyPerReservoir, HoneyReservoirBlockEntity.CAPACITY)));
+            }
+        }
+
+        // Mise a jour des reservoirs output (bas): vides (pas de output tank fluide)
+        for (BlockPos offset : OUTPUT_RESERVOIR_OFFSETS) {
+            BlockPos reservoirPos = worldPosition.offset(offset);
+            if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
+                reservoir.getFluidTank().setFluid(FluidStack.EMPTY);
+            }
+        }
     }
 
     private Optional<RecipeHolder<InfusingRecipe>> findRecipe(Level level) {
