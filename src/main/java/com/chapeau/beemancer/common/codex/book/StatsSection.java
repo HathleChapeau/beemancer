@@ -102,7 +102,7 @@ public class StatsSection extends CodexBookSection {
 
         // Loot line
         String lootName = formatItemName(data.lootItem);
-        String lootLine = "Loot: " + lootName + (data.inComb ? " (in comb)" : "");
+        String lootLine = "Loot: " + lootName;
         graphics.drawString(font, lootLine, x, currentY, INFO_COLOR, false);
     }
 
