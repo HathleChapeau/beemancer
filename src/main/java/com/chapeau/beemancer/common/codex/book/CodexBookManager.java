@@ -9,19 +9,22 @@
  * | Dépendance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | CodexBookContent    | Données de contenu   | Stockage et accès              |
+ * | CodexManager        | Liste des nodes      | Itération sur les nodeIds      |
  * | Gson                | Parsing JSON         | Chargement des fichiers        |
  * | ResourceManager     | Accès ressources     | Lecture des données            |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
  * - CodexBookScreen (récupération du contenu à afficher)
- * - Beemancer (initialisation au démarrage)
  *
  * ============================================================
  */
 package com.chapeau.beemancer.common.codex.book;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.codex.CodexManager;
+import com.chapeau.beemancer.common.codex.CodexNode;
+import com.chapeau.beemancer.common.codex.CodexPage;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
@@ -29,9 +32,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class CodexBookManager {
 
@@ -41,34 +42,46 @@ public class CodexBookManager {
 
     /**
      * Charge le contenu des pages du livre depuis les fichiers JSON.
-     * Fichiers attendus dans: data/beemancer/codex/book/{nodeId}.json
+     * Itère sur tous les nodeIds connus et tente de charger
+     * data/beemancer/codex/book/{nodeId}.json pour chacun.
      * @param resourceManager Le gestionnaire de ressources
      */
     public static void load(ResourceManager resourceManager) {
         CONTENTS.clear();
 
-        Map<ResourceLocation, Resource> resources = resourceManager.listResources(
-                "codex/book", path -> path.getPath().endsWith(".json"));
+        // Collecter tous les nodeIds uniques depuis le CodexManager
+        Set<String> nodeIds = new HashSet<>();
+        for (CodexPage page : CodexPage.values()) {
+            List<CodexNode> nodes = CodexManager.getNodesForPage(page);
+            if (nodes != null) {
+                for (CodexNode node : nodes) {
+                    nodeIds.add(node.getId());
+                }
+            }
+        }
 
-        Beemancer.LOGGER.info("CodexBook scanning: found {} resource files", resources.size());
+        // Charger le JSON de chaque node par chemin exact
+        for (String nodeId : nodeIds) {
+            ResourceLocation path = ResourceLocation.fromNamespaceAndPath(
+                    Beemancer.MOD_ID, "codex/book/" + nodeId + ".json");
 
-        for (Map.Entry<ResourceLocation, Resource> entry : resources.entrySet()) {
-            ResourceLocation location = entry.getKey();
-            String path = location.getPath();
-            String nodeId = path.substring(path.lastIndexOf('/') + 1, path.length() - 5);
-
-            try (InputStreamReader reader = new InputStreamReader(entry.getValue().open())) {
-                JsonObject json = GSON.fromJson(reader, JsonObject.class);
-                CodexBookContent content = CodexBookContent.fromJson(nodeId, json);
-                CONTENTS.put(nodeId, content);
-                Beemancer.LOGGER.info("Loaded book content for node: {} ({} sections)", nodeId, content.getSections().size());
-            } catch (Exception e) {
-                Beemancer.LOGGER.error("Failed to load book content for {}: {}", nodeId, e.getMessage());
+            Optional<Resource> resourceOpt = resourceManager.getResource(path);
+            if (resourceOpt.isPresent()) {
+                try (InputStreamReader reader = new InputStreamReader(resourceOpt.get().open())) {
+                    JsonObject json = GSON.fromJson(reader, JsonObject.class);
+                    CodexBookContent content = CodexBookContent.fromJson(nodeId, json);
+                    CONTENTS.put(nodeId, content);
+                    Beemancer.LOGGER.info("Loaded book content for node: {} ({} sections)",
+                            nodeId, content.getSections().size());
+                } catch (Exception e) {
+                    Beemancer.LOGGER.error("Failed to load book content for {}: {}", nodeId, e.getMessage());
+                }
             }
         }
 
         loaded = true;
-        Beemancer.LOGGER.info("CodexBook loaded: {} custom pages, rest use defaults", CONTENTS.size());
+        Beemancer.LOGGER.info("CodexBook loaded: {} custom pages out of {} nodes",
+                CONTENTS.size(), nodeIds.size());
     }
 
     /**
@@ -92,6 +105,7 @@ public class CodexBookManager {
         if (!loaded) {
             net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
             if (mc != null && mc.getResourceManager() != null) {
+                CodexManager.ensureClientLoaded();
                 load(mc.getResourceManager());
             }
         }
