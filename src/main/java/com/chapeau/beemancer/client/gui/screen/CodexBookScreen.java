@@ -59,7 +59,8 @@ public class CodexBookScreen extends Screen {
     private static final int SPINE_WIDTH = 10;
 
     private static final int PAGE_PADDING = 4;
-    private static final float CONTENT_SCALE = 0.85f;
+    private static final float CONTENT_SCALE = 0.95f;
+    private static final int RIGHT_PAGE_EXTRA_MARGIN = 10;
     private static final int ARROW_DISABLED_COLOR = 0xFF9C8A70;
 
     private final CodexNode node;
@@ -179,10 +180,10 @@ public class CodexBookScreen extends Screen {
                     leftPageX, contentTopY, nodeTitle, relativeDay);
         }
 
-        // Page droite
+        // Page droite (marge supplémentaire à gauche)
         if (spreadPages[1] < paginatedContent.size()) {
             renderPageSections(graphics, paginatedContent.get(spreadPages[1]),
-                    rightPageX, contentTopY, nodeTitle, relativeDay);
+                    rightPageX + RIGHT_PAGE_EXTRA_MARGIN, contentTopY, nodeTitle, relativeDay);
         }
 
         // Numéro de page
