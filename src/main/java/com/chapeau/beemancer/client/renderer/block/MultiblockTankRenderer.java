@@ -183,7 +183,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
         // Y de départ (juste au-dessus de la base opaque): 0.32 * cubeSize
         // Y d'arrivée (juste en dessous du top): 0.95 * cubeSize
         float yStart = 0.32f * cubeSize;
-        float yEnd = 0.95f * cubeSize;
+        float yEnd = 0.98f * cubeSize;
 
         // Lerp entre yStart et yEnd selon le % de remplissage
         float minY = yStart;
