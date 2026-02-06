@@ -180,9 +180,9 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
         float minZ = inset;
         float maxZ = cubeSize - inset;
 
-        // Y de départ (juste au-dessus de la base opaque): 0.35 * cubeSize
+        // Y de départ (juste au-dessus de la base opaque): 0.32 * cubeSize
         // Y d'arrivée (juste en dessous du top): 0.95 * cubeSize
-        float yStart = 0.35f * cubeSize;
+        float yStart = 0.32f * cubeSize;
         float yEnd = 0.95f * cubeSize;
 
         // Lerp entre yStart et yEnd selon le % de remplissage
