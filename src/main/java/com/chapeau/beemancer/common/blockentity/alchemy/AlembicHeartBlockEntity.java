@@ -6,15 +6,18 @@
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance              | Raison                | Utilisation                    |
- * |-------------------------|----------------------|--------------------------------|
- * | MultiblockController    | Interface controleur | Formation/destruction          |
- * | MultiblockPatterns      | Definition pattern   | ALEMBIC_MULTIBLOCK             |
- * | MultiblockValidator     | Validation           | tryFormMultiblock()            |
- * | MultiblockEvents        | Enregistrement       | Detection destruction          |
- * | BeemancerBlockEntities  | Type registration    | Constructor                    |
- * | BeemancerRecipeTypes    | Recettes distilling  | Processing                     |
- * | BeemancerFluids         | Validation fluides   | Tank filtering                 |
+ * | Dependance                    | Raison                | Utilisation                    |
+ * |-------------------------------|----------------------|--------------------------------|
+ * | MultiblockController          | Interface controleur | Formation/destruction          |
+ * | MultiblockCapabilityProvider  | Delegation caps      | Capabilities sur reservoirs    |
+ * | MultiblockIOConfig            | Config IO declarative| IO_CONFIG statique             |
+ * | MultiblockPatterns            | Definition pattern   | ALEMBIC_MULTIBLOCK             |
+ * | MultiblockValidator           | Validation           | tryFormMultiblock()            |
+ * | MultiblockEvents              | Enregistrement       | Detection destruction          |
+ * | SplitFluidHandler             | Handlers directionnels| inputOnly/outputOnly          |
+ * | BeemancerBlockEntities        | Type registration    | Constructor                    |
+ * | BeemancerRecipeTypes          | Recettes distilling  | Processing                     |
+ * | BeemancerFluids               | Validation fluides   | Tank filtering                 |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -26,14 +29,20 @@ package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.AlembicHeartBlock;
+import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.menu.alchemy.AlembicMenu;
+import com.chapeau.beemancer.core.multiblock.BlockIORule;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
+import com.chapeau.beemancer.core.multiblock.IOMode;
+import com.chapeau.beemancer.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
+import com.chapeau.beemancer.core.multiblock.MultiblockIOConfig;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.core.multiblock.MultiblockValidator;
+import com.chapeau.beemancer.core.util.SplitFluidHandler;
 import com.chapeau.beemancer.core.recipe.BeemancerRecipeTypes;
 import com.chapeau.beemancer.core.recipe.ProcessingRecipeInput;
 import com.chapeau.beemancer.core.recipe.type.DistillingRecipe;
@@ -42,6 +51,7 @@ import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -70,10 +80,33 @@ import java.util.Optional;
  * Gere la distillation: Honey + Royal Jelly -> Nectar.
  * Ne process que lorsque le multibloc est forme.
  */
-public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockController, MenuProvider {
+public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockController, MultiblockCapabilityProvider, MenuProvider {
 
     private static final int TANK_CAPACITY = 4000;
     private static final int DEFAULT_PROCESS_TIME = 80;
+
+    // Positions des reservoirs (relatif au coeur)
+    private static final BlockPos[] RESERVOIR_OFFSETS = {
+        new BlockPos(0, -1, 0),   // Bas (nectar output)
+        new BlockPos(-1, 0, 0),   // Gauche (honey input)
+        new BlockPos(1, 0, 0)     // Droit (royal jelly input)
+    };
+
+    // Configuration IO declarative : quelles faces exposent quoi
+    private static final MultiblockIOConfig IO_CONFIG = MultiblockIOConfig.builder()
+        // Heart (0,0,0) : directional per-face
+        .fluid(0, 0, 0, BlockIORule.builder()
+            .down(IOMode.OUTPUT)
+            .up(IOMode.INPUT)
+            .sides(IOMode.INPUT)
+            .build())
+        // Reservoir bas (0,-1,0) : nectar output sur les cotes
+        .fluid(0, -1, 0, BlockIORule.sides(IOMode.OUTPUT))
+        // Reservoir gauche (-1,0,0) : honey input sur les cotes
+        .fluid(-1, 0, 0, BlockIORule.sides(IOMode.INPUT))
+        // Reservoir droit (1,0,0) : royal jelly input sur les cotes
+        .fluid(1, 0, 0, BlockIORule.sides(IOMode.INPUT))
+        .build();
 
     private boolean formed = false;
     private boolean isProcessingDrain = false;
@@ -162,11 +195,19 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
     public void onMultiblockFormed() {
         formed = true;
         if (level != null && !level.isClientSide()) {
+            // 1. Link reservoirs AU CONTROLLER d'abord (avant que les blockstates ne declenchent updateShape)
+            linkReservoirControllers(true);
+
+            // 2. Puis changer les blockstates (declenche updateShape sur les pipes voisines)
             BlockState state = level.getBlockState(worldPosition);
             if (state.hasProperty(AlembicHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(AlembicHeartBlock.MULTIBLOCK, MultiblockProperty.ALEMBIC), 3);
             }
             setFormedOnStructureBlocks(true);
+
+            // 3. Invalider les capabilities de TOUS les blocs du multibloc
+            invalidateAllCapabilities();
+
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
         }
@@ -176,11 +217,19 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
     public void onMultiblockBroken() {
         formed = false;
         if (level != null && !level.isClientSide()) {
+            // 1. Changer les blockstates d'abord
             BlockState state = level.getBlockState(worldPosition);
             if (state.hasProperty(AlembicHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(AlembicHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
             setFormedOnStructureBlocks(false);
+
+            // 2. Unlink reservoirs (controllerPos = null)
+            linkReservoirControllers(false);
+
+            // 3. Invalider les capabilities de TOUS les blocs du multibloc
+            invalidateAllCapabilities();
+
             MultiblockEvents.unregisterController(worldPosition);
             setChanged();
         }
@@ -238,6 +287,66 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
 
         Beemancer.LOGGER.debug("Alembic validation failed at {}", worldPosition);
         return false;
+    }
+
+    // ==================== MultiblockCapabilityProvider ====================
+
+    @Override
+    @Nullable
+    public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
+        if (!formed) return null;
+        IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face);
+        if (mode == null || mode == IOMode.NONE) return null;
+        Vec3i offset = worldPos.subtract(worldPosition);
+        FluidTank tank = getAlembicTankForOffset(offset, face);
+        if (tank == null) return null;
+        return switch (mode) {
+            case INPUT -> SplitFluidHandler.inputOnly(tank);
+            case OUTPUT -> SplitFluidHandler.outputOnly(tank);
+            case BOTH -> tank;
+            default -> null;
+        };
+    }
+
+    /**
+     * Mappe une position relative et une face au tank correspondant.
+     * Le heart a un mapping per-face, les reservoirs ont un mapping par position.
+     */
+    private FluidTank getAlembicTankForOffset(Vec3i offset, @Nullable Direction face) {
+        if (offset.equals(Vec3i.ZERO)) {
+            if (face == Direction.DOWN) return nectarTank;
+            if (face == Direction.UP) return royalJellyTank;
+            return honeyTank;
+        }
+        if (offset.getY() == -1) return nectarTank;
+        if (offset.getX() == -1) return honeyTank;
+        if (offset.getX() == 1) return royalJellyTank;
+        return null;
+    }
+
+    /**
+     * Lie ou delie les reservoirs au controleur pour la delegation de capabilities.
+     */
+    private void linkReservoirControllers(boolean link) {
+        if (level == null) return;
+        for (BlockPos offset : RESERVOIR_OFFSETS) {
+            BlockPos reservoirPos = worldPosition.offset(offset);
+            if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
+                reservoir.setControllerPosQuiet(link ? worldPosition : null);
+            }
+        }
+    }
+
+    /**
+     * Invalide les capabilities de TOUS les blocs du multibloc (coeur + structure).
+     */
+    private void invalidateAllCapabilities() {
+        if (level == null) return;
+        level.invalidateCapabilities(worldPosition);
+        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
+            BlockPos blockPos = worldPosition.offset(element.offset());
+            level.invalidateCapabilities(blockPos);
+        }
     }
 
     // ==================== Processing ====================

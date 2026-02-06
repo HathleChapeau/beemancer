@@ -39,6 +39,7 @@ import com.chapeau.beemancer.core.breeding.BreedingManager;
 import com.chapeau.beemancer.core.gene.GeneRegistry;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.network.BeemancerNetwork;
+import com.chapeau.beemancer.core.util.SplitItemHandler;
 import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
 import com.chapeau.beemancer.core.network.packets.QuestSyncPacket;
@@ -281,15 +282,13 @@ public class Beemancer {
                 (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getFuelTank()
         );
 
-        // Alembic Heart multibloc
+        // Alembic Heart multibloc: delegation IOConfig quand forme, fallback honey quand standalone
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 BeemancerBlockEntities.ALEMBIC_HEART.get(),
-                (be, side) -> {
-                    if (side == Direction.DOWN) return be.getNectarTank();
-                    if (side == Direction.UP) return be.getRoyalJellyTank();
-                    return be.getHoneyTank();
-                }
+                (be, side) -> be.isFormed()
+                    ? be.getFluidHandlerForBlock(be.getBlockPos(), side)
+                    : be.getHoneyTank()
         );
 
         // Infuser Heart multibloc
@@ -342,6 +341,17 @@ public class Beemancer {
                 Capabilities.ItemHandler.BLOCK,
                 BeemancerBlockEntities.CENTRIFUGE_HEART.get(),
                 (be, side) -> null
+        );
+
+        // Infuser Heart: item input sur les cotes et le haut, output par le bas
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                BeemancerBlockEntities.INFUSER_HEART.get(),
+                (be, side) -> {
+                    if (!be.isFormed()) return null;
+                    if (side == Direction.DOWN) return SplitItemHandler.outputOnly(be.getOutputSlot());
+                    return SplitItemHandler.inputOnly(be.getInputSlot());
+                }
         );
     }
 

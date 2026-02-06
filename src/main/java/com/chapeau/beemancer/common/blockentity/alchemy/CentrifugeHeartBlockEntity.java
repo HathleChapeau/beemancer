@@ -33,9 +33,12 @@ import com.chapeau.beemancer.common.block.alchemy.CentrifugeHeartBlock;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.menu.alchemy.PoweredCentrifugeMenu;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
+import com.chapeau.beemancer.core.multiblock.BlockIORule;
+import com.chapeau.beemancer.core.multiblock.IOMode;
 import com.chapeau.beemancer.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
+import com.chapeau.beemancer.core.multiblock.MultiblockIOConfig;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
@@ -107,6 +110,20 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
         new BlockPos(1, 1, 0),     // Est
         new BlockPos(0, 1, 1)      // Sud
     };
+
+    // Configuration IO declarative : quelles faces exposent quoi
+    private static final MultiblockIOConfig IO_CONFIG = MultiblockIOConfig.builder()
+        // Bottom reservoirs (Y-1): fuel INPUT sur les cotes uniquement
+        .position(0, -1, -1, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        .position(-1, -1, 0, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        .position(1, -1, 0, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        .position(0, -1, 1, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        // Top reservoirs (Y+1): product OUTPUT sur les cotes uniquement
+        .position(0, 1, -1, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .position(-1, 1, 0, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .position(1, 1, 0, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .position(0, 1, 1, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .build();
 
     private boolean formed = false;
     private ItemStack previousInputType = ItemStack.EMPTY;
@@ -282,16 +299,28 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     @Nullable
     public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
         if (!formed) return null;
-        if (face == Direction.UP || face == Direction.DOWN) return null;
-        return splitFluidHandler;
+        IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face);
+        if (mode == null || mode == IOMode.NONE) return null;
+        return switch (mode) {
+            case INPUT -> SplitFluidHandler.inputOnly(fuelTank);
+            case OUTPUT -> SplitFluidHandler.outputOnly(outputTank);
+            case BOTH -> splitFluidHandler;
+            default -> null;
+        };
     }
 
     @Override
     @Nullable
     public IItemHandler getItemHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
         if (!formed) return null;
-        if (face == Direction.UP || face == Direction.DOWN) return null;
-        return splitItemHandler;
+        IOMode mode = IO_CONFIG.getItemMode(worldPosition, worldPos, face);
+        if (mode == null || mode == IOMode.NONE) return null;
+        return switch (mode) {
+            case INPUT -> SplitItemHandler.inputOnly(inputSlot);
+            case OUTPUT -> SplitItemHandler.outputOnly(outputSlots);
+            case BOTH -> splitItemHandler;
+            default -> null;
+        };
     }
 
     /**

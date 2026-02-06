@@ -14,7 +14,8 @@
  *
  * UTILISÉ PAR:
  * - CentrifugeHeartBlockEntity (fuelTank input, outputTank output)
- * - Tout multibloc nécessitant une séparation fill/drain
+ * - AlembicHeartBlockEntity (per-tank directional access)
+ * - Tout multibloc nécessitant une séparation fill/drain ou un accès unidirectionnel
  *
  * ============================================================
  */
@@ -72,5 +73,41 @@ public class SplitFluidHandler implements IFluidHandler {
     @Override
     public FluidStack drain(int maxDrain, FluidAction action) {
         return outputTank.drain(maxDrain, action);
+    }
+
+    // --- Factories unidirectionnelles ---
+
+    /**
+     * Cree un handler qui autorise uniquement fill() (insertion).
+     * drain() retourne toujours EMPTY.
+     * Utilise pour IOMode.INPUT sur un tank specifique.
+     */
+    public static IFluidHandler inputOnly(FluidTank tank) {
+        return new IFluidHandler() {
+            @Override public int getTanks() { return 1; }
+            @Override public FluidStack getFluidInTank(int t) { return tank.getFluid(); }
+            @Override public int getTankCapacity(int t) { return tank.getCapacity(); }
+            @Override public boolean isFluidValid(int t, FluidStack s) { return tank.isFluidValid(s); }
+            @Override public int fill(FluidStack resource, FluidAction action) { return tank.fill(resource, action); }
+            @Override public FluidStack drain(FluidStack resource, FluidAction action) { return FluidStack.EMPTY; }
+            @Override public FluidStack drain(int maxDrain, FluidAction action) { return FluidStack.EMPTY; }
+        };
+    }
+
+    /**
+     * Cree un handler qui autorise uniquement drain() (extraction).
+     * fill() retourne toujours 0.
+     * Utilise pour IOMode.OUTPUT sur un tank specifique.
+     */
+    public static IFluidHandler outputOnly(FluidTank tank) {
+        return new IFluidHandler() {
+            @Override public int getTanks() { return 1; }
+            @Override public FluidStack getFluidInTank(int t) { return tank.getFluid(); }
+            @Override public int getTankCapacity(int t) { return tank.getCapacity(); }
+            @Override public boolean isFluidValid(int t, FluidStack s) { return false; }
+            @Override public int fill(FluidStack resource, FluidAction action) { return 0; }
+            @Override public FluidStack drain(FluidStack resource, FluidAction action) { return tank.drain(resource, action); }
+            @Override public FluidStack drain(int maxDrain, FluidAction action) { return tank.drain(maxDrain, action); }
+        };
     }
 }

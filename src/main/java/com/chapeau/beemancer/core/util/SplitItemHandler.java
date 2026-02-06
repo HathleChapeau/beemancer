@@ -13,7 +13,8 @@
  *
  * UTILISÉ PAR:
  * - CentrifugeHeartBlockEntity (inputSlot insert, outputSlots extract)
- * - Tout multibloc nécessitant une séparation insert/extract
+ * - Beemancer.java (factories inputOnly/outputOnly pour capabilities Infuser)
+ * - Tout multibloc nécessitant une séparation insert/extract ou un accès unidirectionnel
  *
  * ============================================================
  */
@@ -153,5 +154,39 @@ public class SplitItemHandler implements IItemHandler {
 
     public int getInputSlotCount() {
         return inputSlotCount;
+    }
+
+    // --- Factories unidirectionnelles ---
+
+    /**
+     * Cree un handler qui autorise uniquement insertItem() (insertion).
+     * extractItem() retourne toujours EMPTY.
+     * Utilise pour IOMode.INPUT sur un handler specifique.
+     */
+    public static IItemHandler inputOnly(IItemHandler handler) {
+        return new IItemHandler() {
+            @Override public int getSlots() { return handler.getSlots(); }
+            @Override public ItemStack getStackInSlot(int slot) { return handler.getStackInSlot(slot); }
+            @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return handler.insertItem(slot, stack, simulate); }
+            @Override public ItemStack extractItem(int slot, int amount, boolean simulate) { return ItemStack.EMPTY; }
+            @Override public int getSlotLimit(int slot) { return handler.getSlotLimit(slot); }
+            @Override public boolean isItemValid(int slot, ItemStack stack) { return handler.isItemValid(slot, stack); }
+        };
+    }
+
+    /**
+     * Cree un handler qui autorise uniquement extractItem() (extraction).
+     * insertItem() retourne toujours le stack non modifie.
+     * Utilise pour IOMode.OUTPUT sur un handler specifique.
+     */
+    public static IItemHandler outputOnly(IItemHandler handler) {
+        return new IItemHandler() {
+            @Override public int getSlots() { return handler.getSlots(); }
+            @Override public ItemStack getStackInSlot(int slot) { return handler.getStackInSlot(slot); }
+            @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return stack; }
+            @Override public ItemStack extractItem(int slot, int amount, boolean simulate) { return handler.extractItem(slot, amount, simulate); }
+            @Override public int getSlotLimit(int slot) { return handler.getSlotLimit(slot); }
+            @Override public boolean isItemValid(int slot, ItemStack stack) { return false; }
+        };
     }
 }
