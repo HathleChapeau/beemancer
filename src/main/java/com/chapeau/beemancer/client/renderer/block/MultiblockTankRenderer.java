@@ -188,7 +188,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
         // Lerp entre yStart et yEnd selon le % de remplissage
         float minY = yStart;
         float maxY = yStart + (yEnd - yStart) * fillRatio;
-        LOGGER.warn("Ratio : {}/{}/{}/{}", fillRatio, (float) tank.getFluidAmount(), tank.getCapacity(), (Math.pow(cubeSize, 3)));
+        //LOGGER.warn("Ratio : {}/{}/{}/{}", fillRatio, (float) tank.getFluidAmount(), tank.getCapacity(), (Math.pow(cubeSize, 3)));
 
         var pose = poseStack.last();
         FluidCubeRenderer.renderFluidCube(consumer, pose, sprite,
