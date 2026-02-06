@@ -383,7 +383,7 @@ public class MultiblockPatterns {
     // Étage 3 (Y+1): Reservoirs cardinaux (output), Honeyed Stone coins + centre
     //         [S][R][S]     R=Reservoir (output), S=Honeyed Stone
     //         [R][S][R]
-    //         [S][R][S]
+    //         [S][R ][S]
     //
     // Étage 2 (Y+0): Air autour du coeur
     //         [ ][ ][ ]
