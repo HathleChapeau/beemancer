@@ -258,7 +258,7 @@ public class Beemancer {
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 BeemancerBlockEntities.MULTIBLOCK_TANK.get(),
-                (be, side) -> be.isValidCuboid() ? be.getFluidTank() : null
+                (be, side) -> be.isFormed() ? be.getFluidTank() : null
         );
 
         // Directional fluid handlers
