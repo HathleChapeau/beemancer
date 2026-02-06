@@ -46,23 +46,17 @@ public class CodexBookScreen extends Screen {
     private static final ResourceLocation BOOK_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Beemancer.MOD_ID, "textures/gui/codex_book.png");
 
-    // Dimensions de la texture source
-    private static final int TEX_WIDTH = 300;
-    private static final int TEX_HEIGHT = 204;
+    // Dimensions du livre (taille native de la texture)
+    private static final int BOOK_WIDTH = 300;
+    private static final int BOOK_HEIGHT = 204;
 
-    // Échelle de rendu (x2 pour lisibilité)
-    private static final int RENDER_SCALE = 2;
-    private static final int BOOK_WIDTH = TEX_WIDTH * RENDER_SCALE;
-    private static final int BOOK_HEIGHT = TEX_HEIGHT * RENDER_SCALE;
-
-    // Marges intérieures estimées depuis la texture (en pixels source)
-    // La texture a des bordures d'environ 18px sur les côtés, 16px en haut, 20px en bas
-    private static final int TEX_MARGIN_LEFT = 18;
-    private static final int TEX_MARGIN_RIGHT = 18;
-    private static final int TEX_MARGIN_TOP = 16;
-    private static final int TEX_MARGIN_BOTTOM = 20;
-    // La reliure fait environ 10px de large au centre de la texture
-    private static final int TEX_SPINE_WIDTH = 10;
+    // Marges intérieures depuis la texture (en pixels)
+    private static final int MARGIN_LEFT = 18;
+    private static final int MARGIN_RIGHT = 18;
+    private static final int MARGIN_TOP = 16;
+    private static final int MARGIN_BOTTOM = 20;
+    // La reliure au centre de la texture
+    private static final int SPINE_WIDTH = 10;
 
     private static final int PAGE_PADDING = 4;
     private static final int ARROW_DISABLED_COLOR = 0xFF9C8A70;
@@ -100,18 +94,13 @@ public class CodexBookScreen extends Screen {
         bookX = (width - BOOK_WIDTH) / 2;
         bookY = (height - BOOK_HEIGHT) / 2;
 
-        // Calculer les zones de page à partir des marges de la texture (scalées)
-        int marginLeft = TEX_MARGIN_LEFT * RENDER_SCALE;
-        int marginRight = TEX_MARGIN_RIGHT * RENDER_SCALE;
-        int marginTop = TEX_MARGIN_TOP * RENDER_SCALE;
-        int marginBottom = TEX_MARGIN_BOTTOM * RENDER_SCALE;
-        int spineWidth = TEX_SPINE_WIDTH * RENDER_SCALE;
-        int spineX = bookX + (BOOK_WIDTH - spineWidth) / 2;
+        // Calculer les zones de page à partir des marges de la texture
+        int spineX = bookX + (BOOK_WIDTH - SPINE_WIDTH) / 2;
 
-        leftPageX = bookX + marginLeft + PAGE_PADDING;
-        rightPageX = spineX + spineWidth + PAGE_PADDING;
-        pageWidth = (spineX - bookX - marginLeft) - PAGE_PADDING * 2;
-        pageHeight = BOOK_HEIGHT - marginTop - marginBottom - PAGE_PADDING * 2;
+        leftPageX = bookX + MARGIN_LEFT + PAGE_PADDING;
+        rightPageX = spineX + SPINE_WIDTH + PAGE_PADDING;
+        pageWidth = (spineX - bookX - MARGIN_LEFT) - PAGE_PADDING * 2;
+        pageHeight = BOOK_HEIGHT - MARGIN_TOP - MARGIN_BOTTOM - PAGE_PADDING * 2;
 
         CodexBookContent content = CodexBookManager.getContent(node.getId());
         paginatedContent = BookPageLayout.paginate(content.getSections(), font, pageWidth, pageHeight);
@@ -169,9 +158,9 @@ public class CodexBookScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics, mouseX, mouseY, partialTick);
 
-        // Fond du livre (texture codex_book.png scalée)
+        // Fond du livre (texture codex_book.png)
         graphics.blit(BOOK_TEXTURE, bookX, bookY, BOOK_WIDTH, BOOK_HEIGHT,
-                0, 0, TEX_WIDTH, TEX_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
+                0, 0, BOOK_WIDTH, BOOK_HEIGHT, BOOK_WIDTH, BOOK_HEIGHT);
 
         // Rendu du contenu des pages
         CodexPlayerData playerData = getPlayerData();
@@ -180,7 +169,7 @@ public class CodexBookScreen extends Screen {
 
         int[] spreadPages = BookPageLayout.getSpreadPages(currentSpread);
 
-        int contentTopY = bookY + TEX_MARGIN_TOP * RENDER_SCALE + PAGE_PADDING;
+        int contentTopY = bookY + MARGIN_TOP + PAGE_PADDING;
 
         // Page gauche
         if (spreadPages[0] < paginatedContent.size()) {
