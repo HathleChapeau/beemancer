@@ -44,17 +44,27 @@ import java.util.List;
 public class CodexBookScreen extends Screen {
 
     private static final ResourceLocation BOOK_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/codex_bar.png");
+            Beemancer.MOD_ID, "textures/gui/codex_book.png");
 
-    private static final int BOOK_WIDTH = 320;
-    private static final int BOOK_HEIGHT = 200;
-    private static final int PAGE_PADDING = 16;
-    private static final int SPINE_WIDTH = 8;
-    private static final int BG_COLOR = 0xFFF3E1BB;
-    private static final int SPINE_COLOR = 0xFFD4B896;
-    private static final int BORDER_COLOR = 0xFF8B6914;
-    private static final int ARROW_COLOR = 0xFF5C3A1E;
-    private static final int ARROW_HOVER_COLOR = 0xFFB8956A;
+    // Dimensions de la texture source
+    private static final int TEX_WIDTH = 300;
+    private static final int TEX_HEIGHT = 204;
+
+    // Échelle de rendu (x2 pour lisibilité)
+    private static final int RENDER_SCALE = 2;
+    private static final int BOOK_WIDTH = TEX_WIDTH * RENDER_SCALE;
+    private static final int BOOK_HEIGHT = TEX_HEIGHT * RENDER_SCALE;
+
+    // Marges intérieures estimées depuis la texture (en pixels source)
+    // La texture a des bordures d'environ 18px sur les côtés, 16px en haut, 20px en bas
+    private static final int TEX_MARGIN_LEFT = 18;
+    private static final int TEX_MARGIN_RIGHT = 18;
+    private static final int TEX_MARGIN_TOP = 16;
+    private static final int TEX_MARGIN_BOTTOM = 20;
+    // La reliure fait environ 10px de large au centre de la texture
+    private static final int TEX_SPINE_WIDTH = 10;
+
+    private static final int PAGE_PADDING = 4;
     private static final int ARROW_DISABLED_COLOR = 0xFF9C8A70;
 
     private final CodexNode node;
@@ -90,12 +100,18 @@ public class CodexBookScreen extends Screen {
         bookX = (width - BOOK_WIDTH) / 2;
         bookY = (height - BOOK_HEIGHT) / 2;
 
-        int halfBook = (BOOK_WIDTH - SPINE_WIDTH) / 2;
-        pageWidth = halfBook - PAGE_PADDING * 2;
-        pageHeight = BOOK_HEIGHT - PAGE_PADDING * 2 - 20;
+        // Calculer les zones de page à partir des marges de la texture (scalées)
+        int marginLeft = TEX_MARGIN_LEFT * RENDER_SCALE;
+        int marginRight = TEX_MARGIN_RIGHT * RENDER_SCALE;
+        int marginTop = TEX_MARGIN_TOP * RENDER_SCALE;
+        int marginBottom = TEX_MARGIN_BOTTOM * RENDER_SCALE;
+        int spineWidth = TEX_SPINE_WIDTH * RENDER_SCALE;
+        int spineX = bookX + (BOOK_WIDTH - spineWidth) / 2;
 
-        leftPageX = bookX + PAGE_PADDING;
-        rightPageX = bookX + halfBook + SPINE_WIDTH + PAGE_PADDING;
+        leftPageX = bookX + marginLeft + PAGE_PADDING;
+        rightPageX = spineX + spineWidth + PAGE_PADDING;
+        pageWidth = (spineX - bookX - marginLeft) - PAGE_PADDING * 2;
+        pageHeight = BOOK_HEIGHT - marginTop - marginBottom - PAGE_PADDING * 2;
 
         CodexBookContent content = CodexBookManager.getContent(node.getId());
         paginatedContent = BookPageLayout.paginate(content.getSections(), font, pageWidth, pageHeight);
@@ -153,18 +169,9 @@ public class CodexBookScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics, mouseX, mouseY, partialTick);
 
-        // Fond du livre
-        graphics.fill(bookX, bookY, bookX + BOOK_WIDTH, bookY + BOOK_HEIGHT, BG_COLOR);
-
-        // Bordure
-        graphics.fill(bookX, bookY, bookX + BOOK_WIDTH, bookY + 1, BORDER_COLOR);
-        graphics.fill(bookX, bookY + BOOK_HEIGHT - 1, bookX + BOOK_WIDTH, bookY + BOOK_HEIGHT, BORDER_COLOR);
-        graphics.fill(bookX, bookY, bookX + 1, bookY + BOOK_HEIGHT, BORDER_COLOR);
-        graphics.fill(bookX + BOOK_WIDTH - 1, bookY, bookX + BOOK_WIDTH, bookY + BOOK_HEIGHT, BORDER_COLOR);
-
-        // Reliure centrale
-        int spineX = bookX + (BOOK_WIDTH - SPINE_WIDTH) / 2;
-        graphics.fill(spineX, bookY, spineX + SPINE_WIDTH, bookY + BOOK_HEIGHT, SPINE_COLOR);
+        // Fond du livre (texture codex_book.png scalée)
+        graphics.blit(BOOK_TEXTURE, bookX, bookY, BOOK_WIDTH, BOOK_HEIGHT,
+                0, 0, TEX_WIDTH, TEX_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
 
         // Rendu du contenu des pages
         CodexPlayerData playerData = getPlayerData();
@@ -173,16 +180,18 @@ public class CodexBookScreen extends Screen {
 
         int[] spreadPages = BookPageLayout.getSpreadPages(currentSpread);
 
+        int contentTopY = bookY + TEX_MARGIN_TOP * RENDER_SCALE + PAGE_PADDING;
+
         // Page gauche
         if (spreadPages[0] < paginatedContent.size()) {
             renderPageSections(graphics, paginatedContent.get(spreadPages[0]),
-                    leftPageX, bookY + PAGE_PADDING, nodeTitle, relativeDay);
+                    leftPageX, contentTopY, nodeTitle, relativeDay);
         }
 
         // Page droite
         if (spreadPages[1] < paginatedContent.size()) {
             renderPageSections(graphics, paginatedContent.get(spreadPages[1]),
-                    rightPageX, bookY + PAGE_PADDING, nodeTitle, relativeDay);
+                    rightPageX, contentTopY, nodeTitle, relativeDay);
         }
 
         // Numéro de page
