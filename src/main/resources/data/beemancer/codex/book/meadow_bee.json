@@ -4,5 +4,10 @@
     {"type": "text", "key": "codex.beemancer.bees.meadow_bee.desc"},
     {"type": "model", "species": "meadow", "height": 80, "scale": -90, "y": -80},
     {"type": "stats", "species": "meadow"}
+  ],
+  "sticky_notes": [
+    {"title": "Habitat"},
+    {"title": "Breeding"},
+    {"title": "Tips"}
   ]
 }

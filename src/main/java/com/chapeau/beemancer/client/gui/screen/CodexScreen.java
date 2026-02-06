@@ -151,16 +151,15 @@ public class CodexScreen extends Screen {
         contentWidth = FRAME_WIDTH - BORDER * 2;
         contentHeight = FRAME_HEIGHT - BORDER * 2;
 
-        // Générer les décorations pour le tab courant
-        currentDecorations = CodexDecorationRenderer.generate(
-                currentPage, frameX, frameY, FRAME_WIDTH, FRAME_HEIGHT, BORDER);
-
         // Créer les boutons de tab
         createTabButtons();
 
-        // Créer les widgets de nodes
+        // Créer les widgets de nodes (calcule aussi les scroll bounds)
         currentRenderer = pageRenderers.get(currentPage);
         rebuildNodeWidgets();
+
+        // Générer les décorations dans l'espace scrollable (après calcul des bounds)
+        regenerateDecorations();
     }
 
     private void createTabButtons() {
@@ -197,11 +196,15 @@ public class CodexScreen extends Screen {
         scrollX = 0;
         scrollY = 0;
 
-        currentDecorations = CodexDecorationRenderer.generate(
-                currentPage, frameX, frameY, FRAME_WIDTH, FRAME_HEIGHT, BORDER);
-
         rebuildNodeWidgets();
+        regenerateDecorations();
         updateTabButtonStyles();
+    }
+
+    private void regenerateDecorations() {
+        currentDecorations = CodexDecorationRenderer.generate(
+                currentPage, minScrollX, maxScrollX, minScrollY, maxScrollY,
+                contentWidth, contentHeight);
     }
 
     private void updateTabButtonStyles() {
@@ -254,11 +257,12 @@ public class CodexScreen extends Screen {
         // 1. Rendu du background uni (pas de tiling!)
         graphics.fill(frameX, frameY, frameX + FRAME_WIDTH, frameY + FRAME_HEIGHT, BG_COLOR);
 
-        // 1.5 Décorations (cracks, stains, borders)
-        CodexDecorationRenderer.render(graphics, currentDecorations);
-
         // 2. Rendu du contenu avec scissor (clippe aux bords)
         graphics.enableScissor(contentX, contentY, contentX + contentWidth, contentY + contentHeight);
+
+        // Décorations (cracks, stains, borders) — suivent le scroll
+        CodexDecorationRenderer.render(graphics, currentDecorations,
+                contentX + contentWidth / 2, contentY + contentHeight / 2, scrollX, scrollY);
 
         // Connexions et nodes
         currentRenderer.renderConnections(graphics);

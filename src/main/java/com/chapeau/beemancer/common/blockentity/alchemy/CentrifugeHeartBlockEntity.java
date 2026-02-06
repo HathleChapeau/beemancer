@@ -6,19 +6,23 @@
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance              | Raison                | Utilisation                    |
- * |-------------------------|----------------------|--------------------------------|
- * | MultiblockController    | Interface controleur | Formation/destruction          |
- * | MultiblockPatterns      | Definition pattern   | CENTRIFUGE_MULTIBLOCK          |
- * | MultiblockValidator     | Validation           | tryFormMultiblock()            |
- * | MultiblockEvents        | Enregistrement       | Detection destruction          |
- * | BeemancerBlockEntities  | Type registration    | Constructor                    |
- * | BeemancerRecipeTypes    | Recettes centrifuge  | Processing                     |
- * | BeemancerFluids         | Validation fluides   | Tank filtering                 |
+ * | Dependance                    | Raison                | Utilisation                    |
+ * |-------------------------------|----------------------|--------------------------------|
+ * | MultiblockController          | Interface controleur | Formation/destruction          |
+ * | MultiblockCapabilityProvider  | Delegation caps      | Capabilities sur reservoirs    |
+ * | MultiblockPatterns            | Definition pattern   | CENTRIFUGE_MULTIBLOCK          |
+ * | MultiblockValidator           | Validation           | tryFormMultiblock()            |
+ * | MultiblockEvents              | Enregistrement       | Detection destruction          |
+ * | SplitFluidHandler             | Split fill/drain     | Capability fluid               |
+ * | SplitItemHandler              | Split insert/extract | Capability item                |
+ * | BeemancerBlockEntities        | Type registration    | Constructor                    |
+ * | BeemancerRecipeTypes          | Recettes centrifuge  | Processing                     |
+ * | BeemancerFluids               | Validation fluides   | Tank filtering                 |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
  * - CentrifugeHeartBlock.java (creation BlockEntity, ticker)
+ * - Beemancer.java (capability registration)
  *
  * ============================================================
  */
@@ -29,12 +33,15 @@ import com.chapeau.beemancer.common.block.alchemy.CentrifugeHeartBlock;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.menu.alchemy.PoweredCentrifugeMenu;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
+import com.chapeau.beemancer.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.core.multiblock.MultiblockValidator;
+import com.chapeau.beemancer.core.util.SplitFluidHandler;
+import com.chapeau.beemancer.core.util.SplitItemHandler;
 import com.chapeau.beemancer.core.recipe.BeemancerRecipeTypes;
 import com.chapeau.beemancer.core.recipe.ProcessingOutput;
 import com.chapeau.beemancer.core.recipe.ProcessingRecipeInput;
@@ -42,6 +49,7 @@ import com.chapeau.beemancer.core.recipe.type.CentrifugeRecipe;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -62,6 +70,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
@@ -72,7 +81,7 @@ import java.util.Optional;
  * Equivalent au PoweredCentrifugeBlockEntity TIER3 (25mB/tick, 32000mB, 0.3x process time).
  * Ne process que lorsque le multibloc est forme.
  */
-public class CentrifugeHeartBlockEntity extends BlockEntity implements MultiblockController, MenuProvider {
+public class CentrifugeHeartBlockEntity extends BlockEntity implements MultiblockController, MultiblockCapabilityProvider, MenuProvider {
 
     private static final int HONEY_CONSUMPTION = 25;
     private static final int TANK_CAPACITY = 32000;
@@ -135,6 +144,9 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
         protected void onContentsChanged() { setChanged(); }
     };
 
+    private final SplitFluidHandler splitFluidHandler;
+    private final SplitItemHandler splitItemHandler;
+
     private int progress = 0;
     private int currentProcessTime = DEFAULT_PROCESS_TIME;
     @Nullable
@@ -162,6 +174,8 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
 
     public CentrifugeHeartBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.CENTRIFUGE_HEART.get(), pos, state);
+        this.splitFluidHandler = new SplitFluidHandler(fuelTank, outputTank);
+        this.splitItemHandler = new SplitItemHandler(inputSlot, outputSlots);
     }
 
     // ==================== MultiblockController ====================
@@ -186,6 +200,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
                 level.setBlock(worldPosition, state.setValue(CentrifugeHeartBlock.MULTIBLOCK, MultiblockProperty.CENTRIFUGE), 3);
             }
             setFormedOnStructureBlocks(true);
+            linkReservoirControllers(true);
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
         }
@@ -199,6 +214,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
             if (state.hasProperty(CentrifugeHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(CentrifugeHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
+            linkReservoirControllers(false);
             setFormedOnStructureBlocks(false);
             MultiblockEvents.unregisterController(worldPosition);
             setChanged();
@@ -244,6 +260,38 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
 
         Beemancer.LOGGER.debug("Centrifuge validation failed at {}", worldPosition);
         return false;
+    }
+
+    // ==================== MultiblockCapabilityProvider ====================
+
+    @Override
+    @Nullable
+    public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
+        if (!formed) return null;
+        return splitFluidHandler;
+    }
+
+    @Override
+    @Nullable
+    public IItemHandler getItemHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
+        if (!formed) return null;
+        return splitItemHandler;
+    }
+
+    /**
+     * Lie ou délie les réservoirs au contrôleur pour la délégation de capabilities.
+     */
+    private void linkReservoirControllers(boolean link) {
+        if (level == null) return;
+        BlockPos[][] allOffsets = { FUEL_RESERVOIR_OFFSETS, OUTPUT_RESERVOIR_OFFSETS };
+        for (BlockPos[] offsets : allOffsets) {
+            for (BlockPos offset : offsets) {
+                BlockPos reservoirPos = worldPosition.offset(offset);
+                if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
+                    reservoir.setControllerPos(link ? worldPosition : null);
+                }
+            }
+        }
     }
 
     // ==================== Animation ====================
@@ -453,6 +501,8 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     public FluidTank getOutputTank() { return outputTank; }
     public ItemStackHandler getInputSlot() { return inputSlot; }
     public ItemStackHandler getOutputSlots() { return outputSlots; }
+    public SplitFluidHandler getSplitFluidHandler() { return splitFluidHandler; }
+    public SplitItemHandler getSplitItemHandler() { return splitItemHandler; }
 
     // ==================== MenuProvider ====================
 

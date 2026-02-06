@@ -6,21 +6,26 @@
  *
  * DÉPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance              | Raison                | Utilisation           |
- * |-------------------------|----------------------|-----------------------|
- * | BeemancerBlockEntities  | Type registration   | super()               |
- * | BeemancerFluids         | Fluides acceptés    | isFluidValid          |
- * | AltarHeartBlockEntity   | Multiblock check    | isPartOfFormedMultiblock |
+ * | Dépendance                    | Raison                | Utilisation                    |
+ * |-------------------------------|----------------------|--------------------------------|
+ * | BeemancerBlockEntities        | Type registration    | super()                        |
+ * | BeemancerFluids               | Fluides acceptés     | isFluidValid                   |
+ * | AltarHeartBlockEntity         | Multiblock check     | isPartOfFormedMultiblock       |
+ * | MultiblockCapabilityProvider  | Délégation caps      | findCapabilityProvider         |
+ * | MultiblockController          | Vérif formed         | findCapabilityProvider         |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
  * - HoneyReservoirBlock.java
  * - HoneyCrystalBlockEntity.java (query reservoirs)
+ * - Beemancer.java (capability delegation lambdas)
  *
  * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.altar;
 
+import com.chapeau.beemancer.core.multiblock.MultiblockCapabilityProvider;
+import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import net.minecraft.core.BlockPos;
@@ -45,6 +50,10 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
     public static final int CAPACITY = 4000;
 
     private final FluidTank fluidTank;
+
+    // Position du contrôleur multibloc (pour délégation de capabilities)
+    @Nullable
+    private BlockPos controllerPos = null;
 
     // Spread offset pour le multibloc Storage Controller (en blocs, coordonnées monde)
     private float formedSpreadX = 0.0f;
@@ -82,14 +91,47 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
         return (float) fluidTank.getFluidAmount() / CAPACITY;
     }
 
+    // --- Controller delegation ---
+
+    public void setControllerPos(@Nullable BlockPos pos) {
+        this.controllerPos = pos;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.invalidateCapabilities(worldPosition);
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Nullable
+    public BlockPos getControllerPos() {
+        return controllerPos;
+    }
+
+    /**
+     * Cherche le MultiblockCapabilityProvider du contrôleur associé.
+     * Retourne null si pas de contrôleur, pas formé, ou pas un provider.
+     */
+    @Nullable
+    public MultiblockCapabilityProvider findCapabilityProvider() {
+        if (controllerPos == null || level == null) return null;
+        BlockEntity be = level.getBlockEntity(controllerPos);
+        if (be instanceof MultiblockCapabilityProvider provider
+                && be instanceof MultiblockController controller
+                && controller.isFormed()) {
+            return provider;
+        }
+        return null;
+    }
+
     /**
      * Vérifie si ce réservoir fait partie d'un multiblock formé.
-     * Cherche l'AltarHeart (contrôleur) 2 blocs en dessous.
      */
     public boolean isPartOfFormedMultiblock() {
+        if (controllerPos != null) {
+            return findCapabilityProvider() != null;
+        }
+        // Fallback pour les multiblocs n'utilisant pas encore controllerPos (altar)
         if (level == null) return false;
-
-        // Le réservoir est à Y+2 relatif à l'AltarHeart (Y+0)
         BlockPos heartPos = worldPosition.below(2);
         BlockEntity be = level.getBlockEntity(heartPos);
         if (be instanceof AltarHeartBlockEntity heart) {
@@ -174,6 +216,9 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
+        if (controllerPos != null) {
+            tag.putLong("ControllerPos", controllerPos.asLong());
+        }
         if (formedSpreadX != 0.0f) {
             tag.putFloat("FormedSpreadX", formedSpreadX);
         }
@@ -188,6 +233,7 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
         if (tag.contains("Fluid")) {
             fluidTank.readFromNBT(registries, tag.getCompound("Fluid"));
         }
+        controllerPos = tag.contains("ControllerPos") ? BlockPos.of(tag.getLong("ControllerPos")) : null;
         formedSpreadX = tag.getFloat("FormedSpreadX");
         formedSpreadZ = tag.getFloat("FormedSpreadZ");
     }
@@ -196,6 +242,9 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
+        if (controllerPos != null) {
+            tag.putLong("ControllerPos", controllerPos.asLong());
+        }
         if (formedSpreadX != 0.0f) {
             tag.putFloat("FormedSpreadX", formedSpreadX);
         }

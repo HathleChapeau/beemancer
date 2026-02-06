@@ -35,14 +35,13 @@ import com.chapeau.beemancer.common.blockentity.alchemy.PoweredCentrifugeBlockEn
 import com.chapeau.beemancer.common.menu.BeemancerMenu;
 import com.chapeau.beemancer.common.quest.QuestEvents;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
-import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
+import com.chapeau.beemancer.core.registry.BeemancerTags;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -95,11 +94,7 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
 
         // Input slot (gauche)
         addSlot(BeemancerSlot.combInput(inputHandler, 0, 33, 35)
-            .withFilter(stack -> stack.is(Items.HONEYCOMB) ||
-                                stack.is(BeemancerItems.ROYAL_COMB.get()) ||
-                                stack.is(BeemancerItems.COMMON_COMB.get()) ||
-                                stack.is(BeemancerItems.NOBLE_COMB.get()) ||
-                                stack.is(BeemancerItems.DILIGENT_COMB.get())));
+            .withFilter(stack -> stack.is(BeemancerTags.Items.COMBS)));
 
         // Output slots (droite, 2x2) avec callback pour les quêtes
         addSlot(BeemancerSlot.output(outputHandler, 0, 109, 26)
@@ -178,11 +173,7 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
     }
 
     private boolean isValidComb(ItemStack stack) {
-        return stack.is(Items.HONEYCOMB) ||
-               stack.is(BeemancerItems.ROYAL_COMB.get()) ||
-               stack.is(BeemancerItems.COMMON_COMB.get()) ||
-               stack.is(BeemancerItems.NOBLE_COMB.get()) ||
-               stack.is(BeemancerItems.DILIGENT_COMB.get());
+        return stack.is(BeemancerTags.Items.COMBS);
     }
 
     @Override

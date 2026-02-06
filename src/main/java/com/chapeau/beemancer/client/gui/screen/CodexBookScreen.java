@@ -12,6 +12,7 @@
  * | CodexBookManager    | Chargement contenu   | Récupération par nodeId        |
  * | BookPageLayout      | Pagination           | Répartition sur les pages      |
  * | CodexPlayerData     | Jour relatif         | Calcul Day X dans l'en-tête    |
+ * | StickyNote          | Notes collantes      | Boutons et overlay             |
  * | BeemancerSounds     | Sons                 | Feedback audio                 |
  * ------------------------------------------------------------
  *
@@ -30,6 +31,7 @@ import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.codex.book.CodexBookContent;
 import com.chapeau.beemancer.common.codex.book.CodexBookManager;
 import com.chapeau.beemancer.common.codex.book.CodexBookSection;
+import com.chapeau.beemancer.common.codex.book.StickyNote;
 import com.chapeau.beemancer.core.registry.BeemancerAttachments;
 import com.chapeau.beemancer.core.registry.BeemancerSounds;
 import net.minecraft.client.Minecraft;
@@ -63,6 +65,17 @@ public class CodexBookScreen extends Screen {
     private static final int RIGHT_PAGE_EXTRA_MARGIN = 3;
     private static final int ARROW_DISABLED_COLOR = 0xFF9C8A70;
 
+    // Sticky note constants
+    private static final int NOTE_BUTTON_WIDTH = 16;
+    private static final int NOTE_BUTTON_HEIGHT = 16;
+    private static final int NOTE_BUTTON_GAP = 3;
+    private static final int NOTE_BUTTON_OFFSET_X = 6;
+    private static final int NOTE_OVERLAY_BG = 0xA0000000;
+    private static final int NOTE_WIDTH = 180;
+    private static final int NOTE_HEIGHT = 120;
+    private static final int NOTE_BORDER_COLOR = 0xFF5C3A1E;
+    private static final int NOTE_TITLE_COLOR = 0xFF3B2A1A;
+
     private final CodexNode node;
     private final CodexPage returnPage;
 
@@ -80,6 +93,9 @@ public class CodexBookScreen extends Screen {
     private Button prevButton;
     private Button nextButton;
     private Button backButton;
+
+    private List<StickyNote> stickyNotes = List.of();
+    private int openedNoteIndex = -1;
 
     public CodexBookScreen(CodexNode node, CodexPage returnPage) {
         super(Component.translatable("screen.beemancer.codex_book"));
@@ -109,6 +125,8 @@ public class CodexBookScreen extends Screen {
         paginatedContent = BookPageLayout.paginate(content.getSections(), font, pageWidth, pageHeight);
         totalSpreads = BookPageLayout.getSpreadCount(paginatedContent.size());
         currentSpread = 0;
+        stickyNotes = content.getStickyNotes();
+        openedNoteIndex = -1;
 
         createButtons();
     }
@@ -200,6 +218,14 @@ public class CodexBookScreen extends Screen {
         backButton.render(graphics, mouseX, mouseY, partialTick);
         prevButton.render(graphics, mouseX, mouseY, partialTick);
         nextButton.render(graphics, mouseX, mouseY, partialTick);
+
+        // Sticky note buttons (à droite du livre)
+        renderStickyNoteButtons(graphics, mouseX, mouseY);
+
+        // Sticky note overlay (par dessus tout)
+        if (openedNoteIndex >= 0 && openedNoteIndex < stickyNotes.size()) {
+            renderStickyNoteOverlay(graphics, stickyNotes.get(openedNoteIndex));
+        }
     }
 
     private void renderPageSections(GuiGraphics graphics, List<CodexBookSection> sections,
@@ -219,6 +245,127 @@ public class CodexBookScreen extends Screen {
 
         graphics.pose().popPose();
     }
+
+    // ==================== Sticky Notes ====================
+
+    private void renderStickyNoteButtons(GuiGraphics graphics, int mouseX, int mouseY) {
+        if (stickyNotes.isEmpty()) return;
+
+        int btnX = bookX + BOOK_WIDTH + NOTE_BUTTON_OFFSET_X;
+        int btnY = bookY + MARGIN_TOP;
+
+        for (int i = 0; i < stickyNotes.size(); i++) {
+            StickyNote note = stickyNotes.get(i);
+            int y = btnY + i * (NOTE_BUTTON_HEIGHT + NOTE_BUTTON_GAP);
+
+            boolean hovered = mouseX >= btnX && mouseX < btnX + NOTE_BUTTON_WIDTH
+                    && mouseY >= y && mouseY < y + NOTE_BUTTON_HEIGHT;
+
+            // Background
+            int bgColor = hovered ? brighten(note.color(), 30) : note.color();
+            graphics.fill(btnX, y, btnX + NOTE_BUTTON_WIDTH, y + NOTE_BUTTON_HEIGHT, bgColor);
+
+            // Border
+            int borderColor = openedNoteIndex == i ? 0xFFFFFFFF : NOTE_BORDER_COLOR;
+            graphics.fill(btnX, y, btnX + NOTE_BUTTON_WIDTH, y + 1, borderColor);
+            graphics.fill(btnX, y + NOTE_BUTTON_HEIGHT - 1, btnX + NOTE_BUTTON_WIDTH, y + NOTE_BUTTON_HEIGHT, borderColor);
+            graphics.fill(btnX, y, btnX + 1, y + NOTE_BUTTON_HEIGHT, borderColor);
+            graphics.fill(btnX + NOTE_BUTTON_WIDTH - 1, y, btnX + NOTE_BUTTON_WIDTH, y + NOTE_BUTTON_HEIGHT, borderColor);
+
+            // Number label
+            String label = String.valueOf(i + 1);
+            int labelW = font.width(label);
+            graphics.drawString(font, label,
+                    btnX + (NOTE_BUTTON_WIDTH - labelW) / 2,
+                    y + (NOTE_BUTTON_HEIGHT - font.lineHeight) / 2,
+                    NOTE_TITLE_COLOR, false);
+        }
+    }
+
+    private void renderStickyNoteOverlay(GuiGraphics graphics, StickyNote note) {
+        // Semi-transparent dark overlay (clicking here closes the note)
+        graphics.fill(0, 0, width, height, NOTE_OVERLAY_BG);
+
+        // Note centered on screen
+        int noteX = (width - NOTE_WIDTH) / 2;
+        int noteY = (height - NOTE_HEIGHT) / 2;
+
+        // Note background
+        graphics.fill(noteX, noteY, noteX + NOTE_WIDTH, noteY + NOTE_HEIGHT, note.color());
+
+        // Note border (2px)
+        int b = NOTE_BORDER_COLOR;
+        graphics.fill(noteX, noteY, noteX + NOTE_WIDTH, noteY + 2, b);
+        graphics.fill(noteX, noteY + NOTE_HEIGHT - 2, noteX + NOTE_WIDTH, noteY + NOTE_HEIGHT, b);
+        graphics.fill(noteX, noteY, noteX + 2, noteY + NOTE_HEIGHT, b);
+        graphics.fill(noteX + NOTE_WIDTH - 2, noteY, noteX + NOTE_WIDTH, noteY + NOTE_HEIGHT, b);
+
+        // Title
+        graphics.drawString(font, note.title(),
+                noteX + 8, noteY + 8, NOTE_TITLE_COLOR, false);
+
+        // Separator
+        graphics.fill(noteX + 6, noteY + 8 + font.lineHeight + 2,
+                noteX + NOTE_WIDTH - 6, noteY + 8 + font.lineHeight + 3,
+                NOTE_BORDER_COLOR);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Si une note est ouverte, cliquer ferme la note
+        if (openedNoteIndex >= 0) {
+            // Check if click is ON the note (don't close)
+            int noteX = (width - NOTE_WIDTH) / 2;
+            int noteY = (height - NOTE_HEIGHT) / 2;
+            if (mouseX >= noteX && mouseX < noteX + NOTE_WIDTH
+                    && mouseY >= noteY && mouseY < noteY + NOTE_HEIGHT) {
+                return true;
+            }
+            // Click outside the note → close
+            openedNoteIndex = -1;
+            return true;
+        }
+
+        // Check sticky note button clicks
+        if (!stickyNotes.isEmpty()) {
+            int btnX = bookX + BOOK_WIDTH + NOTE_BUTTON_OFFSET_X;
+            int btnY = bookY + MARGIN_TOP;
+
+            for (int i = 0; i < stickyNotes.size(); i++) {
+                int y = btnY + i * (NOTE_BUTTON_HEIGHT + NOTE_BUTTON_GAP);
+                if (mouseX >= btnX && mouseX < btnX + NOTE_BUTTON_WIDTH
+                        && mouseY >= y && mouseY < y + NOTE_BUTTON_HEIGHT) {
+                    openedNoteIndex = i;
+                    return true;
+                }
+            }
+        }
+
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (openedNoteIndex >= 0) {
+            // Escape closes the note
+            if (keyCode == 256) {
+                openedNoteIndex = -1;
+                return true;
+            }
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    private static int brighten(int color, int amount) {
+        int a = (color >> 24) & 0xFF;
+        int r = Math.min(255, ((color >> 16) & 0xFF) + amount);
+        int g = Math.min(255, ((color >> 8) & 0xFF) + amount);
+        int b = Math.min(255, (color & 0xFF) + amount);
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    // ==================== Utils ====================
 
     private CodexPlayerData getPlayerData() {
         if (Minecraft.getInstance().player != null) {

@@ -10,12 +10,13 @@
  * |---------------------|----------------------|--------------------------------|
  * | CodexBookSection    | Sections modulaires  | Liste ordonnée de contenus     |
  * | HeaderSection       | En-tête par défaut   | Génération de contenu vierge   |
+ * | StickyNote          | Notes collantes      | Données des sticky notes       |
  * | Gson                | Parsing JSON         | Chargement data-driven         |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
  * - CodexBookManager (cache et chargement)
- * - CodexBookScreen (affichage du contenu)
+ * - CodexBookScreen (affichage du contenu et sticky notes)
  *
  * ============================================================
  */
@@ -33,10 +34,12 @@ public class CodexBookContent {
 
     private final String nodeId;
     private final List<CodexBookSection> sections;
+    private final List<StickyNote> stickyNotes;
 
-    public CodexBookContent(String nodeId, List<CodexBookSection> sections) {
+    public CodexBookContent(String nodeId, List<CodexBookSection> sections, List<StickyNote> stickyNotes) {
         this.nodeId = nodeId;
         this.sections = Collections.unmodifiableList(sections);
+        this.stickyNotes = Collections.unmodifiableList(stickyNotes);
     }
 
     public String getNodeId() {
@@ -47,6 +50,10 @@ public class CodexBookContent {
         return sections;
     }
 
+    public List<StickyNote> getStickyNotes() {
+        return stickyNotes;
+    }
+
     /**
      * Crée un contenu par défaut (page vierge) avec uniquement un HeaderSection.
      * @param nodeId L'identifiant du node
@@ -55,7 +62,7 @@ public class CodexBookContent {
     public static CodexBookContent createDefault(String nodeId) {
         List<CodexBookSection> defaultSections = new ArrayList<>();
         defaultSections.add(new HeaderSection());
-        return new CodexBookContent(nodeId, defaultSections);
+        return new CodexBookContent(nodeId, defaultSections, List.of());
     }
 
     /**
@@ -88,6 +95,14 @@ public class CodexBookContent {
             sections.add(new HeaderSection());
         }
 
-        return new CodexBookContent(nodeId, sections);
+        List<StickyNote> stickyNotes = new ArrayList<>();
+        if (json.has("sticky_notes")) {
+            JsonArray notesArray = json.getAsJsonArray("sticky_notes");
+            for (JsonElement element : notesArray) {
+                stickyNotes.add(StickyNote.fromJson(element.getAsJsonObject()));
+            }
+        }
+
+        return new CodexBookContent(nodeId, sections, stickyNotes);
     }
 }

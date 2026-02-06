@@ -252,7 +252,14 @@ public class Beemancer {
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 BeemancerBlockEntities.HONEY_RESERVOIR.get(),
-                (be, side) -> be
+                (be, side) -> {
+                    var provider = be.findCapabilityProvider();
+                    if (provider != null) {
+                        var handler = provider.getFluidHandlerForBlock(be.getBlockPos(), side);
+                        if (handler != null) return handler;
+                    }
+                    return be;
+                }
         );
 
         // Conditional fluid handlers
@@ -291,7 +298,7 @@ public class Beemancer {
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 BeemancerBlockEntities.CENTRIFUGE_HEART.get(),
-                (be, side) -> side == Direction.DOWN ? be.getOutputTank() : be.getFuelTank()
+                (be, side) -> be.isFormed() ? be.getSplitFluidHandler() : null
         );
     }
 
@@ -307,6 +314,26 @@ public class Beemancer {
                 Capabilities.ItemHandler.BLOCK,
                 BeemancerBlockEntities.CRYSTALLIZER.get(),
                 (be, side) -> be.getOutputSlot()
+        );
+
+        // Honey Reservoir: delegation au controleur multibloc si formé
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                BeemancerBlockEntities.HONEY_RESERVOIR.get(),
+                (be, side) -> {
+                    var provider = be.findCapabilityProvider();
+                    if (provider != null) {
+                        return provider.getItemHandlerForBlock(be.getBlockPos(), side);
+                    }
+                    return null;
+                }
+        );
+
+        // Centrifuge Heart: split item handler quand formé
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                BeemancerBlockEntities.CENTRIFUGE_HEART.get(),
+                (be, side) -> be.isFormed() ? be.getSplitItemHandler() : null
         );
     }
 
