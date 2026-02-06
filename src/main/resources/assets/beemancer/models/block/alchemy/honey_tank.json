@@ -5,7 +5,7 @@
     "dark_wood": "beemancer:block/iron",
     "amber_glass": "beemancer:block/honeyed_glass",
     "dark_iron": "beemancer:block/plank",
-    "particle": "beemancer:block/plank"
+    "particle": "beemancer:block/iron"
   },
   "elements": [
     {

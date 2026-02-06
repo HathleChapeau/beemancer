@@ -1,25 +1,7 @@
 {
-  "parent": "minecraft:block/cube_bottom_top",
-  "credit": "Beemancer - Multiblock Tank Single Block (unformed)",
+  "parent": "minecraft:block/cube_all",
+  "render_type": "translucent",
   "textures": {
-    "top": "beemancer:block/alchemy/multiblock_tank_top",
-    "bottom": "beemancer:block/alchemy/multiblock_tank_top",
-    "side": "beemancer:block/alchemy/multiblock_tank_side",
-    "particle": "beemancer:block/alchemy/multiblock_tank_side"
-  },
-  "elements": [
-    {
-      "name": "cube",
-      "from": [0, 0, 0],
-      "to": [16, 16, 16],
-      "faces": {
-        "north": {"texture": "#side"},
-        "east": {"texture": "#side"},
-        "south": {"texture": "#side"},
-        "west": {"texture": "#side"},
-        "up": {"texture": "#top"},
-        "down": {"texture": "#bottom"}
-      }
-    }
-  ]
+    "all": "beemancer:block/alchemy/multiblock_tank"
+  }
 }
