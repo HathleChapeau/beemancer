@@ -55,8 +55,8 @@ public class StatsSection extends CodexBookSection {
     @Override
     public int getHeight(Font font, int pageWidth) {
         int lineH = font.lineHeight + LINE_SPACING;
-        // Info line + separator + 6 stat lines + separator + loot line + padding
-        return lineH * 9 + 2 + 2 + PADDING_BOTTOM;
+        // Info line + separator + 6 stat lines + separator + loot + traits + padding
+        return lineH * 10 + 2 + 2 + PADDING_BOTTOM;
     }
 
     @Override
@@ -104,6 +104,11 @@ public class StatsSection extends CodexBookSection {
         String lootName = formatItemName(data.lootItem);
         String lootLine = "Loot: " + lootName;
         graphics.drawString(font, lootLine, x, currentY, INFO_COLOR, false);
+        currentY += lineH;
+
+        // Traits line
+        String traits = formatTraits(data);
+        graphics.drawString(font, "Traits: " + traits, x, currentY, INFO_COLOR, false);
     }
 
     private void renderStatLine(GuiGraphics graphics, Font font,
@@ -142,6 +147,20 @@ public class StatsSection extends CodexBookSection {
         // "minecraft:honeycomb" -> "Honeycomb"
         String name = itemId.contains(":") ? itemId.substring(itemId.indexOf(':') + 1) : itemId;
         return capitalize(name.replace('_', ' '));
+    }
+
+    private static String formatTraits(BeeSpeciesData data) {
+        StringBuilder sb = new StringBuilder();
+        if (data.aggressiveToPlayers) sb.append("Aggressive");
+        if (data.aggressiveToHostileMobs) {
+            if (!sb.isEmpty()) sb.append(", ");
+            sb.append("Anti-Hostile");
+        }
+        if (data.aggressiveToPassiveMobs) {
+            if (!sb.isEmpty()) sb.append(", ");
+            sb.append("Anti-Passive");
+        }
+        return sb.isEmpty() ? "Passive" : sb.toString();
     }
 
     private static String capitalize(String str) {

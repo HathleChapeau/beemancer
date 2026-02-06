@@ -47,16 +47,16 @@ public class CodexBookScreen extends Screen {
             Beemancer.MOD_ID, "textures/gui/codex_book.png");
 
     // Dimensions du livre (taille native de la texture)
-    private static final int BOOK_WIDTH = 300;
-    private static final int BOOK_HEIGHT = 204;
+    private static final int BOOK_WIDTH = 330;
+    private static final int BOOK_HEIGHT = 224;
 
-    // Marges intérieures depuis la texture (en pixels)
-    private static final int MARGIN_LEFT = 18;
-    private static final int MARGIN_RIGHT = 18;
-    private static final int MARGIN_TOP = 16;
-    private static final int MARGIN_BOTTOM = 20;
+    // Marges intérieures (proportionnelles à la texture upscalée)
+    private static final int MARGIN_LEFT = 20;
+    private static final int MARGIN_RIGHT = 20;
+    private static final int MARGIN_TOP = 18;
+    private static final int MARGIN_BOTTOM = 22;
     // La reliure au centre de la texture
-    private static final int SPINE_WIDTH = 10;
+    private static final int SPINE_WIDTH = 11;
 
     private static final int PAGE_PADDING = 4;
     private static final float CONTENT_SCALE = 0.95f;
@@ -177,13 +177,14 @@ public class CodexBookScreen extends Screen {
         // Page gauche
         if (spreadPages[0] < paginatedContent.size()) {
             renderPageSections(graphics, paginatedContent.get(spreadPages[0]),
-                    leftPageX, contentTopY, nodeTitle, relativeDay);
+                    leftPageX, contentTopY, pageWidth, nodeTitle, relativeDay);
         }
 
-        // Page droite (marge supplémentaire à gauche)
+        // Page droite (marge supplémentaire à gauche et à droite)
         if (spreadPages[1] < paginatedContent.size()) {
+            int rightEffectiveWidth = pageWidth - RIGHT_PAGE_EXTRA_MARGIN * 2;
             renderPageSections(graphics, paginatedContent.get(spreadPages[1]),
-                    rightPageX + RIGHT_PAGE_EXTRA_MARGIN, contentTopY, nodeTitle, relativeDay);
+                    rightPageX + RIGHT_PAGE_EXTRA_MARGIN, contentTopY, rightEffectiveWidth, nodeTitle, relativeDay);
         }
 
         // Numéro de page
@@ -202,13 +203,13 @@ public class CodexBookScreen extends Screen {
     }
 
     private void renderPageSections(GuiGraphics graphics, List<CodexBookSection> sections,
-                                     int pageX, int pageY, String nodeTitle, long relativeDay) {
+                                     int pageX, int pageY, int effectiveWidth, String nodeTitle, long relativeDay) {
         graphics.pose().pushPose();
         graphics.pose().scale(CONTENT_SCALE, CONTENT_SCALE, 1.0f);
 
         int scaledX = Math.round(pageX / CONTENT_SCALE);
         int scaledY = Math.round(pageY / CONTENT_SCALE);
-        int scaledWidth = Math.round(pageWidth / CONTENT_SCALE);
+        int scaledWidth = Math.round(effectiveWidth / CONTENT_SCALE);
 
         int currentY = scaledY;
         for (CodexBookSection section : sections) {
