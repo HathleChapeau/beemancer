@@ -1,0 +1,8 @@
+{
+  "sections": [
+    {"type": "header"},
+    {"type": "text", "key": "codex.beemancer.bees.fire_bee.desc"},
+    {"type": "model", "species": "fire", "height": 80, "scale": -90, "y": -80},
+    {"type": "stats", "species": "fire"}
+  ]
+}
