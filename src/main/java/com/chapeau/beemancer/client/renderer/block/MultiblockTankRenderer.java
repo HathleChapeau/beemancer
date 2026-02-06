@@ -84,19 +84,17 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
             return;
         }
 
-        poseStack.pushPose();
-
         // Le modèle fait 32 pixels (2 blocs), donc scale = cubeSize / 2
         float scale = cubeSize / 2.0f;
+
+        // Render le modèle formé (scalé)
+        poseStack.pushPose();
         poseStack.scale(scale, scale, scale);
-
-        // Render le modèle formé
         renderFormedModel(poseStack, buffer, packedLight);
-
-        // Render le fluide
-        renderFluid(blockEntity, poseStack, buffer);
-
         poseStack.popPose();
+
+        // Render le fluide (coordonnées monde, pas scalé)
+        renderFluid(blockEntity, cubeSize, poseStack, buffer);
     }
 
     private void renderSingleBlock(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
@@ -146,7 +144,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
         );
     }
 
-    private void renderFluid(MultiblockTankBlockEntity blockEntity, PoseStack poseStack, MultiBufferSource buffer) {
+    private void renderFluid(MultiblockTankBlockEntity blockEntity, int cubeSize, PoseStack poseStack, MultiBufferSource buffer) {
         FluidTank tank = blockEntity.getFluidTank();
         if (tank == null || tank.isEmpty()) return;
 
@@ -163,16 +161,26 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
 
-        // Coordonnées du fluide dans l'espace du modèle (0-2 blocs)
-        // Le modèle: base=0-9, middle=9-10, top(glass)=10-32 (en pixels, /16 pour blocs)
-        // Fluide remplit l'intérieur du glass (top): x=4-28, y=11-31, z=4-28
-        float minX = 4f / 16f;   // 0.25
-        float maxX = 28f / 16f;  // 1.75
-        float minZ = 4f / 16f;
-        float maxZ = 28f / 16f;
-        float minY = 11f / 16f;  // Juste au-dessus du bord du glass
-        float maxYFull = 31f / 16f;  // Juste en dessous du top
-        float maxY = minY + (maxYFull - minY) * fillRatio;
+        // Coordonnées en espace monde (blocs), scalées par cubeSize
+        // Le modèle: glass de [3,10,3] à [29,32,29] sur 32 pixels (2 blocs de base)
+        // Ratio pour convertir: cubeSize / 2
+        float scale = cubeSize / 2.0f;
+
+        // Marge de 1 pixel à l'intérieur du glass (4 pixels depuis le bord du modèle)
+        float inset = (4f / 32f) * cubeSize;  // 4 pixels sur 32 = ratio * cubeSize
+
+        float minX = inset;
+        float maxX = cubeSize - inset;
+        float minZ = inset;
+        float maxZ = cubeSize - inset;
+
+        // Y: base du glass à 10/32 du modèle, top à 32/32
+        // Fluide commence à 11/32, finit à 31/32
+        float baseY = (11f / 32f) * cubeSize;  // Juste au-dessus du bord
+        float topY = (31f / 32f) * cubeSize;   // Juste en dessous du top
+
+        float minY = baseY;
+        float maxY = baseY + (topY - baseY) * fillRatio;
 
         var pose = poseStack.last();
         FluidCubeRenderer.renderFluidCube(consumer, pose, sprite,
