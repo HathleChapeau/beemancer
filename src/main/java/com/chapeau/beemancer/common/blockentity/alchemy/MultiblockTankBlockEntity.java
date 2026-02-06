@@ -3,23 +3,6 @@
  * [MultiblockTankBlockEntity.java]
  * Description: BlockEntity pour tank multibloc cube dynamique
  * ============================================================
- *
- * DÉPENDANCES:
- * ------------------------------------------------------------
- * | Dépendance                    | Raison                  | Utilisation                    |
- * |-------------------------------|------------------------|--------------------------------|
- * | MultiblockTankBlock           | Bloc associé           | Propriété MULTIBLOCK           |
- * | MultiblockProperty            | État multibloc         | NONE/TANK                      |
- * | BeemancerBlockEntities        | Registre               | Type BlockEntity               |
- * | BeemancerFluids               | Fluides acceptés       | Validation FluidTank           |
- * ------------------------------------------------------------
- *
- * UTILISÉ PAR:
- * - MultiblockTankBlock.java
- * - MultiblockTankRenderer.java
- * - MultiblockTankMenu.java
- *
- * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
@@ -72,12 +55,15 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     private FluidTank fluidTank;
     private int cubeSize = 0;
 
+    // Position du bloc en cours de cassage (pour exclure du BFS)
+    @Nullable
+    private static BlockPos breakingPos = null;
+
     // Validation différée après chargement
     private boolean needsLoadValidation = false;
     private int loadValidationDelay = 0;
     private static final int LOAD_VALIDATION_WAIT_TICKS = 10;
 
-    // Bucket slot (only used by master for GUI)
     protected final ItemStackHandler bucketSlot = new ItemStackHandler(1) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -141,26 +127,21 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         };
     }
 
-    // ==================== Multiblock State ====================
+    // ==================== Multiblock State (via blockstate) ====================
 
+    /**
+     * Vérifie si ce bloc est le master via le BLOCKSTATE (synchronisé automatiquement).
+     */
     public boolean isMaster() {
-        return masterPos == null;
-    }
-
-    public BlockPos getMasterPos() {
-        return isMaster() ? worldPosition : masterPos;
-    }
-
-    @Nullable
-    public MultiblockTankBlockEntity getMaster() {
-        if (isMaster()) return this;
-        if (level == null) return null;
-        BlockEntity be = level.getBlockEntity(masterPos);
-        return be instanceof MultiblockTankBlockEntity tank ? tank : null;
+        BlockState state = getBlockState();
+        if (state.hasProperty(MultiblockTankBlock.MASTER)) {
+            return state.getValue(MultiblockTankBlock.MASTER);
+        }
+        return masterPos == null; // Fallback
     }
 
     /**
-     * Vérifie si le multibloc est formé via le blockstate.
+     * Vérifie si le multibloc est formé via le BLOCKSTATE (synchronisé automatiquement).
      */
     public boolean isFormed() {
         BlockState state = getBlockState();
@@ -168,6 +149,19 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             return state.getValue(MultiblockTankBlock.MULTIBLOCK) == MultiblockProperty.TANK;
         }
         return false;
+    }
+
+    public BlockPos getMasterPos() {
+        if (isMaster()) return worldPosition;
+        return masterPos;
+    }
+
+    @Nullable
+    public MultiblockTankBlockEntity getMaster() {
+        if (isMaster()) return this;
+        if (level == null || masterPos == null) return null;
+        BlockEntity be = level.getBlockEntity(masterPos);
+        return be instanceof MultiblockTankBlockEntity tank ? tank : null;
     }
 
     public int getCubeSize() {
@@ -196,19 +190,16 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
 
     // ==================== Multiblock Formation ====================
 
-    /**
-     * Appelé quand un bloc est placé. Découvre et forme le multibloc.
-     */
     public void onPlaced() {
         if (level == null || level.isClientSide()) return;
-        tryFormMultiblock();
+        tryFormMultiblock(null);
     }
 
     /**
-     * BFS flood-fill pour découvrir tous les tanks adjacents,
-     * puis valide si c'est un cube et forme le multibloc.
+     * BFS flood-fill pour découvrir tous les tanks adjacents.
+     * @param excludePos Position à exclure du BFS (bloc en cours de cassage)
      */
-    private void tryFormMultiblock() {
+    private void tryFormMultiblock(@Nullable BlockPos excludePos) {
         if (level == null) return;
 
         // BFS depuis cette position
@@ -222,6 +213,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             for (Direction dir : Direction.values()) {
                 BlockPos neighbor = current.relative(dir);
                 if (found.contains(neighbor)) continue;
+                if (excludePos != null && neighbor.equals(excludePos)) continue; // Exclure le bloc cassé
                 if (!level.isLoaded(neighbor)) continue;
                 if (level.getBlockEntity(neighbor) instanceof MultiblockTankBlockEntity) {
                     found.add(neighbor);
@@ -232,8 +224,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
 
         // Un seul bloc = pas de multibloc
         if (found.size() == 1) {
-            initializeAsSingle();
-            setChanged();
+            resetBlock(worldPosition);
             return;
         }
 
@@ -277,17 +268,14 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         formMultiblock(found, sizeX);
     }
 
-    /**
-     * Forme le multibloc avec les blocs trouvés.
-     */
     private void formMultiblock(Set<BlockPos> blocks, int size) {
         if (level == null) return;
 
         // Élire le master (plus petite position Y, puis X, puis Z)
-        BlockPos masterPos = worldPosition;
+        BlockPos newMasterPos = worldPosition;
         for (BlockPos pos : blocks) {
-            if (comparePositions(pos, masterPos) < 0) {
-                masterPos = pos;
+            if (comparePositions(pos, newMasterPos) < 0) {
+                newMasterPos = pos;
             }
         }
 
@@ -306,7 +294,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         }
 
         // Configurer le master
-        BlockEntity masterBe = level.getBlockEntity(masterPos);
+        BlockEntity masterBe = level.getBlockEntity(newMasterPos);
         if (!(masterBe instanceof MultiblockTankBlockEntity master)) return;
 
         master.masterPos = null;
@@ -320,56 +308,62 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             int toFill = Math.min(totalFluid.getAmount(), newCapacity);
             master.fluidTank.fill(new FluidStack(totalFluid.getFluid(), toFill), IFluidHandler.FluidAction.EXECUTE);
         }
-
         master.setChanged();
 
-        // Mettre à jour TOUS les blocs: blockstate + BlockEntity + sync client
+        // Mettre à jour TOUS les blocs: blockstate (MULTIBLOCK + MASTER)
         for (BlockPos pos : blocks) {
+            boolean isMasterBlock = pos.equals(newMasterPos);
+
+            // Mettre à jour le blockstate avec MULTIBLOCK=TANK et MASTER=true/false
             BlockState blockState = level.getBlockState(pos);
-            if (blockState.hasProperty(MultiblockTankBlock.MULTIBLOCK)) {
-                level.setBlock(pos, blockState.setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.TANK), 3);
+            if (blockState.hasProperty(MultiblockTankBlock.MULTIBLOCK) && blockState.hasProperty(MultiblockTankBlock.MASTER)) {
+                BlockState newState = blockState
+                    .setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.TANK)
+                    .setValue(MultiblockTankBlock.MASTER, isMasterBlock);
+                level.setBlock(pos, newState, 3);
             }
 
+            // Configurer le BlockEntity
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof MultiblockTankBlockEntity tank) {
-                if (!pos.equals(masterPos)) {
-                    tank.masterPos = masterPos;
+                if (!isMasterBlock) {
+                    tank.masterPos = newMasterPos;
                     tank.connectedBlocks.clear();
                     tank.fluidTank = null;
                     tank.cubeSize = 0;
-                    tank.needsLoadValidation = false;
                 }
+                tank.needsLoadValidation = false;
                 tank.setChanged();
-                // Synchroniser au client
-                level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
             }
         }
     }
 
-    /**
-     * Reset tous les blocs à l'état non formé.
-     */
-    private void resetAllBlocks(Set<BlockPos> blocks) {
+    private void resetBlock(BlockPos pos) {
         if (level == null) return;
 
-        for (BlockPos pos : blocks) {
-            // Reset blockstate
-            BlockState blockState = level.getBlockState(pos);
-            if (blockState.hasProperty(MultiblockTankBlock.MULTIBLOCK)) {
-                level.setBlock(pos, blockState.setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
-            }
+        BlockState blockState = level.getBlockState(pos);
+        if (blockState.hasProperty(MultiblockTankBlock.MULTIBLOCK) && blockState.hasProperty(MultiblockTankBlock.MASTER)) {
+            BlockState newState = blockState
+                .setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.NONE)
+                .setValue(MultiblockTankBlock.MASTER, false);
+            level.setBlock(pos, newState, 3);
+        }
 
-            // Reset BlockEntity + sync client
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof MultiblockTankBlockEntity tank) {
-                tank.masterPos = null;
-                tank.connectedBlocks.clear();
-                tank.connectedBlocks.add(pos);
-                tank.fluidTank = tank.createFluidTank(CAPACITY_PER_BLOCK);
-                tank.cubeSize = 0;
-                tank.setChanged();
-                level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
-            }
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof MultiblockTankBlockEntity tank) {
+            tank.masterPos = null;
+            tank.connectedBlocks.clear();
+            tank.connectedBlocks.add(pos);
+            tank.fluidTank = tank.createFluidTank(CAPACITY_PER_BLOCK);
+            tank.cubeSize = 0;
+            tank.setChanged();
+        }
+    }
+
+    private void resetAllBlocks(Set<BlockPos> blocks) {
+        if (level == null) return;
+        for (BlockPos pos : blocks) {
+            resetBlock(pos);
         }
     }
 
@@ -379,68 +373,101 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     public void onBroken() {
         if (level == null || level.isClientSide()) return;
 
-        // Si on est le master et formé
+        // Marquer cette position comme en cours de cassage
+        BlockPos myPos = worldPosition;
+
+        // Si on est le master ET formé
         if (isMaster() && isFormed()) {
             // Détruire le fluide
             if (fluidTank != null) {
                 fluidTank.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
             }
 
-            // Copier la liste des blocs
+            // Copier la liste des blocs (exclure le bloc cassé)
             Set<BlockPos> blocksToReset = new HashSet<>(connectedBlocks);
-            blocksToReset.remove(worldPosition); // Exclure le bloc cassé
+            blocksToReset.remove(myPos);
 
-            // Reset TOUS les autres blocs + sync client
+            // Reset TOUS les autres blocs
             for (BlockPos pos : blocksToReset) {
-                // Reset blockstate
-                BlockState blockState = level.getBlockState(pos);
-                if (blockState.hasProperty(MultiblockTankBlock.MULTIBLOCK)) {
-                    level.setBlock(pos, blockState.setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
-                }
-
-                // Reset BlockEntity + sync
-                BlockEntity be = level.getBlockEntity(pos);
-                if (be instanceof MultiblockTankBlockEntity tank) {
-                    tank.masterPos = null;
-                    tank.connectedBlocks.clear();
-                    tank.connectedBlocks.add(pos);
-                    tank.fluidTank = tank.createFluidTank(CAPACITY_PER_BLOCK);
-                    tank.cubeSize = 0;
-                    tank.setChanged();
-                    level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
-                }
+                resetBlock(pos);
             }
 
             // Trouver un voisin restant pour reformer
             BlockPos reformFrom = null;
             for (Direction dir : Direction.values()) {
-                BlockPos neighbor = worldPosition.relative(dir);
+                BlockPos neighbor = myPos.relative(dir);
                 if (blocksToReset.contains(neighbor)) {
                     reformFrom = neighbor;
                     break;
                 }
             }
 
-            // Reformer depuis un voisin
+            // Reformer depuis un voisin (en excluant le bloc cassé)
             if (reformFrom != null) {
                 BlockEntity be = level.getBlockEntity(reformFrom);
                 if (be instanceof MultiblockTankBlockEntity neighbor) {
-                    neighbor.tryFormMultiblock();
+                    neighbor.tryFormMultiblock(myPos); // Exclure le bloc cassé!
                 }
             }
-        } else if (masterPos != null) {
-            // On est un slave: notifier le master
+        } else if (masterPos != null && isFormed()) {
+            // On est un slave: notifier le master en lui passant notre position
             BlockEntity be = level.getBlockEntity(masterPos);
             if (be instanceof MultiblockTankBlockEntity master) {
-                master.onBroken();
+                // Le master va gérer le cassage
+                master.handleSlaveBreaking(myPos);
             }
         }
 
-        // Reset ce bloc
+        // Reset ce bloc (sera retiré juste après par super.onRemove)
         this.masterPos = null;
         this.connectedBlocks.clear();
         this.fluidTank = null;
         this.cubeSize = 0;
+    }
+
+    /**
+     * Appelé par un slave qui est cassé pour que le master gère le cassage.
+     */
+    public void handleSlaveBreaking(BlockPos brokenPos) {
+        if (level == null || level.isClientSide()) return;
+        if (!isMaster() || !isFormed()) return;
+
+        // Détruire le fluide
+        if (fluidTank != null) {
+            fluidTank.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
+        }
+
+        // Copier la liste des blocs (exclure le bloc cassé ET le master)
+        Set<BlockPos> blocksToReset = new HashSet<>(connectedBlocks);
+        blocksToReset.remove(brokenPos);
+        blocksToReset.remove(worldPosition);
+
+        // Reset TOUS les blocs (y compris le master)
+        for (BlockPos pos : connectedBlocks) {
+            if (!pos.equals(brokenPos)) {
+                resetBlock(pos);
+            }
+        }
+
+        // Trouver un voisin du bloc cassé pour reformer
+        BlockPos reformFrom = null;
+        for (Direction dir : Direction.values()) {
+            BlockPos neighbor = brokenPos.relative(dir);
+            if (blocksToReset.contains(neighbor) || neighbor.equals(worldPosition)) {
+                if (!neighbor.equals(brokenPos)) {
+                    reformFrom = neighbor;
+                    break;
+                }
+            }
+        }
+
+        // Reformer depuis un voisin (en excluant le bloc cassé)
+        if (reformFrom != null) {
+            BlockEntity be = level.getBlockEntity(reformFrom);
+            if (be instanceof MultiblockTankBlockEntity tank) {
+                tank.tryFormMultiblock(brokenPos);
+            }
+        }
     }
 
     // ==================== Helpers ====================
@@ -484,7 +511,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             be.loadValidationDelay++;
             if (be.loadValidationDelay >= LOAD_VALIDATION_WAIT_TICKS) {
                 be.needsLoadValidation = false;
-                be.tryFormMultiblock();
+                be.tryFormMultiblock(null);
             }
         }
 
@@ -569,9 +596,9 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
-        boolean isMaster = tag.getBoolean("IsMaster");
+        boolean isMasterData = tag.getBoolean("IsMaster");
 
-        if (isMaster) {
+        if (isMasterData) {
             this.masterPos = null;
 
             connectedBlocks.clear();

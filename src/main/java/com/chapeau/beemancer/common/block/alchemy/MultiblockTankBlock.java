@@ -3,21 +3,6 @@
  * [MultiblockTankBlock.java]
  * Description: Bloc tank multibloc cube dynamique (2x2x2 minimum)
  * ============================================================
- *
- * DÉPENDANCES:
- * ------------------------------------------------------------
- * | Dépendance                    | Raison                  | Utilisation                    |
- * |-------------------------------|------------------------|--------------------------------|
- * | MultiblockTankBlockEntity     | BlockEntity associé    | Logique multibloc              |
- * | MultiblockProperty            | État multibloc         | Blockstate formed/not formed   |
- * | BeemancerBlockEntities        | Registre               | Ticker                         |
- * ------------------------------------------------------------
- *
- * UTILISÉ PAR:
- * - MultiblockTankBlockEntity.java (référence bloc)
- * - MultiblockTankRenderer.java (lecture blockstate)
- *
- * ============================================================
  */
 package com.chapeau.beemancer.common.block.alchemy;
 
@@ -40,6 +25,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
@@ -51,15 +37,19 @@ public class MultiblockTankBlock extends BaseEntityBlock {
     // Propriété blockstate: NONE = non formé, TANK = formé
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create(MultiblockProperty.TANK);
 
+    // Propriété blockstate: true = ce bloc est le master du multibloc
+    public static final BooleanProperty MASTER = BooleanProperty.create("master");
+
     public MultiblockTankBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(MULTIBLOCK, MultiblockProperty.NONE));
+            .setValue(MULTIBLOCK, MultiblockProperty.NONE)
+            .setValue(MASTER, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(MULTIBLOCK);
+        builder.add(MULTIBLOCK, MASTER);
     }
 
     @Override
@@ -67,7 +57,6 @@ public class MultiblockTankBlock extends BaseEntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        // ENTITYBLOCK_ANIMATED: le renderer gère tout (modèle scalé + fluide)
         return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
@@ -110,15 +99,31 @@ public class MultiblockTankBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof MultiblockTankBlockEntity tank) {
-                // Chercher le master
-                MultiblockTankBlockEntity master = tank.getMaster();
-                if (master != null && master.isFormed()) {
-                    serverPlayer.openMenu(master, buf -> buf.writeBlockPos(master.getBlockPos()));
+            // Vérifier via le blockstate - plus fiable
+            if (state.getValue(MULTIBLOCK) == MultiblockProperty.TANK) {
+                BlockEntity be = level.getBlockEntity(pos);
+                if (be instanceof MultiblockTankBlockEntity tank) {
+                    MultiblockTankBlockEntity master = tank.getMaster();
+                    if (master != null) {
+                        serverPlayer.openMenu(master, buf -> buf.writeBlockPos(master.getBlockPos()));
+                    }
                 }
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
+    }
+
+    /**
+     * Vérifie si ce bloc est formé via le blockstate.
+     */
+    public static boolean isFormed(BlockState state) {
+        return state.getValue(MULTIBLOCK) == MultiblockProperty.TANK;
+    }
+
+    /**
+     * Vérifie si ce bloc est le master via le blockstate.
+     */
+    public static boolean isMaster(BlockState state) {
+        return state.getValue(MASTER);
     }
 }
