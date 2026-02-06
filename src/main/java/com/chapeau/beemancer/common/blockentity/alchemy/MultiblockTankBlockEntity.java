@@ -323,23 +323,25 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
 
         master.setChanged();
 
-        // Mettre à jour TOUS les blocs: blockstate + BlockEntity
+        // Mettre à jour TOUS les blocs: blockstate + BlockEntity + sync client
         for (BlockPos pos : blocks) {
             BlockState blockState = level.getBlockState(pos);
             if (blockState.hasProperty(MultiblockTankBlock.MULTIBLOCK)) {
                 level.setBlock(pos, blockState.setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.TANK), 3);
             }
 
-            if (!pos.equals(masterPos)) {
-                BlockEntity be = level.getBlockEntity(pos);
-                if (be instanceof MultiblockTankBlockEntity slave) {
-                    slave.masterPos = masterPos;
-                    slave.connectedBlocks.clear();
-                    slave.fluidTank = null;
-                    slave.cubeSize = 0;
-                    slave.needsLoadValidation = false;
-                    slave.setChanged();
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof MultiblockTankBlockEntity tank) {
+                if (!pos.equals(masterPos)) {
+                    tank.masterPos = masterPos;
+                    tank.connectedBlocks.clear();
+                    tank.fluidTank = null;
+                    tank.cubeSize = 0;
+                    tank.needsLoadValidation = false;
                 }
+                tank.setChanged();
+                // Synchroniser au client
+                level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
             }
         }
     }
@@ -357,7 +359,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                 level.setBlock(pos, blockState.setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
 
-            // Reset BlockEntity
+            // Reset BlockEntity + sync client
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof MultiblockTankBlockEntity tank) {
                 tank.masterPos = null;
@@ -366,6 +368,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                 tank.fluidTank = tank.createFluidTank(CAPACITY_PER_BLOCK);
                 tank.cubeSize = 0;
                 tank.setChanged();
+                level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
             }
         }
     }
@@ -387,7 +390,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             Set<BlockPos> blocksToReset = new HashSet<>(connectedBlocks);
             blocksToReset.remove(worldPosition); // Exclure le bloc cassé
 
-            // Reset TOUS les autres blocs
+            // Reset TOUS les autres blocs + sync client
             for (BlockPos pos : blocksToReset) {
                 // Reset blockstate
                 BlockState blockState = level.getBlockState(pos);
@@ -395,7 +398,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                     level.setBlock(pos, blockState.setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
                 }
 
-                // Reset BlockEntity
+                // Reset BlockEntity + sync
                 BlockEntity be = level.getBlockEntity(pos);
                 if (be instanceof MultiblockTankBlockEntity tank) {
                     tank.masterPos = null;
@@ -404,6 +407,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                     tank.fluidTank = tank.createFluidTank(CAPACITY_PER_BLOCK);
                     tank.cubeSize = 0;
                     tank.setChanged();
+                    level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
                 }
             }
 
