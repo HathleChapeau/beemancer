@@ -383,7 +383,7 @@ public class MagicBeeEntity extends Bee {
     }
 
     /**
-     * Vérifie si l'abeille doit fuir (vie < 30%).
+     * Vérifie si l'abeille doit fuir (vie - 30%).
      */
     public boolean shouldFlee() {
         return getHealthPercentage() < 0.3f;

@@ -51,16 +51,16 @@ public class CodexBookScreen extends Screen {
     private static final int BOOK_HEIGHT = 224;
 
     // Marges intérieures (proportionnelles à la texture upscalée)
-    private static final int MARGIN_LEFT = 20;
+    private static final int MARGIN_LEFT = 22;
     private static final int MARGIN_RIGHT = 20;
-    private static final int MARGIN_TOP = 18;
+    private static final int MARGIN_TOP = 16;
     private static final int MARGIN_BOTTOM = 22;
     // La reliure au centre de la texture
-    private static final int SPINE_WIDTH = 11;
+    private static final int SPINE_WIDTH = 25;
 
     private static final int PAGE_PADDING = 4;
-    private static final float CONTENT_SCALE = 0.95f;
-    private static final int RIGHT_PAGE_EXTRA_MARGIN = 10;
+    private static final float CONTENT_SCALE = 0.93f;
+    private static final int RIGHT_PAGE_EXTRA_MARGIN = 3;
     private static final int ARROW_DISABLED_COLOR = 0xFF9C8A70;
 
     private final CodexNode node;
@@ -182,7 +182,7 @@ public class CodexBookScreen extends Screen {
 
         // Page droite (marge supplémentaire à gauche et à droite)
         if (spreadPages[1] < paginatedContent.size()) {
-            int rightEffectiveWidth = pageWidth - RIGHT_PAGE_EXTRA_MARGIN * 2;
+            int rightEffectiveWidth = pageWidth;// - RIGHT_PAGE_EXTRA_MARGIN * 2;
             renderPageSections(graphics, paginatedContent.get(spreadPages[1]),
                     rightPageX + RIGHT_PAGE_EXTRA_MARGIN, contentTopY, rightEffectiveWidth, nodeTitle, relativeDay);
         }
