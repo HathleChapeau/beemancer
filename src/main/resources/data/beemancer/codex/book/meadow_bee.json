@@ -2,7 +2,7 @@
   "sections": [
     {"type": "header"},
     {"type": "text", "key": "codex.beemancer.bees.meadow_bee.desc"},
-    {"type": "model", "species": "meadow", "height": 80, "scale": -90},
+    {"type": "model", "species": "meadow", "height": 80, "scale": -90, "y": -60},
     {"type": "stats", "species": "meadow"}
   ]
 }
