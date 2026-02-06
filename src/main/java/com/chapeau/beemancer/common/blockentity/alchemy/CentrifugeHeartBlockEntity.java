@@ -92,37 +92,37 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     private static final int DEFAULT_PROCESS_TIME = 100;
 
     // Animation cubes centraux
-    private static final float MAX_ROTATION_SPEED = 8.0f;
+    private static final float MAX_ROTATION_SPEED = 12.0f;
     private static final float ACCELERATION = 0.15f;
 
     // Positions des reservoirs (relatif au coeur)
-    // Bottom (Y-1): cardinaux pour le fuel tank
+    // Top (Y+1): cardinaux pour le fuel tank (entree miel + items)
     private static final BlockPos[] FUEL_RESERVOIR_OFFSETS = {
-        new BlockPos(0, -1, -1),   // Nord
-        new BlockPos(-1, -1, 0),   // Ouest
-        new BlockPos(1, -1, 0),    // Est
-        new BlockPos(0, -1, 1)     // Sud
-    };
-    // Top (Y+1): cardinaux pour le output tank
-    private static final BlockPos[] OUTPUT_RESERVOIR_OFFSETS = {
         new BlockPos(0, 1, -1),    // Nord
         new BlockPos(-1, 1, 0),    // Ouest
         new BlockPos(1, 1, 0),     // Est
         new BlockPos(0, 1, 1)      // Sud
     };
+    // Bottom (Y-1): cardinaux pour le output tank (sortie produits)
+    private static final BlockPos[] OUTPUT_RESERVOIR_OFFSETS = {
+        new BlockPos(0, -1, -1),   // Nord
+        new BlockPos(-1, -1, 0),   // Ouest
+        new BlockPos(1, -1, 0),    // Est
+        new BlockPos(0, -1, 1)     // Sud
+    };
 
     // Configuration IO declarative : quelles faces exposent quoi
     private static final MultiblockIOConfig IO_CONFIG = MultiblockIOConfig.builder()
-        // Bottom reservoirs (Y-1): fuel INPUT sur les cotes uniquement
-        .position(0, -1, -1, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
-        .position(-1, -1, 0, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
-        .position(1, -1, 0, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
-        .position(0, -1, 1, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
-        // Top reservoirs (Y+1): product OUTPUT sur les cotes uniquement
-        .position(0, 1, -1, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
-        .position(-1, 1, 0, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
-        .position(1, 1, 0, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
-        .position(0, 1, 1, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        // Top reservoirs (Y+1): fuel/items INPUT sur les cotes uniquement
+        .position(0, 1, -1, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        .position(-1, 1, 0, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        .position(1, 1, 0, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        .position(0, 1, 1, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+        // Bottom reservoirs (Y-1): product OUTPUT sur les cotes uniquement
+        .position(0, -1, -1, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .position(-1, -1, 0, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .position(1, -1, 0, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+        .position(0, -1, 1, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
         .build();
 
     private boolean formed = false;
@@ -298,23 +298,15 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     @Override
     @Nullable
     public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
-        if (!formed) {
-            Beemancer.LOGGER.warn("[CENTRIFUGE] getFluidHandler: NOT FORMED");
-            return null;
-        }
+        if (!formed) return null;
         IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face);
-        Beemancer.LOGGER.warn("[CENTRIFUGE] getFluidHandler: controllerPos={} queriedPos={} face={} offset={} mode={}",
-            worldPosition, worldPos, face, worldPos.subtract(worldPosition), mode);
         if (mode == null || mode == IOMode.NONE) return null;
-        var result = switch (mode) {
+        return switch (mode) {
             case INPUT -> SplitFluidHandler.inputOnly(fuelTank);
             case OUTPUT -> SplitFluidHandler.outputOnly(outputTank);
             case BOTH -> splitFluidHandler;
             default -> null;
         };
-        Beemancer.LOGGER.warn("[CENTRIFUGE] getFluidHandler: returning {} (fuelTank={}/{}mB)",
-            result != null ? "handler" : "null", fuelTank.getFluidAmount(), fuelTank.getCapacity());
-        return result;
     }
 
     @Override
@@ -451,8 +443,8 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
 
     /**
      * Met à jour les niveaux visuels des reservoirs du multibloc.
-     * - Reservoirs du bas (Y-1): affichent le niveau du fuelTank
-     * - Reservoirs du haut (Y+1): affichent le niveau du outputTank
+     * - Reservoirs du haut (Y+1): affichent le niveau du fuelTank (entree)
+     * - Reservoirs du bas (Y-1): affichent le niveau du outputTank (sortie)
      * Chaque reservoir affiche 1/4 de la capacité totale du tank.
      */
     private void updateReservoirLevels() {
