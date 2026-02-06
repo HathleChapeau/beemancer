@@ -35,6 +35,10 @@ core/util/
   - countItem(Container, ItemStack) / countItem(Container, ItemStack, int[])
   - hasSpaceFor(Container, ItemStack, int), availableSpace(Container, ItemStack)
   - Utilise par: StorageDeliveryManager, DeliveryPhaseGoal, ImportInterfaceBlockEntity, StorageItemAggregator
+- SplitFluidHandler.java: IFluidHandler wrapper fill→inputTank, drain→outputTank
+  - Utilisé par: CentrifugeHeartBlockEntity (fuelTank/outputTank)
+- SplitItemHandler.java: IItemHandler wrapper insertItem→input, extractItem→output
+  - Utilisé par: CentrifugeHeartBlockEntity (inputSlot/outputSlots)
 - ParticleHelper.java: Utilitaire statique de spawn de particules (server/client)
   - EffectType enum: SUCCESS, FAILURE, MAGIC, HEAL, HONEY, SOUL, PORTAL, NATURE, FLAME, ELECTRIC, SCULK
   - Formes: burst, ring, spiral, line, sphere
@@ -175,6 +179,11 @@ core/multiblock/
 - MultiblockValidator.java: Validation et utilitaires (validate, getAbsolutePositions, isPartOfMultiblock)
 - MultiblockController.java: Interface pour BlockEntities contrôleurs
 - MultiblockEvents.java: Détection destruction de blocs, cache contrôleurs actifs
+- MultiblockCapabilityProvider.java: Interface délégation capabilities structurels → contrôleur
+  - getFluidHandlerForBlock(BlockPos, Direction): fluid handler pour un bloc structurel
+  - getItemHandlerForBlock(BlockPos, Direction): item handler pour un bloc structurel
+  - Implémenté par: CentrifugeHeartBlockEntity
+  - Querié par: HoneyReservoirBlockEntity.findCapabilityProvider()
 
 ================================================================================
 common/entity/bee/

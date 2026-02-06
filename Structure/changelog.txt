@@ -3,6 +3,34 @@
 ################################################################################
 
 ================================================================================
+2026-02-06 - Multiblock Capability Delegation + Codex Book Features
+================================================================================
+
+MULTIBLOCK CAPABILITY DELEGATION:
+- Nouveau: MultiblockCapabilityProvider interface (core/multiblock/)
+- Nouveau: SplitFluidHandler (fill→inputTank, drain→outputTank)
+- Nouveau: SplitItemHandler (insertItem→input, extractItem→output)
+- Modifié: HoneyReservoirBlockEntity — controllerPos + findCapabilityProvider()
+- Modifié: CentrifugeHeartBlockEntity — implements MultiblockCapabilityProvider
+- Modifié: Beemancer.java — capability registration fluid+item pour reservoir+heart
+- Les pipes fluide/item se connectent aux réservoirs et délèguent au coeur
+
+CODEX BOOK:
+- Nouveau: StickyNote record (title, color) + parsing JSON sticky_notes
+- Modifié: CodexBookContent — champ stickyNotes
+- Modifié: CodexBookScreen — boutons sticky note (droite du livre) + overlay
+- Modifié: meadow_bee.json — 3 sticky notes de test (Habitat, Breeding, Tips)
+
+CENTRIFUGE:
+- Nouveau: centrifuge_heart_centrifuge_working.json (texture honey_crystal)
+- Modifié: blockstates/centrifuge_heart.json — working=true pointe vers working model
+- Modifié: PoweredCentrifugeMenu — filtre par tag beemancer:combs
+
+CODEX DECORATIONS:
+- CodexDecorationRenderer revu pour suivre le scroll (coordonnées relatives)
+- atlases/blocks.json créé pour texture empty_slot_comb
+
+================================================================================
 2026-02-05 - Bugfixes + Optimisations Reseau de Stockage
 ================================================================================
 

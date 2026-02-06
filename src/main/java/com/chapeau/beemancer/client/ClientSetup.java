@@ -315,8 +315,9 @@ public class ClientSetup {
         // Modèle crank (rendu par BER avec rotation)
         event.register(CrankRenderer.CRANK_MODEL_LOC);
 
-        // Modèle core du centrifuge heart (cubes animés)
+        // Modèles core du centrifuge heart (cubes animés)
         event.register(CentrifugeHeartRenderer.CORE_MODEL_LOC);
+        event.register(CentrifugeHeartRenderer.CORE_WORKING_MODEL_LOC);
 
         // Modèles multiblock tank
         event.register(MultiblockTankRenderer.FORMED_MODEL_LOC);  // Formé (scalé)

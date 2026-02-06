@@ -1,0 +1,22 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "honey": "beemancer:block/honey_crystal",
+    "particle": "beemancer:block/honey_crystal"
+  },
+  "elements": [
+    {
+      "name": "Core",
+      "from": [-4, -4, -4],
+      "to": [20, 20, 20],
+      "faces": {
+        "north": {"texture": "#honey", "uv": [0, 0, 16, 16]},
+        "east":  {"texture": "#honey", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#honey", "uv": [0, 0, 16, 16]},
+        "west":  {"texture": "#honey", "uv": [0, 0, 16, 16]},
+        "up":    {"texture": "#honey", "uv": [0, 0, 16, 16]},
+        "down":  {"texture": "#honey", "uv": [0, 0, 16, 16]}
+      }
+    }
+  ]
+}

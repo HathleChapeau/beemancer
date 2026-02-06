@@ -10,7 +10,7 @@
       "model": "beemancer:block/alchemy/centrifuge_heart_centrifuge"
     },
     "multiblock=centrifuge,working=true": {
-      "model": "beemancer:block/alchemy/centrifuge_heart_centrifuge_working"
+      "model": "beemancer:block/alchemy/centrifuge_heart_centrifuge"
     }
   }
 }

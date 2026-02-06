@@ -58,6 +58,10 @@ public class CentrifugeHeartRenderer implements BlockEntityRenderer<CentrifugeHe
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
             Beemancer.MOD_ID, "block/alchemy/centrifuge_heart_core"));
 
+    public static final ModelResourceLocation CORE_WORKING_MODEL_LOC =
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "block/alchemy/centrifuge_heart_core_working"));
+
     public CentrifugeHeartRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
     }
@@ -76,8 +80,12 @@ public class CentrifugeHeartRenderer implements BlockEntityRenderer<CentrifugeHe
             return;
         }
 
+        boolean working = state.hasProperty(CentrifugeHeartBlock.WORKING)
+            && state.getValue(CentrifugeHeartBlock.WORKING);
+
+        ModelResourceLocation modelLoc = working ? CORE_WORKING_MODEL_LOC : CORE_MODEL_LOC;
         BakedModel coreModel = Minecraft.getInstance().getModelManager()
-            .getModel(CORE_MODEL_LOC);
+            .getModel(modelLoc);
 
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.translucent());
 

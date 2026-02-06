@@ -89,6 +89,9 @@ Philosophie:
 │ client/gui/GuiRenderHelper.java      │ Rendu programmatique GUIs partagé    │
 │ core/util/ParticleHelper.java        │ Utilitaire statique spawn particules │
 │ core/multiblock/MultiblockProperty.java│ Enum + factory blockstate property │
+│ core/multiblock/MultiblockCapabilityProvider│ Interface délégation caps multibloc│
+│ core/util/SplitFluidHandler.java      │ Wrapper fill→input, drain→output   │
+│ core/util/SplitItemHandler.java       │ Wrapper insert→input, extract→output│
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -279,6 +282,41 @@ LISTE DES FEATURES:
 → Delivery System Refactoring (5 phases)
   Fichier: Structure/feature_delivery_refactoring.txt
   Description: Refonte complète du système de livraison: RequestManager, flux unifié, recall bees, localisation GUI
+
+→ Multiblock Capability Delegation
+  Description: Système polyvalent de délégation de capabilities (fluid+item) des blocs structurels vers le contrôleur multibloc
+  Scripts créés: MultiblockCapabilityProvider.java, SplitFluidHandler.java, SplitItemHandler.java
+  Scripts modifiés: CentrifugeHeartBlockEntity.java, HoneyReservoirBlockEntity.java, Beemancer.java
+  Dépendances: MultiblockController, IFluidHandler, IItemHandler
+  Registres modifiés: Capabilities (fluid+item) pour HONEY_RESERVOIR et CENTRIFUGE_HEART
+
+→ Codex Book V1 (Sections + Sticky Notes)
+  Description: Système de livre modulaire avec sections (header, text, model, stats) et sticky notes en overlay
+  Scripts créés: StickyNote.java, StatsSection.java, ModelSection.java
+  Scripts modifiés: CodexBookScreen.java, CodexBookContent.java, meadow_bee.json + 97 bee JSONs
+  Assets: 97 fichiers data/beemancer/codex/book/*.json
+  Dépendances: CodexBookManager, BookPageLayout, BeeSpeciesManager
+
+→ Codex Decorations (Cracks, Stains, Borders)
+  Description: Décorations aléatoires sur le background du CodexScreen (suivent le scroll)
+  Scripts créés: CodexDecorationRenderer.java
+  Scripts modifiés: CodexScreen.java
+  Assets: crack_1-4.png, stain_1-2.png, page_border.png
+  Dépendances: CodexPage
+
+→ Centrifuge Comb Tag Filter
+  Description: La centrifugeuse accepte tout item du tag beemancer:combs au lieu d'une whitelist hardcodée
+  Scripts modifiés: PoweredCentrifugeMenu.java
+  Dépendances: BeemancerTags.Items.COMBS
+
+→ Empty Comb Slot Texture
+  Description: Affichage de la texture empty_slot_comb dans les slots comb input
+  Assets créés: atlases/blocks.json (enregistrement texture dans le block atlas)
+
+→ Centrifuge Heart Working Texture
+  Description: Le coeur de centrifuge formé affiche une texture différente quand working=true
+  Assets créés: models/block/alchemy/centrifuge_heart_centrifuge_working.json
+  Assets modifiés: blockstates/centrifuge_heart.json
 
 ================================================================================
 6. FEATURES EN COURS
