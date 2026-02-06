@@ -2,6 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "rune": "beemancer:block/alchemy/powered_centrifuge_top_rune2",
+    "rune2": "beemancer:block/alchemy/powered_centrifuge_top_rune3",
     "iron8": "beemancer:block/iron8x8",
     "iron8s": "beemancer:block/iron8x8shadow",
     "iron8l": "beemancer:block/iron8x8light",
@@ -15,10 +16,10 @@
       "from": [-12, -16, -12],
       "to": [28, -4, 28],
       "faces": {
-        "north": {"texture": "#rune", "uv": [0, 0, 16, 16]},
-        "south": {"texture": "#rune", "uv": [0, 0, 16, 16]},
-        "east": {"texture": "#rune", "uv": [0, 0, 16, 16]},
-        "west": {"texture": "#rune", "uv": [0, 0, 16, 16]},
+        "north": {"texture": "#rune2", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#rune2", "uv": [0, 0, 16, 16]},
+        "east": {"texture": "#rune2", "uv": [0, 0, 16, 16]},
+        "west": {"texture": "#rune2", "uv": [0, 0, 16, 16]},
         "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
         "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
       }
