@@ -268,6 +268,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     @Nullable
     public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
         if (!formed) return null;
+        if (face == Direction.UP || face == Direction.DOWN) return null;
         return splitFluidHandler;
     }
 
@@ -275,6 +276,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     @Nullable
     public IItemHandler getItemHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
         if (!formed) return null;
+        if (face == Direction.UP || face == Direction.DOWN) return null;
         return splitItemHandler;
     }
 

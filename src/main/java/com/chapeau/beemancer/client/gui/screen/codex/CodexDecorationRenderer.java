@@ -57,17 +57,17 @@ public class CodexDecorationRenderer {
     private static final int BORDER_SRC_H = 19;
 
     // --- Scales ---
-    private static final int CRACK_SCALE = 3;
+    private static final int CRACK_SCALE = 2;
     private static final int STAIN_SCALE = 2;
     private static final int BORDER_SCALE = 2;
 
     // --- Distance minimums (en pixels rendus) ---
-    private static final int MIN_DISTANCE = 60;
+    private static final int MIN_DISTANCE = 45;
 
     // --- Config par tab : {cracks, stains, borders} ---
     private static final int[][] TAB_CONFIG = {
         {4, 2, 1}, // APICA
-        {3, 2, 1}, // BEES
+        {7, 4, 1}, // BEES
         {5, 3, 1}, // ALCHEMY
         {6, 2, 1}, // ARTIFACTS
         {4, 1, 1}  // LOGISTICS
@@ -96,7 +96,7 @@ public class CodexDecorationRenderer {
                                              double scrollMinY, double scrollMaxY,
                                              int contentW, int contentH) {
         long seed = new Random().nextLong();
-        LOGGER.debug("Codex decorations seed for {}: {}", page.getId(), seed);
+        LOGGER.warn("tab {}, seed {}", page.getId(), seed);
         Random rng = new Random(seed);
 
         int tabIndex = page.ordinal();
@@ -105,13 +105,16 @@ public class CodexDecorationRenderer {
         int numStains = config[1];
         int numBorders = config[2];
 
-        // Zone scrollable totale (en pixels relatifs au centre)
+        // Zone monde complète (pixels relatifs au centre)
+        // Conversion scroll bounds → world bounds:
+        //   world min = -halfW - maxScroll (visible quand scrollé au max à droite)
+        //   world max = halfW - minScroll (visible quand scrollé au max à gauche)
         int halfW = contentW / 2;
         int halfH = contentH / 2;
-        int areaMinX = (int) scrollMinX - halfW - 20;
-        int areaMaxX = (int) scrollMaxX + halfW + 20;
-        int areaMinY = (int) scrollMinY - halfH - 20;
-        int areaMaxY = (int) scrollMaxY + halfH + 20;
+        int areaMinX = (int) (-halfW - scrollMaxX);
+        int areaMaxX = (int) (halfW - scrollMinX);
+        int areaMinY = (int) (-halfH - scrollMaxY);
+        int areaMaxY = (int) (halfH - scrollMinY);
         int areaW = areaMaxX - areaMinX;
         int areaH = areaMaxY - areaMinY;
 
@@ -144,7 +147,8 @@ public class CodexDecorationRenderer {
             int[] pos = findPosition(rng, areaMinX, areaMinY, areaW - renderW, areaH - renderH, placedPositions, MIN_DISTANCE);
             if (pos != null) {
                 placedPositions.add(pos);
-                decorations.add(new Decoration(CRACK_TEXTURES[idx], pos[0], pos[1], srcW, srcH, CRACK_SCALE, 0));
+                float crackRotation = rng.nextFloat() * 360f;
+                decorations.add(new Decoration(CRACK_TEXTURES[idx], pos[0], pos[1], srcW, srcH, CRACK_SCALE, crackRotation));
             }
         }
 

@@ -255,8 +255,9 @@ public class Beemancer {
                 (be, side) -> {
                     var provider = be.findCapabilityProvider();
                     if (provider != null) {
-                        var handler = provider.getFluidHandlerForBlock(be.getBlockPos(), side);
-                        if (handler != null) return handler;
+                        // Reservoir fait partie d'un multibloc: le controleur decide tout
+                        // Retourne null si la face n'est pas autorisee (pas de fallback sur le tank propre)
+                        return provider.getFluidHandlerForBlock(be.getBlockPos(), side);
                     }
                     return be;
                 }
