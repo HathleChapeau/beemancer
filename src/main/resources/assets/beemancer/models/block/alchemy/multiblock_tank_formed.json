@@ -1,10 +1,9 @@
 {
   "credit": "Beemancer - Multiblock Tank Formed (scaled by renderer)",
-  "render_type": "translucent",
   "textures": {
-    "frame": "beemancer:block/alchemy/fluid_tank_bottom",
-    "glass": "beemancer:block/alchemy/fluid_tank_glass",
-    "particle": "beemancer:block/iron"
+    "frame": "beemancer:block/iron",
+    "glass": "beemancer:block/honeyed_glass",
+    "particle": "beemancer:block/honeyed_stone"
   },
   "elements": [
     {
@@ -12,12 +11,12 @@
       "from": [0, 0, 0],
       "to": [32, 9, 32],
       "faces": {
-        "north": {"texture": "#frame", "uv":  [0,0,16,9]},
-        "east": {"texture": "#frame", "uv":  [0,0,16,9]},
-        "south": {"texture": "#frame", "uv":  [0,0,16,9]},
-        "west": {"texture": "#frame", "uv":  [0,0,16,9]},
-        "up": {"texture": "#frame", "uv":  [0,0,16,16]},
-        "down": {"texture": "#frame", "uv":  [0,0,16,16]}
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
       }
     },
     {
@@ -25,11 +24,12 @@
       "from": [2, 9, 2],
       "to": [30, 10, 30],
       "faces": {
-        "north": {"texture": "#frame", "uv":  [0,0,16,9]},
-        "east": {"texture": "#frame", "uv":  [0,0,16,9]},
-        "south": {"texture": "#frame", "uv":  [0,0,16,9]},
-        "west": {"texture": "#frame", "uv":  [0,0,16,9]},
-        "up": {"texture": "#frame", "uv":  [0,0,16,16]}
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
       }
     },
     {
@@ -37,11 +37,11 @@
       "from": [3, 10, 3],
       "to": [29, 32, 29],
       "faces": {
-        "north": {"texture": "#glass", "uv":  [0,0,16,16]},
-        "east": {"texture": "#glass", "uv":  [0,0,16,16]},
-        "south": {"texture": "#glass", "uv":  [0,0,16,16]},
-        "west": {"texture": "#glass", "uv":  [0,0,16,16]},
-        "up": {"texture": "#glass", "uv":  [0,0,16,16]}
+        "north": {"texture": "#glass"},
+        "east": {"texture": "#glass"},
+        "south": {"texture": "#glass"},
+        "west": {"texture": "#glass"},
+        "up": {"texture": "#glass"}
       }
     }
   ]
