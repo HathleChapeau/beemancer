@@ -61,7 +61,8 @@ public class HoneyedStoneBlock extends Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if (state.getValue(MULTIBLOCK) == MultiblockProperty.CENTRIFUGE) {
+        MultiblockProperty mb = state.getValue(MULTIBLOCK);
+        if (mb == MultiblockProperty.CENTRIFUGE || mb == MultiblockProperty.INFUSER) {
             return SHAPE_CENTRIFUGE;
         }
         return Shapes.block();
@@ -69,7 +70,8 @@ public class HoneyedStoneBlock extends Block {
 
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if (state.getValue(MULTIBLOCK) == MultiblockProperty.CENTRIFUGE) {
+        MultiblockProperty mb = state.getValue(MULTIBLOCK);
+        if (mb == MultiblockProperty.CENTRIFUGE || mb == MultiblockProperty.INFUSER) {
             return SHAPE_CENTRIFUGE;
         }
         return Shapes.block();

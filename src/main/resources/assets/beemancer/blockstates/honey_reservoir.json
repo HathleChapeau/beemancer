@@ -31,6 +31,10 @@
     "facing=north,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir_centrifuge" },
     "facing=south,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir_centrifuge" },
     "facing=east,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir_centrifuge" },
-    "facing=west,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir_centrifuge" }
+    "facing=west,multiblock=centrifuge": { "model": "beemancer:block/altar/honey_reservoir_centrifuge" },
+    "facing=north,multiblock=infuser": { "model": "beemancer:block/altar/honey_reservoir_infuser" },
+    "facing=south,multiblock=infuser": { "model": "beemancer:block/altar/honey_reservoir_infuser" },
+    "facing=east,multiblock=infuser": { "model": "beemancer:block/altar/honey_reservoir_infuser" },
+    "facing=west,multiblock=infuser": { "model": "beemancer:block/altar/honey_reservoir_infuser" }
   }
 }

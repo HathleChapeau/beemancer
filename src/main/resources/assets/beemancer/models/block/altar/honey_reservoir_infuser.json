@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "beemancer:block/altar/reservoir_cap"
+  },
+  "elements": []
+}
