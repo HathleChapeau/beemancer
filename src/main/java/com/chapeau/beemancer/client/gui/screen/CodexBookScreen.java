@@ -117,11 +117,11 @@ public class CodexBookScreen extends Screen {
 
         int buttonY = bookY + BOOK_HEIGHT - 18;
 
-        // Flèche retour (droite → gauche) pour revenir au codex
+        // Flèche retour pour revenir au codex (onglet précédent)
         backButton = Button.builder(Component.literal("\u2190 Back"), btn -> {
             playSound(BeemancerSounds.CODEX_PAGE_TURN.get());
-            Minecraft.getInstance().setScreen(new CodexScreen());
-        }).bounds(bookX + 4, buttonY, 50, 14).build();
+            Minecraft.getInstance().setScreen(new CodexScreen(returnPage));
+        }).bounds(bookX + BOOK_WIDTH / 2 - 25, buttonY, 50, 14).build();
         addRenderableWidget(backButton);
 
         // Flèche page précédente

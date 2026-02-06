@@ -101,7 +101,12 @@ public class CodexScreen extends Screen {
     private static final int SCROLL_MARGIN = 40; // Marge autour des nodes extremes
 
     public CodexScreen() {
+        this(CodexPage.APICA);
+    }
+
+    public CodexScreen(CodexPage initialPage) {
         super(Component.translatable("screen.beemancer.codex"));
+        this.currentPage = initialPage;
         initRenderers();
     }
 
