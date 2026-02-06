@@ -8,6 +8,7 @@ package com.chapeau.beemancer.core.network;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.core.network.packets.BeeCreatorActionPacket;
+import com.chapeau.beemancer.core.network.packets.CodexFirstOpenPacket;
 import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
 import com.chapeau.beemancer.core.network.packets.QuestSyncPacket;
@@ -39,6 +40,12 @@ public class BeemancerNetwork {
                 CodexUnlockPacket.TYPE,
                 CodexUnlockPacket.STREAM_CODEC,
                 CodexUnlockPacket::handle
+        );
+
+        registrar.playToServer(
+                CodexFirstOpenPacket.TYPE,
+                CodexFirstOpenPacket.STREAM_CODEC,
+                CodexFirstOpenPacket::handle
         );
 
         registrar.playToServer(

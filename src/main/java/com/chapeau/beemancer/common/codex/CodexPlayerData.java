@@ -16,6 +16,7 @@
  * - BeemancerAttachments (enregistrement de l'attachment)
  * - CodexScreen (affichage de la progression)
  * - CodexUnlockPacket (mise à jour serveur)
+ * - CodexBookScreen (calcul Day X)
  *
  * ============================================================
  */
@@ -28,28 +29,40 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CodexPlayerData {
     public static final Codec<CodexPlayerData> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
             Codec.STRING.listOf().fieldOf("unlocked_nodes").forGetter(data -> List.copyOf(data.unlockedNodes)),
-            Codec.STRING.listOf().fieldOf("discovered_nodes").forGetter(data -> List.copyOf(data.discoveredNodes))
-        ).apply(instance, (unlockedList, discoveredList) -> {
+            Codec.STRING.listOf().fieldOf("discovered_nodes").forGetter(data -> List.copyOf(data.discoveredNodes)),
+            Codec.LONG.fieldOf("first_open_day").forGetter(data -> data.firstOpenDay),
+            Codec.unboundedMap(Codec.STRING, Codec.LONG).fieldOf("unlock_days").forGetter(data -> data.unlockDays)
+        ).apply(instance, (unlockedList, discoveredList, openDay, days) -> {
             CodexPlayerData data = new CodexPlayerData();
             data.unlockedNodes.addAll(unlockedList);
             data.discoveredNodes.addAll(discoveredList);
+            data.firstOpenDay = openDay;
+            data.unlockDays.putAll(days);
             return data;
         })
     );
 
     private final Set<String> unlockedNodes = new HashSet<>();
     private final Set<String> discoveredNodes = new HashSet<>();
+    private long firstOpenDay = -1;
+    private final Map<String, Long> unlockDays = new HashMap<>();
 
     public CodexPlayerData() {
     }
+
+    // ============================================================
+    // NODES (existant)
+    // ============================================================
 
     public Set<String> getUnlockedNodes() {
         return unlockedNodes;
@@ -121,6 +134,74 @@ public class CodexPlayerData {
         return count;
     }
 
+    // ============================================================
+    // DAY TRACKING
+    // ============================================================
+
+    /**
+     * Enregistre le jour MC de la première ouverture du Codex.
+     * Ne fait rien si déjà enregistré.
+     * @param currentDay Le jour MC actuel (level.getDayTime() / 24000L)
+     * @return true si c'est la première ouverture
+     */
+    public boolean recordFirstOpen(long currentDay) {
+        if (firstOpenDay == -1) {
+            firstOpenDay = currentDay;
+            return true;
+        }
+        return false;
+    }
+
+    public long getFirstOpenDay() {
+        return firstOpenDay;
+    }
+
+    public void setFirstOpenDay(long day) {
+        this.firstOpenDay = day;
+    }
+
+    /**
+     * Enregistre le jour MC où un node a été débloqué.
+     * @param fullNodeId L'ID complet du node (page:id)
+     * @param currentDay Le jour MC actuel
+     */
+    public void recordUnlockDay(String fullNodeId, long currentDay) {
+        unlockDays.putIfAbsent(fullNodeId, currentDay);
+    }
+
+    /**
+     * Retourne le jour MC où un node a été débloqué.
+     * @param fullNodeId L'ID complet du node
+     * @return Le jour MC, ou -1 si pas encore débloqué
+     */
+    public long getUnlockDay(String fullNodeId) {
+        return unlockDays.getOrDefault(fullNodeId, -1L);
+    }
+
+    public Map<String, Long> getUnlockDays() {
+        return unlockDays;
+    }
+
+    /**
+     * Calcule le jour relatif d'un node (par rapport à la première ouverture).
+     * @param fullNodeId L'ID complet du node
+     * @return Le jour relatif (1-based), ou -1 si données indisponibles
+     */
+    public long getRelativeDay(String fullNodeId) {
+        if (firstOpenDay == -1) {
+            return -1;
+        }
+        long unlockDay = getUnlockDay(fullNodeId);
+        if (unlockDay == -1) {
+            return -1;
+        }
+        return unlockDay - firstOpenDay + 1;
+    }
+
+    // ============================================================
+    // SÉRIALISATION
+    // ============================================================
+
     public CompoundTag toNbt() {
         CompoundTag tag = new CompoundTag();
         ListTag unlockedList = new ListTag();
@@ -134,6 +215,14 @@ public class CodexPlayerData {
             discoveredList.add(StringTag.valueOf(nodeId));
         }
         tag.put("discovered", discoveredList);
+
+        tag.putLong("first_open_day", firstOpenDay);
+
+        CompoundTag daysTag = new CompoundTag();
+        for (Map.Entry<String, Long> entry : unlockDays.entrySet()) {
+            daysTag.putLong(entry.getKey(), entry.getValue());
+        }
+        tag.put("unlock_days", daysTag);
 
         return tag;
     }
@@ -152,6 +241,15 @@ public class CodexPlayerData {
                 data.discoveredNodes.add(list.getString(i));
             }
         }
+        if (tag.contains("first_open_day", Tag.TAG_LONG)) {
+            data.firstOpenDay = tag.getLong("first_open_day");
+        }
+        if (tag.contains("unlock_days", Tag.TAG_COMPOUND)) {
+            CompoundTag daysTag = tag.getCompound("unlock_days");
+            for (String key : daysTag.getAllKeys()) {
+                data.unlockDays.put(key, daysTag.getLong(key));
+            }
+        }
         return data;
     }
 
@@ -159,6 +257,8 @@ public class CodexPlayerData {
         CodexPlayerData copy = new CodexPlayerData();
         copy.unlockedNodes.addAll(this.unlockedNodes);
         copy.discoveredNodes.addAll(this.discoveredNodes);
+        copy.firstOpenDay = this.firstOpenDay;
+        copy.unlockDays.putAll(this.unlockDays);
         return copy;
     }
 }

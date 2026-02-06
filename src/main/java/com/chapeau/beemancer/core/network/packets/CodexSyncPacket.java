@@ -14,6 +14,7 @@
  *
  * UTILISÉ PAR:
  * - CodexUnlockPacket (après déblocage réussi)
+ * - CodexFirstOpenPacket (après enregistrement premier open)
  * - PlayerLoggedInEvent (sync initiale)
  * - BeemancerNetwork (enregistrement)
  *
@@ -32,10 +33,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredNodes) implements CustomPacketPayload {
+public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredNodes,
+                               long firstOpenDay, Map<String, Long> unlockDays) implements CustomPacketPayload {
 
     public static final Type<CodexSyncPacket> TYPE = new Type<>(
         ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "codex_sync"));
@@ -55,7 +59,17 @@ public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredN
                 discovered.add(buf.readUtf());
             }
 
-            return new CodexSyncPacket(unlocked, discovered);
+            long openDay = buf.readLong();
+
+            int daysSize = buf.readVarInt();
+            Map<String, Long> days = new HashMap<>(daysSize);
+            for (int i = 0; i < daysSize; i++) {
+                String nodeId = buf.readUtf();
+                long day = buf.readLong();
+                days.put(nodeId, day);
+            }
+
+            return new CodexSyncPacket(unlocked, discovered, openDay, days);
         }
 
         @Override
@@ -69,11 +83,20 @@ public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredN
             for (String nodeId : packet.discoveredNodes) {
                 buf.writeUtf(nodeId);
             }
+
+            buf.writeLong(packet.firstOpenDay);
+
+            buf.writeVarInt(packet.unlockDays.size());
+            for (Map.Entry<String, Long> entry : packet.unlockDays.entrySet()) {
+                buf.writeUtf(entry.getKey());
+                buf.writeLong(entry.getValue());
+            }
         }
     };
 
     public CodexSyncPacket(CodexPlayerData data) {
-        this(new HashSet<>(data.getUnlockedNodes()), new HashSet<>(data.getDiscoveredNodes()));
+        this(new HashSet<>(data.getUnlockedNodes()), new HashSet<>(data.getDiscoveredNodes()),
+             data.getFirstOpenDay(), new HashMap<>(data.getUnlockDays()));
     }
 
     @Override
@@ -90,8 +113,11 @@ public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredN
                 data.getUnlockedNodes().addAll(packet.unlockedNodes);
                 data.getDiscoveredNodes().clear();
                 data.getDiscoveredNodes().addAll(packet.discoveredNodes);
-                Beemancer.LOGGER.debug("Synced {} unlocked, {} discovered nodes from server",
-                    packet.unlockedNodes.size(), packet.discoveredNodes.size());
+                data.setFirstOpenDay(packet.firstOpenDay);
+                data.getUnlockDays().clear();
+                data.getUnlockDays().putAll(packet.unlockDays);
+                Beemancer.LOGGER.debug("Synced {} unlocked, {} discovered nodes, day {} from server",
+                    packet.unlockedNodes.size(), packet.discoveredNodes.size(), packet.firstOpenDay);
             }
         });
     }

@@ -29,6 +29,7 @@ import com.chapeau.beemancer.client.gui.screen.codex.StandardPageRenderer;
 import com.chapeau.beemancer.common.codex.*;
 import com.chapeau.beemancer.common.quest.QuestManager;
 import com.chapeau.beemancer.common.quest.QuestPlayerData;
+import com.chapeau.beemancer.core.network.packets.CodexFirstOpenPacket;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
 import com.chapeau.beemancer.core.registry.BeemancerAttachments;
 import com.chapeau.beemancer.core.registry.BeemancerSounds;
@@ -123,6 +124,12 @@ public class CodexScreen extends Screen {
         // Vérifier les quêtes OBTAIN (items dans l'inventaire)
         if (Minecraft.getInstance().player != null) {
             QuestManager.checkObtainQuests(Minecraft.getInstance().player);
+
+            // Enregistrer la première ouverture du Codex (envoie le jour MC au serveur)
+            CodexPlayerData data = getPlayerData();
+            if (data.getFirstOpenDay() == -1) {
+                PacketDistributor.sendToServer(new CodexFirstOpenPacket());
+            }
         }
 
         // Position de la frame (centrée, avec espace pour les tabs au-dessus)
@@ -379,12 +386,16 @@ public class CodexScreen extends Screen {
 
     private void handleNodeClick(CodexNode node, boolean isUnlocked, boolean canUnlock) {
         if (canUnlock && !isUnlocked) {
+            // DISCOVERED → envoyer unlock + ouvrir le book
             PacketDistributor.sendToServer(new CodexUnlockPacket(node.getFullId()));
             playSound(BeemancerSounds.CODEX_NODE_UNLOCK.get());
-            rebuildNodeWidgets();
+            Minecraft.getInstance().setScreen(new CodexBookScreen(node, currentPage));
         } else if (isUnlocked) {
+            // UNLOCKED → ouvrir le book
             playSound(BeemancerSounds.CODEX_NODE_CLICK.get());
+            Minecraft.getInstance().setScreen(new CodexBookScreen(node, currentPage));
         }
+        // LOCKED → rien (pas de else)
     }
 
     @Override

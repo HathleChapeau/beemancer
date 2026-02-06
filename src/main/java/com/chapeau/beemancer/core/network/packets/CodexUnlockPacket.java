@@ -62,9 +62,12 @@ public record CodexUnlockPacket(String nodeFullId) implements CustomPacketPayloa
 
                 CodexPlayerData data = player.getData(BeemancerAttachments.CODEX_DATA);
                 if (data.unlock(node)) {
-                    Beemancer.LOGGER.debug("Player {} unlocked codex node: {}", 
-                        player.getName().getString(), packet.nodeFullId);
-                    
+                    long currentDay = player.serverLevel().getDayTime() / 24000L;
+                    data.recordUnlockDay(packet.nodeFullId, currentDay);
+
+                    Beemancer.LOGGER.debug("Player {} unlocked codex node: {} on day {}",
+                        player.getName().getString(), packet.nodeFullId, currentDay);
+
                     // Sync back to client
                     PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
                 }
