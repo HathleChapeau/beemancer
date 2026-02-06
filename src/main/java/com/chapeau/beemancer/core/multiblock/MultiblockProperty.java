@@ -42,7 +42,8 @@ public enum MultiblockProperty implements StringRepresentable {
     ALEMBIC_0("alembic_0"),
     ALEMBIC_1("alembic_1"),
     INFUSER("infuser"),
-    CENTRIFUGE("centrifuge");
+    CENTRIFUGE("centrifuge"),
+    TANK("tank");
 
     private final String name;
 

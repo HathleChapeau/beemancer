@@ -1,13 +1,31 @@
 /**
  * ============================================================
  * [MultiblockTankBlockEntity.java]
- * Description: BlockEntity pour tank multi-bloc dynamique
+ * Description: BlockEntity pour tank multibloc cube dynamique
+ * ============================================================
+ *
+ * DÉPENDANCES:
+ * ------------------------------------------------------------
+ * | Dépendance                    | Raison                  | Utilisation                    |
+ * |-------------------------------|------------------------|--------------------------------|
+ * | MultiblockTankBlock           | Bloc associé           | Propriété MULTIBLOCK           |
+ * | MultiblockProperty            | État multibloc         | NONE/TANK                      |
+ * | BeemancerBlockEntities        | Registre               | Type BlockEntity               |
+ * | BeemancerFluids               | Fluides acceptés       | Validation FluidTank           |
+ * ------------------------------------------------------------
+ *
+ * UTILISÉ PAR:
+ * - MultiblockTankBlock.java
+ * - MultiblockTankRenderer.java
+ * - MultiblockTankMenu.java
+ *
  * ============================================================
  */
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.common.block.alchemy.MultiblockTankBlock;
 import com.chapeau.beemancer.common.menu.alchemy.MultiblockTankMenu;
+import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import net.minecraft.core.BlockPos;
@@ -18,6 +36,9 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -34,10 +55,6 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -46,19 +63,16 @@ import java.util.Set;
 public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvider {
     public static final int CAPACITY_PER_BLOCK = 8000;
 
-    // Master position (null = this is master)
+    // Master position (null = this IS the master)
     @Nullable
     private BlockPos masterPos = null;
 
     // Only for master: connected blocks and fluid storage
     private final Set<BlockPos> connectedBlocks = new HashSet<>();
     private FluidTank fluidTank;
-    private boolean validCuboid = false;
+    private int cubeSize = 0;
 
-    // Flag local synchronisé: true si ce bloc fait partie d'un multibloc formé
-    private boolean formed = false;
-
-    // Deferred validation: onLoad() ne peut pas valider car les voisins ne sont pas encore charges
+    // Validation différée après chargement
     private boolean needsLoadValidation = false;
     private int loadValidationDelay = 0;
     private static final int LOAD_VALIDATION_WAIT_TICKS = 10;
@@ -85,7 +99,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                 case 0 -> master.fluidTank != null ? master.fluidTank.getFluidAmount() : 0;
                 case 1 -> master.getTotalCapacity();
                 case 2 -> master.connectedBlocks.size();
-                case 3 -> master.validCuboid ? 1 : 0;
+                case 3 -> master.isFormed() ? 1 : 0;
                 default -> 0;
             };
         }
@@ -97,16 +111,15 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
 
     public MultiblockTankBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.MULTIBLOCK_TANK.get(), pos, state);
-        initializeAsMaster();
+        initializeAsSingle();
     }
 
-    private void initializeAsMaster() {
+    private void initializeAsSingle() {
         this.masterPos = null;
         this.connectedBlocks.clear();
         this.connectedBlocks.add(worldPosition);
         this.fluidTank = createFluidTank(CAPACITY_PER_BLOCK);
-        this.validCuboid = false;  // Un seul bloc = pas un cube valide
-        this.formed = false;
+        this.cubeSize = 0;
     }
 
     private FluidTank createFluidTank(int capacity) {
@@ -128,6 +141,8 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         };
     }
 
+    // ==================== Multiblock State ====================
+
     public boolean isMaster() {
         return masterPos == null;
     }
@@ -144,6 +159,22 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         return be instanceof MultiblockTankBlockEntity tank ? tank : null;
     }
 
+    /**
+     * Vérifie si le multibloc est formé via le blockstate.
+     */
+    public boolean isFormed() {
+        BlockState state = getBlockState();
+        if (state.hasProperty(MultiblockTankBlock.MULTIBLOCK)) {
+            return state.getValue(MultiblockTankBlock.MULTIBLOCK) == MultiblockProperty.TANK;
+        }
+        return false;
+    }
+
+    public int getCubeSize() {
+        MultiblockTankBlockEntity master = getMaster();
+        return master != null ? master.cubeSize : 0;
+    }
+
     public FluidTank getFluidTank() {
         MultiblockTankBlockEntity master = getMaster();
         return master != null ? master.fluidTank : null;
@@ -158,66 +189,29 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         return master != null ? master.connectedBlocks.size() : 1;
     }
 
-    public boolean isValidCuboid() {
-        MultiblockTankBlockEntity master = getMaster();
-        return master != null && master.validCuboid;
-    }
-
-    /**
-     * Retourne true si ce bloc fait partie d'un multibloc formé.
-     * Utilise le flag local synchronisé (pas de dépendance au master).
-     */
-    public boolean isFormed() {
-        return formed;
-    }
-
-    /**
-     * Retourne la taille du cube (côté).
-     * Si le cube n'est pas valide, retourne 0.
-     * Utilise le cache client si disponible.
-     */
-    public int getCubeSize() {
-        // Utiliser le cache client si on est sur le client et qu'il est défini
-        if (level != null && level.isClientSide() && isMaster() && clientCubeSize > 0) {
-            return clientCubeSize;
-        }
-
-        MultiblockTankBlockEntity master = getMaster();
-        if (master == null || !master.validCuboid) return 0;
-
-        // Cache client du master
-        if (level != null && level.isClientSide() && master.clientCubeSize > 0) {
-            return master.clientCubeSize;
-        }
-
-        int[] bb = master.getBoundingBox();
-        return bb[3] - bb[0] + 1; // maxX - minX + 1
-    }
-
     public ItemStackHandler getBucketSlot() {
         MultiblockTankBlockEntity master = getMaster();
         return master != null ? master.bucketSlot : bucketSlot;
     }
 
+    // ==================== Multiblock Formation ====================
+
     /**
-     * Appele quand un bloc est place. Utilise BFS pour decouvrir
-     * tous les tanks adjacents et reformer le multibloc entier.
+     * Appelé quand un bloc est placé. Découvre et forme le multibloc.
      */
     public void onPlaced() {
         if (level == null || level.isClientSide()) return;
-        reformMultiblock();
-        setChanged();
+        tryFormMultiblock();
     }
 
     /**
-     * BFS flood-fill pour decouvrir et reformer tout le multibloc.
-     * Utilise par onPlaced() et performLoadValidation().
-     * Inspire de Create's ConnectivityHandler.formMulti().
+     * BFS flood-fill pour découvrir tous les tanks adjacents,
+     * puis valide si c'est un cube et forme le multibloc.
      */
-    private void reformMultiblock() {
+    private void tryFormMultiblock() {
         if (level == null) return;
 
-        // BFS depuis cette position pour trouver tous les tanks connectes
+        // BFS depuis cette position
         Set<BlockPos> found = new HashSet<>();
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
         queue.add(worldPosition);
@@ -236,30 +230,70 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             }
         }
 
+        // Un seul bloc = pas de multibloc
         if (found.size() == 1) {
-            initializeAsMaster();
-            recalculateStructure();
-            // Sync au client
-            if (level != null) {
-                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-            }
+            initializeAsSingle();
+            setChanged();
             return;
         }
 
-        // Elire le master: plus petite position (Y, X, Z)
-        BlockPos newMasterPos = worldPosition;
-        for (BlockPos pos : found) {
-            if (comparePositions(pos, newMasterPos) < 0) {
-                newMasterPos = pos;
+        // Valider que c'est un cube parfait
+        int[] bb = calculateBoundingBox(found);
+        int sizeX = bb[3] - bb[0] + 1;
+        int sizeY = bb[4] - bb[1] + 1;
+        int sizeZ = bb[5] - bb[2] + 1;
+
+        // Doit être un cube (toutes dimensions égales)
+        if (sizeX != sizeY || sizeY != sizeZ) {
+            resetAllBlocks(found);
+            return;
+        }
+
+        // Minimum 2x2x2
+        if (sizeX < 2) {
+            resetAllBlocks(found);
+            return;
+        }
+
+        // Vérifier que toutes les positions sont remplies
+        int expectedSize = sizeX * sizeY * sizeZ;
+        if (found.size() != expectedSize) {
+            resetAllBlocks(found);
+            return;
+        }
+
+        for (int x = bb[0]; x <= bb[3]; x++) {
+            for (int y = bb[1]; y <= bb[4]; y++) {
+                for (int z = bb[2]; z <= bb[5]; z++) {
+                    if (!found.contains(new BlockPos(x, y, z))) {
+                        resetAllBlocks(found);
+                        return;
+                    }
+                }
             }
         }
 
-        BlockEntity masterBe = level.getBlockEntity(newMasterPos);
-        if (!(masterBe instanceof MultiblockTankBlockEntity newMaster)) return;
+        // Cube valide! Former le multibloc
+        formMultiblock(found, sizeX);
+    }
 
-        // Collecter le fluide depuis tous les anciens masters
+    /**
+     * Forme le multibloc avec les blocs trouvés.
+     */
+    private void formMultiblock(Set<BlockPos> blocks, int size) {
+        if (level == null) return;
+
+        // Élire le master (plus petite position Y, puis X, puis Z)
+        BlockPos masterPos = worldPosition;
+        for (BlockPos pos : blocks) {
+            if (comparePositions(pos, masterPos) < 0) {
+                masterPos = pos;
+            }
+        }
+
+        // Collecter le fluide depuis tous les anciens tanks
         FluidStack totalFluid = FluidStack.EMPTY;
-        for (BlockPos pos : found) {
+        for (BlockPos pos : blocks) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof MultiblockTankBlockEntity tank && tank.fluidTank != null && !tank.fluidTank.isEmpty()) {
                 FluidStack f = tank.fluidTank.getFluid().copy();
@@ -268,69 +302,108 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                 } else if (totalFluid.getFluid() == f.getFluid()) {
                     totalFluid.grow(f.getAmount());
                 }
-                // Fluides incompatibles: garder le premier trouve
             }
         }
 
         // Configurer le master
-        newMaster.masterPos = null;
-        newMaster.connectedBlocks.clear();
-        newMaster.connectedBlocks.addAll(found);
-        int newCapacity = found.size() * CAPACITY_PER_BLOCK;
-        newMaster.fluidTank = newMaster.createFluidTank(newCapacity);
+        BlockEntity masterBe = level.getBlockEntity(masterPos);
+        if (!(masterBe instanceof MultiblockTankBlockEntity master)) return;
+
+        master.masterPos = null;
+        master.connectedBlocks.clear();
+        master.connectedBlocks.addAll(blocks);
+        master.cubeSize = size;
+
+        int newCapacity = blocks.size() * CAPACITY_PER_BLOCK;
+        master.fluidTank = master.createFluidTank(newCapacity);
         if (!totalFluid.isEmpty()) {
             int toFill = Math.min(totalFluid.getAmount(), newCapacity);
-            newMaster.fluidTank.fill(new FluidStack(totalFluid.getFluid(), toFill), IFluidHandler.FluidAction.EXECUTE);
+            master.fluidTank.fill(new FluidStack(totalFluid.getFluid(), toFill), IFluidHandler.FluidAction.EXECUTE);
         }
 
-        // Configurer les slaves (formed sera mis à jour par recalculateStructure)
-        for (BlockPos pos : found) {
-            if (pos.equals(newMasterPos)) continue;
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof MultiblockTankBlockEntity slave) {
-                slave.masterPos = newMasterPos;
-                slave.fluidTank = null;
-                slave.connectedBlocks.clear();
-                slave.needsLoadValidation = false;
-                slave.formed = false; // Sera mis à jour par recalculateStructure
-                slave.setChanged();
+        master.setChanged();
+
+        // Mettre à jour TOUS les blocs: blockstate + BlockEntity
+        for (BlockPos pos : blocks) {
+            BlockState blockState = level.getBlockState(pos);
+            if (blockState.hasProperty(MultiblockTankBlock.MULTIBLOCK)) {
+                level.setBlock(pos, blockState.setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.TANK), 3);
+            }
+
+            if (!pos.equals(masterPos)) {
+                BlockEntity be = level.getBlockEntity(pos);
+                if (be instanceof MultiblockTankBlockEntity slave) {
+                    slave.masterPos = masterPos;
+                    slave.connectedBlocks.clear();
+                    slave.fluidTank = null;
+                    slave.cubeSize = 0;
+                    slave.needsLoadValidation = false;
+                    slave.setChanged();
+                }
             }
         }
-
-        newMaster.needsLoadValidation = false;
-        newMaster.recalculateStructure();
     }
 
     /**
-     * Appele quand un bloc est casse. Detruit le fluide et
-     * reset TOUS les blocs de la structure, puis reforme si possible.
+     * Reset tous les blocs à l'état non formé.
+     */
+    private void resetAllBlocks(Set<BlockPos> blocks) {
+        if (level == null) return;
+
+        for (BlockPos pos : blocks) {
+            // Reset blockstate
+            BlockState blockState = level.getBlockState(pos);
+            if (blockState.hasProperty(MultiblockTankBlock.MULTIBLOCK)) {
+                level.setBlock(pos, blockState.setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
+            }
+
+            // Reset BlockEntity
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof MultiblockTankBlockEntity tank) {
+                tank.masterPos = null;
+                tank.connectedBlocks.clear();
+                tank.connectedBlocks.add(pos);
+                tank.fluidTank = tank.createFluidTank(CAPACITY_PER_BLOCK);
+                tank.cubeSize = 0;
+                tank.setChanged();
+            }
+        }
+    }
+
+    /**
+     * Appelé quand un bloc est cassé. Détruit le fluide et reset la structure.
      */
     public void onBroken() {
         if (level == null || level.isClientSide()) return;
 
-        // Si on est le master, reset tous les blocs de la structure
-        if (isMaster() && formed) {
-            // Destroy all fluid (as per spec)
+        // Si on est le master et formé
+        if (isMaster() && isFormed()) {
+            // Détruire le fluide
             if (fluidTank != null) {
                 fluidTank.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
             }
 
-            // Copier la liste car on va la modifier
+            // Copier la liste des blocs
             Set<BlockPos> blocksToReset = new HashSet<>(connectedBlocks);
+            blocksToReset.remove(worldPosition); // Exclure le bloc cassé
 
-            // Reset TOUS les blocs de la structure
+            // Reset TOUS les autres blocs
             for (BlockPos pos : blocksToReset) {
-                if (pos.equals(worldPosition)) continue; // Skip self (being broken)
+                // Reset blockstate
+                BlockState blockState = level.getBlockState(pos);
+                if (blockState.hasProperty(MultiblockTankBlock.MULTIBLOCK)) {
+                    level.setBlock(pos, blockState.setValue(MultiblockTankBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
+                }
+
+                // Reset BlockEntity
                 BlockEntity be = level.getBlockEntity(pos);
                 if (be instanceof MultiblockTankBlockEntity tank) {
                     tank.masterPos = null;
-                    tank.formed = false;
                     tank.connectedBlocks.clear();
                     tank.connectedBlocks.add(pos);
                     tank.fluidTank = tank.createFluidTank(CAPACITY_PER_BLOCK);
-                    tank.validCuboid = false;
+                    tank.cubeSize = 0;
                     tank.setChanged();
-                    level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
                 }
             }
 
@@ -338,7 +411,7 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             BlockPos reformFrom = null;
             for (Direction dir : Direction.values()) {
                 BlockPos neighbor = worldPosition.relative(dir);
-                if (blocksToReset.contains(neighbor) && level.getBlockEntity(neighbor) instanceof MultiblockTankBlockEntity) {
+                if (blocksToReset.contains(neighbor)) {
                     reformFrom = neighbor;
                     break;
                 }
@@ -348,84 +421,32 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             if (reformFrom != null) {
                 BlockEntity be = level.getBlockEntity(reformFrom);
                 if (be instanceof MultiblockTankBlockEntity neighbor) {
-                    neighbor.reformMultiblock();
+                    neighbor.tryFormMultiblock();
                 }
             }
         } else if (masterPos != null) {
-            // Si on est un slave, notifier le master
+            // On est un slave: notifier le master
             BlockEntity be = level.getBlockEntity(masterPos);
             if (be instanceof MultiblockTankBlockEntity master) {
                 master.onBroken();
             }
         }
 
-        // Clear this block's state
+        // Reset ce bloc
         this.masterPos = null;
         this.connectedBlocks.clear();
         this.fluidTank = null;
-        this.formed = false;
-        this.validCuboid = false;
+        this.cubeSize = 0;
     }
 
-    private int comparePositions(BlockPos a, BlockPos b) {
-        if (a.getY() != b.getY()) return Integer.compare(a.getY(), b.getY());
-        if (a.getX() != b.getX()) return Integer.compare(a.getX(), b.getX());
-        return Integer.compare(a.getZ(), b.getZ());
-    }
+    // ==================== Helpers ====================
 
-    private void recalculateStructure() {
-        if (!isMaster()) return;
-
-        // Update tank capacity only if needed
-        int newCapacity = getTotalCapacity();
-        if (fluidTank == null) {
-            fluidTank = createFluidTank(newCapacity);
-        } else if (fluidTank.getCapacity() != newCapacity) {
-            FluidStack currentFluid = fluidTank.getFluid().copy();
-            fluidTank = createFluidTank(newCapacity);
-            if (!currentFluid.isEmpty()) {
-                // Truncate fluid if over capacity
-                int toFill = Math.min(currentFluid.getAmount(), newCapacity);
-                fluidTank.fill(new FluidStack(currentFluid.getFluid(), toFill), IFluidHandler.FluidAction.EXECUTE);
-            }
-        }
-
-        // Validate cuboid shape
-        validCuboid = validateCuboid();
-        boolean isFormed = validCuboid && connectedBlocks.size() >= 8; // min 2x2x2 = 8 blocs
-
-        // Update le flag 'formed' sur TOUS les blocs et sync au client
-        if (level != null) {
-            for (BlockPos pos : connectedBlocks) {
-                BlockEntity be = level.getBlockEntity(pos);
-                if (be instanceof MultiblockTankBlockEntity tank) {
-                    tank.formed = isFormed;
-                    tank.setChanged();
-                    level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
-                }
-            }
-        }
-
-        setChanged();
-    }
-
-    /**
-     * Valide que la structure forme un CUBE parfait (h = l = p).
-     * Minimum 2x2x2 pour être valide.
-     * Un bloc seul n'est pas valide (trop petit).
-     */
-    private boolean validateCuboid() {
-        if (connectedBlocks.isEmpty()) return false;
-
-        // Un bloc seul n'est pas valide (min 2x2x2)
-        if (connectedBlocks.size() == 1) return false;
-
-        // Calculate bounding box
+    private int[] calculateBoundingBox(Set<BlockPos> blocks) {
         int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
         int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
         int minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
 
-        for (BlockPos pos : connectedBlocks) {
+        for (BlockPos pos : blocks) {
             minX = Math.min(minX, pos.getX());
             maxX = Math.max(maxX, pos.getX());
             minY = Math.min(minY, pos.getY());
@@ -434,36 +455,16 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             maxZ = Math.max(maxZ, pos.getZ());
         }
 
-        // Calculate dimensions
-        int sizeX = maxX - minX + 1;
-        int sizeY = maxY - minY + 1;
-        int sizeZ = maxZ - minZ + 1;
-
-        // CUBE: toutes les dimensions doivent être égales
-        if (sizeX != sizeY || sizeY != sizeZ) return false;
-
-        // Minimum 2x2x2
-        if (sizeX < 2) return false;
-
-        // Calculate expected volume
-        int expectedSize = sizeX * sizeY * sizeZ;
-
-        // Check if we have exactly the right number of blocks
-        if (connectedBlocks.size() != expectedSize) return false;
-
-        // Verify every position in bounding box has a tank
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                for (int z = minZ; z <= maxZ; z++) {
-                    if (!connectedBlocks.contains(new BlockPos(x, y, z))) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
+        return new int[]{minX, minY, minZ, maxX, maxY, maxZ};
     }
+
+    private int comparePositions(BlockPos a, BlockPos b) {
+        if (a.getY() != b.getY()) return Integer.compare(a.getY(), b.getY());
+        if (a.getX() != b.getX()) return Integer.compare(a.getX(), b.getX());
+        return Integer.compare(a.getZ(), b.getZ());
+    }
+
+    // ==================== Tick ====================
 
     @Override
     public void onLoad() {
@@ -474,32 +475,22 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         }
     }
 
-    /**
-     * Validation differee apres chargement.
-     * Attend quelques ticks puis reforme le multibloc via BFS.
-     */
-    private void performLoadValidation() {
-        if (level == null) return;
-
-        loadValidationDelay++;
-        if (loadValidationDelay < LOAD_VALIDATION_WAIT_TICKS) return;
-
-        needsLoadValidation = false;
-        reformMultiblock();
-    }
-
     public static void serverTick(Level level, BlockPos pos, BlockState state, MultiblockTankBlockEntity be) {
         if (be.needsLoadValidation) {
-            be.performLoadValidation();
+            be.loadValidationDelay++;
+            if (be.loadValidationDelay >= LOAD_VALIDATION_WAIT_TICKS) {
+                be.needsLoadValidation = false;
+                be.tryFormMultiblock();
+            }
         }
 
-        if (!be.isMaster()) return;
+        if (!be.isMaster() || !be.isFormed()) return;
 
         be.processBucketSlot();
     }
 
     protected void processBucketSlot() {
-        if (!validCuboid) return; // No bucket processing if invalid shape
+        if (!isFormed()) return;
 
         ItemStack bucket = bucketSlot.getStackInSlot(0);
         if (bucket.isEmpty() || fluidTank == null) return;
@@ -530,6 +521,8 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         return FluidStack.EMPTY;
     }
 
+    // ==================== Menu ====================
+
     @Override
     public Component getDisplayName() {
         return Component.translatable("container.beemancer.multiblock_tank");
@@ -538,35 +531,32 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
-        // Always use master for menu
         MultiblockTankBlockEntity master = getMaster();
         if (master == null) return null;
         return new MultiblockTankMenu(containerId, playerInv, master, master.dataAccess);
     }
+
+    // ==================== NBT ====================
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
 
         tag.putBoolean("IsMaster", isMaster());
-        tag.putBoolean("Formed", formed);
 
         if (isMaster()) {
-            // Save master data
             if (fluidTank != null) {
                 tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
             }
             tag.put("Bucket", bucketSlot.serializeNBT(registries));
-            tag.putBoolean("ValidCuboid", validCuboid);
+            tag.putInt("CubeSize", cubeSize);
 
-            // Save connected blocks
             ListTag blocksList = new ListTag();
             for (BlockPos pos : connectedBlocks) {
                 blocksList.add(NbtUtils.writeBlockPos(pos));
             }
             tag.put("ConnectedBlocks", blocksList);
-        } else {
-            // Save slave data
+        } else if (masterPos != null) {
             tag.put("MasterPos", NbtUtils.writeBlockPos(masterPos));
         }
     }
@@ -575,15 +565,11 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
 
-        // Toujours charger le flag formed
-        this.formed = tag.getBoolean("Formed");
-
         boolean isMaster = tag.getBoolean("IsMaster");
 
         if (isMaster) {
             this.masterPos = null;
 
-            // Load connected blocks
             connectedBlocks.clear();
             if (tag.contains("ConnectedBlocks")) {
                 ListTag blocksList = tag.getList("ConnectedBlocks", Tag.TAG_COMPOUND);
@@ -595,7 +581,6 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                 connectedBlocks.add(worldPosition);
             }
 
-            // Load fluid tank
             int capacity = getTotalCapacity();
             this.fluidTank = createFluidTank(capacity);
             if (tag.contains("Fluid")) {
@@ -606,108 +591,26 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                 bucketSlot.deserializeNBT(registries, tag.getCompound("Bucket"));
             }
 
-            this.validCuboid = tag.getBoolean("ValidCuboid");
-
-            // Charger bounding box pour le client
-            if (tag.contains("BoundingBox")) {
-                this.clientBoundingBox = tag.getIntArray("BoundingBox");
-                if (this.clientBoundingBox.length != 6) {
-                    this.clientBoundingBox = null;
-                }
-            }
-
-            // Charger taille du cube pour le client
-            if (tag.contains("CubeSize")) {
-                this.clientCubeSize = tag.getInt("CubeSize");
-            }
+            this.cubeSize = tag.getInt("CubeSize");
         } else {
-            // Load slave data
             if (tag.contains("MasterPos")) {
                 NbtUtils.readBlockPos(tag.getCompound("MasterPos"), "").ifPresent(pos -> this.masterPos = pos);
             }
             this.fluidTank = null;
+            this.cubeSize = 0;
         }
-    }
-
-    /**
-     * Calcule le bounding box du cuboid (pour le rendu client).
-     * Retourne [minX, minY, minZ, maxX, maxY, maxZ] en coordonnees monde.
-     */
-    public int[] getBoundingBox() {
-        if (connectedBlocks.isEmpty()) {
-            return new int[]{worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
-                             worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()};
-        }
-        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
-        int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
-        int minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
-        for (BlockPos pos : connectedBlocks) {
-            minX = Math.min(minX, pos.getX());
-            maxX = Math.max(maxX, pos.getX());
-            minY = Math.min(minY, pos.getY());
-            maxY = Math.max(maxY, pos.getY());
-            minZ = Math.min(minZ, pos.getZ());
-            maxZ = Math.max(maxZ, pos.getZ());
-        }
-        return new int[]{minX, minY, minZ, maxX, maxY, maxZ};
-    }
-
-    // Bounding box cache pour le client (charge via updateTag)
-    private int[] clientBoundingBox = null;
-
-    // Taille du cube cache pour le client
-    private int clientCubeSize = 0;
-
-    public int[] getClientBoundingBox() {
-        if (clientBoundingBox != null) return clientBoundingBox;
-        return getBoundingBox();
-    }
-
-    /**
-     * Calcule le ratio de remplissage [0.0-1.0] pour un bloc specifique
-     * selon sa position Y dans le multibloc.
-     */
-    public float getFluidFillRatioForBlock(BlockPos blockPos) {
-        MultiblockTankBlockEntity master = getMaster();
-        if (master == null || master.fluidTank == null || master.fluidTank.isEmpty()) return 0f;
-
-        int[] bb = master.getClientBoundingBox();
-        int minY = bb[1];
-        int maxY = bb[4];
-        int totalHeight = maxY - minY + 1;
-        if (totalHeight <= 0) return 0f;
-
-        float globalFill = (float) master.fluidTank.getFluidAmount() / master.fluidTank.getCapacity();
-        int blockIndex = blockPos.getY() - minY;
-
-        float fillPerBlock = 1.0f / totalHeight;
-        float blockStartFill = blockIndex * fillPerBlock;
-        float blockEndFill = (blockIndex + 1) * fillPerBlock;
-
-        if (globalFill <= blockStartFill) return 0f;
-        if (globalFill >= blockEndFill) return 1f;
-        return (globalFill - blockStartFill) / fillPerBlock;
     }
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         tag.putBoolean("IsMaster", isMaster());
-        tag.putBoolean("Formed", formed);  // Toujours sync le flag formed
 
         if (isMaster()) {
             if (fluidTank != null) {
                 tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
             }
             tag.putInt("BlockCount", connectedBlocks.size());
-            tag.putBoolean("ValidCuboid", validCuboid);
-
-            // Bounding box pour le rendu client du fluide
-            int[] bb = getBoundingBox();
-            tag.putIntArray("BoundingBox", bb);
-
-            // Taille du cube pour le renderer
-            int cubeSize = validCuboid ? (bb[3] - bb[0] + 1) : 0;
             tag.putInt("CubeSize", cubeSize);
         } else if (masterPos != null) {
             tag.put("MasterPos", NbtUtils.writeBlockPos(masterPos));
