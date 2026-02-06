@@ -1,5 +1,6 @@
 {
   "credit": "Beemancer - Multiblock Tank Formed (scaled by renderer)",
+  "render_type": "minecraft:translucent",
   "textures": {
     "frame": "beemancer:block/iron",
     "glass": "beemancer:block/honeyed_glass",

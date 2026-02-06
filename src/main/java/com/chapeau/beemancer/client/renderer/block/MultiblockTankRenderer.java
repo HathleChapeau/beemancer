@@ -131,25 +131,11 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
 
         var blockRenderer = minecraft.getBlockRenderer().getModelRenderer();
 
-        // Render en solid
-        VertexConsumer consumer = buffer.getBuffer(RenderType.solid());
+        // Le modèle est entièrement translucent (render_type dans le JSON)
+        VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
         blockRenderer.renderModel(
             poseStack.last(),
             consumer,
-            null,
-            model,
-            1f, 1f, 1f,
-            packedLight,
-            OverlayTexture.NO_OVERLAY,
-            ModelData.EMPTY,
-            RenderType.solid()
-        );
-
-        // Render en translucent (pour le verre)
-        VertexConsumer translucentConsumer = buffer.getBuffer(RenderType.translucent());
-        blockRenderer.renderModel(
-            poseStack.last(),
-            translucentConsumer,
             null,
             model,
             1f, 1f, 1f,
