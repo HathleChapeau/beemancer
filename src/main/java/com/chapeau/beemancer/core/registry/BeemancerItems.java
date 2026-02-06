@@ -270,7 +270,7 @@ public class BeemancerItems {
             () -> new Item(new Item.Properties()));
 
     // --- ESSENCES ---
-    // Drop Essences (améliore le drop level des abeilles)
+    // Production Essences (améliore le niveau de production des abeilles)
     public static final DeferredItem<EssenceItem> LESSER_DROP_ESSENCE = ITEMS.register("lesser_drop_essence",
             () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.DROP, EssenceItem.EssenceLevel.LESSER));
     public static final DeferredItem<EssenceItem> DROP_ESSENCE = ITEMS.register("drop_essence",

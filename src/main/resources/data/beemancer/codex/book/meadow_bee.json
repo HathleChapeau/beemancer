@@ -1,0 +1,8 @@
+{
+  "sections": [
+    {"type": "header"},
+    {"type": "text", "key": "codex.beemancer.bees.meadow_bee.desc"},
+    {"type": "stats", "species": "meadow"},
+    {"type": "model", "species": "meadow", "height": 80}
+  ]
+}

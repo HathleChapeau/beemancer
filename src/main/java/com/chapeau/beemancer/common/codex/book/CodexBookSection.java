@@ -30,7 +30,9 @@ public abstract class CodexBookSection {
     public enum SectionType {
         HEADER("header"),
         TEXT("text"),
-        IMAGE("image");
+        IMAGE("image"),
+        MODEL("model"),
+        STATS("stats");
 
         private final String id;
 
@@ -88,6 +90,8 @@ public abstract class CodexBookSection {
             case HEADER -> new HeaderSection();
             case TEXT -> TextSection.fromJson(json);
             case IMAGE -> ImageSection.fromJson(json);
+            case MODEL -> ModelSection.fromJson(json);
+            case STATS -> StatsSection.fromJson(json);
         };
     }
 }

@@ -324,6 +324,18 @@ public class BeeSpeciesManager {
         return loaded;
     }
 
+    /**
+     * S'assure que les donnees sont chargees cote client (lazy loading).
+     */
+    public static void ensureClientLoaded() {
+        if (!loaded) {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc != null && mc.getResourceManager() != null) {
+                load(mc.getResourceManager());
+            }
+        }
+    }
+
     // ========== CLASSES INTERNES ==========
 
     public enum StatType {

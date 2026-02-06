@@ -90,6 +90,7 @@ public class CodexBookScreen extends Screen {
         super.init();
 
         CodexBookManager.ensureClientLoaded();
+        playSound(BeemancerSounds.CODEX_PAGE_TURN.get());
 
         bookX = (width - BOOK_WIDTH) / 2;
         bookY = (height - BOOK_HEIGHT) / 2;
