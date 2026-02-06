@@ -50,6 +50,8 @@ public class CodexBookManager {
         Map<ResourceLocation, Resource> resources = resourceManager.listResources(
                 "codex/book", path -> path.getPath().endsWith(".json"));
 
+        Beemancer.LOGGER.info("CodexBook scanning: found {} resource files", resources.size());
+
         for (Map.Entry<ResourceLocation, Resource> entry : resources.entrySet()) {
             ResourceLocation location = entry.getKey();
             String path = location.getPath();
@@ -59,7 +61,7 @@ public class CodexBookManager {
                 JsonObject json = GSON.fromJson(reader, JsonObject.class);
                 CodexBookContent content = CodexBookContent.fromJson(nodeId, json);
                 CONTENTS.put(nodeId, content);
-                Beemancer.LOGGER.debug("Loaded book content for node: {}", nodeId);
+                Beemancer.LOGGER.info("Loaded book content for node: {} ({} sections)", nodeId, content.getSections().size());
             } catch (Exception e) {
                 Beemancer.LOGGER.error("Failed to load book content for {}: {}", nodeId, e.getMessage());
             }
