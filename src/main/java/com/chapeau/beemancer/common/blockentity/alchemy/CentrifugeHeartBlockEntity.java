@@ -92,7 +92,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     private static final int DEFAULT_PROCESS_TIME = 100;
 
     // Animation cubes centraux
-    private static final float MAX_ROTATION_SPEED = 12.0f;
+    private static final float MAX_ROTATION_SPEED = 14.0f;
     private static final float ACCELERATION = 0.15f;
 
     // Positions des reservoirs (relatif au coeur)

@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "honey": "beemancer:block/iron",
+    "honey": "beemancer:block/alchemy/powered_centrifuge_heart",
     "particle": "beemancer:block/iron"
   },
   "elements": [

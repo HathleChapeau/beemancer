@@ -1,22 +1,6 @@
 {
-  "parent": "minecraft:block/block",
+  "parent": "beemancer:block/alchemy/centrifuge_heart_core",
   "textures": {
-    "honey": "beemancer:block/honey_crystal",
-    "particle": "beemancer:block/honey_crystal"
-  },
-  "elements": [
-    {
-      "name": "Core",
-      "from": [-4, -4, -4],
-      "to": [20, 20, 20],
-      "faces": {
-        "north": {"texture": "#honey", "uv": [0, 0, 16, 16]},
-        "east":  {"texture": "#honey", "uv": [0, 0, 16, 16]},
-        "south": {"texture": "#honey", "uv": [0, 0, 16, 16]},
-        "west":  {"texture": "#honey", "uv": [0, 0, 16, 16]},
-        "up":    {"texture": "#honey", "uv": [0, 0, 16, 16]},
-        "down":  {"texture": "#honey", "uv": [0, 0, 16, 16]}
-      }
-    }
-  ]
+    "honey": "beemancer:block/alchemy/powered_centrifuge_heart_working"
+  }
 }
