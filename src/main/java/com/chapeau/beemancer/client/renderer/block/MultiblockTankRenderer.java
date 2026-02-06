@@ -42,6 +42,9 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.minecraft.world.phys.AABB;
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
+
 
 /**
  * Renderer pour le multiblock tank.
@@ -49,6 +52,8 @@ import net.minecraft.world.phys.AABB;
  * Charge le modèle JSON et le scale selon la taille du cube.
  */
 public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTankBlockEntity> {
+
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     // Modèle formé (scalé par le renderer)
     public static final ModelResourceLocation FORMED_MODEL_LOC = ModelResourceLocation.standalone(
@@ -149,7 +154,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
         if (tank == null || tank.isEmpty()) return;
 
         FluidStack fluidStack = tank.getFluid();
-        float fillRatio = (float) tank.getFluidAmount() / tank.getCapacity();
+        float fillRatio = (float) tank.getFluidAmount() / tank.getCapacity() / (float) (Math.pow(cubeSize, 3));
         if (fillRatio <= 0f) return;
 
         Fluid fluid = fluidStack.getFluid();
@@ -183,6 +188,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
         // Lerp entre yStart et yEnd selon le % de remplissage
         float minY = yStart;
         float maxY = yStart + (yEnd - yStart) * fillRatio;
+        LOGGER.warn("Ratio : {}/{}/{}/{}", fillRatio, (float) tank.getFluidAmount(), tank.getCapacity(), (Math.pow(cubeSize, 3)));
 
         var pose = poseStack.last();
         FluidCubeRenderer.renderFluidCube(consumer, pose, sprite,
