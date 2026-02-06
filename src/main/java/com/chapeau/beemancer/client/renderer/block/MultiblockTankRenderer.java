@@ -161,26 +161,28 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
 
-        // Coordonnées en espace monde (blocs), scalées par cubeSize
-        // Le modèle: glass de [3,10,3] à [29,32,29] sur 32 pixels (2 blocs de base)
-        // Ratio pour convertir: cubeSize / 2
-        float scale = cubeSize / 2.0f;
+        // Coordonnées en blocs, relatives à la position du BlockEntity
+        // Le modèle fait 2 blocs de base, scalé à cubeSize blocs
+        // Glass dans le modèle: X/Z de 3 à 29 pixels (sur 32), Y de 10 à 32 pixels
+        // En ratio du cubeSize:
+        // - X/Z inset: 3/32 ≈ 0.09375, on utilise 0.125 (marge)
+        // - Y start: 10/32 = 0.3125, Y end: 32/32 = 1.0
 
-        // Marge de 1 pixel à l'intérieur du glass (4 pixels depuis le bord du modèle)
-        float inset = (4f / 32f) * cubeSize;  // 4 pixels sur 32 = ratio * cubeSize
+        float inset = 0.125f * cubeSize;  // Marge X/Z depuis les bords
 
         float minX = inset;
         float maxX = cubeSize - inset;
         float minZ = inset;
         float maxZ = cubeSize - inset;
 
-        // Y: base du glass à 10/32 du modèle, top à 32/32
-        // Fluide commence à 11/32, finit à 31/32
-        float baseY = (11f / 32f) * cubeSize;  // Juste au-dessus du bord
-        float topY = (31f / 32f) * cubeSize;   // Juste en dessous du top
+        // Y de départ (juste au-dessus de la base opaque): 0.35 * cubeSize
+        // Y d'arrivée (juste en dessous du top): 0.95 * cubeSize
+        float yStart = 0.35f * cubeSize;
+        float yEnd = 0.95f * cubeSize;
 
-        float minY = baseY;
-        float maxY = baseY + (topY - baseY) * fillRatio;
+        // Lerp entre yStart et yEnd selon le % de remplissage
+        float minY = yStart;
+        float maxY = yStart + (yEnd - yStart) * fillRatio;
 
         var pose = poseStack.last();
         FluidCubeRenderer.renderFluidCube(consumer, pose, sprite,
