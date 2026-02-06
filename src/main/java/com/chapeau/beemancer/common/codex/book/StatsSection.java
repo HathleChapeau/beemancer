@@ -55,9 +55,9 @@ public class StatsSection extends CodexBookSection {
     @Override
     public int getHeight(Font font, int pageWidth) {
         int lineH = font.lineHeight + LINE_SPACING;
-        // Tier + Activity + Flower + sep + 6 stats + sep + Loot + sep + 3 traits + padding
-        // 3 + 6 + 1 + 3 = 13 lines + 3 separators (3px each)
-        return lineH * 13 + 3 + 3 + 3 + PADDING_BOTTOM;
+        // Tier + sep + Activity + Flower + sep + 6 stats + sep + Loot + sep + 3 traits + padding
+        // 1 + 2 + 6 + 1 + 3 = 13 lines + 4 separators (3px each)
+        return lineH * 13 + 3 + 3 + 3 + 3 + PADDING_BOTTOM;
     }
 
     @Override
@@ -73,9 +73,13 @@ public class StatsSection extends CodexBookSection {
         int lineH = font.lineHeight + LINE_SPACING;
         int currentY = y;
 
-        // Tier
-        graphics.drawString(font, "Tier " + data.tier, x, currentY, INFO_COLOR, false);
+        // Tier (mis en avant avec couleur label)
+        graphics.drawString(font, "Tier " + data.tier, x, currentY, LABEL_COLOR, false);
         currentY += lineH;
+
+        // Separator
+        graphics.fill(x, currentY, x + pageWidth, currentY + 1, SEPARATOR_COLOR);
+        currentY += 3;
 
         // Activity
         graphics.drawString(font, "Activity: " + formatActivity(data.dayNight), x, currentY, INFO_COLOR, false);
@@ -118,15 +122,15 @@ public class StatsSection extends CodexBookSection {
         // Traits (one per line)
         String yesNo;
         yesNo = data.aggressiveToPlayers ? "Yes" : "No";
-        renderTraitLine(graphics, font, x, currentY, "Aggressive to Players", yesNo);
+        renderTraitLine(graphics, font, x, currentY, "Aggr. to Players", yesNo);
         currentY += lineH;
 
         yesNo = data.aggressiveToHostileMobs ? "Yes" : "No";
-        renderTraitLine(graphics, font, x, currentY, "Aggressive to Hostiles", yesNo);
+        renderTraitLine(graphics, font, x, currentY, "Aggr. to Hostiles", yesNo);
         currentY += lineH;
 
         yesNo = data.aggressiveToPassiveMobs ? "Yes" : "No";
-        renderTraitLine(graphics, font, x, currentY, "Aggressive to Passives", yesNo);
+        renderTraitLine(graphics, font, x, currentY, "Aggr. to Passives", yesNo);
     }
 
     private void renderStatLine(GuiGraphics graphics, Font font,
