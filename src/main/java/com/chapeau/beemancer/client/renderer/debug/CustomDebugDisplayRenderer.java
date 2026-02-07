@@ -19,6 +19,7 @@
  */
 package com.chapeau.beemancer.client.renderer.debug;
 
+import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.item.debug.DebugDisplayEntry;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -98,6 +99,7 @@ public class CustomDebugDisplayRenderer {
                 text = ERROR_TEXT;
             }
 
+            //Beemancer.LOGGER.warn("{} || {}", entry.positionSupplier().get().toString(), text);
             // Appliquer l'offset et rendre
             Vec3 renderPos = pos.add(entry.offset());
             renderTextAt(poseStack, bufferSource, font, cameraPos, renderPos, text);
@@ -125,17 +127,20 @@ public class CustomDebugDisplayRenderer {
         poseStack.translate(x, y, z);
 
         // Billboard: faire face à la caméra
-        poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
+        //poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
         poseStack.scale(-TEXT_SCALE, -TEXT_SCALE, TEXT_SCALE);
 
         Matrix4f matrix = poseStack.last().pose();
         int textX = -font.width(text) / 2;
 
-        font.drawInBatch(
-            text, textX, 0, TEXT_COLOR, false,
-            matrix, bufferSource, Font.DisplayMode.SEE_THROUGH,
-            TEXT_BG_COLOR, 0xF000F0
-        );
+        String[] lines = text.split("\n");                                                                                                                   int lineY = 0;
+        for (String line : lines) {
+            int lineX = -font.width(line) / 2;
+            font.drawInBatch(line, lineX, lineY, TEXT_COLOR, false,
+                    matrix, bufferSource, Font.DisplayMode.SEE_THROUGH,
+                    TEXT_BG_COLOR, 0xF000F0);
+            lineY += 10;
+        }
 
         poseStack.popPose();
     }

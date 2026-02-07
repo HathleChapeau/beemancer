@@ -15,6 +15,7 @@
 package com.chapeau.beemancer.common.blockentity.alchemy;
 
 import com.chapeau.beemancer.common.block.alchemy.ItemPipeBlock;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,6 +32,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -84,6 +86,23 @@ public class ItemPipeBlockEntity extends BlockEntity {
                 setChanged();
             }
         };
+
+        for (int i = 0; i < buffer.getSlots(); i++) {
+            ItemStack stack = buffer.getStackInSlot(i);
+            if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
+
+            }
+        }
+
+        DebugWandItem.addDisplay(this, () -> {
+            StringBuilder str = new StringBuilder();
+            for (int i = 0; i < buffer.getSlots(); i++) {
+                ItemStack stack = buffer.getStackInSlot(i);
+                if(!stack.isEmpty())
+                    str.append(stack.getHoverName().getString()).append(": ").append(stack.getCount()).append("\n");
+            }
+            return "Item: " + str;
+        }, new Vec3(0,1,0));
     }
 
     // Factory methods for tiered versions
