@@ -97,6 +97,11 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         }
 
         @Override
+        public int getSlotLimit(int slot) {
+            return 1;
+        }
+
+        @Override
         protected void onContentsChanged(int slot) {
             setChanged();
             if (!isSaving) {

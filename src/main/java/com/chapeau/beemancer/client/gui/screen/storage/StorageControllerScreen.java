@@ -53,13 +53,27 @@ public class StorageControllerScreen extends AbstractContainerScreen<StorageCont
         int y = (height - imageHeight) / 2;
         guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
-        // Render background for active bonus slots (slots 4-7)
+        // Draw slot backgrounds for active bonus slots (slots 4-7)
         for (int i = 4; i < 8; i++) {
             Slot slot = menu.slots.get(i);
             if (slot.isActive()) {
-                guiGraphics.blit(TEXTURE, x + slot.x - 1, y + slot.y - 1, 176, 0, 18, 18);
+                drawSlotBackground(guiGraphics, x + slot.x - 1, y + slot.y - 1);
             }
         }
+    }
+
+    /**
+     * Dessine un fond de slot 18x18 identique au style vanilla.
+     */
+    private void drawSlotBackground(GuiGraphics guiGraphics, int x, int y) {
+        // Top and left edges (dark)
+        guiGraphics.fill(x, y, x + 18, y + 1, 0xFF373737);
+        guiGraphics.fill(x, y + 1, x + 1, y + 17, 0xFF373737);
+        // Bottom and right edges (light)
+        guiGraphics.fill(x, y + 17, x + 18, y + 18, 0xFFFFFFFF);
+        guiGraphics.fill(x + 17, y, x + 18, y + 17, 0xFFFFFFFF);
+        // Inner area
+        guiGraphics.fill(x + 1, y + 1, x + 17, y + 17, 0xFF8B8B8B);
     }
 
     @Override
