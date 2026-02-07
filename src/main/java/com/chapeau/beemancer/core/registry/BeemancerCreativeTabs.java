@@ -182,6 +182,10 @@ public class BeemancerCreativeTabs {
     }
 
     private static void addBuildingBlocks(CreativeModeTab.Output output) {
+        // Honeyed Logs
+        output.accept(BeemancerItems.HONEYED_LOG.get());
+        output.accept(BeemancerItems.STRIPPED_HONEYED_LOG.get());
+
         // Honeyed Wood
         output.accept(BeemancerItems.HONEYED_PLANKS.get());
         output.accept(BeemancerItems.HONEYED_WOOD_STAIR.get());
