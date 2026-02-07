@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": { "model": "beemancer:block/honeyed_iron_block" }
+    "": { "model": "beemancer:block/building/honeyed_iron_block" }
   }
 }

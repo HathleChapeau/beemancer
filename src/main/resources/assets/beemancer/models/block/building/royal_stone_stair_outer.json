@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:block/outer_stairs",
   "textures": {
-    "bottom": "beemancer:block/royal_stone",
-    "top": "beemancer:block/royal_stone",
-    "side": "beemancer:block/royal_stone"
+    "bottom": "beemancer:block/building/royal_stone",
+    "top": "beemancer:block/building/royal_stone",
+    "side": "beemancer:block/building/royal_stone"
   }
 }

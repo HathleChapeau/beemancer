@@ -1,10 +1,10 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "base": "beemancer:block/bee_statue_base",
-    "column": "beemancer:block/bee_statue_column",
-    "top": "beemancer:block/bee_statue_top",
-    "particle": "beemancer:block/bee_statue_column"
+    "base": "beemancer:block/machines/bee_statue_base",
+    "column": "beemancer:block/machines/bee_statue_column",
+    "top": "beemancer:block/machines/bee_statue_top",
+    "particle": "beemancer:block/machines/bee_statue_column"
   },
   "elements": [
     {

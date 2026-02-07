@@ -2,8 +2,8 @@
   "parent": "minecraft:block/block",
   "textures": {
     "gold": "beemancer:block/royal_gold_block",
-    "glass": "beemancer:block/honeyed_glass",
-    "particle": "beemancer:block/honeyed_glass"
+    "glass": "beemancer:block/building/honeyed_glass",
+    "particle": "beemancer:block/building/honeyed_glass"
   },
   "elements": [
     {

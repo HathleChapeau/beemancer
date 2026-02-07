@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "beemancer:block/nectar_stone"
+    "all": "beemancer:block/building/nectar_stone"
   }
 }

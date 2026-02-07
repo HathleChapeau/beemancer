@@ -169,6 +169,12 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> BEE_STATUE = ITEMS.register("bee_statue",
             () -> new BlockItem(BeemancerBlocks.BEE_STATUE.get(), new Item.Properties()));
 
+    // --- BUILDING BLOCKS: HONEYED LOGS ---
+    public static final DeferredItem<BlockItem> HONEYED_LOG = ITEMS.register("honeyed_log",
+            () -> new BlockItem(BeemancerBlocks.HONEYED_LOG.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> STRIPPED_HONEYED_LOG = ITEMS.register("stripped_honeyed_log",
+            () -> new BlockItem(BeemancerBlocks.STRIPPED_HONEYED_LOG.get(), new Item.Properties()));
+
     // --- BUILDING BLOCKS: HONEYED WOOD ---
     public static final DeferredItem<BlockItem> HONEYED_PLANKS = ITEMS.register("honeyed_planks",
             () -> new BlockItem(BeemancerBlocks.HONEYED_PLANKS.get(), new Item.Properties()));

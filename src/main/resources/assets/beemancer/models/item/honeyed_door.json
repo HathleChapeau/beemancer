@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:block/honeyed_plank"
+    "layer0": "beemancer:block/building/honeyed_plank"
   }
 }

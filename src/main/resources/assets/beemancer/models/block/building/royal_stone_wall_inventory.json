@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/wall_inventory",
   "textures": {
-    "wall": "beemancer:block/royal_stone"
+    "wall": "beemancer:block/building/royal_stone"
   }
 }

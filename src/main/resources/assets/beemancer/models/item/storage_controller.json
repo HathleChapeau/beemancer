@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:block/logistic/storage_controller"
+    "layer0": "beemancer:block/storage/storage_controller"
   }
 }

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "beemancer:block/bee_creator"
+    "all": "beemancer:block/machines/bee_creator"
   }
 }

@@ -2,6 +2,6 @@
   "parent": "minecraft:item/generated",
   "render_type": "translucent",
   "textures": {
-    "layer0": "beemancer:block/honeyed_glass"
+    "layer0": "beemancer:block/building/honeyed_glass"
   }
 }

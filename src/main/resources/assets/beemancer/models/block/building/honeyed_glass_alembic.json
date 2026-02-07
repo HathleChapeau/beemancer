@@ -3,7 +3,7 @@
   "textures": {
     "frame": "beemancer:block/royal_gold_block",
     "gold": "beemancer:block/royal_gold_block",
-    "particle": "beemancer:block/honeyed_glass"
+    "particle": "beemancer:block/building/honeyed_glass"
   },
   "elements": [
     {

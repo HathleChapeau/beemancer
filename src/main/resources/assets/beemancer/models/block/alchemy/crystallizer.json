@@ -3,7 +3,7 @@
   "render_type": "translucent",
   "textures": {
     "frame": "beemancer:block/iron",
-    "amber_glass": "beemancer:block/honeyed_glass",
+    "amber_glass": "beemancer:block/building/honeyed_glass",
     "dark_wood": "beemancer:block/iron"
   },
   "elements": [

@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/fence_side",
   "textures": {
-    "texture": "beemancer:block/nectar_planks"
+    "texture": "beemancer:block/building/nectar_planks"
   }
 }

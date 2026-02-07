@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/template_wall_side",
   "textures": {
-    "wall": "beemancer:block/honeyed_stone"
+    "wall": "beemancer:block/altar/honeyed_stone"
   }
 }

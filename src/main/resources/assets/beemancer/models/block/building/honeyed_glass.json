@@ -2,6 +2,6 @@
   "parent": "minecraft:block/cube_all",
   "render_type": "translucent",
   "textures": {
-    "all": "beemancer:block/honeyed_glass"
+    "all": "beemancer:block/building/honeyed_glass"
   }
 }

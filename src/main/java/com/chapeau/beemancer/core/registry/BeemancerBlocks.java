@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
@@ -350,6 +351,15 @@ public class BeemancerBlocks {
                     .strength(2.0f)
                     .sound(SoundType.STONE)
                     .noOcclusion()));
+
+    // --- BUILDING BLOCKS: HONEYED LOGS ---
+    public static final DeferredBlock<RotatedPillarBlock> HONEYED_LOG = BLOCKS.register("honeyed_log",
+            () -> new RotatedPillarBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_HONEYED_LOG = BLOCKS.register("stripped_honeyed_log",
+            () -> new RotatedPillarBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
 
     // --- BUILDING BLOCKS: HONEYED WOOD ---
     public static final DeferredBlock<Block> HONEYED_PLANKS = BLOCKS.register("honeyed_planks",

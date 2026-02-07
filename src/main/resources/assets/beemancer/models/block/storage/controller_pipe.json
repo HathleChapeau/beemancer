@@ -2,8 +2,8 @@
   "parent": "minecraft:block/block",
   "ambientocclusion": false,
   "textures": {
-    "core": "beemancer:block/pipe_core_white",
-    "frame": "beemancer:block/pipe_frame"
+    "core": "beemancer:block/pipes/pipe_core_white",
+    "frame": "beemancer:block/pipes/pipe_frame"
   },
   "elements": [
     {

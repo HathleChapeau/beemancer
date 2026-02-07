@@ -2,9 +2,9 @@
   "parent": "minecraft:block/block",
   "ambientocclusion": false,
   "textures": {
-    "pipe": "beemancer:block/honey_pipe",
-    "frame": "beemancer:block/pipe_frame",
-    "particle": "beemancer:block/honey_pipe"
+    "pipe": "beemancer:block/pipes/honey_pipe",
+    "frame": "beemancer:block/pipes/pipe_frame",
+    "particle": "beemancer:block/pipes/honey_pipe"
   },
   "elements": [
     {

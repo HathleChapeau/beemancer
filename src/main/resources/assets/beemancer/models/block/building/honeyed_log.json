@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "beemancer:block/honeyed/honeyed_wood_top_bottom",
+    "side": "beemancer:block/honeyed/honeyed_wood"
+  }
+}

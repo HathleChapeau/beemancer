@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/template_wall_post",
   "textures": {
-    "wall": "beemancer:block/nectar_stone"
+    "wall": "beemancer:block/building/nectar_stone"
   }
 }

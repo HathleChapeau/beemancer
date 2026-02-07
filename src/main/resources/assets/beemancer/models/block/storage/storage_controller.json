@@ -2,6 +2,6 @@
   "parent": "minecraft:block/cross",
   "render_type": "cutout",
   "textures": {
-    "cross": "beemancer:block/logistic/storage_controller"
+    "cross": "beemancer:block/storage/storage_controller"
   }
 }

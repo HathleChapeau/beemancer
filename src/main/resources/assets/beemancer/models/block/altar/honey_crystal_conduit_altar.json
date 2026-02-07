@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "conduit": "beemancer:block/honeyed_stone",
+    "conduit": "beemancer:block/altar/honeyed_stone",
     "cap": "minecraft:block/copper_block",
-    "particle": "beemancer:block/honeyed_stone"
+    "particle": "beemancer:block/altar/honeyed_stone"
   },
   "elements": [
     {

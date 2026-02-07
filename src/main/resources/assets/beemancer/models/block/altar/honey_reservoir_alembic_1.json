@@ -4,7 +4,7 @@
   "textures": {
     "gold": "minecraft:block/gold_block",
     "reservoir": "beemancer:block/alchemy/alembic_glass",
-    "particle": "beemancer:block/honeyed_glass"
+    "particle": "beemancer:block/building/honeyed_glass"
   },
   "elements": [
     {

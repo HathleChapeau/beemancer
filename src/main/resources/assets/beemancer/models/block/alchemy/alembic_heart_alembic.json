@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "ring": "beemancer:block/honey_crystal",
-    "block": "beemancer:block/honey_crystal",
-    "particle": "beemancer:block/honey_crystal"
+    "ring": "beemancer:block/altar/honey_crystal",
+    "block": "beemancer:block/altar/honey_crystal",
+    "particle": "beemancer:block/altar/honey_crystal"
   },
   "elements": [
     {

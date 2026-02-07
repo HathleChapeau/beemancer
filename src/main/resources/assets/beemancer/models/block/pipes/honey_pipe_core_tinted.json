@@ -1,6 +1,6 @@
 {
   "parent": "beemancer:block/pipes/honey_pipe_core",
   "textures": {
-    "core": "beemancer:block/pipe_core_white"
+    "core": "beemancer:block/pipes/pipe_core_white"
   }
 }

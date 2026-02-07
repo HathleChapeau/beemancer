@@ -1,8 +1,8 @@
 {
   "parent": "minecraft:block/outer_stairs",
   "textures": {
-    "bottom": "beemancer:block/honeyed_plank",
-    "top": "beemancer:block/honeyed_plank",
-    "side": "beemancer:block/honeyed_plank"
+    "bottom": "beemancer:block/building/honeyed_plank",
+    "top": "beemancer:block/building/honeyed_plank",
+    "side": "beemancer:block/building/honeyed_plank"
   }
 }

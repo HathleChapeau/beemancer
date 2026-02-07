@@ -2,7 +2,7 @@
   "parent": "minecraft:block/block",
   "render_type": "translucent",
   "textures": {
-    "glass": "beemancer:block/honeyed_glass",
+    "glass": "beemancer:block/building/honeyed_glass",
     "honey": "beemancer:block/wood",
     "iron": "beemancer:block/iron",
     "particle": "beemancer:block/iron"

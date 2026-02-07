@@ -2,6 +2,6 @@
   "parent": "minecraft:block/cross",
   "render_type": "cutout",
   "textures": {
-    "cross": "beemancer:block/antibreeding_crystal"
+    "cross": "beemancer:block/machines/antibreeding_crystal"
   }
 }

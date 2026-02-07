@@ -2,11 +2,11 @@
   "parent": "minecraft:block/block",
   "render_type": "translucent",
   "textures": {
-    "particle": "beemancer:block/honeyed_plank",
+    "particle": "beemancer:block/building/honeyed_plank",
     "bottom": "minecraft:block/honey_block_top",
     "side": "minecraft:block/honey_block_top",
-    "top": "beemancer:block/pollen_jar_top",
-    "inside": "beemancer:block/honeyed_plank"
+    "top": "beemancer:block/machines/pollen_jar_top",
+    "inside": "beemancer:block/building/honeyed_plank"
   },
   "elements": [
     {
