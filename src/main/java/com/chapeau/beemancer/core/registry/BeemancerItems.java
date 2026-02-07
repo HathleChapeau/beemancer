@@ -174,6 +174,10 @@ public class BeemancerItems {
             () -> new BlockItem(BeemancerBlocks.HONEYED_LOG.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> STRIPPED_HONEYED_LOG = ITEMS.register("stripped_honeyed_log",
             () -> new BlockItem(BeemancerBlocks.STRIPPED_HONEYED_LOG.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> HONEYED_WOOD = ITEMS.register("honeyed_wood",
+            () -> new BlockItem(BeemancerBlocks.HONEYED_WOOD.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> STRIPPED_HONEYED_WOOD = ITEMS.register("stripped_honeyed_wood",
+            () -> new BlockItem(BeemancerBlocks.STRIPPED_HONEYED_WOOD.get(), new Item.Properties()));
 
     // --- BUILDING BLOCKS: HONEYED WOOD ---
     public static final DeferredItem<BlockItem> HONEYED_PLANKS = ITEMS.register("honeyed_planks",
@@ -354,10 +358,6 @@ public class BeemancerItems {
     public static final DeferredItem<BucketItem> NECTAR_BUCKET = ITEMS.register("nectar_bucket",
             () -> new BucketItem(BeemancerFluids.NECTAR_SOURCE.get(),
                     new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
-
-    // --- ALCHEMY INGREDIENTS ---
-    public static final DeferredItem<Item> HONEYED_WOOD = ITEMS.register("honeyed_wood",
-            () -> new Item(new Item.Properties()));
 
     // --- COMBS (legacy) ---
     public static final DeferredItem<Item> COMMON_COMB = ITEMS.register("common_comb",

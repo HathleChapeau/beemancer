@@ -182,11 +182,13 @@ public class BeemancerCreativeTabs {
     }
 
     private static void addBuildingBlocks(CreativeModeTab.Output output) {
-        // Honeyed Logs
+        // Honeyed Logs & Wood
         output.accept(BeemancerItems.HONEYED_LOG.get());
         output.accept(BeemancerItems.STRIPPED_HONEYED_LOG.get());
+        output.accept(BeemancerItems.HONEYED_WOOD.get());
+        output.accept(BeemancerItems.STRIPPED_HONEYED_WOOD.get());
 
-        // Honeyed Wood
+        // Honeyed Planks
         output.accept(BeemancerItems.HONEYED_PLANKS.get());
         output.accept(BeemancerItems.HONEYED_WOOD_STAIR.get());
         output.accept(BeemancerItems.HONEYED_WOOD_SLAB.get());
@@ -281,7 +283,6 @@ public class BeemancerCreativeTabs {
     // =========================================================================
 
     private static void addAlchemyIngredients(CreativeModeTab.Output output) {
-        output.accept(BeemancerItems.HONEYED_WOOD.get());
     }
 
     private static void addLegacyCombs(CreativeModeTab.Output output) {

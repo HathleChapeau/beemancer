@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    { "item": "beemancer:honeyed_wood" }
+    { "item": "beemancer:honeyed_log" }
   ],
   "result": { "id": "beemancer:honeyed_planks", "count": 4 }
 }

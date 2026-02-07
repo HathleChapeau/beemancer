@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "W": { "item": "beemancer:honeyed_wood" },
+    "W": { "item": "beemancer:honeyed_log" },
     "A": { "item": "beemancer:honeyed_iron" },
     "G": { "item": "beemancer:honeyed_glass" },
     "C": { "item": "beemancer:honey_crystal" }

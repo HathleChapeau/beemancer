@@ -361,6 +361,14 @@ public class BeemancerBlocks {
             () -> new RotatedPillarBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f).sound(SoundType.WOOD)));
 
+    public static final DeferredBlock<RotatedPillarBlock> HONEYED_WOOD = BLOCKS.register("honeyed_wood",
+            () -> new RotatedPillarBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<RotatedPillarBlock> STRIPPED_HONEYED_WOOD = BLOCKS.register("stripped_honeyed_wood",
+            () -> new RotatedPillarBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD)));
+
     // --- BUILDING BLOCKS: HONEYED WOOD ---
     public static final DeferredBlock<Block> HONEYED_PLANKS = BLOCKS.register("honeyed_planks",
             () -> new Block(BlockBehaviour.Properties.of()

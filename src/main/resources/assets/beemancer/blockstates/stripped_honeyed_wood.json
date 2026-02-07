@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": { "model": "beemancer:block/building/stripped_honeyed_wood", "x": 90, "y": 90 },
+    "axis=y": { "model": "beemancer:block/building/stripped_honeyed_wood" },
+    "axis=z": { "model": "beemancer:block/building/stripped_honeyed_wood", "x": 90 }
+  }
+}

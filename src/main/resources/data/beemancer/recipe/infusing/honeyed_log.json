@@ -2,6 +2,6 @@
   "type": "beemancer:infusing",
   "ingredient": { "tag": "minecraft:logs" },
   "fluid_ingredient": { "fluid": "beemancer:honey", "amount": 500 },
-  "result": { "id": "beemancer:honeyed_wood" },
+  "result": { "id": "beemancer:honeyed_log" },
   "processing_time": 200
 }

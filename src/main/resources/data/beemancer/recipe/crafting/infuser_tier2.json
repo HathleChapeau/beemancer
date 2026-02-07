@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "A": { "item": "beemancer:honeyed_iron" },
-    "W": { "item": "beemancer:honeyed_wood" },
+    "W": { "item": "beemancer:honeyed_log" },
     "I": { "item": "beemancer:infuser" },
     "R": { "item": "beemancer:royal_crystal" }
   },
