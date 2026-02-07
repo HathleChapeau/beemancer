@@ -38,6 +38,9 @@
 --- STORAGE ---
 | controlled_hive          | BlockItem        | Storage Network |
 | controller_pipe          | BlockItem        | Storage Network |
+| storage_hive             | BlockItem        | Storage Hive    |
+| storage_hive_tier2       | BlockItem        | Storage Hive    |
+| storage_hive_tier3       | BlockItem        | Storage Hive    |
 
 --- HONEY ALTAR ---
 | honeyed_stone            | BlockItem        | Honey Altar     |
@@ -103,11 +106,22 @@
 | royal_jelly_bucket       | BucketItem       | Fluids          |
 | nectar_bucket            | BucketItem       | Fluids          |
 
+--- HONEYED LOGS & WOOD ---
+| honeyed_log              | BlockItem        | Building        |
+| stripped_honeyed_log     | BlockItem        | Building        |
+| honeyed_wood             | BlockItem        | Building        |
+| stripped_honeyed_wood    | BlockItem        | Building        |
+| honeyed_wood_stair       | BlockItem        | Building        |
+| honeyed_wood_slab        | BlockItem        | Building        |
+
+--- PLACEABLE CRYSTALS ---
+| royal_crystal            | BlockItem        | Honey Altar     |
+| nectar_crystal           | BlockItem        | Honey Altar     |
+
 --- ALCHEMY INGREDIENTS ---
 | beeswax                  | Item             | Alchemy         |
 | propolis                 | Item             | Alchemy         |
 | pollen                   | Item             | Alchemy         |
-| honeyed_wood             | Item             | Alchemy         |
 
 --- COMBS ---
 | common_comb              | Item             | Alchemy         |

@@ -79,6 +79,7 @@ public class StorageMultiblockManager {
                 parent.getBlockState().setValue(StorageControllerBlock.MULTIBLOCK, MultiblockProperty.STORAGE), 3);
             setFormedOnStructureBlocks(true);
             MultiblockEvents.registerActiveController(parent.getLevel(), parent.getBlockPos());
+            parent.notifyLinkedHives();
             parent.setChanged();
         }
     }
@@ -97,6 +98,7 @@ public class StorageMultiblockManager {
                     parent.getBlockState().setValue(StorageControllerBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
             MultiblockEvents.unregisterController(parent.getBlockPos());
+            parent.notifyLinkedHives();
             parent.setChanged();
         }
     }

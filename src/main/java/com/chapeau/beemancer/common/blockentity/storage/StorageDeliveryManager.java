@@ -55,7 +55,6 @@ import java.util.*;
 public class StorageDeliveryManager {
     private final StorageControllerBlockEntity parent;
 
-    private static final int MAX_ACTIVE_BEES = 2;
     private static final int DELIVERY_PROCESS_INTERVAL = 10;
     private static final int MAX_COMPLETED_IDS = 100;
     private static final int HONEY_CONSUME_INTERVAL = 20;
@@ -340,7 +339,8 @@ public class StorageDeliveryManager {
         if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
 
         int consumptionPerSecond = ControllerStats.getHoneyConsumption(
-            parent.getEssenceSlots(), parent.getChestManager().getRegisteredChestCount());
+            parent.getEssenceSlots(), parent.getChestManager().getRegisteredChestCount(),
+            parent.getHiveMultiplier());
         int remaining = consumptionPerSecond;
 
         int rotation = parent.getMultiblockManager().getRotation();
@@ -402,7 +402,7 @@ public class StorageDeliveryManager {
         deliveryQueue.clear();
         deliveryQueue.addAll(sortedQueue);
 
-        while (activeTasks.size() < MAX_ACTIVE_BEES) {
+        while (activeTasks.size() < parent.getMaxDeliveryBees()) {
             DeliveryTask eligible = findEligibleTask();
             if (eligible == null) break;
 
@@ -777,7 +777,7 @@ public class StorageDeliveryManager {
 
         if (honeyDepleted) return "gui.beemancer.tasks.blocked.honey_depleted";
 
-        if (activeTasks.size() >= MAX_ACTIVE_BEES) return "gui.beemancer.tasks.blocked.no_bee_slot";
+        if (activeTasks.size() >= parent.getMaxDeliveryBees()) return "gui.beemancer.tasks.blocked.no_bee_slot";
 
         if (!task.isReady(completedTaskIds)) return "gui.beemancer.tasks.blocked.dependency_pending";
 

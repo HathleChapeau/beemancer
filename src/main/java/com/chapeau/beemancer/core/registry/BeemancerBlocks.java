@@ -28,6 +28,7 @@ import com.chapeau.beemancer.common.block.storage.ExportInterfaceBlock;
 import com.chapeau.beemancer.common.block.storage.ImportInterfaceBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
+import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
 import com.chapeau.beemancer.common.block.storage.StorageRelayBlock;
 import com.chapeau.beemancer.common.block.storage.StorageTerminalBlock;
 import net.minecraft.world.level.block.Block;
@@ -103,6 +104,22 @@ public class BeemancerBlocks {
                     .strength(2.0f)
                     .sound(SoundType.COPPER)
                     .noOcclusion()));
+
+    // --- STORAGE HIVES ---
+    public static final DeferredBlock<StorageHiveBlock> STORAGE_HIVE = BLOCKS.register("storage_hive",
+            () -> new StorageHiveBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<StorageHiveBlock> STORAGE_HIVE_TIER2 = BLOCKS.register("storage_hive_tier2",
+            () -> new StorageHiveBlock(BlockBehaviour.Properties.of()
+                    .strength(2.5f)
+                    .sound(SoundType.WOOD), 2));
+
+    public static final DeferredBlock<StorageHiveBlock> STORAGE_HIVE_TIER3 = BLOCKS.register("storage_hive_tier3",
+            () -> new StorageHiveBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.WOOD), 3));
 
     // --- BEE MACHINES ---
     public static final DeferredBlock<Block> BEE_CREATOR = BLOCKS.register("bee_creator",

@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-06                     #
-#     (Multiblock IO Config System + Centrifuge IO Inversion - 2026-02-06)     #
+#                         Dernière mise à jour: 2026-02-07                     #
+#  (Storage Hive (3 Tiers) - 2026-02-07)                                       #
 ################################################################################
 
 ================================================================================
@@ -320,6 +320,13 @@ LISTE DES FEATURES:
   Description: Le coeur de centrifuge formé affiche une texture différente quand working=true
   Assets créés: models/block/alchemy/centrifuge_heart_centrifuge_working.json
   Assets modifiés: blockstates/centrifuge_heart.json
+
+→ Storage Hive (3 Tiers)
+  Description: Bloc ruche liee directement au Storage Controller. 3 tiers (T1=+1 bee, T2=+2, T3=+3). Consommation miel multiplicative (T1=x1.5, T2=x2.0, T3=x2.5). +1 slot essence par hive (max 4 hives = 8 slots total). 3 etats visuels: UNLINKED, LINKED, ACTIVE.
+  Scripts crees: StorageHiveBlock.java, StorageHiveBlockEntity.java
+  Scripts modifies: StorageControllerBlockEntity.java, StorageNetworkRegistry.java, StorageEvents.java, ControllerStats.java, StorageDeliveryManager.java, StorageMultiblockManager.java, StorageControllerMenu.java, StorageControllerScreen.java
+  Assets: 3 blockstates, 9 block models, 3 item models, 3 loot tables
+  Registres modifies: BeemancerBlocks (+3), BeemancerItems (+3), BeemancerBlockEntities (+1)
 
 ================================================================================
 6. FEATURES EN COURS

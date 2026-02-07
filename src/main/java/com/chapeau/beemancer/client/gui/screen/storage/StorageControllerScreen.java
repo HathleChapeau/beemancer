@@ -1,19 +1,19 @@
 /**
  * ============================================================
  * [StorageControllerScreen.java]
- * Description: Écran GUI du Storage Controller (stats + 4 slots essence)
+ * Description: Ecran GUI du Storage Controller (stats + 8 slots essence dynamiques)
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance                    | Raison                | Utilisation                    |
+ * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
- * | StorageControllerMenu         | Menu associé         | Lecture des stats              |
+ * | StorageControllerMenu         | Menu associe         | Lecture des stats              |
  * | AbstractContainerScreen       | Base GUI             | Rendu standard                 |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
- * - ClientSetup.java (enregistrement écran)
+ * UTILISE PAR:
+ * - ClientSetup.java (enregistrement ecran)
  *
  * ============================================================
  */
@@ -26,11 +26,14 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 
 /**
- * Écran du Storage Controller.
- * Affiche 4 stats (vitesse de vol, recherche, craft, quantité)
- * et 4 slots pour les essences.
+ * Ecran du Storage Controller.
+ * Affiche 7 stats (vol, recherche, craft, quantite, consommation miel, efficacite, delivery bees)
+ * et jusqu'a 8 slots essence (4 de base + 4 bonus par hive).
+ *
+ * Les 4 bonus slots sont rendus avec un fond de slot uniquement quand actifs.
  */
 public class StorageControllerScreen extends AbstractContainerScreen<StorageControllerMenu> {
 
@@ -40,7 +43,8 @@ public class StorageControllerScreen extends AbstractContainerScreen<StorageCont
     public StorageControllerScreen(StorageControllerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = 176;
-        this.imageHeight = 166;
+        this.imageHeight = 176;
+        this.inventoryLabelY = this.imageHeight - 94;
     }
 
     @Override
@@ -48,6 +52,14 @@ public class StorageControllerScreen extends AbstractContainerScreen<StorageCont
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
         guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
+
+        // Render background for active bonus slots (slots 4-7)
+        for (int i = 4; i < 8; i++) {
+            Slot slot = menu.slots.get(i);
+            if (slot.isActive()) {
+                guiGraphics.blit(TEXTURE, x + slot.x - 1, y + slot.y - 1, 176, 0, 18, 18);
+            }
+        }
     }
 
     @Override
@@ -57,8 +69,8 @@ public class StorageControllerScreen extends AbstractContainerScreen<StorageCont
 
         // Stats
         int statX = 8;
-        int statY = 20;
-        int lineHeight = 12;
+        int statY = 18;
+        int lineHeight = 10;
 
         drawStat(guiGraphics, statX, statY,
             Component.translatable("gui.beemancer.storage_controller.flight_speed"),
@@ -85,6 +97,11 @@ public class StorageControllerScreen extends AbstractContainerScreen<StorageCont
         drawStat(guiGraphics, statX, statY + lineHeight * 5,
             Component.translatable("gui.beemancer.storage_controller.honey_efficiency"),
             efficiencyText);
+
+        int maxBees = menu.getMaxDeliveryBees();
+        drawStat(guiGraphics, statX, statY + lineHeight * 6,
+            Component.translatable("gui.beemancer.storage_controller.delivery_bees"),
+            String.valueOf(maxBees));
 
         // Player inventory label
         guiGraphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "hive_state=unlinked": { "model": "beemancer:block/storage/storage_hive_tier2" },
+    "hive_state=linked": { "model": "beemancer:block/storage/storage_hive_tier2_linked" },
+    "hive_state=active": { "model": "beemancer:block/storage/storage_hive_tier2_active" }
+  }
+}

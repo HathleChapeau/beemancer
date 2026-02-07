@@ -59,6 +59,11 @@ public class ControllerStats {
     public static final int HONEY_PER_ESSENCE_LEVEL = 10;
     public static final int EFFICIENCY_PER_INSOMNIA_LEVEL = 10;
 
+    // Hive honey consumption multipliers (multiplicative between hives)
+    public static final float HIVE_MULTIPLIER_T1 = 1.5f;
+    public static final float HIVE_MULTIPLIER_T2 = 2.0f;
+    public static final float HIVE_MULTIPLIER_T3 = 2.5f;
+
     /**
      * Calcule le pourcentage de vitesse de vol (100 = 100%).
      */
@@ -144,13 +149,21 @@ public class ControllerStats {
      * Formula: (base + chests * perChest + essenceCost) * (1 - efficiency/100)
      */
     public static int getHoneyConsumption(ItemStackHandler essenceSlots, int chestCount) {
+        return getHoneyConsumption(essenceSlots, chestCount, 1.0f);
+    }
+
+    /**
+     * Calcule la consommation effective de miel en mB/s avec multiplicateur hive.
+     * Formula: (base + chests * perChest + essenceCost) * hiveMultiplier * (1 - efficiency/100)
+     */
+    public static int getHoneyConsumption(ItemStackHandler essenceSlots, int chestCount, float hiveMultiplier) {
         int base = BASE_HONEY_CONSUMPTION;
         int chestCost = chestCount * HONEY_PER_CHEST;
         int essenceCost = getEssenceConsumptionCost(essenceSlots);
         int total = base + chestCost + essenceCost;
 
         int efficiency = getHoneyEfficiency(essenceSlots);
-        return Math.max(1, Math.round(total * (1.0f - efficiency / 100.0f)));
+        return Math.max(1, Math.round(total * hiveMultiplier * (1.0f - efficiency / 100.0f)));
     }
 
     /**

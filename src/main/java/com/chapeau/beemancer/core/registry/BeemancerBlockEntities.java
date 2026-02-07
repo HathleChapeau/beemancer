@@ -23,6 +23,7 @@ import com.chapeau.beemancer.common.blockentity.storage.ExportInterfaceBlockEnti
 import com.chapeau.beemancer.common.blockentity.storage.ImportInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageCrateBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.StorageHiveBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageRelayBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
 import net.minecraft.core.registries.Registries;
@@ -69,6 +70,15 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             ControllerPipeBlockEntity::new,
                             BeemancerBlocks.CONTROLLER_PIPE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<StorageHiveBlockEntity>> STORAGE_HIVE =
+            BLOCK_ENTITIES.register("storage_hive",
+                    () -> BlockEntityType.Builder.of(
+                            StorageHiveBlockEntity::new,
+                            BeemancerBlocks.STORAGE_HIVE.get(),
+                            BeemancerBlocks.STORAGE_HIVE_TIER2.get(),
+                            BeemancerBlocks.STORAGE_HIVE_TIER3.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<ImportInterfaceBlockEntity>> IMPORT_INTERFACE =

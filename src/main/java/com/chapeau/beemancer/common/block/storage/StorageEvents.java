@@ -25,6 +25,7 @@ package com.chapeau.beemancer.common.block.storage;
 import com.chapeau.beemancer.common.blockentity.storage.INetworkNode;
 import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.StorageHiveBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageNetworkRegistry;
 import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
 import com.chapeau.beemancer.core.util.StorageHelper;
@@ -77,6 +78,12 @@ public class StorageEvents {
         // Terminal: toggle link/unlink (en edit mode, pas besoin de shift)
         if (be instanceof StorageTerminalBlockEntity terminal) {
             handleTerminalToggle(player, level, node, terminal, clickedPos, event);
+            return;
+        }
+
+        // Storage Hive: toggle link/unlink (controller edit mode only)
+        if (be instanceof StorageHiveBlockEntity hive) {
+            handleHiveToggle(player, level, node, hive, clickedPos, event);
             return;
         }
 
@@ -168,6 +175,57 @@ public class StorageEvents {
             iface.linkToController(controllerPos);
             player.displayClientMessage(
                     Component.translatable("message.beemancer.network_interface.linked_manually"),
+                    true);
+        }
+
+        controller.setChanged();
+        controller.syncNodeToClient();
+        event.setCanceled(true);
+        event.setCancellationResult(InteractionResult.SUCCESS);
+    }
+
+    /**
+     * Toggle une Storage Hive: lien direct au controller uniquement (pas relay).
+     * Max 4 hives par controller.
+     */
+    private static void handleHiveToggle(Player player, Level level, INetworkNode node,
+                                          StorageHiveBlockEntity hive, BlockPos clickedPos,
+                                          PlayerInteractEvent.RightClickBlock event) {
+        // Les hives ne peuvent etre liees qu'en mode edition du controller
+        if (!(node instanceof StorageControllerBlockEntity controller)) {
+            player.displayClientMessage(
+                    Component.translatable("message.beemancer.storage_hive.controller_only"),
+                    true);
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            return;
+        }
+
+        StorageNetworkRegistry registry = controller.getNetworkRegistry();
+
+        if (hive.getControllerPos() != null) {
+            // Deja liee: unlink
+            controller.unlinkHive(clickedPos);
+            hive.unlinkController();
+            player.displayClientMessage(
+                    Component.translatable("message.beemancer.storage_hive.unlinked"),
+                    true);
+        } else {
+            // Verifier le max de 4 hives
+            if (registry.getHiveCount() >= StorageControllerBlockEntity.MAX_LINKED_HIVES) {
+                player.displayClientMessage(
+                        Component.translatable("message.beemancer.storage_hive.max_reached"),
+                        true);
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.SUCCESS);
+                return;
+            }
+
+            // Link
+            controller.linkHive(clickedPos);
+            hive.linkToController(controller.getBlockPos());
+            player.displayClientMessage(
+                    Component.translatable("message.beemancer.storage_hive.linked"),
                     true);
         }
 

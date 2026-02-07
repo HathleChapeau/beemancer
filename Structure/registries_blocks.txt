@@ -52,6 +52,9 @@
 --- STORAGE ---
 | controlled_hive        | ControlledHiveBlock       | Non          | Storage Network |
 | controller_pipe        | ControllerPipeBlock       | Oui          | Storage Network |
+| storage_hive           | StorageHiveBlock          | Oui          | Storage Hive    |
+| storage_hive_tier2     | StorageHiveBlock          | Oui          | Storage Hive    |
+| storage_hive_tier3     | StorageHiveBlock          | Oui          | Storage Hive    |
 
 --- BEE STATUE ---
 | bee_statue             | BeeStatueBlock            | Oui          | Bee Statue      |
@@ -60,6 +63,18 @@
 | alembic_heart          | AlembicHeartBlock         | Oui          | Alchemy         |
 | infuser_heart          | InfuserHeartBlock         | Oui          | Alchemy         |
 | centrifuge_heart       | CentrifugeHeartBlock      | Oui          | Alchemy         |
+
+--- HONEYED LOGS & WOOD ---
+| honeyed_log            | RotatedPillarBlock        | Non          | Building        |
+| stripped_honeyed_log   | RotatedPillarBlock        | Non          | Building        |
+| honeyed_wood           | RotatedPillarBlock        | Non          | Building        |
+| stripped_honeyed_wood  | RotatedPillarBlock        | Non          | Building        |
+| honeyed_wood_stair     | StairBlock                | Non          | Building        |
+| honeyed_wood_slab      | SlabBlock                 | Non          | Building        |
+
+--- PLACEABLE CRYSTALS ---
+| royal_crystal          | HoneyCrystalBlock         | Non          | Honey Altar     |
+| nectar_crystal         | HoneyCrystalBlock         | Non          | Honey Altar     |
 
 --- STORAGE MATERIAL BLOCKS ---
 | honeyed_iron_block     | Block (simple)            | Non          | Storage         |

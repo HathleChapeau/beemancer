@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  */
 public class StorageNetworkRegistry {
 
-    public enum NetworkBlockType { CHEST, TERMINAL, INTERFACE }
+    public enum NetworkBlockType { CHEST, TERMINAL, INTERFACE, HIVE }
 
     public record NetworkEntry(BlockPos ownerNode, NetworkBlockType type) {}
 
@@ -110,10 +110,16 @@ public class StorageNetworkRegistry {
     public Set<BlockPos> getAllChests() { return getBlocksByType(NetworkBlockType.CHEST); }
     public Set<BlockPos> getAllTerminals() { return getBlocksByType(NetworkBlockType.TERMINAL); }
     public Set<BlockPos> getAllInterfaces() { return getBlocksByType(NetworkBlockType.INTERFACE); }
+    public Set<BlockPos> getAllHives() { return getBlocksByType(NetworkBlockType.HIVE); }
 
     public int getChestCount() {
         return (int) registry.values().stream()
             .filter(e -> e.type() == NetworkBlockType.CHEST).count();
+    }
+
+    public int getHiveCount() {
+        return (int) registry.values().stream()
+            .filter(e -> e.type() == NetworkBlockType.HIVE).count();
     }
 
     public Map<BlockPos, NetworkEntry> getAll() {

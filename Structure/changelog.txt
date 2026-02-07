@@ -3,6 +3,93 @@
 ################################################################################
 
 ================================================================================
+2026-02-07 - Storage Hive (3 Tiers)
+================================================================================
+
+NOUVEAU BLOC: Storage Hive (3 tiers)
+- storage_hive: StorageHiveBlock (tier 1, +1 delivery bee, miel x1.5)
+- storage_hive_tier2: StorageHiveBlock (tier 2, +2 delivery bees, miel x2.0)
+- storage_hive_tier3: StorageHiveBlock (tier 3, +3 delivery bees, miel x2.5)
+
+FONCTIONNEMENT:
+- Bloc ruche liee directement au Storage Controller (pas relay)
+- +1 slot essence par hive connectee (4 base + max 4 bonus = 8 total)
+- 3 etats visuels: UNLINKED, LINKED, ACTIVE
+- Delivery bees dynamiques: base 2 + sum(tiers des hives)
+- Consommation miel multiplicative entre hives
+
+SCRIPTS CREES (2):
+- common/block/storage/StorageHiveBlock.java
+- common/blockentity/storage/StorageHiveBlockEntity.java
+
+SCRIPTS MODIFIES (12):
+- StorageControllerBlockEntity, StorageNetworkRegistry, StorageEvents
+- ControllerStats, StorageDeliveryManager, StorageMultiblockManager
+- StorageControllerMenu, StorageControllerScreen
+- BeemancerBlocks, BeemancerItems, BeemancerBlockEntities, BeemancerCreativeTabs
+
+ASSETS: 3 blockstates, 9 block models, 3 item models, 3 loot tables, lang
+
+================================================================================
+2026-02-07 - Honeyed Logs/Wood + Placeable Crystals + Texture Cleanup
+================================================================================
+
+NOUVEAUX BLOCS HONEYED (6):
+- honeyed_log: RotatedPillarBlock (cube_column, side=honeyed_wood, end=honeyed_wood_top_bottom)
+- stripped_honeyed_log: RotatedPillarBlock (cube_column, stripped textures)
+- honeyed_wood: RotatedPillarBlock (cube_column, bark on all faces)
+- stripped_honeyed_wood: RotatedPillarBlock (cube_column, stripped bark all faces)
+- honeyed_wood_stair: StairBlock
+- honeyed_wood_slab: SlabBlock
+
+CRISTAUX POSABLES (2):
+- royal_crystal: HoneyCrystalBlock (cross model, cutout, light 10, amethyst sound)
+- nectar_crystal: HoneyCrystalBlock (idem)
+- Convertis de Item simple vers BlockItem wrapping un bloc HoneyCrystalBlock
+- Pattern identique a honey_crystal (VoxelShape 3-13, cross model)
+
+SUPPRESSION ITEM HONEYED_WOOD (alchimie):
+- Item honeyed_wood supprime (etait ingredient alchimie)
+- Remplace par honeyed_log dans 6 recettes:
+  infusing/honeyed_log.json, crafting/honey_pipe.json, crafting/honey_pipe_tier2.json,
+  crafting/multiblock_tank.json, crafting/infuser_tier2.json, crafting/honeyed_planks.json
+
+NETTOYAGE TEXTURES (35 supprimees):
+- 19 textures orphelines racine (export_interface, iron_incubator, lamp, etc.)
+- 13 textures orphelines alchemy/ (crystallizer_*, infuser_*, honey_tank_*, etc.)
+- 1 texture doublon honeyed/ (honeywood.png)
+- 2 textures orphelines logistic/ (storage_terminal*.png)
+
+REORGANISATION TEXTURES (27 deplacees):
+- 7 textures vers building/ (honeyed_plank, honeyed_glass*, nectar_planks, etc.)
+- 9 textures vers machines/ (bee_creator, bee_statue_*, incubator, etc.)
+- 6 textures vers altar/ (honeyed_stone, honey_crystal*, honey_pedestal_*)
+- 1 texture vers storage/ (storage_crate)
+- 3 textures vers pipes/ (honey_pipe, pipe_core_white, pipe_frame)
+- Fusion logistic/ dans storage/ (storage_controller.png), dossier logistic/ supprime
+
+MODELES REORGANISES:
+- honeyed_iron_block.json deplace vers building/
+- Tous les model JSON mis a jour avec les nouveaux chemins textures
+
+ASSETS CREES:
+- 6 blockstates (honeyed_log, stripped_honeyed_log, honeyed_wood, stripped_honeyed_wood,
+  royal_crystal, nectar_crystal)
+- 8 models block (honeyed_log, _horizontal, stripped_honeyed_log, _horizontal,
+  honeyed_wood, stripped_honeyed_wood, royal_crystal, nectar_crystal)
+- 6 models item (honeyed_log, stripped_honeyed_log, honeyed_wood, stripped_honeyed_wood + existants)
+
+CREATIVE TAB:
+- Ajout 4 honeyed logs/wood dans addBuildingBlocks()
+
+REGISTRES MODIFIES:
+- BeemancerBlocks: +HONEYED_LOG, +STRIPPED_HONEYED_LOG, +HONEYED_WOOD, +STRIPPED_HONEYED_WOOD,
+  +HONEYED_WOOD_STAIR, +HONEYED_WOOD_SLAB, +ROYAL_CRYSTAL, +NECTAR_CRYSTAL
+- BeemancerItems: +6 BlockItems logs/wood, ROYAL_CRYSTAL et NECTAR_CRYSTAL convertis Item->BlockItem,
+  -HONEYED_WOOD (item alchimie)
+- BeemancerCreativeTabs: +4 honeyed bois dans building
+
+================================================================================
 2026-02-06 - Multiblock IO Config System + Centrifuge IO Inversion
 ================================================================================
 

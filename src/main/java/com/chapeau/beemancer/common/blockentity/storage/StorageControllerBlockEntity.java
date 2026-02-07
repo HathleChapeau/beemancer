@@ -49,12 +49,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.Containers;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+
+import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
 
 /**
  * Unite centrale du reseau de stockage.
@@ -72,6 +75,11 @@ import java.util.*;
 public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         implements MultiblockController, MenuProvider {
 
+    public static final int MAX_LINKED_HIVES = 4;
+    public static final int BASE_ESSENCE_SLOTS = 4;
+    public static final int MAX_ESSENCE_SLOTS = BASE_ESSENCE_SLOTS + MAX_LINKED_HIVES;
+    private static final int BASE_DELIVERY_BEES = 2;
+
     // === Registre central du reseau ===
     private final StorageNetworkRegistry networkRegistry = new StorageNetworkRegistry();
 
@@ -82,7 +90,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     private final RequestManager requestManager = new RequestManager(this);
 
     // === Essence slots ===
-    private final ItemStackHandler essenceSlots = new ItemStackHandler(4) {
+    private final ItemStackHandler essenceSlots = new ItemStackHandler(MAX_ESSENCE_SLOTS) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             return stack.is(BeemancerTags.Items.ESSENCES);
@@ -106,8 +114,10 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
                 case 1 -> ControllerStats.getSearchSpeed(essenceSlots);
                 case 2 -> ControllerStats.getCraftSpeed(essenceSlots);
                 case 3 -> ControllerStats.getQuantity(essenceSlots);
-                case 4 -> ControllerStats.getHoneyConsumption(essenceSlots, networkRegistry.getChestCount());
+                case 4 -> ControllerStats.getHoneyConsumption(essenceSlots, networkRegistry.getChestCount(), getHiveMultiplier());
                 case 5 -> ControllerStats.getHoneyEfficiency(essenceSlots);
+                case 6 -> getLinkedHiveCount();
+                case 7 -> getMaxDeliveryBees();
                 default -> 0;
             };
         }
@@ -116,7 +126,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         public void set(int index, int value) { }
 
         @Override
-        public int getCount() { return 6; }
+        public int getCount() { return 8; }
     };
 
     public StorageControllerBlockEntity(BlockPos pos, BlockState blockState) {
@@ -190,6 +200,11 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
                 }
                 case INTERFACE -> {
                     if (!(be instanceof NetworkInterfaceBlockEntity iface) || iface.getControllerPos() == null) {
+                        toRemove.add(pos);
+                    }
+                }
+                case HIVE -> {
+                    if (!(be instanceof StorageHiveBlockEntity hive) || hive.getControllerPos() == null) {
                         toRemove.add(pos);
                     }
                 }
@@ -269,6 +284,102 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         requestManager.cancelRequestsFromSource(interfacePos);
         setChanged();
         syncToClient();
+    }
+
+    // === Hives (directement liees au controller) ===
+
+    /**
+     * Enregistre une hive dans le registre du reseau.
+     */
+    public void linkHive(BlockPos hivePos) {
+        networkRegistry.registerBlock(hivePos, worldPosition, StorageNetworkRegistry.NetworkBlockType.HIVE);
+        setChanged();
+        syncToClient();
+    }
+
+    /**
+     * Retire une hive du registre et drop les essences overflow si necessaire.
+     */
+    public void unlinkHive(BlockPos hivePos) {
+        networkRegistry.unregisterBlock(hivePos);
+        dropOverflowEssences();
+        setChanged();
+        syncToClient();
+    }
+
+    /**
+     * Retourne le nombre de hives liees au controller.
+     */
+    public int getLinkedHiveCount() {
+        return networkRegistry.getHiveCount();
+    }
+
+    /**
+     * Calcule le nombre max de delivery bees: base + somme des tiers des hives.
+     */
+    public int getMaxDeliveryBees() {
+        if (level == null) return BASE_DELIVERY_BEES;
+        int bonus = 0;
+        for (BlockPos hivePos : networkRegistry.getAllHives()) {
+            if (!level.isLoaded(hivePos)) continue;
+            BlockEntity be = level.getBlockEntity(hivePos);
+            if (be instanceof StorageHiveBlockEntity hive) {
+                bonus += hive.getTier();
+            }
+        }
+        return BASE_DELIVERY_BEES + bonus;
+    }
+
+    /**
+     * Calcule le multiplicateur de consommation de miel (produit des multiplicateurs de chaque hive).
+     * Retourne 1.0f si aucune hive.
+     */
+    public float getHiveMultiplier() {
+        if (level == null) return 1.0f;
+        float multiplier = 1.0f;
+        for (BlockPos hivePos : networkRegistry.getAllHives()) {
+            if (!level.isLoaded(hivePos)) continue;
+            BlockEntity be = level.getBlockEntity(hivePos);
+            if (be instanceof StorageHiveBlockEntity hive) {
+                BlockState hiveState = level.getBlockState(hivePos);
+                if (hiveState.getBlock() instanceof StorageHiveBlock hiveBlock) {
+                    multiplier *= hiveBlock.getHoneyMultiplier();
+                }
+            }
+        }
+        return multiplier;
+    }
+
+    /**
+     * Notifie toutes les hives liees pour mettre a jour leur etat visuel.
+     * Appele quand le multibloc est forme ou detruit.
+     */
+    public void notifyLinkedHives() {
+        if (level == null || level.isClientSide()) return;
+        for (BlockPos hivePos : networkRegistry.getAllHives()) {
+            if (!level.isLoaded(hivePos)) continue;
+            BlockEntity be = level.getBlockEntity(hivePos);
+            if (be instanceof StorageHiveBlockEntity hive) {
+                hive.updateVisualState();
+            }
+        }
+    }
+
+    /**
+     * Drop les items essence dans les slots bonus qui depassent le nombre de hives actuel.
+     * Les slots actifs: BASE_ESSENCE_SLOTS + getLinkedHiveCount().
+     */
+    private void dropOverflowEssences() {
+        if (level == null || level.isClientSide()) return;
+        int activeSlots = BASE_ESSENCE_SLOTS + getLinkedHiveCount();
+        for (int i = activeSlots; i < MAX_ESSENCE_SLOTS; i++) {
+            ItemStack stack = essenceSlots.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5,
+                        worldPosition.getY() + 1.0, worldPosition.getZ() + 0.5, stack);
+                essenceSlots.setStackInSlot(i, ItemStack.EMPTY);
+            }
+        }
     }
 
     // === Agregation Items (delegue) ===
@@ -356,6 +467,18 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     public void setRemoved() {
         super.setRemoved();
         deliveryManager.killAllDeliveryBees();
+
+        // Unlink all hives (reset their visual state)
+        if (level != null && !level.isClientSide()) {
+            for (BlockPos hivePos : networkRegistry.getAllHives()) {
+                if (!level.isLoaded(hivePos)) continue;
+                BlockEntity be = level.getBlockEntity(hivePos);
+                if (be instanceof StorageHiveBlockEntity hive) {
+                    hive.unlinkController();
+                }
+            }
+        }
+
         MultiblockEvents.unregisterController(worldPosition);
     }
 
