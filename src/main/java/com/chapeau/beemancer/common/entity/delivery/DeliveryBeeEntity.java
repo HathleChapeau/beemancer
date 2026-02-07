@@ -22,6 +22,7 @@
 package com.chapeau.beemancer.common.entity.delivery;
 
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -48,6 +49,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -93,6 +95,7 @@ public class DeliveryBeeEntity extends Bee {
         super(entityType, level);
         this.moveControl = new FlyingMoveControl(this, 20, true);
         this.setNoGravity(true);
+        DebugWandItem.addDisplay(this, this::getSyncedPhase, new Vec3(0, 0.5, 0), 0xFFFFFF00);
     }
 
     @Override

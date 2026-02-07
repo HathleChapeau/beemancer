@@ -68,6 +68,7 @@ public class DebugWandItem extends Item {
 
     // --- Debug Display System ---
     private static final Vec3 DEFAULT_DISPLAY_OFFSET = new Vec3(0, 1, 0);
+    private static final int DEFAULT_DISPLAY_COLOR = 0xFFFFFFFF;
     private static final List<DebugDisplayEntry> displayEntries = new CopyOnWriteArrayList<>();
 
     public DebugWandItem(Properties properties) {
@@ -165,41 +166,57 @@ public class DebugWandItem extends Item {
     // =========================================================================
 
     /**
-     * Enregistre un affichage debug avec position dynamique, texte dynamique et offset custom.
+     * Enregistre un affichage debug (version complète).
      * Appelable depuis n'importe quel constructeur (BlockEntity, Entity, etc.).
      * L'entrée est automatiquement retirée quand positionFn renvoie null.
      *
      * @param positionFn fournit la position monde (null = objet supprimé → retrait auto)
      * @param textFn     fournit le texte à afficher (exception → "Str. Error")
      * @param offset     décalage par rapport à la position
+     * @param color      couleur ARGB du texte (ex: 0xFFFFFF00 pour jaune)
      */
+    public static void addDisplay(Supplier<Vec3> positionFn, Supplier<String> textFn, Vec3 offset, int color) {
+        displayEntries.add(new DebugDisplayEntry(positionFn, textFn, offset, color));
+    }
+
+    /** Surcharge avec couleur par défaut (blanc). */
     public static void addDisplay(Supplier<Vec3> positionFn, Supplier<String> textFn, Vec3 offset) {
-        displayEntries.add(new DebugDisplayEntry(positionFn, textFn, offset));
+        addDisplay(positionFn, textFn, offset, DEFAULT_DISPLAY_COLOR);
     }
 
-    /** Surcharge avec offset par défaut (0, 1, 0). */
+    /** Surcharge avec offset par défaut (0, 1, 0) et blanc. */
     public static void addDisplay(Supplier<Vec3> positionFn, Supplier<String> textFn) {
-        addDisplay(positionFn, textFn, DEFAULT_DISPLAY_OFFSET);
+        addDisplay(positionFn, textFn, DEFAULT_DISPLAY_OFFSET, DEFAULT_DISPLAY_COLOR);
     }
 
-    /** Surcharge BlockEntity: position = centre du bloc, null auto si removed. */
+    /** Surcharge BlockEntity avec offset et couleur custom. */
+    public static void addDisplay(BlockEntity be, Supplier<String> textFn, Vec3 offset, int color) {
+        addDisplay(() -> be.isRemoved() ? null : Vec3.atCenterOf(be.getBlockPos()), textFn, offset, color);
+    }
+
+    /** Surcharge BlockEntity avec offset custom, blanc. */
     public static void addDisplay(BlockEntity be, Supplier<String> textFn, Vec3 offset) {
-        addDisplay(() -> be.isRemoved() ? null : Vec3.atCenterOf(be.getBlockPos()), textFn, offset);
+        addDisplay(be, textFn, offset, DEFAULT_DISPLAY_COLOR);
     }
 
-    /** Surcharge BlockEntity avec offset par défaut (0, 1, 0). */
+    /** Surcharge BlockEntity avec offset par défaut (0, 1, 0) et blanc. */
     public static void addDisplay(BlockEntity be, Supplier<String> textFn) {
-        addDisplay(be, textFn, DEFAULT_DISPLAY_OFFSET);
+        addDisplay(be, textFn, DEFAULT_DISPLAY_OFFSET, DEFAULT_DISPLAY_COLOR);
     }
 
-    /** Surcharge Entity: position = entity.position(), null auto si removed. */
+    /** Surcharge Entity avec offset et couleur custom. */
+    public static void addDisplay(Entity entity, Supplier<String> textFn, Vec3 offset, int color) {
+        addDisplay(() -> entity.isRemoved() ? null : entity.position(), textFn, offset, color);
+    }
+
+    /** Surcharge Entity avec offset custom, blanc. */
     public static void addDisplay(Entity entity, Supplier<String> textFn, Vec3 offset) {
-        addDisplay(() -> entity.isRemoved() ? null : entity.position(), textFn, offset);
+        addDisplay(entity, textFn, offset, DEFAULT_DISPLAY_COLOR);
     }
 
-    /** Surcharge Entity avec offset par défaut (0, 1, 0). */
+    /** Surcharge Entity avec offset par défaut (0, 1, 0) et blanc. */
     public static void addDisplay(Entity entity, Supplier<String> textFn) {
-        addDisplay(entity, textFn, DEFAULT_DISPLAY_OFFSET);
+        addDisplay(entity, textFn, DEFAULT_DISPLAY_OFFSET, DEFAULT_DISPLAY_COLOR);
     }
 
     /** Retourne la liste des entrées debug display (utilisé par le renderer). */

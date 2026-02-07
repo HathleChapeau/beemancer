@@ -25,6 +25,7 @@
 package com.chapeau.beemancer.common.block.hive;
 
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import com.chapeau.beemancer.content.gene.environment.EnvironmentGene;
@@ -62,6 +63,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -137,6 +139,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         for (int i = 0; i < BEE_SLOTS; i++) {
             beeSlots[i] = new HiveBeeSlot();
         }
+        DebugWandItem.addDisplay(this, this::buildDebugText, new Vec3(0, 1.3, 0));
     }
 
     // === Manager Accessors (package-private) ===
@@ -513,6 +516,32 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new MagicHiveMenu(containerId, playerInventory, this, containerData);
+    }
+
+    // ==================== Debug Display ====================
+
+    /**
+     * Construit le texte debug pour DebugWandItem.addDisplay().
+     * Reproduit la logique de l'ancien HiveDebugRenderer.
+     */
+    private String buildDebugText() {
+        StringBuilder sb = new StringBuilder("[Hive Cooldowns]");
+        boolean hasAnyBee = false;
+        for (int i = 0; i < BEE_SLOTS; i++) {
+            HiveBeeSlot.State state = beeSlots[i].getState();
+            if (state == HiveBeeSlot.State.EMPTY) continue;
+            hasAnyBee = true;
+            int cooldown = beeSlots[i].getCooldown();
+            String cooldownStr = cooldown > 0
+                ? String.format("%.1fs", cooldown / 20.0f)
+                : "Ready";
+            sb.append("\nSlot ").append(i + 1).append(": ")
+              .append(state.name()).append(" [").append(cooldownStr).append("]");
+        }
+        if (!hasAnyBee) {
+            sb.append("\n(empty)");
+        }
+        return sb.toString();
     }
 
     // ==================== Cleanup ====================

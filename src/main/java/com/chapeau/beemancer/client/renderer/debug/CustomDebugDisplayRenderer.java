@@ -19,7 +19,6 @@
  */
 package com.chapeau.beemancer.client.renderer.debug;
 
-import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.item.debug.DebugDisplayEntry;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -46,7 +45,6 @@ public class CustomDebugDisplayRenderer {
 
     private static final float TEXT_SCALE = 0.025f;
     private static final int TEXT_BG_COLOR = 0x80000000;
-    private static final int TEXT_COLOR = 0xFFFFFFFF;
     private static final String ERROR_TEXT = "Str. Error";
 
     @SubscribeEvent
@@ -99,10 +97,9 @@ public class CustomDebugDisplayRenderer {
                 text = ERROR_TEXT;
             }
 
-            //Beemancer.LOGGER.warn("{} || {}", entry.positionSupplier().get().toString(), text);
             // Appliquer l'offset et rendre
             Vec3 renderPos = pos.add(entry.offset());
-            renderTextAt(poseStack, bufferSource, font, cameraPos, renderPos, text);
+            renderTextAt(poseStack, bufferSource, font, cameraPos, renderPos, text, entry.color());
         }
 
         // Retirer les entrées invalides
@@ -118,7 +115,7 @@ public class CustomDebugDisplayRenderer {
      * Le texte fait toujours face à la caméra (billboard).
      */
     private static void renderTextAt(PoseStack poseStack, MultiBufferSource bufferSource,
-                                      Font font, Vec3 cameraPos, Vec3 worldPos, String text) {
+                                      Font font, Vec3 cameraPos, Vec3 worldPos, String text, int color) {
         double x = worldPos.x - cameraPos.x;
         double y = worldPos.y - cameraPos.y;
         double z = worldPos.z - cameraPos.z;
@@ -131,12 +128,12 @@ public class CustomDebugDisplayRenderer {
         poseStack.scale(-TEXT_SCALE, -TEXT_SCALE, TEXT_SCALE);
 
         Matrix4f matrix = poseStack.last().pose();
-        int textX = -font.width(text) / 2;
 
-        String[] lines = text.split("\n");                                                                                                                   int lineY = 0;
+        String[] lines = text.split("\n");
+        int lineY = 0;
         for (String line : lines) {
             int lineX = -font.width(line) / 2;
-            font.drawInBatch(line, lineX, lineY, TEXT_COLOR, false,
+            font.drawInBatch(line, lineX, lineY, color, false,
                     matrix, bufferSource, Font.DisplayMode.SEE_THROUGH,
                     TEXT_BG_COLOR, 0xF000F0);
             lineY += 10;

@@ -25,11 +25,12 @@ import net.minecraft.world.phys.Vec3;
 import java.util.function.Supplier;
 
 /**
- * Entrée d'affichage debug: position dynamique + texte dynamique + offset.
+ * Entrée d'affichage debug: position dynamique + texte dynamique + offset + couleur.
  * Si positionSupplier renvoie null, l'entrée est considérée invalide et sera retirée.
  */
 public record DebugDisplayEntry(
     Supplier<Vec3> positionSupplier,
     Supplier<String> textSupplier,
-    Vec3 offset
+    Vec3 offset,
+    int color
 ) {}
