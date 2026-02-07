@@ -1,0 +1,6 @@
+{
+  "parent": "beemancer:block/pipes/item_pipe_side",
+  "textures": {
+    "pipe": "minecraft:block/stone"
+  }
+}

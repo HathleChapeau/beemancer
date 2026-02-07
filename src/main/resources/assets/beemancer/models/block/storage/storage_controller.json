@@ -1,22 +1,7 @@
 {
-  "parent": "minecraft:block/block",
+  "parent": "minecraft:block/cross",
+  "render_type": "cutout",
   "textures": {
-    "all": "beemancer:block/logistic/storage_controller",
-    "particle": "beemancer:block/logistic/storage_controller"
-  },
-  "elements": [
-    {
-      "name": "Base 10x10x10",
-      "from": [3, 3, 3],
-      "to": [13, 13, 13],
-      "faces": {
-        "north": {"texture": "#all", "uv": [3, 3, 13, 13]},
-        "east": {"texture": "#all", "uv": [3, 3, 13, 13]},
-        "south": {"texture": "#all", "uv": [3, 3, 13, 13]},
-        "west": {"texture": "#all", "uv": [3, 3, 13, 13]},
-        "up": {"texture": "#all", "uv": [3, 3, 13, 13]},
-        "down": {"texture": "#all", "uv": [3, 3, 13, 13]}
-      }
-    }
-  ]
+    "cross": "beemancer:block/logistic/storage_controller"
+  }
 }

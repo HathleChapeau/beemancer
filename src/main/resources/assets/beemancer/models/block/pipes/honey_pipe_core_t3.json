@@ -1,6 +1,7 @@
 {
   "parent": "beemancer:block/pipes/honey_pipe_core",
   "textures": {
+    "core": "beemancer:block/plank",
     "frame": "beemancer:block/royal_gold_block"
   }
 }

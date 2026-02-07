@@ -1,0 +1,6 @@
+{
+  "parent": "beemancer:block/pipes/honey_pipe_side",
+  "textures": {
+    "pipe": "beemancer:block/plank"
+  }
+}

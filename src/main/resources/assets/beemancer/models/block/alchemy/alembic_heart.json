@@ -1,22 +1,7 @@
 {
-  "parent": "minecraft:block/block",
+  "parent": "minecraft:block/cross",
+  "render_type": "cutout",
   "textures": {
-    "particle": "beemancer:block/honey_crystal",
-    "all": "beemancer:block/honey_crystal"
-  },
-  "elements": [
-    {
-      "name": "Core",
-      "from": [4, 4, 4],
-      "to": [12, 12, 12],
-      "faces": {
-        "north": {"texture": "#all", "uv": [4, 4, 12, 12]},
-        "south": {"texture": "#all", "uv": [4, 4, 12, 12]},
-        "east": {"texture": "#all", "uv": [4, 4, 12, 12]},
-        "west": {"texture": "#all", "uv": [4, 4, 12, 12]},
-        "up": {"texture": "#all", "uv": [4, 4, 12, 12]},
-        "down": {"texture": "#all", "uv": [4, 4, 12, 12]}
-      }
-    }
-  ]
+    "cross": "beemancer:block/alchemy/alembic_heart"
+  }
 }

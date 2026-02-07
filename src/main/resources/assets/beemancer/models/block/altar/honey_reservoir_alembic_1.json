@@ -3,7 +3,7 @@
   "render_type": "translucent",
   "textures": {
     "gold": "minecraft:block/gold_block",
-    "reservoir": "beemancer:block/altar/reservoir_alembic",
+    "reservoir": "beemancer:block/alchemy/alembic_glass",
     "particle": "beemancer:block/honeyed_glass"
   },
   "elements": [

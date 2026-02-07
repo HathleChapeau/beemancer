@@ -1,6 +1,7 @@
 {
   "parent": "beemancer:block/pipes/item_pipe_core",
   "textures": {
+    "core": "minecraft:block/stone",
     "frame": "beemancer:block/nectar_diamond_block"
   }
 }

@@ -2,6 +2,7 @@
   "credit": "Beemancer - Multiblock Tank Formed (scaled by renderer)",
   "render_type": "translucent",
   "textures": {
+    "bottom": "beemancer:block/alchemy/fluid_tank_bottom4",
     "frame": "beemancer:block/alchemy/fluid_tank_bottom",
     "glass": "beemancer:block/alchemy/fluid_tank_glass",
     "particle": "beemancer:block/iron"
@@ -12,10 +13,10 @@
       "from": [0, 0, 0],
       "to": [32, 9, 32],
       "faces": {
-        "north": {"texture": "#frame", "uv":  [0,0,16,4]},
-        "east": {"texture": "#frame", "uv":  [0,0,16,4]},
-        "south": {"texture": "#frame", "uv":  [0,0,16,4]},
-        "west": {"texture": "#frame", "uv":  [0,0,16,4]},
+        "north": {"texture": "#bottom", "uv":  [0,0,16,16]},
+        "east": {"texture": "#bottom", "uv":  [0,0,16,16]},
+        "south": {"texture": "#bottom", "uv":  [0,0,16,16]},
+        "west": {"texture": "#bottom", "uv":  [0,0,16,16]},
         "up": {"texture": "#frame", "uv":  [0,0,16,16]},
         "down": {"texture": "#frame", "uv":  [0,0,16,16]}
       }

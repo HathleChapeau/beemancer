@@ -1,3 +1,6 @@
 {
-  "parent": "beemancer:block/alchemy/centrifuge_heart"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "beemancer:block/alchemy/centrifuge_heart"
+  }
 }
