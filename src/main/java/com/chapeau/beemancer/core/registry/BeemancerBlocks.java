@@ -521,6 +521,22 @@ public class BeemancerBlocks {
             () -> new Block(BlockBehaviour.Properties.of()
                     .strength(5.0f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<HoneyCrystalBlock> ROYAL_CRYSTAL = BLOCKS.register("royal_crystal",
+            () -> new HoneyCrystalBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 10)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<HoneyCrystalBlock> NECTAR_CRYSTAL = BLOCKS.register("nectar_crystal",
+            () -> new HoneyCrystalBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 10)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
     // --- FLYWHEEL TEST ---
     public static final DeferredBlock<BeeSpawnerBlock> BEE_SPAWNER = BLOCKS.register("bee_spawner",
             () -> new BeeSpawnerBlock(BlockBehaviour.Properties.of()

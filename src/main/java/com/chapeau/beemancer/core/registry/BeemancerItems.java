@@ -270,14 +270,14 @@ public class BeemancerItems {
     // --- CRAFTING MATERIALS ---
     public static final DeferredItem<Item> HONEYED_IRON = ITEMS.register("honeyed_iron",
             () -> new Item(new Item.Properties()));
-    public static final DeferredItem<Item> ROYAL_CRYSTAL = ITEMS.register("royal_crystal",
-            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<BlockItem> ROYAL_CRYSTAL = ITEMS.register("royal_crystal",
+            () -> new BlockItem(BeemancerBlocks.ROYAL_CRYSTAL.get(), new Item.Properties()));
     public static final DeferredItem<Item> ROYAL_GOLD = ITEMS.register("royal_gold",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> NECTAR_DIAMOND = ITEMS.register("nectar_diamond",
             () -> new Item(new Item.Properties()));
-    public static final DeferredItem<Item> NECTAR_CRYSTAL = ITEMS.register("nectar_crystal",
-            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<BlockItem> NECTAR_CRYSTAL = ITEMS.register("nectar_crystal",
+            () -> new BlockItem(BeemancerBlocks.NECTAR_CRYSTAL.get(), new Item.Properties()));
 
     // --- ESSENCES ---
     // Production Essences (améliore le niveau de production des abeilles)
