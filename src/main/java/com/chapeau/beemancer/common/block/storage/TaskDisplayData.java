@@ -44,7 +44,8 @@ public record TaskDisplayData(
     String origin,
     String blockedReason,
     @Nullable BlockPos requesterPos,
-    String requesterType
+    String requesterType,
+    @Nullable UUID parentTaskId
 ) {
 
     /**
@@ -66,6 +67,10 @@ public record TaskDisplayData(
             buf.writeLong(requesterPos.asLong());
         }
         buf.writeUtf(requesterType, 32);
+        buf.writeBoolean(parentTaskId != null);
+        if (parentTaskId != null) {
+            buf.writeUUID(parentTaskId);
+        }
     }
 
     /**
@@ -85,7 +90,8 @@ public record TaskDisplayData(
         String blockedReason = buf.readUtf(64);
         BlockPos reqPos = buf.readBoolean() ? BlockPos.of(buf.readLong()) : null;
         String reqType = buf.readUtf(32);
+        UUID parentId = buf.readBoolean() ? buf.readUUID() : null;
         return new TaskDisplayData(taskId, template, count, state, deps, origin,
-            blockedReason, reqPos, reqType);
+            blockedReason, reqPos, reqType, parentId);
     }
 }

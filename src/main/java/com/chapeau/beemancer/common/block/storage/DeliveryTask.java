@@ -61,6 +61,7 @@ public class DeliveryTask {
     }
 
     private final UUID taskId;
+    @Nullable private final UUID parentTaskId;
     private final ItemStack template;
     private int count;
     private final BlockPos sourcePos;
@@ -79,7 +80,7 @@ public class DeliveryTask {
                         BlockPos destPos, TaskOrigin origin,
                         @Nullable BlockPos requesterPos) {
         this(template, count, sourcePos, destPos, 0, Collections.emptyList(),
-            origin, false, requesterPos);
+            origin, false, requesterPos, null);
     }
 
     /**
@@ -89,7 +90,7 @@ public class DeliveryTask {
                         BlockPos destPos, TaskOrigin origin, boolean preloaded,
                         @Nullable BlockPos requesterPos) {
         this(template, count, sourcePos, destPos, 0, Collections.emptyList(),
-            origin, preloaded, requesterPos);
+            origin, preloaded, requesterPos, null);
     }
 
     /**
@@ -98,8 +99,10 @@ public class DeliveryTask {
     public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
                         BlockPos destPos, int priority, List<UUID> dependencies,
                         TaskOrigin origin, boolean preloaded,
-                        @Nullable BlockPos requesterPos) {
+                        @Nullable BlockPos requesterPos,
+                        @Nullable UUID parentTaskId) {
         this.taskId = UUID.randomUUID();
+        this.parentTaskId = parentTaskId;
         this.template = template.copy();
         this.count = count;
         this.sourcePos = sourcePos;
@@ -115,11 +118,13 @@ public class DeliveryTask {
     /**
      * Constructeur interne (pour load NBT).
      */
-    private DeliveryTask(UUID taskId, ItemStack template, int count, BlockPos sourcePos,
-                         BlockPos destPos, @Nullable BlockPos requesterPos,
-                         DeliveryState state, int priority, List<UUID> dependencies,
+    private DeliveryTask(UUID taskId, @Nullable UUID parentTaskId, ItemStack template,
+                         int count, BlockPos sourcePos, BlockPos destPos,
+                         @Nullable BlockPos requesterPos, DeliveryState state,
+                         int priority, List<UUID> dependencies,
                          TaskOrigin origin, boolean preloaded) {
         this.taskId = taskId;
+        this.parentTaskId = parentTaskId;
         this.template = template;
         this.count = count;
         this.sourcePos = sourcePos;
@@ -135,6 +140,12 @@ public class DeliveryTask {
     // === Getters ===
 
     public UUID getTaskId() { return taskId; }
+    @Nullable public UUID getParentTaskId() { return parentTaskId; }
+    /**
+     * Retourne l'ID racine du groupe de taches: parentTaskId si c'est une subtask, sinon taskId.
+     * Utilise pour retrouver la request associee meme pour les subtasks split.
+     */
+    public UUID getRootTaskId() { return parentTaskId != null ? parentTaskId : taskId; }
     public ItemStack getTemplate() { return template.copy(); }
     public int getCount() { return count; }
     public BlockPos getSourcePos() { return sourcePos; }
@@ -169,6 +180,7 @@ public class DeliveryTask {
     /**
      * Divise cette tache: reduit le count a beeCapacity et retourne
      * une nouvelle tache avec le reste des items.
+     * La subtask herite du rootTaskId pour garder le lien avec la request parente.
      */
     public DeliveryTask splitRemaining(int beeCapacity) {
         if (count <= beeCapacity) return null;
@@ -176,9 +188,10 @@ public class DeliveryTask {
         int remaining = count - beeCapacity;
         this.count = beeCapacity;
 
+        UUID rootId = getRootTaskId();
         DeliveryTask splitTask = new DeliveryTask(
             template.copy(), remaining, sourcePos, destPos,
-            priority, dependencies, origin, preloaded, requesterPos
+            priority, dependencies, origin, preloaded, requesterPos, rootId
         );
         return splitTask;
     }
@@ -188,6 +201,9 @@ public class DeliveryTask {
     public CompoundTag save(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("TaskId", taskId);
+        if (parentTaskId != null) {
+            tag.putUUID("ParentTaskId", parentTaskId);
+        }
         tag.put("Template", template.saveOptional(registries));
         tag.putInt("Count", count);
         tag.putLong("SourcePos", sourcePos.asLong());
@@ -215,6 +231,7 @@ public class DeliveryTask {
 
     public static DeliveryTask load(CompoundTag tag, HolderLookup.Provider registries) {
         UUID id = tag.getUUID("TaskId");
+        UUID parentId = tag.contains("ParentTaskId") ? tag.getUUID("ParentTaskId") : null;
         ItemStack template = ItemStack.parseOptional(registries, tag.getCompound("Template"));
         int count = tag.getInt("Count");
 
@@ -255,7 +272,7 @@ public class DeliveryTask {
             }
         }
 
-        return new DeliveryTask(id, template, count, source, dest, requesterPos,
+        return new DeliveryTask(id, parentId, template, count, source, dest, requesterPos,
             state, priority, dependencies, origin, preloaded);
     }
 }

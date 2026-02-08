@@ -38,8 +38,11 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Screen du Storage Terminal avec layout panneau gauche + droite.
@@ -343,34 +346,24 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
     private void renderTasksTab(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         List<TaskDisplayData> tasks = menu.getTaskDisplayData();
-
-        List<TaskDisplayData> requestTasks = new ArrayList<>();
-        List<TaskDisplayData> automationTasks = new ArrayList<>();
-        for (TaskDisplayData task : tasks) {
-            if ("AUTOMATION".equals(task.origin())) {
-                automationTasks.add(task);
-            } else {
-                requestTasks.add(task);
-            }
-        }
+        GroupedTasks grouped = groupTasks(tasks);
 
         int currentY = y + TASK_LIST_Y;
         int maxVisible = 6;
         int rendered = 0;
         int skipped = 0;
-        int totalEntries = getTotalTaskEntries(requestTasks, automationTasks);
 
         // Requests header
         if (skipped >= taskScrollOffset && rendered < maxVisible) {
             g.drawString(font, Component.translatable("gui.beemancer.tasks.requests")
-                .append(" (" + requestTasks.size() + ")"),
+                .append(" (" + grouped.requestRoots.size() + ")"),
                 x + TASK_LIST_X, currentY, 0xFFFFAA00, false);
             currentY += 12;
             rendered++;
         }
         skipped++;
 
-        if (requestTasks.isEmpty()) {
+        if (grouped.requestRoots.isEmpty()) {
             if (skipped >= taskScrollOffset && rendered < maxVisible) {
                 g.drawString(font, Component.translatable("gui.beemancer.tasks.empty"),
                     x + TASK_LIST_X + 4, currentY, 0xFF888888, false);
@@ -379,13 +372,27 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             }
             skipped++;
         } else {
-            for (TaskDisplayData task : requestTasks) {
+            for (TaskDisplayData root : grouped.requestRoots) {
+                List<TaskDisplayData> children = grouped.childrenMap
+                    .getOrDefault(root.taskId(), List.of());
+                int totalCount = computeTotalCount(root, children);
+
                 if (skipped >= taskScrollOffset && rendered < maxVisible) {
-                    renderTaskRow(g, x, currentY, task, mouseX, mouseY);
+                    renderTaskRow(g, x, currentY, root, totalCount, mouseX, mouseY);
                     currentY += TASK_ROW_HEIGHT;
                     rendered++;
                 }
                 skipped++;
+
+                for (int i = 0; i < children.size(); i++) {
+                    if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                        boolean isLast = (i == children.size() - 1);
+                        renderSubtaskRow(g, x, currentY, children.get(i), isLast);
+                        currentY += TASK_ROW_HEIGHT;
+                        rendered++;
+                    }
+                    skipped++;
+                }
             }
         }
 
@@ -397,14 +404,14 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         // Automation header
         if (skipped >= taskScrollOffset && rendered < maxVisible) {
             g.drawString(font, Component.translatable("gui.beemancer.tasks.automation")
-                .append(" (" + automationTasks.size() + ")"),
+                .append(" (" + grouped.automationRoots.size() + ")"),
                 x + TASK_LIST_X, currentY, 0xFF44FF44, false);
             currentY += 12;
             rendered++;
         }
         skipped++;
 
-        if (automationTasks.isEmpty()) {
+        if (grouped.automationRoots.isEmpty()) {
             if (skipped >= taskScrollOffset && rendered < maxVisible) {
                 g.drawString(font, Component.translatable("gui.beemancer.tasks.empty"),
                     x + TASK_LIST_X + 4, currentY, 0xFF888888, false);
@@ -413,28 +420,34 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             }
             skipped++;
         } else {
-            for (TaskDisplayData task : automationTasks) {
+            for (TaskDisplayData root : grouped.automationRoots) {
+                List<TaskDisplayData> children = grouped.childrenMap
+                    .getOrDefault(root.taskId(), List.of());
+                int totalCount = computeTotalCount(root, children);
+
                 if (skipped >= taskScrollOffset && rendered < maxVisible) {
-                    renderTaskRow(g, x, currentY, task, mouseX, mouseY);
+                    renderTaskRow(g, x, currentY, root, totalCount, mouseX, mouseY);
                     currentY += TASK_ROW_HEIGHT;
                     rendered++;
                 }
                 skipped++;
+
+                for (int i = 0; i < children.size(); i++) {
+                    if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                        boolean isLast = (i == children.size() - 1);
+                        renderSubtaskRow(g, x, currentY, children.get(i), isLast);
+                        currentY += TASK_ROW_HEIGHT;
+                        rendered++;
+                    }
+                    skipped++;
+                }
             }
         }
     }
 
     private void renderTaskRow(GuiGraphics g, int x, int currentY, TaskDisplayData task,
-                                int mouseX, int mouseY) {
-        // Dependency connector
-        if (!task.dependencyIds().isEmpty()) {
-            g.fill(x + TASK_LIST_X + 2, currentY - 2,
-                x + TASK_LIST_X + 3, currentY + 8, 0xFF888888);
-            g.fill(x + TASK_LIST_X + 2, currentY + 7,
-                x + TASK_LIST_X + 10, currentY + 8, 0xFF888888);
-        }
-
-        int taskX = x + TASK_LIST_X + (task.dependencyIds().isEmpty() ? 0 : 12);
+                                int totalCount, int mouseX, int mouseY) {
+        int taskX = x + TASK_LIST_X;
 
         if (!task.template().isEmpty()) {
             g.renderItem(task.template(), taskX, currentY);
@@ -442,7 +455,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
         String itemName = task.template().getHoverName().getString();
         if (itemName.length() > 16) itemName = itemName.substring(0, 14) + "..";
-        g.drawString(font, itemName + " x" + task.count(),
+        g.drawString(font, itemName + " x" + totalCount,
             taskX + 18, currentY + 4, 0xFFFFFF, false);
 
         int stateColor = getStateColor(task.state());
@@ -474,11 +487,96 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         }
     }
 
-    private int getTotalTaskEntries(List<TaskDisplayData> requestTasks,
-                                     List<TaskDisplayData> automationTasks) {
+    /**
+     * Rendu d'une subtask indentee avec connecteur visuel.
+     */
+    private void renderSubtaskRow(GuiGraphics g, int x, int currentY,
+                                    TaskDisplayData task, boolean isLast) {
+        int baseX = x + TASK_LIST_X;
+        int indent = 12;
+
+        // Connecteur L-shape gris
+        String connector = isLast ? "\u2514" : "\u251C";
+        g.drawString(font, connector, baseX + 2, currentY + 4, 0xFF666666, false);
+
+        int taskX = baseX + indent;
+
+        // Icone item (petit)
+        if (!task.template().isEmpty()) {
+            g.renderItem(task.template(), taskX, currentY);
+        }
+
+        // Count + etat
+        g.drawString(font, "x" + task.count(),
+            taskX + 18, currentY + 4, 0xFFCCCCCC, false);
+
+        int stateColor = getStateColor(task.state());
+        String stateLabel = getStateLabel(task.state());
+        int stateX = x + GUI_WIDTH - 60;
+        g.drawString(font, stateLabel, stateX, currentY + 4, stateColor, false);
+    }
+
+    private static int computeTotalCount(TaskDisplayData root, List<TaskDisplayData> children) {
+        int total = root.count();
+        for (TaskDisplayData child : children) {
+            total += child.count();
+        }
+        return total;
+    }
+
+    /**
+     * Groupe les taches par parentTaskId: roots (pas de parent) + map parent -> children.
+     * Separe les roots en REQUEST et AUTOMATION.
+     */
+    private GroupedTasks groupTasks(List<TaskDisplayData> tasks) {
+        List<TaskDisplayData> roots = new ArrayList<>();
+        Map<UUID, List<TaskDisplayData>> childrenMap = new HashMap<>();
+
+        for (TaskDisplayData task : tasks) {
+            if (task.parentTaskId() == null) {
+                roots.add(task);
+            } else {
+                childrenMap.computeIfAbsent(task.parentTaskId(), k -> new ArrayList<>()).add(task);
+            }
+        }
+
+        List<TaskDisplayData> requestRoots = new ArrayList<>();
+        List<TaskDisplayData> automationRoots = new ArrayList<>();
+        for (TaskDisplayData root : roots) {
+            if ("AUTOMATION".equals(root.origin())) {
+                automationRoots.add(root);
+            } else {
+                requestRoots.add(root);
+            }
+        }
+
+        return new GroupedTasks(requestRoots, automationRoots, childrenMap);
+    }
+
+    private record GroupedTasks(
+        List<TaskDisplayData> requestRoots,
+        List<TaskDisplayData> automationRoots,
+        Map<UUID, List<TaskDisplayData>> childrenMap
+    ) {}
+
+    private int getTotalTaskEntries(GroupedTasks grouped) {
         int total = 2; // 2 headers
-        total += requestTasks.isEmpty() ? 1 : requestTasks.size();
-        total += automationTasks.isEmpty() ? 1 : automationTasks.size();
+        if (grouped.requestRoots.isEmpty()) {
+            total += 1;
+        } else {
+            for (TaskDisplayData root : grouped.requestRoots) {
+                total += 1; // root
+                total += grouped.childrenMap.getOrDefault(root.taskId(), List.of()).size();
+            }
+        }
+        if (grouped.automationRoots.isEmpty()) {
+            total += 1;
+        } else {
+            for (TaskDisplayData root : grouped.automationRoots) {
+                total += 1; // root
+                total += grouped.childrenMap.getOrDefault(root.taskId(), List.of()).size();
+            }
+        }
         return total;
     }
 
@@ -709,16 +807,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
     private boolean handleTasksCancelClick(double mouseX, double mouseY) {
         List<TaskDisplayData> tasks = menu.getTaskDisplayData();
-
-        List<TaskDisplayData> requestTasks = new ArrayList<>();
-        List<TaskDisplayData> automationTasks = new ArrayList<>();
-        for (TaskDisplayData task : tasks) {
-            if ("AUTOMATION".equals(task.origin())) {
-                automationTasks.add(task);
-            } else {
-                requestTasks.add(task);
-            }
-        }
+        GroupedTasks grouped = groupTasks(tasks);
 
         int x = this.leftPos;
         int y = this.topPos;
@@ -734,23 +823,31 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         }
         skipped++;
 
-        // Request tasks (or empty placeholder)
-        List<TaskDisplayData> reqList = requestTasks.isEmpty()
-            ? java.util.Collections.emptyList() : requestTasks;
-        if (requestTasks.isEmpty()) {
+        if (grouped.requestRoots.isEmpty()) {
             if (skipped >= taskScrollOffset && rendered < maxVisible) {
                 currentY += TASK_ROW_HEIGHT;
                 rendered++;
             }
             skipped++;
-        }
-        for (TaskDisplayData task : reqList) {
-            if (skipped >= taskScrollOffset && rendered < maxVisible) {
-                if (checkCancelClick(mouseX, mouseY, x, currentY, task)) return true;
-                currentY += TASK_ROW_HEIGHT;
-                rendered++;
+        } else {
+            for (TaskDisplayData root : grouped.requestRoots) {
+                List<TaskDisplayData> children = grouped.childrenMap
+                    .getOrDefault(root.taskId(), List.of());
+                if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                    if (checkCancelClick(mouseX, mouseY, x, currentY, root)) return true;
+                    currentY += TASK_ROW_HEIGHT;
+                    rendered++;
+                }
+                skipped++;
+                // Subtasks: skip them (no cancel button)
+                for (int i = 0; i < children.size(); i++) {
+                    if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                        currentY += TASK_ROW_HEIGHT;
+                        rendered++;
+                    }
+                    skipped++;
+                }
             }
-            skipped++;
         }
 
         // Spacing
@@ -765,17 +862,26 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         }
         skipped++;
 
-        // Automation tasks (or empty placeholder)
-        if (automationTasks.isEmpty()) {
+        if (grouped.automationRoots.isEmpty()) {
             skipped++;
-        }
-        for (TaskDisplayData task : automationTasks) {
-            if (skipped >= taskScrollOffset && rendered < maxVisible) {
-                if (checkCancelClick(mouseX, mouseY, x, currentY, task)) return true;
-                currentY += TASK_ROW_HEIGHT;
-                rendered++;
+        } else {
+            for (TaskDisplayData root : grouped.automationRoots) {
+                List<TaskDisplayData> children = grouped.childrenMap
+                    .getOrDefault(root.taskId(), List.of());
+                if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                    if (checkCancelClick(mouseX, mouseY, x, currentY, root)) return true;
+                    currentY += TASK_ROW_HEIGHT;
+                    rendered++;
+                }
+                skipped++;
+                for (int i = 0; i < children.size(); i++) {
+                    if (skipped >= taskScrollOffset && rendered < maxVisible) {
+                        currentY += TASK_ROW_HEIGHT;
+                        rendered++;
+                    }
+                    skipped++;
+                }
             }
-            skipped++;
         }
 
         return false;
@@ -900,13 +1006,8 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             }
             if (activeTab == StorageTab.TASKS) {
                 List<TaskDisplayData> tasks = menu.getTaskDisplayData();
-                List<TaskDisplayData> reqTasks = new ArrayList<>();
-                List<TaskDisplayData> autoTasks = new ArrayList<>();
-                for (TaskDisplayData t : tasks) {
-                    if ("AUTOMATION".equals(t.origin())) autoTasks.add(t);
-                    else reqTasks.add(t);
-                }
-                int totalEntries = getTotalTaskEntries(reqTasks, autoTasks);
+                GroupedTasks grouped = groupTasks(tasks);
+                int totalEntries = getTotalTaskEntries(grouped);
                 int maxTaskScroll = Math.max(0, totalEntries - 8);
                 taskScrollOffset = Mth.clamp(taskScrollOffset - (int) scrollY, 0, maxTaskScroll);
                 return true;

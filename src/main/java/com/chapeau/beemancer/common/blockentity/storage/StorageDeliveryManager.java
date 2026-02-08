@@ -411,7 +411,10 @@ public class StorageDeliveryManager {
 
             deliveryQueue.remove(eligible);
 
-            int beeCapacity = eligible.getTemplate().getMaxStackSize();
+            int beeCapacity = Math.min(
+                ControllerStats.getQuantity(parent.getEssenceSlots()),
+                eligible.getTemplate().getMaxStackSize()
+            );
             if (eligible.getCount() > beeCapacity) {
                 DeliveryTask rest = eligible.splitRemaining(beeCapacity);
                 if (rest != null) {
@@ -447,7 +450,7 @@ public class StorageDeliveryManager {
             DeliveryTask task = queueIt.next();
             if (task.getState() != DeliveryTask.DeliveryState.QUEUED) continue;
 
-            InterfaceRequest request = requestManager.findRequestByTaskId(task.getTaskId());
+            InterfaceRequest request = requestManager.findRequestByTaskId(task.getRootTaskId());
             if (request == null) continue;
 
             int currentDemand = request.getCount();
@@ -459,7 +462,10 @@ public class StorageDeliveryManager {
             }
 
             task.setCount(currentDemand);
-            int beeCapacity = task.getTemplate().getMaxStackSize();
+            int beeCapacity = Math.min(
+                ControllerStats.getQuantity(parent.getEssenceSlots()),
+                task.getTemplate().getMaxStackSize()
+            );
             if (task.getCount() > beeCapacity) {
                 DeliveryTask split = task.splitRemaining(beeCapacity);
                 if (split != null) {
@@ -473,7 +479,7 @@ public class StorageDeliveryManager {
         for (DeliveryTask task : new ArrayList<>(activeTasks)) {
             if (task.getState() != DeliveryTask.DeliveryState.FLYING) continue;
 
-            InterfaceRequest request = requestManager.findRequestByTaskId(task.getTaskId());
+            InterfaceRequest request = requestManager.findRequestByTaskId(task.getRootTaskId());
             if (request == null) continue;
 
             int currentDemand = request.getCount();
@@ -485,12 +491,17 @@ public class StorageDeliveryManager {
             }
 
             // Demande augmente au-dela de la capacite d'une bee: creer sous-tache pour surplus
-            int beeCapacity = task.getTemplate().getMaxStackSize();
+            int beeCapacity = Math.min(
+                ControllerStats.getQuantity(parent.getEssenceSlots()),
+                task.getTemplate().getMaxStackSize()
+            );
             if (currentDemand > beeCapacity && !hasQueuedTaskForRequest(request.getRequestId())) {
                 int surplus = currentDemand - beeCapacity;
+                UUID rootId = task.getRootTaskId();
                 DeliveryTask surplusTask = new DeliveryTask(
                     task.getTemplate(), surplus, task.getSourcePos(), task.getDestPos(),
-                    task.getOrigin(), task.getRequesterPos()
+                    0, Collections.emptyList(), task.getOrigin(), false,
+                    task.getRequesterPos(), rootId
                 );
                 deliveryQueue.add(surplusTask);
                 parent.setChanged();
@@ -695,7 +706,8 @@ public class StorageDeliveryManager {
 
     /**
      * Termine une tache active: met a jour l'etat, retire de la liste, marque pour sync.
-     * Notifie le RequestManager du resultat.
+     * Pour les taches COMPLETED, ne notifie le RequestManager que quand toutes les
+     * subtasks du meme groupe (meme rootTaskId) sont terminees.
      */
     private void finishTask(UUID taskId, DeliveryTask.DeliveryState state) {
         Iterator<DeliveryTask> it = activeTasks.iterator();
@@ -703,18 +715,43 @@ public class StorageDeliveryManager {
             DeliveryTask task = it.next();
             if (task.getTaskId().equals(taskId)) {
                 task.setState(state);
+                UUID rootId = task.getRootTaskId();
+                it.remove();
+
                 if (state == DeliveryTask.DeliveryState.COMPLETED) {
                     completedTaskIds.add(taskId);
-                    parent.getRequestManager().onTaskCompleted(taskId);
+                    if (!hasRemainingSubtasks(rootId)) {
+                        parent.getRequestManager().onTaskCompleted(rootId);
+                    }
                 } else if (state == DeliveryTask.DeliveryState.FAILED) {
-                    parent.getRequestManager().onTaskFailed(taskId);
+                    parent.getRequestManager().onTaskFailed(rootId);
                 }
-                it.remove();
+
                 parent.setChanged();
                 parent.getItemAggregator().setNeedsSync(true);
                 return;
             }
         }
+    }
+
+    /**
+     * Verifie s'il reste des subtasks actives ou en queue pour un meme rootTaskId.
+     */
+    private boolean hasRemainingSubtasks(UUID rootId) {
+        for (DeliveryTask t : activeTasks) {
+            if (t.getRootTaskId().equals(rootId)
+                    && (t.getState() == DeliveryTask.DeliveryState.FLYING
+                        || t.getState() == DeliveryTask.DeliveryState.QUEUED)) {
+                return true;
+            }
+        }
+        for (DeliveryTask t : deliveryQueue) {
+            if (t.getRootTaskId().equals(rootId)
+                    && t.getState() == DeliveryTask.DeliveryState.QUEUED) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // === Task Cancellation ===
@@ -764,7 +801,8 @@ public class StorageDeliveryManager {
     }
 
     /**
-     * Annule récursivement toutes les tâches qui dépendent de la tâche donnée.
+     * Annule recursivement toutes les taches qui dependent de la tache donnee,
+     * ainsi que toutes les subtasks du meme groupe (meme rootTaskId).
      */
     private void cancelDependentTasks(UUID cancelledTaskId) {
         List<DeliveryTask> toCancel = new ArrayList<>();
@@ -773,10 +811,24 @@ public class StorageDeliveryManager {
                 toCancel.add(task);
             }
         }
+        // Annuler les subtasks du meme groupe
+        for (DeliveryTask task : deliveryQueue) {
+            if (cancelledTaskId.equals(task.getParentTaskId()) && !toCancel.contains(task)) {
+                toCancel.add(task);
+            }
+        }
         for (DeliveryTask task : toCancel) {
             deliveryQueue.remove(task);
             handleCancelledTask(task);
             cancelDependentTasks(task.getTaskId());
+        }
+        // Annuler les subtasks actives (bees en vol)
+        for (DeliveryTask task : new ArrayList<>(activeTasks)) {
+            if (cancelledTaskId.equals(task.getParentTaskId())) {
+                task.setState(DeliveryTask.DeliveryState.FAILED);
+                recallBeeForTask(task);
+                handleCancelledTask(task);
+            }
         }
     }
 
@@ -961,10 +1013,10 @@ public class StorageDeliveryManager {
     }
 
     private TaskDisplayData taskToDisplayData(DeliveryTask task) {
-        // Reverse lookup: trouver la request associee pour obtenir les infos requester
+        // Reverse lookup: trouver la request associee via rootTaskId
         BlockPos requesterPos = null;
         String requesterType = "";
-        InterfaceRequest request = parent.getRequestManager().findRequestByTaskId(task.getTaskId());
+        InterfaceRequest request = parent.getRequestManager().findRequestByTaskId(task.getRootTaskId());
         if (request != null) {
             requesterPos = request.getRequesterPos();
             requesterType = deriveRequesterType(request);
@@ -979,7 +1031,8 @@ public class StorageDeliveryManager {
             task.getOrigin().name(),
             computeBlockedReason(task),
             requesterPos,
-            requesterType
+            requesterType,
+            task.getParentTaskId()
         );
     }
 

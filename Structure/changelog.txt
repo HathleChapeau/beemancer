@@ -3,6 +3,41 @@
 ################################################################################
 
 ================================================================================
+2026-02-08 - Fix Delivery Bees (Capacite + Task Splitting + Subtask Display)
+================================================================================
+
+FIX CRITIQUE: Capacite des abeilles (StorageDeliveryManager)
+- beeCapacity utilise maintenant ControllerStats.getQuantity() (base 32 + DROP essence)
+  au lieu de template.getMaxStackSize() (64)
+- Capacite plafonnee a maxStackSize pour items non-stackables (ender pearls=16, outils=1)
+- Corrige aux 3 endroits: processDeliveryQueue, reevaluateTasks (QUEUED), reevaluateTasks (FLYING)
+
+FIX CRITIQUE: Requetes > 1 stack oubliees (DeliveryTask + StorageDeliveryManager)
+- Ajout parentTaskId dans DeliveryTask pour lier les subtasks split a la task racine
+- splitRemaining() propage le rootTaskId aux subtasks creees
+- finishTask() ne retire la request que quand TOUTES les subtasks sont completees
+  (via hasRemainingSubtasks check sur rootTaskId)
+- reevaluateTasks() utilise getRootTaskId() pour retrouver la request parente
+- cancelDependentTasks() annule aussi les subtasks du meme groupe
+
+AJOUT: Affichage subtasks avec indentation (StorageTerminalScreen)
+- Tasks groupees par parentTaskId: roots + children map
+- Task racine affiche le count TOTAL (somme parent + enfants)
+- Subtasks indentees de 12px avec connecteur Unicode (└ ou ├)
+- Bouton cancel uniquement sur les tasks racine (cancel cascade aux enfants)
+- Scroll mis a jour pour compter les subtasks dans le total
+
+FIX MINEUR: Double event RightClickBlock (StorageEvents)
+- Ajout filtre event.getHand() != MAIN_HAND pour eviter le double-toggle
+
+Fichiers modifies:
+- DeliveryTask.java (parentTaskId, getRootTaskId, splitRemaining, NBT)
+- StorageDeliveryManager.java (beeCapacity x3, finishTask, hasRemainingSubtasks, reevaluateTasks)
+- TaskDisplayData.java (parentTaskId field + network serialization)
+- StorageTerminalScreen.java (GroupedTasks, renderSubtaskRow, groupTasks)
+- StorageEvents.java (filtre MAIN_HAND)
+
+================================================================================
 2026-02-08 - Refonte Storage Hive System (Blocs fantomes + Desync + Feedback)
 ================================================================================
 
