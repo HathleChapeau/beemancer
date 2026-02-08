@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [AltarHeartRenderer.java]
- * Description: Renderer pour le Honey Altar forme — 3 parties + anneaux animes
+ * Description: Renderer pour le Honey Altar forme — 3 parties de structure
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,7 +9,6 @@
  * | Dependance              | Raison                | Utilisation           |
  * |-------------------------|----------------------|-----------------------|
  * | AltarHeartBlockEntity   | Donnees a rendre     | isFormed()            |
- * | DebugWandItem           | Vitesse rotation     | value2                |
  * | BlockEntityRenderer     | Interface renderer   | Rendu custom          |
  * ------------------------------------------------------------
  *
@@ -22,11 +21,9 @@ package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
-import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -42,19 +39,12 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * Renderer pour le Honey Altar multibloc.
- * Quand forme, rend 3 parties de structure (pedestal, core, top)
- * et les anneaux animes qui tournent autour du coeur.
+ * Quand forme, rend 3 parties de structure (pedestal, core, top).
  */
 public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEntity> {
 
     private final BlockRenderDispatcher blockRenderer;
     private final RandomSource random = RandomSource.create();
-
-    // Modeles des anneaux
-    private static final ModelResourceLocation BIG_RING_MODEL_LOC =
-        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_big_ring"));
-    private static final ModelResourceLocation SMALL_RING_MODEL_LOC =
-        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring"));
 
     // Modeles des 3 parties de structure
     public static final ModelResourceLocation PEDESTAL_MODEL_LOC =
@@ -74,14 +64,8 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         if (!blockEntity.isFormed()) return;
 
-        float ringSpeed = DebugWandItem.value2;
-        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
-        float ringAngle = (gameTime + partialTick) * ringSpeed;
-
         BlockState heartState = BeemancerBlocks.ALTAR_HEART.get().defaultBlockState();
-
         renderStructureParts(blockEntity, heartState, poseStack, buffer, packedLight, packedOverlay);
-        renderRotatingRings(blockEntity, heartState, ringAngle, poseStack, buffer, packedLight, packedOverlay);
     }
 
     /**
@@ -118,43 +102,6 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         poseStack.translate(0, 1, 0);
         blockRenderer.getModelRenderer().tesselateBlock(
             blockEntity.getLevel(), topModel, heartState, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, false, random, packedLight, packedOverlay,
-            ModelData.EMPTY, RenderType.solid());
-        poseStack.popPose();
-    }
-
-    /**
-     * Rend les 2 anneaux qui tournent autour du coeur.
-     */
-    private void renderRotatingRings(AltarHeartBlockEntity blockEntity, BlockState heartState,
-                                     float rotationAngle, PoseStack poseStack,
-                                     MultiBufferSource buffer, int packedLight, int packedOverlay) {
-
-        BakedModel bigRingModel = Minecraft.getInstance().getModelManager().getModel(BIG_RING_MODEL_LOC);
-        BakedModel smallRingModel = Minecraft.getInstance().getModelManager().getModel(SMALL_RING_MODEL_LOC);
-
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.solid());
-
-        // Big ring: rotation X + Z (sens positif)
-        poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
-        poseStack.mulPose(Axis.XP.rotationDegrees(rotationAngle));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(rotationAngle * 0.7f));
-        poseStack.translate(-0.5, -0.5, -0.5);
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(), bigRingModel, heartState, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, false, random, packedLight, packedOverlay,
-            ModelData.EMPTY, RenderType.solid());
-        poseStack.popPose();
-
-        // Small ring: rotation X + Z (sens oppose)
-        poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
-        poseStack.mulPose(Axis.XP.rotationDegrees(-rotationAngle * 1.3f));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-rotationAngle));
-        poseStack.translate(-0.5, -0.5, -0.5);
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(), smallRingModel, heartState, blockEntity.getBlockPos(),
             poseStack, vertexConsumer, false, random, packedLight, packedOverlay,
             ModelData.EMPTY, RenderType.solid());
         poseStack.popPose();

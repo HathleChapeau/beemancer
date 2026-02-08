@@ -297,11 +297,7 @@ public class ClientSetup {
     // =========================================================================
 
     private static void registerAdditionalModels(final ModelEvent.RegisterAdditional event) {
-        // Modèles du Altar Heart formé (rendus dynamiquement)
-        event.register(ModelResourceLocation.standalone(
-            ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_big_ring")));
-        event.register(ModelResourceLocation.standalone(
-            ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_heart_small_ring")));
+        // Modèles du Altar Heart formé (3 parties de structure, rendues dynamiquement)
         event.register(AltarHeartRenderer.PEDESTAL_MODEL_LOC);
         event.register(AltarHeartRenderer.CORE_MODEL_LOC);
         event.register(AltarHeartRenderer.TOP_MODEL_LOC);
