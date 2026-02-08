@@ -227,7 +227,7 @@ public class AltarCraftAnimator {
 
     private static RotateAnimation buildInitialRotAnim() {
         return RotateAnimation.builder()
-            .axis(Axis.YP).startAngle(0).endAngle(INITIAL_ROT)
+            .axis(Axis.XP).startAngle(0).endAngle(INITIAL_ROT)
             .pivot(CONDUIT_PIVOT)
             .duration(EXPAND_END).timingType(TimingType.EASE_OUT)
             .resetAfterAnimation(false)

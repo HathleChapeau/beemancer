@@ -76,7 +76,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         float currentTime = blockEntity.getLevel().getGameTime() + partialTick;
         BlockState heartState = BeemancerBlocks.ALTAR_HEART.get().defaultBlockState();
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.solid());
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.cutout());
 
         AltarCraftAnimator.updateCraftState(blockEntity.getBlockPos(), blockEntity.isCrafting());
         AnimationController ctrl = AltarCraftAnimator.getController(blockEntity.getBlockPos());
@@ -114,6 +114,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         ctrl.applyAnimation("heart_y", poseStack);
         ctrl.applyAnimation("heart_x", poseStack);
         ctrl.applyAnimation("heart_z", poseStack);
+
         renderModel(CORE_MODEL_LOC, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
         poseStack.popPose();
     }
@@ -146,7 +147,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         blockRenderer.getModelRenderer().tesselateBlock(
             blockEntity.getLevel(), model, heartState, blockEntity.getBlockPos(),
             poseStack, vertexConsumer, false, random, packedLight, packedOverlay,
-            ModelData.EMPTY, RenderType.solid());
+            ModelData.EMPTY, RenderType.cutout());
     }
 
     @Override
