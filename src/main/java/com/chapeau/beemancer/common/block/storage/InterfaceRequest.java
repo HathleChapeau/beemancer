@@ -59,6 +59,7 @@ public class InterfaceRequest {
     private final RequestType type;
     private final ItemStack template;
     private int count;
+    private final int originalCount;
     private RequestStatus status;
     private String blockedReason;
     @Nullable
@@ -87,6 +88,7 @@ public class InterfaceRequest {
         this.type = type;
         this.template = template.copyWithCount(1);
         this.count = count;
+        this.originalCount = count;
         this.status = RequestStatus.PENDING;
         this.blockedReason = "";
         this.assignedTaskId = null;
@@ -99,7 +101,7 @@ public class InterfaceRequest {
      */
     private InterfaceRequest(UUID requestId, BlockPos sourcePos, BlockPos requesterPos,
                              RequestType type, ItemStack template, int count,
-                             RequestStatus status, String blockedReason,
+                             int originalCount, RequestStatus status, String blockedReason,
                              @Nullable UUID assignedTaskId, TaskOrigin origin,
                              boolean preloaded) {
         this.requestId = requestId;
@@ -108,6 +110,7 @@ public class InterfaceRequest {
         this.type = type;
         this.template = template;
         this.count = count;
+        this.originalCount = originalCount;
         this.status = status;
         this.blockedReason = blockedReason;
         this.assignedTaskId = assignedTaskId;
@@ -123,6 +126,7 @@ public class InterfaceRequest {
     public RequestType getType() { return type; }
     public ItemStack getTemplate() { return template.copy(); }
     public int getCount() { return count; }
+    public int getOriginalCount() { return originalCount; }
     public RequestStatus getStatus() { return status; }
     public String getBlockedReason() { return blockedReason; }
     @Nullable public UUID getAssignedTaskId() { return assignedTaskId; }
@@ -146,6 +150,7 @@ public class InterfaceRequest {
         tag.putString("Type", type.name());
         tag.put("Template", template.saveOptional(registries));
         tag.putInt("Count", count);
+        tag.putInt("OriginalCount", originalCount);
         tag.putString("Status", status.name());
         tag.putString("BlockedReason", blockedReason);
         tag.putString("Origin", origin.name());
@@ -164,6 +169,7 @@ public class InterfaceRequest {
         RequestType type = RequestType.valueOf(tag.getString("Type"));
         ItemStack template = ItemStack.parseOptional(registries, tag.getCompound("Template"));
         int count = tag.getInt("Count");
+        int originalCount = tag.contains("OriginalCount") ? tag.getInt("OriginalCount") : count;
         RequestStatus status = RequestStatus.valueOf(tag.getString("Status"));
         String blockedReason = tag.getString("BlockedReason");
         TaskOrigin origin = tag.contains("Origin")
@@ -173,6 +179,6 @@ public class InterfaceRequest {
             ? tag.getUUID("AssignedTaskId") : null;
         boolean preloaded = tag.getBoolean("Preloaded");
         return new InterfaceRequest(requestId, sourcePos, requesterPos, type, template,
-            count, status, blockedReason, assignedTaskId, origin, preloaded);
+            count, originalCount, status, blockedReason, assignedTaskId, origin, preloaded);
     }
 }

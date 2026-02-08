@@ -1025,7 +1025,7 @@ public class StorageDeliveryManager {
             result.add(new TaskDisplayData(
                 request.getRequestId(),
                 request.getTemplate(),
-                request.getCount(),
+                request.getOriginalCount(),
                 aggregateState,
                 List.of(),
                 originStr,

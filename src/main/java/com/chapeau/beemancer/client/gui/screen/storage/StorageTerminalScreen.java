@@ -506,7 +506,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
         // Count + etat
         g.drawString(font, "x" + task.count(),
-            taskX + 18, currentY + 4, 0xFFCCCCCC, false);
+            taskX + 18, currentY + 4, 0xFFFFFFFF, false);
 
         int stateColor = getStateColor(task.state());
         String stateLabel = getStateLabel(task.state());
