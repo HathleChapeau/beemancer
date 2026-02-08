@@ -223,22 +223,12 @@ public class RequestManager {
      * IMPORT: trouver un coffre source, creer une tache (coffre → interface/terminal).
      */
     private void processImportRequest(InterfaceRequest request, StorageDeliveryManager delivery) {
-        BlockPos chestPos = delivery.findChestWithItem(request.getTemplate(), request.getCount());
+        // Chercher un coffre contenant au moins 1 item du type demande
+        BlockPos chestPos = delivery.findChestWithItem(request.getTemplate(), 1);
         if (chestPos == null) {
-            // Fallback: trouver un coffre avec au moins 1 item
-            chestPos = delivery.findChestWithItem(request.getTemplate(), 1);
-            if (chestPos == null) {
-                request.setStatus(InterfaceRequest.RequestStatus.BLOCKED);
-                request.setBlockedReason("gui.beemancer.tasks.blocked.items_unavailable");
-                return;
-            }
-            int available = delivery.countItemInChest(request.getTemplate(), chestPos);
-            if (available <= 0) {
-                request.setStatus(InterfaceRequest.RequestStatus.BLOCKED);
-                request.setBlockedReason("gui.beemancer.tasks.blocked.items_unavailable");
-                return;
-            }
-            request.setCount(Math.min(request.getCount(), available));
+            request.setStatus(InterfaceRequest.RequestStatus.BLOCKED);
+            request.setBlockedReason("gui.beemancer.tasks.blocked.items_unavailable");
+            return;
         }
 
         // Ne pas creer de tache si la source est la meme que la destination (loop prevention)
@@ -247,6 +237,9 @@ public class RequestManager {
         DeliveryTask.TaskOrigin taskOrigin = request.getOrigin() == InterfaceRequest.TaskOrigin.REQUEST
             ? DeliveryTask.TaskOrigin.REQUEST : DeliveryTask.TaskOrigin.AUTOMATION;
 
+        // Creer la tache avec le count complet de la request.
+        // processDeliveryQueue decoupera en subtasks par beeCapacity.
+        // spawnDeliveryBee verifiera la disponibilite reelle au moment du spawn.
         DeliveryTask task = new DeliveryTask(
             request.getTemplate(), request.getCount(),
             chestPos, request.getSourcePos(),

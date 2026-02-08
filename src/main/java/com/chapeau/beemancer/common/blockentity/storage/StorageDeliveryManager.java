@@ -443,9 +443,8 @@ public class StorageDeliveryManager {
 
         RequestManager requestManager = parent.getRequestManager();
 
-        // Reevaluer les taches en queue
+        // Reevaluer les taches en queue: annuler si demande tombe a 0
         Iterator<DeliveryTask> queueIt = deliveryQueue.iterator();
-        List<DeliveryTask> toAdd = new ArrayList<>();
         while (queueIt.hasNext()) {
             DeliveryTask task = queueIt.next();
             if (task.getState() != DeliveryTask.DeliveryState.QUEUED) continue;
@@ -453,58 +452,22 @@ public class StorageDeliveryManager {
             InterfaceRequest request = requestManager.findRequestByTaskId(task.getRootTaskId());
             if (request == null) continue;
 
-            int currentDemand = request.getCount();
-            if (currentDemand <= 0) {
+            if (request.getCount() <= 0) {
                 queueIt.remove();
                 handleCancelledTask(task);
                 parent.setChanged();
-                continue;
-            }
-
-            task.setCount(currentDemand);
-            int beeCapacity = Math.min(
-                ControllerStats.getQuantity(parent.getEssenceSlots()),
-                task.getTemplate().getMaxStackSize()
-            );
-            if (task.getCount() > beeCapacity) {
-                DeliveryTask split = task.splitRemaining(beeCapacity);
-                if (split != null) {
-                    toAdd.add(split);
-                }
             }
         }
-        deliveryQueue.addAll(toAdd);
 
-        // Reevaluer les taches actives (bees en vol)
+        // Reevaluer les taches actives: annuler si demande tombe a 0
         for (DeliveryTask task : new ArrayList<>(activeTasks)) {
             if (task.getState() != DeliveryTask.DeliveryState.FLYING) continue;
 
             InterfaceRequest request = requestManager.findRequestByTaskId(task.getRootTaskId());
             if (request == null) continue;
 
-            int currentDemand = request.getCount();
-
-            // Demande tombee a 0: cancel et recall bee
-            if (currentDemand <= 0) {
+            if (request.getCount() <= 0) {
                 cancelTask(task.getTaskId());
-                continue;
-            }
-
-            // Demande augmente au-dela de la capacite d'une bee: creer sous-tache pour surplus
-            int beeCapacity = Math.min(
-                ControllerStats.getQuantity(parent.getEssenceSlots()),
-                task.getTemplate().getMaxStackSize()
-            );
-            if (currentDemand > beeCapacity && !hasQueuedTaskForRequest(request.getRequestId())) {
-                int surplus = currentDemand - beeCapacity;
-                UUID rootId = task.getRootTaskId();
-                DeliveryTask surplusTask = new DeliveryTask(
-                    task.getTemplate(), surplus, task.getSourcePos(), task.getDestPos(),
-                    0, Collections.emptyList(), task.getOrigin(), false,
-                    task.getRequesterPos(), rootId
-                );
-                deliveryQueue.add(surplusTask);
-                parent.setChanged();
             }
         }
     }

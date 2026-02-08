@@ -188,20 +188,11 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         StorageControllerBlockEntity controller = getController();
         if (controller == null) return ItemStack.EMPTY;
 
-        int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
-        int toRequest = Math.min(count, maxQuantity);
-
         InterfaceRequest request = new InterfaceRequest(
             worldPosition, worldPosition, InterfaceRequest.RequestType.IMPORT,
-            template, toRequest, InterfaceRequest.TaskOrigin.REQUEST
+            template, count, InterfaceRequest.TaskOrigin.REQUEST
         );
         controller.getRequestManager().publishRequest(request);
-
-        // Ajouter le reste a la file d'attente si demande > max quantite
-        int pendingCount = count - toRequest;
-        if (pendingCount > 0) {
-            addToPendingQueue(template.copy(), pendingCount);
-        }
 
         setChanged();
         return ItemStack.EMPTY;
