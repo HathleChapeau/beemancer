@@ -11,7 +11,7 @@
  * | StorageControllerBlockEntity  | Controller lie       | Acces reseau de stockage       |
  * | INetworkNode                  | Interface reseau     | Recherche controller           |
  * | InterfaceFilter               | Filtre individuel    | Systeme de filtres par ligne   |
- * | InterfaceTask                 | Tache unitaire       | Gestion tasks TODO/LOCKED/DEL  |
+ * | InterfaceTask                 | Tache unitaire       | Gestion tasks NEEDED/LOCKED/DEL  |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -316,12 +316,12 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     }
 
     /**
-     * Somme des count de toutes les tasks TODO pour un item donne.
+     * Somme des count de toutes les tasks NEEDED pour un item donne.
      */
     protected int getTodoCount(ItemStack template) {
         int total = 0;
         for (InterfaceTask task : tasks) {
-            if (task.getState() == InterfaceTask.TaskState.TODO
+            if (task.getState() == InterfaceTask.TaskState.NEEDED
                     && task.matchesItem(template)) {
                 total += task.getCount();
             }
@@ -341,7 +341,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     }
 
     /**
-     * Deverrouille une task (bee echouee/timeout), remet en TODO.
+     * Deverrouille une task (bee echouee/timeout), remet en NEEDED.
      */
     public void unlockTask(java.util.UUID taskId) {
         InterfaceTask task = getTask(taskId);
@@ -361,18 +361,18 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     }
 
     /**
-     * Annule les tasks TODO excedentaires pour un item donne.
+     * Annule les tasks NEEDED excedentaires pour un item donne.
      * Appele quand le needed est <= 0 (trop d'items deja livres/en route).
      */
     protected void cancelExcessTodoTasks(ItemStack template) {
         boolean changed = tasks.removeIf(
-            task -> task.getState() == InterfaceTask.TaskState.TODO
+            task -> task.getState() == InterfaceTask.TaskState.NEEDED
                     && task.matchesItem(template));
         if (changed) setChanged();
     }
 
     /**
-     * Annule toutes les tasks: rappelle les bees LOCKED, supprime les TODO.
+     * Annule toutes les tasks: rappelle les bees LOCKED, supprime les NEEDED.
      * Appele quand l'interface est desactivee ou detruite.
      */
     protected void cancelAllTasks() {
@@ -389,12 +389,12 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     }
 
     /**
-     * Publie les tasks TODO aupres du controller pour assignation de bees.
+     * Publie les tasks NEEDED aupres du controller pour assignation de bees.
      * Le controller trouve le coffre source/dest et cree un DeliveryTask.
      */
     protected void publishTodoTasks(StorageControllerBlockEntity controller) {
         for (InterfaceTask task : tasks) {
-            if (task.getState() != InterfaceTask.TaskState.TODO) continue;
+            if (task.getState() != InterfaceTask.TaskState.NEEDED) continue;
             controller.assignBeeToInterfaceTask(this, task);
         }
         setChanged();

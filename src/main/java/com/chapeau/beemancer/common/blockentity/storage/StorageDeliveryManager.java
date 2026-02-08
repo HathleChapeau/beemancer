@@ -759,7 +759,7 @@ public class StorageDeliveryManager {
                     if (task.getInterfaceTaskId() == null) {
                         parent.getRequestManager().onTaskFailed(rootId);
                     } else {
-                        // Interface task echouee: remettre en TODO pour re-tentative
+                        // Interface task echouee: remettre en NEEDED pour re-tentative
                         notifyInterfaceTaskFailed(task);
                     }
                 }
@@ -772,7 +772,7 @@ public class StorageDeliveryManager {
     }
 
     /**
-     * Notifie l'interface qu'une task a echoue: remet la task en TODO pour re-tentative.
+     * Notifie l'interface qu'une task a echoue: remet la task en NEEDED pour re-tentative.
      */
     private void notifyInterfaceTaskFailed(DeliveryTask task) {
         if (task.getInterfacePos() == null || task.getInterfaceTaskId() == null) return;

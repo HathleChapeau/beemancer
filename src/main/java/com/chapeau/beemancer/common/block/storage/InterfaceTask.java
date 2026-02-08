@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [InterfaceTask.java]
- * Description: Tache geree par une interface import/export avec etats TODO/LOCKED/DELIVERED
+ * Description: Tache geree par une interface import/export avec etats NEEDED/LOCKED/DELIVERED
  * ============================================================
  *
  * DEPENDANCES:
@@ -34,7 +34,7 @@ import java.util.UUID;
  * Represente une tache unitaire geree par une interface import/export.
  *
  * Cycle de vie:
- * - TODO: en attente d'assignation a une bee
+ * - NEEDED: en attente d'assignation a une bee
  * - LOCKED: une bee a ete assignee (en transit). Le count peut evoluer via scan.
  * - DELIVERED: la bee a complete la livraison
  *
@@ -45,7 +45,7 @@ import java.util.UUID;
 public class InterfaceTask {
 
     public enum TaskState {
-        TODO,
+        NEEDED,
         LOCKED,
         DELIVERED
     }
@@ -73,7 +73,7 @@ public class InterfaceTask {
         this.template = template.copyWithCount(1);
         this.count = count;
         this.lockedCount = 0;
-        this.state = TaskState.TODO;
+        this.state = TaskState.NEEDED;
         this.assignedBeeTaskId = null;
         this.lockedTick = 0;
     }
@@ -130,10 +130,10 @@ public class InterfaceTask {
     }
 
     /**
-     * Deverrouille la task: bee echouee/timeout, remet en TODO.
+     * Deverrouille la task: bee echouee/timeout, remet en NEEDED.
      */
     public void unlockTask() {
-        this.state = TaskState.TODO;
+        this.state = TaskState.NEEDED;
         this.lockedCount = 0;
         this.assignedBeeTaskId = null;
         this.lockedTick = 0;
@@ -155,9 +155,9 @@ public class InterfaceTask {
         tag.put("Template", template.saveOptional(registries));
         tag.putInt("Count", count);
         tag.putInt("LockedCount", lockedCount);
-        // LOCKED sauvegarde comme TODO (bees ephemeres au reload)
+        // LOCKED sauvegarde comme NEEDED (bees ephemeres au reload)
         if (state == TaskState.LOCKED) {
-            tag.putString("State", TaskState.TODO.name());
+            tag.putString("State", TaskState.NEEDED.name());
         } else {
             tag.putString("State", state.name());
         }
@@ -181,7 +181,7 @@ public class InterfaceTask {
 
         // Reset locked state on load (bees ephemeres)
         if (state == TaskState.LOCKED) {
-            state = TaskState.TODO;
+            state = TaskState.NEEDED;
             lockedCount = 0;
             assignedBeeTaskId = null;
             lockedTick = 0;

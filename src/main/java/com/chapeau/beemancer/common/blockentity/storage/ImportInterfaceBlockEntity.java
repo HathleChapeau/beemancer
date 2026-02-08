@@ -48,7 +48,7 @@ import java.util.List;
  * Implemente IDeliveryEndpoint pour recevoir les items livres par les abeilles
  * et les inserer dans l'inventaire adjacent.
  *
- * Utilise InterfaceTask (TODO/LOCKED/DELIVERED) pour un suivi precis
+ * Utilise InterfaceTask (NEEDED/LOCKED/DELIVERED) pour un suivi precis
  * avec adaptation dynamique du count.
  */
 public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity implements IDeliveryEndpoint {

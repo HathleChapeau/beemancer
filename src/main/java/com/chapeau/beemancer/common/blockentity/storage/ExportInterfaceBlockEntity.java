@@ -43,7 +43,7 @@ import java.util.Map;
  *
  * Sans filtre: exporter tous les items des globalSelectedSlots.
  *
- * Utilise InterfaceTask (TODO/LOCKED/DELIVERED) pour un suivi precis
+ * Utilise InterfaceTask (NEEDED/LOCKED/DELIVERED) pour un suivi precis
  * avec adaptation dynamique du count.
  */
 public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
