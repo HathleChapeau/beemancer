@@ -1,36 +1,39 @@
 /**
  * ============================================================
  * [AltarCraftAnimator.java]
- * Description: Calcul des positions et rotations des conduits pendant le craft de l'altar
+ * Description: Gestionnaire d'etat d'animation per-altar utilisant le systeme Animation/Sequence
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance                    | Raison                | Utilisation                    |
- * |-------------------------------|----------------------|--------------------------------|
- * | (aucune externe)              | Math standalone      | -                              |
+ * | Dependance              | Raison                | Utilisation                    |
+ * |-------------------------|----------------------|--------------------------------|
+ * | AnimationController     | Gestion animations   | Named animations + sequences   |
+ * | RotateAnimation         | Rotation conduits    | Phases spin/decel              |
+ * | MoveAnimation           | Position conduits    | Expand/hold/return             |
+ * | Sequence                | Timeline craft       | Action callbacks par phase     |
+ * | SequenceEntry           | Entrees sequence     | action() pour transitions      |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - AltarHeartRenderer.java (rendu des conduits animes)
- * - AltarHeartBlockEntity.java (constantes de timing)
+ * - AltarHeartRenderer.java (obtient controller, tick, apply)
+ * - AltarHeartBlockEntity.java (constantes de timing pour serverTick)
  *
  * ============================================================
  */
 package com.chapeau.beemancer.client.animation;
 
-import net.minecraft.util.Mth;
+import com.mojang.math.Axis;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Calculateur d'animation pour le craft de l'altar.
- * Gere 5 phases pour les 4 conduits:
- *
- * Phase 1 (0-2s):   Conduits s'ecartent en diagonal bas + rotation 90 deg
- * Phase 2 (2-7s):   Conduits accelerent leur rotation (spin-up, ease-in)
- * Phase 3 (7-8s):   Conduits maintiennent la vitesse max (hold)
- * Phase 4 (8-11s):  Conduits decelerent la rotation (ease-out vers 0 deg visuel)
- * Phase 5 (9-11s):  Conduits reviennent a leur position d'origine (chevauche phase 4)
+ * Gestionnaire d'etat d'animation per-altar.
+ * Stocke un AnimationController par BlockPos d'altar.
+ * Gere la rotation permanente du coeur et la sequence de craft des conduits.
  */
 public class AltarCraftAnimator {
 
@@ -41,16 +44,13 @@ public class AltarCraftAnimator {
     public static final int RETURN_POS_START = 180;
     public static final int TOTAL_TICKS = 220;
 
-    // === Rotation ===
+    // === Rotation angles ===
     private static final float INITIAL_ROT = 90f;
-    private static final float SPIN_TOTAL = 2520f;
-    private static final float SPIN_DURATION = 100f;
-    private static final float SPIN_END_SPEED = 2f * SPIN_TOTAL / SPIN_DURATION;
-    private static final float HOLD_DURATION = 20f;
-    private static final float HOLD_ADDITIONAL = SPIN_END_SPEED * HOLD_DURATION;
-    private static final float ANGLE_AT_HOLD_END = INITIAL_ROT + SPIN_TOTAL + HOLD_ADDITIONAL;
-    private static final float RETURN_ROT_TOTAL = 1422f;
-    private static final float RETURN_ROT_DURATION = 60f;
+    private static final float ANGLE_AT_SPIN_END = 2610f;
+    private static final float ANGLE_AT_HOLD_END = 3618f;
+    private static final float DECEL_END_ANGLE = 5040f;
+
+    private static final Vec3 CONDUIT_PIVOT = new Vec3(0.5, 0.5, 0.5);
 
     // === Positions des conduits (relatives au coeur) ===
     private static final Vec3[] STATIC_POS = {
@@ -60,83 +60,204 @@ public class AltarCraftAnimator {
         new Vec3(-1, 1, 0),
     };
 
-    private static final Vec3[] TARGET_POS = {
-        new Vec3(0, 0, -2),
-        new Vec3(0, 0, 2),
-        new Vec3(2, 0, 0),
-        new Vec3(-2, 0, 0),
+    // Offsets de deplacement: TARGET - STATIC
+    private static final Vec3[] DELTA_POS = {
+        new Vec3(0, -1, -1),
+        new Vec3(0, -1, 1),
+        new Vec3(1, -1, 0),
+        new Vec3(-1, -1, 0),
     };
 
-    /**
-     * Calcule la position d'un conduit pendant l'animation de craft.
-     * @param conduitIndex index du conduit (0=N, 1=S, 2=E, 3=W)
-     * @param craftTick temps ecoule depuis le debut du craft (fractionnaire pour partialTick)
-     */
-    public static Vec3 computePosition(int conduitIndex, float craftTick) {
-        Vec3 from = STATIC_POS[conduitIndex];
-        Vec3 to = TARGET_POS[conduitIndex];
+    // === Per-altar state ===
+    private static final Map<BlockPos, AnimState> states = new HashMap<>();
 
-        if (craftTick < EXPAND_END) {
-            float p = easeOut(craftTick / EXPAND_END);
-            return lerpVec(p, from, to);
-        } else if (craftTick < RETURN_POS_START) {
-            return to;
-        } else if (craftTick < TOTAL_TICKS) {
-            float p = easeOut((craftTick - RETURN_POS_START) / (TOTAL_TICKS - RETURN_POS_START));
-            return lerpVec(p, to, from);
+    private static class AnimState {
+        final AnimationController controller;
+        boolean craftActive = false;
+        Sequence craftSequence = null;
+
+        AnimState(AnimationController controller) {
+            this.controller = controller;
         }
-        return from;
     }
 
-    /**
-     * Calcule la rotation Y d'un conduit pendant l'animation de craft.
-     * La rotation est continue a travers toutes les phases.
-     * @param craftTick temps ecoule depuis le debut du craft
-     * @return angle de rotation en degres
-     */
-    public static float computeRotation(float craftTick) {
-        if (craftTick < EXPAND_END) {
-            float p = easeOut(craftTick / EXPAND_END);
-            return p * INITIAL_ROT;
-        } else if (craftTick < SPIN_END) {
-            float p = (craftTick - EXPAND_END) / SPIN_DURATION;
-            return INITIAL_ROT + easeIn(p) * SPIN_TOTAL;
-        } else if (craftTick < CRAFT_TICK) {
-            float elapsed = craftTick - SPIN_END;
-            return INITIAL_ROT + SPIN_TOTAL + SPIN_END_SPEED * elapsed;
-        } else if (craftTick < CRAFT_TICK + RETURN_ROT_DURATION) {
-            float p = (craftTick - CRAFT_TICK) / RETURN_ROT_DURATION;
-            return ANGLE_AT_HOLD_END + easeOut(p) * RETURN_ROT_TOTAL;
-        }
-        return 0f;
+    // === API publique ===
+
+    public static AnimationController getController(BlockPos pos) {
+        return getOrCreateState(pos).controller;
     }
 
-    /**
-     * Retourne la position statique d'un conduit (hors craft).
-     */
-    public static Vec3 getStaticPosition(int conduitIndex) {
-        return STATIC_POS[conduitIndex];
+    public static void updateCraftState(BlockPos pos, boolean isCrafting) {
+        AnimState state = getOrCreateState(pos);
+        if (isCrafting && !state.craftActive) {
+            startCraft(state);
+        } else if (!isCrafting && state.craftActive) {
+            stopCraft(state);
+        }
+    }
+
+    public static void remove(BlockPos pos) {
+        states.remove(pos);
+    }
+
+    public static Vec3 getStaticPosition(int index) {
+        return STATIC_POS[index];
     }
 
     public static int getConduitCount() {
         return STATIC_POS.length;
     }
 
-    // === Math helpers ===
+    // === Creation controller ===
 
-    private static float easeIn(float t) {
-        return t * t;
+    private static AnimState getOrCreateState(BlockPos pos) {
+        return states.computeIfAbsent(pos, p -> createState());
     }
 
-    private static float easeOut(float t) {
-        return 1f - (1f - t) * (1f - t);
+    private static AnimState createState() {
+        AnimationController ctrl = new AnimationController();
+
+        // Heart rotation permanente sur 3 axes
+        ctrl.createAnimation("heart_y", RotateAnimation.builder()
+            .axis(Axis.YP).startAngle(0).endAngle(360)
+            .pivot(CONDUIT_PIVOT)
+            .duration(360f).timingEffect(TimingEffect.LOOP)
+            .build());
+        ctrl.createAnimation("heart_x", RotateAnimation.builder()
+            .axis(Axis.XP).startAngle(0).endAngle(360)
+            .pivot(CONDUIT_PIVOT)
+            .duration(514f).timingEffect(TimingEffect.LOOP)
+            .build());
+        ctrl.createAnimation("heart_z", RotateAnimation.builder()
+            .axis(Axis.ZP).startAngle(0).endAngle(360)
+            .pivot(CONDUIT_PIVOT)
+            .duration(1200f).timingEffect(TimingEffect.LOOP)
+            .build());
+
+        ctrl.playAnimation("heart_y");
+        ctrl.playAnimation("heart_x");
+        ctrl.playAnimation("heart_z");
+
+        return new AnimState(ctrl);
     }
 
-    private static Vec3 lerpVec(float t, Vec3 a, Vec3 b) {
-        return new Vec3(
-            Mth.lerp(t, a.x, b.x),
-            Mth.lerp(t, a.y, b.y),
-            Mth.lerp(t, a.z, b.z)
+    // === Craft sequence ===
+
+    private static void startCraft(AnimState state) {
+        state.craftActive = true;
+        state.craftSequence = buildCraftSequence(state.controller);
+        state.controller.playSequence(state.craftSequence);
+    }
+
+    private static void stopCraft(AnimState state) {
+        state.craftActive = false;
+        if (state.craftSequence != null) {
+            state.controller.stopSequence(state.craftSequence);
+            state.craftSequence = null;
+        }
+        for (int i = 0; i < STATIC_POS.length; i++) {
+            state.controller.stopAnimation("pos_" + i);
+            state.controller.stopAnimation("rot_" + i);
+        }
+    }
+
+    private static Sequence buildCraftSequence(AnimationController ctrl) {
+        return new Sequence(
+            // t=0: conduits s'ecartent + rotation initiale 90 deg
+            SequenceEntry.action(0, () -> {
+                for (int i = 0; i < STATIC_POS.length; i++) {
+                    ctrl.replaceAnimation("pos_" + i, buildExpandAnim(i));
+                    ctrl.replaceAnimation("rot_" + i, buildInitialRotAnim());
+                }
+            }),
+            // t=40: hold position + spin acceleration
+            SequenceEntry.action(EXPAND_END, () -> {
+                for (int i = 0; i < STATIC_POS.length; i++) {
+                    ctrl.replaceAnimation("pos_" + i, buildHoldPosAnim(i));
+                    ctrl.replaceAnimation("rot_" + i, buildSpinAnim());
+                }
+            }),
+            // t=140: hold rotation a vitesse constante
+            SequenceEntry.action(SPIN_END, () -> {
+                for (int i = 0; i < STATIC_POS.length; i++) {
+                    ctrl.replaceAnimation("rot_" + i, buildHoldRotAnim());
+                }
+            }),
+            // t=160: deceleration rotation
+            SequenceEntry.action(CRAFT_TICK, () -> {
+                for (int i = 0; i < STATIC_POS.length; i++) {
+                    ctrl.replaceAnimation("rot_" + i, buildDecelAnim());
+                }
+            }),
+            // t=180: retour position
+            SequenceEntry.action(RETURN_POS_START, () -> {
+                for (int i = 0; i < STATIC_POS.length; i++) {
+                    ctrl.replaceAnimation("pos_" + i, buildReturnAnim(i));
+                }
+            })
         );
+    }
+
+    // === Animation factories ===
+
+    private static MoveAnimation buildExpandAnim(int conduitIndex) {
+        return MoveAnimation.builder()
+            .from(Vec3.ZERO).to(DELTA_POS[conduitIndex])
+            .duration(EXPAND_END).timingType(TimingType.EASE_OUT)
+            .resetAfterAnimation(false)
+            .build();
+    }
+
+    private static MoveAnimation buildHoldPosAnim(int conduitIndex) {
+        Vec3 delta = DELTA_POS[conduitIndex];
+        return MoveAnimation.builder()
+            .from(delta).to(delta)
+            .duration(20f).timingEffect(TimingEffect.LOOP)
+            .build();
+    }
+
+    private static MoveAnimation buildReturnAnim(int conduitIndex) {
+        return MoveAnimation.builder()
+            .from(DELTA_POS[conduitIndex]).to(Vec3.ZERO)
+            .duration(TOTAL_TICKS - RETURN_POS_START)
+            .timingType(TimingType.EASE_OUT)
+            .resetAfterAnimation(true)
+            .build();
+    }
+
+    private static RotateAnimation buildInitialRotAnim() {
+        return RotateAnimation.builder()
+            .axis(Axis.YP).startAngle(0).endAngle(INITIAL_ROT)
+            .pivot(CONDUIT_PIVOT)
+            .duration(EXPAND_END).timingType(TimingType.EASE_OUT)
+            .resetAfterAnimation(false)
+            .build();
+    }
+
+    private static RotateAnimation buildSpinAnim() {
+        return RotateAnimation.builder()
+            .axis(Axis.YP).startAngle(INITIAL_ROT).endAngle(ANGLE_AT_SPIN_END)
+            .pivot(CONDUIT_PIVOT)
+            .duration(SPIN_END - EXPAND_END).timingType(TimingType.EASE_IN)
+            .resetAfterAnimation(false)
+            .build();
+    }
+
+    private static RotateAnimation buildHoldRotAnim() {
+        return RotateAnimation.builder()
+            .axis(Axis.YP).startAngle(ANGLE_AT_SPIN_END).endAngle(ANGLE_AT_HOLD_END)
+            .pivot(CONDUIT_PIVOT)
+            .duration(CRAFT_TICK - SPIN_END).timingType(TimingType.NORMAL)
+            .resetAfterAnimation(false)
+            .build();
+    }
+
+    private static RotateAnimation buildDecelAnim() {
+        return RotateAnimation.builder()
+            .axis(Axis.YP).startAngle(ANGLE_AT_HOLD_END).endAngle(DECEL_END_ANGLE)
+            .pivot(CONDUIT_PIVOT)
+            .duration(TOTAL_TICKS - CRAFT_TICK).timingType(TimingType.EASE_OUT)
+            .resetAfterAnimation(true)
+            .build();
     }
 }

@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-02-08                     #
-#  (Animation System - 2026-02-08)                                              #
+#  (Altar Animation Refonte - 2026-02-08)                                       #
 ################################################################################
 
 ================================================================================
@@ -343,6 +343,12 @@ LISTE DES FEATURES:
   Scripts modifies: aucun
   Dependances: PoseStack, com.mojang.math.Axis, Mth
   Registres modifies: aucun (framework client-side pur)
+
+→ Altar Animation Refonte
+  Description: Refonte de l'animation altar craft pour utiliser le systeme Animation (Sequence + AnimationController + replaceAnimation). Le coeur tourne en permanence sur 3 axes via LOOP RotateAnimations. Le craft des conduits utilise une Sequence avec action callbacks qui appellent replaceAnimation pour chaque phase (expand, spin, hold, decel, return).
+  Scripts modifies: AnimationController.java (+replaceAnimation), AltarCraftAnimator.java (refonte complete), AltarHeartRenderer.java (refonte)
+  Dependances: AnimationController, RotateAnimation, MoveAnimation, Sequence, SequenceEntry, TimingType, TimingEffect
+  Registres modifies: aucun
 
 ================================================================================
 6. FEATURES EN COURS

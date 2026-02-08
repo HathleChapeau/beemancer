@@ -82,6 +82,19 @@ public class AnimationController {
     }
 
     /**
+     * Remplace une animation nommee par une nouvelle.
+     * Stoppe l'ancienne animation, enregistre la nouvelle et la joue immediatement.
+     */
+    public void replaceAnimation(String name, Animation animation) {
+        Animation old = namedAnimations.get(name);
+        if (old != null) {
+            old.stop();
+        }
+        namedAnimations.put(name, animation);
+        animation.play(currentTime);
+    }
+
+    /**
      * Applique l'animation nommee au PoseStack (si active).
      */
     public void applyAnimation(String name, PoseStack poseStack) {

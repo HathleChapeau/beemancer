@@ -3,6 +3,19 @@
 ################################################################################
 
 ================================================================================
+2026-02-08 - Altar Animation Refonte
+================================================================================
+
+REFONTE: Animation altar craft utilise le systeme Animation/Sequence/AnimationController
+- AnimationController.java: +replaceAnimation(name, animation) — stoppe l'ancienne,
+  enregistre la nouvelle et la joue immediatement.
+- AltarCraftAnimator.java (REFONTE COMPLETE): gestionnaire d'etat per-altar.
+  AnimState par BlockPos, createState() avec 3 RotateAnimations LOOP (heart_y/x/z),
+  buildCraftSequence() avec 5 action callbacks (expand, hold, spin, decel, return).
+- AltarHeartRenderer.java (REFONTE): utilise AltarCraftAnimator.getController(pos),
+  tick() + applyAnimation() pour coeur et conduits.
+
+================================================================================
 2026-02-08 - Animation System
 ================================================================================
 

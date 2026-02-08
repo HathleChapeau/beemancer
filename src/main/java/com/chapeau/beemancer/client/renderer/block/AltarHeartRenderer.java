@@ -9,7 +9,8 @@
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | AltarHeartBlockEntity   | Donnees a rendre     | isFormed(), isCrafting()       |
- * | AltarCraftAnimator      | Animation craft      | computePosition/Rotation       |
+ * | AltarCraftAnimator      | Etat animation       | getController, updateCraftState |
+ * | AnimationController     | Apply animations     | tick(), applyAnimation()       |
  * | BlockEntityRenderer     | Interface renderer   | Rendu custom                   |
  * ------------------------------------------------------------
  *
@@ -22,11 +23,11 @@ package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.animation.AltarCraftAnimator;
+import com.chapeau.beemancer.client.animation.AnimationController;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -44,14 +45,13 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 /**
  * Renderer pour le Honey Altar multibloc.
  * Quand forme: rend 3 parties de structure + coeur rotatif + 4 conduits.
- * Pendant le craft: anime les conduits (deplacement, rotation acceleree).
+ * Pendant le craft: anime les conduits via le systeme d'animation.
  */
 public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEntity> {
 
     private final BlockRenderDispatcher blockRenderer;
     private final RandomSource random = RandomSource.create();
 
-    // Modeles des parties de structure
     public static final ModelResourceLocation PEDESTAL_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_pedestal"));
     public static final ModelResourceLocation CORE_MODEL_LOC =
@@ -69,15 +69,22 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     public void render(AltarHeartBlockEntity blockEntity, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
-        if (!blockEntity.isFormed() || blockEntity.getLevel() == null) return;
+        if (!blockEntity.isFormed() || blockEntity.getLevel() == null) {
+            AltarCraftAnimator.remove(blockEntity.getBlockPos());
+            return;
+        }
 
+        float currentTime = blockEntity.getLevel().getGameTime() + partialTick;
         BlockState heartState = BeemancerBlocks.ALTAR_HEART.get().defaultBlockState();
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.solid());
-        float currentTime = blockEntity.getLevel().getGameTime() + partialTick;
+
+        AltarCraftAnimator.updateCraftState(blockEntity.getBlockPos(), blockEntity.isCrafting());
+        AnimationController ctrl = AltarCraftAnimator.getController(blockEntity.getBlockPos());
+        ctrl.tick(currentTime);
 
         renderStructureParts(blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
-        renderHeart(blockEntity, heartState, currentTime, poseStack, vertexConsumer, packedLight, packedOverlay);
-        renderConduits(blockEntity, heartState, currentTime, poseStack, vertexConsumer, packedLight, packedOverlay);
+        renderHeart(ctrl, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
+        renderConduits(ctrl, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
     }
 
     /**
@@ -86,13 +93,11 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     private void renderStructureParts(AltarHeartBlockEntity blockEntity, BlockState heartState,
                                        PoseStack poseStack, VertexConsumer vertexConsumer,
                                        int packedLight, int packedOverlay) {
-        // Pedestal: Y-2
         poseStack.pushPose();
         poseStack.translate(0, -2, 0);
         renderModel(PEDESTAL_MODEL_LOC, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
         poseStack.popPose();
 
-        // Top: Y+1
         poseStack.pushPose();
         poseStack.translate(0, 1, 0);
         renderModel(TOP_MODEL_LOC, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
@@ -100,53 +105,32 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     }
 
     /**
-     * Rend le coeur (core) avec rotation permanente sur 3 axes.
+     * Rend le coeur (core) avec rotation permanente sur 3 axes via AnimationController.
      */
-    private void renderHeart(AltarHeartBlockEntity blockEntity, BlockState heartState, float currentTime,
-                              PoseStack poseStack, VertexConsumer vertexConsumer,
+    private void renderHeart(AnimationController ctrl, AltarHeartBlockEntity blockEntity,
+                              BlockState heartState, PoseStack poseStack, VertexConsumer vertexConsumer,
                               int packedLight, int packedOverlay) {
         poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
-        poseStack.mulPose(Axis.YP.rotationDegrees(currentTime * 1.0f));
-        poseStack.mulPose(Axis.XP.rotationDegrees(currentTime * 0.7f));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(currentTime * 0.3f));
-        poseStack.translate(-0.5, -0.5, -0.5);
+        ctrl.applyAnimation("heart_y", poseStack);
+        ctrl.applyAnimation("heart_x", poseStack);
+        ctrl.applyAnimation("heart_z", poseStack);
         renderModel(CORE_MODEL_LOC, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
         poseStack.popPose();
     }
 
     /**
-     * Rend les 4 conduits — statiques ou animes pendant le craft.
+     * Rend les 4 conduits a leur position statique + animations craft.
      */
-    private void renderConduits(AltarHeartBlockEntity blockEntity, BlockState heartState, float currentTime,
-                                 PoseStack poseStack, VertexConsumer vertexConsumer,
+    private void renderConduits(AnimationController ctrl, AltarHeartBlockEntity blockEntity,
+                                 BlockState heartState, PoseStack poseStack, VertexConsumer vertexConsumer,
                                  int packedLight, int packedOverlay) {
-
-        boolean isCrafting = blockEntity.isCrafting();
-        float craftTick = isCrafting
-            ? (currentTime - blockEntity.getCraftStartGameTime())
-            : -1f;
-        boolean animating = isCrafting && craftTick >= 0 && craftTick < AltarCraftAnimator.TOTAL_TICKS;
-
         for (int i = 0; i < AltarCraftAnimator.getConduitCount(); i++) {
-            Vec3 pos;
-            float rotation;
-
-            if (animating) {
-                pos = AltarCraftAnimator.computePosition(i, craftTick);
-                rotation = AltarCraftAnimator.computeRotation(craftTick);
-            } else {
-                pos = AltarCraftAnimator.getStaticPosition(i);
-                rotation = 0f;
-            }
+            Vec3 staticPos = AltarCraftAnimator.getStaticPosition(i);
 
             poseStack.pushPose();
-            poseStack.translate(pos.x, pos.y, pos.z);
-            if (rotation != 0f) {
-                poseStack.translate(0.5, 0.5, 0.5);
-                poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
-                poseStack.translate(-0.5, -0.5, -0.5);
-            }
+            poseStack.translate(staticPos.x, staticPos.y, staticPos.z);
+            ctrl.applyAnimation("pos_" + i, poseStack);
+            ctrl.applyAnimation("rot_" + i, poseStack);
             renderModel(CONDUIT_MODEL_LOC, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
             poseStack.popPose();
         }
