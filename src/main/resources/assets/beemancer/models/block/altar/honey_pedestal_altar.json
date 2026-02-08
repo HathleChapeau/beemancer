@@ -1,47 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "base": "beemancer:block/altar/honey_pedestal_base",
-    "column": "beemancer:block/altar/honey_pedestal_column",
-    "top": "beemancer:block/altar/honey_pedestal_top",
     "particle": "beemancer:block/altar/honey_pedestal_column"
   },
-  "elements": [
-    {
-      "name": "Base",
-      "from": [2, 0, 2],
-      "to": [14, 3, 14],
-      "faces": {
-        "north": {"texture": "#base", "uv": [2, 13, 14, 16]},
-        "east": {"texture": "#base", "uv": [2, 13, 14, 16]},
-        "south": {"texture": "#base", "uv": [2, 13, 14, 16]},
-        "west": {"texture": "#base", "uv": [2, 13, 14, 16]},
-        "up": {"texture": "#base", "uv": [2, 2, 14, 14]},
-        "down": {"texture": "#base", "uv": [2, 2, 14, 14], "cullface": "down"}
-      }
-    },
-    {
-      "name": "Column",
-      "from": [4, 3, 4],
-      "to": [12, 13, 12],
-      "faces": {
-        "north": {"texture": "#column", "uv": [4, 3, 12, 13]},
-        "east": {"texture": "#column", "uv": [4, 3, 12, 13]},
-        "south": {"texture": "#column", "uv": [4, 3, 12, 13]},
-        "west": {"texture": "#column", "uv": [4, 3, 12, 13]}
-      }
-    },
-    {
-      "name": "Top",
-      "from": [2, 13, 2],
-      "to": [14, 16, 14],
-      "faces": {
-        "north": {"texture": "#top", "uv": [2, 0, 14, 3]},
-        "east": {"texture": "#top", "uv": [2, 0, 14, 3]},
-        "south": {"texture": "#top", "uv": [2, 0, 14, 3]},
-        "west": {"texture": "#top", "uv": [2, 0, 14, 3]},
-        "up": {"texture": "#top", "uv": [2, 2, 14, 14]}
-      }
-    }
-  ]
+  "elements": []
 }

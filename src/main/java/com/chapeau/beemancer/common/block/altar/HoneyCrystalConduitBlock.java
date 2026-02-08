@@ -65,7 +65,6 @@ public class HoneyCrystalConduitBlock extends Block {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        // Quand formé: invisible (le renderer gère l'animation)
-        return state.getValue(MULTIBLOCK) != MultiblockProperty.NONE ? RenderShape.INVISIBLE : RenderShape.MODEL;
+        return RenderShape.MODEL;
     }
 }

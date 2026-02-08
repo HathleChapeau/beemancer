@@ -1,8 +1,7 @@
 {
-  "parent": "minecraft:block/inner_stairs",
+  "parent": "minecraft:block/block",
   "textures": {
-    "bottom": "beemancer:block/altar/honeyed_stone",
-    "top": "beemancer:block/altar/honeyed_stone",
-    "side": "beemancer:block/altar/honeyed_stone"
-  }
+    "particle": "beemancer:block/altar/honeyed_stone"
+  },
+  "elements": []
 }
