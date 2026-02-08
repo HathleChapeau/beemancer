@@ -1,7 +1,45 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "beemancer:block/altar/honeyed_stone"
+    "cube": "beemancer:block/iron",
+    "particle": "beemancer:block/iron"
   },
-  "elements": []
+  "elements": [
+    {
+    "from": [-8, 16, -8],
+    "to": [22, 32, 22],
+    "faces": {
+      "north": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "east": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "south": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "west": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "up": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "down": {"texture": "#cube", "uv":  [0, 0, 16, 16]}
+    }
+  },
+  {
+    "from": [-16, 18, -8],
+    "to": [32, 30, 22],
+    "faces": {
+      "north": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "east": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "south": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "west": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "up": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "down": {"texture": "#cube", "uv":  [0, 0, 16, 16]}
+    }
+  },
+  {
+    "from": [-8, 18, -16],
+    "to": [22, 30, 32],
+    "faces": {
+      "north": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "east": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "south": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "west": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "up": {"texture": "#cube", "uv":  [0, 0, 16, 16]},
+      "down": {"texture": "#cube", "uv":  [0, 0, 16, 16]}
+    }
+  }
+  ]
 }

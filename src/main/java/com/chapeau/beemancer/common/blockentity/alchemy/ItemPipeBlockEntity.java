@@ -94,6 +94,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
             }
         }
 
+
         DebugWandItem.addDisplay(this, () -> {
             StringBuilder str = new StringBuilder();
             for (int i = 0; i < buffer.getSlots(); i++) {

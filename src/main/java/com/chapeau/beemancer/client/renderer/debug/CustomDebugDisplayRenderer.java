@@ -31,6 +31,8 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,6 +126,13 @@ public class CustomDebugDisplayRenderer {
         poseStack.translate(x, y, z);
 
         // Billboard: faire face à la caméra
+        if(Minecraft.getInstance().player == null) return;
+        Vec3 p = Minecraft.getInstance().player.position();
+        double tan = -Math.atan2(worldPos.z - p.z, worldPos.x - p.x) + (Math.PI/(double)2);
+
+        Quaternionf quat = new Quaternionf().rotationXYZ(0, (float)(tan), 0);
+
+        poseStack.mulPose(quat);
         //poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
         poseStack.scale(-TEXT_SCALE, -TEXT_SCALE, TEXT_SCALE);
 
@@ -131,12 +140,14 @@ public class CustomDebugDisplayRenderer {
 
         String[] lines = text.split("\n");
         int lineY = 0;
-        for (String line : lines) {
+        for (int i = lines.length - 1; i >= 0; i--) {
+            String line = lines[i];
+        //for (String line : lines) {
             int lineX = -font.width(line) / 2;
             font.drawInBatch(line, lineX, lineY, color, false,
-                    matrix, bufferSource, Font.DisplayMode.SEE_THROUGH,
+                    matrix, bufferSource, Font.DisplayMode.NORMAL,
                     TEXT_BG_COLOR, 0xF000F0);
-            lineY += 10;
+            lineY -= 10;
         }
 
         poseStack.popPose();

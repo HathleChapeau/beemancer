@@ -1,7 +1,19 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "particle": "beemancer:block/altar/honeyed_stone"
+    "cube": "beemancer:block/iron",
+    "particle": "beemancer:block/iron"
   },
-  "elements": []
+  "elements": [{
+    "from": [1, 6, 1],
+    "to": [15, 24, 15],
+    "faces": {
+      "north": {"texture": "#cube"},
+      "east": {"texture": "#cube"},
+      "south": {"texture": "#cube"},
+      "west": {"texture": "#cube"},
+      "up": {"texture": "#cube"},
+      "down": {"texture": "#cube"}
+    }
+  }]
 }

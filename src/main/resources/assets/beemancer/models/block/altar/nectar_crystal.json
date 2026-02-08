@@ -1,7 +1,7 @@
 {
-  "parent": "minecraft:block/cross",
+  "parent": "block/cross",
   "render_type": "cutout",
   "textures": {
-    "cross": "beemancer:item/ingredient/nectar_crystal"
+    "cross": "beemancer:block/altar/nectar_crystal"
   }
 }

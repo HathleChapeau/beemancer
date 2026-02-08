@@ -67,7 +67,7 @@ public class DebugWandItem extends Item {
     public static boolean displayDebug = false;
 
     // --- Debug Display System ---
-    private static final Vec3 DEFAULT_DISPLAY_OFFSET = new Vec3(0, 1, 0);
+    private static final Vec3 DEFAULT_DISPLAY_OFFSET = new Vec3(0, 0.6f, 0);
     private static final int DEFAULT_DISPLAY_COLOR = 0xFFFFFFFF;
     private static final List<DebugDisplayEntry> displayEntries = new CopyOnWriteArrayList<>();
 

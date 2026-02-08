@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beemancer:item/ingredient/royal_crystal"
+    "layer0": "beemancer:block/altar/royal_crystal"
   }
 }
