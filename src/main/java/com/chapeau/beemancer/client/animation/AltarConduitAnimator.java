@@ -47,17 +47,17 @@ public class AltarConduitAnimator {
     // === Calculs d'animation ===
 
     /**
-     * Calcule l'angle de rotation interpolé pour l'animation.
+     * Calcule l'angle de rotation interpolé pour l'animation orbitale.
      *
      * @param blockEntity Le BlockEntity de l'altar
      * @param partialTick L'interpolation entre ticks (0.0 - 1.0)
      * @return L'angle de rotation en degrés
      */
     public static float getRotationAngle(AltarHeartBlockEntity blockEntity, float partialTick) {
-        if (blockEntity == null || !blockEntity.isFormed()) {
+        if (blockEntity == null || !blockEntity.isFormed() || blockEntity.getLevel() == null) {
             return 0f;
         }
-        return blockEntity.getInterpolatedRotationAngle(partialTick);
+        return (blockEntity.getLevel().getGameTime() + partialTick) * DEFAULT_ROTATION_SPEED;
     }
 
     /**

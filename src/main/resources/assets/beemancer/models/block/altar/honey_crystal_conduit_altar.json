@@ -1,49 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "conduit": "beemancer:block/iron",
-    "cap": "beemancer:block/iron",
     "particle": "beemancer:block/altar/honeyed_stone"
   },
-  "elements": [
-    {
-      "name": "Main Body",
-      "from": [3, 0, 3],
-      "to": [13, 16, 13],
-      "faces": {
-        "north": {"texture": "#conduit", "uv": [6, 0, 10, 16]},
-        "east": {"texture": "#conduit", "uv": [6, 0, 10, 16]},
-        "south": {"texture": "#conduit", "uv": [6, 0, 10, 16]},
-        "west": {"texture": "#conduit", "uv": [6, 0, 10, 16]},
-        "up": {"texture": "#conduit", "uv": [6, 6, 10, 10]},
-        "down": {"texture": "#conduit", "uv": [6, 6, 10, 10]}
-      }
-    },
-    {
-      "name": "Cap Bottom",
-      "from": [2, 3, 2],
-      "to": [14, 5, 14],
-      "faces": {
-        "north": {"texture": "#cap", "uv": [5, 14, 11, 16]},
-        "east": {"texture": "#cap", "uv": [5, 14, 11, 16]},
-        "south": {"texture": "#cap", "uv": [5, 14, 11, 16]},
-        "west": {"texture": "#cap", "uv": [5, 14, 11, 16]},
-        "up": {"texture": "#cap", "uv": [5, 5, 11, 11]},
-        "down": {"texture": "#cap", "uv": [5, 5, 11, 11]}
-      }
-    },
-    {
-      "name": "Cap Top",
-      "from": [2, 11, 2],
-      "to": [14, 13, 14],
-      "faces": {
-        "north": {"texture": "#cap", "uv": [5, 0, 11, 2]},
-        "east": {"texture": "#cap", "uv": [5, 0, 11, 2]},
-        "south": {"texture": "#cap", "uv": [5, 0, 11, 2]},
-        "west": {"texture": "#cap", "uv": [5, 0, 11, 2]},
-        "up": {"texture": "#cap", "uv": [5, 5, 11, 11]},
-        "down": {"texture": "#cap", "uv": [5, 5, 11, 11]}
-      }
-    }
-  ]
+  "elements": []
 }

@@ -79,9 +79,9 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
 
     private boolean altarFormed = false;
 
-    // === Animation ===
-    /** Vitesse de rotation des conduits en degrés par tick (20 ticks = 1 seconde) */
-    private float conduitRotationSpeed = 1.0f;
+    // === Craft Animation ===
+    private boolean crafting = false;
+    private long craftStartGameTime = 0;
 
     public AltarHeartBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.ALTAR_HEART.get(), pos, state);
@@ -132,6 +132,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     @Override
     public void onMultiblockBroken() {
         altarFormed = false;
+        stopCrafting();
         if (level != null && !level.isClientSide()) {
             // 1. Blockstate controller
             if (level.getBlockState(worldPosition).hasProperty(AltarHeartBlock.MULTIBLOCK)) {
@@ -304,6 +305,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
      * @return true si un craft a ete effectue ou du pollen consomme
      */
     public boolean tryCraft() {
+        if (crafting) return false;
         if (level == null || level.isClientSide() || !altarFormed) {
             return false;
         }
@@ -349,8 +351,8 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
 
         // Verifier si le pollen est suffisant
         if (recipe.hasEnoughPollen(availablePollen)) {
-            // Craft complet!
-            executeCraft(recipe, centerPedestalPos, surroundingPedestals, pollenPots, availablePollen);
+            // Pollen suffisant — demarrer l'animation de craft
+            startCraftAnimation();
             return true;
         } else {
             // Pollen insuffisant - consommer ce qu'on peut
@@ -531,21 +533,26 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     }
 
 
-    // ==================== Animation ====================
+    // ==================== Craft Animation ====================
 
     /**
-     * @return La vitesse de rotation des conduits en degrés par tick
+     * Demarre l'animation de craft.
+     * Le craft effectif se declenchera a CRAFT_TICK via serverTick().
      */
-    public float getConduitRotationSpeed() {
-        return conduitRotationSpeed;
+    private void startCraftAnimation() {
+        crafting = true;
+        craftStartGameTime = level.getGameTime();
+        setChanged();
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
     /**
-     * Définit la vitesse de rotation des conduits.
-     * @param speed Vitesse en degrés par tick (1.0 = 1°/tick = 18°/sec)
+     * Arrete le craft en cours (annulation ou fin d'animation).
      */
-    public void setConduitRotationSpeed(float speed) {
-        this.conduitRotationSpeed = speed;
+    private void stopCrafting() {
+        if (!crafting) return;
+        crafting = false;
+        craftStartGameTime = 0;
         setChanged();
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
@@ -553,16 +560,71 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     }
 
     /**
-     * Calcule l'angle de rotation interpolé pour le rendu.
-     * @param partialTick Interpolation entre ticks (0.0 - 1.0)
-     * @return L'angle de rotation en degrés
+     * Tick serveur appele par le BlockEntityTicker.
+     * Gere le timing du craft: declenchement a 8s, fin a 11s.
      */
-    public float getInterpolatedRotationAngle(float partialTick) {
-        if (!altarFormed || level == null) return 0f;
+    public void serverTick() {
+        if (!crafting || level == null || level.isClientSide()) return;
 
-        // Utilise gameTime pour une rotation fluide et déterministe
-        long gameTime = level.getGameTime();
-        return (gameTime + partialTick) * conduitRotationSpeed;
+        long elapsed = level.getGameTime() - craftStartGameTime;
+
+        if (elapsed == com.chapeau.beemancer.client.animation.AltarCraftAnimator.CRAFT_TICK) {
+            executeDelayedCraft();
+        }
+
+        if (elapsed >= com.chapeau.beemancer.client.animation.AltarCraftAnimator.TOTAL_TICKS) {
+            stopCrafting();
+        }
+    }
+
+    /**
+     * Execute le craft a la fin de la phase d'animation (tick 160 = 8s).
+     * Re-valide la recette pour eviter les exploits.
+     */
+    private void executeDelayedCraft() {
+        BlockPos centerPedestalPos = worldPosition.offset(0, -2, 0);
+        ItemStack centerItem = getCenterItem(centerPedestalPos);
+
+        List<HoneyPedestalBlockEntity> surroundingPedestals = getSurroundingPedestals(centerPedestalPos);
+        List<ItemStack> pedestalItems = new ArrayList<>();
+        for (HoneyPedestalBlockEntity pedestal : surroundingPedestals) {
+            if (!pedestal.isEmpty()) {
+                pedestalItems.add(pedestal.getStoredItem());
+            }
+        }
+
+        List<PollenPotBlockEntity> pollenPots = getSurroundingPollenPots(centerPedestalPos);
+        Map<Item, Integer> availablePollen = new HashMap<>();
+        for (PollenPotBlockEntity pot : pollenPots) {
+            if (!pot.isEmpty()) {
+                Item pollenItem = pot.getPollenItem();
+                availablePollen.merge(pollenItem, pot.getPollenCount(), Integer::sum);
+            }
+        }
+
+        AltarRecipeInput input = new AltarRecipeInput(centerItem, pedestalItems, availablePollen);
+        Optional<RecipeHolder<AltarRecipe>> recipeHolder = level.getRecipeManager()
+            .getRecipeFor(BeemancerRecipeTypes.ALTAR.get(), input, level);
+
+        if (recipeHolder.isEmpty()) {
+            playFailSound();
+            return;
+        }
+
+        AltarRecipe recipe = recipeHolder.get().value();
+        if (recipe.hasEnoughPollen(availablePollen)) {
+            executeCraft(recipe, centerPedestalPos, surroundingPedestals, pollenPots, availablePollen);
+        } else {
+            playFailSound();
+        }
+    }
+
+    public boolean isCrafting() {
+        return crafting;
+    }
+
+    public long getCraftStartGameTime() {
+        return craftStartGameTime;
     }
 
     // ==================== Lifecycle ====================
@@ -589,16 +651,16 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putBoolean("AltarFormed", altarFormed);
-        tag.putFloat("ConduitRotationSpeed", conduitRotationSpeed);
+        tag.putBoolean("Crafting", crafting);
+        tag.putLong("CraftStartGameTime", craftStartGameTime);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         altarFormed = tag.getBoolean("AltarFormed");
-        if (tag.contains("ConduitRotationSpeed")) {
-            conduitRotationSpeed = tag.getFloat("ConduitRotationSpeed");
-        }
+        crafting = tag.getBoolean("Crafting");
+        craftStartGameTime = tag.getLong("CraftStartGameTime");
     }
 
     // ==================== Sync ====================
