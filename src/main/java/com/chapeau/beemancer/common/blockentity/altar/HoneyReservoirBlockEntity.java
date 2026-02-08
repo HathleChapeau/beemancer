@@ -10,7 +10,7 @@
  * |-------------------------------|----------------------|--------------------------------|
  * | BeemancerBlockEntities        | Type registration    | super()                        |
  * | BeemancerFluids               | Fluides acceptés     | isFluidValid                   |
- * | AltarHeartBlockEntity         | Multiblock check     | isPartOfFormedMultiblock       |
+ * | MultiblockController          | Multiblock check     | isPartOfFormedMultiblock       |
  * | MultiblockCapabilityProvider  | Délégation caps      | findCapabilityProvider         |
  * | MultiblockController          | Vérif formed         | findCapabilityProvider         |
  * ------------------------------------------------------------
@@ -139,15 +139,10 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
      * Vérifie si ce réservoir fait partie d'un multiblock formé.
      */
     public boolean isPartOfFormedMultiblock() {
-        if (controllerPos != null) {
-            return findCapabilityProvider() != null;
-        }
-        // Fallback pour les multiblocs n'utilisant pas encore controllerPos (altar)
-        if (level == null) return false;
-        BlockPos heartPos = worldPosition.below(2);
-        BlockEntity be = level.getBlockEntity(heartPos);
-        if (be instanceof AltarHeartBlockEntity heart) {
-            return heart.isFormed();
+        if (controllerPos == null || level == null) return false;
+        BlockEntity be = level.getBlockEntity(controllerPos);
+        if (be instanceof MultiblockController controller) {
+            return controller.isFormed();
         }
         return false;
     }

@@ -23,9 +23,7 @@ package com.chapeau.beemancer.common.blockentity.altar;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.altar.AltarHeartBlock;
-import com.chapeau.beemancer.common.block.altar.HoneyCrystalConduitBlock;
-import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
-import com.chapeau.beemancer.common.block.altar.HoneyedStoneBlock;
+import com.chapeau.beemancer.core.multiblock.BlockMatcher;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlockEntity;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
@@ -40,6 +38,7 @@ import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -53,6 +52,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.Fluid;
 
 import javax.annotation.Nullable;
@@ -67,6 +68,14 @@ import java.util.Optional;
  * Implémente MultiblockController pour gérer le Honey Altar.
  */
 public class AltarHeartBlockEntity extends BlockEntity implements MultiblockController {
+
+    // Positions des reservoirs a Y+2 relatif au controleur (N, S, E, W)
+    private static final BlockPos[] RESERVOIR_OFFSETS = {
+        new BlockPos(0, 2, -1),
+        new BlockPos(0, 2, 1),
+        new BlockPos(1, 2, 0),
+        new BlockPos(-1, 2, 0)
+    };
 
     private boolean altarFormed = false;
 
@@ -99,12 +108,22 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     public void onMultiblockFormed() {
         altarFormed = true;
         if (level != null && !level.isClientSide()) {
-            // Mettre à jour le contrôleur
-            level.setBlock(worldPosition, getBlockState().setValue(AltarHeartBlock.MULTIBLOCK, MultiblockProperty.ALTAR), 3);
+            // 1. Link reservoirs au controller
+            linkReservoirControllers(true);
 
-            // Mettre à jour tous les blocs du multibloc
-            updateMultiblockBlocksState(true);
+            // 2. Blockstate controller
+            BlockState state = level.getBlockState(worldPosition);
+            if (state.hasProperty(AltarHeartBlock.MULTIBLOCK)) {
+                level.setBlock(worldPosition, state.setValue(AltarHeartBlock.MULTIBLOCK, MultiblockProperty.ALTAR), 3);
+            }
 
+            // 3. Blockstates structure
+            setFormedOnStructureBlocks(true);
+
+            // 4. Invalider capabilities
+            invalidateAllCapabilities();
+
+            // 5. Register events
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
         }
@@ -114,107 +133,104 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     public void onMultiblockBroken() {
         altarFormed = false;
         if (level != null && !level.isClientSide()) {
-            // Mettre à jour le contrôleur
+            // 1. Blockstate controller
             if (level.getBlockState(worldPosition).hasProperty(AltarHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, getBlockState().setValue(AltarHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
 
-            // Mettre à jour tous les blocs du multibloc
-            updateMultiblockBlocksState(false);
+            // 2. Blockstates structure
+            setFormedOnStructureBlocks(false);
 
+            // 3. Unlink reservoirs
+            linkReservoirControllers(false);
+
+            // 4. Invalider capabilities
+            invalidateAllCapabilities();
+
+            // 5. Unregister events
             MultiblockEvents.unregisterController(worldPosition);
             setChanged();
         }
     }
 
     /**
-     * Met à jour l'état MULTIBLOCK de tous les blocs du multibloc.
+     * Met a jour la propriete MULTIBLOCK (et FACING pour les blocs cardinaux)
+     * sur tous les blocs de la structure en iterant le pattern.
      */
-    private void updateMultiblockBlocksState(boolean formed) {
+    private void setFormedOnStructureBlocks(boolean formed) {
         if (level == null) return;
+        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
+            if (BlockMatcher.isAirMatcher(element.matcher())) continue;
+            BlockPos blockPos = worldPosition.offset(element.offset());
+            BlockState state = level.getBlockState(blockPos);
+            BlockState newState = state;
 
-        MultiblockProperty multiblockValue = formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE;
-
-        // === 4 Conduits cardinaux à Y+1 (orientés vers le centre) ===
-        updateConduit(worldPosition.offset(0, 1, -1), formed, Direction.SOUTH);   // N pointe vers S
-        updateConduit(worldPosition.offset(0, 1, 1), formed, Direction.NORTH);    // S pointe vers N
-        updateConduit(worldPosition.offset(1, 1, 0), formed, Direction.WEST);     // E pointe vers W
-        updateConduit(worldPosition.offset(-1, 1, 0), formed, Direction.EAST);    // W pointe vers E
-
-        // === Honeyed Stone centre à Y+1 (layer 1: base avec colonne) ===
-        updateHoneyedStone(worldPosition.offset(0, 1, 0), formed);
-
-        // === Honeyed Stone centre à Y+2 (layer 2: gros cube) ===
-        updateHoneyedStone(worldPosition.offset(0, 2, 0), formed);
-
-        // === 4 Réservoirs à Y+2 (orientés vers le centre) ===
-        updateReservoir(worldPosition.offset(0, 2, -1), formed, Direction.SOUTH);  // N pointe vers S
-        updateReservoir(worldPosition.offset(0, 2, 1), formed, Direction.NORTH);   // S pointe vers N
-        updateReservoir(worldPosition.offset(1, 2, 0), formed, Direction.WEST);    // E pointe vers W
-        updateReservoir(worldPosition.offset(-1, 2, 0), formed, Direction.EAST);   // W pointe vers E
-
-        // === Pedestal at Y-2 ===
-        updateGenericMultiblock(worldPosition.offset(0, -2, 0), formed, MultiblockProperty.ALTAR);
-
-        // === 4 Stairs at Y-2 ===
-        updateGenericMultiblock(worldPosition.offset(0, -2, -1), formed, MultiblockProperty.ALTAR);
-        updateGenericMultiblock(worldPosition.offset(0, -2, 1), formed, MultiblockProperty.ALTAR);
-        updateGenericMultiblock(worldPosition.offset(1, -2, 0), formed, MultiblockProperty.ALTAR);
-        updateGenericMultiblock(worldPosition.offset(-1, -2, 0), formed, MultiblockProperty.ALTAR);
-    }
-
-    /**
-     * Met à jour un HoneyedStoneBlock avec MULTIBLOCK.
-     */
-    private void updateHoneyedStone(BlockPos pos, boolean formed) {
-        BlockState state = level.getBlockState(pos);
-        if (state.hasProperty(HoneyedStoneBlock.MULTIBLOCK)) {
-            level.setBlock(pos, state
-                .setValue(HoneyedStoneBlock.MULTIBLOCK, formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE), 3);
-        }
-    }
-
-    /**
-     * Met à jour la propriété MULTIBLOCK sur n'importe quel bloc qui la possède.
-     * Recherche dynamiquement la propriété "multiblock" par nom.
-     */
-    private void updateGenericMultiblock(BlockPos pos, boolean formed, MultiblockProperty type) {
-        BlockState state = level.getBlockState(pos);
-        for (var prop : state.getProperties()) {
-            if (prop.getName().equals("multiblock") && prop instanceof net.minecraft.world.level.block.state.properties.EnumProperty<?> enumProp) {
-                @SuppressWarnings("unchecked")
-                net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty> mbProp =
-                    (net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty>) enumProp;
-                MultiblockProperty value = formed ? type : MultiblockProperty.NONE;
-                if (mbProp.getPossibleValues().contains(value)) {
-                    level.setBlock(pos, state.setValue(mbProp, value), 3);
+            // Set MULTIBLOCK generiquement
+            for (var prop : newState.getProperties()) {
+                if (prop.getName().equals("multiblock") && prop instanceof EnumProperty<?> enumProp) {
+                    @SuppressWarnings("unchecked")
+                    EnumProperty<MultiblockProperty> mbProp = (EnumProperty<MultiblockProperty>) enumProp;
+                    MultiblockProperty value = formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE;
+                    if (mbProp.getPossibleValues().contains(value) && newState.getValue(mbProp) != value) {
+                        newState = newState.setValue(mbProp, value);
+                    }
+                    break;
                 }
-                break;
+            }
+
+            // Set FACING pour les blocs cardinaux (conduits, reservoirs)
+            if (formed && newState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                Direction facing = getFacingTowardCenter(element.offset());
+                if (facing != null) {
+                    newState = newState.setValue(BlockStateProperties.HORIZONTAL_FACING, facing);
+                }
+            }
+
+            if (newState != state) {
+                level.setBlock(blockPos, newState, 3);
             }
         }
     }
 
     /**
-     * Met à jour un HoneyReservoirBlock avec MULTIBLOCK et FACING.
+     * Derive la direction FACING depuis un offset relatif au controller.
+     * Les blocs cardinaux pointent vers le centre.
+     *
+     * @return la direction vers le centre, ou null si centre/diagonale
      */
-    private void updateReservoir(BlockPos pos, boolean formed, Direction facing) {
-        BlockState state = level.getBlockState(pos);
-        if (state.hasProperty(HoneyReservoirBlock.MULTIBLOCK) && state.hasProperty(HoneyReservoirBlock.FACING)) {
-            level.setBlock(pos, state
-                .setValue(HoneyReservoirBlock.MULTIBLOCK, formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE)
-                .setValue(HoneyReservoirBlock.FACING, facing), 3);
+    @Nullable
+    private static Direction getFacingTowardCenter(Vec3i offset) {
+        int x = offset.getX();
+        int z = offset.getZ();
+        if (x == 0 && z < 0) return Direction.SOUTH;
+        if (x == 0 && z > 0) return Direction.NORTH;
+        if (x > 0 && z == 0) return Direction.WEST;
+        if (x < 0 && z == 0) return Direction.EAST;
+        return null;
+    }
+
+    /**
+     * Lie ou delie les reservoirs au controleur pour la detection de multibloc.
+     */
+    private void linkReservoirControllers(boolean link) {
+        if (level == null) return;
+        for (BlockPos offset : RESERVOIR_OFFSETS) {
+            BlockPos reservoirPos = worldPosition.offset(offset);
+            if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
+                reservoir.setControllerPosQuiet(link ? worldPosition : null);
+            }
         }
     }
 
     /**
-     * Met à jour un HoneyCrystalConduitBlock avec MULTIBLOCK et FACING.
+     * Invalide les capabilities de tous les blocs du multibloc.
      */
-    private void updateConduit(BlockPos pos, boolean formed, Direction facing) {
-        BlockState state = level.getBlockState(pos);
-        if (state.hasProperty(HoneyCrystalConduitBlock.MULTIBLOCK) && state.hasProperty(HoneyCrystalConduitBlock.FACING)) {
-            level.setBlock(pos, state
-                .setValue(HoneyCrystalConduitBlock.MULTIBLOCK, formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE)
-                .setValue(HoneyCrystalConduitBlock.FACING, facing), 3);
+    private void invalidateAllCapabilities() {
+        if (level == null) return;
+        level.invalidateCapabilities(worldPosition);
+        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
+            BlockPos blockPos = worldPosition.offset(element.offset());
+            level.invalidateCapabilities(blockPos);
         }
     }
 
@@ -227,17 +243,13 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     public boolean tryFormAltar() {
         if (level == null || level.isClientSide()) return false;
 
-        // Utiliser validateDetailed pour avoir les infos d'échec
-        var result = MultiblockValidator.validateDetailed(getPattern(), level, worldPosition);
-
-        if (result.valid()) {
+        int rotation = MultiblockValidator.validateWithRotations(getPattern(), level, worldPosition);
+        if (rotation >= 0) {
             onMultiblockFormed();
             return true;
         }
 
-        // Log l'échec pour debug
-        Beemancer.LOGGER.debug("Altar validation failed at {} - {}",
-            result.failedAt(), result.reason());
+        Beemancer.LOGGER.debug("Altar validation failed at {}", worldPosition);
         return false;
     }
 
@@ -249,15 +261,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         List<HoneyReservoirBlockEntity> reservoirs = new ArrayList<>();
         if (!altarFormed || level == null) return reservoirs;
 
-        // Positions des réservoirs à Y+2 relatif au contrôleur
-        BlockPos[] offsets = {
-            new BlockPos(0, 2, -1),  // Nord
-            new BlockPos(0, 2, 1),   // Sud
-            new BlockPos(1, 2, 0),   // Est
-            new BlockPos(-1, 2, 0)   // Ouest
-        };
-
-        for (BlockPos offset : offsets) {
+        for (BlockPos offset : RESERVOIR_OFFSETS) {
             BlockEntity be = level.getBlockEntity(worldPosition.offset(offset));
             if (be instanceof HoneyReservoirBlockEntity reservoir) {
                 reservoirs.add(reservoir);
