@@ -105,6 +105,36 @@ public class StorageDeliveryManager {
     }
 
     /**
+     * Trouve TOUS les coffres du reseau contenant un item donne, avec leur quantite.
+     * Utilise pour distribuer une request sur plusieurs coffres sources.
+     *
+     * @return liste de paires (position, quantite disponible), ordonnee par quantite decroissante
+     */
+    public List<ChestItemInfo> findAllChestsWithItem(ItemStack template) {
+        List<ChestItemInfo> result = new ArrayList<>();
+        if (parent.getLevel() == null || template.isEmpty()) return result;
+
+        for (BlockPos chestPos : parent.getAllNetworkChests()) {
+            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
+            if (be instanceof Container container) {
+                int count = ContainerHelper.countItem(container, template);
+                if (count > 0) {
+                    result.add(new ChestItemInfo(chestPos, count));
+                }
+            }
+        }
+        // Trier par quantite decroissante (optimise: coffres les plus remplis d'abord)
+        result.sort((a, b) -> Integer.compare(b.count, a.count));
+        return result;
+    }
+
+    /**
+     * Info sur un coffre contenant un item: position + quantite disponible.
+     */
+    public record ChestItemInfo(BlockPos pos, int count) {}
+
+    /**
      * Trouve le chemin de relais entre le controller et le noeud qui possede un coffre donne.
      * BFS a travers le graphe de noeuds connectes.
      * Supporte les coffres (via getRegisteredChests) et les blocs du NetworkRegistry

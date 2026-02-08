@@ -353,6 +353,18 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int rendered = 0;
         int skipped = 0;
 
+        // Bee count header: "Bees: active/max"
+        if (skipped >= taskScrollOffset && rendered < maxVisible) {
+            int activeBees = menu.getActiveTaskCount();
+            int maxBees = menu.getMaxBees();
+            int beeColor = activeBees >= maxBees ? 0xFFFF6666 : 0xFFAADDFF;
+            g.drawString(font, Component.literal("Bees: " + activeBees + "/" + maxBees),
+                x + TASK_LIST_X, currentY, beeColor, false);
+            currentY += 12;
+            rendered++;
+        }
+        skipped++;
+
         // Requests header
         if (skipped >= taskScrollOffset && rendered < maxVisible) {
             g.drawString(font, Component.translatable("gui.beemancer.tasks.requests")

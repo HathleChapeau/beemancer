@@ -223,31 +223,50 @@ public class RequestManager {
      * IMPORT: trouver un coffre source, creer une tache (coffre → interface/terminal).
      */
     private void processImportRequest(InterfaceRequest request, StorageDeliveryManager delivery) {
-        // Chercher un coffre contenant au moins 1 item du type demande
-        BlockPos chestPos = delivery.findChestWithItem(request.getTemplate(), 1);
-        if (chestPos == null) {
+        // Scanner TOUS les coffres contenant l'item demande
+        List<StorageDeliveryManager.ChestItemInfo> chests =
+            delivery.findAllChestsWithItem(request.getTemplate());
+
+        // Filtrer les coffres qui sont la destination (loop prevention)
+        chests.removeIf(info -> info.pos().equals(request.getSourcePos()));
+
+        if (chests.isEmpty()) {
             request.setStatus(InterfaceRequest.RequestStatus.BLOCKED);
             request.setBlockedReason("gui.beemancer.tasks.blocked.items_unavailable");
             return;
         }
 
-        // Ne pas creer de tache si la source est la meme que la destination (loop prevention)
-        if (chestPos.equals(request.getSourcePos())) return;
-
         DeliveryTask.TaskOrigin taskOrigin = request.getOrigin() == InterfaceRequest.TaskOrigin.REQUEST
             ? DeliveryTask.TaskOrigin.REQUEST : DeliveryTask.TaskOrigin.AUTOMATION;
 
-        // Creer la tache avec le count complet de la request.
-        // processDeliveryQueue decoupera en subtasks par beeCapacity.
-        // spawnDeliveryBee verifiera la disponibilite reelle au moment du spawn.
-        DeliveryTask task = new DeliveryTask(
-            request.getTemplate(), request.getCount(),
-            chestPos, request.getSourcePos(),
-            taskOrigin, request.getRequesterPos()
-        );
+        // Creer une tache racine (premier coffre), puis des subtasks pour les coffres suivants.
+        // Chaque tache a le count reel disponible dans le coffre (cap a la demande restante).
+        // processDeliveryQueue decoupera ensuite par beeCapacity.
+        int remaining = request.getCount();
+        DeliveryTask rootTask = null;
 
-        delivery.addDeliveryTask(task);
-        request.setAssignedTaskId(task.getTaskId());
+        for (StorageDeliveryManager.ChestItemInfo chest : chests) {
+            if (remaining <= 0) break;
+
+            int toTake = Math.min(remaining, chest.count());
+            UUID parentId = rootTask != null ? rootTask.getTaskId() : null;
+
+            DeliveryTask task = new DeliveryTask(
+                request.getTemplate(), toTake,
+                chest.pos(), request.getSourcePos(),
+                0, java.util.Collections.emptyList(),
+                taskOrigin, false, request.getRequesterPos(), parentId
+            );
+
+            delivery.addDeliveryTask(task);
+            remaining -= toTake;
+
+            if (rootTask == null) {
+                rootTask = task;
+            }
+        }
+
+        request.setAssignedTaskId(rootTask.getTaskId());
         request.setStatus(InterfaceRequest.RequestStatus.ASSIGNED);
         request.setBlockedReason("");
         parent.setChanged();

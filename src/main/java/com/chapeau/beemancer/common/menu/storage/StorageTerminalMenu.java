@@ -92,7 +92,8 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public static final int DATA_HONEY_EFFICIENCY = 8;
     public static final int DATA_ACTIVE_TASKS = 9;
     public static final int DATA_QUEUED_TASKS = 10;
-    public static final int DATA_SIZE = 11;
+    public static final int DATA_MAX_BEES = 11;
+    public static final int DATA_SIZE = 12;
 
     // Slot positions — Left panel (deposit/craft/pickup stacked vertically)
     private static final int DEPOSIT_X = 23;
@@ -282,6 +283,10 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
                     case DATA_QUEUED_TASKS -> {
                         if (controller == null) yield 0;
                         yield controller.getDeliveryManager().getQueuedTaskCount();
+                    }
+                    case DATA_MAX_BEES -> {
+                        if (controller == null) yield 0;
+                        yield controller.getMaxDeliveryBees();
                     }
                     default -> 0;
                 };
@@ -481,6 +486,7 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public int getHoneyEfficiency() { return this.data.get(DATA_HONEY_EFFICIENCY); }
     public int getActiveTaskCount() { return this.data.get(DATA_ACTIVE_TASKS); }
     public int getQueuedTaskCount() { return this.data.get(DATA_QUEUED_TASKS); }
+    public int getMaxBees() { return this.data.get(DATA_MAX_BEES); }
 
     public BlockPos getBlockPos() { return blockPos; }
 
