@@ -3,6 +3,31 @@
 ################################################################################
 
 ================================================================================
+2026-02-08 - Animation System
+================================================================================
+
+AJOUT: Framework d'animation generique pour renderers
+- TimingType.java (NOUVEAU): Enum courbes d'easing (NORMAL, EASE_IN, EASE_OUT,
+  SLOW_IN_SLOW_OUT) avec parametre power configurable (defaut 2).
+- TimingEffect.java (NOUVEAU): Enum effets temporels (NONE clamp, LOOP modulo,
+  BOOMERANG ping-pong).
+- Animation.java (NOUVEAU): Classe abstraite parent. Pipeline: rawDelta →
+  TimingEffect → TimingType → doApply(progress). Gestion play/pause/stop,
+  resetAfterAnimation (defaut true), builder pattern generique.
+- MoveAnimation.java (NOUVEAU): Translation Vec3 start → Vec3 end avec builder.
+- RotateAnimation.java (NOUVEAU): Rotation axe + startAngle/endAngle + pivot
+  optionnel avec builder.
+- SequenceEntry.java (NOUVEAU): Entree de sequence — animation, callback
+  (Runnable), ou step (threshold -1, pause chrono, attend continueSequence).
+- Sequence.java (NOUVEAU): Enchainement par seuils temporels, step-by-step
+  (waiting state), continueSequence(), auto-stop quand termine.
+- AnimationController.java (NOUVEAU): Gestionnaire animations nommees
+  (createAnimation/playAnimation/pauseAnimation/stopAnimation/applyAnimation)
+  + sequences (playSequence/pauseSequence/stopSequence/continueSequence).
+  Cache currentTime, tick() une fois par frame.
+- IAnimatable.java (NOUVEAU): Interface pour renderers → getAnimationController().
+
+================================================================================
 2026-02-08 - InterfaceTask Refactoring
 ================================================================================
 

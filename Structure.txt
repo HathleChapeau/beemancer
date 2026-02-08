@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-02-08                     #
-#  (InterfaceTask Refactoring - 2026-02-08)                                     #
+#  (Animation System - 2026-02-08)                                              #
 ################################################################################
 
 ================================================================================
@@ -336,6 +336,13 @@ LISTE DES FEATURES:
   Description: Import/Export interfaces gerent leurs propres taches via InterfaceTask (TODO/LOCKED/DELIVERED) au lieu de passer par RequestManager. Lecture adaptative du count: les abeilles lisent le count actuel a l'extraction ET a la livraison pour s'adapter aux changements en cours de route. Controller expose beeCapacity cache. RequestManager desormais terminal-only.
   Scripts crees: InterfaceTask.java
   Scripts modifies: StorageControllerBlockEntity.java (beeCapacity, assignBeeToInterfaceTask), DeliveryTask.java (interfaceTaskId/interfacePos), NetworkInterfaceBlockEntity.java (gestion tasks), ImportInterfaceBlockEntity.java (rewrite doScan), ExportInterfaceBlockEntity.java (rewrite doScan), DeliveryBeeEntity.java (interfaceTaskId, readCurrentInterfaceTaskCount), DeliveryPhaseGoal.java (extraction/livraison adaptatives), StorageDeliveryManager.java (skip split interface, notifyInterfaceTaskFailed), RequestManager.java (cleanup terminal-only)
+
+→ Animation System
+  Description: Framework d'animation generique pour renderers avec courbes d'easing, effets temporels, sequences step-by-step et controller
+  Scripts crees: TimingType.java, TimingEffect.java, Animation.java, MoveAnimation.java, RotateAnimation.java, SequenceEntry.java, Sequence.java, AnimationController.java, IAnimatable.java
+  Scripts modifies: aucun
+  Dependances: PoseStack, com.mojang.math.Axis, Mth
+  Registres modifies: aucun (framework client-side pur)
 
 ================================================================================
 6. FEATURES EN COURS
