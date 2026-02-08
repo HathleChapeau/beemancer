@@ -269,6 +269,12 @@ public class StorageDeliveryManager {
         if (parent.getLevel() == null || template.isEmpty()) return 0;
         if (!parent.getLevel().isLoaded(chestPos)) return 0;
         BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
+
+        // Terminal: compter les deposit slots uniquement
+        if (be instanceof StorageTerminalBlockEntity terminal) {
+            return terminal.countInDeposit(template);
+        }
+
         if (!(be instanceof Container container)) return 0;
         return ContainerHelper.countItem(container, template);
     }
@@ -294,13 +300,22 @@ public class StorageDeliveryManager {
     }
 
     /**
-     * Extrait un item d'un coffre spécifique pour une livraison.
+     * Extrait un item d'un coffre ou terminal pour une livraison.
+     * Si la source est un terminal, extrait uniquement des deposit slots.
      */
     public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
         if (parent.getLevel() == null || template.isEmpty() || count <= 0) return ItemStack.EMPTY;
         if (!parent.getLevel().isLoaded(chestPos)) return ItemStack.EMPTY;
 
         BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
+
+        // Terminal: extraire des deposit slots uniquement
+        if (be instanceof StorageTerminalBlockEntity terminal) {
+            ItemStack result = terminal.extractFromDeposit(template, count);
+            parent.getItemAggregator().setNeedsSync(true);
+            return result;
+        }
+
         if (!(be instanceof Container container)) return ItemStack.EMPTY;
 
         ItemStack result = ContainerHelper.extractItem(container, template, count);
@@ -468,6 +483,17 @@ public class StorageDeliveryManager {
 
             if (request.getCount() <= 0) {
                 cancelTask(task.getTaskId());
+            }
+        }
+
+        // Nettoyer les requests orphelines: ASSIGNED mais plus aucune subtask en cours
+        // (arrive quand des subtasks echouent au spawn, ex: deposit vide)
+        for (InterfaceRequest request : new ArrayList<>(requestManager.getAllRequests())) {
+            if (request.getStatus() != InterfaceRequest.RequestStatus.ASSIGNED) continue;
+            UUID assignedId = request.getAssignedTaskId();
+            if (assignedId == null) continue;
+            if (!hasRemainingSubtasks(assignedId)) {
+                requestManager.onTaskCompleted(assignedId);
             }
         }
     }

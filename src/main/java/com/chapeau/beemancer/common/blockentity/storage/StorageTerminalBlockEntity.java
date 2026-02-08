@@ -73,21 +73,22 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     @Nullable
     private BlockPos controllerPos = null;
 
-    // Flag pour éviter la récursion lors du dépôt
-    private boolean isDepositing = false;
+    // Flag pour éviter de re-scanner pendant l'extraction par une bee
+    private boolean isExtracting = false;
     private boolean isSaving = false;
+    // Flag pour declencher un scan des deposit slots au prochain tick
+    private boolean needsDepositScan = false;
 
     // File d'attente des requêtes en attente
     private final Queue<PendingRequest> pendingRequests = new LinkedList<>();
 
-    // Slots internes
+    // Slots internes — les items restent dans les slots jusqu'a extraction par une bee
     private final ItemStackHandler depositSlots = new ItemStackHandler(DEPOSIT_SLOTS) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            // Transférer automatiquement vers le réseau (éviter récursion)
-            if (!isDepositing) {
-                tryDepositToNetwork(slot);
+            if (!isExtracting) {
+                needsDepositScan = true;
             }
         }
     };
@@ -305,38 +306,115 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     }
 
     /**
-     * Tente de deposer un item du slot deposit vers le reseau via RequestManager.
+     * Scanne les deposit slots et cree des requetes EXPORT non-preloaded.
+     * Les items restent dans les slots — les bees viennent les extraire.
+     * Evite les doublons: ne cree pas de requete si une est deja active pour le meme type.
      */
-    private void tryDepositToNetwork(int slot) {
+    private void scanDepositSlots() {
         if (level == null || level.isClientSide()) return;
-
         StorageControllerBlockEntity controller = getController();
         if (controller == null) return;
 
-        isDepositing = true;
-        try {
-            int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
+        RequestManager requestManager = controller.getRequestManager();
 
-            while (true) {
-                ItemStack stack = depositSlots.getStackInSlot(slot);
-                if (stack.isEmpty()) break;
+        // Collecter les types distincts et leur total dans les deposit slots
+        List<ItemStack> templates = new ArrayList<>();
+        List<Integer> counts = new ArrayList<>();
 
-                int toDeposit = Math.min(stack.getCount(), maxQuantity);
+        for (int i = 0; i < DEPOSIT_SLOTS; i++) {
+            ItemStack stack = depositSlots.getStackInSlot(i);
+            if (stack.isEmpty()) continue;
 
-                ItemStack toSend = stack.copy();
-                toSend.setCount(toDeposit);
-                stack.shrink(toDeposit);
-                depositSlots.setStackInSlot(slot, stack.isEmpty() ? ItemStack.EMPTY : stack);
+            boolean found = false;
+            for (int j = 0; j < templates.size(); j++) {
+                if (ItemStack.isSameItemSameComponents(templates.get(j), stack)) {
+                    counts.set(j, counts.get(j) + stack.getCount());
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                templates.add(stack.copyWithCount(1));
+                counts.add(stack.getCount());
+            }
+        }
 
+        // Pour chaque type, creer une requete si aucune n'est active
+        for (int j = 0; j < templates.size(); j++) {
+            ItemStack template = templates.get(j);
+            int totalCount = counts.get(j);
+
+            boolean hasRequest = false;
+            for (InterfaceRequest req : requestManager.getAllRequests()) {
+                if (req.getSourcePos().equals(worldPosition)
+                        && req.getType() == InterfaceRequest.RequestType.EXPORT
+                        && req.getStatus() != InterfaceRequest.RequestStatus.CANCELLED
+                        && ItemStack.isSameItemSameComponents(req.getTemplate(), template)) {
+                    hasRequest = true;
+                    break;
+                }
+            }
+
+            if (!hasRequest) {
                 InterfaceRequest request = new InterfaceRequest(
                     worldPosition, worldPosition, InterfaceRequest.RequestType.EXPORT,
-                    toSend, toDeposit, InterfaceRequest.TaskOrigin.REQUEST, true
+                    template, totalCount, InterfaceRequest.TaskOrigin.REQUEST, false
                 );
-                controller.getRequestManager().publishRequest(request);
+                requestManager.publishRequest(request);
             }
-        } finally {
-            isDepositing = false;
         }
+    }
+
+    /**
+     * Extrait des items des deposit slots uniquement.
+     * Appele par le systeme de livraison quand une bee arrive au terminal.
+     *
+     * @return les items extraits (count peut etre inferieur si pas assez)
+     */
+    public ItemStack extractFromDeposit(ItemStack template, int count) {
+        if (template.isEmpty() || count <= 0) return ItemStack.EMPTY;
+
+        isExtracting = true;
+        try {
+            ItemStack result = template.copy();
+            result.setCount(0);
+            int needed = count;
+
+            for (int i = 0; i < DEPOSIT_SLOTS && needed > 0; i++) {
+                ItemStack stack = depositSlots.getStackInSlot(i);
+                if (ItemStack.isSameItemSameComponents(stack, template)) {
+                    int toTake = Math.min(needed, stack.getCount());
+                    stack.shrink(toTake);
+                    result.grow(toTake);
+                    needed -= toTake;
+                    if (stack.isEmpty()) {
+                        depositSlots.setStackInSlot(i, ItemStack.EMPTY);
+                    }
+                }
+            }
+
+            if (result.getCount() > 0) {
+                setChanged();
+            }
+            return result;
+        } finally {
+            isExtracting = false;
+        }
+    }
+
+    /**
+     * Compte les items d'un type dans les deposit slots uniquement.
+     */
+    public int countInDeposit(ItemStack template) {
+        if (template.isEmpty()) return 0;
+        int count = 0;
+        for (int i = 0; i < DEPOSIT_SLOTS; i++) {
+            ItemStack stack = depositSlots.getStackInSlot(i);
+            if (ItemStack.isSameItemSameComponents(stack, template)) {
+                count += stack.getCount();
+            }
+        }
+        return count;
     }
 
     // === Tick ===
@@ -345,6 +423,13 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         // Traiter périodiquement les requêtes en attente (chaque seconde)
         if (be.level != null && be.level.getGameTime() % 20 == 0) {
             be.processPendingRequests();
+            // Scan periodique en backup (rattrape les cas ou le flag a ete manque)
+            be.needsDepositScan = true;
+        }
+        // Scanner les deposit slots quand marque (joueur a ajoute/retire des items)
+        if (be.needsDepositScan) {
+            be.scanDepositSlots();
+            be.needsDepositScan = false;
         }
     }
 
