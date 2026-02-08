@@ -87,6 +87,18 @@ public class StorageControllerMenu extends BeemancerMenu {
     public int getLinkedHiveCount() { return data.get(6); }
     public int getMaxDeliveryBees() { return data.get(7); }
 
+    /**
+     * Verifie si un slot bonus (index 4-7) est deverrouille.
+     */
+    public boolean isBonusSlotUnlocked(int slotIndex) {
+        if (slotIndex < BASE_ESSENCE_SLOTS || slotIndex >= TOTAL_ESSENCE_SLOTS) return true;
+        Slot slot = slots.get(slotIndex);
+        if (slot instanceof DynamicEssenceSlot dynamicSlot) {
+            return dynamicSlot.isUnlocked();
+        }
+        return true;
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         ItemStack result = ItemStack.EMPTY;
@@ -133,8 +145,9 @@ public class StorageControllerMenu extends BeemancerMenu {
     }
 
     /**
-     * Slot essence dynamique: actif seulement quand assez de hives sont liees.
-     * requiredHives=1 signifie qu'il faut au moins 1 hive pour activer ce slot.
+     * Slot essence dynamique: toujours rendu (isActive=true) mais verrouille
+     * tant que le nombre de hives liees est insuffisant.
+     * requiredHives=1 signifie qu'il faut au moins 1 hive pour deverrouiller ce slot.
      */
     private class DynamicEssenceSlot extends BeemancerSlot {
         private final int requiredHives;
@@ -147,18 +160,22 @@ public class StorageControllerMenu extends BeemancerMenu {
 
         @Override
         public boolean isActive() {
+            return true;
+        }
+
+        public boolean isUnlocked() {
             return data.get(6) >= requiredHives;
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            if (!isActive()) return false;
+            if (!isUnlocked()) return false;
             return super.mayPlace(stack);
         }
 
         @Override
         public boolean mayPickup(Player player) {
-            if (!isActive()) return false;
+            if (!isUnlocked()) return false;
             return super.mayPickup(player);
         }
     }

@@ -83,6 +83,20 @@ public class DeliveryBeeEntity extends Bee {
     private int ticksAlive = 0;
     private boolean recalled = false;
 
+    // Redirect / reassignment fields
+    private boolean taskCancelled = false;
+    @Nullable private BlockPos redirectTarget = null;
+    @Nullable private BlockPos savingChestPos = null;
+    @Nullable private BlockPos newSourcePos = null;
+    @Nullable private BlockPos newDestPos = null;
+    @Nullable private BlockPos newRequesterPos = null;
+    private ItemStack newTemplate = ItemStack.EMPTY;
+    @Nullable private UUID newTaskId = null;
+    private boolean hasNewTask = false;
+    private List<BlockPos> newOutboundWaypoints = new ArrayList<>();
+    private List<BlockPos> newTransitWaypoints = new ArrayList<>();
+    private List<BlockPos> newHomeWaypoints = new ArrayList<>();
+
     // Waypoints pour le trajet multi-relais
     // outboundWaypoints: controller → relay1 → relay2 → ... → source
     // transitWaypoints: source → ... → LCA → ... → dest (chemin direct via ancetre commun)
@@ -380,7 +394,84 @@ public class DeliveryBeeEntity extends Bee {
         this.recalled = true;
     }
 
+    /**
+     * Annule la tache courante et redirige la bee vers un nouveau noeud du reseau.
+     * Si une nouvelle tache est fournie, la bee l'executera apres redirection.
+     * Sinon, la bee rentrera au controller.
+     *
+     * @param nearestNode noeud reseau le plus proche (relay ou controller) pour la redirection
+     * @param savingChest coffre ou deposer les items transportes (null si pas d'items)
+     * @param newTaskId nouvelle tache a executer (null si retour au controller)
+     * @param newSource source de la nouvelle tache
+     * @param newDest destination de la nouvelle tache
+     * @param newTmpl template item de la nouvelle tache
+     * @param outbound waypoints: redirectNode → nouvelle source
+     * @param transit waypoints: nouvelle source → nouvelle dest
+     * @param home waypoints: nouvelle dest → controller
+     */
+    public void cancelAndRedirect(@Nullable BlockPos nearestNode,
+                                   @Nullable BlockPos savingChest,
+                                   @Nullable UUID newTaskId,
+                                   @Nullable BlockPos newSource,
+                                   @Nullable BlockPos newDest,
+                                   @Nullable BlockPos newRequester,
+                                   ItemStack newTmpl,
+                                   List<BlockPos> outbound,
+                                   List<BlockPos> transit,
+                                   List<BlockPos> home) {
+        this.taskCancelled = true;
+        this.redirectTarget = nearestNode;
+        this.savingChestPos = savingChest;
+
+        if (newTaskId != null) {
+            this.newTaskId = newTaskId;
+            this.newSourcePos = newSource;
+            this.newDestPos = newDest;
+            this.newRequesterPos = newRequester;
+            this.newTemplate = newTmpl.copy();
+            this.newOutboundWaypoints = new ArrayList<>(outbound);
+            this.newTransitWaypoints = new ArrayList<>(transit);
+            this.newHomeWaypoints = new ArrayList<>(home);
+            this.hasNewTask = true;
+        }
+    }
+
+    /**
+     * Applique la nouvelle tache sur la bee (apres redirection au relay).
+     * Remplace les donnees de tache et les waypoints.
+     */
+    public void applyNewTask() {
+        if (!hasNewTask) return;
+
+        this.taskId = newTaskId;
+        this.sourcePos = newSourcePos;
+        this.destPos = newDestPos;
+        this.template = newTemplate.copy();
+
+        this.outboundWaypoints = new ArrayList<>(newOutboundWaypoints);
+        this.transitWaypoints = new ArrayList<>(newTransitWaypoints);
+        this.homeWaypoints = new ArrayList<>(newHomeWaypoints);
+
+        // Reset redirect state
+        this.taskCancelled = false;
+        this.hasNewTask = false;
+        this.redirectTarget = null;
+        this.savingChestPos = null;
+        this.newTaskId = null;
+        this.newSourcePos = null;
+        this.newDestPos = null;
+        this.newRequesterPos = null;
+        this.newTemplate = ItemStack.EMPTY;
+        this.newOutboundWaypoints.clear();
+        this.newTransitWaypoints.clear();
+        this.newHomeWaypoints.clear();
+    }
+
     public boolean isRecalled() { return recalled; }
+    public boolean isTaskCancelled() { return taskCancelled; }
+    public boolean hasNewTask() { return hasNewTask; }
+    @Nullable public BlockPos getRedirectTarget() { return redirectTarget; }
+    @Nullable public BlockPos getSavingChestPos() { return savingChestPos; }
 
     public UUID getTaskId() { return taskId; }
     public BlockPos getControllerPos() { return controllerPos; }

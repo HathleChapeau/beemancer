@@ -42,6 +42,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.Nullable;
@@ -56,6 +57,7 @@ public class StorageDeliveryManager {
     private final StorageControllerBlockEntity parent;
 
     private static final int DELIVERY_PROCESS_INTERVAL = 10;
+    private static final int REEVALUATE_INTERVAL = 20;
     private static final int MAX_COMPLETED_IDS = 100;
     private static final int HONEY_CONSUME_INTERVAL = 20;
     private static final int MAX_RANGE = 30;
@@ -64,6 +66,7 @@ public class StorageDeliveryManager {
     private final List<DeliveryTask> activeTasks = new ArrayList<>();
     private final Set<UUID> completedTaskIds = new LinkedHashSet<>();
     private int deliveryTimer = 0;
+    private int reevaluateTimer = 0;
     private int honeyConsumeTimer = 0;
     private boolean honeyDepleted = false;
 
@@ -426,6 +429,90 @@ public class StorageDeliveryManager {
         }
     }
 
+    /**
+     * Reevalue les taches en fonction de la demande actuelle.
+     * - QUEUED: met a jour le count, split si necessaire, cancel si demande nulle
+     * - FLYING: cree des sous-taches si demande augmente, cancel si demande tombe a 0
+     */
+    private void reevaluateTasks() {
+        if (parent.getLevel() == null || parent.getLevel().isClientSide()
+            || !parent.getMultiblockManager().isFormed()) return;
+
+        RequestManager requestManager = parent.getRequestManager();
+
+        // Reevaluer les taches en queue
+        Iterator<DeliveryTask> queueIt = deliveryQueue.iterator();
+        List<DeliveryTask> toAdd = new ArrayList<>();
+        while (queueIt.hasNext()) {
+            DeliveryTask task = queueIt.next();
+            if (task.getState() != DeliveryTask.DeliveryState.QUEUED) continue;
+
+            InterfaceRequest request = requestManager.findRequestByTaskId(task.getTaskId());
+            if (request == null) continue;
+
+            int currentDemand = request.getCount();
+            if (currentDemand <= 0) {
+                queueIt.remove();
+                handleCancelledTask(task);
+                parent.setChanged();
+                continue;
+            }
+
+            task.setCount(currentDemand);
+            int beeCapacity = task.getTemplate().getMaxStackSize();
+            if (task.getCount() > beeCapacity) {
+                DeliveryTask split = task.splitRemaining(beeCapacity);
+                if (split != null) {
+                    toAdd.add(split);
+                }
+            }
+        }
+        deliveryQueue.addAll(toAdd);
+
+        // Reevaluer les taches actives (bees en vol)
+        for (DeliveryTask task : new ArrayList<>(activeTasks)) {
+            if (task.getState() != DeliveryTask.DeliveryState.FLYING) continue;
+
+            InterfaceRequest request = requestManager.findRequestByTaskId(task.getTaskId());
+            if (request == null) continue;
+
+            int currentDemand = request.getCount();
+
+            // Demande tombee a 0: cancel et recall bee
+            if (currentDemand <= 0) {
+                cancelTask(task.getTaskId());
+                continue;
+            }
+
+            // Demande augmente au-dela de la capacite d'une bee: creer sous-tache pour surplus
+            int beeCapacity = task.getTemplate().getMaxStackSize();
+            if (currentDemand > beeCapacity && !hasQueuedTaskForRequest(request.getRequestId())) {
+                int surplus = currentDemand - beeCapacity;
+                DeliveryTask surplusTask = new DeliveryTask(
+                    task.getTemplate(), surplus, task.getSourcePos(), task.getDestPos(),
+                    task.getOrigin(), task.getRequesterPos()
+                );
+                deliveryQueue.add(surplusTask);
+                parent.setChanged();
+            }
+        }
+    }
+
+    /**
+     * Verifie s'il existe deja une tache en queue associee a la meme request.
+     */
+    private boolean hasQueuedTaskForRequest(UUID requestId) {
+        for (DeliveryTask task : deliveryQueue) {
+            if (task.getState() == DeliveryTask.DeliveryState.QUEUED) {
+                InterfaceRequest taskReq = parent.getRequestManager().findRequestByTaskId(task.getTaskId());
+                if (taskReq != null && taskReq.getRequestId().equals(requestId)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private DeliveryTask findEligibleTask() {
         for (DeliveryTask task : deliveryQueue) {
             if (task.getState() == DeliveryTask.DeliveryState.QUEUED
@@ -640,7 +727,7 @@ public class StorageDeliveryManager {
      * @return true si la tâche a été trouvée et annulée
      */
     public boolean cancelTask(UUID taskId) {
-        // Vérifier dans la queue
+        // Verifier dans la queue
         Iterator<DeliveryTask> it = deliveryQueue.iterator();
         while (it.hasNext()) {
             DeliveryTask task = it.next();
@@ -653,11 +740,20 @@ public class StorageDeliveryManager {
             }
         }
 
-        // Vérifier dans les tâches actives
+        // Verifier dans les taches actives
         for (DeliveryTask task : activeTasks) {
             if (task.getTaskId().equals(taskId)) {
                 task.setState(DeliveryTask.DeliveryState.FAILED);
-                recallBeeForTask(task);
+
+                // Chercher une tache en queue pour rediriger la bee
+                DeliveryTask nextTask = findEligibleTask();
+                if (nextTask != null) {
+                    deliveryQueue.remove(nextTask);
+                    redirectBee(task, nextTask);
+                } else {
+                    recallBeeForTask(task);
+                }
+
                 handleCancelledTask(task);
                 cancelDependentTasks(taskId);
                 parent.setChanged();
@@ -714,6 +810,138 @@ public class StorageDeliveryManager {
                 break;
             }
         }
+    }
+
+    /**
+     * Redirige une bee dont la tache est annulee vers une nouvelle tache.
+     * La bee va au noeud reseau le plus proche, puis suit les waypoints vers la nouvelle source.
+     * Si newTask est null, la bee rentre simplement au controller.
+     *
+     * @param cancelledTask la tache annulee
+     * @param newTask la nouvelle tache a executer (nullable)
+     */
+    public void redirectBee(DeliveryTask cancelledTask, @Nullable DeliveryTask newTask) {
+        if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
+
+        DeliveryBeeEntity targetBee = findBeeForTask(cancelledTask.getTaskId());
+        if (targetBee == null) return;
+
+        BlockPos nearestNode = findNearestNetworkNode(targetBee.position());
+
+        // Trouver un coffre pour deposer les items si la bee en transporte
+        BlockPos savingChest = null;
+        if (!targetBee.getCarriedItems().isEmpty()) {
+            savingChest = findChestWithSpace(
+                targetBee.getCarriedItems(), targetBee.getCarriedItems().getCount());
+        }
+
+        if (newTask != null) {
+            // Calculer les waypoints depuis le nearestNode vers la nouvelle tache
+            List<BlockPos> pathToSource = List.of();
+            List<BlockPos> pathToDest = List.of();
+
+            if (!newTask.isPreloaded()) {
+                pathToSource = findPathToChest(newTask.getSourcePos(), newTask.getRequesterPos());
+            }
+            if (newTask.getDestPos() != null && !newTask.getDestPos().equals(parent.getBlockPos())) {
+                pathToDest = findPathToChest(newTask.getDestPos(), newTask.getRequesterPos());
+            }
+
+            // Outbound: du nearestNode vers la source (trimmer le prefixe commun)
+            List<BlockPos> outboundFromNode = trimPathFromNode(pathToSource, nearestNode);
+            List<BlockPos> transitWaypoints = computeTransitWaypoints(pathToSource, pathToDest);
+            List<BlockPos> homeWaypoints = new ArrayList<>(pathToDest);
+            Collections.reverse(homeWaypoints);
+
+            targetBee.cancelAndRedirect(
+                nearestNode, savingChest,
+                newTask.getTaskId(), newTask.getSourcePos(), newTask.getDestPos(),
+                newTask.getRequesterPos(), newTask.getTemplate(),
+                outboundFromNode, transitWaypoints, homeWaypoints
+            );
+
+            newTask.setState(DeliveryTask.DeliveryState.FLYING);
+            activeTasks.add(newTask);
+        } else {
+            targetBee.cancelAndRedirect(
+                nearestNode, savingChest,
+                null, null, null, null, ItemStack.EMPTY,
+                List.of(), List.of(), List.of()
+            );
+        }
+
+        parent.setChanged();
+    }
+
+    /**
+     * Trouve la bee assignee a une tache par taskId.
+     */
+    @Nullable
+    private DeliveryBeeEntity findBeeForTask(UUID taskId) {
+        if (parent.getLevel() == null) return null;
+
+        List<DeliveryBeeEntity> bees = parent.getLevel().getEntitiesOfClass(
+            DeliveryBeeEntity.class,
+            new net.minecraft.world.phys.AABB(parent.getBlockPos()).inflate(MAX_RANGE),
+            bee -> parent.getBlockPos().equals(bee.getControllerPos())
+        );
+        for (DeliveryBeeEntity bee : bees) {
+            if (taskId.equals(bee.getTaskId())) {
+                return bee;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Trouve le noeud du reseau (controller ou relay) le plus proche d'une position donnee.
+     * Itere le controller + tous les noeuds connectes recursivement.
+     */
+    public BlockPos findNearestNetworkNode(Vec3 position) {
+        BlockPos nearest = parent.getBlockPos();
+        double nearestDistSq = position.distanceToSqr(
+            nearest.getX() + 0.5, nearest.getY() + 0.5, nearest.getZ() + 0.5);
+
+        Set<BlockPos> visited = new HashSet<>();
+        visited.add(parent.getBlockPos());
+        Queue<BlockPos> toVisit = new LinkedList<>(parent.getConnectedNodes());
+
+        while (!toVisit.isEmpty()) {
+            BlockPos nodePos = toVisit.poll();
+            if (!visited.add(nodePos)) continue;
+            if (parent.getLevel() == null || !parent.getLevel().isLoaded(nodePos)) continue;
+
+            double distSq = position.distanceToSqr(
+                nodePos.getX() + 0.5, nodePos.getY() + 0.5, nodePos.getZ() + 0.5);
+            if (distSq < nearestDistSq) {
+                nearestDistSq = distSq;
+                nearest = nodePos;
+            }
+
+            BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
+            if (be instanceof INetworkNode node) {
+                for (BlockPos neighbor : node.getConnectedNodes()) {
+                    if (!visited.contains(neighbor)) {
+                        toVisit.add(neighbor);
+                    }
+                }
+            }
+        }
+
+        return nearest;
+    }
+
+    /**
+     * Trimme le prefixe d'un chemin de relais jusqu'au noeud donne.
+     * Retourne le suffixe du chemin apres le noeud.
+     */
+    private List<BlockPos> trimPathFromNode(List<BlockPos> fullPath, BlockPos fromNode) {
+        for (int i = 0; i < fullPath.size(); i++) {
+            if (fullPath.get(i).equals(fromNode)) {
+                return new ArrayList<>(fullPath.subList(i + 1, fullPath.size()));
+            }
+        }
+        return new ArrayList<>(fullPath);
     }
 
     // === Task Display Data ===
@@ -827,13 +1055,19 @@ public class StorageDeliveryManager {
     // === Tick ===
 
     /**
-     * Tick du timer de livraison.
+     * Tick du timer de livraison et reevaluation.
      */
     public void tickDelivery() {
         deliveryTimer++;
         if (deliveryTimer >= DELIVERY_PROCESS_INTERVAL) {
             deliveryTimer = 0;
             processDeliveryQueue();
+        }
+
+        reevaluateTimer++;
+        if (reevaluateTimer >= REEVALUATE_INTERVAL) {
+            reevaluateTimer = 0;
+            reevaluateTasks();
         }
     }
 

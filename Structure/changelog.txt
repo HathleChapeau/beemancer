@@ -3,6 +3,41 @@
 ################################################################################
 
 ================================================================================
+2026-02-08 - Fix Slot Visibility + Delivery Task Redesign
+================================================================================
+
+FIX: Slots bonus essence invisibles
+- DynamicEssenceSlot.isActive() retourne toujours true (slots rendus par Minecraft)
+- Ajout isUnlocked() pour verifier si le slot est fonctionnellement actif
+- Slots verrouilles affichent un fond grise avec barre
+- Ajout isBonusSlotUnlocked() sur le menu pour query depuis le Screen
+
+FEATURE: Extraction dynamique
+- L'abeille prend tout ce qui est disponible a la source (jusqu'a maxStackSize)
+- Plus de snapshot de quantite au spawn
+
+FEATURE: Reevaluation periodique des taches
+- Controller reevalue les taches toutes les 20 ticks
+- Split des taches QUEUED si count > beeCapacity
+- Cancel des taches si demande tombe a 0
+- Sous-taches creees pour surplus quand demande augmente sur tache en vol
+- Les requests ASSIGNED mettent aussi a jour leur count
+
+FEATURE: Redirection mid-flight
+- Annulation de tache avec redirection vers nouvelle tache sans retour controller
+- La bee va au noeud reseau le plus proche (findNearestNetworkNode)
+- Phase REDIRECTING: vol vers relay, puis applyNewTask, puis FLY_TO_SOURCE
+- Phase SAVING_INVENTORY: depot des items transportes avant redirect
+- cancelAndRedirect() sur DeliveryBeeEntity pour pousser une nouvelle tache
+- redirectBee() sur StorageDeliveryManager pour orchestrer la redirection
+- cancelTask() tente une redirection vers tache en queue avant recall simple
+
+SCRIPTS MODIFIES (6):
+- StorageControllerMenu, StorageControllerScreen
+- DeliveryPhaseGoal, DeliveryBeeEntity
+- StorageDeliveryManager, RequestManager
+
+================================================================================
 2026-02-07 - Storage Hive (3 Tiers)
 ================================================================================
 

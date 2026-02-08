@@ -53,11 +53,13 @@ public class StorageControllerScreen extends AbstractContainerScreen<StorageCont
         int y = (height - imageHeight) / 2;
         guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
-        // Draw slot backgrounds for active bonus slots (slots 4-7)
+        // Draw slot backgrounds for bonus slots (slots 4-7)
         for (int i = 4; i < 8; i++) {
             Slot slot = menu.slots.get(i);
-            if (slot.isActive()) {
+            if (menu.isBonusSlotUnlocked(i)) {
                 drawSlotBackground(guiGraphics, x + slot.x - 1, y + slot.y - 1);
+            } else {
+                drawLockedSlotBackground(guiGraphics, x + slot.x - 1, y + slot.y - 1);
             }
         }
     }
@@ -74,6 +76,22 @@ public class StorageControllerScreen extends AbstractContainerScreen<StorageCont
         guiGraphics.fill(x + 17, y, x + 18, y + 17, 0xFFFFFFFF);
         // Inner area
         guiGraphics.fill(x + 1, y + 1, x + 17, y + 17, 0xFF8B8B8B);
+    }
+
+    /**
+     * Dessine un fond de slot 18x18 verrouille (grise, pas assez de hives).
+     */
+    private void drawLockedSlotBackground(GuiGraphics guiGraphics, int x, int y) {
+        // Top and left edges (dark, muted)
+        guiGraphics.fill(x, y, x + 18, y + 1, 0xFF2A2A2A);
+        guiGraphics.fill(x, y + 1, x + 1, y + 17, 0xFF2A2A2A);
+        // Bottom and right edges (light, muted)
+        guiGraphics.fill(x, y + 17, x + 18, y + 18, 0xFF9E9E9E);
+        guiGraphics.fill(x + 17, y, x + 18, y + 17, 0xFF9E9E9E);
+        // Inner area (dark gray - locked)
+        guiGraphics.fill(x + 1, y + 1, x + 17, y + 17, 0xFF555555);
+        // Diagonal cross to indicate locked
+        guiGraphics.fill(x + 4, y + 8, x + 14, y + 9, 0xFF3A3A3A);
     }
 
     @Override

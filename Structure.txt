@@ -328,6 +328,10 @@ LISTE DES FEATURES:
   Assets: 3 blockstates, 9 block models, 3 item models, 3 loot tables
   Registres modifies: BeemancerBlocks (+3), BeemancerItems (+3), BeemancerBlockEntities (+1)
 
+→ Dynamic Delivery Task System
+  Description: Systeme de taches de livraison dynamique. Les abeilles s'adaptent a la quantite disponible a la source (extraction dynamique jusqu'a maxStackSize). Le controller reevalue les taches toutes les 20 ticks (split/merge/cancel). Redirection mid-flight: quand une tache est annulee, l'abeille va au relay le plus proche et prend une nouvelle tache sans revenir au controller. Phase SAVING_INVENTORY pour deposer les items avant redirect. Slots bonus essence toujours visibles (verrouilles si hives insuffisantes).
+  Scripts modifies: DeliveryPhaseGoal.java, DeliveryBeeEntity.java, StorageDeliveryManager.java, RequestManager.java, StorageControllerMenu.java, StorageControllerScreen.java
+
 ================================================================================
 6. FEATURES EN COURS
 ================================================================================

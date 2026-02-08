@@ -82,9 +82,10 @@ public class RequestManager {
                     && existing.getType() == request.getType()
                     && ItemStack.isSameItemSameComponents(existing.getTemplate(), request.getTemplate())
                     && existing.getStatus() != InterfaceRequest.RequestStatus.CANCELLED) {
-                // Mettre a jour le count si la demande est encore PENDING
+                // Mettre a jour le count pour PENDING, BLOCKED ou ASSIGNED
                 if (existing.getStatus() == InterfaceRequest.RequestStatus.PENDING
-                        || existing.getStatus() == InterfaceRequest.RequestStatus.BLOCKED) {
+                        || existing.getStatus() == InterfaceRequest.RequestStatus.BLOCKED
+                        || existing.getStatus() == InterfaceRequest.RequestStatus.ASSIGNED) {
                     existing.setCount(request.getCount());
                     parent.setChanged();
                 }
