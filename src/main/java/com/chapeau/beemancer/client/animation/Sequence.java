@@ -35,6 +35,7 @@ import java.util.List;
 public class Sequence {
 
     private final SequenceEntry[] entries;
+    private final float totalDuration;
     private final List<Animation> startedAnimations = new ArrayList<>();
 
     private boolean playing = false;
@@ -52,6 +53,14 @@ public class Sequence {
      */
     public Sequence(SequenceEntry... entries) {
         this.entries = entries.clone();
+        float maxEnd = 0f;
+        for (SequenceEntry entry : this.entries) {
+            if (entry.isAnimation() && entry.getAnimation() != null && !entry.isStep()) {
+                float end = entry.getThreshold() + entry.getAnimation().getDuration();
+                if (end > maxEnd) maxEnd = end;
+            }
+        }
+        this.totalDuration = maxEnd;
     }
 
     // --- Playback controls ---
@@ -129,6 +138,23 @@ public class Sequence {
 
     public boolean isWaiting() {
         return waiting;
+    }
+
+    /**
+     * Retourne l'avancement de la sequence entre 0.0 et 1.0.
+     * Calcule: elapsed / (derniere animation threshold + sa duree).
+     */
+    public float timelineRatio(float currentTime) {
+        if (!playing || totalDuration <= 0f) return 0f;
+        float elapsed;
+        if (waiting) {
+            elapsed = waitStartTime - startTime - totalPausedDuration;
+        } else if (paused) {
+            elapsed = pauseTime - startTime - totalPausedDuration;
+        } else {
+            elapsed = currentTime - startTime - totalPausedDuration;
+        }
+        return Math.min(elapsed / totalDuration, 1f);
     }
 
     // --- Tick & Apply ---

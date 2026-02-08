@@ -101,6 +101,10 @@ public abstract class Animation {
         return paused;
     }
 
+    public float getDuration() {
+        return duration;
+    }
+
     /**
      * Verifie si l'animation est terminee (uniquement pour TimingEffect.NONE).
      */
