@@ -385,6 +385,7 @@
   "gui.beemancer.storage_controller.honey_consumption": "Honey",
   "gui.beemancer.storage_controller.honey_efficiency": "Efficiency",
   "gui.beemancer.storage_controller.delivery_bees": "Delivery Bees",
+  "gui.beemancer.storage_controller.hives": "Hives",
   "block.beemancer.storage_hive": "Storage Hive",
   "block.beemancer.storage_hive_tier2": "Storage Hive Tier 2",
   "block.beemancer.storage_hive_tier3": "Storage Hive Tier 3",

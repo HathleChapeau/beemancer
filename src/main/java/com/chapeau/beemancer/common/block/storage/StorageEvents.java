@@ -204,9 +204,8 @@ public class StorageEvents {
         StorageNetworkRegistry registry = controller.getNetworkRegistry();
 
         if (hive.getControllerPos() != null) {
-            // Deja liee: unlink
+            // Deja liee: unlink (unlinkHive notifie la hive automatiquement)
             controller.unlinkHive(clickedPos);
-            hive.unlinkController();
             player.displayClientMessage(
                     Component.translatable("message.beemancer.storage_hive.unlinked"),
                     true);
@@ -221,9 +220,8 @@ public class StorageEvents {
                 return;
             }
 
-            // Link
+            // Link (linkHive est self-contained, notifie la hive automatiquement)
             controller.linkHive(clickedPos);
-            hive.linkToController(controller.getBlockPos());
             player.displayClientMessage(
                     Component.translatable("message.beemancer.storage_hive.linked"),
                     true);

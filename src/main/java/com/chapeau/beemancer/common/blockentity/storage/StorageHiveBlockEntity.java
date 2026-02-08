@@ -72,7 +72,8 @@ public class StorageHiveBlockEntity extends BlockEntity {
 
     /**
      * Retourne le controller lié, ou null si invalide.
-     * Invalide automatiquement le lien si le controller n'existe plus.
+     * Getter pur: aucun side-effect, ne modifie pas l'état.
+     * La validation du lien est faite dans serverTick().
      */
     @Nullable
     public StorageControllerBlockEntity getController() {
@@ -83,10 +84,6 @@ public class StorageHiveBlockEntity extends BlockEntity {
         if (be instanceof StorageControllerBlockEntity controller) {
             return controller;
         }
-
-        controllerPos = null;
-        setChanged();
-        updateBlockState(StorageHiveBlock.HiveState.UNLINKED);
         return null;
     }
 
@@ -142,9 +139,19 @@ public class StorageHiveBlockEntity extends BlockEntity {
         if (validateTimer >= VALIDATE_INTERVAL) {
             validateTimer = 0;
             if (controllerPos != null) {
-                StorageControllerBlockEntity controller = getController();
-                if (controller == null) {
+                if (!level.isLoaded(controllerPos)) {
+                    // Chunk pas charge: on ne sait pas si le controller existe, pas d'action
+                    return;
+                }
+                BlockEntity be = level.getBlockEntity(controllerPos);
+                if (!(be instanceof StorageControllerBlockEntity)) {
+                    // Chunk charge mais controller absent: auto-unlink
+                    controllerPos = null;
+                    setChanged();
                     updateBlockState(StorageHiveBlock.HiveState.UNLINKED);
+                } else {
+                    // Controller present: sync etat visuel
+                    updateVisualState();
                 }
             }
         }

@@ -245,6 +245,8 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
                         1.0f, 0.6f, 0.1f, 1.0f, 0.8f);
                 case TERMINAL -> renderBlockLink(lineBuffer, matrix, controllerPos, blockPos,
                         0.1f, 0.8f, 0.9f, 1.0f, 0.8f);
+                case HIVE -> renderBlockLink(lineBuffer, matrix, controllerPos, blockPos,
+                        1.0f, 0.9f, 0.2f, 1.0f, 0.8f);
             }
         }
 

@@ -135,6 +135,10 @@ public class StorageControllerScreen extends AbstractContainerScreen<StorageCont
             Component.translatable("gui.beemancer.storage_controller.delivery_bees"),
             String.valueOf(maxBees));
 
+        drawStat(guiGraphics, statX, statY + lineHeight * 7,
+            Component.translatable("gui.beemancer.storage_controller.hives"),
+            menu.getLinkedHiveCount() + " / " + StorageControllerMenu.MAX_HIVES);
+
         // Player inventory label
         guiGraphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);
     }

@@ -42,6 +42,7 @@ public class StorageControllerMenu extends BeemancerMenu {
 
     private static final int BASE_ESSENCE_SLOTS = 4;
     private static final int TOTAL_ESSENCE_SLOTS = 8;
+    public static final int MAX_HIVES = 4;
     private static final int ESSENCE_SLOT_START = 0;
     private static final int ESSENCE_SLOT_END = 8;
     private static final int PLAYER_INV_START = 8;

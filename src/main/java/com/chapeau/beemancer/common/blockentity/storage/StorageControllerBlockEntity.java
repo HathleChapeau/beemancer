@@ -79,6 +79,8 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     public static final int BASE_ESSENCE_SLOTS = 4;
     public static final int MAX_ESSENCE_SLOTS = BASE_ESSENCE_SLOTS + MAX_LINKED_HIVES;
     private static final int BASE_DELIVERY_BEES = 2;
+    private static final int NETWORK_VALIDATE_INTERVAL = 200;
+    private int networkValidateTimer = 0;
 
     // === Registre central du reseau ===
     private final StorageNetworkRegistry networkRegistry = new StorageNetworkRegistry();
@@ -183,6 +185,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         if (level == null || level.isClientSide()) return;
 
         List<BlockPos> toRemove = new ArrayList<>();
+        List<BlockPos> hivesToRemove = new ArrayList<>();
 
         for (Map.Entry<BlockPos, StorageNetworkRegistry.NetworkEntry> entry : networkRegistry.getAll().entrySet()) {
             BlockPos pos = entry.getKey();
@@ -199,27 +202,47 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
                     }
                 }
                 case TERMINAL -> {
-                    if (!(be instanceof StorageTerminalBlockEntity terminal) || terminal.getControllerPos() == null) {
+                    if (!(be instanceof StorageTerminalBlockEntity terminal)
+                            || terminal.getControllerPos() == null
+                            || !terminal.getControllerPos().equals(worldPosition)) {
                         toRemove.add(pos);
                     }
                 }
                 case INTERFACE -> {
-                    if (!(be instanceof NetworkInterfaceBlockEntity iface) || iface.getControllerPos() == null) {
+                    if (!(be instanceof NetworkInterfaceBlockEntity iface)
+                            || iface.getControllerPos() == null
+                            || !iface.getControllerPos().equals(worldPosition)) {
                         toRemove.add(pos);
                     }
                 }
                 case HIVE -> {
-                    if (!(be instanceof StorageHiveBlockEntity hive) || hive.getControllerPos() == null) {
-                        toRemove.add(pos);
+                    if (!(be instanceof StorageHiveBlockEntity hive)
+                            || hive.getControllerPos() == null
+                            || !hive.getControllerPos().equals(worldPosition)) {
+                        hivesToRemove.add(pos);
                     }
                 }
             }
         }
 
-        if (!toRemove.isEmpty()) {
-            for (BlockPos pos : toRemove) {
-                networkRegistry.unregisterBlock(pos);
+        // Remove non-hive blocks
+        for (BlockPos pos : toRemove) {
+            networkRegistry.unregisterBlock(pos);
+        }
+
+        // Remove hives with proper cleanup (notify hive + drop overflow essences)
+        for (BlockPos hivePos : hivesToRemove) {
+            BlockEntity be = level.getBlockEntity(hivePos);
+            if (be instanceof StorageHiveBlockEntity hive) {
+                hive.unlinkController();
             }
+            networkRegistry.unregisterBlock(hivePos);
+        }
+        if (!hivesToRemove.isEmpty()) {
+            dropOverflowEssences();
+        }
+
+        if (!toRemove.isEmpty() || !hivesToRemove.isEmpty()) {
             setChanged();
             syncToClient();
         }
@@ -294,19 +317,32 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     // === Hives (directement liees au controller) ===
 
     /**
-     * Enregistre une hive dans le registre du reseau.
+     * Enregistre une hive dans le registre du reseau et notifie la hive.
+     * Self-contained: la hive est automatiquement liee au controller.
      */
     public void linkHive(BlockPos hivePos) {
         networkRegistry.registerBlock(hivePos, worldPosition, StorageNetworkRegistry.NetworkBlockType.HIVE);
+        if (level != null && level.isLoaded(hivePos)) {
+            BlockEntity be = level.getBlockEntity(hivePos);
+            if (be instanceof StorageHiveBlockEntity hive) {
+                hive.linkToController(worldPosition);
+            }
+        }
         setChanged();
         syncToClient();
     }
 
     /**
-     * Retire une hive du registre et drop les essences overflow si necessaire.
+     * Retire une hive du registre, notifie la hive et drop les essences overflow.
      */
     public void unlinkHive(BlockPos hivePos) {
         networkRegistry.unregisterBlock(hivePos);
+        if (level != null && level.isLoaded(hivePos)) {
+            BlockEntity be = level.getBlockEntity(hivePos);
+            if (be instanceof StorageHiveBlockEntity hive) {
+                hive.unlinkController();
+            }
+        }
         dropOverflowEssences();
         setChanged();
         syncToClient();
@@ -451,6 +487,12 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         be.deliveryManager.tickDelivery();
         be.tickEditMode();
         be.itemAggregator.cleanupViewers();
+
+        be.networkValidateTimer++;
+        if (be.networkValidateTimer >= NETWORK_VALIDATE_INTERVAL) {
+            be.networkValidateTimer = 0;
+            be.validateNetworkBlocks();
+        }
     }
 
     // === MenuProvider ===

@@ -3,6 +3,44 @@
 ################################################################################
 
 ================================================================================
+2026-02-08 - Fix Storage Hive Phase 2 (Getter pur + linkHive symétrique)
+================================================================================
+
+FIX: linkHive() self-contained (symétrique avec unlinkHive)
+- linkHive() notifie maintenant la hive automatiquement (hive.linkToController)
+- StorageEvents.java ne fait plus le double appel redondant lors du linking
+- Pattern conforme à Create: removeController() self-contained
+
+FIX: getController() getter pur (sans side-effect)
+- getController() ne modifie plus l'état de la hive quand le controller est absent
+- Retourne simplement null si invalide, conforme au pattern Create getControllerBE()
+- Élimine les auto-unlink surprises lors d'appels depuis updateVisualState()
+
+FIX: serverTick() validation explicite
+- Auto-unlink explicite quand le chunk est chargé mais le controller absent
+- Chunk pas chargé = aucune action (pas de faux delink lors du chunk unload)
+- Controller présent = sync état visuel (LINKED/ACTIVE)
+- Sécurisé contre Forge Issue #8302 (setRemoved pendant chunk unload)
+
+================================================================================
+2026-02-08 - Fix Storage Hive Linking Bugs (Phase 1)
+================================================================================
+
+FIX: validateNetworkBlocks() cleanup correct des hives
+- Les hives retirees lors de la validation sont maintenant notifiees (unlinkController)
+- dropOverflowEssences() appele quand des hives sont retirees du registre
+- Verification que controllerPos pointe vers CE controller (pas un autre)
+- Meme verification ajoutee pour TERMINAL et INTERFACE
+
+FIX: unlinkHive() self-contained
+- unlinkHive() notifie maintenant la hive automatiquement (hive.unlinkController)
+- StorageEvents.java ne fait plus le double appel redondant
+
+FIX: Validation periodique du reseau
+- Ajout timer de validation toutes les 200 ticks dans serverTick()
+- Detecte les blocs casses/invalides sans avoir a ouvrir le mode edition
+
+================================================================================
 2026-02-08 - Fix Slot Visibility + Delivery Task Redesign
 ================================================================================
 
