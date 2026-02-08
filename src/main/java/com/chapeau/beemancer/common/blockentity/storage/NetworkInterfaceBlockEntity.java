@@ -353,20 +353,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     }
 
     /**
-     * Somme des count de toutes les tasks NEEDED pour un item donne.
-     */
-    protected int getTodoCount(ItemStack template) {
-        int total = 0;
-        for (InterfaceTask task : tasks) {
-            if (task.getState() == InterfaceTask.TaskState.NEEDED
-                    && task.matchesItem(template)) {
-                total += task.getCount();
-            }
-        }
-        return total;
-    }
-
-    /**
      * Marque une task comme livree par la bee.
      */
     public void markTaskDelivered(java.util.UUID taskId) {
@@ -398,13 +384,106 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     }
 
     /**
-     * Annule les tasks NEEDED excedentaires pour un item donne.
-     * Appele quand le needed est <= 0 (trop d'items deja livres/en route).
+     * Reconcilie les tasks existantes pour un item donne avec la demande actuelle.
+     *
+     * Met a jour les counts des tasks LOCKED (la bee lira le count actuel via
+     * readCurrentInterfaceTaskCount), ajuste/supprime les tasks NEEDED, et cree
+     * de nouvelles tasks si la demande augmente.
+     *
+     * @param template l'item template
+     * @param totalDesired le nombre total d'items desires (apres deduction du stock actuel)
+     * @param beeCapacity la capacite max par bee
+     * @param type IMPORT ou EXPORT
      */
-    protected void cancelExcessTodoTasks(ItemStack template) {
-        boolean changed = tasks.removeIf(
-            task -> task.getState() == InterfaceTask.TaskState.NEEDED
-                    && task.matchesItem(template));
+    protected void reconcileTasksForItem(ItemStack template, int totalDesired,
+                                          int beeCapacity, InterfaceTask.TaskType type) {
+        int remaining = Math.max(0, totalDesired);
+
+        // Phase 1: Ajuster les tasks LOCKED (bees en vol)
+        // Repartir la demande sur les tasks LOCKED existantes
+        for (InterfaceTask task : tasks) {
+            if (task.getState() != InterfaceTask.TaskState.LOCKED || !task.matchesItem(template)) continue;
+
+            if (remaining <= 0) {
+                // Plus besoin de cette task: mettre le count a 0, la bee adaptera
+                task.setCount(0);
+            } else {
+                int itemBeeCapacity = Math.min(beeCapacity, template.getMaxStackSize());
+                int taskShare = Math.min(remaining, itemBeeCapacity);
+                task.setCount(taskShare);
+                remaining -= taskShare;
+            }
+        }
+
+        // Phase 2: Annuler les tasks LOCKED dont le count est 0 (rappeler les bees)
+        StorageControllerBlockEntity controller = getController();
+        java.util.Iterator<InterfaceTask> it = tasks.iterator();
+        while (it.hasNext()) {
+            InterfaceTask task = it.next();
+            if (task.getState() != InterfaceTask.TaskState.LOCKED || !task.matchesItem(template)) continue;
+            if (task.getCount() <= 0) {
+                if (task.getAssignedBeeTaskId() != null && controller != null) {
+                    controller.getDeliveryManager().cancelTask(task.getAssignedBeeTaskId());
+                }
+                it.remove();
+            }
+        }
+
+        // Phase 3: Ajuster les tasks NEEDED
+        // Reduire ou supprimer les NEEDED excedentaires, ou en creer de nouvelles
+        it = tasks.iterator();
+        while (it.hasNext()) {
+            InterfaceTask task = it.next();
+            if (task.getState() != InterfaceTask.TaskState.NEEDED || !task.matchesItem(template)) continue;
+
+            if (remaining <= 0) {
+                it.remove();
+            } else {
+                int itemBeeCapacity = Math.min(beeCapacity, template.getMaxStackSize());
+                int taskShare = Math.min(remaining, itemBeeCapacity);
+                task.setCount(taskShare);
+                remaining -= taskShare;
+            }
+        }
+
+        // Phase 4: Creer de nouvelles tasks NEEDED pour le reste
+        int itemBeeCapacity = Math.min(beeCapacity, template.getMaxStackSize());
+        while (remaining > 0) {
+            int chunk = Math.min(remaining, itemBeeCapacity);
+            tasks.add(new InterfaceTask(type, template, chunk));
+            remaining -= chunk;
+        }
+
+        setChanged();
+    }
+
+    /**
+     * Supprime les tasks (NEEDED et LOCKED) pour des items qui ne sont plus demandes.
+     * Rappelle les bees LOCKED pour ces items.
+     *
+     * @param activeItemKeys set des itemKeys encore actifs apres le scan
+     */
+    protected void cleanupOrphanedTasks(Set<String> activeItemKeys) {
+        StorageControllerBlockEntity controller = getController();
+        boolean changed = false;
+
+        java.util.Iterator<InterfaceTask> it = tasks.iterator();
+        while (it.hasNext()) {
+            InterfaceTask task = it.next();
+            if (task.getState() == InterfaceTask.TaskState.DELIVERED) continue;
+
+            String key = itemKey(task.getTemplate());
+            if (activeItemKeys.contains(key)) continue;
+
+            // Item plus demande: annuler
+            if (task.getState() == InterfaceTask.TaskState.LOCKED
+                    && task.getAssignedBeeTaskId() != null && controller != null) {
+                controller.getDeliveryManager().cancelTask(task.getAssignedBeeTaskId());
+            }
+            it.remove();
+            changed = true;
+        }
+
         if (changed) setChanged();
     }
 

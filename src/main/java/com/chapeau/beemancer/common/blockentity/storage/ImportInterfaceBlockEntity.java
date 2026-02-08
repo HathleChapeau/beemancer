@@ -33,7 +33,9 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Import Interface: scanne l'inventaire adjacent et cree des InterfaceTasks
@@ -110,27 +112,34 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
         cleanupDeliveredTasks();
         int beeCapacity = controller.getBeeCapacity();
 
-        if (filters.isEmpty()) return; // Import sans filtre = rien a importer
-
-        for (InterfaceFilter filter : filters) {
-            doScanWithFilter(adjacent, controller, filter, beeCapacity);
+        if (filters.isEmpty()) {
+            cleanupOrphanedTasks(new HashSet<>());
+            return;
         }
 
+        Set<String> activeItemKeys = new HashSet<>();
+
+        for (InterfaceFilter filter : filters) {
+            doScanWithFilter(adjacent, controller, filter, beeCapacity, activeItemKeys);
+        }
+
+        cleanupOrphanedTasks(activeItemKeys);
         publishTodoTasks(controller);
     }
 
     /**
-     * Avec filtre: chercher les items qui matchent et creer des InterfaceTasks d'import.
+     * Avec filtre: reconcilie les InterfaceTasks d'import pour les items matchant.
      */
     private void doScanWithFilter(Container adjacent, StorageControllerBlockEntity controller,
-                                   InterfaceFilter filter, int beeCapacity) {
+                                   InterfaceFilter filter, int beeCapacity,
+                                   Set<String> activeItemKeys) {
         int[] slots = getOperableSlots(adjacent, filter.getSelectedSlots());
         int targetQty = filter.getQuantity();
 
         if (filter.getMode() == InterfaceFilter.FilterMode.ITEM) {
-            scanItemMode(adjacent, filter, slots, beeCapacity, targetQty);
+            scanItemMode(adjacent, filter, slots, beeCapacity, targetQty, activeItemKeys);
         } else {
-            scanTextMode(adjacent, controller, filter, slots, beeCapacity, targetQty);
+            scanTextMode(adjacent, controller, filter, slots, beeCapacity, targetQty, activeItemKeys);
         }
     }
 
@@ -138,12 +147,13 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
      * Mode ITEM: itere les slots du filtre pour trouver les items a importer.
      */
     private void scanItemMode(Container adjacent, InterfaceFilter filter,
-                               int[] slots, int beeCapacity, int targetQty) {
+                               int[] slots, int beeCapacity, int targetQty,
+                               Set<String> activeItemKeys) {
         for (int i = 0; i < InterfaceFilter.SLOTS_PER_FILTER; i++) {
             ItemStack filterItem = filter.getItem(i);
             if (filterItem.isEmpty()) continue;
 
-            createImportTasksForItem(adjacent, filterItem, slots, beeCapacity, targetQty);
+            reconcileImportItem(adjacent, filterItem, slots, beeCapacity, targetQty, activeItemKeys);
         }
     }
 
@@ -151,52 +161,41 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
      * Mode TEXT: cherche dans le reseau les items matchant le filtre texte.
      */
     private void scanTextMode(Container adjacent, StorageControllerBlockEntity controller,
-                               InterfaceFilter filter, int[] slots, int beeCapacity, int targetQty) {
+                               InterfaceFilter filter, int[] slots, int beeCapacity,
+                               int targetQty, Set<String> activeItemKeys) {
         List<ItemStack> networkItems = controller.getAggregatedItems();
 
         for (ItemStack networkItem : networkItems) {
             if (!filter.matches(networkItem, false)) continue;
 
-            createImportTasksForItem(adjacent, networkItem, slots, beeCapacity, targetQty);
+            reconcileImportItem(adjacent, networkItem, slots, beeCapacity, targetQty, activeItemKeys);
         }
     }
 
     /**
-     * Cree des InterfaceTasks pour un item specifique a importer.
-     * Calcule le needed en tenant compte des tasks deja en cours.
+     * Reconcilie les InterfaceTasks pour un item specifique a importer.
+     * Calcule le needed reel et delegue a reconcileTasksForItem().
      *
      * @param targetQty 0=remplir les slots, N=importer jusqu'a N items
      */
-    private void createImportTasksForItem(Container adjacent, ItemStack filterItem,
-                                           int[] slots, int beeCapacity, int targetQty) {
+    private void reconcileImportItem(Container adjacent, ItemStack filterItem,
+                                      int[] slots, int beeCapacity, int targetQty,
+                                      Set<String> activeItemKeys) {
+        String key = itemKey(filterItem);
+        activeItemKeys.add(key);
+
         int currentCount = countInSlots(adjacent, filterItem, slots);
-        int lockedCount = getLockedCount(filterItem);
-        int deliveredCount = getDeliveredCount(filterItem);
 
         int needed;
         if (targetQty == 0) {
             int capacity = calculateCapacity(adjacent, filterItem, slots);
-            needed = capacity - currentCount - lockedCount - deliveredCount;
+            needed = capacity - currentCount;
         } else {
-            needed = targetQty - currentCount - lockedCount - deliveredCount;
+            needed = targetQty - currentCount;
         }
 
-        if (needed <= 0) {
-            cancelExcessTodoTasks(filterItem);
-            return;
-        }
-
-        int todoCount = getTodoCount(filterItem);
-        int toCreate = needed - todoCount;
-
-        if (toCreate <= 0) return;
-
-        int itemBeeCapacity = Math.min(beeCapacity, filterItem.getMaxStackSize());
-        while (toCreate > 0) {
-            int chunk = Math.min(toCreate, itemBeeCapacity);
-            tasks.add(new InterfaceTask(InterfaceTask.TaskType.IMPORT, filterItem, chunk));
-            toCreate -= chunk;
-        }
+        reconcileTasksForItem(filterItem, needed, beeCapacity,
+            InterfaceTask.TaskType.IMPORT);
     }
 
     // === Helpers ===

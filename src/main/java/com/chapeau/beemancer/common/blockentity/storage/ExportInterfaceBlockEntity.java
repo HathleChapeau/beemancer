@@ -30,8 +30,10 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Export Interface: scanne l'inventaire adjacent et cree des InterfaceTasks
@@ -59,46 +61,52 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
         cleanupDeliveredTasks();
         int beeCapacity = controller.getBeeCapacity();
 
+        Set<String> activeItemKeys = new HashSet<>();
+
         if (filters.isEmpty()) {
-            doScanNoFilter(adjacent, controller, beeCapacity);
+            doScanNoFilter(adjacent, beeCapacity, activeItemKeys);
         } else {
             for (InterfaceFilter filter : filters) {
-                doScanWithFilter(adjacent, controller, filter, beeCapacity);
+                doScanWithFilter(adjacent, filter, beeCapacity, activeItemKeys);
             }
         }
 
+        cleanupOrphanedTasks(activeItemKeys);
         publishTodoTasks(controller);
     }
 
     /**
      * Sans filtre: exporter tous les items des globalSelectedSlots.
      */
-    private void doScanNoFilter(Container adjacent, StorageControllerBlockEntity controller,
-                                 int beeCapacity) {
+    private void doScanNoFilter(Container adjacent, int beeCapacity,
+                                 Set<String> activeItemKeys) {
         int[] slots = getGlobalOperableSlots(adjacent);
-        createExportTasks(adjacent, slots, 0, beeCapacity, null);
+        reconcileExportItems(adjacent, slots, 0, beeCapacity, null, activeItemKeys);
     }
 
     /**
      * Avec filtre: exporter les items qui matchent, en respectant la quantite.
      */
-    private void doScanWithFilter(Container adjacent, StorageControllerBlockEntity controller,
-                                   InterfaceFilter filter, int beeCapacity) {
+    private void doScanWithFilter(Container adjacent, InterfaceFilter filter,
+                                   int beeCapacity, Set<String> activeItemKeys) {
         int[] slots = getOperableSlots(adjacent, filter.getSelectedSlots());
         int keepQty = filter.getQuantity();
-        createExportTasks(adjacent, slots, keepQty, beeCapacity, filter);
+        reconcileExportItems(adjacent, slots, keepQty, beeCapacity, filter, activeItemKeys);
     }
 
     /**
-     * Cree des InterfaceTasks pour chaque type d'item a exporter.
-     * Split en chunks de beeCapacity.
+     * Reconcilie les InterfaceTasks pour chaque type d'item a exporter.
+     * Met a jour les tasks existantes (LOCKED et NEEDED) au lieu de creer
+     * de nouvelles tasks a chaque scan.
      *
      * @param filter si non-null, seuls les items matchant ce filtre sont exportes
      * @param keepQty 0=tout exporter, N=garder N items
+     * @param activeItemKeys set des itemKeys actifs (rempli par cette methode)
      */
-    private void createExportTasks(Container adjacent, int[] slots,
-                                    int keepQty, int beeCapacity,
-                                    InterfaceFilter filter) {
+    private void reconcileExportItems(Container adjacent, int[] slots,
+                                       int keepQty, int beeCapacity,
+                                       InterfaceFilter filter,
+                                       Set<String> activeItemKeys) {
         Map<String, ItemStack> templatesByKey = new LinkedHashMap<>();
         Map<String, Integer> totalCountsByKey = new LinkedHashMap<>();
 
@@ -114,28 +122,16 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
         }
 
         for (Map.Entry<String, ItemStack> entry : templatesByKey.entrySet()) {
+            String key = entry.getKey();
             ItemStack template = entry.getValue();
-            int totalCount = totalCountsByKey.get(entry.getKey());
+            int totalCount = totalCountsByKey.get(key);
+            activeItemKeys.add(key);
 
-            int lockedCount = getLockedCount(template);
-            int exportable = totalCount - keepQty - lockedCount;
+            // Le nombre total desire a exporter (sans deduire locked/needed existants)
+            int exportable = Math.max(0, totalCount - keepQty);
 
-            if (exportable <= 0) {
-                cancelExcessTodoTasks(template);
-                continue;
-            }
-
-            int todoCount = getTodoCount(template);
-            int toCreate = exportable - todoCount;
-
-            if (toCreate <= 0) continue;
-
-            int itemBeeCapacity = Math.min(beeCapacity, template.getMaxStackSize());
-            while (toCreate > 0) {
-                int chunk = Math.min(toCreate, itemBeeCapacity);
-                tasks.add(new InterfaceTask(InterfaceTask.TaskType.EXPORT, template, chunk));
-                toCreate -= chunk;
-            }
+            reconcileTasksForItem(template, exportable, beeCapacity,
+                InterfaceTask.TaskType.EXPORT);
         }
     }
 
