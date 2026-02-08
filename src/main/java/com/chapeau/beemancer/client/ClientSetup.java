@@ -301,7 +301,8 @@ public class ClientSetup {
         event.register(AltarHeartRenderer.PEDESTAL_MODEL_LOC);
         event.register(AltarHeartRenderer.CORE_MODEL_LOC);
         event.register(AltarHeartRenderer.TOP_MODEL_LOC);
-        event.register(AltarHeartRenderer.CONDUIT_MODEL_LOC);
+        event.register(AltarHeartRenderer.CONDUIT_NS_MODEL_LOC);
+        event.register(AltarHeartRenderer.CONDUIT_EW_MODEL_LOC);
 
         // Modèles cubes du Storage Controller formé (cubes animés)
         event.register(StorageControllerRenderer.CUBE_MODEL_LOC);
