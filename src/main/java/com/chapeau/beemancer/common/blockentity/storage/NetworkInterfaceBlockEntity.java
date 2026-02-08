@@ -11,7 +11,7 @@
  * | StorageControllerBlockEntity  | Controller lie       | Acces reseau de stockage       |
  * | INetworkNode                  | Interface reseau     | Recherche controller           |
  * | InterfaceFilter               | Filtre individuel    | Systeme de filtres par ligne   |
- * | RequestManager                | Gestionnaire demandes| Publication demandes           |
+ * | InterfaceTask                 | Tache unitaire       | Gestion tasks TODO/LOCKED/DEL  |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -22,6 +22,7 @@
  */
 package com.chapeau.beemancer.common.blockentity.storage;
 
+import com.chapeau.beemancer.common.block.storage.InterfaceTask;
 import com.chapeau.beemancer.common.menu.storage.NetworkInterfaceMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -68,6 +69,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     protected BlockPos controllerPos = null;
 
     protected final List<InterfaceFilter> filters = new ArrayList<>();
+    protected final List<InterfaceTask> tasks = new ArrayList<>();
     protected final Set<Integer> globalSelectedSlots = new HashSet<>();
     protected boolean active = false;
     protected boolean hasAdjacentGui = false;
@@ -225,12 +227,9 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         setChanged();
         syncToClient();
 
-        // Si desactive, annuler toutes les demandes en cours (rappelle les abeilles en vol)
+        // Si desactive, annuler toutes les tasks en cours (rappelle les abeilles en vol)
         if (wasActive && !active) {
-            StorageControllerBlockEntity controller = getController();
-            if (controller != null) {
-                controller.getRequestManager().cancelRequestsFromRequester(worldPosition);
-            }
+            cancelAllTasks();
         }
     }
 
@@ -262,6 +261,143 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             if (filter.matches(stack, false)) return true;
         }
         return false;
+    }
+
+    // === InterfaceTask Management ===
+
+    /**
+     * Cherche une InterfaceTask par son UUID.
+     */
+    @Nullable
+    public InterfaceTask getTask(java.util.UUID taskId) {
+        for (InterfaceTask task : tasks) {
+            if (task.getTaskId().equals(taskId)) {
+                return task;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retourne la liste des InterfaceTasks (lecture seule pour GUI/debug).
+     */
+    public List<InterfaceTask> getTasks() {
+        return java.util.Collections.unmodifiableList(tasks);
+    }
+
+    /**
+     * Somme des lockedCount de toutes les tasks LOCKED pour un item donne.
+     * Represente le nombre d'items "en cours de livraison" par les bees.
+     */
+    public int getLockedCount(ItemStack template) {
+        int total = 0;
+        for (InterfaceTask task : tasks) {
+            if (task.getState() == InterfaceTask.TaskState.LOCKED
+                    && task.matchesItem(template)) {
+                total += task.getLockedCount();
+            }
+        }
+        return total;
+    }
+
+    /**
+     * Somme des count de toutes les tasks DELIVERED pour un item donne.
+     * Represente les items recemment livres pas encore nettoyes.
+     */
+    public int getDeliveredCount(ItemStack template) {
+        int total = 0;
+        for (InterfaceTask task : tasks) {
+            if (task.getState() == InterfaceTask.TaskState.DELIVERED
+                    && task.matchesItem(template)) {
+                total += task.getCount();
+            }
+        }
+        return total;
+    }
+
+    /**
+     * Somme des count de toutes les tasks TODO pour un item donne.
+     */
+    protected int getTodoCount(ItemStack template) {
+        int total = 0;
+        for (InterfaceTask task : tasks) {
+            if (task.getState() == InterfaceTask.TaskState.TODO
+                    && task.matchesItem(template)) {
+                total += task.getCount();
+            }
+        }
+        return total;
+    }
+
+    /**
+     * Marque une task comme livree par la bee.
+     */
+    public void markTaskDelivered(java.util.UUID taskId) {
+        InterfaceTask task = getTask(taskId);
+        if (task != null && task.getState() == InterfaceTask.TaskState.LOCKED) {
+            task.markDelivered();
+            setChanged();
+        }
+    }
+
+    /**
+     * Deverrouille une task (bee echouee/timeout), remet en TODO.
+     */
+    public void unlockTask(java.util.UUID taskId) {
+        InterfaceTask task = getTask(taskId);
+        if (task != null && task.getState() == InterfaceTask.TaskState.LOCKED) {
+            task.unlockTask();
+            setChanged();
+        }
+    }
+
+    /**
+     * Retire les tasks DELIVERED. Appele au debut de doScan() pour reconcilier.
+     */
+    protected void cleanupDeliveredTasks() {
+        boolean changed = tasks.removeIf(
+            task -> task.getState() == InterfaceTask.TaskState.DELIVERED);
+        if (changed) setChanged();
+    }
+
+    /**
+     * Annule les tasks TODO excedentaires pour un item donne.
+     * Appele quand le needed est <= 0 (trop d'items deja livres/en route).
+     */
+    protected void cancelExcessTodoTasks(ItemStack template) {
+        boolean changed = tasks.removeIf(
+            task -> task.getState() == InterfaceTask.TaskState.TODO
+                    && task.matchesItem(template));
+        if (changed) setChanged();
+    }
+
+    /**
+     * Annule toutes les tasks: rappelle les bees LOCKED, supprime les TODO.
+     * Appele quand l'interface est desactivee ou detruite.
+     */
+    protected void cancelAllTasks() {
+        StorageControllerBlockEntity controller = getController();
+
+        for (InterfaceTask task : tasks) {
+            if (task.getState() == InterfaceTask.TaskState.LOCKED
+                    && task.getAssignedBeeTaskId() != null && controller != null) {
+                controller.getDeliveryManager().cancelTask(task.getAssignedBeeTaskId());
+            }
+        }
+        tasks.clear();
+        setChanged();
+    }
+
+    /**
+     * Publie les tasks TODO aupres du controller pour assignation de bees.
+     * Le controller trouve le coffre source/dest et cree un DeliveryTask.
+     */
+    protected void publishTodoTasks(StorageControllerBlockEntity controller) {
+        for (InterfaceTask task : tasks) {
+            if (task.getState() != InterfaceTask.TaskState.TODO) continue;
+            controller.assignBeeToInterfaceTask(this, task);
+        }
+        setChanged();
     }
 
     // === Adjacent Inventory ===
@@ -385,6 +521,13 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             tag.putBoolean("Active", active);
             tag.putBoolean("HasAdjacentGui", hasAdjacentGui);
 
+            // InterfaceTasks
+            ListTag tasksTag = new ListTag();
+            for (InterfaceTask task : tasks) {
+                tasksTag.add(task.save(registries));
+            }
+            tag.put("InterfaceTasks", tasksTag);
+
             saveExtra(tag, registries);
         } finally {
             isSaving = false;
@@ -423,6 +566,15 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         active = tag.getBoolean("Active");
         hasAdjacentGui = tag.getBoolean("HasAdjacentGui");
 
+        // InterfaceTasks
+        tasks.clear();
+        if (tag.contains("InterfaceTasks")) {
+            ListTag tasksTag = tag.getList("InterfaceTasks", Tag.TAG_COMPOUND);
+            for (int i = 0; i < tasksTag.size(); i++) {
+                tasks.add(InterfaceTask.load(tasksTag.getCompound(i), registries));
+            }
+        }
+
         loadExtra(tag, registries);
     }
 
@@ -460,12 +612,9 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     @Override
     public void setRemoved() {
-        // Annuler toutes les demandes et rappeler les abeilles en vol avant suppression
+        // Annuler toutes les tasks et rappeler les abeilles en vol avant suppression
         if (level != null && !level.isClientSide()) {
-            StorageControllerBlockEntity controller = getController();
-            if (controller != null) {
-                controller.getRequestManager().cancelRequestsFromRequester(worldPosition);
-            }
+            cancelAllTasks();
         }
         super.setRemoved();
     }

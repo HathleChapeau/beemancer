@@ -30,6 +30,7 @@ package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
+import com.chapeau.beemancer.common.block.storage.InterfaceTask;
 import com.chapeau.beemancer.common.menu.storage.StorageControllerMenu;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
@@ -81,6 +82,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     private static final int BASE_DELIVERY_BEES = 2;
     private static final int NETWORK_VALIDATE_INTERVAL = 200;
     private int networkValidateTimer = 0;
+    private int beeCapacity = ControllerStats.BASE_DROP;
 
     // === Registre central du reseau ===
     private final StorageNetworkRegistry networkRegistry = new StorageNetworkRegistry();
@@ -106,6 +108,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
+            recalculateBeeCapacity();
             if (!isSaving) {
                 syncToClient();
             }
@@ -305,11 +308,9 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     /**
      * Retire une interface du registre du reseau.
-     * Annule les demandes en cours depuis cette interface.
      */
     public void unlinkInterface(BlockPos interfacePos) {
         networkRegistry.unregisterBlock(interfacePos);
-        requestManager.cancelRequestsFromSource(interfacePos);
         setChanged();
         syncToClient();
     }
@@ -468,6 +469,60 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     public boolean isHoneyDepleted() { return deliveryManager.isHoneyDepleted(); }
 
+    // === Bee Capacity ===
+
+    /**
+     * Retourne la capacite max d'une bee (items par trajet).
+     * Cache recalcule quand les essences changent.
+     */
+    public int getBeeCapacity() { return beeCapacity; }
+
+    private void recalculateBeeCapacity() {
+        this.beeCapacity = ControllerStats.getQuantity(essenceSlots);
+    }
+
+    /**
+     * Assigne une bee a une InterfaceTask d'interface.
+     * Trouve le coffre source (import) ou destination (export), cree un DeliveryTask.
+     * @return true si la task a ete assignee avec succes
+     */
+    public boolean assignBeeToInterfaceTask(NetworkInterfaceBlockEntity iface, InterfaceTask task) {
+        if (level == null) return false;
+
+        if (task.getType() == InterfaceTask.TaskType.IMPORT) {
+            BlockPos chest = deliveryManager.findChestWithItem(task.getTemplate(), 1);
+            if (chest == null) return false;
+            if (chest.equals(iface.getAdjacentPos())) return false;
+
+            DeliveryTask dt = new DeliveryTask(
+                task.getTemplate(), task.getCount(),
+                chest, iface.getBlockPos(),
+                DeliveryTask.TaskOrigin.AUTOMATION, false,
+                iface.getBlockPos(), null,
+                task.getTaskId(), iface.getBlockPos()
+            );
+            deliveryManager.addDeliveryTask(dt);
+            task.lockTask(dt.getTaskId(), level.getGameTime());
+            return true;
+
+        } else {
+            BlockPos dest = itemAggregator.findSlotForItem(task.getTemplate());
+            if (dest == null) return false;
+            if (dest.equals(iface.getAdjacentPos())) return false;
+
+            DeliveryTask dt = new DeliveryTask(
+                task.getTemplate(), task.getCount(),
+                iface.getAdjacentPos(), dest,
+                DeliveryTask.TaskOrigin.AUTOMATION, false,
+                iface.getBlockPos(), null,
+                task.getTaskId(), iface.getBlockPos()
+            );
+            deliveryManager.addDeliveryTask(dt);
+            task.lockTask(dt.getTaskId(), level.getGameTime());
+            return true;
+        }
+    }
+
     public boolean cancelTask(UUID id) {
         if (deliveryManager.cancelTask(id)) return true;
         requestManager.cancelRequest(id);
@@ -583,6 +638,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         if (tag.contains("EssenceSlots")) {
             essenceSlots.deserializeNBT(registries, tag.getCompound("EssenceSlots"));
         }
+        recalculateBeeCapacity();
 
         // Registre central: charger ou migrer depuis l'ancien format
         if (tag.contains("NetworkRegistry")) {

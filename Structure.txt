@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-07                     #
-#  (Storage Hive (3 Tiers) - 2026-02-07)                                       #
+#                         Dernière mise à jour: 2026-02-08                     #
+#  (InterfaceTask Refactoring - 2026-02-08)                                     #
 ################################################################################
 
 ================================================================================
@@ -82,7 +82,7 @@ Philosophie:
 │   StorageChestManager               │ Gestion coffres réseau stockage      │
 │   StorageItemAggregator             │ Agrégation/dépôt/extraction items    │
 │   StorageDeliveryManager            │ Queue livraison + spawn/recall bees  │
-│   RequestManager                    │ Demandes interfaces/terminaux        │
+│   RequestManager                    │ Demandes terminaux (joueur)          │
 │   StorageMultiblockManager          │ Formation/destruction multibloc      │
 │ common/block/hive/                    │                                        │
 │   HiveBeeLifecycleManager           │ Cycle de vie abeilles dans ruche     │
@@ -331,6 +331,11 @@ LISTE DES FEATURES:
 → Dynamic Delivery Task System
   Description: Systeme de taches de livraison dynamique. Les abeilles s'adaptent a la quantite disponible a la source (extraction dynamique jusqu'a maxStackSize). Le controller reevalue les taches toutes les 20 ticks (split/merge/cancel). Redirection mid-flight: quand une tache est annulee, l'abeille va au relay le plus proche et prend une nouvelle tache sans revenir au controller. Phase SAVING_INVENTORY pour deposer les items avant redirect. Slots bonus essence toujours visibles (verrouilles si hives insuffisantes).
   Scripts modifies: DeliveryPhaseGoal.java, DeliveryBeeEntity.java, StorageDeliveryManager.java, RequestManager.java, StorageControllerMenu.java, StorageControllerScreen.java
+
+→ InterfaceTask Refactoring
+  Description: Import/Export interfaces gerent leurs propres taches via InterfaceTask (TODO/LOCKED/DELIVERED) au lieu de passer par RequestManager. Lecture adaptative du count: les abeilles lisent le count actuel a l'extraction ET a la livraison pour s'adapter aux changements en cours de route. Controller expose beeCapacity cache. RequestManager desormais terminal-only.
+  Scripts crees: InterfaceTask.java
+  Scripts modifies: StorageControllerBlockEntity.java (beeCapacity, assignBeeToInterfaceTask), DeliveryTask.java (interfaceTaskId/interfacePos), NetworkInterfaceBlockEntity.java (gestion tasks), ImportInterfaceBlockEntity.java (rewrite doScan), ExportInterfaceBlockEntity.java (rewrite doScan), DeliveryBeeEntity.java (interfaceTaskId, readCurrentInterfaceTaskCount), DeliveryPhaseGoal.java (extraction/livraison adaptatives), StorageDeliveryManager.java (skip split interface, notifyInterfaceTaskFailed), RequestManager.java (cleanup terminal-only)
 
 ================================================================================
 6. FEATURES EN COURS

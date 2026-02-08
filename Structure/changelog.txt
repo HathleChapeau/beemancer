@@ -3,6 +3,35 @@
 ################################################################################
 
 ================================================================================
+2026-02-08 - InterfaceTask Refactoring
+================================================================================
+
+REFONTE: Import/Export interfaces gerent leurs propres taches
+- InterfaceTask.java (NOUVEAU): Tache unitaire avec etats TODO/LOCKED/DELIVERED,
+  count mutable, NBT. LOCKED sauvegarde comme TODO (bees ephemeres au reload).
+- StorageControllerBlockEntity: +beeCapacity cache, +getBeeCapacity(),
+  +recalculateBeeCapacity(), +assignBeeToInterfaceTask() (trouve coffre, cree
+  DeliveryTask, lock InterfaceTask)
+- DeliveryTask: +interfaceTaskId, +interfacePos (nullable), guard splitRemaining()
+  pour tasks pre-split par l'interface
+- NetworkInterfaceBlockEntity: +tasks list, getTask/lock/deliver/unlock/cleanup,
+  getLockedCount/getDeliveredCount/getTodoCount, cancelAllTasks, publishTodoTasks,
+  NBT save/load tasks
+- ImportInterfaceBlockEntity: rewrite doScan() → InterfaceTasks (needed = targetQty
+  - currentCount - lockedCount - deliveredCount), split par beeCapacity
+- ExportInterfaceBlockEntity: rewrite doScan() → InterfaceTasks (exportable =
+  totalCount - keepQty - lockedCount), split par beeCapacity
+- DeliveryBeeEntity: +interfaceTaskId/Pos, +readCurrentInterfaceTaskCount(),
+  notifyTaskCompleted() notifie aussi l'interface (markTaskDelivered)
+- DeliveryPhaseGoal: performExtraction() lit count actuel depuis InterfaceTask,
+  performDelivery() adapte la livraison (excedent retourne au reseau)
+- StorageDeliveryManager: skip split pour interface tasks, finishTask() differencie
+  interface vs terminal, +notifyInterfaceTaskFailed() (remet en TODO),
+  reevaluateTasks() skip interface tasks
+- RequestManager: cleanup (terminal-only), suppression check interface dans
+  validateRequestSources()
+
+================================================================================
 2026-02-08 - Fix Extraction + Request-as-Parent Display
 ================================================================================
 

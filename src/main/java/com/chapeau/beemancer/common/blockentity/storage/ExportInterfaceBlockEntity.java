@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ExportInterfaceBlockEntity.java]
- * Description: Interface d'export - exporte les items de l'inventaire adjacent vers un coffre du reseau
+ * Description: Interface d'export - exporte les items de l'inventaire adjacent vers le reseau
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,8 +9,8 @@
  * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
  * | NetworkInterfaceBlockEntity   | Parent abstrait      | Filtres, controller, scan      |
- * | StorageControllerBlockEntity  | Controller lie       | Taches de livraison, depot     |
- * | ControllerStats               | Quantite max         | Limite par tache               |
+ * | StorageControllerBlockEntity  | Controller lie       | Assignation bees, depot        |
+ * | InterfaceTask                 | Tache unitaire       | Export par chunks bee-sized     |
  * | InterfaceFilter               | Filtre individuel    | Logique per-filter             |
  * ------------------------------------------------------------
  *
@@ -21,8 +21,7 @@
  */
 package com.chapeau.beemancer.common.blockentity.storage;
 
-import com.chapeau.beemancer.common.block.storage.ControllerStats;
-import com.chapeau.beemancer.common.block.storage.InterfaceRequest;
+import com.chapeau.beemancer.common.block.storage.InterfaceTask;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -35,9 +34,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Export Interface: scanne l'inventaire adjacent et cree des taches EXTRACT
- * pour qu'une abeille aille physiquement chercher les items, puis les depose
- * dans un coffre du reseau ayant de la place.
+ * Export Interface: scanne l'inventaire adjacent et cree des InterfaceTasks
+ * pour qu'une abeille aille chercher les items et les depose dans le reseau.
  *
  * Comportement quantite:
  * - quantite=0: exporter tout
@@ -45,8 +43,8 @@ import java.util.Map;
  *
  * Sans filtre: exporter tous les items des globalSelectedSlots.
  *
- * L'abeille fait le trajet complet:
- * controller → adjacent (extraction) → controller → coffre destination (depot) → controller
+ * Utilise InterfaceTask (TODO/LOCKED/DELIVERED) pour un suivi precis
+ * avec adaptation dynamique du count.
  */
 public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
 
@@ -58,47 +56,49 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
 
     @Override
     protected void doScan(Container adjacent, StorageControllerBlockEntity controller) {
-        int maxQuantity = ControllerStats.getQuantity(controller.getEssenceSlots());
+        cleanupDeliveredTasks();
+        int beeCapacity = controller.getBeeCapacity();
 
         if (filters.isEmpty()) {
-            doScanNoFilter(adjacent, controller, maxQuantity);
+            doScanNoFilter(adjacent, controller, beeCapacity);
         } else {
             for (InterfaceFilter filter : filters) {
-                doScanWithFilter(adjacent, controller, filter, maxQuantity);
+                doScanWithFilter(adjacent, controller, filter, beeCapacity);
             }
         }
+
+        publishTodoTasks(controller);
     }
 
     /**
      * Sans filtre: exporter tous les items des globalSelectedSlots.
      */
     private void doScanNoFilter(Container adjacent, StorageControllerBlockEntity controller,
-                                 int maxQuantity) {
+                                 int beeCapacity) {
         int[] slots = getGlobalOperableSlots(adjacent);
-        createExportRequests(adjacent, controller, slots,0, maxQuantity, null);
+        createExportTasks(adjacent, slots, 0, beeCapacity, null);
     }
 
     /**
      * Avec filtre: exporter les items qui matchent, en respectant la quantite.
      */
     private void doScanWithFilter(Container adjacent, StorageControllerBlockEntity controller,
-                                   InterfaceFilter filter, int maxQuantity) {
+                                   InterfaceFilter filter, int beeCapacity) {
         int[] slots = getOperableSlots(adjacent, filter.getSelectedSlots());
         int keepQty = filter.getQuantity();
-        createExportRequests(adjacent, controller, slots,keepQty, maxQuantity, filter);
+        createExportTasks(adjacent, slots, keepQty, beeCapacity, filter);
     }
 
     /**
-     * Publie des demandes EXPORT pour chaque type d'item a exporter.
-     * Le controller (via RequestManager) decidera ou envoyer les items.
+     * Cree des InterfaceTasks pour chaque type d'item a exporter.
+     * Split en chunks de beeCapacity.
      *
      * @param filter si non-null, seuls les items matchant ce filtre sont exportes
      * @param keepQty 0=tout exporter, N=garder N items
      */
-    private void createExportRequests(Container adjacent, StorageControllerBlockEntity controller,
-                                       int[] slots, int keepQty, int maxQuantity,
-                                       InterfaceFilter filter) {
-        RequestManager requestManager = controller.getRequestManager();
+    private void createExportTasks(Container adjacent, int[] slots,
+                                    int keepQty, int beeCapacity,
+                                    InterfaceFilter filter) {
         Map<String, ItemStack> templatesByKey = new LinkedHashMap<>();
         Map<String, Integer> totalCountsByKey = new LinkedHashMap<>();
 
@@ -115,21 +115,27 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
 
         for (Map.Entry<String, ItemStack> entry : templatesByKey.entrySet()) {
             ItemStack template = entry.getValue();
-
-            int requestedCount = requestManager.getRequestedCount(
-                worldPosition, InterfaceRequest.RequestType.EXPORT, template);
-
             int totalCount = totalCountsByKey.get(entry.getKey());
-            int exportable = totalCount - keepQty - requestedCount;
-            if (exportable <= 0) continue;
 
-            int toExport = Math.min(exportable, maxQuantity);
+            int lockedCount = getLockedCount(template);
+            int exportable = totalCount - keepQty - lockedCount;
 
-            InterfaceRequest request = new InterfaceRequest(
-                getAdjacentPos(), worldPosition, InterfaceRequest.RequestType.EXPORT,
-                template, toExport, InterfaceRequest.TaskOrigin.AUTOMATION
-            );
-            requestManager.publishRequest(request);
+            if (exportable <= 0) {
+                cancelExcessTodoTasks(template);
+                continue;
+            }
+
+            int todoCount = getTodoCount(template);
+            int toCreate = exportable - todoCount;
+
+            if (toCreate <= 0) continue;
+
+            int itemBeeCapacity = Math.min(beeCapacity, template.getMaxStackSize());
+            while (toCreate > 0) {
+                int chunk = Math.min(toCreate, itemBeeCapacity);
+                tasks.add(new InterfaceTask(InterfaceTask.TaskType.EXPORT, template, chunk));
+                toCreate -= chunk;
+            }
         }
     }
 

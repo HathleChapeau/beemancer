@@ -424,7 +424,8 @@ public class DeliveryPhaseGoal extends Goal {
 
     /**
      * Extraction a la source: le controller extrait l'item du coffre/container.
-     * Prend tout ce qui est disponible jusqu'a maxStackSize (extraction dynamique).
+     * Pour les taches d'interface, lit le count actuel depuis l'InterfaceTask
+     * pour s'adapter aux changements pendant le transit.
      */
     private void performExtraction(Level level) {
         BlockEntity be = level.getBlockEntity(bee.getControllerPos());
@@ -433,7 +434,20 @@ public class DeliveryPhaseGoal extends Goal {
             return;
         }
 
-        int maxExtract = bee.getRequestCount();
+        int maxExtract;
+        if (bee.getInterfaceTaskId() != null) {
+            int currentCount = bee.readCurrentInterfaceTaskCount();
+            if (currentCount <= 0) {
+                // Task annulee ou count a 0: abandonner
+                bee.notifyTaskFailed();
+                bee.discard();
+                return;
+            }
+            maxExtract = Math.min(currentCount, bee.getRequestCount());
+        } else {
+            maxExtract = bee.getRequestCount();
+        }
+
         ItemStack extracted = controller.extractItemForDelivery(
             bee.getTemplate(), maxExtract, bee.getSourcePos()
         );
@@ -443,6 +457,10 @@ public class DeliveryPhaseGoal extends Goal {
     /**
      * Livraison a destination: insere les items dans un IDeliveryEndpoint (import interface,
      * terminal) ou directement dans un Container (coffre du reseau pour export).
+     *
+     * Pour les taches d'interface, lit le count actuel et adapte la livraison:
+     * - Si le count a diminue: livrer seulement le count actuel, retourner l'excedent au reseau
+     * - Si le count a augmente: livrer tout, l'interface creera une nouvelle task pour le delta
      */
     private void performDelivery() {
         Level level = bee.level();
@@ -451,24 +469,67 @@ public class DeliveryPhaseGoal extends Goal {
         ItemStack carried = bee.getCarriedItems();
         if (carried.isEmpty()) return;
 
-        BlockEntity destBe = level.getBlockEntity(bee.getDestPos());
+        // Adaptation du count pour les taches d'interface
+        ItemStack toDeliver = carried;
+        ItemStack excess = ItemStack.EMPTY;
 
-        ItemStack remaining;
-        if (destBe instanceof IDeliveryEndpoint endpoint) {
-            remaining = endpoint.receiveDeliveredItems(carried);
-        } else if (destBe instanceof Container container) {
-            remaining = ContainerHelper.insertItem(container, carried);
-        } else {
-            remaining = carried;
-        }
-
-        if (!remaining.isEmpty()) {
-            BlockEntity controllerBe = level.getBlockEntity(bee.getControllerPos());
-            if (controllerBe instanceof StorageControllerBlockEntity controller) {
-                controller.depositItemForDelivery(remaining, null);
+        if (bee.getInterfaceTaskId() != null) {
+            int currentCount = bee.readCurrentInterfaceTaskCount();
+            if (currentCount >= 0 && carried.getCount() > currentCount) {
+                // Task a diminue: livrer seulement currentCount, retourner le reste
+                if (currentCount > 0) {
+                    toDeliver = carried.copyWithCount(currentCount);
+                } else {
+                    toDeliver = ItemStack.EMPTY;
+                }
+                excess = carried.copyWithCount(carried.getCount() - Math.max(0, currentCount));
             }
         }
 
+        BlockEntity destBe = level.getBlockEntity(bee.getDestPos());
+
+        ItemStack remaining;
+        if (!toDeliver.isEmpty()) {
+            if (destBe instanceof IDeliveryEndpoint endpoint) {
+                remaining = endpoint.receiveDeliveredItems(toDeliver);
+            } else if (destBe instanceof Container container) {
+                remaining = ContainerHelper.insertItem(container, toDeliver);
+            } else {
+                remaining = toDeliver;
+            }
+        } else {
+            remaining = ItemStack.EMPTY;
+        }
+
+        // Combiner remaining + excess et retourner au reseau
+        ItemStack toReturn = ItemStack.EMPTY;
+        if (!remaining.isEmpty() && !excess.isEmpty()
+                && ItemStack.isSameItemSameComponents(remaining, excess)) {
+            toReturn = remaining.copyWithCount(remaining.getCount() + excess.getCount());
+        } else if (!remaining.isEmpty()) {
+            toReturn = remaining;
+            if (!excess.isEmpty()) {
+                // Types differents: deposer l'excedent separement
+                returnToNetwork(level, excess);
+            }
+        } else if (!excess.isEmpty()) {
+            toReturn = excess;
+        }
+
+        if (!toReturn.isEmpty()) {
+            returnToNetwork(level, toReturn);
+        }
+
         bee.setCarriedItems(ItemStack.EMPTY);
+    }
+
+    /**
+     * Restitue des items au reseau de stockage via le controller.
+     */
+    private void returnToNetwork(Level level, ItemStack items) {
+        BlockEntity controllerBe = level.getBlockEntity(bee.getControllerPos());
+        if (controllerBe instanceof StorageControllerBlockEntity controller) {
+            controller.depositItemForDelivery(items, null);
+        }
     }
 }

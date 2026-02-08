@@ -16,9 +16,8 @@
  *
  * UTILISE PAR:
  * - StorageControllerBlockEntity.java (delegation tick/NBT)
- * - ImportInterfaceBlockEntity.java (publication demandes)
- * - ExportInterfaceBlockEntity.java (publication demandes)
  * - StorageTerminalBlockEntity.java (publication demandes)
+ * - StorageDeliveryManager.java (completion/echec taches terminal)
  *
  * ============================================================
  */
@@ -44,10 +43,11 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Recoit les demandes des interfaces et terminaux, les convertit en DeliveryTasks.
+ * Recoit les demandes des terminaux, les convertit en DeliveryTasks.
+ * Les interfaces utilisent desormais InterfaceTask (gere directement par l'interface).
  *
  * Flux:
- * 1. Interface/terminal publie une InterfaceRequest via publishRequest()
+ * 1. Terminal publie une InterfaceRequest via publishRequest()
  * 2. processRequests() (chaque tick) convertit les PENDING en DeliveryTasks
  * 3. Quand la tache est terminee, onTaskCompleted() retire la demande
  * 4. Si la tache echoue, onTaskFailed() remet la demande en PENDING
@@ -385,8 +385,8 @@ public class RequestManager {
     }
 
     /**
-     * Valide que les sources des demandes actives existent encore et sont operationnelles.
-     * Annule les demandes dont l'interface/terminal source a ete detruite ou desactivee.
+     * Valide que les sources des demandes actives existent encore.
+     * Annule les demandes dont le terminal source a ete detruit.
      */
     private void validateRequestSources() {
         if (parent.getLevel() == null) return;
@@ -405,25 +405,12 @@ public class RequestManager {
 
             BlockEntity be = parent.getLevel().getBlockEntity(reqPos);
 
-            // Interface detruite
+            // Terminal detruit
             if (be == null) {
                 for (InterfaceRequest r : activeRequests.values()) {
                     if (r.getRequesterPos().equals(reqPos)
                             && r.getStatus() != InterfaceRequest.RequestStatus.CANCELLED) {
                         toCancel.add(r.getRequestId());
-                    }
-                }
-                continue;
-            }
-
-            // Interface desactivee ou delinkee
-            if (be instanceof NetworkInterfaceBlockEntity iface) {
-                if (!iface.isActive() || !iface.isLinked()) {
-                    for (InterfaceRequest r : activeRequests.values()) {
-                        if (r.getRequesterPos().equals(reqPos)
-                                && r.getStatus() != InterfaceRequest.RequestStatus.CANCELLED) {
-                            toCancel.add(r.getRequestId());
-                        }
                     }
                 }
             }

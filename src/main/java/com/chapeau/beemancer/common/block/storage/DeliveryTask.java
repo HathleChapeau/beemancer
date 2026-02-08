@@ -62,6 +62,8 @@ public class DeliveryTask {
 
     private final UUID taskId;
     @Nullable private final UUID parentTaskId;
+    @Nullable private final UUID interfaceTaskId;
+    @Nullable private final BlockPos interfacePos;
     private final ItemStack template;
     private int count;
     private final BlockPos sourcePos;
@@ -80,7 +82,7 @@ public class DeliveryTask {
                         BlockPos destPos, TaskOrigin origin,
                         @Nullable BlockPos requesterPos) {
         this(template, count, sourcePos, destPos, 0, Collections.emptyList(),
-            origin, false, requesterPos, null);
+            origin, false, requesterPos, null, null, null);
     }
 
     /**
@@ -90,19 +92,48 @@ public class DeliveryTask {
                         BlockPos destPos, TaskOrigin origin, boolean preloaded,
                         @Nullable BlockPos requesterPos) {
         this(template, count, sourcePos, destPos, 0, Collections.emptyList(),
-            origin, preloaded, requesterPos, null);
+            origin, preloaded, requesterPos, null, null, null);
     }
 
     /**
-     * Constructeur complet.
+     * Constructeur complet (sans interface).
      */
     public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
                         BlockPos destPos, int priority, List<UUID> dependencies,
                         TaskOrigin origin, boolean preloaded,
                         @Nullable BlockPos requesterPos,
                         @Nullable UUID parentTaskId) {
+        this(template, count, sourcePos, destPos, priority, dependencies,
+            origin, preloaded, requesterPos, parentTaskId, null, null);
+    }
+
+    /**
+     * Constructeur complet avec interface task.
+     */
+    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
+                        BlockPos destPos, TaskOrigin origin, boolean preloaded,
+                        @Nullable BlockPos requesterPos,
+                        @Nullable UUID parentTaskId,
+                        @Nullable UUID interfaceTaskId,
+                        @Nullable BlockPos interfacePos) {
+        this(template, count, sourcePos, destPos, 0, Collections.emptyList(),
+            origin, preloaded, requesterPos, parentTaskId, interfaceTaskId, interfacePos);
+    }
+
+    /**
+     * Constructeur maitre.
+     */
+    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
+                        BlockPos destPos, int priority, List<UUID> dependencies,
+                        TaskOrigin origin, boolean preloaded,
+                        @Nullable BlockPos requesterPos,
+                        @Nullable UUID parentTaskId,
+                        @Nullable UUID interfaceTaskId,
+                        @Nullable BlockPos interfacePos) {
         this.taskId = UUID.randomUUID();
         this.parentTaskId = parentTaskId;
+        this.interfaceTaskId = interfaceTaskId;
+        this.interfacePos = interfacePos;
         this.template = template.copy();
         this.count = count;
         this.sourcePos = sourcePos;
@@ -122,9 +153,13 @@ public class DeliveryTask {
                          int count, BlockPos sourcePos, BlockPos destPos,
                          @Nullable BlockPos requesterPos, DeliveryState state,
                          int priority, List<UUID> dependencies,
-                         TaskOrigin origin, boolean preloaded) {
+                         TaskOrigin origin, boolean preloaded,
+                         @Nullable UUID interfaceTaskId,
+                         @Nullable BlockPos interfacePos) {
         this.taskId = taskId;
         this.parentTaskId = parentTaskId;
+        this.interfaceTaskId = interfaceTaskId;
+        this.interfacePos = interfacePos;
         this.template = template;
         this.count = count;
         this.sourcePos = sourcePos;
@@ -141,6 +176,8 @@ public class DeliveryTask {
 
     public UUID getTaskId() { return taskId; }
     @Nullable public UUID getParentTaskId() { return parentTaskId; }
+    @Nullable public UUID getInterfaceTaskId() { return interfaceTaskId; }
+    @Nullable public BlockPos getInterfacePos() { return interfacePos; }
     /**
      * Retourne l'ID racine du groupe de taches: parentTaskId si c'est une subtask, sinon taskId.
      * Utilise pour retrouver la request associee meme pour les subtasks split.
@@ -183,6 +220,7 @@ public class DeliveryTask {
      * La subtask herite du rootTaskId pour garder le lien avec la request parente.
      */
     public DeliveryTask splitRemaining(int beeCapacity) {
+        if (interfaceTaskId != null) return null;
         if (count <= beeCapacity) return null;
 
         int remaining = count - beeCapacity;
@@ -203,6 +241,12 @@ public class DeliveryTask {
         tag.putUUID("TaskId", taskId);
         if (parentTaskId != null) {
             tag.putUUID("ParentTaskId", parentTaskId);
+        }
+        if (interfaceTaskId != null) {
+            tag.putUUID("InterfaceTaskId", interfaceTaskId);
+        }
+        if (interfacePos != null) {
+            tag.putLong("InterfacePos", interfacePos.asLong());
         }
         tag.put("Template", template.saveOptional(registries));
         tag.putInt("Count", count);
@@ -264,6 +308,11 @@ public class DeliveryTask {
         BlockPos requesterPos = tag.contains("RequesterPos")
             ? BlockPos.of(tag.getLong("RequesterPos")) : null;
 
+        UUID interfaceTaskId = tag.contains("InterfaceTaskId")
+            ? tag.getUUID("InterfaceTaskId") : null;
+        BlockPos interfacePos = tag.contains("InterfacePos")
+            ? BlockPos.of(tag.getLong("InterfacePos")) : null;
+
         List<UUID> dependencies = new ArrayList<>();
         if (tag.contains("Dependencies")) {
             ListTag depTag = tag.getList("Dependencies", Tag.TAG_COMPOUND);
@@ -273,6 +322,6 @@ public class DeliveryTask {
         }
 
         return new DeliveryTask(id, parentId, template, count, source, dest, requesterPos,
-            state, priority, dependencies, origin, preloaded);
+            state, priority, dependencies, origin, preloaded, interfaceTaskId, interfacePos);
     }
 }

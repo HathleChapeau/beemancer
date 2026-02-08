@@ -456,14 +456,17 @@ public class StorageDeliveryManager {
 
             deliveryQueue.remove(eligible);
 
-            int beeCapacity = Math.min(
-                ControllerStats.getQuantity(parent.getEssenceSlots()),
-                eligible.getTemplate().getMaxStackSize()
-            );
-            if (eligible.getCount() > beeCapacity) {
-                DeliveryTask rest = eligible.splitRemaining(beeCapacity);
-                if (rest != null) {
-                    deliveryQueue.add(rest);
+            // Interface tasks sont deja split par l'interface, ne pas re-split
+            if (eligible.getInterfaceTaskId() == null) {
+                int beeCapacity = Math.min(
+                    ControllerStats.getQuantity(parent.getEssenceSlots()),
+                    eligible.getTemplate().getMaxStackSize()
+                );
+                if (eligible.getCount() > beeCapacity) {
+                    DeliveryTask rest = eligible.splitRemaining(beeCapacity);
+                    if (rest != null) {
+                        deliveryQueue.add(rest);
+                    }
                 }
             }
 
@@ -489,10 +492,12 @@ public class StorageDeliveryManager {
         RequestManager requestManager = parent.getRequestManager();
 
         // Reevaluer les taches en queue: annuler si demande tombe a 0
+        // (seulement les tasks terminal, les tasks interface sont gerees par l'interface)
         Iterator<DeliveryTask> queueIt = deliveryQueue.iterator();
         while (queueIt.hasNext()) {
             DeliveryTask task = queueIt.next();
             if (task.getState() != DeliveryTask.DeliveryState.QUEUED) continue;
+            if (task.getInterfaceTaskId() != null) continue; // Geree par l'interface
 
             InterfaceRequest request = requestManager.findRequestByTaskId(task.getRootTaskId());
             if (request == null) continue;
@@ -505,8 +510,10 @@ public class StorageDeliveryManager {
         }
 
         // Reevaluer les taches actives: annuler si demande tombe a 0
+        // (seulement les tasks terminal)
         for (DeliveryTask task : new ArrayList<>(activeTasks)) {
             if (task.getState() != DeliveryTask.DeliveryState.FLYING) continue;
+            if (task.getInterfaceTaskId() != null) continue; // Geree par l'interface
 
             InterfaceRequest request = requestManager.findRequestByTaskId(task.getRootTaskId());
             if (request == null) continue;
@@ -638,7 +645,9 @@ public class StorageDeliveryManager {
             carried,
             ControllerStats.getFlightSpeedMultiplier(parent.getEssenceSlots()),
             ControllerStats.getSearchSpeedMultiplier(parent.getEssenceSlots()),
-            task.getTaskId()
+            task.getTaskId(),
+            task.getInterfaceTaskId(),
+            task.getInterfacePos()
         );
 
         // Calculer les waypoints: outbound (→source), transit (source→dest), home (dest→controller)
@@ -739,17 +748,39 @@ public class StorageDeliveryManager {
 
                 if (state == DeliveryTask.DeliveryState.COMPLETED) {
                     completedTaskIds.add(taskId);
-                    if (!hasRemainingSubtasks(rootId)) {
-                        parent.getRequestManager().onTaskCompleted(rootId);
+                    if (task.getInterfaceTaskId() == null) {
+                        // Terminal task: utiliser RequestManager
+                        if (!hasRemainingSubtasks(rootId)) {
+                            parent.getRequestManager().onTaskCompleted(rootId);
+                        }
                     }
+                    // Interface tasks: notification faite par la bee dans notifyTaskCompleted()
                 } else if (state == DeliveryTask.DeliveryState.FAILED) {
-                    parent.getRequestManager().onTaskFailed(rootId);
+                    if (task.getInterfaceTaskId() == null) {
+                        parent.getRequestManager().onTaskFailed(rootId);
+                    } else {
+                        // Interface task echouee: remettre en TODO pour re-tentative
+                        notifyInterfaceTaskFailed(task);
+                    }
                 }
 
                 parent.setChanged();
                 parent.getItemAggregator().setNeedsSync(true);
                 return;
             }
+        }
+    }
+
+    /**
+     * Notifie l'interface qu'une task a echoue: remet la task en TODO pour re-tentative.
+     */
+    private void notifyInterfaceTaskFailed(DeliveryTask task) {
+        if (task.getInterfacePos() == null || task.getInterfaceTaskId() == null) return;
+        if (parent.getLevel() == null) return;
+        if (!parent.getLevel().isLoaded(task.getInterfacePos())) return;
+        BlockEntity be = parent.getLevel().getBlockEntity(task.getInterfacePos());
+        if (be instanceof NetworkInterfaceBlockEntity iface) {
+            iface.unlockTask(task.getInterfaceTaskId());
         }
     }
 

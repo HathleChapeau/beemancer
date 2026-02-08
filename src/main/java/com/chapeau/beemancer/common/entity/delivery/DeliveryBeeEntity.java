@@ -21,6 +21,8 @@
  */
 package com.chapeau.beemancer.common.entity.delivery;
 
+import com.chapeau.beemancer.common.block.storage.InterfaceTask;
+import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import java.util.ArrayList;
@@ -82,6 +84,10 @@ public class DeliveryBeeEntity extends Bee {
     private float searchSpeedMultiplier = 1.0f;
     private int ticksAlive = 0;
     private boolean recalled = false;
+
+    // Interface task fields (for adaptive count reading)
+    @Nullable private UUID interfaceTaskId;
+    @Nullable private BlockPos interfacePos;
 
     // Redirect / reassignment fields
     private boolean taskCancelled = false;
@@ -153,7 +159,9 @@ public class DeliveryBeeEntity extends Bee {
                                   BlockPos destPos, ItemStack template, int requestCount,
                                   ItemStack carriedItems,
                                   float flySpeedMultiplier, float searchSpeedMultiplier,
-                                  UUID taskId) {
+                                  UUID taskId,
+                                  @Nullable UUID interfaceTaskId,
+                                  @Nullable BlockPos interfacePos) {
         this.controllerPos = controllerPos;
         this.sourcePos = sourcePos;
         this.returnPos = returnPos;
@@ -164,6 +172,8 @@ public class DeliveryBeeEntity extends Bee {
         this.flySpeedMultiplier = flySpeedMultiplier;
         this.searchSpeedMultiplier = searchSpeedMultiplier;
         this.taskId = taskId;
+        this.interfaceTaskId = interfaceTaskId;
+        this.interfacePos = interfacePos;
 
         this.deliveryGoal = new DeliveryPhaseGoal(this);
         this.goalSelector.addGoal(0, deliveryGoal);
@@ -364,6 +374,7 @@ public class DeliveryBeeEntity extends Bee {
 
     /**
      * Notifie le controller que la tache est completee.
+     * Si c'est une tache d'interface, notifie aussi l'interface (markTaskDelivered).
      */
     public void notifyTaskCompleted() {
         if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
@@ -371,6 +382,14 @@ public class DeliveryBeeEntity extends Bee {
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
             controller.getDeliveryManager().completeTask(taskId);
+        }
+        // Notifier l'interface que la task est livree
+        if (interfaceTaskId != null && interfacePos != null
+                && level().isLoaded(interfacePos)) {
+            BlockEntity ifBe = level().getBlockEntity(interfacePos);
+            if (ifBe instanceof NetworkInterfaceBlockEntity iface) {
+                iface.markTaskDelivered(interfaceTaskId);
+            }
         }
     }
 
@@ -472,6 +491,26 @@ public class DeliveryBeeEntity extends Bee {
     public boolean hasNewTask() { return hasNewTask; }
     @Nullable public BlockPos getRedirectTarget() { return redirectTarget; }
     @Nullable public BlockPos getSavingChestPos() { return savingChestPos; }
+
+    @Nullable public UUID getInterfaceTaskId() { return interfaceTaskId; }
+    @Nullable public BlockPos getInterfacePos() { return interfacePos; }
+
+    /**
+     * Lit le count actuel de l'InterfaceTask depuis l'interface.
+     * Permet a la bee de s'adapter si le count change pendant le transit.
+     *
+     * @return count actuel, ou -1 si task introuvable/annulee/interface inaccessible
+     */
+    public int readCurrentInterfaceTaskCount() {
+        if (interfaceTaskId == null || interfacePos == null) return -1;
+        if (level() == null || !level().isLoaded(interfacePos)) return -1;
+        BlockEntity be = level().getBlockEntity(interfacePos);
+        if (be instanceof NetworkInterfaceBlockEntity iface) {
+            InterfaceTask task = iface.getTask(interfaceTaskId);
+            if (task != null) return task.getCount();
+        }
+        return -1;
+    }
 
     public UUID getTaskId() { return taskId; }
     public BlockPos getControllerPos() { return controllerPos; }
