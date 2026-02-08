@@ -23,6 +23,7 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.InterfaceTask;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.common.menu.storage.NetworkInterfaceMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -45,6 +46,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -79,6 +81,41 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     public NetworkInterfaceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        DebugWandItem.addDisplay(this, this::getTasksDebugText, new Vec3(0, 1, 0), 0xFFFFAA00);
+    }
+
+    /**
+     * Texte debug affiche au-dessus de l'interface: liste des InterfaceTasks.
+     */
+    private String getTasksDebugText() {
+        if (tasks.isEmpty()) return "Tasks: 0";
+
+        int needed = 0, locked = 0, delivered = 0;
+        for (InterfaceTask task : tasks) {
+            switch (task.getState()) {
+                case NEEDED -> needed++;
+                case LOCKED -> locked++;
+                case DELIVERED -> delivered++;
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Tasks: ").append(tasks.size());
+        sb.append(" (N:").append(needed).append(" L:").append(locked).append(" D:").append(delivered).append(")\n");
+
+        for (InterfaceTask task : tasks) {
+            String stateLetter = switch (task.getState()) {
+                case NEEDED -> "N";
+                case LOCKED -> "L";
+                case DELIVERED -> "D";
+            };
+            String itemName = task.getTemplate().getItem().builtInRegistryHolder()
+                .key().location().getPath();
+            sb.append("[").append(stateLetter).append("] ")
+              .append(itemName).append(" x").append(task.getCount()).append("\n");
+        }
+
+        return sb.toString().trim();
     }
 
     // === Controller Link ===
