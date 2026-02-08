@@ -999,21 +999,109 @@ public class StorageDeliveryManager {
     // === Task Display Data ===
 
     /**
-     * Retourne les données d'affichage de toutes les tâches (actives + en queue).
+     * Retourne les donnees d'affichage: requests comme parents, tasks comme enfants.
+     * Chaque InterfaceRequest ASSIGNED genere une entree racine (avec le count original),
+     * et toutes les DeliveryTasks associees deviennent des enfants de cette racine.
+     * Les tasks sans request associee restent des racines independantes.
      */
     public List<TaskDisplayData> getTaskDisplayData() {
         List<TaskDisplayData> result = new ArrayList<>();
+        RequestManager requestManager = parent.getRequestManager();
+
+        // Map rootTaskId -> InterfaceRequest pour les requests qui ont des tasks assignees
+        Map<UUID, InterfaceRequest> rootToRequest = new HashMap<>();
+        for (InterfaceRequest request : requestManager.getAllRequests()) {
+            if (request.getAssignedTaskId() != null
+                    && request.getStatus() != InterfaceRequest.RequestStatus.CANCELLED) {
+                rootToRequest.put(request.getAssignedTaskId(), request);
+            }
+        }
+
+        // Generer les entrees racine depuis les requests
+        for (InterfaceRequest request : rootToRequest.values()) {
+            String aggregateState = computeRequestAggregateState(request.getAssignedTaskId());
+            String originStr = request.getOrigin() == InterfaceRequest.TaskOrigin.REQUEST
+                ? "REQUEST" : "AUTOMATION";
+            result.add(new TaskDisplayData(
+                request.getRequestId(),
+                request.getTemplate(),
+                request.getCount(),
+                aggregateState,
+                List.of(),
+                originStr,
+                "",
+                request.getRequesterPos(),
+                deriveRequesterType(request),
+                null
+            ));
+        }
+
+        // Ajouter les tasks reelles comme enfants des requests
         for (DeliveryTask task : activeTasks) {
-            result.add(taskToDisplayData(task));
+            InterfaceRequest request = rootToRequest.get(task.getRootTaskId());
+            if (request != null) {
+                result.add(taskToDisplayDataAsChild(task, request.getRequestId()));
+            } else {
+                result.add(taskToDisplayData(task));
+            }
         }
         for (DeliveryTask task : deliveryQueue) {
-            result.add(taskToDisplayData(task));
+            InterfaceRequest request = rootToRequest.get(task.getRootTaskId());
+            if (request != null) {
+                result.add(taskToDisplayDataAsChild(task, request.getRequestId()));
+            } else {
+                result.add(taskToDisplayData(task));
+            }
         }
+
         return result;
     }
 
+    /**
+     * Calcule l'etat agrege d'une request en fonction de ses tasks.
+     */
+    private String computeRequestAggregateState(UUID rootTaskId) {
+        boolean hasFlying = false;
+        boolean hasQueued = false;
+        for (DeliveryTask t : activeTasks) {
+            if (t.getRootTaskId().equals(rootTaskId)
+                    && t.getState() == DeliveryTask.DeliveryState.FLYING) {
+                hasFlying = true;
+            }
+        }
+        for (DeliveryTask t : deliveryQueue) {
+            if (t.getRootTaskId().equals(rootTaskId)
+                    && t.getState() == DeliveryTask.DeliveryState.QUEUED) {
+                hasQueued = true;
+            }
+        }
+        if (hasFlying) return "FLYING";
+        if (hasQueued) return "QUEUED";
+        return "COMPLETED";
+    }
+
+    /**
+     * Cree un TaskDisplayData pour une task enfant d'une request.
+     */
+    private TaskDisplayData taskToDisplayDataAsChild(DeliveryTask task, UUID displayParentId) {
+        return new TaskDisplayData(
+            task.getTaskId(),
+            task.getTemplate(),
+            task.getCount(),
+            task.getState().name(),
+            task.getDependencies(),
+            task.getOrigin().name(),
+            computeBlockedReason(task),
+            task.getRequesterPos(),
+            "",
+            displayParentId
+        );
+    }
+
+    /**
+     * Cree un TaskDisplayData pour une task standalone (sans request associee).
+     */
     private TaskDisplayData taskToDisplayData(DeliveryTask task) {
-        // Reverse lookup: trouver la request associee via rootTaskId
         BlockPos requesterPos = null;
         String requesterType = "";
         InterfaceRequest request = parent.getRequestManager().findRequestByTaskId(task.getRootTaskId());

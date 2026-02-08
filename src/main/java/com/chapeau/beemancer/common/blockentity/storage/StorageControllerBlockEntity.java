@@ -468,7 +468,11 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     public boolean isHoneyDepleted() { return deliveryManager.isHoneyDepleted(); }
 
-    public boolean cancelTask(UUID taskId) { return deliveryManager.cancelTask(taskId); }
+    public boolean cancelTask(UUID id) {
+        if (deliveryManager.cancelTask(id)) return true;
+        requestManager.cancelRequest(id);
+        return true;
+    }
 
     public List<com.chapeau.beemancer.common.block.storage.TaskDisplayData> getTaskDisplayData() {
         return deliveryManager.getTaskDisplayData();

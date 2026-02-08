@@ -433,7 +433,7 @@ public class DeliveryPhaseGoal extends Goal {
             return;
         }
 
-        int maxExtract = bee.getTemplate().getMaxStackSize();
+        int maxExtract = bee.getRequestCount();
         ItemStack extracted = controller.extractItemForDelivery(
             bee.getTemplate(), maxExtract, bee.getSourcePos()
         );

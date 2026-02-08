@@ -3,6 +3,32 @@
 ################################################################################
 
 ================================================================================
+2026-02-08 - Fix Extraction + Request-as-Parent Display
+================================================================================
+
+FIX CRITIQUE: Abeilles extraient le count de la task (DeliveryPhaseGoal)
+- performExtraction() utilise maintenant bee.getRequestCount() au lieu de
+  bee.getTemplate().getMaxStackSize() (64)
+- L'abeille extrait exactement le nombre d'items indique par la task (ex: 32)
+
+REFACTORING: Requests comme parents dans l'affichage (StorageDeliveryManager)
+- getTaskDisplayData() genere des entrees racine depuis les InterfaceRequest
+  (avec le count ORIGINAL de la requete, ex: 128)
+- Les DeliveryTasks reelles deviennent des enfants de la request
+- computeRequestAggregateState() calcule l'etat agrege (FLYING/QUEUED/COMPLETED)
+- Resout le probleme d'orphanage: quand la 1ere task complete, les enfants
+  restent lies a la request (pas a une task qui disparait)
+
+FIX: Cancel supporte les requestId (StorageControllerBlockEntity)
+- cancelTask() essaie d'abord cancelTask sur le delivery manager,
+  puis cancelRequest sur le request manager
+- Permet de cancel une request entiere depuis le GUI
+
+FIX: Display n'additionne plus root + children (StorageTerminalScreen)
+- La racine affiche maintenant root.count() directement (count original)
+- Suppression de computeTotalCount() devenu inutile
+
+================================================================================
 2026-02-08 - Fix Delivery Bees (Capacite + Task Splitting + Subtask Display)
 ================================================================================
 

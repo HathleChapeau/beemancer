@@ -375,10 +375,9 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             for (TaskDisplayData root : grouped.requestRoots) {
                 List<TaskDisplayData> children = grouped.childrenMap
                     .getOrDefault(root.taskId(), List.of());
-                int totalCount = computeTotalCount(root, children);
 
                 if (skipped >= taskScrollOffset && rendered < maxVisible) {
-                    renderTaskRow(g, x, currentY, root, totalCount, mouseX, mouseY);
+                    renderTaskRow(g, x, currentY, root, root.count(), mouseX, mouseY);
                     currentY += TASK_ROW_HEIGHT;
                     rendered++;
                 }
@@ -423,10 +422,9 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             for (TaskDisplayData root : grouped.automationRoots) {
                 List<TaskDisplayData> children = grouped.childrenMap
                     .getOrDefault(root.taskId(), List.of());
-                int totalCount = computeTotalCount(root, children);
 
                 if (skipped >= taskScrollOffset && rendered < maxVisible) {
-                    renderTaskRow(g, x, currentY, root, totalCount, mouseX, mouseY);
+                    renderTaskRow(g, x, currentY, root, root.count(), mouseX, mouseY);
                     currentY += TASK_ROW_HEIGHT;
                     rendered++;
                 }
@@ -514,14 +512,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         String stateLabel = getStateLabel(task.state());
         int stateX = x + GUI_WIDTH - 60;
         g.drawString(font, stateLabel, stateX, currentY + 4, stateColor, false);
-    }
-
-    private static int computeTotalCount(TaskDisplayData root, List<TaskDisplayData> children) {
-        int total = root.count();
-        for (TaskDisplayData child : children) {
-            total += child.count();
-        }
-        return total;
     }
 
     /**
