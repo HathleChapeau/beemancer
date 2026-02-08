@@ -3,6 +3,36 @@
 ################################################################################
 
 ================================================================================
+2026-02-08 - Refonte Storage Hive System (Blocs fantomes + Desync + Feedback)
+================================================================================
+
+FIX CRITIQUE: Blocs fantomes (StorageHiveBlockEntity.updateBlockState)
+- updateBlockState() verifie maintenant l'etat REEL du monde (level.getBlockState)
+  au lieu du cache (getBlockState) avant d'appeler level.setBlock()
+- Si le bloc a ete detruit (remplace par air), le setBlock est ignore
+- Corrige les blocs fantomes lors de: onRemove, setRemoved, validateNetworkBlocks
+
+FIX CRITIQUE: Desync NBT (StorageHiveBlockEntity.loadAdditional)
+- loadAdditional() reset maintenant controllerPos a null quand le tag ne contient
+  pas "ControllerPos" (empeche la persistance de liens residuels)
+
+FIX CRITIQUE: Toggle link/unlink (StorageEvents.handleHiveToggle)
+- Utilise registry.isRegistered(pos) comme source de verite unique
+  au lieu de hive.getControllerPos() (elimine les faux positifs de desync)
+
+AJOUT: Sync client/serveur (StorageHiveBlockEntity)
+- getUpdatePacket(), getUpdateTag(), handleUpdateTag() implementes
+- syncToClient() appele dans linkToController() et unlinkController()
+
+AJOUT: Feedback visuel et sonore (StorageEvents.handleHiveToggle)
+- Particules SUCCESS (vertes) + son aigu lors du link
+- Particules FAILURE (rouges) + son grave lors du unlink
+
+Fichiers modifies:
+- StorageHiveBlockEntity.java (updateBlockState, loadAdditional, sync, link/unlink)
+- StorageEvents.java (handleHiveToggle: registre source de verite + feedback)
+
+================================================================================
 2026-02-08 - Fix Storage Hive Phase 2 (Getter pur + linkHive symétrique)
 ================================================================================
 

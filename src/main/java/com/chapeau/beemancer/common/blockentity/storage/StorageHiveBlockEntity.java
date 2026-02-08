@@ -28,6 +28,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -38,6 +41,9 @@ import org.jetbrains.annotations.Nullable;
  *
  * Vérifie périodiquement que le controller existe toujours (toutes les 100 ticks).
  * Met à jour le blockstate HIVE_STATE quand notifié par le controller.
+ *
+ * Sécurité: updateBlockState() vérifie l'état RÉEL du monde avant setBlock()
+ * pour éviter de recréer un bloc fantôme pendant onRemove().
  */
 public class StorageHiveBlockEntity extends BlockEntity {
 
@@ -57,12 +63,14 @@ public class StorageHiveBlockEntity extends BlockEntity {
         this.controllerPos = pos;
         setChanged();
         updateVisualState();
+        syncToClient();
     }
 
     public void unlinkController() {
         this.controllerPos = null;
         setChanged();
         updateBlockState(StorageHiveBlock.HiveState.UNLINKED);
+        syncToClient();
     }
 
     @Nullable
@@ -122,11 +130,17 @@ public class StorageHiveBlockEntity extends BlockEntity {
         }
     }
 
+    /**
+     * Met à jour le blockstate HIVE_STATE.
+     * Vérifie l'état RÉEL du monde (pas le cache) pour éviter de recréer
+     * un bloc fantôme si le bloc a été détruit (pendant onRemove/setRemoved).
+     */
     private void updateBlockState(StorageHiveBlock.HiveState newState) {
         if (level == null) return;
-        BlockState current = getBlockState();
-        if (current.getValue(StorageHiveBlock.HIVE_STATE) != newState) {
-            level.setBlock(worldPosition, current.setValue(StorageHiveBlock.HIVE_STATE, newState), 3);
+        BlockState worldState = level.getBlockState(worldPosition);
+        if (!(worldState.getBlock() instanceof StorageHiveBlock)) return;
+        if (worldState.getValue(StorageHiveBlock.HIVE_STATE) != newState) {
+            level.setBlock(worldPosition, worldState.setValue(StorageHiveBlock.HIVE_STATE, newState), 3);
         }
     }
 
@@ -140,21 +154,45 @@ public class StorageHiveBlockEntity extends BlockEntity {
             validateTimer = 0;
             if (controllerPos != null) {
                 if (!level.isLoaded(controllerPos)) {
-                    // Chunk pas charge: on ne sait pas si le controller existe, pas d'action
                     return;
                 }
                 BlockEntity be = level.getBlockEntity(controllerPos);
                 if (!(be instanceof StorageControllerBlockEntity)) {
-                    // Chunk charge mais controller absent: auto-unlink
                     controllerPos = null;
                     setChanged();
                     updateBlockState(StorageHiveBlock.HiveState.UNLINKED);
+                    syncToClient();
                 } else {
-                    // Controller present: sync etat visuel
                     updateVisualState();
                 }
             }
         }
+    }
+
+    // === Client Sync ===
+
+    private void syncToClient() {
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        loadAdditional(tag, registries);
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     // === NBT ===
@@ -172,6 +210,8 @@ public class StorageHiveBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         if (tag.contains("ControllerPos")) {
             NbtUtils.readBlockPos(tag, "ControllerPos").ifPresent(pos -> controllerPos = pos);
+        } else {
+            controllerPos = null;
         }
     }
 }

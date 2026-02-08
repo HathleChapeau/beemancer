@@ -28,9 +28,13 @@ import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEn
 import com.chapeau.beemancer.common.blockentity.storage.StorageHiveBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageNetworkRegistry;
 import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
+import com.chapeau.beemancer.core.util.ParticleHelper;
 import com.chapeau.beemancer.core.util.StorageHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -203,14 +207,19 @@ public class StorageEvents {
 
         StorageNetworkRegistry registry = controller.getNetworkRegistry();
 
-        if (hive.getControllerPos() != null) {
-            // Deja liee: unlink (unlinkHive notifie la hive automatiquement)
+        // Utiliser le registre comme source de verite unique (pas hive.getControllerPos())
+        boolean isRegistered = registry.isRegistered(clickedPos);
+
+        if (isRegistered) {
             controller.unlinkHive(clickedPos);
             player.displayClientMessage(
                     Component.translatable("message.beemancer.storage_hive.unlinked"),
                     true);
+            if (level instanceof ServerLevel serverLevel) {
+                ParticleHelper.burst(serverLevel, clickedPos.getCenter(), ParticleHelper.EffectType.FAILURE, 8);
+                level.playSound(null, clickedPos, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0f, 0.8f);
+            }
         } else {
-            // Verifier le max de 4 hives
             if (registry.getHiveCount() >= StorageControllerBlockEntity.MAX_LINKED_HIVES) {
                 player.displayClientMessage(
                         Component.translatable("message.beemancer.storage_hive.max_reached"),
@@ -220,11 +229,14 @@ public class StorageEvents {
                 return;
             }
 
-            // Link (linkHive est self-contained, notifie la hive automatiquement)
             controller.linkHive(clickedPos);
             player.displayClientMessage(
                     Component.translatable("message.beemancer.storage_hive.linked"),
                     true);
+            if (level instanceof ServerLevel serverLevel) {
+                ParticleHelper.burst(serverLevel, clickedPos.getCenter(), ParticleHelper.EffectType.SUCCESS, 8);
+                level.playSound(null, clickedPos, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0f, 1.2f);
+            }
         }
 
         controller.setChanged();
