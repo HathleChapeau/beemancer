@@ -67,6 +67,7 @@ public class StorageEvents {
         BlockPos clickedPos = event.getPos();
 
         if (level.isClientSide()) return;
+        if (event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND) return;
 
         if (!StorageEditModeHandler.isEditing(player, level)) return;
 
