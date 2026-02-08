@@ -9,7 +9,7 @@
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | AnimationController     | Gestion animations   | Named animations + sequences   |
- * | RotateAnimation         | Rotation conduits    | Phases spin/decel              |
+ * | RotateAnimation         | Rotation conduits    | Tilt, orbite, decel            |
  * | MoveAnimation           | Position conduits    | Expand/hold/return             |
  * | Sequence                | Timeline craft       | Action callbacks par phase     |
  * | SequenceEntry           | Entrees sequence     | action() pour transitions      |
@@ -32,8 +32,8 @@ import java.util.Map;
 
 /**
  * Gestionnaire d'etat d'animation per-altar.
- * Stocke un AnimationController par BlockPos d'altar.
- * Gere la rotation permanente du coeur et la sequence de craft des conduits.
+ * 3 canaux par conduit: orbit_i (orbite Y autour altar), pos_i (position), rot_i (tilt X/Z).
+ * L'orbite tourne autour du centre de l'altar, pas autour du conduit.
  */
 public class AltarCraftAnimator {
 
@@ -44,13 +44,20 @@ public class AltarCraftAnimator {
     public static final int RETURN_POS_START = 180;
     public static final int TOTAL_TICKS = 220;
 
-    // === Rotation angles ===
-    private static final float INITIAL_ROT = 90f;
-    private static final float ANGLE_AT_SPIN_END = 2610f;
-    private static final float ANGLE_AT_HOLD_END = 3618f;
-    private static final float DECEL_END_ANGLE = 5040f;
+    // === Tilt (rotation initiale sur soi-meme) ===
+    private static final float TILT_ANGLE = 90f;
 
-    private static final Vec3 CONDUIT_PIVOT = new Vec3(0.5, 0.5, 0.5);
+    // === Orbite angles (rotation Y autour du centre altar) ===
+    private static final float ORBIT_SPIN_END = 2520f;
+    private static final float ORBIT_HOLD_END = 3528f;
+    private static final float ORBIT_DECEL_END = 5040f;
+
+    private static final Vec3 BLOCK_CENTER = new Vec3(0.5, 0.5, 0.5);
+
+    // Axe de tilt par conduit: N/S sur X, E/W sur Z
+    private static final Axis[] TILT_AXES = {
+        Axis.XP, Axis.XP, Axis.ZP, Axis.ZP,
+    };
 
     // === Positions des conduits (relatives au coeur) ===
     private static final Vec3[] STATIC_POS = {
@@ -117,20 +124,19 @@ public class AltarCraftAnimator {
     private static AnimState createState() {
         AnimationController ctrl = new AnimationController();
 
-        // Heart rotation permanente sur 3 axes
         ctrl.createAnimation("heart_y", RotateAnimation.builder()
             .axis(Axis.YP).startAngle(0).endAngle(360)
-            .pivot(CONDUIT_PIVOT)
+            .pivot(BLOCK_CENTER)
             .duration(360f).timingEffect(TimingEffect.LOOP)
             .build());
         ctrl.createAnimation("heart_x", RotateAnimation.builder()
             .axis(Axis.XP).startAngle(0).endAngle(360)
-            .pivot(CONDUIT_PIVOT)
+            .pivot(BLOCK_CENTER)
             .duration(514f).timingEffect(TimingEffect.LOOP)
             .build());
         ctrl.createAnimation("heart_z", RotateAnimation.builder()
             .axis(Axis.ZP).startAngle(0).endAngle(360)
-            .pivot(CONDUIT_PIVOT)
+            .pivot(BLOCK_CENTER)
             .duration(1200f).timingEffect(TimingEffect.LOOP)
             .build());
 
@@ -156,6 +162,7 @@ public class AltarCraftAnimator {
             state.craftSequence = null;
         }
         for (int i = 0; i < STATIC_POS.length; i++) {
+            state.controller.stopAnimation("orbit_" + i);
             state.controller.stopAnimation("pos_" + i);
             state.controller.stopAnimation("rot_" + i);
         }
@@ -163,30 +170,32 @@ public class AltarCraftAnimator {
 
     private static Sequence buildCraftSequence(AnimationController ctrl) {
         return new Sequence(
-            // t=0: conduits s'ecartent + rotation initiale 90 deg
+            // t=0: tilt X/Z + expand position
             SequenceEntry.action(0, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
+                    ctrl.replaceAnimation("rot_" + i, buildTiltAnim(i));
                     ctrl.replaceAnimation("pos_" + i, buildExpandAnim(i));
-                    ctrl.replaceAnimation("rot_" + i, buildInitialRotAnim());
                 }
             }),
-            // t=40: hold position + spin acceleration
+            // t=40: hold tilt + hold position + start orbit spin
             SequenceEntry.action(EXPAND_END, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
+                    ctrl.replaceAnimation("rot_" + i, buildHoldTiltAnim(i));
                     ctrl.replaceAnimation("pos_" + i, buildHoldPosAnim(i));
-                    ctrl.replaceAnimation("rot_" + i, buildSpinAnim());
+                    ctrl.replaceAnimation("orbit_" + i, buildOrbitSpinAnim());
                 }
             }),
-            // t=140: hold rotation a vitesse constante
+            // t=140: orbit hold (vitesse constante)
             SequenceEntry.action(SPIN_END, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
-                    ctrl.replaceAnimation("rot_" + i, buildHoldRotAnim());
+                    ctrl.replaceAnimation("orbit_" + i, buildOrbitHoldAnim());
                 }
             }),
-            // t=160: deceleration rotation
+            // t=160: orbit decel + un-tilt
             SequenceEntry.action(CRAFT_TICK, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
-                    ctrl.replaceAnimation("rot_" + i, buildDecelAnim());
+                    ctrl.replaceAnimation("orbit_" + i, buildOrbitDecelAnim());
+                    ctrl.replaceAnimation("rot_" + i, buildUntiltAnim(i));
                 }
             }),
             // t=180: retour position
@@ -198,7 +207,7 @@ public class AltarCraftAnimator {
         );
     }
 
-    // === Animation factories ===
+    // === Position factories ===
 
     private static MoveAnimation buildExpandAnim(int conduitIndex) {
         return MoveAnimation.builder()
@@ -225,37 +234,58 @@ public class AltarCraftAnimator {
             .build();
     }
 
-    private static RotateAnimation buildInitialRotAnim() {
+    // === Tilt factories (rotation sur soi-meme, axe X ou Z selon le cote) ===
+
+    private static RotateAnimation buildTiltAnim(int conduitIndex) {
         return RotateAnimation.builder()
-            .axis(Axis.XP).startAngle(0).endAngle(INITIAL_ROT)
-            .pivot(CONDUIT_PIVOT)
+            .axis(TILT_AXES[conduitIndex]).startAngle(0).endAngle(TILT_ANGLE)
+            .pivot(BLOCK_CENTER)
             .duration(EXPAND_END).timingType(TimingType.EASE_OUT)
             .resetAfterAnimation(false)
             .build();
     }
 
-    private static RotateAnimation buildSpinAnim() {
+    private static RotateAnimation buildHoldTiltAnim(int conduitIndex) {
         return RotateAnimation.builder()
-            .axis(Axis.YP).startAngle(INITIAL_ROT).endAngle(ANGLE_AT_SPIN_END)
-            .pivot(CONDUIT_PIVOT)
+            .axis(TILT_AXES[conduitIndex]).startAngle(TILT_ANGLE).endAngle(TILT_ANGLE)
+            .pivot(BLOCK_CENTER)
+            .duration(20f).timingEffect(TimingEffect.LOOP)
+            .build();
+    }
+
+    private static RotateAnimation buildUntiltAnim(int conduitIndex) {
+        return RotateAnimation.builder()
+            .axis(TILT_AXES[conduitIndex]).startAngle(TILT_ANGLE).endAngle(0)
+            .pivot(BLOCK_CENTER)
+            .duration(TOTAL_TICKS - CRAFT_TICK).timingType(TimingType.EASE_OUT)
+            .resetAfterAnimation(true)
+            .build();
+    }
+
+    // === Orbit factories (rotation Y autour du centre altar) ===
+
+    private static RotateAnimation buildOrbitSpinAnim() {
+        return RotateAnimation.builder()
+            .axis(Axis.YP).startAngle(0).endAngle(ORBIT_SPIN_END)
+            .pivot(BLOCK_CENTER)
             .duration(SPIN_END - EXPAND_END).timingType(TimingType.EASE_IN)
             .resetAfterAnimation(false)
             .build();
     }
 
-    private static RotateAnimation buildHoldRotAnim() {
+    private static RotateAnimation buildOrbitHoldAnim() {
         return RotateAnimation.builder()
-            .axis(Axis.YP).startAngle(ANGLE_AT_SPIN_END).endAngle(ANGLE_AT_HOLD_END)
-            .pivot(CONDUIT_PIVOT)
+            .axis(Axis.YP).startAngle(ORBIT_SPIN_END).endAngle(ORBIT_HOLD_END)
+            .pivot(BLOCK_CENTER)
             .duration(CRAFT_TICK - SPIN_END).timingType(TimingType.NORMAL)
             .resetAfterAnimation(false)
             .build();
     }
 
-    private static RotateAnimation buildDecelAnim() {
+    private static RotateAnimation buildOrbitDecelAnim() {
         return RotateAnimation.builder()
-            .axis(Axis.YP).startAngle(ANGLE_AT_HOLD_END).endAngle(DECEL_END_ANGLE)
-            .pivot(CONDUIT_PIVOT)
+            .axis(Axis.YP).startAngle(ORBIT_HOLD_END).endAngle(ORBIT_DECEL_END)
+            .pivot(BLOCK_CENTER)
             .duration(TOTAL_TICKS - CRAFT_TICK).timingType(TimingType.EASE_OUT)
             .resetAfterAnimation(true)
             .build();

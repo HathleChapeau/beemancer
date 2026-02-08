@@ -129,6 +129,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             Vec3 staticPos = AltarCraftAnimator.getStaticPosition(i);
 
             poseStack.pushPose();
+            ctrl.applyAnimation("orbit_" + i, poseStack);
             poseStack.translate(staticPos.x, staticPos.y, staticPos.z);
             ctrl.applyAnimation("pos_" + i, poseStack);
             ctrl.applyAnimation("rot_" + i, poseStack);
