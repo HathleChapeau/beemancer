@@ -12,6 +12,10 @@ import com.chapeau.beemancer.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.beemancer.client.gui.hud.HoverbikeDebugHud;
 import com.chapeau.beemancer.client.gui.hud.HoverbikeGaugeHud;
 import com.chapeau.beemancer.client.model.HoverbikeModel;
+import com.chapeau.beemancer.client.model.hoverbike.ChassisPartModel;
+import com.chapeau.beemancer.client.model.hoverbike.CoeurPartModel;
+import com.chapeau.beemancer.client.model.hoverbike.PropulseurPartModel;
+import com.chapeau.beemancer.client.model.hoverbike.RadiateurPartModel;
 import com.chapeau.beemancer.client.renderer.entity.HoverbikeRenderer;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
 import com.chapeau.beemancer.client.input.DebugKeyHandler;
@@ -197,7 +201,14 @@ public class ClientSetup {
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
+        // Hoverbike — modele de base
         event.registerLayerDefinition(HoverbikeRenderer.LAYER_LOCATION, HoverbikeModel::createBodyLayer);
+
+        // Hoverbike — parties modulaires
+        event.registerLayerDefinition(ChassisPartModel.LAYER_LOCATION, ChassisPartModel::createLayerDefinition);
+        event.registerLayerDefinition(CoeurPartModel.LAYER_LOCATION, CoeurPartModel::createLayerDefinition);
+        event.registerLayerDefinition(PropulseurPartModel.LAYER_LOCATION, PropulseurPartModel::createLayerDefinition);
+        event.registerLayerDefinition(RadiateurPartModel.LAYER_LOCATION, RadiateurPartModel::createLayerDefinition);
     }
 
     private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {

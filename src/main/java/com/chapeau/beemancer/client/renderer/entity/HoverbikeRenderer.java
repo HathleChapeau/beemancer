@@ -9,7 +9,8 @@
  * | Dépendance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | HoverbikeEntity     | Entite a rendre      | Source des donnees             |
- * | HoverbikeModel      | Modele 3D            | Geometrie                      |
+ * | HoverbikeModel      | Modele 3D            | Geometrie base                 |
+ * | HoverbikePartLayer  | Layer parties         | Rendu parties modulaires       |
  * | Beemancer           | MOD_ID               | Chemin texture                 |
  * ------------------------------------------------------------
  *
@@ -30,8 +31,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Renderer simple pour le Hoverbike.
- * Utilise le modele test a deux cubes.
+ * Renderer du Hoverbike.
+ * Rend le modele de base (2 cubes) puis delegue aux parties modulaires
+ * via HoverbikePartLayer (chassis, coeur, propulseur, radiateur).
  */
 public class HoverbikeRenderer extends MobRenderer<HoverbikeEntity, HoverbikeModel> {
 
@@ -43,6 +45,7 @@ public class HoverbikeRenderer extends MobRenderer<HoverbikeEntity, HoverbikeMod
 
     public HoverbikeRenderer(EntityRendererProvider.Context context) {
         super(context, new HoverbikeModel(context.bakeLayer(LAYER_LOCATION)), 0.8f);
+        this.addLayer(new HoverbikePartLayer(this, context));
     }
 
     @Override
