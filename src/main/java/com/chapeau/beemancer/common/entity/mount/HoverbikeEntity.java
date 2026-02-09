@@ -64,6 +64,16 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private static final EntityDataAccessor<Optional<UUID>> DATA_EDITING_PLAYER =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.OPTIONAL_UUID);
 
+    // --- Part Variants (synched pour rendu cote client) ---
+    private static final EntityDataAccessor<Integer> DATA_CHASSIS_VARIANT =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_COEUR_VARIANT =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_PROPULSEUR_VARIANT =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_RADIATEUR_VARIANT =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.INT);
+
     // --- Settings ---
     private final HoverbikeSettings settings;
 
@@ -90,6 +100,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         super.defineSynchedData(builder);
         builder.define(DATA_EDIT_MODE, false);
         builder.define(DATA_EDITING_PLAYER, Optional.empty());
+        builder.define(DATA_CHASSIS_VARIANT, 0);
+        builder.define(DATA_COEUR_VARIANT, 0);
+        builder.define(DATA_PROPULSEUR_VARIANT, 0);
+        builder.define(DATA_RADIATEUR_VARIANT, 0);
     }
 
     // --- Attributes ---
@@ -421,11 +435,39 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        tag.putInt("ChassisVariant", this.entityData.get(DATA_CHASSIS_VARIANT));
+        tag.putInt("CoeurVariant", this.entityData.get(DATA_COEUR_VARIANT));
+        tag.putInt("PropulseurVariant", this.entityData.get(DATA_PROPULSEUR_VARIANT));
+        tag.putInt("RadiateurVariant", this.entityData.get(DATA_RADIATEUR_VARIANT));
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (tag.contains("ChassisVariant")) this.entityData.set(DATA_CHASSIS_VARIANT, tag.getInt("ChassisVariant"));
+        if (tag.contains("CoeurVariant")) this.entityData.set(DATA_COEUR_VARIANT, tag.getInt("CoeurVariant"));
+        if (tag.contains("PropulseurVariant")) this.entityData.set(DATA_PROPULSEUR_VARIANT, tag.getInt("PropulseurVariant"));
+        if (tag.contains("RadiateurVariant")) this.entityData.set(DATA_RADIATEUR_VARIANT, tag.getInt("RadiateurVariant"));
+    }
+
+    /** Retourne l'index de variante pour une partie donnee. */
+    public int getPartVariant(HoverbikePart part) {
+        return switch (part) {
+            case CHASSIS -> this.entityData.get(DATA_CHASSIS_VARIANT);
+            case COEUR -> this.entityData.get(DATA_COEUR_VARIANT);
+            case PROPULSEUR -> this.entityData.get(DATA_PROPULSEUR_VARIANT);
+            case RADIATEUR -> this.entityData.get(DATA_RADIATEUR_VARIANT);
+        };
+    }
+
+    /** Definit l'index de variante pour une partie donnee. */
+    public void setPartVariant(HoverbikePart part, int variant) {
+        switch (part) {
+            case CHASSIS -> this.entityData.set(DATA_CHASSIS_VARIANT, variant);
+            case COEUR -> this.entityData.set(DATA_COEUR_VARIANT, variant);
+            case PROPULSEUR -> this.entityData.set(DATA_PROPULSEUR_VARIANT, variant);
+            case RADIATEUR -> this.entityData.set(DATA_RADIATEUR_VARIANT, variant);
+        }
     }
 
     // --- Misc ---

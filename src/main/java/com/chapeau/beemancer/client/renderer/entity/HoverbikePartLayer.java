@@ -8,11 +8,7 @@
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | HoverbikePartModel  | Modeles des parties  | Rendu geometrie                |
- * | ChassisPartModel    | Partie chassis       | Instanciation modele           |
- * | CoeurPartModel      | Partie coeur         | Instanciation modele           |
- * | PropulseurPartModel | Partie propulseur    | Instanciation modele           |
- * | RadiateurPartModel  | Partie radiateur     | Instanciation modele           |
+ * | HoverbikePartVariants| Registre variantes  | Selection du modele a rendre   |
  * | AnimationController | Animations edit mode | Ecartement/retour des pieces   |
  * | MoveAnimation       | Translation animee   | Mouvement des pieces           |
  * | HoverbikeModel      | Modele parent        | Type generique du renderer     |
@@ -31,11 +27,8 @@ import com.chapeau.beemancer.client.animation.MoveAnimation;
 import com.chapeau.beemancer.client.animation.TimingType;
 import com.chapeau.beemancer.client.gui.hud.HoverbikeEditModeHandler;
 import com.chapeau.beemancer.client.model.HoverbikeModel;
-import com.chapeau.beemancer.client.model.hoverbike.ChassisPartModel;
-import com.chapeau.beemancer.client.model.hoverbike.CoeurPartModel;
 import com.chapeau.beemancer.client.model.hoverbike.HoverbikePartModel;
-import com.chapeau.beemancer.client.model.hoverbike.PropulseurPartModel;
-import com.chapeau.beemancer.client.model.hoverbike.RadiateurPartModel;
+import com.chapeau.beemancer.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.beemancer.common.entity.mount.HoverbikePart;
 import com.chapeau.beemancer.common.entity.mount.HoverbikeEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -48,12 +41,15 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Layer de rendu qui itere sur toutes les parties du hoverbike et les rend
- * par-dessus le modele de base. En edit mode, chaque partie s'ecarte du centre
- * de la moto avec une animation smooth, puis revient a sa place en sortant.
+ * Layer de rendu qui itere sur toutes les parties du hoverbike et rend
+ * la variante selectionnee de chaque partie. En edit mode, chaque partie
+ * s'ecarte du centre avec une animation smooth.
  */
 public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeModel> {
 
@@ -62,7 +58,9 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
     private static final int FULLBRIGHT = 15728880;
     private static final int GLOW_COLOR = 0x44FFFFFF;
 
-    private final List<HoverbikePartModel> parts;
+    /** Tous les modeles bakes, par partie → liste des variantes. */
+    private final Map<HoverbikePart, List<HoverbikePartModel>> partVariants = new EnumMap<>(HoverbikePart.class);
+
     private final AnimationController controller = new AnimationController();
     private boolean wasEditMode = false;
     private boolean editExpanded = false;
@@ -71,12 +69,16 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
                               EntityRendererProvider.Context context) {
         super(parent);
 
-        this.parts = List.of(
-                new ChassisPartModel(context.bakeLayer(ChassisPartModel.LAYER_LOCATION)),
-                new CoeurPartModel(context.bakeLayer(CoeurPartModel.LAYER_LOCATION)),
-                new PropulseurPartModel(context.bakeLayer(PropulseurPartModel.LAYER_LOCATION)),
-                new RadiateurPartModel(context.bakeLayer(RadiateurPartModel.LAYER_LOCATION))
-        );
+        // Bake toutes les variantes de chaque partie
+        for (HoverbikePart part : HoverbikePart.values()) {
+            List<HoverbikePartVariants.VariantEntry> variants = HoverbikePartVariants.getVariants(part);
+            List<HoverbikePartModel> models = new ArrayList<>();
+            for (HoverbikePartVariants.VariantEntry entry : variants) {
+                models.add(entry.factory().constructor().apply(
+                        context.bakeLayer(entry.factory().layerLocation())));
+            }
+            partVariants.put(part, models);
+        }
     }
 
     @Override
@@ -92,10 +94,17 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
 
         HoverbikePart hoveredPart = HoverbikeEditModeHandler.getHoveredPart();
 
-        for (HoverbikePartModel part : parts) {
+        for (HoverbikePart partType : HoverbikePart.values()) {
+            List<HoverbikePartModel> models = partVariants.get(partType);
+            if (models == null || models.isEmpty()) continue;
+
+            int variantIndex = entity.getPartVariant(partType);
+            int clampedIndex = Math.floorMod(variantIndex, models.size());
+            HoverbikePartModel part = models.get(clampedIndex);
+
             part.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
-            String animName = ANIM_PREFIX + part.getPartType().name().toLowerCase();
+            String animName = ANIM_PREFIX + partType.name().toLowerCase();
 
             poseStack.pushPose();
             applyEditOffset(poseStack, part, animName);
@@ -107,7 +116,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
                     OverlayTexture.NO_OVERLAY);
 
             // Glow overlay sur la partie survolee
-            if (isEdit && part.getPartType() == hoveredPart) {
+            if (isEdit && partType == hoveredPart) {
                 VertexConsumer glowConsumer = bufferSource.getBuffer(
                         RenderType.entityTranslucent(part.getTextureLocation()));
                 part.renderToBuffer(poseStack, glowConsumer, FULLBRIGHT,
@@ -120,13 +129,16 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
 
     /**
      * Detecte les transitions d'edit mode et cree les animations d'ecartement/retour.
+     * Utilise le premier modele de chaque partie pour les offsets (tous les variantes
+     * d'une meme partie partagent le meme offset).
      */
     private void handleEditModeTransition(boolean isEdit) {
         if (isEdit && !wasEditMode) {
-            // Entree en edit mode : ecarter les pieces
-            for (HoverbikePartModel part : parts) {
-                String animName = ANIM_PREFIX + part.getPartType().name().toLowerCase();
-                Vec3 offset = part.getEditModeOffset();
+            for (HoverbikePart partType : HoverbikePart.values()) {
+                List<HoverbikePartModel> models = partVariants.get(partType);
+                if (models == null || models.isEmpty()) continue;
+                String animName = ANIM_PREFIX + partType.name().toLowerCase();
+                Vec3 offset = models.get(0).getEditModeOffset();
                 controller.replaceAnimation(animName, MoveAnimation.builder()
                         .from(Vec3.ZERO).to(offset)
                         .duration(EDIT_ANIM_DURATION)
@@ -136,10 +148,11 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
             }
             editExpanded = true;
         } else if (!isEdit && wasEditMode) {
-            // Sortie d'edit mode : ramener les pieces
-            for (HoverbikePartModel part : parts) {
-                String animName = ANIM_PREFIX + part.getPartType().name().toLowerCase();
-                Vec3 offset = part.getEditModeOffset();
+            for (HoverbikePart partType : HoverbikePart.values()) {
+                List<HoverbikePartModel> models = partVariants.get(partType);
+                if (models == null || models.isEmpty()) continue;
+                String animName = ANIM_PREFIX + partType.name().toLowerCase();
+                Vec3 offset = models.get(0).getEditModeOffset();
                 controller.replaceAnimation(animName, MoveAnimation.builder()
                         .from(offset).to(Vec3.ZERO)
                         .duration(EDIT_ANIM_DURATION)
@@ -152,18 +165,11 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
         wasEditMode = isEdit;
     }
 
-    /**
-     * Applique l'offset d'edit mode a la partie.
-     * Si l'animation d'expansion est terminee (playing = false, editExpanded = true),
-     * applique l'offset statiquement. Sinon, delegue a l'AnimationController.
-     */
     private void applyEditOffset(PoseStack poseStack, HoverbikePartModel part, String animName) {
         if (editExpanded && !controller.isAnimationPlaying(animName)) {
-            // Animation terminee, maintien statique a la position ecartee
             Vec3 offset = part.getEditModeOffset();
             poseStack.translate(offset.x, offset.y, offset.z);
         } else {
-            // Animation en cours (expand ou contract) — ou pas d'edit mode
             controller.applyAnimation(animName, poseStack);
         }
     }

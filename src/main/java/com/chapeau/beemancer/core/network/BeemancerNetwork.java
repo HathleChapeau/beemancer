@@ -15,6 +15,7 @@ import com.chapeau.beemancer.core.network.packets.QuestSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageRequestPacket;
 import com.chapeau.beemancer.core.network.packets.InterfaceActionPacket;
+import com.chapeau.beemancer.core.network.packets.HoverbikeVariantPacket;
 import com.chapeau.beemancer.core.network.packets.StorageTaskCancelPacket;
 import com.chapeau.beemancer.core.network.packets.StorageTasksSyncPacket;
 import net.neoforged.bus.api.IEventBus;
@@ -64,6 +65,12 @@ public class BeemancerNetwork {
                 InterfaceActionPacket.TYPE,
                 InterfaceActionPacket.STREAM_CODEC,
                 InterfaceActionPacket::handle
+        );
+
+        registrar.playToServer(
+                HoverbikeVariantPacket.TYPE,
+                HoverbikeVariantPacket.STREAM_CODEC,
+                HoverbikeVariantPacket::handle
         );
 
         // Server to Client packets
