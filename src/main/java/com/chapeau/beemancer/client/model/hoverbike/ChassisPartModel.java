@@ -87,7 +87,6 @@ public class ChassisPartModel extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        // Le chassis descend : cadre structural se detache par le bas
-        return new Vec3(0, 16, 0);
+        return new Vec3(0, 1, 1);
     }
 }

@@ -80,7 +80,6 @@ public class PropulseurPartModel extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        // Les propulseurs reculent : tuyeres se detachent vers l'arriere
-        return new Vec3(0, 0, 16);
+        return new Vec3(0, 0, 1);
     }
 }

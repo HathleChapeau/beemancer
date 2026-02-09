@@ -80,7 +80,6 @@ public class RadiateurPartModel extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        // Les radiateurs avancent : panneaux de refroidissement se detachent vers l'avant
-        return new Vec3(0, 0, -16);
+        return new Vec3(0, 0, -1);
     }
 }

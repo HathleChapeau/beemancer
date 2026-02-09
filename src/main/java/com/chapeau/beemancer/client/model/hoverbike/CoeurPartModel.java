@@ -73,7 +73,6 @@ public class CoeurPartModel extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        // Le coeur monte : source d'energie flotte vers le haut
-        return new Vec3(0, -16, 0);
+        return new Vec3(0, 1, -1);
     }
 }
