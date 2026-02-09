@@ -11,6 +11,7 @@
  * | HoverbikeEntity     | Etat edit mode       | Verification shader actif      |
  * | PostChain           | Shader pipeline      | Acces au target "mask"         |
  * | LevelRenderer       | entity_outline       | Source de la silhouette         |
+ * | OutlineBufferSource | Flush outline batch   | Force GPU write avant blit     |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -23,6 +24,7 @@ package com.chapeau.beemancer.client;
 import com.chapeau.beemancer.common.entity.mount.HoverbikeEntity;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.OutlineBufferSource;
 import net.minecraft.client.renderer.PostChain;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -34,6 +36,10 @@ import org.lwjgl.opengl.GL30;
  * Copie le buffer entity_outline (silhouette des entites glow) vers le target "mask"
  * du shader edit mode. Appele a AFTER_ENTITIES, avant que le PostChain entity_outline
  * ne transforme la silhouette brute en contour.
+ *
+ * IMPORTANT: A AFTER_ENTITIES, les draw calls entity_outline sont encore dans le buffer
+ * de OutlineBufferSource (non flushed vers le GPU). On doit appeler endOutlineBatch()
+ * pour forcer l'ecriture dans entityTarget AVANT de copier vers le masque.
  * Le fragment shader utilise ensuite ce masque pour preserver les pixels de la moto.
  */
 @OnlyIn(Dist.CLIENT)
@@ -45,6 +51,13 @@ public class HoverbikeEditModeEffect {
         if (!HoverbikeEntity.isEditShaderActive()) return;
 
         Minecraft mc = Minecraft.getInstance();
+
+        // Forcer le flush des draw calls outline vers le GPU.
+        // A AFTER_ENTITIES, les entites sont rendues mais les outline draw calls
+        // sont encore batches dans OutlineBufferSource. Sans ce flush,
+        // entityTarget() est vide et le masque ne contient aucune donnee.
+        OutlineBufferSource outlineBS = mc.renderBuffers().outlineBufferSource();
+        outlineBS.endOutlineBatch();
 
         // Source : entity_outline (silhouette brute des entites glow)
         RenderTarget entityOutline = mc.levelRenderer.entityTarget();

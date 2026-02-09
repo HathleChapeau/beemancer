@@ -13,7 +13,9 @@ void main() {
 
     // Ou le masque a des pixels (silhouette entite), on garde la luminosite originale.
     // Partout ailleurs, on assombrit.
-    float maskStrength = clamp(mask.a, 0.0, 1.0);
+    // On verifie RGB ET alpha car l'outline buffer peut stocker la silhouette
+    // dans les canaux couleur (blanc) ou alpha selon le contexte de rendu.
+    float maskStrength = clamp(max(mask.a, max(mask.r, max(mask.g, mask.b))), 0.0, 1.0);
     float brightness = mix(DarkenAmount, 1.0, maskStrength);
 
     fragColor = vec4(color.rgb * brightness, color.a);
