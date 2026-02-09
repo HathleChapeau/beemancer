@@ -127,8 +127,8 @@ public class HoverbikePartScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Fond opaque noir (pas de blur, pas de transparence)
-        graphics.fill(0, 0, width, height, 0xFF101010);
+        // Fond assombri avec blur vanilla
+        renderBackground(graphics, mouseX, mouseY, partialTick);
 
         // Panneau container vanilla (fond gris + bordures 3D)
         GuiRenderHelper.renderContainerBackgroundNoTitle(graphics, panelX, panelY, PANEL_WIDTH, PANEL_HEIGHT);
