@@ -1,12 +1,19 @@
 {
     "targets": [
-        "swap"
+        "swap",
+        "mask"
     ],
     "passes": [
         {
             "name": "beemancer:edit_darken",
             "intarget": "minecraft:main",
-            "outtarget": "swap"
+            "outtarget": "swap",
+            "auxtargets": [
+                {
+                    "name": "MaskSampler",
+                    "id": "mask"
+                }
+            ]
         },
         {
             "name": "blit",

@@ -402,6 +402,13 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         Minecraft.getInstance().gameRenderer.shutdownEffect();
     }
 
+    /**
+     * Indique si le shader d'edit mode est actif (utilise par HoverbikeEditModeEffect).
+     */
+    public static boolean isEditShaderActive() {
+        return editShaderActive;
+    }
+
     // --- AI ---
 
     @Override

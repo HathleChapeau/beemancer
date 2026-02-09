@@ -106,6 +106,7 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.register(HoverbikeDebugHud.class);
         NeoForge.EVENT_BUS.register(HoverbikeGaugeHud.class);
         NeoForge.EVENT_BUS.register(HoverbikeCameraController.class);
+        NeoForge.EVENT_BUS.register(HoverbikeEditModeEffect.class);
 
         // Overlay quand on ouvre un GUI adjacent depuis le bouton Debug de l'interface
         NeoForge.EVENT_BUS.register(com.chapeau.beemancer.client.gui.screen.storage.AdjacentGuiOverlayRenderer.class);
