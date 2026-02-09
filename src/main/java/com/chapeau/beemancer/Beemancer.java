@@ -27,10 +27,7 @@ import com.chapeau.beemancer.core.command.BeemancerCommands;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
-import com.chapeau.beemancer.common.entity.mount.RideableBeeEntity;
-import com.chapeau.beemancer.common.entity.mount.behaviour.RidingBehaviours;
-import com.chapeau.beemancer.common.entity.mount.behaviour.types.land.HorseBehaviour;
-import com.chapeau.beemancer.common.entity.mount.behaviour.types.land.HorseSettings;
+import com.chapeau.beemancer.common.entity.mount.HoverbikeEntity;
 import com.chapeau.beemancer.content.gene.GeneInit;
 import com.chapeau.beemancer.core.bee.BeeSpeciesManager;
 import com.chapeau.beemancer.core.bee.BiomeTemperatureManager;
@@ -151,17 +148,13 @@ public class Beemancer {
             // Gene system
             GeneInit.registerAllGenes();
             LOGGER.info("Gene system initialized with {} genes", GeneRegistry.getAllGenes().size());
-
-            // Riding behaviours (Pattern Cobblemon)
-            RidingBehaviours.register(HorseSettings.KEY, new HorseBehaviour());
-            LOGGER.info("Riding behaviours registered");
         });
     }
 
     private void onEntityAttributeCreation(final EntityAttributeCreationEvent event) {
         event.put(BeemancerEntities.MAGIC_BEE.get(), MagicBeeEntity.createAttributes().build());
-        event.put(BeemancerEntities.RIDEABLE_BEE.get(), RideableBeeEntity.createAttributes().build());
         event.put(BeemancerEntities.DELIVERY_BEE.get(), DeliveryBeeEntity.createAttributes().build());
+        event.put(BeemancerEntities.HOVERBIKE.get(), HoverbikeEntity.createAttributes().build());
     }
 
     private void onRegisterCapabilities(final RegisterCapabilitiesEvent event) {
@@ -370,7 +363,6 @@ public class Beemancer {
         BiomeTemperatureManager.load(server);
         BreedingManager.loadCombinations(server);
         BeeBehaviorManager.load(server);
-        // RidingSettingsLoader remplacé par HorseSettings (système Cobblemon)
         CodexManager.load(server);
         CodexBookManager.load(server);
         QuestManager.load(server);

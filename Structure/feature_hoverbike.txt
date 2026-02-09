@@ -1,0 +1,95 @@
+################################################################################
+#                         FEATURE: Hoverbike                                   #
+################################################################################
+
+Description: Moto flottante avec 2 modes (Hover/Run), physique velocite/acceleration
+Statut: COMPLETE
+Reference: Pattern Cobblemon (simplifie), architecture originale
+
+================================================================================
+COMPOSANTS
+================================================================================
+
+Core (common/entity/mount/):
+- HoverbikeMode.java: Enum HOVER/RUN
+- HoverbikeSettings.java: Record immutable des parametres physiques
+- HoverbikePhysics.java: Classe stateless pour calculs physiques
+- HoverbikeEntity.java: Entite principale (extends Mob, implements PlayerRideable)
+
+Client:
+- client/model/HoverbikeModel.java: Modele test 2 cubes (arriere + avant)
+- client/renderer/entity/HoverbikeRenderer.java: MobRenderer simple
+- client/gui/hud/HoverbikeDebugHud.java: HUD debug haut a droite
+- client/camera/HoverbikeCameraController.java: Camera controller
+
+Item:
+- common/item/mount/HoverbikeSpawnItem.java: Item spawn hoverbike
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+Separation claire des responsabilites:
+
+1. HoverbikeSettings (record immutable):
+   - maxHoverSpeed, maxRunSpeed, runThresholdSpeed
+   - hoverAcceleration, runAcceleration, deceleration, brakeDeceleration, hoverFriction
+   - gravity, terminalVelocity
+   - rotationSpeedMax, rotationSpeedMin
+
+2. HoverbikePhysics (classe stateless):
+   - calculateHoverVelocity(): 4 directions, friction glace, gravite reduite
+   - calculateRunVelocity(): avant uniquement, decel, brake, gravite
+   - calculateYawDelta(): rotation progressive vers curseur joueur
+   - shouldTransitionToRun() / shouldTransitionToHover(): conditions de mode
+   - localToWorld(): conversion espace local -> monde via yRot
+
+3. HoverbikeEntity (logique entite):
+   - tickRidden(): rotation + transitions de mode
+   - travel(): calcul velocite locale, conversion world, inertie, move
+   - Input direct via driver.zza, driver.xxa, driver.isSprinting()
+
+4. HoverbikeModel (presentation):
+   - 2 cubes 16x16x16: arriere (siege) + avant
+   - Texture: iron_block (placeholder)
+
+================================================================================
+MODES DE DEPLACEMENT
+================================================================================
+
+Mode HOVER (par defaut):
+- WASD: 4 directions relatives a l'orientation entite
+- Acceleration: hoverAcceleration (0.008)
+- Friction: hoverFriction (0.002) - style glace
+- Gravite: reduite (0.025 vs 0.08 normal)
+- Vitesse max: maxHoverSpeed (0.15)
+- Rotation: constante, rotationSpeedMax (6 deg/tick)
+
+Mode RUN (sprint + seuil):
+- W: accelere (runAcceleration 0.012)
+- S: frein (brakeDeceleration 0.015)
+- Rien: deceleration naturelle (deceleration 0.003)
+- Vitesse max: maxRunSpeed (0.6)
+- Rotation: variable selon vitesse (rotationSpeedMin 1.5 a rotationSpeedMax 6.0)
+  Plus rapide = tourne moins vite
+
+Transitions:
+- HOVER -> RUN: sprint presse + W + speed > runThresholdSpeed (0.2)
+- RUN -> HOVER: speed < runThresholdSpeed (automatique)
+
+================================================================================
+REGISTRES
+================================================================================
+
+- BeemancerEntities: HOVERBIKE (sized 1.2x1.0, MobCategory.MISC)
+- BeemancerItems: HOVERBIKE_SPAWN (stacksTo 1)
+- BeemancerCreativeTabs: dans addBees()
+
+================================================================================
+COMMANDES TEST
+================================================================================
+
+/summon beemancer:hoverbike ~ ~ ~
+/give @p beemancer:hoverbike_spawn
+
+################################################################################

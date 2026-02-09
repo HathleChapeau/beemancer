@@ -70,7 +70,8 @@ Philosophie:
 │ client/renderer/entity/MagicBeeRenderer│ Renderer entité avec texture espèce  │
 │ common/codex/CodexManager.java      │ Gestionnaire central du Codex          │
 │ client/renderer/block/AltarHeartRenderer│ Renderer multibloc Honey Altar     │
-│ client/gui/hud/RideableBeeDebugHud  │ HUD debug rideable bee (haut droit)    │
+│ client/gui/hud/HoverbikeDebugHud    │ HUD debug hoverbike (haut droit)       │
+│ client/camera/HoverbikeCameraController│ Camera controller hoverbike          │
 │ client/renderer/debug/PipeDebugRenderer│ Texte debug au-dessus des pipes     │
 │ client/renderer/debug/HiveDebugRenderer│ Cooldowns au-dessus des ruches      │
 │ client/renderer/util/FluidCubeRenderer │ Rendu fluide avec sélection faces  │
@@ -261,13 +262,13 @@ LISTE DES FEATURES:
   Fichier: Structure/feature_honey_reservoir.txt
   Description: Réservoir fluide + Coeur d'Autel (contrôleur) pour multibloc Honey Altar
 
-→ Rideable Bee
-  Fichier: Structure/feature_rideable_bee.txt
-  Description: Abeille chevauchable avec modes WALK/RUN et caméra dynamique (inspiré Cobblemon)
+→ Hoverbike
+  Fichier: Structure/feature_hoverbike.txt
+  Description: Moto flottante avec 2 modes (Hover/Run), physique velocite/acceleration, gravite reduite, friction glace
 
 → Debug Display System
   Fichier: Structure/feature_debug_display.txt
-  Description: Affichages debug visuels (HUD rideable bee, texte pipes/ruches) quand displayDebug=true
+  Description: Affichages debug visuels (HUD hoverbike, texte pipes/ruches) quand displayDebug=true
 
 → Programmatic GUI Overhaul
   Fichier: Structure/feature_gui_overhaul.txt

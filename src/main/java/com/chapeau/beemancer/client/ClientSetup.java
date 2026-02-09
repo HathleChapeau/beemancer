@@ -7,9 +7,11 @@
 package com.chapeau.beemancer.client;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.client.camera.RidingCameraController;
+import com.chapeau.beemancer.client.camera.HoverbikeCameraController;
 import com.chapeau.beemancer.client.gui.hud.DebugPanelRenderer;
-import com.chapeau.beemancer.client.gui.hud.RideableBeeDebugHud;
+import com.chapeau.beemancer.client.gui.hud.HoverbikeDebugHud;
+import com.chapeau.beemancer.client.model.HoverbikeModel;
+import com.chapeau.beemancer.client.renderer.entity.HoverbikeRenderer;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
 import com.chapeau.beemancer.client.input.DebugKeyHandler;
 import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
@@ -49,10 +51,8 @@ import com.chapeau.beemancer.client.renderer.block.StorageTerminalRenderer;
 import com.chapeau.beemancer.client.renderer.block.TranslucentOutlineRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.beemancer.client.renderer.debug.CustomDebugDisplayRenderer;
-import com.chapeau.beemancer.client.model.RideableBeeModel;
 import com.chapeau.beemancer.client.visual.FlywheelTestBeeVisualizer;
 import com.chapeau.beemancer.client.renderer.entity.MagicBeeRenderer;
-import com.chapeau.beemancer.client.renderer.entity.RideableBeeRenderer;
 import com.chapeau.beemancer.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.beemancer.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.beemancer.common.blockentity.alchemy.HoneyPipeBlockEntity;
@@ -99,11 +99,11 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.register(BeeDebugRenderer.class);
 
         // Debug renderers (quand displayDebug = true)
-        NeoForge.EVENT_BUS.register(RideableBeeDebugHud.class);
         NeoForge.EVENT_BUS.register(CustomDebugDisplayRenderer.class);
 
-        // Riding system - caméra seulement (input lu directement depuis le joueur)
-        NeoForge.EVENT_BUS.register(RidingCameraController.class);
+        // Hoverbike system
+        NeoForge.EVENT_BUS.register(HoverbikeDebugHud.class);
+        NeoForge.EVENT_BUS.register(HoverbikeCameraController.class);
 
         // Overlay quand on ouvre un GUI adjacent depuis le bouton Debug de l'interface
         NeoForge.EVENT_BUS.register(com.chapeau.beemancer.client.gui.screen.storage.AdjacentGuiOverlayRenderer.class);
@@ -135,8 +135,8 @@ public class ClientSetup {
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(BeemancerEntities.MAGIC_BEE.get(), MagicBeeRenderer::new);
-        event.registerEntityRenderer(BeemancerEntities.RIDEABLE_BEE.get(), RideableBeeRenderer::new);
         event.registerEntityRenderer(BeemancerEntities.DELIVERY_BEE.get(), DeliveryBeeRenderer::new);
+        event.registerEntityRenderer(BeemancerEntities.HOVERBIKE.get(), HoverbikeRenderer::new);
         // Flywheel test bee - noop renderer (Flywheel handles rendering)
         event.registerEntityRenderer(BeemancerEntities.FLYWHEEL_TEST_BEE.get(),
             net.minecraft.client.renderer.entity.NoopRenderer::new);
@@ -194,8 +194,7 @@ public class ClientSetup {
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
-        // RideableBee model layer
-        event.registerLayerDefinition(RideableBeeRenderer.LAYER_LOCATION, RideableBeeModel::createBodyLayer);
+        event.registerLayerDefinition(HoverbikeRenderer.LAYER_LOCATION, HoverbikeModel::createBodyLayer);
     }
 
     private static void registerClientExtensions(final RegisterClientExtensionsEvent event) {

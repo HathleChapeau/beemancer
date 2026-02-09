@@ -9,7 +9,7 @@ package com.chapeau.beemancer.core.registry;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
-import com.chapeau.beemancer.common.entity.mount.RideableBeeEntity;
+import com.chapeau.beemancer.common.entity.mount.HoverbikeEntity;
 import com.chapeau.beemancer.content.flywheeltest.FlywheelTestBeeEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -38,13 +38,11 @@ public class BeemancerEntities {
                     .build("delivery_bee"));
 
     // --- MOUNTS ---
-    // Abeille chevauchable (scale 1.5x visuellement)
-    // Hitbox: ~1.05 largeur, ~0.9 hauteur
-    public static final Supplier<EntityType<RideableBeeEntity>> RIDEABLE_BEE = ENTITIES.register("rideable_bee",
-            () -> EntityType.Builder.of(RideableBeeEntity::new, MobCategory.CREATURE)
-                    .sized(1.05F, 0.9F)
+    public static final Supplier<EntityType<HoverbikeEntity>> HOVERBIKE = ENTITIES.register("hoverbike",
+            () -> EntityType.Builder.of(HoverbikeEntity::new, MobCategory.MISC)
+                    .sized(1.2F, 1.0F)
                     .clientTrackingRange(10)
-                    .build("rideable_bee"));
+                    .build("hoverbike"));
 
     // --- FLYWHEEL TEST ---
     public static final Supplier<EntityType<FlywheelTestBeeEntity>> FLYWHEEL_TEST_BEE =

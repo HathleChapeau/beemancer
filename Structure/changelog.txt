@@ -3,6 +3,29 @@
 ################################################################################
 
 ================================================================================
+2026-02-09 - Hoverbike System (Remplacement Rideable Bee)
+================================================================================
+
+SUPPRESSION COMPLETE: Feature Rideable Bee (24 fichiers supprimes)
+- Tout le package common/entity/mount/behaviour/ (RidingController, HorseBehaviour, etc.)
+- RideableBeeEntity, RideableBeeMovement, RidingMode, RidingSettings
+- RideableBeeRenderer, RideableBeeModel, RidingCameraController, RideableBeeDebugHud
+- RideableBeeSpawnItem, rideable_bee.json
+
+NOUVEAU SYSTEME: Hoverbike (9 fichiers crees)
+- HoverbikeMode.java: Enum HOVER/RUN
+- HoverbikeSettings.java: Record constantes physiques
+- HoverbikePhysics.java: Calculs velocite, rotation, gravite, friction
+- HoverbikeEntity.java: Entite principale (extends Mob, PlayerRideable)
+- HoverbikeModel.java: Modele test 2 cubes
+- HoverbikeRenderer.java: MobRenderer simple
+- HoverbikeDebugHud.java: HUD debug
+- HoverbikeCameraController.java: Camera controller
+- HoverbikeSpawnItem.java: Item de spawn
+
+REGISTRES: -RIDEABLE_BEE/+HOVERBIKE, -RIDEABLE_BEE_SPAWN/+HOVERBIKE_SPAWN
+
+================================================================================
 2026-02-09 - Hive BlockEntities Deduplication
 ================================================================================
 

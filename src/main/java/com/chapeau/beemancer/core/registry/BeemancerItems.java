@@ -12,7 +12,7 @@ import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.item.codex.CodexItem;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.common.item.essence.EssenceItem;
-import com.chapeau.beemancer.common.item.mount.RideableBeeSpawnItem;
+import com.chapeau.beemancer.common.item.mount.HoverbikeSpawnItem;
 import com.chapeau.beemancer.common.item.tool.BuildingWandItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
@@ -669,8 +669,8 @@ public class BeemancerItems {
             () -> new BlockItem(BeemancerBlocks.BEE_SPAWNER.get(), new Item.Properties()));
 
     // --- MOUNT ITEMS ---
-    public static final DeferredItem<RideableBeeSpawnItem> RIDEABLE_BEE_SPAWN = ITEMS.register("rideable_bee_spawn",
-            () -> new RideableBeeSpawnItem(new Item.Properties()));
+    public static final DeferredItem<HoverbikeSpawnItem> HOVERBIKE_SPAWN = ITEMS.register("hoverbike_spawn",
+            () -> new HoverbikeSpawnItem(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
