@@ -7,7 +7,7 @@
  * PATTERN: Inspire de Cobblemon PokemonEntity.kt
  * - travel() L1815-1875: Conversion velocite locale -> monde
  * - tickRidden() L2232-2283: Tick rotation et mode
- * - getRiddenInput() L2397-2400: Retourne velocite du behaviour
+ * - getDefaultGravity() L2494-2502: Desactive vanilla gravity quand monte
  *
  * DÉPENDANCES:
  * ------------------------------------------------------------
@@ -27,8 +27,8 @@
  */
 package com.chapeau.beemancer.common.entity.mount;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -58,6 +58,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     // --- Etat interne ---
     private HoverbikeMode mode = HoverbikeMode.HOVER;
     private Vec3 rideVelocity = Vec3.ZERO;
+    private boolean sprintPressed = false;
 
     // --- Constructor ---
 
@@ -73,6 +74,21 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 .add(Attributes.MAX_HEALTH, 40.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.0)
                 .add(Attributes.FOLLOW_RANGE, 0.0);
+    }
+
+    // --- Gravity Override (Pattern Cobblemon PokemonEntity.kt L2494-2502) ---
+
+    /**
+     * Desactive la gravite vanilla quand monte.
+     * Toute la gravite est geree manuellement dans HoverbikePhysics.
+     * Evite le flickering onGround cause par la superposition de deux systemes de gravite.
+     */
+    @Override
+    protected double getDefaultGravity() {
+        if (this.isVehicle()) {
+            return 0.0;
+        }
+        return super.getDefaultGravity();
     }
 
     // --- Mounting ---
@@ -101,12 +117,12 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         if (this.getPassengers().isEmpty()) {
             mode = HoverbikeMode.HOVER;
             rideVelocity = Vec3.ZERO;
+            sprintPressed = false;
         }
     }
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity entity, EntityDimensions dimensions, float scale) {
-        // Joueur assis sur le cube arriere, un peu au-dessus
         return new Vec3(0, dimensions.height() + 0.1, 0);
     }
 
@@ -122,7 +138,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     /**
      * Appele chaque tick quand un joueur est monte.
-     * Gere la rotation et les transitions de mode.
+     * Gere la rotation, la lecture du sprint key, et les transitions de mode.
      */
     @Override
     protected void tickRidden(Player driver, Vec3 movementInput) {
@@ -133,7 +149,12 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
         // Lire input
         float forward = Math.signum(driver.zza);
-        boolean sprinting = driver.isSprinting();
+
+        // Lire sprint key directement (pattern Cobblemon HorseBehaviour.kt L144)
+        // driver.isSprinting() ne fonctionne pas quand le joueur monte une entite
+        if (this.level().isClientSide) {
+            this.sprintPressed = isSprintKeyDown();
+        }
 
         // Calculer et appliquer la rotation
         float yawDelta = HoverbikePhysics.calculateYawDelta(
@@ -148,7 +169,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
         // Transitions de mode
         if (mode == HoverbikeMode.HOVER) {
-            if (HoverbikePhysics.shouldTransitionToRun(forward, sprinting, rideVelocity.z, settings)) {
+            if (HoverbikePhysics.shouldTransitionToRun(forward, sprintPressed, rideVelocity.z, settings)) {
                 mode = HoverbikeMode.RUN;
             }
         } else {
@@ -156,6 +177,15 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 mode = HoverbikeMode.HOVER;
             }
         }
+    }
+
+    /**
+     * Lecture du sprint key cote client.
+     * Isole dans une methode separee pour que la reference a Minecraft
+     * ne soit resolue que cote client.
+     */
+    private static boolean isSprintKeyDown() {
+        return Minecraft.getInstance().options.keySprint.isDown();
     }
 
     /**
@@ -192,6 +222,14 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         Vec3 diff = worldVelocity.subtract(this.getDeltaMovement());
         double inertia = 0.85;
         this.setDeltaMovement(this.getDeltaMovement().add(diff.scale(inertia)));
+
+        // Anti-bounce trick (Pattern Cobblemon PokemonEntity.kt L1785-1787)
+        // Micro offset Y negatif quand au sol pour eviter le flickering onGround
+        Vec3 movement = this.getDeltaMovement();
+        if (this.onGround() && movement.y == 0.0) {
+            movement = movement.subtract(0, 0.0001, 0);
+            this.setDeltaMovement(movement);
+        }
 
         // Appliquer le mouvement
         this.move(MoverType.SELF, this.getDeltaMovement());
@@ -250,6 +288,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     public double getForwardSpeed() {
         return rideVelocity.z;
+    }
+
+    public boolean isSprintPressed() {
+        return sprintPressed;
     }
 
     public HoverbikeSettings getSettings() {

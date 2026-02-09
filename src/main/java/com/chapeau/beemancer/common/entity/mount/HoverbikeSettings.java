@@ -55,7 +55,7 @@ public record HoverbikeSettings(
                 // Vitesses
                 0.15,    // maxHoverSpeed (~3 blocs/sec)
                 0.6,     // maxRunSpeed (~12 blocs/sec)
-                0.2,     // runThresholdSpeed (seuil hover<->run)
+                0.1125,  // runThresholdSpeed (75% de maxHoverSpeed)
 
                 // Acceleration
                 0.008,   // hoverAcceleration
