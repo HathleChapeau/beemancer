@@ -29,6 +29,7 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Coeur : source d'energie du hoverbike.
@@ -68,5 +69,11 @@ public class CoeurPartModel extends HoverbikePartModel {
     @Override
     public ResourceLocation getTextureLocation() {
         return TEXTURE;
+    }
+
+    @Override
+    public Vec3 getEditModeOffset() {
+        // Le coeur monte : source d'energie flotte vers le haut
+        return new Vec3(0, -16, 0);
     }
 }

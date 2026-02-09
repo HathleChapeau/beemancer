@@ -29,6 +29,7 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Radiateur : ailettes de refroidissement sur les cotes du hoverbike.
@@ -75,5 +76,11 @@ public class RadiateurPartModel extends HoverbikePartModel {
     @Override
     public ResourceLocation getTextureLocation() {
         return TEXTURE;
+    }
+
+    @Override
+    public Vec3 getEditModeOffset() {
+        // Les radiateurs avancent : panneaux de refroidissement se detachent vers l'avant
+        return new Vec3(0, 0, -16);
     }
 }

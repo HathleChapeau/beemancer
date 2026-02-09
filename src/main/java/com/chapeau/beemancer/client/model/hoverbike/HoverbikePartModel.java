@@ -28,6 +28,7 @@ import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Base abstraite pour les modeles de parties du Hoverbike.
@@ -53,6 +54,15 @@ public abstract class HoverbikePartModel extends HierarchicalModel<HoverbikeEnti
 
     /** Texture utilisee pour rendre cette partie. */
     public abstract ResourceLocation getTextureLocation();
+
+    /**
+     * Offset en edit mode : direction et distance d'ecartement de la piece.
+     * En unites modele (16 = 1 bloc). Chaque partie definit sa propre direction
+     * pour s'ecarter du centre de la moto de maniere logique.
+     * Coordonnees dans l'espace du modele apres flip MobRenderer :
+     * +Y = down, -Y = up, +Z = backward, -Z = forward, +X = left, -X = right.
+     */
+    public abstract Vec3 getEditModeOffset();
 
     @Override
     public void setupAnim(HoverbikeEntity entity, float limbSwing, float limbSwingAmount,

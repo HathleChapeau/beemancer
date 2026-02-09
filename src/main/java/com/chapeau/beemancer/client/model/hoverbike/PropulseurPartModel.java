@@ -29,6 +29,7 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Propulseur : tuyeres d'echappement a l'arriere du hoverbike.
@@ -75,5 +76,11 @@ public class PropulseurPartModel extends HoverbikePartModel {
     @Override
     public ResourceLocation getTextureLocation() {
         return TEXTURE;
+    }
+
+    @Override
+    public Vec3 getEditModeOffset() {
+        // Les propulseurs reculent : tuyeres se detachent vers l'arriere
+        return new Vec3(0, 0, 16);
     }
 }

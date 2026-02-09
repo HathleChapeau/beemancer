@@ -29,6 +29,7 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Chassis : cadre structural du hoverbike.
@@ -82,5 +83,11 @@ public class ChassisPartModel extends HoverbikePartModel {
     @Override
     public ResourceLocation getTextureLocation() {
         return TEXTURE;
+    }
+
+    @Override
+    public Vec3 getEditModeOffset() {
+        // Le chassis descend : cadre structural se detache par le bas
+        return new Vec3(0, 16, 0);
     }
 }
