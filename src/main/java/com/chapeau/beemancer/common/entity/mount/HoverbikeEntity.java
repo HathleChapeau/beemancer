@@ -29,6 +29,9 @@ package com.chapeau.beemancer.common.entity.mount;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -45,12 +48,21 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+import java.util.UUID;
+
 /**
  * Hoverbike — moto flottante avec physique velocite/acceleration.
  * Deux modes: HOVER (4 directions, basse vitesse) et RUN (avant uniquement, haute vitesse).
  * Gravite reduite, friction glace en permanence.
  */
 public class HoverbikeEntity extends Mob implements PlayerRideable {
+
+    // --- Synched Data ---
+    private static final EntityDataAccessor<Boolean> DATA_EDIT_MODE =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Optional<UUID>> DATA_EDITING_PLAYER =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.OPTIONAL_UUID);
 
     // --- Settings ---
     private final HoverbikeSettings settings;
@@ -62,11 +74,22 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private boolean jumpPressed = false;
     private float gaugeLevel = 1.0f;
 
+    // --- Edit mode ---
+    private static final double EDIT_MODE_MAX_DISTANCE = 5.0;
+    private static boolean editShaderActive = false;
+
     // --- Constructor ---
 
     public HoverbikeEntity(EntityType<? extends HoverbikeEntity> entityType, Level level) {
         super(entityType, level);
         this.settings = HoverbikeSettings.createDefaults();
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_EDIT_MODE, false);
+        builder.define(DATA_EDITING_PLAYER, Optional.empty());
     }
 
     // --- Attributes ---
@@ -94,17 +117,50 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         return super.getDefaultGravity();
     }
 
-    // --- Mounting ---
+    // --- Mounting & Edit Mode ---
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (!this.isVehicle() && !player.isSecondaryUseActive()) {
+        // Shift+click : toggle edit mode
+        if (player.isSecondaryUseActive()) {
+            if (!this.level().isClientSide()) {
+                if (isEditMode() && getEditingPlayerUUID().isPresent()
+                        && getEditingPlayerUUID().get().equals(player.getUUID())) {
+                    exitEditMode();
+                } else if (!isEditMode()) {
+                    enterEditMode(player.getUUID());
+                }
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide());
+        }
+
+        // Click normal : monter (seulement si pas en edit mode et pas deja monte)
+        if (!isEditMode() && !this.isVehicle()) {
             if (!this.level().isClientSide()) {
                 player.startRiding(this);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
+
         return super.mobInteract(player, hand);
+    }
+
+    private void enterEditMode(UUID playerUUID) {
+        this.entityData.set(DATA_EDIT_MODE, true);
+        this.entityData.set(DATA_EDITING_PLAYER, Optional.of(playerUUID));
+    }
+
+    private void exitEditMode() {
+        this.entityData.set(DATA_EDIT_MODE, false);
+        this.entityData.set(DATA_EDITING_PLAYER, Optional.empty());
+    }
+
+    public boolean isEditMode() {
+        return this.entityData.get(DATA_EDIT_MODE);
+    }
+
+    public Optional<UUID> getEditingPlayerUUID() {
+        return this.entityData.get(DATA_EDITING_PLAYER);
     }
 
     @Nullable
@@ -162,8 +218,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             this.jumpPressed = isJumpKeyDown();
         }
 
-        // Jauge d'envol : se remplit quand on n'appuie pas sur saut
-        if (!jumpPressed) {
+        // Jauge d'envol : se remplit uniquement au sol et sans appuyer sur saut
+        if (!jumpPressed && this.onGround()) {
             gaugeLevel = Math.min(1.0f, gaugeLevel + (float) settings.gaugeFillRate());
         }
 
@@ -257,6 +313,12 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
         // Appliquer le mouvement
         this.move(MoverType.SELF, this.getDeltaMovement());
+
+        // Feedback collision : si on percute un mur, synchroniser rideVelocity
+        // avec le mouvement reel pour eviter de rester colle au mur
+        if (this.horizontalCollision) {
+            rideVelocity = HoverbikePhysics.worldToLocal(this.getDeltaMovement(), this.getYRot());
+        }
     }
 
     @Override
@@ -267,6 +329,77 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     protected float getRiddenSpeed(Player driver) {
         return (float) rideVelocity.length();
+    }
+
+    // --- Glow en edit mode ---
+
+    /**
+     * L'entite brille en edit mode (contour visible).
+     * Cote client uniquement pour eviter de modifier le synched glowing tag.
+     */
+    @Override
+    public boolean isCurrentlyGlowing() {
+        return isEditMode() || super.isCurrentlyGlowing();
+    }
+
+    // --- Tick (edit mode + shader management) ---
+
+    @Override
+    public void tick() {
+        super.tick();
+
+        // Server: verifier que l'editeur est toujours a portee
+        if (!this.level().isClientSide() && isEditMode() && getEditingPlayerUUID().isPresent()) {
+            Player editor = this.level().getPlayerByUUID(getEditingPlayerUUID().get());
+            if (editor == null || editor.distanceTo(this) > EDIT_MODE_MAX_DISTANCE) {
+                exitEditMode();
+            }
+        }
+
+        // Client: gerer le shader d'assombrissement
+        if (this.level().isClientSide()) {
+            boolean shouldBeActive = isEditMode() && isLocalPlayerEditor();
+            if (shouldBeActive && !editShaderActive) {
+                loadEditShader();
+                editShaderActive = true;
+            } else if (!shouldBeActive && editShaderActive) {
+                unloadEditShader();
+                editShaderActive = false;
+            }
+        }
+    }
+
+    @Override
+    public void onRemovedFromLevel() {
+        super.onRemovedFromLevel();
+        // Nettoyer le shader si l'entite est retiree pendant l'edit mode
+        if (this.level().isClientSide() && editShaderActive) {
+            unloadEditShader();
+            editShaderActive = false;
+        }
+    }
+
+    /**
+     * Verifie si le joueur local est l'editeur de cette moto.
+     */
+    private boolean isLocalPlayerEditor() {
+        Optional<UUID> editorUUID = getEditingPlayerUUID();
+        if (editorUUID.isEmpty()) return false;
+        return editorUUID.get().equals(getLocalPlayerUUID());
+    }
+
+    private static UUID getLocalPlayerUUID() {
+        return Minecraft.getInstance().player != null ? Minecraft.getInstance().player.getUUID() : null;
+    }
+
+    private static void loadEditShader() {
+        Minecraft.getInstance().gameRenderer.loadEffect(
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("beemancer", "shaders/post/edit_mode.json")
+        );
+    }
+
+    private static void unloadEditShader() {
+        Minecraft.getInstance().gameRenderer.shutdownEffect();
     }
 
     // --- AI ---

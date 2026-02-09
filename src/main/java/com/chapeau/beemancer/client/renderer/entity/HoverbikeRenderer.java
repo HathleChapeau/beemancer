@@ -26,6 +26,7 @@ import com.chapeau.beemancer.common.entity.mount.HoverbikeEntity;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -47,5 +48,14 @@ public class HoverbikeRenderer extends MobRenderer<HoverbikeEntity, HoverbikeMod
     @Override
     public ResourceLocation getTextureLocation(HoverbikeEntity entity) {
         return TEXTURE;
+    }
+
+    /**
+     * En edit mode, force le block light a 15 (fullbright).
+     * L'entite est ainsi plus lumineuse que l'environnement assombri par le shader.
+     */
+    @Override
+    protected int getBlockLightLevel(HoverbikeEntity entity, BlockPos pos) {
+        return entity.isEditMode() ? 15 : super.getBlockLightLevel(entity, pos);
     }
 }

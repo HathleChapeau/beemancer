@@ -223,6 +223,22 @@ public final class HoverbikePhysics {
     }
 
     /**
+     * Inverse de localToWorld : convertit une velocite monde en espace local.
+     * Utilise apres collision pour synchroniser rideVelocity avec le mouvement reel.
+     */
+    public static Vec3 worldToLocal(Vec3 worldVel, float entityYaw) {
+        float yawRad = entityYaw * Mth.DEG_TO_RAD;
+        float sin = Mth.sin(yawRad);
+        float cos = Mth.cos(yawRad);
+
+        return new Vec3(
+                worldVel.x * cos + worldVel.z * sin,
+                worldVel.y,
+                worldVel.z * cos - worldVel.x * sin
+        );
+    }
+
+    /**
      * Applique la gravite reduite.
      */
     private static double applyGravity(double vy, boolean onGround, HoverbikeSettings settings) {
