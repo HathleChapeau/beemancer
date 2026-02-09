@@ -107,7 +107,7 @@ public class HoverbikeEditStatsHud {
             maxWidth = Math.max(maxWidth, font.width(text));
         }
 
-        int boxWidth = maxWidth + PADDING * 2 + 10;
+        int boxWidth = Math.max(180, maxWidth + PADDING * 2 + 20);
         int boxHeight = PADDING * 2 + LINE_HEIGHT + 4 + LINE_HEIGHT * lines.length;
 
         int x = BOX_MARGIN;
@@ -127,14 +127,15 @@ public class HoverbikeEditStatsHud {
         textY += 3;
 
         // Lignes
+        int valueX = x + boxWidth - PADDING - 4;
         for (String[] line : lines) {
             if (line[1] == null) {
                 // Section header
                 graphics.drawString(font, line[0], textX, textY, SECTION_COLOR, false);
             } else {
-                String label = line[0] + ": ";
-                graphics.drawString(font, label, textX, textY, LABEL_COLOR, false);
-                graphics.drawString(font, line[1], textX + font.width(label), textY, VALUE_COLOR, false);
+                graphics.drawString(font, line[0], textX, textY, LABEL_COLOR, false);
+                int valW = font.width(line[1]);
+                graphics.drawString(font, line[1], valueX - valW, textY, VALUE_COLOR, false);
             }
             textY += LINE_HEIGHT;
         }

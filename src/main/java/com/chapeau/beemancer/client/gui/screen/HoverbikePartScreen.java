@@ -11,7 +11,7 @@
  * | HoverbikePart       | Enum partie          | Identification partie          |
  * | HoverbikePartModel  | Modele 3D            | Rendu preview                  |
  * | HoverbikeEntity     | Entite source        | Contexte edit mode             |
- * | ClientSetup         | Layer definitions    | Bake du modele pour preview    |
+ * | GuiRenderHelper     | Rendu vanilla        | Fond container, slots, boutons |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -21,6 +21,7 @@
  */
 package com.chapeau.beemancer.client.gui.screen;
 
+import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.model.hoverbike.ChassisPartModel;
 import com.chapeau.beemancer.client.model.hoverbike.CoeurPartModel;
 import com.chapeau.beemancer.client.model.hoverbike.HoverbikePartModel;
@@ -28,11 +29,13 @@ import com.chapeau.beemancer.client.model.hoverbike.PropulseurPartModel;
 import com.chapeau.beemancer.client.model.hoverbike.RadiateurPartModel;
 import com.chapeau.beemancer.common.entity.mount.HoverbikeEntity;
 import com.chapeau.beemancer.common.entity.mount.HoverbikePart;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LightTexture;
@@ -44,19 +47,24 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * Ecran de visualisation/selection d'un modele de partie du hoverbike.
- * Affiche le modele 3D de la partie au centre, avec des fleches
- * gauche/droite (futures: navigation entre modeles) et un bouton retour.
- * Le joueur peut maintenir clic gauche pour faire tourner le modele.
+ * Utilise les widgets et couleurs vanilla Minecraft (fond container gris,
+ * boutons standards, inset slot). Le joueur peut maintenir clic gauche
+ * pour faire tourner le modele de la piece.
  */
 public class HoverbikePartScreen extends Screen {
 
-    private static final int BG_COLOR = 0xCC000000;
-    private static final int BORDER_COLOR = 0xFF555555;
-    private static final int TITLE_COLOR = 0xFFFFAA00;
-    private static final int ARROW_COLOR = 0xFFAAAAAA;
-    private static final int ARROW_HOVER_COLOR = 0xFFFFFFFF;
-    private static final int CLOSE_COLOR = 0xFFFF5555;
-    private static final int CLOSE_HOVER_COLOR = 0xFFFF8888;
+    private static final int PANEL_WIDTH = 200;
+    private static final int PANEL_HEIGHT = 170;
+    private static final int INSET_SIZE = 100;
+    private static final int TITLE_Y_OFFSET = 7;
+    private static final int BUTTON_HEIGHT = 20;
+
+    // Couleurs vanilla container
+    private static final int CONTAINER_BG = 0xFFC6C6C6;
+    private static final int TITLE_COLOR = 0x404040;
+    private static final int INSET_BG = 0xFF8B8B8B;
+    private static final int INSET_BORDER_DARK = 0xFF373737;
+    private static final int INSET_BORDER_LIGHT = 0xFFFFFFFF;
 
     private final HoverbikePart partType;
     private final HoverbikeEntity hoverbike;
@@ -66,13 +74,12 @@ public class HoverbikePartScreen extends Screen {
     private float rotationX = -20f;
     private boolean dragging = false;
 
-    // Layout
-    private int panelX, panelY, panelW, panelH;
-    private int arrowLeftX, arrowRightX, arrowY, arrowSize;
-    private int closeX, closeY, closeW, closeH;
+    // Layout calcule dans init()
+    private int panelX, panelY;
+    private int insetX, insetY;
 
     public HoverbikePartScreen(HoverbikePart partType, HoverbikeEntity hoverbike) {
-        super(Component.literal(partType.name()));
+        super(Component.literal(formatPartName(partType)));
         this.partType = partType;
         this.hoverbike = hoverbike;
     }
@@ -96,90 +103,95 @@ public class HoverbikePartScreen extends Screen {
             case RADIATEUR -> new RadiateurPartModel(root);
         };
 
-        // Layout du panneau central (60% de la hauteur, 40% de la largeur)
-        panelW = Math.min(300, (int) (width * 0.4));
-        panelH = Math.min(350, (int) (height * 0.6));
-        panelX = (width - panelW) / 2;
-        panelY = (height - panelH) / 2;
+        // Layout centre
+        panelX = (width - PANEL_WIDTH) / 2;
+        panelY = (height - PANEL_HEIGHT) / 2;
+        insetX = panelX + (PANEL_WIDTH - INSET_SIZE) / 2;
+        insetY = panelY + 22;
 
-        // Fleches gauche/droite
-        arrowSize = 30;
-        arrowLeftX = panelX + 15;
-        arrowRightX = panelX + panelW - 15 - arrowSize;
-        arrowY = panelY + panelH / 2 - arrowSize / 2;
+        // Fleche gauche (vanilla Button)
+        addRenderableWidget(Button.builder(Component.literal("<"), btn -> {
+            // Navigation modele precedent (futur)
+        }).bounds(panelX + 8, insetY + INSET_SIZE / 2 - BUTTON_HEIGHT / 2, 20, BUTTON_HEIGHT).build());
 
-        // Bouton fermer en bas au centre
-        closeW = 40;
-        closeH = 20;
-        closeX = width / 2 - closeW / 2;
-        closeY = panelY + panelH - 35;
+        // Fleche droite (vanilla Button)
+        addRenderableWidget(Button.builder(Component.literal(">"), btn -> {
+            // Navigation modele suivant (futur)
+        }).bounds(panelX + PANEL_WIDTH - 28, insetY + INSET_SIZE / 2 - BUTTON_HEIGHT / 2, 20, BUTTON_HEIGHT).build());
+
+        // Bouton retour (vanilla Button, translatable)
+        addRenderableWidget(Button.builder(Component.translatable("gui.back"), btn -> {
+            onClose();
+        }).bounds(width / 2 - 40, panelY + PANEL_HEIGHT - 30, 80, BUTTON_HEIGHT).build());
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
+        // Fond assombri vanilla
+        renderBackground(graphics, mouseX, mouseY, partialTick);
 
-        // Fond semi-transparent
-        graphics.fill(panelX, panelY, panelX + panelW, panelY + panelH, BG_COLOR);
-        drawBorder(graphics, panelX, panelY, panelW, panelH, BORDER_COLOR);
+        // Panneau container vanilla (fond gris + bordures 3D)
+        GuiRenderHelper.renderContainerBackgroundNoTitle(graphics, panelX, panelY, PANEL_WIDTH, PANEL_HEIGHT);
 
-        // Titre
-        String title = partType.name();
-        int titleWidth = font.width(title);
-        graphics.drawString(font, title, width / 2 - titleWidth / 2, panelY + 8, TITLE_COLOR, false);
+        // Titre centre (couleur vanilla 0x404040 sur fond gris)
+        graphics.drawCenteredString(font, title, width / 2, panelY + TITLE_Y_OFFSET, TITLE_COLOR);
 
-        // Ligne separatrice sous le titre
-        graphics.fill(panelX + 4, panelY + 20, panelX + panelW - 4, panelY + 21, BORDER_COLOR);
+        // Separateur sous le titre
+        graphics.fill(panelX + 7, panelY + 18, panelX + PANEL_WIDTH - 7, panelY + 19, 0xFF8B8B8B);
 
-        // Rendu du modele 3D au centre
+        // Zone inset pour le modele (style slot agrandi)
+        renderInset(graphics, insetX, insetY, INSET_SIZE, INSET_SIZE);
+
+        // Rendu du modele 3D
         renderPartModel(graphics, partialTick);
 
-        // Fleche gauche
-        boolean hoverLeft = isInside(mouseX, mouseY, arrowLeftX, arrowY, arrowSize, arrowSize);
-        int leftColor = hoverLeft ? ARROW_HOVER_COLOR : ARROW_COLOR;
-        graphics.drawString(font, "<", arrowLeftX + arrowSize / 2 - 3, arrowY + arrowSize / 2 - 4, leftColor, true);
-
-        // Fleche droite
-        boolean hoverRight = isInside(mouseX, mouseY, arrowRightX, arrowY, arrowSize, arrowSize);
-        int rightColor = hoverRight ? ARROW_HOVER_COLOR : ARROW_COLOR;
-        graphics.drawString(font, ">", arrowRightX + arrowSize / 2 - 3, arrowY + arrowSize / 2 - 4, rightColor, true);
-
-        // Bouton retour (fleche gauche en bas)
-        boolean hoverClose = isInside(mouseX, mouseY, closeX, closeY, closeW, closeH);
-        int closeBg = hoverClose ? CLOSE_HOVER_COLOR : CLOSE_COLOR;
-        graphics.fill(closeX, closeY, closeX + closeW, closeY + closeH, closeBg);
-        drawBorder(graphics, closeX, closeY, closeW, closeH, BORDER_COLOR);
-        String closeText = "<-";
-        int closeTextW = font.width(closeText);
-        graphics.drawString(font, closeText, closeX + closeW / 2 - closeTextW / 2,
-                closeY + closeH / 2 - 4, 0xFFFFFFFF, false);
+        // Widgets (boutons vanilla) rendus par super
+        super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     /**
-     * Rend le modele 3D de la partie au centre du panneau.
+     * Rend une zone inset style slot Minecraft (bord sombre en haut-gauche,
+     * bord clair en bas-droite, fond gris fonce).
+     */
+    private void renderInset(GuiGraphics g, int x, int y, int w, int h) {
+        // Fond sombre
+        g.fill(x + 1, y + 1, x + w - 1, y + h - 1, INSET_BG);
+        // Bord haut et gauche (sombre = inset)
+        g.fill(x, y, x + w, y + 1, INSET_BORDER_DARK);
+        g.fill(x, y, x + 1, y + h, INSET_BORDER_DARK);
+        // Bord bas et droit (clair = inset)
+        g.fill(x + 1, y + h - 1, x + w, y + h, INSET_BORDER_LIGHT);
+        g.fill(x + w - 1, y + 1, x + w, y + h, INSET_BORDER_LIGHT);
+    }
+
+    /**
+     * Rend le modele 3D de la partie au centre de la zone inset.
+     * Utilise le lighting vanilla pour les entites en inventaire.
      */
     private void renderPartModel(GuiGraphics graphics, float partialTick) {
         if (partModel == null) return;
 
-        int centerX = width / 2;
-        int centerY = panelY + panelH / 2 + 10;
-        float scale = 4.0f;
+        int centerX = insetX + INSET_SIZE / 2;
+        int centerY = insetY + INSET_SIZE / 2 + 10;
+        float scale = 50f;
 
         PoseStack poseStack = graphics.pose();
         poseStack.pushPose();
 
-        // Positionner au centre de l'ecran
-        poseStack.translate(centerX, centerY, 150);
-        poseStack.scale(scale, scale, scale);
+        // Positionner au centre de l'inset
+        poseStack.translate(centerX, centerY, 100);
+        poseStack.scale(scale, scale, -scale);
 
-        // Appliquer la rotation utilisateur
+        // Rotation utilisateur
         poseStack.mulPose(Axis.XP.rotationDegrees(rotationX));
         poseStack.mulPose(Axis.YP.rotationDegrees(rotationY));
 
-        // Flip Y pour correspondre a la convention modele
-        poseStack.scale(-1, -1, 1);
+        // Centrer le modele (decaler vers son centre approximatif)
+        poseStack.translate(0, -0.7, 0);
 
-        // Rendre le modele
+        // Lighting vanilla pour entites en inventaire
+        Lighting.setupForEntityInInventory();
+
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         ResourceLocation texture = partModel.getTextureLocation();
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(texture));
@@ -188,32 +200,30 @@ public class HoverbikePartScreen extends Screen {
                 OverlayTexture.NO_OVERLAY);
 
         bufferSource.endBatch();
+
+        // Restaurer le lighting
+        Lighting.setupFor3DItems();
+
         poseStack.popPose();
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Clic gauche : commencer a drag pour rotation
-        if (button == 0) {
+        // Laisser les widgets vanilla gerer leurs clics d'abord
+        if (super.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
+        // Clic gauche dans l'inset : commencer drag rotation
+        if (button == 0 && isInsideInset((int) mouseX, (int) mouseY)) {
             dragging = true;
             return true;
         }
-        // Clic droit sur bouton fermer
-        if (button == 0 && isInside((int) mouseX, (int) mouseY, closeX, closeY, closeW, closeH)) {
-            onClose();
-            return true;
-        }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return false;
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
-            // Verifier si on a clique sans drag sur le bouton fermer
-            if (isInside((int) mouseX, (int) mouseY, closeX, closeY, closeW, closeH)) {
-                onClose();
-                return true;
-            }
+        if (button == 0 && dragging) {
             dragging = false;
             return true;
         }
@@ -236,14 +246,16 @@ public class HoverbikePartScreen extends Screen {
         return false;
     }
 
-    private boolean isInside(int mx, int my, int x, int y, int w, int h) {
-        return mx >= x && mx < x + w && my >= y && my < y + h;
+    private boolean isInsideInset(int mx, int my) {
+        return mx >= insetX && mx < insetX + INSET_SIZE
+                && my >= insetY && my < insetY + INSET_SIZE;
     }
 
-    private void drawBorder(GuiGraphics graphics, int x, int y, int w, int h, int color) {
-        graphics.fill(x, y, x + w, y + 1, color);
-        graphics.fill(x, y + h - 1, x + w, y + h, color);
-        graphics.fill(x, y, x + 1, y + h, color);
-        graphics.fill(x + w - 1, y, x + w, y + h, color);
+    /**
+     * Formatte le nom de la partie avec majuscule initiale.
+     */
+    private static String formatPartName(HoverbikePart part) {
+        String name = part.name().toLowerCase();
+        return Character.toUpperCase(name.charAt(0)) + name.substring(1);
     }
 }

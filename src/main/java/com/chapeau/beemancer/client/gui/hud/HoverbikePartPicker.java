@@ -58,25 +58,25 @@ public class HoverbikePartPicker {
     private static final Map<HoverbikePart, Vec3> EDIT_OFFSETS = new EnumMap<>(HoverbikePart.class);
 
     static {
-        // Chassis : rails lateraux + plaque inferieure (AABB combinee)
+        // Chassis : rails lateraux + plaque inferieure (AABB combinee, genereux)
         HITBOXES.put(HoverbikePart.CHASSIS, List.of(
-                new AABB(-0.65, 0.60, -1.05, 0.65, 1.10, 1.05)
+                new AABB(-0.80, 0.40, -1.20, 0.80, 1.20, 1.20)
         ));
 
-        // Coeur : cube central 6x6x6 (legrement padde pour faciliter le clic)
+        // Coeur : cube central 6x6x6 (padde pour faciliter le clic)
         HITBOXES.put(HoverbikePart.COEUR, List.of(
-                new AABB(-0.25, -0.50, -0.25, 0.25, 0.0, 0.25)
+                new AABB(-0.35, -0.60, -0.35, 0.35, 0.10, 0.35)
         ));
 
-        // Propulseur : 2 exhausts arriere (AABB combinee)
+        // Propulseur : 2 exhausts arriere (AABB combinee, genereux)
         HITBOXES.put(HoverbikePart.PROPULSEUR, List.of(
-                new AABB(-0.40, 0.48, 0.95, 0.40, 0.80, 1.40)
+                new AABB(-0.50, 0.35, 0.85, 0.50, 0.95, 1.55)
         ));
 
-        // Radiateur : 2 panneaux lateraux (AABBs separees, paddees en X)
+        // Radiateur : 2 panneaux lateraux (AABBs separees, genereux en X)
         HITBOXES.put(HoverbikePart.RADIATEUR, List.of(
-                new AABB(0.50, 0.20, -0.80, 0.75, 0.80, 0.55),
-                new AABB(-0.75, 0.20, -0.80, -0.50, 0.80, 0.55)
+                new AABB(0.40, 0.10, -0.90, 0.90, 0.90, 0.65),
+                new AABB(-0.90, 0.10, -0.90, -0.40, 0.90, 0.65)
         ));
 
         // Edit offsets (identiques aux valeurs dans les PartModel)
@@ -137,8 +137,8 @@ public class HoverbikePartPicker {
      */
     private static Vec3 worldToLocal(Vec3 worldRel, float bodyYaw) {
         double yawRad = Math.toRadians(180.0 - bodyYaw);
-        double cos = Math.cos(-yawRad);
-        double sin = Math.sin(-yawRad);
+        double cos = Math.cos(yawRad);
+        double sin = Math.sin(yawRad);
         return new Vec3(
                 worldRel.x * cos - worldRel.z * sin,
                 worldRel.y,
