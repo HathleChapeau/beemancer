@@ -16,6 +16,7 @@
  * | AnimationController | Animations edit mode | Ecartement/retour des pieces   |
  * | MoveAnimation       | Translation animee   | Mouvement des pieces           |
  * | HoverbikeModel      | Modele parent        | Type generique du renderer     |
+ * | EditModeHandler     | Partie hover         | Glow sur partie survolee       |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -28,12 +29,14 @@ package com.chapeau.beemancer.client.renderer.entity;
 import com.chapeau.beemancer.client.animation.AnimationController;
 import com.chapeau.beemancer.client.animation.MoveAnimation;
 import com.chapeau.beemancer.client.animation.TimingType;
+import com.chapeau.beemancer.client.gui.hud.HoverbikeEditModeHandler;
 import com.chapeau.beemancer.client.model.HoverbikeModel;
 import com.chapeau.beemancer.client.model.hoverbike.ChassisPartModel;
 import com.chapeau.beemancer.client.model.hoverbike.CoeurPartModel;
 import com.chapeau.beemancer.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.beemancer.client.model.hoverbike.PropulseurPartModel;
 import com.chapeau.beemancer.client.model.hoverbike.RadiateurPartModel;
+import com.chapeau.beemancer.common.entity.mount.HoverbikePart;
 import com.chapeau.beemancer.common.entity.mount.HoverbikeEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -56,6 +59,8 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
 
     private static final float EDIT_ANIM_DURATION = 15f;
     private static final String ANIM_PREFIX = "edit_";
+    private static final int FULLBRIGHT = 15728880;
+    private static final int GLOW_COLOR = 0x44FFFFFF;
 
     private final List<HoverbikePartModel> parts;
     private final AnimationController controller = new AnimationController();
@@ -85,6 +90,8 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
         boolean isEdit = entity.isEditMode();
         handleEditModeTransition(isEdit);
 
+        HoverbikePart hoveredPart = HoverbikeEditModeHandler.getHoveredPart();
+
         for (HoverbikePartModel part : parts) {
             part.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
@@ -98,6 +105,15 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
 
             part.renderToBuffer(poseStack, vertexConsumer, packedLight,
                     OverlayTexture.NO_OVERLAY);
+
+            // Glow overlay sur la partie survolee
+            if (isEdit && part.getPartType() == hoveredPart) {
+                VertexConsumer glowConsumer = bufferSource.getBuffer(
+                        RenderType.entityTranslucent(part.getTextureLocation()));
+                part.renderToBuffer(poseStack, glowConsumer, FULLBRIGHT,
+                        OverlayTexture.NO_OVERLAY, GLOW_COLOR);
+            }
+
             poseStack.popPose();
         }
     }
