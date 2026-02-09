@@ -28,6 +28,7 @@
  */
 package com.chapeau.beemancer.common.entity.bee;
 
+import com.chapeau.beemancer.core.util.ParticleHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -37,7 +38,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Set;
 
 /**
  * Pathfinding Theta* pour abeilles volantes.
@@ -196,11 +205,7 @@ public class BeePathfinding {
                 double y = lastPos.y + (waypointPos.y - lastPos.y) * t;
                 double z = lastPos.z + (waypointPos.z - lastPos.z) * t;
 
-                serverLevel.sendParticles(
-                        ParticleTypes.END_ROD,
-                        x, y, z,
-                        1, 0, 0, 0, 0
-                );
+                ParticleHelper.spawnParticles(serverLevel, ParticleTypes.END_ROD, new Vec3(x, y, z), 1, 0, 0);
             }
 
             lastPos = waypointPos;

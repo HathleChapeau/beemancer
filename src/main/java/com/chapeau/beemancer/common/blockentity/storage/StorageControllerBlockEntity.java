@@ -56,7 +56,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
 
@@ -447,24 +451,24 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     @Nullable
     public BlockPos findChestWithItem(ItemStack template, int minCount) {
-        return deliveryManager.findChestWithItem(template, minCount);
+        return deliveryManager.getContainerOps().findChestWithItem(template, minCount);
     }
 
     @Nullable
     public BlockPos findChestWithSpace(ItemStack template, int count) {
-        return deliveryManager.findChestWithSpace(template, count);
+        return deliveryManager.getContainerOps().findChestWithSpace(template, count);
     }
 
     public int countItemInChest(ItemStack template, BlockPos chestPos) {
-        return deliveryManager.countItemInChest(template, chestPos);
+        return deliveryManager.getContainerOps().countItemInChest(template, chestPos);
     }
 
     public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
-        return deliveryManager.extractItemForDelivery(template, count, chestPos);
+        return deliveryManager.getContainerOps().extractItemForDelivery(template, count, chestPos);
     }
 
     public ItemStack depositItemForDelivery(ItemStack stack, @Nullable BlockPos chestPos) {
-        return deliveryManager.depositItemForDelivery(stack, chestPos);
+        return deliveryManager.getContainerOps().depositItemForDelivery(stack, chestPos);
     }
 
     public boolean isHoneyDepleted() { return deliveryManager.isHoneyDepleted(); }
@@ -490,7 +494,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         if (level == null) return false;
 
         if (task.getType() == InterfaceTask.TaskType.IMPORT) {
-            BlockPos chest = deliveryManager.findChestWithItem(task.getTemplate(), 1);
+            BlockPos chest = deliveryManager.getContainerOps().findChestWithItem(task.getTemplate(), 1);
             if (chest == null) return false;
             if (chest.equals(iface.getAdjacentPos())) return false;
 

@@ -15,7 +15,9 @@ import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -59,36 +61,7 @@ public class CrystallizerMenu extends BeemancerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        ItemStack result = ItemStack.EMPTY;
-        Slot slot = slots.get(index);
-        if (slot.hasItem()) {
-            ItemStack stack = slot.getItem();
-            result = stack.copy();
-
-            // Moving from output slot to player inventory
-            if (index == OUTPUT_SLOT) {
-                if (!moveItemStackTo(stack, PLAYER_INV_START, HOTBAR_END, true)) {
-                    return ItemStack.EMPTY;
-                }
-            } 
-            // Moving from player inventory to hotbar or vice versa
-            else if (index >= PLAYER_INV_START && index < PLAYER_INV_END) {
-                if (!moveItemStackTo(stack, HOTBAR_START, HOTBAR_END, false)) {
-                    return ItemStack.EMPTY;
-                }
-            } else if (index >= HOTBAR_START && index < HOTBAR_END) {
-                if (!moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, false)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-
-            if (stack.isEmpty()) {
-                slot.set(ItemStack.EMPTY);
-            } else {
-                slot.setChanged();
-            }
-        }
-        return result;
+        return doQuickMove(index, PLAYER_INV_START, -1, -1, null);
     }
 
     @Override

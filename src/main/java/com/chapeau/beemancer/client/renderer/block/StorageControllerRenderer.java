@@ -26,6 +26,8 @@ import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
+import com.chapeau.beemancer.client.renderer.util.RenderHelper;
+import com.chapeau.beemancer.client.renderer.util.RotatingModelHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -43,7 +45,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 
 import java.util.Map;
@@ -119,55 +120,31 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         boolean depleted = blockEntity.isHoneyDepleted();
 
         if (depleted) {
-            // Mode éteint: tous les cubes au centre, immobiles
-            // 2 gros cubes (superposés, pas de rotation)
-            blockRenderer.getModelRenderer().tesselateBlock(
-                blockEntity.getLevel(), cubeBigModel, state, blockEntity.getBlockPos(),
-                poseStack, vertexConsumer, false, random,
-                packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
-            );
-
-            // 2 petits cubes (au centre, pas de décalage)
-            blockRenderer.getModelRenderer().tesselateBlock(
-                blockEntity.getLevel(), cubeModel, state, blockEntity.getBlockPos(),
-                poseStack, vertexConsumer, false, random,
-                packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
-            );
+            // Mode eteint: tous les cubes au centre, immobiles
+            RenderHelper.tesselateModel(blockRenderer, cubeBigModel, blockEntity.getLevel(),
+                state, blockEntity.getBlockPos(), poseStack, vertexConsumer, random,
+                packedLight, packedOverlay, RenderType.solid());
+            RenderHelper.tesselateModel(blockRenderer, cubeModel, blockEntity.getLevel(),
+                state, blockEntity.getBlockPos(), poseStack, vertexConsumer, random,
+                packedLight, packedOverlay, RenderType.solid());
             return;
         }
 
-        // Mode actif: animation complète
+        // Mode actif: animation complete
         long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
         float time = (gameTime + partialTick);
 
-        // === 2 gros cubes au centre (rotation rapide sur eux-mêmes) ===
-        // Cube A: même pattern XYZ, vitesse rapide
-        poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
-        poseStack.mulPose(Axis.XP.rotationDegrees(time * 3.0f));
-        poseStack.mulPose(Axis.YP.rotationDegrees(time * 4.5f));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(time * 2.1f));
-        poseStack.translate(-0.5, -0.5, -0.5);
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(), cubeBigModel, state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid()
-        );
-        poseStack.popPose();
+        // === 2 gros cubes au centre (rotation rapide sur eux-memes) ===
+        RotatingModelHelper.renderWithXYZRotation(blockRenderer, cubeBigModel,
+            blockEntity.getLevel(), state, blockEntity.getBlockPos(),
+            poseStack, vertexConsumer, random, packedLight, packedOverlay,
+            RenderType.solid(), time * 3.0f, time * 4.5f, time * 2.1f, 1.0f);
 
-        // Cube B: même pattern XYZ, vitesse rapide, phase décalée
-        poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
-        poseStack.mulPose(Axis.XP.rotationDegrees(time * 3.0f + 90));
-        poseStack.mulPose(Axis.YP.rotationDegrees(time * 4.5f + 60));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(time * 2.1f + 45));
-        poseStack.translate(-0.5, -0.5, -0.5);
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(), cubeBigModel, state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.translucent()
-        );
-        poseStack.popPose();
+        RotatingModelHelper.renderWithXYZRotation(blockRenderer, cubeBigModel,
+            blockEntity.getLevel(), state, blockEntity.getBlockPos(),
+            poseStack, vertexConsumer, random, packedLight, packedOverlay,
+            RenderType.translucent(),
+            time * 3.0f + 90, time * 4.5f + 60, time * 2.1f + 45, 1.0f);
 
         // === Rotation globale des 2 petits cubes ===
         poseStack.pushPose();
@@ -180,21 +157,17 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         // Petit cube 1 (position x=2/16)
         poseStack.pushPose();
         poseStack.translate((2.0 / 16.0) - (7.0 / 16.0), 0, 0);
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(), cubeModel, state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.translucent()//.solid()
-        );
+        RenderHelper.tesselateModel(blockRenderer, cubeModel, blockEntity.getLevel(),
+            state, blockEntity.getBlockPos(), poseStack, vertexConsumer, random,
+            packedLight, packedOverlay, RenderType.translucent());
         poseStack.popPose();
 
         // Petit cube 2 (position x=14/16)
         poseStack.pushPose();
         poseStack.translate((14.0 / 16.0) - (7.0 / 16.0), 0, 0);
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(), cubeModel, state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.endPortal()//.solid()
-        );
+        RenderHelper.tesselateModel(blockRenderer, cubeModel, blockEntity.getLevel(),
+            state, blockEntity.getBlockPos(), poseStack, vertexConsumer, random,
+            packedLight, packedOverlay, RenderType.endPortal());
         poseStack.popPose();
 
         poseStack.popPose(); // Fin rotation globale petits cubes

@@ -17,12 +17,23 @@
 package com.chapeau.beemancer.content.gene;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.content.gene.environment.*;
-import com.chapeau.beemancer.content.gene.flower.*;
-import com.chapeau.beemancer.content.gene.species.*;
+import com.chapeau.beemancer.content.gene.environment.NocturnalEnvironmentGene;
+import com.chapeau.beemancer.content.gene.environment.NormalEnvironmentGene;
+import com.chapeau.beemancer.content.gene.environment.RobustEnvironmentGene;
+import com.chapeau.beemancer.content.gene.flower.CavePlantsFlowerGene;
+import com.chapeau.beemancer.content.gene.flower.CropsFlowerGene;
+import com.chapeau.beemancer.content.gene.flower.CrystalsFlowerGene;
+import com.chapeau.beemancer.content.gene.flower.FlowersFlowerGene;
+import com.chapeau.beemancer.content.gene.flower.MushroomsFlowerGene;
+import com.chapeau.beemancer.content.gene.flower.NetherWartFlowerGene;
+import com.chapeau.beemancer.content.gene.flower.TreesFlowerGene;
+import com.chapeau.beemancer.content.gene.species.DataDrivenSpeciesGene;
 import com.chapeau.beemancer.core.gene.GeneRegistry;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 public class GeneInit {
 

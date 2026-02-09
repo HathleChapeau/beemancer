@@ -224,8 +224,8 @@ public class RequestManager {
      */
     private void processImportRequest(InterfaceRequest request, StorageDeliveryManager delivery) {
         // Scanner TOUS les coffres contenant l'item demande
-        List<StorageDeliveryManager.ChestItemInfo> chests =
-            delivery.findAllChestsWithItem(request.getTemplate());
+        List<DeliveryContainerOps.ChestItemInfo> chests =
+            delivery.getContainerOps().findAllChestsWithItem(request.getTemplate());
 
         // Filtrer les coffres qui sont la destination (loop prevention)
         chests.removeIf(info -> info.pos().equals(request.getSourcePos()));
@@ -245,7 +245,7 @@ public class RequestManager {
         int remaining = request.getCount();
         DeliveryTask rootTask = null;
 
-        for (StorageDeliveryManager.ChestItemInfo chest : chests) {
+        for (DeliveryContainerOps.ChestItemInfo chest : chests) {
             if (remaining <= 0) break;
 
             int toTake = Math.min(remaining, chest.count());
@@ -316,7 +316,7 @@ public class RequestManager {
             StorageDeliveryManager delivery = parent.getDeliveryManager();
 
             if (request.getType() == InterfaceRequest.RequestType.IMPORT) {
-                BlockPos chestPos = delivery.findChestWithItem(request.getTemplate(), 1);
+                BlockPos chestPos = delivery.getContainerOps().findChestWithItem(request.getTemplate(), 1);
                 if (chestPos != null) {
                     request.setStatus(InterfaceRequest.RequestStatus.PENDING);
                     request.setBlockedReason("");

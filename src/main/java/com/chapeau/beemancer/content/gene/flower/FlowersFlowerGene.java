@@ -1,3 +1,22 @@
+/**
+ * ============================================================
+ * [FlowersFlowerGene.java]
+ * Description: Gene fleur pour fleurs classiques (BlockTags.FLOWERS)
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | FlowerGene          | Classe de base       | Extension comportement fleur   |
+ * | BlockTags           | Tags Minecraft       | FLOWERS                        |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - GeneInit.java (enregistrement dans GeneRegistry)
+ *
+ * ============================================================
+ */
 package com.chapeau.beemancer.content.gene.flower;
 
 import net.minecraft.tags.BlockTags;

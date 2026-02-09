@@ -26,6 +26,7 @@ import com.chapeau.beemancer.common.block.altar.AltarHeartBlock;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.block.pollenpot.PollenPotBlockEntity;
+import com.chapeau.beemancer.core.util.ParticleHelper;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
@@ -40,6 +41,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -502,10 +504,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
             double z = centerPos.getZ() + 0.5;
 
             // Explosion de particules
-            serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER,
-                x, y, z, 20, 0.5, 0.5, 0.5, 0.1);
-            serverLevel.sendParticles(ParticleTypes.END_ROD,
-                x, y, z, 10, 0.3, 0.3, 0.3, 0.05);
+            ParticleHelper.burst(serverLevel, new Vec3(x, y, z), ParticleHelper.EffectType.SUCCESS, 20);
 
             // Son de succes
             level.playSound(null, centerPos, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 1.0f, 1.2f);
@@ -526,8 +525,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
                 double y = centerPedestalPos.getY() + 1.2;
                 double z = centerPedestalPos.getZ() + 0.5;
 
-                serverLevel.sendParticles(ParticleTypes.SMOKE,
-                    x, y, z, 5, 0.2, 0.1, 0.2, 0.01);
+                ParticleHelper.spawnParticles(serverLevel, ParticleTypes.SMOKE, new Vec3(x, y, z), 5, 0.2, 0.01);
             }
         }
     }

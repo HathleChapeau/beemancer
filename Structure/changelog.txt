@@ -3,6 +3,31 @@
 ################################################################################
 
 ================================================================================
+2026-02-09 - Hive BlockEntities Deduplication
+================================================================================
+
+REFONTE: HiveMultiblockBlockEntity delegue au HiveBeeLifecycleManager (comme MagicHive)
+- IHiveInternals.java (NOUVEAU): Interface package-private pour le lifecycle manager.
+  Methodes: getItems, getBeeSlots, getFlowerPool, returnAssignedFlower, triggerFlowerScan,
+  hasFlowersForSlot, shouldReleaseBee, shouldBreedOnEntry, setChanged, getLevel, getBlockPos.
+- HiveConfig.java (NOUVEAU): Record parametres par type de ruche.
+  MAGIC_HIVE (spawnHeight=1, inflate=2/2/2, entry=1.5),
+  MULTIBLOCK (spawnHeight=4, inflate=4/5/4, entry=3.0).
+- HiveBeeLifecycleManager.java: MagicHiveBlockEntity -> IHiveInternals + HiveConfig.
+  Spawn height, search box, entry distance parameterises via config.
+  shouldReleaseBee/shouldBreedOnEntry delegates au parent.
+- MagicHiveBlockEntity.java: +implements IHiveInternals, +shouldReleaseBee (= canBeeForage),
+  +shouldBreedOnEntry (= !antibreedingMode), +getFlowerPool.
+- HiveMultiblockBlockEntity.java (REFONTE): +implements IHiveInternals,
+  +HiveBeeLifecycleManager instance. SUPPRIME ~260L de code duplique (releaseBee, addBee,
+  onBeeKilled, handleBeePing, verifyOutsideBees, resetSlotToInside, depositPollinationLoot,
+  insertIntoOutputSlots, tryBreedingOnEntry, tickBeeSlot, checkReturningBees).
+  shouldReleaseBee = !breedingMode, shouldBreedOnEntry = true.
+  +outsideVerifyTimer (40 ticks) pour verification UUID periodique.
+BUG FIX: Multiblock canBeeEnter verifie maintenant les UUIDs (via lifecycle manager).
+Lignes: HiveMultiblockBlockEntity 921L -> 662L, total hive -104L net.
+
+================================================================================
 2026-02-08 - Altar Animation Refonte
 ================================================================================
 

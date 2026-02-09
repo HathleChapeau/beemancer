@@ -27,7 +27,10 @@ import com.chapeau.beemancer.client.gui.screen.codex.BeeTreePageRenderer;
 import com.chapeau.beemancer.client.gui.screen.codex.CodexDecorationRenderer;
 import com.chapeau.beemancer.client.gui.screen.codex.CodexPageRenderer;
 import com.chapeau.beemancer.client.gui.screen.codex.StandardPageRenderer;
-import com.chapeau.beemancer.common.codex.*;
+import com.chapeau.beemancer.common.codex.CodexManager;
+import com.chapeau.beemancer.common.codex.CodexNode;
+import com.chapeau.beemancer.common.codex.CodexPage;
+import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.quest.QuestManager;
 import com.chapeau.beemancer.common.quest.QuestPlayerData;
 import com.chapeau.beemancer.core.network.packets.CodexFirstOpenPacket;
@@ -45,7 +48,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class CodexScreen extends Screen {
     // Textures pour la frame

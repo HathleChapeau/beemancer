@@ -37,7 +37,15 @@ import net.minecraft.server.packs.resources.ResourceManager;
 
 import javax.annotation.Nullable;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public class CodexManager {
     private static final Gson GSON = new Gson();

@@ -9,7 +9,8 @@
  * | Dependance                  | Raison                | Utilisation           |
  * |-----------------------------|----------------------|-----------------------|
  * | HoneyPedestalBlockEntity    | Donnees a rendre     | getStoredItem()       |
- * | ItemRenderer                | Rendu item           | Affichage 3D          |
+ * | FloatingItemHelper          | Rendu item flottant  | renderFloatingItem()  |
+ * | MagicBeeItem                | Detection abeille    | Rendu specifique      |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -19,9 +20,9 @@
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.client.renderer.util.FloatingItemHelper;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
-import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -49,55 +50,36 @@ public class HoneyPedestalRenderer implements BlockEntityRenderer<HoneyPedestalB
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
         ItemStack storedItem = blockEntity.getStoredItem();
-        if (storedItem.isEmpty()) {
-            return;
+        if (storedItem.isEmpty()) return;
+
+        if (storedItem.getItem() instanceof MagicBeeItem) {
+            renderBeeItem(blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay, storedItem);
+        } else {
+            FloatingItemHelper.renderFloatingItem(itemRenderer, storedItem, blockEntity.getLevel(),
+                partialTick, poseStack, buffer, packedLight, packedOverlay,
+                0.5, 1.25, 0.5, 0.5f, 0.05f, 2.0f);
         }
+    }
 
-        poseStack.pushPose();
-
+    private void renderBeeItem(HoneyPedestalBlockEntity blockEntity, float partialTick,
+                                PoseStack poseStack, MultiBufferSource buffer,
+                                int packedLight, int packedOverlay, ItemStack storedItem) {
         float time = (blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0) + partialTick;
         float bob = (float) Math.sin(time * 0.1) * 0.05f;
 
-        boolean isBee = storedItem.getItem() instanceof MagicBeeItem;
+        poseStack.pushPose();
+        poseStack.translate(0.8f, 2.2f + bob, 0.8f);
+        poseStack.scale(0.6f, 0.6f, 0.6f);
+        poseStack.translate(-0.5, -0.5, -0.5);
+        poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
 
-        if (isBee) {
-            // Pivot du modèle abeille dans l'espace BEWLR (ajuster si besoin)
-            float pivotX = 0;
-            float pivotY = 0;
-            float pivotZ = 0;
-
-            // Position au-dessus du pedestal
-            poseStack.translate(0.8f, 2.2f + bob, 0.8f);
-            poseStack.scale(0.6f, 0.6f, 0.6f);
-            // Compenser le translate(0.5, 0.5, 0.5) du BEWLR FIXED
-            poseStack.translate(-0.5, -0.5, -0.5);
-            // Rotation autour du pivot (centre du modèle abeille)
-            poseStack.translate(pivotX, pivotY, pivotZ);
-            poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
-            poseStack.translate(-pivotX, -pivotY, -pivotZ);
-        } else {
-            // Items normaux
-            poseStack.translate(0.5, 1.25 + bob, 0.5);
-            poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
-            poseStack.scale(0.5f, 0.5f, 0.5f);
-        }
-
-        itemRenderer.renderStatic(
-            storedItem,
-            ItemDisplayContext.FIXED,
-            packedLight,
-            packedOverlay,
-            poseStack,
-            buffer,
-            blockEntity.getLevel(),
-            0
-        );
-
+        itemRenderer.renderStatic(storedItem, ItemDisplayContext.FIXED, packedLight, packedOverlay,
+            poseStack, buffer, blockEntity.getLevel(), 0);
         poseStack.popPose();
     }
 
     @Override
     public boolean shouldRenderOffScreen(HoneyPedestalBlockEntity blockEntity) {
-        return true; // L'item flotte au-dessus
+        return true;
     }
 }

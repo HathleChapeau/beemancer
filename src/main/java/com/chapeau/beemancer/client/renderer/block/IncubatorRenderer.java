@@ -6,10 +6,11 @@
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance                | Raison                | Utilisation                    |
- * |---------------------------|----------------------|--------------------------------|
- * | IncubatorBlockEntity      | Donnees item         | getItem(0)                     |
- * | MagicBeeItem              | Detection abeille    | Rendu specifique BEWLR         |
+ * | Dependance              | Raison                | Utilisation                    |
+ * |-------------------------|----------------------|--------------------------------|
+ * | IncubatorBlockEntity    | Donnees item         | getItem(0)                     |
+ * | MagicBeeItem            | Detection abeille    | Rendu specifique BEWLR         |
+ * | FloatingItemHelper      | Rendu item flottant  | renderFloatingItem()           |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -19,9 +20,9 @@
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.client.renderer.util.FloatingItemHelper;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlockEntity;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
-import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -55,38 +56,29 @@ public class IncubatorRenderer implements BlockEntityRenderer<IncubatorBlockEnti
         ItemStack displayItem = blockEntity.getItemHandler().getStackInSlot(0);
         if (displayItem.isEmpty()) return;
 
-        poseStack.pushPose();
+        if (displayItem.getItem() instanceof MagicBeeItem) {
+            renderBeeItem(blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay, displayItem);
+        } else {
+            FloatingItemHelper.renderFloatingItem(itemRenderer, displayItem, blockEntity.getLevel(),
+                partialTick, poseStack, buffer, packedLight, packedOverlay,
+                0.5, 0.5, 0.5, 0.4f, 0.03f, 1.5f);
+        }
+    }
 
+    private void renderBeeItem(IncubatorBlockEntity blockEntity, float partialTick,
+                                PoseStack poseStack, MultiBufferSource buffer,
+                                int packedLight, int packedOverlay, ItemStack displayItem) {
         float time = blockEntity.getLevel().getGameTime() + partialTick;
         float bob = (float) Math.sin(time * 0.1) * 0.03f;
 
-        boolean isBee = displayItem.getItem() instanceof MagicBeeItem;
+        poseStack.pushPose();
+        poseStack.translate(1.05f, 2.37f + bob, 1.05f);
+        poseStack.scale(1.1f, 1.1f, 1.1f);
+        poseStack.translate(-0.5, -0.5, -0.5);
+        poseStack.mulPose(Axis.YP.rotationDegrees(time * 1.5f));
 
-        if (isBee) {
-            // Compenser les transforms du MagicBeeItemRenderer BEWLR (mode FIXED)
-            // Le BEWLR fait: translate(0.5, 0.5, 0.5), scale(-1,-1,1), rotate Y 225, scale 0.9
-            poseStack.translate(1.05f, 2.37f + bob, 1.05f);
-            poseStack.scale(1.1f, 1.1f, 1.1f);
-            poseStack.translate(-0.5, -0.5, -0.5);
-            poseStack.mulPose(Axis.YP.rotationDegrees(time * 1.5f));
-        } else {
-            // Items normaux (larve, etc.)
-            poseStack.translate(0.5, 0.5 + bob, 0.5);
-            poseStack.mulPose(Axis.YP.rotationDegrees(time * 1.5f));
-            poseStack.scale(0.4f, 0.4f, 0.4f);
-        }
-
-        itemRenderer.renderStatic(
-                displayItem,
-                ItemDisplayContext.FIXED,
-                packedLight,
-                packedOverlay,
-                poseStack,
-                buffer,
-                blockEntity.getLevel(),
-                0
-        );
-
+        itemRenderer.renderStatic(displayItem, ItemDisplayContext.FIXED, packedLight, packedOverlay,
+            poseStack, buffer, blockEntity.getLevel(), 0);
         poseStack.popPose();
     }
 }

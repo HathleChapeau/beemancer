@@ -23,11 +23,17 @@ package com.chapeau.beemancer.client.gui.screen.codex;
 import com.chapeau.beemancer.client.gui.util.LineDrawingHelper;
 import com.chapeau.beemancer.client.gui.util.LineDrawingHelper.ConnectionMode;
 import com.chapeau.beemancer.client.gui.widget.CodexNodeWidget;
-import com.chapeau.beemancer.common.codex.*;
+import com.chapeau.beemancer.common.codex.CodexManager;
+import com.chapeau.beemancer.common.codex.CodexNode;
+import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.quest.NodeState;
 import net.minecraft.client.gui.GuiGraphics;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class StandardPageRenderer implements CodexPageRenderer {
 

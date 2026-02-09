@@ -4,14 +4,16 @@
  * Description: BlockEntity pour multibloc ruche 3x3x3
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance              | Raison                | Utilisation           |
- * |-------------------------|----------------------|-----------------------|
- * | MagicHiveBlockEntity    | Logique ruche        | Copie comportement    |
- * | MultiblockValidator     | Validation           | Vérification pattern  |
- * | MultiblockPatterns      | Pattern              | Définition structure  |
- * | MultiblockController    | Interface            | Contrôleur multibloc  |
+ * | Dependance               | Raison                | Utilisation               |
+ * |--------------------------|----------------------|-----------------------    |
+ * | HiveBeeLifecycleManager  | Cycle de vie abeilles| Delegation bee lifecycle  |
+ * | IHiveInternals           | Interface lifecycle  | Back-reference manager    |
+ * | HiveConfig               | Parametres ruche     | MULTIBLOCK config         |
+ * | MultiblockValidator      | Validation           | Verification pattern      |
+ * | MultiblockPatterns       | Pattern              | Definition structure      |
+ * | MultiblockController     | Interface            | Controleur multibloc      |
  * ------------------------------------------------------------
  *
  * ============================================================
@@ -19,13 +21,11 @@
 package com.chapeau.beemancer.common.block.hive;
 
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
-import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import com.chapeau.beemancer.content.gene.flower.FlowerGene;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
-import com.chapeau.beemancer.core.breeding.BreedingManager;
 import com.chapeau.beemancer.core.gene.BeeGeneData;
 import com.chapeau.beemancer.core.gene.Gene;
 import com.chapeau.beemancer.core.gene.GeneCategory;
@@ -37,7 +37,6 @@ import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.core.multiblock.MultiblockValidator;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
-import com.chapeau.beemancer.core.registry.BeemancerEntities;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -67,16 +66,22 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
-public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvider, net.minecraft.world.Container, MultiblockController {
+public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvider, net.minecraft.world.Container, MultiblockController, IHiveBeeHost, IHiveInternals {
 
     public static final int BEE_SLOTS = 5;
     public static final int OUTPUT_SLOTS = 7;
     public static final int TOTAL_SLOTS = BEE_SLOTS + OUTPUT_SLOTS;
+
+    // === Manager ===
+    private final HiveBeeLifecycleManager lifecycleManager = new HiveBeeLifecycleManager(this, HiveConfig.MULTIBLOCK);
 
     // Controller position (null = not part of a formed multiblock, or this IS the controller)
     @Nullable
@@ -92,6 +97,9 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     // Breeding
     private boolean breedingMode = false;
     private int breedingCooldown = 0;
+
+    // UUID sync verification timer (transient, not saved)
+    private int outsideVerifyTimer = 0;
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -115,6 +123,22 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         }
     }
 
+    // ==================== IHiveInternals ====================
+
+    @Override public NonNullList<ItemStack> getItems() { return items; }
+    @Override public HiveBeeSlot[] getBeeSlots() { return beeSlots; }
+    @Override public HiveFlowerPool getFlowerPool() { return flowerPool; }
+
+    @Override
+    public boolean shouldReleaseBee(int slot) {
+        return !breedingMode;
+    }
+
+    @Override
+    public boolean shouldBreedOnEntry() {
+        return true;
+    }
+
     // ==================== Multiblock Logic ====================
 
     @Override
@@ -134,7 +158,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
     @Override
     public void onMultiblockFormed() {
-        // Called by external systems when multiblock is formed
         // Formation logic is handled in formMultiblock()
     }
 
@@ -142,7 +165,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     public void onMultiblockBroken() {
         if (isController && formed) {
             dropContents();
-            // Reset all structure blocks via onBroken
             onBroken();
             return;
         }
@@ -158,30 +180,22 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         setChanged();
     }
 
-    /**
-     * Find the controller for this block's multiblock, or try to form one.
-     * Returns the controller if found/formed, null otherwise.
-     */
     @Nullable
     public HiveMultiblockBlockEntity findOrBecomeController() {
         if (level == null) return null;
 
-        // If we have a controller, return it
         if (controllerPos != null) {
             BlockEntity be = level.getBlockEntity(controllerPos);
             if (be instanceof HiveMultiblockBlockEntity controller && controller.isFormed()) {
                 return controller;
             }
-            // Controller no longer valid
             controllerPos = null;
         }
 
-        // If this is already a controller, return this
         if (isController && formed) {
             return this;
         }
 
-        // Try to validate and form the multiblock
         return tryFormMultiblock();
     }
 
@@ -189,20 +203,16 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     private HiveMultiblockBlockEntity tryFormMultiblock() {
         if (level == null) return null;
 
-        // Find the potential controller position (center of bottom layer)
-        // We need to search around this block to find where the controller should be
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -2; dy <= 0; dy++) {
                 for (int dz = -1; dz <= 1; dz++) {
                     BlockPos potentialController = worldPosition.offset(dx, dy, dz);
 
-                    // Check if pattern is valid with this as controller
                     if (MultiblockValidator.validate(MultiblockPatterns.HIVE_MULTIBLOCK, level, potentialController)) {
                         BlockEntity be = level.getBlockEntity(potentialController);
                         if (be instanceof HiveMultiblockBlockEntity controller) {
                             controller.formMultiblock();
 
-                            // Set this block's controller reference
                             if (controller != this) {
                                 this.controllerPos = potentialController;
                             }
@@ -224,13 +234,11 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         formed = true;
         controllerPos = null;
 
-        // Set MULTIBLOCK blockstate on the controller itself
         BlockState controllerState = level.getBlockState(worldPosition);
         if (controllerState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
             level.setBlock(worldPosition, controllerState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE), 3);
         }
 
-        // Set MULTIBLOCK on all structure blocks
         MultiblockPattern pattern = getPattern();
         for (Vec3i offset : pattern.getStructurePositions()) {
             BlockPos structurePos = worldPosition.offset(offset);
@@ -238,7 +246,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
             BlockState blockState = level.getBlockState(structurePos);
 
-            // Hive blocks (have BlockEntities)
             if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
                 level.setBlock(structurePos, blockState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE), 3);
                 BlockEntity be = level.getBlockEntity(structurePos);
@@ -250,7 +257,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                 }
             }
 
-            // Slab blocks (no BlockEntity)
             if (blockState.hasProperty(HoneyedSlabBlock.MULTIBLOCK)) {
                 level.setBlock(structurePos, blockState.setValue(HoneyedSlabBlock.MULTIBLOCK, MultiblockProperty.HIVE), 3);
             }
@@ -259,7 +265,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         com.chapeau.beemancer.core.multiblock.MultiblockEvents.registerActiveController(level, worldPosition);
         setChanged();
 
-        // Send formation message to nearby players
         if (level instanceof ServerLevel serverLevel) {
             serverLevel.players().stream()
                 .filter(p -> p.distanceToSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()) < 256)
@@ -271,10 +276,8 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         if (level == null || level.isClientSide()) return;
 
         if (isController && formed) {
-            // Drop all contents
             dropContents();
 
-            // Reset MULTIBLOCK on all structure blocks
             MultiblockPattern pattern = getPattern();
             for (Vec3i offset : pattern.getStructurePositions()) {
                 BlockPos structurePos = worldPosition.offset(offset);
@@ -282,7 +285,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
                 BlockState blockState = level.getBlockState(structurePos);
 
-                // Hive blocks (have BlockEntities)
                 if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
                     level.setBlock(structurePos, blockState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
                     BlockEntity be = level.getBlockEntity(structurePos);
@@ -294,7 +296,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                     }
                 }
 
-                // Slab blocks (no BlockEntity)
                 if (blockState.hasProperty(HoneyedSlabBlock.MULTIBLOCK)) {
                     level.setBlock(structurePos, blockState.setValue(HoneyedSlabBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
                 }
@@ -302,7 +303,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
             com.chapeau.beemancer.core.multiblock.MultiblockEvents.unregisterController(worldPosition);
         } else if (controllerPos != null) {
-            // Notify the controller that structure is broken
             BlockEntity be = level.getBlockEntity(controllerPos);
             if (be instanceof HiveMultiblockBlockEntity controller) {
                 controller.onBroken();
@@ -384,7 +384,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         MagicBeeItem.setAssignedHive(beeItem, worldPosition, slot);
 
         BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
-        String speciesId = getSpeciesId(geneData);
+        String speciesId = HiveBeeLifecycleManager.getSpeciesId(geneData);
         BeeBehaviorConfig config = BeeBehaviorManager.getConfig(speciesId);
 
         HiveBeeSlot beeSlot = beeSlots[slot];
@@ -411,7 +411,8 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
     // ==================== Flower Management ====================
 
-    private void triggerFlowerScan() {
+    @Override
+    public void triggerFlowerScan() {
         if (level == null) return;
 
         Set<TagKey<Block>> flowerTags = new HashSet<>();
@@ -428,7 +429,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                 flowerTags.add(fg.getFlowerTag());
             }
 
-            BeeBehaviorConfig config = BeeBehaviorManager.getConfig(getSpeciesId(geneData));
+            BeeBehaviorConfig config = BeeBehaviorManager.getConfig(HiveBeeLifecycleManager.getSpeciesId(geneData));
             maxRadius = Math.max(maxRadius, config.getAreaOfEffect());
         }
 
@@ -440,6 +441,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         flowerPool.scanFlowers(level, worldPosition, flowerTags, maxRadius, assigned);
     }
 
+    @Override
     @Nullable
     public BlockPos getAndAssignFlower(int slot) {
         if (slot < 0 || slot >= BEE_SLOTS) return null;
@@ -463,6 +465,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         return flower;
     }
 
+    @Override
     public void returnFlower(int slot, BlockPos flower) {
         if (slot >= 0 && slot < BEE_SLOTS) {
             beeSlots[slot].clearAssignedFlower();
@@ -470,189 +473,40 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         flowerPool.returnFlower(flower);
     }
 
-    private void returnAssignedFlower(int slot) {
+    @Override
+    public void returnAssignedFlower(int slot) {
         if (slot >= 0 && slot < BEE_SLOTS && beeSlots[slot].hasAssignedFlower()) {
             flowerPool.returnFlower(beeSlots[slot].getAssignedFlower());
             beeSlots[slot].clearAssignedFlower();
         }
     }
 
+    @Override
     public boolean hasFlowersForSlot(int slot) {
         return flowerPool.hasFlowers();
     }
 
-    // ==================== Bee Release/Entry ====================
+    // ==================== Bee Lifecycle (delegue au manager) ====================
 
-    public void releaseBee(int slot) {
-        if (slot < 0 || slot >= BEE_SLOTS) return;
-        if (!beeSlots[slot].isInside()) return;
-        if (!(level instanceof ServerLevel serverLevel)) return;
+    public void releaseBee(int slot) { lifecycleManager.releaseBee(slot); }
 
-        ItemStack beeItem = items.get(slot);
-        if (beeItem.isEmpty() || !beeItem.is(BeemancerItems.MAGIC_BEE.get())) return;
-        if (!hasFlowersForSlot(slot)) return;
+    public boolean canBeeEnter(MagicBeeEntity bee) { return lifecycleManager.canBeeEnter(bee); }
 
-        MagicBeeEntity bee = BeemancerEntities.MAGIC_BEE.get().create(level);
-        if (bee == null) return;
+    public void addBee(MagicBeeEntity bee) { lifecycleManager.addBee(bee); }
 
-        // Spawn above the multiblock structure (Y+4 to be above slabs)
-        BlockPos spawnPos = worldPosition.above(4);
-        bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY() + 1, spawnPos.getZ() + 0.5, 0, 0);
+    @Override
+    public void onBeeKilled(UUID beeUUID) { lifecycleManager.onBeeKilled(beeUUID); }
 
-        BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
-        bee.getGeneData().copyFrom(geneData);
-        for (Gene gene : geneData.getAllGenes()) bee.setGene(gene);
+    @Override
+    public boolean handleBeePing(MagicBeeEntity bee) { return lifecycleManager.handleBeePing(bee); }
 
-        bee.setStoredHealth(beeSlots[slot].getCurrentHealth());
-        bee.setAssignedHive(worldPosition, slot);
-        bee.setPollinated(false);
-        bee.setEnraged(false);
-        bee.setReturning(false);
-
-        serverLevel.addFreshEntity(bee);
-
-        beeSlots[slot].setState(HiveBeeSlot.State.OUTSIDE);
-        beeSlots[slot].setBeeUUID(bee.getUUID());
-        setChanged();
-    }
-
-    public boolean canBeeEnter(MagicBeeEntity bee) {
-        if (!bee.hasAssignedHive() || !worldPosition.equals(bee.getAssignedHivePos())) return false;
-        int slot = bee.getAssignedSlot();
-        return slot >= 0 && slot < BEE_SLOTS && beeSlots[slot].isOutside();
-    }
-
-    public void addBee(MagicBeeEntity bee) {
-        int slot = bee.getAssignedSlot();
-        if (slot < 0 || slot >= BEE_SLOTS) return;
-
-        bee.markAsEnteredHive();
-
-        if (bee.isPollinated()) {
-            depositPollinationLoot(bee);
-        }
-
-        returnAssignedFlower(slot);
-
-        ItemStack beeItem = MagicBeeItem.captureFromEntity(bee);
-        items.set(slot, beeItem);
-
-        HiveBeeSlot beeSlot = beeSlots[slot];
-        beeSlot.setState(HiveBeeSlot.State.INSIDE);
-        beeSlot.setBeeUUID(null);
-        beeSlot.setCurrentHealth(bee.getHealth());
-        beeSlot.setMaxHealth(bee.getMaxHealth());
-        beeSlot.setNeedsHealing(bee.getHealth() < bee.getMaxHealth());
-        beeSlot.setCooldown(bee.getBehaviorConfig().getRandomRestCooldown(level.getRandom()));
-
-        bee.setPollinated(false);
-        bee.setEnraged(false);
-        bee.setReturning(false);
-
-        // Tenter le breeding à l'entrée
-        if (level != null) {
-            tryBreedingOnEntry(slot, level.getRandom());
-        }
-
-        triggerFlowerScan();
-        setChanged();
-    }
-
-    /**
-     * Tente le breeding quand une abeille rentre (15% de chance).
-     */
-    private void tryBreedingOnEntry(int enteringSlot, RandomSource random) {
-        if (random.nextDouble() >= 0.15) return;
-
-        // Collecter les abeilles INSIDE (sauf celle qui rentre)
-        java.util.List<Integer> insidePartners = new java.util.ArrayList<>();
-        for (int i = 0; i < BEE_SLOTS; i++) {
-            if (i != enteringSlot && beeSlots[i].isInside() && !items.get(i).isEmpty()) {
-                insidePartners.add(i);
-            }
-        }
-        if (insidePartners.isEmpty()) return;
-
-        // Sélection aléatoire du partenaire
-        int partnerSlot = insidePartners.get(random.nextInt(insidePartners.size()));
-
-        // Trouver un slot de sortie libre
-        int outputSlot = -1;
-        for (int i = BEE_SLOTS; i < TOTAL_SLOTS; i++) {
-            if (items.get(i).isEmpty()) {
-                outputSlot = i;
-                break;
-            }
-        }
-        if (outputSlot < 0) return;
-
-        BeeGeneData parent1Data = MagicBeeItem.getGeneData(items.get(enteringSlot));
-        BeeGeneData parent2Data = MagicBeeItem.getGeneData(items.get(partnerSlot));
-
-        Gene species1 = parent1Data.getGene(GeneCategory.SPECIES);
-        Gene species2 = parent2Data.getGene(GeneCategory.SPECIES);
-        if (species1 == null || species2 == null) return;
-
-        String offspringSpecies = BreedingManager.resolveOffspringSpecies(species1.getId(), species2.getId(), random);
-
-        BeeGeneData offspringData = BreedingManager.createOffspringGeneData(parent1Data, parent2Data, offspringSpecies, random);
-        items.set(outputSlot, BeeLarvaItem.createWithGenes(offspringData));
-    }
-
-    public void onBeeKilled(UUID beeUUID) {
-        for (int i = 0; i < BEE_SLOTS; i++) {
-            if (beeUUID.equals(beeSlots[i].getBeeUUID()) && beeSlots[i].isOutside()) {
-                returnAssignedFlower(i);
-                items.set(i, ItemStack.EMPTY);
-                beeSlots[i].clear();
-                setChanged();
-                return;
-            }
-        }
-    }
-
-    // ==================== Loot & Output ====================
-
-    private void depositPollinationLoot(MagicBeeEntity bee) {
-        if (level == null) return;
-        BeeBehaviorConfig config = bee.getBehaviorConfig();
-        for (ItemStack stack : config.rollPollinationLoot(level.getRandom())) {
-            insertIntoOutputSlots(stack);
-        }
-    }
-
-    public void insertIntoOutputSlots(ItemStack stack) {
-        if (stack.isEmpty()) return;
-
-        for (int i = BEE_SLOTS; i < TOTAL_SLOTS && !stack.isEmpty(); i++) {
-            ItemStack existing = items.get(i);
-            if (!existing.isEmpty() && ItemStack.isSameItemSameComponents(existing, stack)) {
-                int toAdd = Math.min(existing.getMaxStackSize() - existing.getCount(), stack.getCount());
-                if (toAdd > 0) {
-                    existing.grow(toAdd);
-                    stack.shrink(toAdd);
-                }
-            }
-        }
-
-        for (int i = BEE_SLOTS; i < TOTAL_SLOTS && !stack.isEmpty(); i++) {
-            if (items.get(i).isEmpty()) {
-                items.set(i, stack.copy());
-                stack.setCount(0);
-            }
-        }
-        setChanged();
-    }
-
-    // ==================== Breeding ====================
+    public void insertIntoOutputSlots(ItemStack stack) { lifecycleManager.insertIntoOutputSlots(stack); }
 
     // ==================== Tick ====================
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HiveMultiblockBlockEntity hive) {
-        // Only the controller ticks
         if (!hive.isController || !hive.formed) return;
 
-        // Check for breeding crystal above the structure (Y+4)
         hive.breedingMode = level.getBlockState(pos.above(4)).is(BeemancerBlocks.BREEDING_CRYSTAL.get());
 
         if (hive.flowerPool.tickScanCooldown()) {
@@ -660,56 +514,19 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         }
 
         for (int i = 0; i < BEE_SLOTS; i++) {
-            hive.tickBeeSlot(i);
+            hive.lifecycleManager.tickBeeSlot(i);
         }
 
-        hive.checkReturningBees(level, pos);
-        // Breeding géré à l'entrée des abeilles (voir addBee)
-    }
+        hive.lifecycleManager.checkReturningBees(level, pos);
 
-    private void tickBeeSlot(int slot) {
-        HiveBeeSlot beeSlot = beeSlots[slot];
-        if (!beeSlot.isInside() || items.get(slot).isEmpty()) return;
-
-        BeeGeneData geneData = MagicBeeItem.getGeneData(items.get(slot));
-        BeeBehaviorConfig config = BeeBehaviorManager.getConfig(getSpeciesId(geneData));
-
-        if (beeSlot.needsHealing()) {
-            beeSlot.heal(config.getRegenerationRate() / 20.0f);
-            if (!beeSlot.needsHealing()) {
-                MagicBeeItem.setStoredHealth(items.get(slot), beeSlot.getCurrentHealth());
-            }
-        }
-
-        if (!beeSlot.needsHealing()) {
-            beeSlot.decrementCooldown();
-        }
-
-        if (beeSlot.isCooldownComplete() && !beeSlot.needsHealing() && !breedingMode) {
-            releaseBee(slot);
-        }
-    }
-
-    private void checkReturningBees(Level level, BlockPos pos) {
-        // Check in a larger area since bees spawn above the structure
-        AABB searchBox = new AABB(pos).inflate(4, 5, 4);
-        List<MagicBeeEntity> nearbyBees = level.getEntitiesOfClass(MagicBeeEntity.class, searchBox,
-                bee -> bee.hasAssignedHive() && pos.equals(bee.getAssignedHivePos()));
-
-        for (MagicBeeEntity bee : nearbyBees) {
-            if (canBeeEnter(bee) && bee.isReturning() && bee.position().distanceTo(pos.getCenter()) < 3.0) {
-                addBee(bee);
-                bee.discard();
-            }
+        hive.outsideVerifyTimer++;
+        if (hive.outsideVerifyTimer >= 40) {
+            hive.outsideVerifyTimer = 0;
+            hive.lifecycleManager.verifyOutsideBees();
         }
     }
 
     // ==================== Helpers ====================
-
-    private String getSpeciesId(BeeGeneData geneData) {
-        Gene species = geneData.getGene(GeneCategory.SPECIES);
-        return species != null ? species.getId() : "meadow";
-    }
 
     @Nullable
     private MagicBeeEntity findBeeEntity(int slot) {

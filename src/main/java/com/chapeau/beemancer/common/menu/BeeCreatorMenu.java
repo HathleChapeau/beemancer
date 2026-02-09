@@ -19,7 +19,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class BeeCreatorMenu extends AbstractContainerMenu {
+public class BeeCreatorMenu extends BeemancerMenu {
     private final Container container;
     private final BlockPos blockPos;
     private final ContainerLevelAccess access;
@@ -59,17 +58,9 @@ public class BeeCreatorMenu extends AbstractContainerMenu {
         // Bee slot (centered at top)
         this.addSlot(new BeeSlot(container, 0, 80, 20, this::loadGenesFromBee));
 
-        // Player inventory
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                this.addSlot(new Slot(playerInv, col + row * 9 + 9, 8 + col * 18, 102 + row * 18));
-            }
-        }
-
-        // Player hotbar
-        for (int col = 0; col < 9; col++) {
-            this.addSlot(new Slot(playerInv, col, 8 + col * 18, 160));
-        }
+        // Player inventory + hotbar
+        addPlayerInventory(playerInv, 8, 102);
+        addPlayerHotbar(playerInv, 8, 160);
 
         // Initialize editing genes from bee if present
         loadGenesFromBee();
@@ -126,35 +117,8 @@ public class BeeCreatorMenu extends AbstractContainerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        ItemStack result = ItemStack.EMPTY;
-        Slot slot = this.slots.get(index);
-        
-        if (slot != null && slot.hasItem()) {
-            ItemStack slotStack = slot.getItem();
-            result = slotStack.copy();
-            
-            if (index == 0) {
-                // From bee slot to inventory
-                if (!this.moveItemStackTo(slotStack, 1, 37, true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                // From inventory to bee slot
-                if (slotStack.is(BeemancerItems.MAGIC_BEE.get())) {
-                    if (!this.moveItemStackTo(slotStack, 0, 1, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                }
-            }
-            
-            if (slotStack.isEmpty()) {
-                slot.set(ItemStack.EMPTY);
-            } else {
-                slot.setChanged();
-            }
-        }
-        
-        return result;
+        return doQuickMove(index, 1, 0, 1,
+                           stack -> stack.is(BeemancerItems.MAGIC_BEE.get()));
     }
 
     @Override

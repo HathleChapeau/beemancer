@@ -24,7 +24,7 @@
  */
 package com.chapeau.beemancer.common.entity.bee;
 
-import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
+import com.chapeau.beemancer.common.block.hive.IHiveBeeHost;
 import com.chapeau.beemancer.common.entity.bee.goal.BeeRevengeGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.ForagingBehaviorGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.MoveToTargetGoal;
@@ -356,7 +356,7 @@ public class MagicBeeEntity extends Bee {
         hivePingTimer = 0;
 
         if (assignedHivePos == null) return;
-        if (!(level().getBlockEntity(assignedHivePos) instanceof MagicHiveBlockEntity hive)) return;
+        if (!(level().getBlockEntity(assignedHivePos) instanceof IHiveBeeHost hive)) return;
 
         boolean shouldSurvive = hive.handleBeePing(this);
         if (!shouldSurvive) {
@@ -472,7 +472,7 @@ public class MagicBeeEntity extends Bee {
     private void notifyHiveOfDeath() {
         if (assignedHivePos == null) return;
 
-        if (level().getBlockEntity(assignedHivePos) instanceof MagicHiveBlockEntity hive) {
+        if (level().getBlockEntity(assignedHivePos) instanceof IHiveBeeHost hive) {
             hive.onBeeKilled(getUUID());
         }
     }

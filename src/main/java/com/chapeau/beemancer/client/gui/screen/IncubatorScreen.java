@@ -6,10 +6,11 @@
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | IncubatorMenu       | Donnees container    | Larva slot, progress           |
- * | GuiRenderHelper     | Rendu programmatique | Background, slot, progress     |
+ * | Dependance              | Raison                | Utilisation                    |
+ * |-------------------------|----------------------|--------------------------------|
+ * | IncubatorMenu           | Donnees container    | Larva slot, progress           |
+ * | GuiRenderHelper         | Rendu programmatique | Background, slot, progress     |
+ * | AbstractBeemancerScreen | Base screen          | Boilerplate GUI                |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -21,48 +22,28 @@ package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
-import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.menu.IncubatorMenu;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
-public class IncubatorScreen extends AbstractContainerScreen<IncubatorMenu> {
+public class IncubatorScreen extends AbstractBeemancerScreen<IncubatorMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Beemancer.MOD_ID, "textures/gui/incubator.png");
-    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
 
     public IncubatorScreen(IncubatorMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        this.imageWidth = 176;
-        this.imageHeight = 170;
-        this.inventoryLabelY = -999;
+        super(menu, playerInventory, title, 80);
     }
 
+    @Override protected ResourceLocation getTexture() { return TEXTURE; }
+    @Override protected String getTitleKey() { return "container.beemancer.incubator"; }
+    @Override protected int getTitleColor() { return 0x404040; }
+    @Override protected int getTitleY() { return 6; }
+
     @Override
-    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        int x = (width - imageWidth) / 2;
-        int y = (height - imageHeight) / 2;
-
-        g.blit(TEXTURE, x, y, 0, 0, 176, 76, 176, 76);
-        g.drawString(font, Component.translatable("container.beemancer.incubator"),
-            x + 8, y + 6, 0x404040, false);
-
-        // Larva slot (80, 35)
+    protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
         GuiRenderHelper.renderSlot(g, x + 79, y + 34);
-
-        // Progress arrow
         GuiRenderHelper.renderProgressArrow(g, x + 100, y + 35, menu.getProgressRatio());
-
-        // Player inventory
-        playerInventory.render(g, x, y);
-    }
-
-    @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        super.render(g, mouseX, mouseY, partialTick);
-        renderTooltip(g, mouseX, mouseY);
     }
 }

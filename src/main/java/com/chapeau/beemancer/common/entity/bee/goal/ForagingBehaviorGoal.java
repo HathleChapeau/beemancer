@@ -25,7 +25,7 @@
  */
 package com.chapeau.beemancer.common.entity.bee.goal;
 
-import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
+import com.chapeau.beemancer.common.block.hive.IHiveBeeHost;
 import com.chapeau.beemancer.common.entity.bee.BeeAIStateMachine;
 import com.chapeau.beemancer.common.entity.bee.BeeActivityState;
 import com.chapeau.beemancer.common.entity.bee.BeePathfinding;
@@ -383,7 +383,7 @@ public class ForagingBehaviorGoal extends Goal {
     private BlockPos findNextFlower() {
         // D'abord essayer depuis la ruche
         BlockPos hivePos = bee.getAssignedHivePos();
-        if (hivePos != null && bee.level().getBlockEntity(hivePos) instanceof MagicHiveBlockEntity hive) {
+        if (hivePos != null && bee.level().getBlockEntity(hivePos) instanceof IHiveBeeHost hive) {
             int slot = bee.getAssignedSlot();
             BlockPos flower = hive.getAndAssignFlower(slot);
             if (flower != null) {
@@ -469,7 +469,7 @@ public class ForagingBehaviorGoal extends Goal {
         if (flower == null) return;
 
         BlockPos hivePos = bee.getAssignedHivePos();
-        if (hivePos != null && bee.level().getBlockEntity(hivePos) instanceof MagicHiveBlockEntity hive) {
+        if (hivePos != null && bee.level().getBlockEntity(hivePos) instanceof IHiveBeeHost hive) {
             hive.returnFlower(bee.getAssignedSlot(), flower);
         }
     }

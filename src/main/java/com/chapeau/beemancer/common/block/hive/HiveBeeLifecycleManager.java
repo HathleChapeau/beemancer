@@ -1,23 +1,25 @@
 /**
  * ============================================================
  * [HiveBeeLifecycleManager.java]
- * Description: Gestion du cycle de vie des abeilles dans la ruche magique
+ * Description: Gestion du cycle de vie des abeilles dans une ruche
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance               | Raison                  | Utilisation                    |
+ * | Dependance               | Raison                  | Utilisation                    |
  * |--------------------------|------------------------|--------------------------------|
- * | MagicHiveBlockEntity     | Parent BlockEntity     | Back-reference                 |
- * | MagicBeeEntity           | Entité abeille         | Spawn/capture/interaction      |
- * | MagicBeeItem             | Item abeille           | Lecture/écriture gènes         |
- * | BeeBehaviorManager       | Config comportement    | Cooldowns, loot, régénération  |
- * | BreedingManager          | Logique reproduction   | Offspring species et gènes     |
- * | BeeLarvaItem             | Item larve             | Création larve offspring        |
+ * | IHiveInternals           | Interface parent       | Back-reference generique       |
+ * | HiveConfig               | Parametres ruche       | Spawn height, search, entry    |
+ * | MagicBeeEntity           | Entite abeille         | Spawn/capture/interaction      |
+ * | MagicBeeItem             | Item abeille           | Lecture/ecriture genes         |
+ * | BeeBehaviorManager       | Config comportement    | Cooldowns, loot, regeneration  |
+ * | BreedingManager          | Logique reproduction   | Offspring species et genes     |
+ * | BeeLarvaItem             | Item larve             | Creation larve offspring       |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
- * - MagicHiveBlockEntity.java (délégation tick, release, entry, breeding)
+ * UTILISE PAR:
+ * - MagicHiveBlockEntity.java (delegation tick, release, entry, breeding)
+ * - HiveMultiblockBlockEntity.java (delegation tick, release, entry, breeding)
  *
  * ============================================================
  */
@@ -26,7 +28,6 @@ package com.chapeau.beemancer.common.block.hive;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
-import com.chapeau.beemancer.core.bee.BeeSpeciesManager;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
 import com.chapeau.beemancer.core.breeding.BreedingManager;
@@ -50,25 +51,25 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Gère le cycle de vie des abeilles : sortie/entrée de ruche, pollinisation,
+ * Gere le cycle de vie des abeilles : sortie/entree de ruche, pollinisation,
  * loot, reproduction automatique et tick des slots.
- * Ne possède aucun champ — opère sur les données du parent via back-reference.
+ * Ne possede aucun champ — opere sur les donnees du parent via IHiveInternals.
  */
 public class HiveBeeLifecycleManager {
-    private final MagicHiveBlockEntity parent;
+    private static final int BEE_SLOTS = MagicHiveBlockEntity.BEE_SLOTS;
+    private static final int TOTAL_SLOTS = MagicHiveBlockEntity.TOTAL_SLOTS;
+    private static final double BREEDING_CHANCE_ON_ENTRY = 0.15;
 
-    private static final double BREEDING_CHANCE_ON_ENTRY = 0.15; // 15% quand une abeille rentre
+    private final IHiveInternals parent;
+    private final HiveConfig config;
 
-    public HiveBeeLifecycleManager(MagicHiveBlockEntity parent) {
+    public HiveBeeLifecycleManager(IHiveInternals parent, HiveConfig config) {
         this.parent = parent;
+        this.config = config;
     }
 
     // === Static Helper ===
 
-    /**
-     * Résout l'ID d'espèce depuis les données génétiques.
-     * Utilisé par le parent et le lifecycle manager.
-     */
     static String getSpeciesId(BeeGeneData geneData) {
         Gene species = geneData.getGene(GeneCategory.SPECIES);
         return species != null ? species.getId() : "meadow";
@@ -77,7 +78,7 @@ public class HiveBeeLifecycleManager {
     // === Bee Release/Entry ===
 
     public void releaseBee(int slot) {
-        if (slot < 0 || slot >= MagicHiveBlockEntity.BEE_SLOTS) return;
+        if (slot < 0 || slot >= BEE_SLOTS) return;
 
         HiveBeeSlot[] beeSlots = parent.getBeeSlots();
         if (!beeSlots[slot].isInside()) return;
@@ -91,7 +92,7 @@ public class HiveBeeLifecycleManager {
         MagicBeeEntity bee = BeemancerEntities.MAGIC_BEE.get().create(parent.getLevel());
         if (bee == null) return;
 
-        BlockPos spawnPos = parent.getBlockPos().above();
+        BlockPos spawnPos = parent.getBlockPos().above(config.spawnHeightOffset());
         bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY() + 1, spawnPos.getZ() + 0.5, 0, 0);
         bee.setDeltaMovement(Vec3.ZERO);
 
@@ -115,7 +116,7 @@ public class HiveBeeLifecycleManager {
     public boolean canBeeEnter(MagicBeeEntity bee) {
         if (!bee.hasAssignedHive() || !parent.getBlockPos().equals(bee.getAssignedHivePos())) return false;
         int slot = bee.getAssignedSlot();
-        if (slot < 0 || slot >= MagicHiveBlockEntity.BEE_SLOTS) return false;
+        if (slot < 0 || slot >= BEE_SLOTS) return false;
 
         HiveBeeSlot beeSlot = parent.getBeeSlots()[slot];
         if (!beeSlot.isOutside()) return false;
@@ -126,7 +127,7 @@ public class HiveBeeLifecycleManager {
 
     public void addBee(MagicBeeEntity bee) {
         int slot = bee.getAssignedSlot();
-        if (slot < 0 || slot >= MagicHiveBlockEntity.BEE_SLOTS) return;
+        if (slot < 0 || slot >= BEE_SLOTS) return;
 
         bee.markAsEnteredHive();
 
@@ -152,7 +153,7 @@ public class HiveBeeLifecycleManager {
         bee.setEnraged(false);
         bee.setReturning(false);
 
-        if (!parent.isAntibreedingMode() && parent.getLevel() != null) {
+        if (parent.shouldBreedOnEntry() && parent.getLevel() != null) {
             tryAutoBreeding(slot, parent.getLevel().getRandom());
         }
 
@@ -164,7 +165,7 @@ public class HiveBeeLifecycleManager {
         HiveBeeSlot[] beeSlots = parent.getBeeSlots();
         NonNullList<ItemStack> items = parent.getItems();
 
-        for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
+        for (int i = 0; i < BEE_SLOTS; i++) {
             if (beeUUID.equals(beeSlots[i].getBeeUUID()) && beeSlots[i].isOutside()) {
                 parent.returnAssignedFlower(i);
                 items.set(i, ItemStack.EMPTY);
@@ -177,15 +178,9 @@ public class HiveBeeLifecycleManager {
 
     // === UUID Sync Security ===
 
-    /**
-     * Gere le ping periodique d'une abeille exterieure.
-     * Verifie que le UUID du bee correspond au slot de la ruche.
-     *
-     * @return true si le bee est valide et doit survivre, false si c'est un doublon a detruire
-     */
     public boolean handleBeePing(MagicBeeEntity bee) {
         int slot = bee.getAssignedSlot();
-        if (slot < 0 || slot >= MagicHiveBlockEntity.BEE_SLOTS) return false;
+        if (slot < 0 || slot >= BEE_SLOTS) return false;
 
         HiveBeeSlot beeSlot = parent.getBeeSlots()[slot];
         UUID beeUUID = bee.getUUID();
@@ -209,18 +204,13 @@ public class HiveBeeLifecycleManager {
         return false;
     }
 
-    /**
-     * Verifie toutes les abeilles OUTSIDE de la ruche.
-     * Pour chaque slot OUTSIDE, si l'entite n'est plus trouvable dans le monde,
-     * remet le slot en INSIDE avec un cooldown de recuperation.
-     */
     void verifyOutsideBees() {
         if (!(parent.getLevel() instanceof ServerLevel serverLevel)) return;
 
         HiveBeeSlot[] beeSlots = parent.getBeeSlots();
         NonNullList<ItemStack> items = parent.getItems();
 
-        for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
+        for (int i = 0; i < BEE_SLOTS; i++) {
             if (!beeSlots[i].isOutside()) continue;
 
             UUID uuid = beeSlots[i].getBeeUUID();
@@ -236,10 +226,6 @@ public class HiveBeeLifecycleManager {
         }
     }
 
-    /**
-     * Remet un slot OUTSIDE en INSIDE avec un cooldown de recuperation.
-     * Utilise si l'entite associee n'est plus trouvable.
-     */
     private void resetSlotToInside(int slot, HiveBeeSlot beeSlot, ItemStack beeItem) {
         parent.returnAssignedFlower(slot);
         beeSlot.setState(HiveBeeSlot.State.INSIDE);
@@ -247,8 +233,8 @@ public class HiveBeeLifecycleManager {
 
         if (!beeItem.isEmpty()) {
             BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
-            BeeBehaviorConfig config = BeeBehaviorManager.getConfig(getSpeciesId(geneData));
-            beeSlot.setCooldown(config.getRandomRestCooldown(
+            BeeBehaviorConfig behaviorConfig = BeeBehaviorManager.getConfig(getSpeciesId(geneData));
+            beeSlot.setCooldown(behaviorConfig.getRandomRestCooldown(
                     parent.getLevel() != null ? parent.getLevel().getRandom() : RandomSource.create()));
         } else {
             beeSlot.setCooldown(200);
@@ -261,8 +247,8 @@ public class HiveBeeLifecycleManager {
 
     void depositPollinationLoot(MagicBeeEntity bee) {
         if (parent.getLevel() == null) return;
-        BeeBehaviorConfig config = bee.getBehaviorConfig();
-        for (ItemStack stack : config.rollPollinationLoot(parent.getLevel().getRandom())) {
+        BeeBehaviorConfig behaviorConfig = bee.getBehaviorConfig();
+        for (ItemStack stack : behaviorConfig.rollPollinationLoot(parent.getLevel().getRandom())) {
             insertIntoOutputSlots(stack);
         }
     }
@@ -272,7 +258,7 @@ public class HiveBeeLifecycleManager {
 
         NonNullList<ItemStack> items = parent.getItems();
 
-        for (int i = MagicHiveBlockEntity.BEE_SLOTS; i < MagicHiveBlockEntity.TOTAL_SLOTS && !stack.isEmpty(); i++) {
+        for (int i = BEE_SLOTS; i < TOTAL_SLOTS && !stack.isEmpty(); i++) {
             ItemStack existing = items.get(i);
             if (!existing.isEmpty() && ItemStack.isSameItemSameComponents(existing, stack)) {
                 int toAdd = Math.min(existing.getMaxStackSize() - existing.getCount(), stack.getCount());
@@ -283,7 +269,7 @@ public class HiveBeeLifecycleManager {
             }
         }
 
-        for (int i = MagicHiveBlockEntity.BEE_SLOTS; i < MagicHiveBlockEntity.TOTAL_SLOTS && !stack.isEmpty(); i++) {
+        for (int i = BEE_SLOTS; i < TOTAL_SLOTS && !stack.isEmpty(); i++) {
             if (items.get(i).isEmpty()) {
                 items.set(i, stack.copy());
                 stack.setCount(0);
@@ -294,32 +280,24 @@ public class HiveBeeLifecycleManager {
 
     // === Breeding ===
 
-    /**
-     * Tente le breeding quand une abeille rentre dans la ruche.
-     * - 15% de chance si une autre abeille est INSIDE
-     * - Sélection aléatoire du partenaire si plusieurs abeilles INSIDE
-     */
     void tryAutoBreeding(int enteringSlot, RandomSource random) {
         if (random.nextDouble() >= BREEDING_CHANCE_ON_ENTRY) return;
 
         HiveBeeSlot[] beeSlots = parent.getBeeSlots();
         NonNullList<ItemStack> items = parent.getItems();
 
-        // Collecter toutes les abeilles INSIDE (sauf celle qui rentre)
         List<Integer> insidePartners = new ArrayList<>();
-        for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
+        for (int i = 0; i < BEE_SLOTS; i++) {
             if (i != enteringSlot && beeSlots[i].isInside() && !items.get(i).isEmpty()) {
                 insidePartners.add(i);
             }
         }
         if (insidePartners.isEmpty()) return;
 
-        // Sélection aléatoire du partenaire
         int partnerSlot = insidePartners.get(random.nextInt(insidePartners.size()));
 
-        // Trouver un slot de sortie libre
         int outputSlot = -1;
-        for (int i = MagicHiveBlockEntity.BEE_SLOTS; i < MagicHiveBlockEntity.TOTAL_SLOTS; i++) {
+        for (int i = BEE_SLOTS; i < TOTAL_SLOTS; i++) {
             if (items.get(i).isEmpty()) {
                 outputSlot = i;
                 break;
@@ -349,10 +327,10 @@ public class HiveBeeLifecycleManager {
         if (!beeSlot.isInside() || items.get(slot).isEmpty()) return;
 
         BeeGeneData geneData = MagicBeeItem.getGeneData(items.get(slot));
-        BeeBehaviorConfig config = BeeBehaviorManager.getConfig(getSpeciesId(geneData));
+        BeeBehaviorConfig behaviorConfig = BeeBehaviorManager.getConfig(getSpeciesId(geneData));
 
         if (beeSlot.needsHealing()) {
-            beeSlot.heal(config.getRegenerationRate() / 20.0f);
+            beeSlot.heal(behaviorConfig.getRegenerationRate() / 20.0f);
             if (!beeSlot.needsHealing()) {
                 MagicBeeItem.setStoredHealth(items.get(slot), beeSlot.getCurrentHealth());
             }
@@ -362,18 +340,18 @@ public class HiveBeeLifecycleManager {
             beeSlot.decrementCooldown();
         }
 
-        if (beeSlot.isCooldownComplete() && !beeSlot.needsHealing() && parent.canBeeForage(slot)) {
+        if (beeSlot.isCooldownComplete() && !beeSlot.needsHealing() && parent.shouldReleaseBee(slot)) {
             releaseBee(slot);
         }
     }
 
     void checkReturningBees(Level level, BlockPos pos) {
-        AABB searchBox = new AABB(pos).inflate(2);
+        AABB searchBox = new AABB(pos).inflate(config.searchInflateX(), config.searchInflateY(), config.searchInflateZ());
         List<MagicBeeEntity> nearbyBees = level.getEntitiesOfClass(MagicBeeEntity.class, searchBox,
             bee -> bee.hasAssignedHive() && pos.equals(bee.getAssignedHivePos()));
 
         for (MagicBeeEntity bee : nearbyBees) {
-            if (canBeeEnter(bee) && bee.isReturning() && bee.position().distanceTo(pos.getCenter()) < 1.5) {
+            if (canBeeEnter(bee) && bee.isReturning() && bee.position().distanceTo(pos.getCenter()) < config.entryDistance()) {
                 addBee(bee);
                 bee.discard();
             }

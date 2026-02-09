@@ -1,0 +1,209 @@
+################################################################################
+#              FEATURE: Codebase Refactoring (Phases 1-5 + Hive Dedup)       #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Refactoring massif du codebase en 6 phases incrementales. Objectif: reduire la
+dette technique, eliminer le code duplique, respecter la limite ~150L/fichier,
+et unifier les patterns a travers le projet.
+
+================================================================================
+PHASE 1 — Quick Wins (imports wildcard)
+================================================================================
+
+Remplacement de TOUS les imports wildcard (import .*) par des imports explicites.
+77 fichiers modifies, aucun changement de logique.
+
+SYSTEMES IMPACTES:
+- Gene/Breeding: GeneInit, FlowerGene (x4), EnvironmentGene (x3), BeeGeneData,
+  GeneRegistry, BreedingManager
+- Bee entity: MagicBeeEntity, BeePathfinding, ForagingBehaviorGoal, RideableBeeEntity
+- Hive: MagicHiveBlockEntity, HiveMultiblockBlockEntity, HiveFlowerPool,
+  HiveBeeLifecycleManager
+- Storage: StorageControllerBlockEntity, StorageDeliveryManager, RequestManager,
+  StorageChestManager, StorageNetworkRegistry, StorageItemAggregator,
+  AbstractNetworkNodeBlockEntity
+- Codex: CodexManager, CodexJsonLoader, CodexBookManager
+- Menus: BeemancerMenu, MagicHiveMenu, BeeCreatorMenu, StorageCrateMenu,
+  StorageTerminalMenu, 7 menus alchemy
+- Screens: MagicHiveScreen, CodexScreen, IncubatorScreen, StorageTerminalScreen,
+  StandardPageRenderer, 8 screens alchemy
+- Renderers: 11 block renderers (Centrifuge, Crystallizer, Pedestal, Reservoir,
+  Tank, Incubator, Infuser x2, MultiblockTank, StorageController)
+- Core: Beemancer.java, ClientSetup.java, BeeSpeciesManager, BeemancerBlockEntities,
+  BeemancerBlocks, BeemancerMenus
+- Misc: BuildingWandItem, AltarHeartBlockEntity, QuestManager
+
+================================================================================
+PHASE 2 — Menus refactoring
+================================================================================
+
+Unification de la logique player inventory/hotbar dans BeemancerMenu.
+
+FICHIERS MODIFIES:
+- common/menu/BeemancerMenu.java — Base commune (addPlayerInventory/addPlayerHotbar)
+- common/menu/alchemy/AlembicMenu.java — Herite BeemancerMenu
+- common/menu/alchemy/CrystallizerMenu.java — Herite BeemancerMenu
+- common/menu/alchemy/HoneyTankMenu.java — Herite BeemancerMenu
+- common/menu/alchemy/InfuserMenu.java — Herite BeemancerMenu
+- common/menu/alchemy/ManualCentrifugeMenu.java — Herite BeemancerMenu
+- common/menu/alchemy/MultiblockTankMenu.java — Herite BeemancerMenu
+- common/menu/alchemy/PoweredCentrifugeMenu.java — Herite BeemancerMenu
+- common/menu/MagicHiveMenu.java — Herite BeemancerMenu
+- common/menu/BeeCreatorMenu.java — Herite BeemancerMenu
+- common/menu/StorageCrateMenu.java — Herite BeemancerMenu
+- common/menu/storage/StorageTerminalMenu.java — Adapte
+
+================================================================================
+PHASE 3 — Renderers helpers
+================================================================================
+
+Extraction du code duplique entre les 11 block renderers dans 3 helpers partages.
+
+FICHIERS CREES:
+- client/renderer/util/RenderHelper.java — Push/pop PoseStack, facing rotation,
+  methodes communes renderers
+- client/renderer/util/FloatingItemHelper.java — Rendu item flottant avec
+  animation bobbing + rotation (pedestal, infuser)
+- client/renderer/util/RotatingModelHelper.java — Rendu modele rotatif avec
+  vitesse configurable (centrifuge, crystallizer)
+
+FICHIERS MODIFIES (delegation aux helpers):
+- client/renderer/block/CentrifugeHeartRenderer.java
+- client/renderer/block/CrystallizerRenderer.java
+- client/renderer/block/HoneyPedestalRenderer.java
+- client/renderer/block/HoneyReservoirRenderer.java
+- client/renderer/block/HoneyTankRenderer.java
+- client/renderer/block/IncubatorRenderer.java
+- client/renderer/block/InfuserHeartRenderer.java
+- client/renderer/block/InfuserRenderer.java
+- client/renderer/block/MultiblockTankRenderer.java
+- client/renderer/block/StorageControllerRenderer.java
+
+================================================================================
+PHASE 4.1 — StorageTerminalScreen decomposition (1071L -> 431L + 3 helpers)
+================================================================================
+
+Extraction des 3 composants majeurs du screen monolithique.
+
+FICHIERS CREES:
+- client/gui/screen/storage/TerminalRequestPopup.java (180L)
+  Popup modale pour demande d'item. Auto-contenu: render, click, key, open/close.
+- client/gui/screen/storage/TerminalTasksTabRenderer.java (407L)
+  Onglet Tasks: rendu taches + scroll + bouton cancel.
+- client/gui/screen/storage/TerminalStorageTabRenderer.java (198L)
+  Onglet Storage: grille virtuelle + scroll + search + tooltip.
+
+FICHIER MODIFIE:
+- client/gui/screen/storage/StorageTerminalScreen.java (1071L -> 431L)
+  Dispatcher mince: init, renderBg, input routing, onglets verticaux, player inv.
+
+================================================================================
+PHASE 4.2 — StorageDeliveryManager decomposition (1337L -> 592L + 4 helpers)
+================================================================================
+
+Extraction de 4 responsabilites distinctes du manager monolithique.
+
+FICHIERS CREES:
+- common/blockentity/storage/DeliveryNetworkPathfinder.java (222L)
+  BFS pathfinding dans le graphe reseau: findPathToChest, computeTransitWaypoints,
+  findNearestNetworkNode. Calcul pur, aucune mutation d'etat.
+
+- common/blockentity/storage/DeliveryContainerOps.java (169L)
+  Recherche/extraction/depot dans coffres: findChestWithItem, findAllChestsWithItem,
+  countItemInChest, findChestWithSpace, extractItemForDelivery, depositItemForDelivery.
+  Record ChestItemInfo deplace ici.
+
+- common/blockentity/storage/DeliveryTaskDisplayBuilder.java (230L)
+  Construction donnees affichage Tasks tab. Classe stateless (final, private ctor,
+  static methods). Toutes les donnees passees en parametres.
+
+- common/blockentity/storage/DeliveryBeeSpawner.java (297L)
+  Spawn, recall, redirect, kill bees. redirectBee() retourne @Nullable DeliveryTask
+  (le caller ajoute a activeTasks — evite partage etat mutable).
+
+FICHIERS MODIFIES:
+- common/blockentity/storage/StorageDeliveryManager.java (1337L -> 592L)
+  Reste: queues, tick, cancel, completion, honey consumption, NBT.
+  3 champs delegues: pathfinder, containerOps, beeSpawner (avec getters).
+- common/blockentity/storage/StorageControllerBlockEntity.java
+  Convenience methods delegues a deliveryManager.getContainerOps().
+- common/blockentity/storage/RequestManager.java
+  ChestItemInfo import: StorageDeliveryManager -> DeliveryContainerOps.
+
+================================================================================
+PHASE 4.3 — Hive BlockEntities unification (921L -> 662L, bug fix)
+================================================================================
+
+Unification de la logique bee lifecycle entre MagicHive et HiveMultiblock.
+
+FICHIERS CREES:
+- common/block/hive/IHiveBeeHost.java (63L)
+  Interface publique pour les entites abeilles: handleBeePing, onBeeKilled,
+  getAndAssignFlower, returnFlower, getBlockPos.
+- common/block/hive/IHiveInternals.java (66L)
+  Interface package-private pour le lifecycle manager: getItems, getBeeSlots,
+  getFlowerPool, shouldReleaseBee, shouldBreedOnEntry, etc.
+- common/block/hive/HiveConfig.java (34L)
+  Record parametres: MAGIC_HIVE (spawn=1, inflate=2/2/2, entry=1.5),
+  MULTIBLOCK (spawn=4, inflate=4/5/4, entry=3.0).
+
+FICHIERS MODIFIES:
+- common/block/hive/HiveBeeLifecycleManager.java (382L -> 360L)
+  MagicHiveBlockEntity -> IHiveInternals + HiveConfig. Generique.
+- common/block/hive/MagicHiveBlockEntity.java (574L -> 588L)
+  +implements IHiveInternals. shouldReleaseBee = canBeeForage,
+  shouldBreedOnEntry = !antibreedingMode.
+- common/block/hive/HiveMultiblockBlockEntity.java (921L -> 662L)
+  +implements IHiveInternals. Delegue au lifecycle manager.
+  SUPPRIME ~260L de code duplique. shouldReleaseBee = !breedingMode,
+  shouldBreedOnEntry = true. +outsideVerifyTimer 40 ticks.
+- common/entity/bee/MagicBeeEntity.java
+  instanceof MagicHiveBlockEntity -> instanceof IHiveBeeHost (2 lignes).
+- common/entity/bee/goal/ForagingBehaviorGoal.java
+  instanceof MagicHiveBlockEntity -> instanceof IHiveBeeHost (2 lignes).
+
+BUG FIX:
+- Multiblock canBeeEnter ne verifiait PAS les UUIDs (bees pouvaient entrer
+  dans le mauvais slot). Maintenant delegue au lifecycle manager qui verifie.
+- Multiblock n'avait PAS de verifyOutsideBees (bees perdues restaient OUTSIDE
+  indefiniment). Maintenant verifie toutes les 40 ticks.
+
+================================================================================
+PHASE 5 — Nettoyage architectural (screens + GUI)
+================================================================================
+
+Base commune pour tous les screens du mod.
+
+FICHIERS CREES:
+- client/gui/screen/AbstractBeemancerScreen.java
+  Classe abstraite commune pour tous les screens: renderBg partagé,
+  helpers de positionnement, constantes layout.
+
+FICHIERS MODIFIES:
+- client/gui/GuiRenderHelper.java — Methodes partagees refactorisees
+- Tous les screens alchemy — Heritent d'AbstractBeemancerScreen
+- client/gui/screen/MagicHiveScreen.java — Adapte
+- client/gui/screen/IncubatorScreen.java — Adapte
+- client/gui/screen/CodexScreen.java — Adapte
+- client/gui/screen/codex/StandardPageRenderer.java — Adapte
+
+================================================================================
+BILAN GLOBAL
+================================================================================
+
+AVANT:                          APRES:
+StorageTerminalScreen  1071L -> 431L + 3 helpers (785L total)
+StorageDeliveryManager 1337L -> 592L + 4 helpers (918L total)
+HiveMultiblockBE        921L -> 662L (via delegation lifecycle manager)
+MagicHiveBE             574L -> 588L (+14L interface impls)
+
+FICHIERS CREES: 14 nouveaux fichiers
+FICHIERS MODIFIES: ~80 fichiers
+IMPORTS EXPLICITES: 77 fichiers nettoyes
+CODE DUPLIQUE ELIMINE: ~600+ lignes
+
+################################################################################

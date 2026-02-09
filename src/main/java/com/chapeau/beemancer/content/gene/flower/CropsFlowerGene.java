@@ -1,3 +1,22 @@
+/**
+ * ============================================================
+ * [CropsFlowerGene.java]
+ * Description: Gene fleur pour cultures (BlockTags.CROPS)
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | FlowerGene          | Classe de base       | Extension comportement fleur   |
+ * | BlockTags           | Tags Minecraft       | CROPS                          |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - GeneInit.java (enregistrement dans GeneRegistry)
+ *
+ * ============================================================
+ */
 package com.chapeau.beemancer.content.gene.flower;
 
 import net.minecraft.tags.BlockTags;

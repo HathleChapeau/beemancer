@@ -36,7 +36,12 @@ import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public class QuestManager {
     private static final Gson GSON = new Gson();

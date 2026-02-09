@@ -66,16 +66,20 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
-public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, net.minecraft.world.Container {
+public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, net.minecraft.world.Container, IHiveBeeHost, IHiveInternals {
 
     public static final int BEE_SLOTS = 5;
     public static final int OUTPUT_SLOTS = 7;
     public static final int TOTAL_SLOTS = BEE_SLOTS + OUTPUT_SLOTS;
 
     // === Manager ===
-    private final HiveBeeLifecycleManager lifecycleManager = new HiveBeeLifecycleManager(this);
+    private final HiveBeeLifecycleManager lifecycleManager = new HiveBeeLifecycleManager(this, HiveConfig.MAGIC_HIVE);
 
     // Inventaire
     private final NonNullList<ItemStack> items = NonNullList.withSize(TOTAL_SLOTS, ItemStack.EMPTY);
@@ -142,12 +146,23 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         DebugWandItem.addDisplay(this, this::buildDebugText, new Vec3(0, 1.3, 0));
     }
 
-    // === Manager Accessors (package-private) ===
+    // === Manager Accessors (package-private, IHiveInternals) ===
 
-    NonNullList<ItemStack> getItems() { return items; }
-    HiveBeeSlot[] getBeeSlots() { return beeSlots; }
+    @Override public NonNullList<ItemStack> getItems() { return items; }
+    @Override public HiveBeeSlot[] getBeeSlots() { return beeSlots; }
+    @Override public HiveFlowerPool getFlowerPool() { return flowerPool; }
     int getBreedingCooldown() { return breedingCooldown; }
     void setBreedingCooldown(int value) { this.breedingCooldown = value; }
+
+    @Override
+    public boolean shouldReleaseBee(int slot) {
+        return canBeeForage(slot);
+    }
+
+    @Override
+    public boolean shouldBreedOnEntry() {
+        return !antibreedingMode;
+    }
 
     // ==================== Container Implementation ====================
 
@@ -248,7 +263,8 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     // ==================== Flower Management ====================
 
-    void triggerFlowerScan() {
+    @Override
+    public void triggerFlowerScan() {
         if (level == null) return;
 
         Set<TagKey<Block>> flowerTags = new HashSet<>();
@@ -277,6 +293,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         flowerPool.scanFlowers(level, worldPosition, flowerTags, maxRadius, assigned);
     }
 
+    @Override
     @Nullable
     public BlockPos getAndAssignFlower(int slot) {
         if (slot < 0 || slot >= BEE_SLOTS) return null;
@@ -300,6 +317,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         return flower;
     }
 
+    @Override
     public void returnFlower(int slot, BlockPos flower) {
         if (slot >= 0 && slot < BEE_SLOTS) {
             beeSlots[slot].clearAssignedFlower();
@@ -307,13 +325,15 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         flowerPool.returnFlower(flower);
     }
 
-    void returnAssignedFlower(int slot) {
+    @Override
+    public void returnAssignedFlower(int slot) {
         if (slot >= 0 && slot < BEE_SLOTS && beeSlots[slot].hasAssignedFlower()) {
             flowerPool.returnFlower(beeSlots[slot].getAssignedFlower());
             beeSlots[slot].clearAssignedFlower();
         }
     }
 
+    @Override
     public boolean hasFlowersForSlot(int slot) {
         return flowerPool.hasFlowers();
     }
@@ -403,8 +423,10 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     public void addBee(MagicBeeEntity bee) { lifecycleManager.addBee(bee); }
 
+    @Override
     public void onBeeKilled(UUID beeUUID) { lifecycleManager.onBeeKilled(beeUUID); }
 
+    @Override
     public boolean handleBeePing(MagicBeeEntity bee) { return lifecycleManager.handleBeePing(bee); }
 
     public void insertIntoOutputSlots(ItemStack stack) { lifecycleManager.insertIntoOutputSlots(stack); }

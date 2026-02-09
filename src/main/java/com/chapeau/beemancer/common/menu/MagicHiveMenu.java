@@ -112,35 +112,8 @@ public class MagicHiveMenu extends BeemancerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        ItemStack result = ItemStack.EMPTY;
-        Slot slot = slots.get(index);
-        
-        if (slot.hasItem()) {
-            ItemStack stackInSlot = slot.getItem();
-            result = stackInSlot.copy();
-            
-            int containerSlots = MagicHiveBlockEntity.TOTAL_SLOTS;
-            
-            if (index < containerSlots) {
-                // From container to player
-                if (!moveItemStackTo(stackInSlot, containerSlots, containerSlots + 36, true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                // From player to bee slots only (output slots don't accept items)
-                if (!moveItemStackTo(stackInSlot, 0, MagicHiveBlockEntity.BEE_SLOTS, false)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-            
-            if (stackInSlot.isEmpty()) {
-                slot.set(ItemStack.EMPTY);
-            } else {
-                slot.setChanged();
-            }
-        }
-        
-        return result;
+        return doQuickMove(index, MagicHiveBlockEntity.TOTAL_SLOTS,
+                           0, MagicHiveBlockEntity.BEE_SLOTS, null);
     }
 
     @Override

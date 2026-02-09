@@ -10,7 +10,11 @@ ARCHITECTURE
 ================================================================================
 
 - MagicHiveBlock: Bloc avec GUI
-- MagicHiveBlockEntity: 12 slots (5 bee + 7 output), tracking états, breeding, cooldowns
+- MagicHiveBlockEntity: 12 slots (5 bee + 7 output), implements IHiveBeeHost + IHiveInternals
+- HiveBeeLifecycleManager: Cycle de vie abeilles (release, entry, breeding, tick)
+- IHiveBeeHost: Interface publique pour les entites abeilles (handleBeePing, onBeeKilled, etc.)
+- IHiveInternals: Interface interne pour le lifecycle manager (getItems, shouldReleaseBee, etc.)
+- HiveConfig: Parametres par type de ruche (MAGIC_HIVE: spawnHeight=1, inflate=2, entry=1.5)
 - MagicHiveMenu: Slots custom (BeeAssignmentSlot, OutputOnlySlot)
 - MagicHiveScreen: GUI avec layout honeycomb + indicateur breeding
 
@@ -61,11 +65,39 @@ SLOTS
 - 5-11: OutputOnlySlot (7 slots honeycomb, extraction seulement)
 
 ================================================================================
-FICHIERS LIÉS
+INTERFACES ET DELEGATION
+================================================================================
+
+MagicHiveBlockEntity implements IHiveBeeHost + IHiveInternals.
+Toute la logique bee lifecycle est deleguee a HiveBeeLifecycleManager:
+- releaseBee, canBeeEnter, addBee, onBeeKilled, handleBeePing
+- insertIntoOutputSlots, tickBeeSlot, checkReturningBees, verifyOutsideBees
+- tryAutoBreeding (15% chance a l'entree si !antibreedingMode)
+
+Semantique MagicHive:
+- shouldReleaseBee(slot) = canBeeForage(slot) (fleurs, jour/nuit, temperature, pas antibreeding)
+- shouldBreedOnEntry() = !antibreedingMode (crystal au-dessus = PAS de breeding)
+
+Le lifecycle manager utilise HiveConfig.MAGIC_HIVE:
+- spawnHeightOffset = 1 (bee spawn au-dessus du bloc)
+- searchInflate = (2, 2, 2) (zone de detection bees retour)
+- entryDistance = 1.5 (distance pour entrer dans la ruche)
+
+MagicBeeEntity et ForagingBehaviorGoal utilisent instanceof IHiveBeeHost
+(pas instanceof MagicHiveBlockEntity) pour interagir avec les deux types de ruches.
+
+================================================================================
+FICHIERS LIES
 ================================================================================
 
 - common/block/hive/MagicHiveBlock.java
-- common/block/hive/MagicHiveBlockEntity.java
+- common/block/hive/MagicHiveBlockEntity.java (implements IHiveBeeHost, IHiveInternals)
+- common/block/hive/HiveBeeLifecycleManager.java (cycle de vie generique)
+- common/block/hive/IHiveBeeHost.java (interface publique bee-hive)
+- common/block/hive/IHiveInternals.java (interface interne lifecycle manager)
+- common/block/hive/HiveConfig.java (parametres par type de ruche)
+- common/block/hive/HiveBeeSlot.java (donnees par slot)
+- common/block/hive/HiveFlowerPool.java (pool de fleurs partagees)
 - common/menu/MagicHiveMenu.java
 - common/menu/slot/BeeAssignmentSlot.java
 - common/menu/slot/OutputOnlySlot.java

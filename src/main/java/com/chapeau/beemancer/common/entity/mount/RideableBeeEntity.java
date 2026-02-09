@@ -34,7 +34,8 @@
  */
 package com.chapeau.beemancer.common.entity.mount;
 
-import com.chapeau.beemancer.common.entity.mount.behaviour.*;
+import com.chapeau.beemancer.common.entity.mount.behaviour.RidingBehaviourState;
+import com.chapeau.beemancer.common.entity.mount.behaviour.RidingController;
 import com.chapeau.beemancer.common.entity.mount.behaviour.types.land.HorseBehaviour;
 import com.chapeau.beemancer.common.entity.mount.behaviour.types.land.HorseSettings;
 import com.chapeau.beemancer.common.entity.mount.behaviour.types.land.HorseState;
@@ -42,7 +43,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.PlayerRideable;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;

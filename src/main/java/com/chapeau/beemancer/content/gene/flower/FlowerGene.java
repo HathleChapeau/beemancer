@@ -1,3 +1,24 @@
+/**
+ * ============================================================
+ * [FlowerGene.java]
+ * Description: Classe abstraite pour les genes de type fleur
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | AbstractGene        | Classe de base gene  | Extension comportement         |
+ * | GeneCategory        | Categorie gene       | Classification FLOWER          |
+ * | TagKey<Block>       | Tags Minecraft       | Identification fleurs valides  |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - FlowersFlowerGene, CropsFlowerGene, CavePlantsFlowerGene
+ * - GeneInit.java (enregistrement)
+ *
+ * ============================================================
+ */
 package com.chapeau.beemancer.content.gene.flower;
 
 import com.chapeau.beemancer.core.gene.AbstractGene;

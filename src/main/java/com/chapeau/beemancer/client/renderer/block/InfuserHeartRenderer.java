@@ -23,6 +23,8 @@ import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.InfuserHeartBlock;
 import com.chapeau.beemancer.common.blockentity.alchemy.InfuserHeartBlockEntity;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
+import com.chapeau.beemancer.client.renderer.util.RenderHelper;
+import com.chapeau.beemancer.client.renderer.util.RotatingModelHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -36,7 +38,6 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * Renderer pour l'Infuser Heart multibloc.
@@ -78,24 +79,14 @@ public class InfuserHeartRenderer implements BlockEntityRenderer<InfuserHeartBlo
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.translucent());
 
         // Cube 1: position normale (pas de rotation)
-        poseStack.pushPose();
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(), coreModel, state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.translucent()
-        );
-        poseStack.popPose();
+        RenderHelper.tesselateModel(blockRenderer, coreModel, blockEntity.getLevel(),
+            state, blockEntity.getBlockPos(), poseStack, vertexConsumer, random,
+            packedLight, packedOverlay, RenderType.translucent());
 
         // Cube 2: tourne de 45 degres (fixe, pas anime)
-        poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
-        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(45.0f));
-        poseStack.translate(-0.5, -0.5, -0.5);
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(), coreModel, state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.translucent()
-        );
-        poseStack.popPose();
+        RotatingModelHelper.renderWithYRotation(blockRenderer, coreModel,
+            blockEntity.getLevel(), state, blockEntity.getBlockPos(),
+            poseStack, vertexConsumer, random, packedLight, packedOverlay,
+            RenderType.translucent(), 45.0f);
     }
 }

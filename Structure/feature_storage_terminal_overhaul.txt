@@ -36,13 +36,16 @@ CONTAINER DATA (11 valeurs):
 FICHIERS
 ================================================================================
 
-CRÉÉS:
+CREES:
 - client/gui/screen/storage/StorageTab.java (enum 3 onglets)
-- common/block/storage/TaskDisplayData.java (record données tâche)
-- core/network/packets/StorageTasksSyncPacket.java (Server→Client)
-- core/network/packets/StorageTaskCancelPacket.java (Client→Server)
+- client/gui/screen/storage/TerminalRequestPopup.java (popup modale demande item, 180L)
+- client/gui/screen/storage/TerminalTasksTabRenderer.java (onglet Tasks, 407L)
+- client/gui/screen/storage/TerminalStorageTabRenderer.java (onglet Storage grille+scroll, 198L)
+- common/block/storage/TaskDisplayData.java (record donnees tache)
+- core/network/packets/StorageTasksSyncPacket.java (Server->Client)
+- core/network/packets/StorageTaskCancelPacket.java (Client->Server)
 
-MODIFIÉS:
+MODIFIES:
 - common/entity/delivery/DeliveryBeeEntity.java
 - common/blockentity/storage/StorageItemAggregator.java
 - common/menu/storage/StorageTerminalMenu.java
@@ -51,7 +54,7 @@ MODIFIÉS:
 - common/blockentity/storage/StorageControllerBlockEntity.java
 - core/network/BeemancerNetwork.java
 - client/gui/GuiRenderHelper.java
-- client/gui/screen/storage/StorageTerminalScreen.java
+- client/gui/screen/storage/StorageTerminalScreen.java (1071L -> 431L, delegue aux 3 helpers)
 - lang/en_us.json, lang/fr_fr.json
 
 ================================================================================

@@ -6,11 +6,12 @@
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | MagicHiveMenu       | Donnees container    | Bee slots, output, status      |
- * | MagicHiveBlockEntity| Constantes           | BEE_SLOTS                      |
- * | GuiRenderHelper     | Rendu programmatique | Background, slots              |
+ * | Dependance              | Raison                | Utilisation                    |
+ * |-------------------------|----------------------|--------------------------------|
+ * | MagicHiveMenu           | Donnees container    | Bee slots, output, status      |
+ * | MagicHiveBlockEntity    | Constantes           | BEE_SLOTS                      |
+ * | GuiRenderHelper         | Rendu programmatique | Background, slots              |
+ * | AbstractBeemancerScreen | Base screen          | Boilerplate GUI                |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -22,12 +23,10 @@ package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
-import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,52 +34,40 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MagicHiveScreen extends AbstractContainerScreen<MagicHiveMenu> {
+public class MagicHiveScreen extends AbstractBeemancerScreen<MagicHiveMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Beemancer.MOD_ID, "textures/gui/magic_hive.png");
     private static final int ICON_SIZE = 12;
     private static final int ICON_SPACING = 2;
-    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(104);
 
     public MagicHiveScreen(MagicHiveMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        this.imageWidth = 176;
+        super(menu, playerInventory, title, 104);
         this.imageHeight = 194;
-        this.inventoryLabelY = -999;
     }
 
+    @Override protected ResourceLocation getTexture() { return TEXTURE; }
+    @Override protected String getTitleKey() { return "container.beemancer.magic_hive"; }
+    @Override protected int getTitleColor() { return 0x404040; }
+    @Override protected int getTitleY() { return 6; }
+    @Override protected int getBlitHeight() { return 100; }
+
     @Override
-    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        int x = (width - imageWidth) / 2;
-        int y = (height - imageHeight) / 2;
-
-        g.blit(TEXTURE, x, y, 0, 0, 176, 100, 176, 100);
-        g.drawString(font, Component.translatable("container.beemancer.magic_hive"),
-            x + 8, y + 6, 0x404040, false);
-
-        // Bee assignment slots (5 slots at Y=20, starting X=44, spaced 18px)
+    protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
         for (int i = 0; i < 5; i++) {
             GuiRenderHelper.renderSlot(g, x + 43 + i * 18, y + 19);
         }
-
-        // Honeycomb output slots (7 slots around center 88, 65)
         int cx = x + 79, cy = y + 56;
-        GuiRenderHelper.renderSlot(g, cx, cy); // center
+        GuiRenderHelper.renderSlot(g, cx, cy);
         GuiRenderHelper.renderSlot(g, cx - 10, cy - 17);
         GuiRenderHelper.renderSlot(g, cx + 10, cy - 17);
         GuiRenderHelper.renderSlot(g, cx - 20, cy);
         GuiRenderHelper.renderSlot(g, cx + 20, cy);
         GuiRenderHelper.renderSlot(g, cx - 10, cy + 17);
         GuiRenderHelper.renderSlot(g, cx + 10, cy + 17);
-
-        // Player inventory
-        playerInventory.render(g, x, y);
     }
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        super.render(g, mouseX, mouseY, partialTick);
-        renderTooltip(g, mouseX, mouseY);
+    protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         renderStatusIcons(g, mouseX, mouseY);
         renderBeeSmileys(g);
     }

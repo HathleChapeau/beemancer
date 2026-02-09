@@ -21,19 +21,15 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.client.renderer.util.FluidCubeRenderer;
+import com.chapeau.beemancer.client.renderer.util.RenderHelper;
 import com.chapeau.beemancer.common.blockentity.alchemy.HoneyTankBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 /**
@@ -58,12 +54,7 @@ public class HoneyTankRenderer implements BlockEntityRenderer<HoneyTankBlockEnti
         float fillRatio = (float) blockEntity.getFluidAmount() / blockEntity.getCapacity();
         if (fillRatio <= 0f) return;
 
-        Fluid fluid = fluidStack.getFluid();
-        IClientFluidTypeExtensions fluidExtensions = IClientFluidTypeExtensions.of(fluid);
-        ResourceLocation stillTexture = fluidExtensions.getStillTexture();
-        TextureAtlasSprite sprite = Minecraft.getInstance()
-            .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-            .apply(stillTexture);
+        TextureAtlasSprite sprite = RenderHelper.getFluidSprite(fluidStack.getFluid());
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
         var pose = poseStack.last();

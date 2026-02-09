@@ -22,7 +22,9 @@ import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -89,49 +91,8 @@ public class ManualCentrifugeMenu extends BeemancerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        ItemStack result = ItemStack.EMPTY;
-        Slot slot = slots.get(index);
-
-        if (slot.hasItem()) {
-            ItemStack stack = slot.getItem();
-            result = stack.copy();
-
-            // From input slot to player
-            if (index == INPUT_SLOT) {
-                if (!moveItemStackTo(stack, PLAYER_INV_START, HOTBAR_END, true)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-            // From output slots to player
-            else if (index >= OUTPUT_START && index < OUTPUT_END) {
-                if (!moveItemStackTo(stack, PLAYER_INV_START, HOTBAR_END, true)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-            // From player inventory
-            else {
-                // Try to move to input slot if valid
-                if (blockEntity.isValidComb(stack)) {
-                    if (!moveItemStackTo(stack, INPUT_SLOT, INPUT_SLOT + 1, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                }
-                // Move between inventory and hotbar
-                else if (index >= PLAYER_INV_START && index < PLAYER_INV_END) {
-                    if (!moveItemStackTo(stack, HOTBAR_START, HOTBAR_END, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (index >= HOTBAR_START && index < HOTBAR_END) {
-                    if (!moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                }
-            }
-
-            if (stack.isEmpty()) slot.set(ItemStack.EMPTY);
-            else slot.setChanged();
-        }
-        return result;
+        return doQuickMove(index, PLAYER_INV_START, INPUT_SLOT, INPUT_SLOT + 1,
+                           stack -> blockEntity.isValidComb(stack));
     }
 
     @Override

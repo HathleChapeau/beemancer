@@ -6,10 +6,11 @@
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | MultiblockTankMenu  | Donnees container    | Bucket slot, fluid, block info |
- * | GuiRenderHelper     | Rendu programmatique | Background, slots              |
+ * | Dependance              | Raison                | Utilisation                    |
+ * |-------------------------|----------------------|--------------------------------|
+ * | MultiblockTankMenu      | Donnees container    | Bucket slot, fluid, block info |
+ * | GuiRenderHelper         | Rendu programmatique | Background, slots              |
+ * | AbstractBeemancerScreen | Base screen          | Boilerplate GUI                |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -21,10 +22,9 @@ package com.chapeau.beemancer.client.gui.screen.alchemy;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
-import com.chapeau.beemancer.client.gui.widget.PlayerInventoryWidget;
+import com.chapeau.beemancer.client.gui.screen.AbstractBeemancerScreen;
 import com.chapeau.beemancer.common.menu.alchemy.MultiblockTankMenu;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -32,56 +32,37 @@ import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.List;
 
-public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTankMenu> {
+public class MultiblockTankScreen extends AbstractBeemancerScreen<MultiblockTankMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
     private static final int GAUGE_X = 62;
     private static final int GAUGE_Y = 17;
     private static final int GAUGE_W = 52;
     private static final int GAUGE_H = 52;
-    private final PlayerInventoryWidget playerInventory = new PlayerInventoryWidget(80);
 
     public MultiblockTankScreen(MultiblockTankMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        this.imageWidth = 176;
-        this.imageHeight = 170;
-        this.inventoryLabelY = -999;
-        this.titleLabelY = -999;
+        super(menu, playerInventory, title, 80);
     }
 
+    @Override protected ResourceLocation getTexture() { return TEXTURE; }
+    @Override protected String getTitleKey() { return "container.beemancer.multiblock_tank"; }
+
     @Override
-    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        int x = (width - imageWidth) / 2;
-        int y = (height - imageHeight) / 2;
-
-        g.blit(TEXTURE, x, y, 0, 0, 176, 76, 176, 76);
-        g.drawString(font, Component.translatable("container.beemancer.multiblock_tank"),
-            x + 8, y + 7, 0xDDDDDD, false);
-
-        // Bucket slot (26, 35)
+    protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
         GuiRenderHelper.renderSlot(g, x + 25, y + 34);
-
-        // Fluid gauge
         renderFluidGauge(g, x + GAUGE_X, y + GAUGE_Y);
-
-        // Status info
         int blockCount = menu.getBlockCount();
         g.drawString(font, blockCount + " blocks", x + 120, y + 20, 0x404040, false);
         g.drawString(font, (menu.getCapacity() / 1000) + "B", x + 120, y + 32, 0x404040, false);
-
-        // Player inventory
-        playerInventory.render(g, x, y);
     }
 
     private void renderFluidGauge(GuiGraphics g, int gx, int gy) {
-        // Frame (inset style)
         g.fill(gx, gy, gx + GAUGE_W, gy + 1, 0xFF373737);
         g.fill(gx, gy, gx + 1, gy + GAUGE_H, 0xFF373737);
         g.fill(gx, gy + GAUGE_H - 1, gx + GAUGE_W, gy + GAUGE_H, 0xFFFFFFFF);
         g.fill(gx + GAUGE_W - 1, gy, gx + GAUGE_W, gy + GAUGE_H, 0xFFFFFFFF);
         g.fill(gx + 1, gy + 1, gx + GAUGE_W - 1, gy + GAUGE_H - 1, 0xFF8B8B8B);
 
-        // Fluid fill
         int amount = menu.getFluidAmount();
         int capacity = menu.getCapacity();
         if (amount > 0 && capacity > 0) {
@@ -90,8 +71,6 @@ public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTank
                 int color = getFluidColor();
                 int fy = gy + GAUGE_H - 1 - fluidH;
                 g.fill(gx + 1, fy, gx + GAUGE_W - 1, fy + fluidH, 0xFF000000 | color);
-
-                // Highlight + shadow edges
                 int r = (color >> 16) & 0xFF, gr = (color >> 8) & 0xFF, b = color & 0xFF;
                 g.fill(gx + 1, fy, gx + 2, fy + fluidH,
                     0xFF000000 | (Math.min(255, r + 40) << 16) | (Math.min(255, gr + 40) << 8) | Math.min(255, b + 40));
@@ -100,7 +79,6 @@ public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTank
             }
         }
 
-        // Overlay graduations (25%, 50%, 75%)
         int inner = GAUGE_H - 2;
         for (int i = 1; i <= 3; i++) {
             int gradY = gy + GAUGE_H - 1 - (inner * i / 4);
@@ -122,13 +100,7 @@ public class MultiblockTankScreen extends AbstractContainerScreen<MultiblockTank
     }
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        super.render(g, mouseX, mouseY, partialTick);
-        renderTooltip(g, mouseX, mouseY);
-
-        int x = (width - imageWidth) / 2;
-        int y = (height - imageHeight) / 2;
-
+    protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         int gx = x + GAUGE_X, gy = y + GAUGE_Y;
         if (mouseX >= gx && mouseX < gx + GAUGE_W && mouseY >= gy && mouseY < gy + GAUGE_H) {
             int amount = menu.getFluidAmount();

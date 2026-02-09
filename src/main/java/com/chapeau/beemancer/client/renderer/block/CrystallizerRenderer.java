@@ -23,9 +23,9 @@ package com.chapeau.beemancer.client.renderer.block;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.alchemy.CrystallizerBlock;
 import com.chapeau.beemancer.common.blockentity.alchemy.CrystallizerBlockEntity;
+import com.chapeau.beemancer.client.renderer.util.RotatingModelHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -37,7 +37,6 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * Renderer pour le Crystallizer.
@@ -98,38 +97,21 @@ public class CrystallizerRenderer implements BlockEntityRenderer<CrystallizerBlo
         long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
         float time = gameTime + partialTick;
 
+        float xRot1 = shouldRotate ? time * 3.0f : 0;
+        float yRot1 = shouldRotate ? time * 4.5f : 0;
+        float zRot1 = shouldRotate ? time * 2.1f : 0;
+
         // Core 1
-        poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
-        poseStack.scale(scale, scale, scale);
-        if (shouldRotate) {
-            poseStack.mulPose(Axis.XP.rotationDegrees(time * 3.0f));
-            poseStack.mulPose(Axis.YP.rotationDegrees(time * 4.5f));
-            poseStack.mulPose(Axis.ZP.rotationDegrees(time * 2.1f));
-        }
-        poseStack.translate(-0.5, -0.5, -0.5);
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(), coreModel, state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.translucent()
-        );
-        poseStack.popPose();
+        RotatingModelHelper.renderWithXYZRotation(blockRenderer, coreModel,
+            blockEntity.getLevel(), state, blockEntity.getBlockPos(),
+            poseStack, vertexConsumer, random, packedLight, packedOverlay,
+            RenderType.translucent(), xRot1, yRot1, zRot1, scale);
 
         // Core 2: phase decalee
-        poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
-        poseStack.scale(scale, scale, scale);
-        if (shouldRotate) {
-            poseStack.mulPose(Axis.XP.rotationDegrees(time * 3.0f + 90));
-            poseStack.mulPose(Axis.YP.rotationDegrees(time * 4.5f + 60));
-            poseStack.mulPose(Axis.ZP.rotationDegrees(time * 2.1f + 45));
-        }
-        poseStack.translate(-0.5, -0.5, -0.5);
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(), coreModel, state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, false, random,
-            packedLight, packedOverlay, ModelData.EMPTY, RenderType.translucent()
-        );
-        poseStack.popPose();
+        RotatingModelHelper.renderWithXYZRotation(blockRenderer, coreModel,
+            blockEntity.getLevel(), state, blockEntity.getBlockPos(),
+            poseStack, vertexConsumer, random, packedLight, packedOverlay,
+            RenderType.translucent(),
+            xRot1 + 90, yRot1 + 60, zRot1 + 45, scale);
     }
 }

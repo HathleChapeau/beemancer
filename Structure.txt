@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-08                     #
-#  (Altar Animation Refonte - 2026-02-08)                                       #
+#                         Dernière mise à jour: 2026-02-09                     #
+#  (Hive Deduplication - 2026-02-09)                                            #
 ################################################################################
 
 ================================================================================
@@ -75,17 +75,28 @@ Philosophie:
 │ client/renderer/debug/HiveDebugRenderer│ Cooldowns au-dessus des ruches      │
 │ client/renderer/util/FluidCubeRenderer │ Rendu fluide avec sélection faces  │
 │ client/renderer/util/DebugRenderHelper │ Lignes et cubes debug partagés     │
+│ client/renderer/util/RenderHelper      │ Push/pop, facing rotation partagés │
+│ client/renderer/util/FloatingItemHelper│ Rendu item flottant anime          │
+│ client/renderer/util/RotatingModelHelper│ Rendu modele rotatif partagé      │
+│ client/gui/screen/AbstractBeemancerScreen│ Base commune pour tous les screens│
 │ common/block/alchemy/AbstractPipeBlock │ Base commune pipes (Item+Honey)    │
 │ common/menu/BeemancerMenu              │ Base menus (player inv/hotbar)     │
 │ common/entity/bee/goal/MoveToTargetGoal│ Goal navigation bee via BeeWand    │
 │ common/blockentity/storage/           │                                        │
 │   StorageChestManager               │ Gestion coffres réseau stockage      │
 │   StorageItemAggregator             │ Agrégation/dépôt/extraction items    │
-│   StorageDeliveryManager            │ Queue livraison + spawn/recall bees  │
+│   StorageDeliveryManager            │ Orchestrateur queues/tick/cancel/NBT │
+│   DeliveryNetworkPathfinder         │ BFS pathfinding graphe reseau        │
+│   DeliveryContainerOps              │ Recherche/extraction/depot coffres   │
+│   DeliveryTaskDisplayBuilder        │ Construction donnees affichage Tasks │
+│   DeliveryBeeSpawner                │ Spawn, recall, redirect, kill bees   │
 │   RequestManager                    │ Demandes terminaux (joueur)          │
 │   StorageMultiblockManager          │ Formation/destruction multibloc      │
 │ common/block/hive/                    │                                        │
-│   HiveBeeLifecycleManager           │ Cycle de vie abeilles dans ruche     │
+│   IHiveBeeHost                      │ Interface publique abeille-ruche     │
+│   IHiveInternals                    │ Interface interne lifecycle manager  │
+│   HiveConfig                        │ Parametres par type de ruche         │
+│   HiveBeeLifecycleManager           │ Cycle de vie abeilles (generique)   │
 │ client/gui/GuiRenderHelper.java      │ Rendu programmatique GUIs partagé    │
 │ core/util/ParticleHelper.java        │ Utilitaire statique spawn particules │
 │ core/multiblock/MultiblockProperty.java│ Enum + factory blockstate property │
@@ -349,6 +360,10 @@ LISTE DES FEATURES:
   Scripts modifies: AnimationController.java (+replaceAnimation), AltarCraftAnimator.java (refonte complete), AltarHeartRenderer.java (refonte)
   Dependances: AnimationController, RotateAnimation, MoveAnimation, Sequence, SequenceEntry, TimingType, TimingEffect
   Registres modifies: aucun
+
+→ Codebase Refactoring (Phases 1-5 + Hive Dedup)
+  Fichier: Structure/feature_codebase_refactoring.txt
+  Description: Refactoring massif en 6 phases: imports, menus, renderers, decomposition fichiers massifs, screens, hive deduplication
 
 ================================================================================
 6. FEATURES EN COURS

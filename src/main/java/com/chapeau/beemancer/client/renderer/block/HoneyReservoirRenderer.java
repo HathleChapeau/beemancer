@@ -24,6 +24,7 @@ package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.renderer.util.FluidCubeRenderer;
+import com.chapeau.beemancer.client.renderer.util.RenderHelper;
 import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
@@ -40,11 +41,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 /**
@@ -94,12 +91,7 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         }
 
         float fillRatio = (float) blockEntity.getFluidAmount() / HoneyReservoirBlockEntity.CAPACITY;
-        Fluid fluid = fluidStack.getFluid();
-        IClientFluidTypeExtensions fluidExtensions = IClientFluidTypeExtensions.of(fluid);
-        ResourceLocation stillTexture = fluidExtensions.getStillTexture();
-        TextureAtlasSprite sprite = Minecraft.getInstance()
-            .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-            .apply(stillTexture);
+        TextureAtlasSprite sprite = RenderHelper.getFluidSprite(fluidStack.getFluid());
 
         poseStack.pushPose();
 
@@ -133,20 +125,9 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         poseStack.pushPose();
         poseStack.translate(spreadX, 0, spreadZ);
 
-        blockRenderer.getModelRenderer().tesselateBlock(
-            blockEntity.getLevel(),
-            formedModel,
-            state,
-            blockEntity.getBlockPos(),
-            poseStack,
-            vertexConsumer,
-            false,
-            random,
-            packedLight,
-            packedOverlay,
-            ModelData.EMPTY,
-            RenderType.solid()
-        );
+        RenderHelper.tesselateModel(blockRenderer, formedModel, blockEntity.getLevel(),
+            state, blockEntity.getBlockPos(), poseStack, vertexConsumer, random,
+            packedLight, packedOverlay, RenderType.solid());
 
         poseStack.popPose();
     }

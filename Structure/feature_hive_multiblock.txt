@@ -38,10 +38,10 @@ common/block/hive/HiveMultiblockBlock.java
   - onRemove(): notifie multibloc de destruction
 
 common/block/hive/HiveMultiblockBlockEntity.java
-  - Implémente MultiblockController
-  - Logique identique à MagicHiveBlockEntity
+  - Implements MultiblockController, IHiveBeeHost, IHiveInternals
+  - Delegue le cycle de vie abeilles a HiveBeeLifecycleManager (partage avec MagicHive)
   - 5 slots abeilles, 7 slots output
-  - Breeding, flower management, bee release/entry
+  - Flower management, container, NBT, multiblock formation/destruction
   - formMultiblock(): forme la structure
   - onBroken(): drop items, notifie autres blocs
 
@@ -122,42 +122,52 @@ UTILISATION
 5. Casser un bloc → tous les items drop, multibloc se déforme
 
 ================================================================================
-COMPORTEMENT IDENTIQUE À MAGIC HIVE
+DELEGATION AU LIFECYCLE MANAGER (PARTAGE AVEC MAGIC HIVE)
 ================================================================================
 
-- 5 slots abeilles
-- 7 slots output
-- Breeding avec Breeding Crystal (au dessus de la structure, Y+4)
-- Gestion des fleurs par abeille
-- Release/Entry automatique des abeilles
-- Régénération de santé dans la ruche
-- Dépôt de loot pollination
+Le multiblock delegue TOUT le cycle de vie abeilles a HiveBeeLifecycleManager:
+- releaseBee, canBeeEnter, addBee, onBeeKilled, handleBeePing
+- insertIntoOutputSlots, tickBeeSlot, checkReturningBees, verifyOutsideBees
+- tryAutoBreeding (15% chance a l'entree, TOUJOURS actif)
+
+Semantique Multiblock (INVERSEE par rapport a MagicHive):
+- shouldReleaseBee(slot) = !breedingMode (crystal au-dessus = bees RESTENT DEDANS)
+- shouldBreedOnEntry() = true (TOUJOURS tenter le breeding)
+
+Le lifecycle manager utilise HiveConfig.MULTIBLOCK:
+- spawnHeightOffset = 4 (bee spawn au-dessus de la structure 3x3x3 + slabs)
+- searchInflate = (4, 5, 4) (zone de detection bees retour, plus large)
+- entryDistance = 3.0 (distance pour entrer dans la ruche, plus permissif)
+
+Securite UUID (identique a MagicHive):
+- canBeeEnter verifie UUID du bee vs UUID du slot
+- verifyOutsideBees toutes les 40 ticks (outsideVerifyTimer)
+- handleBeePing avec adoption si slot INSIDE
 
 ================================================================================
-IMPLÉMENTATION TECHNIQUE
+IMPLEMENTATION TECHNIQUE
 ================================================================================
 
 Le controller est le HiveMultiblockBlockEntity au centre de la couche du bas.
-Les autres blocs de la structure sont passifs (pas de BlockEntity lié).
+Les autres blocs de la structure sont passifs (pas de BlockEntity lie).
 
 STRUCTURE DU PATTERN:
-- Offsets Y+0 à Y+2 = blocs de ruche (27 blocs - 1 controller = 26 blocs passifs)
+- Offsets Y+0 a Y+2 = blocs de ruche (27 blocs - 1 controller = 26 blocs passifs)
 - Offsets Y+3 = slabs (9 blocs passifs, pas de BlockEntity)
 
 GESTION SLOTS:
-- Pattern vérifie uniquement la présence des blocs
-- La formation ne touche que les blocs hive (slabs ignorés car pas de BlockEntity)
-- Lors de destruction, seuls les blocs hive sont notifiés
+- Pattern verifie uniquement la presence des blocs
+- La formation ne touche que les blocs hive (slabs ignores car pas de BlockEntity)
+- Lors de destruction, seuls les blocs hive sont notifies
 
 PERSISTANCE NBT:
-- beeSlots, outputItems, lastUsedOutputSlot
-- flowerPool, breedingCooldown
-- Toutes les données sont conservées au reload du monde
+- beeSlots, outputItems, breedingCooldown
+- Toutes les donnees sont conservees au reload du monde
 
 SYNCHRONISATION CLIENT:
 - getUpdatePacket() pour sync lors de changements
-- handleUpdateTag() pour réception des données
-- setChanged() + sendBlockUpdated() après modifications
+- handleUpdateTag() pour reception des donnees
+- setChanged() apres modifications
 
 ================================================================================
 BUG FIXES APPLIQUÉS (2026-01-25)

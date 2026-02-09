@@ -1,3 +1,21 @@
+/**
+ * ============================================================
+ * [NocturnalEnvironmentGene.java]
+ * Description: Gene environnement nocturne (travaille la nuit)
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | EnvironmentGene     | Classe de base       | Extension gene environnement   |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - GeneInit.java (enregistrement dans GeneRegistry)
+ *
+ * ============================================================
+ */
 package com.chapeau.beemancer.content.gene.environment;
 
 import net.minecraft.world.entity.animal.Bee;

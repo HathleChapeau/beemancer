@@ -22,6 +22,7 @@ package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.renderer.util.FluidCubeRenderer;
+import com.chapeau.beemancer.client.renderer.util.RenderHelper;
 import com.chapeau.beemancer.common.blockentity.alchemy.MultiblockTankBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -35,9 +36,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.level.material.Fluid;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
@@ -157,12 +155,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
         float fillRatio = (float) tank.getFluidAmount() / tank.getCapacity() / (float) (Math.pow(cubeSize, 3));
         if (fillRatio <= 0f) return;
 
-        Fluid fluid = fluidStack.getFluid();
-        IClientFluidTypeExtensions fluidExtensions = IClientFluidTypeExtensions.of(fluid);
-        ResourceLocation stillTexture = fluidExtensions.getStillTexture();
-        TextureAtlasSprite sprite = Minecraft.getInstance()
-            .getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
-            .apply(stillTexture);
+        TextureAtlasSprite sprite = RenderHelper.getFluidSprite(fluidStack.getFluid());
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
 

@@ -4,36 +4,35 @@
  * Description: Renderer pour l'item flottant au centre de l'Infuser
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance                | Raison                | Utilisation                    |
- * |---------------------------|----------------------|--------------------------------|
- * | InfuserBlockEntity        | Données item         | getInputSlot(), getOutputSlot()|
+ * | Dependance              | Raison                | Utilisation                    |
+ * |-------------------------|----------------------|--------------------------------|
+ * | InfuserBlockEntity      | Donnees item         | getInputSlot(), getOutputSlot()|
+ * | FloatingItemHelper      | Rendu item flottant  | renderFloatingItem()           |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - ClientSetup.java (enregistrement renderer)
  *
  * ============================================================
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.client.renderer.util.FloatingItemHelper;
 import com.chapeau.beemancer.common.blockentity.alchemy.InfuserBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * Renderer pour l'Infuser.
  * Affiche l'item au centre du bloc avec bobbing et rotation.
- * Priorité: input slot, sinon output slot (craft terminé).
- * Les particules sont gérées côté serveur via ParticleHelper dans InfuserBlockEntity.serverTick().
+ * Priorite: input slot, sinon output slot (craft termine).
  */
 public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> {
 
@@ -55,26 +54,8 @@ public class InfuserRenderer implements BlockEntityRenderer<InfuserBlockEntity> 
         }
         if (displayItem.isEmpty()) return;
 
-        poseStack.pushPose();
-
-        float time = blockEntity.getLevel().getGameTime() + partialTick;
-        float bob = (float) Math.sin(time * 0.1) * 0.03f;
-
-        poseStack.translate(0.5, 0.5 + bob, 0.5);
-        poseStack.mulPose(Axis.YP.rotationDegrees(time * 1.5f));
-        poseStack.scale(0.4f, 0.4f, 0.4f);
-
-        itemRenderer.renderStatic(
-            displayItem,
-            ItemDisplayContext.FIXED,
-            packedLight,
-            packedOverlay,
-            poseStack,
-            buffer,
-            blockEntity.getLevel(),
-            0
-        );
-
-        poseStack.popPose();
+        FloatingItemHelper.renderFloatingItem(itemRenderer, displayItem, blockEntity.getLevel(),
+            partialTick, poseStack, buffer, packedLight, packedOverlay,
+            0.5, 0.5, 0.5, 0.4f, 0.03f, 1.5f);
     }
 }
