@@ -127,8 +127,12 @@ public class HoverbikePartScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+
+        // Widgets (boutons vanilla) rendus par super
+        super.render(graphics, mouseX, mouseY, partialTick);
+
         // Fond assombri avec blur vanilla
-        renderBackground(graphics, mouseX, mouseY, partialTick);
+        //renderBackground(graphics, mouseX, mouseY, partialTick);
 
         // Panneau container vanilla (fond gris + bordures 3D)
         GuiRenderHelper.renderContainerBackgroundNoTitle(graphics, panelX, panelY, PANEL_WIDTH, PANEL_HEIGHT);
@@ -145,8 +149,6 @@ public class HoverbikePartScreen extends Screen {
         // Rendu du modele 3D
         renderPartModel(graphics, partialTick);
 
-        // Widgets (boutons vanilla) rendus par super
-        super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     /**
@@ -233,8 +235,8 @@ public class HoverbikePartScreen extends Screen {
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (button == 0 && dragging) {
-            rotationY += (float) dragX * 0.8f;
-            rotationX -= (float) dragY * 0.8f;
+            rotationY -= (float) dragX * 0.8f;
+            rotationX += (float) dragY * 0.8f;
             rotationX = Math.max(-90f, Math.min(90f, rotationX));
             return true;
         }

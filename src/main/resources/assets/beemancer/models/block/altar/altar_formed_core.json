@@ -2,8 +2,10 @@
   "parent": "minecraft:block/cube_all",
   "render_type": "cutout",
   "textures": {
-    "cube": "beemancer:block/iron",
-    "frame": "beemancer:block/altar/altar_heart_frame",
+    "cube2": "minecraft:block/yellow_concrete_powder",
+    "cube": "beemancer:block/altar/altar_heart_center",
+    "frame": "beemancer:block/altar/altar_heart_frame_2",
+    "frame2": "beemancer:block/altar/altar_heart_1",
     "particle": "beemancer:block/iron"
   },
   "elements": [
@@ -35,12 +37,12 @@
       "from": [2.5, 2.5, 2.5],
       "to": [13.5, 13.5, 13.5],
       "faces": {
-        "north": {"texture": "#frame"},
-        "east": {"texture": "#frame"},
-        "south": {"texture": "#frame"},
-        "west": {"texture": "#frame"},
-        "up": {"texture": "#frame"},
-        "down": {"texture": "#frame"}
+        "north": {"texture": "#frame2", "uv":  [0,0,16,16]},
+        "east": {"texture": "#frame2", "uv":  [0,0,16,16]},
+        "south": {"texture": "#frame2", "uv":  [0,0,16,16]},
+        "west": {"texture": "#frame2", "uv":  [0,0,16,16]},
+        "up": {"texture": "#frame2", "uv":  [0,0,16,16]},
+        "down": {"texture": "#frame2", "uv":  [0,0,16,16]}
       }
     }
   ]
