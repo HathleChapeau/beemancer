@@ -10,6 +10,7 @@ import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.camera.HoverbikeCameraController;
 import com.chapeau.beemancer.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.beemancer.client.gui.hud.HoverbikeDebugHud;
+import com.chapeau.beemancer.client.gui.hud.HoverbikeGaugeHud;
 import com.chapeau.beemancer.client.model.HoverbikeModel;
 import com.chapeau.beemancer.client.renderer.entity.HoverbikeRenderer;
 import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
@@ -103,6 +104,7 @@ public class ClientSetup {
 
         // Hoverbike system
         NeoForge.EVENT_BUS.register(HoverbikeDebugHud.class);
+        NeoForge.EVENT_BUS.register(HoverbikeGaugeHud.class);
         NeoForge.EVENT_BUS.register(HoverbikeCameraController.class);
 
         // Overlay quand on ouvre un GUI adjacent depuis le bouton Debug de l'interface

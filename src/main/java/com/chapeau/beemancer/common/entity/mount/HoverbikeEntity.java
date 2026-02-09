@@ -59,6 +59,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private HoverbikeMode mode = HoverbikeMode.HOVER;
     private Vec3 rideVelocity = Vec3.ZERO;
     private boolean sprintPressed = false;
+    private boolean jumpPressed = false;
+    private float gaugeLevel = 1.0f;
 
     // --- Constructor ---
 
@@ -73,7 +75,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 40.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.0)
-                .add(Attributes.FOLLOW_RANGE, 0.0);
+                .add(Attributes.FOLLOW_RANGE, 0.0)
+                .add(Attributes.STEP_HEIGHT, 1.3);
     }
 
     // --- Gravity Override (Pattern Cobblemon PokemonEntity.kt L2494-2502) ---
@@ -118,6 +121,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             mode = HoverbikeMode.HOVER;
             rideVelocity = Vec3.ZERO;
             sprintPressed = false;
+            jumpPressed = false;
+            gaugeLevel = 1.0f;
         }
     }
 
@@ -150,10 +155,16 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         // Lire input
         float forward = Math.signum(driver.zza);
 
-        // Lire sprint key directement (pattern Cobblemon HorseBehaviour.kt L144)
+        // Lire sprint/jump key directement (pattern Cobblemon HorseBehaviour.kt L144)
         // driver.isSprinting() ne fonctionne pas quand le joueur monte une entite
         if (this.level().isClientSide) {
             this.sprintPressed = isSprintKeyDown();
+            this.jumpPressed = isJumpKeyDown();
+        }
+
+        // Jauge d'envol : se remplit quand on n'appuie pas sur saut
+        if (!jumpPressed) {
+            gaugeLevel = Math.min(1.0f, gaugeLevel + (float) settings.gaugeFillRate());
         }
 
         // Calculer et appliquer la rotation
@@ -189,6 +200,13 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     }
 
     /**
+     * Lecture du jump key cote client.
+     */
+    private static boolean isJumpKeyDown() {
+        return Minecraft.getInstance().options.keyJump.isDown();
+    }
+
+    /**
      * Calcule et applique le mouvement.
      * Pattern Cobblemon: PokemonEntity.travel() L1815-1875
      */
@@ -213,6 +231,12 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             rideVelocity = HoverbikePhysics.calculateHoverVelocity(
                     forward, strafe, rideVelocity, this.onGround(), settings
             );
+        }
+
+        // Envol : en hover, maintenir saut = montee douce qui consomme la jauge
+        if (mode == HoverbikeMode.HOVER && jumpPressed && gaugeLevel > 0) {
+            rideVelocity = new Vec3(rideVelocity.x, settings.liftSpeed(), rideVelocity.z);
+            gaugeLevel = Math.max(0, gaugeLevel - (float) settings.gaugeDrainRate());
         }
 
         // Convertir local -> world
@@ -296,5 +320,13 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     public HoverbikeSettings getSettings() {
         return settings;
+    }
+
+    public float getGaugeLevel() {
+        return gaugeLevel;
+    }
+
+    public boolean isJumpPressed() {
+        return jumpPressed;
     }
 }

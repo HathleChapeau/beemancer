@@ -43,7 +43,12 @@ public record HoverbikeSettings(
 
         // --- Rotation (degres/tick) ---
         double rotationSpeedMax,
-        double rotationSpeedMin
+        double rotationSpeedMin,
+
+        // --- Jauge d'envol ---
+        double gaugeFillRate,
+        double gaugeDrainRate,
+        double liftSpeed
 ) {
 
     /**
@@ -70,7 +75,12 @@ public record HoverbikeSettings(
 
                 // Rotation
                 6.0,     // rotationSpeedMax (deg/tick a basse vitesse / hover)
-                1.5      // rotationSpeedMin (deg/tick a vitesse max run)
+                1.5,     // rotationSpeedMin (deg/tick a vitesse max run)
+
+                // Jauge d'envol
+                0.01,    // gaugeFillRate (100 ticks = 5 sec pour remplir)
+                0.0125,  // gaugeDrainRate (80 ticks = 4 sec de vol)
+                0.06     // liftSpeed (montee douce, > gravity 0.025)
         );
     }
 }
