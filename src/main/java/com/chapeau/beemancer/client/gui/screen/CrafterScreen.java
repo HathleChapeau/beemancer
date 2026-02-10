@@ -199,8 +199,18 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
         boolean hovered = isMouseOver(mouseX, mouseY, bx, by, INSCRIBE_BTN_W, INSCRIBE_BTN_H);
 
         if (canInscribe) {
-            GuiRenderHelper.renderButton(g, font, bx, by,
-                    INSCRIBE_BTN_W, INSCRIBE_BTN_H, "Inscribe", hovered);
+            // Gold/honey button when enabled
+            int bg = hovered ? 0xFFE8C840 : 0xFFD4A017;
+            g.fill(bx, by, bx + INSCRIBE_BTN_W, by + INSCRIBE_BTN_H, bg);
+            g.fill(bx, by, bx + INSCRIBE_BTN_W, by + 1, 0xFFF0D860);
+            g.fill(bx, by, bx + 1, by + INSCRIBE_BTN_H, 0xFFF0D860);
+            g.fill(bx, by + INSCRIBE_BTN_H - 1, bx + INSCRIBE_BTN_W,
+                    by + INSCRIBE_BTN_H, 0xFF8B6914);
+            g.fill(bx + INSCRIBE_BTN_W - 1, by, bx + INSCRIBE_BTN_W,
+                    by + INSCRIBE_BTN_H, 0xFF8B6914);
+            int tw = font.width("Inscribe");
+            g.drawString(font, "Inscribe", bx + (tw > INSCRIBE_BTN_W ? 0 : (INSCRIBE_BTN_W - tw) / 2),
+                    by + (INSCRIBE_BTN_H - 8) / 2, 0xFF3A2000, false);
         } else {
             g.fill(bx, by, bx + INSCRIBE_BTN_W, by + INSCRIBE_BTN_H, 0xFFA0A0A0);
             g.fill(bx, by, bx + INSCRIBE_BTN_W, by + 1, 0xFFBBBBBB);
@@ -243,7 +253,10 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
     private boolean canInscribe() {
         boolean isCraftMode = menu.getMode() == 0;
         if (isCraftMode) {
-            if (!menu.hasBlankPaper()) return false;
+            // Check reserve slot directly (vanilla slot sync, no ContainerData delay)
+            ItemStack reserve = menu.getSlot(CrafterMenu.SLOT_RESERVE).getItem();
+            if (reserve.isEmpty()) return false;
+            // Need at least one ghost item
             for (int i = 0; i < CrafterBlockEntity.GHOST_GRID_SIZE; i++) {
                 if (!menu.getGhostSlots()[i].getItem().isEmpty()) return true;
             }
