@@ -65,6 +65,9 @@ public class HoneyCrystalConduitBlock extends Block {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
+        if (state.getValue(MULTIBLOCK) == MultiblockProperty.ALTAR) {
+            return RenderShape.INVISIBLE;
+        }
         return RenderShape.MODEL;
     }
 }
