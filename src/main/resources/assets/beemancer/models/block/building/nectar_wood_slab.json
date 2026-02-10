@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/slab",
-  "textures": {
-    "bottom": "beemancer:block/building/nectar_planks",
-    "top": "beemancer:block/building/nectar_planks",
-    "side": "beemancer:block/building/nectar_planks"
-  }
-}

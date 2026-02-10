@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/door_bottom_left",
-  "textures": {
-    "bottom": "beemancer:block/building/nectar_planks",
-    "top": "beemancer:block/building/nectar_planks"
-  }
-}

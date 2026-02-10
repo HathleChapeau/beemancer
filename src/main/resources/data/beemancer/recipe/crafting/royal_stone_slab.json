@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "building",
-  "key": { "#": { "item": "beemancer:royal_stone" } },
-  "pattern": [ "###" ],
-  "result": { "id": "beemancer:royal_stone_slab", "count": 6 }
-}
