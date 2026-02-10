@@ -325,13 +325,30 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             this.setDeltaMovement(movement);
         }
 
-        // Appliquer le mouvement
-        this.move(MoverType.SELF, this.getDeltaMovement());
+        // Sauvegarder la velocite pre-collision pour calcul du ratio
+        Vec3 preMoveVelocity = this.getDeltaMovement();
 
-        // Feedback collision : si on percute un mur, synchroniser rideVelocity
-        // avec le mouvement reel pour eviter de rester colle au mur
+        // Appliquer le mouvement
+        this.move(MoverType.SELF, preMoveVelocity);
+
+        // Feedback collision : ratio-based scaling
+        // On ne reconvertit PAS en local via worldToLocal car le clipping axis-aligned
+        // de Entity.move() redistribue incorrectement entre forward/strafe selon le yaw.
+        // A la place, on scale uniformement la velocite locale par le ratio de vitesse
+        // horizontale pre/post collision. Cela preserve la direction locale tout en
+        // reduisant la magnitude correctement (pattern Boat-like wall sliding).
         if (this.horizontalCollision) {
-            rideVelocity = HoverbikePhysics.worldToLocal(this.getDeltaMovement(), this.getYRot());
+            Vec3 postMoveVelocity = this.getDeltaMovement();
+            double preSpeed = preMoveVelocity.horizontalDistance();
+            double postSpeed = postMoveVelocity.horizontalDistance();
+            if (preSpeed > 0.001) {
+                double ratio = postSpeed / preSpeed;
+                rideVelocity = new Vec3(
+                        rideVelocity.x * ratio,
+                        postMoveVelocity.y,
+                        rideVelocity.z * ratio
+                );
+            }
         }
     }
 
