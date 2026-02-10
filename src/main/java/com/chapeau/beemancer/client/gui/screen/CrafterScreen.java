@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [CrafterScreen.java]
- * Description: GUI du Crafter - mode CRAFT (ghost 3x3) et mode MACHINE (inputs dynamiques)
+ * Description: GUI du Crafter - mode CRAFT (ghost 3x3) et mode MACHINE (overlay dynamique)
  * ============================================================
  *
  * DEPENDANCES:
@@ -43,62 +43,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Screen du Crafter avec deux modes:
+ * Screen du Crafter avec deux modes superposes (meme zone):
  * - CRAFT: grille 3x3 ghost + preview resultat crafting
  * - MACHINE: inputs dynamiques scrollables + output via CrafterMachinePanel
- * Commun: reserve slot, output slots, library, boutons toggle/inscribe.
+ * Header: toggle top-left, paper slot, output slots.
+ * Library: 9 slots de large, scrollable.
+ * Pas de titre.
  */
 public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
 
     private static final int BG_WIDTH = 176;
-    private static final int BG_HEIGHT = 266;
+    private static final int BG_HEIGHT = 220;
 
-    // Ghost grid 3x3
-    private static final int GHOST_X = 26;
-    private static final int GHOST_Y = 18;
-
-    // Preview result position (right of grid)
-    private static final int PREVIEW_X = 116;
-    private static final int PREVIEW_Y = 36;
-
-    // Arrow between grid and preview
-    private static final int ARROW_X = 82;
-    private static final int ARROW_Y = 36;
-
-    // Reserve slot
-    private static final int RESERVE_X = 14;
-    private static final int RESERVE_Y = 108;
-
-    // Output slots
-    private static final int OUTPUT_A_X = 68;
-    private static final int OUTPUT_A_Y = 108;
-    private static final int OUTPUT_B_X = 90;
-    private static final int OUTPUT_B_Y = 108;
-
-    // Buttons
-    private static final int MODE_BTN_X = 116;
-    private static final int MODE_BTN_Y = 60;
+    // Header row
+    private static final int MODE_BTN_X = 8;
+    private static final int MODE_BTN_Y = 5;
     private static final int MODE_BTN_W = 50;
     private static final int MODE_BTN_H = 14;
 
-    private static final int INSCRIBE_BTN_X = 116;
-    private static final int INSCRIBE_BTN_Y = 108;
+    // Mode content area (overlay: craft OR machine, same zone)
+    private static final int GHOST_X = CrafterMenu.GHOST_X;
+    private static final int GHOST_Y = CrafterMenu.GHOST_Y;
+    private static final int PREVIEW_X = 116;
+    private static final int PREVIEW_Y = 44;
+    private static final int ARROW_X = 82;
+    private static final int ARROW_Y = 44;
+
+    // Inscribe button (below content area)
+    private static final int INSCRIBE_BTN_X = 28;
+    private static final int INSCRIBE_BTN_Y = 84;
     private static final int INSCRIBE_BTN_W = 50;
     private static final int INSCRIBE_BTN_H = 14;
 
-    // Library 4x2
-    private static final int LIBRARY_X = 8;
-    private static final int LIBRARY_Y = 140;
+    // Library (9 wide, 1 visible row, scrollable)
+    private static final int LIBRARY_X = CrafterMenu.LIBRARY_X;
+    private static final int LIBRARY_Y = CrafterMenu.LIBRARY_Y;
+
+    // Library scroll buttons
+    private static final int LIB_SCROLL_UP_X = 8;
+    private static final int LIB_SCROLL_UP_Y = 100;
+    private static final int LIB_SCROLL_DN_X = 20;
+    private static final int LIB_SCROLL_DN_Y = 100;
+    private static final int LIB_SCROLL_W = 10;
+    private static final int LIB_SCROLL_H = 9;
 
     // Player inventory
-    private static final int PLAYER_INV_Y = 184;
-    private static final int HOTBAR_Y = 242;
-
-    // Separator
-    private static final int SEPARATOR_Y = 175;
+    private static final int PLAYER_INV_Y = CrafterMenu.PLAYER_INV_Y;
+    private static final int HOTBAR_Y = CrafterMenu.HOTBAR_Y;
+    private static final int SEPARATOR_Y = 130;
 
     // Machine mode panel (composition)
     private final CrafterMachinePanel machinePanel = new CrafterMachinePanel();
+    private int lastRenderedMode = -1;
 
     public CrafterScreen(CrafterMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -112,51 +108,75 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
-
         boolean isCraftMode = menu.getMode() == 0;
-        String titleKey = "container.beemancer.crafter";
-        GuiRenderHelper.renderContainerBackground(g, font, x, y, BG_WIDTH, BG_HEIGHT,
-                titleKey, SEPARATOR_Y);
 
-        if (isCraftMode) {
-            // Ghost grid 3x3
-            GuiRenderHelper.renderSlotGrid(g, x + GHOST_X, y + GHOST_Y, 3, 3);
-            // Preview result slot + arrow
-            GuiRenderHelper.renderSlot(g, x + PREVIEW_X, y + PREVIEW_Y);
-            GuiRenderHelper.renderProgressArrow(g, x + ARROW_X, y + ARROW_Y, 0f);
-        } else {
-            // Machine mode panel
-            machinePanel.render(g, font, x, y, mouseX, mouseY);
+        // Update slot visibility on mode change
+        if (lastRenderedMode != menu.getMode()) {
+            lastRenderedMode = menu.getMode();
+            menu.updateGhostSlotVisibility();
+            menu.updateOutputVisibility();
         }
 
-        // Reserve slot (blank paper)
-        GuiRenderHelper.renderSlot(g, x + RESERVE_X, y + RESERVE_Y);
-        g.drawString(font, "Paper", x + RESERVE_X, y + RESERVE_Y - 9, 0x606060, false);
+        // Background (no title)
+        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, BG_WIDTH, BG_HEIGHT);
 
-        // Output slots A and B
-        GuiRenderHelper.renderSlot(g, x + OUTPUT_A_X, y + OUTPUT_A_Y);
-        GuiRenderHelper.renderSlot(g, x + OUTPUT_B_X, y + OUTPUT_B_Y);
-        g.drawString(font, "Output", x + OUTPUT_A_X, y + OUTPUT_A_Y - 9, 0x606060, false);
+        // Separator above player inventory
+        g.fill(x + 4, y + SEPARATOR_Y, x + BG_WIDTH - 4, y + SEPARATOR_Y + 1, 0xFF7B7B7B);
 
-        // Mode toggle button
+        // === Header: toggle, paper, outputs ===
         String modeLabel = isCraftMode ? "CRAFT" : "MACHINE";
         boolean modeHovered = isMouseOver(mouseX, mouseY,
                 x + MODE_BTN_X, y + MODE_BTN_Y, MODE_BTN_W, MODE_BTN_H);
         GuiRenderHelper.renderButton(g, font, x + MODE_BTN_X, y + MODE_BTN_Y,
                 MODE_BTN_W, MODE_BTN_H, modeLabel, modeHovered);
 
-        // Inscribe button
-        boolean canInscribe = canInscribe();
-        renderInscribeButton(g, x, y, mouseX, mouseY, canInscribe);
+        // Reserve slot (paper, right of toggle)
+        GuiRenderHelper.renderSlot(g, x + CrafterMenu.RESERVE_X - 1, y + CrafterMenu.RESERVE_Y - 1);
 
-        // Library slots 4x2
-        GuiRenderHelper.renderSlotGrid(g, x + LIBRARY_X, y + LIBRARY_Y, 4, 2);
-        g.drawString(font, "Library", x + LIBRARY_X, y + LIBRARY_Y - 9, 0x606060, false);
+        // Output A
+        GuiRenderHelper.renderSlot(g, x + CrafterMenu.OUTPUT_A_X - 1, y + CrafterMenu.OUTPUT_A_Y - 1);
+        // Output B (machine mode only)
+        if (!isCraftMode) {
+            GuiRenderHelper.renderSlot(g, x + CrafterMenu.OUTPUT_B_X - 1, y + CrafterMenu.OUTPUT_B_Y - 1);
+        }
 
-        // Player inventory slots
+        // === Mode content area (overlay) ===
+        if (isCraftMode) {
+            GuiRenderHelper.renderSlotGrid(g, x + GHOST_X - 1, y + GHOST_Y - 1, 3, 3);
+            GuiRenderHelper.renderSlot(g, x + PREVIEW_X, y + PREVIEW_Y);
+            GuiRenderHelper.renderProgressArrow(g, x + ARROW_X, y + ARROW_Y, 0f);
+        } else {
+            machinePanel.render(g, font, x, y, mouseX, mouseY);
+        }
+
+        // === Inscribe button ===
+        renderInscribeButton(g, x, y, mouseX, mouseY, canInscribe());
+
+        // === Library (9 wide, scrollable) ===
+        g.drawString(font, "Library", x + LIBRARY_X + 34, y + LIBRARY_Y - 9, 0x606060, false);
+        GuiRenderHelper.renderSlotGrid(g, x + LIBRARY_X - 1, y + LIBRARY_Y - 1, 9, 1);
+
+        // Scroll indicators
+        int scrollRow = menu.getLibraryScrollRow();
+        if (scrollRow > 0) {
+            boolean hov = isMouseOver(mouseX, mouseY, x + LIB_SCROLL_UP_X, y + LIB_SCROLL_UP_Y, LIB_SCROLL_W, LIB_SCROLL_H);
+            GuiRenderHelper.renderButton(g, font, x + LIB_SCROLL_UP_X, y + LIB_SCROLL_UP_Y,
+                    LIB_SCROLL_W, LIB_SCROLL_H, "\u25B2", hov);
+        }
+        if (scrollRow < CrafterMenu.LIBRARY_ROWS - 1) {
+            boolean hov = isMouseOver(mouseX, mouseY, x + LIB_SCROLL_DN_X, y + LIB_SCROLL_DN_Y, LIB_SCROLL_W, LIB_SCROLL_H);
+            GuiRenderHelper.renderButton(g, font, x + LIB_SCROLL_DN_X, y + LIB_SCROLL_DN_Y,
+                    LIB_SCROLL_W, LIB_SCROLL_H, "\u25BC", hov);
+        }
+
+        // Row indicator
+        g.drawString(font, (scrollRow + 1) + "/" + CrafterMenu.LIBRARY_ROWS,
+                x + LIBRARY_X, y + LIBRARY_Y - 9, 0x909090, false);
+
+        // === Player inventory ===
         GuiRenderHelper.renderPlayerInventory(g, x, y, PLAYER_INV_Y - 1, HOTBAR_Y - 1);
 
-        // Render ghost preview result
+        // Craft preview (ghost result)
         if (isCraftMode) {
             renderCraftPreview(g, x, y);
         }
@@ -172,7 +192,6 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
             GuiRenderHelper.renderButton(g, font, bx, by,
                     INSCRIBE_BTN_W, INSCRIBE_BTN_H, "Inscribe", hovered);
         } else {
-            // Grayed out button
             g.fill(bx, by, bx + INSCRIBE_BTN_W, by + INSCRIBE_BTN_H, 0xFFA0A0A0);
             g.fill(bx, by, bx + INSCRIBE_BTN_W, by + 1, 0xFFBBBBBB);
             g.fill(bx, by, bx + 1, by + INSCRIBE_BTN_H, 0xFFBBBBBB);
@@ -184,9 +203,6 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
         }
     }
 
-    /**
-     * Renders the craft result preview in the preview slot (ghost, non-interactive).
-     */
     private void renderCraftPreview(GuiGraphics g, int x, int y) {
         if (minecraft == null || minecraft.level == null) return;
 
@@ -208,11 +224,8 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
                 .assemble(craftInput, minecraft.level.registryAccess());
         if (result.isEmpty()) return;
 
-        // Render ghost result (semi-transparent)
-        g.pose().pushPose();
         g.renderItem(result, x + PREVIEW_X + 1, y + PREVIEW_Y + 1);
         g.renderItemDecorations(font, result, x + PREVIEW_X + 1, y + PREVIEW_Y + 1);
-        g.pose().popPose();
     }
 
     private boolean canInscribe() {
@@ -240,7 +253,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
         int y = topPos;
         CrafterBlockEntity be = menu.getBlockEntity();
 
-        // Mode toggle button (reset machine panel on switch)
+        // Mode toggle button
         if (isMouseOver(mouseX, mouseY, x + MODE_BTN_X, y + MODE_BTN_Y,
                 MODE_BTN_W, MODE_BTN_H) && be != null) {
             machinePanel.reset();
@@ -260,14 +273,26 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
             return true;
         }
 
+        // Library scroll buttons
+        if (isMouseOver(mouseX, mouseY, x + LIB_SCROLL_UP_X, y + LIB_SCROLL_UP_Y,
+                LIB_SCROLL_W, LIB_SCROLL_H)) {
+            menu.scrollLibrary(-1);
+            return true;
+        }
+        if (isMouseOver(mouseX, mouseY, x + LIB_SCROLL_DN_X, y + LIB_SCROLL_DN_Y,
+                LIB_SCROLL_W, LIB_SCROLL_H)) {
+            menu.scrollLibrary(1);
+            return true;
+        }
+
         boolean isCraftMode = menu.getMode() == 0;
 
         // Ghost slot clicks (mode CRAFT only)
         if (isCraftMode && be != null) {
             for (int row = 0; row < 3; row++) {
                 for (int col = 0; col < 3; col++) {
-                    int slotX = x + GHOST_X + col * 18 + 1;
-                    int slotY = y + GHOST_Y + row * 18 + 1;
+                    int slotX = x + GHOST_X + col * 18;
+                    int slotY = y + GHOST_Y + row * 18;
                     if (mouseX >= slotX && mouseX < slotX + 16
                             && mouseY >= slotY && mouseY < slotY + 16) {
                         int idx = row * 3 + col;
@@ -292,15 +317,26 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        int x = leftPos;
+        int y = topPos;
+
+        // Library area scroll
+        if (mouseY >= y + LIBRARY_Y - 10 && mouseY <= y + LIBRARY_Y + 20) {
+            menu.scrollLibrary(scrollY > 0 ? -1 : 1);
+            return true;
+        }
+
+        // Machine mode content area scroll
         if (menu.getMode() != 0 && machinePanel.handleScroll(scrollY)) {
             return true;
         }
+
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-        // Title is rendered by renderContainerBackground, skip default
+        // No labels (no title, no inventory label)
     }
 
     private boolean isMouseOver(double mouseX, double mouseY, int x, int y, int w, int h) {

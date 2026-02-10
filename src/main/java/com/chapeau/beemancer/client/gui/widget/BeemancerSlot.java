@@ -44,6 +44,7 @@ public class BeemancerSlot extends SlotItemHandler {
     private BiConsumer<net.minecraft.world.entity.player.Player, ItemStack> onExtractCallback;
     private boolean canInsert = true;
     private boolean canExtract = true;
+    private boolean active = true;
 
     /**
      * Constructeur de base - utilise le fond de slot Minecraft par defaut
@@ -113,6 +114,16 @@ public class BeemancerSlot extends SlotItemHandler {
         if (onExtractCallback != null && !stack.isEmpty()) {
             onExtractCallback.accept(player, stack);
         }
+    }
+
+    public BeemancerSlot setActive(boolean active) {
+        this.active = active;
+        return this;
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
     }
 
     @Override

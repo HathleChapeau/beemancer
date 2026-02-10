@@ -36,16 +36,17 @@ import java.util.List;
 
 /**
  * Gere le rendu et l'interaction du mode MACHINE dans le CrafterScreen.
+ * Zone overlay: partage le meme espace que le ghost grid 3x3 (y=26 a y=80).
  * Inputs dynamiques (ajout/suppression) + output + scroll + inscription.
  */
 public class CrafterMachinePanel {
 
-    // Layout relative to screen top-left
+    // Layout relative to screen top-left (overlays the ghost grid area)
     private static final int PANEL_X = 8;
-    private static final int PANEL_Y = 18;
+    private static final int PANEL_Y = 26;
     private static final int PANEL_W = 160;
-    private static final int LINE_H = 20;
-    private static final int MAX_VISIBLE_LINES = 4;
+    private static final int LINE_H = 18;
+    private static final int MAX_VISIBLE_LINES = 2;
 
     // Per-line element offsets (relative to line X)
     private static final int SLOT_OFFSET_X = 0;
@@ -55,12 +56,8 @@ public class CrafterMachinePanel {
     private static final int DELETE_X = 80;
     private static final int BTN_SIZE = 14;
 
-    // Add button
-    private static final int ADD_BTN_Y_OFFSET = 2;
-
-    // Output section
-    private static final int OUTPUT_LABEL_Y = 90;
-    private static final int OUTPUT_LINE_Y = 100;
+    // Output section (within the overlay zone)
+    private static final int OUTPUT_LINE_Y = 62;
 
     /** Client-side input entries (item + count). */
     private final List<MachineEntry> inputs = new ArrayList<>();
@@ -69,8 +66,6 @@ public class CrafterMachinePanel {
     private MachineEntry output = new MachineEntry(ItemStack.EMPTY, 1);
 
     private int scrollOffset = 0;
-
-    // === Data structures ===
 
     public static class MachineEntry {
         ItemStack item;
@@ -95,7 +90,6 @@ public class CrafterMachinePanel {
     public void render(GuiGraphics g, Font font, int x, int y, int mouseX, int mouseY) {
         g.drawString(font, "Inputs", x + PANEL_X, y + PANEL_Y - 10, 0x606060, false);
 
-        // Visible input lines (scrolled)
         int visibleCount = Math.min(inputs.size(), MAX_VISIBLE_LINES);
         for (int i = 0; i < visibleCount; i++) {
             int dataIdx = i + scrollOffset;
@@ -104,10 +98,12 @@ public class CrafterMachinePanel {
             renderInputLine(g, font, x + PANEL_X, lineY, inputs.get(dataIdx), mouseX, mouseY);
         }
 
-        // [+] Add input button (below visible inputs)
-        int addY = y + PANEL_Y + visibleCount * LINE_H + ADD_BTN_Y_OFFSET;
-        boolean addHovered = isOver(mouseX, mouseY, x + PANEL_X, addY, BTN_SIZE, BTN_SIZE);
-        GuiRenderHelper.renderButton(g, font, x + PANEL_X, addY, BTN_SIZE, BTN_SIZE, "+", addHovered);
+        // [+] Add input button (below visible inputs, if space allows)
+        int addY = y + PANEL_Y + visibleCount * LINE_H + 2;
+        if (addY + BTN_SIZE <= y + OUTPUT_LINE_Y - 2) {
+            boolean addHovered = isOver(mouseX, mouseY, x + PANEL_X, addY, BTN_SIZE, BTN_SIZE);
+            GuiRenderHelper.renderButton(g, font, x + PANEL_X, addY, BTN_SIZE, BTN_SIZE, "+", addHovered);
+        }
 
         // Scroll indicators
         if (scrollOffset > 0) {
@@ -119,21 +115,17 @@ public class CrafterMachinePanel {
         }
 
         // Output section
-        int outLabelY = y + OUTPUT_LABEL_Y;
-        int outLineY = y + OUTPUT_LINE_Y;
-        g.drawString(font, "Output", x + PANEL_X, outLabelY, 0x606060, false);
-        renderOutputLine(g, font, x + PANEL_X, outLineY, mouseX, mouseY);
+        g.drawString(font, "Output", x + PANEL_X, y + OUTPUT_LINE_Y - 10, 0x606060, false);
+        renderOutputLine(g, font, x + PANEL_X, y + OUTPUT_LINE_Y, mouseX, mouseY);
     }
 
     private void renderInputLine(GuiGraphics g, Font font, int lx, int ly,
                                   MachineEntry entry, int mouseX, int mouseY) {
-        // Ghost slot
         GuiRenderHelper.renderSlot(g, lx + SLOT_OFFSET_X, ly);
         if (!entry.item.isEmpty()) {
             g.renderItem(entry.item, lx + SLOT_OFFSET_X + 1, ly + 1);
         }
 
-        // [-] count [+]
         boolean minusHov = isOver(mouseX, mouseY, lx + COUNT_MINUS_X, ly, BTN_SIZE, BTN_SIZE);
         GuiRenderHelper.renderButton(g, font, lx + COUNT_MINUS_X, ly, BTN_SIZE, BTN_SIZE, "-", minusHov);
 
@@ -144,7 +136,6 @@ public class CrafterMachinePanel {
         boolean plusHov = isOver(mouseX, mouseY, lx + COUNT_PLUS_X, ly, BTN_SIZE, BTN_SIZE);
         GuiRenderHelper.renderButton(g, font, lx + COUNT_PLUS_X, ly, BTN_SIZE, BTN_SIZE, "+", plusHov);
 
-        // Delete button
         boolean delHov = isOver(mouseX, mouseY, lx + DELETE_X, ly, BTN_SIZE, BTN_SIZE);
         GuiRenderHelper.renderButton(g, font, lx + DELETE_X, ly, BTN_SIZE, BTN_SIZE, "X", delHov);
     }
@@ -169,11 +160,7 @@ public class CrafterMachinePanel {
 
     // === Interaction ===
 
-    /**
-     * Handles mouse click in machine mode. Returns true if consumed.
-     */
     public boolean handleClick(double mouseX, double mouseY, int x, int y, ItemStack carried) {
-        // Input lines
         int visibleCount = Math.min(inputs.size(), MAX_VISIBLE_LINES);
         for (int i = 0; i < visibleCount; i++) {
             int dataIdx = i + scrollOffset;
@@ -181,24 +168,18 @@ public class CrafterMachinePanel {
             int lx = x + PANEL_X;
             int ly = y + PANEL_Y + i * LINE_H;
 
-            // Ghost slot click: set/clear item
             if (isOver(mouseX, mouseY, lx + SLOT_OFFSET_X + 1, ly + 1, 16, 16)) {
                 inputs.get(dataIdx).item = carried.isEmpty() ? ItemStack.EMPTY : carried.copyWithCount(1);
                 return true;
             }
-            // [-] count
             if (isOver(mouseX, mouseY, lx + COUNT_MINUS_X, ly, BTN_SIZE, BTN_SIZE)) {
-                MachineEntry e = inputs.get(dataIdx);
-                e.count = Math.max(1, e.count - 1);
+                inputs.get(dataIdx).count = Math.max(1, inputs.get(dataIdx).count - 1);
                 return true;
             }
-            // [+] count
             if (isOver(mouseX, mouseY, lx + COUNT_PLUS_X, ly, BTN_SIZE, BTN_SIZE)) {
-                MachineEntry e = inputs.get(dataIdx);
-                e.count = Math.min(64, e.count + 1);
+                inputs.get(dataIdx).count = Math.min(64, inputs.get(dataIdx).count + 1);
                 return true;
             }
-            // [X] delete
             if (isOver(mouseX, mouseY, lx + DELETE_X, ly, BTN_SIZE, BTN_SIZE)) {
                 inputs.remove(dataIdx);
                 scrollOffset = Mth.clamp(scrollOffset, 0, Math.max(0, inputs.size() - MAX_VISIBLE_LINES));
@@ -207,8 +188,9 @@ public class CrafterMachinePanel {
         }
 
         // [+] Add input button
-        int addY = y + PANEL_Y + visibleCount * LINE_H + ADD_BTN_Y_OFFSET;
-        if (isOver(mouseX, mouseY, x + PANEL_X, addY, BTN_SIZE, BTN_SIZE)) {
+        int addY = y + PANEL_Y + visibleCount * LINE_H + 2;
+        if (addY + BTN_SIZE <= y + OUTPUT_LINE_Y - 2
+                && isOver(mouseX, mouseY, x + PANEL_X, addY, BTN_SIZE, BTN_SIZE)) {
             inputs.add(new MachineEntry(ItemStack.EMPTY, 1));
             return true;
         }
@@ -220,12 +202,10 @@ public class CrafterMachinePanel {
             output.item = carried.isEmpty() ? ItemStack.EMPTY : carried.copyWithCount(1);
             return true;
         }
-        // Output [-]
         if (isOver(mouseX, mouseY, lx + COUNT_MINUS_X, outLineY, BTN_SIZE, BTN_SIZE)) {
             output.count = Math.max(1, output.count - 1);
             return true;
         }
-        // Output [+]
         if (isOver(mouseX, mouseY, lx + COUNT_PLUS_X, outLineY, BTN_SIZE, BTN_SIZE)) {
             output.count = Math.min(64, output.count + 1);
             return true;
@@ -234,7 +214,6 @@ public class CrafterMachinePanel {
         return false;
     }
 
-    /** Handles scroll in machine mode. Returns true if consumed. */
     public boolean handleScroll(double scrollY) {
         if (inputs.size() <= MAX_VISIBLE_LINES) return false;
         int maxScroll = inputs.size() - MAX_VISIBLE_LINES;
@@ -244,17 +223,13 @@ public class CrafterMachinePanel {
 
     // === Inscribe logic ===
 
-    /** Whether machine mode inscribe is possible. */
     public boolean canInscribe(CrafterMenu menu) {
         if (!menu.hasBlankPaper()) return false;
-        // At least one input with an item
         boolean hasInput = inputs.stream().anyMatch(e -> !e.item.isEmpty());
         if (!hasInput) return false;
-        // Output must have an item
         return !output.item.isEmpty();
     }
 
-    /** Sends the CrafterInscribePacket for mode=1 (machine). */
     public void sendInscribe(CrafterBlockEntity be) {
         List<ItemStack> machineInputs = new ArrayList<>();
         for (MachineEntry e : inputs) {

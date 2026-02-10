@@ -387,6 +387,7 @@
   "message.beemancer.crafter.unlinked": "Assembleur délié du contrôleur",
   "message.beemancer.crafter.controller_only": "Les assembleurs ne peuvent être liés qu'en mode édition du contrôleur",
   "message.beemancer.crafter.already_linked": "Le contrôleur a déjà un assembleur lié",
+  "message.beemancer.crafter.not_linked": "L'assembleur doit être lié à un contrôleur",
   "block.beemancer.storage_relay": "Relais de Stockage",
   "message.beemancer.storage_relay.edit_mode_on": "Mode édition relais activé - Cliquez sur les coffres ou Shift+clic sur les nœuds",
   "message.beemancer.storage_relay.edit_mode_off": "Mode édition relais désactivé",

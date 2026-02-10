@@ -400,6 +400,7 @@
   "message.beemancer.crafter.unlinked": "Crafter unlinked from controller",
   "message.beemancer.crafter.controller_only": "Crafters can only be linked from controller edit mode",
   "message.beemancer.crafter.already_linked": "Controller already has a linked crafter",
+  "message.beemancer.crafter.not_linked": "Crafter must be linked to a controller",
   "block.beemancer.storage_relay": "Storage Relay",
   "message.beemancer.storage_relay.edit_mode_on": "Relay edit mode enabled - Click chests or Shift+click nodes to link",
   "message.beemancer.storage_relay.edit_mode_off": "Relay edit mode disabled",
