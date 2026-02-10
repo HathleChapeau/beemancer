@@ -58,10 +58,10 @@ public class MultiblockPatterns {
         MultiblockPattern.builder("honey_altar")
             // Étage 1 (Y-2): Pedestal + Honeyed Stone cardinaux
             .add(0, -2, 0, block(BeemancerBlocks.HONEY_PEDESTAL))
-            .add(0, -2, -1, block(BeemancerBlocks.HONEYED_STONE))   // Nord
-            .add(0, -2, 1, block(BeemancerBlocks.HONEYED_STONE))    // Sud
-            .add(1, -2, 0, block(BeemancerBlocks.HONEYED_STONE))    // Est
-            .add(-1, -2, 0, block(BeemancerBlocks.HONEYED_STONE))   // Ouest
+            .add(0, -2, -1, air())   // Nord
+            .add(0, -2, 1, air())    // Sud
+            .add(1, -2, 0, air())    // Est
+            .add(-1, -2, 0, air())   // Ouest
             .add(-1, -2, -1, air())  // Coins vides
             .add(1, -2, -1, air())
             .add(-1, -2, 1, air())
