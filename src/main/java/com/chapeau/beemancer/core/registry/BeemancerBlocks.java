@@ -312,7 +312,7 @@ public class BeemancerBlocks {
             () -> new HoneyCrystalBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f)
                     .sound(SoundType.AMETHYST)
-                    .lightLevel(state -> 10)
+                    .lightLevel(state -> 11)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
@@ -561,7 +561,7 @@ public class BeemancerBlocks {
             () -> new HoneyCrystalBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f)
                     .sound(SoundType.AMETHYST)
-                    .lightLevel(state -> 10)
+                    .lightLevel(state -> 13)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
@@ -569,7 +569,7 @@ public class BeemancerBlocks {
             () -> new HoneyCrystalBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f)
                     .sound(SoundType.AMETHYST)
-                    .lightLevel(state -> 10)
+                    .lightLevel(state -> 15)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
