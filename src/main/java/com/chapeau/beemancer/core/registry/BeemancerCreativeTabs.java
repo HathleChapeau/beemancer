@@ -204,6 +204,12 @@ public class BeemancerCreativeTabs {
         // Honeyed Stone
         output.accept(BeemancerItems.HONEYED_STONE_WALL.get());
 
+        // Iron Foundation
+        output.accept(BeemancerItems.IRON_FOUNDATION.get());
+        output.accept(BeemancerItems.IRON_FOUNDATION_WALL.get());
+        output.accept(BeemancerItems.IRON_FOUNDATION_TRAPDOOR.get());
+        output.accept(BeemancerItems.IRON_FOUNDATION_DOOR.get());
+
         // Honeyed Glass
         output.accept(BeemancerItems.HONEYED_GLASS.get());
         output.accept(BeemancerItems.HONEYED_GLASS_PANE.get());
