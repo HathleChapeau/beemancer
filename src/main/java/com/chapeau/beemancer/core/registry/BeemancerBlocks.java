@@ -332,7 +332,7 @@ public class BeemancerBlocks {
             () -> new AltarHeartBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.AMETHYST)
-                    .lightLevel(state -> state.getValue(AltarHeartBlock.MULTIBLOCK) != MultiblockProperty.NONE ? 15 : 8)
+                    .lightLevel(state -> 4)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
@@ -355,7 +355,7 @@ public class BeemancerBlocks {
             () -> new ExtractorHeartBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.AMETHYST)
-                    .lightLevel(state -> state.getValue(ExtractorHeartBlock.MULTIBLOCK) != MultiblockProperty.NONE ? 12 : 6)
+                    .lightLevel(state -> 4)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
@@ -364,6 +364,7 @@ public class BeemancerBlocks {
             () -> new AlembicHeartBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 4)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
@@ -371,6 +372,7 @@ public class BeemancerBlocks {
             () -> new InfuserHeartBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 4)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
@@ -378,6 +380,7 @@ public class BeemancerBlocks {
             () -> new CentrifugeHeartBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 4)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
