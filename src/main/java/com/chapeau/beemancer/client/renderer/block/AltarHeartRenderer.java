@@ -140,8 +140,12 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         BlockPos blockPos = blockEntity.getBlockPos();
         long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
         boolean beamActive = AltarCraftAnimator.isBeamActive(blockPos);
+        int conduitCount = AltarCraftAnimator.getConduitCount();
 
-        for (int i = 0; i < AltarCraftAnimator.getConduitCount(); i++) {
+        // Collecter les centres pour le beam (rendu apres les modeles pour eviter le conflit de buffer)
+        Vec3[] beamStarts = beamActive ? new Vec3[conduitCount] : null;
+
+        for (int i = 0; i < conduitCount; i++) {
             Vec3 staticPos = AltarCraftAnimator.getStaticPosition(i);
 
             poseStack.pushPose();
@@ -158,11 +162,16 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             renderModel(CONDUIT_MODEL_LOC, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
             poseStack.popPose();
 
-            // Beam 3D style beacon du centre du conduit vers le coeur
             if (beamActive) {
-                Vec3 conduitCenter = computeConduitCenter(ctrl, i, staticPos);
-                Vec3 heartCenter = new Vec3(0.5, 0.5, 0.5);
-                BeamRenderer.renderBeam(poseStack, buffer, conduitCenter, heartCenter,
+                beamStarts[i] = computeConduitCenter(ctrl, i, staticPos);
+            }
+        }
+
+        // Beams 3D style beacon — rendu apres tous les modeles (RenderType different)
+        if (beamStarts != null) {
+            Vec3 heartCenter = new Vec3(0.5, 0.5, 0.5);
+            for (Vec3 start : beamStarts) {
+                BeamRenderer.renderBeam(poseStack, buffer, start, heartCenter,
                     partialTick, gameTime, 0.04f, 0.1f, 1.0f, 0.85f, 0.2f);
             }
         }
