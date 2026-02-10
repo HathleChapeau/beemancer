@@ -369,10 +369,10 @@ public class AltarCraftAnimator {
 
     // === Self-spin factory ===
 
-    /** Phase 3: rotation Y sur soi-meme (loop, vitesse moyenne). */
+    /** Phase 3: rotation Z sur soi-meme (loop, vitesse moyenne). */
     private static RotateAnimation buildSelfSpinAnim() {
         return RotateAnimation.builder()
-            .axis(Axis.YP).startAngle(0).endAngle(360)
+            .axis(Axis.ZP).startAngle(0).endAngle(360)
             .pivot(BLOCK_CENTER)
             .duration(SELF_SPIN_PERIOD).timingEffect(TimingEffect.LOOP)
             .build();

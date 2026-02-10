@@ -41,12 +41,13 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
@@ -170,22 +171,28 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             }
         }
 
-        // Particule centre (glow persistant au coeur pendant le craft)
+        // Particule centre (boule de glow miel au coeur pendant le craft)
         if (AltarCraftAnimator.trySpawnCenterParticleTick(blockPos, gameTime)
                 && blockEntity.getLevel() != null) {
             Vec3 center = new Vec3(blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5);
-            double angle = (gameTime * 9.0) * Math.PI / 180.0;
-            Vec3 particlePos = center.add(Math.cos(angle) * 0.15, 0, Math.sin(angle) * 0.15);
-            ParticleHelper.addParticle(blockEntity.getLevel(), ParticleTypes.END_ROD,
-                particlePos, new Vec3(0, 0.01, 0));
+            DustParticleOptions honeyParticle = new DustParticleOptions(
+                new Vector3f(1.0f, 0.75f, 0.1f), 1.2f);
+            for (int p = 0; p < 3; p++) {
+                Vec3 offset = new Vec3(
+                    (random.nextDouble() - 0.5) * 0.25,
+                    (random.nextDouble() - 0.5) * 0.25,
+                    (random.nextDouble() - 0.5) * 0.25);
+                ParticleHelper.addParticle(blockEntity.getLevel(), honeyParticle,
+                    center.add(offset), Vec3.ZERO);
+            }
         }
 
-        // Beams 3D style beacon — rendu apres tous les modeles (RenderType different)
+        // Beams convergents — 4 coins du conduit vers point de convergence, puis beam epais vers coeur
         if (beamStarts != null) {
             Vec3 heartCenter = new Vec3(0.5, 0.5, 0.5);
-            for (Vec3 start : beamStarts) {
-                BeamRenderer.renderBeam(poseStack, buffer, start, heartCenter,
-                    partialTick, gameTime, 0.04f, 0.1f, 1.0f, 0.85f, 0.2f);
+            for (Vec3 conduitCenter : beamStarts) {
+                renderConvergingBeams(poseStack, buffer, conduitCenter, heartCenter,
+                    partialTick, gameTime);
             }
         }
     }
@@ -202,6 +209,49 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         Vector4f c = new Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
         calc.last().pose().transform(c);
         return new Vec3(c.x(), c.y(), c.z());
+    }
+
+    /**
+     * Rend 4 beams fins depuis les coins du conduit vers un point de convergence,
+     * puis un beam epais du point de convergence vers le coeur.
+     */
+    private void renderConvergingBeams(PoseStack poseStack, MultiBufferSource buffer,
+                                        Vec3 conduitCenter, Vec3 heartCenter,
+                                        float partialTick, long gameTime) {
+        Vec3 dir = heartCenter.subtract(conduitCenter);
+        if (dir.lengthSqr() < 0.001) return;
+        Vec3 dirNorm = dir.normalize();
+
+        // Base perpendiculaire pour les 4 coins
+        Vec3 up = new Vec3(0, 1, 0);
+        Vec3 right = dirNorm.cross(up);
+        if (right.lengthSqr() < 0.001) {
+            right = dirNorm.cross(new Vec3(1, 0, 0));
+        }
+        right = right.normalize();
+        Vec3 perpUp = right.cross(dirNorm).normalize();
+
+        // 4 coins autour du centre du conduit
+        float cornerOffset = 0.25f;
+        Vec3[] corners = {
+            conduitCenter.add(right.scale(cornerOffset)).add(perpUp.scale(cornerOffset)),
+            conduitCenter.add(right.scale(-cornerOffset)).add(perpUp.scale(cornerOffset)),
+            conduitCenter.add(right.scale(cornerOffset)).add(perpUp.scale(-cornerOffset)),
+            conduitCenter.add(right.scale(-cornerOffset)).add(perpUp.scale(-cornerOffset)),
+        };
+
+        // Point de convergence: 60% du chemin conduit -> coeur
+        Vec3 convergence = conduitCenter.add(dir.scale(0.6));
+
+        // 4 beams fins des coins vers le point de convergence
+        for (Vec3 corner : corners) {
+            BeamRenderer.renderBeam(poseStack, buffer, corner, convergence,
+                partialTick, gameTime, 0.02f, 0.04f, 1.0f, 0.85f, 0.2f);
+        }
+
+        // 1 beam epais du point de convergence vers le coeur
+        BeamRenderer.renderBeam(poseStack, buffer, convergence, heartCenter,
+            partialTick, gameTime, 0.06f, 0.14f, 1.0f, 0.85f, 0.2f);
     }
 
     /**
