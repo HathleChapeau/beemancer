@@ -566,7 +566,8 @@ public class BeemancerBlocks {
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 13)
                     .noOcclusion()
-                    .requiresCorrectToolForDrops()));
+                    .requiresCorrectToolForDrops(),
+                    Block.box(3, 0, 3, 13, 12, 13)));
 
     public static final DeferredBlock<HoneyCrystalBlock> NECTAR_CRYSTAL = BLOCKS.register("nectar_crystal",
             () -> new HoneyCrystalBlock(BlockBehaviour.Properties.of()
@@ -574,7 +575,8 @@ public class BeemancerBlocks {
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 15)
                     .noOcclusion()
-                    .requiresCorrectToolForDrops()));
+                    .requiresCorrectToolForDrops(),
+                    Block.box(3, 0, 3, 13, 14, 13)));
 
     // --- FLYWHEEL TEST ---
     public static final DeferredBlock<BeeSpawnerBlock> BEE_SPAWNER = BLOCKS.register("bee_spawner",

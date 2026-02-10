@@ -68,8 +68,8 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
         MultiblockProperty.create("altar", "extractor", "storage", "alembic", "alembic_0", "alembic_1", "centrifuge", "infuser");
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    // Forme carrée: réservoir 8x8x8 centré
-    private static final VoxelShape SHAPE = Block.box(4, 4, 4, 12, 12, 12);
+    // Forme: bloc complet (carre de base)
+    private static final VoxelShape SHAPE = Shapes.block();
 
     // Alembic: colonne de verre + base dorée
     private static final VoxelShape SHAPE_ALEMBIC_BASE = Shapes.or(

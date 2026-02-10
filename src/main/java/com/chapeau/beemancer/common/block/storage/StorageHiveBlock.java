@@ -28,6 +28,7 @@ import com.chapeau.beemancer.common.blockentity.storage.StorageHiveBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -37,6 +38,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -57,6 +60,9 @@ public class StorageHiveBlock extends Block implements EntityBlock {
 
     public static final EnumProperty<HiveState> HIVE_STATE = EnumProperty.create("hive_state", HiveState.class);
 
+    // 10 pixels de large centre (3 a 13)
+    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 16, 13);
+
     private final int tier;
 
     public StorageHiveBlock(Properties properties) {
@@ -72,6 +78,11 @@ public class StorageHiveBlock extends Block implements EntityBlock {
 
     public int getTier() {
         return tier;
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
 
     /**

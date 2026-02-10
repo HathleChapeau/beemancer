@@ -54,6 +54,9 @@ public class AlembicHeartBlock extends Block implements EntityBlock {
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("alembic");
     public static final BooleanProperty DISTILLING = BooleanProperty.create("distilling");
 
+    // VoxelShape pour le coeur seul (non-forme): petit cube 8x8x8
+    private static final VoxelShape SHAPE_CORE = Block.box(4, 4, 4, 12, 12, 12);
+
     private static final VoxelShape SHAPE_ALEMBIC = Block.box(1, 14, 1, 15, 18, 15);
 
     public AlembicHeartBlock(Properties properties) {
@@ -73,7 +76,7 @@ public class AlembicHeartBlock extends Block implements EntityBlock {
         if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE) {
             return SHAPE_ALEMBIC;
         }
-        return super.getShape(state, level, pos, context);
+        return SHAPE_CORE;
     }
 
     @Override

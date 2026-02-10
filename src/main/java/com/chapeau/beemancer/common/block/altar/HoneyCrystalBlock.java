@@ -31,14 +31,19 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class HoneyCrystalBlock extends Block {
 
-    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 14, 13);
+    private final VoxelShape shape;
+
+    public HoneyCrystalBlock(Properties properties, VoxelShape shape) {
+        super(properties);
+        this.shape = shape;
+    }
 
     public HoneyCrystalBlock(Properties properties) {
-        super(properties);
+        this(properties, Block.box(4, 0, 4, 12, 8, 12));
     }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return shape;
     }
 }

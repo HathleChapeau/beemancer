@@ -51,7 +51,7 @@ public class ExtractorHeartBlock extends Block implements EntityBlock {
 
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("extractor");
 
-    private static final VoxelShape SHAPE = Block.box(2, 2, 2, 14, 14, 14);
+    private static final VoxelShape SHAPE = Block.box(4, 4, 4, 12, 12, 12);
 
     public ExtractorHeartBlock(Properties properties) {
         super(properties);

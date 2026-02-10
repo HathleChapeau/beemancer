@@ -62,14 +62,11 @@ public class HoneyPedestalBlock extends Block implements EntityBlock {
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK =
         MultiblockProperty.create("altar", "extractor");
 
-    // Forme: colonne centrale
+    // Forme: 3 blocs de base du modele (colonne + caps)
     private static final VoxelShape SHAPE = Shapes.or(
-        // Base (plus large)
-        Block.box(2, 0, 2, 14, 3, 14),
-        // Colonne centrale
-        Block.box(4, 3, 4, 12, 13, 12),
-        // Top (plus large)
-        Block.box(2, 13, 2, 14, 16, 14)
+        Block.box(2, 0, 2, 14, 14, 14),    // Base column
+        Block.box(1, 13, 1, 15, 14, 15),   // Top cap
+        Block.box(1, 0, 1, 15, 1, 15)      // Bottom plate
     );
 
     public HoneyPedestalBlock(Properties properties) {
