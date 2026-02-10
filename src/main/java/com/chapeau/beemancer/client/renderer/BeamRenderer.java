@@ -128,7 +128,9 @@ public class BeamRenderer {
                                    float y, float x, float z, float u, float v) {
         consumer.addVertex(matrix, x, y, z)
             .setColor((int) (r * 255), (int) (g * 255), (int) (b * 255), (int) (a * 255))
-            .setUv(u, v);
+            .setUv(u, v)
+            .setUv2(240, 240)
+            .setNormal(0, 1, 0);
     }
 
     private BeamRenderer() {
