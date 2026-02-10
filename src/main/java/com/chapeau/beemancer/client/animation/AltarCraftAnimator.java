@@ -44,8 +44,14 @@ public class AltarCraftAnimator {
     public static final int RETURN_POS_START = 180;
     public static final int TOTAL_TICKS = 220;
 
-    // === Tilt (rotation initiale sur soi-meme) ===
-    private static final float TILT_ANGLE = 90f;
+    // === Tilt (rotation initiale sur soi-meme, depend du facing) ===
+    // Chaque conduit tilt vers l'exterieur de l'altar: angles opposes pour N/S et E/W
+    private static final float[] TILT_ANGLES = {
+        90f,   // N → tilt vers le nord (exterieur)
+        -90f,  // S → tilt vers le sud (exterieur)
+        90f,   // E → tilt vers l'est (exterieur)
+        -90f,  // W → tilt vers l'ouest (exterieur)
+    };
 
     // === Orbite angles (rotation Y autour du centre altar) ===
     private static final float ORBIT_SPIN_END = 2520f;
@@ -237,8 +243,9 @@ public class AltarCraftAnimator {
     // === Tilt factories (rotation sur soi-meme, axe X ou Z selon le cote) ===
 
     private static RotateAnimation buildTiltAnim(int conduitIndex) {
+        float angle = TILT_ANGLES[conduitIndex];
         return RotateAnimation.builder()
-            .axis(TILT_AXES[conduitIndex]).startAngle(0).endAngle(TILT_ANGLE)
+            .axis(TILT_AXES[conduitIndex]).startAngle(0).endAngle(angle)
             .pivot(BLOCK_CENTER)
             .duration(EXPAND_END).timingType(TimingType.EASE_OUT)
             .resetAfterAnimation(false)
@@ -246,16 +253,18 @@ public class AltarCraftAnimator {
     }
 
     private static RotateAnimation buildHoldTiltAnim(int conduitIndex) {
+        float angle = TILT_ANGLES[conduitIndex];
         return RotateAnimation.builder()
-            .axis(TILT_AXES[conduitIndex]).startAngle(TILT_ANGLE).endAngle(TILT_ANGLE)
+            .axis(TILT_AXES[conduitIndex]).startAngle(angle).endAngle(angle)
             .pivot(BLOCK_CENTER)
             .duration(20f).timingEffect(TimingEffect.LOOP)
             .build();
     }
 
     private static RotateAnimation buildUntiltAnim(int conduitIndex) {
+        float angle = TILT_ANGLES[conduitIndex];
         return RotateAnimation.builder()
-            .axis(TILT_AXES[conduitIndex]).startAngle(TILT_ANGLE).endAngle(0)
+            .axis(TILT_AXES[conduitIndex]).startAngle(angle).endAngle(0)
             .pivot(BLOCK_CENTER)
             .duration(TOTAL_TICKS - CRAFT_TICK).timingType(TimingType.EASE_OUT)
             .resetAfterAnimation(true)

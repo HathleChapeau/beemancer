@@ -28,6 +28,7 @@ import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -58,10 +59,12 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_core"));
     public static final ModelResourceLocation TOP_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_top"));
-    public static final ModelResourceLocation CONDUIT_NS_MODEL_LOC =
-        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_conduit_ns"));
-    public static final ModelResourceLocation CONDUIT_EW_MODEL_LOC =
-        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_conduit_ew"));
+    public static final ModelResourceLocation CONDUIT_MODEL_LOC =
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_conduit"));
+
+    // Rotation Y par conduit pour orienter le modele vers l'exterieur
+    // N/S: 0° (modele oriente sur Z), E/W: 90° (modele oriente sur X)
+    private static final float[] CONDUIT_Y_ROTATIONS = { 0f, 0f, 90f, 90f };
 
     public AltarHeartRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
@@ -135,8 +138,13 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             poseStack.translate(staticPos.x, staticPos.y, staticPos.z);
             ctrl.applyAnimation("pos_" + i, poseStack);
             ctrl.applyAnimation("rot_" + i, poseStack);
-            ModelResourceLocation conduitModel = (i < 2) ? CONDUIT_NS_MODEL_LOC : CONDUIT_EW_MODEL_LOC;
-            renderModel(conduitModel, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
+
+            // Rotation Y pour orienter le modele selon le facing du conduit
+            poseStack.translate(0.5, 0.5, 0.5);
+            poseStack.mulPose(Axis.YP.rotationDegrees(CONDUIT_Y_ROTATIONS[i]));
+            poseStack.translate(-0.5, -0.5, -0.5);
+
+            renderModel(CONDUIT_MODEL_LOC, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
             poseStack.popPose();
         }
     }

@@ -183,7 +183,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
 
             // Set FACING pour les blocs cardinaux (conduits, reservoirs)
             if (formed && newState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-                Direction facing = getFacingTowardCenter(element.offset());
+                Direction facing = getFacingOutward(element.offset());
                 if (facing != null) {
                     newState = newState.setValue(BlockStateProperties.HORIZONTAL_FACING, facing);
                 }
@@ -197,18 +197,18 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
 
     /**
      * Derive la direction FACING depuis un offset relatif au controller.
-     * Les blocs cardinaux pointent vers le centre.
+     * Les blocs cardinaux pointent vers l'exterieur de l'altar.
      *
-     * @return la direction vers le centre, ou null si centre/diagonale
+     * @return la direction vers l'exterieur, ou null si centre/diagonale
      */
     @Nullable
-    private static Direction getFacingTowardCenter(Vec3i offset) {
+    private static Direction getFacingOutward(Vec3i offset) {
         int x = offset.getX();
         int z = offset.getZ();
-        if (x == 0 && z < 0) return Direction.SOUTH;
-        if (x == 0 && z > 0) return Direction.NORTH;
-        if (x > 0 && z == 0) return Direction.WEST;
-        if (x < 0 && z == 0) return Direction.EAST;
+        if (x == 0 && z < 0) return Direction.NORTH;
+        if (x == 0 && z > 0) return Direction.SOUTH;
+        if (x > 0 && z == 0) return Direction.EAST;
+        if (x < 0 && z == 0) return Direction.WEST;
         return null;
     }
 

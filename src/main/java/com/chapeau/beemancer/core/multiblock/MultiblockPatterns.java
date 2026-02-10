@@ -21,7 +21,6 @@
 package com.chapeau.beemancer.core.multiblock;
 
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
-import net.minecraft.core.Direction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,12 +56,12 @@ public class MultiblockPatterns {
 
     public static final MultiblockPattern HONEY_ALTAR = register(
         MultiblockPattern.builder("honey_altar")
-            // Étage 1 (Y-2): Pedestal + Stairs
+            // Étage 1 (Y-2): Pedestal + Honeyed Stone cardinaux
             .add(0, -2, 0, block(BeemancerBlocks.HONEY_PEDESTAL))
-            .add(0, -2, -1, stairFacing(BeemancerBlocks.HONEYED_STONE_STAIR, Direction.SOUTH))  // Nord → pointe Sud
-            .add(0, -2, 1, stairFacing(BeemancerBlocks.HONEYED_STONE_STAIR, Direction.NORTH))   // Sud → pointe Nord
-            .add(1, -2, 0, stairFacing(BeemancerBlocks.HONEYED_STONE_STAIR, Direction.WEST))    // Est → pointe Ouest
-            .add(-1, -2, 0, stairFacing(BeemancerBlocks.HONEYED_STONE_STAIR, Direction.EAST))   // Ouest → pointe Est
+            .add(0, -2, -1, block(BeemancerBlocks.HONEYED_STONE))   // Nord
+            .add(0, -2, 1, block(BeemancerBlocks.HONEYED_STONE))    // Sud
+            .add(1, -2, 0, block(BeemancerBlocks.HONEYED_STONE))    // Est
+            .add(-1, -2, 0, block(BeemancerBlocks.HONEYED_STONE))   // Ouest
             .add(-1, -2, -1, air())  // Coins vides
             .add(1, -2, -1, air())
             .add(-1, -2, 1, air())

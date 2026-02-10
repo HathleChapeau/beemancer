@@ -325,27 +325,28 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             this.setDeltaMovement(movement);
         }
 
-        // Sauvegarder la velocite pre-collision pour calcul du ratio
+        // Sauvegarder position et velocite pre-collision
+        double preX = this.getX();
+        double preZ = this.getZ();
         Vec3 preMoveVelocity = this.getDeltaMovement();
 
         // Appliquer le mouvement
         this.move(MoverType.SELF, preMoveVelocity);
 
-        // Feedback collision : ratio-based scaling
-        // On ne reconvertit PAS en local via worldToLocal car le clipping axis-aligned
-        // de Entity.move() redistribue incorrectement entre forward/strafe selon le yaw.
-        // A la place, on scale uniformement la velocite locale par le ratio de vitesse
-        // horizontale pre/post collision. Cela preserve la direction locale tout en
-        // reduisant la magnitude correctement (pattern Boat-like wall sliding).
+        // Feedback collision : ratio-based scaling basee sur le deplacement reel
+        // On utilise le delta de position (pas getDeltaMovement) car vanilla peut
+        // agressivement zeroer deltaMovement sur step-up echoue ou collision diagonale,
+        // meme si l'entite a physiquement glisse le long du mur.
         if (this.horizontalCollision) {
-            Vec3 postMoveVelocity = this.getDeltaMovement();
+            double actualDx = this.getX() - preX;
+            double actualDz = this.getZ() - preZ;
+            double actualSpeed = Math.sqrt(actualDx * actualDx + actualDz * actualDz);
             double preSpeed = preMoveVelocity.horizontalDistance();
-            double postSpeed = postMoveVelocity.horizontalDistance();
             if (preSpeed > 0.001) {
-                double ratio = postSpeed / preSpeed;
+                double ratio = Math.min(1.0, actualSpeed / preSpeed);
                 rideVelocity = new Vec3(
                         rideVelocity.x * ratio,
-                        postMoveVelocity.y,
+                        this.getDeltaMovement().y,
                         rideVelocity.z * ratio
                 );
             }

@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/block",
-  "textures": {
-    "particle": "beemancer:block/altar/honeyed_stone"
-  },
-  "elements": []
-}
