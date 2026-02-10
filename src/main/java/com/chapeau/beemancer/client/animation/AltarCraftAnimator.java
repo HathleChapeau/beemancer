@@ -44,14 +44,16 @@ import java.util.Map;
  */
 public class AltarCraftAnimator {
 
-    // === Timing (en ticks, 20 ticks = 1 seconde) ===
+    // === Timing (en ticks, 20 ticks = 1 seconde, gaps de 40t entre phases) ===
     public static final int HORIZ_END = 30;
-    public static final int VERT_TILT_END = 60;
-    public static final int SPIN_END = 140;
-    public static final int CRAFT_TICK = 160;
-    public static final int BEAM_CUT = 170;
-    public static final int RETURN_POS_START = 180;
-    public static final int TOTAL_TICKS = 220;
+    public static final int VERT_TILT_START = 70;
+    public static final int VERT_TILT_END = 100;
+    public static final int SPIN_START = 140;
+    public static final int SPIN_END = 220;
+    public static final int CRAFT_TICK = 250;
+    public static final int BEAM_CUT = 260;
+    public static final int RETURN_POS_START = 300;
+    public static final int TOTAL_TICKS = 340;
 
     // === Tilt (rotation sur soi-meme, depend du facing) ===
     private static final float[] TILT_ANGLES = {
@@ -63,8 +65,8 @@ public class AltarCraftAnimator {
 
     // === Orbite angles (rotation Y autour du centre altar, vitesse /3) ===
     private static final float ORBIT_SPIN_END = 840f;
-    private static final float ORBIT_HOLD_END = 1176f;
-    private static final float ORBIT_DECEL_END = 1680f;
+    private static final float ORBIT_HOLD_END = 1290f;
+    private static final float ORBIT_DECEL_END = 2100f;
 
     private static final Vec3 BLOCK_CENTER = new Vec3(0.5, 0.5, 0.5);
 
@@ -218,15 +220,15 @@ public class AltarCraftAnimator {
                     ctrl.replaceAnimation("pos_" + i, buildHorizSpreadAnim(i));
                 }
             }),
-            // t=30: tilt + descente verticale (ease in)
-            SequenceEntry.action(HORIZ_END, () -> {
+            // t=70: tilt + descente verticale (ease in)
+            SequenceEntry.action(VERT_TILT_START, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
                     ctrl.replaceAnimation("pos_" + i, buildVertMoveAnim(i));
                     ctrl.replaceAnimation("rot_" + i, buildTiltAnim(i));
                 }
             }),
-            // t=60: beam on + hold pos/tilt + orbit spin
-            SequenceEntry.action(VERT_TILT_END, () -> {
+            // t=140: beam on + hold pos/tilt + orbit spin
+            SequenceEntry.action(SPIN_START, () -> {
                 state.beamActive = true;
                 for (int i = 0; i < STATIC_POS.length; i++) {
                     ctrl.replaceAnimation("pos_" + i, buildHoldPosAnim(i));
@@ -234,13 +236,13 @@ public class AltarCraftAnimator {
                     ctrl.replaceAnimation("orbit_" + i, buildOrbitSpinAnim());
                 }
             }),
-            // t=140: orbit hold (vitesse constante)
+            // t=220: orbit hold (vitesse constante)
             SequenceEntry.action(SPIN_END, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
                     ctrl.replaceAnimation("orbit_" + i, buildOrbitHoldAnim());
                 }
             }),
-            // t=170: beam off + orbit decel + untilt
+            // t=260: beam off + orbit decel + untilt
             SequenceEntry.action(BEAM_CUT, () -> {
                 state.beamActive = false;
                 for (int i = 0; i < STATIC_POS.length; i++) {
@@ -248,7 +250,7 @@ public class AltarCraftAnimator {
                     ctrl.replaceAnimation("rot_" + i, buildUntiltAnim(i));
                 }
             }),
-            // t=180: retour position
+            // t=300: retour position
             SequenceEntry.action(RETURN_POS_START, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
                     ctrl.replaceAnimation("pos_" + i, buildReturnAnim(i));
@@ -274,7 +276,7 @@ public class AltarCraftAnimator {
         Vec3 to = HORIZ_DELTA[conduitIndex].add(VERT_DELTA);
         return MoveAnimation.builder()
             .from(from).to(to)
-            .duration(VERT_TILT_END - HORIZ_END).timingType(TimingType.EASE_IN)
+            .duration(VERT_TILT_END - VERT_TILT_START).timingType(TimingType.EASE_IN)
             .resetAfterAnimation(false)
             .build();
     }
@@ -307,7 +309,7 @@ public class AltarCraftAnimator {
         return RotateAnimation.builder()
             .axis(TILT_AXES[conduitIndex]).startAngle(0).endAngle(angle)
             .pivot(BLOCK_CENTER)
-            .duration(VERT_TILT_END - HORIZ_END).timingType(TimingType.EASE_IN)
+            .duration(VERT_TILT_END - VERT_TILT_START).timingType(TimingType.EASE_IN)
             .resetAfterAnimation(false)
             .build();
     }
@@ -340,7 +342,7 @@ public class AltarCraftAnimator {
         return RotateAnimation.builder()
             .axis(Axis.YP).startAngle(0).endAngle(ORBIT_SPIN_END)
             .pivot(BLOCK_CENTER)
-            .duration(SPIN_END - VERT_TILT_END).timingType(TimingType.EASE_IN)
+            .duration(SPIN_END - SPIN_START).timingType(TimingType.EASE_IN)
             .resetAfterAnimation(false)
             .build();
     }

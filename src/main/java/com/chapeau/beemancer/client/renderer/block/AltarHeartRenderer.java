@@ -25,9 +25,9 @@ package com.chapeau.beemancer.client.renderer.block;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.animation.AltarCraftAnimator;
 import com.chapeau.beemancer.client.animation.AnimationController;
+import com.chapeau.beemancer.client.renderer.BeamRenderer;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
-import com.chapeau.beemancer.core.util.ParticleHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -40,14 +40,11 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
 /**
@@ -97,7 +94,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
         renderStructureParts(blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
         renderHeart(ctrl, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
-        renderConduits(ctrl, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
+        renderConduits(ctrl, blockEntity, heartState, poseStack, buffer, vertexConsumer, partialTick, packedLight, packedOverlay);
     }
 
     /**
@@ -134,15 +131,15 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
     /**
      * Rend les 4 conduits a leur position statique + animations craft.
-     * Quand le beam est actif, spawne des particules END_ROD du centre du conduit vers le coeur.
+     * Quand le beam est actif, rend un beam 3D style beacon du conduit vers le coeur.
      */
     private void renderConduits(AnimationController ctrl, AltarHeartBlockEntity blockEntity,
-                                 BlockState heartState, PoseStack poseStack, VertexConsumer vertexConsumer,
-                                 int packedLight, int packedOverlay) {
+                                 BlockState heartState, PoseStack poseStack,
+                                 MultiBufferSource buffer, VertexConsumer vertexConsumer,
+                                 float partialTick, int packedLight, int packedOverlay) {
         BlockPos blockPos = blockEntity.getBlockPos();
-        Level level = blockEntity.getLevel();
-        long gameTime = level != null ? level.getGameTime() : 0;
-        boolean spawnBeam = AltarCraftAnimator.trySpawnBeamTick(blockPos, gameTime);
+        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
+        boolean beamActive = AltarCraftAnimator.isBeamActive(blockPos);
 
         for (int i = 0; i < AltarCraftAnimator.getConduitCount(); i++) {
             Vec3 staticPos = AltarCraftAnimator.getStaticPosition(i);
@@ -159,23 +156,30 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             poseStack.translate(-0.5, -0.5, -0.5);
 
             renderModel(CONDUIT_MODEL_LOC, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
-
-            // Beam: particules du centre du conduit vers le coeur (1x par tick)
-            if (spawnBeam && level != null) {
-                Matrix4f mat = poseStack.last().pose();
-                Vector4f center = new Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
-                mat.transform(center);
-                Vec3 conduitWorld = new Vec3(
-                    blockPos.getX() + center.x(),
-                    blockPos.getY() + center.y(),
-                    blockPos.getZ() + center.z()
-                );
-                Vec3 heartWorld = Vec3.atCenterOf(blockPos);
-                ParticleHelper.beam(level, ParticleTypes.END_ROD, conduitWorld, heartWorld, 4);
-            }
-
             poseStack.popPose();
+
+            // Beam 3D style beacon du centre du conduit vers le coeur
+            if (beamActive) {
+                Vec3 conduitCenter = computeConduitCenter(ctrl, i, staticPos);
+                Vec3 heartCenter = new Vec3(0.5, 0.5, 0.5);
+                BeamRenderer.renderBeam(poseStack, buffer, conduitCenter, heartCenter,
+                    partialTick, gameTime, 0.04f, 0.1f, 1.0f, 0.85f, 0.2f);
+            }
         }
+    }
+
+    /**
+     * Calcule la position du centre du conduit en espace BE-relatif
+     * en appliquant les animations d'orbite et de position (sans rotation).
+     */
+    private Vec3 computeConduitCenter(AnimationController ctrl, int index, Vec3 staticPos) {
+        PoseStack calc = new PoseStack();
+        ctrl.applyAnimation("orbit_" + index, calc);
+        calc.translate(staticPos.x, staticPos.y, staticPos.z);
+        ctrl.applyAnimation("pos_" + index, calc);
+        Vector4f c = new Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
+        calc.last().pose().transform(c);
+        return new Vec3(c.x(), c.y(), c.z());
     }
 
     /**
