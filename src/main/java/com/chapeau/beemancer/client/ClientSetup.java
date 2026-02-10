@@ -227,15 +227,14 @@ public class ClientSetup {
         }, BeemancerItems.MAGIC_BEE.get());
 
         // --- Fluid Extensions ---
-        // Honey - blanc (pas de tint, la texture contient déjà la couleur)
         registerFluidExtension(event, BeemancerFluids.HONEY_FLUID_TYPE,
-            "block/fluid/honey_still", "block/fluid/honey_flow", 0xFFFFFFFF);
+            //"block/fluid/honey_still", "block/fluid/honey_flow", 0xFFFFFFFF);
+            "block/t", "block/t2", 0xFFE8A317);
 
-        // Royal Jelly - blanc (pas de tint, la texture contient déjà la couleur)
         registerFluidExtension(event, BeemancerFluids.ROYAL_JELLY_FLUID_TYPE,
-            "block/fluid/royal_jelly_still", "block/fluid/royal_jelly_flow", 0xFFFFFFFF);
+            //"block/fluid/royal_jelly_still", "block/fluid/royal_jelly_flow", 0xFFFFFFFF);
+            "block/t", "block/t2", 0xFFF5F0E0);
 
-        // Nectar - blanc (pas de tint, la texture contient déjà la couleur)
         registerFluidExtension(event, BeemancerFluids.NECTAR_FLUID_TYPE,
             "block/fluid/nectar_still", "block/fluid/nectar_flow", 0xFFFFFFFF);
     }
