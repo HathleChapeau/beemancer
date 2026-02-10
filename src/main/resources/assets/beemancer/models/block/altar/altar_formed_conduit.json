@@ -9,8 +9,8 @@
   "elements": [
     {
       "name": "Main Body",
-      "from": [3, 6, 10],
-      "to": [13, 16, 16],
+      "from": [3, 3, 0],
+      "to": [13, 13, 3],
       "faces": {
         "north": {"texture": "#conduit", "uv": [3, 3, 13, 13]},
         "east": {"texture": "#conduit", "uv": [0, 3, 6, 13]},
@@ -21,20 +21,47 @@
       }
     },
     {
-      "from": [3, 8, 0],
-      "to": [19, 8, 16],
-      "rotation": {"angle": -45, "axis": "z", "origin": [8, 8, 11], "rescale": false},
+      "name": "Main Body 2",
+      "from": [5, 5, 3],
+      "to": [11, 11, 5],
       "faces": {
-        "east": {"uv": [0, 0, 16, 16], "texture": "#crystal"},
-        "west": {"uv": [0, 0, 16, 16], "texture": "#crystal"}
+        "north": {"texture": "#conduit", "uv": [3, 3, 13, 13]},
+        "east": {"texture": "#conduit", "uv": [0, 3, 6, 13]},
+        "south": {"texture": "#conduit", "uv": [3, 3, 13, 13]},
+        "west": {"texture": "#conduit", "uv": [0, 3, 6, 13]},
+        "up": {"texture": "#conduit", "uv": [3, 0, 13, 6]},
+        "down": {"texture": "#conduit", "uv": [3, 0, 13, 6]}
       }
     },
     {
-      "from": [3, 8, 0],
-      "to": [19, 8, 16],
+      "from": [2, 8, 2],
+      "to": [14, 8, 14],
+      "rotation": {"angle": 45, "axis": "z", "origin": [8, 8, 11], "rescale": false},
+      "faces": {
+        "down": {"uv": [0, 0, 16, 16], "texture": "#crystal"}
+      }
+    },
+    {
+      "from": [14, 8, 2],
+      "to": [2, 8, 14],
+      "rotation": {"angle": 45, "axis": "z", "origin": [8, 8, 11], "rescale": false},
+      "faces": {
+        "down": {"uv": [0, 0, 16, 16], "texture": "#crystal"}
+      }
+    },
+    {
+      "from": [2, 8, 2],
+      "to": [14, 8, 14],
       "rotation": {"angle": -45, "axis": "z", "origin": [8, 8, 11], "rescale": false},
       "faces": {
-        "up": {"uv": [0, 0, 16, 16], "texture": "#crystal"},
+        "down": {"uv": [0, 0, 16, 16], "texture": "#crystal"}
+      }
+    },
+    {
+      "from": [14, 8, 2],
+      "to": [2, 8, 14],
+      "rotation": {"angle": -45, "axis": "z", "origin": [8, 8, 11], "rescale": false},
+      "faces": {
         "down": {"uv": [0, 0, 16, 16], "texture": "#crystal"}
       }
     }

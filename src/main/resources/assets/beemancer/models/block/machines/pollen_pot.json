@@ -6,7 +6,7 @@
     "bottom": "minecraft:block/honey_block_top",
     "side": "minecraft:block/honey_block_top",
     "top": "beemancer:block/machines/pollen_jar_top",
-    "inside": "beemancer:block/building/honeyed_plank"
+    "inside": "beemancer:block/plank_3_bis"
   },
   "elements": [
     {

@@ -1,7 +1,8 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "base": "beemancer:block/iron",
+    "base": "beemancer:block/plank_2",
+    "base1": "beemancer:block/iron",
     "pipe": "beemancer:block/honey",
     "frame": "beemancer:block/iron",
     "particle": "beemancer:block/iron"
@@ -22,24 +23,24 @@
       "from": [1, 13, 1],
       "to": [15, 14, 15],
       "faces": {
-        "north": {"texture": "#base"},
-        "east": {"texture": "#base"},
-        "south": {"texture": "#base"},
-        "west": {"texture": "#base"},
-        "up": {"texture": "#base"},
-        "down": {"texture": "#base"}
+        "north": {"texture": "#base1"},
+        "east": {"texture": "#base1"},
+        "south": {"texture": "#base1"},
+        "west": {"texture": "#base1"},
+        "up": {"texture": "#base1"},
+        "down": {"texture": "#base1"}
       }
     },{
       "name": "Base2",
       "from": [1, 0, 1],
       "to": [15, 1, 15],
       "faces": {
-        "north": {"texture": "#base"},
-        "east": {"texture": "#base"},
-        "south": {"texture": "#base"},
-        "west": {"texture": "#base"},
-        "up": {"texture": "#base"},
-        "down": {"texture": "#base"}
+        "north": {"texture": "#base1"},
+        "east": {"texture": "#base1"},
+        "south": {"texture": "#base1"},
+        "west": {"texture": "#base1"},
+        "up": {"texture": "#base1"},
+        "down": {"texture": "#base1"}
       }
     },
     {

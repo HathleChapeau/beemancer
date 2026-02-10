@@ -2,6 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "cube": "beemancer:block/iron",
+    "body": "beemancer:block/plank_2",
     "particle": "beemancer:block/iron"
   },
   "elements": [
@@ -10,22 +11,21 @@
       "from": [2, 0, 2],
       "to": [14, 16, 14],
       "faces": {
-        "north": {"texture": "#cube"},
-        "east": {"texture": "#cube"},
-        "south": {"texture": "#cube"},
-        "west": {"texture": "#cube"}
+        "north": {"texture": "#body"},
+        "east": {"texture": "#body"},
+        "south": {"texture": "#body"},
+        "west": {"texture": "#body"}
       }
     },
     {
       "from": [1, 0, 1],
       "to": [15, 4, 15],
       "faces": {
-        "north": {"texture": "#cube"},
-        "east": {"texture": "#cube"},
-        "south": {"texture": "#cube"},
-        "west": {"texture": "#cube"},
-        "up": {"texture": "#cube"},
-        "down": {"texture": "#cube"}
+        "north": {"texture": "#body"},
+        "east": {"texture": "#body"},
+        "south": {"texture": "#body"},
+        "west": {"texture": "#body"},
+        "up": {"texture": "#body"}
       }
     },
     {
@@ -56,12 +56,11 @@
       "from": [1, 12, 1],
       "to": [15, 16, 15],
       "faces": {
-        "north": {"texture": "#cube"},
-        "east": {"texture": "#cube"},
-        "south": {"texture": "#cube"},
-        "west": {"texture": "#cube"},
-        "up": {"texture": "#cube"},
-        "down": {"texture": "#cube"}
+        "north": {"texture": "#body"},
+        "east": {"texture": "#body"},
+        "south": {"texture": "#body"},
+        "west": {"texture": "#body"},
+        "down": {"texture": "#body"}
       }
     },
     {

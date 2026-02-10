@@ -61,7 +61,7 @@ public class StorageHiveBlock extends Block implements EntityBlock {
     public static final EnumProperty<HiveState> HIVE_STATE = EnumProperty.create("hive_state", HiveState.class);
 
     // 10 pixels de large centre (3 a 13)
-    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 16, 13);
+    private static final VoxelShape SHAPE = Block.box(3, 3, 3, 13, 13, 13);
 
     private final int tier;
 
