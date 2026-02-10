@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "beemancer:block/storage/crafter" },
+    "facing=east": { "model": "beemancer:block/storage/crafter", "y": 90 },
+    "facing=south": { "model": "beemancer:block/storage/crafter", "y": 180 },
+    "facing=west": { "model": "beemancer:block/storage/crafter", "y": 270 }
+  }
+}

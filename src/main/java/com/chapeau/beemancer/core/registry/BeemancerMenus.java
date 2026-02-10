@@ -19,6 +19,7 @@ import com.chapeau.beemancer.common.menu.alchemy.InfuserMenu;
 import com.chapeau.beemancer.common.menu.alchemy.ManualCentrifugeMenu;
 import com.chapeau.beemancer.common.menu.alchemy.MultiblockTankMenu;
 import com.chapeau.beemancer.common.menu.alchemy.PoweredCentrifugeMenu;
+import com.chapeau.beemancer.common.menu.storage.CrafterMenu;
 import com.chapeau.beemancer.common.menu.storage.NetworkInterfaceMenu;
 import com.chapeau.beemancer.common.menu.storage.StorageControllerMenu;
 import com.chapeau.beemancer.common.menu.storage.StorageTerminalMenu;
@@ -50,6 +51,10 @@ public class BeemancerMenus {
     public static final Supplier<MenuType<NetworkInterfaceMenu>> NETWORK_INTERFACE =
             MENUS.register("network_interface",
                     () -> IMenuTypeExtension.create(NetworkInterfaceMenu::new));
+
+    public static final Supplier<MenuType<CrafterMenu>> CRAFTER =
+            MENUS.register("crafter",
+                    () -> IMenuTypeExtension.create(CrafterMenu::new));
 
     public static final Supplier<MenuType<BeeCreatorMenu>> BEE_CREATOR = 
             MENUS.register("bee_creator",

@@ -12,6 +12,9 @@
  * | StorageControllerBlockEntity  | Controller lie       | Assignation bees, depot        |
  * | InterfaceTask                 | Tache unitaire       | Export par chunks bee-sized     |
  * | InterfaceFilter               | Filtre individuel    | Logique per-filter             |
+ * | PartCraftingPaperData         | Donnees Part Paper   | Craft mode: items a exporter   |
+ * | CrafterBlockEntity            | Crafter lie          | Output slots, export craft     |
+ * | DeliveryTask                  | Livraison bee        | Export craft source=crafter    |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -22,6 +25,7 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.InterfaceTask;
+import com.chapeau.beemancer.common.data.PartCraftingPaperData;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -61,6 +65,11 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
         cleanupDeliveredTasks();
         int beeCapacity = controller.getBeeCapacity();
 
+        if (craftMode) {
+            doScanCraftMode(adjacent, controller, beeCapacity);
+            return;
+        }
+
         Set<String> activeItemKeys = new HashSet<>();
 
         if (filters.isEmpty()) {
@@ -73,6 +82,102 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
 
         cleanupOrphanedTasks(activeItemKeys);
         publishTodoTasks(controller);
+    }
+
+    /**
+     * Scan en mode craft: utilise le Part Crafting Paper OUTPUT pour definir
+     * les items a exporter depuis les output slots du Crafter vers le reseau.
+     * Attend que le craft soit complet (items presents dans les output slots).
+     */
+    private void doScanCraftMode(Container adjacent, StorageControllerBlockEntity controller,
+                                  int beeCapacity) {
+        PartCraftingPaperData paperData = getCraftPaperData();
+        if (paperData == null || paperData.mode() != PartCraftingPaperData.PartMode.OUTPUT) {
+            cleanupOrphanedTasks(new HashSet<>());
+            return;
+        }
+
+        // Le Crafter doit etre lie au controller
+        CrafterBlockEntity crafter = controller.getCrafter();
+        if (crafter == null) {
+            cleanupOrphanedTasks(new HashSet<>());
+            return;
+        }
+
+        Set<String> activeItemKeys = new HashSet<>();
+
+        for (ItemStack item : paperData.items()) {
+            if (item.isEmpty()) continue;
+
+            String key = itemKey(item);
+            activeItemKeys.add(key);
+
+            // Compter les items dans les output slots du Crafter (slots A et B)
+            int currentCount = countInCrafterOutput(crafter, item);
+
+            // Exporter tout ce qui est present dans les output slots
+            if (currentCount > 0) {
+                reconcileTasksForItem(item, currentCount, beeCapacity,
+                        InterfaceTask.TaskType.EXPORT);
+            }
+        }
+
+        cleanupOrphanedTasks(activeItemKeys);
+        publishCraftExportTasks(controller, crafter);
+    }
+
+    /**
+     * Compte les items d'un type donne dans les output slots du Crafter.
+     */
+    private int countInCrafterOutput(CrafterBlockEntity crafter, ItemStack template) {
+        int count = 0;
+        net.neoforged.neoforge.items.ItemStackHandler inv = crafter.getInventory();
+        for (int slot : new int[]{CrafterBlockEntity.SLOT_OUTPUT_A, CrafterBlockEntity.SLOT_OUTPUT_B}) {
+            ItemStack stack = inv.getStackInSlot(slot);
+            if (!stack.isEmpty() && ItemStack.isSameItemSameComponents(template, stack)) {
+                count += stack.getCount();
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Publie les tasks NEEDED pour l'export craft mode.
+     * La source est le Crafter (pas l'inventaire adjacent).
+     */
+    private void publishCraftExportTasks(StorageControllerBlockEntity controller,
+                                          CrafterBlockEntity crafter) {
+        for (InterfaceTask task : tasks) {
+            if (task.getState() != InterfaceTask.TaskState.NEEDED) continue;
+            assignCraftExportBee(controller, crafter, task);
+        }
+        setChanged();
+    }
+
+    /**
+     * Assigne une bee pour exporter depuis le Crafter vers le reseau.
+     * Source = Crafter position, dest = coffre dans le reseau.
+     */
+    private void assignCraftExportBee(StorageControllerBlockEntity controller,
+                                       CrafterBlockEntity crafter, InterfaceTask task) {
+        if (level == null) return;
+
+        BlockPos dest = controller.findSlotForItem(task.getTemplate());
+        if (dest == null) return;
+
+        BlockPos crafterPos = crafter.getBlockPos();
+        if (dest.equals(crafterPos)) return;
+
+        com.chapeau.beemancer.common.block.storage.DeliveryTask dt =
+                new com.chapeau.beemancer.common.block.storage.DeliveryTask(
+                    task.getTemplate(), task.getCount(),
+                    crafterPos, dest,
+                    com.chapeau.beemancer.common.block.storage.DeliveryTask.TaskOrigin.AUTOMATION, false,
+                    getBlockPos(), null,
+                    task.getTaskId(), getBlockPos()
+                );
+        controller.getDeliveryManager().addDeliveryTask(dt);
+        task.lockTask(dt.getTaskId(), level.getGameTime());
     }
 
     /**

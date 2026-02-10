@@ -370,6 +370,7 @@ public class DeliveryPhaseGoal extends Goal {
                 navigationStarted = false;
                 return;
             }
+            bee.snapshotCarriedItems();
             performDelivery();
         }
 

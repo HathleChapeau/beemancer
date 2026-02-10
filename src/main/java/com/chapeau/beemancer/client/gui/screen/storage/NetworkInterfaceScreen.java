@@ -9,9 +9,10 @@
  * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
  * | NetworkInterfaceMenu          | Donnees container    | Slots, data accessors          |
- * | InterfaceActionPacket         | Envoi actions C2S    | Add/remove filter, mode, text  |
+ * | InterfaceActionPacket         | Envoi actions C2S    | Filtres, mode, text, craft     |
  * | GuiRenderHelper               | Rendu programmatique | Background, slots, boutons     |
  * | InterfaceFilter               | Donnees filtre       | Mode, quantite                 |
+ * | NetworkInterfaceBlockEntity   | BlockEntity source   | Craft mode toggle, filtre data |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -181,8 +182,16 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
     private void updateWidgetVisibility() {
         NetworkInterfaceBlockEntity be = menu.getBlockEntity();
         int filterCount = be != null ? be.getFilterCount() : 0;
+        boolean isCraftMode = be != null && be.isCraftMode();
 
         for (int i = 0; i < InterfaceFilter.MAX_FILTERS; i++) {
+            // En mode craft, cacher tous les EditBoxes
+            if (isCraftMode) {
+                filterTextBoxes[i].setVisible(false);
+                qtyBoxes[i].setVisible(false);
+                continue;
+            }
+
             boolean filterExists = i < filterCount;
             InterfaceFilter filter = (filterExists && be != null) ? be.getFilter(i) : null;
             boolean isTextMode = filter != null
@@ -271,28 +280,34 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         // Adjacent block info + Debug button
         renderAdjacentBlock(g, x, y, mouseX, mouseY);
 
-        // Filter lines
+        // Filter lines or craft mode display
         NetworkInterfaceBlockEntity be = menu.getBlockEntity();
-        int filterCount = be != null ? be.getFilterCount() : 0;
+        boolean isCraftMode = be != null && be.isCraftMode();
 
-        for (int i = 0; i < filterCount; i++) {
-            renderFilterLine(g, x, y, i, mouseX, mouseY);
-        }
+        if (isCraftMode) {
+            renderCraftModeArea(g, x, y, isImport);
+        } else {
+            int filterCount = be != null ? be.getFilterCount() : 0;
 
-        // [+] Add filter button (if < 3 filters)
-        if (filterCount < InterfaceFilter.MAX_FILTERS) {
-            int addY = y + FILTER_ZONE_Y + filterCount * FILTER_LINE_H + 3;
-            boolean addHovered = isMouseOver(mouseX, mouseY,
-                x + TOGGLE_X, addY, ADD_BTN_W, ADD_BTN_H);
-            GuiRenderHelper.renderButton(g, font, x + TOGGLE_X, addY,
-                ADD_BTN_W, ADD_BTN_H, "+", addHovered);
+            for (int i = 0; i < filterCount; i++) {
+                renderFilterLine(g, x, y, i, mouseX, mouseY);
+            }
 
-            // Global [S] button (only when 0 filters)
-            if (filterCount == 0) {
-                boolean sHovered = isMouseOver(mouseX, mouseY,
-                    x + TOGGLE_X + ADD_BTN_W + 2, addY, SELECT_W, SELECT_H);
-                GuiRenderHelper.renderButton(g, font, x + TOGGLE_X + ADD_BTN_W + 2, addY,
-                    SELECT_W, SELECT_H, "S", sHovered);
+            // [+] Add filter button (if < 3 filters)
+            if (filterCount < InterfaceFilter.MAX_FILTERS) {
+                int addY = y + FILTER_ZONE_Y + filterCount * FILTER_LINE_H + 3;
+                boolean addHovered = isMouseOver(mouseX, mouseY,
+                    x + TOGGLE_X, addY, ADD_BTN_W, ADD_BTN_H);
+                GuiRenderHelper.renderButton(g, font, x + TOGGLE_X, addY,
+                    ADD_BTN_W, ADD_BTN_H, "+", addHovered);
+
+                // Global [S] button (only when 0 filters)
+                if (filterCount == 0) {
+                    boolean sHovered = isMouseOver(mouseX, mouseY,
+                        x + TOGGLE_X + ADD_BTN_W + 2, addY, SELECT_W, SELECT_H);
+                    GuiRenderHelper.renderButton(g, font, x + TOGGLE_X + ADD_BTN_W + 2, addY,
+                        SELECT_W, SELECT_H, "S", sHovered);
+                }
             }
         }
 
@@ -302,6 +317,8 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
 
     private static final int TOGGLE_ACTIVE_W = 24;
     private static final int TOGGLE_ACTIVE_H = 10;
+    private static final int CRAFT_MODE_W = 14;
+    private static final int CRAFT_MODE_H = 10;
 
     private void renderStatus(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         // Linked / Not Linked status (top right)
@@ -333,6 +350,21 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         int textX = toggleX + (TOGGLE_ACTIVE_W - font.width(toggleLabel)) / 2;
         int textY = toggleY + (TOGGLE_ACTIVE_H - 8) / 2;
         g.drawString(font, toggleLabel, textX, textY, 0xFFFFFF, false);
+
+        // [C] Craft mode toggle (left of ON/OFF button)
+        boolean isCraftMode = be != null && be.isCraftMode();
+        int craftX = toggleX - CRAFT_MODE_W - 2;
+        int craftY = toggleY;
+        boolean craftHovered = isMouseOver(mouseX, mouseY,
+            craftX, craftY, CRAFT_MODE_W, CRAFT_MODE_H);
+        int craftBg = isCraftMode ? 0xFF4488CC : 0xFF666666;
+        g.fill(craftX, craftY,
+            craftX + CRAFT_MODE_W, craftY + CRAFT_MODE_H,
+            craftHovered ? (craftBg + 0x222222) : craftBg);
+        String craftLabel = "C";
+        int craftTextX = craftX + (CRAFT_MODE_W - font.width(craftLabel)) / 2;
+        int craftTextY = craftY + (CRAFT_MODE_H - 8) / 2;
+        g.drawString(font, craftLabel, craftTextX, craftTextY, 0xFFFFFF, false);
     }
 
     private void renderAdjacentBlock(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
@@ -354,6 +386,21 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         }
 
         g.drawString(font, "\u2192 " + blockName, x + 8, y + 17, color, false);
+    }
+
+    /**
+     * Affiche la zone craft mode: un seul ghost slot pour le Part Crafting Paper
+     * avec une indication du type attendu (INPUT ou OUTPUT).
+     */
+    private void renderCraftModeArea(GuiGraphics g, int x, int y, boolean isImport) {
+        int lineY = y + FILTER_ZONE_Y + 3;
+
+        // Label indiquant le type de Part Paper attendu
+        String label = isImport ? "Part Paper [INPUT]" : "Part Paper [OUTPUT]";
+        g.drawString(font, label, x + SLOTS_X + 20, lineY + 3, 0x404040, false);
+
+        // Ghost slot pour le Part Paper (slot 0 du filtre 0)
+        GuiRenderHelper.renderSlot(g, x + SLOTS_X, lineY - 1);
     }
 
     private void renderFilterLine(GuiGraphics g, int x, int y, int filterIdx,
@@ -579,68 +626,86 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
             return true;
         }
 
-        // Check filter line buttons
-        for (int i = 0; i < filterCount; i++) {
-            int lineY = y + FILTER_ZONE_Y + i * FILTER_LINE_H + 3;
-
-            // [T] Toggle
-            if (isMouseOver(mouseX, mouseY, x + TOGGLE_X, lineY, TOGGLE_W, TOGGLE_H)) {
-                InterfaceFilter filter = be.getFilter(i);
-                if (filter != null) {
-                    String newMode = filter.getMode() == InterfaceFilter.FilterMode.ITEM
-                        ? "TEXT" : "ITEM";
-                    PacketDistributor.sendToServer(new InterfaceActionPacket(
-                        menu.containerId, InterfaceActionPacket.ACTION_SET_FILTER_MODE,
-                        i, newMode));
-                    filter.setMode(InterfaceFilter.FilterMode.valueOf(newMode));
-                    updateWidgetVisibility();
-                    menu.updateFilterSlots();
-                }
-                return true;
+        // [C] Craft mode toggle (left of ON/OFF button)
+        int craftX = toggleX - CRAFT_MODE_W - 2;
+        int craftY = toggleY;
+        if (isMouseOver(mouseX, mouseY, craftX, craftY, CRAFT_MODE_W, CRAFT_MODE_H)) {
+            PacketDistributor.sendToServer(new InterfaceActionPacket(
+                menu.containerId, InterfaceActionPacket.ACTION_TOGGLE_CRAFT_MODE, 0, ""));
+            if (be != null) {
+                be.setCraftMode(!be.isCraftMode());
+                updateWidgetVisibility();
+                menu.updateFilterSlots();
             }
-
-            // [S] Select Slots
-            if (isMouseOver(mouseX, mouseY, x + SELECT_X, lineY, SELECT_W, SELECT_H)) {
-                openSlotSelector(i);
-                return true;
-            }
-
-            // [-] Remove
-            if (isMouseOver(mouseX, mouseY, x + REMOVE_X, lineY, REMOVE_W, REMOVE_H)) {
-                PacketDistributor.sendToServer(new InterfaceActionPacket(
-                    menu.containerId, InterfaceActionPacket.ACTION_REMOVE_FILTER, i, ""));
-                if (be != null) {
-                    be.removeFilter(i);
-                    updateWidgetVisibility();
-                    menu.updateFilterSlots();
-                }
-                return true;
-            }
+            return true;
         }
 
-        // [+] Add filter button
-        if (filterCount < InterfaceFilter.MAX_FILTERS) {
-            int addY = y + FILTER_ZONE_Y + filterCount * FILTER_LINE_H + 3;
-            if (isMouseOver(mouseX, mouseY, x + TOGGLE_X, addY, ADD_BTN_W, ADD_BTN_H)) {
-                PacketDistributor.sendToServer(new InterfaceActionPacket(
-                    menu.containerId, InterfaceActionPacket.ACTION_ADD_FILTER, 0, ""));
-                if (be != null) {
-                    be.addFilter();
-                    updateWidgetVisibility();
-                    menu.updateFilterSlots();
-                }
-                return true;
-            }
+        // En mode craft, pas de boutons de filtre
+        boolean isCraftMode = be != null && be.isCraftMode();
+        if (!isCraftMode) {
+            // Check filter line buttons
+            for (int i = 0; i < filterCount; i++) {
+                int lineY = y + FILTER_ZONE_Y + i * FILTER_LINE_H + 3;
 
-            // Global [S] (only when 0 filters)
-            if (filterCount == 0) {
-                if (isMouseOver(mouseX, mouseY, x + TOGGLE_X + ADD_BTN_W + 2, addY,
-                    SELECT_W, SELECT_H)) {
-                    openSlotSelector(99);
+                // [T] Toggle
+                if (isMouseOver(mouseX, mouseY, x + TOGGLE_X, lineY, TOGGLE_W, TOGGLE_H)) {
+                    InterfaceFilter filter = be.getFilter(i);
+                    if (filter != null) {
+                        String newMode = filter.getMode() == InterfaceFilter.FilterMode.ITEM
+                            ? "TEXT" : "ITEM";
+                        PacketDistributor.sendToServer(new InterfaceActionPacket(
+                            menu.containerId, InterfaceActionPacket.ACTION_SET_FILTER_MODE,
+                            i, newMode));
+                        filter.setMode(InterfaceFilter.FilterMode.valueOf(newMode));
+                        updateWidgetVisibility();
+                        menu.updateFilterSlots();
+                    }
+                    return true;
+                }
+
+                // [S] Select Slots
+                if (isMouseOver(mouseX, mouseY, x + SELECT_X, lineY, SELECT_W, SELECT_H)) {
+                    openSlotSelector(i);
+                    return true;
+                }
+
+                // [-] Remove
+                if (isMouseOver(mouseX, mouseY, x + REMOVE_X, lineY, REMOVE_W, REMOVE_H)) {
+                    PacketDistributor.sendToServer(new InterfaceActionPacket(
+                        menu.containerId, InterfaceActionPacket.ACTION_REMOVE_FILTER, i, ""));
+                    if (be != null) {
+                        be.removeFilter(i);
+                        updateWidgetVisibility();
+                        menu.updateFilterSlots();
+                    }
                     return true;
                 }
             }
-        }
+
+            // [+] Add filter button
+            if (filterCount < InterfaceFilter.MAX_FILTERS) {
+                int addY = y + FILTER_ZONE_Y + filterCount * FILTER_LINE_H + 3;
+                if (isMouseOver(mouseX, mouseY, x + TOGGLE_X, addY, ADD_BTN_W, ADD_BTN_H)) {
+                    PacketDistributor.sendToServer(new InterfaceActionPacket(
+                        menu.containerId, InterfaceActionPacket.ACTION_ADD_FILTER, 0, ""));
+                    if (be != null) {
+                        be.addFilter();
+                        updateWidgetVisibility();
+                        menu.updateFilterSlots();
+                    }
+                    return true;
+                }
+
+                // Global [S] (only when 0 filters)
+                if (filterCount == 0) {
+                    if (isMouseOver(mouseX, mouseY, x + TOGGLE_X + ADD_BTN_W + 2, addY,
+                        SELECT_W, SELECT_H)) {
+                        openSlotSelector(99);
+                        return true;
+                    }
+                }
+            }
+        } // end !isCraftMode
 
         return super.mouseClicked(mouseX, mouseY, button);
     }

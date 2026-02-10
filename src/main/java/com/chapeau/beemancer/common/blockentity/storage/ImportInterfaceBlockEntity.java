@@ -13,6 +13,8 @@
  * | StorageControllerBlockEntity  | Controller lie       | Assignation bees, depot        |
  * | InterfaceTask                 | Tache unitaire       | Import par chunks bee-sized    |
  * | InterfaceFilter               | Filtre individuel    | Logique per-filter             |
+ * | PartCraftingPaperData         | Donnees Part Paper   | Craft mode: items a importer   |
+ * | CrafterBlockEntity            | Crafter lie          | Craft buffer, forward items    |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -24,6 +26,7 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.InterfaceTask;
+import com.chapeau.beemancer.common.data.PartCraftingPaperData;
 import com.chapeau.beemancer.core.util.ContainerHelper;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -63,6 +66,11 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
     @Override
     public ItemStack receiveDeliveredItems(ItemStack items) {
+        // En mode craft, les items sont destines au Crafter
+        if (craftMode) {
+            return receiveForCrafter(items);
+        }
+
         Container adjacent = getAdjacentInventory();
         if (adjacent == null) return items;
 
@@ -91,6 +99,21 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
         return insertIntoSlots(adjacent, remaining, slots);
     }
 
+    /**
+     * En mode craft, forward les items recus vers le Crafter lie au controller.
+     * Le Crafter est identifie via le controller commun.
+     */
+    private ItemStack receiveForCrafter(ItemStack items) {
+        StorageControllerBlockEntity controller = getController();
+        if (controller == null) return items;
+
+        CrafterBlockEntity crafter = controller.getCrafter();
+        if (crafter == null) return items;
+
+        // Deleguer au Crafter qui gere son craft buffer
+        return crafter.receiveDeliveredItems(items);
+    }
+
     private ItemStack insertIntoSlots(Container adjacent, ItemStack remaining, int[] slots) {
         remaining = ContainerHelper.insertItem(adjacent, remaining, slots);
 
@@ -112,6 +135,11 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
         cleanupDeliveredTasks();
         int beeCapacity = controller.getBeeCapacity();
 
+        if (craftMode) {
+            doScanCraftMode(adjacent, controller, beeCapacity);
+            return;
+        }
+
         if (filters.isEmpty()) {
             cleanupOrphanedTasks(new HashSet<>());
             return;
@@ -125,6 +153,59 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
         cleanupOrphanedTasks(activeItemKeys);
         publishTodoTasks(controller);
+    }
+
+    /**
+     * Scan en mode craft: utilise le Part Crafting Paper INPUT pour definir
+     * les items a importer depuis le reseau vers le Crafter lie.
+     * Verifie le craft buffer du Crafter pour determiner les quantites manquantes.
+     */
+    private void doScanCraftMode(Container adjacent, StorageControllerBlockEntity controller,
+                                  int beeCapacity) {
+        PartCraftingPaperData paperData = getCraftPaperData();
+        if (paperData == null || paperData.mode() != PartCraftingPaperData.PartMode.INPUT) {
+            cleanupOrphanedTasks(new HashSet<>());
+            return;
+        }
+
+        // Le Crafter doit etre lie au controller
+        CrafterBlockEntity crafter = controller.getCrafter();
+        if (crafter == null || !crafter.isCrafting()) {
+            cleanupOrphanedTasks(new HashSet<>());
+            return;
+        }
+
+        Set<String> activeItemKeys = new HashSet<>();
+
+        for (ItemStack item : paperData.items()) {
+            if (item.isEmpty()) continue;
+
+            String key = itemKey(item);
+            activeItemKeys.add(key);
+
+            // Compter les items deja dans le craft buffer du Crafter
+            int currentCount = countInCraftBuffer(crafter, item);
+            int needed = item.getCount() - currentCount;
+
+            reconcileTasksForItem(item, needed, beeCapacity,
+                    InterfaceTask.TaskType.IMPORT);
+        }
+
+        cleanupOrphanedTasks(activeItemKeys);
+        publishTodoTasks(controller);
+    }
+
+    /**
+     * Compte les items d'un type donne dans le craft buffer du Crafter.
+     */
+    private int countInCraftBuffer(CrafterBlockEntity crafter, ItemStack template) {
+        int count = 0;
+        for (ItemStack bufferStack : crafter.getCraftBuffer()) {
+            if (ItemStack.isSameItemSameComponents(template, bufferStack)) {
+                count += bufferStack.getCount();
+            }
+        }
+        return count;
     }
 
     /**

@@ -1,0 +1,155 @@
+================================================================================
+FEATURE: Crafter System (Crafting Automatique)
+================================================================================
+
+Description: Systeme de crafting automatique connecte au reseau de stockage.
+Le joueur programme des recettes (vanilla 3x3 ou machine) sur des Crafting
+Papers, les charge dans le Crafter, et les abeilles livrent les ingredients
+puis ramenent les resultats.
+
+Statut: IMPLEMENTE
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+Le systeme se compose de 6 couches:
+
+1. DATA: CraftingPaperData, PartCraftingPaperData, CraftTask
+2. ITEMS: CraftingPaperItem, PartCraftingPaperItem
+3. BLOCK: CrafterBlock, CrafterBlockEntity, CraftManager
+4. MENU/GUI: CrafterMenu, CrafterScreen, CrafterMachinePanel
+5. NETWORK: CrafterGhostSlotPacket, CrafterInscribePacket, CrafterModeTogglePacket
+6. INTEGRATION: Delivery system (DeliveryTask craft fields), Import/Export craft mode
+
+================================================================================
+SCRIPTS CREES
+================================================================================
+
+| Fichier                                           | Responsabilite                          |
+|---------------------------------------------------|-----------------------------------------|
+| common/data/CraftingPaperData.java                | Record: recette vanilla (9 slots + result)|
+| common/data/PartCraftingPaperData.java            | Record: recette machine (INPUT/OUTPUT)   |
+| common/data/CraftTask.java                        | Tache de craft avec etats et timeout     |
+| common/item/CraftingPaperItem.java                | Item Crafting Paper avec tooltip         |
+| common/item/PartCraftingPaperItem.java            | Item Part Crafting Paper (INPUT/OUTPUT)  |
+| common/block/storage/CrafterBlock.java            | Bloc avec facing, menu, drop on remove  |
+| common/blockentity/storage/CrafterBlockEntity.java| BE: inventaire, ghost grid, craft buffer|
+| common/blockentity/storage/CraftManager.java      | Orchestration crafts, resolution imbrique|
+| common/menu/storage/CrafterMenu.java              | Menu: reserve, output, library, ghost   |
+| client/gui/screen/CrafterScreen.java              | Screen mode CRAFT (3x3 ghost, inscribe) |
+| client/gui/screen/CrafterMachinePanel.java        | Panel mode MACHINE (scroll, +/- count)  |
+| core/network/packets/CrafterGhostSlotPacket.java  | C2S: set/clear ghost item               |
+| core/network/packets/CrafterInscribePacket.java   | C2S: inscrire recette (craft ou machine)|
+| core/network/packets/CrafterModeTogglePacket.java | C2S: toggle CRAFT/MACHINE               |
+
+================================================================================
+SCRIPTS MODIFIES
+================================================================================
+
+| Fichier                                           | Modification                            |
+|---------------------------------------------------|-----------------------------------------|
+| core/registry/BeemancerBlocks.java                | +CRAFTER                                |
+| core/registry/BeemancerItems.java                 | +CRAFTER, +CRAFTING_PAPER, +PART_CRAFTING_PAPER|
+| core/registry/BeemancerBlockEntities.java         | +CRAFTER                                |
+| core/registry/BeemancerMenus.java                 | +CRAFTER                                |
+| core/registry/BeemancerCreativeTabs.java          | +3 items dans l'onglet                  |
+| core/network/BeemancerNetwork.java                | +3 packets                              |
+| client/ClientSetup.java                           | +CrafterScreen registration             |
+| common/blockentity/storage/StorageNetworkRegistry.java | +CRAFTER dans NetworkBlockType      |
+| common/block/storage/StorageEvents.java           | +handleCrafterToggle() (edit mode)      |
+| common/blockentity/storage/StorageControllerBlockEntity.java | +tickCraftManager(), linkCrafter deja present |
+| common/block/storage/DeliveryTask.java            | +craftTaskId, craftReturn, createCraftDelivery()|
+| common/entity/delivery/DeliveryBeeEntity.java     | +craft fields, snapshotCarriedItems()   |
+| common/entity/delivery/DeliveryPhaseGoal.java     | +snapshot avant delivery                |
+| common/blockentity/storage/DeliveryBeeSpawner.java| +pass craft fields                      |
+| common/blockentity/storage/StorageDeliveryManager.java | +skip split/reevaluate craft tasks  |
+| common/blockentity/storage/NetworkInterfaceBlockEntity.java | +craftMode boolean, getCraftPaperData()|
+| common/blockentity/storage/ImportInterfaceBlockEntity.java  | +doScanCraftMode()              |
+| common/blockentity/storage/ExportInterfaceBlockEntity.java  | +doScanCraftMode()              |
+| common/menu/storage/NetworkInterfaceMenu.java     | +DATA_CRAFT_MODE                        |
+| core/network/packets/InterfaceActionPacket.java   | +ACTION_TOGGLE_CRAFT_MODE               |
+| client/gui/screen/storage/NetworkInterfaceScreen.java | +toggle craft mode button [C]       |
+| common/blockentity/storage/DeliveryContainerOps.java  | +extractFromCrafterOutput()         |
+| assets/lang/en_us.json                            | +traductions crafter, papers, messages  |
+| assets/lang/fr_fr.json                            | +traductions crafter, papers, messages  |
+
+================================================================================
+ASSETS
+================================================================================
+
+| Fichier                                           | Type                                    |
+|---------------------------------------------------|-----------------------------------------|
+| blockstates/crafter.json                          | Blockstate avec facing                  |
+| models/block/storage/crafter.json                 | Modele bloc                             |
+| models/item/crafter.json                          | Modele item (parent block)              |
+| models/item/crafting_paper.json                   | Modele item                             |
+| models/item/part_crafting_paper.json              | Modele item                             |
+| textures/block/storage/crafter_front.png          | Texture face avant                      |
+| textures/block/storage/crafter_side.png           | Texture faces laterales                 |
+| textures/block/storage/crafter_top.png            | Texture face superieure                 |
+| textures/item/crafting_paper.png                  | Texture item                            |
+| textures/item/part_crafting_paper.png             | Texture item                            |
+| data/loot_table/blocks/crafter.json               | Loot table (drop self)                  |
+| data/recipe/crafting/crafting_paper.json           | Recette shaped (sticks + honeyed_planks)|
+
+================================================================================
+FONCTIONNEMENT
+================================================================================
+
+MODE CRAFT (recettes vanilla 3x3):
+1. Le joueur ouvre le Crafter et place des Crafting Papers vierges dans le slot reserve
+2. Il clique sur les ghost slots avec des items pour definir la recette 3x3
+3. Le preview affiche le resultat si la recette est valide
+4. Clic Inscribe: consomme 1 paper vierge, cree 1 Crafting Paper inscrit dans output A
+5. Le paper inscrit va dans la bibliotheque (8 slots)
+
+MODE MACHINE (recettes non-vanilla):
+1. Toggle CRAFT/MACHINE via le bouton
+2. Ajout de lignes input (+) avec item ghost + quantite
+3. Definition de l'output avec item ghost + quantite
+4. Inscribe: consomme 1 paper vierge, cree 2 Part Crafting Papers (INPUT + OUTPUT) avec UUID partage
+
+CRAFT AUTOMATIQUE:
+1. Le CraftManager recoit une demande de craft via submitCraft()
+2. Resolution recursive des sous-crafts (bibliotheque, max profondeur 8, detection cycles)
+3. Les abeilles apportent les ingredients au crafter (DeliveryTask -> IDeliveryEndpoint)
+4. CraftManager.tick() verifie si tous les ingredients sont presents dans le craftBuffer
+5. Execute le craft, resultat retourne au reseau via abeille preloaded (bypassCapacity)
+6. Timeout 2 minutes: annule et retourne les items orphelins au reseau
+
+LINKING CONTROLLER:
+1. Shift+Right-Click sur le Controller pour entrer en edit mode
+2. Right-Click sur le Crafter pour lier (1 crafter max par controller)
+3. Le crafter est controller-only (pas de relay)
+
+IMPORT/EXPORT CRAFT MODE:
+1. Toggle [C] sur l'interface import/export
+2. Placer un Part Crafting Paper INPUT dans l'import interface
+3. Placer un Part Crafting Paper OUTPUT dans l'export interface
+4. Les interfaces routent via le controller commun vers le crafter lie
+
+================================================================================
+DEPENDANCES
+================================================================================
+
+- StorageControllerBlockEntity (link crafter, delivery management)
+- StorageNetworkRegistry (NetworkBlockType.CRAFTER)
+- StorageDeliveryManager (craft delivery tasks)
+- DeliveryBeeEntity + DeliveryPhaseGoal (transport ingredients/resultats)
+- IDeliveryEndpoint (reception items par le crafter)
+- InterfaceTask pattern (modele pour CraftTask)
+- GuiRenderHelper (rendu programmatique screens)
+- AbstractBeemancerScreen (base class mais CrafterScreen extend directement AbstractContainerScreen)
+
+================================================================================
+CONTRAINTES DESIGN
+================================================================================
+
+- 1 crafter = 1 controller maximum (pas de relay)
+- 1 controller = 1 crafter maximum
+- 1 seul craft a la fois dans le crafter
+- Detection de cycles dans les crafts imbriques (Set visited + profondeur max 8)
+- CraftBuffer cap: 54 stacks max
+- Timeout craft: 2400 ticks (2 minutes)
+- Retour resultat TOUJOURS via abeille (pas de depot direct)

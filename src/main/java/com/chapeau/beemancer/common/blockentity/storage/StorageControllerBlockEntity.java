@@ -88,6 +88,10 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     private int networkValidateTimer = 0;
     private int beeCapacity = ControllerStats.BASE_DROP;
 
+    // === Crafter direct link (max 1 per controller, not via relay) ===
+    @Nullable
+    private BlockPos crafterPos = null;
+
     // === Registre central du reseau ===
     private final StorageNetworkRegistry networkRegistry = new StorageNetworkRegistry();
 
@@ -252,6 +256,16 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         if (!toRemove.isEmpty() || !hivesToRemove.isEmpty()) {
             setChanged();
             syncToClient();
+        }
+
+        // Validate crafter link
+        if (crafterPos != null && level.isLoaded(crafterPos)) {
+            BlockEntity crafterBe = level.getBlockEntity(crafterPos);
+            if (!(crafterBe instanceof CrafterBlockEntity crafter)
+                    || crafter.getControllerPos() == null
+                    || !crafter.getControllerPos().equals(worldPosition)) {
+                unlinkCrafter();
+            }
         }
     }
 
@@ -428,6 +442,44 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         }
     }
 
+    // === Crafter (direct link, max 1 per controller) ===
+
+    @Nullable
+    public BlockPos getCrafterPos() { return crafterPos; }
+
+    /**
+     * Lie un crafter au controller. Max 1 crafter par controller.
+     * @return true si le lien a ete effectue, false si un crafter est deja lie
+     */
+    public boolean linkCrafter(BlockPos pos) {
+        if (crafterPos != null) return false;
+        crafterPos = pos;
+        setChanged();
+        syncToClient();
+        return true;
+    }
+
+    /**
+     * Retire le lien avec le crafter.
+     */
+    public void unlinkCrafter() {
+        crafterPos = null;
+        setChanged();
+        syncToClient();
+    }
+
+    /**
+     * Retourne le CrafterBlockEntity lie, ou null si aucun ou invalide.
+     */
+    @Nullable
+    public CrafterBlockEntity getCrafter() {
+        if (crafterPos == null || level == null || !level.isLoaded(crafterPos)) return null;
+        BlockEntity be = level.getBlockEntity(crafterPos);
+        if (be instanceof CrafterBlockEntity crafter) return crafter;
+        unlinkCrafter();
+        return null;
+    }
+
     // === Agregation Items (delegue) ===
 
     public List<ItemStack> getAggregatedItems() { return itemAggregator.getAggregatedItems(); }
@@ -548,6 +600,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
         be.requestManager.tick();
         be.deliveryManager.tickDelivery();
+        be.tickCraftManager();
         be.tickEditMode();
         be.itemAggregator.cleanupViewers();
 
@@ -556,6 +609,19 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             be.networkValidateTimer = 0;
             be.validateNetworkBlocks();
         }
+    }
+
+    /**
+     * Tick le CraftManager du crafter lie (si existant et multibloc forme).
+     * Le CraftManager vit sur le CrafterBlockEntity mais a besoin du controller
+     * pour acceder au systeme de livraison et au reseau de stockage.
+     */
+    private void tickCraftManager() {
+        if (!multiblockManager.isFormed()) return;
+        CrafterBlockEntity crafter = getCrafter();
+        if (crafter == null) return;
+        long gameTick = level != null ? level.getGameTime() : 0;
+        crafter.getCraftManager().tick(this, gameTick);
     }
 
     // === MenuProvider ===
@@ -585,6 +651,14 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
                 BlockEntity be = level.getBlockEntity(hivePos);
                 if (be instanceof StorageHiveBlockEntity hive) {
                     hive.unlinkController();
+                }
+            }
+
+            // Unlink crafter
+            if (crafterPos != null && level.isLoaded(crafterPos)) {
+                BlockEntity crafterBe = level.getBlockEntity(crafterPos);
+                if (crafterBe instanceof CrafterBlockEntity crafter) {
+                    crafter.unlinkController();
                 }
             }
         }
@@ -621,6 +695,13 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
             // Essence slots
             tag.put("EssenceSlots", essenceSlots.serializeNBT(registries));
+
+            // Crafter link
+            if (crafterPos != null) {
+                tag.putInt("CrafterX", crafterPos.getX());
+                tag.putInt("CrafterY", crafterPos.getY());
+                tag.putInt("CrafterZ", crafterPos.getZ());
+            }
         } finally {
             isSaving = false;
         }
@@ -643,6 +724,17 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             essenceSlots.deserializeNBT(registries, tag.getCompound("EssenceSlots"));
         }
         recalculateBeeCapacity();
+
+        // Crafter link
+        if (tag.contains("CrafterX")) {
+            crafterPos = new BlockPos(
+                    tag.getInt("CrafterX"),
+                    tag.getInt("CrafterY"),
+                    tag.getInt("CrafterZ")
+            );
+        } else {
+            crafterPos = null;
+        }
 
         // Registre central: charger ou migrer depuis l'ancien format
         if (tag.contains("NetworkRegistry")) {

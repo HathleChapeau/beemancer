@@ -31,6 +31,7 @@ import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.block.statue.BeeStatueBlockEntity;
 import com.chapeau.beemancer.common.blockentity.extractor.ExtractorHeartBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.ControllerPipeBlockEntity;
+import com.chapeau.beemancer.common.blockentity.storage.CrafterBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.ExportInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.ImportInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
@@ -105,6 +106,13 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             ExportInterfaceBlockEntity::new,
                             BeemancerBlocks.EXPORT_INTERFACE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<CrafterBlockEntity>> CRAFTER =
+            BLOCK_ENTITIES.register("crafter",
+                    () -> BlockEntityType.Builder.of(
+                            CrafterBlockEntity::new,
+                            BeemancerBlocks.CRAFTER.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<BeeCreatorBlockEntity>> BEE_CREATOR =

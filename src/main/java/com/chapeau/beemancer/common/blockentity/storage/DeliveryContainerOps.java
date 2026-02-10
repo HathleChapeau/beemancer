@@ -11,6 +11,7 @@
  * | StorageControllerBlockEntity   | Parent controller    | Acces coffres reseau      |
  * | ContainerHelper                | Operations container | count/extract/insert      |
  * | StorageTerminalBlockEntity     | Terminal deposit     | extractFromDeposit()      |
+ * | CrafterBlockEntity             | Crafter output       | extractFromCrafterOutput  |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -123,7 +124,7 @@ public class DeliveryContainerOps {
     }
 
     /**
-     * Extrait un item d'un coffre ou terminal pour une livraison.
+     * Extrait un item d'un coffre, terminal ou crafter pour une livraison.
      */
     public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
         if (parent.getLevel() == null || template.isEmpty() || count <= 0) return ItemStack.EMPTY;
@@ -137,11 +138,44 @@ public class DeliveryContainerOps {
             return result;
         }
 
+        // Crafter: extraire depuis les output slots
+        if (be instanceof CrafterBlockEntity crafter) {
+            ItemStack result = extractFromCrafterOutput(crafter, template, count);
+            return result;
+        }
+
         if (!(be instanceof Container container)) return ItemStack.EMPTY;
 
         ItemStack result = ContainerHelper.extractItem(container, template, count);
         parent.getItemAggregator().setNeedsSync(true);
         return result;
+    }
+
+    /**
+     * Extrait un item des output slots du Crafter (slots A et B).
+     */
+    private ItemStack extractFromCrafterOutput(CrafterBlockEntity crafter,
+                                                ItemStack template, int count) {
+        int extracted = 0;
+        net.neoforged.neoforge.items.ItemStackHandler inv = crafter.getInventory();
+
+        for (int slot : new int[]{CrafterBlockEntity.SLOT_OUTPUT_A, CrafterBlockEntity.SLOT_OUTPUT_B}) {
+            ItemStack stack = inv.getStackInSlot(slot);
+            if (stack.isEmpty() || !ItemStack.isSameItemSameComponents(template, stack)) continue;
+
+            int toTake = Math.min(count - extracted, stack.getCount());
+            stack.shrink(toTake);
+            extracted += toTake;
+
+            if (stack.isEmpty()) {
+                inv.setStackInSlot(slot, ItemStack.EMPTY);
+            }
+            if (extracted >= count) break;
+        }
+
+        if (extracted == 0) return ItemStack.EMPTY;
+        crafter.setChanged();
+        return template.copyWithCount(extracted);
     }
 
     /**

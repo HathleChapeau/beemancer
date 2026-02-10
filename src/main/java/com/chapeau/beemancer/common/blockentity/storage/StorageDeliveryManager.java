@@ -183,8 +183,8 @@ public class StorageDeliveryManager {
 
             deliveryQueue.remove(eligible);
 
-            // Interface tasks sont deja split par l'interface, ne pas re-split
-            if (eligible.getInterfaceTaskId() == null) {
+            // Interface/craft tasks sont deja dimensionnees, ne pas re-split
+            if (eligible.getInterfaceTaskId() == null && eligible.getCraftTaskId() == null) {
                 int beeCapacity = Math.min(
                     ControllerStats.getQuantity(parent.getEssenceSlots()),
                     eligible.getTemplate().getMaxStackSize()
@@ -225,6 +225,7 @@ public class StorageDeliveryManager {
             DeliveryTask task = queueIt.next();
             if (task.getState() != DeliveryTask.DeliveryState.QUEUED) continue;
             if (task.getInterfaceTaskId() != null) continue; // Geree par l'interface
+            if (task.getCraftTaskId() != null) continue; // Geree par le CraftManager
 
             InterfaceRequest request = requestManager.findRequestByTaskId(task.getRootTaskId());
             if (request == null) continue;
@@ -241,6 +242,7 @@ public class StorageDeliveryManager {
         for (DeliveryTask task : new ArrayList<>(activeTasks)) {
             if (task.getState() != DeliveryTask.DeliveryState.FLYING) continue;
             if (task.getInterfaceTaskId() != null) continue; // Geree par l'interface
+            if (task.getCraftTaskId() != null) continue; // Geree par le CraftManager
 
             InterfaceRequest request = requestManager.findRequestByTaskId(task.getRootTaskId());
             if (request == null) continue;
@@ -324,15 +326,18 @@ public class StorageDeliveryManager {
 
                 if (state == DeliveryTask.DeliveryState.COMPLETED) {
                     completedTaskIds.add(taskId);
-                    if (task.getInterfaceTaskId() == null) {
+                    if (task.getInterfaceTaskId() == null && task.getCraftTaskId() == null) {
                         // Terminal task: utiliser RequestManager
                         if (!hasRemainingSubtasks(rootId)) {
                             parent.getRequestManager().onTaskCompleted(rootId);
                         }
                     }
                     // Interface tasks: notification faite par la bee dans notifyTaskCompleted()
+                    // Craft tasks: notification faite par la bee dans notifyTaskCompleted()
                 } else if (state == DeliveryTask.DeliveryState.FAILED) {
-                    if (task.getInterfaceTaskId() == null) {
+                    if (task.getCraftTaskId() != null) {
+                        // Craft task echouee: notification faite par la bee
+                    } else if (task.getInterfaceTaskId() == null) {
                         parent.getRequestManager().onTaskFailed(rootId);
                     } else {
                         // Interface task echouee: remettre en NEEDED pour re-tentative

@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  */
 public class StorageNetworkRegistry {
 
-    public enum NetworkBlockType { CHEST, TERMINAL, INTERFACE, HIVE }
+    public enum NetworkBlockType { CHEST, TERMINAL, INTERFACE, HIVE, CRAFTER }
 
     public record NetworkEntry(BlockPos ownerNode, NetworkBlockType type) {}
 

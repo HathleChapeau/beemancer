@@ -3,6 +3,54 @@
 ################################################################################
 
 ================================================================================
+2026-02-10 - Crafter System (Crafting Automatique)
+================================================================================
+
+NOUVEAU SYSTEME: Crafting Automatique (14 fichiers crees, 23 fichiers modifies)
+
+Scripts crees:
+- CraftingPaperData.java: Record recette vanilla (9 ingredients + result)
+- PartCraftingPaperData.java: Record recette machine (INPUT/OUTPUT + UUID)
+- CraftTask.java: Tache de craft avec etats, timeout, imbrication
+- CraftingPaperItem.java: Item Crafting Paper avec tooltip shift-hover
+- PartCraftingPaperItem.java: Item Part Crafting Paper (INPUT/OUTPUT)
+- CrafterBlock.java: Bloc avec facing, menu, drop inventory on remove
+- CrafterBlockEntity.java: BE avec inventaire 11 slots, ghost grid 3x3, craft buffer
+- CraftManager.java: Orchestration crafts, resolution recursive, detection cycles
+- CrafterMenu.java: Menu reserve + output + library + ghost slots
+- CrafterScreen.java: Screen mode CRAFT (ghost grid, preview, inscribe)
+- CrafterMachinePanel.java: Panel mode MACHINE (scroll, +/- count, dynamic lines)
+- CrafterGhostSlotPacket.java: C2S set/clear ghost item
+- CrafterInscribePacket.java: C2S inscrire recette (craft ou machine)
+- CrafterModeTogglePacket.java: C2S toggle CRAFT/MACHINE
+
+Scripts modifies:
+- Registres: +CRAFTER bloc/item/BE/menu, +CRAFTING_PAPER, +PART_CRAFTING_PAPER
+- BeemancerNetwork: +3 packets crafter
+- ClientSetup: +CrafterScreen registration
+- StorageNetworkRegistry: +CRAFTER dans NetworkBlockType
+- StorageEvents: +handleCrafterToggle() pour edit mode
+- StorageControllerBlockEntity: +tickCraftManager()
+- DeliveryTask: +craftTaskId, craftReturn, createCraftDelivery()
+- DeliveryBeeEntity: +craft fields, snapshotCarriedItems()
+- DeliveryPhaseGoal: +snapshot avant delivery
+- DeliveryBeeSpawner: +pass craft fields
+- StorageDeliveryManager: +skip split/reevaluate craft tasks
+- NetworkInterfaceBlockEntity: +craftMode, getCraftPaperData()
+- Import/ExportInterfaceBlockEntity: +doScanCraftMode()
+- NetworkInterfaceMenu: +DATA_CRAFT_MODE
+- InterfaceActionPacket: +ACTION_TOGGLE_CRAFT_MODE
+- NetworkInterfaceScreen: +toggle craft mode button [C]
+- Lang EN + FR: traductions crafter, papers, messages edit mode
+
+Assets:
+- blockstates/crafter.json, models/block+item crafter
+- models/item crafting_paper + part_crafting_paper
+- textures block (front, side, top) + textures item (2)
+- loot_table/blocks/crafter.json
+- recipe/crafting/crafting_paper.json
+
+================================================================================
 2026-02-09 - Hoverbike System (Remplacement Rideable Bee)
 ================================================================================
 

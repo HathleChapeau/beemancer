@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-09                     #
-#  (Hive Deduplication - 2026-02-09)                                            #
+#                         Dernière mise à jour: 2026-02-10                     #
+#  (Crafter System - 2026-02-10)                                                #
 ################################################################################
 
 ================================================================================
@@ -365,6 +365,10 @@ LISTE DES FEATURES:
 → Codebase Refactoring (Phases 1-5 + Hive Dedup)
   Fichier: Structure/feature_codebase_refactoring.txt
   Description: Refactoring massif en 6 phases: imports, menus, renderers, decomposition fichiers massifs, screens, hive deduplication
+
+→ Crafter System (Crafting Automatique)
+  Fichier: Structure/feature_crafter_system.txt
+  Description: Systeme de crafting automatique: Crafting Papers, Crafter bloc, CraftManager, integration delivery + import/export craft mode
 
 ================================================================================
 6. FEATURES EN COURS
