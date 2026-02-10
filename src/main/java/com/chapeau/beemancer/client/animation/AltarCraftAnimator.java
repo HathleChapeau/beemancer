@@ -100,6 +100,11 @@ public class AltarCraftAnimator {
         Axis.XP, Axis.XP, Axis.ZP, Axis.ZP,
     };
 
+    // Axe de self-spin par conduit: N/S sur Z (face le long de Z), E/W sur X (face le long de X)
+    private static final Axis[] SPIN_AXES = {
+        Axis.ZP, Axis.ZP, Axis.XP, Axis.XP,
+    };
+
     // === Positions des conduits (relatives au coeur) ===
     private static final Vec3[] STATIC_POS = {
         new Vec3(0, 1, -1),
@@ -172,6 +177,14 @@ public class AltarCraftAnimator {
         if (state.lastBeamTick == gameTime) return false;
         state.lastBeamTick = gameTime;
         return true;
+    }
+
+    /**
+     * Retourne true si les particules de conduit sont actives pour cet altar.
+     */
+    public static boolean isCenterParticleActive(BlockPos pos) {
+        AnimState state = states.get(pos);
+        return state != null && state.centerParticleActive;
     }
 
     /**
@@ -261,7 +274,7 @@ public class AltarCraftAnimator {
             // t=75: self-spin Y demarre (loop, vitesse moyenne)
             SequenceEntry.action(SELF_SPIN_START, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
-                    ctrl.replaceAnimation("spin_" + i, buildSelfSpinAnim());
+                    ctrl.replaceAnimation("spin_" + i, buildSelfSpinAnim(i));
                 }
             }),
             // t=115: particule centre apparait
@@ -369,10 +382,10 @@ public class AltarCraftAnimator {
 
     // === Self-spin factory ===
 
-    /** Phase 3: rotation Z sur soi-meme (loop, vitesse moyenne). */
-    private static RotateAnimation buildSelfSpinAnim() {
+    /** Phase 3: rotation sur soi-meme (loop, vitesse moyenne). Axe selon le facing du conduit. */
+    private static RotateAnimation buildSelfSpinAnim(int conduitIndex) {
         return RotateAnimation.builder()
-            .axis(Axis.ZP).startAngle(0).endAngle(360)
+            .axis(SPIN_AXES[conduitIndex]).startAngle(0).endAngle(360)
             .pivot(BLOCK_CENTER)
             .duration(SELF_SPIN_PERIOD).timingEffect(TimingEffect.LOOP)
             .build();

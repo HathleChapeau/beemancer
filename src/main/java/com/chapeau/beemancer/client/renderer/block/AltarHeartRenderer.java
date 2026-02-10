@@ -143,10 +143,12 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         BlockPos blockPos = blockEntity.getBlockPos();
         long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
         boolean beamActive = AltarCraftAnimator.isBeamActive(blockPos);
+        boolean particleActive = AltarCraftAnimator.isCenterParticleActive(blockPos);
         int conduitCount = AltarCraftAnimator.getConduitCount();
 
-        // Collecter les centres pour le beam (rendu apres les modeles pour eviter le conflit de buffer)
-        Vec3[] beamStarts = beamActive ? new Vec3[conduitCount] : null;
+        // Collecter les centres animes des conduits (pour beams et/ou particules)
+        boolean needCenters = beamActive || particleActive;
+        Vec3[] conduitCenters = needCenters ? new Vec3[conduitCount] : null;
 
         for (int i = 0; i < conduitCount; i++) {
             Vec3 staticPos = AltarCraftAnimator.getStaticPosition(i);
@@ -166,31 +168,37 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             renderModel(CONDUIT_MODEL_LOC, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
             poseStack.popPose();
 
-            if (beamActive) {
-                beamStarts[i] = computeConduitCenter(ctrl, i, staticPos);
+            if (needCenters) {
+                conduitCenters[i] = computeConduitCenter(ctrl, i, staticPos);
             }
         }
 
-        // Particule centre (boule de glow miel au coeur pendant le craft)
-        if (AltarCraftAnimator.trySpawnCenterParticleTick(blockPos, gameTime)
+        // Particules miel (boule de glow au centre de chaque conduit)
+        if (conduitCenters != null
+                && AltarCraftAnimator.trySpawnCenterParticleTick(blockPos, gameTime)
                 && blockEntity.getLevel() != null) {
-            Vec3 center = new Vec3(blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5);
             DustParticleOptions honeyParticle = new DustParticleOptions(
                 new Vector3f(1.0f, 0.75f, 0.1f), 1.2f);
-            for (int p = 0; p < 3; p++) {
-                Vec3 offset = new Vec3(
-                    (random.nextDouble() - 0.5) * 0.25,
-                    (random.nextDouble() - 0.5) * 0.25,
-                    (random.nextDouble() - 0.5) * 0.25);
-                ParticleHelper.addParticle(blockEntity.getLevel(), honeyParticle,
-                    center.add(offset), Vec3.ZERO);
+            for (Vec3 center : conduitCenters) {
+                Vec3 worldCenter = new Vec3(
+                    blockPos.getX() + center.x,
+                    blockPos.getY() + center.y,
+                    blockPos.getZ() + center.z);
+                for (int p = 0; p < 3; p++) {
+                    Vec3 offset = new Vec3(
+                        (random.nextDouble() - 0.5) * 0.25,
+                        (random.nextDouble() - 0.5) * 0.25,
+                        (random.nextDouble() - 0.5) * 0.25);
+                    ParticleHelper.addParticle(blockEntity.getLevel(), honeyParticle,
+                        worldCenter.add(offset), Vec3.ZERO);
+                }
             }
         }
 
         // Beams convergents — 4 coins du conduit vers point de convergence, puis beam epais vers coeur
-        if (beamStarts != null) {
+        if (conduitCenters != null && beamActive) {
             Vec3 heartCenter = new Vec3(0.5, 0.5, 0.5);
-            for (Vec3 conduitCenter : beamStarts) {
+            for (Vec3 conduitCenter : conduitCenters) {
                 renderConvergingBeams(poseStack, buffer, conduitCenter, heartCenter,
                     partialTick, gameTime);
             }
