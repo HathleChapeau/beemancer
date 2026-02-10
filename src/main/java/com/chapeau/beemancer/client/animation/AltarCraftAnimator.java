@@ -34,14 +34,18 @@ import java.util.Map;
  * Gestionnaire d'etat d'animation per-altar.
  * 5 canaux par conduit: orbit_i, pos_i, rot_i, spin_i + flags beam/particule.
  *
+ * Position de repos (startpos):
+ * Les conduits sont decales a mi-chemin vers le centre de l'altar.
+ * Cette position est le depart et la fin de toute la sequence de craft.
+ *
  * Phases du craft:
- * 1. Horizontal spread — conduits s'ecartent a l'horizontal
+ * 1. Horizontal spread — conduits s'ecartent depuis startpos vers l'exterieur
  * 2. Tilt + vertical descent — conduits se tournent et descendent
  * 3. Self-spin Y — conduits tournent sur eux-memes (loop)
  * 4. Center particle — particule au centre du coeur
  * 5. Untilt — conduits pivotent 90 vers le centre
  * 6. Beam + orbit — beam actif, conduits orbitent autour de l'altar
- * 7. Decel + return — tout ralentit, particules off, retour position
+ * 7. Decel + return — tout ralentit, retour a la position startpos
  */
 public class AltarCraftAnimator {
 
@@ -121,6 +125,15 @@ public class AltarCraftAnimator {
     };
 
     private static final Vec3 VERT_DELTA = new Vec3(0, -1, 0);
+
+    // Position de repos: conduits decales a mi-chemin vers le centre
+    private static final double STARTPOS_SCALE = 0.5;
+    private static final Vec3[] STARTPOS_OFFSET = {
+        HORIZ_DELTA[0].scale(-STARTPOS_SCALE),
+        HORIZ_DELTA[1].scale(-STARTPOS_SCALE),
+        HORIZ_DELTA[2].scale(-STARTPOS_SCALE),
+        HORIZ_DELTA[3].scale(-STARTPOS_SCALE),
+    };
 
     // === Per-altar state ===
     private static final Map<BlockPos, AnimState> states = new HashMap<>();
@@ -228,6 +241,12 @@ public class AltarCraftAnimator {
         ctrl.playAnimation("heart_x");
         ctrl.playAnimation("heart_z");
 
+        // Conduits en position de repos (startpos): decales vers le centre
+        for (int i = 0; i < STATIC_POS.length; i++) {
+            ctrl.createAnimation("pos_" + i, buildStartPosHoldAnim(i));
+            ctrl.playAnimation("pos_" + i);
+        }
+
         return new AnimState(ctrl);
     }
 
@@ -249,9 +268,10 @@ public class AltarCraftAnimator {
         }
         for (int i = 0; i < STATIC_POS.length; i++) {
             state.controller.stopAnimation("orbit_" + i);
-            state.controller.stopAnimation("pos_" + i);
             state.controller.stopAnimation("rot_" + i);
             state.controller.stopAnimation("spin_" + i);
+            // Restaurer pos_i a la position de repos (startpos)
+            state.controller.replaceAnimation("pos_" + i, buildStartPosHoldAnim(i));
         }
     }
 
@@ -316,10 +336,20 @@ public class AltarCraftAnimator {
 
     // === Position factories ===
 
-    /** Phase 1: spread horizontal (ease in, hold). */
+    /** Position de repos: conduit decale vers le centre (hold permanent). */
+    private static MoveAnimation buildStartPosHoldAnim(int conduitIndex) {
+        Vec3 offset = STARTPOS_OFFSET[conduitIndex];
+        return MoveAnimation.builder()
+            .from(offset).to(offset)
+            .duration(1f)
+            .resetAfterAnimation(false)
+            .build();
+    }
+
+    /** Phase 1: spread depuis startpos vers l'exterieur (ease in, hold). */
     private static MoveAnimation buildHorizSpreadAnim(int conduitIndex) {
         return MoveAnimation.builder()
-            .from(Vec3.ZERO).to(HORIZ_DELTA[conduitIndex])
+            .from(STARTPOS_OFFSET[conduitIndex]).to(HORIZ_DELTA[conduitIndex])
             .duration(HORIZ_DURATION).timingType(TimingType.EASE_IN)
             .resetAfterAnimation(false)
             .build();
@@ -345,14 +375,14 @@ public class AltarCraftAnimator {
             .build();
     }
 
-    /** Retour a la position de repos (ease out, reset). */
+    /** Retour a la position de repos startpos (ease out, hold). */
     private static MoveAnimation buildReturnAnim(int conduitIndex) {
         Vec3 pos = HORIZ_DELTA[conduitIndex].add(VERT_DELTA);
         return MoveAnimation.builder()
-            .from(pos).to(Vec3.ZERO)
+            .from(pos).to(STARTPOS_OFFSET[conduitIndex])
             .duration(DECEL_DURATION)
             .timingType(TimingType.EASE_OUT)
-            .resetAfterAnimation(true)
+            .resetAfterAnimation(false)
             .build();
     }
 

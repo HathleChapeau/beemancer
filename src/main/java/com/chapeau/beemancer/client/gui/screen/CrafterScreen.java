@@ -256,6 +256,8 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
             // Check reserve slot directly (vanilla slot sync, no ContainerData delay)
             ItemStack reserve = menu.getSlot(CrafterMenu.SLOT_RESERVE).getItem();
             if (reserve.isEmpty()) return false;
+            // Output A must be empty (server will reject otherwise)
+            if (!menu.getSlot(CrafterMenu.SLOT_OUTPUT_A).getItem().isEmpty()) return false;
             // Need at least one ghost item
             for (int i = 0; i < CrafterBlockEntity.GHOST_GRID_SIZE; i++) {
                 if (!menu.getGhostSlots()[i].getItem().isEmpty()) return true;

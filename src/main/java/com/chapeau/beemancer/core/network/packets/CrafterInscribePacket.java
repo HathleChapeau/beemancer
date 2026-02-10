@@ -63,8 +63,8 @@ public record CrafterInscribePacket(
             StreamCodec.composite(
                     BlockPos.STREAM_CODEC, CrafterInscribePacket::crafterPos,
                     ByteBufCodecs.INT, CrafterInscribePacket::mode,
-                    ItemStack.LIST_STREAM_CODEC, CrafterInscribePacket::machineInputs,
-                    ItemStack.LIST_STREAM_CODEC, CrafterInscribePacket::machineOutputs,
+                    ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list()), CrafterInscribePacket::machineInputs,
+                    ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list()), CrafterInscribePacket::machineOutputs,
                     CrafterInscribePacket::new
             );
 
@@ -92,7 +92,8 @@ public record CrafterInscribePacket(
             if (paperStack.isEmpty() || !(paperStack.getItem() instanceof CraftingPaperItem)) return;
             if (CraftingPaperData.hasData(paperStack)) return;
 
-            if (packet.mode == 0) {
+            // Use server-side mode (ignore client-sent mode to prevent tampering)
+            if (crafter.getMode() == 0) {
                 handleCraftInscribe(crafter, serverLevel, packet.machineInputs);
             } else {
                 handleMachineInscribe(crafter, serverLevel, packet.machineInputs, packet.machineOutputs);

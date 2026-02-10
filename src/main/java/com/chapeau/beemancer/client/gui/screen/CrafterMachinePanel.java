@@ -240,6 +240,9 @@ public class CrafterMachinePanel {
         // Check reserve slot directly (bypass ContainerData)
         ItemStack reserve = menu.getSlot(CrafterMenu.SLOT_RESERVE).getItem();
         if (reserve.isEmpty()) return false;
+        // Both output slots must be empty (machine mode produces 2 parts)
+        if (!menu.getSlot(CrafterMenu.SLOT_OUTPUT_A).getItem().isEmpty()) return false;
+        if (!menu.getSlot(CrafterMenu.SLOT_OUTPUT_B).getItem().isEmpty()) return false;
         boolean hasInput = inputs.stream().anyMatch(e -> !e.item.isEmpty());
         if (!hasInput) return false;
         return !output.item.isEmpty();
