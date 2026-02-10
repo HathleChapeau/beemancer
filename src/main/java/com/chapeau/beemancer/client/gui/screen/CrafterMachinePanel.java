@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [CrafterMachinePanel.java]
- * Description: Panneau mode MACHINE du CrafterScreen - inputs/output dynamiques scrollables
+ * Description: Panneau mode MACHINE du CrafterScreen - inputs gauche, output droite
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,7 +9,7 @@
  * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
  * | GuiRenderHelper               | Rendu programmatique | Slots, boutons                 |
- * | CrafterMenu                   | Donnees container    | hasBlankPaper                  |
+ * | CrafterMenu                   | Donnees container    | Reserve slot check             |
  * | CrafterInscribePacket         | Inscription C2S      | Envoi mode=1                   |
  * | CrafterBlockEntity            | BE reference         | BlockPos pour packet            |
  * ------------------------------------------------------------
@@ -37,27 +37,26 @@ import java.util.List;
 /**
  * Gere le rendu et l'interaction du mode MACHINE dans le CrafterScreen.
  * Zone overlay: partage le meme espace que le ghost grid 3x3 (y=26 a y=80).
- * Inputs dynamiques (ajout/suppression) + output + scroll + inscription.
+ * Inputs a gauche (dynamiques, scrollables), output a droite.
  */
 public class CrafterMachinePanel {
 
-    // Layout relative to screen top-left (overlays the ghost grid area)
-    private static final int PANEL_X = 8;
+    // Input section (left side)
+    private static final int INPUT_X = 8;
     private static final int PANEL_Y = 26;
-    private static final int PANEL_W = 160;
     private static final int LINE_H = 18;
-    private static final int MAX_VISIBLE_LINES = 2;
+    private static final int MAX_VISIBLE_LINES = 3;
 
     // Per-line element offsets (relative to line X)
     private static final int SLOT_OFFSET_X = 0;
     private static final int COUNT_MINUS_X = 20;
     private static final int COUNT_LABEL_X = 34;
-    private static final int COUNT_PLUS_X = 62;
-    private static final int DELETE_X = 80;
+    private static final int COUNT_PLUS_X = 54;
+    private static final int DELETE_X = 70;
     private static final int BTN_SIZE = 14;
 
-    // Output section (within the overlay zone)
-    private static final int OUTPUT_LINE_Y = 62;
+    // Output section (right side)
+    private static final int OUTPUT_X = 108;
 
     /** Client-side input entries (item + count). */
     private final List<MachineEntry> inputs = new ArrayList<>();
@@ -88,35 +87,37 @@ public class CrafterMachinePanel {
     // === Rendering ===
 
     public void render(GuiGraphics g, Font font, int x, int y, int mouseX, int mouseY) {
-        g.drawString(font, "Inputs", x + PANEL_X, y + PANEL_Y - 10, 0x606060, false);
+        // Input section (left)
+        g.drawString(font, "Inputs", x + INPUT_X, y + PANEL_Y - 10, 0x606060, false);
 
         int visibleCount = Math.min(inputs.size(), MAX_VISIBLE_LINES);
         for (int i = 0; i < visibleCount; i++) {
             int dataIdx = i + scrollOffset;
             if (dataIdx >= inputs.size()) break;
             int lineY = y + PANEL_Y + i * LINE_H;
-            renderInputLine(g, font, x + PANEL_X, lineY, inputs.get(dataIdx), mouseX, mouseY);
+            renderInputLine(g, font, x + INPUT_X, lineY, inputs.get(dataIdx), mouseX, mouseY);
         }
 
-        // [+] Add input button (below visible inputs, if space allows)
+        // [+] Add input button (below visible inputs)
         int addY = y + PANEL_Y + visibleCount * LINE_H + 2;
-        if (addY + BTN_SIZE <= y + OUTPUT_LINE_Y - 2) {
-            boolean addHovered = isOver(mouseX, mouseY, x + PANEL_X, addY, BTN_SIZE, BTN_SIZE);
-            GuiRenderHelper.renderButton(g, font, x + PANEL_X, addY, BTN_SIZE, BTN_SIZE, "+", addHovered);
+        if (visibleCount < MAX_VISIBLE_LINES || inputs.isEmpty()) {
+            boolean addHovered = isOver(mouseX, mouseY, x + INPUT_X, addY, BTN_SIZE, BTN_SIZE);
+            GuiRenderHelper.renderButton(g, font, x + INPUT_X, addY,
+                    BTN_SIZE, BTN_SIZE, "+", addHovered);
         }
 
         // Scroll indicators
         if (scrollOffset > 0) {
-            g.drawString(font, "\u25B2", x + PANEL_X + PANEL_W - 10, y + PANEL_Y - 10, 0x404040, false);
+            g.drawString(font, "\u25B2", x + INPUT_X + 86, y + PANEL_Y - 10, 0x404040, false);
         }
         if (scrollOffset + MAX_VISIBLE_LINES < inputs.size()) {
-            g.drawString(font, "\u25BC", x + PANEL_X + PANEL_W - 10,
+            g.drawString(font, "\u25BC", x + INPUT_X + 86,
                     y + PANEL_Y + MAX_VISIBLE_LINES * LINE_H, 0x404040, false);
         }
 
-        // Output section
-        g.drawString(font, "Output", x + PANEL_X, y + OUTPUT_LINE_Y - 10, 0x606060, false);
-        renderOutputLine(g, font, x + PANEL_X, y + OUTPUT_LINE_Y, mouseX, mouseY);
+        // Output section (right side)
+        g.drawString(font, "Output", x + OUTPUT_X, y + PANEL_Y - 10, 0x606060, false);
+        renderOutputLine(g, font, x + OUTPUT_X, y + PANEL_Y, mouseX, mouseY);
     }
 
     private void renderInputLine(GuiGraphics g, Font font, int lx, int ly,
@@ -127,17 +128,21 @@ public class CrafterMachinePanel {
         }
 
         boolean minusHov = isOver(mouseX, mouseY, lx + COUNT_MINUS_X, ly, BTN_SIZE, BTN_SIZE);
-        GuiRenderHelper.renderButton(g, font, lx + COUNT_MINUS_X, ly, BTN_SIZE, BTN_SIZE, "-", minusHov);
+        GuiRenderHelper.renderButton(g, font, lx + COUNT_MINUS_X, ly,
+                BTN_SIZE, BTN_SIZE, "-", minusHov);
 
         String countStr = String.valueOf(entry.count);
         int countW = font.width(countStr);
-        g.drawString(font, countStr, lx + COUNT_LABEL_X + (24 - countW) / 2, ly + 4, 0x404040, false);
+        g.drawString(font, countStr, lx + COUNT_LABEL_X + (18 - countW) / 2,
+                ly + 4, 0x404040, false);
 
         boolean plusHov = isOver(mouseX, mouseY, lx + COUNT_PLUS_X, ly, BTN_SIZE, BTN_SIZE);
-        GuiRenderHelper.renderButton(g, font, lx + COUNT_PLUS_X, ly, BTN_SIZE, BTN_SIZE, "+", plusHov);
+        GuiRenderHelper.renderButton(g, font, lx + COUNT_PLUS_X, ly,
+                BTN_SIZE, BTN_SIZE, "+", plusHov);
 
         boolean delHov = isOver(mouseX, mouseY, lx + DELETE_X, ly, BTN_SIZE, BTN_SIZE);
-        GuiRenderHelper.renderButton(g, font, lx + DELETE_X, ly, BTN_SIZE, BTN_SIZE, "X", delHov);
+        GuiRenderHelper.renderButton(g, font, lx + DELETE_X, ly,
+                BTN_SIZE, BTN_SIZE, "X", delHov);
     }
 
     private void renderOutputLine(GuiGraphics g, Font font, int lx, int ly,
@@ -147,29 +152,33 @@ public class CrafterMachinePanel {
             g.renderItem(output.item, lx + SLOT_OFFSET_X + 1, ly + 1);
         }
 
-        boolean minusHov = isOver(mouseX, mouseY, lx + COUNT_MINUS_X, ly, BTN_SIZE, BTN_SIZE);
-        GuiRenderHelper.renderButton(g, font, lx + COUNT_MINUS_X, ly, BTN_SIZE, BTN_SIZE, "-", minusHov);
+        // Count controls below the slot
+        int ctrlY = ly + LINE_H;
+        boolean minusHov = isOver(mouseX, mouseY, lx, ctrlY, BTN_SIZE, BTN_SIZE);
+        GuiRenderHelper.renderButton(g, font, lx, ctrlY, BTN_SIZE, BTN_SIZE, "-", minusHov);
 
         String countStr = String.valueOf(output.count);
         int countW = font.width(countStr);
-        g.drawString(font, countStr, lx + COUNT_LABEL_X + (24 - countW) / 2, ly + 4, 0x404040, false);
+        g.drawString(font, countStr, lx + 16 + (18 - countW) / 2, ctrlY + 4, 0x404040, false);
 
-        boolean plusHov = isOver(mouseX, mouseY, lx + COUNT_PLUS_X, ly, BTN_SIZE, BTN_SIZE);
-        GuiRenderHelper.renderButton(g, font, lx + COUNT_PLUS_X, ly, BTN_SIZE, BTN_SIZE, "+", plusHov);
+        boolean plusHov = isOver(mouseX, mouseY, lx + 36, ctrlY, BTN_SIZE, BTN_SIZE);
+        GuiRenderHelper.renderButton(g, font, lx + 36, ctrlY, BTN_SIZE, BTN_SIZE, "+", plusHov);
     }
 
     // === Interaction ===
 
     public boolean handleClick(double mouseX, double mouseY, int x, int y, ItemStack carried) {
+        // Input lines
         int visibleCount = Math.min(inputs.size(), MAX_VISIBLE_LINES);
         for (int i = 0; i < visibleCount; i++) {
             int dataIdx = i + scrollOffset;
             if (dataIdx >= inputs.size()) break;
-            int lx = x + PANEL_X;
+            int lx = x + INPUT_X;
             int ly = y + PANEL_Y + i * LINE_H;
 
             if (isOver(mouseX, mouseY, lx + SLOT_OFFSET_X + 1, ly + 1, 16, 16)) {
-                inputs.get(dataIdx).item = carried.isEmpty() ? ItemStack.EMPTY : carried.copyWithCount(1);
+                inputs.get(dataIdx).item = carried.isEmpty()
+                        ? ItemStack.EMPTY : carried.copyWithCount(1);
                 return true;
             }
             if (isOver(mouseX, mouseY, lx + COUNT_MINUS_X, ly, BTN_SIZE, BTN_SIZE)) {
@@ -182,31 +191,35 @@ public class CrafterMachinePanel {
             }
             if (isOver(mouseX, mouseY, lx + DELETE_X, ly, BTN_SIZE, BTN_SIZE)) {
                 inputs.remove(dataIdx);
-                scrollOffset = Mth.clamp(scrollOffset, 0, Math.max(0, inputs.size() - MAX_VISIBLE_LINES));
+                scrollOffset = Mth.clamp(scrollOffset, 0,
+                        Math.max(0, inputs.size() - MAX_VISIBLE_LINES));
                 return true;
             }
         }
 
         // [+] Add input button
         int addY = y + PANEL_Y + visibleCount * LINE_H + 2;
-        if (addY + BTN_SIZE <= y + OUTPUT_LINE_Y - 2
-                && isOver(mouseX, mouseY, x + PANEL_X, addY, BTN_SIZE, BTN_SIZE)) {
+        if ((visibleCount < MAX_VISIBLE_LINES || inputs.isEmpty())
+                && isOver(mouseX, mouseY, x + INPUT_X, addY, BTN_SIZE, BTN_SIZE)) {
             inputs.add(new MachineEntry(ItemStack.EMPTY, 1));
             return true;
         }
 
         // Output ghost slot click
-        int outLineY = y + OUTPUT_LINE_Y;
-        int lx = x + PANEL_X;
-        if (isOver(mouseX, mouseY, lx + SLOT_OFFSET_X + 1, outLineY + 1, 16, 16)) {
+        int outX = x + OUTPUT_X;
+        int outY = y + PANEL_Y;
+        if (isOver(mouseX, mouseY, outX + SLOT_OFFSET_X + 1, outY + 1, 16, 16)) {
             output.item = carried.isEmpty() ? ItemStack.EMPTY : carried.copyWithCount(1);
             return true;
         }
-        if (isOver(mouseX, mouseY, lx + COUNT_MINUS_X, outLineY, BTN_SIZE, BTN_SIZE)) {
+
+        // Output count controls (below slot)
+        int ctrlY = outY + LINE_H;
+        if (isOver(mouseX, mouseY, outX, ctrlY, BTN_SIZE, BTN_SIZE)) {
             output.count = Math.max(1, output.count - 1);
             return true;
         }
-        if (isOver(mouseX, mouseY, lx + COUNT_PLUS_X, outLineY, BTN_SIZE, BTN_SIZE)) {
+        if (isOver(mouseX, mouseY, outX + 36, ctrlY, BTN_SIZE, BTN_SIZE)) {
             output.count = Math.min(64, output.count + 1);
             return true;
         }
@@ -224,7 +237,9 @@ public class CrafterMachinePanel {
     // === Inscribe logic ===
 
     public boolean canInscribe(CrafterMenu menu) {
-        if (!menu.hasBlankPaper()) return false;
+        // Check reserve slot directly (bypass ContainerData)
+        ItemStack reserve = menu.getSlot(CrafterMenu.SLOT_RESERVE).getItem();
+        if (reserve.isEmpty()) return false;
         boolean hasInput = inputs.stream().anyMatch(e -> !e.item.isEmpty());
         if (!hasInput) return false;
         return !output.item.isEmpty();

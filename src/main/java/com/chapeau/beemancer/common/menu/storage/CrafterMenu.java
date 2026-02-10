@@ -176,6 +176,20 @@ public class CrafterMenu extends BeemancerMenu {
     public boolean isCrafting() { return data.get(DATA_CRAFTING) != 0; }
     public GhostSlot[] getGhostSlots() { return ghostSlots; }
     public int getLibraryPage() { return libraryPage; }
+    public BeemancerSlot[] getLibrarySlots() { return librarySlots; }
+
+    /** Compute effective total pages based on occupied library slots. */
+    public int getEffectiveTotalPages() {
+        int highestOccupiedRow = -1;
+        for (int i = 0; i < LIBRARY_TOTAL; i++) {
+            if (!librarySlots[i].getItem().isEmpty()) {
+                highestOccupiedRow = i / LIBRARY_COLS;
+            }
+        }
+        int neededRows = Math.min(highestOccupiedRow + 2, LIBRARY_ROWS);
+        int pages = Math.max(1, (neededRows + LIBRARY_VISIBLE_ROWS - 1) / LIBRARY_VISIBLE_ROWS);
+        return Math.min(pages, LIBRARY_TOTAL_PAGES);
+    }
 
     // === Ghost slot visibility ===
 
@@ -195,7 +209,7 @@ public class CrafterMenu extends BeemancerMenu {
     // === Library page navigation ===
 
     public void setLibraryPage(int page) {
-        this.libraryPage = Mth.clamp(page, 0, LIBRARY_TOTAL_PAGES - 1);
+        this.libraryPage = Mth.clamp(page, 0, Math.max(0, getEffectiveTotalPages() - 1));
         updateLibraryVisibility();
     }
 

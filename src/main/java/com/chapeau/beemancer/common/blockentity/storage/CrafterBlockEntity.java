@@ -44,6 +44,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -95,6 +98,7 @@ public class CrafterBlockEntity extends BlockEntity implements MenuProvider, IDe
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
+            syncToClient();
         }
     };
 
@@ -103,6 +107,7 @@ public class CrafterBlockEntity extends BlockEntity implements MenuProvider, IDe
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
+            syncToClient();
         }
     };
 
@@ -363,6 +368,18 @@ public class CrafterBlockEntity extends BlockEntity implements MenuProvider, IDe
 
         if (tag.contains("Inventory")) {
             inventory.deserializeNBT(registries, tag.getCompound("Inventory"));
+            // Migration: si l'ancien NBT avait un Size different (ex: 11 ou 30),
+            // deserializeNBT resize le handler. On le remet a TOTAL_SLOTS.
+            if (inventory.getSlots() != TOTAL_SLOTS) {
+                List<ItemStack> saved = new ArrayList<>();
+                for (int i = 0; i < inventory.getSlots(); i++) {
+                    saved.add(inventory.getStackInSlot(i));
+                }
+                inventory.setSize(TOTAL_SLOTS);
+                for (int i = 0; i < Math.min(saved.size(), TOTAL_SLOTS); i++) {
+                    inventory.setStackInSlot(i, saved.get(i));
+                }
+            }
         }
         if (tag.contains("GhostItems")) {
             ghostItems.deserializeNBT(registries, tag.getCompound("GhostItems"));
@@ -394,5 +411,30 @@ public class CrafterBlockEntity extends BlockEntity implements MenuProvider, IDe
 
         // Craft manager
         craftManager.load(tag, registries);
+    }
+
+    // === Client sync ===
+
+    public void syncToClient() {
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        loadAdditional(tag, registries);
     }
 }

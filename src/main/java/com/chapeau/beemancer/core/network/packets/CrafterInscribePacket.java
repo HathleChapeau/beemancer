@@ -93,23 +93,30 @@ public record CrafterInscribePacket(
             if (CraftingPaperData.hasData(paperStack)) return;
 
             if (packet.mode == 0) {
-                handleCraftInscribe(crafter, serverLevel);
+                handleCraftInscribe(crafter, serverLevel, packet.machineInputs);
             } else {
                 handleMachineInscribe(crafter, serverLevel, packet.machineInputs, packet.machineOutputs);
             }
         });
     }
 
-    private static void handleCraftInscribe(CrafterBlockEntity crafter, ServerLevel level) {
-        // Read 9 ghost items
+    private static void handleCraftInscribe(CrafterBlockEntity crafter, ServerLevel level,
+                                              List<ItemStack> clientIngredients) {
+        // Use client-sent ingredients (bypass ghost item sync dependency)
         List<ItemStack> ingredients = new ArrayList<>(9);
         boolean hasAny = false;
         for (int i = 0; i < CrafterBlockEntity.GHOST_GRID_SIZE; i++) {
-            ItemStack ghost = crafter.getGhostItems().getStackInSlot(i);
-            ingredients.add(ghost.isEmpty() ? ItemStack.EMPTY : ghost.copy());
-            if (!ghost.isEmpty()) hasAny = true;
+            ItemStack item = i < clientIngredients.size() ? clientIngredients.get(i) : ItemStack.EMPTY;
+            ItemStack normalized = item.isEmpty() ? ItemStack.EMPTY : item.copyWithCount(1);
+            ingredients.add(normalized);
+            if (!normalized.isEmpty()) hasAny = true;
         }
         if (!hasAny) return;
+
+        // Sync ghost items on server BE to match
+        for (int i = 0; i < CrafterBlockEntity.GHOST_GRID_SIZE; i++) {
+            crafter.setGhostItem(i, ingredients.get(i));
+        }
 
         // Build CraftingInput and find recipe
         CraftingInput craftInput = CraftingInput.of(3, 3, ingredients);

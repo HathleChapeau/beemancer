@@ -160,7 +160,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
 
         // Page controls [<] 1/2 [>]
         int page = menu.getLibraryPage();
-        int totalPages = CrafterMenu.LIBRARY_TOTAL_PAGES;
+        int totalPages = menu.getEffectiveTotalPages();
         String pageStr = (page + 1) + "/" + totalPages;
 
         if (page > 0) {
@@ -297,8 +297,13 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
         if (isMouseOver(mouseX, mouseY, x + INSCRIBE_BTN_X, y + INSCRIBE_BTN_Y,
                 INSCRIBE_BTN_W, INSCRIBE_BTN_H) && canInscribe() && be != null) {
             if (menu.getMode() == 0) {
+                // Send ghost items directly with the packet
+                List<ItemStack> ghostItems = new ArrayList<>(9);
+                for (int i = 0; i < CrafterBlockEntity.GHOST_GRID_SIZE; i++) {
+                    ghostItems.add(menu.getGhostSlots()[i].getItem().copy());
+                }
                 PacketDistributor.sendToServer(new CrafterInscribePacket(
-                        be.getBlockPos(), 0, List.of(), List.of()));
+                        be.getBlockPos(), 0, ghostItems, List.of()));
             } else {
                 machinePanel.sendInscribe(be);
             }
@@ -313,7 +318,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
         }
         if (isMouseOver(mouseX, mouseY, x + PAGE_NEXT_X, y + PAGE_BTN_Y,
                 PAGE_BTN_W, PAGE_BTN_H)
-                && menu.getLibraryPage() < CrafterMenu.LIBRARY_TOTAL_PAGES - 1) {
+                && menu.getLibraryPage() < menu.getEffectiveTotalPages() - 1) {
             menu.setLibraryPage(menu.getLibraryPage() + 1);
             return true;
         }
@@ -361,7 +366,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
             if (scrollY > 0 && menu.getLibraryPage() > 0) {
                 menu.setLibraryPage(menu.getLibraryPage() - 1);
             } else if (scrollY < 0
-                    && menu.getLibraryPage() < CrafterMenu.LIBRARY_TOTAL_PAGES - 1) {
+                    && menu.getLibraryPage() < menu.getEffectiveTotalPages() - 1) {
                 menu.setLibraryPage(menu.getLibraryPage() + 1);
             }
             return true;
