@@ -209,6 +209,16 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> HONEYED_STONE_WALL = ITEMS.register("honeyed_stone_wall",
             () -> new BlockItem(BeemancerBlocks.HONEYED_STONE_WALL.get(), new Item.Properties()));
 
+    // --- IRON FOUNDATION ---
+    public static final DeferredItem<BlockItem> IRON_FOUNDATION = ITEMS.register("iron_foundation",
+            () -> new BlockItem(BeemancerBlocks.IRON_FOUNDATION.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> IRON_FOUNDATION_WALL = ITEMS.register("iron_foundation_wall",
+            () -> new BlockItem(BeemancerBlocks.IRON_FOUNDATION_WALL.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> IRON_FOUNDATION_TRAPDOOR = ITEMS.register("iron_foundation_trapdoor",
+            () -> new BlockItem(BeemancerBlocks.IRON_FOUNDATION_TRAPDOOR.get(), new Item.Properties()));
+    public static final DeferredItem<DoubleHighBlockItem> IRON_FOUNDATION_DOOR = ITEMS.register("iron_foundation_door",
+            () -> new DoubleHighBlockItem(BeemancerBlocks.IRON_FOUNDATION_DOOR.get(), new Item.Properties()));
+
     // --- BUILDING BLOCKS: HONEYED GLASS ---
     public static final DeferredItem<BlockItem> HONEYED_GLASS = ITEMS.register("honeyed_glass",
             () -> new BlockItem(BeemancerBlocks.HONEYED_GLASS.get(), new Item.Properties()));

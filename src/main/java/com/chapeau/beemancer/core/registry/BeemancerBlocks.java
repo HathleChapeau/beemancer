@@ -31,6 +31,7 @@ import com.chapeau.beemancer.common.block.altar.HoneyedStoneStairBlock;
 import com.chapeau.beemancer.content.flywheeltest.BeeSpawnerBlock;
 import com.chapeau.beemancer.common.block.building.HoneyedGlassBlock;
 import com.chapeau.beemancer.common.block.building.HoneyedStoneWallBlock;
+import com.chapeau.beemancer.common.block.building.IronFoundationBlock;
 import com.chapeau.beemancer.common.block.building.RoyalGoldBlock;
 import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
@@ -546,6 +547,33 @@ public class BeemancerBlocks {
     public static final DeferredBlock<WallBlock> NECTAR_STONE_WALL = BLOCKS.register("nectar_stone_wall",
             () -> new WallBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    // --- IRON FOUNDATION ---
+    public static final DeferredBlock<IronFoundationBlock> IRON_FOUNDATION = BLOCKS.register("iron_foundation",
+            () -> new IronFoundationBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<WallBlock> IRON_FOUNDATION_WALL = BLOCKS.register("iron_foundation_wall",
+            () -> new WallBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<TrapDoorBlock> IRON_FOUNDATION_TRAPDOOR = BLOCKS.register("iron_foundation_trapdoor",
+            () -> new TrapDoorBlock(BlockSetType.IRON, BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<DoorBlock> IRON_FOUNDATION_DOOR = BLOCKS.register("iron_foundation_door",
+            () -> new DoorBlock(BlockSetType.IRON, BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
 
     // --- MATERIAL STORAGE BLOCKS ---
     public static final DeferredBlock<Block> HONEYED_IRON_BLOCK = BLOCKS.register("honeyed_iron_block",

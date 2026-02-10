@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": { "item": "beemancer:iron_foundation" }
+  },
+  "pattern": [
+    "##",
+    "##",
+    "##"
+  ],
+  "result": { "id": "beemancer:iron_foundation_door", "count": 3 }
+}
