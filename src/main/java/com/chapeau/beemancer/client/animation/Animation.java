@@ -40,6 +40,7 @@ public abstract class Animation {
 
     private boolean playing = false;
     private boolean paused = false;
+    private boolean finished = false;
     private float startTime = 0f;
     private float pauseTime = 0f;
     private float totalPausedDuration = 0f;
@@ -70,6 +71,7 @@ public abstract class Animation {
         totalPausedDuration = 0f;
         playing = true;
         paused = false;
+        finished = false;
     }
 
     /**
@@ -88,6 +90,7 @@ public abstract class Animation {
     public void stop() {
         playing = false;
         paused = false;
+        finished = false;
         startTime = 0f;
         pauseTime = 0f;
         totalPausedDuration = 0f;
@@ -123,6 +126,12 @@ public abstract class Animation {
      * @param currentTime temps actuel (gameTime + partialTick)
      */
     public void apply(PoseStack poseStack, float currentTime) {
+        // Maintien de la derniere frame pour les animations finies sans reset
+        if (finished && !resetAfterAnimation) {
+            doApply(poseStack, 1.0f);
+            return;
+        }
+
         if (!playing || paused) return;
 
         float rawDelta = computeRawDelta(currentTime);
@@ -133,6 +142,7 @@ public abstract class Animation {
                 doApply(poseStack, 1.0f);
             }
             playing = false;
+            finished = true;
             return;
         }
 

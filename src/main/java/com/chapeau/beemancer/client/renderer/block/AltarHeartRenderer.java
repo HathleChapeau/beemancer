@@ -28,6 +28,7 @@ import com.chapeau.beemancer.client.animation.AnimationController;
 import com.chapeau.beemancer.client.renderer.BeamRenderer;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
+import com.chapeau.beemancer.core.util.ParticleHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -40,6 +41,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
@@ -154,7 +156,8 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             ctrl.applyAnimation("pos_" + i, poseStack);
             ctrl.applyAnimation("rot_" + i, poseStack);
 
-            // Rotation Y pour orienter le modele selon le facing du conduit
+            // Self-spin Y + Rotation Y pour orienter le modele selon le facing
+            ctrl.applyAnimation("spin_" + i, poseStack);
             poseStack.translate(0.5, 0.5, 0.5);
             poseStack.mulPose(Axis.YP.rotationDegrees(CONDUIT_Y_ROTATIONS[i]));
             poseStack.translate(-0.5, -0.5, -0.5);
@@ -165,6 +168,16 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             if (beamActive) {
                 beamStarts[i] = computeConduitCenter(ctrl, i, staticPos);
             }
+        }
+
+        // Particule centre (glow persistant au coeur pendant le craft)
+        if (AltarCraftAnimator.trySpawnCenterParticleTick(blockPos, gameTime)
+                && blockEntity.getLevel() != null) {
+            Vec3 center = new Vec3(blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5);
+            double angle = (gameTime * 9.0) * Math.PI / 180.0;
+            Vec3 particlePos = center.add(Math.cos(angle) * 0.15, 0, Math.sin(angle) * 0.15);
+            ParticleHelper.addParticle(blockEntity.getLevel(), ParticleTypes.END_ROD,
+                particlePos, new Vec3(0, 0.01, 0));
         }
 
         // Beams 3D style beacon — rendu apres tous les modeles (RenderType different)
