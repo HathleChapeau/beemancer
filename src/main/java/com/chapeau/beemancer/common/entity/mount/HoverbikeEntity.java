@@ -353,6 +353,40 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         }
     }
 
+    /**
+     * Anti-tunneling : subdivise les grands mouvements en sous-etapes.
+     * A haute vitesse (0.6 blocs/tick), l'entite peut depasser sa propre largeur
+     * en un tick et traverser les murs. On decoupe le mouvement en etapes assez
+     * petites pour que la collision vanilla detecte chaque mur.
+     */
+    @Override
+    public void move(MoverType type, Vec3 movement) {
+        // Ne subdiviser que le mouvement propre (pas piston, etc.)
+        if (type != MoverType.SELF) {
+            super.move(type, movement);
+            return;
+        }
+
+        double horizDist = movement.horizontalDistance();
+        double threshold = this.getBbWidth() * 0.4; // ~0.48 pour largeur 1.2
+
+        if (horizDist <= threshold) {
+            super.move(type, movement);
+            return;
+        }
+
+        // Decouper en sous-etapes (max 8 pour eviter les abus)
+        int steps = Math.min(8, (int) Math.ceil(horizDist / threshold));
+        Vec3 stepMovement = movement.scale(1.0 / steps);
+
+        for (int i = 0; i < steps; i++) {
+            super.move(type, stepMovement);
+            if (this.horizontalCollision) {
+                break;
+            }
+        }
+    }
+
     @Override
     protected Vec3 getRiddenInput(Player driver, Vec3 movementInput) {
         return rideVelocity;

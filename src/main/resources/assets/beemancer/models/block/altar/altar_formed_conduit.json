@@ -1,48 +1,41 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "cutout",
   "textures": {
     "conduit": "beemancer:block/iron",
-    "cap": "beemancer:block/iron",
-    "particle": "beemancer:block/altar/honeyed_stone"
+    "crystal": "beemancer:block/altar/crystal_altar",
+    "particle": "beemancer:block/iron"
   },
   "elements": [
     {
       "name": "Main Body",
-      "from": [3, 3, 0],
-      "to": [13, 13, 16],
+      "from": [3, 0, 3],
+      "to": [13, 6, 13],
       "faces": {
-        "north": {"texture": "#conduit", "uv": [6, 6, 10, 10]},
-        "east": {"texture": "#conduit", "uv": [6, 0, 10, 16]},
-        "south": {"texture": "#conduit", "uv": [6, 6, 10, 10]},
-        "west": {"texture": "#conduit", "uv": [6, 0, 10, 16]},
+        "north": {"texture": "#conduit", "uv": [6, 0, 10, 16]},
+        "east": {"texture": "#conduit", "uv": [6, 6, 10, 10]},
+        "south": {"texture": "#conduit", "uv": [6, 0, 10, 16]},
+        "west": {"texture": "#conduit", "uv": [6, 6, 10, 10]},
         "up": {"texture": "#conduit", "uv": [6, 0, 10, 16]},
         "down": {"texture": "#conduit", "uv": [6, 0, 10, 16]}
       }
     },
     {
-      "name": "Cap Front",
-      "from": [2, 2, 3],
-      "to": [14, 14, 5],
+      "from": [8, 2, 0],
+      "to": [8, 18, 16],
+      "rotation": {"angle": 45, "axis": "y", "origin": [8, 5, 8], "rescale": false},
       "faces": {
-        "north": {"texture": "#cap", "uv": [5, 5, 11, 11]},
-        "east": {"texture": "#cap", "uv": [5, 14, 11, 16]},
-        "south": {"texture": "#cap", "uv": [5, 5, 11, 11]},
-        "west": {"texture": "#cap", "uv": [5, 14, 11, 16]},
-        "up": {"texture": "#cap", "uv": [5, 14, 11, 16]},
-        "down": {"texture": "#cap", "uv": [5, 14, 11, 16]}
+        "east": {"uv": [0, 0, 16, 16], "texture": "#crystal"},
+        "west": {"uv": [0, 0, 16, 16], "texture": "#crystal"}
       }
     },
     {
-      "name": "Cap Back",
-      "from": [2, 2, 11],
-      "to": [14, 14, 13],
+      "from": [0, 2, 8],
+      "to": [16, 18, 8],
+      "rotation": {"angle": 45, "axis": "y", "origin": [8, 5, 8], "rescale": false},
       "faces": {
-        "north": {"texture": "#cap", "uv": [5, 5, 11, 11]},
-        "east": {"texture": "#cap", "uv": [5, 0, 11, 2]},
-        "south": {"texture": "#cap", "uv": [5, 5, 11, 11]},
-        "west": {"texture": "#cap", "uv": [5, 0, 11, 2]},
-        "up": {"texture": "#cap", "uv": [5, 0, 11, 2]},
-        "down": {"texture": "#cap", "uv": [5, 0, 11, 2]}
+        "north": {"uv": [0, 0, 16, 16], "texture": "#crystal"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#crystal"}
       }
     }
   ]
