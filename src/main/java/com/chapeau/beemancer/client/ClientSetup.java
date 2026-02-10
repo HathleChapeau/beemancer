@@ -14,12 +14,10 @@ import com.chapeau.beemancer.client.gui.hud.HoverbikeGaugeHud;
 import com.chapeau.beemancer.client.model.HoverbikeModel;
 import com.chapeau.beemancer.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.beemancer.client.renderer.entity.HoverbikeRenderer;
-import com.chapeau.beemancer.client.gui.screen.BeeCreatorScreen;
 import com.chapeau.beemancer.client.gui.screen.CrafterScreen;
 import com.chapeau.beemancer.client.input.DebugKeyHandler;
 import com.chapeau.beemancer.client.gui.screen.IncubatorScreen;
 import com.chapeau.beemancer.client.gui.screen.MagicHiveScreen;
-import com.chapeau.beemancer.client.gui.screen.StorageCrateScreen;
 import com.chapeau.beemancer.client.gui.screen.alchemy.AlembicScreen;
 import com.chapeau.beemancer.client.gui.screen.alchemy.CreativeTankScreen;
 import com.chapeau.beemancer.client.gui.screen.alchemy.CrystallizerScreen;
@@ -121,11 +119,9 @@ public class ClientSetup {
 
     private static void registerScreens(final RegisterMenuScreensEvent event) {
         // Core screens
-        event.register(BeemancerMenus.STORAGE_CRATE.get(), StorageCrateScreen::new);
         event.register(BeemancerMenus.STORAGE_TERMINAL.get(), StorageTerminalScreen::new);
         event.register(BeemancerMenus.STORAGE_CONTROLLER.get(), StorageControllerScreen::new);
         event.register(BeemancerMenus.NETWORK_INTERFACE.get(), NetworkInterfaceScreen::new);
-        event.register(BeemancerMenus.BEE_CREATOR.get(), BeeCreatorScreen::new);
         event.register(BeemancerMenus.MAGIC_HIVE.get(), MagicHiveScreen::new);
         event.register(BeemancerMenus.INCUBATOR.get(), IncubatorScreen::new);
         event.register(BeemancerMenus.CRAFTER.get(), CrafterScreen::new);

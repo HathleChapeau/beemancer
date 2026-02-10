@@ -33,7 +33,6 @@ import com.chapeau.beemancer.common.block.building.HoneyedGlassBlock;
 import com.chapeau.beemancer.common.block.building.HoneyedStoneWallBlock;
 import com.chapeau.beemancer.common.block.building.IronFoundationBlock;
 import com.chapeau.beemancer.common.block.building.RoyalGoldBlock;
-import com.chapeau.beemancer.common.block.beecreator.BeeCreatorBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
 import com.chapeau.beemancer.common.block.extractor.ExtractorHeartBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
@@ -48,7 +47,6 @@ import com.chapeau.beemancer.common.block.storage.CrafterBlock;
 import com.chapeau.beemancer.common.block.storage.ExportInterfaceBlock;
 import com.chapeau.beemancer.common.block.storage.ImportInterfaceBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
-import com.chapeau.beemancer.common.block.storage.StorageCrateBlock;
 import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
 import com.chapeau.beemancer.common.block.storage.StorageRelayBlock;
 import com.chapeau.beemancer.common.block.storage.StorageTerminalBlock;
@@ -79,11 +77,6 @@ public class BeemancerBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Beemancer.MOD_ID);
 
     // --- STORAGE ---
-    public static final DeferredBlock<Block> STORAGE_CRATE = BLOCKS.register("storage_crate",
-            () -> new StorageCrateBlock(BlockBehaviour.Properties.of()
-                    .strength(2.5f)
-                    .requiresCorrectToolForDrops()));
-
     public static final DeferredBlock<StorageControllerBlock> STORAGE_CONTROLLER = BLOCKS.register("storage_controller",
             () -> new StorageControllerBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
@@ -149,11 +142,6 @@ public class BeemancerBlocks {
                     .sound(SoundType.WOOD), 3));
 
     // --- BEE MACHINES ---
-    public static final DeferredBlock<Block> BEE_CREATOR = BLOCKS.register("bee_creator",
-            () -> new BeeCreatorBlock(BlockBehaviour.Properties.of()
-                    .strength(3.0f)
-                    .requiresCorrectToolForDrops()));
-
     public static final DeferredBlock<Block> MAGIC_HIVE = BLOCKS.register("magic_hive",
             () -> new MagicHiveBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)));

@@ -102,7 +102,6 @@ public class BeemancerCreativeTabs {
     }
 
     private static void addBeeMachines(CreativeModeTab.Output output) {
-        output.accept(BeemancerItems.BEE_CREATOR.get());
         output.accept(BeemancerItems.MAGIC_HIVE.get());
         output.accept(BeemancerItems.INCUBATOR.get());
         output.accept(BeemancerItems.ANTIBREEDING_CRYSTAL.get());
@@ -148,7 +147,6 @@ public class BeemancerCreativeTabs {
     }
 
     private static void addStorageBlocks(CreativeModeTab.Output output) {
-        output.accept(BeemancerItems.STORAGE_CRATE.get());
         output.accept(BeemancerItems.STORAGE_CONTROLLER.get());
         output.accept(BeemancerItems.STORAGE_TERMINAL.get());
         output.accept(BeemancerItems.STORAGE_RELAY.get());

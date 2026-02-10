@@ -59,7 +59,7 @@ public class CrafterMenu extends BeemancerMenu {
     public static final int PLAYER_END = 74;
 
     // === Layout positions ===
-    public static final int RESERVE_X = 62;
+    public static final int RESERVE_X = 80;
     public static final int RESERVE_Y = 5;
     public static final int OUTPUT_A_X = 134;
     public static final int OUTPUT_A_Y = 5;

@@ -43,7 +43,7 @@
     {
       "id": "gene_mastery",
       "position": { "x": 4, "y": 1 },
-      "icon": "beemancer:textures/block/bee_creator.png",
+      "icon": "beemancer:textures/block/machines/magic_hive.png",
       "category": "CHALLENGE",
       "parent": "breeding",
       "hidden_until_parent_unlocked": true,

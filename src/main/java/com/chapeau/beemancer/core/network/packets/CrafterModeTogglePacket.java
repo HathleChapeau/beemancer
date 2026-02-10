@@ -68,6 +68,7 @@ public record CrafterModeTogglePacket(BlockPos crafterPos)
             crafter.setMode(newMode);
             crafter.clearGhostItems();
             menu.updateGhostSlotVisibility();
+            menu.updateOutputVisibility();
         });
     }
 }

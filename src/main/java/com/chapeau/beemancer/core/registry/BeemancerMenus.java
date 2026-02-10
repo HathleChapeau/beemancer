@@ -7,10 +7,8 @@
 package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.common.menu.BeeCreatorMenu;
 import com.chapeau.beemancer.common.menu.IncubatorMenu;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
-import com.chapeau.beemancer.common.menu.StorageCrateMenu;
 import com.chapeau.beemancer.common.menu.alchemy.AlembicMenu;
 import com.chapeau.beemancer.common.menu.alchemy.CreativeTankMenu;
 import com.chapeau.beemancer.common.menu.alchemy.CrystallizerMenu;
@@ -36,10 +34,6 @@ public class BeemancerMenus {
             DeferredRegister.create(Registries.MENU, Beemancer.MOD_ID);
 
     // --- CORE MENUS ---
-    public static final Supplier<MenuType<StorageCrateMenu>> STORAGE_CRATE =
-            MENUS.register("storage_crate",
-                    () -> IMenuTypeExtension.create(StorageCrateMenu::new));
-
     public static final Supplier<MenuType<StorageTerminalMenu>> STORAGE_TERMINAL =
             MENUS.register("storage_terminal",
                     () -> IMenuTypeExtension.create(StorageTerminalMenu::new));
@@ -55,10 +49,6 @@ public class BeemancerMenus {
     public static final Supplier<MenuType<CrafterMenu>> CRAFTER =
             MENUS.register("crafter",
                     () -> IMenuTypeExtension.create(CrafterMenu::new));
-
-    public static final Supplier<MenuType<BeeCreatorMenu>> BEE_CREATOR = 
-            MENUS.register("bee_creator",
-                    () -> IMenuTypeExtension.create(BeeCreatorMenu::new));
 
     public static final Supplier<MenuType<MagicHiveMenu>> MAGIC_HIVE = 
             MENUS.register("magic_hive",

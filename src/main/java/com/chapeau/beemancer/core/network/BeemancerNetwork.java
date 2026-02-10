@@ -7,7 +7,6 @@
 package com.chapeau.beemancer.core.network;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.core.network.packets.BeeCreatorActionPacket;
 import com.chapeau.beemancer.core.network.packets.CodexFirstOpenPacket;
 import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
@@ -34,12 +33,6 @@ public class BeemancerNetwork {
         PayloadRegistrar registrar = event.registrar(Beemancer.MOD_ID);
 
         // Client to Server packets
-        registrar.playToServer(
-                BeeCreatorActionPacket.TYPE,
-                BeeCreatorActionPacket.STREAM_CODEC,
-                BeeCreatorActionPacket::handle
-        );
-
         registrar.playToServer(
                 CodexUnlockPacket.TYPE,
                 CodexUnlockPacket.STREAM_CODEC,
