@@ -47,13 +47,13 @@ import java.util.List;
  * - CRAFT: grille 3x3 ghost + preview resultat crafting
  * - MACHINE: inputs dynamiques scrollables + output via CrafterMachinePanel
  * Header: toggle top-left, paper slot, output slots.
- * Library: 9 slots de large, scrollable.
+ * Library: 9 slots de large, 2 rangees visibles, pagination.
  * Pas de titre.
  */
 public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
 
     private static final int BG_WIDTH = 176;
-    private static final int BG_HEIGHT = 220;
+    private static final int BG_HEIGHT = 222;
 
     // Header row
     private static final int MODE_BTN_X = 8;
@@ -69,28 +69,27 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
     private static final int ARROW_X = 82;
     private static final int ARROW_Y = 44;
 
-    // Inscribe button (below content area)
-    private static final int INSCRIBE_BTN_X = 28;
-    private static final int INSCRIBE_BTN_Y = 84;
+    // Inscribe button (below craft result)
+    private static final int INSCRIBE_BTN_X = 100;
+    private static final int INSCRIBE_BTN_Y = 82;
     private static final int INSCRIBE_BTN_W = 50;
     private static final int INSCRIBE_BTN_H = 14;
 
-    // Library (9 wide, 1 visible row, scrollable)
+    // Library (9 wide, 2 visible rows, paginated)
     private static final int LIBRARY_X = CrafterMenu.LIBRARY_X;
     private static final int LIBRARY_Y = CrafterMenu.LIBRARY_Y;
 
-    // Library scroll buttons
-    private static final int LIB_SCROLL_UP_X = 8;
-    private static final int LIB_SCROLL_UP_Y = 100;
-    private static final int LIB_SCROLL_DN_X = 20;
-    private static final int LIB_SCROLL_DN_Y = 100;
-    private static final int LIB_SCROLL_W = 10;
-    private static final int LIB_SCROLL_H = 9;
+    // Library page controls (on the label line, right side)
+    private static final int PAGE_PREV_X = 116;
+    private static final int PAGE_NEXT_X = 150;
+    private static final int PAGE_BTN_Y = 86;
+    private static final int PAGE_BTN_W = 14;
+    private static final int PAGE_BTN_H = 10;
 
     // Player inventory
     private static final int PLAYER_INV_Y = CrafterMenu.PLAYER_INV_Y;
     private static final int HOTBAR_Y = CrafterMenu.HOTBAR_Y;
-    private static final int SEPARATOR_Y = 130;
+    private static final int SEPARATOR_Y = 134;
 
     // Machine mode panel (composition)
     private final CrafterMachinePanel machinePanel = new CrafterMachinePanel();
@@ -131,13 +130,16 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
                 MODE_BTN_W, MODE_BTN_H, modeLabel, modeHovered);
 
         // Reserve slot (paper, right of toggle)
-        GuiRenderHelper.renderSlot(g, x + CrafterMenu.RESERVE_X - 1, y + CrafterMenu.RESERVE_Y - 1);
+        GuiRenderHelper.renderSlot(g,
+                x + CrafterMenu.RESERVE_X - 1, y + CrafterMenu.RESERVE_Y - 1);
 
         // Output A
-        GuiRenderHelper.renderSlot(g, x + CrafterMenu.OUTPUT_A_X - 1, y + CrafterMenu.OUTPUT_A_Y - 1);
+        GuiRenderHelper.renderSlot(g,
+                x + CrafterMenu.OUTPUT_A_X - 1, y + CrafterMenu.OUTPUT_A_Y - 1);
         // Output B (machine mode only)
         if (!isCraftMode) {
-            GuiRenderHelper.renderSlot(g, x + CrafterMenu.OUTPUT_B_X - 1, y + CrafterMenu.OUTPUT_B_Y - 1);
+            GuiRenderHelper.renderSlot(g,
+                    x + CrafterMenu.OUTPUT_B_X - 1, y + CrafterMenu.OUTPUT_B_Y - 1);
         }
 
         // === Mode content area (overlay) ===
@@ -152,26 +154,34 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
         // === Inscribe button ===
         renderInscribeButton(g, x, y, mouseX, mouseY, canInscribe());
 
-        // === Library (9 wide, scrollable) ===
-        g.drawString(font, "Library", x + LIBRARY_X + 34, y + LIBRARY_Y - 9, 0x606060, false);
-        GuiRenderHelper.renderSlotGrid(g, x + LIBRARY_X - 1, y + LIBRARY_Y - 1, 9, 1);
+        // === Library (9 wide, 2 visible rows, paginated) ===
+        g.drawString(font, "Library", x + LIBRARY_X, y + LIBRARY_Y - 9, 0x606060, false);
+        GuiRenderHelper.renderSlotGrid(g, x + LIBRARY_X - 1, y + LIBRARY_Y - 1, 9, 2);
 
-        // Scroll indicators
-        int scrollRow = menu.getLibraryScrollRow();
-        if (scrollRow > 0) {
-            boolean hov = isMouseOver(mouseX, mouseY, x + LIB_SCROLL_UP_X, y + LIB_SCROLL_UP_Y, LIB_SCROLL_W, LIB_SCROLL_H);
-            GuiRenderHelper.renderButton(g, font, x + LIB_SCROLL_UP_X, y + LIB_SCROLL_UP_Y,
-                    LIB_SCROLL_W, LIB_SCROLL_H, "\u25B2", hov);
-        }
-        if (scrollRow < CrafterMenu.LIBRARY_ROWS - 1) {
-            boolean hov = isMouseOver(mouseX, mouseY, x + LIB_SCROLL_DN_X, y + LIB_SCROLL_DN_Y, LIB_SCROLL_W, LIB_SCROLL_H);
-            GuiRenderHelper.renderButton(g, font, x + LIB_SCROLL_DN_X, y + LIB_SCROLL_DN_Y,
-                    LIB_SCROLL_W, LIB_SCROLL_H, "\u25BC", hov);
+        // Page controls [<] 1/2 [>]
+        int page = menu.getLibraryPage();
+        int totalPages = CrafterMenu.LIBRARY_TOTAL_PAGES;
+        String pageStr = (page + 1) + "/" + totalPages;
+
+        if (page > 0) {
+            boolean hov = isMouseOver(mouseX, mouseY,
+                    x + PAGE_PREV_X, y + PAGE_BTN_Y, PAGE_BTN_W, PAGE_BTN_H);
+            GuiRenderHelper.renderButton(g, font,
+                    x + PAGE_PREV_X, y + PAGE_BTN_Y, PAGE_BTN_W, PAGE_BTN_H, "<", hov);
         }
 
-        // Row indicator
-        g.drawString(font, (scrollRow + 1) + "/" + CrafterMenu.LIBRARY_ROWS,
-                x + LIBRARY_X, y + LIBRARY_Y - 9, 0x909090, false);
+        int textX = x + PAGE_PREV_X + PAGE_BTN_W + 2;
+        int textW = PAGE_NEXT_X - PAGE_PREV_X - PAGE_BTN_W - 2;
+        int strW = font.width(pageStr);
+        g.drawString(font, pageStr, textX + (textW - strW) / 2,
+                y + PAGE_BTN_Y + 1, 0x404040, false);
+
+        if (page < totalPages - 1) {
+            boolean hov = isMouseOver(mouseX, mouseY,
+                    x + PAGE_NEXT_X, y + PAGE_BTN_Y, PAGE_BTN_W, PAGE_BTN_H);
+            GuiRenderHelper.renderButton(g, font,
+                    x + PAGE_NEXT_X, y + PAGE_BTN_Y, PAGE_BTN_W, PAGE_BTN_H, ">", hov);
+        }
 
         // === Player inventory ===
         GuiRenderHelper.renderPlayerInventory(g, x, y, PLAYER_INV_Y - 1, HOTBAR_Y - 1);
@@ -195,8 +205,10 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
             g.fill(bx, by, bx + INSCRIBE_BTN_W, by + INSCRIBE_BTN_H, 0xFFA0A0A0);
             g.fill(bx, by, bx + INSCRIBE_BTN_W, by + 1, 0xFFBBBBBB);
             g.fill(bx, by, bx + 1, by + INSCRIBE_BTN_H, 0xFFBBBBBB);
-            g.fill(bx, by + INSCRIBE_BTN_H - 1, bx + INSCRIBE_BTN_W, by + INSCRIBE_BTN_H, 0xFF777777);
-            g.fill(bx + INSCRIBE_BTN_W - 1, by, bx + INSCRIBE_BTN_W, by + INSCRIBE_BTN_H, 0xFF777777);
+            g.fill(bx, by + INSCRIBE_BTN_H - 1, bx + INSCRIBE_BTN_W,
+                    by + INSCRIBE_BTN_H, 0xFF777777);
+            g.fill(bx + INSCRIBE_BTN_W - 1, by, bx + INSCRIBE_BTN_W,
+                    by + INSCRIBE_BTN_H, 0xFF777777);
             int tw = font.width("Inscribe");
             g.drawString(font, "Inscribe", bx + (INSCRIBE_BTN_W - tw) / 2,
                     by + (INSCRIBE_BTN_H - 8) / 2, 0x808080, false);
@@ -253,11 +265,18 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
         int y = topPos;
         CrafterBlockEntity be = menu.getBlockEntity();
 
-        // Mode toggle button
+        // Mode toggle button (with client-side prediction)
         if (isMouseOver(mouseX, mouseY, x + MODE_BTN_X, y + MODE_BTN_Y,
                 MODE_BTN_W, MODE_BTN_H) && be != null) {
             machinePanel.reset();
             PacketDistributor.sendToServer(new CrafterModeTogglePacket(be.getBlockPos()));
+            int newMode = menu.getMode() == 0 ? 1 : 0;
+            menu.getData().set(CrafterMenu.DATA_MODE, newMode);
+            be.setMode(newMode);
+            be.clearGhostItems();
+            menu.updateGhostSlotVisibility();
+            menu.updateOutputVisibility();
+            lastRenderedMode = newMode;
             return true;
         }
 
@@ -273,15 +292,16 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
             return true;
         }
 
-        // Library scroll buttons
-        if (isMouseOver(mouseX, mouseY, x + LIB_SCROLL_UP_X, y + LIB_SCROLL_UP_Y,
-                LIB_SCROLL_W, LIB_SCROLL_H)) {
-            menu.scrollLibrary(-1);
+        // Library page buttons
+        if (isMouseOver(mouseX, mouseY, x + PAGE_PREV_X, y + PAGE_BTN_Y,
+                PAGE_BTN_W, PAGE_BTN_H) && menu.getLibraryPage() > 0) {
+            menu.setLibraryPage(menu.getLibraryPage() - 1);
             return true;
         }
-        if (isMouseOver(mouseX, mouseY, x + LIB_SCROLL_DN_X, y + LIB_SCROLL_DN_Y,
-                LIB_SCROLL_W, LIB_SCROLL_H)) {
-            menu.scrollLibrary(1);
+        if (isMouseOver(mouseX, mouseY, x + PAGE_NEXT_X, y + PAGE_BTN_Y,
+                PAGE_BTN_W, PAGE_BTN_H)
+                && menu.getLibraryPage() < CrafterMenu.LIBRARY_TOTAL_PAGES - 1) {
+            menu.setLibraryPage(menu.getLibraryPage() + 1);
             return true;
         }
 
@@ -297,7 +317,8 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
                             && mouseY >= slotY && mouseY < slotY + 16) {
                         int idx = row * 3 + col;
                         ItemStack carried = menu.getCarried();
-                        ItemStack ghostItem = carried.isEmpty() ? ItemStack.EMPTY : carried.copyWithCount(1);
+                        ItemStack ghostItem = carried.isEmpty()
+                                ? ItemStack.EMPTY : carried.copyWithCount(1);
                         PacketDistributor.sendToServer(new CrafterGhostSlotPacket(
                                 be.getBlockPos(), idx, ghostItem));
                         be.setGhostItem(idx, ghostItem);
@@ -308,7 +329,8 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
         }
 
         // Machine panel clicks (mode MACHINE only)
-        if (!isCraftMode && machinePanel.handleClick(mouseX, mouseY, x, y, menu.getCarried())) {
+        if (!isCraftMode
+                && machinePanel.handleClick(mouseX, mouseY, x, y, menu.getCarried())) {
             return true;
         }
 
@@ -316,13 +338,19 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double mouseX, double mouseY,
+                                  double scrollX, double scrollY) {
         int x = leftPos;
         int y = topPos;
 
-        // Library area scroll
-        if (mouseY >= y + LIBRARY_Y - 10 && mouseY <= y + LIBRARY_Y + 20) {
-            menu.scrollLibrary(scrollY > 0 ? -1 : 1);
+        // Library area scroll (page navigation)
+        if (mouseY >= y + LIBRARY_Y - 10 && mouseY <= y + LIBRARY_Y + 40) {
+            if (scrollY > 0 && menu.getLibraryPage() > 0) {
+                menu.setLibraryPage(menu.getLibraryPage() - 1);
+            } else if (scrollY < 0
+                    && menu.getLibraryPage() < CrafterMenu.LIBRARY_TOTAL_PAGES - 1) {
+                menu.setLibraryPage(menu.getLibraryPage() + 1);
+            }
             return true;
         }
 

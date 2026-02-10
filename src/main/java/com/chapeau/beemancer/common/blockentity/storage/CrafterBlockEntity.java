@@ -59,8 +59,8 @@ public class CrafterBlockEntity extends BlockEntity implements MenuProvider, IDe
     public static final int SLOT_OUTPUT_A = 1;
     public static final int SLOT_OUTPUT_B = 2;
     public static final int LIBRARY_START = 3;
-    public static final int LIBRARY_END = 29;
-    public static final int TOTAL_SLOTS = 30;
+    public static final int LIBRARY_END = 38;
+    public static final int TOTAL_SLOTS = 39;
     public static final int GHOST_GRID_SIZE = 9;
     public static final int CRAFT_BUFFER_MAX_STACKS = 54;
 
@@ -74,7 +74,7 @@ public class CrafterBlockEntity extends BlockEntity implements MenuProvider, IDe
     // === Crafting state ===
     private boolean crafting = false;
 
-    // === Inventory: 11 slots ===
+    // === Inventory: 39 slots (reserve + 2 outputs + 36 library) ===
     private final ItemStackHandler inventory = new ItemStackHandler(TOTAL_SLOTS) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {

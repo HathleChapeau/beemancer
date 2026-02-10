@@ -44,7 +44,7 @@ public record CrafterGhostSlotPacket(BlockPos crafterPos, int slotIndex, ItemSta
             StreamCodec.composite(
                     BlockPos.STREAM_CODEC, CrafterGhostSlotPacket::crafterPos,
                     ByteBufCodecs.INT, CrafterGhostSlotPacket::slotIndex,
-                    ItemStack.STREAM_CODEC, CrafterGhostSlotPacket::ghostItem,
+                    ItemStack.OPTIONAL_STREAM_CODEC, CrafterGhostSlotPacket::ghostItem,
                     CrafterGhostSlotPacket::new
             );
 

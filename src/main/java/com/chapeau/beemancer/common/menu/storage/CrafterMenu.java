@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [CrafterMenu.java]
- * Description: Menu du Crafter - slots reserve, output, library scrollable, ghost grid
+ * Description: Menu du Crafter - slots reserve, output, library paginee, ghost grid
  * ============================================================
  *
  * DEPENDANCES:
@@ -52,11 +52,11 @@ public class CrafterMenu extends BeemancerMenu {
     public static final int SLOT_OUTPUT_A = 1;
     public static final int SLOT_OUTPUT_B = 2;
     public static final int LIBRARY_START = 3;
-    public static final int LIBRARY_END = 29;
-    public static final int GHOST_START = 30;
-    public static final int GHOST_END = 38;
-    public static final int PLAYER_START = 39;
-    public static final int PLAYER_END = 74;
+    public static final int LIBRARY_END = 38;
+    public static final int GHOST_START = 39;
+    public static final int GHOST_END = 47;
+    public static final int PLAYER_START = 48;
+    public static final int PLAYER_END = 83;
 
     // === Layout positions ===
     public static final int RESERVE_X = 80;
@@ -66,16 +66,19 @@ public class CrafterMenu extends BeemancerMenu {
     public static final int OUTPUT_B_X = 152;
     public static final int OUTPUT_B_Y = 5;
     public static final int LIBRARY_X = 8;
-    public static final int LIBRARY_Y = 110;
+    public static final int LIBRARY_Y = 96;
     public static final int GHOST_X = 26;
     public static final int GHOST_Y = 26;
-    public static final int PLAYER_INV_Y = 140;
-    public static final int HOTBAR_Y = 198;
+    public static final int PLAYER_INV_Y = 142;
+    public static final int HOTBAR_Y = 200;
 
-    // === Library scroll ===
+    // === Library pages ===
     public static final int LIBRARY_COLS = 9;
     public static final int LIBRARY_TOTAL = LIBRARY_END - LIBRARY_START + 1;
     public static final int LIBRARY_ROWS = (LIBRARY_TOTAL + LIBRARY_COLS - 1) / LIBRARY_COLS;
+    public static final int LIBRARY_VISIBLE_ROWS = 2;
+    public static final int LIBRARY_TOTAL_PAGES =
+            (LIBRARY_ROWS + LIBRARY_VISIBLE_ROWS - 1) / LIBRARY_VISIBLE_ROWS;
 
     // === ContainerData indices ===
     public static final int DATA_MODE = 0;
@@ -89,7 +92,7 @@ public class CrafterMenu extends BeemancerMenu {
     private final GhostSlot[] ghostSlots = new GhostSlot[CrafterBlockEntity.GHOST_GRID_SIZE];
     private final BeemancerSlot[] librarySlots = new BeemancerSlot[LIBRARY_TOTAL];
     private BeemancerSlot outputBSlot;
-    private int libraryScrollRow = 0;
+    private int libraryPage = 0;
 
     // === Client constructor (from network) ===
     public CrafterMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
@@ -109,8 +112,10 @@ public class CrafterMenu extends BeemancerMenu {
         this.blockEntity = be;
         this.data = data;
 
-        ItemStackHandler inv = be != null ? be.getInventory() : new ItemStackHandler(CrafterBlockEntity.TOTAL_SLOTS);
-        ItemStackHandler ghost = be != null ? be.getGhostItems() : new ItemStackHandler(CrafterBlockEntity.GHOST_GRID_SIZE);
+        ItemStackHandler inv = be != null ? be.getInventory()
+                : new ItemStackHandler(CrafterBlockEntity.TOTAL_SLOTS);
+        ItemStackHandler ghost = be != null ? be.getGhostItems()
+                : new ItemStackHandler(CrafterBlockEntity.GHOST_GRID_SIZE);
 
         // Slot 0: Reserve (blank Crafting Paper only)
         addSlot(new BeemancerSlot(inv, CrafterBlockEntity.SLOT_RESERVE, RESERVE_X, RESERVE_Y)
@@ -119,28 +124,34 @@ public class CrafterMenu extends BeemancerMenu {
 
         // Slots 1-2: Output A and B (output only)
         addSlot(BeemancerSlot.output(inv, CrafterBlockEntity.SLOT_OUTPUT_A, OUTPUT_A_X, OUTPUT_A_Y));
-        outputBSlot = (BeemancerSlot) BeemancerSlot.output(inv, CrafterBlockEntity.SLOT_OUTPUT_B, OUTPUT_B_X, OUTPUT_B_Y);
+        outputBSlot = (BeemancerSlot) BeemancerSlot.output(
+                inv, CrafterBlockEntity.SLOT_OUTPUT_B, OUTPUT_B_X, OUTPUT_B_Y);
         addSlot(outputBSlot);
 
-        // Slots 3-29: Library (27 slots, 9 per row, overlapping positions, 1 row active at a time)
+        // Slots 3-38: Library (36 slots, 9 per row, 2 rows visible per page)
         for (int i = 0; i < LIBRARY_TOTAL; i++) {
             int slot = CrafterBlockEntity.LIBRARY_START + i;
             int col = i % LIBRARY_COLS;
-            int row = i / LIBRARY_COLS;
-            BeemancerSlot libSlot = new BeemancerSlot(inv, slot, LIBRARY_X + col * 18, LIBRARY_Y);
+            int globalRow = i / LIBRARY_COLS;
+            int rowInPage = globalRow % LIBRARY_VISIBLE_ROWS;
+            int page = globalRow / LIBRARY_VISIBLE_ROWS;
+            BeemancerSlot libSlot = new BeemancerSlot(inv, slot,
+                    LIBRARY_X + col * 18, LIBRARY_Y + rowInPage * 18);
             libSlot.withFilter(stack ->
                     (stack.getItem() instanceof CraftingPaperItem && CraftingPaperData.hasData(stack))
-                    || (stack.getItem() instanceof PartCraftingPaperItem && PartCraftingPaperData.hasData(stack)));
-            libSlot.setActive(row == 0);
+                    || (stack.getItem() instanceof PartCraftingPaperItem
+                            && PartCraftingPaperData.hasData(stack)));
+            libSlot.setActive(page == 0);
             librarySlots[i] = libSlot;
             addSlot(libSlot);
         }
 
-        // Slots 30-38: Ghost grid 3x3 (mode craft)
+        // Slots 39-47: Ghost grid 3x3 (mode craft)
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
                 int idx = row * 3 + col;
-                GhostSlot gs = new GhostSlot(ghost, idx, GHOST_X + col * 18, GHOST_Y + row * 18);
+                GhostSlot gs = new GhostSlot(ghost, idx,
+                        GHOST_X + col * 18, GHOST_Y + row * 18);
                 ghostSlots[idx] = gs;
                 addSlot(gs);
             }
@@ -164,7 +175,7 @@ public class CrafterMenu extends BeemancerMenu {
     public boolean hasBlankPaper() { return data.get(DATA_HAS_BLANK_PAPER) != 0; }
     public boolean isCrafting() { return data.get(DATA_CRAFTING) != 0; }
     public GhostSlot[] getGhostSlots() { return ghostSlots; }
-    public int getLibraryScrollRow() { return libraryScrollRow; }
+    public int getLibraryPage() { return libraryPage; }
 
     // === Ghost slot visibility ===
 
@@ -181,25 +192,26 @@ public class CrafterMenu extends BeemancerMenu {
         outputBSlot.setActive(getMode() == 1);
     }
 
-    // === Library scroll ===
+    // === Library page navigation ===
 
-    public void scrollLibrary(int direction) {
-        int maxRow = LIBRARY_ROWS - 1;
-        libraryScrollRow = Mth.clamp(libraryScrollRow + direction, 0, maxRow);
+    public void setLibraryPage(int page) {
+        this.libraryPage = Mth.clamp(page, 0, LIBRARY_TOTAL_PAGES - 1);
         updateLibraryVisibility();
     }
 
     private void updateLibraryVisibility() {
         for (int i = 0; i < LIBRARY_TOTAL; i++) {
-            int row = i / LIBRARY_COLS;
-            librarySlots[i].setActive(row == libraryScrollRow);
+            int globalRow = i / LIBRARY_COLS;
+            int page = globalRow / LIBRARY_VISIBLE_ROWS;
+            librarySlots[i].setActive(page == libraryPage);
         }
     }
 
     // === Ghost slot interaction ===
 
     @Override
-    public void clicked(int slotId, int button, net.minecraft.world.inventory.ClickType clickType, Player player) {
+    public void clicked(int slotId, int button,
+                        net.minecraft.world.inventory.ClickType clickType, Player player) {
         if (slotId >= GHOST_START && slotId <= GHOST_END && blockEntity != null) {
             int ghostIdx = slotId - GHOST_START;
             ItemStack carried = getCarried();

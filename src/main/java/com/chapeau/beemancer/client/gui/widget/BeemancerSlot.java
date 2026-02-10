@@ -27,6 +27,7 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 import javax.annotation.Nullable;
@@ -124,6 +125,20 @@ public class BeemancerSlot extends SlotItemHandler {
     @Override
     public boolean isActive() {
         return active;
+    }
+
+    /**
+     * Override pour garantir que le BlockEntity.setChanged() est appele
+     * lors d'un merge de stacks (moveItemStackTo). La classe parente
+     * SlotItemHandler herite d'un setChanged() no-op.
+     */
+    @Override
+    public void setChanged() {
+        IItemHandler handler = getItemHandler();
+        if (handler instanceof ItemStackHandler ish) {
+            int idx = getSlotIndex();
+            ish.setStackInSlot(idx, ish.getStackInSlot(idx));
+        }
     }
 
     @Override
