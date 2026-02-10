@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "base": "beemancer:block/plank_2",
+    "base": "beemancer:block/altar/pedestal_side",
     "base1": "beemancer:block/iron",
     "pipe": "beemancer:block/honey",
     "frame": "beemancer:block/iron",
