@@ -242,6 +242,29 @@ public class ParticleHelper {
 
     // ==================== Client-side ====================
 
+    /**
+     * Spawne des particules le long d'une ligne entre deux points (client-side).
+     * Cree un effet de "beam" visible entre start et end.
+     *
+     * @param level    Level (client-side uniquement)
+     * @param particle Type de particule
+     * @param start    Point de depart du beam (world)
+     * @param end      Point d'arrivee du beam (world)
+     * @param density  Nombre de particules par bloc de distance
+     */
+    public static void beam(Level level, ParticleOptions particle, Vec3 start, Vec3 end, int density) {
+        if (!level.isClientSide) return;
+        Vec3 dir = end.subtract(start);
+        double length = dir.length();
+        if (length < 0.01) return;
+        int count = Math.max(2, (int) (length * density));
+        for (int i = 0; i <= count; i++) {
+            double t = (double) i / count;
+            Vec3 pos = start.add(dir.scale(t));
+            level.addParticle(particle, pos.x, pos.y, pos.z, 0, 0, 0);
+        }
+    }
+
     public static void addParticle(Level level, ParticleOptions particle, Vec3 pos, Vec3 motion) {
         if (level.isClientSide) {
             level.addParticle(particle, pos.x, pos.y, pos.z, motion.x, motion.y, motion.z);

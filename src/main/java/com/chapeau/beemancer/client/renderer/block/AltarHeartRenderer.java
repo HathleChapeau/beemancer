@@ -12,6 +12,7 @@
  * | AltarCraftAnimator      | Etat animation       | getController, updateCraftState |
  * | AnimationController     | Apply animations     | tick(), applyAnimation()       |
  * | BlockEntityRenderer     | Interface renderer   | Rendu custom                   |
+ * | ParticleHelper          | Beam particules      | beam() client-side             |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -26,6 +27,7 @@ import com.chapeau.beemancer.client.animation.AltarCraftAnimator;
 import com.chapeau.beemancer.client.animation.AnimationController;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
+import com.chapeau.beemancer.core.util.ParticleHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -37,16 +39,21 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 /**
  * Renderer pour le Honey Altar multibloc.
  * Quand forme: rend 3 parties de structure + coeur rotatif + 4 conduits.
- * Pendant le craft: anime les conduits via le systeme d'animation.
+ * Pendant le craft: anime les conduits via le systeme d'animation + beam de particules.
  */
 public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEntity> {
 
@@ -63,8 +70,9 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_conduit"));
 
     // Rotation Y par conduit pour orienter le modele vers l'exterieur
-    // N/S: 0° (modele oriente sur Z), E/W: 90° (modele oriente sur X)
-    private static final float[] CONDUIT_Y_ROTATIONS = { 0f, 0f, 90f, 90f };
+    // Modele de base pointe vers le nord (-Z)
+    // N: 0°, S: 180°, E: 270°, W: 90°
+    private static final float[] CONDUIT_Y_ROTATIONS = { 0f, 180f, 270f, 90f };
 
     public AltarHeartRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
@@ -126,10 +134,16 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
 
     /**
      * Rend les 4 conduits a leur position statique + animations craft.
+     * Quand le beam est actif, spawne des particules END_ROD du centre du conduit vers le coeur.
      */
     private void renderConduits(AnimationController ctrl, AltarHeartBlockEntity blockEntity,
                                  BlockState heartState, PoseStack poseStack, VertexConsumer vertexConsumer,
                                  int packedLight, int packedOverlay) {
+        BlockPos blockPos = blockEntity.getBlockPos();
+        Level level = blockEntity.getLevel();
+        long gameTime = level != null ? level.getGameTime() : 0;
+        boolean spawnBeam = AltarCraftAnimator.trySpawnBeamTick(blockPos, gameTime);
+
         for (int i = 0; i < AltarCraftAnimator.getConduitCount(); i++) {
             Vec3 staticPos = AltarCraftAnimator.getStaticPosition(i);
 
@@ -145,6 +159,21 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             poseStack.translate(-0.5, -0.5, -0.5);
 
             renderModel(CONDUIT_MODEL_LOC, blockEntity, heartState, poseStack, vertexConsumer, packedLight, packedOverlay);
+
+            // Beam: particules du centre du conduit vers le coeur (1x par tick)
+            if (spawnBeam && level != null) {
+                Matrix4f mat = poseStack.last().pose();
+                Vector4f center = new Vector4f(0.5f, 0.5f, 0.5f, 1.0f);
+                mat.transform(center);
+                Vec3 conduitWorld = new Vec3(
+                    blockPos.getX() + center.x(),
+                    blockPos.getY() + center.y(),
+                    blockPos.getZ() + center.z()
+                );
+                Vec3 heartWorld = Vec3.atCenterOf(blockPos);
+                ParticleHelper.beam(level, ParticleTypes.END_ROD, conduitWorld, heartWorld, 4);
+            }
+
             poseStack.popPose();
         }
     }

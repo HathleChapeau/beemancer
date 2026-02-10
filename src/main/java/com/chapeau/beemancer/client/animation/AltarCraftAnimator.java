@@ -16,7 +16,7 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - AltarHeartRenderer.java (obtient controller, tick, apply)
+ * - AltarHeartRenderer.java (obtient controller, tick, apply, beam state)
  * - AltarHeartBlockEntity.java (constantes de timing pour serverTick)
  *
  * ============================================================
@@ -33,19 +33,27 @@ import java.util.Map;
 /**
  * Gestionnaire d'etat d'animation per-altar.
  * 3 canaux par conduit: orbit_i (orbite Y autour altar), pos_i (position), rot_i (tilt X/Z).
- * L'orbite tourne autour du centre de l'altar, pas autour du conduit.
+ *
+ * Phases du craft:
+ * 1. Horizontal spread (ease in) — conduits s'ecartent a l'horizontal
+ * 2. Tilt + vertical move (ease in) — conduits se tournent et descendent
+ * 3. Beam + orbit (ease in) — beam de particules + rotation orbitale (vitesse /3)
+ * 4. Hold — rotation constante, beam actif
+ * 5. Craft tick — execution du craft serveur
+ * 6. Return — beam coupe, retour position, decel orbite
  */
 public class AltarCraftAnimator {
 
     // === Timing (en ticks, 20 ticks = 1 seconde) ===
-    public static final int EXPAND_END = 40;
+    public static final int HORIZ_END = 30;
+    public static final int VERT_TILT_END = 60;
     public static final int SPIN_END = 140;
     public static final int CRAFT_TICK = 160;
+    public static final int BEAM_CUT = 170;
     public static final int RETURN_POS_START = 180;
     public static final int TOTAL_TICKS = 220;
 
-    // === Tilt (rotation initiale sur soi-meme, depend du facing) ===
-    // Chaque conduit tilt vers l'exterieur de l'altar: angles opposes pour N/S et E/W
+    // === Tilt (rotation sur soi-meme, depend du facing) ===
     private static final float[] TILT_ANGLES = {
         90f,   // N → tilt vers le nord (exterieur)
         -90f,  // S → tilt vers le sud (exterieur)
@@ -53,10 +61,10 @@ public class AltarCraftAnimator {
         -90f,  // W → tilt vers l'ouest (exterieur)
     };
 
-    // === Orbite angles (rotation Y autour du centre altar) ===
-    private static final float ORBIT_SPIN_END = 2520f;
-    private static final float ORBIT_HOLD_END = 3528f;
-    private static final float ORBIT_DECEL_END = 5040f;
+    // === Orbite angles (rotation Y autour du centre altar, vitesse /3) ===
+    private static final float ORBIT_SPIN_END = 840f;
+    private static final float ORBIT_HOLD_END = 1176f;
+    private static final float ORBIT_DECEL_END = 1680f;
 
     private static final Vec3 BLOCK_CENTER = new Vec3(0.5, 0.5, 0.5);
 
@@ -73,13 +81,16 @@ public class AltarCraftAnimator {
         new Vec3(-1, 1, 0),
     };
 
-    // Offsets de deplacement: TARGET - STATIC
-    private static final Vec3[] DELTA_POS = {
-        new Vec3(0, -1, -1),
-        new Vec3(0, -1, 1),
-        new Vec3(1, -1, 0),
-        new Vec3(-1, -1, 0),
+    // Offsets horizontaux (phase 1 — spread outward)
+    private static final Vec3[] HORIZ_DELTA = {
+        new Vec3(0, 0, -1),
+        new Vec3(0, 0, 1),
+        new Vec3(1, 0, 0),
+        new Vec3(-1, 0, 0),
     };
+
+    // Offset vertical (phase 2 — descente au niveau du coeur)
+    private static final Vec3 VERT_DELTA = new Vec3(0, -1, 0);
 
     // === Per-altar state ===
     private static final Map<BlockPos, AnimState> states = new HashMap<>();
@@ -88,6 +99,8 @@ public class AltarCraftAnimator {
         final AnimationController controller;
         boolean craftActive = false;
         Sequence craftSequence = null;
+        boolean beamActive = false;
+        long lastBeamTick = -1;
 
         AnimState(AnimationController controller) {
             this.controller = controller;
@@ -119,6 +132,27 @@ public class AltarCraftAnimator {
 
     public static int getConduitCount() {
         return STATIC_POS.length;
+    }
+
+    /**
+     * Retourne true si le beam est actif pour cet altar.
+     * Utilise par le renderer pour savoir s'il faut spawner les particules.
+     */
+    public static boolean isBeamActive(BlockPos pos) {
+        AnimState state = states.get(pos);
+        return state != null && state.beamActive;
+    }
+
+    /**
+     * Retourne true si le beam doit etre rendu CE tick (evite le spam par frame).
+     * Retourne false si deja appele ce tick ou si le beam est inactif.
+     */
+    public static boolean trySpawnBeamTick(BlockPos pos, long gameTime) {
+        AnimState state = states.get(pos);
+        if (state == null || !state.beamActive) return false;
+        if (state.lastBeamTick == gameTime) return false;
+        state.lastBeamTick = gameTime;
+        return true;
     }
 
     // === Creation controller ===
@@ -157,12 +191,13 @@ public class AltarCraftAnimator {
 
     private static void startCraft(AnimState state) {
         state.craftActive = true;
-        state.craftSequence = buildCraftSequence(state.controller);
+        state.craftSequence = buildCraftSequence(state);
         state.controller.playSequence(state.craftSequence);
     }
 
     private static void stopCraft(AnimState state) {
         state.craftActive = false;
+        state.beamActive = false;
         if (state.craftSequence != null) {
             state.controller.stopSequence(state.craftSequence);
             state.craftSequence = null;
@@ -174,20 +209,28 @@ public class AltarCraftAnimator {
         }
     }
 
-    private static Sequence buildCraftSequence(AnimationController ctrl) {
+    private static Sequence buildCraftSequence(AnimState state) {
+        AnimationController ctrl = state.controller;
         return new Sequence(
-            // t=0: tilt X/Z + expand position
+            // t=0: spread horizontal (ease in)
             SequenceEntry.action(0, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
-                    ctrl.replaceAnimation("rot_" + i, buildTiltAnim(i));
-                    ctrl.replaceAnimation("pos_" + i, buildExpandAnim(i));
+                    ctrl.replaceAnimation("pos_" + i, buildHorizSpreadAnim(i));
                 }
             }),
-            // t=40: hold tilt + hold position + start orbit spin
-            SequenceEntry.action(EXPAND_END, () -> {
+            // t=30: tilt + descente verticale (ease in)
+            SequenceEntry.action(HORIZ_END, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
-                    ctrl.replaceAnimation("rot_" + i, buildHoldTiltAnim(i));
+                    ctrl.replaceAnimation("pos_" + i, buildVertMoveAnim(i));
+                    ctrl.replaceAnimation("rot_" + i, buildTiltAnim(i));
+                }
+            }),
+            // t=60: beam on + hold pos/tilt + orbit spin
+            SequenceEntry.action(VERT_TILT_END, () -> {
+                state.beamActive = true;
+                for (int i = 0; i < STATIC_POS.length; i++) {
                     ctrl.replaceAnimation("pos_" + i, buildHoldPosAnim(i));
+                    ctrl.replaceAnimation("rot_" + i, buildHoldTiltAnim(i));
                     ctrl.replaceAnimation("orbit_" + i, buildOrbitSpinAnim());
                 }
             }),
@@ -197,8 +240,9 @@ public class AltarCraftAnimator {
                     ctrl.replaceAnimation("orbit_" + i, buildOrbitHoldAnim());
                 }
             }),
-            // t=160: orbit decel + un-tilt
-            SequenceEntry.action(CRAFT_TICK, () -> {
+            // t=170: beam off + orbit decel + untilt
+            SequenceEntry.action(BEAM_CUT, () -> {
+                state.beamActive = false;
                 for (int i = 0; i < STATIC_POS.length; i++) {
                     ctrl.replaceAnimation("orbit_" + i, buildOrbitDecelAnim());
                     ctrl.replaceAnimation("rot_" + i, buildUntiltAnim(i));
@@ -215,25 +259,40 @@ public class AltarCraftAnimator {
 
     // === Position factories ===
 
-    private static MoveAnimation buildExpandAnim(int conduitIndex) {
+    /** Phase 1 : spread horizontal (ease in). */
+    private static MoveAnimation buildHorizSpreadAnim(int conduitIndex) {
         return MoveAnimation.builder()
-            .from(Vec3.ZERO).to(DELTA_POS[conduitIndex])
-            .duration(EXPAND_END).timingType(TimingType.EASE_OUT)
+            .from(Vec3.ZERO).to(HORIZ_DELTA[conduitIndex])
+            .duration(HORIZ_END).timingType(TimingType.EASE_IN)
             .resetAfterAnimation(false)
             .build();
     }
 
-    private static MoveAnimation buildHoldPosAnim(int conduitIndex) {
-        Vec3 delta = DELTA_POS[conduitIndex];
+    /** Phase 2 : descente verticale (ease in). */
+    private static MoveAnimation buildVertMoveAnim(int conduitIndex) {
+        Vec3 from = HORIZ_DELTA[conduitIndex];
+        Vec3 to = HORIZ_DELTA[conduitIndex].add(VERT_DELTA);
         return MoveAnimation.builder()
-            .from(delta).to(delta)
+            .from(from).to(to)
+            .duration(VERT_TILT_END - HORIZ_END).timingType(TimingType.EASE_IN)
+            .resetAfterAnimation(false)
+            .build();
+    }
+
+    /** Hold a la position finale (HORIZ + VERT = deplacement complet). */
+    private static MoveAnimation buildHoldPosAnim(int conduitIndex) {
+        Vec3 pos = HORIZ_DELTA[conduitIndex].add(VERT_DELTA);
+        return MoveAnimation.builder()
+            .from(pos).to(pos)
             .duration(20f).timingEffect(TimingEffect.LOOP)
             .build();
     }
 
+    /** Retour a la position de repos. */
     private static MoveAnimation buildReturnAnim(int conduitIndex) {
+        Vec3 pos = HORIZ_DELTA[conduitIndex].add(VERT_DELTA);
         return MoveAnimation.builder()
-            .from(DELTA_POS[conduitIndex]).to(Vec3.ZERO)
+            .from(pos).to(Vec3.ZERO)
             .duration(TOTAL_TICKS - RETURN_POS_START)
             .timingType(TimingType.EASE_OUT)
             .resetAfterAnimation(true)
@@ -242,16 +301,18 @@ public class AltarCraftAnimator {
 
     // === Tilt factories (rotation sur soi-meme, axe X ou Z selon le cote) ===
 
+    /** Phase 2 : tilt vers l'exterieur (ease in). */
     private static RotateAnimation buildTiltAnim(int conduitIndex) {
         float angle = TILT_ANGLES[conduitIndex];
         return RotateAnimation.builder()
             .axis(TILT_AXES[conduitIndex]).startAngle(0).endAngle(angle)
             .pivot(BLOCK_CENTER)
-            .duration(EXPAND_END).timingType(TimingType.EASE_OUT)
+            .duration(VERT_TILT_END - HORIZ_END).timingType(TimingType.EASE_IN)
             .resetAfterAnimation(false)
             .build();
     }
 
+    /** Hold du tilt pendant le beam + orbite. */
     private static RotateAnimation buildHoldTiltAnim(int conduitIndex) {
         float angle = TILT_ANGLES[conduitIndex];
         return RotateAnimation.builder()
@@ -261,41 +322,45 @@ public class AltarCraftAnimator {
             .build();
     }
 
+    /** Retour du tilt a 0 (ease out). */
     private static RotateAnimation buildUntiltAnim(int conduitIndex) {
         float angle = TILT_ANGLES[conduitIndex];
         return RotateAnimation.builder()
             .axis(TILT_AXES[conduitIndex]).startAngle(angle).endAngle(0)
             .pivot(BLOCK_CENTER)
-            .duration(TOTAL_TICKS - CRAFT_TICK).timingType(TimingType.EASE_OUT)
+            .duration(TOTAL_TICKS - BEAM_CUT).timingType(TimingType.EASE_OUT)
             .resetAfterAnimation(true)
             .build();
     }
 
-    // === Orbit factories (rotation Y autour du centre altar) ===
+    // === Orbit factories (rotation Y autour du centre altar, vitesse /3) ===
 
+    /** Acceleration de l'orbite (ease in). */
     private static RotateAnimation buildOrbitSpinAnim() {
         return RotateAnimation.builder()
             .axis(Axis.YP).startAngle(0).endAngle(ORBIT_SPIN_END)
             .pivot(BLOCK_CENTER)
-            .duration(SPIN_END - EXPAND_END).timingType(TimingType.EASE_IN)
+            .duration(SPIN_END - VERT_TILT_END).timingType(TimingType.EASE_IN)
             .resetAfterAnimation(false)
             .build();
     }
 
+    /** Orbite a vitesse constante. */
     private static RotateAnimation buildOrbitHoldAnim() {
         return RotateAnimation.builder()
             .axis(Axis.YP).startAngle(ORBIT_SPIN_END).endAngle(ORBIT_HOLD_END)
             .pivot(BLOCK_CENTER)
-            .duration(CRAFT_TICK - SPIN_END).timingType(TimingType.NORMAL)
+            .duration(BEAM_CUT - SPIN_END).timingType(TimingType.NORMAL)
             .resetAfterAnimation(false)
             .build();
     }
 
+    /** Deceleration de l'orbite (ease out). */
     private static RotateAnimation buildOrbitDecelAnim() {
         return RotateAnimation.builder()
             .axis(Axis.YP).startAngle(ORBIT_HOLD_END).endAngle(ORBIT_DECEL_END)
             .pivot(BLOCK_CENTER)
-            .duration(TOTAL_TICKS - CRAFT_TICK).timingType(TimingType.EASE_OUT)
+            .duration(TOTAL_TICKS - BEAM_CUT).timingType(TimingType.EASE_OUT)
             .resetAfterAnimation(true)
             .build();
     }
