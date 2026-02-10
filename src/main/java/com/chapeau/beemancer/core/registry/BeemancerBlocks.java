@@ -456,98 +456,6 @@ public class BeemancerBlocks {
             () -> new IronBarsBlock(BlockBehaviour.Properties.of()
                     .strength(0.3f).sound(SoundType.GLASS).noOcclusion()));
 
-    // --- BUILDING BLOCKS: ROYAL WOOD ---
-    public static final DeferredBlock<Block> ROYAL_PLANKS = BLOCKS.register("royal_planks",
-            () -> new Block(BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD)));
-
-    public static final DeferredBlock<StairBlock> ROYAL_WOOD_STAIR = BLOCKS.register("royal_wood_stair",
-            () -> new StairBlock(ROYAL_PLANKS.get().defaultBlockState(),
-                    BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.WOOD)));
-
-    public static final DeferredBlock<SlabBlock> ROYAL_WOOD_SLAB = BLOCKS.register("royal_wood_slab",
-            () -> new SlabBlock(BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD)));
-
-    public static final DeferredBlock<FenceBlock> ROYAL_FENCE = BLOCKS.register("royal_fence",
-            () -> new FenceBlock(BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD)));
-
-    public static final DeferredBlock<FenceGateBlock> ROYAL_FENCE_GATE = BLOCKS.register("royal_fence_gate",
-            () -> new FenceGateBlock(WoodType.OAK, BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD)));
-
-    public static final DeferredBlock<TrapDoorBlock> ROYAL_TRAPDOOR = BLOCKS.register("royal_trapdoor",
-            () -> new TrapDoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
-
-    public static final DeferredBlock<DoorBlock> ROYAL_DOOR = BLOCKS.register("royal_door",
-            () -> new DoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
-
-    // --- BUILDING BLOCKS: ROYAL STONE ---
-    public static final DeferredBlock<Block> ROYAL_STONE = BLOCKS.register("royal_stone",
-            () -> new Block(BlockBehaviour.Properties.of()
-                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
-
-    public static final DeferredBlock<StairBlock> ROYAL_STONE_STAIR = BLOCKS.register("royal_stone_stair",
-            () -> new StairBlock(ROYAL_STONE.get().defaultBlockState(),
-                    BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
-
-    public static final DeferredBlock<SlabBlock> ROYAL_STONE_SLAB = BLOCKS.register("royal_stone_slab",
-            () -> new SlabBlock(BlockBehaviour.Properties.of()
-                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
-
-    public static final DeferredBlock<WallBlock> ROYAL_STONE_WALL = BLOCKS.register("royal_stone_wall",
-            () -> new WallBlock(BlockBehaviour.Properties.of()
-                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
-
-    // --- BUILDING BLOCKS: NECTAR WOOD ---
-    public static final DeferredBlock<Block> NECTAR_PLANKS = BLOCKS.register("nectar_planks",
-            () -> new Block(BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD)));
-
-    public static final DeferredBlock<StairBlock> NECTAR_WOOD_STAIR = BLOCKS.register("nectar_wood_stair",
-            () -> new StairBlock(NECTAR_PLANKS.get().defaultBlockState(),
-                    BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.WOOD)));
-
-    public static final DeferredBlock<SlabBlock> NECTAR_WOOD_SLAB = BLOCKS.register("nectar_wood_slab",
-            () -> new SlabBlock(BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD)));
-
-    public static final DeferredBlock<FenceBlock> NECTAR_FENCE = BLOCKS.register("nectar_fence",
-            () -> new FenceBlock(BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD)));
-
-    public static final DeferredBlock<FenceGateBlock> NECTAR_FENCE_GATE = BLOCKS.register("nectar_fence_gate",
-            () -> new FenceGateBlock(WoodType.OAK, BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD)));
-
-    public static final DeferredBlock<TrapDoorBlock> NECTAR_TRAPDOOR = BLOCKS.register("nectar_trapdoor",
-            () -> new TrapDoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
-
-    public static final DeferredBlock<DoorBlock> NECTAR_DOOR = BLOCKS.register("nectar_door",
-            () -> new DoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
-                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
-
-    // --- BUILDING BLOCKS: NECTAR STONE ---
-    public static final DeferredBlock<Block> NECTAR_STONE = BLOCKS.register("nectar_stone",
-            () -> new Block(BlockBehaviour.Properties.of()
-                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
-
-    public static final DeferredBlock<StairBlock> NECTAR_STONE_STAIR = BLOCKS.register("nectar_stone_stair",
-            () -> new StairBlock(NECTAR_STONE.get().defaultBlockState(),
-                    BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
-
-    public static final DeferredBlock<SlabBlock> NECTAR_STONE_SLAB = BLOCKS.register("nectar_stone_slab",
-            () -> new SlabBlock(BlockBehaviour.Properties.of()
-                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
-
-    public static final DeferredBlock<WallBlock> NECTAR_STONE_WALL = BLOCKS.register("nectar_stone_wall",
-            () -> new WallBlock(BlockBehaviour.Properties.of()
-                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
-
     // --- IRON FOUNDATION ---
     public static final DeferredBlock<IronFoundationBlock> IRON_FOUNDATION = BLOCKS.register("iron_foundation",
             () -> new IronFoundationBlock(BlockBehaviour.Properties.of()
@@ -561,15 +469,28 @@ public class BeemancerBlocks {
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<StairBlock> IRON_FOUNDATION_STAIR = BLOCKS.register("iron_foundation_stair",
+            () -> new StairBlock(IRON_FOUNDATION.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .strength(2.0f)
+                            .sound(SoundType.STONE)
+                            .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<SlabBlock> IRON_FOUNDATION_SLAB = BLOCKS.register("iron_foundation_slab",
+            () -> new SlabBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
     public static final DeferredBlock<TrapDoorBlock> IRON_FOUNDATION_TRAPDOOR = BLOCKS.register("iron_foundation_trapdoor",
-            () -> new TrapDoorBlock(BlockSetType.IRON, BlockBehaviour.Properties.of()
+            () -> new TrapDoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.METAL)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
     public static final DeferredBlock<DoorBlock> IRON_FOUNDATION_DOOR = BLOCKS.register("iron_foundation_door",
-            () -> new DoorBlock(BlockSetType.IRON, BlockBehaviour.Properties.of()
+            () -> new DoorBlock(BlockSetType.OAK, BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.METAL)
                     .noOcclusion()

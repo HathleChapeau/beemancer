@@ -218,64 +218,16 @@ public class BeemancerItems {
             () -> new BlockItem(BeemancerBlocks.IRON_FOUNDATION_TRAPDOOR.get(), new Item.Properties()));
     public static final DeferredItem<DoubleHighBlockItem> IRON_FOUNDATION_DOOR = ITEMS.register("iron_foundation_door",
             () -> new DoubleHighBlockItem(BeemancerBlocks.IRON_FOUNDATION_DOOR.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> IRON_FOUNDATION_STAIR = ITEMS.register("iron_foundation_stair",
+            () -> new BlockItem(BeemancerBlocks.IRON_FOUNDATION_STAIR.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> IRON_FOUNDATION_SLAB = ITEMS.register("iron_foundation_slab",
+            () -> new BlockItem(BeemancerBlocks.IRON_FOUNDATION_SLAB.get(), new Item.Properties()));
 
     // --- BUILDING BLOCKS: HONEYED GLASS ---
     public static final DeferredItem<BlockItem> HONEYED_GLASS = ITEMS.register("honeyed_glass",
             () -> new BlockItem(BeemancerBlocks.HONEYED_GLASS.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> HONEYED_GLASS_PANE = ITEMS.register("honeyed_glass_pane",
             () -> new BlockItem(BeemancerBlocks.HONEYED_GLASS_PANE.get(), new Item.Properties()));
-
-    // --- BUILDING BLOCKS: ROYAL WOOD ---
-    public static final DeferredItem<BlockItem> ROYAL_PLANKS = ITEMS.register("royal_planks",
-            () -> new BlockItem(BeemancerBlocks.ROYAL_PLANKS.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> ROYAL_WOOD_STAIR = ITEMS.register("royal_wood_stair",
-            () -> new BlockItem(BeemancerBlocks.ROYAL_WOOD_STAIR.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> ROYAL_WOOD_SLAB = ITEMS.register("royal_wood_slab",
-            () -> new BlockItem(BeemancerBlocks.ROYAL_WOOD_SLAB.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> ROYAL_FENCE = ITEMS.register("royal_fence",
-            () -> new BlockItem(BeemancerBlocks.ROYAL_FENCE.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> ROYAL_FENCE_GATE = ITEMS.register("royal_fence_gate",
-            () -> new BlockItem(BeemancerBlocks.ROYAL_FENCE_GATE.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> ROYAL_TRAPDOOR = ITEMS.register("royal_trapdoor",
-            () -> new BlockItem(BeemancerBlocks.ROYAL_TRAPDOOR.get(), new Item.Properties()));
-    public static final DeferredItem<DoubleHighBlockItem> ROYAL_DOOR = ITEMS.register("royal_door",
-            () -> new DoubleHighBlockItem(BeemancerBlocks.ROYAL_DOOR.get(), new Item.Properties()));
-
-    // --- BUILDING BLOCKS: ROYAL STONE ---
-    public static final DeferredItem<BlockItem> ROYAL_STONE = ITEMS.register("royal_stone",
-            () -> new BlockItem(BeemancerBlocks.ROYAL_STONE.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> ROYAL_STONE_STAIR = ITEMS.register("royal_stone_stair",
-            () -> new BlockItem(BeemancerBlocks.ROYAL_STONE_STAIR.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> ROYAL_STONE_SLAB = ITEMS.register("royal_stone_slab",
-            () -> new BlockItem(BeemancerBlocks.ROYAL_STONE_SLAB.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> ROYAL_STONE_WALL = ITEMS.register("royal_stone_wall",
-            () -> new BlockItem(BeemancerBlocks.ROYAL_STONE_WALL.get(), new Item.Properties()));
-
-    // --- BUILDING BLOCKS: NECTAR WOOD ---
-    public static final DeferredItem<BlockItem> NECTAR_PLANKS = ITEMS.register("nectar_planks",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_PLANKS.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> NECTAR_WOOD_STAIR = ITEMS.register("nectar_wood_stair",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_WOOD_STAIR.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> NECTAR_WOOD_SLAB = ITEMS.register("nectar_wood_slab",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_WOOD_SLAB.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> NECTAR_FENCE = ITEMS.register("nectar_fence",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_FENCE.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> NECTAR_FENCE_GATE = ITEMS.register("nectar_fence_gate",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_FENCE_GATE.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> NECTAR_TRAPDOOR = ITEMS.register("nectar_trapdoor",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_TRAPDOOR.get(), new Item.Properties()));
-    public static final DeferredItem<DoubleHighBlockItem> NECTAR_DOOR = ITEMS.register("nectar_door",
-            () -> new DoubleHighBlockItem(BeemancerBlocks.NECTAR_DOOR.get(), new Item.Properties()));
-
-    // --- BUILDING BLOCKS: NECTAR STONE ---
-    public static final DeferredItem<BlockItem> NECTAR_STONE = ITEMS.register("nectar_stone",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_STONE.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> NECTAR_STONE_STAIR = ITEMS.register("nectar_stone_stair",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_STONE_STAIR.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> NECTAR_STONE_SLAB = ITEMS.register("nectar_stone_slab",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_STONE_SLAB.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> NECTAR_STONE_WALL = ITEMS.register("nectar_stone_wall",
-            () -> new BlockItem(BeemancerBlocks.NECTAR_STONE_WALL.get(), new Item.Properties()));
 
     // --- MATERIAL STORAGE BLOCKS ---
     public static final DeferredItem<BlockItem> HONEYED_IRON_BLOCK = ITEMS.register("honeyed_iron_block",

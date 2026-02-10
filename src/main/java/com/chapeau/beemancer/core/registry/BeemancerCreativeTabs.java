@@ -48,7 +48,6 @@ public class BeemancerCreativeTabs {
                         addEssences(output);
                         addCrystalItems(output);
                         addBeeStatue(output);
-                        addFlywheelTest(output);
                         addBuildingBlocks(output);
                         addCraftingMaterials(output);
                     })
@@ -76,13 +75,24 @@ public class BeemancerCreativeTabs {
                     .build());
 
     // =========================================================================
+    // DEBUG TAB - Debug and Creative Tools
+    // =========================================================================
+
+    public static final Supplier<CreativeModeTab> DEBUG_TAB = CREATIVE_TABS.register("debug_tab",
+            () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup." + Beemancer.MOD_ID + ".debug"))
+                    .icon(() -> new ItemStack(BeemancerItems.DEBUG_WAND.get()))
+                    .displayItems((parameters, output) -> {
+                        addDebugTools(output);
+                    })
+                    .build());
+
+    // =========================================================================
     // HELPER METHODS - MAIN TAB
     // =========================================================================
 
     private static void addCodexAndTools(CreativeModeTab.Output output) {
         output.accept(BeemancerItems.CODEX.get());
-        output.accept(BeemancerItems.BUILDING_WAND.get());
-        output.accept(BeemancerItems.DEBUG_WAND.get());
     }
 
     private static void addBees(CreativeModeTab.Output output) {
@@ -117,7 +127,6 @@ public class BeemancerCreativeTabs {
         // Tanks
         output.accept(BeemancerItems.HONEY_TANK.get());
         output.accept(BeemancerItems.MULTIBLOCK_TANK.get());
-        output.accept(BeemancerItems.CREATIVE_TANK.get());
 
         // Honey Pipes
         output.accept(BeemancerItems.HONEY_PIPE.get());
@@ -180,7 +189,10 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.BEE_STATUE.get());
     }
 
-    private static void addFlywheelTest(CreativeModeTab.Output output) {
+    private static void addDebugTools(CreativeModeTab.Output output) {
+        output.accept(BeemancerItems.DEBUG_WAND.get());
+        output.accept(BeemancerItems.BUILDING_WAND.get());
+        output.accept(BeemancerItems.CREATIVE_TANK.get());
         output.accept(BeemancerItems.BEE_SPAWNER.get());
     }
 
@@ -206,6 +218,8 @@ public class BeemancerCreativeTabs {
 
         // Iron Foundation
         output.accept(BeemancerItems.IRON_FOUNDATION.get());
+        output.accept(BeemancerItems.IRON_FOUNDATION_STAIR.get());
+        output.accept(BeemancerItems.IRON_FOUNDATION_SLAB.get());
         output.accept(BeemancerItems.IRON_FOUNDATION_WALL.get());
         output.accept(BeemancerItems.IRON_FOUNDATION_TRAPDOOR.get());
         output.accept(BeemancerItems.IRON_FOUNDATION_DOOR.get());
@@ -213,36 +227,6 @@ public class BeemancerCreativeTabs {
         // Honeyed Glass
         output.accept(BeemancerItems.HONEYED_GLASS.get());
         output.accept(BeemancerItems.HONEYED_GLASS_PANE.get());
-
-        // Royal Wood
-        output.accept(BeemancerItems.ROYAL_PLANKS.get());
-        output.accept(BeemancerItems.ROYAL_WOOD_STAIR.get());
-        output.accept(BeemancerItems.ROYAL_WOOD_SLAB.get());
-        output.accept(BeemancerItems.ROYAL_FENCE.get());
-        output.accept(BeemancerItems.ROYAL_FENCE_GATE.get());
-        output.accept(BeemancerItems.ROYAL_TRAPDOOR.get());
-        output.accept(BeemancerItems.ROYAL_DOOR.get());
-
-        // Royal Stone
-        output.accept(BeemancerItems.ROYAL_STONE.get());
-        output.accept(BeemancerItems.ROYAL_STONE_STAIR.get());
-        output.accept(BeemancerItems.ROYAL_STONE_SLAB.get());
-        output.accept(BeemancerItems.ROYAL_STONE_WALL.get());
-
-        // Nectar Wood
-        output.accept(BeemancerItems.NECTAR_PLANKS.get());
-        output.accept(BeemancerItems.NECTAR_WOOD_STAIR.get());
-        output.accept(BeemancerItems.NECTAR_WOOD_SLAB.get());
-        output.accept(BeemancerItems.NECTAR_FENCE.get());
-        output.accept(BeemancerItems.NECTAR_FENCE_GATE.get());
-        output.accept(BeemancerItems.NECTAR_TRAPDOOR.get());
-        output.accept(BeemancerItems.NECTAR_DOOR.get());
-
-        // Nectar Stone
-        output.accept(BeemancerItems.NECTAR_STONE.get());
-        output.accept(BeemancerItems.NECTAR_STONE_STAIR.get());
-        output.accept(BeemancerItems.NECTAR_STONE_SLAB.get());
-        output.accept(BeemancerItems.NECTAR_STONE_WALL.get());
     }
 
     private static void addCraftingMaterials(CreativeModeTab.Output output) {

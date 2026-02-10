@@ -1,8 +1,6 @@
 {
   "replace": false,
   "values": [
-    "beemancer:honeyed_fence",
-    "beemancer:royal_fence",
-    "beemancer:nectar_fence"
+    "beemancer:honeyed_fence"
   ]
 }

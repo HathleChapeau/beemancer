@@ -2,8 +2,6 @@
   "replace": false,
   "values": [
     "beemancer:honeyed_stone_wall",
-    "beemancer:royal_stone_wall",
-    "beemancer:nectar_stone_wall",
     "beemancer:iron_foundation_wall"
   ]
 }
