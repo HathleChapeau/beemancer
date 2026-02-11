@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "translucent",
   "textures": {
     "rune": "beemancer:block/alchemy/powered_centrifuge_top_rune2",
     "rune2": "beemancer:block/alchemy/powered_centrifuge_top_rune3",
@@ -8,6 +9,7 @@
     "iron8l": "beemancer:block/iron8x8light",
     "frame": "beemancer:block/iron40x40_no_light",
     "pillar": "beemancer:block/iron3x20",
+    "glass": "beemancer:block/alchemy/fluid_tank_glass",
     "particle": "beemancer:block/iron"
   },
   "elements": [
@@ -35,6 +37,17 @@
         "west": {"texture": "#rune", "uv": [0, 0, 16, 16]},
         "up": {"texture": "#frame", "uv": [0, 0, 16, 16]},
         "down": {"texture": "#frame", "uv": [0, 0, 16, 16]}
+      }
+    },
+    {
+      "name": "Glass",
+      "from": [-10, -4, -10],
+      "to": [26, 20, 26],
+      "faces": {
+        "north": {"texture": "#glass", "uv": [0, 0, 16, 16]},
+        "east":  {"texture": "#glass", "uv": [0, 0, 16, 16]},
+        "south": {"texture": "#glass", "uv": [0, 0, 16, 16]},
+        "west":  {"texture": "#glass", "uv": [0, 0, 16, 16]}
       }
     },
     {

@@ -52,38 +52,40 @@ public class AltarCraftAnimator {
     // === Timing (en ticks, 20 ticks = 1 seconde) ===
 
     /** Phase 1: spread horizontal (ease in) */
-    public static final int HORIZ_DURATION = 25;
+    public static final int DELAY_START = 25;
+
+    public static final int HORIZ_DURATION = 40;
 
     /** Phase 2: tilt outward + descente verticale */
-    public static final int TILT_START = 40;
-    public static final int TILT_DURATION = 25;
+    public static final int TILT_START = 80;
+    public static final int TILT_DURATION = 40;
 
     /** Phase 3: self-spin Y (rotation sur soi-meme, loop) */
-    public static final int SELF_SPIN_START = 75;
+    public static final int SELF_SPIN_START = 150;
     public static final int SELF_SPIN_PERIOD = 100;
 
     /** Phase 4: particule centre apparait */
-    public static final int CENTER_PARTICLE_START = 115;
+    public static final int CENTER_PARTICLE_START = 165;
 
     /** Phase 5: untilt 90 vers le centre (slow in slow out) */
-    public static final int UNTILT_START = 155;
-    public static final int UNTILT_DURATION = 40;
+    public static final int UNTILT_START = 255;
+    public static final int UNTILT_DURATION = 60;
 
     /** Phase 6: beam ON + orbite acceleree */
-    public static final int BEAM_ORBIT_START = 215;
-    public static final int ORBIT_ACCEL_DURATION = 60;
+    public static final int BEAM_ORBIT_START = 300;
+    public static final int ORBIT_ACCEL_DURATION = 100;
 
     /** Phase 6b: orbite vitesse constante */
-    public static final int ORBIT_HOLD_START = 275;
-    public static final int ORBIT_HOLD_DURATION = 40;
+    public static final int ORBIT_HOLD_START = 400;
+    public static final int ORBIT_HOLD_DURATION = 200;
 
     /** Craft execution (server-side) */
-    public static final int CRAFT_TICK = 290;
+    public static final int CRAFT_TICK = 590;
 
     /** Phase 7: deceleration + retour */
-    public static final int DECEL_START = 315;
-    public static final int DECEL_DURATION = 50;
-    public static final int TOTAL_TICKS = 365;
+    public static final int DECEL_START = 610;
+    public static final int DECEL_DURATION = 100;
+    public static final int TOTAL_TICKS = 710;
 
     // === Orbit angles ===
     private static final float ORBIT_ACCEL_END = 300f;
@@ -124,15 +126,15 @@ public class AltarCraftAnimator {
         new Vec3(-1, 0, 0),
     };
 
-    private static final Vec3 VERT_DELTA = new Vec3(0, -1, 0);
+    private static final Vec3 VERT_DELTA = new Vec3(0, -1.2, 0);
 
     // Position de repos: conduits decales a mi-chemin vers le centre
-    private static final double STARTPOS_SCALE = 0.5;
+    //private static final double STARTPOS_SCALE = 0.5;
     private static final Vec3[] STARTPOS_OFFSET = {
-        HORIZ_DELTA[0].scale(-STARTPOS_SCALE),
-        HORIZ_DELTA[1].scale(-STARTPOS_SCALE),
-        HORIZ_DELTA[2].scale(-STARTPOS_SCALE),
-        HORIZ_DELTA[3].scale(-STARTPOS_SCALE),
+            new Vec3(0, 0.2, 0.4),
+            new Vec3(0, 0.2, -0.4),
+            new Vec3(-0.4, 0.2, 0),
+            new Vec3(0.4, 0.2, 0),
     };
 
     // === Per-altar state ===
@@ -279,7 +281,7 @@ public class AltarCraftAnimator {
         AnimationController ctrl = state.controller;
         return new Sequence(
             // t=0: spread horizontal (ease in)
-            SequenceEntry.action(0, () -> {
+            SequenceEntry.action(DELAY_START, () -> {
                 for (int i = 0; i < STATIC_POS.length; i++) {
                     ctrl.replaceAnimation("pos_" + i, buildHorizSpreadAnim(i));
                 }
@@ -417,7 +419,7 @@ public class AltarCraftAnimator {
         return RotateAnimation.builder()
             .axis(SPIN_AXES[conduitIndex]).startAngle(0).endAngle(360)
             .pivot(BLOCK_CENTER)
-            .duration(SELF_SPIN_PERIOD).timingEffect(TimingEffect.LOOP)
+            .duration(SELF_SPIN_PERIOD)//.timingEffect(TimingEffect.LOOP)
             .build();
     }
 
