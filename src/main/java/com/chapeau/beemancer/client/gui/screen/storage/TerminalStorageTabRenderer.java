@@ -26,6 +26,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Rendu de l'onglet Storage: grille virtuelle 9x5, scrollbar et indicateur pending.
@@ -45,13 +46,15 @@ public class TerminalStorageTabRenderer {
     public void render(GuiGraphics g, Font font, StorageTerminalMenu menu,
                        List<ItemStack> displayedItems, int scrollOffset,
                        int x, int y, int mouseX, int mouseY) {
-        renderVirtualGrid(g, font, displayedItems, scrollOffset, x, y, mouseX, mouseY);
+        Set<String> craftableKeys = menu.getCraftableItemKeys();
+        renderVirtualGrid(g, font, displayedItems, scrollOffset, x, y, mouseX, mouseY, craftableKeys);
         renderScrollbar(g, displayedItems, scrollOffset, x, y);
         renderPendingIndicator(g, font, menu, x, y);
     }
 
     private void renderVirtualGrid(GuiGraphics g, Font font, List<ItemStack> displayedItems,
-                                   int scrollOffset, int x, int y, int mouseX, int mouseY) {
+                                   int scrollOffset, int x, int y, int mouseX, int mouseY,
+                                   Set<String> craftableKeys) {
         int startIndex = scrollOffset * GRID_COLS;
 
         for (int row = 0; row < GRID_ROWS; row++) {
@@ -78,10 +81,27 @@ public class TerminalStorageTabRenderer {
 
                 if (index < displayedItems.size()) {
                     ItemStack stack = displayedItems.get(index);
-                    String countStr = formatCount(stack.getCount());
+                    String itemKey = StorageTerminalMenu.craftableKeyOf(stack);
+                    boolean isCraftable = craftableKeys.contains(itemKey);
+
+                    // Count text: "Craft" in green for craft-only, normal count otherwise
+                    String countStr;
+                    int countColor;
+                    if (stack.getCount() == 0 && isCraftable) {
+                        countStr = "Craft";
+                        countColor = 0xFF80FF80;
+                    } else {
+                        countStr = formatCount(stack.getCount());
+                        countColor = 0xFFFFFF;
+                    }
                     g.drawString(font, countStr,
                         slotX + 17 - font.width(countStr),
-                        slotY + 9, 0xFFFFFF, true);
+                        slotY + 9, countColor, true);
+
+                    // "C" badge in top-right for all craftable items
+                    if (isCraftable) {
+                        g.drawString(font, "C", slotX + 12, slotY + 1, 0xFF40DD40, true);
+                    }
 
                     if (isMouseOverSlot(slotX, slotY, mouseX, mouseY)) {
                         g.fillGradient(slotX + 1, slotY + 1,

@@ -26,6 +26,8 @@ package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.common.blockentity.storage.CrafterBlockEntity;
+import com.chapeau.beemancer.common.data.CraftingPaperData;
+import com.chapeau.beemancer.common.item.CraftingPaperItem;
 import com.chapeau.beemancer.common.menu.storage.CrafterMenu;
 import com.chapeau.beemancer.core.network.packets.CrafterGhostSlotPacket;
 import com.chapeau.beemancer.core.network.packets.CrafterInscribePacket;
@@ -189,6 +191,43 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
         // Craft preview (ghost result)
         if (isCraftMode) {
             renderCraftPreview(g, x, y);
+        }
+
+        // Library: overlay result items on inscribed CraftingPapers
+        renderLibraryResultOverlay(g, x, y);
+    }
+
+    /**
+     * Affiche l'item resultat par-dessus les CraftingPapers inscrits dans la library.
+     * Utilise z=300 pour s'afficher au-dessus du rendu normal des items.
+     */
+    private void renderLibraryResultOverlay(GuiGraphics g, int x, int y) {
+        if (minecraft == null || minecraft.level == null) return;
+
+        int page = menu.getLibraryPage();
+        int startSlot = page * CrafterMenu.LIBRARY_VISIBLE_ROWS * CrafterMenu.LIBRARY_COLS;
+        int endSlot = Math.min(startSlot + CrafterMenu.LIBRARY_VISIBLE_ROWS * CrafterMenu.LIBRARY_COLS,
+                CrafterMenu.LIBRARY_TOTAL);
+
+        for (int i = startSlot; i < endSlot; i++) {
+            ItemStack paper = menu.getLibrarySlots()[i].getItem();
+            if (paper.isEmpty() || !(paper.getItem() instanceof CraftingPaperItem)) continue;
+            if (!CraftingPaperData.hasData(paper)) continue;
+
+            CraftingPaperData data = CraftingPaperData.readFromStack(paper,
+                    minecraft.level.registryAccess());
+            if (data == null || data.result().isEmpty()) continue;
+
+            int col = i % CrafterMenu.LIBRARY_COLS;
+            int rowInPage = (i / CrafterMenu.LIBRARY_COLS) - (page * CrafterMenu.LIBRARY_VISIBLE_ROWS);
+            int sx = x + LIBRARY_X + col * 18;
+            int sy = y + LIBRARY_Y + rowInPage * 18;
+
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 300);
+            g.renderItem(data.result(), sx, sy);
+            g.renderItemDecorations(font, data.result(), sx, sy);
+            g.pose().popPose();
         }
     }
 

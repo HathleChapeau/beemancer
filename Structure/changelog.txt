@@ -3,6 +3,30 @@
 ################################################################################
 
 ================================================================================
+2026-02-10 - Terminal Auto-Craft Integration
+================================================================================
+
+EXTENSION CRAFTER: Integration crafting automatique dans le terminal de stockage
+
+Scripts crees (4):
+- CraftableRecipe.java: Record recette craftable avec StreamCodec
+- StorageCraftablesSyncPacket.java: S2C sync recettes craftables vers terminal
+- StorageCraftRequestPacket.java: C2S requete hybride stock+craft depuis terminal
+- TerminalCraftMaterialsPanel.java: Panneau materiaux requis dans popup request
+
+Scripts modifies (8):
+- BeemancerNetwork.java: +StorageCraftablesSyncPacket (S2C), +StorageCraftRequestPacket (C2S)
+- StorageItemAggregator.java: scan crafter library, merge craft-only items, sync craftables
+- StorageTerminalMenu.java: +craftable recipes cache, getCraftableRecipeFor(), craftableKeyOf()
+- TerminalStorageTabRenderer.java: badge "C" sur items craftables, texte "Craft" craft-only
+- TerminalRequestPopup.java: rewrite — mode craft, split stock/craft, materials panel
+- StorageTerminalScreen.java: passe craftable recipe au popup, scroll materials panel
+- CraftManager.java: +pendingCraftQueue (Deque), queueCrafts(), auto-start, NBT queue
+- CrafterScreen.java: library affiche overlay item resultat a z=300
+
+Lang: +gui.beemancer.terminal.materials, +gui.beemancer.terminal.missing
+
+================================================================================
 2026-02-10 - Crafter System (Crafting Automatique)
 ================================================================================
 

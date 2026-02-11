@@ -28,6 +28,7 @@ package com.chapeau.beemancer.common.menu.storage;
 import com.chapeau.beemancer.client.gui.screen.storage.StorageTab;
 import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
 import com.chapeau.beemancer.common.block.storage.TaskDisplayData;
+import com.chapeau.beemancer.common.data.CraftableRecipe;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -56,8 +57,10 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Menu du Storage Terminal avec système d'onglets.
@@ -133,6 +136,9 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
 
     // Cache des tâches (pour onglet Tasks)
     private List<TaskDisplayData> taskDisplayData = new ArrayList<>();
+
+    // Cache des recettes craftables (synchro client)
+    private List<CraftableRecipe> craftableRecipes = new ArrayList<>();
 
     // Onglet actif
     private StorageTab activeTab = StorageTab.STORAGE;
@@ -477,6 +483,47 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
 
     public void setTaskDisplayData(List<TaskDisplayData> tasks) {
         this.taskDisplayData = tasks;
+    }
+
+    // === Accès aux Recettes Craftables ===
+
+    public List<CraftableRecipe> getCraftableRecipes() {
+        return craftableRecipes;
+    }
+
+    public void setCraftableRecipes(List<CraftableRecipe> recipes) {
+        this.craftableRecipes = recipes;
+    }
+
+    /**
+     * Cherche une recette craftable dont le resultat correspond a l'item donne.
+     */
+    @Nullable
+    public CraftableRecipe getCraftableRecipeFor(ItemStack item) {
+        for (CraftableRecipe recipe : craftableRecipes) {
+            if (ItemStack.isSameItemSameComponents(recipe.result(), item)) {
+                return recipe;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retourne un set de cles representant les items craftables (pour badge "C").
+     */
+    public Set<String> getCraftableItemKeys() {
+        Set<String> keys = new HashSet<>();
+        for (CraftableRecipe recipe : craftableRecipes) {
+            keys.add(craftableKeyOf(recipe.result()));
+        }
+        return keys;
+    }
+
+    /**
+     * Genere une cle unique pour un ItemStack (item + components, ignore count).
+     */
+    public static String craftableKeyOf(ItemStack stack) {
+        return ItemStack.hashItemAndComponents(stack) + ":" + stack.getItem();
     }
 
     // === Data Accessors ===

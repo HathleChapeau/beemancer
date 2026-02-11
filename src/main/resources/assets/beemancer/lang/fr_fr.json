@@ -541,5 +541,7 @@
   "tooltip.beemancer.part_crafting_paper.blank": "Vierge - inscrire dans un Crafter",
   "tooltip.beemancer.part_crafting_paper.mode_input": "ENTREE",
   "tooltip.beemancer.part_crafting_paper.mode_output": "SORTIE",
-  "tooltip.beemancer.part_crafting_paper.craft_id": "ID Craft"
+  "tooltip.beemancer.part_crafting_paper.craft_id": "ID Craft",
+  "gui.beemancer.terminal.materials": "Materiaux",
+  "gui.beemancer.terminal.missing": "Manquant"
 }
