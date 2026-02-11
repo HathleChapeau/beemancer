@@ -14,8 +14,6 @@ import com.chapeau.beemancer.core.network.packets.CrafterGhostSlotPacket;
 import com.chapeau.beemancer.core.network.packets.CrafterInscribePacket;
 import com.chapeau.beemancer.core.network.packets.CrafterModeTogglePacket;
 import com.chapeau.beemancer.core.network.packets.QuestSyncPacket;
-import com.chapeau.beemancer.core.network.packets.StorageCraftRequestPacket;
-import com.chapeau.beemancer.core.network.packets.StorageCraftablesSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageRequestPacket;
 import com.chapeau.beemancer.core.network.packets.InterfaceActionPacket;
@@ -89,12 +87,6 @@ public class BeemancerNetwork {
                 CrafterModeTogglePacket::handle
         );
 
-        registrar.playToServer(
-                StorageCraftRequestPacket.TYPE,
-                StorageCraftRequestPacket.STREAM_CODEC,
-                StorageCraftRequestPacket::handle
-        );
-
         // Server to Client packets
         registrar.playToClient(
                 CodexSyncPacket.TYPE,
@@ -120,11 +112,6 @@ public class BeemancerNetwork {
                 QuestSyncPacket::handle
         );
 
-        registrar.playToClient(
-                StorageCraftablesSyncPacket.TYPE,
-                StorageCraftablesSyncPacket.STREAM_CODEC,
-                StorageCraftablesSyncPacket::handle
-        );
     }
 
     /**

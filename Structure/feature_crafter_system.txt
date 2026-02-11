@@ -155,35 +155,8 @@ CONTRAINTES DESIGN
 - Retour resultat TOUJOURS via abeille (pas de depot direct)
 
 ================================================================================
-EXTENSION: Terminal Auto-Craft Integration (2026-02-10)
+EXTENSION: Terminal Auto-Craft Integration (2026-02-10) — RETIREE
 ================================================================================
 
-Description: Les items craftables depuis la bibliotheque du crafter apparaissent
-dans la grille du terminal avec un badge "C". Les items non disponibles en stock
-mais craftables affichent "Craft". Le popup de requete supporte un mode hybride
-stock+craft avec panneau de materiaux. Le CraftManager supporte les crafts en
-queue depuis le terminal. La bibliotheque affiche le modele de l'item resultat.
-
-SCRIPTS CREES:
-
-| Fichier                                                | Responsabilite                             |
-|--------------------------------------------------------|--------------------------------------------|
-| common/data/CraftableRecipe.java                       | Record recette craftable avec StreamCodec   |
-| core/network/packets/StorageCraftablesSyncPacket.java   | S2C: sync recettes craftables vers terminal |
-| core/network/packets/StorageCraftRequestPacket.java     | C2S: requete hybride stock+craft            |
-| client/gui/screen/storage/TerminalCraftMaterialsPanel.java | Panneau materiaux requis dans popup     |
-
-SCRIPTS MODIFIES:
-
-| Fichier                                                | Modification                                          |
-|--------------------------------------------------------|-------------------------------------------------------|
-| core/network/BeemancerNetwork.java                     | +StorageCraftablesSyncPacket, +StorageCraftRequestPacket |
-| common/blockentity/storage/StorageItemAggregator.java  | Scan crafter library, merge craft-only, sync craftables |
-| common/menu/storage/StorageTerminalMenu.java           | +craftable recipes cache, getCraftableRecipeFor()       |
-| client/gui/screen/storage/TerminalStorageTabRenderer.java | Badge "C", texte "Craft" pour craft-only             |
-| client/gui/screen/storage/TerminalRequestPopup.java    | Rewrite: mode craft, split stock/craft, materials panel |
-| client/gui/screen/storage/StorageTerminalScreen.java   | Passe craftable recipe au popup, scroll materials       |
-| common/blockentity/storage/CraftManager.java           | +pendingCraftQueue, queueCrafts(), auto-start, NBT     |
-| client/gui/screen/CrafterScreen.java                   | Library: overlay item resultat a z=300                  |
-
-LANG KEYS: gui.beemancer.terminal.materials, gui.beemancer.terminal.missing
+Statut: RETIREE le 2026-02-11 — causait des crashs frequents.
+Tous les fichiers crees ont ete supprimes et les fichiers modifies ont ete nettoyes.

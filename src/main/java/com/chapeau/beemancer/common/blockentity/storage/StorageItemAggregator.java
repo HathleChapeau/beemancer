@@ -22,15 +22,9 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.TaskDisplayData;
-import com.chapeau.beemancer.common.data.CraftableRecipe;
-import com.chapeau.beemancer.common.data.CraftingPaperData;
-import com.chapeau.beemancer.common.item.CraftingPaperItem;
 import com.chapeau.beemancer.core.util.ContainerHelper;
-import com.chapeau.beemancer.core.network.packets.StorageCraftablesSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageTasksSyncPacket;
-import net.minecraft.core.HolderLookup;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -42,7 +36,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +51,6 @@ public class StorageItemAggregator {
     private final StorageControllerBlockEntity parent;
 
     private List<ItemStack> aggregatedItems = new ArrayList<>();
-    private List<CraftableRecipe> craftableRecipes = new ArrayList<>();
     private int syncTimer = 0;
     private boolean needsSync = false;
     private final Map<UUID, BlockPos> playersViewing = new HashMap<>();
@@ -73,10 +65,6 @@ public class StorageItemAggregator {
 
     public List<ItemStack> getAggregatedItems() {
         return aggregatedItems;
-    }
-
-    public List<CraftableRecipe> getCraftableRecipes() {
-        return craftableRecipes;
     }
 
     /**
@@ -128,41 +116,6 @@ public class StorageItemAggregator {
             aggregatedItems.add(stack);
         }
 
-        // Scan crafter library for craftable recipes
-        craftableRecipes.clear();
-        CrafterBlockEntity crafter = parent.getCrafter();
-        if (crafter != null && crafter.getLevel() != null) {
-            HolderLookup.Provider reg = crafter.getLevel().registryAccess();
-            ItemStackHandler crafterInv = crafter.getInventory();
-            Set<String> seenResults = new HashSet<>();
-            for (int slot = CrafterBlockEntity.LIBRARY_START;
-                 slot <= CrafterBlockEntity.LIBRARY_END; slot++) {
-                ItemStack paper = crafterInv.getStackInSlot(slot);
-                if (paper.isEmpty() || !(paper.getItem() instanceof CraftingPaperItem)) continue;
-                CraftingPaperData data = CraftingPaperData.readFromStack(paper, reg);
-                if (data == null || data.result().isEmpty()) continue;
-                String key = ItemStack.hashItemAndComponents(data.result())
-                        + ":" + data.result().getItem();
-                if (seenResults.contains(key)) continue;
-                seenResults.add(key);
-                craftableRecipes.add(CraftableRecipe.fromCraftingPaperData(data));
-            }
-        }
-
-        // Merge craft-only items into aggregatedItems (count=0 for items not in storage)
-        for (CraftableRecipe recipe : craftableRecipes) {
-            boolean exists = false;
-            for (ItemStack s : aggregatedItems) {
-                if (ItemStack.isSameItemSameComponents(s, recipe.result())) {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists) {
-                aggregatedItems.add(recipe.result().copyWithCount(0));
-            }
-        }
-
         aggregatedItems.sort(Comparator.comparing(
             stack -> stack.getHoverName().getString()
         ));
@@ -185,8 +138,6 @@ public class StorageItemAggregator {
                     new StorageItemsSyncPacket(entry.getValue(), aggregatedItems));
                 PacketDistributor.sendToPlayer(player,
                     new StorageTasksSyncPacket(entry.getValue(), taskData));
-                PacketDistributor.sendToPlayer(player,
-                    new StorageCraftablesSyncPacket(entry.getValue(), craftableRecipes));
             }
         }
     }
@@ -409,8 +360,6 @@ public class StorageItemAggregator {
                 refreshAggregatedItems();
                 PacketDistributor.sendToPlayer(player,
                     new StorageItemsSyncPacket(terminalPos, aggregatedItems));
-                PacketDistributor.sendToPlayer(player,
-                    new StorageCraftablesSyncPacket(terminalPos, craftableRecipes));
             }
         }
     }

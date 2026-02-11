@@ -36,9 +36,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -68,7 +66,6 @@ public class CraftManager {
     private final Map<UUID, CraftTask> tasks = new LinkedHashMap<>();
     @Nullable private UUID activeRootTaskId = null;
     private int tickCounter = 0;
-    private final Deque<CraftingPaperData> pendingCraftQueue = new ArrayDeque<>();
 
     public CraftManager(CrafterBlockEntity crafter) {
         this.crafter = crafter;
@@ -87,26 +84,6 @@ public class CraftManager {
 
     public boolean isBusy() {
         return activeRootTaskId != null;
-    }
-
-    // === Queue crafts from terminal ===
-
-    /**
-     * Met en file d'attente plusieurs crafts de la meme recette.
-     * Le premier est soumis immediatement si le crafter est libre.
-     *
-     * @param recipeData la recette a crafter
-     * @param times nombre de crafts a effectuer
-     * @param gameTick le tick actuel
-     */
-    public void queueCrafts(CraftingPaperData recipeData, int times, long gameTick) {
-        for (int i = 0; i < times; i++) {
-            if (!isBusy()) {
-                submitCraft(recipeData, gameTick);
-            } else {
-                pendingCraftQueue.add(recipeData);
-            }
-        }
     }
 
     // === Submit a new craft ===
@@ -472,7 +449,6 @@ public class CraftManager {
             }
         }
 
-        pendingCraftQueue.clear();
         cleanupActiveTask();
     }
 
@@ -521,12 +497,6 @@ public class CraftManager {
         activeRootTaskId = null;
         crafter.setCrafting(false);
         crafter.clearCraftBuffer();
-
-        // Auto-start next queued craft
-        if (!pendingCraftQueue.isEmpty() && crafter.getLevel() != null) {
-            CraftingPaperData next = pendingCraftQueue.poll();
-            submitCraft(next, crafter.getLevel().getGameTime());
-        }
     }
 
     private void cleanupActiveTask() {
@@ -547,21 +517,11 @@ public class CraftManager {
         if (activeRootTaskId != null) {
             parentTag.putUUID("ActiveRootTaskId", activeRootTaskId);
         }
-
-        // Save pending craft queue
-        if (!pendingCraftQueue.isEmpty()) {
-            ListTag queueList = new ListTag();
-            for (CraftingPaperData data : pendingCraftQueue) {
-                queueList.add(CraftingPaperData.saveToTag(data, registries));
-            }
-            parentTag.put("PendingCraftQueue", queueList);
-        }
     }
 
     public void load(CompoundTag parentTag, HolderLookup.Provider registries) {
         tasks.clear();
         activeRootTaskId = null;
-        pendingCraftQueue.clear();
 
         if (parentTag.contains("CraftTasks", Tag.TAG_LIST)) {
             ListTag taskList = parentTag.getList("CraftTasks", Tag.TAG_COMPOUND);
@@ -575,18 +535,6 @@ public class CraftManager {
             activeRootTaskId = parentTag.getUUID("ActiveRootTaskId");
             if (!tasks.containsKey(activeRootTaskId)) {
                 activeRootTaskId = null;
-            }
-        }
-
-        // Restore pending craft queue
-        if (parentTag.contains("PendingCraftQueue", Tag.TAG_LIST)) {
-            ListTag queueList = parentTag.getList("PendingCraftQueue", Tag.TAG_COMPOUND);
-            for (int i = 0; i < queueList.size(); i++) {
-                CraftingPaperData data = CraftingPaperData.loadFromTag(
-                        queueList.getCompound(i), registries);
-                if (data != null && !data.result().isEmpty()) {
-                    pendingCraftQueue.add(data);
-                }
             }
         }
 

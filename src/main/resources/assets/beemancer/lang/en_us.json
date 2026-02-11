@@ -739,7 +739,5 @@
   "tooltip.beemancer.part_crafting_paper.blank": "Blank - inscribe in a Crafter",
   "tooltip.beemancer.part_crafting_paper.mode_input": "INPUT",
   "tooltip.beemancer.part_crafting_paper.mode_output": "OUTPUT",
-  "tooltip.beemancer.part_crafting_paper.craft_id": "Craft ID",
-  "gui.beemancer.terminal.materials": "Materials",
-  "gui.beemancer.terminal.missing": "Missing"
+  "tooltip.beemancer.part_crafting_paper.craft_id": "Craft ID"
 }

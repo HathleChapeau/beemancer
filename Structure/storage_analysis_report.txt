@@ -1,0 +1,477 @@
+================================================================================
+RAPPORT D'ANALYSE APPROFONDIE — SYSTEME DE STOCKAGE BEEMANCER
+================================================================================
+Date: 2026-02-11
+Methodologie: 5 agents de recherche (codebase, AE2, Refined Storage, Create, crash)
+Sources: 60+ recherches web, analyse exhaustive de 30+ fichiers du codebase
+================================================================================
+
+TABLE DES MATIERES
+1. Etat actuel du systeme
+2. Problemes critiques identifies
+3. Problemes importants (gameplay)
+4. Problemes de performance
+5. Lecons des mods de reference (AE2, RS, Create)
+6. Recommandations prioritaires
+7. Ameliorations futures suggerees
+
+================================================================================
+1. ETAT ACTUEL DU SYSTEME
+================================================================================
+
+Le systeme de stockage Beemancer est compose de ~9,000+ lignes de code reparties
+sur 30+ fichiers organises en 6 sous-systemes:
+
+SOUS-SYSTEMES:
+- Network Core: Controller, Registry, Multiblock, Relay
+- Item Management: Aggregator, ChestManager, ContainerOps
+- Delivery: DeliveryManager, BeeSpawner, BeeEntity, PhaseGoal, Task
+- Terminals & Interfaces: Terminal, Import/Export, NetworkInterface
+- Crafter: CrafterBlockEntity, CraftManager, CraftTask
+- Request Management: RequestManager, InterfaceRequest, InterfaceTask
+
+ARCHITECTURE GLOBALE:
+StorageControllerBlockEntity est le hub central. Il orchestre tous les
+sous-systemes via des tick intervals differents:
+- 10 ticks: RequestManager, DeliveryManager
+- 20 ticks: HoneyConsumption, CraftManager, TerminalScan
+- 40 ticks: ItemAggregator sync, InterfaceScan
+- 100 ticks: GUI validation
+- 200 ticks: Network validation
+
+VERDICT: L'architecture est globalement bien structuree avec une bonne
+separation des responsabilites. Les problemes sont principalement lies a
+la robustesse face au chunk unloading, la protection des collections
+mutables, et des optimisations de performance pour les grands reseaux.
+
+================================================================================
+2. PROBLEMES CRITIQUES (Risque: crash / perte de donnees)
+================================================================================
+
+--- 2.1 ACCES CHUNK NON SECURISES ---
+
+PROBLEME: Plusieurs methodes appellent level.getBlockEntity() sans verifier
+que le chunk cible est charge. C'est la cause #1 de crash dans les mods de
+stockage (source: issues AE2, RS, Create, Tom's Storage).
+
+Fichiers concernes:
+| Fichier                          | Methode              | Risque                |
+|----------------------------------|---------------------|-----------------------|
+| StorageControllerBlockEntity     | getCrafter()        | NPE si chunk decharge |
+| StorageControllerBlockEntity     | tickCraftManager()  | NPE chaque 20 ticks   |
+| DeliveryNetworkPathfinder        | BFS getConnectedNodes | Chemin incomplet     |
+| DeliveryPhaseGoal                | performExtraction() | Echec silencieux       |
+| StorageMultiblockManager         | setFormedOnBlocks() | setBlock echoue       |
+
+SOLUTION RECOMMANDEE:
+Toujours utiliser le guard pattern:
+```java
+if (!level.hasChunkAt(targetPos)) return; // ou skip
+BlockEntity be = level.getBlockEntity(targetPos);
+if (be == null) return;
+```
+
+REFERENCE: AE2 a eu les memes problemes (#4704, #7621). RS aussi (#681).
+Create crash avec IllegalStateException quand refreshBlockState() rencontre
+void_air dans un chunk decharge (#9104).
+
+--- 2.2 COLLECTIONS MUTABLES EXPOSEES ---
+
+PROBLEME: Certaines collections internes sont exposees mutables, risquant
+des ConcurrentModificationException.
+
+| Fichier               | Methode                    | Risque                        |
+|-----------------------|---------------------------|-------------------------------|
+| StorageChestManager   | getRegisteredChestsMutable() | Set mutable expose directement|
+| CrafterBlockEntity    | getCraftBuffer()           | List mutable exposee          |
+| StorageDeliveryManager| reevaluateTasks()          | activeTasks modifie pendant iteration |
+
+SOLUTION RECOMMANDEE:
+- Retourner Collections.unmodifiableSet/List() pour les getters
+- Utiliser des methodes dediees pour la modification (addChest/removeChest)
+- Dans reevaluateTasks(): collecter les taches a annuler AVANT de modifier
+
+REFERENCE: RS1 a souffert de CME dans son network graph. ATM-9 (#406) avait
+des CME constantes pendant le chunk saving.
+
+--- 2.3 PERTE D'ITEMS SILENCIEUSE ---
+
+PROBLEME: Plusieurs scenarios peuvent causer la perte d'items sans feedback
+au joueur.
+
+| Scenario                                    | Fichier              | Impact          |
+|--------------------------------------------|---------------------|-----------------|
+| Reseau plein, items excedentaires           | DeliveryPhaseGoal   | Items perdus    |
+| Annulation craft, buffer overflow           | CraftManager        | Items perdus    |
+| Craft buffer > 54 stacks                   | CrafterBlockEntity  | Items ignores   |
+| Item rejete par crafter (no match task)     | CrafterBlockEntity  | Doit gerer retour|
+| Queue requetes terminal pleine (16)         | StorageTerminalBE   | Requete ignoree |
+
+SOLUTION RECOMMANDEE:
+- Drop les items au sol (Block.popResource) si le reseau est plein
+- Feedback joueur (message chat) quand une operation echoue
+- Log serveur pour le debug
+
+REFERENCE: AE2 utilise un "internal crafting inventory" isole pour eviter
+les race conditions. RS retourne les items au reseau en cas d'annulation.
+
+================================================================================
+3. PROBLEMES IMPORTANTS (Impact gameplay)
+================================================================================
+
+--- 3.1 SYNC COMPLETE A CHAQUE CYCLE ---
+
+PROBLEME: StorageItemsSyncPacket envoie la LISTE COMPLETE des items agreges
+a chaque cycle de sync (40 ticks). Avec un grand reseau (centaines d'items),
+chaque packet contient tout.
+
+IMPACT: Bande passante reseau inutile, potentiel lag client avec beaucoup
+d'items.
+
+REFERENCE AE2: Utilise un systeme de "delta sync" incremental. Seuls les
+changements (ajouts/retraits/modifications de count) sont envoyes. Un
+"serial number" unique identifie chaque type d'item pour le tracking.
+
+REFERENCE RS: Utilise un pattern "GridWatcher + GridSynchronizer" qui pousse
+les changements en temps reel via un observer pattern.
+
+SOLUTION RECOMMANDEE:
+Phase 1 (simple): Dirty flag - n'envoyer que si les items ont change.
+Phase 2 (avancee): Delta sync - stocker un snapshot, comparer, envoyer
+uniquement les differences (item + delta count).
+
+--- 3.2 PAS DE PRIORITE DE STOCKAGE ---
+
+PROBLEME: Le systeme de depot d'items utilise 5 passes (findSlotForItem)
+mais ne permet pas au joueur de configurer la priorite des coffres.
+
+REFERENCE RS: Systeme de priorite dual (insert priority + extract priority)
+avec modes d'acces (insert-only, extract-only, both).
+
+REFERENCE AE2: NetworkStorage avec priorite configurable par storage device.
+
+--- 3.3 ABSENCE DE FEEDBACK ERREURS ---
+
+PROBLEME: Quand une operation echoue (queue pleine, miel epuise, pas de
+source), le joueur ne recoit aucun feedback visuel ou textuel.
+
+================================================================================
+4. PROBLEMES DE PERFORMANCE
+================================================================================
+
+--- 4.1 SCANS LINEAIRES REPETES ---
+
+| Fichier               | Methode                | Complexite          | Frequence    |
+|-----------------------|-----------------------|---------------------|--------------|
+| StorageItemAggregator | findSlotForItem()     | O(5*C*S) C=coffres  | Par depot    |
+| RequestManager        | processImportRequest()| O(R*C*S) R=requetes | 10 ticks     |
+| StorageNetworkRegistry| getBlocksByType()     | O(N) stream+collect | Chaque appel |
+| NetworkInterfaceBE    | doScan() TEXT mode    | O(Items) scan total | 40 ticks     |
+| StorageDeliveryManager| processDeliveryQueue()| O(N*logN) tri       | 10 ticks     |
+
+SOLUTIONS RECOMMANDEES:
+1. Cache getBlocksByType() avec invalidation sur mutation du registry
+2. Delta sync au lieu de full scan pour l'aggregator
+3. Ne trier la queue que si elle a ete modifiee (dirty flag)
+4. Indexer les requetes par type/item dans RequestManager
+
+REFERENCE CREATE: Pattern "dirty flag + lazy tick" - ne recalculer que
+si quelque chose a change. Aussi: stagger initialization (distribuer les
+lazy ticks via worldPosition.hashCode() % RATE pour eviter les pics).
+
+--- 4.2 INTERVALLES DE TICK NON STAGGERS ---
+
+PROBLEME: Tous les controllers tickent aux memes moments (tick % 10, 20,
+40...). Si plusieurs controllers existent, ils synchronisent tous leurs
+operations lourdes sur les memes frames.
+
+SOLUTION: Utiliser un offset base sur la position du bloc:
+```java
+int offset = worldPosition.hashCode() % TICK_INTERVAL;
+if ((gameTick + offset) % TICK_INTERVAL == 0) { ... }
+```
+
+REFERENCE: Create utilise ce pattern dans SmartBlockEntity.
+
+================================================================================
+5. LECONS DES MODS DE REFERENCE
+================================================================================
+
+--- 5.1 APPLIED ENERGISTICS 2 (AE2) ---
+
+POINTS CLES:
+- Grid service container: chaque service (storage, crafting, spatial) est
+  un module independant du grid
+- AEKey: abstraction type-safe pour items/fluids (pas de raw ItemStack)
+- Serial-based item identity: chaque type d'item a un serial unique pour
+  le tracking delta
+- Delta sync incrementale: seuls les changements sont envoyes au client
+- Async crafting calculation: les calculs de craft sont budgetes en temps
+  (time budgets) pour ne pas bloquer le tick
+- Sleep/wake tick management: les machines inactives dorment et ne tickent
+  plus (0 cost quand idle)
+- Channel system: limite le nombre de devices par cable (pas pertinent
+  pour Beemancer mais concept de limitation est interessant)
+
+APPLICABLE A BEEMANCER:
+1. Delta sync pour StorageItemsSyncPacket (PRIORITE HAUTE)
+2. Sleep/wake pour les interfaces inactives
+3. Time-budgeted craft resolution
+4. Serial-based item tracking
+
+--- 5.2 REFINED STORAGE (RS) ---
+
+POINTS CLES:
+- Flat network (pas de channels): plus simple, plus player-friendly
+- Storage Disks: les items sont stockes dans un fichier monde separe,
+  PAS dans le NBT de l'item disk (evite NBT bloat)
+- Repository Pattern: StorageRepository abstrait les differents backends
+  (disk, block, external) derriere une interface unifiee
+- Dual priority: priorite insert separee de priorite extract
+- Observer pattern: Grid s'enregistre comme watcher du storage network,
+  recoit les changements en temps reel
+- Autocrafter locking modes: 6 modes de verrouillage pour interaction
+  avec machines externes (never, until pulse, until empty, until received,
+  until high/low redstone)
+- Void Excess: mode qui detruit le surplus quand le storage est plein
+  (optionnel, evite le clogging)
+- ResourceKey/ResourceAmount: abstraction unifiant items, fluids, chemicals
+
+RS1 PROBLEMES CONNUS (a eviter):
+- Class.getSimpleName() consommait 50%+ du tick sur grands reseaux
+- Network discovery causait des timeouts watchdog >60s
+- External Storage trop lent pour transferts en masse
+- Search @mod/@tooltip causait du FPS stalling client
+
+APPLICABLE A BEEMANCER:
+1. Observer pattern pour les updates GUI (au lieu de polling)
+2. Priorite de stockage configurable
+3. Locking modes pour le crafter avec machines externes
+4. Void excess optionnel pour eviter le clogging
+
+--- 5.3 CREATE MOD ---
+
+POINTS CLES:
+- Logistique physique visible: items transportes physiquement (belts, chutes)
+- Two-tier progression: andesite (basic) vs brass (advanced + filtering)
+- SmartBlockEntity + BlockEntityBehaviour: composition de comportements
+  reutilisables (ScrollValue, Filtering, LogisticallyLinked)
+- Threshold Switch: monitore le remplissage + seuils configurables
+- Item Vault: stockage multiblock SANS acces GUI direct (automation only)
+- Sequenced Assembly: crafts multi-etapes avec echec probabiliste
+
+CREATE 6.0 LOGISTICS NETWORK (nouveau):
+- Cardboard Packages: items empaquetes avec adresses
+- Chain Conveyors: transport physique avec tri par adresse
+- Package Frogports: tri/routage par regex d'adresse
+- Stock Link/Ticker: visibilite reseau distribuee
+- LogisticsManager + Promise System:
+  * Promise = suivi des paquets en transit
+  * Previent les doublons de requetes
+  * Timeout configurable pour les promesses
+  * Pipeline: groupement -> selection aleatoire -> priorite -> traitement
+- Factory Panel: monitore les items, auto-requete sous seuil
+- Multi-level caching: 1 tick pour orders, 20 ticks pour display
+
+APPLICABLE A BEEMANCER:
+1. Promise pattern pour le delivery system (prevenir doublons) - DEJA
+   partiellement implemente via les etats de DeliveryTask
+2. Stagger initialization pattern
+3. Dirty flag + lazy tick pattern
+4. Threshold-based automation pour les interfaces
+
+--- 5.4 CRASH PREVENTION (Best Practices) ---
+
+TOP 10 REGLES ANTI-CRASH:
+1. Toujours null-check getLevel() et guard avec isRemoved() dans les ticks
+2. Toujours verifier level.hasChunkAt(pos) avant getBlockEntity()
+3. Copies defensives pour iterer les collections modifiables
+4. Utiliser BlockCapabilityCache au lieu de raw getCapability()
+5. Valider tout dans les packet handlers (player, chunk, BE, distance)
+6. Throttle operations (lazy ticks, dirty flags)
+7. Utiliser preRemoveSideEffects() pour le cleanup (pas setRemoved qui
+   fire aussi sur chunk unload)
+8. Toujours .copy() les ItemStacks avant de stocker des references
+9. Delayer l'initialisation reseau de quelques ticks apres world load
+10. Borner toutes les caches et collections
+
+NEOFORGE 1.21 SPECIFIQUES:
+- DataComponents remplace NBT sur ItemStacks: utiliser DataComponentType
+  avec Codec et StreamCodec
+- Capabilities: plus de LazyOptional, retour direct + null si indisponible
+- BlockCapabilityCache pour la performance (remplace getCapability repete)
+- CustomPacketPayload + StreamCodec (remplace SimpleChannel)
+- Limites packets: S2C = 1 MiB, C2S = 32 KiB
+- preRemoveSideEffects() prefere a setRemoved() pour le cleanup
+
+LIFECYCLE BLOCKENTITY:
+Constructor -> loadAdditional() -> setLevel() -> onLoad() -> tick()
+ATTENTION: getLevel() est null pendant loadAdditional()!
+setRemoved() est appele AUSSI sur chunk unload, pas seulement block break.
+
+================================================================================
+6. RECOMMANDATIONS PRIORITAIRES
+================================================================================
+
+Les recommandations sont classees par priorite (CRITIQUE > HAUTE > MOYENNE).
+
+--- CRITIQUE (a faire en premier — previent les crashs) ---
+
+C1. CHUNK SAFETY GUARDS
+    Fichiers: StorageControllerBlockEntity, DeliveryNetworkPathfinder,
+              DeliveryPhaseGoal, StorageMultiblockManager
+    Action: Ajouter level.hasChunkAt(pos) avant chaque getBlockEntity()
+            sur une position distante (pas le propre bloc)
+    Effort: ~2h
+    Impact: Elimine la categorie de crash la plus frequente
+
+C2. COLLECTIONS MUTABLES
+    Fichiers: StorageChestManager, CrafterBlockEntity, StorageDeliveryManager
+    Action: Retourner des vues immutables, copies defensives avant iteration
+    Effort: ~1h
+    Impact: Elimine les ConcurrentModificationException potentielles
+
+C3. ITEM LOSS PREVENTION
+    Fichiers: DeliveryPhaseGoal, CraftManager, CrafterBlockEntity
+    Action: Drop items au sol si reseau plein au lieu de les perdre
+    Effort: ~2h
+    Impact: Zero perte d'items (gameplay trust)
+
+--- HAUTE (amelioration significative) ---
+
+H1. DELTA SYNC POUR ITEMS
+    Fichiers: StorageItemAggregator, StorageItemsSyncPacket
+    Action: Stocker un snapshot des items, comparer, envoyer seulement
+            les deltas (item, countDelta) au lieu de la liste complete
+    Effort: ~4h
+    Impact: Reduction drastique de la bande passante reseau
+
+H2. DIRTY FLAG PATTERN
+    Fichiers: StorageItemAggregator, StorageDeliveryManager, RequestManager
+    Action: Ne recalculer/trier que si une mutation a eu lieu
+    Effort: ~2h
+    Impact: Reduction du CPU tick sur les operations de maintenance
+
+H3. STAGGER TICK OFFSETS
+    Fichiers: StorageControllerBlockEntity
+    Action: Utiliser (gameTick + positionHash) % interval pour distribuer
+            les ticks lourds entre plusieurs controllers
+    Effort: ~30min
+    Impact: Meilleure distribution de la charge tick
+
+H4. FEEDBACK JOUEUR
+    Fichiers: StorageTerminalBlockEntity, CraftManager
+    Action: Envoyer des messages chat ou des indicateurs visuels quand
+            une operation echoue (queue pleine, miel epuise, items perdus)
+    Effort: ~2h
+    Impact: Meilleure experience joueur
+
+--- MOYENNE (amelioration de qualite) ---
+
+M1. CACHE getBlocksByType()
+    Fichier: StorageNetworkRegistry
+    Action: Cacher le resultat, invalider sur register/unregister
+    Effort: ~1h
+
+M2. INDEX RequestManager PAR TYPE/ITEM
+    Fichier: RequestManager
+    Action: Map<ItemStackKey, List<Request>> pour O(1) lookup
+    Effort: ~2h
+
+M3. SLEEP/WAKE POUR INTERFACES INACTIVES
+    Fichiers: NetworkInterfaceBlockEntity
+    Action: Si aucun filtre configure, ne pas scanner
+    Effort: ~1h
+
+M4. PRIORITE DE STOCKAGE
+    Fichiers: StorageItemAggregator, StorageChestManager
+    Action: Permettre au joueur de configurer la priorite des coffres
+    Effort: ~4h (include GUI)
+
+M5. preRemoveSideEffects() AU LIEU DE setRemoved()
+    Fichiers: Tous les BlockEntities avec cleanup
+    Action: Migrer le cleanup de setRemoved() vers preRemoveSideEffects()
+    Effort: ~2h
+
+================================================================================
+7. AMELIORATIONS FUTURES SUGGEREES
+================================================================================
+
+Ces ameliorations ne sont pas urgentes mais representent des evolutions
+interessantes inspirees des mods de reference.
+
+--- STOCKAGE ---
+
+F1. FILTRAGE AVANCEE TERMINAL
+    Inspiration: RS (@mod, #tag, $tooltip, comparaisons numeriques)
+    Ajout: Recherche par mod, tag, tooltip dans le terminal
+    Complexite: MOYENNE
+
+F2. VOID EXCESS MODE
+    Inspiration: RS
+    Ajout: Option sur les interfaces pour detruire le surplus
+    Complexite: FAIBLE
+
+F3. EXTERNAL STORAGE CONNECTOR
+    Inspiration: RS, AE2
+    Ajout: Bloc qui integre un inventaire externe au reseau
+    Complexite: HAUTE
+
+--- CRAFTING ---
+
+F4. LOCKING MODES CRAFTER
+    Inspiration: RS Autocrafter
+    Ajout: Modes de verrouillage (never, until pulse, until empty, etc.)
+    Complexite: MOYENNE
+
+F5. PREVIEW CRAFT MATERIALS
+    Inspiration: AE2 crafting preview, RS task preview
+    Ajout: Avant de lancer un craft, montrer les materiaux requis/manquants
+    Note: C'est ce que le Terminal Auto-Craft tentait de faire (retire cause crashs).
+          Reimplementer de facon plus stable et isolee.
+    Complexite: HAUTE
+
+--- LOGISTIQUE ---
+
+F6. PROMISE/TRACKING SYSTEM
+    Inspiration: Create 6.0 LogisticsManager
+    Ajout: Systeme de "promesses" pour prevenir les doublons de livraison
+    Note: Partiellement implemente via les etats de DeliveryTask
+    Complexite: MOYENNE
+
+F7. THRESHOLD-BASED INTERFACE
+    Inspiration: Create Threshold Switch
+    Ajout: Mode "maintenir N items" au lieu de "importer/exporter"
+    Complexite: FAIBLE (le keepQty existe deja partiellement)
+
+F8. ROUTE VISUELLE DES ABEILLES
+    Inspiration: Create Chain Conveyor (visible transport)
+    Ajout: Particules ou lignes montrant les routes des abeilles
+    Complexite: MOYENNE
+
+--- PERFORMANCE AVANCEE ---
+
+F9. ITEM SERIAL TRACKING
+    Inspiration: AE2
+    Ajout: Identifiant unique par type d'item pour le delta sync
+    Complexite: HAUTE
+
+F10. SLEEP/WAKE NETWORK
+     Inspiration: AE2 grid sleep
+     Ajout: Les blocs inactifs ne tickent plus du tout
+     Complexite: HAUTE
+
+================================================================================
+FIN DU RAPPORT
+================================================================================
+
+Resume executif:
+- 3 problemes CRITIQUES a corriger immediatement (chunk safety, CME, item loss)
+- 4 problemes HAUTS a traiter ensuite (delta sync, dirty flags, stagger, feedback)
+- 5 ameliorations MOYENNES pour la qualite
+- 10 features futures suggerees
+
+Le systeme est bien architecture mais manque de robustesse face aux edge cases
+(chunks decharges, collections mutees, perte d'items). Les corrections
+critiques sont relativement simples (~5h de travail) et elimineraient la
+majorite des crashs potentiels.

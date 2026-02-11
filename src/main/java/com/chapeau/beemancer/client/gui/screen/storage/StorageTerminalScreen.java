@@ -333,8 +333,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
                 mouseX, mouseY, displayedItems, scrollOffset, x, y);
             if (clickedItem != null) {
                 if (!menu.isHoneyDepleted()) {
-                    requestPopup.open(clickedItem, clickedItem.getCount(),
-                        menu.getCraftableRecipeFor(clickedItem));
+                    requestPopup.open(clickedItem, clickedItem.getCount());
                 }
                 return true;
             }
@@ -386,9 +385,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (requestPopup.isVisible()) {
-            return requestPopup.handleScroll(scrollY);
-        }
         if (!requestPopup.isVisible()) {
             if (activeTab == StorageTab.STORAGE) {
                 int maxScroll = TerminalStorageTabRenderer.getMaxScroll(displayedItems);
