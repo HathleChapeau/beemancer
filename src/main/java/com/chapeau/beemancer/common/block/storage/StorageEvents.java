@@ -401,7 +401,7 @@ public class StorageEvents {
             if (ownerPos != null && level.isLoaded(ownerPos)) {
                 BlockEntity ownerBe = level.getBlockEntity(ownerPos);
                 if (ownerBe instanceof INetworkNode ownerNode) {
-                    ownerNode.getChestManager().getRegisteredChestsMutable().remove(brokenPos);
+                    ownerNode.getChestManager().removeChest(brokenPos);
                 }
             }
         }

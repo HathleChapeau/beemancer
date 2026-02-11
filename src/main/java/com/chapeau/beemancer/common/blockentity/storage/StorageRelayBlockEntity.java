@@ -78,7 +78,7 @@ public class StorageRelayBlockEntity extends AbstractNetworkNodeBlockEntity {
         if (level != null && !level.isClientSide()) {
             // Deconnecter des noeuds lies
             for (BlockPos nodePos : new ArrayList<>(getConnectedNodes())) {
-                if (!level.isLoaded(nodePos)) continue;
+                if (!level.hasChunkAt(nodePos)) continue;
                 BlockEntity be = level.getBlockEntity(nodePos);
                 if (be instanceof INetworkNode node) {
                     node.disconnectNode(worldPosition);
@@ -104,7 +104,7 @@ public class StorageRelayBlockEntity extends AbstractNetworkNodeBlockEntity {
         while (!queue.isEmpty()) {
             BlockPos nodePos = queue.poll();
             if (!visited.add(nodePos)) continue;
-            if (!level.isLoaded(nodePos)) continue;
+            if (!level.hasChunkAt(nodePos)) continue;
 
             BlockEntity be = level.getBlockEntity(nodePos);
             if (be instanceof StorageControllerBlockEntity controller) {

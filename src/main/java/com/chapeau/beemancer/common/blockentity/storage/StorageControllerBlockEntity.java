@@ -44,6 +44,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -85,7 +86,6 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     public static final int MAX_ESSENCE_SLOTS = BASE_ESSENCE_SLOTS + MAX_LINKED_HIVES;
     private static final int BASE_DELIVERY_BEES = 2;
     private static final int NETWORK_VALIDATE_INTERVAL = 200;
-    private int networkValidateTimer = 0;
     private int beeCapacity = ControllerStats.BASE_DROP;
 
     // === Registre central du reseau ===
@@ -198,7 +198,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             BlockPos pos = entry.getKey();
             StorageNetworkRegistry.NetworkBlockType type = entry.getValue().type();
 
-            if (!level.isLoaded(pos)) continue;
+            if (!level.hasChunkAt(pos)) continue;
 
             BlockEntity be = level.getBlockEntity(pos);
 
@@ -239,6 +239,10 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
         // Remove hives with proper cleanup (notify hive + drop overflow essences)
         for (BlockPos hivePos : hivesToRemove) {
+            if (!level.hasChunkAt(hivePos)) {
+                networkRegistry.unregisterBlock(hivePos);
+                continue;
+            }
             BlockEntity be = level.getBlockEntity(hivePos);
             if (be instanceof StorageHiveBlockEntity hive) {
                 hive.unlinkController();
@@ -328,7 +332,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
      */
     public void linkHive(BlockPos hivePos) {
         networkRegistry.registerBlock(hivePos, worldPosition, StorageNetworkRegistry.NetworkBlockType.HIVE);
-        if (level != null && level.isLoaded(hivePos)) {
+        if (level != null && level.hasChunkAt(hivePos)) {
             BlockEntity be = level.getBlockEntity(hivePos);
             if (be instanceof StorageHiveBlockEntity hive) {
                 hive.linkToController(worldPosition);
@@ -343,7 +347,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
      */
     public void unlinkHive(BlockPos hivePos) {
         networkRegistry.unregisterBlock(hivePos);
-        if (level != null && level.isLoaded(hivePos)) {
+        if (level != null && level.hasChunkAt(hivePos)) {
             BlockEntity be = level.getBlockEntity(hivePos);
             if (be instanceof StorageHiveBlockEntity hive) {
                 hive.unlinkController();
@@ -368,7 +372,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         if (level == null) return BASE_DELIVERY_BEES;
         int bonus = 0;
         for (BlockPos hivePos : networkRegistry.getAllHives()) {
-            if (!level.isLoaded(hivePos)) continue;
+            if (!level.hasChunkAt(hivePos)) continue;
             BlockEntity be = level.getBlockEntity(hivePos);
             if (be instanceof StorageHiveBlockEntity hive) {
                 bonus += hive.getTier();
@@ -385,7 +389,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         if (level == null) return 1.0f;
         float multiplier = 1.0f;
         for (BlockPos hivePos : networkRegistry.getAllHives()) {
-            if (!level.isLoaded(hivePos)) continue;
+            if (!level.hasChunkAt(hivePos)) continue;
             BlockEntity be = level.getBlockEntity(hivePos);
             if (be instanceof StorageHiveBlockEntity hive) {
                 BlockState hiveState = level.getBlockState(hivePos);
@@ -404,7 +408,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     public void notifyLinkedHives() {
         if (level == null || level.isClientSide()) return;
         for (BlockPos hivePos : networkRegistry.getAllHives()) {
-            if (!level.isLoaded(hivePos)) continue;
+            if (!level.hasChunkAt(hivePos)) continue;
             BlockEntity be = level.getBlockEntity(hivePos);
             if (be instanceof StorageHiveBlockEntity hive) {
                 hive.updateVisualState();
@@ -425,6 +429,21 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
                 Containers.dropItemStack(level, worldPosition.getX() + 0.5,
                         worldPosition.getY() + 1.0, worldPosition.getZ() + 0.5, stack);
                 essenceSlots.setStackInSlot(i, ItemStack.EMPTY);
+            }
+        }
+    }
+
+    // === Player Feedback ===
+
+    /**
+     * Envoie un message action bar a tous les joueurs qui ont un terminal ouvert sur ce reseau.
+     */
+    public void notifyViewers(Component message) {
+        if (level == null || level.isClientSide()) return;
+        for (UUID playerId : itemAggregator.getViewerIds()) {
+            ServerPlayer player = level.getServer().getPlayerList().getPlayer(playerId);
+            if (player != null) {
+                player.displayClientMessage(message, true);
             }
         }
     }
@@ -541,20 +560,22 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     // === Tick ===
 
     public static void serverTick(StorageControllerBlockEntity be) {
-        be.itemAggregator.tickSync();
+        if (be.level == null) return;
+        long gameTick = be.level.getGameTime();
+        long offset = be.worldPosition.hashCode();
+
+        be.itemAggregator.tickSync(gameTick);
 
         if (be.multiblockManager.isFormed()) {
-            be.deliveryManager.tickHoneyConsumption();
+            be.deliveryManager.tickHoneyConsumption(gameTick);
         }
 
-        be.requestManager.tick();
-        be.deliveryManager.tickDelivery();
+        be.requestManager.tick(gameTick);
+        be.deliveryManager.tickDelivery(gameTick);
         be.tickEditMode();
         be.itemAggregator.cleanupViewers();
 
-        be.networkValidateTimer++;
-        if (be.networkValidateTimer >= NETWORK_VALIDATE_INTERVAL) {
-            be.networkValidateTimer = 0;
+        if ((gameTick + offset) % NETWORK_VALIDATE_INTERVAL == 0) {
             be.validateNetworkBlocks();
         }
     }
@@ -582,7 +603,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         // Unlink all hives (reset their visual state)
         if (level != null && !level.isClientSide()) {
             for (BlockPos hivePos : networkRegistry.getAllHives()) {
-                if (!level.isLoaded(hivePos)) continue;
+                if (!level.hasChunkAt(hivePos)) continue;
                 BlockEntity be = level.getBlockEntity(hivePos);
                 if (be instanceof StorageHiveBlockEntity hive) {
                     hive.unlinkController();

@@ -112,7 +112,7 @@ public class StorageChestManager {
      */
     public boolean isChest(BlockPos pos) {
         if (parent.getNodeLevel() == null) return false;
-        if (!parent.getNodeLevel().isLoaded(pos)) return false;
+        if (!parent.getNodeLevel().hasChunkAt(pos)) return false;
         BlockState state = parent.getNodeLevel().getBlockState(pos);
         return StorageHelper.isStorageContainer(state);
     }
@@ -134,10 +134,16 @@ public class StorageChestManager {
     }
 
     /**
-     * Accès mutable pour refreshAggregatedItems (nettoyage des coffres invalides).
+     * Retire un coffre du registre (utilise par StorageEvents quand un coffre est casse).
+     *
+     * @return true si le coffre existait
      */
-    public Set<BlockPos> getRegisteredChestsMutable() {
-        return registeredChests;
+    public boolean removeChest(BlockPos pos) {
+        boolean removed = registeredChests.remove(pos);
+        if (removed) {
+            parent.markDirty();
+        }
+        return removed;
     }
 
     // === NBT ===

@@ -227,21 +227,33 @@ public class DeliveryBeeEntity extends Bee {
 
     /**
      * Restitue les items transportes dans le reseau de stockage si possible.
+     * Si le reseau est plein ou inaccessible, drop les items au sol.
      * Appele lors du discard pour eviter la perte d'items en transit.
      */
     public void returnCarriedItemsToNetwork() {
-        if (carriedItems.isEmpty() || controllerPos == null || level() == null) return;
-        if (!level().isLoaded(controllerPos)) return;
+        if (carriedItems.isEmpty() || level() == null) return;
+
+        if (controllerPos == null || !level().hasChunkAt(controllerPos)) {
+            spawnAtLocation(carriedItems);
+            carriedItems = ItemStack.EMPTY;
+            return;
+        }
+
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
-            controller.depositItemForDelivery(carriedItems, null);
-            carriedItems = ItemStack.EMPTY;
+            ItemStack remaining = controller.depositItemForDelivery(carriedItems, null);
+            if (!remaining.isEmpty()) {
+                spawnAtLocation(remaining);
+            }
+        } else {
+            spawnAtLocation(carriedItems);
         }
+        carriedItems = ItemStack.EMPTY;
     }
 
     private boolean isControllerValid() {
         if (controllerPos == null || level() == null) return false;
-        if (!level().isLoaded(controllerPos)) return true;
+        if (!level().hasChunkAt(controllerPos)) return true;
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
             return controller.isFormed();
@@ -380,14 +392,14 @@ public class DeliveryBeeEntity extends Bee {
      */
     public void notifyTaskCompleted() {
         if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
-        if (!level().isLoaded(controllerPos)) return;
+        if (!level().hasChunkAt(controllerPos)) return;
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
             controller.getDeliveryManager().completeTask(taskId);
         }
         // Notifier l'interface que la task est livree
         if (interfaceTaskId != null && interfacePos != null
-                && level().isLoaded(interfacePos)) {
+                && level().hasChunkAt(interfacePos)) {
             BlockEntity ifBe = level().getBlockEntity(interfacePos);
             if (ifBe instanceof NetworkInterfaceBlockEntity iface) {
                 iface.markTaskDelivered(interfaceTaskId);
@@ -400,7 +412,7 @@ public class DeliveryBeeEntity extends Bee {
      */
     public void notifyTaskFailed() {
         if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
-        if (!level().isLoaded(controllerPos)) return;
+        if (!level().hasChunkAt(controllerPos)) return;
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
             controller.getDeliveryManager().failTask(taskId);
@@ -515,7 +527,7 @@ public class DeliveryBeeEntity extends Bee {
      */
     public int readCurrentInterfaceTaskCount() {
         if (interfaceTaskId == null || interfacePos == null) return -1;
-        if (level() == null || !level().isLoaded(interfacePos)) return -1;
+        if (level() == null || !level().hasChunkAt(interfacePos)) return -1;
         BlockEntity be = level().getBlockEntity(interfacePos);
         if (be instanceof NetworkInterfaceBlockEntity iface) {
             InterfaceTask task = iface.getTask(interfaceTaskId);

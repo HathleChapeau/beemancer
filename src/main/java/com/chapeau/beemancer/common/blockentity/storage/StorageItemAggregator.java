@@ -34,6 +34,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -45,14 +46,19 @@ import java.util.UUID;
 /**
  * Gère l'agrégation des items du réseau, le dépôt, l'extraction,
  * et la synchronisation vers les joueurs qui visualisent le terminal.
+ * Utilise un delta sync incrémental inspiré d'AE2: seuls les changements
+ * (ajouts, suppressions, modifications de count) sont envoyés au client.
+ * Les nouveaux viewers reçoivent un full sync initial.
  * Aucun état persistant (NBT) — tout est recalculé au chargement.
  */
 public class StorageItemAggregator {
     private final StorageControllerBlockEntity parent;
 
     private List<ItemStack> aggregatedItems = new ArrayList<>();
-    private int syncTimer = 0;
+    private Map<ItemStackKey, Integer> previousSnapshot = new HashMap<>();
+    private final Set<UUID> fullSyncPending = new LinkedHashSet<>();
     private boolean needsSync = false;
+    private boolean dirty = false;
     private final Map<UUID, BlockPos> playersViewing = new HashMap<>();
 
     private static final int SYNC_INTERVAL = 40;
@@ -64,7 +70,7 @@ public class StorageItemAggregator {
     // === Agrégation ===
 
     public List<ItemStack> getAggregatedItems() {
-        return aggregatedItems;
+        return Collections.unmodifiableList(aggregatedItems);
     }
 
     /**
@@ -81,7 +87,7 @@ public class StorageItemAggregator {
 
         List<BlockPos> toRemove = new ArrayList<>();
         for (BlockPos pos : allChests) {
-            if (!parent.getLevel().isLoaded(pos)) continue;
+            if (!parent.getLevel().hasChunkAt(pos)) continue;
             if (!chestManager.isChest(pos)) {
                 toRemove.add(pos);
             }
@@ -96,7 +102,7 @@ public class StorageItemAggregator {
         }
         Map<ItemStackKey, Integer> itemCounts = new HashMap<>();
         for (BlockPos chestPos : allChests) {
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 for (int i = 0; i < container.getContainerSize(); i++) {
@@ -124,22 +130,85 @@ public class StorageItemAggregator {
     }
 
     /**
-     * Envoie la liste des items agrégés et des tâches aux joueurs qui ont le terminal ouvert.
+     * Envoie les items agrégés et les tâches aux joueurs qui ont le terminal ouvert.
+     * Nouveaux viewers reçoivent un full sync. Les autres reçoivent un delta incrémental.
      */
     private void syncItemsToViewers() {
         if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
+        if (playersViewing.isEmpty()) {
+            updateSnapshot();
+            return;
+        }
 
         List<TaskDisplayData> taskData = parent.getDeliveryManager().getTaskDisplayData();
+        Map<ItemStackKey, Integer> currentSnapshot = buildCurrentSnapshot();
+        List<ItemStack> deltaItems = computeDelta(previousSnapshot, currentSnapshot);
+        previousSnapshot = currentSnapshot;
 
         for (Map.Entry<UUID, BlockPos> entry : playersViewing.entrySet()) {
             ServerPlayer player = parent.getLevel().getServer().getPlayerList().getPlayer(entry.getKey());
-            if (player != null) {
+            if (player == null) continue;
+
+            if (fullSyncPending.remove(entry.getKey())) {
                 PacketDistributor.sendToPlayer(player,
-                    new StorageItemsSyncPacket(entry.getValue(), aggregatedItems));
+                    new StorageItemsSyncPacket(entry.getValue(), true, aggregatedItems));
+            } else if (!deltaItems.isEmpty()) {
                 PacketDistributor.sendToPlayer(player,
-                    new StorageTasksSyncPacket(entry.getValue(), taskData));
+                    new StorageItemsSyncPacket(entry.getValue(), false, deltaItems));
+            }
+            PacketDistributor.sendToPlayer(player,
+                new StorageTasksSyncPacket(entry.getValue(), taskData));
+        }
+    }
+
+    /**
+     * Construit un snapshot des counts actuels (ItemStackKey -> totalCount).
+     */
+    private Map<ItemStackKey, Integer> buildCurrentSnapshot() {
+        Map<ItemStackKey, Integer> snapshot = new HashMap<>();
+        for (ItemStack stack : aggregatedItems) {
+            snapshot.put(new ItemStackKey(stack), stack.getCount());
+        }
+        return snapshot;
+    }
+
+    /**
+     * Met à jour le snapshot sans envoyer de packets (quand pas de viewers).
+     */
+    private void updateSnapshot() {
+        previousSnapshot = buildCurrentSnapshot();
+    }
+
+    /**
+     * Compare le snapshot précédent avec le snapshot actuel et produit la liste des deltas.
+     * Un delta est un ItemStack avec:
+     * - count > 0: item ajouté ou count modifié (nouveau count absolu)
+     * - count = 0: item supprimé du réseau
+     */
+    private List<ItemStack> computeDelta(Map<ItemStackKey, Integer> previous,
+                                          Map<ItemStackKey, Integer> current) {
+        List<ItemStack> deltas = new ArrayList<>();
+
+        // Items modifiés ou ajoutés
+        for (Map.Entry<ItemStackKey, Integer> entry : current.entrySet()) {
+            Integer prevCount = previous.get(entry.getKey());
+            if (prevCount == null || !prevCount.equals(entry.getValue())) {
+                ItemStack delta = entry.getKey().toStack();
+                delta.setCount(entry.getValue());
+                deltas.add(delta);
             }
         }
+
+        // Items supprimés (présents dans previous mais pas dans current)
+        for (Map.Entry<ItemStackKey, Integer> entry : previous.entrySet()) {
+            if (!current.containsKey(entry.getKey())) {
+                ItemStack removed = entry.getKey().toStack();
+                removed.setCount(0);
+                deltas.add(removed);
+            }
+        }
+
+        return deltas;
     }
 
     // === Deposit / Extract ===
@@ -162,7 +231,7 @@ public class StorageItemAggregator {
 
         // Priorité 1: Coffre avec le même item exact (stack mergeable)
         for (BlockPos chestPos : chests) {
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 for (int i = 0; i < container.getContainerSize(); i++) {
@@ -177,7 +246,7 @@ public class StorageItemAggregator {
 
         // Priorité 1b: Coffre avec le même item (mais besoin d'un slot vide)
         for (BlockPos chestPos : chests) {
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 boolean hasSameItem = false;
@@ -201,7 +270,7 @@ public class StorageItemAggregator {
         // Priorité 2: Coffre contenant un item partageant un tag commun
         if (!stackTags.isEmpty()) {
             for (BlockPos chestPos : chests) {
-                if (!parent.getLevel().isLoaded(chestPos)) continue;
+                if (!parent.getLevel().hasChunkAt(chestPos)) continue;
                 BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
                 if (be instanceof Container container) {
                     boolean hasSharedTag = false;
@@ -226,7 +295,7 @@ public class StorageItemAggregator {
 
         // Priorité 3: Coffre contenant un item du même mod/namespace
         for (BlockPos chestPos : chests) {
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 boolean hasSameNamespace = false;
@@ -249,7 +318,7 @@ public class StorageItemAggregator {
 
         // Priorité 4: Coffre totalement vide
         for (BlockPos chestPos : chests) {
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 boolean allEmpty = true;
@@ -265,7 +334,7 @@ public class StorageItemAggregator {
 
         // Priorité 5: N'importe quel coffre avec un slot vide
         for (BlockPos chestPos : chests) {
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 for (int i = 0; i < container.getContainerSize(); i++) {
@@ -294,7 +363,7 @@ public class StorageItemAggregator {
         // Pass 1: deposit in chests that already contain the same item
         for (BlockPos chestPos : chests) {
             if (remaining.isEmpty()) break;
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
@@ -307,7 +376,7 @@ public class StorageItemAggregator {
         // Pass 2: deposit in any chest with empty slots
         for (BlockPos chestPos : chests) {
             if (remaining.isEmpty()) break;
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
@@ -316,6 +385,7 @@ public class StorageItemAggregator {
         }
 
         needsSync = true;
+        dirty = true;
         return remaining;
     }
 
@@ -334,7 +404,7 @@ public class StorageItemAggregator {
 
         for (BlockPos chestPos : chests) {
             if (needed <= 0) break;
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
@@ -347,6 +417,7 @@ public class StorageItemAggregator {
         }
 
         needsSync = true;
+        dirty = true;
         return result;
     }
 
@@ -354,35 +425,45 @@ public class StorageItemAggregator {
 
     public void addViewer(UUID playerId, BlockPos terminalPos) {
         playersViewing.put(playerId, terminalPos);
+        fullSyncPending.add(playerId);
         if (parent.getLevel() != null && !parent.getLevel().isClientSide()) {
             ServerPlayer player = parent.getLevel().getServer().getPlayerList().getPlayer(playerId);
             if (player != null) {
                 refreshAggregatedItems();
-                PacketDistributor.sendToPlayer(player,
-                    new StorageItemsSyncPacket(terminalPos, aggregatedItems));
             }
         }
     }
 
     public void removeViewer(UUID playerId) {
         playersViewing.remove(playerId);
+        fullSyncPending.remove(playerId);
+    }
+
+    /**
+     * Retourne les UUIDs des joueurs qui visualisent le terminal.
+     */
+    public Set<UUID> getViewerIds() {
+        return Collections.unmodifiableSet(playersViewing.keySet());
     }
 
     // === Tick ===
 
     /**
      * Gère le timer de synchronisation périodique.
+     * Ne recalcule l'agrégation que si le réseau a été muté (dirty flag).
+     * N'envoie les packets sync que si des viewers sont connectés ou si un sync est nécessaire.
      */
-    public void tickSync() {
-        syncTimer++;
-
+    public void tickSync(long gameTick) {
         boolean hasViewers = !playersViewing.isEmpty();
-        // Sync toutes les SYNC_INTERVAL ticks quand il y a des viewers (pas chaque tick)
-        boolean shouldSync = (syncTimer >= SYNC_INTERVAL) && (hasViewers || needsSync);
+        boolean shouldTick = ((gameTick + parent.getBlockPos().hashCode()) % SYNC_INTERVAL) == 0;
+        if (!shouldTick) return;
 
-        if (shouldSync) {
+        if (dirty) {
             refreshAggregatedItems();
-            syncTimer = 0;
+            dirty = false;
+            needsSync = false;
+        } else if (hasViewers || needsSync) {
+            syncItemsToViewers();
             needsSync = false;
         }
     }
@@ -399,6 +480,9 @@ public class StorageItemAggregator {
 
     public void setNeedsSync(boolean value) {
         this.needsSync = value;
+        if (value) {
+            this.dirty = true;
+        }
     }
 
     /**

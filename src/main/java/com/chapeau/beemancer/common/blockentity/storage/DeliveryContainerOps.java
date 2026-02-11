@@ -54,7 +54,7 @@ public class DeliveryContainerOps {
         if (parent.getLevel() == null || template.isEmpty()) return null;
 
         for (BlockPos chestPos : parent.getAllNetworkChests()) {
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 if (ContainerHelper.countItem(container, template) >= minCount) {
@@ -74,7 +74,7 @@ public class DeliveryContainerOps {
         if (parent.getLevel() == null || template.isEmpty()) return result;
 
         for (BlockPos chestPos : parent.getAllNetworkChests()) {
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 int count = ContainerHelper.countItem(container, template);
@@ -92,7 +92,7 @@ public class DeliveryContainerOps {
      */
     public int countItemInChest(ItemStack template, BlockPos chestPos) {
         if (parent.getLevel() == null || template.isEmpty()) return 0;
-        if (!parent.getLevel().isLoaded(chestPos)) return 0;
+        if (!parent.getLevel().hasChunkAt(chestPos)) return 0;
         BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
 
         if (be instanceof StorageTerminalBlockEntity terminal) {
@@ -111,7 +111,7 @@ public class DeliveryContainerOps {
         if (parent.getLevel() == null || template.isEmpty()) return null;
 
         for (BlockPos chestPos : parent.getAllNetworkChests()) {
-            if (!parent.getLevel().isLoaded(chestPos)) continue;
+            if (!parent.getLevel().hasChunkAt(chestPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 if (ContainerHelper.availableSpace(container, template) >= count) {
@@ -127,7 +127,7 @@ public class DeliveryContainerOps {
      */
     public ItemStack extractItemForDelivery(ItemStack template, int count, BlockPos chestPos) {
         if (parent.getLevel() == null || template.isEmpty() || count <= 0) return ItemStack.EMPTY;
-        if (!parent.getLevel().isLoaded(chestPos)) return ItemStack.EMPTY;
+        if (!parent.getLevel().hasChunkAt(chestPos)) return ItemStack.EMPTY;
 
         BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
 
@@ -157,7 +157,7 @@ public class DeliveryContainerOps {
 
     private ItemStack depositIntoChest(ItemStack stack, BlockPos chestPos) {
         if (parent.getLevel() == null || stack.isEmpty()) return stack;
-        if (!parent.getLevel().isLoaded(chestPos)) return stack;
+        if (!parent.getLevel().hasChunkAt(chestPos)) return stack;
 
         BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
         if (!(be instanceof Container container)) return stack;

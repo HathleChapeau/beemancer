@@ -86,7 +86,7 @@ public class StorageHiveBlockEntity extends BlockEntity {
     @Nullable
     public StorageControllerBlockEntity getController() {
         if (controllerPos == null || level == null) return null;
-        if (!level.isLoaded(controllerPos)) return null;
+        if (!level.hasChunkAt(controllerPos)) return null;
 
         BlockEntity be = level.getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
@@ -153,7 +153,7 @@ public class StorageHiveBlockEntity extends BlockEntity {
         if (validateTimer >= VALIDATE_INTERVAL) {
             validateTimer = 0;
             if (controllerPos != null) {
-                if (!level.isLoaded(controllerPos)) {
+                if (!level.hasChunkAt(controllerPos)) {
                     return;
                 }
                 BlockEntity be = level.getBlockEntity(controllerPos);

@@ -527,4 +527,8 @@
   "entity.beemancer.flywheel_test_bee": "Abeille Test",
   "gui.beemancer.interface.active": "Actif",
   "gui.beemancer.interface.inactive": "Inactif",
+  "gui.beemancer.network.honey_depleted": "Réseau de stockage : miel épuisé !",
+  "gui.beemancer.network.honey_restored": "Réseau de stockage : approvisionnement en miel rétabli",
+  "gui.beemancer.network.queue_full": "File d'attente pleine — réessayez plus tard",
+  "gui.beemancer.network.storage_full": "Réseau de stockage plein — items lâchés au sol"
 }

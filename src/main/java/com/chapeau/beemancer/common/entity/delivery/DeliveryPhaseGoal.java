@@ -229,18 +229,19 @@ public class DeliveryPhaseGoal extends Goal {
 
     /**
      * Depose les items transportes dans le coffre de sauvegarde.
-     * Les restes sont restitues au reseau via le controller.
+     * Les restes sont restitues au reseau (ou droppes au sol si reseau plein).
      */
     private void performSavingDeposit(BlockPos chestPos) {
         Level level = bee.level();
         ItemStack carried = bee.getCarriedItems();
         if (carried.isEmpty()) return;
 
-        if (level.isLoaded(chestPos)) {
+        if (level.hasChunkAt(chestPos)) {
             BlockEntity be = level.getBlockEntity(chestPos);
             if (be instanceof Container container) {
                 ItemStack remaining = ContainerHelper.insertItem(container, carried);
                 if (!remaining.isEmpty()) {
+                    bee.setCarriedItems(remaining);
                     bee.returnCarriedItemsToNetwork();
                 } else {
                     bee.setCarriedItems(ItemStack.EMPTY);
@@ -393,7 +394,7 @@ public class DeliveryPhaseGoal extends Goal {
     private boolean isDestValid() {
         Level level = bee.level();
         BlockPos destPos = bee.getDestPos();
-        if (destPos == null || !level.isLoaded(destPos)) return false;
+        if (destPos == null || !level.hasChunkAt(destPos)) return false;
 
         BlockEntity be = level.getBlockEntity(destPos);
         if (be == null) return false;
@@ -429,7 +430,13 @@ public class DeliveryPhaseGoal extends Goal {
      * pour s'adapter aux changements pendant le transit.
      */
     private void performExtraction(Level level) {
-        BlockEntity be = level.getBlockEntity(bee.getControllerPos());
+        BlockPos controllerPos = bee.getControllerPos();
+        if (!level.hasChunkAt(controllerPos)) {
+            bee.notifyTaskFailed();
+            bee.discard();
+            return;
+        }
+        BlockEntity be = level.getBlockEntity(controllerPos);
         if (!(be instanceof StorageControllerBlockEntity controller)) {
             bee.discard();
             return;
@@ -487,7 +494,16 @@ public class DeliveryPhaseGoal extends Goal {
             }
         }
 
-        BlockEntity destBe = level.getBlockEntity(bee.getDestPos());
+        BlockPos destPos = bee.getDestPos();
+        if (!level.hasChunkAt(destPos)) {
+            returnToNetwork(level, toDeliver.isEmpty() ? carried : toDeliver);
+            if (!excess.isEmpty()) {
+                returnToNetwork(level, excess);
+            }
+            bee.setCarriedItems(ItemStack.EMPTY);
+            return;
+        }
+        BlockEntity destBe = level.getBlockEntity(destPos);
 
         ItemStack remaining;
         if (!toDeliver.isEmpty()) {
@@ -526,11 +542,24 @@ public class DeliveryPhaseGoal extends Goal {
 
     /**
      * Restitue des items au reseau de stockage via le controller.
+     * Si le controller est inaccessible ou le reseau plein, drop les items au sol.
      */
     private void returnToNetwork(Level level, ItemStack items) {
-        BlockEntity controllerBe = level.getBlockEntity(bee.getControllerPos());
+        if (items.isEmpty()) return;
+
+        BlockPos controllerPos = bee.getControllerPos();
+        if (!level.hasChunkAt(controllerPos)) {
+            bee.spawnAtLocation(items);
+            return;
+        }
+        BlockEntity controllerBe = level.getBlockEntity(controllerPos);
         if (controllerBe instanceof StorageControllerBlockEntity controller) {
-            controller.depositItemForDelivery(items, null);
+            ItemStack remaining = controller.depositItemForDelivery(items, null);
+            if (!remaining.isEmpty()) {
+                bee.spawnAtLocation(remaining);
+            }
+        } else {
+            bee.spawnAtLocation(items);
         }
     }
 }

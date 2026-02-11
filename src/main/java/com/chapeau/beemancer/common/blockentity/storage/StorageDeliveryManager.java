@@ -33,11 +33,14 @@ import com.chapeau.beemancer.common.block.storage.TaskDisplayData;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.Containers;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -67,10 +70,8 @@ public class StorageDeliveryManager {
     private final Queue<DeliveryTask> deliveryQueue = new LinkedList<>();
     private final List<DeliveryTask> activeTasks = new ArrayList<>();
     private final Set<UUID> completedTaskIds = new LinkedHashSet<>();
-    private int deliveryTimer = 0;
-    private int reevaluateTimer = 0;
-    private int honeyConsumeTimer = 0;
     private boolean honeyDepleted = false;
+    private boolean queueDirty = false;
 
     private final DeliveryNetworkPathfinder pathfinder;
     private final DeliveryContainerOps containerOps;
@@ -102,6 +103,7 @@ public class StorageDeliveryManager {
      */
     public void addDeliveryTask(DeliveryTask task) {
         deliveryQueue.add(task);
+        queueDirty = true;
         parent.setChanged();
     }
 
@@ -123,7 +125,7 @@ public class StorageDeliveryManager {
             if (remaining <= 0) break;
             Vec3i rotatedOffset = MultiblockPattern.rotateY(new Vec3i(xOff, 0, 0), rotation);
             BlockPos reservoirPos = parent.getBlockPos().offset(rotatedOffset);
-            if (!parent.getLevel().isLoaded(reservoirPos)) continue;
+            if (!parent.getLevel().hasChunkAt(reservoirPos)) continue;
             BlockEntity be = parent.getLevel().getBlockEntity(reservoirPos);
             if (be instanceof HoneyReservoirBlockEntity reservoir) {
                 FluidStack drained = reservoir.drain(remaining, IFluidHandler.FluidAction.EXECUTE);
@@ -135,7 +137,11 @@ public class StorageDeliveryManager {
 
         boolean wasDepleted = honeyDepleted;
         honeyDepleted = remaining > 0;
-        if (wasDepleted != honeyDepleted) {
+        if (!wasDepleted && honeyDepleted) {
+            parent.notifyViewers(Component.translatable("gui.beemancer.network.honey_depleted"));
+            parent.syncToClient();
+        } else if (wasDepleted && !honeyDepleted) {
+            parent.notifyViewers(Component.translatable("gui.beemancer.network.honey_restored"));
             parent.syncToClient();
         }
     }
@@ -172,10 +178,13 @@ public class StorageDeliveryManager {
             }
         }
 
-        List<DeliveryTask> sortedQueue = new ArrayList<>(deliveryQueue);
-        sortedQueue.sort(Comparator.comparingInt(DeliveryTask::getPriority));
-        deliveryQueue.clear();
-        deliveryQueue.addAll(sortedQueue);
+        if (queueDirty) {
+            List<DeliveryTask> sortedQueue = new ArrayList<>(deliveryQueue);
+            sortedQueue.sort(Comparator.comparingInt(DeliveryTask::getPriority));
+            deliveryQueue.clear();
+            deliveryQueue.addAll(sortedQueue);
+            queueDirty = false;
+        }
 
         while (activeTasks.size() < parent.getMaxDeliveryBees()) {
             DeliveryTask eligible = findEligibleTask();
@@ -353,7 +362,7 @@ public class StorageDeliveryManager {
     private void notifyInterfaceTaskFailed(DeliveryTask task) {
         if (task.getInterfacePos() == null || task.getInterfaceTaskId() == null) return;
         if (parent.getLevel() == null) return;
-        if (!parent.getLevel().isLoaded(task.getInterfacePos())) return;
+        if (!parent.getLevel().hasChunkAt(task.getInterfacePos())) return;
         BlockEntity be = parent.getLevel().getBlockEntity(task.getInterfacePos());
         if (be instanceof NetworkInterfaceBlockEntity iface) {
             iface.unlockTask(task.getInterfaceTaskId());
@@ -463,12 +472,18 @@ public class StorageDeliveryManager {
 
     /**
      * Gere les consequences de l'annulation d'une tache.
-     * Pour les taches preloaded: remet les items dans le reseau.
+     * Pour les taches preloaded: remet les items dans le reseau (drop au sol si plein).
      */
     private void handleCancelledTask(DeliveryTask task) {
         if (task.isPreloaded()) {
-            parent.getItemAggregator().depositItem(
-                task.getTemplate().copyWithCount(task.getCount()));
+            ItemStack toReturn = task.getTemplate().copyWithCount(task.getCount());
+            ItemStack remaining = parent.getItemAggregator().depositItem(toReturn);
+            if (!remaining.isEmpty() && parent.getLevel() != null) {
+                Containers.dropItemStack(parent.getLevel(),
+                    parent.getBlockPos().getX() + 0.5,
+                    parent.getBlockPos().getY() + 1.0,
+                    parent.getBlockPos().getZ() + 0.5, remaining);
+            }
         }
     }
 
@@ -515,28 +530,25 @@ public class StorageDeliveryManager {
 
     /**
      * Tick du timer de livraison et reevaluation.
+     * Utilise gameTick + offset pour stagger entre controllers.
      */
-    public void tickDelivery() {
-        deliveryTimer++;
-        if (deliveryTimer >= DELIVERY_PROCESS_INTERVAL) {
-            deliveryTimer = 0;
+    public void tickDelivery(long gameTick) {
+        long offset = parent.getBlockPos().hashCode();
+        if ((gameTick + offset) % DELIVERY_PROCESS_INTERVAL == 0) {
             processDeliveryQueue();
         }
-
-        reevaluateTimer++;
-        if (reevaluateTimer >= REEVALUATE_INTERVAL) {
-            reevaluateTimer = 0;
+        if ((gameTick + offset) % REEVALUATE_INTERVAL == 0) {
             reevaluateTasks();
         }
     }
 
     /**
      * Tick de la consommation de miel.
+     * Utilise gameTick + offset pour stagger entre controllers.
      */
-    public void tickHoneyConsumption() {
-        honeyConsumeTimer++;
-        if (honeyConsumeTimer >= HONEY_CONSUME_INTERVAL) {
-            honeyConsumeTimer = 0;
+    public void tickHoneyConsumption(long gameTick) {
+        long offset = parent.getBlockPos().hashCode();
+        if ((gameTick + offset) % HONEY_CONSUME_INTERVAL == 0) {
             consumeHoney();
         }
     }
@@ -587,6 +599,10 @@ public class StorageDeliveryManager {
             for (int i = 0; i < completedTag.size(); i++) {
                 completedTaskIds.add(completedTag.getCompound(i).getUUID("Id"));
             }
+        }
+
+        if (!deliveryQueue.isEmpty()) {
+            queueDirty = true;
         }
     }
 }

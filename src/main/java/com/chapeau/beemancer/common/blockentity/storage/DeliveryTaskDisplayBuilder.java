@@ -220,7 +220,7 @@ public final class DeliveryTaskDisplayBuilder {
         }
 
         if (!task.isPreloaded() && level != null && task.getSourcePos() != null
-                && level.isLoaded(task.getSourcePos())) {
+                && level.hasChunkAt(task.getSourcePos())) {
             BlockEntity be = level.getBlockEntity(task.getSourcePos());
             if (be == null) return "gui.beemancer.tasks.blocked.target_missing";
         }

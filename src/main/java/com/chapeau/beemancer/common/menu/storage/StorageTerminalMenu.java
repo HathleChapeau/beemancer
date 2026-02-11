@@ -469,6 +469,37 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         this.aggregatedItems = items;
     }
 
+    /**
+     * Applique des deltas incrémentiels sur le cache local des items agrégés.
+     * Chaque delta est un ItemStack: count > 0 = nouveau count pour cet item, count = 0 = item supprimé.
+     * Le delta utilise copyWithCount(1) comme clé de comparaison pour trouver l'item dans la liste.
+     */
+    public void applyDeltaItems(List<ItemStack> deltas) {
+        for (ItemStack delta : deltas) {
+            int deltaCount = delta.getCount();
+            ItemStack deltaTemplate = delta.copyWithCount(1);
+            boolean found = false;
+            for (int i = 0; i < aggregatedItems.size(); i++) {
+                ItemStack existing = aggregatedItems.get(i).copyWithCount(1);
+                if (ItemStack.isSameItemSameComponents(existing, deltaTemplate)) {
+                    if (deltaCount == 0) {
+                        aggregatedItems.remove(i);
+                    } else {
+                        aggregatedItems.get(i).setCount(deltaCount);
+                    }
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && deltaCount > 0) {
+                aggregatedItems.add(delta.copy());
+            }
+        }
+        aggregatedItems.sort(java.util.Comparator.comparing(
+            stack -> stack.getHoverName().getString()
+        ));
+    }
+
     // === Accès aux Tâches ===
 
     public List<TaskDisplayData> getTaskDisplayData() {
