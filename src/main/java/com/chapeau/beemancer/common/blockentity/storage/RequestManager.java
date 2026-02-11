@@ -61,9 +61,7 @@ public class RequestManager {
 
     private final StorageControllerBlockEntity parent;
     private final Map<UUID, InterfaceRequest> activeRequests = new LinkedHashMap<>();
-    private int processTimer = 0;
-    private int blockedRecheckTimer = 0;
-    private int sourceValidationTimer = 0;
+    private boolean dirty = false;
 
     public RequestManager(StorageControllerBlockEntity parent) {
         this.parent = parent;
@@ -94,6 +92,7 @@ public class RequestManager {
         }
 
         activeRequests.put(request.getRequestId(), request);
+        dirty = true;
         parent.setChanged();
     }
 
@@ -193,6 +192,7 @@ public class RequestManager {
                 request.setStatus(InterfaceRequest.RequestStatus.PENDING);
                 request.setAssignedTaskId(null);
                 request.setBlockedReason("");
+                dirty = true;
                 parent.setChanged();
                 return;
             }
@@ -204,8 +204,12 @@ public class RequestManager {
     /**
      * Convertit les demandes PENDING en DeliveryTasks.
      * Appele periodiquement par le tick du controller.
+     * Ne traite que si le dirty flag est leve (nouvelle demande ou retour en PENDING).
      */
     public void processRequests() {
+        if (!dirty) return;
+        dirty = false;
+
         StorageDeliveryManager delivery = parent.getDeliveryManager();
 
         for (InterfaceRequest request : activeRequests.values()) {
@@ -320,12 +324,14 @@ public class RequestManager {
                 if (chestPos != null) {
                     request.setStatus(InterfaceRequest.RequestStatus.PENDING);
                     request.setBlockedReason("");
+                    dirty = true;
                 }
             } else {
                 BlockPos destChest = parent.getItemAggregator().findSlotForItem(request.getTemplate());
                 if (destChest != null) {
                     request.setStatus(InterfaceRequest.RequestStatus.PENDING);
                     request.setBlockedReason("");
+                    dirty = true;
                 }
             }
         }
@@ -401,7 +407,7 @@ public class RequestManager {
             if (checkedPositions.contains(reqPos)) continue;
             checkedPositions.add(reqPos);
 
-            if (!parent.getLevel().isLoaded(reqPos)) continue;
+            if (!parent.getLevel().hasChunkAt(reqPos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(reqPos);
 
@@ -423,22 +429,19 @@ public class RequestManager {
 
     // === Tick ===
 
-    public void tick() {
-        processTimer++;
-        if (processTimer >= PROCESS_INTERVAL) {
-            processTimer = 0;
+    /**
+     * Tick periodique avec stagger offset pour distribuer la charge entre controllers.
+     */
+    public void tick(long gameTick) {
+        long offset = parent.getBlockPos().hashCode();
+
+        if ((gameTick + offset) % PROCESS_INTERVAL == 0) {
             processRequests();
         }
-
-        blockedRecheckTimer++;
-        if (blockedRecheckTimer >= BLOCKED_RECHECK_INTERVAL) {
-            blockedRecheckTimer = 0;
+        if ((gameTick + offset) % BLOCKED_RECHECK_INTERVAL == 0) {
             recheckBlockedRequests();
         }
-
-        sourceValidationTimer++;
-        if (sourceValidationTimer >= SOURCE_VALIDATION_INTERVAL) {
-            sourceValidationTimer = 0;
+        if ((gameTick + offset) % SOURCE_VALIDATION_INTERVAL == 0) {
             validateRequestSources();
         }
     }
@@ -469,6 +472,9 @@ public class RequestManager {
                 InterfaceRequest request = InterfaceRequest.load(requestsTag.getCompound(i), registries);
                 activeRequests.put(request.getRequestId(), request);
             }
+        }
+        if (!activeRequests.isEmpty()) {
+            dirty = true;
         }
     }
 }

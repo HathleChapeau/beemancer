@@ -66,7 +66,7 @@ public class DeliveryBeeSpawner {
 
         if (!task.isPreloaded()) {
             BlockPos sourcePos = task.getSourcePos();
-            if (sourcePos != null && level.isLoaded(sourcePos)) {
+            if (sourcePos != null && level.hasChunkAt(sourcePos)) {
                 BlockEntity sourceBe = level.getBlockEntity(sourcePos);
                 if (sourceBe == null) {
                     registry.unregisterBlock(sourcePos);
@@ -83,7 +83,7 @@ public class DeliveryBeeSpawner {
         }
 
         BlockPos destPos = task.getDestPos();
-        if (destPos != null && !destPos.equals(parent.getBlockPos()) && level.isLoaded(destPos)) {
+        if (destPos != null && !destPos.equals(parent.getBlockPos()) && level.hasChunkAt(destPos)) {
             BlockEntity destBe = level.getBlockEntity(destPos);
             if (destBe == null) {
                 registry.unregisterBlock(destPos);

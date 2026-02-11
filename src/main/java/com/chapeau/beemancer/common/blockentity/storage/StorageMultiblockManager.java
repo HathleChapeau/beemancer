@@ -137,6 +137,7 @@ public class StorageMultiblockManager {
             Vec3i originalOffset = element.offset();
             Vec3i rotatedOffset = MultiblockPattern.rotateY(originalOffset, multiblockRotation);
             BlockPos blockPos = parent.getBlockPos().offset(rotatedOffset);
+            if (!parent.getLevel().hasChunkAt(blockPos)) continue;
             BlockState state = parent.getLevel().getBlockState(blockPos);
 
             float spreadX = 0.0f;

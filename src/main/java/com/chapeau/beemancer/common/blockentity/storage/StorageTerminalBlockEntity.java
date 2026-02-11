@@ -223,6 +223,10 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
         // Limiter le nombre de requêtes en attente
         if (pendingRequests.size() >= MAX_PENDING_REQUESTS) {
+            StorageControllerBlockEntity controller = getController();
+            if (controller != null) {
+                controller.notifyViewers(Component.translatable("gui.beemancer.network.queue_full"));
+            }
             return;
         }
 

@@ -76,7 +76,7 @@ public class DeliveryNetworkPathfinder {
             List<BlockPos> path = entry.getValue();
 
             if (!visited.add(nodePos)) continue;
-            if (!parent.getLevel().isLoaded(nodePos)) continue;
+            if (!parent.getLevel().hasChunkAt(nodePos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
             if (!(be instanceof INetworkNode node)) continue;
@@ -123,7 +123,7 @@ public class DeliveryNetworkPathfinder {
             List<BlockPos> path = entry.getValue();
 
             if (!visited.add(nodePos)) continue;
-            if (!parent.getLevel().isLoaded(nodePos)) continue;
+            if (!parent.getLevel().hasChunkAt(nodePos)) continue;
 
             BlockEntity be = parent.getLevel().getBlockEntity(nodePos);
             if (!(be instanceof INetworkNode node)) continue;
@@ -186,7 +186,7 @@ public class DeliveryNetworkPathfinder {
         while (!toVisit.isEmpty()) {
             BlockPos nodePos = toVisit.poll();
             if (!visited.add(nodePos)) continue;
-            if (parent.getLevel() == null || !parent.getLevel().isLoaded(nodePos)) continue;
+            if (parent.getLevel() == null || !parent.getLevel().hasChunkAt(nodePos)) continue;
 
             double distSq = position.distanceToSqr(
                 nodePos.getX() + 0.5, nodePos.getY() + 0.5, nodePos.getZ() + 0.5);

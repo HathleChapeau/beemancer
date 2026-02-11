@@ -110,7 +110,7 @@ public class InterfaceFilter {
     // === Selected Slots ===
 
     public Set<Integer> getSelectedSlots() {
-        return selectedSlots;
+        return java.util.Collections.unmodifiableSet(selectedSlots);
     }
 
     public void setSelectedSlots(Set<Integer> slots) {

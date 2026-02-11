@@ -144,7 +144,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     @Nullable
     public StorageControllerBlockEntity getController() {
         if (controllerPos == null || level == null) return null;
-        if (!level.isLoaded(controllerPos)) return null;
+        if (!level.hasChunkAt(controllerPos)) return null;
         BlockEntity be = level.getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
             return controller;
@@ -157,7 +157,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     // === Filter Management ===
 
     public List<InterfaceFilter> getFilters() {
-        return filters;
+        return java.util.Collections.unmodifiableList(filters);
     }
 
     public int getFilterCount() {
@@ -234,7 +234,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     // === Global Selected Slots (used when 0 filters) ===
 
     public Set<Integer> getGlobalSelectedSlots() {
-        return globalSelectedSlots;
+        return java.util.Collections.unmodifiableSet(globalSelectedSlots);
     }
 
     public void setGlobalSelectedSlots(Set<Integer> slots) {
@@ -534,7 +534,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     public Container getAdjacentInventory() {
         if (level == null) return null;
         BlockPos adjPos = getAdjacentPos();
-        if (!level.isLoaded(adjPos)) return null;
+        if (!level.hasChunkAt(adjPos)) return null;
         BlockEntity be = level.getBlockEntity(adjPos);
         if (be instanceof Container container) {
             return container;
@@ -584,7 +584,7 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             guiCheckTimer = 0;
             boolean hadGui = hasAdjacentGui;
             BlockPos adjPos = getAdjacentPos();
-            if (!level.isLoaded(adjPos)) return;
+            if (!level.hasChunkAt(adjPos)) return;
             BlockEntity adjacentBe = level.getBlockEntity(adjPos);
             hasAdjacentGui = adjacentBe instanceof net.minecraft.world.MenuProvider;
             if (hadGui != hasAdjacentGui) {

@@ -725,4 +725,8 @@
   "entity.beemancer.flywheel_test_bee": "Test Bee",
   "gui.beemancer.interface.active": "Active",
   "gui.beemancer.interface.inactive": "Inactive",
+  "gui.beemancer.network.honey_depleted": "Storage network: honey depleted!",
+  "gui.beemancer.network.honey_restored": "Storage network: honey supply restored",
+  "gui.beemancer.network.queue_full": "Request queue full — try again later",
+  "gui.beemancer.network.storage_full": "Storage network full — items dropped"
 }
