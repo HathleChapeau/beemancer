@@ -12,8 +12,6 @@
  * | InterfaceFilter               | Filtre individuel    | Ghost slots per-filter         |
  * | GhostSlot                    | Slots fantomes       | Filter slots 0-14              |
  * | BeemancerMenus               | Type du menu         | Constructeur                   |
- * | PartCraftingPaperData         | Donnees Part Paper   | Validation craft mode          |
- * | PartCraftingPaperItem         | Type item Part Paper | Validation clicked item        |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -27,8 +25,6 @@ package com.chapeau.beemancer.common.menu.storage;
 
 import com.chapeau.beemancer.common.blockentity.storage.InterfaceFilter;
 import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
-import com.chapeau.beemancer.common.data.PartCraftingPaperData;
-import com.chapeau.beemancer.common.item.PartCraftingPaperItem;
 import com.chapeau.beemancer.common.menu.BeemancerMenu;
 import com.chapeau.beemancer.common.menu.slot.GhostSlot;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -72,8 +68,7 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
     public static final int DATA_IS_IMPORT = 0;
     public static final int DATA_IS_LINKED = 1;
     public static final int DATA_FILTER_COUNT = 2;
-    public static final int DATA_CRAFT_MODE = 3;
-    public static final int DATA_SIZE = 4;
+    public static final int DATA_SIZE = 3;
 
     // Ghost slot positions (matching screen layout)
     private static final int GHOST_SLOTS_X = 23;
@@ -164,7 +159,6 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
                     case DATA_IS_IMPORT -> be.isImport() ? 1 : 0;
                     case DATA_IS_LINKED -> be.isLinked() ? 1 : 0;
                     case DATA_FILTER_COUNT -> be.getFilterCount();
-                    case DATA_CRAFT_MODE -> be.isCraftMode() ? 1 : 0;
                     default -> 0;
                 };
             }
@@ -183,17 +177,6 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
      */
     public void updateFilterSlots() {
         if (blockEntity == null) return;
-
-        // En mode craft: seul le slot 0 du filtre 0 est actif
-        if (blockEntity.isCraftMode()) {
-            for (int filterIdx = 0; filterIdx < MAX_FILTERS; filterIdx++) {
-                for (int slot = 0; slot < SLOTS_PER_FILTER; slot++) {
-                    int globalIdx = filterIdx * SLOTS_PER_FILTER + slot;
-                    ghostSlots[globalIdx].setActive(filterIdx == 0 && slot == 0);
-                }
-            }
-            return;
-        }
 
         int filterCount = blockEntity.getFilterCount();
 
@@ -226,19 +209,6 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
             int filterIdx = slotId / SLOTS_PER_FILTER;
             int slotInFilter = slotId % SLOTS_PER_FILTER;
 
-            // En mode craft: seul le slot 0 du filtre 0 accepte un Part Crafting Paper
-            if (blockEntity.isCraftMode()) {
-                if (filterIdx != 0 || slotInFilter != 0) return;
-                ItemStack carried = getCarried();
-                if (!carried.isEmpty()) {
-                    if (!isValidCraftPaper(carried)) return;
-                    blockEntity.setFilterItem(0, 0, carried);
-                } else {
-                    blockEntity.clearFilterItem(0, 0);
-                }
-                return;
-            }
-
             InterfaceFilter filter = blockEntity.getFilter(filterIdx);
             if (filter != null && filter.getMode() == InterfaceFilter.FilterMode.ITEM) {
                 ItemStack carried = getCarried();
@@ -251,26 +221,6 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
             }
         }
         super.clicked(slotId, button, clickType, player);
-    }
-
-    /**
-     * Verifie si un item est un Part Crafting Paper valide pour le mode craft.
-     * Import = INPUT seulement, Export = OUTPUT seulement.
-     */
-    private boolean isValidCraftPaper(ItemStack stack) {
-        if (!(stack.getItem() instanceof PartCraftingPaperItem)) return false;
-        if (!PartCraftingPaperData.hasData(stack)) return false;
-        if (blockEntity == null || blockEntity.getLevel() == null) return false;
-
-        PartCraftingPaperData data = PartCraftingPaperData.readFromStack(
-                stack, blockEntity.getLevel().registryAccess());
-        if (data == null) return false;
-
-        if (blockEntity.isImport()) {
-            return data.mode() == PartCraftingPaperData.PartMode.INPUT;
-        } else {
-            return data.mode() == PartCraftingPaperData.PartMode.OUTPUT;
-        }
     }
 
     // === Quick Move ===
@@ -318,7 +268,6 @@ public class NetworkInterfaceMenu extends BeemancerMenu {
     public boolean isImport() { return data.get(DATA_IS_IMPORT) != 0; }
     public boolean isLinked() { return data.get(DATA_IS_LINKED) != 0; }
     public int getFilterCount() { return data.get(DATA_FILTER_COUNT); }
-    public boolean isCraftMode() { return data.get(DATA_CRAFT_MODE) != 0; }
 
     @Nullable
     public NetworkInterfaceBlockEntity getBlockEntity() { return blockEntity; }

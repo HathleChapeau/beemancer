@@ -7,8 +7,6 @@
 package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.common.item.CraftingPaperItem;
-import com.chapeau.beemancer.common.item.PartCraftingPaperItem;
 import com.chapeau.beemancer.common.item.bee.BeeLarvaItem;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.item.codex.CodexItem;
@@ -46,9 +44,6 @@ public class BeemancerItems {
 
     public static final DeferredItem<BlockItem> CONTROLLED_HIVE = ITEMS.register("controlled_hive",
             () -> new BlockItem(BeemancerBlocks.CONTROLLED_HIVE.get(), new Item.Properties()));
-
-    public static final DeferredItem<BlockItem> CRAFTER = ITEMS.register("crafter",
-            () -> new BlockItem(BeemancerBlocks.CRAFTER.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> CONTROLLER_PIPE = ITEMS.register("controller_pipe",
             () -> new BlockItem(BeemancerBlocks.CONTROLLER_PIPE.get(), new Item.Properties()));
@@ -628,13 +623,6 @@ public class BeemancerItems {
     // --- FLYWHEEL TEST ---
     public static final DeferredItem<BlockItem> BEE_SPAWNER = ITEMS.register("bee_spawner",
             () -> new BlockItem(BeemancerBlocks.BEE_SPAWNER.get(), new Item.Properties()));
-
-    // --- CRAFTING PAPER ---
-    public static final DeferredItem<CraftingPaperItem> CRAFTING_PAPER = ITEMS.register("crafting_paper",
-            () -> new CraftingPaperItem(new Item.Properties()));
-
-    public static final DeferredItem<PartCraftingPaperItem> PART_CRAFTING_PAPER = ITEMS.register("part_crafting_paper",
-            () -> new PartCraftingPaperItem(new Item.Properties()));
 
     // --- MOUNT ITEMS ---
     public static final DeferredItem<HoverbikeSpawnItem> HOVERBIKE_SPAWN = ITEMS.register("hoverbike_spawn",

@@ -71,7 +71,6 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("interface", "beemancer:storage_terminal");
         NODE_TO_ITEM.put("import", "beemancer:import_interface");
         NODE_TO_ITEM.put("export", "beemancer:export_interface");
-        NODE_TO_ITEM.put("craft_auto", "beemancer:auto_crafter");
         NODE_TO_ITEM.put("pipe_t2", "beemancer:controller_pipe");
         NODE_TO_ITEM.put("pipe_t3", "beemancer:controller_pipe");
         NODE_TO_ITEM.put("pipe_t4", "beemancer:controller_pipe");

@@ -11,8 +11,6 @@
  * | Bee                           | Entite parent        | Skin vanilla                   |
  * | StorageControllerBlockEntity  | Controller parent    | Extraction/depot items         |
  * | DeliveryPhaseGoal             | AI unique            | Vol → attente → retour         |
- * | CraftManager                  | Craft callbacks      | Notification livraisons craft  |
- * | CrafterBlockEntity            | Crafter cible        | Lecture etat craft             |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -24,7 +22,6 @@
 package com.chapeau.beemancer.common.entity.delivery;
 
 import com.chapeau.beemancer.common.block.storage.InterfaceTask;
-import com.chapeau.beemancer.common.blockentity.storage.CrafterBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
@@ -92,9 +89,6 @@ public class DeliveryBeeEntity extends Bee {
     @Nullable private UUID interfaceTaskId;
     @Nullable private BlockPos interfacePos;
 
-    // Craft task fields (for craft delivery integration)
-    @Nullable private UUID craftTaskId;
-    private boolean craftReturn;
     private ItemStack deliveredSnapshot = ItemStack.EMPTY;
 
     // Redirect / reassignment fields
@@ -169,9 +163,7 @@ public class DeliveryBeeEntity extends Bee {
                                   float flySpeedMultiplier, float searchSpeedMultiplier,
                                   UUID taskId,
                                   @Nullable UUID interfaceTaskId,
-                                  @Nullable BlockPos interfacePos,
-                                  @Nullable UUID craftTaskId,
-                                  boolean craftReturn) {
+                                  @Nullable BlockPos interfacePos) {
         this.controllerPos = controllerPos;
         this.sourcePos = sourcePos;
         this.returnPos = returnPos;
@@ -184,8 +176,6 @@ public class DeliveryBeeEntity extends Bee {
         this.taskId = taskId;
         this.interfaceTaskId = interfaceTaskId;
         this.interfacePos = interfacePos;
-        this.craftTaskId = craftTaskId;
-        this.craftReturn = craftReturn;
 
         this.deliveryGoal = new DeliveryPhaseGoal(this);
         this.goalSelector.addGoal(0, deliveryGoal);
@@ -387,7 +377,6 @@ public class DeliveryBeeEntity extends Bee {
     /**
      * Notifie le controller que la tache est completee.
      * Si c'est une tache d'interface, notifie aussi l'interface (markTaskDelivered).
-     * Si c'est une tache de craft, notifie le CraftManager.
      */
     public void notifyTaskCompleted() {
         if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
@@ -395,16 +384,6 @@ public class DeliveryBeeEntity extends Bee {
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
             controller.getDeliveryManager().completeTask(taskId);
-
-            // Notifier le CraftManager pour les livraisons craft
-            if (craftTaskId != null) {
-                CrafterBlockEntity crafter = controller.getCrafter();
-                if (crafter != null) {
-                    long gameTick = level().getGameTime();
-                    crafter.getCraftManager().onDeliveryCompleted(
-                            taskId, deliveredSnapshot, deliveredSnapshot.getCount(), gameTick);
-                }
-            }
         }
         // Notifier l'interface que la task est livree
         if (interfaceTaskId != null && interfacePos != null
@@ -425,14 +404,6 @@ public class DeliveryBeeEntity extends Bee {
         BlockEntity be = level().getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
             controller.getDeliveryManager().failTask(taskId);
-
-            // Notifier le CraftManager pour les livraisons craft echouees
-            if (craftTaskId != null) {
-                CrafterBlockEntity crafter = controller.getCrafter();
-                if (crafter != null) {
-                    crafter.getCraftManager().onDeliveryFailed(taskId);
-                }
-            }
         }
     }
 
@@ -525,13 +496,10 @@ public class DeliveryBeeEntity extends Bee {
 
     @Nullable public UUID getInterfaceTaskId() { return interfaceTaskId; }
     @Nullable public BlockPos getInterfacePos() { return interfacePos; }
-    @Nullable public UUID getCraftTaskId() { return craftTaskId; }
-    public boolean isCraftReturn() { return craftReturn; }
     public ItemStack getDeliveredSnapshot() { return deliveredSnapshot; }
 
     /**
      * Prend un snapshot des items transportes avant la livraison.
-     * Utilise pour notifier le CraftManager apres que carriedItems a ete vide.
      */
     public void snapshotCarriedItems() {
         if (!carriedItems.isEmpty()) {

@@ -16,7 +16,6 @@
  * - StorageDeliveryManager.java (queue de livraison, spawn bees)
  * - RequestManager.java (creation taches depuis demandes)
  * - DeliveryBeeEntity.java (execution de la tache)
- * - CraftManager.java (livraisons craft: ingredients et retour resultat)
  *
  * ============================================================
  */
@@ -65,8 +64,6 @@ public class DeliveryTask {
     @Nullable private final UUID parentTaskId;
     @Nullable private final UUID interfaceTaskId;
     @Nullable private final BlockPos interfacePos;
-    @Nullable private final UUID craftTaskId;
-    private final boolean craftReturn;
     private final ItemStack template;
     private int count;
     private final BlockPos sourcePos;
@@ -124,18 +121,6 @@ public class DeliveryTask {
     }
 
     /**
-     * Constructeur pour craft delivery (ingredient ou retour resultat).
-     */
-    public static DeliveryTask createCraftDelivery(ItemStack template, int count,
-                                                    BlockPos sourcePos, BlockPos destPos,
-                                                    boolean preloaded, UUID craftTaskId,
-                                                    boolean craftReturn) {
-        return new DeliveryTask(template, count, sourcePos, destPos, 0, Collections.emptyList(),
-            TaskOrigin.AUTOMATION, preloaded, destPos, null,
-            null, null, craftTaskId, craftReturn);
-    }
-
-    /**
      * Constructeur maitre.
      */
     public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
@@ -145,29 +130,10 @@ public class DeliveryTask {
                         @Nullable UUID parentTaskId,
                         @Nullable UUID interfaceTaskId,
                         @Nullable BlockPos interfacePos) {
-        this(template, count, sourcePos, destPos, priority, dependencies,
-            origin, preloaded, requesterPos, parentTaskId,
-            interfaceTaskId, interfacePos, null, false);
-    }
-
-    /**
-     * Constructeur maitre avec craft fields.
-     */
-    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
-                        BlockPos destPos, int priority, List<UUID> dependencies,
-                        TaskOrigin origin, boolean preloaded,
-                        @Nullable BlockPos requesterPos,
-                        @Nullable UUID parentTaskId,
-                        @Nullable UUID interfaceTaskId,
-                        @Nullable BlockPos interfacePos,
-                        @Nullable UUID craftTaskId,
-                        boolean craftReturn) {
         this.taskId = UUID.randomUUID();
         this.parentTaskId = parentTaskId;
         this.interfaceTaskId = interfaceTaskId;
         this.interfacePos = interfacePos;
-        this.craftTaskId = craftTaskId;
-        this.craftReturn = craftReturn;
         this.template = template.copy();
         this.count = count;
         this.sourcePos = sourcePos;
@@ -189,15 +155,11 @@ public class DeliveryTask {
                          int priority, List<UUID> dependencies,
                          TaskOrigin origin, boolean preloaded,
                          @Nullable UUID interfaceTaskId,
-                         @Nullable BlockPos interfacePos,
-                         @Nullable UUID craftTaskId,
-                         boolean craftReturn) {
+                         @Nullable BlockPos interfacePos) {
         this.taskId = taskId;
         this.parentTaskId = parentTaskId;
         this.interfaceTaskId = interfaceTaskId;
         this.interfacePos = interfacePos;
-        this.craftTaskId = craftTaskId;
-        this.craftReturn = craftReturn;
         this.template = template;
         this.count = count;
         this.sourcePos = sourcePos;
@@ -216,8 +178,6 @@ public class DeliveryTask {
     @Nullable public UUID getParentTaskId() { return parentTaskId; }
     @Nullable public UUID getInterfaceTaskId() { return interfaceTaskId; }
     @Nullable public BlockPos getInterfacePos() { return interfacePos; }
-    @Nullable public UUID getCraftTaskId() { return craftTaskId; }
-    public boolean isCraftReturn() { return craftReturn; }
     /**
      * Retourne l'ID racine du groupe de taches: parentTaskId si c'est une subtask, sinon taskId.
      * Utilise pour retrouver la request associee meme pour les subtasks split.
@@ -261,7 +221,6 @@ public class DeliveryTask {
      */
     public DeliveryTask splitRemaining(int beeCapacity) {
         if (interfaceTaskId != null) return null;
-        if (craftTaskId != null) return null;
         if (count <= beeCapacity) return null;
 
         int remaining = count - beeCapacity;
@@ -288,12 +247,6 @@ public class DeliveryTask {
         }
         if (interfacePos != null) {
             tag.putLong("InterfacePos", interfacePos.asLong());
-        }
-        if (craftTaskId != null) {
-            tag.putUUID("CraftTaskId", craftTaskId);
-        }
-        if (craftReturn) {
-            tag.putBoolean("CraftReturn", true);
         }
         tag.put("Template", template.saveOptional(registries));
         tag.putInt("Count", count);
@@ -360,10 +313,6 @@ public class DeliveryTask {
         BlockPos interfacePos = tag.contains("InterfacePos")
             ? BlockPos.of(tag.getLong("InterfacePos")) : null;
 
-        UUID craftTaskId = tag.contains("CraftTaskId")
-            ? tag.getUUID("CraftTaskId") : null;
-        boolean craftReturn = tag.getBoolean("CraftReturn");
-
         List<UUID> dependencies = new ArrayList<>();
         if (tag.contains("Dependencies")) {
             ListTag depTag = tag.getList("Dependencies", Tag.TAG_COMPOUND);
@@ -373,7 +322,6 @@ public class DeliveryTask {
         }
 
         return new DeliveryTask(id, parentId, template, count, source, dest, requesterPos,
-            state, priority, dependencies, origin, preloaded, interfaceTaskId, interfacePos,
-            craftTaskId, craftReturn);
+            state, priority, dependencies, origin, preloaded, interfaceTaskId, interfacePos);
     }
 }

@@ -13,7 +13,6 @@
  * | StorageHelper                 | Verification coffres | isStorageContainer             |
  * | StorageNetworkRegistry        | Registre central     | Propriete exclusive            |
  * | StorageControllerBlockEntity  | Controller reseau    | Acces registre                 |
- * | CrafterBlockEntity            | Crafter reseau       | Link/unlink controller         |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -23,7 +22,6 @@
  */
 package com.chapeau.beemancer.common.block.storage;
 
-import com.chapeau.beemancer.common.blockentity.storage.CrafterBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.INetworkNode;
 import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
@@ -91,12 +89,6 @@ public class StorageEvents {
         // Storage Hive: toggle link/unlink (controller edit mode only)
         if (be instanceof StorageHiveBlockEntity hive) {
             handleHiveToggle(player, level, node, hive, clickedPos, event);
-            return;
-        }
-
-        // Crafter: toggle link/unlink (controller edit mode only, max 1)
-        if (be instanceof CrafterBlockEntity crafter) {
-            handleCrafterToggle(player, level, node, crafter, clickedPos, event);
             return;
         }
 
@@ -241,63 +233,6 @@ public class StorageEvents {
             controller.linkHive(clickedPos);
             player.displayClientMessage(
                     Component.translatable("message.beemancer.storage_hive.linked"),
-                    true);
-            if (level instanceof ServerLevel serverLevel) {
-                ParticleHelper.burst(serverLevel, clickedPos.getCenter(), ParticleHelper.EffectType.SUCCESS, 8);
-                level.playSound(null, clickedPos, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0f, 1.2f);
-            }
-        }
-
-        controller.setChanged();
-        controller.syncNodeToClient();
-        event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.SUCCESS);
-    }
-
-    /**
-     * Toggle un Crafter: lien direct au controller uniquement (pas relay).
-     * Max 1 crafter par controller.
-     */
-    private static void handleCrafterToggle(Player player, Level level, INetworkNode node,
-                                             CrafterBlockEntity crafter, BlockPos clickedPos,
-                                             PlayerInteractEvent.RightClickBlock event) {
-        // Les crafters ne peuvent etre lies qu'en mode edition du controller
-        if (!(node instanceof StorageControllerBlockEntity controller)) {
-            player.displayClientMessage(
-                    Component.translatable("message.beemancer.crafter.controller_only"),
-                    true);
-            event.setCanceled(true);
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            return;
-        }
-
-        if (crafter.getControllerPos() != null && crafter.getControllerPos().equals(controller.getBlockPos())) {
-            // Deja lie a ce controller: unlink
-            controller.unlinkCrafter();
-            crafter.unlinkController();
-            player.displayClientMessage(
-                    Component.translatable("message.beemancer.crafter.unlinked"),
-                    true);
-            if (level instanceof ServerLevel serverLevel) {
-                ParticleHelper.burst(serverLevel, clickedPos.getCenter(), ParticleHelper.EffectType.FAILURE, 8);
-                level.playSound(null, clickedPos, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0f, 0.8f);
-            }
-        } else {
-            // Pas lie: essayer de lier
-            if (controller.getCrafterPos() != null) {
-                // Controller a deja un crafter lie
-                player.displayClientMessage(
-                        Component.translatable("message.beemancer.crafter.already_linked"),
-                        true);
-                event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                return;
-            }
-
-            controller.linkCrafter(clickedPos);
-            crafter.linkToController(controller.getBlockPos());
-            player.displayClientMessage(
-                    Component.translatable("message.beemancer.crafter.linked"),
                     true);
             if (level instanceof ServerLevel serverLevel) {
                 ParticleHelper.burst(serverLevel, clickedPos.getCenter(), ParticleHelper.EffectType.SUCCESS, 8);

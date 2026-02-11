@@ -12,7 +12,6 @@
  * | INetworkNode                  | Interface reseau     | Recherche controller           |
  * | InterfaceFilter               | Filtre individuel    | Systeme de filtres par ligne   |
  * | InterfaceTask                 | Tache unitaire       | Gestion tasks NEEDED/LOCKED/DEL  |
- * | PartCraftingPaperData         | Donnees Part Paper   | Craft mode: items a import/export|
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -24,7 +23,6 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.InterfaceTask;
-import com.chapeau.beemancer.common.data.PartCraftingPaperData;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.common.menu.storage.NetworkInterfaceMenu;
 import net.minecraft.core.BlockPos;
@@ -76,7 +74,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     protected final List<InterfaceTask> tasks = new ArrayList<>();
     protected final Set<Integer> globalSelectedSlots = new HashSet<>();
     protected boolean active = false;
-    protected boolean craftMode = false;
     protected boolean hasAdjacentGui = false;
     protected int scanTimer = 0;
     private int guiCheckTimer = 0;
@@ -271,51 +268,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         if (wasActive && !active) {
             cancelAllTasks();
         }
-    }
-
-    // === Craft Mode ===
-
-    public boolean isCraftMode() {
-        return craftMode;
-    }
-
-    /**
-     * Bascule le mode craft. En mode craft, les filtres normaux sont desactives
-     * et l'interface utilise un Part Crafting Paper comme definition d'items.
-     * Le Part Paper est place dans le premier slot de filtre 0 (mode ITEM, slot 0).
-     *
-     * En entrant en craft mode: assure qu'au moins un filtre existe (pour le ghost slot).
-     * En sortant du craft mode: annule toutes les tasks en cours.
-     */
-    public void setCraftMode(boolean craftMode) {
-        boolean wasCraft = this.craftMode;
-        this.craftMode = craftMode;
-
-        // En entrant en craft mode, assurer qu'un filtre existe pour accueillir le Part Paper
-        if (craftMode && filters.isEmpty()) {
-            filters.add(new InterfaceFilter());
-        }
-
-        setChanged();
-        syncToClient();
-
-        if (wasCraft && !craftMode) {
-            cancelAllTasks();
-        }
-    }
-
-    /**
-     * Lit le Part Crafting Paper depuis le premier slot du premier filtre.
-     * En craft mode, seul le slot 0 du filtre 0 est utilise pour le Part Paper.
-     */
-    @Nullable
-    public PartCraftingPaperData getCraftPaperData() {
-        if (!craftMode) return null;
-        if (filters.isEmpty()) return null;
-        ItemStack paperStack = filters.get(0).getItem(0);
-        if (paperStack.isEmpty()) return null;
-        if (level == null) return null;
-        return PartCraftingPaperData.readFromStack(paperStack, level.registryAccess());
     }
 
     // === MenuProvider ===
@@ -683,7 +635,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             }
 
             tag.putBoolean("Active", active);
-            tag.putBoolean("CraftMode", craftMode);
             tag.putBoolean("HasAdjacentGui", hasAdjacentGui);
 
             // InterfaceTasks
@@ -729,7 +680,6 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
         }
 
         active = tag.getBoolean("Active");
-        craftMode = tag.getBoolean("CraftMode");
         hasAdjacentGui = tag.getBoolean("HasAdjacentGui");
 
         // InterfaceTasks

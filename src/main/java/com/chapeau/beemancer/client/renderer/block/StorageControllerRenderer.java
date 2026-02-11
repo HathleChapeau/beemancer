@@ -223,13 +223,6 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
             }
         }
 
-        // Crafter link (direct, not via registry)
-        BlockPos crafterPos = blockEntity.getCrafterPos();
-        if (crafterPos != null) {
-            renderBlockLink(lineBuffer, matrix, controllerPos, crafterPos,
-                    0.4f, 0.9f, 0.4f, 1.0f, 0.8f);
-        }
-
         poseStack.popPose();
     }
 

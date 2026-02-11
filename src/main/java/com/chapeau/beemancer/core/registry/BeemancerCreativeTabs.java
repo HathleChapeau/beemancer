@@ -157,9 +157,6 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.STORAGE_HIVE.get());
         output.accept(BeemancerItems.STORAGE_HIVE_TIER2.get());
         output.accept(BeemancerItems.STORAGE_HIVE_TIER3.get());
-        output.accept(BeemancerItems.CRAFTER.get());
-        output.accept(BeemancerItems.CRAFTING_PAPER.get());
-        output.accept(BeemancerItems.PART_CRAFTING_PAPER.get());
     }
 
     private static void addHoneyAltarBlocks(CreativeModeTab.Output output) {

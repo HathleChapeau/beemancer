@@ -44,7 +44,6 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * - 3: SET_FILTER_TEXT — change le texte d'un filtre (slot = filterIndex, textValue = texte)
  * - 4: SET_FILTER_QUANTITY — change la quantite d'un filtre (slot = filterIndex, textValue = qty string)
  * - 8: TOGGLE_ACTIVE — bascule ON/OFF
- * - 9: TOGGLE_CRAFT_MODE — bascule le mode craft (Part Crafting Paper comme filtre)
  */
 public record InterfaceActionPacket(int containerId, int action, int slot, String textValue)
         implements CustomPacketPayload {
@@ -58,7 +57,6 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
     public static final int ACTION_SET_GLOBAL_SELECTED_SLOTS = 6;
     public static final int ACTION_OPEN_ADJACENT_GUI = 7;
     public static final int ACTION_TOGGLE_ACTIVE = 8;
-    public static final int ACTION_TOGGLE_CRAFT_MODE = 9;
 
     public static final Type<InterfaceActionPacket> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "interface_action"));
@@ -193,10 +191,6 @@ public record InterfaceActionPacket(int containerId, int action, int slot, Strin
                 }
                 case ACTION_TOGGLE_ACTIVE -> {
                     be.setActive(!be.isActive());
-                }
-                case ACTION_TOGGLE_CRAFT_MODE -> {
-                    be.setCraftMode(!be.isCraftMode());
-                    menu.updateFilterSlots();
                 }
             }
         });

@@ -143,9 +143,7 @@ public class DeliveryBeeSpawner {
             ControllerStats.getSearchSpeedMultiplier(parent.getEssenceSlots()),
             task.getTaskId(),
             task.getInterfaceTaskId(),
-            task.getInterfacePos(),
-            task.getCraftTaskId(),
-            task.isCraftReturn()
+            task.getInterfacePos()
         );
 
         List<BlockPos> pathToSource = List.of();

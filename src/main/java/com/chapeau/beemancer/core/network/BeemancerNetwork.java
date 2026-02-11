@@ -10,9 +10,6 @@ import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.core.network.packets.CodexFirstOpenPacket;
 import com.chapeau.beemancer.core.network.packets.CodexSyncPacket;
 import com.chapeau.beemancer.core.network.packets.CodexUnlockPacket;
-import com.chapeau.beemancer.core.network.packets.CrafterGhostSlotPacket;
-import com.chapeau.beemancer.core.network.packets.CrafterInscribePacket;
-import com.chapeau.beemancer.core.network.packets.CrafterModeTogglePacket;
 import com.chapeau.beemancer.core.network.packets.QuestSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageRequestPacket;
@@ -67,24 +64,6 @@ public class BeemancerNetwork {
                 HoverbikeVariantPacket.TYPE,
                 HoverbikeVariantPacket.STREAM_CODEC,
                 HoverbikeVariantPacket::handle
-        );
-
-        registrar.playToServer(
-                CrafterGhostSlotPacket.TYPE,
-                CrafterGhostSlotPacket.STREAM_CODEC,
-                CrafterGhostSlotPacket::handle
-        );
-
-        registrar.playToServer(
-                CrafterInscribePacket.TYPE,
-                CrafterInscribePacket.STREAM_CODEC,
-                CrafterInscribePacket::handle
-        );
-
-        registrar.playToServer(
-                CrafterModeTogglePacket.TYPE,
-                CrafterModeTogglePacket.STREAM_CODEC,
-                CrafterModeTogglePacket::handle
         );
 
         // Server to Client packets
