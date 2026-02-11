@@ -1,0 +1,273 @@
+================================================================================
+PROMPT DE REPRISE — SESSION BRAINSTORMING STORAGE SYSTEM
+================================================================================
+Date de pause: 2026-02-11
+Document en cours: /home/adri/beemancer/beemancer-linux/storage_brainstorm.txt
+================================================================================
+
+INSTRUCTIONS POUR REPRENDRE:
+Copier-coller ce prompt dans une nouvelle session Claude Code.
+
+
+
+fais toi une équipe applied energestics expert, refine storage expert, create expert et un expert de l'achitecture de beemancer.
+
+================================================================================
+DEBUT DU PROMPT
+================================================================================
+
+fais toi une equipe applied energestics expert, refine storage expert, create
+expert et un expert de l'achitecture de beemancer.
+
+On est en train de creer un document de brainstorming pour le storage system
+de Beemancer. Le document est deja partiellement ecrit dans:
+  /home/adri/beemancer/beemancer-linux/storage_brainstorm.txt
+
+LIS CE FICHIER EN ENTIER avant de commencer. Il contient le travail deja fait.
+
+== ETAT D'AVANCEMENT ==
+
+Le brainstorming est organise en 5 groupes de features. Voici l'etat:
+
+GROUPE 1 — Reseau et Topologie: [COMPLET - dans le document]
+  Features: Storage Controller, Storage Relay, Network Validation, Storage Chests
+  19 propositions (A a S), 5 quick wins P0, 1 unanimite 3/3 (IItemHandler)
+  Synthese complete avec convergences/divergences/faisabilite.
+
+GROUPE 2 — Items et Stockage: [COMPLET - dans le document]
+  Features: Item Aggregation, Delta Sync, Storage Terminal
+  24 propositions (T a AQ), 5 bugs confirmes dont 1 critique (setRemoved)
+  4 unanimites 3/3: cache incrementiel, IItemHandler, setRemoved, sync trop lent
+  Divergence majeure sync: AE2 (delta rapide) vs RS (event-driven) vs Create (stateless)
+  Synthese complete.
+
+GROUPE 3 — Transport et Livraison: [PROPOSITIONS RECUES, SYNTHESE A FAIRE]
+  Features: Delivery System (608L), Delivery Bee Spawner (297L),
+            Request Manager (481L), Delivery Task (328L)
+
+  Les 3 experts ont envoye leurs propositions. Voici le resume:
+
+  === AE2 EXPERT — GROUPE 3 (16 propositions) ===
+
+  3.1 Delivery System:
+  - 3.1A Extraire HoneyEnergyManager
+  - 3.1B PriorityQueue au lieu de LinkedList+sort [Perf]
+  - 3.1C Parallelisme par hive (max bees = hives connectees)
+  - 3.1D Sleep mode (intervalle lent quand queue vide)
+  - 3.1E completedTaskIds eviction [BUG] FIFO aveugle evince des IDs references
+  - 3.1F ASSIGNED sauvegarde comme PENDING [BUG CRITIQUE ITEM DUPE] items preloaded
+    en vol perdus au reload, re-extraits au respawn. Ref: AE2 CraftingCpuLogic NBT
+  - 3.1G Cancel en vol [BUG] items deja extraits quand tache annulee FLYING
+
+  3.2 Bee Spawner:
+  - 3.2A Map<UUID,Bee> au lieu d'AABB [Perf+++] O(1) vs O(N)
+  - 3.2B TOCTOU validate-spawn: re-verifier si spawn echoue, remettre items
+    Ref: AE2 SIMULATE/MODULATE
+  - 3.2C Spawn position au-dessus (y+2) au lieu du centre
+
+  3.3 Request Manager:
+  - 3.3A Decomposition ImportRequestProcessor + ExportRequestProcessor
+  - 3.3B Debloquer IMPORT on deposit [UX] notifier BLOCKED immediatement
+    Ref: AE2 IStorageMonitorable watchers
+  - 3.3D Loop prevention Set<BlockPos> visited sur rootTaskId
+  - 3.3E Retry infini [BUG] onTaskFailed remet PENDING sans limite, max 3-5 + backoff
+    Ref: AE2 ICraftingSubmitResult error codes
+
+  3.4 Delivery Task:
+  - 3.4B On-demand splitting splitter au fur et a mesure
+  - 3.4C Timeout FLYING [BUG] pas de timeout = bee zombie, 600 ticks max
+
+  === RS EXPERT — GROUPE 3 (10 propositions) ===
+
+  BUGS:
+  1. [P0 BUG] consumeHoney() wrong chest count — meme bug que terminal: utilise
+     getChestManager().getRegisteredChestCount() au lieu de
+     getNetworkRegistry().getChestCount()
+  2. [P0 BUG] Request/task duplication au reload — RequestManager save ASSIGNED
+     comme PENDING, DeliveryManager save FLYING comme QUEUED. Au reload = doublons
+  3. [P1 BUG] completedTaskIds eviction unsafe — Eviction a 100 entrees peut
+     supprimer des IDs dont d'autres tasks dependent encore
+  4. [P1 BUG] Items en transit perdus au reload — Bees FLYING tuees au reload
+     mais items carried pas restitues
+
+  PERFORMANCE:
+  5. [P1 PERF] Entity scanning O(E) -> Map registry O(1) findBeeForTask() scanne
+     TOUTES les entites dans 30 blocs. Map<UUID taskId, WeakReference<Bee>>
+  6. [P1 PERF] LinkedList+sort -> PriorityQueue O(log N) insert
+  7. [P2 PERF] Pending request queue separee — processRequests() itere ALL requests
+
+  ARCHITECTURE:
+  8. [P2 REFACT] Builder pattern pour DeliveryTask — 6 constructeurs telescopiques
+  9. [P2 REFACT] cancelDependentTasks() iteratif — Recursion sans limite -> StackOverflow
+  10. [P3 REFACT] Deferred recheckBlockedRequests
+
+  === CREATE EXPERT — GROUPE 3 (11 propositions) ===
+
+  3.1 Delivery System:
+  - C24 Simplifier queue: supprimer dependency tracking, PriorityQueue.
+    Ref: LogisticsManager.broadcastPackageRequest() stateless
+  - C25 Decomposer 608L en 4+ classes.
+    Ref: PackagerBlockEntity delegation pattern
+  - C26 Pattern isTooBusyFor backpressure cap par type de requete.
+    Ref: PackagerBlockEntity.isTooBusyFor()
+
+  3.2 Bee Spawner:
+  - C27 LerpedFloat pour animation vol fluide.
+    Ref: FrogportBlockEntity, LerpedFloat.linear().chase()
+  - C28 Valider targets via capability IItemHandler.
+    Ref: CapManipulationBehaviourBase.findNewCapability()
+  - C29 Extraction deux phases: simulate d'abord puis extract.
+    Ref: LogisticsManager dry/wet
+
+  3.3 Request Manager:
+  - C30 RequestPromiseQueue event-driven remplace polling 60 ticks BLOCKED.
+    Ref: RequestPromiseQueue.itemEnteredSystem()
+  - C31 Decomposer 481L en 4 classes.
+    Ref: LogisticsManager + RequestPromiseQueue
+  - C32 Deduplication InventoryIdentifier (2 relais meme coffre).
+    Ref: LogisticsManager.findPackagersForRequest()
+
+  3.4 Delivery Task:
+  - C33 DataComponents + Codec au lieu de NBT manuel (12+ champs).
+    Ref: AllDataComponents.java
+  - C34 Simplifier FSM preloaded: 3 phases au lieu de 6.
+    Ref: FrogportBlockEntity 2 etats
+
+  BUGS Create: Perte donnees reload, deadlock completedTaskIds, duplication items
+  ASSIGNED->PENDING, recherche entite O(n)
+
+  === CONVERGENCES GROUPE 3 ===
+  - 3/3: PriorityQueue au lieu de LinkedList+sort
+  - 3/3: Map<UUID,Bee> au lieu de AABB scan
+  - 3/3: Bug completedTaskIds eviction unsafe
+  - 3/3: Bug item loss/dupe au reload (ASSIGNED->PENDING + bees tuees)
+  - AE2+RS: Retry infini sans limite
+  - AE2+Create: Extraction simulate/validate avant spawn (TOCTOU)
+  - AE2+RS+Create: Decomposition du code (608L et 481L)
+
+GROUPE 4 — Automation et Interfaces: [PAS COMMENCE]
+  Features a analyser:
+  - Import/Export Interfaces (NetworkInterfaceBlockEntity ~738L,
+    ImportInterfaceBlockEntity ~237L, ExportInterfaceBlockEntity ~150L)
+  - InterfaceFilter (mode ITEM/TEXT, slots, quantite, selectedSlots)
+  - InterfaceTask lifecycle (NEEDED -> LOCKED -> DELIVERED)
+  - Crafter System (CrafterBlockEntity, CraftingPaperItem, PartCraftingPaperItem,
+    CraftManager resolution recursive max profondeur 8, detection cycles)
+
+GROUPE 5 — Energie et Progression: [PAS COMMENCE]
+  Features a analyser:
+  - Honey Energy System (consommation depuis HoneyReservoirs, formule:
+    base 20 mB/s + coffres*10 + essenceCost * hiveMultiplier * (1-efficiency%))
+  - Essence System (5 types: SPEED, FORAGING, TOLERANCE, DROP, INSOMNIA;
+    4 tiers: LESSER +25%, NORMAL +50%, GREATER +75%, PERFECT +100%)
+  - Storage Hives (3 tiers: T1 +1bee/x1.5, T2 +2bees/x2.0, T3 +3bees/x2.5;
+    max 4 hives, +1 essence slot par hive)
+
+== CE QU'IL RESTE A FAIRE ==
+
+1. L'architecte doit synthetiser le Groupe 3 (les propositions sont ci-dessus)
+   - Moderer les propositions, verifier la faisabilite dans le code
+   - Identifier convergences/divergences
+   - Creer la matrice de priorite Groupe 3
+   -> Mettre a jour storage_brainstorm.txt section 3
+
+2. Lancer le Groupe 4 (Automation et Interfaces)
+   - L'architecte presente factuellement les features aux experts
+   - Les experts proposent ameliorations/fixes/optimisations
+   - L'architecte modere, challenge, demande des sources
+   - Compiler la synthese
+   -> Mettre a jour storage_brainstorm.txt section 4
+
+3. Lancer le Groupe 5 (Energie et Progression)
+   - Meme processus
+   -> Mettre a jour storage_brainstorm.txt section 5
+
+4. Mettre a jour la matrice de priorite globale (section 6) avec tous les groupes
+
+== ROLES DES AGENTS ==
+
+- beemancer-architect: Moderateur. Presente les features FACTUELLEMENT (pas de
+  jugement). Repond aux questions techniques sur le code. Challenge les propositions.
+  S'assure que les experts sourcent leurs affirmations. Relance des recherches
+  internet si necessaire. NE PROPOSE PAS d'ameliorations lui-meme.
+
+- ae2-expert: Expert Applied Energistics 2. Propose des ameliorations/fixes/optim
+  en comparant avec AE2. Sources obligatoires.
+
+- rs-expert: Expert Refined Storage 2. Idem en comparant avec RS2.
+
+- create-expert: Expert Create mod. Propose des patterns Create applicables
+  (SmartBlockEntity, Behaviours, VersionedInventoryWrapper, etc.)
+
+- team-lead (toi): Coordonne, relaie les propositions si l'architecte perd son
+  contexte (probleme frequent de compaction), met a jour le document.
+
+== REGLES IMPORTANTES ==
+
+1. L'architecte perd souvent ses messages a cause de la compaction de contexte.
+   Solution: les experts envoient AUSSI leurs propositions au team-lead en backup.
+   Le team-lead relaie si necessaire.
+
+2. Chaque proposition doit avoir: quoi, pourquoi, comment, reference mod, priorite.
+
+3. Les experts doivent faire des recherches internet pour sourcer leurs propositions.
+
+4. Le document storage_brainstorm.txt est mis a jour incrementalement apres chaque
+   groupe (pas a la fin).
+
+5. La portee reseau est de 15 blocs (MAX_RANGE = 15), pas 24.
+
+6. Insight important (AE2): Separer la topologie reseau (auto-connect pour
+   aggregation) du routage de livraison (waypoints manuels pour les bees).
+
+== RECHERCHES DEJA EFFECTUEES ==
+
+Les experts ont deja fait des recherches approfondies au debut de la session.
+Voici les sources cles:
+
+AE2:
+- https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+- https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/main/API.md
+- https://guide.appliedenergistics.org/1.20.1/items-blocks-machines/storage_cells
+- https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/import-export-storage
+- https://guide.appliedenergistics.org/1.20.2/ae2-mechanics/subnetworks
+
+RS:
+- https://deepwiki.com/refinedmods/refinedstorage2
+- https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+- https://deepwiki.com/refinedmods/refinedstorage2/3.2-neoforge-platform
+- https://github.com/refinedmods/refinedstorage2
+- https://refinedmods.com/refined-storage/
+
+Create:
+- Code source de Create mc1.21.1/dev depuis https://github.com/Creators-of-Create/Create
+- Classes analysees: SmartBlockEntity, SyncedBlockEntity, BlockEntityBehaviour,
+  ItemVaultBlockEntity, DepotBehaviour, StockTickerBlockEntity, LogisticsManager,
+  FunnelBlockEntity, VersionedInventoryWrapper, BasinBlockEntity,
+  SequencedAssemblyRecipe, FilterItem, AllDataComponents
+
+== CATALOGUE DES FEATURES (par l'architecte) ==
+
+Le catalogue complet est dans Structure.txt et dans les messages precedents.
+Les features du storage system sont:
+
+1. Multibloc Controller 3x3x3 (StorageControllerBlockEntity ~714L)
+2. Enregistrement de coffres par flood fill BFS (StorageChestManager ~169L)
+3. Storage Relay (StorageRelayBlockEntity ~126L)
+4. Terminal 3 onglets (StorageTerminalBlockEntity ~693L)
+5. Import/Export Interfaces (NetworkInterfaceBlockEntity ~738L)
+6. Delivery Bee System FSM 6 phases (DeliveryBeeEntity, DeliveryPhaseGoal)
+7. Essence System (5 types, 4 tiers)
+8. Storage Hives 3 tiers
+9. Crafter System (CrafterBlockEntity, CraftingPaperItem)
+10. Item Aggregation (StorageItemAggregator ~523L)
+11. Request Manager (RequestManager ~481L)
+12. Delivery Manager (StorageDeliveryManager ~608L)
+13. Delta Sync (dans StorageItemAggregator)
+14. Network Validation (dans StorageControllerBlockEntity)
+15. IDeliveryEndpoint (interface polymorphe)
+16. AbstractNetworkNodeBlockEntity (base commune controller/relay)
+
+================================================================================
+FIN DU PROMPT
+================================================================================

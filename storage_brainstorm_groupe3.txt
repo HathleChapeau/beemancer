@@ -1,0 +1,486 @@
+================================================================================
+3. GROUPE 3 — TRANSPORT ET LIVRAISON
+================================================================================
+
+FEATURES ANALYSEES:
+  3.1 Delivery System (StorageDeliveryManager ~608L)
+  3.2 Delivery Bee Spawner (DeliveryBeeSpawner ~297L)
+  3.3 Request Manager (RequestManager ~481L)
+  3.4 Delivery Task (DeliveryTask ~328L)
+
+Convergences Groupe 3:
+  UNANIMITE 3/3: PriorityQueue au lieu de LinkedList+sort
+  UNANIMITE 3/3: Map<UUID,Bee> au lieu de AABB scan O(N)
+  UNANIMITE 3/3: Bug completedTaskIds eviction unsafe
+  UNANIMITE 3/3: Bug item loss/dupe au reload (ASSIGNED->PENDING + bees tuees)
+  AE2+RS: Retry infini sans limite
+  AE2+CREATE: Extraction simulate/validate avant spawn (TOCTOU)
+  AE2+RS+CREATE: Decomposition du code (608L et 481L)
+
+Divergence notable:
+  CREATE propose de simplifier radicalement (supprimer dependency tracking, FSM
+  3 phases au lieu de 6). AE2 et RS veulent garder la complexite actuelle mais
+  la fiabiliser. L'architecte note que le dependency tracking est utilise par
+  le Crafter System (resolution recursive) — le supprimer casserait le craft
+  automatique. La simplification FSM est debatable (les 6 phases gere des cas
+  reels: preload, waypoints intermediaires, retry).
+
+--------------------------------------------------------------------------------
+3.1 DELIVERY SYSTEM (StorageDeliveryManager ~608L)
+--------------------------------------------------------------------------------
+Etat actuel: Gestion de la queue de livraison, spawn de bees, honey consumption,
+dependency tracking, splitting de taches. 608 lignes, fichier le plus complexe
+du storage system. Delegue au DeliveryBeeSpawner pour le spawn effectif.
+Fichiers: StorageDeliveryManager.java, DeliveryBeeEntity.java, DeliveryPhaseGoal.java
+
+--- BUGS ---
+
+[AR] consumeHoney() mauvais chest count [BUG]
+     Quoi: StorageDeliveryManager.consumeHoney() utilise
+           getChestManager().getRegisteredChestCount() au lieu de
+           getNetworkRegistry().getChestCount(). Meme bug que [AI] dans le terminal.
+     Pourquoi: La formule honey sous-estime le nombre de coffres du reseau
+               (ignore ceux enregistres via relays). Le joueur paie moins que prevu.
+     Comment: Remplacer par getNetworkRegistry().getChestCount(). 1 ligne.
+     Reference: [RS] RS-expert a decouvert le pattern dans le terminal (AI).
+     Priorite: P0 BUGFIX
+     Effort: 1 ligne | Risque: Aucun
+     Experts: RS
+
+[AS] ASSIGNED sauvegarde comme PENDING = item dupe au reload [BUG CRITIQUE]
+     Quoi: Quand le serveur sauvegarde, les DeliveryTask en etat ASSIGNED (items
+           deja extraits du coffre source, en attente de spawn bee) sont serialisees
+           comme PENDING. Au reload :
+           1. La tache redevient PENDING → les items sont re-extraits du coffre
+           2. Les items deja donnes a la bee en vol sont perdus (entite detruite)
+           = Duplication des items extraits + perte des items en vol.
+     Pourquoi: Le save/load ne preserve pas l'etat ASSIGNED ni les items preloaded.
+               C'est un bug de data integrity critique.
+     Comment: Sauvegarder l'etat exact de chaque tache (ASSIGNED, FLYING, etc.)
+              et les items preloaded dans le NBT. Au reload:
+              - ASSIGNED sans bee → remettre items dans le coffre source
+              - FLYING → remettre items dans le coffre source (bee perdue)
+              Pattern AE2: CraftingCpuLogic.writeToNBT() sauvegarde l'etat exact.
+     Reference: [AE2] AE2 CraftingCpuLogic persiste l'etat exact des crafts en cours.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2
+                [RS] RS2 persiste l'etat exact des operations en cours.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2
+                [CREATE] Create LogisticsManager est stateless (pas de persistence
+                des operations en cours — les colis en transit sont perdus au reload
+                mais les items source ne sont pas dupliqu's).
+     Priorite: P0 BUGFIX CRITIQUE (data corruption)
+     Effort: Moyen (refactoring serialization) | Risque: Moyen
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+     Note: Ce bug est le plus critique du storage system. Il peut causer
+           de la duplication d'items en jeu, ce qui casse l'economie.
+
+[AT] completedTaskIds eviction unsafe [BUG]
+     Quoi: La liste completedTaskIds utilise une eviction FIFO a 100 entrees.
+           Quand la liste depasse 100, les plus anciens IDs sont supprimes.
+           Si une autre tache reference encore un ID evince (via dependency),
+           elle ne detectera jamais que sa dependance est terminee.
+     Pourquoi: La dependance reste en etat BLOCKED indefiniment, la tache n'est
+               jamais executee. Les items restent bloques dans le coffre source.
+     Comment: Au lieu de FIFO aveugle, compter les references. Evincer
+              uniquement les IDs qui n'ont plus de dependants actifs.
+              Alternative: TTL-based (evincer apres 600 ticks = 30 sec).
+     Reference: [AE2] AE2 CraftingCPU ne fait pas d'eviction — les crafts termines
+                sont nettoyes quand TOUS les dependants sont resolus.
+                [RS] RS2 n'utilise pas d'eviction FIFO aveugle.
+                [CREATE] Create LogisticsManager n'a pas de dependency tracking.
+     Priorite: P1 BUGFIX
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[AU] Cancel en vol sans restitution items [BUG]
+     Quoi: Quand une tache est annulee alors que la bee est en vol (etat FLYING),
+           les items portes par la bee ne sont pas restitues au coffre source.
+     Pourquoi: La bee est killed mais ses items sont perdus dans le void.
+     Comment: Dans cancelTask(), si etat == FLYING :
+              1. Recuperer les items de la bee (getBeeCarriedItem())
+              2. Tenter de les reinjecter dans le coffre source
+              3. Si echec, drop les items au sol a la position de la bee
+     Reference: [AE2] AE2 annule un craft en restituant les materiaux au reseau.
+     Priorite: P1 BUGFIX
+     Effort: Moyen | Risque: Faible
+     Experts: AE2
+
+[AV] Retry infini sans limite [BUG]
+     Quoi: Quand onTaskFailed() est appele, la tache est remise en PENDING sans
+           aucune limite de retry. Une tache qui echoue systematiquement (coffre
+           plein, chemin bloque) boucle indefiniment.
+     Pourquoi: Gaspillage de bees, honey, et CPU. Le joueur ne recoit aucun
+               feedback que quelque chose est bloque.
+     Comment: Ajouter un compteur retryCount dans DeliveryTask. Max 3-5 retries
+              avec backoff exponentiel (delai croissant entre retries).
+              Apres max retries: marquer FAILED, notifier le joueur via particules
+              ou message dans le terminal.
+     Reference: [AE2] ICraftingSubmitResult retourne des error codes (NO_CPU,
+                INCOMPLETE_PLAN, etc.) avec feedback au joueur.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2
+                [RS] RS2 a des error codes et des limites de retry.
+     Priorite: P1 BUGFIX
+     Effort: Faible | Risque: Aucun
+     Experts: AE2, RS (convergence)
+
+[AW] Timeout FLYING manquant [BUG]
+     Quoi: Une bee en etat FLYING n'a pas de timeout. Si elle est bloquee
+           (pathfinding impossible, chunk unloaded, entite bugee), elle reste
+           en vol indefiniment = "bee zombie".
+     Pourquoi: La tache reste FLYING pour toujours, le slot de bee est occupe,
+               les items sont perdus.
+     Comment: Ajouter un champ flyingStartTick dans DeliveryTask. Si
+              gameTime - flyingStartTick > MAX_FLYING_TICKS (600 = 30 sec),
+              forcer un recall ou un fail avec restitution d'items.
+     Reference: [AE2] AE2 a des timeouts sur les operations reseau.
+     Priorite: P0 BUGFIX (previent perte d'items et bee zombie)
+     Effort: Faible | Risque: Aucun
+     Experts: AE2
+
+--- AMELIORATIONS ---
+
+[AX] PriorityQueue au lieu de LinkedList+sort [UNANIMITE 3/3]
+     Quoi: Remplacer la LinkedList triee par priority dans processQueue() par
+           une PriorityQueue<DeliveryTask> avec Comparator sur priority.
+     Pourquoi: LinkedList+Collections.sort() est O(N log N) a chaque insertion.
+               PriorityQueue.offer() est O(log N). Pour une queue de 50+ taches,
+               la difference est significative.
+     Comment: Changer le type de deliveryQueue. Adapter add/remove/iterate.
+     Reference: [AE2] AE2 utilise des queues triees nativement pour les crafts.
+                [RS] RS2 utilise des queues triees pour les operations.
+                [CREATE] Create LogisticsManager utilise broadcastPackageRequest()
+                avec priorite intrinseque. Ref: LogisticsManager.java
+     Priorite: P1 PERF
+     Effort: Faible | Risque: Faible
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[AY] Extraire HoneyEnergyManager
+     Quoi: Les lignes de gestion honey (consumeHoney, getHoneyLevel, formule
+           de cout) sont melangees dans le DeliveryManager. Extraire en classe.
+     Pourquoi: Responsabilite mixte. Le DeliveryManager gere la queue ET l'energie.
+               Le honey management est reutilisable par d'autres systemes.
+     Comment: Creer HoneyEnergyManager avec consumeHoney(), calculateCost(),
+              getHoneyLevel(). Meme pattern que les managers du controller.
+     Reference: [AE2] AE2 separe IEnergyService du reste de la logique reseau.
+     Priorite: P2 REFACT
+     Effort: Faible | Risque: Faible
+     Experts: AE2
+
+[AZ] Decomposer 608L en 4+ classes
+     Quoi: StorageDeliveryManager a 608L. Decomposer en :
+           - DeliveryQueueManager (~150L) : queue, priorites, processing
+           - DeliveryTaskLifecycle (~100L) : etats, transitions, retry
+           - HoneyEnergyManager (~80L) : consommation honey
+           - DeliveryDependencyTracker (~100L) : dependency tracking
+           StorageDeliveryManager reste ~170L (orchestrateur).
+     Pourquoi: 608L >> 150L max. Responsabilites multiples dans un seul fichier.
+     Comment: Extraction par responsabilite, delegation.
+     Reference: [CREATE] PackagerBlockEntity delegue a des sous-composants.
+                Source: Create PackagerBlockEntity.java
+                [AE2] AE2 separe CraftingCPU de CraftingCpuLogic.
+                [RS] RS2 separe ICraftingManager des implementations.
+     Priorite: P2 REFACT
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, RS, CREATE (convergence)
+
+[BA] Parallelisme par hive (max bees = hives connectees)
+     Quoi: Limiter le nombre de bees en vol au nombre de Storage Hives connectees.
+           Plus de hives = plus de parallelisme de livraison.
+     Pourquoi: Progression gameplay: le joueur construit plus de hives pour
+               augmenter le debit. Actuellement pas de lien direct hives ↔ debit.
+     Comment: maxConcurrentBees = sum(hive.getBonusBees()) pour chaque hive liee.
+              Verifier avant spawn si currentBees < maxConcurrentBees.
+     Reference: [AE2] AE2 limite les crafts par CraftingCPU disponibles.
+                Plus de CPUs = plus de crafts en parallele.
+     Priorite: P3 FEAT (decision gameplay)
+     Effort: Faible | Risque: Faible
+     Experts: AE2
+
+[BB] Sleep mode queue vide
+     Quoi: Quand la queue de livraison est vide, passer en mode "sleep" avec
+           un intervalle de tick plus lent (ex: tous les 40 ticks au lieu de chaque tick).
+     Pourquoi: Economiser des CPU cycles quand le reseau est idle.
+     Comment: if (queue.isEmpty()) { if (gameTick % 40 != 0) return; }
+              Reveiller immediatement quand une nouvelle tache est ajoutee.
+     Reference: [AE2] AE2 TickManagerService sleep/wake model.
+     Priorite: P2 OPTIM
+     Effort: Trivial | Risque: Aucun
+     Experts: AE2
+
+[BC] Pattern isTooBusyFor backpressure
+     Quoi: Ajouter une methode isTooBusyFor(RequestType) qui refuse de nouvelles
+           taches quand le systeme est sature (trop de bees en vol, queue pleine).
+     Pourquoi: Sans backpressure, le systeme accepte des taches indefiniment,
+               creant un backlog qui augmente la latence de livraison.
+     Comment: Verifier queue.size() < MAX_QUEUE_SIZE && activeBees < MAX_BEES
+              avant d'accepter une nouvelle tache.
+     Reference: [CREATE] PackagerBlockEntity.isTooBusyFor() refuse les requetes
+                quand la machine est saturee. Source: Create PackagerBlockEntity.java
+     Priorite: P2 FEAT
+     Effort: Faible | Risque: Aucun
+     Experts: CREATE
+
+--------------------------------------------------------------------------------
+3.2 DELIVERY BEE SPAWNER (DeliveryBeeSpawner ~297L)
+--------------------------------------------------------------------------------
+Etat actuel: Gestion du spawn, recall et redirect des abeilles de livraison.
+Recherche de bee par AABB scan dans un rayon de 30 blocs.
+Fichiers: DeliveryBeeSpawner.java
+
+--- BUGS ---
+
+[BD] Map<UUID,Bee> au lieu de AABB scan [UNANIMITE 3/3]
+     Quoi: findBeeForTask() utilise level.getEntitiesOfClass(DeliveryBeeEntity,
+           AABB(30 blocs)) pour trouver la bee associee a une tache. C'est un
+           scan lineaire O(E) sur TOUTES les entites dans le rayon.
+     Pourquoi: Avec 20 bees en vol + entites vanilla, le scan peut etre couteux.
+               Un Map<UUID, WeakReference<DeliveryBeeEntity>> donne O(1).
+     Comment: Maintenir un registre Map<UUID taskId, WeakRef<Bee>> mis a jour
+              au spawn et au despawn. findBeeForTask() = map.get(taskId).
+     Reference: [AE2] AE2 utilise des registres O(1) pour tout.
+                [RS] RS2 utilise des registres par ID pour les composants reseau.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2
+                [CREATE] Create utilise des registres internes pour les contraptions.
+     Priorite: P1 PERF
+     Effort: Faible | Risque: Faible
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[BE] TOCTOU simulate/extract avant spawn
+     Quoi: La validation des items disponibles et le spawn de la bee ne sont pas
+           atomiques. Entre la verification et le spawn, un autre systeme peut
+           extraire les items (hopper, autre tache, joueur).
+     Pourquoi: Time-Of-Check-Time-Of-Use = items extraits mais plus disponibles,
+               ou items deja pris par un autre acteur.
+     Comment: Pattern "simulate then commit" :
+              1. simulateExtract() : verifier sans modifier
+              2. spawn la bee
+              3. extract() : retirer les items effectivement
+              Si extract echoue apres spawn, recall la bee immediatement.
+     Reference: [AE2] AE2 SIMULATE/MODULATE pattern dans toutes les operations.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2
+                [CREATE] LogisticsManager dry/wet runs.
+                Source: Create LogisticsManager.java
+     Priorite: P1 BUGFIX PREVENTIF
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, CREATE (convergence)
+
+--- AMELIORATIONS ---
+
+[BF] Spawn position au-dessus (y+2) au lieu du centre
+     Quoi: Les bees spawnent au centre du bloc source. Spawner 2 blocs au-dessus
+           pour eviter le clipping avec le coffre et donner un aspect plus naturel.
+     Pourquoi: Esthetique et feedback visuel (la bee emerge de la ruche/coffre).
+     Comment: Ajouter +2 au Y de la position de spawn.
+     Reference: [AE2] AE2-expert.
+     Priorite: P2 UX
+     Effort: 1 ligne | Risque: Aucun
+     Experts: AE2
+
+[BG] LerpedFloat pour animation de vol fluide
+     Quoi: Utiliser un LerpedFloat pour lisser les mouvements des bees de livraison.
+     Pourquoi: Les bees se deplacent en teleportation discrete (tick-based).
+               Un lerp donnerait un mouvement fluide visuellement.
+     Comment: Pattern LerpedFloat.linear().chase(targetValue, speed).
+     Reference: [CREATE] FrogportBlockEntity utilise LerpedFloat pour les
+                animations fluides. Source: Create FrogportBlockEntity.java,
+                LerpedFloat.java
+     Priorite: P3 UX
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+[BH] Valider targets via IItemHandler capability
+     Quoi: Avant de spawner la bee, verifier que la destination a encore la
+           capability IItemHandler (pas juste que le bloc existe).
+     Pourquoi: Un conteneur peut etre remplace par un bloc normal entre la
+               creation de la tache et le spawn. La bee volerait vers un bloc
+               qui ne peut pas recevoir d'items.
+     Comment: level.getCapability(Capabilities.ItemHandler.BLOCK, targetPos, dir).
+     Reference: [CREATE] CapManipulationBehaviourBase.findNewCapability() valide
+                la capability avant chaque operation.
+                Source: Create CapManipulationBehaviourBase.java
+     Priorite: P2 FIX
+     Effort: Faible | Risque: Aucun
+     Experts: CREATE
+     Note: Lie a [P] (IItemHandler detection) du Groupe 1. Implemente ensemble.
+
+--------------------------------------------------------------------------------
+3.3 REQUEST MANAGER (RequestManager ~481L)
+--------------------------------------------------------------------------------
+Etat actuel: Gestion des requetes import/export des terminaux et interfaces.
+Iteration lineaire sur toutes les requetes. Retry infini. 481 lignes.
+Fichiers: RequestManager.java
+
+--- BUGS ---
+
+[BK] Loop prevention manquante
+     Quoi: Pas de detection de boucle quand un import et un export creent
+           un cycle (A exporte vers B, B importe depuis A, etc.).
+     Pourquoi: Boucle infinie de taches de livraison, gaspillage de bees et honey.
+     Comment: Set<BlockPos> visited pour chaque rootTaskId. Si une tache
+              vise un BlockPos deja visite dans la meme chaine, la bloquer.
+     Reference: [AE2] AE2 detecte les cycles dans l'autocrafting recursif.
+     Priorite: P2 BUGFIX
+     Effort: Faible | Risque: Aucun
+     Experts: AE2
+
+[BM] Deduplication quand 2 relais menent au meme coffre
+     Quoi: Si un coffre est accessible via 2 chemins reseau differents (2 relays),
+           il peut apparaitre 2 fois dans l'aggregation, et 2 taches de livraison
+           peuvent cibler le meme coffre simultanement.
+     Pourquoi: Duplication dans l'affichage terminal + conflit de livraison.
+     Comment: Identifier les coffres par BlockPos (unique) au lieu du chemin
+              reseau. Deduplication dans l'aggregation par Set<BlockPos>.
+     Reference: [CREATE] LogisticsManager.findPackagersForRequest() deduplique
+                par InventoryIdentifier. Source: Create LogisticsManager.java
+     Priorite: P2 BUGFIX
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+     Note: L'architecte doit verifier si ce bug existe reellement dans le code
+           actuel (StorageNetworkRegistry.EXCLUSIVE peut deja prevenir ce cas).
+
+--- AMELIORATIONS ---
+
+[BI] Decomposition 481L en 4 classes
+     Quoi: Decomposer RequestManager en :
+           - ImportRequestProcessor (~120L) : logique import
+           - ExportRequestProcessor (~120L) : logique export
+           - RequestQueue (~100L) : queue + iteration + matching
+           RequestManager reste ~140L (orchestrateur).
+     Pourquoi: 481L >> 150L max. Import et Export sont des logiques distinctes.
+     Comment: Extraction par type de requete.
+     Reference: [AE2] AE2 separe IImportStrategy et IExportStrategy.
+                [CREATE] LogisticsManager + RequestPromiseQueue.
+                Source: Create LogisticsManager.java, RequestPromiseQueue.java
+     Priorite: P2 REFACT
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, CREATE (convergence)
+
+[BJ] Debloquer IMPORT on deposit immediatement [UX]
+     Quoi: Quand un joueur depose un item dans le terminal, les import requests
+           correspondantes ne sont pas notifiees immediatement. Elles attendent
+           le prochain cycle de scan (60 ticks BLOCKED).
+     Pourquoi: Latence UX — le joueur depose un item et ne voit rien se passer
+               pendant 3 secondes.
+     Comment: Quand un depot est effectue dans le terminal, appeler
+              requestManager.recheckBlockedImports(depositedItemStack).
+     Reference: [AE2] IStorageMonitorable watchers — notification immediate
+                quand le contenu du reseau change.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2
+     Priorite: P2 UX
+     Effort: Faible | Risque: Aucun
+     Experts: AE2
+
+[BL] RequestPromiseQueue event-driven (alternative au polling)
+     Quoi: Remplacer le polling de BLOCKED requests (toutes les 60 ticks) par
+           un systeme event-driven : notifier quand un item entre dans le reseau.
+     Pourquoi: Elimine le polling, reduit la latence, economise des CPU cycles.
+     Comment: Pattern Observer : quand un item est depose/livre, notifier la
+              RequestQueue qui reveille les BLOCKED requests correspondantes.
+     Reference: [CREATE] RequestPromiseQueue.itemEnteredSystem() reveille les
+                requetes en attente. Source: Create RequestPromiseQueue.java
+                [RS] RS GridWatcher event-driven.
+     Priorite: P3 ARCH (alternative radicale au polling)
+     Effort: Moyen | Risque: Moyen
+     Experts: CREATE, RS (convergence)
+
+[BN] Deferred recheckBlockedRequests
+     Quoi: Quand recheckBlockedRequests() est appele, ne pas traiter immediatement.
+           Mettre un flag et traiter dans le prochain serverTick.
+     Pourquoi: Eviter de modifier l'etat pendant une callback (meme pattern que AJ).
+     Comment: Flag needsRecheck=true, traitement dans serverTick().
+     Reference: [RS] RS-expert, meme pattern que [AJ].
+     Priorite: P2 OPTIM
+     Effort: Trivial | Risque: Aucun
+     Experts: RS
+
+--- OPTIMISATIONS ---
+
+[BO] Pending request queue separee
+     Quoi: processRequests() itere ALL requests (y compris BLOCKED et ACTIVE).
+           Maintenir une queue separee pour les PENDING seulement.
+     Pourquoi: Avec beaucoup de requetes actives, 90% des iterations sont inutiles
+               (elles sautent les requetes non-PENDING).
+     Comment: Separer en pendingQueue, activeSet, blockedSet. Deplacer les
+              requetes entre les collections quand leur etat change.
+     Reference: [RS] RS-expert.
+     Priorite: P2 PERF
+     Effort: Moyen | Risque: Faible
+     Experts: RS
+
+--------------------------------------------------------------------------------
+3.4 DELIVERY TASK (DeliveryTask ~328L)
+--------------------------------------------------------------------------------
+Etat actuel: 328 lignes. 6 constructeurs telescopiques. 12+ champs serialises
+manuellement en NBT. FSM a 6 phases. Dependency tracking.
+Fichiers: DeliveryTask.java
+
+--- AMELIORATIONS ---
+
+[BP] On-demand splitting
+     Quoi: Au lieu de pre-splitter les taches en sous-taches au moment de la
+           creation, splitter au fur et a mesure de l'execution (lazy splitting).
+     Pourquoi: Le pre-splitting cree N taches immediatement meme si le reseau
+               ne peut traiter que 2 en parallele. Gaspillage de memoire et
+               complexite du dependency tracking.
+     Comment: Une tache garde son count total. A chaque cycle, elle extrait
+              min(64, remaining) et spawne une bee. La tache se termine quand
+              remaining == 0.
+     Reference: [AE2] AE2 CraftingCPU decompose les etapes au fur et a mesure.
+     Priorite: P3 OPTIM
+     Effort: Moyen | Risque: Moyen (changement de modele)
+     Experts: AE2
+
+[BQ] DataComponents + Codec au lieu de NBT manuel
+     Quoi: Les 12+ champs de DeliveryTask sont serialises manuellement avec
+           tag.putString/tag.getInt. Utiliser un Codec et DataComponents.
+     Pourquoi: Le NBT manuel est error-prone (typos dans les cles, oublis de
+               champs, pas de validation). Un Codec est type-safe et genere
+               automatiquement la serialisation.
+     Comment: Definir un Codec<DeliveryTask> avec RecordCodecBuilder.
+              Ref: NeoForge 1.21.1 DataComponents system.
+     Reference: [CREATE] AllDataComponents.java utilise des Codecs partout.
+                Source: Create AllDataComponents.java
+     Priorite: P2 REFACT
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+[BR] Simplifier FSM 6 → 3 phases
+     Quoi: Le FSM actuel a 6 phases (IDLE, PICKUP, FLY_TO_WAYPOINT, FLY_TO_TARGET,
+           DELIVER, RETURN). Simplifier a 3 (PICKUP, FLY, DELIVER).
+     Pourquoi: Moins d'etats = moins de bugs, code plus simple.
+     Comment: Fusionner FLY_TO_WAYPOINT + FLY_TO_TARGET en un seul FLY avec
+              une liste de waypoints. Fusionner IDLE + RETURN en un seul etat.
+     Reference: [CREATE] FrogportBlockEntity utilise seulement 2 etats.
+                Source: Create FrogportBlockEntity.java
+     Priorite: P3 REFACT (decision gameplay — les waypoints sont visuellement
+               importants pour le joueur)
+     Effort: Eleve | Risque: Eleve (regression potentielle)
+     Experts: CREATE
+     Note architecte: Les 6 phases grent des cas reels (waypoints intermediaires,
+     preload de l'item avant vol, retour a la hive). Simplifier risque de perdre
+     des fonctionnalites. A evaluer avec prudence.
+
+[BS] Builder pattern pour DeliveryTask
+     Quoi: Les 6 constructeurs telescopiques sont remplacees par un Builder.
+     Pourquoi: 6 constructeurs avec des combinaisons de parametres differentes
+               sont difficiles a lire et a maintenir.
+     Comment: DeliveryTask.builder().from(pos).to(pos).item(stack).priority(p).build()
+     Reference: [RS] RS-expert. Pattern classique Java.
+     Priorite: P2 REFACT
+     Effort: Faible | Risque: Aucun
+     Experts: RS
+
+[BT] cancelDependentTasks() iteratif au lieu de recursif
+     Quoi: cancelDependentTasks() est recursif sans limite de profondeur.
+           Une chaine longue de dependances peut causer un StackOverflow.
+     Pourquoi: Le Crafter System cree des chaines de dependances recursives
+               (max profondeur 8). 8 niveaux ne causent pas de StackOverflow,
+               mais c'est une bombe a retardement si la limite change.
+     Comment: Remplacer la recursion par une boucle iterative avec une
+              Stack/Queue explicite.
+     Reference: [RS] RS-expert. Pattern classique d'elimination de recursion.
+     Priorite: P2 BUGFIX PREVENTIF
+     Effort: Faible | Risque: Aucun
+     Experts: RS
+
+

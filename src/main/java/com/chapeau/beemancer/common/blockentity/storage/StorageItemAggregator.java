@@ -23,13 +23,13 @@ package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.common.block.storage.TaskDisplayData;
 import com.chapeau.beemancer.core.util.ContainerHelper;
+import com.chapeau.beemancer.core.util.StorageHelper;
 import com.chapeau.beemancer.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.beemancer.core.network.packets.StorageTasksSyncPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,6 +60,10 @@ public class StorageItemAggregator {
     private boolean needsSync = false;
     private boolean dirty = false;
     private final Map<UUID, BlockPos> playersViewing = new HashMap<>();
+
+    // Versioned inventory cache: skip rescanning unchanged chests
+    private final Map<BlockPos, Long> chestFingerprints = new HashMap<>();
+    private final Map<BlockPos, Map<ItemStackKey, Integer>> cachedChestCounts = new HashMap<>();
 
     private static final int SYNC_INTERVAL = 40;
 
@@ -101,19 +105,41 @@ public class StorageItemAggregator {
             parent.syncNodeToClient();
         }
         Map<ItemStackKey, Integer> itemCounts = new HashMap<>();
+        Set<BlockPos> activeChests = new LinkedHashSet<>();
         for (BlockPos chestPos : allChests) {
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack stack = container.getItem(i);
+            activeChests.add(chestPos);
+
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler == null) continue;
+
+            long fingerprint = computeFingerprint(handler);
+            Long cached = chestFingerprints.get(chestPos);
+
+            Map<ItemStackKey, Integer> chestCounts;
+            if (cached != null && cached == fingerprint) {
+                chestCounts = cachedChestCounts.get(chestPos);
+            } else {
+                chestCounts = new HashMap<>();
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    ItemStack stack = handler.getStackInSlot(i);
                     if (!stack.isEmpty()) {
                         ItemStackKey key = new ItemStackKey(stack);
-                        itemCounts.merge(key, stack.getCount(), Integer::sum);
+                        chestCounts.merge(key, stack.getCount(), Integer::sum);
                     }
                 }
+                chestFingerprints.put(chestPos, fingerprint);
+                cachedChestCounts.put(chestPos, chestCounts);
+            }
+
+            for (Map.Entry<ItemStackKey, Integer> chestEntry : chestCounts.entrySet()) {
+                itemCounts.merge(chestEntry.getKey(), chestEntry.getValue(), Integer::sum);
             }
         }
+
+        // Nettoyer le cache des coffres retires du reseau
+        chestFingerprints.keySet().retainAll(activeChests);
+        cachedChestCounts.keySet().retainAll(activeChests);
 
         aggregatedItems = new ArrayList<>();
         for (Map.Entry<ItemStackKey, Integer> entry : itemCounts.entrySet()) {
@@ -232,10 +258,10 @@ public class StorageItemAggregator {
         // Priorité 1: Coffre avec le même item exact (stack mergeable)
         for (BlockPos chestPos : chests) {
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack existing = container.getItem(i);
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    ItemStack existing = handler.getStackInSlot(i);
                     if (ItemStack.isSameItemSameComponents(existing, stack) &&
                         existing.getCount() < existing.getMaxStackSize()) {
                         return chestPos;
@@ -247,12 +273,12 @@ public class StorageItemAggregator {
         // Priorité 1b: Coffre avec le même item (mais besoin d'un slot vide)
         for (BlockPos chestPos : chests) {
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
                 boolean hasSameItem = false;
                 boolean hasEmptySlot = false;
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack existing = container.getItem(i);
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    ItemStack existing = handler.getStackInSlot(i);
                     if (existing.isEmpty()) {
                         hasEmptySlot = true;
                     } else if (ItemStack.isSameItemSameComponents(existing, stack)) {
@@ -271,12 +297,12 @@ public class StorageItemAggregator {
         if (!stackTags.isEmpty()) {
             for (BlockPos chestPos : chests) {
                 if (!parent.getLevel().hasChunkAt(chestPos)) continue;
-                BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-                if (be instanceof Container container) {
+                IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+                if (handler != null) {
                     boolean hasSharedTag = false;
                     boolean hasEmptySlot = false;
-                    for (int i = 0; i < container.getContainerSize(); i++) {
-                        ItemStack existing = container.getItem(i);
+                    for (int i = 0; i < handler.getSlots(); i++) {
+                        ItemStack existing = handler.getStackInSlot(i);
                         if (existing.isEmpty()) {
                             hasEmptySlot = true;
                         } else if (!hasSharedTag) {
@@ -296,12 +322,12 @@ public class StorageItemAggregator {
         // Priorité 3: Coffre contenant un item du même mod/namespace
         for (BlockPos chestPos : chests) {
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
                 boolean hasSameNamespace = false;
                 boolean hasEmptySlot = false;
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    ItemStack existing = container.getItem(i);
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    ItemStack existing = handler.getStackInSlot(i);
                     if (existing.isEmpty()) {
                         hasEmptySlot = true;
                     } else if (!hasSameNamespace) {
@@ -319,26 +345,26 @@ public class StorageItemAggregator {
         // Priorité 4: Coffre totalement vide
         for (BlockPos chestPos : chests) {
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
                 boolean allEmpty = true;
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    if (!container.getItem(i).isEmpty()) {
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    if (!handler.getStackInSlot(i).isEmpty()) {
                         allEmpty = false;
                         break;
                     }
                 }
-                if (allEmpty && container.getContainerSize() > 0) return chestPos;
+                if (allEmpty && handler.getSlots() > 0) return chestPos;
             }
         }
 
         // Priorité 5: N'importe quel coffre avec un slot vide
         for (BlockPos chestPos : chests) {
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
-                for (int i = 0; i < container.getContainerSize(); i++) {
-                    if (container.getItem(i).isEmpty()) {
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    if (handler.getStackInSlot(i).isEmpty()) {
                         return chestPos;
                     }
                 }
@@ -365,10 +391,10 @@ public class StorageItemAggregator {
             if (remaining.isEmpty()) break;
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
 
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
-                if (ContainerHelper.countItem(container, remaining) > 0) {
-                    remaining = ContainerHelper.insertItem(container, remaining);
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
+                if (ContainerHelper.countItem(handler, remaining) > 0) {
+                    remaining = ContainerHelper.insertItem(handler, remaining);
                 }
             }
         }
@@ -378,9 +404,9 @@ public class StorageItemAggregator {
             if (remaining.isEmpty()) break;
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
 
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
-                remaining = ContainerHelper.insertItem(container, remaining);
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
+                remaining = ContainerHelper.insertItem(handler, remaining);
             }
         }
 
@@ -406,9 +432,9 @@ public class StorageItemAggregator {
             if (needed <= 0) break;
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
 
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
-                ItemStack extracted = ContainerHelper.extractItem(container, template, needed);
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
+                ItemStack extracted = ContainerHelper.extractItem(handler, template, needed);
                 if (!extracted.isEmpty()) {
                     result.grow(extracted.getCount());
                     needed -= extracted.getCount();
@@ -490,6 +516,35 @@ public class StorageItemAggregator {
      */
     public void removeViewersForTerminal(BlockPos terminalPos) {
         playersViewing.entrySet().removeIf(entry -> entry.getValue().equals(terminalPos));
+    }
+
+    // === Versioned Inventory ===
+
+    /**
+     * Calcule un fingerprint du contenu d'un IItemHandler.
+     * Combine le nombre de slots, les types d'items et leurs counts en un hash long.
+     * Deux inventaires identiques produisent le meme fingerprint.
+     */
+    private long computeFingerprint(IItemHandler handler) {
+        long hash = handler.getSlots();
+        for (int i = 0; i < handler.getSlots(); i++) {
+            ItemStack stack = handler.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                hash = hash * 31 + ItemStack.hashItemAndComponents(stack);
+                hash = hash * 31 + stack.getCount();
+            } else {
+                hash = hash * 31;
+            }
+        }
+        return hash;
+    }
+
+    /**
+     * Marque l'aggregateur comme necessitant un refresh.
+     * Appele par les blocs intelligents du reseau (push model).
+     */
+    public void markDirty() {
+        this.dirty = true;
     }
 
     // === Inner class ===

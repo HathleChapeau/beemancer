@@ -22,6 +22,7 @@
  */
 package com.chapeau.beemancer.common.block.storage;
 
+import com.chapeau.beemancer.common.blockentity.storage.HiveManager;
 import com.chapeau.beemancer.common.blockentity.storage.INetworkNode;
 import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
@@ -106,8 +107,9 @@ public class StorageEvents {
             }
         }
 
-        // Verifier si c'est un conteneur de stockage supporte
-        if (!StorageHelper.isStorageContainer(clickedState)) {
+        // Verifier si c'est un conteneur de stockage supporte (capability IItemHandler ou whitelist legacy)
+        if (!StorageHelper.hasItemHandlerCapability(level, clickedPos, null)
+                && !StorageHelper.isStorageContainer(clickedState)) {
             return;
         }
 
@@ -221,7 +223,7 @@ public class StorageEvents {
                 level.playSound(null, clickedPos, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0f, 0.8f);
             }
         } else {
-            if (registry.getHiveCount() >= StorageControllerBlockEntity.MAX_LINKED_HIVES) {
+            if (registry.getHiveCount() >= HiveManager.MAX_LINKED_HIVES) {
                 player.displayClientMessage(
                         Component.translatable("message.beemancer.storage_hive.max_reached"),
                         true);

@@ -81,24 +81,23 @@ import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
 public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         implements MultiblockController, MenuProvider {
 
-    public static final int MAX_LINKED_HIVES = 4;
-    public static final int BASE_ESSENCE_SLOTS = 4;
-    public static final int MAX_ESSENCE_SLOTS = BASE_ESSENCE_SLOTS + MAX_LINKED_HIVES;
-    private static final int BASE_DELIVERY_BEES = 2;
-    private static final int NETWORK_VALIDATE_INTERVAL = 200;
+    private static final int VALIDATION_BATCH_INTERVAL = 20;
+    private static final int VALIDATION_SPREAD_TICKS = 10;
     private int beeCapacity = ControllerStats.BASE_DROP;
+    private int validationIndex = 0;
 
     // === Registre central du reseau ===
     private final StorageNetworkRegistry networkRegistry = new StorageNetworkRegistry();
 
     // === Managers ===
+    private final HiveManager hiveManager = new HiveManager(this);
     private final StorageMultiblockManager multiblockManager = new StorageMultiblockManager(this);
     private final StorageItemAggregator itemAggregator = new StorageItemAggregator(this);
     private final StorageDeliveryManager deliveryManager = new StorageDeliveryManager(this);
     private final RequestManager requestManager = new RequestManager(this);
 
     // === Essence slots ===
-    private final ItemStackHandler essenceSlots = new ItemStackHandler(MAX_ESSENCE_SLOTS) {
+    private final ItemStackHandler essenceSlots = new ItemStackHandler(HiveManager.MAX_ESSENCE_SLOTS) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             return stack.is(BeemancerTags.Items.ESSENCES);
@@ -128,7 +127,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
                 case 1 -> ControllerStats.getSearchSpeed(essenceSlots);
                 case 2 -> ControllerStats.getCraftSpeed(essenceSlots);
                 case 3 -> ControllerStats.getQuantity(essenceSlots);
-                case 4 -> ControllerStats.getHoneyConsumption(essenceSlots, networkRegistry.getChestCount(), getHiveMultiplier());
+                case 4 -> ControllerStats.getHoneyConsumption(essenceSlots, networkRegistry.getChestCount(), getHiveMultiplier(), getRelayCount());
                 case 5 -> ControllerStats.getHoneyEfficiency(essenceSlots);
                 case 6 -> getLinkedHiveCount();
                 case 7 -> getMaxDeliveryBees();
@@ -153,6 +152,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     // === Manager Accessors ===
 
+    public HiveManager getHiveManager() { return hiveManager; }
     public StorageMultiblockManager getMultiblockManager() { return multiblockManager; }
     public StorageItemAggregator getItemAggregator() { return itemAggregator; }
     public StorageDeliveryManager getDeliveryManager() { return deliveryManager; }
@@ -204,7 +204,8 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
             switch (type) {
                 case CHEST -> {
-                    if (!com.chapeau.beemancer.core.util.StorageHelper.isStorageContainer(level.getBlockState(pos))) {
+                    if (!com.chapeau.beemancer.core.util.StorageHelper.hasItemHandlerCapability(level, pos, null)
+                            && !com.chapeau.beemancer.core.util.StorageHelper.isStorageContainer(level.getBlockState(pos))) {
                         toRemove.add(pos);
                     }
                 }
@@ -250,7 +251,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             networkRegistry.unregisterBlock(hivePos);
         }
         if (!hivesToRemove.isEmpty()) {
-            dropOverflowEssences();
+            hiveManager.dropOverflowEssences();
         }
 
         if (!toRemove.isEmpty() || !hivesToRemove.isEmpty()) {
@@ -260,7 +261,124 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     }
 
-    // === Reseau: coffres, terminaux, interfaces (via registre) ===
+    /**
+     * Validation amortie: valide un batch de blocs par appel au lieu de tout d'un coup.
+     * Repartit la charge sur VALIDATION_SPREAD_TICKS ticks pour eviter les lag spikes
+     * sur les grands reseaux (200+ coffres).
+     */
+    private void validateNetworkBlocksAmortized() {
+        if (level == null || level.isClientSide()) return;
+
+        List<Map.Entry<BlockPos, StorageNetworkRegistry.NetworkEntry>> entries =
+                new ArrayList<>(networkRegistry.getAll().entrySet());
+        if (entries.isEmpty()) {
+            validationIndex = 0;
+            return;
+        }
+
+        int batchSize = Math.max(1, (int) Math.ceil(entries.size() / (double) VALIDATION_SPREAD_TICKS));
+        int start = Math.min(validationIndex, entries.size());
+        int end = Math.min(start + batchSize, entries.size());
+
+        List<BlockPos> toRemove = new ArrayList<>();
+        List<BlockPos> hivesToRemove = new ArrayList<>();
+
+        for (int i = start; i < end; i++) {
+            Map.Entry<BlockPos, StorageNetworkRegistry.NetworkEntry> entry = entries.get(i);
+            BlockPos pos = entry.getKey();
+            StorageNetworkRegistry.NetworkBlockType type = entry.getValue().type();
+
+            if (!level.hasChunkAt(pos)) continue;
+
+            BlockEntity be = level.getBlockEntity(pos);
+
+            switch (type) {
+                case CHEST -> {
+                    if (!com.chapeau.beemancer.core.util.StorageHelper.hasItemHandlerCapability(level, pos, null)
+                            && !com.chapeau.beemancer.core.util.StorageHelper.isStorageContainer(level.getBlockState(pos))) {
+                        toRemove.add(pos);
+                    }
+                }
+                case TERMINAL -> {
+                    if (!(be instanceof StorageTerminalBlockEntity terminal)
+                            || terminal.getControllerPos() == null
+                            || !terminal.getControllerPos().equals(worldPosition)) {
+                        toRemove.add(pos);
+                    }
+                }
+                case INTERFACE -> {
+                    if (!(be instanceof NetworkInterfaceBlockEntity iface)
+                            || iface.getControllerPos() == null
+                            || !iface.getControllerPos().equals(worldPosition)) {
+                        toRemove.add(pos);
+                    }
+                }
+                case HIVE -> {
+                    if (!(be instanceof StorageHiveBlockEntity hive)
+                            || hive.getControllerPos() == null
+                            || !hive.getControllerPos().equals(worldPosition)) {
+                        hivesToRemove.add(pos);
+                    }
+                }
+            }
+        }
+
+        validationIndex = end >= entries.size() ? 0 : end;
+
+        for (BlockPos pos : toRemove) {
+            networkRegistry.unregisterBlock(pos);
+        }
+
+        for (BlockPos hivePos : hivesToRemove) {
+            if (!level.hasChunkAt(hivePos)) {
+                networkRegistry.unregisterBlock(hivePos);
+                continue;
+            }
+            BlockEntity be = level.getBlockEntity(hivePos);
+            if (be instanceof StorageHiveBlockEntity hive) {
+                hive.unlinkController();
+            }
+            networkRegistry.unregisterBlock(hivePos);
+        }
+        if (!hivesToRemove.isEmpty()) {
+            hiveManager.dropOverflowEssences();
+        }
+
+        if (!toRemove.isEmpty() || !hivesToRemove.isEmpty()) {
+            setChanged();
+            syncToClient();
+        }
+    }
+
+    // === Reseau: relays, coffres, terminaux, interfaces (via registre) ===
+
+    /**
+     * Compte le nombre de relays dans le reseau via BFS depuis les noeuds connectes.
+     * Les relays ne sont pas dans le NetworkRegistry (ce sont des noeuds, pas des blocs enregistres).
+     */
+    public int getRelayCount() {
+        if (level == null) return 0;
+        int count = 0;
+        java.util.Set<BlockPos> visited = new java.util.HashSet<>();
+        java.util.Queue<BlockPos> queue = new java.util.LinkedList<>(getConnectedNodes());
+        visited.add(worldPosition);
+        while (!queue.isEmpty()) {
+            BlockPos pos = queue.poll();
+            if (!visited.add(pos)) continue;
+            if (!level.hasChunkAt(pos)) continue;
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof StorageRelayBlockEntity relay) {
+                count++;
+                for (BlockPos neighbor : relay.getConnectedNodes()) {
+                    if (!visited.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
 
     /**
      * Retourne TOUS les coffres du reseau via le registre central.
@@ -324,114 +442,14 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         syncToClient();
     }
 
-    // === Hives (directement liees au controller) ===
+    // === Hives (delegue au HiveManager) ===
 
-    /**
-     * Enregistre une hive dans le registre du reseau et notifie la hive.
-     * Self-contained: la hive est automatiquement liee au controller.
-     */
-    public void linkHive(BlockPos hivePos) {
-        networkRegistry.registerBlock(hivePos, worldPosition, StorageNetworkRegistry.NetworkBlockType.HIVE);
-        if (level != null && level.hasChunkAt(hivePos)) {
-            BlockEntity be = level.getBlockEntity(hivePos);
-            if (be instanceof StorageHiveBlockEntity hive) {
-                hive.linkToController(worldPosition);
-            }
-        }
-        setChanged();
-        syncToClient();
-    }
-
-    /**
-     * Retire une hive du registre, notifie la hive et drop les essences overflow.
-     */
-    public void unlinkHive(BlockPos hivePos) {
-        networkRegistry.unregisterBlock(hivePos);
-        if (level != null && level.hasChunkAt(hivePos)) {
-            BlockEntity be = level.getBlockEntity(hivePos);
-            if (be instanceof StorageHiveBlockEntity hive) {
-                hive.unlinkController();
-            }
-        }
-        dropOverflowEssences();
-        setChanged();
-        syncToClient();
-    }
-
-    /**
-     * Retourne le nombre de hives liees au controller.
-     */
-    public int getLinkedHiveCount() {
-        return networkRegistry.getHiveCount();
-    }
-
-    /**
-     * Calcule le nombre max de delivery bees: base + somme des tiers des hives.
-     */
-    public int getMaxDeliveryBees() {
-        if (level == null) return BASE_DELIVERY_BEES;
-        int bonus = 0;
-        for (BlockPos hivePos : networkRegistry.getAllHives()) {
-            if (!level.hasChunkAt(hivePos)) continue;
-            BlockEntity be = level.getBlockEntity(hivePos);
-            if (be instanceof StorageHiveBlockEntity hive) {
-                bonus += hive.getTier();
-            }
-        }
-        return BASE_DELIVERY_BEES + bonus;
-    }
-
-    /**
-     * Calcule le multiplicateur de consommation de miel (produit des multiplicateurs de chaque hive).
-     * Retourne 1.0f si aucune hive.
-     */
-    public float getHiveMultiplier() {
-        if (level == null) return 1.0f;
-        float multiplier = 1.0f;
-        for (BlockPos hivePos : networkRegistry.getAllHives()) {
-            if (!level.hasChunkAt(hivePos)) continue;
-            BlockEntity be = level.getBlockEntity(hivePos);
-            if (be instanceof StorageHiveBlockEntity hive) {
-                BlockState hiveState = level.getBlockState(hivePos);
-                if (hiveState.getBlock() instanceof StorageHiveBlock hiveBlock) {
-                    multiplier *= hiveBlock.getHoneyMultiplier();
-                }
-            }
-        }
-        return multiplier;
-    }
-
-    /**
-     * Notifie toutes les hives liees pour mettre a jour leur etat visuel.
-     * Appele quand le multibloc est forme ou detruit.
-     */
-    public void notifyLinkedHives() {
-        if (level == null || level.isClientSide()) return;
-        for (BlockPos hivePos : networkRegistry.getAllHives()) {
-            if (!level.hasChunkAt(hivePos)) continue;
-            BlockEntity be = level.getBlockEntity(hivePos);
-            if (be instanceof StorageHiveBlockEntity hive) {
-                hive.updateVisualState();
-            }
-        }
-    }
-
-    /**
-     * Drop les items essence dans les slots bonus qui depassent le nombre de hives actuel.
-     * Les slots actifs: BASE_ESSENCE_SLOTS + getLinkedHiveCount().
-     */
-    private void dropOverflowEssences() {
-        if (level == null || level.isClientSide()) return;
-        int activeSlots = BASE_ESSENCE_SLOTS + getLinkedHiveCount();
-        for (int i = activeSlots; i < MAX_ESSENCE_SLOTS; i++) {
-            ItemStack stack = essenceSlots.getStackInSlot(i);
-            if (!stack.isEmpty()) {
-                Containers.dropItemStack(level, worldPosition.getX() + 0.5,
-                        worldPosition.getY() + 1.0, worldPosition.getZ() + 0.5, stack);
-                essenceSlots.setStackInSlot(i, ItemStack.EMPTY);
-            }
-        }
-    }
+    public void linkHive(BlockPos hivePos) { hiveManager.linkHive(hivePos); }
+    public void unlinkHive(BlockPos hivePos) { hiveManager.unlinkHive(hivePos); }
+    public int getLinkedHiveCount() { return hiveManager.getLinkedHiveCount(); }
+    public int getMaxDeliveryBees() { return hiveManager.getMaxDeliveryBees(); }
+    public float getHiveMultiplier() { return hiveManager.getHiveMultiplier(); }
+    public void notifyLinkedHives() { hiveManager.notifyLinkedHives(); }
 
     // === Player Feedback ===
 
@@ -575,8 +593,8 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         be.tickEditMode();
         be.itemAggregator.cleanupViewers();
 
-        if ((gameTick + offset) % NETWORK_VALIDATE_INTERVAL == 0) {
-            be.validateNetworkBlocks();
+        if ((gameTick + offset) % VALIDATION_BATCH_INTERVAL == 0) {
+            be.validateNetworkBlocksAmortized();
         }
     }
 
@@ -599,19 +617,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     public void setRemoved() {
         super.setRemoved();
         deliveryManager.killAllDeliveryBees();
-
-        // Unlink all hives (reset their visual state)
-        if (level != null && !level.isClientSide()) {
-            for (BlockPos hivePos : networkRegistry.getAllHives()) {
-                if (!level.hasChunkAt(hivePos)) continue;
-                BlockEntity be = level.getBlockEntity(hivePos);
-                if (be instanceof StorageHiveBlockEntity hive) {
-                    hive.unlinkController();
-                }
-            }
-
-        }
-
+        hiveManager.unlinkAllHives();
         MultiblockEvents.unregisterController(worldPosition);
     }
 

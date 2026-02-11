@@ -1,0 +1,531 @@
+================================================================================
+5. GROUPE 5 — ENERGIE ET PROGRESSION
+================================================================================
+
+FEATURES ANALYSEES:
+  5.1 Honey Energy System (consommation, reservoirs, formule cout)
+  5.2 Essence System (7 types — pas 5 : DROP, SPEED, FORAGING, TOLERANCE, DIURNAL,
+      NOCTURNAL, INSOMNIA — 4 tiers)
+  5.3 Storage Hives (3 tiers, multiplicateurs)
+
+Convergences Groupe 5:
+  UNANIME 3/3: TOLERANCE essence morte (5.2D / C61 / RS-5.2A) — P1
+  UNANIME 3/3: Consommation constante / idle vs active (5.1F / C51 / RS-5.1A) — P2
+  UNANIME 3/3: Multiplicateur hives multiplicatif x39 (5.3B / C59 / RS-5.3A) — QUESTION
+  CONVERGENCE AE2+CREATE+RS: INSOMNIA tiers (5.2E / C62 / RS-5.2D) — P2
+  CONVERGENCE AE2+RS: Cout par appareil reseau (5.1B / RS-5.1B) — P2
+  CONVERGENCE AE2+RS: Essence cap (5.2B / RS-5.2B) — P3
+  CONVERGENCE AE2+CREATE: Cache honeyConsumptionRate (5.1E / C50) — P3
+  CONVERGENCE AE2+CREATE: Warning/grace period avant depletion (5.1C / C53) — P2
+  CONVERGENCE 3/3: setRemoved hive (5.3C / RS-5.3C) — P3 (debat resolu)
+  Confirmation RS: consumeHoney() wrong chest count (5.1A) — P1
+
+Decouvertes majeures:
+  - 7 types d'essence (pas 5). TOLERANCE = code mort (crafter supprime). DIURNAL/NOCTURNAL
+    = MagicBees seulement, aucun effet sur ControllerStats. INSOMNIA = 1 seul tier PERFECT.
+  - Multiplicateur hives MULTIPLICATIF: 4x T3 = 2.5^4 = x39.06. Avec config mid-game
+    typique (20 base + 4 coffres + 2 SPEED PERFECT), drain = 5468 mB/s. 2 reservoirs
+    (8000 mB) vides en 2.4 secondes. Probleme d'equilibrage probable.
+  - consumeHoney() utilise getChestManager().getRegisteredChestCount() au lieu de
+    networkRegistry.getChestCount(). Les coffres via relay ne coutent rien en miel.
+  - StorageHiveBlockEntity.getController() = meme pattern isFormed() manquant que
+    Terminal (AK) et Interface (BU). Bug systemique confirme.
+
+Note RS: L'expert RS a contribue 14 propositions formelles (RS-5.1A a RS-5.3D) avec
+references RS2. 4 corrections de priorite par l'architecte (RS-5.1C deja fait,
+RS-5.3C P1→P3, RS-5.3D P2→P3, RS-5.2A P2→P1). 5 propositions uniques RS (DR-DV).
+INSOMNIA: RS a signale une erreur factuelle (NORMAL au lieu de PERFECT) — corrigee.
+
+Divergences:
+  - Multiplicatif vs Additif: AE2 utilise scaling lineaire (cout fixe par device),
+    RS2 aussi (somme lineaire). Create utilise addition (stress capacity/impact).
+    Beemancer est le seul avec un multiplicateur exponentiel. Les 3 experts questionnent
+    ce choix de design.
+  - Granularite: RS2 a des upgrades par device (chaque importer a SA vitesse).
+    Beemancer a des essences globales (bonus pour TOUT le reseau). Design intentionnel
+    mais perte de granularite (RS).
+  - Reservoir: AE2 permet l'energie depuis n'importe quelle source sur le reseau.
+    Beemancer force 2 positions fixes dans le multibloc. Question de design, pas un bug.
+  - setRemoved hive (5.3C/DN): Debat RESOLU P3. onRemove() existe dans le Block +
+    validateNetworkBlocks() auto-corrige en 200 ticks max. Defense en profondeur.
+  - Honey buffer: RS propose un buffer interne (pattern RS2 Controller 32k FE) pour
+    absorber les fluctuations. AE2/Create n'ont pas propose cet angle [DS].
+  - Validation bidirectionnelle: RS propose supprimer la double validation (hive 100t +
+    controller 200t) en faveur d'une validation unidirectionnelle controller→hives [DV].
+
+--------------------------------------------------------------------------------
+5.1 HONEY ENERGY SYSTEM (StorageDeliveryManager.consumeHoney, ControllerStats)
+--------------------------------------------------------------------------------
+Etat actuel: consumeHoney() (lignes 115-147) draine depuis 2 HoneyReservoirs aux
+positions (-1,0,0) et (1,0,0) du multibloc. Formule ControllerStats:
+  (base20 + chestCost10/coffre + essenceCost10/niveau) * hiveMultiplier * (1 - efficiency/100)
+Consommation CONSTANTE (pas proportionnelle a l'activite). HONEY_CONSUME_INTERVAL = 20 ticks.
+HoneyReservoir: 4000mB capacite, PARTAGE entre Storage Controller et Altar.
+Fichiers: StorageDeliveryManager.java, ControllerStats.java, HoneyReservoirBlockEntity.java
+
+--- BUGS ---
+
+[CX] consumeHoney() utilise mauvais compteur de coffres [CONFIRME PAR ARCHITECTE]
+     Quoi: StorageDeliveryManager.consumeHoney() ligne 119 utilise
+           `parent.getChestManager().getRegisteredChestCount()` au lieu de
+           `parent.getNetworkRegistry().getChestCount()`. Meme bug que [AI] (Groupe 2)
+           pour le terminal.
+     Pourquoi: ChestManager ne contient PAS les coffres enregistres via relay. Le
+               formule sous-estime le nombre de coffres = consommation trop basse.
+               Les coffres via relay sont GRATUITS en miel. Le joueur paie moins
+               que ce qu'il devrait pour son reseau reel.
+     Comment: Changer en `parent.getNetworkRegistry().getChestCount()`. 1 ligne.
+     Reference: [AE2] Decouverte originale du bug par l'expert AE2 (5.1A).
+                Confirmee par RS et architecte dans le code source.
+                Meme pattern que [AI] Groupe 2 (display vs actual).
+     Priorite: P1 BUGFIX (formule incorrecte, impact gameplay)
+     Effort: 1 ligne | Risque: Aucun
+     Experts: AE2 (5.1A), RS (confirmation)
+     Note: Bug a DEUX manifestations : affichage terminal [AI] ET consommation
+           reelle [CX]. Les deux doivent etre corriges ensemble.
+
+--- AMELIORATIONS ---
+
+[CY] Cout miel par appareil reseau [CONVERGENCE AE2+RS]
+     Quoi: Les relays, terminaux et interfaces ne coutent rien en miel. Seuls les
+           coffres comptent (chestCount*10). Chaque appareil devrait avoir un cout.
+     Pourquoi: Un joueur peut spammer des relays/terminaux/interfaces sans penalite.
+     Comment: Ajouter a ControllerStats: relayCount*5 + terminalCount*5 +
+              interfaceCount*8 mB/s. Counts via networkRegistry.
+     Reference: [AE2] 25 AE per cable, machine or part.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/energy
+                [RS] RS2 chaque appareil a un cout configurable (Relay=8 energy).
+                Source: https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+     Priorite: P2 FEAT (meme que [E] Groupe 1, etendu a tous appareils par RS)
+     Effort: Faible (3-5 lignes) | Risque: Faible (tuning gameplay)
+     Experts: AE2 (5.1B), RS (RS-5.1B)
+
+[CZ] Warning avant depletion de miel [CONVERGENCE AE2+CREATE]
+     Quoi: Le systeme notifie quand honeyDepleted=true (lignes 140-141) mais aucun
+           avertissement AVANT la depletion. Le joueur decouvre le probleme trop tard.
+     Pourquoi: AE2 affiche un warning quand le reseau manque d'energie. Le reseau
+               degrade progressivement (pas de shutdown instantane).
+     Comment: Ajouter seuil d'alerte (ex: reservoirs < 20% capacite). Notifier
+              "Reserves de miel faibles !" avant depletion. Optionnel: grace period
+              de quelques secondes apres depletion (pattern Create C53 — overstress
+              recovery).
+     Reference: [AE2] AE2 energy system a un buffer (Energy Cells) permettant au
+                reseau de continuer brievement apres arret de l'alimentation.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/energy
+                [CREATE] Pattern overstress recovery — delai avant shutdown complet.
+                Source: Create SuperGlueHandler (tolerance temporaire).
+     Priorite: P2 UX
+     Effort: Faible (10-15 lignes dans consumeHoney) | Risque: Aucun
+     Experts: AE2 (5.1C), CREATE (C53)
+
+[DA] Consommation constante meme au repos [UNANIME 3/3]
+     Quoi: La consommation de miel est constante quelle que soit l'activite du reseau.
+           Pas de distinction idle vs actif.
+     Pourquoi: Thematiquement coherent (les abeilles mangent au repos) mais different
+               des 3 mods de reference. AE2 distingue idle power vs active power.
+               RS2 aussi. Create distingue stress idle vs stress actif.
+     Comment: Option 1: garder design actuel (intentionnel, thematique).
+              Option 2: separer idle cost (reseau connecte) vs active cost (imports/
+              exports/livraisons en cours). Le idle cost serait un pourcentage du
+              cout total.
+     Reference: [AE2] AE2 separe idle power (reseau alive) vs active power (crafting,
+                import/export).
+                [CREATE] Stress capacity (idle) vs stress impact (operations actives).
+     Priorite: P2 DESIGN (question de gameplay — les 3 experts questionnent)
+     Effort: Moyen | Risque: Moyen (changement de formule)
+     Experts: AE2 (5.1F), CREATE (C51), RS (RS-5.1A)
+     Note: Si le design actuel est intentionnel (abeilles = cout constant),
+           documenter ce choix. Si pas intentionnel, implementer la separation.
+           RS propose x0.25 en idle (0 bees, 0 requetes), x1.0 en actif.
+
+[DB] Bonus capacite reservoir par tier de hive
+     Quoi: Chaque hive connectee augmente la capacite totale du reservoir de miel
+           (bonus par tier). Actuellement les hives augmentent le multiplicateur
+           de cout mais ne donnent pas plus de buffer.
+     Pourquoi: Compenser le scaling multiplicatif. Plus de hives = plus de cout,
+               mais aussi plus de stockage pour lisser les pics de consommation.
+     Comment: Par tier: T1 +500mB, T2 +1000mB, T3 +2000mB. Ajouter au reservoir
+              max capacity. Afficher dans GUI.
+     Reference: [CREATE] Pattern Fluid Tank — capacite croit avec le nombre de
+                blocs empiles. Source: Create FluidTankBlockEntity.java
+     Priorite: P3 DESIGN
+     Effort: Faible | Risque: Faible
+     Experts: CREATE (C52)
+
+[DC] Drainage miel limite a 2 reservoirs du multibloc
+     Quoi: consumeHoney() (lignes 123-136) ne draine que les 2 HoneyReservoirs aux
+           positions multibloc fixes (-1,0,0) et (1,0,0). Les reservoirs
+           supplementaires sur le reseau ne sont pas utilises.
+     Pourquoi: Contrainte intentionnelle ? Empeche le scaling de la capacite miel.
+               AE2 permet l'energie depuis n'importe quelle source sur le reseau.
+     Comment: Option 1: garder (contrainte de design, force gestion du miel).
+              Option 2: drainer depuis tout HoneyReservoir sur le reseau (pas juste
+              multibloc). Option 3: ajouter positions de multibloc supplementaires
+              pour les hives T3.
+     Reference: [AE2] Energy Acceptor placeable n'importe ou sur le reseau. Plusieurs
+                Energy Cells connectables. Energie = pool global, pas localise.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/energy
+     Priorite: P3 DESIGN (question de design, pas un bug)
+     Effort: Moyen | Risque: Moyen (architecture energie)
+     Experts: AE2 (5.1D)
+
+[DD] Reservoir partage entre Altar et Storage
+     Quoi: HoneyReservoir est partage entre le Storage Controller et l'Altar.
+           Si les deux systemes sont actifs, risque de conflit et drainage imprevu.
+     Pourquoi: Le joueur peut ne pas realiser que son Altar consomme le miel
+               necessaire au Storage et vice versa.
+     Comment: Option 1: garder (force le joueur a gerer ses ressources).
+              Option 2: separer les reservoirs par systeme. Option 3: ajouter
+              priorite entre consommateurs.
+     Reference: [AE2] Les sous-reseaux AE2 ont des pools d'energie separes.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/subnetworks
+     Priorite: P3 UX
+     Effort: Moyen | Risque: Moyen (changement d'architecture)
+     Experts: AE2 (5.1G)
+
+--- OPTIMISATIONS ---
+
+[DE] Cache honeyConsumptionRate [CONVERGENCE AE2+CREATE]
+     Quoi: consumeHoney() appelle ControllerStats.getHoneyConsumption() chaque
+           HONEY_CONSUME_INTERVAL (20 ticks). Cette methode itere tous les slots
+           d'essence + calcule chest count + hive multiplier a chaque appel.
+     Pourquoi: Le calcul est leger (~8 slots) mais se repete identiquement si rien
+               n'a change. Un cache invalide uniquement quand les essences ou le
+               reseau changent serait plus propre.
+     Comment: Champ honeyConsumptionPerSecond cache. Recalculer seulement quand:
+              essences changent (via onContentsChanged callback), coffres ajoutes/
+              retires, hives modifiees.
+     Reference: [AE2] AE2 EnergyService maintient un cache de la consommation idle
+                totale du reseau. Recalcule seulement quand un node rejoint/quitte.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/2.3-energy-system
+                [CREATE] Pattern BlockStressValues — valeurs de stress pre-calculees.
+                Source: Create BlockStressValues.java
+     Priorite: P3 PERF (calcul leger, optimisation prematuree sauf gros reseau)
+     Effort: Faible | Risque: Aucun
+     Experts: AE2 (5.1E), CREATE (C50)
+     Note architecte: P3 et pas P1 comme propose initialement. Le calcul concerne
+     max 8 slots d'essence — negligeable. Delivery manager a deja un stagger pattern
+     (hashCode offset). Optimisation prematuree.
+
+--------------------------------------------------------------------------------
+5.2 ESSENCE SYSTEM (EssenceType, EssenceItem, ControllerStats)
+--------------------------------------------------------------------------------
+Etat actuel: 7 types d'essence (pas 5 comme initialement documente):
+  - DROP (4 tiers): bonus drop chance des abeilles
+  - SPEED (4 tiers): bonus vitesse livraison
+  - FORAGING (4 tiers): bonus rayon butinage
+  - TOLERANCE (4 tiers): bonus vitesse crafting [CODE MORT — crafter supprime]
+  - DIURNAL (1 tier: NORMAL): activite de jour [MagicBees seulement, PAS stockage]
+  - NOCTURNAL (1 tier: NORMAL): activite de nuit [MagicBees seulement, PAS stockage]
+  - INSOMNIA (1 tier: PERFECT): reduction consommation miel (efficiency %)
+19 items enregistres dans BeemancerItems.
+Bonus par essence: `level * 0.25f` cumulatif. Pas de cap.
+BASE_ESSENCE_SLOTS=4, MAX_ESSENCE_SLOTS=8 (dynamique selon hives connectees).
+Fichiers: EssenceType.java, EssenceItem.java, ControllerStats.java, BeemancerItems.java
+
+--- BUGS ---
+
+[DF] TOLERANCE essence = piege joueur [UNANIME 3/3]
+     Quoi: Le Crafter a ete entierement supprime du codebase (crashs frequents,
+           commits 3ab9504/6982ed6) mais les 4 tiers d'essence TOLERANCE restent
+           enregistres. Le joueur peut les placer dans le controller, payer le cout
+           en miel (10 mB/s par niveau), mais ne recevoir AUCUN bonus.
+     Pourquoi: getCraftSpeedMultiplier() dans ControllerStats existe toujours mais
+               rien ne l'appelle — code mort. La GUI affiche encore "Craft Speed: X%"
+               qui est un mensonge. Piege silencieux pour le joueur.
+     Comment: Option 1: Retirer les items TOLERANCE du jeu et bloquer placement.
+              Option 2: Garder mais desactiver le cout en miel + ajouter tooltip
+              "Inactif — Crafter non disponible". Option 3: Garder en prevision
+              du redesign crafter (Section 4.6).
+              Recommandation: Option 2 (ne pas supprimer pour le futur crafter).
+     Reference: [AE2] AE2 ne garde jamais de cartes d'upgrade pour des machines
+                qui n'existent plus. Si une machine est retiree, ses upgrades aussi.
+                [CREATE] Create supprime proprement les items lies a des features
+                retirees lors de breaking changes.
+     Priorite: P1 BUGFIX (piege joueur actif — coute du miel pour rien)
+     Effort: Faible | Risque: Faible
+     Experts: AE2 (5.2D), CREATE (C61), RS (RS-5.2A) — UNANIME 3/3
+
+[DG] DIURNAL/NOCTURNAL essences sans effet dans le stockage [CONFIRME P1]
+     Quoi: DIURNAL et NOCTURNAL sont dans le tag ESSENCES (ligne 104 BeemancerItems),
+           donc placables dans les slots d'essence du controller. Mais ControllerStats
+           ne les utilise PAS — aucun bonus. Seules les MagicBees les utilisent.
+     Pourquoi: Un joueur peut placer ces essences dans le controller, occuper un slot
+               precieux, payer du miel, et ne recevoir aucun bonus. Pas un piege aussi
+               grave que TOLERANCE (pas de faux affichage) mais gaspillage silencieux.
+     Comment: Option 1: Retirer du tag ESSENCES (empecher placement).
+              Option 2: Ajouter un bonus dans ControllerStats (ex: DIURNAL = bonus
+              jour, NOCTURNAL = bonus nuit). Option 3: Garder mais ajouter tooltip
+              "Aucun effet sur le Storage System".
+     Reference: [CREATE] Create C56 — decouverte de l'anomalie.
+                Confirmee par architecte dans le code.
+     Priorite: P1 UX (rehabilite par architecte+Create — 100% inerte, gaspillage slot)
+     Effort: Trivial (1 tag modification) ou Faible (bonus) | Risque: Aucun
+     Experts: CREATE (C56), confirmee par architecte
+
+--- AMELIORATIONS ---
+
+[DH] INSOMNIA n'a qu'un seul tier [CONVERGENCE AE2+CREATE+RS]
+     Quoi: INSOMNIA n'existe qu'en tier PERFECT (40% efficiency). Pas de progression
+           graduelle LESSER(10%), NORMAL(20%), GREATER(30%).
+     Pourquoi: Tous les autres types utiles (DROP, SPEED, FORAGING) ont 4 tiers,
+               permettant une progression. INSOMNIA force un choix binaire: 0% ou 40%.
+               Pas de progression douce.
+     Comment: Ajouter INSOMNIA_LESSER(10%), INSOMNIA_NORMAL(20%), INSOMNIA_GREATER(30%).
+              Enregistrer dans BeemancerItems + ajouter textures/modeles.
+     Reference: [AE2] Acceleration Cards: progression lineaire 1-4 cartes.
+                [RS] RS2 Speed Upgrade: stackable 1-4, progression lineaire.
+     Priorite: P2 DESIGN (progression manquante)
+     Effort: Faible (3 items + textures) | Risque: Aucun
+     Experts: AE2 (5.2E), CREATE (C62), RS (RS-5.2D) — CONVERGENCE 3/3
+
+[DI] Bonus essence cumulatif sans cap [CONVERGENCE AE2+RS]
+     Quoi: getTotalBonus() accumule tous les bonus sans plafond. Avec
+           MAX_ESSENCE_SLOTS=8, un joueur peut mettre 8x SPEED PERFECT = +800%
+           = vitesse x9. Probablement excessif.
+     Pourquoi: Un joueur determiné sacrifierait toutes les autres essences pour
+               stacker un seul type. Resultat potentiellement desequilibre.
+     Comment: Option 1: Cap par type (ex: max +200%). Option 2: Rendements
+              decroissants (chaque essence du meme type donne moins). Option 3:
+              Garder design actuel (sacrifice = choix strategique).
+     Reference: [AE2] Acceleration Cards cappees a 4 par machine (max 96 items/op).
+                Capacity Cards cappees a 2. AE2 utilise des caps fixes, pas de
+                rendements decroissants.
+                Source: https://guide.appliedenergistics.org/1.20.1/items-blocks-machines/upgrade_cards
+     Priorite: P3 DESIGN (balance gameplay — question ouverte)
+     Effort: Trivial (1 Math.min dans getTotalBonus) | Risque: Moyen (balance)
+     Experts: AE2 (5.2B), CREATE (C54), RS (RS-5.2B)
+
+[DJ] Barres de statistiques visuelles dans GUI controller
+     Quoi: Ajouter des barres visuelles dans le GUI du controller montrant l'impact
+           de chaque type d'essence sur les stats du reseau.
+     Pourquoi: Le joueur doit ouvrir le GUI et interpreter des chiffres bruts.
+               Pas de visualisation intuitive des bonus actuels.
+     Comment: Barres horizontales par stat (Speed, Drop, Foraging, Efficiency)
+              avec pourcentage et couleur. Pattern Stressometer de Create.
+     Reference: [CREATE] Stressometer affiche le stress du reseau avec une barre
+                visuelle + pourcentage. Pattern GUI intuitif.
+                Source: Create GaugeBlockEntity/StressometerScreen.
+     Priorite: P3 UX
+     Effort: Moyen (GUI rendering) | Risque: Aucun
+     Experts: CREATE (C55)
+
+[DK] Feedback par slot d'essence
+     Quoi: Chaque slot d'essence devrait afficher sa contribution au total.
+           Ex: "SPEED +25% (total: +150%)" en tooltip.
+     Pourquoi: Le joueur place des essences mais n'a pas de feedback immediat sur
+               la contribution de chaque slot individuellement.
+     Comment: Tooltip sur chaque slot d'essence montrant: type, tier, contribution
+              individuelle, total actuel pour ce type.
+     Reference: [AE2] Network Tool montre la consommation detaillee du reseau.
+                Chaque composant affiche son cout.
+     Priorite: P3 UX
+     Effort: Faible (tooltip rendering) | Risque: Aucun
+     Experts: AE2 (5.2C)
+
+--------------------------------------------------------------------------------
+5.3 STORAGE HIVES (StorageHiveBlock, StorageHiveBlockEntity)
+--------------------------------------------------------------------------------
+Etat actuel: 3 tiers de hives. Multiplicateurs: T1(x1.5), T2(x2.0), T3(x2.5).
+Le multiplicateur est MULTIPLICATIF entre hives (pas additif).
+MAX_LINKED_HIVES = 4. getMaxDeliveryBees(): 2 + sum(hive.getTier()).
+BASE_ESSENCE_SLOTS=4, MAX_ESSENCE_SLOTS=8 (dynamique selon hives).
+dropOverflowEssences() quand une hive est retiree.
+Fichiers: StorageHiveBlock.java, StorageHiveBlockEntity.java, ControllerStats.java
+
+--- BUGS ---
+
+[DL] getController() sans isFormed() check [BUG SYSTEMIQUE — 3e occurrence]
+     Quoi: StorageHiveBlockEntity.getController() (ligne 87) ne verifie pas
+           isFormed(). Meme pattern que [AK] (terminal, Groupe 2) et [BU]
+           (interfaces, Groupe 4). Troisieme occurrence du meme bug.
+     Pourquoi: Si le multibloc est casse mais le bloc controller existe encore, la
+               hive retourne un controller invalide. updateVisualState() verifie
+               deja isFormed() (ligne 126) et gere correctement le cas LINKED vs
+               ACTIVE. Mais getController() est public et tout futur appelant n'aura
+               pas cette protection.
+     Comment: Ajouter `if (!controller.isFormed()) return null;` dans getController().
+              ATTENTION REGRESSION: Ce fix casse potentiellement onRemove() qui appelle
+              getController() APRES que le multibloc soit deja demonte (isFormed=false).
+              Solution: ajouter getControllerRaw() (sans isFormed check) pour les
+              chemins de cleanup comme onRemove(), setRemoved().
+     Reference: [AE2] Pattern systematique — chaque GridNode verifie isActive().
+                Meme fix que [AK] et [BU]. Bug systemique confirme.
+     Priorite: P1 BUGFIX (coherence avec AK et BU — meme fix partout)
+     Effort: 2 lignes + getControllerRaw() (5 lignes) | Risque: Faible si getControllerRaw()
+     Experts: AE2 (5.3A), confirmee par architecte
+     Note architecte: updateVisualState() gere deja le cas non-forme. Block.onRemove()
+     notifie le controller via unlinkHive(). Le risque est pour les futurs appelants
+     de getController() qui ne sauraient pas verifier isFormed(). Le pattern
+     getControllerRaw() est la bonne solution pour eviter la regression.
+
+--- AMELIORATIONS ---
+
+[DM] Multiplicateur hive multiplicatif : affichage UX [UNANIME 3/3 — QUESTION CRITIQUE]
+     Quoi: getHiveMultiplier() (controller ligne 388) MULTIPLIE les multiplicateurs.
+           2x T3 = 2.5 * 2.5 = 6.25x. 4x T3 = 2.5^4 = 39.06x.
+           Le joueur ne realise probablement pas que chaque hive MULTIPLIE (pas ajoute).
+     Pourquoi: Croissance exponentielle problematique. Math verifiee par architecte:
+               config mid-game (20 base + 4 coffres + 2 SPEED PERFECT), 4x T3 =
+               5468 mB/s avant INSOMNIA. Meme avec INSOMNIA PERFECT (x0.6) = 3281 mB/s.
+               Les 2 reservoirs (8000 mB) se vident en 2.4 secondes.
+               AE2 utilise scaling lineaire. RS2 aussi. Create aussi (stress). Beemancer
+               est le SEUL avec un multiplicateur exponentiel.
+     Comment: QUESTION DE DESIGN — 3 options:
+              1. Garder multiplicatif mais AFFICHER clairement le total ("x39.06")
+                 dans le GUI du controller avec warning couleur.
+              2. Changer en ADDITIF: 4x T3 = 1 + 4*1.5 = 7.0x (au lieu de 39.06x).
+              3. Systeme hybride: additif par tier, multiplicatif par type unique.
+              Minimum: afficher le multiplicateur total dans le GUI.
+     Reference: [AE2] AE2 scaling lineaire — cout fixe par device. Previsible.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/energy
+                [CREATE] Stress system additif — su(impact) vs capacity.
+                Source: Create StressCounterBehaviour.java
+     Priorite: P2 UX (affichage) / QUESTION (formule additif vs multiplicatif)
+     Effort: Trivial (affichage) ou Moyen (changement formule) | Risque: Moyen
+     Experts: AE2 (5.3B), CREATE (C59), RS (RS-5.3A) — UNANIME 3/3
+     Note: Les 3 experts et l'architecte sont d'accord que le multiplicateur x39
+     est probablement un probleme d'equilibrage. La decision finale (garder multiplicatif
+     ou changer en additif) est un choix de game design.
+
+[DN] Hive setRemoved() manquant [DEBAT RESOLU — P3]
+     Quoi: StorageHiveBlockEntity n'a PAS de setRemoved(). Quand une hive est cassee,
+           le controller n'est pas notifie immediatement — detection au prochain
+           cycle de validation periodique (200 ticks = 10 secondes max).
+     Pourquoi: Pendant max 10 secondes, le controller pense encore avoir cette hive.
+               Max delivery bees surestimee, bonus essence slots reste actif.
+     Comment: Override setRemoved(): notifier controller de unlink, appeler
+              dropOverflowEssences() si necessaire, super.setRemoved().
+              ATTENTION: utiliser controllerPos directement, PAS getController()
+              (pour eviter regression avec fix DL/isFormed).
+     Reference: [AE2] Chaque GridNode appelle removeFromWorld() dans setRemoved().
+                [RS] RS2 noeuds notifient controller a la destruction.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2
+     Priorite: P3 CODE QUALITY (debat resolu — onRemove() existe dans Block +
+               validateNetworkBlocks() auto-corrige en 200 ticks. Defense en profondeur.)
+     Effort: 5-10 lignes | Risque: Aucun
+     Experts: AE2 (5.3C), RS (RS-5.3C)
+     Note: Debat AE2 vs architecte. AE2 montrait regression potentielle si fix DL
+     sans getControllerRaw(). Architecte a montre que validateNetworkBlocks() nettoie
+     automatiquement les references stales. Consensus final: P3.
+
+[DO] Tiers de hive = capacites qualitatives (pas juste multiplicateurs)
+     Quoi: Actuellement les tiers different seulement par le multiplicateur numerique
+           (1.5x/2.0x/2.5x). Proposer des capacites qualitatives par tier.
+     Pourquoi: Un systeme de progression interessant offre des choix qualitatifs,
+               pas juste des chiffres plus gros.
+     Comment: Exemple:
+              - T1 (Andesite): +1 slot essence, +2 delivery bees
+              - T2 (Brass): +2 slots essence, +3 delivery bees, unlock filtres avances
+              - T3 (Gold): +2 slots essence, +4 delivery bees, unlock cross-network
+     Reference: [CREATE] Progression Andesite → Brass → Train: chaque tier debloque
+                des CAPACITES (pas juste des chiffres). Andesite = mecanique simple,
+                Brass = logique conditionnelle, Train = mobilite.
+                Source: Create documentation progression.
+     Priorite: P3 DESIGN (redesign progression)
+     Effort: Eleve | Risque: Moyen (balance)
+     Experts: CREATE (C57)
+
+--- OPTIMISATIONS ---
+
+[DP] Tick stagger pour hive validate interval
+     Quoi: Les hives valident leur etat au meme tick. Appliquer le pattern tick
+           stagger (gameTick + hashCode) % interval.
+     Pourquoi: Max 4 hives — impact negligeable. Mais coherence avec le pattern
+               utilise dans les interfaces (BV) et l'aggregator.
+     Comment: Pattern `(gameTick + worldPosition.hashCode()) % VALIDATE_INTERVAL`.
+     Reference: [CREATE] C58, pattern deja dans le codebase.
+     Priorite: P3 OPTIM (max 4 hives, impact negligeable — reclassifie par architecte)
+     Effort: 1 ligne | Risque: Aucun
+     Experts: CREATE (C58)
+     Note architecte: Max 4 hives, chacune fait un getBlockEntity() par validation.
+     Impact negligeable. P3 pour coherence de pattern, pas pour performance.
+
+[DQ] Slots d'essence dans les hives au lieu du controller
+     Quoi: Deplacer les slots d'essence du controller vers les hives individuelles.
+           Chaque hive aurait ses propres slots, et les bonus seraient calcules
+           par hive (granularite).
+     Pourquoi: Plus de granularite — chaque hive peut etre specialisee (une hive
+               SPEED, une hive DROP, etc.). Plus proche du pattern RS2 upgrades
+               per-device.
+     Comment: Chaque hive a 2-3 slots. Controller agrege les bonus de toutes les
+              hives. Les essences dans une hive affectent CETTE hive seulement
+              (ex: les abeilles de cette hive sont plus rapides).
+     Reference: [CREATE] Chaque bloc Create est autonome — les upgrades sont
+                dans le bloc, pas dans un controller central. Mechanical Bearings,
+                Fans, etc. chacun a ses propres reglages.
+     Priorite: P3 DESIGN (redesign majeur, pas une simple amelioration)
+     Effort: Eleve | Risque: Eleve (architecture essence)
+     Experts: CREATE (C60)
+
+--------------------------------------------------------------------------------
+5.4 PROPOSITIONS UNIQUES RS (pas identifiees par AE2/Create)
+--------------------------------------------------------------------------------
+
+[DR] GUI decomposition consommation honey
+     Quoi: Le GUI du controller affiche juste le total honey. Ajouter la
+           decomposition: base + coffres + essences + appareils + efficiency.
+     Pourquoi: Le joueur ne sait pas pourquoi sa conso est elevee. RS controller
+               affiche une decomposition claire par appareil.
+     Comment: Ajouter index ContainerData pour baseCost, chestCost, essenceCost,
+              deviceCost, efficiency. Afficher dans GUI du controller.
+     Reference: [RS] RS controller GUI liste chaque appareil et sa consommation.
+                Source: https://refinedmods.com/refined-storage/networking/controller.html
+     Priorite: P3 UX
+     Effort: Moyen (GUI change) | Risque: Faible
+     Experts: RS (RS-5.1E)
+
+[DS] Honey buffer dans le controller
+     Quoi: Pas de buffer — reservoir a 0 pendant 1 tick = honeyDepleted instantanement.
+           Ajouter un buffer interne pour absorber les fluctuations.
+     Pourquoi: RS controller a un buffer de 32,000 FE. Le reseau ne s'arrete pas
+               instantanement quand l'energie est coupee — continue sur le buffer.
+     Comment: Ajouter honeyBuffer dans StorageDeliveryManager. Puiser dans buffer
+              quand reservoirs insuffisants. Depleted seulement quand buffer=0.
+     Reference: [RS] RS2 Controller capacity 32,000 FE par defaut.
+                Source: https://refinedmods.com/refined-storage/networking/controller.html
+     Priorite: P3 DESIGN
+     Effort: Moyen | Risque: Faible
+     Experts: RS (RS-5.1F)
+
+[DT] Cout non-lineaire par tier d'essence
+     Quoi: Actuellement cout = level * 10 mB/s (lineaire). PERFECT ne coute que
+           40 mB/s pour +100% bonus. Pas assez de tradeoff pour les hauts tiers.
+     Pourquoi: RS Speed Upgrade a un scaling lineaire mais cumulatif. Beemancer
+               pourrait beneficier d'un scaling quadratique pour punir le stacking.
+     Comment: Modifier getEssenceConsumptionCost(): LESSER=5, NORMAL=15,
+              GREATER=30, PERFECT=50 mB/s (scaling ~level^2).
+     Reference: [RS] RS Speed Upgrade scaling: 3→5→7→9→11 FE/t par upgrade.
+                Source: https://ftb.fandom.com/wiki/Speed_Upgrade_(Refined_Storage)
+     Priorite: P3 DESIGN (gameplay balance, necessite playtesting)
+     Effort: Faible (1 methode) | Risque: Moyen (balance)
+     Experts: RS (RS-5.2C)
+
+[DU] Essence slots par tier de hive (pas par count)
+     Quoi: Chaque hive ajoute +1 slot quel que soit le tier. T1 et T3 donnent le
+           meme bonus slots. Pas d'incitation a upgrader pour les slots.
+     Pourquoi: RS Storage Disks: chaque tier = capacite proportionnelle au cout.
+               T3 devrait donner plus de slots que T1 pour justifier son cout.
+     Comment: Essence slots bonus = sum(hive.getTier()). 4xT1=4, 4xT2=8, 4xT3=12.
+              Augmenter MAX_ESSENCE_SLOTS en consequence.
+     Reference: [RS] RS Storage Disks tiers 1k/4k/16k/64k proportionnels.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+     Priorite: P3 DESIGN
+     Effort: Faible | Risque: Moyen (balance, GUI: plus de slots)
+     Experts: RS (RS-5.3B)
+
+[DV] Double validation redondante hive/controller
+     Quoi: La hive valide son controller toutes les 100 ticks. Le controller valide
+           ses hives toutes les 200 ticks. Redondant — les deux font la meme
+           verification (est-ce que l'autre existe encore?).
+     Pourquoi: RS validation unidirectionnelle controller→noeuds. Les noeuds ne
+               valident PAS le controller — ils sont notifies par events.
+     Comment: Supprimer validation dans StorageHiveBlockEntity.serverTick(). Garder:
+              (a) validation controller 200 ticks, (b) cleanup onRemove/setRemoved.
+     Reference: [RS] RS2 validation unidirectionnelle controller→noeuds.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2
+     Priorite: P3 OPTIM
+     Effort: Trivial | Risque: Faible
+     Experts: RS (RS-5.3D)
+
+

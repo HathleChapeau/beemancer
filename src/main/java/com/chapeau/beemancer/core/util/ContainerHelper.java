@@ -23,6 +23,7 @@ package com.chapeau.beemancer.core.util;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.items.IItemHandler;
 
 /**
  * Operations generiques sur Container: insertion, extraction, comptage, espace disponible.
@@ -202,5 +203,92 @@ public final class ContainerHelper {
             slots[i] = i;
         }
         return slots;
+    }
+
+    // ==========================================================================
+    // IItemHandler variants (NeoForge capability)
+    // ==========================================================================
+
+    /**
+     * Insere un ItemStack dans un IItemHandler sur tous les slots.
+     *
+     * @param handler le handler cible
+     * @param stack l'item a inserer (non modifie)
+     * @return le reste non insere (EMPTY si tout insere)
+     */
+    public static ItemStack insertItem(IItemHandler handler, ItemStack stack) {
+        if (stack.isEmpty()) return ItemStack.EMPTY;
+        ItemStack remaining = stack.copy();
+        for (int i = 0; i < handler.getSlots(); i++) {
+            if (remaining.isEmpty()) break;
+            remaining = handler.insertItem(i, remaining, false);
+        }
+        return remaining;
+    }
+
+    /**
+     * Extrait N items d'un type donne depuis un IItemHandler.
+     *
+     * @param handler le handler source
+     * @param template le type d'item a extraire
+     * @param count le nombre d'items a extraire
+     * @return les items extraits (count peut etre inferieur si pas assez)
+     */
+    public static ItemStack extractItem(IItemHandler handler, ItemStack template, int count) {
+        if (template.isEmpty() || count <= 0) return ItemStack.EMPTY;
+        ItemStack result = template.copy();
+        result.setCount(0);
+        int needed = count;
+
+        for (int i = 0; i < handler.getSlots(); i++) {
+            ItemStack existing = handler.getStackInSlot(i);
+            if (ItemStack.isSameItemSameComponents(existing, template)) {
+                int toTake = Math.min(needed, existing.getCount());
+                ItemStack extracted = handler.extractItem(i, toTake, false);
+                result.grow(extracted.getCount());
+                needed -= extracted.getCount();
+            }
+            if (needed <= 0) break;
+        }
+        return result;
+    }
+
+    /**
+     * Compte le nombre d'items d'un type dans un IItemHandler.
+     */
+    public static int countItem(IItemHandler handler, ItemStack template) {
+        if (template.isEmpty()) return 0;
+        int count = 0;
+        for (int i = 0; i < handler.getSlots(); i++) {
+            ItemStack existing = handler.getStackInSlot(i);
+            if (ItemStack.isSameItemSameComponents(existing, template)) {
+                count += existing.getCount();
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Calcule l'espace disponible total pour un type d'item dans un IItemHandler.
+     */
+    public static int availableSpace(IItemHandler handler, ItemStack template) {
+        if (template.isEmpty()) return 0;
+        int space = 0;
+        for (int i = 0; i < handler.getSlots(); i++) {
+            ItemStack existing = handler.getStackInSlot(i);
+            if (existing.isEmpty()) {
+                space += handler.getSlotLimit(i);
+            } else if (ItemStack.isSameItemSameComponents(existing, template)) {
+                space += Math.min(handler.getSlotLimit(i), existing.getMaxStackSize()) - existing.getCount();
+            }
+        }
+        return space;
+    }
+
+    /**
+     * Verifie si le handler a de la place pour N items d'un type.
+     */
+    public static boolean hasSpaceFor(IItemHandler handler, ItemStack template, int count) {
+        return availableSpace(handler, template) >= count;
     }
 }

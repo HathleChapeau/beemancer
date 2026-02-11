@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-10                     #
-#  (Terminal Auto-Craft Integration - 2026-02-10)                               #
+#                         Dernière mise à jour: 2026-02-11                     #
+#  (Storage Network Brainstorm G1 - 2026-02-11)                                 #
 ################################################################################
 
 ================================================================================
@@ -93,6 +93,7 @@ Philosophie:
 │   DeliveryBeeSpawner                │ Spawn, recall, redirect, kill bees   │
 │   RequestManager                    │ Demandes terminaux (joueur)          │
 │   StorageMultiblockManager          │ Formation/destruction multibloc      │
+│   HiveManager                       │ Gestion hives liees au controller    │
 │ common/block/hive/                    │                                        │
 │   IHiveBeeHost                      │ Interface publique abeille-ruche     │
 │   IHiveInternals                    │ Interface interne lifecycle manager  │
@@ -369,6 +370,30 @@ LISTE DES FEATURES:
 → Crafter System (Crafting Automatique)
   Fichier: Structure/feature_crafter_system.txt
   Description: Systeme de crafting automatique: Crafting Papers, Crafter bloc, CraftManager, integration delivery + import/export craft mode
+
+→ Storage Network Hardening (Critical + High Priority)
+  Description: Corrections critiques et haute priorite du reseau stockage: chunk safety guards (C1), collections immutables (C2), item loss prevention (C3), delta sync (H1), dirty flags (H2), stagger ticks (H3), player feedback (H4)
+  Scripts modifies: DeliveryBeeEntity.java, DeliveryPhaseGoal.java, StorageDeliveryManager.java, StorageChestManager.java, DeliveryNetworkPathfinder.java, DeliveryContainerOps.java, StorageMultiblockManager.java, StorageItemAggregator.java, RequestManager.java, StorageControllerBlockEntity.java, StorageTerminalBlockEntity.java
+  Lang: +4 cles en_us + fr_fr (honey_depleted, honey_restored, queue_full, storage_full)
+  Dependances: aucune nouvelle
+  Registres modifies: aucun
+
+→ Storage Brainstorm Groupe 1 — Reseau et Topologie (12 changements)
+  Description: Ameliorations reseau stockage issues du brainstorming 4 experts. 12 changements implementes:
+    [B]+[F] Constantes nommees + tick stagger terminal
+    [Q] Flood fill cap par clic (64 coffres max)
+    [O] setRemoved() terminal pour cleanup automatique
+    [L] Event-driven cleanup (blocs intelligents via setRemoved)
+    [A] Extraction HiveManager depuis controller
+    [E] Cout honey par relay (5 mB/s)
+    [M] Validation amortie round-robin
+    [P] Migration IItemHandler (capability NeoForge au lieu de Container)
+    [R] VersionedInventoryWrapper (fingerprint cache coffres)
+    [N*] Modele hybride push/poll (terminal push, coffres poll)
+  Scripts crees: HiveManager.java
+  Scripts modifies: StorageTerminalBlockEntity.java, StorageChestManager.java, StorageControllerBlockEntity.java, ControllerStats.java, StorageDeliveryManager.java, StorageItemAggregator.java, DeliveryContainerOps.java, StorageHelper.java, ContainerHelper.java, StorageEvents.java, StorageControllerMenu.java
+  Dependances: StorageHelper (IItemHandler methods), ContainerHelper (IItemHandler overloads)
+  Registres modifies: aucun
 
 ================================================================================
 6. FEATURES EN COURS

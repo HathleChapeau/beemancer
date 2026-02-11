@@ -1,0 +1,42 @@
+================================================================================
+BRAINSTORM STORAGE — PROPOSITIONS DIFFÉRÉES
+================================================================================
+Date: 2026-02-11
+Source: storage_brainstorm.txt — Groupe 1 (Réseau et Topologie)
+
+Ces propositions ont été acceptées en principe mais différées pour implémentation
+après que les changements du Groupe 1 soient stabilisés.
+
+================================================================================
+
+[D] Grid Services / Behaviours composables
+---------------------------------------------------------------------------
+Proposé par: Expert AE2
+Catégorie: Amélioration
+Priorité: P4
+
+Description:
+  Refactorer les services du controller en "Grid Services" composables,
+  similaires à l'architecture d'Applied Energistics 2.
+  Chaque service (stockage, livraison, crafting) serait un module
+  indépendant qui peut être ajouté/retiré dynamiquement du réseau.
+
+Référence:
+  AE2: IGridService, ITickingService, ICraftingService
+  Create: ProcessingBehaviours (contraptions modulaires)
+
+Motivation:
+  - Séparation claire des responsabilités
+  - Facilite l'ajout de nouveaux services (futur crafting, énergie, etc.)
+  - Testabilité améliorée (services isolés)
+
+Prérequis:
+  - Compléter les changements Groupe 1 (extraction managers, IItemHandler)
+  - Analyser l'architecture Create pour les Behaviours composables
+  - Définir l'interface IGridService avec lifecycle (attach/detach/tick)
+
+Notes:
+  L'utilisateur souhaite étudier la version Create (Behaviours) plutôt que
+  la version pure AE2 (Grid Services). À évaluer après stabilisation.
+
+================================================================================

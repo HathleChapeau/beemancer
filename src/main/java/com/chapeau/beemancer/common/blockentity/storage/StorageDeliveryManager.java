@@ -117,7 +117,7 @@ public class StorageDeliveryManager {
 
         int consumptionPerSecond = ControllerStats.getHoneyConsumption(
             parent.getEssenceSlots(), parent.getChestManager().getRegisteredChestCount(),
-            parent.getHiveMultiplier());
+            parent.getHiveMultiplier(), parent.getRelayCount());
         int remaining = consumptionPerSecond;
 
         int rotation = parent.getMultiblockManager().getRotation();

@@ -1,0 +1,352 @@
+================================================================================
+2. GROUPE 2 — ITEMS ET STOCKAGE
+================================================================================
+
+FEATURES ANALYSEES:
+  2.1 Item Aggregation (StorageItemAggregator, 5 priorites, ~523 lignes)
+  2.2 Delta Sync (synchro incrementale, snapshots)
+  2.3 Storage Terminal (3 onglets, crafting, deposit/pickup, 68 slots)
+
+--------------------------------------------------------------------------------
+2.1 ITEM AGGREGATION
+--------------------------------------------------------------------------------
+Etat actuel: Classe standalone ~523 lignes. Scanne TOUS les coffres, reconstruit
+la map from scratch a chaque refresh. 5 priorites de depot. Utilise Container
+(vanilla) au lieu de IItemHandler. Pas de cache incrementiel.
+Fichiers: StorageItemAggregator.java, ContainerHelper.java
+
+--- BUGS ---
+
+[T] Dirty flag incomplet (modifications externes)
+    Quoi: Les hoppers, autres mods, et joueurs ouvrant les coffres directement
+          ne declenchent PAS le dirty flag. Le delta sync rate ces changements.
+    Pourquoi: dirty=true uniquement dans depositItem/extractItem. Les modifications
+              externes passent par Container directement, sans passer par l'aggregator.
+    Comment: Quand des viewers sont presents, forcer dirty=true tous les ~100 ticks
+             pour capturer les changements externes.
+    Reference: [AE2] AE2 broadcastChanges() periodic comme filet de securite.
+               Decouverte: AE2-expert, confirmee par verification du code.
+    Priorite: P0 BUGFIX
+    Effort: 5 lignes | Risque: Aucun
+    Experts: AE2
+
+--- AMELIORATIONS ---
+
+[U] Cache incrementiel (Map au lieu de full scan)
+    Quoi: Maintenir un Map<ItemStackKey, Integer> server-side mis a jour dans
+          depositItem/extractItem au lieu de reconstruire depuis scratch.
+    Pourquoi: refreshAggregatedItems() est O(N*M) ou N=coffres, M=slots.
+              Avec 64 coffres x 27 slots = 1728 iterations toutes les 40 ticks.
+              Le cache incrementiel reduit a O(1) par operation.
+    Comment: Update le Map dans deposit/extract. Full scan uniquement a l'init
+             et comme backup periodique (~200 ticks).
+    Reference: [AE2] AE2 KeyCounter dans StorageService, updates incrementaux.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+               [RS] RS2 IStorageCache, meme approche incrementale.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+               [CREATE] InventorySummary + BigItemStack pour structure de donnees.
+               Source: Create InventorySummary.java (194L), BigItemStack.java (87L)
+    Priorite: P1
+    Effort: Moyen | Risque: Faible
+    Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[V] Index coffres par contenu pour depot O(1)
+    Quoi: Maintenir un Map<ItemStackKey, Set<BlockPos>> pour savoir quels coffres
+          contiennent quel item. Le depot passe de 5 passes O(N) a O(1).
+    Pourquoi: findSlotForItem() fait 5 passes lineaires sur TOUS les coffres
+              (meme item mergeable, meme item slot vide, meme tag, meme namespace,
+              n'importe quel slot vide). Avec l'index, la priorite 1 est O(1).
+    Comment: Mettre a jour l'index dans deposit/extract et lors du full scan.
+    Reference: [AE2] AE2 priority-sorted storages.
+               [RS] RS2 StorageRepository avec index.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+    Priorite: P2
+    Effort: Moyen | Risque: Faible
+    Experts: AE2, RS (convergence)
+
+[W] Tri cote client au lieu de server-side
+    Quoi: Deplacer le sort alphabetique de refreshAggregatedItems() (server)
+          vers le handler du StorageItemsSyncPacket (client).
+    Pourquoi: Le tri est une operation de presentation, pas de logique metier.
+              Le serveur n'a pas besoin d'une liste triee.
+    Comment: Supprimer le sort() server-side, ajouter le tri dans le client
+             apres reception du packet.
+    Reference: [RS] RS2 GridView trie cote client.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2
+    Priorite: P1
+    Effort: Faible | Risque: Aucun
+    Experts: RS
+
+--- OPTIMISATIONS ---
+
+[X] Decomposition 523 lignes en 3-4 classes
+    Quoi: Extraire DepositStrategy (~120L), AggregationCache (~120L),
+          ViewerSyncManager (~120L). StorageItemAggregator reste ~160L.
+    Pourquoi: 523 lignes depasse la regle 150L du projet. Responsabilites
+              mixtes (aggregation + depot + sync + viewer management).
+    Comment: Extraction par responsabilite, meme pattern que les 5 managers
+             deja extraits du controller.
+    Reference: [AE2] Separation concerns dans StorageService.
+               [RS] IStorageCache separe de la logique de depot.
+               [CREATE] LogisticsManager + InventorySummary + BigItemStack.
+    Priorite: P2
+    Effort: Moyen | Risque: Faible
+    Experts: AE2, RS, CREATE (convergence)
+
+[Y] Simplifier les 5 priorites de depot
+    Quoi: Les 5 niveaux de priorite (meme item merge, meme item slot vide,
+          meme tag, meme namespace, n'importe quel slot vide) sont complexes.
+          Simplifier a 3 : meme item merge > meme item slot vide > slot vide.
+    Pourquoi: Les priorites "meme tag" et "meme namespace" sont des heuristiques
+              dont l'utilite est discutable. Elles complexifient le code (5 passes).
+    Comment: Retirer les passes 3 et 4, garder merge > slot vide meme coffre > any.
+    Reference: [CREATE] Create delegue simplement a insertItem() sans heuristiques.
+               [RS] RS2 utilise des priorites numeriques configurables par l'utilisateur.
+    Priorite: P3 (decision gameplay)
+    Effort: Faible | Risque: Moyen (changement de comportement)
+    Experts: CREATE, RS
+
+--------------------------------------------------------------------------------
+2.2 DELTA SYNC
+--------------------------------------------------------------------------------
+Etat actuel: SYNC_INTERVAL=40 ticks (2 sec). Snapshot comparison. Full sync pour
+nouveaux viewers. Dirty flag. ItemStackKey comme cle.
+Fichiers: StorageItemAggregator.java (partie sync), StorageItemsSyncPacket.java
+
+--- BUGS ---
+
+[Z] TasksSyncPacket envoye sans changement
+    Quoi: StorageTasksSyncPacket est envoye a CHAQUE sync, meme quand les taches
+          n'ont pas change. Gaspillage de bande passante.
+    Pourquoi: Pas de dirty flag pour les taches (contrairement aux items).
+    Comment: Ajouter un tasksDirty flag dans StorageDeliveryManager, reset apres sync.
+    Reference: [RS] RS2 utilise des dirty flags sur tous les packets de sync.
+    Priorite: P0 QUICK WIN
+    Effort: Trivial | Risque: Aucun
+    Experts: RS
+
+--- AMELIORATIONS ---
+
+[AA] Reduire SYNC_INTERVAL de 40 a 10-20 ticks
+     Quoi: Le terminal met 2 secondes a refleter les changements. Trop lent
+           pour une UI interactive.
+     Pourquoi: 40 ticks = 2 secondes de latence. AE2 sync chaque tick, RS est
+               event-driven (sub-tick). 10-20 ticks = compromis acceptable.
+     Comment: Changer SYNC_INTERVAL de 40 a 10 (ou 20).
+     Reference: [AE2] AE2 broadcastChanges() chaque tick.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/5.1-terminal-system
+                [RS] RS2 GridWatcher event-driven, <1 tick.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2
+     Priorite: P1
+     Effort: Trivial (1 constante) | Risque: Aucun
+     Experts: AE2, RS (convergence)
+
+[AB] BigItemStack pour encodage reseau compact
+     Quoi: Au lieu d'envoyer des ItemStack separees (chacune avec son NBT),
+           envoyer 1 ItemStack + 1 VarInt (count) par type d'item.
+     Pourquoi: 500 stacks de cobblestone = 500 ItemStack dans le packet.
+               Avec BigItemStack = 1 ItemStack + count=32000. Reduction ~99%.
+     Comment: Codec custom : ItemStack (count=1) + VarInt (total count).
+     Reference: [CREATE] BigItemStack.STREAM_CODEC avec ByteBufCodecs.VAR_INT.
+                Source: Create BigItemStack.java (87L)
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: CREATE
+
+[AC] Stateless request/response (alternative au delta sync)
+     Quoi: Remplacer le delta sync par un modele stateless : le client envoie
+           une requete, le serveur repond avec le snapshot complet.
+     Pourquoi: Zero etat a tracker cote serveur (pas de previousSnapshot, pas
+               de dirty flags, pas de fullSyncPending). Plus simple a maintenir.
+     Comment: LogisticalStockRequestPacket (C2S) + LogisticalStockResponsePacket (S2C).
+              Le client demande periodiquement (ex: toutes les 10 ticks).
+     Reference: [CREATE] Create utilise ce pattern pour le StockTicker.
+                Source: Create LogisticalStockRequestPacket.java (35L)
+     Priorite: P3 (alternative radicale, evaluer si delta sync pose des problemes)
+     Effort: Moyen | Risque: Moyen (changement d'architecture)
+     Experts: CREATE
+     Note: DIVERGENCE avec AE2 (delta plus rapide) et RS (event-driven).
+           Les 3 experts ont 3 visions differentes du sync. Le delta actuel
+           fonctionne, les ameliorations AA+AB suffisent pour v1.
+
+[AD] Serial numbers pour identification d'items
+     Quoi: Attribuer un ID numerique a chaque ItemStackKey. Les deltas
+           envoient serial+count au lieu du full ItemStack.
+     Pourquoi: Reduit la taille des delta packets de ~30% apres le full sync initial.
+     Comment: Map<Integer, ItemStackKey> bidirectionnel. Le client resout serial → item.
+     Reference: [AE2] AE2 MEInventoryUpdatePacket + IncrementalUpdateHelper.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/5.1-terminal-system
+     Priorite: P3
+     Effort: Eleve | Risque: Moyen
+     Experts: AE2
+
+--- OPTIMISATIONS ---
+
+[AE] Binary search insert cote client
+     Quoi: applyDeltaItems() re-trie toute la liste O(N log N) apres chaque delta.
+           Utiliser une insertion par binary search O(log N).
+     Pourquoi: Avec 500+ types d'items, re-trier a chaque sync est couteux.
+     Comment: Collections.binarySearch() + list.add(index, item).
+     Reference: [RS] RS2 GridView utilise des insertions triees.
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: RS
+
+[AF] Reponse fragmentee pour gros inventaires
+     Quoi: Si le full sync depasse une certaine taille, le fragmenter en
+           plusieurs packets (100 items/packet) avec un flag lastPacket.
+     Pourquoi: Eviter les limites de taille de packet Minecraft.
+     Comment: Boucle d'envoi avec chunk size configurable.
+     Reference: [CREATE] InventorySummary.divideAndSendTo() lignes 160-187.
+     Priorite: P3
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+[AG] Dual-TTL cache cote serveur
+     Quoi: Deux niveaux de cache : SUMMARIES (TTL 20 ticks, pour affichage)
+           et ACCURATE_SUMMARIES (TTL 1 tick, pour transactions).
+     Pourquoi: Eviter de recalculer le meme summary pour chaque viewer a chaque tick.
+     Comment: Guava Cache ou simple TTL counter.
+     Reference: [CREATE] LogisticsManager.java lignes 38-50, TickBasedCache.
+     Priorite: P3
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+--------------------------------------------------------------------------------
+2.3 STORAGE TERMINAL
+--------------------------------------------------------------------------------
+Etat actuel: 693 lignes. 3 onglets. 68 slots. Deposit/pickup system.
+PendingRequest queue max 16. Pas de setRemoved().
+Fichiers: StorageTerminalBlockEntity.java, StorageTerminalMenu.java,
+          StorageTerminalScreen.java, TerminalStorageTabRenderer.java
+
+--- BUGS ---
+
+[AH] setRemoved() manquant [BUG CRITIQUE]
+     Quoi: StorageTerminalBlockEntity n'a PAS de setRemoved(). Quand le terminal
+           est casse :
+           - Les viewers NE SONT PAS retires de l'aggregator
+           - Les pending requests NE SONT PAS annulees
+           - Le registre reseau N'EST PAS nettoye
+           - Les items dans deposit/pickup NE SONT PAS droppes
+     Pourquoi: Tous les autres blocs reseau (Interface, Hive, Relay) ont un
+               setRemoved() propre. Le terminal est le seul sans.
+     Comment: Override setRemoved() : appeler unlinkController() +
+              cancelAllPendingRequests() + drop deposit/pickup items +
+              super.setRemoved(). ~10 lignes.
+     Reference: [AE2] AE2 GridNode.destroy() dans setRemoved().
+                [RS] RS2 idem.
+                Decouverte: Architecte, confirmee AE2+RS.
+     Priorite: P0 BUGFIX CRITIQUE
+     Effort: 10 lignes | Risque: Aucun
+     Experts: AE2, RS (convergence), CREATE
+
+[AI] DATA_HONEY_CONSUMPTION mauvaise source [BUG]
+     Quoi: StorageTerminalMenu ligne 278 utilise
+           controller.getChestManager().getRegisteredChestCount() qui retourne
+           SEULEMENT les coffres du controller, pas ceux des relays.
+     Pourquoi: La valeur affichee dans l'onglet Controller est incorrecte —
+               elle sous-estime le nombre de coffres et donc le cout honey.
+     Comment: Changer en controller.getNetworkRegistry().getChestCount().
+              1 ligne.
+     Reference: [RS] RS-expert a decouvert ce bug. Le controller lui-meme
+                utilise la bonne methode (ligne 131).
+     Priorite: P0 BUGFIX
+     Effort: 1 ligne | Risque: Aucun
+     Experts: RS
+
+[AJ] Deferred processPendingRequests [BUG POTENTIEL]
+     Quoi: processPendingRequests() est appele dans onContentsChanged() des
+           pickupSlots, donc PENDANT une transaction Container.
+     Pourquoi: Si publishRequest() modifie l'etat pendant la transaction en cours,
+               ca peut causer des effets de bord (ConcurrentModification, etc.)
+     Comment: Utiliser un flag needsProcessPending=true dans onContentsChanged,
+              traiter dans serverTick. Meme pattern que needsDepositScan.
+     Reference: [RS] RS-expert a identifie ce pattern.
+     Priorite: P0 BUGFIX
+     Effort: 5 lignes | Risque: Aucun
+     Experts: RS
+
+[AK] isFormed() check manquant
+     Quoi: getController() verifie que le BE existe mais pas que le multibloc
+           est forme. Si le multibloc est casse mais le bloc controller existe
+           encore, le terminal tente quand meme de l'utiliser.
+     Pourquoi: Les operations echouent silencieusement au lieu de retourner
+               un etat propre "non connecte".
+     Comment: Ajouter `&& controller.isFormed()` dans getController().
+     Reference: [AE2] AE2-expert a identifie ce cas.
+     Priorite: P1
+     Effort: 3 lignes | Risque: Aucun
+     Experts: AE2
+
+--- AMELIORATIONS ---
+
+[AL] Decomposition 693 lignes
+     Quoi: Extraire TerminalDepositHandler (~150L) et TerminalRequestHandler (~130L).
+           StorageTerminalBlockEntity reste ~400L (encore au-dessus de 150L).
+     Pourquoi: 693 lignes depasse largement la regle 150L.
+     Comment: Meme pattern d'extraction que les managers du controller.
+     Reference: [AE2] AE2 separe MEStorageMenu et logique.
+                [RS] RS2 separe la logique de requete.
+                [CREATE] Propose behaviours : NetworkInventoryBehaviour +
+                TerminalSearchBehaviour + TerminalSyncBehaviour.
+                Source: Create SmartBlockEntity.java, DepotBlockEntity.java
+     Priorite: P2
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, RS, CREATE (convergence)
+
+[AM] SmartInventory au lieu de raw ItemStackHandler
+     Quoi: Utiliser un wrapper type SmartInventory avec forbidInsertion/
+           forbidExtraction pour les slots virtuels et whenContentsChanged.
+     Pourquoi: Les pickupSlots sont output-only mais c'est gere par le Menu
+               (OutputOnlyTabSlot) au lieu de l'inventaire lui-meme.
+     Comment: Creer un SmartInventory inspiree de Create.
+     Reference: [CREATE] SmartInventory.java (190L).
+     Priorite: P3
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+[AN] Slots progressifs (upgrades)
+     Quoi: Au lieu de 9+9 slots fixes, commencer avec 2+2 et ajouter
+           +1 par upgrade.
+     Pourquoi: Progression gameplay, le joueur investit pour plus de capacite.
+     Comment: Nouveaux items d'upgrade, slot count dynamique dans le Menu.
+     Reference: [AE2] AE2 ME Terminal a des capacity cards.
+     Priorite: P3
+     Effort: Eleve (nouveaux items, GUI dynamique) | Risque: Moyen
+     Experts: AE2
+
+[AO] Etat client (search, sort, scroll) dans Screen pas dans BE
+     Quoi: S'assurer que l'etat d'affichage (recherche, tri, scroll) est
+           stocke dans le Screen cote client, pas dans le BlockEntity.
+     Pourquoi: Si stocke dans le BE, l'etat survit au chunk unload et peut
+               causer des inchoherences.
+     Comment: Verifier et migrer si necessaire.
+     Reference: [CREATE] Create garde tout display state cote Screen.
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: CREATE
+
+--- OPTIMISATIONS ---
+
+[AP] Index requests dans RequestManager
+     Quoi: scanDepositSlots() itere getAllRequests() pour verifier si une
+           requete existe deja. Utiliser un index par type+terminal.
+     Pourquoi: Avec beaucoup de requetes actives, l'iteration lineaire est lente.
+     Comment: Ajouter hasActiveExportFrom(BlockPos, ItemStack) avec un index.
+     Reference: [RS] RS-expert.
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: RS
+
+[AQ] MenuBase<T> pour lifecycle standardise
+     Quoi: Creer une classe de base pour les menus avec createOnClient,
+           initAndReadInventory, addSlots, saveData, removed() cleanup.
+     Pourquoi: Standardiser le lifecycle des menus, eviter les oublis de cleanup.
+     Comment: Classe abstraite inspiree de Create MenuBase.
+     Reference: [CREATE] Create MenuBase.java (77L).
+     Priorite: P3
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+

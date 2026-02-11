@@ -1,0 +1,320 @@
+================================================================================
+1. GROUPE 1 — RESEAU ET TOPOLOGIE
+================================================================================
+
+FEATURES ANALYSEES:
+  1.1 Storage Controller (multibloc 3x3x3, hub central)
+  1.2 Storage Relay (extension reseau, waypoints)
+  1.3 Network Validation (verification blocs existants)
+  1.4 Storage Chests (flood fill BFS, enregistrement manuel)
+
+Note: La portee reseau est de 15 blocs (AbstractNetworkNodeBlockEntity.MAX_RANGE
+= 15), pas 24 comme initialement presume. Verifie dans le code source.
+
+--------------------------------------------------------------------------------
+1.1 STORAGE CONTROLLER
+--------------------------------------------------------------------------------
+Etat actuel: Multibloc 3x3x3 fixe, hub central, 5 managers, ~714 lignes.
+Fichiers: StorageControllerBlockEntity.java, StorageControllerBlock.java,
+          StorageMultiblockManager.java, ControllerStats.java
+
+--- AMELIORATIONS ---
+
+[A] Extraire HiveManager du controller
+    Quoi: Les lignes 327-434 de StorageControllerBlockEntity gerent les hives
+          (link, unlink, validate, essence overflow). Extraire en classe separee.
+    Pourquoi: Le controller a 714 lignes. Ce bloc de code est self-contained et
+              suit le meme pattern que les 5 managers deja extraits.
+    Comment: Creer HiveManager.java, meme pattern que StorageChestManager.
+    Reference: [RS] RS2 separe strictement les responsabilites dans des modules.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2
+    Priorite: P1
+    Effort: Faible | Risque: Faible
+    Experts: RS
+
+[B] Extraire les magic numbers en constantes
+    Quoi: MAX_LINKED_HIVES=4, intervalles de validation, etc. sont hardcodes.
+    Pourquoi: Lisibilite, maintenabilite, facilite le tuning gameplay.
+    Comment: Constantes statiques finales dans le controller ou une classe Config.
+    Reference: [RS] RS2 utilise des constantes nommees partout.
+    Priorite: P0 QUICK WIN
+    Effort: Trivial | Risque: Aucun
+    Experts: RS
+
+[C] Controller a tiers variables (Iron/Gold/Diamond)
+    Quoi: Differentes tailles/capacites de controller selon le tier.
+    Pourquoi: Progression gameplay, le joueur investit plus pour plus de capacite.
+    Comment: Plusieurs blocs controller avec des capacites differentes.
+    Reference: [AE2] Le ME Controller AE2 est un cuboid libre jusqu'a 7x7x7.
+               Source: https://guide.appliedenergistics.org/1.20.1/items-blocks-machines/me_controller
+               [CREATE] ConnectivityHandler.formMulti() permet des multiblocs
+               a taille variable (ItemVault, FluidTank).
+               Source: Create ItemVaultBlockEntity.java
+    Priorite: P3
+    Effort: Eleve (nouveaux blocs, recipes, modeles) | Risque: Moyen
+    Experts: AE2, CREATE (convergence)
+
+[D] Architecture Grid Services (services injectables)
+    Quoi: Remplacer les 5 managers par des services reseau injectables
+          (IStorageService, ITickService, ICraftingService).
+    Pourquoi: Decouplage, testabilite, extensibilite.
+    Comment: Pattern Grid + GridServices d'AE2. Chaque service s'enregistre
+             aupres du Grid et est accessible par type.
+    Reference: [AE2] AE2 GridServices registry + service factories.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+               [CREATE] Alternative: Behaviours composables (SmartBlockEntity).
+               Chaque behaviour a son propre tick/read/write/initialize.
+               Source: Create SmartBlockEntity.java (~264 lignes)
+    Priorite: P4 (evaluer apres les autres ameliorations)
+    Effort: Eleve | Risque: Eleve (refactoring majeur)
+    Experts: AE2, CREATE (convergence sur le besoin, divergence sur la solution)
+    Note: AE2 propose services injectables, Create propose behaviours composables.
+          Les deux resolvent le meme probleme (mieux organiser le controller).
+
+[E] Cout honey par relay dans la formule reseau
+    Quoi: Actuellement la formule honey = (base + coffres*10 + essenceCost) *
+          hiveMultiplier * (1-efficiency). Les relays ne coutent rien.
+    Pourquoi: Chaque relay etend le reseau, devrait avoir un cout honey.
+    Comment: Ajouter un terme `+ relayCount * RELAY_HONEY_COST` dans la formule.
+    Reference: [RS] RS facture de l'energie par appareil connecte au reseau.
+               Source: https://refinedmods.com/refined-storage/
+    Priorite: P2
+    Effort: Faible | Risque: Faible (gameplay tuning)
+    Experts: RS
+
+--- OPTIMISATIONS ---
+
+[F] Tick stagger etendu
+    Quoi: Etendre le pattern de tick stagger (deja dans ItemAggregator) a TOUTES
+          les boucles de validation du controller.
+    Pourquoi: Distribuer la charge quand plusieurs controllers existent.
+    Comment: Pattern `(gameTick + worldPosition.hashCode()) % interval`.
+    Reference: [AE2] AE2 TickManagerService distribue les ticks entre composants.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+    Priorite: P0 QUICK WIN (pattern deja utilise, juste a etendre)
+    Effort: Trivial | Risque: Aucun
+    Experts: AE2
+    Note: Deja partiellement implemente dans StorageItemAggregator.tickSync().
+
+[G] Sleep/Wake mechanism
+    Quoi: Le controller dort quand il n'y a pas d'activite, se reveille sur
+          changement reseau (chest add/remove, delivery task, etc.)
+    Pourquoi: Eviter de ticker inutilement quand le reseau est idle.
+    Comment: Flag "awake" mis a true sur evenements reseau, remis a false apres
+             N ticks sans activite.
+    Reference: [AE2] AE2 TickManagerService sleep/wake model.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+    Priorite: P4 (necessite etude des triggers)
+    Effort: Moyen | Risque: Moyen
+    Experts: AE2
+
+--------------------------------------------------------------------------------
+1.2 STORAGE RELAY
+--------------------------------------------------------------------------------
+Etat actuel: Bloc relais, portee 15 blocs, waypoint bees, graphe BFS.
+Fichiers: StorageRelayBlockEntity.java (~126L), AbstractNetworkNodeBlockEntity.java
+
+--- AMELIORATIONS ---
+
+[H] Auto-connexion des relays par adjacence
+    Quoi: Quand un relay est place, il se connecte automatiquement aux noeuds
+          reseau (controller/relay) dans son rayon, sans edit mode.
+    Pourquoi: UX — actuellement il faut enter edit mode, cliquer sur chaque relay.
+              AE2 et Create auto-connectent par adjacence.
+    Comment: Dans onLoad() ou setPlacedBy(), scanner les BlockEntities voisins
+             et appeler la logique de connexion.
+    Reference: [AE2] Les cables AE2 s'auto-connectent par adjacence.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+               [CREATE] ItemVault auto-formation via ConnectivityHandler.
+               Source: Create ItemVaultBlockEntity.java
+    Priorite: P3
+    Effort: Moyen | Risque: Faible
+    Experts: AE2, CREATE (convergence)
+    Question ouverte: Devrait-il respecter l'edit mode ou le bypasser ?
+    Question ouverte: Risque de chemins sous-optimaux pour les abeilles ?
+
+[I] Relay cache controllerPos
+    Quoi: StorageRelayBlockEntity n'a PAS de champ controllerPos (verifie dans
+          le code). Ajouter un champ controllerPos cache.
+    Pourquoi: Actuellement, trouver le controller depuis un relay necessite un
+              BFS a chaque fois. Terminal et Interface ont deja controllerPos.
+    Comment: Meme pattern que StorageTerminalBlockEntity.controllerPos.
+             Mis a jour lors de la connexion, persiste en NBT.
+    Reference: [RS] RS2 chaque noeud connait son controller directement.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2
+    Priorite: P1
+    Effort: Faible | Risque: Faible
+    Experts: RS
+
+[J] Feedback visuel de portee
+    Quoi: Afficher une sphere/cercle de particules montrant la portee de 15
+          blocs quand le joueur est en edit mode.
+    Pourquoi: Le joueur ne sait pas ou s'arrete la portee du relay.
+    Comment: ParticleHelper.sphere() ou ring() existe deja.
+    Reference: [RS] RS affiche la portee du Wireless Transmitter.
+               Source: https://refinedmods.com/refined-storage/
+    Priorite: P2
+    Effort: Faible (infrastructure existe) | Risque: Aucun
+    Experts: RS
+
+--- FIXES ---
+
+[K] Partition detection on relay destroy
+    Quoi: Quand un relay est detruit et qu'il etait le seul lien entre deux
+          parties du reseau, detecter et gerer la partition.
+    Pourquoi: Actuellement, BFS cleanup retire les blocs du relay detruit, mais
+              ne detecte pas si d'autres noeuds sont maintenant isoles.
+    Comment: BFS depuis les voisins du relay detruit. Si un voisin ne peut plus
+             atteindre le controller, ses blocs doivent etre nettoyes.
+    Reference: [AE2] Algorithme 2 passes (retrait + validation splits).
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+    Priorite: P4 (necessite design approfondi)
+    Effort: Eleve | Risque: Eleve
+    Experts: AE2, RS (convergence sur le besoin)
+
+--------------------------------------------------------------------------------
+1.3 NETWORK VALIDATION
+--------------------------------------------------------------------------------
+Etat actuel: Polling toutes les 200 ticks (10s). Guards hasChunkAt() partout.
+Fichiers: StorageControllerBlockEntity.java (validateNetworkBlocks),
+          StorageEvents.java, RequestManager.java, DeliveryBeeSpawner.java
+
+--- AMELIORATIONS ---
+
+[L] Event-driven validation (etendre onBlockBreak)
+    Quoi: StorageEvents.onBlockBreak() existe DEJA mais ne se declenche que
+          quand le joueur est en edit mode (check StorageEditModeHandler.isEditing).
+          Retirer/relaxer le gate edit-mode pour le path de cleanup.
+    Pourquoi: Un coffre/terminal/interface detruit hors edit mode n'est detecte
+              qu'apres 10 secondes (200 ticks). Avec l'event, c'est immediat.
+    Comment: Retirer le check isEditing() a la ligne 377 de StorageEvents.java
+             pour le chemin de cleanup (pas pour le chemin d'enregistrement).
+    Reference: [AE2] AE2 utilise addNode/removeNode event-driven.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+               [RS] RS2 utilise BlockEvent.BreakEvent.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2/3.2-neoforge-platform
+    Priorite: P0 QUICK WIN (1 ligne de code, infrastructure existe)
+    Effort: 1 ligne | Risque: Aucun
+    Experts: AE2, RS (convergence forte)
+    Note: Decouverte de l'architecte — le code existe, il est juste gate.
+
+[M] Amortized validation (round-robin)
+    Quoi: Au lieu de valider TOUS les blocs en une fois toutes les 200 ticks,
+          valider N blocs par tick en rotation.
+    Pourquoi: Un reseau avec 200 coffres = 200 checks en 1 tick = lag spike.
+              Amortir = lisser la charge.
+    Comment: Index rotatif, valider ceil(totalBlocks / SPREAD_TICKS) par tick.
+    Reference: [RS] RS propose cette approche.
+               [AE2] AE2 TickManagerService distribue les ticks entre composants.
+    Priorite: P2
+    Effort: Moyen | Risque: Faible
+    Experts: RS, AE2 (complementaire)
+
+[N] TTL keepAlive (heartbeat)
+    Quoi: Chaque bloc reseau envoie un "heartbeat" au controller periodiquement.
+          Si pas de heartbeat pendant N ticks, le bloc est considere invalide.
+    Pourquoi: Inverse le modele: au lieu du controller qui poll, les blocs
+              signalent leur presence.
+    Comment: Pattern LogisticallyLinkedBehaviour de Create.
+    Reference: [CREATE] Create LogisticallyLinkedBehaviour utilise un TTL cache.
+               Source: Create LogisticallyLinkedBehaviour.java
+    Priorite: P3 (alternative a L+M, pas cumulable)
+    Effort: Moyen | Risque: Moyen
+    Experts: CREATE
+    Note: Mutuellement exclusif avec L+M. Choisir l'un ou l'autre.
+
+--- FIXES ---
+
+[O] Ajouter setRemoved() au StorageTerminalBlockEntity
+    Quoi: StorageTerminalBlockEntity n'a PAS de setRemoved(). La cleanup du
+          terminal repose entierement sur la validation periodique.
+    Pourquoi: Quand un terminal est detruit, il faut immediatement:
+              - Retirer du registre reseau
+              - Annuler les requetes pendantes
+              - Fermer les menus ouverts
+    Comment: Override setRemoved(), appeler cancelAllPendingRequests(),
+             unregister du NetworkRegistry, super.setRemoved().
+    Reference: Decouverte de l'architecte lors de la verification du code.
+               Tous les autres blocs reseau (Interface, Hive, Relay) ont
+               un setRemoved() propre.
+    Priorite: P0 QUICK WIN (fix evident)
+    Effort: Trivial | Risque: Aucun
+    Experts: Architecte (decouverte), RS (a souleve le probleme)
+
+--------------------------------------------------------------------------------
+1.4 STORAGE CHESTS
+--------------------------------------------------------------------------------
+Etat actuel: 3 types vanilla (Chest, Trapped Chest, Barrel). Flood fill BFS
+sans limite. Edit mode pour enregistrement.
+Fichiers: StorageChestManager.java (~169L), StorageHelper.java
+
+--- AMELIORATIONS ---
+
+[P] Detection par IItemHandler capability
+    Quoi: Remplacer la whitelist 3 blocs (StorageHelper.isStorageContainer) par
+          une detection via la capability IItemHandler de NeoForge.
+    Pourquoi: Supporterait automatiquement tous les conteneurs moddeds
+              (Iron Chests, Sophisticated Backpacks, Drawers, etc.)
+    Comment: Remplacer `block instanceof ChestBlock || block instanceof BarrelBlock`
+             par `level.getCapability(Capabilities.ItemHandler.BLOCK, pos, dir)`.
+    Reference: [AE2] Le Storage Bus AE2 supporte tout IItemHandler.
+               Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/import-export-storage
+               [RS] RS2 External Storage supporte tout IItemHandler.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+               [CREATE] CapManipulationBehaviourBase detecte par capability.
+               Source: Create CapManipulationBehaviourBase.java
+    Priorite: P2
+    Effort: Moyen (necessite aussi migration Container -> IItemHandler dans
+            StorageItemAggregator et ContainerHelper) | Risque: Moyen
+    Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+    Note: Implique un refactoring de StorageItemAggregator qui utilise
+          actuellement `Container` (vanilla) pour toutes les operations.
+          4+ fichiers impactes: StorageItemAggregator, ContainerHelper,
+          StorageChestManager, DeliveryContainerOps.
+
+[Q] Flood fill cap (~64 coffres)
+    Quoi: Limiter le nombre de coffres enregistrables par flood fill BFS.
+    Pourquoi: Un BFS sans limite dans une zone dense = potentiel lag spike.
+              Un joueur pourrait enregistrer des centaines de coffres d'un clic.
+    Comment: Ajouter `if (registered.size() >= MAX_CHESTS) break;` dans le BFS.
+    Reference: [AE2] AE2 limite les channels (8 normal, 32 dense) ce qui
+               contraint indirectement le nombre de storage.
+               [RS] RS n'a pas de limite explicite mais la performance degrade.
+    Priorite: P0 QUICK WIN
+    Effort: 5 lignes | Risque: Aucun
+    Experts: AE2, RS (convergence)
+
+--- OPTIMISATIONS ---
+
+[R] VersionedInventoryWrapper sur les coffres
+    Quoi: Wrapper les coffres du reseau avec un tracker de version. Si le
+          contenu d'un coffre n'a pas change, skip le recalcul d'agregation.
+    Pourquoi: refreshAggregatedItems() itere TOUS les coffres TOUS les slots
+              a chaque refresh. Si 90% des coffres n'ont pas change, c'est
+              90% de travail inutile.
+    Comment: Pattern VersionedInventoryWrapper de Create.
+             Chaque coffre a un compteur de version incremente a chaque
+             modification. Le refresh ne recalcule que les coffres modifies.
+    Reference: [CREATE] Create VersionedInventoryWrapper +
+               VersionedInventoryTrackerBehaviour.
+               Source: Create VersionedInventoryWrapper.java,
+               VersionedInventoryTrackerBehaviour.java
+    Priorite: P2
+    Effort: Moyen | Risque: Faible
+    Experts: CREATE (proposition unique)
+    Note: Necessite de wrapper les Container/IItemHandler des coffres.
+          Complexifie la gestion mais gros gain de performance potentiel
+          pour les reseaux avec 50+ coffres.
+
+[S] Visual range feedback en edit mode
+    Quoi: Afficher des particules montrant la sphere de portee (15 blocs)
+          quand le joueur est en edit mode.
+    Pourquoi: Le joueur ne sait pas visuellement ou s'arrete la portee.
+    Comment: ParticleHelper.sphere(level, nodePos, 15, particleType, count)
+             appele a l'entree en edit mode ou periodiquement.
+    Reference: [RS] RS affiche la portee du Wireless Transmitter.
+    Priorite: P2
+    Effort: Faible (ParticleHelper existe) | Risque: Aucun
+    Experts: RS
+
+

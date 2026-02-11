@@ -1,0 +1,532 @@
+================================================================================
+4. GROUPE 4 — AUTOMATION ET INTERFACES
+================================================================================
+
+FEATURES ANALYSEES:
+  4.1 Network Interface (NetworkInterfaceBlockEntity ~738L, parent abstrait)
+  4.2 Import Interface (ImportInterfaceBlockEntity ~237L)
+  4.3 Export Interface (ExportInterfaceBlockEntity ~150L)
+  4.4 Interface Filter (InterfaceFilter ~228L, mode ITEM/TEXT)
+  4.5 Interface Task (InterfaceTask ~194L, lifecycle NEEDED/LOCKED/DELIVERED)
+  4.6 Crafter System [RETIRE DU CODEBASE — crashs frequents, commits 3ab9504/6982ed6]
+
+Convergences Groupe 4:
+  UNANIMITE 3/3: isFormed() check manquant (meme pattern que [AK] Groupe 2)
+  UNANIMITE 3/3: Container → IItemHandler (meme chantier que [P] Groupe 1)
+  AE2+RS: SCAN_INTERVAL 40 ticks trop lent
+  AE2+CREATE: Decomposition 738L
+  Bug confirme par architecte: lockedTick champ mort, jamais lu
+  Bug confirme par architecte: getLockedCount() existe mais jamais appele
+  Bug confirme par architecte: matchesTag() substring match (faux positifs)
+
+Decouverte majeure: Le Crafter System (CrafterBlockEntity, CraftManager,
+CraftingPaperItem, PartCraftingPaperItem) a ete ENTIEREMENT SUPPRIME du
+codebase dans les commits recents. Raison: crashs frequents. Tous les fichiers
+ont ete supprimes. Les propositions 4.6 portent sur la reimplementation future.
+
+Divergence crafter redesign:
+  AE2: Separation Pattern Provider / Crafting CPU (architecture AE2)
+  RS: Multi-crafter + priorites + Lock Modes (approach RS2)
+  CREATE: Style Factory Panel distribue (1 recette = 1 crafter, pas centralise)
+
+--------------------------------------------------------------------------------
+4.1 NETWORK INTERFACE (NetworkInterfaceBlockEntity ~738L)
+--------------------------------------------------------------------------------
+Etat actuel: Classe abstraite parente pour Import et Export. 738 lignes.
+Gere: lien controller, filtres (5 ghost slots), InterfaceTasks (lifecycle
+NEEDED→LOCKED→DELIVERED), reconciliation 4 phases, scan periodique 40 ticks.
+Fichiers: NetworkInterfaceBlockEntity.java, NetworkInterfaceMenu.java,
+          InterfaceActionPacket.java (9 types d'action C2S)
+
+--- BUGS ---
+
+[BU] getController() sans isFormed() check [UNANIMITE 3/3]
+     Quoi: NetworkInterfaceBlockEntity.getController() ligne 145 verifie que le
+           BE existe mais pas que le multibloc est forme. Meme bug que [AK] pour
+           le terminal (Groupe 2).
+     Pourquoi: Si le multibloc est casse mais le bloc controller existe encore,
+               l'interface tente de scanner/publier des tasks vers un controller
+               non-forme. Toutes les operations echouent silencieusement.
+               Propage aux deux sous-classes Import et Export par heritage.
+     Comment: Ajouter `if (!controller.isFormed()) return null;` ligne 150.
+     Reference: [AE2] Chaque GridNode verifie grid.isActive() avant toute operation.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/3-storage-and-network
+                [RS] RS2 verifie l'etat du reseau a chaque operation.
+                [CREATE] Pattern systematique dans SmartBlockEntity.
+     Priorite: P0 BUGFIX (trivial, meme pattern que AK)
+     Effort: 1 ligne | Risque: Aucun
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[BV] Tick stagger pour interfaces multiples
+     Quoi: Quand plusieurs interfaces sont connectees au meme reseau, elles
+           scannent toutes au meme tick (modulo SCAN_INTERVAL). Appliquer le
+           pattern tick stagger deja utilise dans l'aggregator.
+     Pourquoi: 10 interfaces scannant au meme tick = lag spike periodique.
+     Comment: Pattern `(gameTick + worldPosition.hashCode()) % SCAN_INTERVAL`.
+              Deja utilise dans StorageItemAggregator.tickSync().
+     Reference: [CREATE] Create-expert (C42). Pattern deja dans le codebase.
+     Priorite: P0 QUICK WIN
+     Effort: 1 ligne | Risque: Aucun
+     Experts: CREATE
+
+--- AMELIORATIONS ---
+
+[BW] Container → IItemHandler pour getAdjacentInventory() [UNANIMITE 3/3]
+     Quoi: getAdjacentInventory() ligne 534 fait `be instanceof Container`.
+           Remplacer par IItemHandler capability.
+     Pourquoi: Les conteneurs moddes (Iron Chests, Sophisticated Backpacks,
+               Drawers) implementent IItemHandler mais pas forcement Container.
+               Meme chantier que [P] du Groupe 1 (UNANIMITE 3/3 deja).
+     Comment: `level.getCapability(Capabilities.ItemHandler.BLOCK, adjPos,
+              getFacing().getOpposite())`. Cascade: adapter toute la chaine
+              Import/Export/ContainerHelper de Container vers IItemHandler.
+     Reference: [AE2] Import/Export Bus interagissent exclusivement via IItemHandler.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/import-export-storage
+                [RS] RS2 Importer/Exporter utilisent ItemHandlerImporterTransferStrategyFactory.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2/3.2-neoforge-platform
+                [CREATE] CapManipulationBehaviourBase detecte par capability.
+     Priorite: P2 (lie a [P], meme refactoring)
+     Effort: Moyen (cascade Import/Export/ContainerHelper) | Risque: Moyen
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[BX] SCAN_INTERVAL 40→20 ticks
+     Quoi: L'interface scanne toutes les 40 ticks (2 secondes). Trop lent pour
+           de l'automatisation reactive.
+     Pourquoi: Si un hopper depose un item, l'interface ne le detecte qu'apres
+               2 secondes. AE2 Import/Export Bus operent a 5 ticks par operation.
+     Comment: Reduire SCAN_INTERVAL de 40 a 20 ticks (1 seconde).
+     Reference: [AE2] Import/Export Bus: 4 ops/seconde = 5 ticks par operation.
+                Avec Acceleration Cards: jusqu'a 96 items par operation.
+                Source: https://guide.appliedenergistics.org/1.20.1/items-blocks-machines/import_bus
+                [RS] RS2 Importer opere chaque tick.
+                Source: https://refinedmods.com/refined-storage/input-and-output/importer.html
+     Priorite: P2
+     Effort: 1 constante | Risque: Aucun
+     Experts: AE2, RS (convergence)
+
+[BY] Scan event-driven (needsScan flag)
+     Quoi: Au lieu de scanner a intervalle fixe, utiliser un flag needsScan=true
+           declenche par les evenements (filtre change, item depose, task complete).
+           Le scan n'est execute que quand necessaire.
+     Pourquoi: Elimine les scans inutiles quand rien n'a change. Plus reactif
+               que le polling fixe — repond immediatement aux changements.
+     Comment: Flag needsScan=true dans onFilterChanged(), onDeliveryComplete(), etc.
+              Dans serverTick(), scanner seulement si needsScan || backup timer.
+     Reference: [CREATE] FactoryPanelBehaviour utilise un scan event-driven
+                avec timer de backup. Source: Create FactoryPanelBehaviour.java
+     Priorite: P2
+     Effort: Faible | Risque: Faible
+     Experts: CREATE (C37)
+     Note: Complementaire avec [BX]. BX reduit l'intervalle, BY elimine les
+           scans inutiles. Les deux peuvent etre combines.
+
+[BZ] Decomposition 738L en 3 classes
+     Quoi: Extraire InterfaceTaskManager (~200L pour reconcileTasksForItem,
+           publishTodoTasks, cleanupOrphanedTasks, cancelAllTasks) et
+           InterfaceFilterManager (~120L pour operations filtres).
+           NetworkInterfaceBlockEntity reste ~400L (encore au-dessus de 150L
+           mais acceptable pour une classe abstraite parente).
+     Pourquoi: 738L depasse 5x la regle 150L. 3 responsabilites melangees
+               (controller link, filtres, tasks).
+     Comment: Meme pattern d'extraction que les managers du controller.
+     Reference: [AE2] AE2 separe IOBusPart (logique bus), ConfigInventory (filtres),
+                TickHandler (tick logic).
+                [CREATE] Create C40, pattern SmartBlockEntity + Behaviours.
+     Priorite: P2 REFACT
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, CREATE (convergence)
+
+--- OPTIMISATIONS ---
+
+[CA] Sleep/Wake pattern pour interfaces idle
+     Quoi: Interface idle (pas de tasks NEEDED, inventaire stable) scanne en
+           mode lent (200 ticks). Au premier changement, mode rapide (20 ticks).
+     Pourquoi: 10 interfaces idle scannant toutes les 20 ticks = gaspillage CPU.
+     Comment: Compteur de "miss" consecutifs. Apres 3 scans sans changement,
+              passer en mode lent. Au premier match, revenir en mode rapide.
+     Reference: [AE2] Import Bus AE2 entre en sleep mode quand idle, se reveille
+                quand un import reussit. TickManagerService gere les cycles.
+                Source: https://guide.appliedenergistics.org/1.20.1/items-blocks-machines/import_bus
+     Priorite: P3
+     Effort: Moyen | Risque: Faible
+     Experts: AE2 (4.1D)
+
+--------------------------------------------------------------------------------
+4.2 IMPORT INTERFACE (ImportInterfaceBlockEntity ~237L)
+--------------------------------------------------------------------------------
+Etat actuel: Import items du reseau vers l'inventaire adjacent. Implemente
+IDeliveryEndpoint. Scanne via reconcileImportItem(). Modes ITEM et TEXT.
+Fichiers: ImportInterfaceBlockEntity.java
+
+--- BUGS ---
+
+[CB] Import ne verifie pas la disponibilite des items [BUG]
+     Quoi: reconcileImportItem() cree des InterfaceTasks sans verifier si l'item
+           existe dans le reseau. Une task NEEDED est creee, puis une DeliveryTask,
+           puis une bee est spawn, vole au coffre source, ne trouve rien, echoue.
+     Pourquoi: Bees gaspillees, honey consommee pour rien, cycle echec-retry
+               inutile. Le joueur ne comprend pas pourquoi ses bees volent
+               dans le vide.
+     Comment: Verifier `controller.getAggregatedItemCount(filterItem) > 0`
+              avant de creer la task. Si count == 0, ne pas creer de task
+              (ou marquer BLOCKED immediatement).
+     Reference: [AE2] L'Export Bus verifie la disponibilite dans NetworkStorage
+                AVANT de tenter l'extraction. Pas de tentative a l'aveugle.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/3-storage-and-network
+     Priorite: P1 BUG
+     Effort: 5-10 lignes | Risque: Aucun
+     Experts: AE2 (4.2B)
+
+[CC] Locked tasks pas deduites du needed [BUG — CONFIRME PAR ARCHITECTE]
+     Quoi: reconcileImportItem() ligne 189 calcule `needed = targetQty - currentCount`
+           sans deduire les items en transit (LOCKED tasks). getLockedCount()
+           EXISTE (ligne 329 du parent) mais n'est JAMAIS appele.
+     Pourquoi: Sur-commande de bees. Si 64 voulus, 0 presents, 32 en transit:
+               needed=64 au lieu de 32. Des bees supplementaires sont creees
+               pour rien. Se stabilise au scan suivant mais gaspille du honey.
+               Meme probleme cote Export (ligne 131).
+     Comment: `int inTransit = getLockedCount(filterItem);`
+              `needed = Math.max(0, needed - inTransit);`
+              Le fix est identique pour Import ET Export.
+     Reference: [AE2] L'Export Bus maintient un compteur d'items "in flight"
+                distinct du stock physique. Les items en transit sont DEDUITS.
+     Priorite: P1 BUG (gaspillage bees + honey)
+     Effort: 3 lignes par sous-classe | Risque: Aucun
+     Experts: AE2 (4.2C), confirme par architecte (verification code)
+     Note architecte: getLockedCount() existe, fait le calcul correct, mais
+     n'est appele par AUCUNE sous-classe. Champ mort fonctionnel.
+
+--- AMELIORATIONS ---
+
+[CD] Backoff sur publishTodoTasks() echec
+     Quoi: Quand publishTodoTasks() echoue (controller occupe, queue pleine),
+           l'interface retente au prochain scan sans backoff.
+     Pourquoi: Spam de tentatives inutiles. Si le controller est sature,
+               retenter toutes les 40 ticks ne fait qu'ajouter de la charge.
+     Comment: Pattern isTooBusyFor() de Create. Si echec, doubler l'intervalle
+              (40→80→160) jusqu'a un max. Resetter au premier succes.
+     Reference: [CREATE] PackagerBlockEntity.isTooBusyFor() refuse les requetes
+                quand la machine est saturee, avec backoff implicite.
+                Source: Create PackagerBlockEntity.java
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: CREATE (C39)
+
+--- OPTIMISATIONS ---
+
+[CE] scanTextMode O(N*F) → cache de matching
+     Quoi: scanTextMode() itere TOUS les networkItems pour chaque filtre texte.
+           500 types d'items x 3 filtres = 1500 comparaisons toutes les 40 ticks.
+     Pourquoi: Pas d'index pour les filtres texte. O(N*F) a chaque scan.
+     Comment: Cacher les resultats dans un Map<FilterKey, List<ItemStack>>
+              et invalider quand les items du reseau changent (dirty flag).
+     Reference: [AE2] AE2 ne fait PAS de filtre texte cote serveur — c'est
+                un choix delibere pour eviter ce probleme. Le filtrage texte
+                est client-side uniquement dans le terminal.
+     Priorite: P3 (impact faible sauf reseaux enormes)
+     Effort: Moyen | Risque: Faible
+     Experts: AE2 (4.2A)
+
+--------------------------------------------------------------------------------
+4.3 EXPORT INTERFACE (ExportInterfaceBlockEntity ~150L)
+--------------------------------------------------------------------------------
+Etat actuel: Export items de l'inventaire adjacent vers le reseau. NE implemente
+PAS IDeliveryEndpoint (asymetrie avec Import). 150 lignes, fichier compact.
+Fichiers: ExportInterfaceBlockEntity.java
+
+--- AMELIORATIONS ---
+
+[CF] Export ne verifie pas l'espace reseau avant task
+     Quoi: reconcileExportItems() cree des tasks EXPORT sans verifier si le
+           reseau a de l'espace de stockage disponible.
+     Pourquoi: Si tous les coffres sont pleins, la bee sera spawn, volera,
+               ne trouvera aucune destination, echouera, et le cycle recommence.
+     Comment: Verifier `controller.hasAvailableStorageSpace()` ou equivalent
+              avant de creer des export tasks.
+     Reference: [AE2] Import Bus AE2 verifie l'espace dans NetworkStorage
+                via MEStorage.insert() avec SIMULATE avant de commiter.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/3-storage-and-network
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: AE2 (4.3A)
+
+[CG] Scheduling mode round-robin pour Export
+     Quoi: L'Export scanne tous les items d'un coup et cree des tasks pour tout.
+           Pas de mode round-robin. Toutes les bees partent sur le premier item.
+     Pourquoi: Avec plusieurs items a exporter, le premier item monopolise les
+               bees. Le round-robin distribuerait mieux les bees entre les items.
+     Comment: Ajouter un enum SchedulingMode (DEFAULT, ROUND_ROBIN) dans
+              l'interface. En ROUND_ROBIN, cycler un index entre les items filtres.
+     Reference: [RS] RS2 Exporter: 3 scheduling modes (Default/Round-robin/Random).
+                Source: https://refinedmods.com/refined-storage/input-and-output/exporter.html
+     Priorite: P3 (nice-to-have)
+     Effort: Faible | Risque: Aucun
+     Experts: RS (RS-4.1G)
+
+--------------------------------------------------------------------------------
+4.4 INTERFACE FILTER (InterfaceFilter ~228L)
+--------------------------------------------------------------------------------
+Etat actuel: POJO avec mode ITEM (5 ghost slots) ou TEXT (tag, mod, nom).
+matchesTag() fait du substring match. Quantity configurable. selectedSlots.
+Fichiers: InterfaceFilter.java
+
+--- BUGS ---
+
+[CH] matchesTag() substring match → exact match [CONFIRME PAR ARCHITECTE]
+     Quoi: InterfaceFilter.matchesTag() ligne 176-187 utilise `path.contains(tagName)`
+           qui fait un substring match. Le filtre "#log" matcherait "analog_lever".
+     Pourquoi: Faux positifs. Le joueur filtre "#logs" et recupere des items
+               dont le tag contient "log" comme sous-chaine ("analog_lever",
+               "dialog_blocks", etc.)
+     Comment: Remplacer `path.contains(tagName)` par un match plus precis:
+              - `path.equals(tagName)` pour match exact
+              - Ou `path.startsWith(tagName)` si on veut garder le match "logs"
+                quand on tape "log" (discutable)
+              Note: les checks `path.equals()` et `fullPath.equals()` sur les
+              lignes precedentes sont corrects. Seul le `contains()` est problematique.
+     Reference: [AE2] Les filtres AE2 sont toujours exact match (ItemStack
+                isSameItemSameComponents). Pas de substring.
+     Priorite: P1 BUGFIX
+     Effort: 1 ligne | Risque: Aucun
+     Experts: AE2 (4.4A), confirme par architecte (verification code lignes 176-187)
+     Note architecte: Le check @namespace (ligne 169) fait equals(), le check
+     texte libre sur display name (ligne 172) fait contains() (voulu). Seul
+     matchesTag() a le contains() problematique.
+
+--- AMELIORATIONS ---
+
+[CI] Blocklist mode (inverser le filtre)
+     Quoi: Ajouter un mode blocklist. Actuellement seul allowlist est supporte
+           (ITEM = ces items, TEXT = les items matchant ce texte).
+     Pourquoi: Le joueur ne peut pas dire "exporter tout SAUF les diamants".
+               Il doit lister positivement chaque item. Pour de grosses
+               collections, c'est impraticable.
+     Comment: Ajouter un boolean `inverted` dans InterfaceFilter. Si true,
+              le resultat de matches() est inverse. GUI: bouton toggle.
+     Reference: [RS] RS2 Importer/Exporter/External Storage supportent tous
+                allowlist ET blocklist. Source:
+                https://refinedmods.com/refined-storage/input-and-output/importer.html
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: RS (RS-4.1D)
+
+[CJ] Fuzzy mode (ignorer components/NBT)
+     Quoi: Ajouter un mode fuzzy qui ignore les DataComponents (durabilite,
+           enchantements, etc.) lors du matching.
+     Pourquoi: Filtrer "n'importe quelle pioche en fer" est impossible — il faut
+               matcher exactement les components. Avec fuzzy, Item.isSameItem()
+               suffit au lieu de ItemStack.isSameItemSameComponents().
+     Comment: Ajouter un boolean `fuzzy` dans InterfaceFilter. Si true,
+              utiliser Item.isSameItem() au lieu de la comparaison complete.
+     Reference: [RS] RS2 mode fuzzy sur tous les appareils avec filtres.
+                Source: https://refinedmods.com/refined-storage/input-and-output/importer.html
+     Priorite: P3
+     Effort: Faible | Risque: Aucun
+     Experts: RS (RS-4.1E)
+
+[CK] Priorite entre filtres
+     Quoi: Quand plusieurs filtres sont definis, ils sont evalues sequentiellement
+           sans priorite. Ajouter un champ priority pour controler l'ordre.
+     Pourquoi: Strategies avancees (priorite haute pour le coffre principal,
+               basse pour le overflow).
+     Comment: Ajouter un champ `priority` a InterfaceFilter, trier par priorite.
+     Reference: [AE2] Chaque storage/bus a une priorite numerique configurable.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/import-export-storage
+     Priorite: P3
+     Effort: Faible | Risque: Aucun
+     Experts: AE2 (4.4B)
+
+[CL] Status feedback sur filtres (visuel dans GUI)
+     Quoi: Afficher l'etat de chaque filtre : "None", "Destination does not accept",
+           "Resource missing", "In transit". Actuellement aucun feedback.
+     Pourquoi: Le joueur ne sait pas pourquoi une interface ne fonctionne pas.
+     Comment: Ajouter un FilterStatus enum dans InterfaceFilter, mis a jour
+              lors du doScan(). Afficher dans le GUI avec couleur.
+     Reference: [RS] RS2 Exporter filter status hints.
+                Source: https://refinedmods.com/refined-storage/input-and-output/exporter.html
+                [CREATE] Factory Panels: couleurs ingredients (Bleu=requesting,
+                Cyan=promised, Gris=inactive). Source: DeepWiki Create 5.2
+     Priorite: P3 UX
+     Effort: Moyen | Risque: Aucun
+     Experts: RS (RS-4.1H), CREATE (C38 feedback visuel)
+
+--------------------------------------------------------------------------------
+4.5 INTERFACE TASK (InterfaceTask ~194L)
+--------------------------------------------------------------------------------
+Etat actuel: Lifecycle NEEDED→LOCKED→DELIVERED. Ephemere au reload (LOCKED→NEEDED).
+Champ lockedTick existe mais n'est JAMAIS lu. 194 lignes.
+Fichiers: InterfaceTask.java
+
+--- BUGS ---
+
+[CM] lockedTick timeout manquant — tache zombie [CONFIRME PAR ARCHITECTE]
+     Quoi: InterfaceTask a un champ `lockedTick` (ecrit dans lockTask(), sauvegarde
+           en NBT) mais getLockedTick() n'est appele NULLE PART dans tout le
+           codebase (0 resultats de recherche). Aucun timeout n'est implemente.
+     Pourquoi: Si une bee disparait (chunk unload, tuee, bug), sa tache reste
+               LOCKED indefiniment. Le slot est bloque, l'item n'est jamais livre.
+               Le seul recovery est le reload (LOCKED→NEEDED au save) ou la
+               destruction de l'interface.
+     Comment: Dans NetworkInterfaceBlockEntity.serverTick(), ajouter :
+              `if (task.getState() == LOCKED && gameTime - task.getLockedTick() > 1200) {`
+              `    unlockTask(task.getTaskId());`
+              `}`
+              1200 ticks = 1 minute de timeout.
+     Reference: [AE2] AE2 CraftingCPU a un timeout implicite sur les items en transit.
+                Meme pattern que [AW] (timeout FLYING) du Groupe 3.
+     Priorite: P1 BUGFIX (tache zombie = slot bloque indefiniment)
+     Effort: 10 lignes dans serverTick | Risque: Aucun
+     Experts: AE2 (4.5B), confirme par architecte (recherche exhaustive codebase)
+
+--- AMELIORATIONS ---
+
+[CN] LOCKED save cleanup (ne pas sauvegarder les LOCKED)
+     Quoi: Actuellement LOCKED est sauvegarde comme NEEDED au reload. Plus propre:
+           ne pas sauvegarder du tout les tasks LOCKED, laisser le prochain scan
+           les re-creer si necessaire.
+     Pourquoi: Le save actuel cree des tasks NEEDED "fantomes" qui ne correspondent
+               plus a la realite apres reload. Le scan les ajustera mais c'est du
+               travail inutile et une source de confusion.
+     Comment: Dans save(), filtrer les tasks LOCKED au lieu de les convertir en NEEDED.
+     Reference: [AE2] AE2 sauvegarde l'etat exact. Alternative: ne pas sauvegarder
+                les taches ephemerales (approach Create — stateless).
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: AE2 (4.5A)
+
+--- OPTIMISATIONS ---
+
+[CO] Task lookup O(1) via Map au lieu de liste
+     Quoi: Les InterfaceTasks sont stockees dans une List. Les lookups par taskId
+           ou par filterItem sont O(N). Utiliser un Map<UUID, InterfaceTask>.
+     Pourquoi: Avec beaucoup de taches actives, les lookups lineaires deviennent
+               couteux. O(1) est trivial a implementer.
+     Comment: Remplacer List<InterfaceTask> par Map<UUID, InterfaceTask>.
+     Reference: [RS] RS-expert (RS-4.1I).
+     Priorite: P3
+     Effort: Faible | Risque: Aucun
+     Experts: RS
+
+--------------------------------------------------------------------------------
+4.6 FEEDBACK VISUEL
+--------------------------------------------------------------------------------
+
+[CP] Blockstate + particules sur les interfaces
+     Quoi: Ajouter un blockstate INACTIVE/WORKING/SATISFIED/BLOCKED avec feedback
+           visuel (particules, texture variant). Actuellement aucun feedback visuel
+           sur l'etat de l'interface.
+     Pourquoi: Le joueur ne sait pas visuellement si l'interface fonctionne,
+               est bloquee, ou est satisfaite. Il doit ouvrir le GUI.
+     Comment: EnumProperty<InterfaceState> dans le blockstate. Particules via
+              ParticleHelper (vert=working, rouge=blocked, bleu=satisfied).
+     Reference: [CREATE] Factory Panels: bulbe eclaire (satisfait), couleurs
+                ingredients (Bleu=requesting, Cyan=promised, Gris=inactive),
+                particules vert (succes), rouge (echec).
+                Source: DeepWiki Create 5.2 (Factory Panel system)
+     Priorite: P2 UX
+     Effort: Moyen (blockstate + particules + renderer) | Risque: Faible
+     Experts: CREATE (C38)
+
+--------------------------------------------------------------------------------
+4.7 CRAFTER SYSTEM [RETIRE — REIMPLEMENTATION FUTURE]
+--------------------------------------------------------------------------------
+Etat actuel: ENTIEREMENT SUPPRIME du codebase (commits 3ab9504, 6982ed6).
+Raison: "causait des crashs frequents" (feature_crafter_system.txt).
+L'ancien systeme comprenait: CrafterBlockEntity (440L), CraftManager (544L),
+CraftingPaperItem, PartCraftingPaperItem, CrafterMenu/Screen.
+
+Les propositions ci-dessous sont des PATTERNS pour une reimplementation future.
+Elles ne sont pas implementables immediatement — elles servent de reference
+architecturale pour quand le crafter sera reimplemente.
+
+--- ARCHITECTURE FUTURE ---
+
+[CQ] Separation Pattern / Provider / CPU (pattern AE2)
+     Quoi: Separer 3 concepts distincts:
+           1. Pattern encoding (CraftingPaper → recette encodee)
+           2. Pattern Provider (pousse les ingredients aux machines)
+           3. Craft orchestration (planifie les crafts recursifs)
+     Pourquoi: L'ancien CraftManager (544L) melangeait les 3. La separation
+               permet des tests unitaires, du scaling (plusieurs providers),
+               et une meilleure gestion d'erreurs.
+     Reference: [AE2] PatternEncodingTerminal + PatternProvider + CraftingService.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/4.1-crafting-cpu-architecture
+                [RS] RS2 separe Pattern / Autocrafter / CraftingManager.
+                Source: https://refinedmods.com/refined-storage/autocrafting/autocrafter.html
+     Priorite: P4 FUTUR (design a faire)
+     Experts: AE2 (4.6A), RS (RS-4.2D)
+
+[CR] Multi-crafter + priorites
+     Quoi: Permettre plusieurs crafters sur le meme reseau, avec priorite par
+           crafter pour la resolution de recettes.
+     Pourquoi: L'ancien systeme limitait a 1 crafter par controller (bottleneck).
+               Avec plusieurs crafters, le joueur peut paralleliser les crafts.
+     Comment: Chaque crafter a une priorite numerique. Quand un craft est
+              demande, le systeme utilise le crafter de plus haute priorite.
+     Reference: [RS] RS2 Autocrafter priority system.
+                Source: https://refinedmods.com/refined-storage/autocrafting/autocrafter.html
+     Priorite: P4 FUTUR
+     Experts: RS (RS-4.2A)
+
+[CS] Lock Modes (bloquer avant insertion)
+     Quoi: Modes de verrouillage avant d'inserer des ingredients dans une machine:
+           - Never (toujours inserer)
+           - Lock until machine empty
+           - Lock until redstone signal
+     Pourquoi: Pour les recettes machines (processing), l'interface pourrait
+               inserer des ingredients dans une machine deja occupee.
+     Reference: [RS] RS2 Autocrafter 6 Lock Modes.
+                Source: https://refinedmods.com/refined-storage/autocrafting/autocrafter.html
+     Priorite: P4 FUTUR
+     Experts: RS (RS-4.2B)
+
+[CT] Style Factory Panel distribue (1 recette = 1 crafter)
+     Quoi: Au lieu d'un crafter centralise avec une bibliotheque de recettes,
+           chaque crafter = 1 recette. Distribue, pas centralise.
+     Pourquoi: Plus simple, pas de CraftManager centralise qui crashe.
+               Le joueur place un crafter par recette, visible dans le monde.
+     Comment: Pattern Factory Panel de Create: chaque panel = 1 recette,
+              connexions directes panel-a-panel.
+     Reference: [CREATE] Factory Panel system de Create.
+                Source: DeepWiki Create 5.2
+     Priorite: P4 FUTUR
+     Experts: CREATE (C43)
+     Note: DIVERGENCE avec AE2 et RS qui preferent un crafter centralise.
+           Le distribue est plus simple mais moins puissant pour les recettes
+           complexes avec sous-ingredients recursifs.
+
+[CU] Promise Queue anti-sur-commande
+     Quoi: Quand un craft est lance, les ingredients promis sont reserves
+           (decomptes du stock disponible) jusqu'a expiration.
+     Pourquoi: Evite que 2 crafts demandent les memes ingredients simultanement.
+     Comment: Pattern RequestPromiseQueue de Create.
+     Reference: [CREATE] RequestPromiseQueue avec expiration configurable.
+                Source: Create RequestPromiseQueue.java
+     Priorite: P4 FUTUR
+     Experts: CREATE (C44)
+
+[CV] Structured error feedback pour crafts
+     Quoi: Afficher des etats d'erreur clairs: "missing resources",
+           "machine busy", "no path to machine". Pas juste un timeout 2 minutes.
+     Pourquoi: L'ancien systeme avait un timeout de 2 minutes sans feedback.
+               Le joueur ne savait pas pourquoi un craft echouait.
+     Comment: Enum CraftError avec messages lisibles. Affichage dans le GUI
+              du crafter et/ou dans le chat.
+     Reference: [RS] RS2 Exporter/Autocrafter error statuses.
+                Source: https://refinedmods.com/refined-storage/input-and-output/exporter.html
+                [AE2] ICraftingSubmitResult error codes.
+     Priorite: P4 FUTUR
+     Experts: RS (RS-4.2C)
+
+[CW] DataComponent au lieu de NBT pour Crafting Paper
+     Quoi: Utiliser des DataComponents (NeoForge 1.21.1) au lieu de NBT manuel
+           pour encoder les recettes dans les Crafting Papers.
+     Pourquoi: L'ancien systeme utilisait du NBT manuel (error-prone, typos
+               dans les cles). Les DataComponents sont type-safe avec Codecs.
+     Comment: Definir un Codec<CraftingRecipe> avec RecordCodecBuilder.
+     Reference: [CREATE] AllDataComponents.java utilise des Codecs partout.
+                Source: Create AllDataComponents.java
+     Priorite: P4 FUTUR
+     Experts: CREATE (C45)
+
+

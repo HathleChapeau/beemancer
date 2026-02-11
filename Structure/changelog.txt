@@ -3,6 +3,80 @@
 ################################################################################
 
 ================================================================================
+2026-02-11 - Storage Brainstorm Groupe 1 — Reseau et Topologie
+================================================================================
+
+Implementation de 12 changements issus du brainstorming 4 experts (AE2, RS, Create, Architecte).
+
+TRIVIAL:
+- [B]+[F]: Magic number % 20 → PENDING_PROCESS_INTERVAL constant + tick stagger offset
+  Fichier: StorageTerminalBlockEntity.java
+- [Q]: Flood fill BFS capped a 64 coffres par clic (MAX_FLOOD_FILL_PER_CLICK)
+  Fichier: StorageChestManager.java
+
+FIX:
+- [O]: setRemoved() sur StorageTerminalBlockEntity → appelle unlinkController()
+  Fichier: StorageTerminalBlockEntity.java
+
+AMELIORATION:
+- [L]: Event-driven cleanup: blocs intelligents (Terminal, Interface, Hive, Relay)
+  gèrent leur propre cleanup via setRemoved()/onRemove(). Coffres couverts par [M].
+- [A]: Extraction HiveManager depuis StorageControllerBlockEntity
+  Fichier cree: HiveManager.java (7 methodes + 4 constantes extraites)
+  Fichiers modifies: StorageControllerBlockEntity.java, StorageEvents.java, StorageControllerMenu.java
+- [E]: Cout honey par relay (5 mB/s) dans la formule de consommation
+  Fichiers modifies: ControllerStats.java (+HONEY_PER_RELAY, surcharge 4 params),
+    StorageControllerBlockEntity.java (+getRelayCount() BFS), StorageDeliveryManager.java
+- [N*]: Modele hybride push/poll — terminal notifie l'aggregateur quand deposit slots changent
+  Fichier modifie: StorageTerminalBlockEntity.java (+notifyControllerDepositsChanged)
+
+OPTIMISATION:
+- [M]: Validation amortie round-robin (batch de blocks tous les 20 ticks au lieu de tout/200 ticks)
+  Fichier modifie: StorageControllerBlockEntity.java (+validateNetworkBlocksAmortized)
+- [R]: VersionedInventoryWrapper — fingerprint cache par coffre, skip rescan si inchange
+  Fichier modifie: StorageItemAggregator.java (+computeFingerprint, cachedChestCounts)
+
+MIGRATION:
+- [P]: Migration IItemHandler — detection capability NeoForge au lieu de whitelist Container
+  Fichiers modifies: StorageHelper.java (+hasItemHandlerCapability, +getItemHandler),
+    ContainerHelper.java (+5 surcharges IItemHandler), StorageChestManager.java (isChest),
+    StorageItemAggregator.java (refreshAggregatedItems, findSlotForItem, depositItem, extractItem),
+    DeliveryContainerOps.java (6 methodes migrees), StorageControllerBlockEntity.java (validation),
+    StorageEvents.java (reconnaissance coffres)
+
+DIFFERE:
+- [D] Grid Services / Behaviours composables → storage_brainstorm_differe.txt
+
+================================================================================
+2026-02-11 - Storage Network Hardening (Critical + High Priority)
+================================================================================
+
+Implementation des recommandations critiques et haute priorite du rapport d'analyse stockage.
+
+CRITICAL:
+- C1: Chunk Safety Guards — hasChunkAt() avant getBlockEntity() sur positions distantes
+  Fichiers: DeliveryBeeEntity.java, DeliveryPhaseGoal.java, StorageDeliveryManager.java,
+            StorageChestManager.java, DeliveryNetworkPathfinder.java, DeliveryContainerOps.java,
+            StorageMultiblockManager.java
+- C2: Collections Mutables Protection — unmodifiableSet/List + copies defensives avant iteration
+  Fichiers: StorageItemAggregator.java, StorageDeliveryManager.java, StorageChestManager.java,
+            RequestManager.java, StorageControllerBlockEntity.java
+- C3: Item Loss Prevention — spawnAtLocation()/dropItemStack() fallback quand network full ou controller absent
+  Fichiers: DeliveryBeeEntity.java, DeliveryPhaseGoal.java, StorageDeliveryManager.java
+
+HIGH:
+- H1: Delta Sync — sync incrementale (ajouts/retraits/modifications) au lieu de full list
+  Fichiers: StorageItemAggregator.java
+- H2: Dirty Flags — recalcul uniquement quand donnees mutees (isDirty flag)
+  Fichiers: StorageItemAggregator.java
+- H3: Stagger Tick Offsets — decalage tick par worldPosition.hashCode() pour eviter spike frames
+  Fichiers: StorageControllerBlockEntity.java, StorageDeliveryManager.java
+- H4: Player Feedback — messages action bar pour honey deplete/restore, queue full
+  Fichiers: StorageControllerBlockEntity.java, StorageItemAggregator.java,
+            StorageDeliveryManager.java, StorageTerminalBlockEntity.java
+  Lang: +4 cles (honey_depleted, honey_restored, queue_full, storage_full)
+
+================================================================================
 2026-02-11 - Retrait Terminal Auto-Craft Integration
 ================================================================================
 

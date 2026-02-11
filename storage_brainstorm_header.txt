@@ -1,0 +1,34 @@
+================================================================================
+BEEMANCER — STORAGE SYSTEM BRAINSTORMING
+================================================================================
+Date: 2026-02-11
+Equipe: AE2 Expert, Refined Storage Expert, Create Expert, Beemancer Architect
+Methode: Presentation factuelle par l'architecte, propositions par les 3 experts,
+         debat croise, moderation par l'architecte, synthese par le team-lead.
+================================================================================
+
+TABLE DES MATIERES
+------------------
+1. GROUPE 1 — Reseau et Topologie          [COMPLET]
+2. GROUPE 2 — Items et Stockage             [COMPLET]
+3. GROUPE 3 — Transport et Livraison        [COMPLET]
+4. GROUPE 4 — Automation et Interfaces      [COMPLET]
+5. GROUPE 5 — Energie et Progression        [COMPLET]
+6. MATRICE DE PRIORITE GLOBALE              [COMPLET]
+
+================================================================================
+LEGENDE
+================================================================================
+[AE2]    = Proposition de l'expert Applied Energistics 2
+[RS]     = Proposition de l'expert Refined Storage
+[CREATE] = Proposition de l'expert Create
+[CONV]   = Convergence (2+ experts d'accord)
+[UNAN]   = Unanimite (3/3 experts d'accord)
+
+Priorites:
+  P0 = Quick Win (trivial, aucun risque, fort impact)
+  P1 = Haute priorite (effort faible-moyen, bon ratio)
+  P2 = Priorite moyenne (effort moyen, impact significatif)
+  P3 = Priorite basse (effort eleve ou design necessaire)
+  P4 = Futur (necessite etude approfondie ou refactoring majeur)
+

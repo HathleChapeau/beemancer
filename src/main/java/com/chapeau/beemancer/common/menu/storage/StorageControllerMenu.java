@@ -23,6 +23,7 @@
 package com.chapeau.beemancer.common.menu.storage;
 
 import com.chapeau.beemancer.client.gui.widget.BeemancerSlot;
+import com.chapeau.beemancer.common.blockentity.storage.HiveManager;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import com.chapeau.beemancer.core.registry.BeemancerTags;
 import net.minecraft.network.FriendlyByteBuf;
@@ -40,9 +41,9 @@ public class StorageControllerMenu extends BeemancerMenu {
 
     private final ContainerData data;
 
-    private static final int BASE_ESSENCE_SLOTS = 4;
-    private static final int TOTAL_ESSENCE_SLOTS = 8;
-    public static final int MAX_HIVES = 4;
+    private static final int BASE_ESSENCE_SLOTS = HiveManager.BASE_ESSENCE_SLOTS;
+    private static final int TOTAL_ESSENCE_SLOTS = HiveManager.MAX_ESSENCE_SLOTS;
+    public static final int MAX_HIVES = HiveManager.MAX_LINKED_HIVES;
     private static final int ESSENCE_SLOT_START = 0;
     private static final int ESSENCE_SLOT_END = 8;
     private static final int PLAYER_INV_START = 8;

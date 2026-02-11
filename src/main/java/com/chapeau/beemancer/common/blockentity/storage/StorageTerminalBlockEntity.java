@@ -68,6 +68,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     public static final int PICKUP_SLOTS = 9;
     public static final int TOTAL_SLOTS = DEPOSIT_SLOTS + PICKUP_SLOTS;
     private static final int MAX_PENDING_REQUESTS = 16;
+    private static final int PENDING_PROCESS_INTERVAL = 20;
 
     // Position du controller lié
     @Nullable
@@ -89,6 +90,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
             setChanged();
             if (!isExtracting) {
                 needsDepositScan = true;
+                notifyControllerDepositsChanged();
             }
         }
     };
@@ -106,6 +108,19 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     public StorageTerminalBlockEntity(BlockPos pos, BlockState blockState) {
         super(BeemancerBlockEntities.STORAGE_TERMINAL.get(), pos, blockState);
+    }
+
+    /**
+     * Notifie le controller que les deposit slots ont change (push model).
+     * Permet a l'aggregateur de marquer ses donnees comme perimees
+     * pour un refresh plus rapide au prochain tick sync.
+     */
+    private void notifyControllerDepositsChanged() {
+        if (controllerPos == null || level == null || level.isClientSide()) return;
+        BlockEntity be = level.getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            controller.getItemAggregator().markDirty();
+        }
     }
 
     // === Liaison Controller ===
@@ -425,7 +440,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     public static void serverTick(StorageTerminalBlockEntity be) {
         // Traiter périodiquement les requêtes en attente (chaque seconde)
-        if (be.level != null && be.level.getGameTime() % 20 == 0) {
+        if (be.level != null && (be.level.getGameTime() + be.worldPosition.hashCode()) % PENDING_PROCESS_INTERVAL == 0) {
             be.processPendingRequests();
             // Scan periodique en backup (rattrape les cas ou le flag a ete manque)
             be.needsDepositScan = true;
@@ -585,6 +600,16 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         if (controller != null) {
             controller.removeViewer(player.getUUID());
         }
+    }
+
+    // === Lifecycle ===
+
+    @Override
+    public void setRemoved() {
+        if (level != null && !level.isClientSide()) {
+            unlinkController();
+        }
+        super.setRemoved();
     }
 
     // === NBT ===

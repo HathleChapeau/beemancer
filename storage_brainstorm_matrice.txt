@@ -1,0 +1,188 @@
+================================================================================
+6. MATRICE DE PRIORITE GLOBALE
+================================================================================
+
+--- P0 QUICK WINS / BUGFIXES ---
+| ID  | Proposition                         | Type    | Experts     | Effort   |
+|-----|-------------------------------------|---------|-------------|----------|
+| B   | Magic numbers -> constantes         | REFACT  | RS          | Trivial  |
+| F   | Tick stagger etendu                 | OPTIM   | AE2         | Trivial  |
+| L   | onBlockBreak hors edit mode         | FIX     | AE2+RS+CRE  | 1 ligne  |
+| O   | setRemoved() sur Terminal (G1)      | FIX     | Archi+RS    | Trivial  |
+| Q   | Flood fill cap ~64                  | FIX     | AE2+RS      | 5 lignes |
+| T   | Dirty flag incomplet (hoppers)      | BUG     | AE2         | 5 lignes |
+| Z   | TasksSyncPacket dirty flag          | OPTIM   | RS          | Trivial  |
+| AH  | setRemoved() Terminal (G2 detail)   | BUG CRT | AE2+RS+CRE  | 10 lignes|
+| AI  | DATA_HONEY_CONSUMPTION wrong src    | BUG     | RS          | 1 ligne  |
+| AJ  | Deferred processPendingRequests     | BUG     | RS          | 5 lignes |
+| AR  | consumeHoney() wrong chest count    | BUG     | RS          | 1 ligne  |
+| AS  | ASSIGNED->PENDING item dupe reload  | BUG CRT | AE2+RS+CRE  | Moyen    |
+| AW  | Timeout FLYING manquant (bee zombie)| BUG     | AE2         | Faible   |
+| BU  | isFormed() interfaces [UNANIME 3/3] | BUG     | AE2+RS+CRE  | 1 ligne  |
+| BV  | Tick stagger interfaces multiples   | OPTIM   | CREATE      | 1 ligne  |
+
+--- P1 HAUTE PRIORITE ---
+| ID  | Proposition                         | Type    | Experts     | Effort   |
+|-----|-------------------------------------|---------|-------------|----------|
+| A   | Extraire HiveManager                | REFACT  | RS          | Faible   |
+| H   | Auto-connexion relays               | FEAT    | AE2+CRE     | Moyen    |
+| I   | Relay cache controllerPos           | OPTIM   | RS          | Faible   |
+| U   | Cache incrementiel aggregation      | PERF    | AE2+RS+CRE  | Moyen    |
+| W   | Tri cote client                     | PERF    | RS          | Faible   |
+| AA  | SYNC_INTERVAL 40->10-20 ticks       | PERF    | AE2+RS      | Trivial  |
+| AK  | isFormed() check terminal           | BUG low | AE2         | 3 lignes |
+| AT  | completedTaskIds eviction unsafe    | BUG     | AE2+RS+CRE  | Moyen    |
+| AU  | Cancel en vol sans restitution      | BUG     | AE2         | Moyen    |
+| AV  | Retry infini sans limite            | BUG     | AE2+RS      | Faible   |
+| AX  | PriorityQueue [UNANIME 3/3]         | PERF    | AE2+RS+CRE  | Faible   |
+| BD  | Map<UUID,Bee> O(1) [UNANIME 3/3]    | PERF    | AE2+RS+CRE  | Faible   |
+| BE  | TOCTOU simulate/extract             | BUG PRV | AE2+CRE     | Moyen    |
+| CB  | Import check dispo items            | BUG     | AE2         | 5-10 L   |
+| CC  | Locked deduction needed [CONFIRME]  | BUG     | AE2+Archi   | 3 lignes |
+| CH  | matchesTag() substring [CONFIRME]   | BUG     | AE2+Archi   | 1 ligne  |
+| CM  | lockedTick timeout [CONFIRME]       | BUG     | AE2+Archi   | 10 lignes|
+| CX  | consumeHoney() wrong chest count    | BUG     | AE2+RS      | 1 ligne  |
+| DF  | TOLERANCE essence piege [CONV]      | BUG     | AE2+CRE     | Faible   |
+| DL  | isFormed() hive [3e occurrence]     | BUG     | AE2+Archi   | 5 lignes |
+| DG  | DIURNAL/NOCTURNAL piege inerte      | UX      | CREATE+Archi | Trivial  |
+
+--- P2 PRIORITE MOYENNE ---
+| ID  | Proposition                         | Type    | Experts     | Effort   |
+|-----|-------------------------------------|---------|-------------|----------|
+| E   | Honey cost par relay                | FEAT    | RS          | Faible   |
+| M   | Amortized validation round-robin    | OPTIM   | RS+AE2      | Moyen    |
+| N   | TTL keepAlive validation            | OPTIM   | CREATE      | Moyen    |
+| P   | IItemHandler capability [UNANIME]   | FEAT    | AE2+RS+CRE  | Moyen    |
+| S   | Visual range feedback               | FEAT    | RS          | Faible   |
+| V   | Index coffres par contenu O(1)      | PERF    | AE2+RS      | Moyen    |
+| X   | Decomposition aggregator 523L       | REFACT  | AE2+RS+CRE  | Moyen    |
+| AB  | BigItemStack encodage compact       | OPTIM   | CREATE      | Faible   |
+| AE  | Binary search insert client         | OPTIM   | RS          | Faible   |
+| AL  | Decomposition terminal 693L         | REFACT  | AE2+RS+CRE  | Moyen    |
+| AO  | Etat client dans Screen pas BE      | FIX     | CREATE      | Faible   |
+| AP  | Index requests RequestManager       | PERF    | RS          | Faible   |
+| AY  | Extraire HoneyEnergyManager         | REFACT  | AE2         | Faible   |
+| AZ  | Decomposer DeliveryManager 608L     | REFACT  | AE2+RS+CRE  | Moyen    |
+| BB  | Sleep mode queue vide               | OPTIM   | AE2         | Trivial  |
+| BC  | isTooBusyFor backpressure           | FEAT    | CREATE      | Faible   |
+| BF  | Spawn position y+2                  | UX      | AE2         | 1 ligne  |
+| BH  | Valider targets IItemHandler        | FIX     | CREATE      | Faible   |
+| BI  | Decomposer RequestManager 481L      | REFACT  | AE2+CRE     | Moyen    |
+| BJ  | Debloquer IMPORT on deposit         | UX      | AE2         | Faible   |
+| BK  | Loop prevention Set<BlockPos>       | BUG PRV | AE2         | Faible   |
+| BM  | Deduplication 2 relais meme coffre  | BUG     | CREATE      | Moyen    |
+| BN  | Deferred recheckBlockedRequests     | OPTIM   | RS          | Trivial  |
+| BO  | Pending request queue separee       | PERF    | RS          | Moyen    |
+| BQ  | DataComponents + Codec DeliveryTask | REFACT  | CREATE      | Moyen    |
+| BS  | Builder pattern DeliveryTask        | REFACT  | RS          | Faible   |
+| BT  | cancelDependentTasks iteratif       | BUG PRV | RS          | Faible   |
+| BW  | Container→IItemHandler interfaces   | FEAT    | AE2+RS+CRE  | Moyen    |
+| BX  | SCAN_INTERVAL 40→20 interfaces      | PERF    | AE2+RS      | Trivial  |
+| BY  | Event-driven scan needsScan flag    | PERF    | CREATE      | Faible   |
+| BZ  | Decomposition interface 738L        | REFACT  | AE2+CRE     | Moyen    |
+| CD  | Backoff publishTodoTasks echec      | OPTIM   | CREATE      | Faible   |
+| CF  | Export check espace reseau          | PERF    | AE2         | Faible   |
+| CI  | Blocklist mode filtres              | FEAT    | RS          | Faible   |
+| CN  | LOCKED save cleanup                 | FIX     | AE2         | Faible   |
+| CP  | Blockstate + particules interfaces  | UX      | CREATE      | Moyen    |
+| CY  | Cout miel par relay                 | FEAT    | AE2         | Faible   |
+| CZ  | Warning avant depletion miel [CONV] | UX      | AE2+CRE     | Faible   |
+| DA  | Consommation constante repos [CONV] | DESIGN  | AE2+CRE     | Moyen    |
+| DH  | INSOMNIA un seul tier [CONV 3/3]    | DESIGN  | AE2+CRE+RS  | Faible   |
+| DM  | Multiplicatif hive UX [UNAN 3/3]   | DESIGN  | AE2+CRE+RS  | Moyen    |
+
+--- P3 PRIORITE BASSE ---
+| ID  | Proposition                         | Type    | Experts     | Effort   |
+|-----|-------------------------------------|---------|-------------|----------|
+| C   | Controller tiers variables          | FEAT    | AE2+CRE     | Eleve    |
+| R   | VersionedInventoryWrapper           | OPTIM   | CREATE      | Eleve    |
+| Y   | Simplifier 5 priorites depot        | REFACT  | CREATE+RS   | Faible   |
+| AC  | Stateless req/resp (alt. delta)     | ARCH    | CREATE      | Moyen    |
+| AD  | Serial numbers delta                | OPTIM   | AE2         | Eleve    |
+| AF  | Reponse fragmentee gros inv.        | OPTIM   | CREATE      | Moyen    |
+| AG  | Dual-TTL cache serveur              | OPTIM   | CREATE      | Moyen    |
+| AM  | SmartInventory wrapper              | REFACT  | CREATE      | Moyen    |
+| AN  | Slots progressifs (upgrades)        | FEAT    | AE2         | Eleve    |
+| AQ  | MenuBase<T> lifecycle               | REFACT  | CREATE      | Moyen    |
+| BA  | Parallelisme par hive               | FEAT    | AE2         | Faible   |
+| BG  | LerpedFloat animation vol           | UX      | CREATE      | Moyen    |
+| BL  | RequestPromiseQueue event-driven    | ARCH    | CREATE+RS   | Moyen    |
+| BP  | On-demand splitting                 | OPTIM   | AE2         | Moyen    |
+| BR  | Simplifier FSM 6->3 phases          | REFACT  | CREATE      | Eleve    |
+| CA  | Sleep/Wake interfaces idle          | OPTIM   | AE2         | Moyen    |
+| CE  | scanTextMode cache matching          | OPTIM   | AE2         | Moyen    |
+| CG  | Scheduling round-robin Export       | FEAT    | RS          | Faible   |
+| CJ  | Fuzzy mode filtres                  | FEAT    | RS          | Faible   |
+| CK  | Priorite entre filtres              | FEAT    | AE2         | Faible   |
+| CL  | Status feedback filtres GUI         | UX      | RS+CRE      | Moyen    |
+| CO  | Task lookup O(1) Map                | OPTIM   | RS          | Faible   |
+| DB  | Bonus capacite reservoir/hive       | DESIGN  | CREATE      | Faible   |
+| DC  | Drainage limite 2 reservoirs        | DESIGN  | AE2         | Moyen    |
+| DD  | Reservoir partage Altar/Storage     | UX      | AE2         | Moyen    |
+| DE  | Cache honeyConsumptionRate [CONV]   | PERF    | AE2+CRE     | Faible   |
+| DI  | Bonus essence sans cap [CONV]       | DESIGN  | AE2+CRE+RS  | Trivial  |
+| DJ  | Barres stats visuelles GUI          | UX      | CREATE      | Moyen    |
+| DK  | Feedback par slot essence           | UX      | AE2         | Faible   |
+| DN  | Hive setRemoved() defense profond.  | FIX     | AE2+RS      | 5 lignes |
+| DO  | Tiers hive capacites qualitatives   | DESIGN  | CREATE      | Eleve    |
+| DP  | Tick stagger hive validate          | OPTIM   | CREATE      | 1 ligne  |
+| DQ  | Essence slots dans hives            | DESIGN  | CREATE      | Eleve    |
+| DR  | GUI decomposition conso honey       | UX      | RS          | Moyen    |
+| DS  | Honey buffer controller             | DESIGN  | RS          | Moyen    |
+| DT  | Cout non-lineaire tier essence      | DESIGN  | RS          | Faible   |
+| DU  | Essence slots par tier hive         | DESIGN  | RS          | Faible   |
+| DV  | Double validation redondante        | OPTIM   | RS          | Trivial  |
+
+--- P4 FUTUR ---
+| ID  | Proposition                         | Type    | Experts     | Effort   |
+|-----|-------------------------------------|---------|-------------|----------|
+| D   | Grid services / Behaviours          | ARCH    | AE2+CRE     | Eleve    |
+| G   | Sleep/Wake mechanism controller     | OPTIM   | AE2         | Moyen    |
+| K   | Partition detection                 | FEAT    | AE2+RS      | Eleve    |
+| CQ  | Crafter: separer Pattern/Provider   | ARCH    | AE2+RS      | Eleve    |
+| CR  | Crafter: multi-crafter + priorites  | FEAT    | RS          | Eleve    |
+| CS  | Crafter: Lock Modes                 | FEAT    | RS          | Moyen    |
+| CT  | Crafter: Factory Panel distribue    | ARCH    | CREATE      | Eleve    |
+| CU  | Crafter: Promise Queue              | ARCH    | CREATE      | Moyen    |
+| CV  | Crafter: error feedback structure   | UX      | RS          | Moyen    |
+| CW  | Crafter: DataComponent CraftPaper   | REFACT  | CREATE      | Moyen    |
+
+Notes:
+- Groupe 1: L (onBlockBreak) consensus 3/3, P (IItemHandler) UNANIME 3/3
+- Groupe 2: U (cache incrementiel) UNANIME 3/3, AH (setRemoved) BUG CRITIQUE 3/3
+- Groupe 2: 5 bugs confirmes dont 1 critique
+- Groupe 3: AS (item dupe reload) BUG CRITIQUE 3/3, AX (PriorityQueue) UNANIME 3/3
+           BD (Map UUID Bee) UNANIME 3/3, AT (completedTaskIds) UNANIME 3/3
+- Groupe 3: 7 bugs dont 2 critiques (AS, AW)
+- Groupe 4: BU (isFormed interfaces) UNANIME 3/3, BW (IItemHandler) UNANIME 3/3
+           4 bugs CONFIRMES par architecte (CC, CH, CM + getLockedCount dead code)
+           Crafter system RETIRE du codebase — 7 propositions P4 pour reimplementation
+- Divergence sync: AE2 (plus rapide), RS (event-driven), Create (stateless)
+- Divergence FSM: Create veut simplifier 6→3, AE2+RS veulent fiabiliser les 6
+- Divergence crafter: AE2 (Pattern/Provider/CPU), RS (multi+locks), Create (distribue)
+- H (auto-connexion): separer topologie reseau vs routage livraison (insight AE2)
+- Groupe 5: DF (TOLERANCE piege) UNANIME 3/3, DM (multiplicatif hive) QUESTION CRITIQUE
+           DL (isFormed hive) 3e occurrence bug systemique, DG (DIURNAL/NOCTURNAL) P1
+           3 unanimites 3/3: TOLERANCE, idle/active, multiplicatif x39
+           6+ convergences (INSOMNIA tiers 3/3, cout/appareil 2/3, buffer/grace 2/3,
+           essence cap 2/3, setRemoved 3/3 resolu P3)
+           TOLERANCE, DIURNAL, NOCTURNAL = 3 essences inutiles/mortes dans le stockage
+           Multiplicateur x39 = probable probleme d'equilibrage (unanimite experts)
+           RS expert: 14 propositions formelles, 5 propositions uniques (DR-DV)
+           Debat 5.3C resolu: P1→P2→P3 (auto-cleanup 200 ticks)
+
+STATISTIQUES GLOBALES:
+  Total propositions: 130 (A → DV)
+  Groupes: 5/5 completes
+  P0: 15 | P1: 22 | P2: 37 | P3: 40 | P4: 16
+  Bugs confirmes: 18 (dont 3 critiques: AS item dupe, AW bee zombie, AH setRemoved)
+  Bugs systemiques: isFormed() = 3 occurrences (AK terminal, BU interface, DL hive)
+  Unanimites 3/3: 10 (L, P, U, AX, BD, BU, BW, DF, DA, DM)
+  Convergences 2/3 ou 3/3: 23+
+  Dead code: getLockedCount(), lockedTick, TOLERANCE, DIURNAL/NOCTURNAL (stockage),
+             getCraftSpeedMultiplier()
+  Question ouverte: multiplicatif vs additif hive multiplier (DM)
+
+================================================================================
+FIN DU DOCUMENT
+================================================================================

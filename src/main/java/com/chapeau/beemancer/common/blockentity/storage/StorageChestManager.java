@@ -42,6 +42,8 @@ import java.util.Set;
  * Fonctionne avec tout INetworkNode (controller ou relay).
  */
 public class StorageChestManager {
+    private static final int MAX_FLOOD_FILL_PER_CLICK = 64;
+
     private final INetworkNode parent;
     private final Set<BlockPos> registeredChests = new HashSet<>();
 
@@ -82,8 +84,11 @@ public class StorageChestManager {
         Queue<BlockPos> toCheck = new LinkedList<>();
         Set<BlockPos> checked = new HashSet<>();
         toCheck.add(startPos);
+        int newlyRegistered = 0;
 
         while (!toCheck.isEmpty()) {
+            if (newlyRegistered >= MAX_FLOOD_FILL_PER_CLICK) break;
+
             BlockPos current = toCheck.poll();
 
             if (checked.contains(current)) continue;
@@ -94,6 +99,7 @@ public class StorageChestManager {
             if (!isInRange(current)) continue;
 
             registeredChests.add(current);
+            newlyRegistered++;
 
             for (Direction dir : Direction.values()) {
                 BlockPos neighbor = current.relative(dir);
@@ -108,13 +114,17 @@ public class StorageChestManager {
     }
 
     /**
-     * Vérifie si une position est un coffre.
+     * Vérifie si une position est un conteneur de stockage valide.
+     * Utilise la capability IItemHandler (NeoForge) en priorite,
+     * avec fallback sur la whitelist legacy (Chest, Barrel).
      */
     public boolean isChest(BlockPos pos) {
         if (parent.getNodeLevel() == null) return false;
         if (!parent.getNodeLevel().hasChunkAt(pos)) return false;
-        BlockState state = parent.getNodeLevel().getBlockState(pos);
-        return StorageHelper.isStorageContainer(state);
+        if (StorageHelper.hasItemHandlerCapability(parent.getNodeLevel(), pos, null)) {
+            return true;
+        }
+        return StorageHelper.isStorageContainer(parent.getNodeLevel().getBlockState(pos));
     }
 
     /**

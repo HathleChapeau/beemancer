@@ -1,0 +1,2443 @@
+================================================================================
+BEEMANCER — STORAGE SYSTEM BRAINSTORMING
+================================================================================
+Date: 2026-02-11
+Equipe: AE2 Expert, Refined Storage Expert, Create Expert, Beemancer Architect
+Methode: Presentation factuelle par l'architecte, propositions par les 3 experts,
+         debat croise, moderation par l'architecte, synthese par le team-lead.
+================================================================================
+
+TABLE DES MATIERES
+------------------
+1. GROUPE 1 — Reseau et Topologie          [COMPLET]
+2. GROUPE 2 — Items et Stockage             [COMPLET]
+3. GROUPE 3 — Transport et Livraison        [COMPLET]
+4. GROUPE 4 — Automation et Interfaces      [COMPLET]
+5. GROUPE 5 — Energie et Progression        [COMPLET]
+6. MATRICE DE PRIORITE GLOBALE              [COMPLET]
+
+================================================================================
+LEGENDE
+================================================================================
+[AE2]    = Proposition de l'expert Applied Energistics 2
+[RS]     = Proposition de l'expert Refined Storage
+[CREATE] = Proposition de l'expert Create
+[CONV]   = Convergence (2+ experts d'accord)
+[UNAN]   = Unanimite (3/3 experts d'accord)
+
+Priorites:
+  P0 = Quick Win (trivial, aucun risque, fort impact)
+  P1 = Haute priorite (effort faible-moyen, bon ratio)
+  P2 = Priorite moyenne (effort moyen, impact significatif)
+  P3 = Priorite basse (effort eleve ou design necessaire)
+  P4 = Futur (necessite etude approfondie ou refactoring majeur)
+
+================================================================================
+1. GROUPE 1 — RESEAU ET TOPOLOGIE
+================================================================================
+
+FEATURES ANALYSEES:
+  1.1 Storage Controller (multibloc 3x3x3, hub central)
+  1.2 Storage Relay (extension reseau, waypoints)
+  1.3 Network Validation (verification blocs existants)
+  1.4 Storage Chests (flood fill BFS, enregistrement manuel)
+
+Note: La portee reseau est de 15 blocs (AbstractNetworkNodeBlockEntity.MAX_RANGE
+= 15), pas 24 comme initialement presume. Verifie dans le code source.
+
+--------------------------------------------------------------------------------
+1.1 STORAGE CONTROLLER
+--------------------------------------------------------------------------------
+Etat actuel: Multibloc 3x3x3 fixe, hub central, 5 managers, ~714 lignes.
+Fichiers: StorageControllerBlockEntity.java, StorageControllerBlock.java,
+          StorageMultiblockManager.java, ControllerStats.java
+
+--- AMELIORATIONS ---
+
+[A] Extraire HiveManager du controller
+    Quoi: Les lignes 327-434 de StorageControllerBlockEntity gerent les hives
+          (link, unlink, validate, essence overflow). Extraire en classe separee.
+    Pourquoi: Le controller a 714 lignes. Ce bloc de code est self-contained et
+              suit le meme pattern que les 5 managers deja extraits.
+    Comment: Creer HiveManager.java, meme pattern que StorageChestManager.
+    Reference: [RS] RS2 separe strictement les responsabilites dans des modules.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2
+    Priorite: P1
+    Effort: Faible | Risque: Faible
+    Experts: RS
+
+[B] Extraire les magic numbers en constantes
+    Quoi: MAX_LINKED_HIVES=4, intervalles de validation, etc. sont hardcodes.
+    Pourquoi: Lisibilite, maintenabilite, facilite le tuning gameplay.
+    Comment: Constantes statiques finales dans le controller ou une classe Config.
+    Reference: [RS] RS2 utilise des constantes nommees partout.
+    Priorite: P0 QUICK WIN
+    Effort: Trivial | Risque: Aucun
+    Experts: RS
+
+[C] Controller a tiers variables (Iron/Gold/Diamond)
+    Quoi: Differentes tailles/capacites de controller selon le tier.
+    Pourquoi: Progression gameplay, le joueur investit plus pour plus de capacite.
+    Comment: Plusieurs blocs controller avec des capacites differentes.
+    Reference: [AE2] Le ME Controller AE2 est un cuboid libre jusqu'a 7x7x7.
+               Source: https://guide.appliedenergistics.org/1.20.1/items-blocks-machines/me_controller
+               [CREATE] ConnectivityHandler.formMulti() permet des multiblocs
+               a taille variable (ItemVault, FluidTank).
+               Source: Create ItemVaultBlockEntity.java
+    Priorite: P3
+    Effort: Eleve (nouveaux blocs, recipes, modeles) | Risque: Moyen
+    Experts: AE2, CREATE (convergence)
+
+[D] Architecture Grid Services (services injectables)
+    Quoi: Remplacer les 5 managers par des services reseau injectables
+          (IStorageService, ITickService, ICraftingService).
+    Pourquoi: Decouplage, testabilite, extensibilite.
+    Comment: Pattern Grid + GridServices d'AE2. Chaque service s'enregistre
+             aupres du Grid et est accessible par type.
+    Reference: [AE2] AE2 GridServices registry + service factories.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+               [CREATE] Alternative: Behaviours composables (SmartBlockEntity).
+               Chaque behaviour a son propre tick/read/write/initialize.
+               Source: Create SmartBlockEntity.java (~264 lignes)
+    Priorite: P4 (evaluer apres les autres ameliorations)
+    Effort: Eleve | Risque: Eleve (refactoring majeur)
+    Experts: AE2, CREATE (convergence sur le besoin, divergence sur la solution)
+    Note: AE2 propose services injectables, Create propose behaviours composables.
+          Les deux resolvent le meme probleme (mieux organiser le controller).
+
+[E] Cout honey par relay dans la formule reseau
+    Quoi: Actuellement la formule honey = (base + coffres*10 + essenceCost) *
+          hiveMultiplier * (1-efficiency). Les relays ne coutent rien.
+    Pourquoi: Chaque relay etend le reseau, devrait avoir un cout honey.
+    Comment: Ajouter un terme `+ relayCount * RELAY_HONEY_COST` dans la formule.
+    Reference: [RS] RS facture de l'energie par appareil connecte au reseau.
+               Source: https://refinedmods.com/refined-storage/
+    Priorite: P2
+    Effort: Faible | Risque: Faible (gameplay tuning)
+    Experts: RS
+
+--- OPTIMISATIONS ---
+
+[F] Tick stagger etendu
+    Quoi: Etendre le pattern de tick stagger (deja dans ItemAggregator) a TOUTES
+          les boucles de validation du controller.
+    Pourquoi: Distribuer la charge quand plusieurs controllers existent.
+    Comment: Pattern `(gameTick + worldPosition.hashCode()) % interval`.
+    Reference: [AE2] AE2 TickManagerService distribue les ticks entre composants.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+    Priorite: P0 QUICK WIN (pattern deja utilise, juste a etendre)
+    Effort: Trivial | Risque: Aucun
+    Experts: AE2
+    Note: Deja partiellement implemente dans StorageItemAggregator.tickSync().
+
+[G] Sleep/Wake mechanism
+    Quoi: Le controller dort quand il n'y a pas d'activite, se reveille sur
+          changement reseau (chest add/remove, delivery task, etc.)
+    Pourquoi: Eviter de ticker inutilement quand le reseau est idle.
+    Comment: Flag "awake" mis a true sur evenements reseau, remis a false apres
+             N ticks sans activite.
+    Reference: [AE2] AE2 TickManagerService sleep/wake model.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+    Priorite: P4 (necessite etude des triggers)
+    Effort: Moyen | Risque: Moyen
+    Experts: AE2
+
+--------------------------------------------------------------------------------
+1.2 STORAGE RELAY
+--------------------------------------------------------------------------------
+Etat actuel: Bloc relais, portee 15 blocs, waypoint bees, graphe BFS.
+Fichiers: StorageRelayBlockEntity.java (~126L), AbstractNetworkNodeBlockEntity.java
+
+--- AMELIORATIONS ---
+
+[H] Auto-connexion des relays par adjacence
+    Quoi: Quand un relay est place, il se connecte automatiquement aux noeuds
+          reseau (controller/relay) dans son rayon, sans edit mode.
+    Pourquoi: UX — actuellement il faut enter edit mode, cliquer sur chaque relay.
+              AE2 et Create auto-connectent par adjacence.
+    Comment: Dans onLoad() ou setPlacedBy(), scanner les BlockEntities voisins
+             et appeler la logique de connexion.
+    Reference: [AE2] Les cables AE2 s'auto-connectent par adjacence.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+               [CREATE] ItemVault auto-formation via ConnectivityHandler.
+               Source: Create ItemVaultBlockEntity.java
+    Priorite: P3
+    Effort: Moyen | Risque: Faible
+    Experts: AE2, CREATE (convergence)
+    Question ouverte: Devrait-il respecter l'edit mode ou le bypasser ?
+    Question ouverte: Risque de chemins sous-optimaux pour les abeilles ?
+
+[I] Relay cache controllerPos
+    Quoi: StorageRelayBlockEntity n'a PAS de champ controllerPos (verifie dans
+          le code). Ajouter un champ controllerPos cache.
+    Pourquoi: Actuellement, trouver le controller depuis un relay necessite un
+              BFS a chaque fois. Terminal et Interface ont deja controllerPos.
+    Comment: Meme pattern que StorageTerminalBlockEntity.controllerPos.
+             Mis a jour lors de la connexion, persiste en NBT.
+    Reference: [RS] RS2 chaque noeud connait son controller directement.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2
+    Priorite: P1
+    Effort: Faible | Risque: Faible
+    Experts: RS
+
+[J] Feedback visuel de portee
+    Quoi: Afficher une sphere/cercle de particules montrant la portee de 15
+          blocs quand le joueur est en edit mode.
+    Pourquoi: Le joueur ne sait pas ou s'arrete la portee du relay.
+    Comment: ParticleHelper.sphere() ou ring() existe deja.
+    Reference: [RS] RS affiche la portee du Wireless Transmitter.
+               Source: https://refinedmods.com/refined-storage/
+    Priorite: P2
+    Effort: Faible (infrastructure existe) | Risque: Aucun
+    Experts: RS
+
+--- FIXES ---
+
+[K] Partition detection on relay destroy
+    Quoi: Quand un relay est detruit et qu'il etait le seul lien entre deux
+          parties du reseau, detecter et gerer la partition.
+    Pourquoi: Actuellement, BFS cleanup retire les blocs du relay detruit, mais
+              ne detecte pas si d'autres noeuds sont maintenant isoles.
+    Comment: BFS depuis les voisins du relay detruit. Si un voisin ne peut plus
+             atteindre le controller, ses blocs doivent etre nettoyes.
+    Reference: [AE2] Algorithme 2 passes (retrait + validation splits).
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+    Priorite: P4 (necessite design approfondi)
+    Effort: Eleve | Risque: Eleve
+    Experts: AE2, RS (convergence sur le besoin)
+
+--------------------------------------------------------------------------------
+1.3 NETWORK VALIDATION
+--------------------------------------------------------------------------------
+Etat actuel: Polling toutes les 200 ticks (10s). Guards hasChunkAt() partout.
+Fichiers: StorageControllerBlockEntity.java (validateNetworkBlocks),
+          StorageEvents.java, RequestManager.java, DeliveryBeeSpawner.java
+
+--- AMELIORATIONS ---
+
+[L] Event-driven validation (etendre onBlockBreak)
+    Quoi: StorageEvents.onBlockBreak() existe DEJA mais ne se declenche que
+          quand le joueur est en edit mode (check StorageEditModeHandler.isEditing).
+          Retirer/relaxer le gate edit-mode pour le path de cleanup.
+    Pourquoi: Un coffre/terminal/interface detruit hors edit mode n'est detecte
+              qu'apres 10 secondes (200 ticks). Avec l'event, c'est immediat.
+    Comment: Retirer le check isEditing() a la ligne 377 de StorageEvents.java
+             pour le chemin de cleanup (pas pour le chemin d'enregistrement).
+    Reference: [AE2] AE2 utilise addNode/removeNode event-driven.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+               [RS] RS2 utilise BlockEvent.BreakEvent.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2/3.2-neoforge-platform
+    Priorite: P0 QUICK WIN (1 ligne de code, infrastructure existe)
+    Effort: 1 ligne | Risque: Aucun
+    Experts: AE2, RS (convergence forte)
+    Note: Decouverte de l'architecte — le code existe, il est juste gate.
+
+[M] Amortized validation (round-robin)
+    Quoi: Au lieu de valider TOUS les blocs en une fois toutes les 200 ticks,
+          valider N blocs par tick en rotation.
+    Pourquoi: Un reseau avec 200 coffres = 200 checks en 1 tick = lag spike.
+              Amortir = lisser la charge.
+    Comment: Index rotatif, valider ceil(totalBlocks / SPREAD_TICKS) par tick.
+    Reference: [RS] RS propose cette approche.
+               [AE2] AE2 TickManagerService distribue les ticks entre composants.
+    Priorite: P2
+    Effort: Moyen | Risque: Faible
+    Experts: RS, AE2 (complementaire)
+
+[N] TTL keepAlive (heartbeat)
+    Quoi: Chaque bloc reseau envoie un "heartbeat" au controller periodiquement.
+          Si pas de heartbeat pendant N ticks, le bloc est considere invalide.
+    Pourquoi: Inverse le modele: au lieu du controller qui poll, les blocs
+              signalent leur presence.
+    Comment: Pattern LogisticallyLinkedBehaviour de Create.
+    Reference: [CREATE] Create LogisticallyLinkedBehaviour utilise un TTL cache.
+               Source: Create LogisticallyLinkedBehaviour.java
+    Priorite: P3 (alternative a L+M, pas cumulable)
+    Effort: Moyen | Risque: Moyen
+    Experts: CREATE
+    Note: Mutuellement exclusif avec L+M. Choisir l'un ou l'autre.
+
+--- FIXES ---
+
+[O] Ajouter setRemoved() au StorageTerminalBlockEntity
+    Quoi: StorageTerminalBlockEntity n'a PAS de setRemoved(). La cleanup du
+          terminal repose entierement sur la validation periodique.
+    Pourquoi: Quand un terminal est detruit, il faut immediatement:
+              - Retirer du registre reseau
+              - Annuler les requetes pendantes
+              - Fermer les menus ouverts
+    Comment: Override setRemoved(), appeler cancelAllPendingRequests(),
+             unregister du NetworkRegistry, super.setRemoved().
+    Reference: Decouverte de l'architecte lors de la verification du code.
+               Tous les autres blocs reseau (Interface, Hive, Relay) ont
+               un setRemoved() propre.
+    Priorite: P0 QUICK WIN (fix evident)
+    Effort: Trivial | Risque: Aucun
+    Experts: Architecte (decouverte), RS (a souleve le probleme)
+
+--------------------------------------------------------------------------------
+1.4 STORAGE CHESTS
+--------------------------------------------------------------------------------
+Etat actuel: 3 types vanilla (Chest, Trapped Chest, Barrel). Flood fill BFS
+sans limite. Edit mode pour enregistrement.
+Fichiers: StorageChestManager.java (~169L), StorageHelper.java
+
+--- AMELIORATIONS ---
+
+[P] Detection par IItemHandler capability
+    Quoi: Remplacer la whitelist 3 blocs (StorageHelper.isStorageContainer) par
+          une detection via la capability IItemHandler de NeoForge.
+    Pourquoi: Supporterait automatiquement tous les conteneurs moddeds
+              (Iron Chests, Sophisticated Backpacks, Drawers, etc.)
+    Comment: Remplacer `block instanceof ChestBlock || block instanceof BarrelBlock`
+             par `level.getCapability(Capabilities.ItemHandler.BLOCK, pos, dir)`.
+    Reference: [AE2] Le Storage Bus AE2 supporte tout IItemHandler.
+               Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/import-export-storage
+               [RS] RS2 External Storage supporte tout IItemHandler.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+               [CREATE] CapManipulationBehaviourBase detecte par capability.
+               Source: Create CapManipulationBehaviourBase.java
+    Priorite: P2
+    Effort: Moyen (necessite aussi migration Container -> IItemHandler dans
+            StorageItemAggregator et ContainerHelper) | Risque: Moyen
+    Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+    Note: Implique un refactoring de StorageItemAggregator qui utilise
+          actuellement `Container` (vanilla) pour toutes les operations.
+          4+ fichiers impactes: StorageItemAggregator, ContainerHelper,
+          StorageChestManager, DeliveryContainerOps.
+
+[Q] Flood fill cap (~64 coffres)
+    Quoi: Limiter le nombre de coffres enregistrables par flood fill BFS.
+    Pourquoi: Un BFS sans limite dans une zone dense = potentiel lag spike.
+              Un joueur pourrait enregistrer des centaines de coffres d'un clic.
+    Comment: Ajouter `if (registered.size() >= MAX_CHESTS) break;` dans le BFS.
+    Reference: [AE2] AE2 limite les channels (8 normal, 32 dense) ce qui
+               contraint indirectement le nombre de storage.
+               [RS] RS n'a pas de limite explicite mais la performance degrade.
+    Priorite: P0 QUICK WIN
+    Effort: 5 lignes | Risque: Aucun
+    Experts: AE2, RS (convergence)
+
+--- OPTIMISATIONS ---
+
+[R] VersionedInventoryWrapper sur les coffres
+    Quoi: Wrapper les coffres du reseau avec un tracker de version. Si le
+          contenu d'un coffre n'a pas change, skip le recalcul d'agregation.
+    Pourquoi: refreshAggregatedItems() itere TOUS les coffres TOUS les slots
+              a chaque refresh. Si 90% des coffres n'ont pas change, c'est
+              90% de travail inutile.
+    Comment: Pattern VersionedInventoryWrapper de Create.
+             Chaque coffre a un compteur de version incremente a chaque
+             modification. Le refresh ne recalcule que les coffres modifies.
+    Reference: [CREATE] Create VersionedInventoryWrapper +
+               VersionedInventoryTrackerBehaviour.
+               Source: Create VersionedInventoryWrapper.java,
+               VersionedInventoryTrackerBehaviour.java
+    Priorite: P2
+    Effort: Moyen | Risque: Faible
+    Experts: CREATE (proposition unique)
+    Note: Necessite de wrapper les Container/IItemHandler des coffres.
+          Complexifie la gestion mais gros gain de performance potentiel
+          pour les reseaux avec 50+ coffres.
+
+[S] Visual range feedback en edit mode
+    Quoi: Afficher des particules montrant la sphere de portee (15 blocs)
+          quand le joueur est en edit mode.
+    Pourquoi: Le joueur ne sait pas visuellement ou s'arrete la portee.
+    Comment: ParticleHelper.sphere(level, nodePos, 15, particleType, count)
+             appele a l'entree en edit mode ou periodiquement.
+    Reference: [RS] RS affiche la portee du Wireless Transmitter.
+    Priorite: P2
+    Effort: Faible (ParticleHelper existe) | Risque: Aucun
+    Experts: RS
+
+
+================================================================================
+2. GROUPE 2 — ITEMS ET STOCKAGE
+================================================================================
+
+FEATURES ANALYSEES:
+  2.1 Item Aggregation (StorageItemAggregator, 5 priorites, ~523 lignes)
+  2.2 Delta Sync (synchro incrementale, snapshots)
+  2.3 Storage Terminal (3 onglets, crafting, deposit/pickup, 68 slots)
+
+--------------------------------------------------------------------------------
+2.1 ITEM AGGREGATION
+--------------------------------------------------------------------------------
+Etat actuel: Classe standalone ~523 lignes. Scanne TOUS les coffres, reconstruit
+la map from scratch a chaque refresh. 5 priorites de depot. Utilise Container
+(vanilla) au lieu de IItemHandler. Pas de cache incrementiel.
+Fichiers: StorageItemAggregator.java, ContainerHelper.java
+
+--- BUGS ---
+
+[T] Dirty flag incomplet (modifications externes)
+    Quoi: Les hoppers, autres mods, et joueurs ouvrant les coffres directement
+          ne declenchent PAS le dirty flag. Le delta sync rate ces changements.
+    Pourquoi: dirty=true uniquement dans depositItem/extractItem. Les modifications
+              externes passent par Container directement, sans passer par l'aggregator.
+    Comment: Quand des viewers sont presents, forcer dirty=true tous les ~100 ticks
+             pour capturer les changements externes.
+    Reference: [AE2] AE2 broadcastChanges() periodic comme filet de securite.
+               Decouverte: AE2-expert, confirmee par verification du code.
+    Priorite: P0 BUGFIX
+    Effort: 5 lignes | Risque: Aucun
+    Experts: AE2
+
+--- AMELIORATIONS ---
+
+[U] Cache incrementiel (Map au lieu de full scan)
+    Quoi: Maintenir un Map<ItemStackKey, Integer> server-side mis a jour dans
+          depositItem/extractItem au lieu de reconstruire depuis scratch.
+    Pourquoi: refreshAggregatedItems() est O(N*M) ou N=coffres, M=slots.
+              Avec 64 coffres x 27 slots = 1728 iterations toutes les 40 ticks.
+              Le cache incrementiel reduit a O(1) par operation.
+    Comment: Update le Map dans deposit/extract. Full scan uniquement a l'init
+             et comme backup periodique (~200 ticks).
+    Reference: [AE2] AE2 KeyCounter dans StorageService, updates incrementaux.
+               Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/1-overview
+               [RS] RS2 IStorageCache, meme approche incrementale.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+               [CREATE] InventorySummary + BigItemStack pour structure de donnees.
+               Source: Create InventorySummary.java (194L), BigItemStack.java (87L)
+    Priorite: P1
+    Effort: Moyen | Risque: Faible
+    Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[V] Index coffres par contenu pour depot O(1)
+    Quoi: Maintenir un Map<ItemStackKey, Set<BlockPos>> pour savoir quels coffres
+          contiennent quel item. Le depot passe de 5 passes O(N) a O(1).
+    Pourquoi: findSlotForItem() fait 5 passes lineaires sur TOUS les coffres
+              (meme item mergeable, meme item slot vide, meme tag, meme namespace,
+              n'importe quel slot vide). Avec l'index, la priorite 1 est O(1).
+    Comment: Mettre a jour l'index dans deposit/extract et lors du full scan.
+    Reference: [AE2] AE2 priority-sorted storages.
+               [RS] RS2 StorageRepository avec index.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+    Priorite: P2
+    Effort: Moyen | Risque: Faible
+    Experts: AE2, RS (convergence)
+
+[W] Tri cote client au lieu de server-side
+    Quoi: Deplacer le sort alphabetique de refreshAggregatedItems() (server)
+          vers le handler du StorageItemsSyncPacket (client).
+    Pourquoi: Le tri est une operation de presentation, pas de logique metier.
+              Le serveur n'a pas besoin d'une liste triee.
+    Comment: Supprimer le sort() server-side, ajouter le tri dans le client
+             apres reception du packet.
+    Reference: [RS] RS2 GridView trie cote client.
+               Source: https://deepwiki.com/refinedmods/refinedstorage2
+    Priorite: P1
+    Effort: Faible | Risque: Aucun
+    Experts: RS
+
+--- OPTIMISATIONS ---
+
+[X] Decomposition 523 lignes en 3-4 classes
+    Quoi: Extraire DepositStrategy (~120L), AggregationCache (~120L),
+          ViewerSyncManager (~120L). StorageItemAggregator reste ~160L.
+    Pourquoi: 523 lignes depasse la regle 150L du projet. Responsabilites
+              mixtes (aggregation + depot + sync + viewer management).
+    Comment: Extraction par responsabilite, meme pattern que les 5 managers
+             deja extraits du controller.
+    Reference: [AE2] Separation concerns dans StorageService.
+               [RS] IStorageCache separe de la logique de depot.
+               [CREATE] LogisticsManager + InventorySummary + BigItemStack.
+    Priorite: P2
+    Effort: Moyen | Risque: Faible
+    Experts: AE2, RS, CREATE (convergence)
+
+[Y] Simplifier les 5 priorites de depot
+    Quoi: Les 5 niveaux de priorite (meme item merge, meme item slot vide,
+          meme tag, meme namespace, n'importe quel slot vide) sont complexes.
+          Simplifier a 3 : meme item merge > meme item slot vide > slot vide.
+    Pourquoi: Les priorites "meme tag" et "meme namespace" sont des heuristiques
+              dont l'utilite est discutable. Elles complexifient le code (5 passes).
+    Comment: Retirer les passes 3 et 4, garder merge > slot vide meme coffre > any.
+    Reference: [CREATE] Create delegue simplement a insertItem() sans heuristiques.
+               [RS] RS2 utilise des priorites numeriques configurables par l'utilisateur.
+    Priorite: P3 (decision gameplay)
+    Effort: Faible | Risque: Moyen (changement de comportement)
+    Experts: CREATE, RS
+
+--------------------------------------------------------------------------------
+2.2 DELTA SYNC
+--------------------------------------------------------------------------------
+Etat actuel: SYNC_INTERVAL=40 ticks (2 sec). Snapshot comparison. Full sync pour
+nouveaux viewers. Dirty flag. ItemStackKey comme cle.
+Fichiers: StorageItemAggregator.java (partie sync), StorageItemsSyncPacket.java
+
+--- BUGS ---
+
+[Z] TasksSyncPacket envoye sans changement
+    Quoi: StorageTasksSyncPacket est envoye a CHAQUE sync, meme quand les taches
+          n'ont pas change. Gaspillage de bande passante.
+    Pourquoi: Pas de dirty flag pour les taches (contrairement aux items).
+    Comment: Ajouter un tasksDirty flag dans StorageDeliveryManager, reset apres sync.
+    Reference: [RS] RS2 utilise des dirty flags sur tous les packets de sync.
+    Priorite: P0 QUICK WIN
+    Effort: Trivial | Risque: Aucun
+    Experts: RS
+
+--- AMELIORATIONS ---
+
+[AA] Reduire SYNC_INTERVAL de 40 a 10-20 ticks
+     Quoi: Le terminal met 2 secondes a refleter les changements. Trop lent
+           pour une UI interactive.
+     Pourquoi: 40 ticks = 2 secondes de latence. AE2 sync chaque tick, RS est
+               event-driven (sub-tick). 10-20 ticks = compromis acceptable.
+     Comment: Changer SYNC_INTERVAL de 40 a 10 (ou 20).
+     Reference: [AE2] AE2 broadcastChanges() chaque tick.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/5.1-terminal-system
+                [RS] RS2 GridWatcher event-driven, <1 tick.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2
+     Priorite: P1
+     Effort: Trivial (1 constante) | Risque: Aucun
+     Experts: AE2, RS (convergence)
+
+[AB] BigItemStack pour encodage reseau compact
+     Quoi: Au lieu d'envoyer des ItemStack separees (chacune avec son NBT),
+           envoyer 1 ItemStack + 1 VarInt (count) par type d'item.
+     Pourquoi: 500 stacks de cobblestone = 500 ItemStack dans le packet.
+               Avec BigItemStack = 1 ItemStack + count=32000. Reduction ~99%.
+     Comment: Codec custom : ItemStack (count=1) + VarInt (total count).
+     Reference: [CREATE] BigItemStack.STREAM_CODEC avec ByteBufCodecs.VAR_INT.
+                Source: Create BigItemStack.java (87L)
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: CREATE
+
+[AC] Stateless request/response (alternative au delta sync)
+     Quoi: Remplacer le delta sync par un modele stateless : le client envoie
+           une requete, le serveur repond avec le snapshot complet.
+     Pourquoi: Zero etat a tracker cote serveur (pas de previousSnapshot, pas
+               de dirty flags, pas de fullSyncPending). Plus simple a maintenir.
+     Comment: LogisticalStockRequestPacket (C2S) + LogisticalStockResponsePacket (S2C).
+              Le client demande periodiquement (ex: toutes les 10 ticks).
+     Reference: [CREATE] Create utilise ce pattern pour le StockTicker.
+                Source: Create LogisticalStockRequestPacket.java (35L)
+     Priorite: P3 (alternative radicale, evaluer si delta sync pose des problemes)
+     Effort: Moyen | Risque: Moyen (changement d'architecture)
+     Experts: CREATE
+     Note: DIVERGENCE avec AE2 (delta plus rapide) et RS (event-driven).
+           Les 3 experts ont 3 visions differentes du sync. Le delta actuel
+           fonctionne, les ameliorations AA+AB suffisent pour v1.
+
+[AD] Serial numbers pour identification d'items
+     Quoi: Attribuer un ID numerique a chaque ItemStackKey. Les deltas
+           envoient serial+count au lieu du full ItemStack.
+     Pourquoi: Reduit la taille des delta packets de ~30% apres le full sync initial.
+     Comment: Map<Integer, ItemStackKey> bidirectionnel. Le client resout serial → item.
+     Reference: [AE2] AE2 MEInventoryUpdatePacket + IncrementalUpdateHelper.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/5.1-terminal-system
+     Priorite: P3
+     Effort: Eleve | Risque: Moyen
+     Experts: AE2
+
+--- OPTIMISATIONS ---
+
+[AE] Binary search insert cote client
+     Quoi: applyDeltaItems() re-trie toute la liste O(N log N) apres chaque delta.
+           Utiliser une insertion par binary search O(log N).
+     Pourquoi: Avec 500+ types d'items, re-trier a chaque sync est couteux.
+     Comment: Collections.binarySearch() + list.add(index, item).
+     Reference: [RS] RS2 GridView utilise des insertions triees.
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: RS
+
+[AF] Reponse fragmentee pour gros inventaires
+     Quoi: Si le full sync depasse une certaine taille, le fragmenter en
+           plusieurs packets (100 items/packet) avec un flag lastPacket.
+     Pourquoi: Eviter les limites de taille de packet Minecraft.
+     Comment: Boucle d'envoi avec chunk size configurable.
+     Reference: [CREATE] InventorySummary.divideAndSendTo() lignes 160-187.
+     Priorite: P3
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+[AG] Dual-TTL cache cote serveur
+     Quoi: Deux niveaux de cache : SUMMARIES (TTL 20 ticks, pour affichage)
+           et ACCURATE_SUMMARIES (TTL 1 tick, pour transactions).
+     Pourquoi: Eviter de recalculer le meme summary pour chaque viewer a chaque tick.
+     Comment: Guava Cache ou simple TTL counter.
+     Reference: [CREATE] LogisticsManager.java lignes 38-50, TickBasedCache.
+     Priorite: P3
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+--------------------------------------------------------------------------------
+2.3 STORAGE TERMINAL
+--------------------------------------------------------------------------------
+Etat actuel: 693 lignes. 3 onglets. 68 slots. Deposit/pickup system.
+PendingRequest queue max 16. Pas de setRemoved().
+Fichiers: StorageTerminalBlockEntity.java, StorageTerminalMenu.java,
+          StorageTerminalScreen.java, TerminalStorageTabRenderer.java
+
+--- BUGS ---
+
+[AH] setRemoved() manquant [BUG CRITIQUE]
+     Quoi: StorageTerminalBlockEntity n'a PAS de setRemoved(). Quand le terminal
+           est casse :
+           - Les viewers NE SONT PAS retires de l'aggregator
+           - Les pending requests NE SONT PAS annulees
+           - Le registre reseau N'EST PAS nettoye
+           - Les items dans deposit/pickup NE SONT PAS droppes
+     Pourquoi: Tous les autres blocs reseau (Interface, Hive, Relay) ont un
+               setRemoved() propre. Le terminal est le seul sans.
+     Comment: Override setRemoved() : appeler unlinkController() +
+              cancelAllPendingRequests() + drop deposit/pickup items +
+              super.setRemoved(). ~10 lignes.
+     Reference: [AE2] AE2 GridNode.destroy() dans setRemoved().
+                [RS] RS2 idem.
+                Decouverte: Architecte, confirmee AE2+RS.
+     Priorite: P0 BUGFIX CRITIQUE
+     Effort: 10 lignes | Risque: Aucun
+     Experts: AE2, RS (convergence), CREATE
+
+[AI] DATA_HONEY_CONSUMPTION mauvaise source [BUG]
+     Quoi: StorageTerminalMenu ligne 278 utilise
+           controller.getChestManager().getRegisteredChestCount() qui retourne
+           SEULEMENT les coffres du controller, pas ceux des relays.
+     Pourquoi: La valeur affichee dans l'onglet Controller est incorrecte —
+               elle sous-estime le nombre de coffres et donc le cout honey.
+     Comment: Changer en controller.getNetworkRegistry().getChestCount().
+              1 ligne.
+     Reference: [RS] RS-expert a decouvert ce bug. Le controller lui-meme
+                utilise la bonne methode (ligne 131).
+     Priorite: P0 BUGFIX
+     Effort: 1 ligne | Risque: Aucun
+     Experts: RS
+
+[AJ] Deferred processPendingRequests [BUG POTENTIEL]
+     Quoi: processPendingRequests() est appele dans onContentsChanged() des
+           pickupSlots, donc PENDANT une transaction Container.
+     Pourquoi: Si publishRequest() modifie l'etat pendant la transaction en cours,
+               ca peut causer des effets de bord (ConcurrentModification, etc.)
+     Comment: Utiliser un flag needsProcessPending=true dans onContentsChanged,
+              traiter dans serverTick. Meme pattern que needsDepositScan.
+     Reference: [RS] RS-expert a identifie ce pattern.
+     Priorite: P0 BUGFIX
+     Effort: 5 lignes | Risque: Aucun
+     Experts: RS
+
+[AK] isFormed() check manquant
+     Quoi: getController() verifie que le BE existe mais pas que le multibloc
+           est forme. Si le multibloc est casse mais le bloc controller existe
+           encore, le terminal tente quand meme de l'utiliser.
+     Pourquoi: Les operations echouent silencieusement au lieu de retourner
+               un etat propre "non connecte".
+     Comment: Ajouter `&& controller.isFormed()` dans getController().
+     Reference: [AE2] AE2-expert a identifie ce cas.
+     Priorite: P1
+     Effort: 3 lignes | Risque: Aucun
+     Experts: AE2
+
+--- AMELIORATIONS ---
+
+[AL] Decomposition 693 lignes
+     Quoi: Extraire TerminalDepositHandler (~150L) et TerminalRequestHandler (~130L).
+           StorageTerminalBlockEntity reste ~400L (encore au-dessus de 150L).
+     Pourquoi: 693 lignes depasse largement la regle 150L.
+     Comment: Meme pattern d'extraction que les managers du controller.
+     Reference: [AE2] AE2 separe MEStorageMenu et logique.
+                [RS] RS2 separe la logique de requete.
+                [CREATE] Propose behaviours : NetworkInventoryBehaviour +
+                TerminalSearchBehaviour + TerminalSyncBehaviour.
+                Source: Create SmartBlockEntity.java, DepotBlockEntity.java
+     Priorite: P2
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, RS, CREATE (convergence)
+
+[AM] SmartInventory au lieu de raw ItemStackHandler
+     Quoi: Utiliser un wrapper type SmartInventory avec forbidInsertion/
+           forbidExtraction pour les slots virtuels et whenContentsChanged.
+     Pourquoi: Les pickupSlots sont output-only mais c'est gere par le Menu
+               (OutputOnlyTabSlot) au lieu de l'inventaire lui-meme.
+     Comment: Creer un SmartInventory inspiree de Create.
+     Reference: [CREATE] SmartInventory.java (190L).
+     Priorite: P3
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+[AN] Slots progressifs (upgrades)
+     Quoi: Au lieu de 9+9 slots fixes, commencer avec 2+2 et ajouter
+           +1 par upgrade.
+     Pourquoi: Progression gameplay, le joueur investit pour plus de capacite.
+     Comment: Nouveaux items d'upgrade, slot count dynamique dans le Menu.
+     Reference: [AE2] AE2 ME Terminal a des capacity cards.
+     Priorite: P3
+     Effort: Eleve (nouveaux items, GUI dynamique) | Risque: Moyen
+     Experts: AE2
+
+[AO] Etat client (search, sort, scroll) dans Screen pas dans BE
+     Quoi: S'assurer que l'etat d'affichage (recherche, tri, scroll) est
+           stocke dans le Screen cote client, pas dans le BlockEntity.
+     Pourquoi: Si stocke dans le BE, l'etat survit au chunk unload et peut
+               causer des inchoherences.
+     Comment: Verifier et migrer si necessaire.
+     Reference: [CREATE] Create garde tout display state cote Screen.
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: CREATE
+
+--- OPTIMISATIONS ---
+
+[AP] Index requests dans RequestManager
+     Quoi: scanDepositSlots() itere getAllRequests() pour verifier si une
+           requete existe deja. Utiliser un index par type+terminal.
+     Pourquoi: Avec beaucoup de requetes actives, l'iteration lineaire est lente.
+     Comment: Ajouter hasActiveExportFrom(BlockPos, ItemStack) avec un index.
+     Reference: [RS] RS-expert.
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: RS
+
+[AQ] MenuBase<T> pour lifecycle standardise
+     Quoi: Creer une classe de base pour les menus avec createOnClient,
+           initAndReadInventory, addSlots, saveData, removed() cleanup.
+     Pourquoi: Standardiser le lifecycle des menus, eviter les oublis de cleanup.
+     Comment: Classe abstraite inspiree de Create MenuBase.
+     Reference: [CREATE] Create MenuBase.java (77L).
+     Priorite: P3
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+
+================================================================================
+3. GROUPE 3 — TRANSPORT ET LIVRAISON
+================================================================================
+
+FEATURES ANALYSEES:
+  3.1 Delivery System (StorageDeliveryManager ~608L)
+  3.2 Delivery Bee Spawner (DeliveryBeeSpawner ~297L)
+  3.3 Request Manager (RequestManager ~481L)
+  3.4 Delivery Task (DeliveryTask ~328L)
+
+Convergences Groupe 3:
+  UNANIMITE 3/3: PriorityQueue au lieu de LinkedList+sort
+  UNANIMITE 3/3: Map<UUID,Bee> au lieu de AABB scan O(N)
+  UNANIMITE 3/3: Bug completedTaskIds eviction unsafe
+  UNANIMITE 3/3: Bug item loss/dupe au reload (ASSIGNED->PENDING + bees tuees)
+  AE2+RS: Retry infini sans limite
+  AE2+CREATE: Extraction simulate/validate avant spawn (TOCTOU)
+  AE2+RS+CREATE: Decomposition du code (608L et 481L)
+
+Divergence notable:
+  CREATE propose de simplifier radicalement (supprimer dependency tracking, FSM
+  3 phases au lieu de 6). AE2 et RS veulent garder la complexite actuelle mais
+  la fiabiliser. L'architecte note que le dependency tracking est utilise par
+  le Crafter System (resolution recursive) — le supprimer casserait le craft
+  automatique. La simplification FSM est debatable (les 6 phases gere des cas
+  reels: preload, waypoints intermediaires, retry).
+
+--------------------------------------------------------------------------------
+3.1 DELIVERY SYSTEM (StorageDeliveryManager ~608L)
+--------------------------------------------------------------------------------
+Etat actuel: Gestion de la queue de livraison, spawn de bees, honey consumption,
+dependency tracking, splitting de taches. 608 lignes, fichier le plus complexe
+du storage system. Delegue au DeliveryBeeSpawner pour le spawn effectif.
+Fichiers: StorageDeliveryManager.java, DeliveryBeeEntity.java, DeliveryPhaseGoal.java
+
+--- BUGS ---
+
+[AR] consumeHoney() mauvais chest count [BUG]
+     Quoi: StorageDeliveryManager.consumeHoney() utilise
+           getChestManager().getRegisteredChestCount() au lieu de
+           getNetworkRegistry().getChestCount(). Meme bug que [AI] dans le terminal.
+     Pourquoi: La formule honey sous-estime le nombre de coffres du reseau
+               (ignore ceux enregistres via relays). Le joueur paie moins que prevu.
+     Comment: Remplacer par getNetworkRegistry().getChestCount(). 1 ligne.
+     Reference: [RS] RS-expert a decouvert le pattern dans le terminal (AI).
+     Priorite: P0 BUGFIX
+     Effort: 1 ligne | Risque: Aucun
+     Experts: RS
+
+[AS] ASSIGNED sauvegarde comme PENDING = item dupe au reload [BUG CRITIQUE]
+     Quoi: Quand le serveur sauvegarde, les DeliveryTask en etat ASSIGNED (items
+           deja extraits du coffre source, en attente de spawn bee) sont serialisees
+           comme PENDING. Au reload :
+           1. La tache redevient PENDING → les items sont re-extraits du coffre
+           2. Les items deja donnes a la bee en vol sont perdus (entite detruite)
+           = Duplication des items extraits + perte des items en vol.
+     Pourquoi: Le save/load ne preserve pas l'etat ASSIGNED ni les items preloaded.
+               C'est un bug de data integrity critique.
+     Comment: Sauvegarder l'etat exact de chaque tache (ASSIGNED, FLYING, etc.)
+              et les items preloaded dans le NBT. Au reload:
+              - ASSIGNED sans bee → remettre items dans le coffre source
+              - FLYING → remettre items dans le coffre source (bee perdue)
+              Pattern AE2: CraftingCpuLogic.writeToNBT() sauvegarde l'etat exact.
+     Reference: [AE2] AE2 CraftingCpuLogic persiste l'etat exact des crafts en cours.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2
+                [RS] RS2 persiste l'etat exact des operations en cours.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2
+                [CREATE] Create LogisticsManager est stateless (pas de persistence
+                des operations en cours — les colis en transit sont perdus au reload
+                mais les items source ne sont pas dupliqu's).
+     Priorite: P0 BUGFIX CRITIQUE (data corruption)
+     Effort: Moyen (refactoring serialization) | Risque: Moyen
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+     Note: Ce bug est le plus critique du storage system. Il peut causer
+           de la duplication d'items en jeu, ce qui casse l'economie.
+
+[AT] completedTaskIds eviction unsafe [BUG]
+     Quoi: La liste completedTaskIds utilise une eviction FIFO a 100 entrees.
+           Quand la liste depasse 100, les plus anciens IDs sont supprimes.
+           Si une autre tache reference encore un ID evince (via dependency),
+           elle ne detectera jamais que sa dependance est terminee.
+     Pourquoi: La dependance reste en etat BLOCKED indefiniment, la tache n'est
+               jamais executee. Les items restent bloques dans le coffre source.
+     Comment: Au lieu de FIFO aveugle, compter les references. Evincer
+              uniquement les IDs qui n'ont plus de dependants actifs.
+              Alternative: TTL-based (evincer apres 600 ticks = 30 sec).
+     Reference: [AE2] AE2 CraftingCPU ne fait pas d'eviction — les crafts termines
+                sont nettoyes quand TOUS les dependants sont resolus.
+                [RS] RS2 n'utilise pas d'eviction FIFO aveugle.
+                [CREATE] Create LogisticsManager n'a pas de dependency tracking.
+     Priorite: P1 BUGFIX
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[AU] Cancel en vol sans restitution items [BUG]
+     Quoi: Quand une tache est annulee alors que la bee est en vol (etat FLYING),
+           les items portes par la bee ne sont pas restitues au coffre source.
+     Pourquoi: La bee est killed mais ses items sont perdus dans le void.
+     Comment: Dans cancelTask(), si etat == FLYING :
+              1. Recuperer les items de la bee (getBeeCarriedItem())
+              2. Tenter de les reinjecter dans le coffre source
+              3. Si echec, drop les items au sol a la position de la bee
+     Reference: [AE2] AE2 annule un craft en restituant les materiaux au reseau.
+     Priorite: P1 BUGFIX
+     Effort: Moyen | Risque: Faible
+     Experts: AE2
+
+[AV] Retry infini sans limite [BUG]
+     Quoi: Quand onTaskFailed() est appele, la tache est remise en PENDING sans
+           aucune limite de retry. Une tache qui echoue systematiquement (coffre
+           plein, chemin bloque) boucle indefiniment.
+     Pourquoi: Gaspillage de bees, honey, et CPU. Le joueur ne recoit aucun
+               feedback que quelque chose est bloque.
+     Comment: Ajouter un compteur retryCount dans DeliveryTask. Max 3-5 retries
+              avec backoff exponentiel (delai croissant entre retries).
+              Apres max retries: marquer FAILED, notifier le joueur via particules
+              ou message dans le terminal.
+     Reference: [AE2] ICraftingSubmitResult retourne des error codes (NO_CPU,
+                INCOMPLETE_PLAN, etc.) avec feedback au joueur.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2
+                [RS] RS2 a des error codes et des limites de retry.
+     Priorite: P1 BUGFIX
+     Effort: Faible | Risque: Aucun
+     Experts: AE2, RS (convergence)
+
+[AW] Timeout FLYING manquant [BUG]
+     Quoi: Une bee en etat FLYING n'a pas de timeout. Si elle est bloquee
+           (pathfinding impossible, chunk unloaded, entite bugee), elle reste
+           en vol indefiniment = "bee zombie".
+     Pourquoi: La tache reste FLYING pour toujours, le slot de bee est occupe,
+               les items sont perdus.
+     Comment: Ajouter un champ flyingStartTick dans DeliveryTask. Si
+              gameTime - flyingStartTick > MAX_FLYING_TICKS (600 = 30 sec),
+              forcer un recall ou un fail avec restitution d'items.
+     Reference: [AE2] AE2 a des timeouts sur les operations reseau.
+     Priorite: P0 BUGFIX (previent perte d'items et bee zombie)
+     Effort: Faible | Risque: Aucun
+     Experts: AE2
+
+--- AMELIORATIONS ---
+
+[AX] PriorityQueue au lieu de LinkedList+sort [UNANIMITE 3/3]
+     Quoi: Remplacer la LinkedList triee par priority dans processQueue() par
+           une PriorityQueue<DeliveryTask> avec Comparator sur priority.
+     Pourquoi: LinkedList+Collections.sort() est O(N log N) a chaque insertion.
+               PriorityQueue.offer() est O(log N). Pour une queue de 50+ taches,
+               la difference est significative.
+     Comment: Changer le type de deliveryQueue. Adapter add/remove/iterate.
+     Reference: [AE2] AE2 utilise des queues triees nativement pour les crafts.
+                [RS] RS2 utilise des queues triees pour les operations.
+                [CREATE] Create LogisticsManager utilise broadcastPackageRequest()
+                avec priorite intrinseque. Ref: LogisticsManager.java
+     Priorite: P1 PERF
+     Effort: Faible | Risque: Faible
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[AY] Extraire HoneyEnergyManager
+     Quoi: Les lignes de gestion honey (consumeHoney, getHoneyLevel, formule
+           de cout) sont melangees dans le DeliveryManager. Extraire en classe.
+     Pourquoi: Responsabilite mixte. Le DeliveryManager gere la queue ET l'energie.
+               Le honey management est reutilisable par d'autres systemes.
+     Comment: Creer HoneyEnergyManager avec consumeHoney(), calculateCost(),
+              getHoneyLevel(). Meme pattern que les managers du controller.
+     Reference: [AE2] AE2 separe IEnergyService du reste de la logique reseau.
+     Priorite: P2 REFACT
+     Effort: Faible | Risque: Faible
+     Experts: AE2
+
+[AZ] Decomposer 608L en 4+ classes
+     Quoi: StorageDeliveryManager a 608L. Decomposer en :
+           - DeliveryQueueManager (~150L) : queue, priorites, processing
+           - DeliveryTaskLifecycle (~100L) : etats, transitions, retry
+           - HoneyEnergyManager (~80L) : consommation honey
+           - DeliveryDependencyTracker (~100L) : dependency tracking
+           StorageDeliveryManager reste ~170L (orchestrateur).
+     Pourquoi: 608L >> 150L max. Responsabilites multiples dans un seul fichier.
+     Comment: Extraction par responsabilite, delegation.
+     Reference: [CREATE] PackagerBlockEntity delegue a des sous-composants.
+                Source: Create PackagerBlockEntity.java
+                [AE2] AE2 separe CraftingCPU de CraftingCpuLogic.
+                [RS] RS2 separe ICraftingManager des implementations.
+     Priorite: P2 REFACT
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, RS, CREATE (convergence)
+
+[BA] Parallelisme par hive (max bees = hives connectees)
+     Quoi: Limiter le nombre de bees en vol au nombre de Storage Hives connectees.
+           Plus de hives = plus de parallelisme de livraison.
+     Pourquoi: Progression gameplay: le joueur construit plus de hives pour
+               augmenter le debit. Actuellement pas de lien direct hives ↔ debit.
+     Comment: maxConcurrentBees = sum(hive.getBonusBees()) pour chaque hive liee.
+              Verifier avant spawn si currentBees < maxConcurrentBees.
+     Reference: [AE2] AE2 limite les crafts par CraftingCPU disponibles.
+                Plus de CPUs = plus de crafts en parallele.
+     Priorite: P3 FEAT (decision gameplay)
+     Effort: Faible | Risque: Faible
+     Experts: AE2
+
+[BB] Sleep mode queue vide
+     Quoi: Quand la queue de livraison est vide, passer en mode "sleep" avec
+           un intervalle de tick plus lent (ex: tous les 40 ticks au lieu de chaque tick).
+     Pourquoi: Economiser des CPU cycles quand le reseau est idle.
+     Comment: if (queue.isEmpty()) { if (gameTick % 40 != 0) return; }
+              Reveiller immediatement quand une nouvelle tache est ajoutee.
+     Reference: [AE2] AE2 TickManagerService sleep/wake model.
+     Priorite: P2 OPTIM
+     Effort: Trivial | Risque: Aucun
+     Experts: AE2
+
+[BC] Pattern isTooBusyFor backpressure
+     Quoi: Ajouter une methode isTooBusyFor(RequestType) qui refuse de nouvelles
+           taches quand le systeme est sature (trop de bees en vol, queue pleine).
+     Pourquoi: Sans backpressure, le systeme accepte des taches indefiniment,
+               creant un backlog qui augmente la latence de livraison.
+     Comment: Verifier queue.size() < MAX_QUEUE_SIZE && activeBees < MAX_BEES
+              avant d'accepter une nouvelle tache.
+     Reference: [CREATE] PackagerBlockEntity.isTooBusyFor() refuse les requetes
+                quand la machine est saturee. Source: Create PackagerBlockEntity.java
+     Priorite: P2 FEAT
+     Effort: Faible | Risque: Aucun
+     Experts: CREATE
+
+--------------------------------------------------------------------------------
+3.2 DELIVERY BEE SPAWNER (DeliveryBeeSpawner ~297L)
+--------------------------------------------------------------------------------
+Etat actuel: Gestion du spawn, recall et redirect des abeilles de livraison.
+Recherche de bee par AABB scan dans un rayon de 30 blocs.
+Fichiers: DeliveryBeeSpawner.java
+
+--- BUGS ---
+
+[BD] Map<UUID,Bee> au lieu de AABB scan [UNANIMITE 3/3]
+     Quoi: findBeeForTask() utilise level.getEntitiesOfClass(DeliveryBeeEntity,
+           AABB(30 blocs)) pour trouver la bee associee a une tache. C'est un
+           scan lineaire O(E) sur TOUTES les entites dans le rayon.
+     Pourquoi: Avec 20 bees en vol + entites vanilla, le scan peut etre couteux.
+               Un Map<UUID, WeakReference<DeliveryBeeEntity>> donne O(1).
+     Comment: Maintenir un registre Map<UUID taskId, WeakRef<Bee>> mis a jour
+              au spawn et au despawn. findBeeForTask() = map.get(taskId).
+     Reference: [AE2] AE2 utilise des registres O(1) pour tout.
+                [RS] RS2 utilise des registres par ID pour les composants reseau.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2
+                [CREATE] Create utilise des registres internes pour les contraptions.
+     Priorite: P1 PERF
+     Effort: Faible | Risque: Faible
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[BE] TOCTOU simulate/extract avant spawn
+     Quoi: La validation des items disponibles et le spawn de la bee ne sont pas
+           atomiques. Entre la verification et le spawn, un autre systeme peut
+           extraire les items (hopper, autre tache, joueur).
+     Pourquoi: Time-Of-Check-Time-Of-Use = items extraits mais plus disponibles,
+               ou items deja pris par un autre acteur.
+     Comment: Pattern "simulate then commit" :
+              1. simulateExtract() : verifier sans modifier
+              2. spawn la bee
+              3. extract() : retirer les items effectivement
+              Si extract echoue apres spawn, recall la bee immediatement.
+     Reference: [AE2] AE2 SIMULATE/MODULATE pattern dans toutes les operations.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2
+                [CREATE] LogisticsManager dry/wet runs.
+                Source: Create LogisticsManager.java
+     Priorite: P1 BUGFIX PREVENTIF
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, CREATE (convergence)
+
+--- AMELIORATIONS ---
+
+[BF] Spawn position au-dessus (y+2) au lieu du centre
+     Quoi: Les bees spawnent au centre du bloc source. Spawner 2 blocs au-dessus
+           pour eviter le clipping avec le coffre et donner un aspect plus naturel.
+     Pourquoi: Esthetique et feedback visuel (la bee emerge de la ruche/coffre).
+     Comment: Ajouter +2 au Y de la position de spawn.
+     Reference: [AE2] AE2-expert.
+     Priorite: P2 UX
+     Effort: 1 ligne | Risque: Aucun
+     Experts: AE2
+
+[BG] LerpedFloat pour animation de vol fluide
+     Quoi: Utiliser un LerpedFloat pour lisser les mouvements des bees de livraison.
+     Pourquoi: Les bees se deplacent en teleportation discrete (tick-based).
+               Un lerp donnerait un mouvement fluide visuellement.
+     Comment: Pattern LerpedFloat.linear().chase(targetValue, speed).
+     Reference: [CREATE] FrogportBlockEntity utilise LerpedFloat pour les
+                animations fluides. Source: Create FrogportBlockEntity.java,
+                LerpedFloat.java
+     Priorite: P3 UX
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+[BH] Valider targets via IItemHandler capability
+     Quoi: Avant de spawner la bee, verifier que la destination a encore la
+           capability IItemHandler (pas juste que le bloc existe).
+     Pourquoi: Un conteneur peut etre remplace par un bloc normal entre la
+               creation de la tache et le spawn. La bee volerait vers un bloc
+               qui ne peut pas recevoir d'items.
+     Comment: level.getCapability(Capabilities.ItemHandler.BLOCK, targetPos, dir).
+     Reference: [CREATE] CapManipulationBehaviourBase.findNewCapability() valide
+                la capability avant chaque operation.
+                Source: Create CapManipulationBehaviourBase.java
+     Priorite: P2 FIX
+     Effort: Faible | Risque: Aucun
+     Experts: CREATE
+     Note: Lie a [P] (IItemHandler detection) du Groupe 1. Implemente ensemble.
+
+--------------------------------------------------------------------------------
+3.3 REQUEST MANAGER (RequestManager ~481L)
+--------------------------------------------------------------------------------
+Etat actuel: Gestion des requetes import/export des terminaux et interfaces.
+Iteration lineaire sur toutes les requetes. Retry infini. 481 lignes.
+Fichiers: RequestManager.java
+
+--- BUGS ---
+
+[BK] Loop prevention manquante
+     Quoi: Pas de detection de boucle quand un import et un export creent
+           un cycle (A exporte vers B, B importe depuis A, etc.).
+     Pourquoi: Boucle infinie de taches de livraison, gaspillage de bees et honey.
+     Comment: Set<BlockPos> visited pour chaque rootTaskId. Si une tache
+              vise un BlockPos deja visite dans la meme chaine, la bloquer.
+     Reference: [AE2] AE2 detecte les cycles dans l'autocrafting recursif.
+     Priorite: P2 BUGFIX
+     Effort: Faible | Risque: Aucun
+     Experts: AE2
+
+[BM] Deduplication quand 2 relais menent au meme coffre
+     Quoi: Si un coffre est accessible via 2 chemins reseau differents (2 relays),
+           il peut apparaitre 2 fois dans l'aggregation, et 2 taches de livraison
+           peuvent cibler le meme coffre simultanement.
+     Pourquoi: Duplication dans l'affichage terminal + conflit de livraison.
+     Comment: Identifier les coffres par BlockPos (unique) au lieu du chemin
+              reseau. Deduplication dans l'aggregation par Set<BlockPos>.
+     Reference: [CREATE] LogisticsManager.findPackagersForRequest() deduplique
+                par InventoryIdentifier. Source: Create LogisticsManager.java
+     Priorite: P2 BUGFIX
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+     Note: L'architecte doit verifier si ce bug existe reellement dans le code
+           actuel (StorageNetworkRegistry.EXCLUSIVE peut deja prevenir ce cas).
+
+--- AMELIORATIONS ---
+
+[BI] Decomposition 481L en 4 classes
+     Quoi: Decomposer RequestManager en :
+           - ImportRequestProcessor (~120L) : logique import
+           - ExportRequestProcessor (~120L) : logique export
+           - RequestQueue (~100L) : queue + iteration + matching
+           RequestManager reste ~140L (orchestrateur).
+     Pourquoi: 481L >> 150L max. Import et Export sont des logiques distinctes.
+     Comment: Extraction par type de requete.
+     Reference: [AE2] AE2 separe IImportStrategy et IExportStrategy.
+                [CREATE] LogisticsManager + RequestPromiseQueue.
+                Source: Create LogisticsManager.java, RequestPromiseQueue.java
+     Priorite: P2 REFACT
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, CREATE (convergence)
+
+[BJ] Debloquer IMPORT on deposit immediatement [UX]
+     Quoi: Quand un joueur depose un item dans le terminal, les import requests
+           correspondantes ne sont pas notifiees immediatement. Elles attendent
+           le prochain cycle de scan (60 ticks BLOCKED).
+     Pourquoi: Latence UX — le joueur depose un item et ne voit rien se passer
+               pendant 3 secondes.
+     Comment: Quand un depot est effectue dans le terminal, appeler
+              requestManager.recheckBlockedImports(depositedItemStack).
+     Reference: [AE2] IStorageMonitorable watchers — notification immediate
+                quand le contenu du reseau change.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2
+     Priorite: P2 UX
+     Effort: Faible | Risque: Aucun
+     Experts: AE2
+
+[BL] RequestPromiseQueue event-driven (alternative au polling)
+     Quoi: Remplacer le polling de BLOCKED requests (toutes les 60 ticks) par
+           un systeme event-driven : notifier quand un item entre dans le reseau.
+     Pourquoi: Elimine le polling, reduit la latence, economise des CPU cycles.
+     Comment: Pattern Observer : quand un item est depose/livre, notifier la
+              RequestQueue qui reveille les BLOCKED requests correspondantes.
+     Reference: [CREATE] RequestPromiseQueue.itemEnteredSystem() reveille les
+                requetes en attente. Source: Create RequestPromiseQueue.java
+                [RS] RS GridWatcher event-driven.
+     Priorite: P3 ARCH (alternative radicale au polling)
+     Effort: Moyen | Risque: Moyen
+     Experts: CREATE, RS (convergence)
+
+[BN] Deferred recheckBlockedRequests
+     Quoi: Quand recheckBlockedRequests() est appele, ne pas traiter immediatement.
+           Mettre un flag et traiter dans le prochain serverTick.
+     Pourquoi: Eviter de modifier l'etat pendant une callback (meme pattern que AJ).
+     Comment: Flag needsRecheck=true, traitement dans serverTick().
+     Reference: [RS] RS-expert, meme pattern que [AJ].
+     Priorite: P2 OPTIM
+     Effort: Trivial | Risque: Aucun
+     Experts: RS
+
+--- OPTIMISATIONS ---
+
+[BO] Pending request queue separee
+     Quoi: processRequests() itere ALL requests (y compris BLOCKED et ACTIVE).
+           Maintenir une queue separee pour les PENDING seulement.
+     Pourquoi: Avec beaucoup de requetes actives, 90% des iterations sont inutiles
+               (elles sautent les requetes non-PENDING).
+     Comment: Separer en pendingQueue, activeSet, blockedSet. Deplacer les
+              requetes entre les collections quand leur etat change.
+     Reference: [RS] RS-expert.
+     Priorite: P2 PERF
+     Effort: Moyen | Risque: Faible
+     Experts: RS
+
+--------------------------------------------------------------------------------
+3.4 DELIVERY TASK (DeliveryTask ~328L)
+--------------------------------------------------------------------------------
+Etat actuel: 328 lignes. 6 constructeurs telescopiques. 12+ champs serialises
+manuellement en NBT. FSM a 6 phases. Dependency tracking.
+Fichiers: DeliveryTask.java
+
+--- AMELIORATIONS ---
+
+[BP] On-demand splitting
+     Quoi: Au lieu de pre-splitter les taches en sous-taches au moment de la
+           creation, splitter au fur et a mesure de l'execution (lazy splitting).
+     Pourquoi: Le pre-splitting cree N taches immediatement meme si le reseau
+               ne peut traiter que 2 en parallele. Gaspillage de memoire et
+               complexite du dependency tracking.
+     Comment: Une tache garde son count total. A chaque cycle, elle extrait
+              min(64, remaining) et spawne une bee. La tache se termine quand
+              remaining == 0.
+     Reference: [AE2] AE2 CraftingCPU decompose les etapes au fur et a mesure.
+     Priorite: P3 OPTIM
+     Effort: Moyen | Risque: Moyen (changement de modele)
+     Experts: AE2
+
+[BQ] DataComponents + Codec au lieu de NBT manuel
+     Quoi: Les 12+ champs de DeliveryTask sont serialises manuellement avec
+           tag.putString/tag.getInt. Utiliser un Codec et DataComponents.
+     Pourquoi: Le NBT manuel est error-prone (typos dans les cles, oublis de
+               champs, pas de validation). Un Codec est type-safe et genere
+               automatiquement la serialisation.
+     Comment: Definir un Codec<DeliveryTask> avec RecordCodecBuilder.
+              Ref: NeoForge 1.21.1 DataComponents system.
+     Reference: [CREATE] AllDataComponents.java utilise des Codecs partout.
+                Source: Create AllDataComponents.java
+     Priorite: P2 REFACT
+     Effort: Moyen | Risque: Faible
+     Experts: CREATE
+
+[BR] Simplifier FSM 6 → 3 phases
+     Quoi: Le FSM actuel a 6 phases (IDLE, PICKUP, FLY_TO_WAYPOINT, FLY_TO_TARGET,
+           DELIVER, RETURN). Simplifier a 3 (PICKUP, FLY, DELIVER).
+     Pourquoi: Moins d'etats = moins de bugs, code plus simple.
+     Comment: Fusionner FLY_TO_WAYPOINT + FLY_TO_TARGET en un seul FLY avec
+              une liste de waypoints. Fusionner IDLE + RETURN en un seul etat.
+     Reference: [CREATE] FrogportBlockEntity utilise seulement 2 etats.
+                Source: Create FrogportBlockEntity.java
+     Priorite: P3 REFACT (decision gameplay — les waypoints sont visuellement
+               importants pour le joueur)
+     Effort: Eleve | Risque: Eleve (regression potentielle)
+     Experts: CREATE
+     Note architecte: Les 6 phases grent des cas reels (waypoints intermediaires,
+     preload de l'item avant vol, retour a la hive). Simplifier risque de perdre
+     des fonctionnalites. A evaluer avec prudence.
+
+[BS] Builder pattern pour DeliveryTask
+     Quoi: Les 6 constructeurs telescopiques sont remplacees par un Builder.
+     Pourquoi: 6 constructeurs avec des combinaisons de parametres differentes
+               sont difficiles a lire et a maintenir.
+     Comment: DeliveryTask.builder().from(pos).to(pos).item(stack).priority(p).build()
+     Reference: [RS] RS-expert. Pattern classique Java.
+     Priorite: P2 REFACT
+     Effort: Faible | Risque: Aucun
+     Experts: RS
+
+[BT] cancelDependentTasks() iteratif au lieu de recursif
+     Quoi: cancelDependentTasks() est recursif sans limite de profondeur.
+           Une chaine longue de dependances peut causer un StackOverflow.
+     Pourquoi: Le Crafter System cree des chaines de dependances recursives
+               (max profondeur 8). 8 niveaux ne causent pas de StackOverflow,
+               mais c'est une bombe a retardement si la limite change.
+     Comment: Remplacer la recursion par une boucle iterative avec une
+              Stack/Queue explicite.
+     Reference: [RS] RS-expert. Pattern classique d'elimination de recursion.
+     Priorite: P2 BUGFIX PREVENTIF
+     Effort: Faible | Risque: Aucun
+     Experts: RS
+
+
+================================================================================
+4. GROUPE 4 — AUTOMATION ET INTERFACES
+================================================================================
+
+FEATURES ANALYSEES:
+  4.1 Network Interface (NetworkInterfaceBlockEntity ~738L, parent abstrait)
+  4.2 Import Interface (ImportInterfaceBlockEntity ~237L)
+  4.3 Export Interface (ExportInterfaceBlockEntity ~150L)
+  4.4 Interface Filter (InterfaceFilter ~228L, mode ITEM/TEXT)
+  4.5 Interface Task (InterfaceTask ~194L, lifecycle NEEDED/LOCKED/DELIVERED)
+  4.6 Crafter System [RETIRE DU CODEBASE — crashs frequents, commits 3ab9504/6982ed6]
+
+Convergences Groupe 4:
+  UNANIMITE 3/3: isFormed() check manquant (meme pattern que [AK] Groupe 2)
+  UNANIMITE 3/3: Container → IItemHandler (meme chantier que [P] Groupe 1)
+  AE2+RS: SCAN_INTERVAL 40 ticks trop lent
+  AE2+CREATE: Decomposition 738L
+  Bug confirme par architecte: lockedTick champ mort, jamais lu
+  Bug confirme par architecte: getLockedCount() existe mais jamais appele
+  Bug confirme par architecte: matchesTag() substring match (faux positifs)
+
+Decouverte majeure: Le Crafter System (CrafterBlockEntity, CraftManager,
+CraftingPaperItem, PartCraftingPaperItem) a ete ENTIEREMENT SUPPRIME du
+codebase dans les commits recents. Raison: crashs frequents. Tous les fichiers
+ont ete supprimes. Les propositions 4.6 portent sur la reimplementation future.
+
+Divergence crafter redesign:
+  AE2: Separation Pattern Provider / Crafting CPU (architecture AE2)
+  RS: Multi-crafter + priorites + Lock Modes (approach RS2)
+  CREATE: Style Factory Panel distribue (1 recette = 1 crafter, pas centralise)
+
+--------------------------------------------------------------------------------
+4.1 NETWORK INTERFACE (NetworkInterfaceBlockEntity ~738L)
+--------------------------------------------------------------------------------
+Etat actuel: Classe abstraite parente pour Import et Export. 738 lignes.
+Gere: lien controller, filtres (5 ghost slots), InterfaceTasks (lifecycle
+NEEDED→LOCKED→DELIVERED), reconciliation 4 phases, scan periodique 40 ticks.
+Fichiers: NetworkInterfaceBlockEntity.java, NetworkInterfaceMenu.java,
+          InterfaceActionPacket.java (9 types d'action C2S)
+
+--- BUGS ---
+
+[BU] getController() sans isFormed() check [UNANIMITE 3/3]
+     Quoi: NetworkInterfaceBlockEntity.getController() ligne 145 verifie que le
+           BE existe mais pas que le multibloc est forme. Meme bug que [AK] pour
+           le terminal (Groupe 2).
+     Pourquoi: Si le multibloc est casse mais le bloc controller existe encore,
+               l'interface tente de scanner/publier des tasks vers un controller
+               non-forme. Toutes les operations echouent silencieusement.
+               Propage aux deux sous-classes Import et Export par heritage.
+     Comment: Ajouter `if (!controller.isFormed()) return null;` ligne 150.
+     Reference: [AE2] Chaque GridNode verifie grid.isActive() avant toute operation.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/3-storage-and-network
+                [RS] RS2 verifie l'etat du reseau a chaque operation.
+                [CREATE] Pattern systematique dans SmartBlockEntity.
+     Priorite: P0 BUGFIX (trivial, meme pattern que AK)
+     Effort: 1 ligne | Risque: Aucun
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[BV] Tick stagger pour interfaces multiples
+     Quoi: Quand plusieurs interfaces sont connectees au meme reseau, elles
+           scannent toutes au meme tick (modulo SCAN_INTERVAL). Appliquer le
+           pattern tick stagger deja utilise dans l'aggregator.
+     Pourquoi: 10 interfaces scannant au meme tick = lag spike periodique.
+     Comment: Pattern `(gameTick + worldPosition.hashCode()) % SCAN_INTERVAL`.
+              Deja utilise dans StorageItemAggregator.tickSync().
+     Reference: [CREATE] Create-expert (C42). Pattern deja dans le codebase.
+     Priorite: P0 QUICK WIN
+     Effort: 1 ligne | Risque: Aucun
+     Experts: CREATE
+
+--- AMELIORATIONS ---
+
+[BW] Container → IItemHandler pour getAdjacentInventory() [UNANIMITE 3/3]
+     Quoi: getAdjacentInventory() ligne 534 fait `be instanceof Container`.
+           Remplacer par IItemHandler capability.
+     Pourquoi: Les conteneurs moddes (Iron Chests, Sophisticated Backpacks,
+               Drawers) implementent IItemHandler mais pas forcement Container.
+               Meme chantier que [P] du Groupe 1 (UNANIMITE 3/3 deja).
+     Comment: `level.getCapability(Capabilities.ItemHandler.BLOCK, adjPos,
+              getFacing().getOpposite())`. Cascade: adapter toute la chaine
+              Import/Export/ContainerHelper de Container vers IItemHandler.
+     Reference: [AE2] Import/Export Bus interagissent exclusivement via IItemHandler.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/import-export-storage
+                [RS] RS2 Importer/Exporter utilisent ItemHandlerImporterTransferStrategyFactory.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2/3.2-neoforge-platform
+                [CREATE] CapManipulationBehaviourBase detecte par capability.
+     Priorite: P2 (lie a [P], meme refactoring)
+     Effort: Moyen (cascade Import/Export/ContainerHelper) | Risque: Moyen
+     Experts: AE2, RS, CREATE (UNANIMITE 3/3)
+
+[BX] SCAN_INTERVAL 40→20 ticks
+     Quoi: L'interface scanne toutes les 40 ticks (2 secondes). Trop lent pour
+           de l'automatisation reactive.
+     Pourquoi: Si un hopper depose un item, l'interface ne le detecte qu'apres
+               2 secondes. AE2 Import/Export Bus operent a 5 ticks par operation.
+     Comment: Reduire SCAN_INTERVAL de 40 a 20 ticks (1 seconde).
+     Reference: [AE2] Import/Export Bus: 4 ops/seconde = 5 ticks par operation.
+                Avec Acceleration Cards: jusqu'a 96 items par operation.
+                Source: https://guide.appliedenergistics.org/1.20.1/items-blocks-machines/import_bus
+                [RS] RS2 Importer opere chaque tick.
+                Source: https://refinedmods.com/refined-storage/input-and-output/importer.html
+     Priorite: P2
+     Effort: 1 constante | Risque: Aucun
+     Experts: AE2, RS (convergence)
+
+[BY] Scan event-driven (needsScan flag)
+     Quoi: Au lieu de scanner a intervalle fixe, utiliser un flag needsScan=true
+           declenche par les evenements (filtre change, item depose, task complete).
+           Le scan n'est execute que quand necessaire.
+     Pourquoi: Elimine les scans inutiles quand rien n'a change. Plus reactif
+               que le polling fixe — repond immediatement aux changements.
+     Comment: Flag needsScan=true dans onFilterChanged(), onDeliveryComplete(), etc.
+              Dans serverTick(), scanner seulement si needsScan || backup timer.
+     Reference: [CREATE] FactoryPanelBehaviour utilise un scan event-driven
+                avec timer de backup. Source: Create FactoryPanelBehaviour.java
+     Priorite: P2
+     Effort: Faible | Risque: Faible
+     Experts: CREATE (C37)
+     Note: Complementaire avec [BX]. BX reduit l'intervalle, BY elimine les
+           scans inutiles. Les deux peuvent etre combines.
+
+[BZ] Decomposition 738L en 3 classes
+     Quoi: Extraire InterfaceTaskManager (~200L pour reconcileTasksForItem,
+           publishTodoTasks, cleanupOrphanedTasks, cancelAllTasks) et
+           InterfaceFilterManager (~120L pour operations filtres).
+           NetworkInterfaceBlockEntity reste ~400L (encore au-dessus de 150L
+           mais acceptable pour une classe abstraite parente).
+     Pourquoi: 738L depasse 5x la regle 150L. 3 responsabilites melangees
+               (controller link, filtres, tasks).
+     Comment: Meme pattern d'extraction que les managers du controller.
+     Reference: [AE2] AE2 separe IOBusPart (logique bus), ConfigInventory (filtres),
+                TickHandler (tick logic).
+                [CREATE] Create C40, pattern SmartBlockEntity + Behaviours.
+     Priorite: P2 REFACT
+     Effort: Moyen | Risque: Faible
+     Experts: AE2, CREATE (convergence)
+
+--- OPTIMISATIONS ---
+
+[CA] Sleep/Wake pattern pour interfaces idle
+     Quoi: Interface idle (pas de tasks NEEDED, inventaire stable) scanne en
+           mode lent (200 ticks). Au premier changement, mode rapide (20 ticks).
+     Pourquoi: 10 interfaces idle scannant toutes les 20 ticks = gaspillage CPU.
+     Comment: Compteur de "miss" consecutifs. Apres 3 scans sans changement,
+              passer en mode lent. Au premier match, revenir en mode rapide.
+     Reference: [AE2] Import Bus AE2 entre en sleep mode quand idle, se reveille
+                quand un import reussit. TickManagerService gere les cycles.
+                Source: https://guide.appliedenergistics.org/1.20.1/items-blocks-machines/import_bus
+     Priorite: P3
+     Effort: Moyen | Risque: Faible
+     Experts: AE2 (4.1D)
+
+--------------------------------------------------------------------------------
+4.2 IMPORT INTERFACE (ImportInterfaceBlockEntity ~237L)
+--------------------------------------------------------------------------------
+Etat actuel: Import items du reseau vers l'inventaire adjacent. Implemente
+IDeliveryEndpoint. Scanne via reconcileImportItem(). Modes ITEM et TEXT.
+Fichiers: ImportInterfaceBlockEntity.java
+
+--- BUGS ---
+
+[CB] Import ne verifie pas la disponibilite des items [BUG]
+     Quoi: reconcileImportItem() cree des InterfaceTasks sans verifier si l'item
+           existe dans le reseau. Une task NEEDED est creee, puis une DeliveryTask,
+           puis une bee est spawn, vole au coffre source, ne trouve rien, echoue.
+     Pourquoi: Bees gaspillees, honey consommee pour rien, cycle echec-retry
+               inutile. Le joueur ne comprend pas pourquoi ses bees volent
+               dans le vide.
+     Comment: Verifier `controller.getAggregatedItemCount(filterItem) > 0`
+              avant de creer la task. Si count == 0, ne pas creer de task
+              (ou marquer BLOCKED immediatement).
+     Reference: [AE2] L'Export Bus verifie la disponibilite dans NetworkStorage
+                AVANT de tenter l'extraction. Pas de tentative a l'aveugle.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/3-storage-and-network
+     Priorite: P1 BUG
+     Effort: 5-10 lignes | Risque: Aucun
+     Experts: AE2 (4.2B)
+
+[CC] Locked tasks pas deduites du needed [BUG — CONFIRME PAR ARCHITECTE]
+     Quoi: reconcileImportItem() ligne 189 calcule `needed = targetQty - currentCount`
+           sans deduire les items en transit (LOCKED tasks). getLockedCount()
+           EXISTE (ligne 329 du parent) mais n'est JAMAIS appele.
+     Pourquoi: Sur-commande de bees. Si 64 voulus, 0 presents, 32 en transit:
+               needed=64 au lieu de 32. Des bees supplementaires sont creees
+               pour rien. Se stabilise au scan suivant mais gaspille du honey.
+               Meme probleme cote Export (ligne 131).
+     Comment: `int inTransit = getLockedCount(filterItem);`
+              `needed = Math.max(0, needed - inTransit);`
+              Le fix est identique pour Import ET Export.
+     Reference: [AE2] L'Export Bus maintient un compteur d'items "in flight"
+                distinct du stock physique. Les items en transit sont DEDUITS.
+     Priorite: P1 BUG (gaspillage bees + honey)
+     Effort: 3 lignes par sous-classe | Risque: Aucun
+     Experts: AE2 (4.2C), confirme par architecte (verification code)
+     Note architecte: getLockedCount() existe, fait le calcul correct, mais
+     n'est appele par AUCUNE sous-classe. Champ mort fonctionnel.
+
+--- AMELIORATIONS ---
+
+[CD] Backoff sur publishTodoTasks() echec
+     Quoi: Quand publishTodoTasks() echoue (controller occupe, queue pleine),
+           l'interface retente au prochain scan sans backoff.
+     Pourquoi: Spam de tentatives inutiles. Si le controller est sature,
+               retenter toutes les 40 ticks ne fait qu'ajouter de la charge.
+     Comment: Pattern isTooBusyFor() de Create. Si echec, doubler l'intervalle
+              (40→80→160) jusqu'a un max. Resetter au premier succes.
+     Reference: [CREATE] PackagerBlockEntity.isTooBusyFor() refuse les requetes
+                quand la machine est saturee, avec backoff implicite.
+                Source: Create PackagerBlockEntity.java
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: CREATE (C39)
+
+--- OPTIMISATIONS ---
+
+[CE] scanTextMode O(N*F) → cache de matching
+     Quoi: scanTextMode() itere TOUS les networkItems pour chaque filtre texte.
+           500 types d'items x 3 filtres = 1500 comparaisons toutes les 40 ticks.
+     Pourquoi: Pas d'index pour les filtres texte. O(N*F) a chaque scan.
+     Comment: Cacher les resultats dans un Map<FilterKey, List<ItemStack>>
+              et invalider quand les items du reseau changent (dirty flag).
+     Reference: [AE2] AE2 ne fait PAS de filtre texte cote serveur — c'est
+                un choix delibere pour eviter ce probleme. Le filtrage texte
+                est client-side uniquement dans le terminal.
+     Priorite: P3 (impact faible sauf reseaux enormes)
+     Effort: Moyen | Risque: Faible
+     Experts: AE2 (4.2A)
+
+--------------------------------------------------------------------------------
+4.3 EXPORT INTERFACE (ExportInterfaceBlockEntity ~150L)
+--------------------------------------------------------------------------------
+Etat actuel: Export items de l'inventaire adjacent vers le reseau. NE implemente
+PAS IDeliveryEndpoint (asymetrie avec Import). 150 lignes, fichier compact.
+Fichiers: ExportInterfaceBlockEntity.java
+
+--- AMELIORATIONS ---
+
+[CF] Export ne verifie pas l'espace reseau avant task
+     Quoi: reconcileExportItems() cree des tasks EXPORT sans verifier si le
+           reseau a de l'espace de stockage disponible.
+     Pourquoi: Si tous les coffres sont pleins, la bee sera spawn, volera,
+               ne trouvera aucune destination, echouera, et le cycle recommence.
+     Comment: Verifier `controller.hasAvailableStorageSpace()` ou equivalent
+              avant de creer des export tasks.
+     Reference: [AE2] Import Bus AE2 verifie l'espace dans NetworkStorage
+                via MEStorage.insert() avec SIMULATE avant de commiter.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/3-storage-and-network
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: AE2 (4.3A)
+
+[CG] Scheduling mode round-robin pour Export
+     Quoi: L'Export scanne tous les items d'un coup et cree des tasks pour tout.
+           Pas de mode round-robin. Toutes les bees partent sur le premier item.
+     Pourquoi: Avec plusieurs items a exporter, le premier item monopolise les
+               bees. Le round-robin distribuerait mieux les bees entre les items.
+     Comment: Ajouter un enum SchedulingMode (DEFAULT, ROUND_ROBIN) dans
+              l'interface. En ROUND_ROBIN, cycler un index entre les items filtres.
+     Reference: [RS] RS2 Exporter: 3 scheduling modes (Default/Round-robin/Random).
+                Source: https://refinedmods.com/refined-storage/input-and-output/exporter.html
+     Priorite: P3 (nice-to-have)
+     Effort: Faible | Risque: Aucun
+     Experts: RS (RS-4.1G)
+
+--------------------------------------------------------------------------------
+4.4 INTERFACE FILTER (InterfaceFilter ~228L)
+--------------------------------------------------------------------------------
+Etat actuel: POJO avec mode ITEM (5 ghost slots) ou TEXT (tag, mod, nom).
+matchesTag() fait du substring match. Quantity configurable. selectedSlots.
+Fichiers: InterfaceFilter.java
+
+--- BUGS ---
+
+[CH] matchesTag() substring match → exact match [CONFIRME PAR ARCHITECTE]
+     Quoi: InterfaceFilter.matchesTag() ligne 176-187 utilise `path.contains(tagName)`
+           qui fait un substring match. Le filtre "#log" matcherait "analog_lever".
+     Pourquoi: Faux positifs. Le joueur filtre "#logs" et recupere des items
+               dont le tag contient "log" comme sous-chaine ("analog_lever",
+               "dialog_blocks", etc.)
+     Comment: Remplacer `path.contains(tagName)` par un match plus precis:
+              - `path.equals(tagName)` pour match exact
+              - Ou `path.startsWith(tagName)` si on veut garder le match "logs"
+                quand on tape "log" (discutable)
+              Note: les checks `path.equals()` et `fullPath.equals()` sur les
+              lignes precedentes sont corrects. Seul le `contains()` est problematique.
+     Reference: [AE2] Les filtres AE2 sont toujours exact match (ItemStack
+                isSameItemSameComponents). Pas de substring.
+     Priorite: P1 BUGFIX
+     Effort: 1 ligne | Risque: Aucun
+     Experts: AE2 (4.4A), confirme par architecte (verification code lignes 176-187)
+     Note architecte: Le check @namespace (ligne 169) fait equals(), le check
+     texte libre sur display name (ligne 172) fait contains() (voulu). Seul
+     matchesTag() a le contains() problematique.
+
+--- AMELIORATIONS ---
+
+[CI] Blocklist mode (inverser le filtre)
+     Quoi: Ajouter un mode blocklist. Actuellement seul allowlist est supporte
+           (ITEM = ces items, TEXT = les items matchant ce texte).
+     Pourquoi: Le joueur ne peut pas dire "exporter tout SAUF les diamants".
+               Il doit lister positivement chaque item. Pour de grosses
+               collections, c'est impraticable.
+     Comment: Ajouter un boolean `inverted` dans InterfaceFilter. Si true,
+              le resultat de matches() est inverse. GUI: bouton toggle.
+     Reference: [RS] RS2 Importer/Exporter/External Storage supportent tous
+                allowlist ET blocklist. Source:
+                https://refinedmods.com/refined-storage/input-and-output/importer.html
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: RS (RS-4.1D)
+
+[CJ] Fuzzy mode (ignorer components/NBT)
+     Quoi: Ajouter un mode fuzzy qui ignore les DataComponents (durabilite,
+           enchantements, etc.) lors du matching.
+     Pourquoi: Filtrer "n'importe quelle pioche en fer" est impossible — il faut
+               matcher exactement les components. Avec fuzzy, Item.isSameItem()
+               suffit au lieu de ItemStack.isSameItemSameComponents().
+     Comment: Ajouter un boolean `fuzzy` dans InterfaceFilter. Si true,
+              utiliser Item.isSameItem() au lieu de la comparaison complete.
+     Reference: [RS] RS2 mode fuzzy sur tous les appareils avec filtres.
+                Source: https://refinedmods.com/refined-storage/input-and-output/importer.html
+     Priorite: P3
+     Effort: Faible | Risque: Aucun
+     Experts: RS (RS-4.1E)
+
+[CK] Priorite entre filtres
+     Quoi: Quand plusieurs filtres sont definis, ils sont evalues sequentiellement
+           sans priorite. Ajouter un champ priority pour controler l'ordre.
+     Pourquoi: Strategies avancees (priorite haute pour le coffre principal,
+               basse pour le overflow).
+     Comment: Ajouter un champ `priority` a InterfaceFilter, trier par priorite.
+     Reference: [AE2] Chaque storage/bus a une priorite numerique configurable.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/import-export-storage
+     Priorite: P3
+     Effort: Faible | Risque: Aucun
+     Experts: AE2 (4.4B)
+
+[CL] Status feedback sur filtres (visuel dans GUI)
+     Quoi: Afficher l'etat de chaque filtre : "None", "Destination does not accept",
+           "Resource missing", "In transit". Actuellement aucun feedback.
+     Pourquoi: Le joueur ne sait pas pourquoi une interface ne fonctionne pas.
+     Comment: Ajouter un FilterStatus enum dans InterfaceFilter, mis a jour
+              lors du doScan(). Afficher dans le GUI avec couleur.
+     Reference: [RS] RS2 Exporter filter status hints.
+                Source: https://refinedmods.com/refined-storage/input-and-output/exporter.html
+                [CREATE] Factory Panels: couleurs ingredients (Bleu=requesting,
+                Cyan=promised, Gris=inactive). Source: DeepWiki Create 5.2
+     Priorite: P3 UX
+     Effort: Moyen | Risque: Aucun
+     Experts: RS (RS-4.1H), CREATE (C38 feedback visuel)
+
+--------------------------------------------------------------------------------
+4.5 INTERFACE TASK (InterfaceTask ~194L)
+--------------------------------------------------------------------------------
+Etat actuel: Lifecycle NEEDED→LOCKED→DELIVERED. Ephemere au reload (LOCKED→NEEDED).
+Champ lockedTick existe mais n'est JAMAIS lu. 194 lignes.
+Fichiers: InterfaceTask.java
+
+--- BUGS ---
+
+[CM] lockedTick timeout manquant — tache zombie [CONFIRME PAR ARCHITECTE]
+     Quoi: InterfaceTask a un champ `lockedTick` (ecrit dans lockTask(), sauvegarde
+           en NBT) mais getLockedTick() n'est appele NULLE PART dans tout le
+           codebase (0 resultats de recherche). Aucun timeout n'est implemente.
+     Pourquoi: Si une bee disparait (chunk unload, tuee, bug), sa tache reste
+               LOCKED indefiniment. Le slot est bloque, l'item n'est jamais livre.
+               Le seul recovery est le reload (LOCKED→NEEDED au save) ou la
+               destruction de l'interface.
+     Comment: Dans NetworkInterfaceBlockEntity.serverTick(), ajouter :
+              `if (task.getState() == LOCKED && gameTime - task.getLockedTick() > 1200) {`
+              `    unlockTask(task.getTaskId());`
+              `}`
+              1200 ticks = 1 minute de timeout.
+     Reference: [AE2] AE2 CraftingCPU a un timeout implicite sur les items en transit.
+                Meme pattern que [AW] (timeout FLYING) du Groupe 3.
+     Priorite: P1 BUGFIX (tache zombie = slot bloque indefiniment)
+     Effort: 10 lignes dans serverTick | Risque: Aucun
+     Experts: AE2 (4.5B), confirme par architecte (recherche exhaustive codebase)
+
+--- AMELIORATIONS ---
+
+[CN] LOCKED save cleanup (ne pas sauvegarder les LOCKED)
+     Quoi: Actuellement LOCKED est sauvegarde comme NEEDED au reload. Plus propre:
+           ne pas sauvegarder du tout les tasks LOCKED, laisser le prochain scan
+           les re-creer si necessaire.
+     Pourquoi: Le save actuel cree des tasks NEEDED "fantomes" qui ne correspondent
+               plus a la realite apres reload. Le scan les ajustera mais c'est du
+               travail inutile et une source de confusion.
+     Comment: Dans save(), filtrer les tasks LOCKED au lieu de les convertir en NEEDED.
+     Reference: [AE2] AE2 sauvegarde l'etat exact. Alternative: ne pas sauvegarder
+                les taches ephemerales (approach Create — stateless).
+     Priorite: P2
+     Effort: Faible | Risque: Aucun
+     Experts: AE2 (4.5A)
+
+--- OPTIMISATIONS ---
+
+[CO] Task lookup O(1) via Map au lieu de liste
+     Quoi: Les InterfaceTasks sont stockees dans une List. Les lookups par taskId
+           ou par filterItem sont O(N). Utiliser un Map<UUID, InterfaceTask>.
+     Pourquoi: Avec beaucoup de taches actives, les lookups lineaires deviennent
+               couteux. O(1) est trivial a implementer.
+     Comment: Remplacer List<InterfaceTask> par Map<UUID, InterfaceTask>.
+     Reference: [RS] RS-expert (RS-4.1I).
+     Priorite: P3
+     Effort: Faible | Risque: Aucun
+     Experts: RS
+
+--------------------------------------------------------------------------------
+4.6 FEEDBACK VISUEL
+--------------------------------------------------------------------------------
+
+[CP] Blockstate + particules sur les interfaces
+     Quoi: Ajouter un blockstate INACTIVE/WORKING/SATISFIED/BLOCKED avec feedback
+           visuel (particules, texture variant). Actuellement aucun feedback visuel
+           sur l'etat de l'interface.
+     Pourquoi: Le joueur ne sait pas visuellement si l'interface fonctionne,
+               est bloquee, ou est satisfaite. Il doit ouvrir le GUI.
+     Comment: EnumProperty<InterfaceState> dans le blockstate. Particules via
+              ParticleHelper (vert=working, rouge=blocked, bleu=satisfied).
+     Reference: [CREATE] Factory Panels: bulbe eclaire (satisfait), couleurs
+                ingredients (Bleu=requesting, Cyan=promised, Gris=inactive),
+                particules vert (succes), rouge (echec).
+                Source: DeepWiki Create 5.2 (Factory Panel system)
+     Priorite: P2 UX
+     Effort: Moyen (blockstate + particules + renderer) | Risque: Faible
+     Experts: CREATE (C38)
+
+--------------------------------------------------------------------------------
+4.7 CRAFTER SYSTEM [RETIRE — REIMPLEMENTATION FUTURE]
+--------------------------------------------------------------------------------
+Etat actuel: ENTIEREMENT SUPPRIME du codebase (commits 3ab9504, 6982ed6).
+Raison: "causait des crashs frequents" (feature_crafter_system.txt).
+L'ancien systeme comprenait: CrafterBlockEntity (440L), CraftManager (544L),
+CraftingPaperItem, PartCraftingPaperItem, CrafterMenu/Screen.
+
+Les propositions ci-dessous sont des PATTERNS pour une reimplementation future.
+Elles ne sont pas implementables immediatement — elles servent de reference
+architecturale pour quand le crafter sera reimplemente.
+
+--- ARCHITECTURE FUTURE ---
+
+[CQ] Separation Pattern / Provider / CPU (pattern AE2)
+     Quoi: Separer 3 concepts distincts:
+           1. Pattern encoding (CraftingPaper → recette encodee)
+           2. Pattern Provider (pousse les ingredients aux machines)
+           3. Craft orchestration (planifie les crafts recursifs)
+     Pourquoi: L'ancien CraftManager (544L) melangeait les 3. La separation
+               permet des tests unitaires, du scaling (plusieurs providers),
+               et une meilleure gestion d'erreurs.
+     Reference: [AE2] PatternEncodingTerminal + PatternProvider + CraftingService.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/4.1-crafting-cpu-architecture
+                [RS] RS2 separe Pattern / Autocrafter / CraftingManager.
+                Source: https://refinedmods.com/refined-storage/autocrafting/autocrafter.html
+     Priorite: P4 FUTUR (design a faire)
+     Experts: AE2 (4.6A), RS (RS-4.2D)
+
+[CR] Multi-crafter + priorites
+     Quoi: Permettre plusieurs crafters sur le meme reseau, avec priorite par
+           crafter pour la resolution de recettes.
+     Pourquoi: L'ancien systeme limitait a 1 crafter par controller (bottleneck).
+               Avec plusieurs crafters, le joueur peut paralleliser les crafts.
+     Comment: Chaque crafter a une priorite numerique. Quand un craft est
+              demande, le systeme utilise le crafter de plus haute priorite.
+     Reference: [RS] RS2 Autocrafter priority system.
+                Source: https://refinedmods.com/refined-storage/autocrafting/autocrafter.html
+     Priorite: P4 FUTUR
+     Experts: RS (RS-4.2A)
+
+[CS] Lock Modes (bloquer avant insertion)
+     Quoi: Modes de verrouillage avant d'inserer des ingredients dans une machine:
+           - Never (toujours inserer)
+           - Lock until machine empty
+           - Lock until redstone signal
+     Pourquoi: Pour les recettes machines (processing), l'interface pourrait
+               inserer des ingredients dans une machine deja occupee.
+     Reference: [RS] RS2 Autocrafter 6 Lock Modes.
+                Source: https://refinedmods.com/refined-storage/autocrafting/autocrafter.html
+     Priorite: P4 FUTUR
+     Experts: RS (RS-4.2B)
+
+[CT] Style Factory Panel distribue (1 recette = 1 crafter)
+     Quoi: Au lieu d'un crafter centralise avec une bibliotheque de recettes,
+           chaque crafter = 1 recette. Distribue, pas centralise.
+     Pourquoi: Plus simple, pas de CraftManager centralise qui crashe.
+               Le joueur place un crafter par recette, visible dans le monde.
+     Comment: Pattern Factory Panel de Create: chaque panel = 1 recette,
+              connexions directes panel-a-panel.
+     Reference: [CREATE] Factory Panel system de Create.
+                Source: DeepWiki Create 5.2
+     Priorite: P4 FUTUR
+     Experts: CREATE (C43)
+     Note: DIVERGENCE avec AE2 et RS qui preferent un crafter centralise.
+           Le distribue est plus simple mais moins puissant pour les recettes
+           complexes avec sous-ingredients recursifs.
+
+[CU] Promise Queue anti-sur-commande
+     Quoi: Quand un craft est lance, les ingredients promis sont reserves
+           (decomptes du stock disponible) jusqu'a expiration.
+     Pourquoi: Evite que 2 crafts demandent les memes ingredients simultanement.
+     Comment: Pattern RequestPromiseQueue de Create.
+     Reference: [CREATE] RequestPromiseQueue avec expiration configurable.
+                Source: Create RequestPromiseQueue.java
+     Priorite: P4 FUTUR
+     Experts: CREATE (C44)
+
+[CV] Structured error feedback pour crafts
+     Quoi: Afficher des etats d'erreur clairs: "missing resources",
+           "machine busy", "no path to machine". Pas juste un timeout 2 minutes.
+     Pourquoi: L'ancien systeme avait un timeout de 2 minutes sans feedback.
+               Le joueur ne savait pas pourquoi un craft echouait.
+     Comment: Enum CraftError avec messages lisibles. Affichage dans le GUI
+              du crafter et/ou dans le chat.
+     Reference: [RS] RS2 Exporter/Autocrafter error statuses.
+                Source: https://refinedmods.com/refined-storage/input-and-output/exporter.html
+                [AE2] ICraftingSubmitResult error codes.
+     Priorite: P4 FUTUR
+     Experts: RS (RS-4.2C)
+
+[CW] DataComponent au lieu de NBT pour Crafting Paper
+     Quoi: Utiliser des DataComponents (NeoForge 1.21.1) au lieu de NBT manuel
+           pour encoder les recettes dans les Crafting Papers.
+     Pourquoi: L'ancien systeme utilisait du NBT manuel (error-prone, typos
+               dans les cles). Les DataComponents sont type-safe avec Codecs.
+     Comment: Definir un Codec<CraftingRecipe> avec RecordCodecBuilder.
+     Reference: [CREATE] AllDataComponents.java utilise des Codecs partout.
+                Source: Create AllDataComponents.java
+     Priorite: P4 FUTUR
+     Experts: CREATE (C45)
+
+
+================================================================================
+5. GROUPE 5 — ENERGIE ET PROGRESSION
+================================================================================
+
+FEATURES ANALYSEES:
+  5.1 Honey Energy System (consommation, reservoirs, formule cout)
+  5.2 Essence System (7 types — pas 5 : DROP, SPEED, FORAGING, TOLERANCE, DIURNAL,
+      NOCTURNAL, INSOMNIA — 4 tiers)
+  5.3 Storage Hives (3 tiers, multiplicateurs)
+
+Convergences Groupe 5:
+  UNANIME 3/3: TOLERANCE essence morte (5.2D / C61 / RS-5.2A) — P1
+  UNANIME 3/3: Consommation constante / idle vs active (5.1F / C51 / RS-5.1A) — P2
+  UNANIME 3/3: Multiplicateur hives multiplicatif x39 (5.3B / C59 / RS-5.3A) — QUESTION
+  CONVERGENCE AE2+CREATE+RS: INSOMNIA tiers (5.2E / C62 / RS-5.2D) — P2
+  CONVERGENCE AE2+RS: Cout par appareil reseau (5.1B / RS-5.1B) — P2
+  CONVERGENCE AE2+RS: Essence cap (5.2B / RS-5.2B) — P3
+  CONVERGENCE AE2+CREATE: Cache honeyConsumptionRate (5.1E / C50) — P3
+  CONVERGENCE AE2+CREATE: Warning/grace period avant depletion (5.1C / C53) — P2
+  CONVERGENCE 3/3: setRemoved hive (5.3C / RS-5.3C) — P3 (debat resolu)
+  Confirmation RS: consumeHoney() wrong chest count (5.1A) — P1
+
+Decouvertes majeures:
+  - 7 types d'essence (pas 5). TOLERANCE = code mort (crafter supprime). DIURNAL/NOCTURNAL
+    = MagicBees seulement, aucun effet sur ControllerStats. INSOMNIA = 1 seul tier PERFECT.
+  - Multiplicateur hives MULTIPLICATIF: 4x T3 = 2.5^4 = x39.06. Avec config mid-game
+    typique (20 base + 4 coffres + 2 SPEED PERFECT), drain = 5468 mB/s. 2 reservoirs
+    (8000 mB) vides en 2.4 secondes. Probleme d'equilibrage probable.
+  - consumeHoney() utilise getChestManager().getRegisteredChestCount() au lieu de
+    networkRegistry.getChestCount(). Les coffres via relay ne coutent rien en miel.
+  - StorageHiveBlockEntity.getController() = meme pattern isFormed() manquant que
+    Terminal (AK) et Interface (BU). Bug systemique confirme.
+
+Note RS: L'expert RS a contribue 14 propositions formelles (RS-5.1A a RS-5.3D) avec
+references RS2. 4 corrections de priorite par l'architecte (RS-5.1C deja fait,
+RS-5.3C P1→P3, RS-5.3D P2→P3, RS-5.2A P2→P1). 5 propositions uniques RS (DR-DV).
+INSOMNIA: RS a signale une erreur factuelle (NORMAL au lieu de PERFECT) — corrigee.
+
+Divergences:
+  - Multiplicatif vs Additif: AE2 utilise scaling lineaire (cout fixe par device),
+    RS2 aussi (somme lineaire). Create utilise addition (stress capacity/impact).
+    Beemancer est le seul avec un multiplicateur exponentiel. Les 3 experts questionnent
+    ce choix de design.
+  - Granularite: RS2 a des upgrades par device (chaque importer a SA vitesse).
+    Beemancer a des essences globales (bonus pour TOUT le reseau). Design intentionnel
+    mais perte de granularite (RS).
+  - Reservoir: AE2 permet l'energie depuis n'importe quelle source sur le reseau.
+    Beemancer force 2 positions fixes dans le multibloc. Question de design, pas un bug.
+  - setRemoved hive (5.3C/DN): Debat RESOLU P3. onRemove() existe dans le Block +
+    validateNetworkBlocks() auto-corrige en 200 ticks max. Defense en profondeur.
+  - Honey buffer: RS propose un buffer interne (pattern RS2 Controller 32k FE) pour
+    absorber les fluctuations. AE2/Create n'ont pas propose cet angle [DS].
+  - Validation bidirectionnelle: RS propose supprimer la double validation (hive 100t +
+    controller 200t) en faveur d'une validation unidirectionnelle controller→hives [DV].
+
+--------------------------------------------------------------------------------
+5.1 HONEY ENERGY SYSTEM (StorageDeliveryManager.consumeHoney, ControllerStats)
+--------------------------------------------------------------------------------
+Etat actuel: consumeHoney() (lignes 115-147) draine depuis 2 HoneyReservoirs aux
+positions (-1,0,0) et (1,0,0) du multibloc. Formule ControllerStats:
+  (base20 + chestCost10/coffre + essenceCost10/niveau) * hiveMultiplier * (1 - efficiency/100)
+Consommation CONSTANTE (pas proportionnelle a l'activite). HONEY_CONSUME_INTERVAL = 20 ticks.
+HoneyReservoir: 4000mB capacite, PARTAGE entre Storage Controller et Altar.
+Fichiers: StorageDeliveryManager.java, ControllerStats.java, HoneyReservoirBlockEntity.java
+
+--- BUGS ---
+
+[CX] consumeHoney() utilise mauvais compteur de coffres [CONFIRME PAR ARCHITECTE]
+     Quoi: StorageDeliveryManager.consumeHoney() ligne 119 utilise
+           `parent.getChestManager().getRegisteredChestCount()` au lieu de
+           `parent.getNetworkRegistry().getChestCount()`. Meme bug que [AI] (Groupe 2)
+           pour le terminal.
+     Pourquoi: ChestManager ne contient PAS les coffres enregistres via relay. Le
+               formule sous-estime le nombre de coffres = consommation trop basse.
+               Les coffres via relay sont GRATUITS en miel. Le joueur paie moins
+               que ce qu'il devrait pour son reseau reel.
+     Comment: Changer en `parent.getNetworkRegistry().getChestCount()`. 1 ligne.
+     Reference: [AE2] Decouverte originale du bug par l'expert AE2 (5.1A).
+                Confirmee par RS et architecte dans le code source.
+                Meme pattern que [AI] Groupe 2 (display vs actual).
+     Priorite: P1 BUGFIX (formule incorrecte, impact gameplay)
+     Effort: 1 ligne | Risque: Aucun
+     Experts: AE2 (5.1A), RS (confirmation)
+     Note: Bug a DEUX manifestations : affichage terminal [AI] ET consommation
+           reelle [CX]. Les deux doivent etre corriges ensemble.
+
+--- AMELIORATIONS ---
+
+[CY] Cout miel par appareil reseau [CONVERGENCE AE2+RS]
+     Quoi: Les relays, terminaux et interfaces ne coutent rien en miel. Seuls les
+           coffres comptent (chestCount*10). Chaque appareil devrait avoir un cout.
+     Pourquoi: Un joueur peut spammer des relays/terminaux/interfaces sans penalite.
+     Comment: Ajouter a ControllerStats: relayCount*5 + terminalCount*5 +
+              interfaceCount*8 mB/s. Counts via networkRegistry.
+     Reference: [AE2] 25 AE per cable, machine or part.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/energy
+                [RS] RS2 chaque appareil a un cout configurable (Relay=8 energy).
+                Source: https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+     Priorite: P2 FEAT (meme que [E] Groupe 1, etendu a tous appareils par RS)
+     Effort: Faible (3-5 lignes) | Risque: Faible (tuning gameplay)
+     Experts: AE2 (5.1B), RS (RS-5.1B)
+
+[CZ] Warning avant depletion de miel [CONVERGENCE AE2+CREATE]
+     Quoi: Le systeme notifie quand honeyDepleted=true (lignes 140-141) mais aucun
+           avertissement AVANT la depletion. Le joueur decouvre le probleme trop tard.
+     Pourquoi: AE2 affiche un warning quand le reseau manque d'energie. Le reseau
+               degrade progressivement (pas de shutdown instantane).
+     Comment: Ajouter seuil d'alerte (ex: reservoirs < 20% capacite). Notifier
+              "Reserves de miel faibles !" avant depletion. Optionnel: grace period
+              de quelques secondes apres depletion (pattern Create C53 — overstress
+              recovery).
+     Reference: [AE2] AE2 energy system a un buffer (Energy Cells) permettant au
+                reseau de continuer brievement apres arret de l'alimentation.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/energy
+                [CREATE] Pattern overstress recovery — delai avant shutdown complet.
+                Source: Create SuperGlueHandler (tolerance temporaire).
+     Priorite: P2 UX
+     Effort: Faible (10-15 lignes dans consumeHoney) | Risque: Aucun
+     Experts: AE2 (5.1C), CREATE (C53)
+
+[DA] Consommation constante meme au repos [UNANIME 3/3]
+     Quoi: La consommation de miel est constante quelle que soit l'activite du reseau.
+           Pas de distinction idle vs actif.
+     Pourquoi: Thematiquement coherent (les abeilles mangent au repos) mais different
+               des 3 mods de reference. AE2 distingue idle power vs active power.
+               RS2 aussi. Create distingue stress idle vs stress actif.
+     Comment: Option 1: garder design actuel (intentionnel, thematique).
+              Option 2: separer idle cost (reseau connecte) vs active cost (imports/
+              exports/livraisons en cours). Le idle cost serait un pourcentage du
+              cout total.
+     Reference: [AE2] AE2 separe idle power (reseau alive) vs active power (crafting,
+                import/export).
+                [CREATE] Stress capacity (idle) vs stress impact (operations actives).
+     Priorite: P2 DESIGN (question de gameplay — les 3 experts questionnent)
+     Effort: Moyen | Risque: Moyen (changement de formule)
+     Experts: AE2 (5.1F), CREATE (C51), RS (RS-5.1A)
+     Note: Si le design actuel est intentionnel (abeilles = cout constant),
+           documenter ce choix. Si pas intentionnel, implementer la separation.
+           RS propose x0.25 en idle (0 bees, 0 requetes), x1.0 en actif.
+
+[DB] Bonus capacite reservoir par tier de hive
+     Quoi: Chaque hive connectee augmente la capacite totale du reservoir de miel
+           (bonus par tier). Actuellement les hives augmentent le multiplicateur
+           de cout mais ne donnent pas plus de buffer.
+     Pourquoi: Compenser le scaling multiplicatif. Plus de hives = plus de cout,
+               mais aussi plus de stockage pour lisser les pics de consommation.
+     Comment: Par tier: T1 +500mB, T2 +1000mB, T3 +2000mB. Ajouter au reservoir
+              max capacity. Afficher dans GUI.
+     Reference: [CREATE] Pattern Fluid Tank — capacite croit avec le nombre de
+                blocs empiles. Source: Create FluidTankBlockEntity.java
+     Priorite: P3 DESIGN
+     Effort: Faible | Risque: Faible
+     Experts: CREATE (C52)
+
+[DC] Drainage miel limite a 2 reservoirs du multibloc
+     Quoi: consumeHoney() (lignes 123-136) ne draine que les 2 HoneyReservoirs aux
+           positions multibloc fixes (-1,0,0) et (1,0,0). Les reservoirs
+           supplementaires sur le reseau ne sont pas utilises.
+     Pourquoi: Contrainte intentionnelle ? Empeche le scaling de la capacite miel.
+               AE2 permet l'energie depuis n'importe quelle source sur le reseau.
+     Comment: Option 1: garder (contrainte de design, force gestion du miel).
+              Option 2: drainer depuis tout HoneyReservoir sur le reseau (pas juste
+              multibloc). Option 3: ajouter positions de multibloc supplementaires
+              pour les hives T3.
+     Reference: [AE2] Energy Acceptor placeable n'importe ou sur le reseau. Plusieurs
+                Energy Cells connectables. Energie = pool global, pas localise.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/energy
+     Priorite: P3 DESIGN (question de design, pas un bug)
+     Effort: Moyen | Risque: Moyen (architecture energie)
+     Experts: AE2 (5.1D)
+
+[DD] Reservoir partage entre Altar et Storage
+     Quoi: HoneyReservoir est partage entre le Storage Controller et l'Altar.
+           Si les deux systemes sont actifs, risque de conflit et drainage imprevu.
+     Pourquoi: Le joueur peut ne pas realiser que son Altar consomme le miel
+               necessaire au Storage et vice versa.
+     Comment: Option 1: garder (force le joueur a gerer ses ressources).
+              Option 2: separer les reservoirs par systeme. Option 3: ajouter
+              priorite entre consommateurs.
+     Reference: [AE2] Les sous-reseaux AE2 ont des pools d'energie separes.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/subnetworks
+     Priorite: P3 UX
+     Effort: Moyen | Risque: Moyen (changement d'architecture)
+     Experts: AE2 (5.1G)
+
+--- OPTIMISATIONS ---
+
+[DE] Cache honeyConsumptionRate [CONVERGENCE AE2+CREATE]
+     Quoi: consumeHoney() appelle ControllerStats.getHoneyConsumption() chaque
+           HONEY_CONSUME_INTERVAL (20 ticks). Cette methode itere tous les slots
+           d'essence + calcule chest count + hive multiplier a chaque appel.
+     Pourquoi: Le calcul est leger (~8 slots) mais se repete identiquement si rien
+               n'a change. Un cache invalide uniquement quand les essences ou le
+               reseau changent serait plus propre.
+     Comment: Champ honeyConsumptionPerSecond cache. Recalculer seulement quand:
+              essences changent (via onContentsChanged callback), coffres ajoutes/
+              retires, hives modifiees.
+     Reference: [AE2] AE2 EnergyService maintient un cache de la consommation idle
+                totale du reseau. Recalcule seulement quand un node rejoint/quitte.
+                Source: https://deepwiki.com/AppliedEnergistics/Applied-Energistics-2/2.3-energy-system
+                [CREATE] Pattern BlockStressValues — valeurs de stress pre-calculees.
+                Source: Create BlockStressValues.java
+     Priorite: P3 PERF (calcul leger, optimisation prematuree sauf gros reseau)
+     Effort: Faible | Risque: Aucun
+     Experts: AE2 (5.1E), CREATE (C50)
+     Note architecte: P3 et pas P1 comme propose initialement. Le calcul concerne
+     max 8 slots d'essence — negligeable. Delivery manager a deja un stagger pattern
+     (hashCode offset). Optimisation prematuree.
+
+--------------------------------------------------------------------------------
+5.2 ESSENCE SYSTEM (EssenceType, EssenceItem, ControllerStats)
+--------------------------------------------------------------------------------
+Etat actuel: 7 types d'essence (pas 5 comme initialement documente):
+  - DROP (4 tiers): bonus drop chance des abeilles
+  - SPEED (4 tiers): bonus vitesse livraison
+  - FORAGING (4 tiers): bonus rayon butinage
+  - TOLERANCE (4 tiers): bonus vitesse crafting [CODE MORT — crafter supprime]
+  - DIURNAL (1 tier: NORMAL): activite de jour [MagicBees seulement, PAS stockage]
+  - NOCTURNAL (1 tier: NORMAL): activite de nuit [MagicBees seulement, PAS stockage]
+  - INSOMNIA (1 tier: PERFECT): reduction consommation miel (efficiency %)
+19 items enregistres dans BeemancerItems.
+Bonus par essence: `level * 0.25f` cumulatif. Pas de cap.
+BASE_ESSENCE_SLOTS=4, MAX_ESSENCE_SLOTS=8 (dynamique selon hives connectees).
+Fichiers: EssenceType.java, EssenceItem.java, ControllerStats.java, BeemancerItems.java
+
+--- BUGS ---
+
+[DF] TOLERANCE essence = piege joueur [UNANIME 3/3]
+     Quoi: Le Crafter a ete entierement supprime du codebase (crashs frequents,
+           commits 3ab9504/6982ed6) mais les 4 tiers d'essence TOLERANCE restent
+           enregistres. Le joueur peut les placer dans le controller, payer le cout
+           en miel (10 mB/s par niveau), mais ne recevoir AUCUN bonus.
+     Pourquoi: getCraftSpeedMultiplier() dans ControllerStats existe toujours mais
+               rien ne l'appelle — code mort. La GUI affiche encore "Craft Speed: X%"
+               qui est un mensonge. Piege silencieux pour le joueur.
+     Comment: Option 1: Retirer les items TOLERANCE du jeu et bloquer placement.
+              Option 2: Garder mais desactiver le cout en miel + ajouter tooltip
+              "Inactif — Crafter non disponible". Option 3: Garder en prevision
+              du redesign crafter (Section 4.6).
+              Recommandation: Option 2 (ne pas supprimer pour le futur crafter).
+     Reference: [AE2] AE2 ne garde jamais de cartes d'upgrade pour des machines
+                qui n'existent plus. Si une machine est retiree, ses upgrades aussi.
+                [CREATE] Create supprime proprement les items lies a des features
+                retirees lors de breaking changes.
+     Priorite: P1 BUGFIX (piege joueur actif — coute du miel pour rien)
+     Effort: Faible | Risque: Faible
+     Experts: AE2 (5.2D), CREATE (C61), RS (RS-5.2A) — UNANIME 3/3
+
+[DG] DIURNAL/NOCTURNAL essences sans effet dans le stockage [CONFIRME P1]
+     Quoi: DIURNAL et NOCTURNAL sont dans le tag ESSENCES (ligne 104 BeemancerItems),
+           donc placables dans les slots d'essence du controller. Mais ControllerStats
+           ne les utilise PAS — aucun bonus. Seules les MagicBees les utilisent.
+     Pourquoi: Un joueur peut placer ces essences dans le controller, occuper un slot
+               precieux, payer du miel, et ne recevoir aucun bonus. Pas un piege aussi
+               grave que TOLERANCE (pas de faux affichage) mais gaspillage silencieux.
+     Comment: Option 1: Retirer du tag ESSENCES (empecher placement).
+              Option 2: Ajouter un bonus dans ControllerStats (ex: DIURNAL = bonus
+              jour, NOCTURNAL = bonus nuit). Option 3: Garder mais ajouter tooltip
+              "Aucun effet sur le Storage System".
+     Reference: [CREATE] Create C56 — decouverte de l'anomalie.
+                Confirmee par architecte dans le code.
+     Priorite: P1 UX (rehabilite par architecte+Create — 100% inerte, gaspillage slot)
+     Effort: Trivial (1 tag modification) ou Faible (bonus) | Risque: Aucun
+     Experts: CREATE (C56), confirmee par architecte
+
+--- AMELIORATIONS ---
+
+[DH] INSOMNIA n'a qu'un seul tier [CONVERGENCE AE2+CREATE+RS]
+     Quoi: INSOMNIA n'existe qu'en tier PERFECT (40% efficiency). Pas de progression
+           graduelle LESSER(10%), NORMAL(20%), GREATER(30%).
+     Pourquoi: Tous les autres types utiles (DROP, SPEED, FORAGING) ont 4 tiers,
+               permettant une progression. INSOMNIA force un choix binaire: 0% ou 40%.
+               Pas de progression douce.
+     Comment: Ajouter INSOMNIA_LESSER(10%), INSOMNIA_NORMAL(20%), INSOMNIA_GREATER(30%).
+              Enregistrer dans BeemancerItems + ajouter textures/modeles.
+     Reference: [AE2] Acceleration Cards: progression lineaire 1-4 cartes.
+                [RS] RS2 Speed Upgrade: stackable 1-4, progression lineaire.
+     Priorite: P2 DESIGN (progression manquante)
+     Effort: Faible (3 items + textures) | Risque: Aucun
+     Experts: AE2 (5.2E), CREATE (C62), RS (RS-5.2D) — CONVERGENCE 3/3
+
+[DI] Bonus essence cumulatif sans cap [CONVERGENCE AE2+RS]
+     Quoi: getTotalBonus() accumule tous les bonus sans plafond. Avec
+           MAX_ESSENCE_SLOTS=8, un joueur peut mettre 8x SPEED PERFECT = +800%
+           = vitesse x9. Probablement excessif.
+     Pourquoi: Un joueur determiné sacrifierait toutes les autres essences pour
+               stacker un seul type. Resultat potentiellement desequilibre.
+     Comment: Option 1: Cap par type (ex: max +200%). Option 2: Rendements
+              decroissants (chaque essence du meme type donne moins). Option 3:
+              Garder design actuel (sacrifice = choix strategique).
+     Reference: [AE2] Acceleration Cards cappees a 4 par machine (max 96 items/op).
+                Capacity Cards cappees a 2. AE2 utilise des caps fixes, pas de
+                rendements decroissants.
+                Source: https://guide.appliedenergistics.org/1.20.1/items-blocks-machines/upgrade_cards
+     Priorite: P3 DESIGN (balance gameplay — question ouverte)
+     Effort: Trivial (1 Math.min dans getTotalBonus) | Risque: Moyen (balance)
+     Experts: AE2 (5.2B), CREATE (C54), RS (RS-5.2B)
+
+[DJ] Barres de statistiques visuelles dans GUI controller
+     Quoi: Ajouter des barres visuelles dans le GUI du controller montrant l'impact
+           de chaque type d'essence sur les stats du reseau.
+     Pourquoi: Le joueur doit ouvrir le GUI et interpreter des chiffres bruts.
+               Pas de visualisation intuitive des bonus actuels.
+     Comment: Barres horizontales par stat (Speed, Drop, Foraging, Efficiency)
+              avec pourcentage et couleur. Pattern Stressometer de Create.
+     Reference: [CREATE] Stressometer affiche le stress du reseau avec une barre
+                visuelle + pourcentage. Pattern GUI intuitif.
+                Source: Create GaugeBlockEntity/StressometerScreen.
+     Priorite: P3 UX
+     Effort: Moyen (GUI rendering) | Risque: Aucun
+     Experts: CREATE (C55)
+
+[DK] Feedback par slot d'essence
+     Quoi: Chaque slot d'essence devrait afficher sa contribution au total.
+           Ex: "SPEED +25% (total: +150%)" en tooltip.
+     Pourquoi: Le joueur place des essences mais n'a pas de feedback immediat sur
+               la contribution de chaque slot individuellement.
+     Comment: Tooltip sur chaque slot d'essence montrant: type, tier, contribution
+              individuelle, total actuel pour ce type.
+     Reference: [AE2] Network Tool montre la consommation detaillee du reseau.
+                Chaque composant affiche son cout.
+     Priorite: P3 UX
+     Effort: Faible (tooltip rendering) | Risque: Aucun
+     Experts: AE2 (5.2C)
+
+--------------------------------------------------------------------------------
+5.3 STORAGE HIVES (StorageHiveBlock, StorageHiveBlockEntity)
+--------------------------------------------------------------------------------
+Etat actuel: 3 tiers de hives. Multiplicateurs: T1(x1.5), T2(x2.0), T3(x2.5).
+Le multiplicateur est MULTIPLICATIF entre hives (pas additif).
+MAX_LINKED_HIVES = 4. getMaxDeliveryBees(): 2 + sum(hive.getTier()).
+BASE_ESSENCE_SLOTS=4, MAX_ESSENCE_SLOTS=8 (dynamique selon hives).
+dropOverflowEssences() quand une hive est retiree.
+Fichiers: StorageHiveBlock.java, StorageHiveBlockEntity.java, ControllerStats.java
+
+--- BUGS ---
+
+[DL] getController() sans isFormed() check [BUG SYSTEMIQUE — 3e occurrence]
+     Quoi: StorageHiveBlockEntity.getController() (ligne 87) ne verifie pas
+           isFormed(). Meme pattern que [AK] (terminal, Groupe 2) et [BU]
+           (interfaces, Groupe 4). Troisieme occurrence du meme bug.
+     Pourquoi: Si le multibloc est casse mais le bloc controller existe encore, la
+               hive retourne un controller invalide. updateVisualState() verifie
+               deja isFormed() (ligne 126) et gere correctement le cas LINKED vs
+               ACTIVE. Mais getController() est public et tout futur appelant n'aura
+               pas cette protection.
+     Comment: Ajouter `if (!controller.isFormed()) return null;` dans getController().
+              ATTENTION REGRESSION: Ce fix casse potentiellement onRemove() qui appelle
+              getController() APRES que le multibloc soit deja demonte (isFormed=false).
+              Solution: ajouter getControllerRaw() (sans isFormed check) pour les
+              chemins de cleanup comme onRemove(), setRemoved().
+     Reference: [AE2] Pattern systematique — chaque GridNode verifie isActive().
+                Meme fix que [AK] et [BU]. Bug systemique confirme.
+     Priorite: P1 BUGFIX (coherence avec AK et BU — meme fix partout)
+     Effort: 2 lignes + getControllerRaw() (5 lignes) | Risque: Faible si getControllerRaw()
+     Experts: AE2 (5.3A), confirmee par architecte
+     Note architecte: updateVisualState() gere deja le cas non-forme. Block.onRemove()
+     notifie le controller via unlinkHive(). Le risque est pour les futurs appelants
+     de getController() qui ne sauraient pas verifier isFormed(). Le pattern
+     getControllerRaw() est la bonne solution pour eviter la regression.
+
+--- AMELIORATIONS ---
+
+[DM] Multiplicateur hive multiplicatif : affichage UX [UNANIME 3/3 — QUESTION CRITIQUE]
+     Quoi: getHiveMultiplier() (controller ligne 388) MULTIPLIE les multiplicateurs.
+           2x T3 = 2.5 * 2.5 = 6.25x. 4x T3 = 2.5^4 = 39.06x.
+           Le joueur ne realise probablement pas que chaque hive MULTIPLIE (pas ajoute).
+     Pourquoi: Croissance exponentielle problematique. Math verifiee par architecte:
+               config mid-game (20 base + 4 coffres + 2 SPEED PERFECT), 4x T3 =
+               5468 mB/s avant INSOMNIA. Meme avec INSOMNIA PERFECT (x0.6) = 3281 mB/s.
+               Les 2 reservoirs (8000 mB) se vident en 2.4 secondes.
+               AE2 utilise scaling lineaire. RS2 aussi. Create aussi (stress). Beemancer
+               est le SEUL avec un multiplicateur exponentiel.
+     Comment: QUESTION DE DESIGN — 3 options:
+              1. Garder multiplicatif mais AFFICHER clairement le total ("x39.06")
+                 dans le GUI du controller avec warning couleur.
+              2. Changer en ADDITIF: 4x T3 = 1 + 4*1.5 = 7.0x (au lieu de 39.06x).
+              3. Systeme hybride: additif par tier, multiplicatif par type unique.
+              Minimum: afficher le multiplicateur total dans le GUI.
+     Reference: [AE2] AE2 scaling lineaire — cout fixe par device. Previsible.
+                Source: https://guide.appliedenergistics.org/1.20.1/ae2-mechanics/energy
+                [CREATE] Stress system additif — su(impact) vs capacity.
+                Source: Create StressCounterBehaviour.java
+     Priorite: P2 UX (affichage) / QUESTION (formule additif vs multiplicatif)
+     Effort: Trivial (affichage) ou Moyen (changement formule) | Risque: Moyen
+     Experts: AE2 (5.3B), CREATE (C59), RS (RS-5.3A) — UNANIME 3/3
+     Note: Les 3 experts et l'architecte sont d'accord que le multiplicateur x39
+     est probablement un probleme d'equilibrage. La decision finale (garder multiplicatif
+     ou changer en additif) est un choix de game design.
+
+[DN] Hive setRemoved() manquant [DEBAT RESOLU — P3]
+     Quoi: StorageHiveBlockEntity n'a PAS de setRemoved(). Quand une hive est cassee,
+           le controller n'est pas notifie immediatement — detection au prochain
+           cycle de validation periodique (200 ticks = 10 secondes max).
+     Pourquoi: Pendant max 10 secondes, le controller pense encore avoir cette hive.
+               Max delivery bees surestimee, bonus essence slots reste actif.
+     Comment: Override setRemoved(): notifier controller de unlink, appeler
+              dropOverflowEssences() si necessaire, super.setRemoved().
+              ATTENTION: utiliser controllerPos directement, PAS getController()
+              (pour eviter regression avec fix DL/isFormed).
+     Reference: [AE2] Chaque GridNode appelle removeFromWorld() dans setRemoved().
+                [RS] RS2 noeuds notifient controller a la destruction.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2
+     Priorite: P3 CODE QUALITY (debat resolu — onRemove() existe dans Block +
+               validateNetworkBlocks() auto-corrige en 200 ticks. Defense en profondeur.)
+     Effort: 5-10 lignes | Risque: Aucun
+     Experts: AE2 (5.3C), RS (RS-5.3C)
+     Note: Debat AE2 vs architecte. AE2 montrait regression potentielle si fix DL
+     sans getControllerRaw(). Architecte a montre que validateNetworkBlocks() nettoie
+     automatiquement les references stales. Consensus final: P3.
+
+[DO] Tiers de hive = capacites qualitatives (pas juste multiplicateurs)
+     Quoi: Actuellement les tiers different seulement par le multiplicateur numerique
+           (1.5x/2.0x/2.5x). Proposer des capacites qualitatives par tier.
+     Pourquoi: Un systeme de progression interessant offre des choix qualitatifs,
+               pas juste des chiffres plus gros.
+     Comment: Exemple:
+              - T1 (Andesite): +1 slot essence, +2 delivery bees
+              - T2 (Brass): +2 slots essence, +3 delivery bees, unlock filtres avances
+              - T3 (Gold): +2 slots essence, +4 delivery bees, unlock cross-network
+     Reference: [CREATE] Progression Andesite → Brass → Train: chaque tier debloque
+                des CAPACITES (pas juste des chiffres). Andesite = mecanique simple,
+                Brass = logique conditionnelle, Train = mobilite.
+                Source: Create documentation progression.
+     Priorite: P3 DESIGN (redesign progression)
+     Effort: Eleve | Risque: Moyen (balance)
+     Experts: CREATE (C57)
+
+--- OPTIMISATIONS ---
+
+[DP] Tick stagger pour hive validate interval
+     Quoi: Les hives valident leur etat au meme tick. Appliquer le pattern tick
+           stagger (gameTick + hashCode) % interval.
+     Pourquoi: Max 4 hives — impact negligeable. Mais coherence avec le pattern
+               utilise dans les interfaces (BV) et l'aggregator.
+     Comment: Pattern `(gameTick + worldPosition.hashCode()) % VALIDATE_INTERVAL`.
+     Reference: [CREATE] C58, pattern deja dans le codebase.
+     Priorite: P3 OPTIM (max 4 hives, impact negligeable — reclassifie par architecte)
+     Effort: 1 ligne | Risque: Aucun
+     Experts: CREATE (C58)
+     Note architecte: Max 4 hives, chacune fait un getBlockEntity() par validation.
+     Impact negligeable. P3 pour coherence de pattern, pas pour performance.
+
+[DQ] Slots d'essence dans les hives au lieu du controller
+     Quoi: Deplacer les slots d'essence du controller vers les hives individuelles.
+           Chaque hive aurait ses propres slots, et les bonus seraient calcules
+           par hive (granularite).
+     Pourquoi: Plus de granularite — chaque hive peut etre specialisee (une hive
+               SPEED, une hive DROP, etc.). Plus proche du pattern RS2 upgrades
+               per-device.
+     Comment: Chaque hive a 2-3 slots. Controller agrege les bonus de toutes les
+              hives. Les essences dans une hive affectent CETTE hive seulement
+              (ex: les abeilles de cette hive sont plus rapides).
+     Reference: [CREATE] Chaque bloc Create est autonome — les upgrades sont
+                dans le bloc, pas dans un controller central. Mechanical Bearings,
+                Fans, etc. chacun a ses propres reglages.
+     Priorite: P3 DESIGN (redesign majeur, pas une simple amelioration)
+     Effort: Eleve | Risque: Eleve (architecture essence)
+     Experts: CREATE (C60)
+
+--------------------------------------------------------------------------------
+5.4 PROPOSITIONS UNIQUES RS (pas identifiees par AE2/Create)
+--------------------------------------------------------------------------------
+
+[DR] GUI decomposition consommation honey
+     Quoi: Le GUI du controller affiche juste le total honey. Ajouter la
+           decomposition: base + coffres + essences + appareils + efficiency.
+     Pourquoi: Le joueur ne sait pas pourquoi sa conso est elevee. RS controller
+               affiche une decomposition claire par appareil.
+     Comment: Ajouter index ContainerData pour baseCost, chestCost, essenceCost,
+              deviceCost, efficiency. Afficher dans GUI du controller.
+     Reference: [RS] RS controller GUI liste chaque appareil et sa consommation.
+                Source: https://refinedmods.com/refined-storage/networking/controller.html
+     Priorite: P3 UX
+     Effort: Moyen (GUI change) | Risque: Faible
+     Experts: RS (RS-5.1E)
+
+[DS] Honey buffer dans le controller
+     Quoi: Pas de buffer — reservoir a 0 pendant 1 tick = honeyDepleted instantanement.
+           Ajouter un buffer interne pour absorber les fluctuations.
+     Pourquoi: RS controller a un buffer de 32,000 FE. Le reseau ne s'arrete pas
+               instantanement quand l'energie est coupee — continue sur le buffer.
+     Comment: Ajouter honeyBuffer dans StorageDeliveryManager. Puiser dans buffer
+              quand reservoirs insuffisants. Depleted seulement quand buffer=0.
+     Reference: [RS] RS2 Controller capacity 32,000 FE par defaut.
+                Source: https://refinedmods.com/refined-storage/networking/controller.html
+     Priorite: P3 DESIGN
+     Effort: Moyen | Risque: Faible
+     Experts: RS (RS-5.1F)
+
+[DT] Cout non-lineaire par tier d'essence
+     Quoi: Actuellement cout = level * 10 mB/s (lineaire). PERFECT ne coute que
+           40 mB/s pour +100% bonus. Pas assez de tradeoff pour les hauts tiers.
+     Pourquoi: RS Speed Upgrade a un scaling lineaire mais cumulatif. Beemancer
+               pourrait beneficier d'un scaling quadratique pour punir le stacking.
+     Comment: Modifier getEssenceConsumptionCost(): LESSER=5, NORMAL=15,
+              GREATER=30, PERFECT=50 mB/s (scaling ~level^2).
+     Reference: [RS] RS Speed Upgrade scaling: 3→5→7→9→11 FE/t par upgrade.
+                Source: https://ftb.fandom.com/wiki/Speed_Upgrade_(Refined_Storage)
+     Priorite: P3 DESIGN (gameplay balance, necessite playtesting)
+     Effort: Faible (1 methode) | Risque: Moyen (balance)
+     Experts: RS (RS-5.2C)
+
+[DU] Essence slots par tier de hive (pas par count)
+     Quoi: Chaque hive ajoute +1 slot quel que soit le tier. T1 et T3 donnent le
+           meme bonus slots. Pas d'incitation a upgrader pour les slots.
+     Pourquoi: RS Storage Disks: chaque tier = capacite proportionnelle au cout.
+               T3 devrait donner plus de slots que T1 pour justifier son cout.
+     Comment: Essence slots bonus = sum(hive.getTier()). 4xT1=4, 4xT2=8, 4xT3=12.
+              Augmenter MAX_ESSENCE_SLOTS en consequence.
+     Reference: [RS] RS Storage Disks tiers 1k/4k/16k/64k proportionnels.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2/2.2-storage-system
+     Priorite: P3 DESIGN
+     Effort: Faible | Risque: Moyen (balance, GUI: plus de slots)
+     Experts: RS (RS-5.3B)
+
+[DV] Double validation redondante hive/controller
+     Quoi: La hive valide son controller toutes les 100 ticks. Le controller valide
+           ses hives toutes les 200 ticks. Redondant — les deux font la meme
+           verification (est-ce que l'autre existe encore?).
+     Pourquoi: RS validation unidirectionnelle controller→noeuds. Les noeuds ne
+               valident PAS le controller — ils sont notifies par events.
+     Comment: Supprimer validation dans StorageHiveBlockEntity.serverTick(). Garder:
+              (a) validation controller 200 ticks, (b) cleanup onRemove/setRemoved.
+     Reference: [RS] RS2 validation unidirectionnelle controller→noeuds.
+                Source: https://deepwiki.com/refinedmods/refinedstorage2
+     Priorite: P3 OPTIM
+     Effort: Trivial | Risque: Faible
+     Experts: RS (RS-5.3D)
+
+
+================================================================================
+6. MATRICE DE PRIORITE GLOBALE
+================================================================================
+
+--- P0 QUICK WINS / BUGFIXES ---
+| ID  | Proposition                         | Type    | Experts     | Effort   |
+|-----|-------------------------------------|---------|-------------|----------|
+| B   | Magic numbers -> constantes         | REFACT  | RS          | Trivial  |
+| F   | Tick stagger etendu                 | OPTIM   | AE2         | Trivial  |
+| L   | onBlockBreak hors edit mode         | FIX     | AE2+RS+CRE  | 1 ligne  |
+| O   | setRemoved() sur Terminal (G1)      | FIX     | Archi+RS    | Trivial  |
+| Q   | Flood fill cap ~64                  | FIX     | AE2+RS      | 5 lignes |
+| T   | Dirty flag incomplet (hoppers)      | BUG     | AE2         | 5 lignes |
+| Z   | TasksSyncPacket dirty flag          | OPTIM   | RS          | Trivial  |
+| AH  | setRemoved() Terminal (G2 detail)   | BUG CRT | AE2+RS+CRE  | 10 lignes|
+| AI  | DATA_HONEY_CONSUMPTION wrong src    | BUG     | RS          | 1 ligne  |
+| AJ  | Deferred processPendingRequests     | BUG     | RS          | 5 lignes |
+| AR  | consumeHoney() wrong chest count    | BUG     | RS          | 1 ligne  |
+| AS  | ASSIGNED->PENDING item dupe reload  | BUG CRT | AE2+RS+CRE  | Moyen    |
+| AW  | Timeout FLYING manquant (bee zombie)| BUG     | AE2         | Faible   |
+| BU  | isFormed() interfaces [UNANIME 3/3] | BUG     | AE2+RS+CRE  | 1 ligne  |
+| BV  | Tick stagger interfaces multiples   | OPTIM   | CREATE      | 1 ligne  |
+
+--- P1 HAUTE PRIORITE ---
+| ID  | Proposition                         | Type    | Experts     | Effort   |
+|-----|-------------------------------------|---------|-------------|----------|
+| A   | Extraire HiveManager                | REFACT  | RS          | Faible   |
+| H   | Auto-connexion relays               | FEAT    | AE2+CRE     | Moyen    |
+| I   | Relay cache controllerPos           | OPTIM   | RS          | Faible   |
+| U   | Cache incrementiel aggregation      | PERF    | AE2+RS+CRE  | Moyen    |
+| W   | Tri cote client                     | PERF    | RS          | Faible   |
+| AA  | SYNC_INTERVAL 40->10-20 ticks       | PERF    | AE2+RS      | Trivial  |
+| AK  | isFormed() check terminal           | BUG low | AE2         | 3 lignes |
+| AT  | completedTaskIds eviction unsafe    | BUG     | AE2+RS+CRE  | Moyen    |
+| AU  | Cancel en vol sans restitution      | BUG     | AE2         | Moyen    |
+| AV  | Retry infini sans limite            | BUG     | AE2+RS      | Faible   |
+| AX  | PriorityQueue [UNANIME 3/3]         | PERF    | AE2+RS+CRE  | Faible   |
+| BD  | Map<UUID,Bee> O(1) [UNANIME 3/3]    | PERF    | AE2+RS+CRE  | Faible   |
+| BE  | TOCTOU simulate/extract             | BUG PRV | AE2+CRE     | Moyen    |
+| CB  | Import check dispo items            | BUG     | AE2         | 5-10 L   |
+| CC  | Locked deduction needed [CONFIRME]  | BUG     | AE2+Archi   | 3 lignes |
+| CH  | matchesTag() substring [CONFIRME]   | BUG     | AE2+Archi   | 1 ligne  |
+| CM  | lockedTick timeout [CONFIRME]       | BUG     | AE2+Archi   | 10 lignes|
+| CX  | consumeHoney() wrong chest count    | BUG     | AE2+RS      | 1 ligne  |
+| DF  | TOLERANCE essence piege [CONV]      | BUG     | AE2+CRE     | Faible   |
+| DL  | isFormed() hive [3e occurrence]     | BUG     | AE2+Archi   | 5 lignes |
+| DG  | DIURNAL/NOCTURNAL piege inerte      | UX      | CREATE+Archi | Trivial  |
+
+--- P2 PRIORITE MOYENNE ---
+| ID  | Proposition                         | Type    | Experts     | Effort   |
+|-----|-------------------------------------|---------|-------------|----------|
+| E   | Honey cost par relay                | FEAT    | RS          | Faible   |
+| M   | Amortized validation round-robin    | OPTIM   | RS+AE2      | Moyen    |
+| N   | TTL keepAlive validation            | OPTIM   | CREATE      | Moyen    |
+| P   | IItemHandler capability [UNANIME]   | FEAT    | AE2+RS+CRE  | Moyen    |
+| S   | Visual range feedback               | FEAT    | RS          | Faible   |
+| V   | Index coffres par contenu O(1)      | PERF    | AE2+RS      | Moyen    |
+| X   | Decomposition aggregator 523L       | REFACT  | AE2+RS+CRE  | Moyen    |
+| AB  | BigItemStack encodage compact       | OPTIM   | CREATE      | Faible   |
+| AE  | Binary search insert client         | OPTIM   | RS          | Faible   |
+| AL  | Decomposition terminal 693L         | REFACT  | AE2+RS+CRE  | Moyen    |
+| AO  | Etat client dans Screen pas BE      | FIX     | CREATE      | Faible   |
+| AP  | Index requests RequestManager       | PERF    | RS          | Faible   |
+| AY  | Extraire HoneyEnergyManager         | REFACT  | AE2         | Faible   |
+| AZ  | Decomposer DeliveryManager 608L     | REFACT  | AE2+RS+CRE  | Moyen    |
+| BB  | Sleep mode queue vide               | OPTIM   | AE2         | Trivial  |
+| BC  | isTooBusyFor backpressure           | FEAT    | CREATE      | Faible   |
+| BF  | Spawn position y+2                  | UX      | AE2         | 1 ligne  |
+| BH  | Valider targets IItemHandler        | FIX     | CREATE      | Faible   |
+| BI  | Decomposer RequestManager 481L      | REFACT  | AE2+CRE     | Moyen    |
+| BJ  | Debloquer IMPORT on deposit         | UX      | AE2         | Faible   |
+| BK  | Loop prevention Set<BlockPos>       | BUG PRV | AE2         | Faible   |
+| BM  | Deduplication 2 relais meme coffre  | BUG     | CREATE      | Moyen    |
+| BN  | Deferred recheckBlockedRequests     | OPTIM   | RS          | Trivial  |
+| BO  | Pending request queue separee       | PERF    | RS          | Moyen    |
+| BQ  | DataComponents + Codec DeliveryTask | REFACT  | CREATE      | Moyen    |
+| BS  | Builder pattern DeliveryTask        | REFACT  | RS          | Faible   |
+| BT  | cancelDependentTasks iteratif       | BUG PRV | RS          | Faible   |
+| BW  | Container→IItemHandler interfaces   | FEAT    | AE2+RS+CRE  | Moyen    |
+| BX  | SCAN_INTERVAL 40→20 interfaces      | PERF    | AE2+RS      | Trivial  |
+| BY  | Event-driven scan needsScan flag    | PERF    | CREATE      | Faible   |
+| BZ  | Decomposition interface 738L        | REFACT  | AE2+CRE     | Moyen    |
+| CD  | Backoff publishTodoTasks echec      | OPTIM   | CREATE      | Faible   |
+| CF  | Export check espace reseau          | PERF    | AE2         | Faible   |
+| CI  | Blocklist mode filtres              | FEAT    | RS          | Faible   |
+| CN  | LOCKED save cleanup                 | FIX     | AE2         | Faible   |
+| CP  | Blockstate + particules interfaces  | UX      | CREATE      | Moyen    |
+| CY  | Cout miel par relay                 | FEAT    | AE2         | Faible   |
+| CZ  | Warning avant depletion miel [CONV] | UX      | AE2+CRE     | Faible   |
+| DA  | Consommation constante repos [CONV] | DESIGN  | AE2+CRE     | Moyen    |
+| DH  | INSOMNIA un seul tier [CONV 3/3]    | DESIGN  | AE2+CRE+RS  | Faible   |
+| DM  | Multiplicatif hive UX [UNAN 3/3]   | DESIGN  | AE2+CRE+RS  | Moyen    |
+
+--- P3 PRIORITE BASSE ---
+| ID  | Proposition                         | Type    | Experts     | Effort   |
+|-----|-------------------------------------|---------|-------------|----------|
+| C   | Controller tiers variables          | FEAT    | AE2+CRE     | Eleve    |
+| R   | VersionedInventoryWrapper           | OPTIM   | CREATE      | Eleve    |
+| Y   | Simplifier 5 priorites depot        | REFACT  | CREATE+RS   | Faible   |
+| AC  | Stateless req/resp (alt. delta)     | ARCH    | CREATE      | Moyen    |
+| AD  | Serial numbers delta                | OPTIM   | AE2         | Eleve    |
+| AF  | Reponse fragmentee gros inv.        | OPTIM   | CREATE      | Moyen    |
+| AG  | Dual-TTL cache serveur              | OPTIM   | CREATE      | Moyen    |
+| AM  | SmartInventory wrapper              | REFACT  | CREATE      | Moyen    |
+| AN  | Slots progressifs (upgrades)        | FEAT    | AE2         | Eleve    |
+| AQ  | MenuBase<T> lifecycle               | REFACT  | CREATE      | Moyen    |
+| BA  | Parallelisme par hive               | FEAT    | AE2         | Faible   |
+| BG  | LerpedFloat animation vol           | UX      | CREATE      | Moyen    |
+| BL  | RequestPromiseQueue event-driven    | ARCH    | CREATE+RS   | Moyen    |
+| BP  | On-demand splitting                 | OPTIM   | AE2         | Moyen    |
+| BR  | Simplifier FSM 6->3 phases          | REFACT  | CREATE      | Eleve    |
+| CA  | Sleep/Wake interfaces idle          | OPTIM   | AE2         | Moyen    |
+| CE  | scanTextMode cache matching          | OPTIM   | AE2         | Moyen    |
+| CG  | Scheduling round-robin Export       | FEAT    | RS          | Faible   |
+| CJ  | Fuzzy mode filtres                  | FEAT    | RS          | Faible   |
+| CK  | Priorite entre filtres              | FEAT    | AE2         | Faible   |
+| CL  | Status feedback filtres GUI         | UX      | RS+CRE      | Moyen    |
+| CO  | Task lookup O(1) Map                | OPTIM   | RS          | Faible   |
+| DB  | Bonus capacite reservoir/hive       | DESIGN  | CREATE      | Faible   |
+| DC  | Drainage limite 2 reservoirs        | DESIGN  | AE2         | Moyen    |
+| DD  | Reservoir partage Altar/Storage     | UX      | AE2         | Moyen    |
+| DE  | Cache honeyConsumptionRate [CONV]   | PERF    | AE2+CRE     | Faible   |
+| DI  | Bonus essence sans cap [CONV]       | DESIGN  | AE2+CRE+RS  | Trivial  |
+| DJ  | Barres stats visuelles GUI          | UX      | CREATE      | Moyen    |
+| DK  | Feedback par slot essence           | UX      | AE2         | Faible   |
+| DN  | Hive setRemoved() defense profond.  | FIX     | AE2+RS      | 5 lignes |
+| DO  | Tiers hive capacites qualitatives   | DESIGN  | CREATE      | Eleve    |
+| DP  | Tick stagger hive validate          | OPTIM   | CREATE      | 1 ligne  |
+| DQ  | Essence slots dans hives            | DESIGN  | CREATE      | Eleve    |
+| DR  | GUI decomposition conso honey       | UX      | RS          | Moyen    |
+| DS  | Honey buffer controller             | DESIGN  | RS          | Moyen    |
+| DT  | Cout non-lineaire tier essence      | DESIGN  | RS          | Faible   |
+| DU  | Essence slots par tier hive         | DESIGN  | RS          | Faible   |
+| DV  | Double validation redondante        | OPTIM   | RS          | Trivial  |
+
+--- P4 FUTUR ---
+| ID  | Proposition                         | Type    | Experts     | Effort   |
+|-----|-------------------------------------|---------|-------------|----------|
+| D   | Grid services / Behaviours          | ARCH    | AE2+CRE     | Eleve    |
+| G   | Sleep/Wake mechanism controller     | OPTIM   | AE2         | Moyen    |
+| K   | Partition detection                 | FEAT    | AE2+RS      | Eleve    |
+| CQ  | Crafter: separer Pattern/Provider   | ARCH    | AE2+RS      | Eleve    |
+| CR  | Crafter: multi-crafter + priorites  | FEAT    | RS          | Eleve    |
+| CS  | Crafter: Lock Modes                 | FEAT    | RS          | Moyen    |
+| CT  | Crafter: Factory Panel distribue    | ARCH    | CREATE      | Eleve    |
+| CU  | Crafter: Promise Queue              | ARCH    | CREATE      | Moyen    |
+| CV  | Crafter: error feedback structure   | UX      | RS          | Moyen    |
+| CW  | Crafter: DataComponent CraftPaper   | REFACT  | CREATE      | Moyen    |
+
+Notes:
+- Groupe 1: L (onBlockBreak) consensus 3/3, P (IItemHandler) UNANIME 3/3
+- Groupe 2: U (cache incrementiel) UNANIME 3/3, AH (setRemoved) BUG CRITIQUE 3/3
+- Groupe 2: 5 bugs confirmes dont 1 critique
+- Groupe 3: AS (item dupe reload) BUG CRITIQUE 3/3, AX (PriorityQueue) UNANIME 3/3
+           BD (Map UUID Bee) UNANIME 3/3, AT (completedTaskIds) UNANIME 3/3
+- Groupe 3: 7 bugs dont 2 critiques (AS, AW)
+- Groupe 4: BU (isFormed interfaces) UNANIME 3/3, BW (IItemHandler) UNANIME 3/3
+           4 bugs CONFIRMES par architecte (CC, CH, CM + getLockedCount dead code)
+           Crafter system RETIRE du codebase — 7 propositions P4 pour reimplementation
+- Divergence sync: AE2 (plus rapide), RS (event-driven), Create (stateless)
+- Divergence FSM: Create veut simplifier 6→3, AE2+RS veulent fiabiliser les 6
+- Divergence crafter: AE2 (Pattern/Provider/CPU), RS (multi+locks), Create (distribue)
+- H (auto-connexion): separer topologie reseau vs routage livraison (insight AE2)
+- Groupe 5: DF (TOLERANCE piege) UNANIME 3/3, DM (multiplicatif hive) QUESTION CRITIQUE
+           DL (isFormed hive) 3e occurrence bug systemique, DG (DIURNAL/NOCTURNAL) P1
+           3 unanimites 3/3: TOLERANCE, idle/active, multiplicatif x39
+           6+ convergences (INSOMNIA tiers 3/3, cout/appareil 2/3, buffer/grace 2/3,
+           essence cap 2/3, setRemoved 3/3 resolu P3)
+           TOLERANCE, DIURNAL, NOCTURNAL = 3 essences inutiles/mortes dans le stockage
+           Multiplicateur x39 = probable probleme d'equilibrage (unanimite experts)
+           RS expert: 14 propositions formelles, 5 propositions uniques (DR-DV)
+           Debat 5.3C resolu: P1→P2→P3 (auto-cleanup 200 ticks)
+
+STATISTIQUES GLOBALES:
+  Total propositions: 130 (A → DV)
+  Groupes: 5/5 completes
+  P0: 15 | P1: 22 | P2: 37 | P3: 40 | P4: 16
+  Bugs confirmes: 18 (dont 3 critiques: AS item dupe, AW bee zombie, AH setRemoved)
+  Bugs systemiques: isFormed() = 3 occurrences (AK terminal, BU interface, DL hive)
+  Unanimites 3/3: 10 (L, P, U, AX, BD, BU, BW, DF, DA, DM)
+  Convergences 2/3 ou 3/3: 23+
+  Dead code: getLockedCount(), lockedTick, TOLERANCE, DIURNAL/NOCTURNAL (stockage),
+             getCraftSpeedMultiplier()
+  Question ouverte: multiplicatif vs additif hive multiplier (DM)
+
+================================================================================
+FIN DU DOCUMENT
+================================================================================

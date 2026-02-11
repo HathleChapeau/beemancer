@@ -22,10 +22,11 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.core.util.ContainerHelper;
+import com.chapeau.beemancer.core.util.StorageHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -55,9 +56,9 @@ public class DeliveryContainerOps {
 
         for (BlockPos chestPos : parent.getAllNetworkChests()) {
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
-                if (ContainerHelper.countItem(container, template) >= minCount) {
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
+                if (ContainerHelper.countItem(handler, template) >= minCount) {
                     return chestPos;
                 }
             }
@@ -75,9 +76,9 @@ public class DeliveryContainerOps {
 
         for (BlockPos chestPos : parent.getAllNetworkChests()) {
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
-                int count = ContainerHelper.countItem(container, template);
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
+                int count = ContainerHelper.countItem(handler, template);
                 if (count > 0) {
                     result.add(new ChestItemInfo(chestPos, count));
                 }
@@ -99,8 +100,9 @@ public class DeliveryContainerOps {
             return terminal.countInDeposit(template);
         }
 
-        if (!(be instanceof Container container)) return 0;
-        return ContainerHelper.countItem(container, template);
+        IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+        if (handler == null) return 0;
+        return ContainerHelper.countItem(handler, template);
     }
 
     /**
@@ -112,9 +114,9 @@ public class DeliveryContainerOps {
 
         for (BlockPos chestPos : parent.getAllNetworkChests()) {
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
-            BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-            if (be instanceof Container container) {
-                if (ContainerHelper.availableSpace(container, template) >= count) {
+            IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+            if (handler != null) {
+                if (ContainerHelper.availableSpace(handler, template) >= count) {
                     return chestPos;
                 }
             }
@@ -137,9 +139,10 @@ public class DeliveryContainerOps {
             return result;
         }
 
-        if (!(be instanceof Container container)) return ItemStack.EMPTY;
+        IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+        if (handler == null) return ItemStack.EMPTY;
 
-        ItemStack result = ContainerHelper.extractItem(container, template, count);
+        ItemStack result = ContainerHelper.extractItem(handler, template, count);
         parent.getItemAggregator().setNeedsSync(true);
         return result;
     }
@@ -159,10 +162,10 @@ public class DeliveryContainerOps {
         if (parent.getLevel() == null || stack.isEmpty()) return stack;
         if (!parent.getLevel().hasChunkAt(chestPos)) return stack;
 
-        BlockEntity be = parent.getLevel().getBlockEntity(chestPos);
-        if (!(be instanceof Container container)) return stack;
+        IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
+        if (handler == null) return stack;
 
-        ItemStack remaining = ContainerHelper.insertItem(container, stack);
+        ItemStack remaining = ContainerHelper.insertItem(handler, stack);
         parent.getItemAggregator().setNeedsSync(true);
         return remaining;
     }
