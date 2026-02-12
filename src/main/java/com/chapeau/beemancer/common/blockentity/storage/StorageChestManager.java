@@ -84,7 +84,8 @@ public class StorageChestManager {
     /**
      * Flood fill pour enregistrer un coffre et tous ses adjacents.
      * Pour les doubles chests, seule la position canonique (LEFT) est enregistree.
-     * Le BFS explore les deux moities mais n'enregistre que la canonique.
+     * Le BFS explore les DEUX moities pour decouvrir tous les voisins adjacents.
+     * Un Set de canoniques deja enregistrees empeche les doublons sans bloquer l'exploration.
      */
     private void registerChestWithNeighbors(BlockPos startPos) {
         Level level = parent.getNodeLevel();
@@ -92,6 +93,7 @@ public class StorageChestManager {
 
         Queue<BlockPos> toCheck = new LinkedList<>();
         Set<BlockPos> checked = new HashSet<>();
+        Set<BlockPos> registeredCanonicals = new HashSet<>();
         toCheck.add(startPos);
         int newlyRegistered = 0;
 
@@ -108,16 +110,14 @@ public class StorageChestManager {
 
             // Position canonique: pour un double chest, toujours LEFT
             BlockPos canonical = StorageHelper.getCanonicalChestPos(level, current);
-            if (!registeredChests.contains(canonical)) {
+            if (!registeredChests.contains(canonical) && !registeredCanonicals.contains(canonical)) {
                 registeredChests.add(canonical);
+                registeredCanonicals.add(canonical);
                 newlyRegistered++;
             }
 
-            // Marquer aussi l'autre moitie comme "checked" pour ne pas la re-traiter
-            BlockPos otherHalf = StorageHelper.getDoubleChestOtherHalf(level, current);
-            if (otherHalf != null) {
-                checked.add(otherHalf);
-            }
+            // NE PAS marquer l'autre moitie comme "checked" — on doit explorer ses voisins
+            // Le dedup se fait via registeredCanonicals, pas via checked
 
             for (Direction dir : Direction.values()) {
                 BlockPos neighbor = current.relative(dir);

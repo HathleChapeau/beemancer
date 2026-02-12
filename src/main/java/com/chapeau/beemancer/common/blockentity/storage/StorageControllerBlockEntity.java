@@ -52,6 +52,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,6 +81,7 @@ import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
 public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         implements MultiblockController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageControllerBlockEntity.class);
     private static final int VALIDATION_BATCH_INTERVAL = 20;
     private static final int VALIDATION_SPREAD_TICKS = 10;
     private static final int BASE_HONEY_CAPACITY = 8000;
@@ -742,6 +745,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     @Override
     public void setRemoved() {
+        LOGGER.debug("[Controller] setRemoved START at {}", worldPosition);
         super.setRemoved();
         deliveryManager.killAllDeliveryBees();
         // [FIX] Silent hive cleanup: clear references without world modification (no setBlock/syncToClient)
@@ -758,6 +762,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             }
         }
         MultiblockEvents.unregisterController(worldPosition);
+        LOGGER.debug("[Controller] setRemoved END at {}", worldPosition);
     }
 
     @Override
@@ -810,6 +815,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        LOGGER.debug("[Controller] saveAdditional START at {}", worldPosition);
         isSaving = true;
         try {
             super.saveAdditional(tag, registries);
@@ -843,6 +849,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
         } finally {
             isSaving = false;
+            LOGGER.debug("[Controller] saveAdditional END at {}", worldPosition);
         }
     }
 

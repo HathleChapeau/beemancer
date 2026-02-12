@@ -286,9 +286,13 @@ public class StorageEvents {
             }
         }
 
+        // Calculer la position canonique pour les doubles chests (toujours LEFT)
+        BlockPos canonical = StorageHelper.getCanonicalChestPos(level, clickedPos);
+
         // [BM] Deduplication: empecher l'enregistrement d'un coffre deja dans un autre reseau
-        if (!node.getRegisteredChests().contains(clickedPos) && controllerPos != null) {
-            BlockPos otherOwner = findOtherNetworkOwner(level, clickedPos, controllerPos);
+        // Verifier a la fois clickedPos et la canonique (double chest: l'autre moitie pourrait etre enregistree)
+        if (!node.getRegisteredChests().contains(canonical) && controllerPos != null) {
+            BlockPos otherOwner = findOtherNetworkOwner(level, canonical, controllerPos);
             if (otherOwner != null) {
                 player.displayClientMessage(
                         Component.translatable("message.beemancer.chest_already_registered"), true);
@@ -326,7 +330,8 @@ public class StorageEvents {
                 controller.syncNodeToClient();
             }
 
-            boolean wasRegistered = oldChests.contains(clickedPos);
+            // Utiliser la canonique pour verifier si c'etait un toggle on/off
+            boolean wasRegistered = oldChests.contains(canonical);
             if (wasRegistered) {
                 player.displayClientMessage(
                         Component.translatable("message.beemancer.storage_controller.chest_removed"),
@@ -344,16 +349,21 @@ public class StorageEvents {
 
     /**
      * [BM] Verifie si un coffre est deja enregistre dans un autre reseau.
+     * Verifie a la fois la position brute et la canonique (double chests).
      * @return la position du controller proprietaire, ou null si libre
      */
     @javax.annotation.Nullable
     private static BlockPos findOtherNetworkOwner(Level level, BlockPos chestPos, BlockPos excludeCtrl) {
+        BlockPos canonical = StorageHelper.getCanonicalChestPos(level, chestPos);
         for (BlockPos ctrlPos : MultiblockEvents.getActiveControllers()) {
             if (ctrlPos.equals(excludeCtrl)) continue;
             if (!level.isLoaded(ctrlPos)) continue;
             BlockEntity be = level.getBlockEntity(ctrlPos);
             if (be instanceof StorageControllerBlockEntity otherCtrl && otherCtrl.isFormed()) {
                 if (otherCtrl.getNetworkRegistry().isRegistered(chestPos)) return ctrlPos;
+                if (!canonical.equals(chestPos) && otherCtrl.getNetworkRegistry().isRegistered(canonical)) {
+                    return ctrlPos;
+                }
             }
         }
         return null;
@@ -421,11 +431,21 @@ public class StorageEvents {
         if (!(ctrlBe instanceof StorageControllerBlockEntity controller)) return;
 
         StorageNetworkRegistry registry = controller.getNetworkRegistry();
+
+        // Chercher l'entree directe ou via la canonique (double chest: seule LEFT est enregistree)
         StorageNetworkRegistry.NetworkEntry entry = registry.getEntry(brokenPos);
+        BlockPos registeredPos = brokenPos;
+        if (entry == null) {
+            BlockPos canonical = StorageHelper.getCanonicalChestPos(level, brokenPos);
+            if (!canonical.equals(brokenPos)) {
+                entry = registry.getEntry(canonical);
+                registeredPos = canonical;
+            }
+        }
         if (entry == null) return;
 
         // Retirer du registre central
-        registry.unregisterBlock(brokenPos);
+        registry.unregisterBlock(registeredPos);
 
         // Si c'est un coffre, retirer aussi de la liste du noeud proprietaire
         if (entry.type() == StorageNetworkRegistry.NetworkBlockType.CHEST) {
@@ -433,7 +453,7 @@ public class StorageEvents {
             if (ownerPos != null && level.isLoaded(ownerPos)) {
                 BlockEntity ownerBe = level.getBlockEntity(ownerPos);
                 if (ownerBe instanceof INetworkNode ownerNode) {
-                    ownerNode.getChestManager().removeChest(brokenPos);
+                    ownerNode.getChestManager().removeChest(registeredPos);
                 }
             }
         }

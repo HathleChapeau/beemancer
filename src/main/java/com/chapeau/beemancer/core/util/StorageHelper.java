@@ -92,6 +92,9 @@ public final class StorageHelper {
      * Retourne la position canonique d'un coffre (pour les doubles, toujours la moitie LEFT).
      * Si le coffre est simple, retourne la position telle quelle.
      * Cela garantit qu'un double chest n'est enregistre qu'une seule fois dans le reseau.
+     *
+     * Direction vanilla: LEFT.getConnectedDirection() = facing.getClockWise() → pointe vers RIGHT
+     *                    RIGHT.getConnectedDirection() = facing.getCounterClockWise() → pointe vers LEFT
      */
     public static BlockPos getCanonicalChestPos(Level level, BlockPos pos) {
         if (level == null || !level.hasChunkAt(pos)) return pos;
@@ -103,9 +106,10 @@ public final class StorageHelper {
         if (type == ChestType.LEFT) return pos;
 
         // Ce coffre est RIGHT: calculer la position LEFT
+        // RIGHT → LEFT = facing.getCounterClockWise() (direction opposee a clockwise)
         Direction facing = state.getValue(ChestBlock.FACING);
-        Direction leftDir = facing.getClockWise();
-        return pos.relative(leftDir);
+        Direction toLeftHalf = facing.getCounterClockWise();
+        return pos.relative(toLeftHalf);
     }
 
     /**

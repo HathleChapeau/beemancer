@@ -45,6 +45,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,6 +66,7 @@ import java.util.Queue;
  */
 public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvider, Container, IDeliveryEndpoint {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageTerminalBlockEntity.class);
     public static final int PAGE_SIZE = 9;
     public static final int PAGES = 3;
     public static final int DEPOSIT_SLOTS = PAGE_SIZE * PAGES;
@@ -597,18 +600,20 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     @Override
     public void setRemoved() {
+        LOGGER.debug("[Terminal] setRemoved at {}", worldPosition);
         if (level != null && !level.isClientSide() && controllerPos != null) {
-            // [FIX] Silent unlink: registry cleanup sans syncToClient()
-            // unlinkController() appelait syncToClient() et level.sendBlockUpdated()
-            // Cela causait des modifications monde pendant le world unload → hang "saving world"
+            // [FIX] Cleanup silencieux: NE PAS appeler cancelRequestsFromSource()
+            // car elle cascade vers cancelRequest() → parent.setChanged() + cancelTask()
+            // → DeliveryTaskCanceller.cancelTask() → parent.setChanged()
+            // Tous ces setChanged() re-dirtient le chunk du controller pendant le world unload
+            // → boucle infinie dans saveAllChunks → "saving world" hang
+            //
+            // Seuls les nettoyages in-memory sans side-effects sont autorises ici.
+            // Le registre et les requests orphelines seront nettoyes au reload via validation.
             BlockEntity be = level.getBlockEntity(controllerPos);
             if (be instanceof StorageControllerBlockEntity controller) {
                 controller.getNetworkRegistry().unregisterBlock(worldPosition);
                 controller.getItemAggregator().removeViewersForTerminal(worldPosition);
-                controller.getRequestManager().cancelRequestsFromSource(worldPosition);
-                // [FIX] Pas de controller.setChanged() ici: pendant le world unload,
-                // re-dirtier le chunk du controller cause une boucle infinie dans saveAllChunks.
-                // StorageEvents gere le cleanup lors du block break en gameplay normal.
             }
             controllerPos = null;
             pendingRequests.clear();
@@ -620,6 +625,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        LOGGER.debug("[Terminal] saveAdditional START at {}", worldPosition);
         isSaving = true;
         try {
             super.saveAdditional(tag, registries);
@@ -642,6 +648,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
             tag.put("PendingRequests", pendingTag);
         } finally {
             isSaving = false;
+            LOGGER.debug("[Terminal] saveAdditional END at {}", worldPosition);
         }
     }
 
