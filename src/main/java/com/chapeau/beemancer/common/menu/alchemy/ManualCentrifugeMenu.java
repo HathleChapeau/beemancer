@@ -56,22 +56,22 @@ public class ManualCentrifugeMenu extends BeemancerMenu {
         addDataSlots(data);
 
         // Input slot (gauche) - filtre par recette de centrifugation
-        addSlot(BeemancerSlot.combInput(blockEntity.getInputSlot(), 0, 33, 35)
+        addSlot(BeemancerSlot.combInput(blockEntity.getInputSlot(), 0, 40, 45)
             .withFilter(stack -> blockEntity.isValidComb(stack)));
 
         // Output slots (droite, 2x2) avec callback pour les quêtes
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 0, 109, 26)
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 0, 116, 36)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 1, 127, 26)
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 1, 134, 36)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 2, 109, 44)
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 2, 116, 54)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 3, 127, 44)
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlots(), 3, 134, 54)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
 
-        // Player inventory
-        addPlayerInventory(playerInv, 8, 88);
-        addPlayerHotbar(playerInv, 8, 146);
+        // Player inventory (centered in 190px container)
+        addPlayerInventory(playerInv, 15, 107);
+        addPlayerHotbar(playerInv, 15, 165);
     }
 
     public ManualCentrifugeBlockEntity getBlockEntity() { return blockEntity; }

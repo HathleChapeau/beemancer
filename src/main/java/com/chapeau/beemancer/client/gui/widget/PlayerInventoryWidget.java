@@ -32,13 +32,16 @@ public class PlayerInventoryWidget {
     private static final int TEX_HEIGHT = 90;
 
     private final int startY;
+    private final int xOffset;
 
     /**
-     * @param startY position Y ou la texture commence, relative au container.
-     *               Calcul: machineHeight + gap (ex: 80 pour standard, 104 pour MagicHive)
+     * @param startY  position Y ou la texture commence, relative au container.
+     * @param xOffset decalage X pour centrer dans un container plus large que 176px.
+     *                Calcul: (containerWidth - 176) / 2
      */
-    public PlayerInventoryWidget(int startY) {
+    public PlayerInventoryWidget(int startY, int xOffset) {
         this.startY = startY;
+        this.xOffset = xOffset;
     }
 
     /**
@@ -49,6 +52,6 @@ public class PlayerInventoryWidget {
      * @param screenY position Y du container a l'ecran
      */
     public void render(GuiGraphics g, int screenX, int screenY) {
-        g.blit(TEXTURE, screenX, screenY + startY, 0, 0, TEX_WIDTH, TEX_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
+        g.blit(TEXTURE, screenX + xOffset, screenY + startY, 0, 0, TEX_WIDTH, TEX_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
     }
 }

@@ -30,20 +30,18 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class IncubatorScreen extends AbstractBeemancerScreen<IncubatorMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/incubator.png");
+        Beemancer.MOD_ID, "textures/gui/bg.png");
 
     public IncubatorScreen(IncubatorMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 80);
+        super(menu, playerInventory, title, 99);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
     @Override protected String getTitleKey() { return "container.beemancer.incubator"; }
-    @Override protected int getTitleColor() { return 0x404040; }
-    @Override protected int getTitleY() { return 6; }
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        GuiRenderHelper.renderSlot(g, x + 79, y + 34);
-        GuiRenderHelper.renderProgressArrow(g, x + 100, y + 35, menu.getProgressRatio());
+        GuiRenderHelper.renderSlot(g, x + 86, y + 44);
+        GuiRenderHelper.renderProgressArrow(g, x + 107, y + 45, menu.getProgressRatio());
     }
 }

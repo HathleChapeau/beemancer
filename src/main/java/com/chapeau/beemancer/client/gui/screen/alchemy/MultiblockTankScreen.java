@@ -34,14 +34,14 @@ import java.util.List;
 
 public class MultiblockTankScreen extends AbstractBeemancerScreen<MultiblockTankMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
-    private static final int GAUGE_X = 62;
-    private static final int GAUGE_Y = 17;
+        Beemancer.MOD_ID, "textures/gui/bg.png");
+    private static final int GAUGE_X = 69;
+    private static final int GAUGE_Y = 27;
     private static final int GAUGE_W = 52;
     private static final int GAUGE_H = 52;
 
     public MultiblockTankScreen(MultiblockTankMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 80);
+        super(menu, playerInventory, title, 99);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
@@ -49,11 +49,11 @@ public class MultiblockTankScreen extends AbstractBeemancerScreen<MultiblockTank
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        GuiRenderHelper.renderSlot(g, x + 25, y + 34);
+        GuiRenderHelper.renderSlot(g, x + 32, y + 44);
         renderFluidGauge(g, x + GAUGE_X, y + GAUGE_Y);
         int blockCount = menu.getBlockCount();
-        g.drawString(font, blockCount + " blocks", x + 120, y + 20, 0x404040, false);
-        g.drawString(font, (menu.getCapacity() / 1000) + "B", x + 120, y + 32, 0x404040, false);
+        g.drawString(font, blockCount + " blocks", x + 127, y + 30, 0xDDDDDD, false);
+        g.drawString(font, (menu.getCapacity() / 1000) + "B", x + 127, y + 42, 0xDDDDDD, false);
     }
 
     private void renderFluidGauge(GuiGraphics g, int gx, int gy) {

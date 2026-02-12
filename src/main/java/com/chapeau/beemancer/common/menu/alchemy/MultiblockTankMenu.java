@@ -54,10 +54,11 @@ public class MultiblockTankMenu extends BeemancerMenu {
         addDataSlots(data);
 
         // Bucket slot
-        addSlot(new SlotItemHandler(blockEntity.getBucketSlot(), 0, 26, 35));
+        addSlot(new SlotItemHandler(blockEntity.getBucketSlot(), 0, 33, 45));
 
-        addPlayerInventory(playerInv, 8, 88);
-        addPlayerHotbar(playerInv, 8, 146);
+        // Player inventory (centered in 190px container)
+        addPlayerInventory(playerInv, 15, 107);
+        addPlayerHotbar(playerInv, 15, 165);
     }
 
     public MultiblockTankBlockEntity getBlockEntity() { return blockEntity; }

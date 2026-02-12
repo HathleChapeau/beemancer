@@ -33,11 +33,11 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class HoneyTankScreen extends AbstractBeemancerScreen<HoneyTankMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
+        Beemancer.MOD_ID, "textures/gui/bg.png");
     private FluidGaugeWidget storageGauge;
 
     public HoneyTankScreen(HoneyTankMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 80);
+        super(menu, playerInventory, title, 99);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
@@ -47,7 +47,7 @@ public class HoneyTankScreen extends AbstractBeemancerScreen<HoneyTankMenu> {
     protected void init() {
         super.init();
         storageGauge = new FluidGaugeWidget(
-            62, 17, 52, 52, 16000,
+            69, 27, 52, 52, 16000,
             () -> menu.getBlockEntity().getFluid(),
             menu::getFluidAmount
         );
@@ -55,7 +55,7 @@ public class HoneyTankScreen extends AbstractBeemancerScreen<HoneyTankMenu> {
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        GuiRenderHelper.renderSlot(g, x + 25, y + 34);
+        GuiRenderHelper.renderSlot(g, x + 32, y + 44);
         storageGauge.render(g, x, y);
     }
 

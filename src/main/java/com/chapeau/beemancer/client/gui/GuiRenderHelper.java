@@ -19,12 +19,19 @@
  */
 package com.chapeau.beemancer.client.gui;
 
+import com.chapeau.beemancer.Beemancer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 public class GuiRenderHelper {
+
+    private static final ResourceLocation SLOT_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/machin-slot-0.png");
+    private static final ResourceLocation SLOTS_2X2_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/machin-slots-0.png");
 
     /**
      * Fond de container Minecraft avec bordures 3D, labels et separateur.
@@ -55,14 +62,17 @@ public class GuiRenderHelper {
     }
 
     /**
-     * Fond de slot Minecraft standard (18x18 avec inset 3D).
+     * Fond de slot via texture (18x18).
      */
     public static void renderSlot(GuiGraphics g, int x, int y) {
-        g.fill(x, y, x + 18, y + 1, 0xFF373737);
-        g.fill(x, y, x + 1, y + 18, 0xFF373737);
-        g.fill(x + 1, y + 17, x + 18, y + 18, 0xFFFFFFFF);
-        g.fill(x + 17, y + 1, x + 18, y + 18, 0xFFFFFFFF);
-        g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF8B8B8B);
+        g.blit(SLOT_TEXTURE, x, y, 0, 0, 18, 18, 18, 18);
+    }
+
+    /**
+     * Grille de slots 2x2 via texture (36x36).
+     */
+    public static void renderSlots2x2(GuiGraphics g, int x, int y) {
+        g.blit(SLOTS_2X2_TEXTURE, x, y, 0, 0, 36, 36, 36, 36);
     }
 
     /**

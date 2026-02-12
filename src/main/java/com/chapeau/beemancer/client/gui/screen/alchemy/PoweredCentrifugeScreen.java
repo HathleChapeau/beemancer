@@ -33,12 +33,12 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class PoweredCentrifugeScreen extends AbstractBeemancerScreen<PoweredCentrifugeMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
+        Beemancer.MOD_ID, "textures/gui/bg.png");
     private FluidGaugeWidget fuelGauge;
     private FluidGaugeWidget outputGauge;
 
     public PoweredCentrifugeScreen(PoweredCentrifugeMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 80);
+        super(menu, playerInventory, title, 99);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
@@ -48,12 +48,12 @@ public class PoweredCentrifugeScreen extends AbstractBeemancerScreen<PoweredCent
     protected void init() {
         super.init();
         fuelGauge = new FluidGaugeWidget(
-            8, 17, 16, 52, menu::getFuelCapacity,
+            15, 27, 16, 52, menu::getFuelCapacity,
             () -> menu.getFuelTank().getFluid(),
             menu::getFuelAmount
         );
         outputGauge = new FluidGaugeWidget(
-            152, 17, 16, 52, menu::getOutputCapacity,
+            159, 27, 16, 52, menu::getOutputCapacity,
             () -> menu.getOutputTank().getFluid(),
             menu::getOutputAmount
         );
@@ -61,12 +61,9 @@ public class PoweredCentrifugeScreen extends AbstractBeemancerScreen<PoweredCent
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        GuiRenderHelper.renderSlot(g, x + 32, y + 34);
-        GuiRenderHelper.renderSlot(g, x + 108, y + 25);
-        GuiRenderHelper.renderSlot(g, x + 126, y + 25);
-        GuiRenderHelper.renderSlot(g, x + 108, y + 43);
-        GuiRenderHelper.renderSlot(g, x + 126, y + 43);
-        GuiRenderHelper.renderProgressBar(g, x + 54, y + 40, 50, 6, menu.getProgressRatio());
+        GuiRenderHelper.renderSlot(g, x + 39, y + 44);
+        GuiRenderHelper.renderSlots2x2(g, x + 115, y + 35);
+        GuiRenderHelper.renderProgressBar(g, x + 61, y + 50, 50, 6, menu.getProgressRatio());
         fuelGauge.render(g, x, y);
         outputGauge.render(g, x, y);
     }

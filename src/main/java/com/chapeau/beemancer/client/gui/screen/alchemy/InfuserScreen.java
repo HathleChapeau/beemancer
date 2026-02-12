@@ -33,11 +33,11 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class InfuserScreen extends AbstractBeemancerScreen<InfuserMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
+        Beemancer.MOD_ID, "textures/gui/bg.png");
     private FluidGaugeWidget honeyGauge;
 
     public InfuserScreen(InfuserMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 80);
+        super(menu, playerInventory, title, 99);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
@@ -47,7 +47,7 @@ public class InfuserScreen extends AbstractBeemancerScreen<InfuserMenu> {
     protected void init() {
         super.init();
         honeyGauge = new FluidGaugeWidget(
-            17, 17, 16, 52, 4000,
+            24, 27, 16, 52, 4000,
             () -> menu.getHoneyTank().getFluid(),
             menu::getHoneyAmount
         );
@@ -55,11 +55,11 @@ public class InfuserScreen extends AbstractBeemancerScreen<InfuserMenu> {
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        GuiRenderHelper.renderSlot(g, x + 43, y + 34);
-        GuiRenderHelper.renderSlot(g, x + 115, y + 34);
+        GuiRenderHelper.renderSlot(g, x + 50, y + 44);
+        GuiRenderHelper.renderSlot(g, x + 122, y + 44);
         int processTime = menu.getProcessTime();
         float ratio = processTime > 0 ? (float) menu.getProgress() / processTime : 0;
-        GuiRenderHelper.renderProgressArrow(g, x + 68, y + 35, ratio);
+        GuiRenderHelper.renderProgressArrow(g, x + 75, y + 45, ratio);
         honeyGauge.render(g, x, y);
     }
 

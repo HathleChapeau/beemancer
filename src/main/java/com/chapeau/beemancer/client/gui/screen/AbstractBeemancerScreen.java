@@ -39,14 +39,21 @@ public abstract class AbstractBeemancerScreen<T extends AbstractContainerMenu>
 
     protected final PlayerInventoryWidget playerInventory;
 
+    /** Standard alchemy constructor (190-wide bg, inventory centered +7px). */
     protected AbstractBeemancerScreen(T menu, Inventory playerInventory, Component title,
                                        int playerInvY) {
+        this(menu, playerInventory, title, 190, playerInvY, 7);
+    }
+
+    /** Full control constructor for custom container widths. */
+    protected AbstractBeemancerScreen(T menu, Inventory playerInventory, Component title,
+                                       int containerWidth, int playerInvY, int invXOffset) {
         super(menu, playerInventory, title);
-        this.imageWidth = 176;
-        this.imageHeight = 170;
+        this.imageWidth = containerWidth;
+        this.imageHeight = playerInvY + 90;
         this.inventoryLabelY = -999;
         this.titleLabelY = -999;
-        this.playerInventory = new PlayerInventoryWidget(playerInvY);
+        this.playerInventory = new PlayerInventoryWidget(playerInvY, invXOffset);
     }
 
     protected abstract ResourceLocation getTexture();
@@ -60,7 +67,7 @@ public abstract class AbstractBeemancerScreen<T extends AbstractContainerMenu>
 
     protected int getTitleY() { return 7; }
 
-    protected int getBlitHeight() { return 76; }
+    protected int getBlitHeight() { return 95; }
 
     /** Rendu des tooltips specifiques a la machine. Appele apres renderTooltip. */
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {}
@@ -71,7 +78,7 @@ public abstract class AbstractBeemancerScreen<T extends AbstractContainerMenu>
         int y = (height - imageHeight) / 2;
 
         int blitH = getBlitHeight();
-        g.blit(getTexture(), x, y, 0, 0, 176, blitH, 176, blitH);
+        g.blit(getTexture(), x, y, 0, 0, imageWidth, blitH, imageWidth, blitH);
         g.drawString(font, Component.translatable(getTitleKey()),
             x + 8, y + getTitleY(), getTitleColor(), false);
 

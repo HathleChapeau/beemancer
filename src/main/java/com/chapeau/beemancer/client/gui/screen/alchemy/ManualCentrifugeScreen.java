@@ -33,11 +33,11 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class ManualCentrifugeScreen extends AbstractBeemancerScreen<ManualCentrifugeMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
+        Beemancer.MOD_ID, "textures/gui/bg.png");
     private FluidGaugeWidget fluidGauge;
 
     public ManualCentrifugeScreen(ManualCentrifugeMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 80);
+        super(menu, playerInventory, title, 99);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
@@ -47,7 +47,7 @@ public class ManualCentrifugeScreen extends AbstractBeemancerScreen<ManualCentri
     protected void init() {
         super.init();
         fluidGauge = new FluidGaugeWidget(
-            152, 17, 16, 52, 4000,
+            159, 27, 16, 52, 4000,
             () -> menu.getBlockEntity().getFluidTank().getFluid(),
             menu::getFluidAmount
         );
@@ -55,12 +55,9 @@ public class ManualCentrifugeScreen extends AbstractBeemancerScreen<ManualCentri
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        GuiRenderHelper.renderSlot(g, x + 32, y + 34);
-        GuiRenderHelper.renderSlot(g, x + 108, y + 25);
-        GuiRenderHelper.renderSlot(g, x + 126, y + 25);
-        GuiRenderHelper.renderSlot(g, x + 108, y + 43);
-        GuiRenderHelper.renderSlot(g, x + 126, y + 43);
-        GuiRenderHelper.renderProgressBar(g, x + 54, y + 40, 50, 6, menu.getProgressRatio());
+        GuiRenderHelper.renderSlot(g, x + 39, y + 44);
+        GuiRenderHelper.renderSlots2x2(g, x + 115, y + 35);
+        GuiRenderHelper.renderProgressBar(g, x + 61, y + 50, 50, 6, menu.getProgressRatio());
         fluidGauge.render(g, x, y);
     }
 
@@ -71,7 +68,7 @@ public class ManualCentrifugeScreen extends AbstractBeemancerScreen<ManualCentri
             g.renderComponentTooltip(font, fluidGauge.getTooltip(name), mouseX, mouseY);
         }
         float ratio = menu.getProgressRatio();
-        if (ratio > 0 && mouseX >= x + 65 && mouseX < x + 101 && mouseY >= y + 35 && mouseY < y + 52) {
+        if (ratio > 0 && mouseX >= x + 72 && mouseX < x + 108 && mouseY >= y + 45 && mouseY < y + 62) {
             g.renderTooltip(font, Component.literal(String.format("%.0f%%", ratio * 100)), mouseX, mouseY);
         }
     }

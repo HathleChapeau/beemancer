@@ -83,14 +83,15 @@ public class InfuserMenu extends BeemancerMenu {
         addDataSlots(data);
 
         // Input slot - accepte tout item valide pour une recette d'infusion
-        addSlot(new BeemancerSlot(inputHandler, 0, 44, 35));
+        addSlot(new BeemancerSlot(inputHandler, 0, 51, 45));
 
         // Output slot (extraction seulement) avec callback pour les quêtes
-        addSlot(BeemancerSlot.output(outputHandler, 0, 116, 35)
+        addSlot(BeemancerSlot.output(outputHandler, 0, 123, 45)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "infuser", s)));
 
-        addPlayerInventory(playerInv, 8, 88);
-        addPlayerHotbar(playerInv, 8, 146);
+        // Player inventory (centered in 190px container)
+        addPlayerInventory(playerInv, 15, 107);
+        addPlayerHotbar(playerInv, 15, 165);
     }
 
     public BlockEntity getBlockEntity() { return blockEntity; }

@@ -95,22 +95,22 @@ public class PoweredCentrifugeMenu extends BeemancerMenu {
         addDataSlots(data);
 
         // Input slot (gauche)
-        addSlot(BeemancerSlot.combInput(inputHandler, 0, 33, 35)
+        addSlot(BeemancerSlot.combInput(inputHandler, 0, 40, 45)
             .withFilter(stack -> stack.is(BeemancerTags.Items.COMBS)));
 
         // Output slots (droite, 2x2) avec callback pour les quêtes
-        addSlot(BeemancerSlot.output(outputHandler, 0, 109, 26)
+        addSlot(BeemancerSlot.output(outputHandler, 0, 116, 36)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
-        addSlot(BeemancerSlot.output(outputHandler, 1, 127, 26)
+        addSlot(BeemancerSlot.output(outputHandler, 1, 134, 36)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
-        addSlot(BeemancerSlot.output(outputHandler, 2, 109, 44)
+        addSlot(BeemancerSlot.output(outputHandler, 2, 116, 54)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
-        addSlot(BeemancerSlot.output(outputHandler, 3, 127, 44)
+        addSlot(BeemancerSlot.output(outputHandler, 3, 134, 54)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
 
-        // Player inventory
-        addPlayerInventory(playerInv, 8, 88);
-        addPlayerHotbar(playerInv, 8, 146);
+        // Player inventory (centered in 190px container)
+        addPlayerInventory(playerInv, 15, 107);
+        addPlayerHotbar(playerInv, 15, 165);
     }
 
     public int getProgress() { return data.get(0); }

@@ -47,11 +47,12 @@ public class CrystallizerMenu extends BeemancerMenu {
         addDataSlots(data);
 
         // Output slot (extraction seulement) avec callback pour les quêtes
-        addSlot(BeemancerSlot.output(blockEntity.getOutputSlot(), 0, 89 - 9, 31)
+        addSlot(BeemancerSlot.output(blockEntity.getOutputSlot(), 0, 87, 41)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "crystallizer", s)));
 
-        addPlayerInventory(playerInv, 8, 88);
-        addPlayerHotbar(playerInv, 8, 146);
+        // Player inventory (centered in 190px container)
+        addPlayerInventory(playerInv, 15, 107);
+        addPlayerHotbar(playerInv, 15, 165);
     }
 
     public CrystallizerBlockEntity getBlockEntity() { return blockEntity; }

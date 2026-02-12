@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [MagicHiveScreen.java]
- * Description: GUI de la ruche magique (rendu programmatique)
+ * Description: GUI de la ruche magique avec textures beehive
  * ============================================================
  *
  * DEPENDANCES:
@@ -10,7 +10,6 @@
  * |-------------------------|----------------------|--------------------------------|
  * | MagicHiveMenu           | Donnees container    | Bee slots, output, status      |
  * | MagicHiveBlockEntity    | Constantes           | BEE_SLOTS                      |
- * | GuiRenderHelper         | Rendu programmatique | Background, slots              |
  * | AbstractBeemancerScreen | Base screen          | Boilerplate GUI                |
  * ------------------------------------------------------------
  *
@@ -22,7 +21,6 @@
 package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import net.minecraft.ChatFormatting;
@@ -36,100 +34,120 @@ import java.util.List;
 
 public class MagicHiveScreen extends AbstractBeemancerScreen<MagicHiveMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/magic_hive.png");
-    private static final int ICON_SIZE = 12;
+        Beemancer.MOD_ID, "textures/gui/beehive/bg_beehive.png");
+    private static final ResourceLocation BEE_SLOT_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/beehive/beehive-slot.png");
+    private static final ResourceLocation COMB_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/beehive/beehive-comb.png");
+
+    private static final String ICON_PATH = "textures/gui/beehive/";
+    private static final int ICON_SIZE = 16;
     private static final int ICON_SPACING = 2;
 
+    private static final int HONEYCOMB_CENTER_X = 108;
+    private static final int HONEYCOMB_CENTER_Y = 70;
+    private static final int COMB_W = 66;
+    private static final int COMB_H = 62;
+
     public MagicHiveScreen(MagicHiveMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 104);
-        this.imageHeight = 194;
+        super(menu, playerInventory, title, 216, 114, 20);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
     @Override protected String getTitleKey() { return "container.beemancer.magic_hive"; }
-    @Override protected int getTitleColor() { return 0x404040; }
+    @Override protected int getTitleColor() { return 0xDDDDDD; }
     @Override protected int getTitleY() { return 6; }
-    @Override protected int getBlitHeight() { return 100; }
+    @Override protected int getBlitHeight() { return 110; }
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
+        // Bee assignment slots (5 orange slots at top)
         for (int i = 0; i < 5; i++) {
-            GuiRenderHelper.renderSlot(g, x + 43 + i * 18, y + 19);
+            g.blit(BEE_SLOT_TEXTURE, x + 63 + i * 18, y + 23, 0, 0, 18, 18, 18, 18);
         }
-        int cx = x + 79, cy = y + 56;
-        GuiRenderHelper.renderSlot(g, cx, cy);
-        GuiRenderHelper.renderSlot(g, cx - 10, cy - 17);
-        GuiRenderHelper.renderSlot(g, cx + 10, cy - 17);
-        GuiRenderHelper.renderSlot(g, cx - 20, cy);
-        GuiRenderHelper.renderSlot(g, cx + 20, cy);
-        GuiRenderHelper.renderSlot(g, cx - 10, cy + 17);
-        GuiRenderHelper.renderSlot(g, cx + 10, cy + 17);
+
+        // Honeycomb output area (single image for 7 slots)
+        int combX = x + HONEYCOMB_CENTER_X - COMB_W / 2;
+        int combY = y + HONEYCOMB_CENTER_Y - COMB_H / 2;
+        g.blit(COMB_TEXTURE, combX, combY, 0, 0, COMB_W, COMB_H, COMB_W, COMB_H);
     }
 
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        renderStatusIcons(g, mouseX, mouseY);
+        renderStatusIcons(g, x, y, mouseX, mouseY);
         renderBeeSmileys(g);
     }
 
-    private void renderStatusIcons(GuiGraphics g, int mouseX, int mouseY) {
-        int iconX = leftPos + imageWidth - ICON_SIZE - 4;
-        int currentY = topPos + 4;
+    private void renderStatusIcons(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
+        int iconX = x + imageWidth - ICON_SIZE - 6;
+        int currentY = y + 22;
 
-        renderIcon(g, iconX, currentY, mouseX, mouseY,
-            menu.isDaytime() ? 0xFFFFEB3B : 0xFF3F51B5,
-            menu.isDaytime() ? "\u2600" : "\u263D",
-            menu.isDaytime() ? "Jour" : "Nuit", ChatFormatting.YELLOW);
+        // Day/Night
+        ResourceLocation dayNightIcon = getIcon(menu.isDaytime() ? "day" : "night");
+        g.blit(dayNightIcon, iconX, currentY, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+        if (isHovering(iconX - leftPos, currentY - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+            g.renderTooltip(font, Component.literal(menu.isDaytime() ? "Day" : "Night")
+                .withStyle(ChatFormatting.YELLOW), mouseX, mouseY);
+        }
         currentY += ICON_SIZE + ICON_SPACING;
 
+        // Temperature
         int temp = menu.getTemperature();
-        int color;
-        String symbol, desc;
+        String tempIcon;
+        String tempDesc;
         switch (temp) {
-            case -2 -> { color = 0xFF00BFFF; symbol = "\u2744"; desc = "Glacial"; }
-            case -1 -> { color = 0xFF87CEEB; symbol = "~"; desc = "Froid"; }
-            case 0 -> { color = 0xFF90EE90; symbol = "\u25C9"; desc = "Temper\u00e9"; }
-            case 1 -> { color = 0xFFFFD700; symbol = "\u263C"; desc = "Chaud"; }
-            default -> { color = 0xFFFF4500; symbol = "\u2668"; desc = "Br\u00fblant"; }
+            case -2 -> { tempIcon = "thundra"; tempDesc = "Glacial"; }
+            case -1 -> { tempIcon = "forest"; tempDesc = "Cold"; }
+            case 0 -> { tempIcon = "flower"; tempDesc = "Temperate"; }
+            case 1 -> { tempIcon = "desert"; tempDesc = "Hot"; }
+            default -> { tempIcon = "neither"; tempDesc = "Burning"; }
         }
-        renderIcon(g, iconX, currentY, mouseX, mouseY, color, symbol,
-            "Temp\u00e9rature: " + desc + " (" + temp + ")", ChatFormatting.GOLD);
+        ResourceLocation tempTexture = getIcon(tempIcon);
+        g.blit(tempTexture, iconX, currentY, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+        if (isHovering(iconX - leftPos, currentY - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+            g.renderTooltip(font, Component.literal("Temperature: " + tempDesc + " (" + temp + ")")
+                .withStyle(ChatFormatting.GOLD), mouseX, mouseY);
+        }
         currentY += ICON_SIZE + ICON_SPACING;
 
+        // Flowers
         if (menu.hasFlowers()) {
-            renderIcon(g, iconX, currentY, mouseX, mouseY, 0xFF4CAF50, "\u273F",
-                "Fleurs disponibles", ChatFormatting.GREEN);
+            ResourceLocation flowerIcon = getIcon("flower");
+            g.blit(flowerIcon, iconX, currentY, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+            if (isHovering(iconX - leftPos, currentY - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+                g.renderTooltip(font, Component.literal("Flowers available")
+                    .withStyle(ChatFormatting.GREEN), mouseX, mouseY);
+            }
             currentY += ICON_SIZE + ICON_SPACING;
         }
+
+        // Mushrooms
         if (menu.hasMushrooms()) {
-            renderIcon(g, iconX, currentY, mouseX, mouseY, 0xFF8B4513, "\uD83C\uDF44",
-                "Champignons disponibles", ChatFormatting.GOLD);
+            ResourceLocation mushroomIcon = getIcon("mushroom");
+            g.blit(mushroomIcon, iconX, currentY, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+            if (isHovering(iconX - leftPos, currentY - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+                g.renderTooltip(font, Component.literal("Mushrooms available")
+                    .withStyle(ChatFormatting.GOLD), mouseX, mouseY);
+            }
             currentY += ICON_SIZE + ICON_SPACING;
         }
+
+        // Antibreeding crystal
         if (menu.isAntibreedingMode()) {
-            g.fill(iconX, currentY, iconX + ICON_SIZE, currentY + ICON_SIZE, 0xFFCC0000);
-            g.drawCenteredString(font, "\u2298", iconX + ICON_SIZE / 2, currentY + 2, 0xFFFFFFFF);
+            ResourceLocation crystalIcon = getIcon("crystal");
+            g.blit(crystalIcon, iconX, currentY, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
             if (isHovering(iconX - leftPos, currentY - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
                 List<Component> tt = new ArrayList<>();
-                tt.add(Component.literal("Crystal Antibreeding actif").withStyle(ChatFormatting.RED));
-                tt.add(Component.literal("Les abeilles ne se reproduisent pas").withStyle(ChatFormatting.GRAY));
+                tt.add(Component.literal("Crystal Antibreeding").withStyle(ChatFormatting.RED));
+                tt.add(Component.literal("Bees cannot breed").withStyle(ChatFormatting.GRAY));
                 g.renderComponentTooltip(font, tt, mouseX, mouseY);
             }
         }
     }
 
-    private void renderIcon(GuiGraphics g, int x, int y, int mx, int my,
-                            int bgColor, String symbol, String tooltip, ChatFormatting color) {
-        g.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, bgColor);
-        g.drawCenteredString(font, symbol, x + ICON_SIZE / 2, y + 2, 0xFFFFFFFF);
-        if (isHovering(x - leftPos, y - topPos, ICON_SIZE, ICON_SIZE, mx, my)) {
-            g.renderTooltip(font, Component.literal(tooltip).withStyle(color), mx, my);
-        }
-    }
-
     private void renderBeeSmileys(GuiGraphics g) {
-        int beeSlotY = topPos + 20;
-        int beeSlotStartX = leftPos + 44;
+        int beeSlotY = topPos + 24;
+        int beeSlotStartX = leftPos + 64;
         for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
             if (menu.getContainer().getItem(i).isEmpty()) continue;
             int slotX = beeSlotStartX + i * 18;
@@ -137,5 +155,9 @@ public class MagicHiveScreen extends AbstractBeemancerScreen<MagicHiveMenu> {
             g.drawString(font, canForage ? "\u263A" : "\u2639",
                 slotX + 12, beeSlotY - 2, canForage ? 0xFF00FF00 : 0xFFFF0000, false);
         }
+    }
+
+    private static ResourceLocation getIcon(String name) {
+        return ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, ICON_PATH + name + ".png");
     }
 }

@@ -48,10 +48,11 @@ public class HoneyTankMenu extends BeemancerMenu {
         addDataSlots(data);
 
         // Bucket slot (a gauche du tank)
-        addSlot(new SlotItemHandler(blockEntity.getBucketSlot(), 0, 26, 35));
+        addSlot(new SlotItemHandler(blockEntity.getBucketSlot(), 0, 33, 45));
 
-        addPlayerInventory(playerInv, 8, 88);
-        addPlayerHotbar(playerInv, 8, 146);
+        // Player inventory (centered in 190px container)
+        addPlayerInventory(playerInv, 15, 107);
+        addPlayerHotbar(playerInv, 15, 165);
     }
 
     protected HoneyTankMenu(MenuType<?> type, int containerId, Inventory playerInv, BlockEntity be, ContainerData data) {
@@ -63,10 +64,11 @@ public class HoneyTankMenu extends BeemancerMenu {
         addDataSlots(data);
 
         // Bucket slot
-        addSlot(new SlotItemHandler(blockEntity.getBucketSlot(), 0, 26, 35));
+        addSlot(new SlotItemHandler(blockEntity.getBucketSlot(), 0, 33, 45));
 
-        addPlayerInventory(playerInv, 8, 88);
-        addPlayerHotbar(playerInv, 8, 146);
+        // Player inventory (centered in 190px container)
+        addPlayerInventory(playerInv, 15, 107);
+        addPlayerHotbar(playerInv, 15, 165);
     }
 
     public HoneyTankBlockEntity getBlockEntity() { return blockEntity; }

@@ -33,13 +33,13 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class AlembicScreen extends AbstractBeemancerScreen<AlembicMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/bg_iron_wood.png");
+        Beemancer.MOD_ID, "textures/gui/bg.png");
     private FluidGaugeWidget honeyGauge;
     private FluidGaugeWidget royalJellyGauge;
     private FluidGaugeWidget nectarGauge;
 
     public AlembicScreen(AlembicMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 80);
+        super(menu, playerInventory, title, 99);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
@@ -49,17 +49,17 @@ public class AlembicScreen extends AbstractBeemancerScreen<AlembicMenu> {
     protected void init() {
         super.init();
         honeyGauge = new FluidGaugeWidget(
-            17, 17, 16, 52, 4000,
+            24, 27, 16, 52, 4000,
             () -> menu.getBlockEntity().getHoneyTank().getFluid(),
             menu::getHoneyAmount
         );
         royalJellyGauge = new FluidGaugeWidget(
-            44, 17, 16, 52, 4000,
+            51, 27, 16, 52, 4000,
             () -> menu.getBlockEntity().getRoyalJellyTank().getFluid(),
             menu::getRoyalJellyAmount
         );
         nectarGauge = new FluidGaugeWidget(
-            143, 17, 16, 52, 4000,
+            150, 27, 16, 52, 4000,
             () -> menu.getBlockEntity().getNectarTank().getFluid(),
             menu::getNectarAmount
         );
@@ -72,7 +72,7 @@ public class AlembicScreen extends AbstractBeemancerScreen<AlembicMenu> {
         nectarGauge.render(g, x, y);
         int processTime = menu.getProcessTime();
         float ratio = processTime > 0 ? (float) menu.getProgress() / processTime : 0;
-        GuiRenderHelper.renderProgressArrow(g, x + 68, y + 35, ratio);
+        GuiRenderHelper.renderProgressArrow(g, x + 75, y + 45, ratio);
     }
 
     @Override

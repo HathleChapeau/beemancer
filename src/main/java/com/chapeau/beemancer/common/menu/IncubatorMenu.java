@@ -56,13 +56,13 @@ public class IncubatorMenu extends BeemancerMenu {
         addDataSlots(data);
 
         // Single slot - accepts larva, allows extracting bee
-        addSlot(new BeemancerSlot(blockEntity.getItemHandler(), 0, 80, 35)
+        addSlot(new BeemancerSlot(blockEntity.getItemHandler(), 0, 87, 45)
                 .withFilter(stack -> stack.is(BeemancerItems.BEE_LARVA.get()))
                 .withOnExtract(this::onBeeExtracted));
 
-        // Player inventory
-        addPlayerInventory(playerInventory, 8, 88);
-        addPlayerHotbar(playerInventory, 8, 146);
+        // Player inventory (centered in 190px container)
+        addPlayerInventory(playerInventory, 15, 107);
+        addPlayerHotbar(playerInventory, 15, 165);
     }
 
     public IncubatorBlockEntity getBlockEntity() { return blockEntity; }

@@ -46,30 +46,30 @@ public class MagicHiveMenu extends BeemancerMenu {
         super(BeemancerMenus.MAGIC_HIVE.get(), containerId);
         this.container = container;
         this.data = data;
-        
+
         // Track data for client sync
         addDataSlots(data);
-        
-        // Bee assignment slots (5 slots in a row at top)
-        int beeSlotY = 20;
-        int beeSlotStartX = 44;
+
+        // Bee assignment slots (5 slots in a row at top, centered in 216px container)
+        int beeSlotY = 24;
+        int beeSlotStartX = 64;
         for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
             addSlot(new BeeAssignmentSlot(container, i, beeSlotStartX + i * 18, beeSlotY));
         }
-        
-        // Output slots (7 honeycomb layout)
-        int honeycombCenterX = 88;
-        int honeycombCenterY = 65;
+
+        // Output slots (7 honeycomb layout, centered in 216px container)
+        int honeycombCenterX = 108;
+        int honeycombCenterY = 70;
         for (int i = 0; i < MagicHiveBlockEntity.OUTPUT_SLOTS; i++) {
             int slotIndex = MagicHiveBlockEntity.BEE_SLOTS + i;
             int x = honeycombCenterX + HONEYCOMB_OFFSETS[i][0] - 8;
             int y = honeycombCenterY + HONEYCOMB_OFFSETS[i][1] - 8;
             addSlot(new OutputOnlySlot(container, slotIndex, x, y));
         }
-        
-        // Player inventory
-        addPlayerInventory(playerInventory, 8, 112);
-        addPlayerHotbar(playerInventory, 8, 170);
+
+        // Player inventory (centered in 216px container: (216-162)/2 = 27, slot at 28)
+        addPlayerInventory(playerInventory, 28, 122);
+        addPlayerHotbar(playerInventory, 28, 180);
     }
 
     /**
