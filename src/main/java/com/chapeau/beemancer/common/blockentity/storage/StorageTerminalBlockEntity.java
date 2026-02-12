@@ -78,6 +78,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     // Flag pour éviter de re-scanner pendant l'extraction par une bee
     private boolean isExtracting = false;
     private boolean isSaving = false;
+    private boolean isLoading = false;
     // Flags lus par le controller dans processTerminals()
     boolean needsDepositScan = false;
     boolean needsProcessPending = false;
@@ -95,6 +96,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
         @Override
         protected void onContentsChanged(int slot) {
+            if (isLoading) return;
             setChanged();
             if (!isExtracting) {
                 needsDepositScan = true;
@@ -112,6 +114,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
         @Override
         protected void onContentsChanged(int slot) {
+            if (isLoading) return;
             setChanged();
             if (getStackInSlot(slot).isEmpty()) {
                 needsProcessPending = true;
@@ -631,33 +634,38 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+        isLoading = true;
+        try {
+            super.loadAdditional(tag, registries);
 
-        if (tag.contains("ControllerPos")) {
-            NbtUtils.readBlockPos(tag, "ControllerPos").ifPresent(pos -> controllerPos = pos);
-        } else {
-            controllerPos = null;
-        }
+            if (tag.contains("ControllerPos")) {
+                NbtUtils.readBlockPos(tag, "ControllerPos").ifPresent(pos -> controllerPos = pos);
+            } else {
+                controllerPos = null;
+            }
 
-        if (tag.contains("DepositSlots")) {
-            depositSlots.deserializeNBT(registries, tag.getCompound("DepositSlots"));
-        }
-        if (tag.contains("PickupSlots")) {
-            pickupSlots.deserializeNBT(registries, tag.getCompound("PickupSlots"));
-        }
+            if (tag.contains("DepositSlots")) {
+                depositSlots.deserializeNBT(registries, tag.getCompound("DepositSlots"));
+            }
+            if (tag.contains("PickupSlots")) {
+                pickupSlots.deserializeNBT(registries, tag.getCompound("PickupSlots"));
+            }
 
-        // Charger les requêtes en attente
-        pendingRequests.clear();
-        if (tag.contains("PendingRequests")) {
-            ListTag pendingTag = tag.getList("PendingRequests", Tag.TAG_COMPOUND);
-            for (int i = 0; i < pendingTag.size(); i++) {
-                CompoundTag requestTag = pendingTag.getCompound(i);
-                ItemStack item = ItemStack.parseOptional(registries, requestTag.getCompound("Item"));
-                int count = requestTag.getInt("Count");
-                if (!item.isEmpty() && count > 0) {
-                    pendingRequests.add(new PendingRequest(item, count));
+            // Charger les requêtes en attente
+            pendingRequests.clear();
+            if (tag.contains("PendingRequests")) {
+                ListTag pendingTag = tag.getList("PendingRequests", Tag.TAG_COMPOUND);
+                for (int i = 0; i < pendingTag.size(); i++) {
+                    CompoundTag requestTag = pendingTag.getCompound(i);
+                    ItemStack item = ItemStack.parseOptional(registries, requestTag.getCompound("Item"));
+                    int count = requestTag.getInt("Count");
+                    if (!item.isEmpty() && count > 0) {
+                        pendingRequests.add(new PendingRequest(item, count));
+                    }
                 }
             }
+        } finally {
+            isLoading = false;
         }
     }
 

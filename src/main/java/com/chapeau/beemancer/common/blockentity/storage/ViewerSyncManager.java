@@ -55,6 +55,10 @@ class ViewerSyncManager {
         return !playersViewing.isEmpty();
     }
 
+    boolean hasFullSyncPending() {
+        return !fullSyncPending.isEmpty();
+    }
+
     void addViewer(UUID playerId, BlockPos terminalPos) {
         playersViewing.put(playerId, terminalPos);
         fullSyncPending.add(playerId);

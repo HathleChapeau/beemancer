@@ -84,6 +84,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     private static final int BASE_HONEY_CAPACITY = 8000;
     private int beeCapacity = ControllerStats.BASE_DROP;
     private int validationIndex = 0;
+    private boolean isLoading = false;
 
     // Honey buffer interne au controller
     private int honeyStored = 0;
@@ -116,6 +117,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
         @Override
         protected void onContentsChanged(int slot) {
+            if (isLoading) return;
             setChanged();
             recalculateBeeCapacity();
             recalculateHoneyCapacity();
@@ -796,42 +798,47 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+        isLoading = true;
+        try {
+            super.loadAdditional(tag, registries);
 
-        // Common: edit mode, connected nodes, chests (from abstract base)
-        loadCommon(tag);
+            // Common: edit mode, connected nodes, chests (from abstract base)
+            loadCommon(tag);
 
-        // Managers specifiques au controller
-        multiblockManager.load(tag);
-        deliveryManager.load(tag, registries);
-        requestManager.load(tag, registries);
+            // Managers specifiques au controller
+            multiblockManager.load(tag);
+            deliveryManager.load(tag, registries);
+            requestManager.load(tag, registries);
 
-        // Honey buffer (charger AVANT essence slots pour eviter clamping a 0)
-        if (tag.contains("HoneyStored")) {
-            honeyStored = tag.getInt("HoneyStored");
-        }
-
-        // Essence slots
-        if (tag.contains("EssenceSlots")) {
-            essenceSlots.deserializeNBT(registries, tag.getCompound("EssenceSlots"));
-        }
-        recalculateBeeCapacity();
-        recalculateHoneyCapacity();
-
-        // [BM] Coffres pris par d'autres reseaux (transient, depuis sync client)
-        takenChestPositions.clear();
-        if (tag.contains("TakenChests")) {
-            ListTag takenTag = tag.getList("TakenChests", Tag.TAG_COMPOUND);
-            for (int i = 0; i < takenTag.size(); i++) {
-                NbtUtils.readBlockPos(takenTag.getCompound(i), "Pos").ifPresent(takenChestPositions::add);
+            // Honey buffer (charger AVANT essence slots pour eviter clamping a 0)
+            if (tag.contains("HoneyStored")) {
+                honeyStored = tag.getInt("HoneyStored");
             }
-        }
 
-        // Registre central: charger ou migrer depuis l'ancien format
-        if (tag.contains("NetworkRegistry")) {
-            networkRegistry.load(tag);
-        } else {
-            migrateOldNetworkData(tag);
+            // Essence slots
+            if (tag.contains("EssenceSlots")) {
+                essenceSlots.deserializeNBT(registries, tag.getCompound("EssenceSlots"));
+            }
+            recalculateBeeCapacity();
+            recalculateHoneyCapacity();
+
+            // [BM] Coffres pris par d'autres reseaux (transient, depuis sync client)
+            takenChestPositions.clear();
+            if (tag.contains("TakenChests")) {
+                ListTag takenTag = tag.getList("TakenChests", Tag.TAG_COMPOUND);
+                for (int i = 0; i < takenTag.size(); i++) {
+                    NbtUtils.readBlockPos(takenTag.getCompound(i), "Pos").ifPresent(takenChestPositions::add);
+                }
+            }
+
+            // Registre central: charger ou migrer depuis l'ancien format
+            if (tag.contains("NetworkRegistry")) {
+                networkRegistry.load(tag);
+            } else {
+                migrateOldNetworkData(tag);
+            }
+        } finally {
+            isLoading = false;
         }
     }
 

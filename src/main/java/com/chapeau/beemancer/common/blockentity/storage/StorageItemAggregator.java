@@ -23,7 +23,6 @@
 package com.chapeau.beemancer.common.blockentity.storage;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -102,12 +101,12 @@ public class StorageItemAggregator {
 
     public void addViewer(UUID playerId, BlockPos terminalPos) {
         viewerSync.addViewer(playerId, terminalPos);
-        if (parent.getLevel() != null && !parent.getLevel().isClientSide()) {
-            ServerPlayer player = parent.getLevel().getServer().getPlayerList().getPlayer(playerId);
-            if (player != null) {
-                refreshAggregatedItems();
-            }
-        }
+        // Marquer dirty pour forcer un full scan+sync au prochain tickSync().
+        // Ne PAS appeler refreshAggregatedItems() ici: le StorageItemsSyncPacket
+        // serait envoye AVANT que le client ait cree le StorageTerminalMenu
+        // (openMenu envoie le ContainerSetMenuPacket APRES le return de createMenu).
+        // Le fullSyncPending serait consomme et le client ne recevrait jamais les items.
+        dirty = true;
     }
 
     public void removeViewer(UUID playerId) {
@@ -131,6 +130,8 @@ public class StorageItemAggregator {
     /**
      * Gere le timer de synchronisation periodique.
      * Refresh complet si dirty, sinon delta sync si viewers connectes.
+     * Si un viewer attend un full sync (vient d'ouvrir le menu), force un refresh
+     * des le prochain tick pour minimiser le delai d'affichage.
      */
     public void tickSync(long gameTick) {
         boolean hasViewers = viewerSync.hasViewers();
@@ -139,10 +140,13 @@ public class StorageItemAggregator {
             dirty = true;
         }
 
-        boolean shouldTick = ((gameTick + parent.getBlockPos().hashCode()) % SYNC_INTERVAL) == 0;
+        // Si un viewer attend un full sync, forcer un refresh au prochain tick
+        boolean hasFullSyncPending = viewerSync.hasFullSyncPending();
+        boolean shouldTick = hasFullSyncPending
+                || ((gameTick + parent.getBlockPos().hashCode()) % SYNC_INTERVAL) == 0;
         if (!shouldTick) return;
 
-        if (dirty) {
+        if (dirty || hasFullSyncPending) {
             refreshAggregatedItems();
             dirty = false;
             needsSync = false;

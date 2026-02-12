@@ -82,6 +82,9 @@ public class StorageDeliveryManager {
     private int idleTicks = 0;
     private boolean sleeping = false;
 
+    // Items a retourner au reseau apres le load (differe au premier tick)
+    private final List<ItemStack> deferredReturns = new ArrayList<>();
+
     // === Managers delegues ===
     private final HoneyEnergyManager honeyManager;
     private final DeliveryTaskLifecycle lifecycle;
@@ -303,6 +306,8 @@ public class StorageDeliveryManager {
     // === Tick ===
 
     public void tickDelivery(long gameTick) {
+        processDeferredReturns();
+
         if (deliveryQueue.isEmpty() && activeTasks.isEmpty()) {
             idleTicks++;
             if (idleTicks >= IDLE_SLEEP_THRESHOLD) {
@@ -359,6 +364,7 @@ public class StorageDeliveryManager {
 
         deliveryQueue.clear();
         activeTasks.clear();
+        deferredReturns.clear();
         if (tag.contains("DeliveryQueue")) {
             ListTag queueTag = tag.getList("DeliveryQueue", Tag.TAG_COMPOUND);
             for (int i = 0; i < queueTag.size(); i++) {
@@ -368,7 +374,8 @@ public class StorageDeliveryManager {
                         if (task.getInterfaceTaskId() != null) {
                             // Interface task: l'interface gere ses propres items
                         } else {
-                            returnPreloadedItems(task);
+                            // Differer au premier tick (ne pas acceder au monde pendant le load)
+                            deferredReturns.add(task.getTemplate().copyWithCount(task.getCount()));
                         }
                     } else {
                         deliveryQueue.add(task);
@@ -395,16 +402,24 @@ public class StorageDeliveryManager {
         }
     }
 
-    private void returnPreloadedItems(DeliveryTask task) {
+    /**
+     * Traite les items differes du load: depose dans les coffres ou drop au sol.
+     * Appele au premier tickDelivery apres le chargement du monde.
+     */
+    private void processDeferredReturns() {
+        if (deferredReturns.isEmpty()) return;
         if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
-        ItemStack toReturn = task.getTemplate().copyWithCount(task.getCount());
-        ItemStack remainder = parent.depositItem(toReturn);
-        if (!remainder.isEmpty()) {
-            Containers.dropItemStack(parent.getLevel(),
-                parent.getBlockPos().getX() + 0.5,
-                parent.getBlockPos().getY() + 1.0,
-                parent.getBlockPos().getZ() + 0.5,
-                remainder);
+
+        for (ItemStack toReturn : deferredReturns) {
+            ItemStack remainder = parent.depositItem(toReturn);
+            if (!remainder.isEmpty()) {
+                Containers.dropItemStack(parent.getLevel(),
+                    parent.getBlockPos().getX() + 0.5,
+                    parent.getBlockPos().getY() + 1.0,
+                    parent.getBlockPos().getZ() + 0.5,
+                    remainder);
+            }
         }
+        deferredReturns.clear();
     }
 }
