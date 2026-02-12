@@ -27,17 +27,22 @@ import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import com.chapeau.beemancer.core.registry.BeemancerEntities;
+import com.chapeau.beemancer.core.util.StorageHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -48,6 +53,9 @@ public class DeliveryBeeSpawner {
     private final DeliveryNetworkPathfinder pathfinder;
     private final DeliveryContainerOps containerOps;
     static final int MAX_RANGE = 30;
+
+    // [BD] Registre de bees par taskId: evite les scans AABB couteux
+    private final Map<UUID, WeakReference<DeliveryBeeEntity>> beeRegistry = new HashMap<>();
 
     public DeliveryBeeSpawner(StorageControllerBlockEntity parent,
                               DeliveryNetworkPathfinder pathfinder,
@@ -96,6 +104,14 @@ public class DeliveryBeeSpawner {
                 parent.setChanged();
                 return false;
             }
+            // [BH] Verifier que la destination peut recevoir des items (IItemHandler)
+            if (!(destBe instanceof NetworkInterfaceBlockEntity)
+                    && !(destBe instanceof StorageTerminalBlockEntity)) {
+                IItemHandler handler = StorageHelper.getItemHandler(level, destPos, null);
+                if (handler == null) {
+                    return false;
+                }
+            }
         }
 
         return true;
@@ -103,33 +119,47 @@ public class DeliveryBeeSpawner {
 
     /**
      * Spawne une abeille de livraison pour une tache donnee.
+     * [BE] Extraction atomique: pour les taches non-preloaded et non-interface,
+     * les items sont extraits du coffre AVANT le spawn pour eviter les TOCTOU.
      */
     boolean spawnDeliveryBee(DeliveryTask task) {
         if (!(parent.getLevel() instanceof ServerLevel serverLevel)) return false;
 
         if (!validateTaskTargets(task, serverLevel)) return false;
 
-        if (!task.isPreloaded()) {
-            int available = containerOps.countItemInChest(task.getTemplate(), task.getSourcePos());
-            if (available <= 0) return false;
-            if (available < task.getCount()) {
-                task.setCount(available);
-            }
-        }
-
-        BlockPos spawnPos = getSpawnPosBottom();
-        BlockPos returnPos = getSpawnPosTop();
-        if (spawnPos == null || returnPos == null) return false;
-
-        DeliveryBeeEntity bee = BeemancerEntities.DELIVERY_BEE.get().create(serverLevel);
-        if (bee == null) return false;
-
-        bee.setPos(spawnPos.getX() + 0.5, spawnPos.getY() + 0.5, spawnPos.getZ() + 0.5);
-
+        // [BE] Determiner les items a transporter
         ItemStack carried = ItemStack.EMPTY;
         if (task.isPreloaded()) {
             carried = task.getTemplate().copyWithCount(task.getCount());
+        } else if (task.getInterfaceTaskId() == null) {
+            // [BE] Extraction atomique: extraire AVANT de spawner
+            ItemStack extracted = containerOps.extractItemForDelivery(
+                task.getTemplate(), task.getCount(), task.getSourcePos());
+            if (extracted.isEmpty()) return false;
+            task.setCount(extracted.getCount());
+            carried = extracted;
         }
+        // Else: interface import task — la bee vole a la source pour extraire
+
+        BlockPos spawnPos = getSpawnPosBottom();
+        BlockPos returnPos = getSpawnPosTop();
+        if (spawnPos == null || returnPos == null) {
+            // Restituer les items si extraction deja faite
+            if (!carried.isEmpty() && !task.isPreloaded()) {
+                containerOps.depositItemForDelivery(carried, task.getSourcePos());
+            }
+            return false;
+        }
+
+        DeliveryBeeEntity bee = BeemancerEntities.DELIVERY_BEE.get().create(serverLevel);
+        if (bee == null) {
+            if (!carried.isEmpty() && !task.isPreloaded()) {
+                containerOps.depositItemForDelivery(carried, task.getSourcePos());
+            }
+            return false;
+        }
+
+        bee.setPos(spawnPos.getX() + 0.5, spawnPos.getY() + 1.0, spawnPos.getZ() + 0.5);
 
         bee.initDeliveryTask(
             parent.getBlockPos(),
@@ -146,10 +176,12 @@ public class DeliveryBeeSpawner {
             task.getInterfacePos()
         );
 
+        // Calculer les waypoints via relays
         List<BlockPos> pathToSource = List.of();
         List<BlockPos> pathToDest = List.of();
 
-        if (!task.isPreloaded()) {
+        // [BE] Si items deja sur la bee, pas besoin de voler a la source
+        if (carried.isEmpty()) {
             pathToSource = pathfinder.findPathToChest(task.getSourcePos(), task.getRequesterPos());
         }
         if (task.getDestPos() != null && !task.getDestPos().equals(parent.getBlockPos())) {
@@ -162,7 +194,16 @@ public class DeliveryBeeSpawner {
 
         bee.setAllWaypoints(pathToSource, transitWaypoints, homeWaypoints);
 
-        serverLevel.addFreshEntity(bee);
+        if (!serverLevel.addFreshEntity(bee)) {
+            // [BE] Spawn echoue: restituer les items extraits
+            if (!carried.isEmpty() && !task.isPreloaded()) {
+                containerOps.depositItemForDelivery(carried, task.getSourcePos());
+            }
+            return false;
+        }
+
+        // [BD] Enregistrer la bee dans le registre
+        beeRegistry.put(task.getTaskId(), new WeakReference<>(bee));
         return true;
     }
 
@@ -196,24 +237,17 @@ public class DeliveryBeeSpawner {
             bee.returnCarriedItemsToNetwork();
             bee.discard();
         }
+        // [BD] Vider le registre
+        beeRegistry.clear();
     }
 
     /**
-     * Rappelle la bee assignee a une tache active.
+     * [BD] Rappelle la bee assignee a une tache active via le registre.
      */
     void recallBeeForTask(DeliveryTask task) {
-        if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
-
-        List<DeliveryBeeEntity> bees = parent.getLevel().getEntitiesOfClass(
-            DeliveryBeeEntity.class,
-            new AABB(parent.getBlockPos()).inflate(MAX_RANGE),
-            bee -> parent.getBlockPos().equals(bee.getControllerPos())
-        );
-        for (DeliveryBeeEntity bee : bees) {
-            if (task.getTaskId().equals(bee.getTaskId())) {
-                bee.recall();
-                break;
-            }
+        DeliveryBeeEntity bee = findBeeForTask(task.getTaskId());
+        if (bee != null) {
+            bee.recall();
         }
     }
 
@@ -276,21 +310,18 @@ public class DeliveryBeeSpawner {
     }
 
     /**
-     * Trouve la bee assignee a une tache par taskId.
+     * [BD] Trouve la bee assignee a une tache via le registre O(1).
+     * Fallback: cleanup si la WeakReference est morte.
      */
     @Nullable
     DeliveryBeeEntity findBeeForTask(UUID taskId) {
-        if (parent.getLevel() == null) return null;
-
-        List<DeliveryBeeEntity> bees = parent.getLevel().getEntitiesOfClass(
-            DeliveryBeeEntity.class,
-            new AABB(parent.getBlockPos()).inflate(MAX_RANGE),
-            bee -> parent.getBlockPos().equals(bee.getControllerPos())
-        );
-        for (DeliveryBeeEntity bee : bees) {
-            if (taskId.equals(bee.getTaskId())) {
+        WeakReference<DeliveryBeeEntity> ref = beeRegistry.get(taskId);
+        if (ref != null) {
+            DeliveryBeeEntity bee = ref.get();
+            if (bee != null && bee.isAlive()) {
                 return bee;
             }
+            beeRegistry.remove(taskId);
         }
         return null;
     }

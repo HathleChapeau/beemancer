@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,6 +51,14 @@ public class MultiblockEvents {
      */
     public static void unregisterController(BlockPos pos) {
         activeControllers.remove(pos);
+    }
+
+    /**
+     * Retourne les positions de tous les controllers actifs (multibloc forme).
+     * Utilise par StorageEvents pour la deduplication inter-reseau [BM].
+     */
+    public static Set<BlockPos> getActiveControllers() {
+        return Collections.unmodifiableSet(activeControllers);
     }
 
     /**

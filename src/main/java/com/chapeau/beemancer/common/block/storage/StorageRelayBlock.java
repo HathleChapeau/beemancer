@@ -171,6 +171,10 @@ public class StorageRelayBlock extends BaseEntityBlock {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof StorageRelayBlockEntity relay)) return;
+        if (relay.getConnectedNodes().isEmpty()) return;
+
         new ParticleEmitter(BeemancerParticles.RUNE.get())
             .at(pos.getX() + 0.5, pos.getY() + 0.2, pos.getZ() + 0.5)
             .speed(0, 0.01, 0)

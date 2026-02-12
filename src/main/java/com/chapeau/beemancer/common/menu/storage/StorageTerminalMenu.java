@@ -72,7 +72,7 @@ import java.util.Optional;
  */
 public class StorageTerminalMenu extends AbstractContainerMenu {
 
-    // Slot ranges
+    // Slot ranges (menu slot indices, not container indices)
     public static final int DEPOSIT_START = 0;
     public static final int DEPOSIT_END = 9;
     public static final int PICKUP_START = 9;
@@ -81,10 +81,20 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public static final int CRAFT_END = 27;
     public static final int RESULT_INDEX = 27;
     public static final int ESSENCE_START = 28;
-    public static final int ESSENCE_END = 32;
-    public static final int PLAYER_START = 32;
-    public static final int PLAYER_END = 68;
-    public static final int TOTAL_SLOTS = 68;
+    public static final int ESSENCE_BASE_END = 32;
+    public static final int ESSENCE_BONUS_START = 32;
+    public static final int ESSENCE_END = 36;
+    public static final int PLAYER_START = 36;
+    public static final int PLAYER_END = 72;
+    public static final int TOTAL_SLOTS = 72;
+
+    // Pagination
+    public static final int DEPOSIT_PAGES = StorageTerminalBlockEntity.PAGES;
+    public static final int PICKUP_PAGES = StorageTerminalBlockEntity.PAGES;
+    public static final int BUTTON_DEPOSIT_NEXT = 100;
+    public static final int BUTTON_DEPOSIT_PREV = 101;
+    public static final int BUTTON_PICKUP_NEXT = 102;
+    public static final int BUTTON_PICKUP_PREV = 103;
 
     // ContainerData indices
     public static final int DATA_PENDING_COUNT = 0;
@@ -92,14 +102,20 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public static final int DATA_HONEY_DEPLETED = 2;
     public static final int DATA_FLIGHT_SPEED = 3;
     public static final int DATA_SEARCH_SPEED = 4;
-    public static final int DATA_CRAFT_SPEED = 5;
+    public static final int DATA_HONEY_RESERVE = 5;
     public static final int DATA_QUANTITY = 6;
     public static final int DATA_HONEY_CONSUMPTION = 7;
     public static final int DATA_HONEY_EFFICIENCY = 8;
     public static final int DATA_ACTIVE_TASKS = 9;
     public static final int DATA_QUEUED_TASKS = 10;
     public static final int DATA_MAX_BEES = 11;
-    public static final int DATA_SIZE = 12;
+    public static final int DATA_LINKED_HIVES = 12;
+    public static final int DATA_DEPOSIT_PAGE = 13;
+    public static final int DATA_PICKUP_PAGE = 14;
+    public static final int DATA_HONEY_STORED = 15;
+    public static final int DATA_HONEY_CAPACITY = 16;
+    public static final int DATA_HIVE_MULTIPLIER = 17;
+    public static final int DATA_SIZE = 18;
 
     // Slot positions — Left panel (deposit/craft/pickup stacked vertically)
     private static final int DEPOSIT_X = 23;
@@ -113,6 +129,7 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     // Controller tab essences (right panel)
     private static final int ESSENCE_X = 155;
     private static final int ESSENCE_Y = 80;
+    private static final int ESSENCE_BONUS_Y = 100;
     // Player inventory (right panel)
     private static final int PLAYER_INV_X = 89;
     private static final int PLAYER_INV_Y = 134;
@@ -124,12 +141,21 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     private final ContainerData data;
     private final Inventory playerInventory;
 
+    // Pagination state
+    private int depositPage = 0;
+    private int pickupPage = 0;
+    private final java.util.List<PaginatedTabSlot> depositPaginatedSlots = new java.util.ArrayList<>();
+    private final java.util.List<PaginatedTabSlot> pickupPaginatedSlots = new java.util.ArrayList<>();
+
     // Crafting
     private final TransientCraftingContainer craftingContainer;
     private final ResultContainer resultContainer = new ResultContainer();
 
     // Cache des items agrégés (pour affichage dans la GUI)
     private List<ItemStack> aggregatedItems = new ArrayList<>();
+    // Buffer pour accumulation des fragments lors d'un full sync fragmenté
+    @Nullable
+    private List<ItemStack> fullSyncBuffer = null;
 
     // Cache des tâches (pour onglet Tasks)
     private List<TaskDisplayData> taskDisplayData = new ArrayList<>();
@@ -142,7 +168,7 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         this(containerId, playerInventory, null,
              extraData.readBlockPos(),
              new SimpleContainerData(DATA_SIZE),
-             new ItemStackHandler(4));
+             new ItemStackHandler(com.chapeau.beemancer.common.blockentity.storage.HiveManager.MAX_ESSENCE_SLOTS));
     }
 
     // Server constructor
@@ -172,29 +198,36 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         // Crafting container
         this.craftingContainer = new TransientCraftingContainer(this, 3, 3);
 
-        // Container pour deposit/pickup (si serveur utilise le terminal, sinon dummy)
-        Container container;
+        // Handlers pour deposit/pickup (serveur: vrais handlers, client: dummy)
+        ItemStackHandler depositHandler;
+        ItemStackHandler pickupHandler;
         if (terminal != null) {
-            container = terminal;
+            depositHandler = terminal.getDepositSlots();
+            pickupHandler = terminal.getPickupSlots();
         } else {
-            container = new SimpleContainer(StorageTerminalBlockEntity.TOTAL_SLOTS);
+            depositHandler = new ItemStackHandler(StorageTerminalBlockEntity.DEPOSIT_SLOTS);
+            pickupHandler = new ItemStackHandler(StorageTerminalBlockEntity.PICKUP_SLOTS);
         }
 
-        // === Deposit slots (0-8) ===
+        // === Deposit slots (0-8, paginated) ===
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
-                int index = col + row * 3;
-                this.addSlot(new TabSlot(container, index,
-                    DEPOSIT_X + col * 18, DEPOSIT_Y + row * 18, StorageTab.STORAGE));
+                int slotInPage = col + row * 3;
+                PaginatedTabSlot slot = new PaginatedTabSlot(depositHandler, slotInPage,
+                    DEPOSIT_X + col * 18, DEPOSIT_Y + row * 18, StorageTab.STORAGE, true);
+                depositPaginatedSlots.add(slot);
+                this.addSlot(slot);
             }
         }
 
-        // === Pickup slots (9-17, output-only) ===
+        // === Pickup slots (9-17, output-only, paginated) ===
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
-                int index = StorageTerminalBlockEntity.DEPOSIT_SLOTS + col + row * 3;
-                this.addSlot(new OutputOnlyTabSlot(container, index,
-                    PICKUP_X + col * 18, PICKUP_Y + row * 18, StorageTab.STORAGE));
+                int slotInPage = col + row * 3;
+                PaginatedTabSlot slot = new PaginatedTabSlot(pickupHandler, slotInPage,
+                    PICKUP_X + col * 18, PICKUP_Y + row * 18, StorageTab.STORAGE, false);
+                pickupPaginatedSlots.add(slot);
+                this.addSlot(slot);
             }
         }
 
@@ -210,14 +243,22 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         this.addSlot(new TabResultSlot(playerInventory.player, craftingContainer,
             resultContainer, 0, RESULT_X, RESULT_Y, StorageTab.STORAGE));
 
-        // === Essence slots (28-31) ===
+        // === Base essence slots (28-31) ===
         for (int i = 0; i < 4; i++) {
             this.addSlot(new TabBeemancerSlot(essenceSlots, i,
                 ESSENCE_X + i * 20, ESSENCE_Y, StorageTab.CONTROLLER)
                 .withFilter(stack -> stack.is(BeemancerTags.Items.ESSENCES)));
         }
 
-        // === Player inventory (32-58) ===
+        // === Bonus essence slots (32-35, locked by hive count) ===
+        for (int i = 0; i < 4; i++) {
+            int slotIndex = 4 + i;
+            int requiredHives = i + 1;
+            this.addSlot(new DynamicTabEssenceSlot(essenceSlots, slotIndex,
+                ESSENCE_X + i * 20, ESSENCE_BONUS_Y, StorageTab.CONTROLLER, requiredHives));
+        }
+
+        // === Player inventory (36-62) ===
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 this.addSlot(new Slot(playerInventory, col + row * 9 + 9,
@@ -261,10 +302,10 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
                         yield com.chapeau.beemancer.common.block.storage.ControllerStats
                             .getSearchSpeed(controller.getEssenceSlots());
                     }
-                    case DATA_CRAFT_SPEED -> {
-                        if (controller == null) yield 100;
+                    case DATA_HONEY_RESERVE -> {
+                        if (controller == null) yield 0;
                         yield com.chapeau.beemancer.common.block.storage.ControllerStats
-                            .getCraftSpeed(controller.getEssenceSlots());
+                            .getHoneyCapacityBonus(controller.getEssenceSlots());
                     }
                     case DATA_QUANTITY -> {
                         if (controller == null) yield 32;
@@ -273,14 +314,19 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
                     }
                     case DATA_HONEY_CONSUMPTION -> {
                         if (controller == null) yield 0;
+                        boolean day = controller.getLevel() != null && controller.getLevel().isDay();
                         yield com.chapeau.beemancer.common.block.storage.ControllerStats
                             .getHoneyConsumption(controller.getEssenceSlots(),
-                                controller.getChestManager().getRegisteredChestCount());
+                                controller.getNetworkRegistry().getChestCount(),
+                                controller.getHiveMultiplier(),
+                                controller.getRelayCount(),
+                                controller.getInterfaceRelayCost(), day);
                     }
                     case DATA_HONEY_EFFICIENCY -> {
                         if (controller == null) yield 0;
+                        boolean day = controller.getLevel() != null && controller.getLevel().isDay();
                         yield com.chapeau.beemancer.common.block.storage.ControllerStats
-                            .getHoneyEfficiency(controller.getEssenceSlots());
+                            .getHoneyEfficiency(controller.getEssenceSlots(), day);
                     }
                     case DATA_ACTIVE_TASKS -> {
                         if (controller == null) yield 0;
@@ -293,6 +339,24 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
                     case DATA_MAX_BEES -> {
                         if (controller == null) yield 0;
                         yield controller.getMaxDeliveryBees();
+                    }
+                    case DATA_LINKED_HIVES -> {
+                        if (controller == null) yield 0;
+                        yield controller.getLinkedHiveCount();
+                    }
+                    case DATA_DEPOSIT_PAGE -> depositPage;
+                    case DATA_PICKUP_PAGE -> pickupPage;
+                    case DATA_HONEY_STORED -> {
+                        if (controller == null) yield 0;
+                        yield controller.getHoneyStored();
+                    }
+                    case DATA_HONEY_CAPACITY -> {
+                        if (controller == null) yield 0;
+                        yield controller.getHoneyCapacity();
+                    }
+                    case DATA_HIVE_MULTIPLIER -> {
+                        if (controller == null) yield 100;
+                        yield Math.round(controller.getHiveMultiplier() * 100.0f);
                     }
                     default -> 0;
                 };
@@ -467,12 +531,37 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
 
     public void setAggregatedItems(List<ItemStack> items) {
         this.aggregatedItems = items;
+        this.aggregatedItems.sort(java.util.Comparator.comparing(
+            stack -> stack.getHoverName().getString()
+        ));
+    }
+
+    /**
+     * Reçoit un fragment de full sync. Accumule les fragments jusqu'au dernier,
+     * puis trie et remplace la liste.
+     */
+    public void receiveFullSyncFragment(List<ItemStack> items, boolean lastFragment) {
+        if (!lastFragment) {
+            if (fullSyncBuffer == null) {
+                fullSyncBuffer = new ArrayList<>(items);
+            } else {
+                fullSyncBuffer.addAll(items);
+            }
+        } else {
+            if (fullSyncBuffer != null) {
+                fullSyncBuffer.addAll(items);
+                setAggregatedItems(fullSyncBuffer);
+                fullSyncBuffer = null;
+            } else {
+                setAggregatedItems(new ArrayList<>(items));
+            }
+        }
     }
 
     /**
      * Applique des deltas incrémentiels sur le cache local des items agrégés.
      * Chaque delta est un ItemStack: count > 0 = nouveau count pour cet item, count = 0 = item supprimé.
-     * Le delta utilise copyWithCount(1) comme clé de comparaison pour trouver l'item dans la liste.
+     * Utilise binary search pour insérer les nouveaux items à la bonne position (tri alphabétique maintenu).
      */
     public void applyDeltaItems(List<ItemStack> deltas) {
         for (ItemStack delta : deltas) {
@@ -492,12 +581,18 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
                 }
             }
             if (!found && deltaCount > 0) {
-                aggregatedItems.add(delta.copy());
+                // Binary search insert pour maintenir le tri alphabétique
+                String name = delta.getHoverName().getString();
+                int insertionPoint = java.util.Collections.binarySearch(
+                    aggregatedItems, delta,
+                    java.util.Comparator.comparing(s -> s.getHoverName().getString())
+                );
+                if (insertionPoint < 0) {
+                    insertionPoint = -(insertionPoint + 1);
+                }
+                aggregatedItems.add(insertionPoint, delta.copy());
             }
         }
-        aggregatedItems.sort(java.util.Comparator.comparing(
-            stack -> stack.getHoverName().getString()
-        ));
     }
 
     // === Accès aux Tâches ===
@@ -517,13 +612,61 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public boolean isHoneyDepleted() { return this.data.get(DATA_HONEY_DEPLETED) != 0; }
     public int getFlightSpeed() { return this.data.get(DATA_FLIGHT_SPEED); }
     public int getSearchSpeed() { return this.data.get(DATA_SEARCH_SPEED); }
-    public int getCraftSpeed() { return this.data.get(DATA_CRAFT_SPEED); }
+    public int getHoneyReserveBonus() { return this.data.get(DATA_HONEY_RESERVE); }
     public int getQuantity() { return this.data.get(DATA_QUANTITY); }
     public int getHoneyConsumption() { return this.data.get(DATA_HONEY_CONSUMPTION); }
     public int getHoneyEfficiency() { return this.data.get(DATA_HONEY_EFFICIENCY); }
     public int getActiveTaskCount() { return this.data.get(DATA_ACTIVE_TASKS); }
     public int getQueuedTaskCount() { return this.data.get(DATA_QUEUED_TASKS); }
     public int getMaxBees() { return this.data.get(DATA_MAX_BEES); }
+    public int getLinkedHiveCount() { return this.data.get(DATA_LINKED_HIVES); }
+    public int getHoneyStored() { return this.data.get(DATA_HONEY_STORED); }
+    public int getHoneyCapacity() { return this.data.get(DATA_HONEY_CAPACITY); }
+    public int getHiveMultiplier() { return this.data.get(DATA_HIVE_MULTIPLIER); }
+
+    /**
+     * Vérifie si un bonus slot essence (index 32-35) est déverrouillé.
+     */
+    public boolean isBonusSlotUnlocked(int slotIndex) {
+        if (slotIndex < ESSENCE_BONUS_START || slotIndex >= ESSENCE_END) return true;
+        net.minecraft.world.inventory.Slot slot = slots.get(slotIndex);
+        if (slot instanceof DynamicTabEssenceSlot dynamicSlot) {
+            return dynamicSlot.isUnlocked();
+        }
+        return true;
+    }
+
+    public int getDepositPage() { return this.data.get(DATA_DEPOSIT_PAGE); }
+    public int getPickupPage() { return this.data.get(DATA_PICKUP_PAGE); }
+
+    public void setDepositPage(int page) {
+        page = Math.max(0, Math.min(page, DEPOSIT_PAGES - 1));
+        this.depositPage = page;
+        int offset = page * StorageTerminalBlockEntity.PAGE_SIZE;
+        for (PaginatedTabSlot slot : depositPaginatedSlots) {
+            slot.setPageOffset(offset);
+        }
+    }
+
+    public void setPickupPage(int page) {
+        page = Math.max(0, Math.min(page, PICKUP_PAGES - 1));
+        this.pickupPage = page;
+        int offset = page * StorageTerminalBlockEntity.PAGE_SIZE;
+        for (PaginatedTabSlot slot : pickupPaginatedSlots) {
+            slot.setPageOffset(offset);
+        }
+    }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        return switch (id) {
+            case BUTTON_DEPOSIT_NEXT -> { setDepositPage(depositPage + 1); yield true; }
+            case BUTTON_DEPOSIT_PREV -> { setDepositPage(depositPage - 1); yield true; }
+            case BUTTON_PICKUP_NEXT -> { setPickupPage(pickupPage + 1); yield true; }
+            case BUTTON_PICKUP_PREV -> { setPickupPage(pickupPage - 1); yield true; }
+            default -> false;
+        };
+    }
 
     public BlockPos getBlockPos() { return blockPos; }
 
@@ -535,6 +678,51 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     }
 
     // === Inner Classes ===
+
+    /**
+     * Slot paginé lié à un onglet. Accède à un ItemStackHandler avec un offset de page.
+     * Le paramètre allowPlace contrôle si les items peuvent être déposés (false pour pickup).
+     */
+    private class PaginatedTabSlot extends Slot {
+        private final ItemStackHandler handler;
+        private final int slotInPage;
+        private final StorageTab requiredTab;
+        private final boolean allowPlace;
+        private int pageOffset = 0;
+
+        PaginatedTabSlot(ItemStackHandler handler, int slotInPage, int x, int y,
+                          StorageTab tab, boolean allowPlace) {
+            super(new SimpleContainer(1), 0, x, y);
+            this.handler = handler;
+            this.slotInPage = slotInPage;
+            this.requiredTab = tab;
+            this.allowPlace = allowPlace;
+        }
+
+        void setPageOffset(int offset) { this.pageOffset = offset; }
+        private int actualSlot() { return slotInPage + pageOffset; }
+
+        @Override public ItemStack getItem() {
+            int s = actualSlot();
+            return s < handler.getSlots() ? handler.getStackInSlot(s) : ItemStack.EMPTY;
+        }
+
+        @Override public void set(ItemStack stack) {
+            int s = actualSlot();
+            if (s < handler.getSlots()) handler.setStackInSlot(s, stack);
+        }
+
+        @Override public ItemStack remove(int amount) {
+            int s = actualSlot();
+            return s < handler.getSlots() ? handler.extractItem(s, amount, false) : ItemStack.EMPTY;
+        }
+
+        @Override public int getMaxStackSize() { return handler.getSlotLimit(actualSlot()); }
+        @Override public boolean hasItem() { return !getItem().isEmpty(); }
+        @Override public boolean mayPlace(ItemStack stack) { return allowPlace; }
+        @Override public boolean isActive() { return activeTab == requiredTab; }
+        @Override public void setChanged() { }
+    }
 
     /**
      * Slot lié à un onglet. isActive() retourne false quand l'onglet n'est pas actif.
@@ -607,6 +795,45 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         @Override
         public boolean isActive() {
             return activeTab == requiredTab;
+        }
+    }
+
+    /**
+     * Slot essence dynamique lié à un onglet: toujours rendu (isActive suit l'onglet)
+     * mais verrouillé tant que le nombre de hives liées est insuffisant.
+     * requiredHives=1 signifie qu'il faut au moins 1 hive pour déverrouiller ce slot.
+     */
+    private class DynamicTabEssenceSlot extends BeemancerSlot {
+        private final StorageTab requiredTab;
+        private final int requiredHives;
+
+        public DynamicTabEssenceSlot(ItemStackHandler handler, int index, int x, int y,
+                                      StorageTab tab, int requiredHives) {
+            super(handler, index, x, y);
+            this.requiredTab = tab;
+            this.requiredHives = requiredHives;
+            withFilter(stack -> stack.is(BeemancerTags.Items.ESSENCES));
+        }
+
+        @Override
+        public boolean isActive() {
+            return activeTab == requiredTab;
+        }
+
+        public boolean isUnlocked() {
+            return data.get(DATA_LINKED_HIVES) >= requiredHives;
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            if (!isUnlocked()) return false;
+            return super.mayPlace(stack);
+        }
+
+        @Override
+        public boolean mayPickup(Player player) {
+            if (!isUnlocked()) return false;
+            return super.mayPickup(player);
         }
     }
 }

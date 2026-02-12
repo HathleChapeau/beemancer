@@ -63,9 +63,10 @@ public class EssenceItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
 
-        // Afficher le type et le niveau avec étoiles
         tooltip.add(Component.translatable("item.beemancer.essence.type." + type.getSerializedName())
                 .withStyle(type.getColor()));
+        tooltip.add(Component.translatable("item.beemancer.essence.role." + type.getSerializedName())
+                .withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal(formatStars(level.getValue()))
                 .withStyle(ChatFormatting.GRAY));
     }

@@ -122,13 +122,21 @@ TACHES:
   - Supprime: type field
 
 MANAGERS:
-- common/blockentity/storage/StorageDeliveryManager.java (1337L -> 592L, orchestrateur mince)
+- common/blockentity/storage/StorageDeliveryManager.java (1337L -> 592L -> ~405L [G3])
   - Adapte spawn/cancel/validate au flux unifie, recallBeeForTask, item recovery
-  - Delegue a 4 helpers extraits:
+  - [G3] Decompose en orchestrateur + 3 sous-managers:
+    - HoneyEnergyManager.java (~100L) — Consommation miel multibloc
+    - DeliveryTaskLifecycle.java (~140L) — Completion, echec, retry backoff
+    - DeliveryTaskCanceller.java (~155L) — Annulation iterative + dependances
+  - Delegue aussi a 4 helpers (inchanges):
     - DeliveryNetworkPathfinder.java (222L) — BFS pathfinding dans le graphe reseau
     - DeliveryContainerOps.java (169L) — Recherche/extraction/depot dans coffres
     - DeliveryTaskDisplayBuilder.java (230L) — Construction donnees affichage Tasks tab
     - DeliveryBeeSpawner.java (297L) — Spawn, recall, redirect, kill bees
+- common/blockentity/storage/RequestManager.java (514L -> ~240L [G3])
+  - [G3] Decompose en orchestrateur + 2 sous-managers:
+    - RequestQueue.java (~150L) — Collection indexee + requetes O(1)
+    - RequestProcessor.java (~160L) — Traitement import/export/validation
 - common/blockentity/storage/StorageControllerBlockEntity.java
   - Ajoute RequestManager (field, tick, NBT, accesseur)
 - common/blockentity/storage/StorageTerminalBlockEntity.java

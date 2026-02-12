@@ -1,99 +1,510 @@
 ################################################################################
 #                       ARBORESCENCE COMPLÈTE                                  #
+#                    Dernière mise à jour: 2026-02-11                          #
 ################################################################################
 
 src/main/java/com/chapeau/beemancer/
 │
-├── Beemancer.java                      # [CORE] Point d'entrée du mod
+├── Beemancer.java                         # [CORE] Point d'entrée du mod
 │
-├── core/                               # === FONDATIONS UNIVERSELLES ===
+├── core/                                  # === FONDATIONS UNIVERSELLES ===
 │   ├── registry/
 │   │   ├── BeemancerItems.java
 │   │   ├── BeemancerBlocks.java
 │   │   ├── BeemancerBlockEntities.java
 │   │   ├── BeemancerEntities.java
 │   │   ├── BeemancerMenus.java
-│   │   └── BeemancerCreativeTabs.java
+│   │   ├── BeemancerCreativeTabs.java
+│   │   ├── BeemancerFluids.java
+│   │   ├── BeemancerParticles.java
+│   │   ├── BeemancerSounds.java
+│   │   ├── BeemancerAttachments.java
+│   │   └── BeemancerTags.java
 │   │
-│   ├── gene/                           # === SYSTÈME DE GÈNES ===
+│   ├── gene/                              # Système de gènes
 │   │   ├── Gene.java
 │   │   ├── AbstractGene.java
 │   │   ├── GeneCategory.java
 │   │   ├── GeneRegistry.java
 │   │   └── BeeGeneData.java
 │   │
-│   ├── behavior/                       # === SYSTÈME DE COMPORTEMENT ===
+│   ├── behavior/                          # Système de comportement
 │   │   ├── BeeBehaviorType.java
 │   │   ├── BeeBehaviorConfig.java
 │   │   ├── BeeBehaviorManager.java
-│   │   ├── LootEntry.java
-│   │   └── SpeedThreshold.java
+│   │   └── LootEntry.java
+│   │
+│   ├── bee/                               # Données abeilles
+│   │   ├── BeeSpeciesManager.java
+│   │   └── BiomeTemperatureManager.java
 │   │
 │   ├── breeding/
 │   │   └── BreedingManager.java
 │   │
-│   ├── util/
-│   │   ├── FlowerSearchHelper.java
-│   │   ├── HarvestHelper.java
-│   │   └── StorageHelper.java
+│   ├── command/
+│   │   └── BeemancerCommands.java
 │   │
-│   └── network/
+│   ├── multiblock/                        # Système multibloc
+│   │   ├── BlockIORule.java
+│   │   ├── BlockMatcher.java
+│   │   ├── IOMode.java
+│   │   ├── MultiblockCapabilityProvider.java
+│   │   ├── MultiblockController.java
+│   │   ├── MultiblockEvents.java
+│   │   ├── MultiblockIOConfig.java
+│   │   ├── MultiblockPattern.java
+│   │   ├── MultiblockPatterns.java
+│   │   ├── MultiblockProperty.java
+│   │   └── MultiblockValidator.java
+│   │
+│   ├── recipe/                            # Recettes
+│   │   ├── AltarRecipeInput.java
+│   │   ├── BeemancerRecipeSerializers.java
+│   │   ├── BeemancerRecipeTypes.java
+│   │   ├── FluidIngredient.java
+│   │   ├── ProcessingOutput.java
+│   │   ├── ProcessingRecipeInput.java
+│   │   └── type/
+│   │       ├── AltarRecipe.java
+│   │       ├── CentrifugeRecipe.java
+│   │       ├── CrystallizingRecipe.java
+│   │       ├── DistillingRecipe.java
+│   │       └── InfusingRecipe.java
+│   │
+│   ├── util/                              # Utilitaires partagés
+│   │   ├── ContainerHelper.java           # IItemHandler operations
+│   │   ├── FlowerSearchHelper.java
+│   │   ├── ParticleHelper.java            # Spawn particules (EffectType)
+│   │   ├── SplitFluidHandler.java         # Wrapper fluid in/out
+│   │   ├── SplitItemHandler.java          # Wrapper item in/out
+│   │   └── StorageHelper.java             # IItemHandler capability access
+│   │
+│   └── network/                           # Packets réseau
 │       ├── BeemancerNetwork.java
 │       └── packets/
-│           ├── BeeCreatorActionPacket.java
-│           ├── StorageRequestPacket.java
-│           └── StorageItemsSyncPacket.java
+│           ├── CodexFirstOpenPacket.java
+│           ├── CodexSyncPacket.java
+│           ├── CodexUnlockPacket.java
+│           ├── HoverbikeVariantPacket.java
+│           ├── InterfaceActionPacket.java
+│           ├── QuestSyncPacket.java
+│           ├── StorageItemsSyncPacket.java     # Full/delta items sync
+│           ├── StorageRequestPacket.java       # Player request item
+│           ├── StorageTaskCancelPacket.java    # Player cancel task
+│           └── StorageTasksSyncPacket.java     # Task display data sync
 │
-├── common/                             # === LOGIQUE PARTAGÉE ===
+├── common/                                # === LOGIQUE PARTAGÉE ===
 │   ├── block/
-│   │   ├── storage/
-│   │   ├── beecreator/
-│   │   ├── hive/
+│   │   ├── alchemy/
+│   │   │   ├── AbstractPipeBlock.java         # Base commune pipes
+│   │   │   ├── AlembicHeartBlock.java
+│   │   │   ├── CentrifugeHeartBlock.java
+│   │   │   ├── CrankBlock.java
+│   │   │   ├── CreativeTankBlock.java
+│   │   │   ├── CrystallizerBlock.java
+│   │   │   ├── HoneyPipeBlock.java
+│   │   │   ├── HoneyTankBlock.java
+│   │   │   ├── InfuserBlock.java
+│   │   │   ├── InfuserHeartBlock.java
+│   │   │   ├── ItemPipeBlock.java
+│   │   │   ├── ManualCentrifugeBlock.java
+│   │   │   ├── MultiblockTankBlock.java
+│   │   │   └── PoweredCentrifugeBlock.java
+│   │   │
+│   │   ├── altar/
+│   │   │   ├── AltarHeartBlock.java
+│   │   │   ├── HoneyAltarMultiblock.java
+│   │   │   ├── HoneyCrystalBlock.java
+│   │   │   ├── HoneyCrystalConduitBlock.java
+│   │   │   ├── HoneyPedestalBlock.java
+│   │   │   ├── HoneyReservoirBlock.java
+│   │   │   ├── HoneyedSlabBlock.java
+│   │   │   ├── HoneyedStoneBlock.java
+│   │   │   └── HoneyedStoneStairBlock.java
+│   │   │
+│   │   ├── building/
+│   │   │   ├── HoneyedGlassBlock.java
+│   │   │   ├── HoneyedStoneWallBlock.java
+│   │   │   ├── IronFoundationBlock.java
+│   │   │   └── RoyalGoldBlock.java
+│   │   │
 │   │   ├── crystal/
-│   │   └── incubator/
+│   │   │   └── MagicBreedingCrystalBlock.java
+│   │   │
+│   │   ├── extractor/
+│   │   │   └── ExtractorHeartBlock.java
+│   │   │
+│   │   ├── hive/
+│   │   │   ├── HiveBeeLifecycleManager.java
+│   │   │   ├── HiveBeeSlot.java
+│   │   │   ├── HiveConfig.java
+│   │   │   ├── HiveFlowerPool.java
+│   │   │   ├── HiveMultiblockBlock.java
+│   │   │   ├── HiveMultiblockBlockEntity.java
+│   │   │   ├── IHiveBeeHost.java
+│   │   │   ├── IHiveInternals.java
+│   │   │   ├── MagicHiveBlock.java
+│   │   │   └── MagicHiveBlockEntity.java
+│   │   │
+│   │   ├── incubator/
+│   │   │   ├── IncubatorBlock.java
+│   │   │   └── IncubatorBlockEntity.java
+│   │   │
+│   │   ├── pollenpot/
+│   │   │   ├── PollenPotBlock.java
+│   │   │   ├── PollenPotBlockEntity.java
+│   │   │   └── PollenPotEvents.java
+│   │   │
+│   │   ├── statue/
+│   │   │   ├── BeeStatueBlock.java
+│   │   │   └── BeeStatueBlockEntity.java
+│   │   │
+│   │   └── storage/                           # Réseau de stockage — blocs
+│   │       ├── ControlledHiveBlock.java
+│   │       ├── ControllerPipeBlock.java
+│   │       ├── ControllerStats.java           # Formules stats controller
+│   │       ├── DeliveryTask.java
+│   │       ├── ExportInterfaceBlock.java
+│   │       ├── ImportInterfaceBlock.java
+│   │       ├── InterfaceRequest.java
+│   │       ├── InterfaceTask.java
+│   │       ├── StorageControllerBlock.java
+│   │       ├── StorageEditModeHandler.java
+│   │       ├── StorageEvents.java
+│   │       ├── StorageHiveBlock.java
+│   │       ├── StorageRelayBlock.java
+│   │       ├── StorageTerminalBlock.java
+│   │       └── TaskDisplayData.java
 │   │
-│   ├── item/bee/
-│   │   ├── MagicBeeItem.java
-│   │   ├── BeeLarvaItem.java
-│   │   └── BeeWandItem.java
+│   ├── blockentity/
+│   │   ├── alchemy/
+│   │   │   ├── AlembicHeartBlockEntity.java
+│   │   │   ├── CentrifugeHeartBlockEntity.java
+│   │   │   ├── CrankBlockEntity.java
+│   │   │   ├── CreativeTankBlockEntity.java
+│   │   │   ├── CrystallizerBlockEntity.java
+│   │   │   ├── HoneyPipeBlockEntity.java
+│   │   │   ├── HoneyTankBlockEntity.java
+│   │   │   ├── InfuserBlockEntity.java
+│   │   │   ├── InfuserHeartBlockEntity.java
+│   │   │   ├── ItemPipeBlockEntity.java
+│   │   │   ├── ManualCentrifugeBlockEntity.java
+│   │   │   ├── MultiblockTankBlockEntity.java
+│   │   │   └── PoweredCentrifugeBlockEntity.java
+│   │   │
+│   │   ├── altar/
+│   │   │   ├── AltarHeartBlockEntity.java
+│   │   │   ├── HoneyPedestalBlockEntity.java
+│   │   │   └── HoneyReservoirBlockEntity.java
+│   │   │
+│   │   ├── extractor/
+│   │   │   └── ExtractorHeartBlockEntity.java
+│   │   │
+│   │   └── storage/                           # Réseau de stockage — logique
+│   │       ├── AbstractNetworkNodeBlockEntity.java
+│   │       ├── AggregationCache.java          # [G2] Caches items, fingerprints, index
+│   │       ├── ControllerPipeBlockEntity.java
+│   │       ├── DeliveryBeeSpawner.java         # [G3] +bee registry, atomic extract
+│   │       ├── DeliveryContainerOps.java
+│   │       ├── DeliveryNetworkPathfinder.java
+│   │       ├── DeliveryTaskCanceller.java     # [G3] Annulation taches + dependances
+│   │       ├── DeliveryTaskDisplayBuilder.java
+│   │       ├── DeliveryTaskLifecycle.java     # [G3] Completion, echec, retry
+│   │       ├── DepositStrategy.java           # [G2] Depot/extraction 5 passes
+│   │       ├── ExportInterfaceBlockEntity.java
+│   │       ├── HiveManager.java               # [G1] Gestion hives liees
+│   │       ├── HoneyEnergyManager.java        # [G3] Consommation miel multibloc
+│   │       ├── IDeliveryEndpoint.java
+│   │       ├── INetworkNode.java
+│   │       ├── ImportInterfaceBlockEntity.java
+│   │       ├── InterfaceFilter.java
+│   │       ├── InterfaceFilterManager.java      # [G4] Gestion filtres interfaces
+│   │       ├── InterfaceTaskManager.java        # [G4] Gestion tasks interfaces (Map UUID)
+│   │       ├── ItemStackKey.java              # [G2] Cle agregation item+components
+│   │       ├── NetworkInterfaceBlockEntity.java
+│   │       ├── RequestManager.java            # [G3] Orchestrateur demandes (delegue)
+│   │       ├── RequestProcessor.java          # [G3] Traitement import/export/validation
+│   │       ├── RequestQueue.java              # [G3] Collection + index demandes
+│   │       ├── StorageChestManager.java
+│   │       ├── StorageControllerBlockEntity.java  # [G3] +takenChestPositions
+│   │       ├── StorageDeliveryManager.java    # [G3] Orchestrateur livraison (delegue)
+│   │       ├── StorageHiveBlockEntity.java
+│   │       ├── StorageItemAggregator.java     # [G2] Coordinateur (délègue)
+│   │       ├── StorageMultiblockManager.java
+│   │       ├── StorageNetworkRegistry.java
+│   │       ├── StorageRelayBlockEntity.java
+│   │       ├── StorageTerminalBlockEntity.java  # [G2] 27 slots, pagination
+│   │       └── ViewerSyncManager.java         # [G2] Sync viewers, delta, fragments
 │   │
-│   ├── block/alchemy/
-│   │   ├── AbstractPipeBlock.java         # Base commune HoneyPipe + ItemPipe
-│   │   ├── HoneyPipeBlock.java
-│   │   └── ItemPipeBlock.java
+│   ├── codex/
+│   │   ├── CodexJsonLoader.java
+│   │   ├── CodexManager.java
+│   │   ├── CodexNode.java
+│   │   ├── CodexNodeCategory.java
+│   │   ├── CodexPage.java
+│   │   ├── CodexPlayerData.java
+│   │   └── book/
+│   │       ├── CodexBookContent.java
+│   │       ├── CodexBookManager.java
+│   │       ├── CodexBookSection.java
+│   │       ├── HeaderSection.java
+│   │       ├── ImageSection.java
+│   │       ├── ModelSection.java
+│   │       ├── StatsSection.java
+│   │       ├── StickyNote.java
+│   │       └── TextSection.java
+│   │
+│   ├── entity/
+│   │   ├── bee/
+│   │   │   ├── BeeAIStateMachine.java
+│   │   │   ├── BeeActivityState.java
+│   │   │   ├── BeePathfinding.java
+│   │   │   ├── MagicBeeEntity.java
+│   │   │   └── goal/
+│   │   │       ├── BeeRevengeGoal.java
+│   │   │       ├── ForagingBehaviorGoal.java
+│   │   │       ├── MoveToTargetGoal.java
+│   │   │       └── ReturnToHiveWhenLowHealthGoal.java
+│   │   │
+│   │   ├── delivery/
+│   │   │   ├── DeliveryBeeEntity.java
+│   │   │   └── DeliveryPhaseGoal.java
+│   │   │
+│   │   └── mount/
+│   │       ├── HoverbikeEntity.java
+│   │       ├── HoverbikeMode.java
+│   │       ├── HoverbikePart.java
+│   │       ├── HoverbikePhysics.java
+│   │       └── HoverbikeSettings.java
+│   │
+│   ├── event/
+│   │   └── BeeInteractionHandler.java
+│   │
+│   ├── fluid/
+│   │   └── HoneyFluid.java
+│   │
+│   ├── item/
+│   │   ├── bee/
+│   │   │   ├── BeeLarvaItem.java
+│   │   │   └── MagicBeeItem.java
+│   │   ├── codex/
+│   │   │   └── CodexItem.java
+│   │   ├── debug/
+│   │   │   ├── DebugDisplayEntry.java
+│   │   │   └── DebugWandItem.java
+│   │   ├── essence/
+│   │   │   └── EssenceItem.java
+│   │   ├── mount/
+│   │   │   └── HoverbikeSpawnItem.java
+│   │   └── tool/
+│   │       └── BuildingWandItem.java
 │   │
 │   ├── menu/
-│   │   ├── BeemancerMenu.java             # Base menus (player inv/hotbar)
-│   │   └── slot/
+│   │   ├── BeemancerMenu.java                 # Base menus (player inv/hotbar)
+│   │   ├── IncubatorMenu.java
+│   │   ├── MagicHiveMenu.java
+│   │   ├── alchemy/
+│   │   │   ├── AlembicMenu.java
+│   │   │   ├── CreativeTankMenu.java
+│   │   │   ├── CrystallizerMenu.java
+│   │   │   ├── HoneyTankMenu.java
+│   │   │   ├── InfuserMenu.java
+│   │   │   ├── ManualCentrifugeMenu.java
+│   │   │   ├── MultiblockTankMenu.java
+│   │   │   └── PoweredCentrifugeMenu.java
+│   │   ├── slot/
+│   │   │   ├── BeeAssignmentSlot.java
+│   │   │   ├── GhostSlot.java
+│   │   │   └── OutputOnlySlot.java
+│   │   └── storage/
+│   │       ├── NetworkInterfaceMenu.java
+│   │       └── StorageTerminalMenu.java       # [G2] +PaginatedTabSlot, 8 essences
 │   │
-│   ├── entity/bee/
-│   │   ├── MagicBeeEntity.java
-│   │   ├── BeeActivityState.java
-│   │   ├── BeeInventory.java
-│   │   └── goal/
-│   │       ├── MoveToTargetGoal.java      # Navigation manuelle (BeeWand)
+│   └── quest/
+│       ├── NodeState.java
+│       ├── NodeVisibility.java
+│       ├── Quest.java
+│       ├── QuestEvents.java
+│       ├── QuestManager.java
+│       ├── QuestPlayerData.java
+│       └── QuestType.java
+│
+├── content/                               # === CONTENU PAR FEATURE ===
+│   ├── flywheeltest/
+│   │   ├── BeeSpawnerBlock.java
+│   │   └── FlywheelTestBeeEntity.java
 │   │
-│   └── menu/
-│       └── slot/
+│   └── gene/
+│       ├── GeneInit.java
+│       ├── environment/
+│       │   ├── EnvironmentGene.java
+│       │   ├── NocturnalEnvironmentGene.java
+│       │   ├── NormalEnvironmentGene.java
+│       │   └── RobustEnvironmentGene.java
+│       ├── flower/
+│       │   ├── CavePlantsFlowerGene.java
+│       │   ├── CropsFlowerGene.java
+│       │   ├── CrystalsFlowerGene.java
+│       │   ├── FlowerGene.java
+│       │   ├── FlowersFlowerGene.java
+│       │   ├── MushroomsFlowerGene.java
+│       │   ├── NetherWartFlowerGene.java
+│       │   └── TreesFlowerGene.java
+│       └── species/
+│           └── DataDrivenSpeciesGene.java
 │
-├── content/gene/                       # === CONTENU PAR FEATURE ===
-│   ├── GeneInit.java
-│   ├── species/
-│   ├── environment/
-│   ├── flower/
-│   └── lifetime/
-│
-└── client/
+└── client/                                # === CLIENT UNIQUEMENT ===
     ├── ClientSetup.java
-    ├── renderer/
+    ├── HoverbikeEditModeEffect.java
+    │
+    ├── animation/                         # Framework animation
+    │   ├── Animation.java
+    │   ├── AnimationController.java
+    │   ├── AltarConduitAnimator.java
+    │   ├── AltarCraftAnimator.java
+    │   ├── IAnimatable.java
+    │   ├── MoveAnimation.java
+    │   ├── RotateAnimation.java
+    │   ├── Sequence.java
+    │   ├── SequenceEntry.java
+    │   ├── TimingEffect.java
+    │   └── TimingType.java
+    │
+    ├── camera/
+    │   └── HoverbikeCameraController.java
+    │
+    ├── color/
+    │   └── PollenTextures.java
+    │
+    ├── gui/
+    │   ├── GuiRenderHelper.java               # Rendu programmatique GUIs
+    │   │
+    │   ├── hud/
+    │   │   ├── DebugPanelRenderer.java
+    │   │   ├── HoverbikeDebugHud.java
+    │   │   ├── HoverbikeEditModeHandler.java
+    │   │   ├── HoverbikeEditStatsHud.java
+    │   │   ├── HoverbikeGaugeHud.java
+    │   │   └── HoverbikePartPicker.java
+    │   │
+    │   ├── screen/
+    │   │   ├── AbstractBeemancerScreen.java   # Base commune screens
+    │   │   ├── CodexBookScreen.java
+    │   │   ├── CodexScreen.java
+    │   │   ├── DebugImageScreen.java
+    │   │   ├── HoverbikePartScreen.java
+    │   │   ├── IncubatorScreen.java
+    │   │   ├── MagicHiveScreen.java
+    │   │   │
+    │   │   ├── alchemy/
+    │   │   │   ├── AlembicScreen.java
+    │   │   │   ├── CreativeTankScreen.java
+    │   │   │   ├── CrystallizerScreen.java
+    │   │   │   ├── HoneyTankScreen.java
+    │   │   │   ├── InfuserScreen.java
+    │   │   │   ├── ManualCentrifugeScreen.java
+    │   │   │   ├── MultiblockTankScreen.java
+    │   │   │   └── PoweredCentrifugeScreen.java
+    │   │   │
+    │   │   ├── codex/
+    │   │   │   ├── BeeTreePageRenderer.java
+    │   │   │   ├── BookPageLayout.java
+    │   │   │   ├── CodexDecorationRenderer.java
+    │   │   │   ├── CodexPageRenderer.java
+    │   │   │   └── StandardPageRenderer.java
+    │   │   │
+    │   │   └── storage/                       # [G2] StorageControllerScreen supprimé
+    │   │       ├── AdjacentGuiOverlayRenderer.java
+    │   │       ├── NetworkInterfaceScreen.java
+    │   │       ├── StorageTab.java
+    │   │       ├── StorageTerminalScreen.java     # [G2] +page arrows
+    │   │       ├── TerminalRequestPopup.java
+    │   │       ├── TerminalStorageTabRenderer.java
+    │   │       └── TerminalTasksTabRenderer.java
+    │   │
     │   ├── util/
-    │   │   ├── FluidCubeRenderer.java     # Rendu fluide 6 faces partagé
-    │   │   └── DebugRenderHelper.java     # Lignes et cubes debug partagés
-    │   ├── block/                         # Renderers de blocs
-    │   └── debug/                         # Renderers debug
-    └── gui/
-        ├── screen/
-        └── hud/                        # === HUD OVERLAYS ===
-            └── WandOverlayRenderer.java
+    │   │   └── LineDrawingHelper.java
+    │   │
+    │   └── widget/
+    │       ├── BeeNodeWidget.java
+    │       ├── BeemancerSlot.java
+    │       ├── CodexNodeWidget.java
+    │       ├── FluidGaugeWidget.java
+    │       └── PlayerInventoryWidget.java
+    │
+    ├── input/
+    │   └── DebugKeyHandler.java
+    │
+    ├── model/
+    │   ├── HoverbikeModel.java
+    │   └── hoverbike/
+    │       ├── ChassisPartModel.java
+    │       ├── ChassisPartModelB.java
+    │       ├── ChassisPartModelC.java
+    │       ├── CoeurPartModel.java
+    │       ├── CoeurPartModelB.java
+    │       ├── CoeurPartModelC.java
+    │       ├── HoverbikePartModel.java
+    │       ├── HoverbikePartVariants.java
+    │       ├── PropulseurPartModel.java
+    │       ├── PropulseurPartModelB.java
+    │       ├── PropulseurPartModelC.java
+    │       ├── RadiateurPartModel.java
+    │       ├── RadiateurPartModelB.java
+    │       └── RadiateurPartModelC.java
+    │
+    ├── particle/
+    │   ├── ConfigurableParticle.java
+    │   ├── HoneyPixelParticle.java
+    │   ├── ParticleEmitter.java
+    │   └── RuneParticle.java
+    │
+    ├── renderer/
+    │   ├── BeamRenderer.java
+    │   ├── BuildingWandPreviewRenderer.java
+    │   │
+    │   ├── block/
+    │   │   ├── AltarHeartRenderer.java
+    │   │   ├── BeeStatueRenderer.java
+    │   │   ├── CentrifugeHeartRenderer.java
+    │   │   ├── ControllerPipeRenderer.java
+    │   │   ├── CrankRenderer.java
+    │   │   ├── CrystallizerRenderer.java
+    │   │   ├── HoneyPedestalRenderer.java
+    │   │   ├── HoneyReservoirRenderer.java
+    │   │   ├── HoneyTankRenderer.java
+    │   │   ├── IncubatorRenderer.java
+    │   │   ├── InfuserHeartRenderer.java
+    │   │   ├── InfuserRenderer.java
+    │   │   ├── MultiblockTankRenderer.java
+    │   │   ├── PollenPotRenderer.java
+    │   │   ├── StorageControllerRenderer.java
+    │   │   ├── StorageRelayRenderer.java
+    │   │   ├── StorageTerminalRenderer.java
+    │   │   └── TranslucentOutlineRenderer.java
+    │   │
+    │   ├── debug/
+    │   │   ├── BeeDebugRenderer.java
+    │   │   └── CustomDebugDisplayRenderer.java
+    │   │
+    │   ├── entity/
+    │   │   ├── DeliveryBeeRenderer.java
+    │   │   ├── HoverbikePartLayer.java
+    │   │   ├── HoverbikeRenderer.java
+    │   │   └── MagicBeeRenderer.java
+    │   │
+    │   ├── item/
+    │   │   └── MagicBeeItemRenderer.java
+    │   │
+    │   └── util/
+    │       ├── DebugRenderHelper.java
+    │       ├── FloatingItemHelper.java
+    │       ├── FluidCubeRenderer.java
+    │       ├── RenderHelper.java
+    │       └── RotatingModelHelper.java
+    │
+    └── visual/
+        ├── FlywheelTestBeeVisual.java
+        └── FlywheelTestBeeVisualizer.java
 
 ################################################################################

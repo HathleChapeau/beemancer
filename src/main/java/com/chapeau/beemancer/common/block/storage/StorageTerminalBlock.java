@@ -23,7 +23,6 @@ package com.chapeau.beemancer.common.block.storage;
 
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
-import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -122,9 +121,8 @@ public class StorageTerminalBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
                                                                    BlockEntityType<T> blockEntityType) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(blockEntityType, BeemancerBlockEntities.STORAGE_TERMINAL.get(),
-            (lvl, pos, st, be) -> StorageTerminalBlockEntity.serverTick(be));
+        // Terminal tick logic driven by the controller via processTerminals()
+        return null;
     }
 
     /**

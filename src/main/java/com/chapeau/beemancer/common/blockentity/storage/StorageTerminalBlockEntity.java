@@ -64,11 +64,12 @@ import java.util.Queue;
  */
 public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvider, Container, IDeliveryEndpoint {
 
-    public static final int DEPOSIT_SLOTS = 9;
-    public static final int PICKUP_SLOTS = 9;
+    public static final int PAGE_SIZE = 9;
+    public static final int PAGES = 3;
+    public static final int DEPOSIT_SLOTS = PAGE_SIZE * PAGES;
+    public static final int PICKUP_SLOTS = PAGE_SIZE * PAGES;
     public static final int TOTAL_SLOTS = DEPOSIT_SLOTS + PICKUP_SLOTS;
     private static final int MAX_PENDING_REQUESTS = 16;
-    private static final int PENDING_PROCESS_INTERVAL = 20;
 
     // Position du controller lié
     @Nullable
@@ -77,14 +78,21 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     // Flag pour éviter de re-scanner pendant l'extraction par une bee
     private boolean isExtracting = false;
     private boolean isSaving = false;
-    // Flag pour declencher un scan des deposit slots au prochain tick
-    private boolean needsDepositScan = false;
+    // Flags lus par le controller dans processTerminals()
+    boolean needsDepositScan = false;
+    boolean needsProcessPending = false;
 
     // File d'attente des requêtes en attente
     private final Queue<PendingRequest> pendingRequests = new LinkedList<>();
 
     // Slots internes — les items restent dans les slots jusqu'a extraction par une bee
     private final ItemStackHandler depositSlots = new ItemStackHandler(DEPOSIT_SLOTS) {
+        @Override
+        public void setSize(int size) {
+            if (size < DEPOSIT_SLOTS) return;
+            super.setSize(size);
+        }
+
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
@@ -97,11 +105,16 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     private final ItemStackHandler pickupSlots = new ItemStackHandler(PICKUP_SLOTS) {
         @Override
+        public void setSize(int size) {
+            if (size < PICKUP_SLOTS) return;
+            super.setSize(size);
+        }
+
+        @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            // Quand un slot se libère, traiter la file d'attente
             if (getStackInSlot(slot).isEmpty()) {
-                processPendingRequests();
+                needsProcessPending = true;
             }
         }
     };
@@ -174,10 +187,11 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
         BlockEntity be = level.getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
-            return controller;
+            // Controller existe mais pas formé: retourner null sans casser le lien
+            return controller.isFormed() ? controller : null;
         }
 
-        // Controller n'existe plus
+        // Controller n'existe plus: casser le lien
         controllerPos = null;
         setChanged();
         return null;
@@ -260,10 +274,11 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     }
 
     /**
-     * Traite les requêtes en attente quand de la place se libère.
+     * Traite les requetes en attente quand de la place se libere.
      * Publie des InterfaceRequests via le RequestManager.
+     * Appele par le controller dans processTerminals().
      */
-    private void processPendingRequests() {
+    void processPendingRequests() {
         if (level == null || level.isClientSide()) return;
         if (pendingRequests.isEmpty()) return;
 
@@ -328,8 +343,9 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
      * Scanne les deposit slots et cree des requetes EXPORT non-preloaded.
      * Les items restent dans les slots — les bees viennent les extraire.
      * Evite les doublons: ne cree pas de requete si une est deja active pour le meme type.
+     * Appele par le controller dans processTerminals().
      */
-    private void scanDepositSlots() {
+    void scanDepositSlots() {
         if (level == null || level.isClientSide()) return;
         StorageControllerBlockEntity controller = getController();
         if (controller == null) return;
@@ -358,23 +374,12 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
             }
         }
 
-        // Pour chaque type, creer une requete si aucune n'est active
+        // Pour chaque type, creer une requete si aucune n'est active (O(1) via index)
         for (int j = 0; j < templates.size(); j++) {
             ItemStack template = templates.get(j);
             int totalCount = counts.get(j);
 
-            boolean hasRequest = false;
-            for (InterfaceRequest req : requestManager.getAllRequests()) {
-                if (req.getSourcePos().equals(worldPosition)
-                        && req.getType() == InterfaceRequest.RequestType.EXPORT
-                        && req.getStatus() != InterfaceRequest.RequestStatus.CANCELLED
-                        && ItemStack.isSameItemSameComponents(req.getTemplate(), template)) {
-                    hasRequest = true;
-                    break;
-                }
-            }
-
-            if (!hasRequest) {
+            if (!requestManager.hasRequestFor(worldPosition, InterfaceRequest.RequestType.EXPORT, template)) {
                 InterfaceRequest request = new InterfaceRequest(
                     worldPosition, worldPosition, InterfaceRequest.RequestType.EXPORT,
                     template, totalCount, InterfaceRequest.TaskOrigin.REQUEST, false
@@ -434,22 +439,6 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
             }
         }
         return count;
-    }
-
-    // === Tick ===
-
-    public static void serverTick(StorageTerminalBlockEntity be) {
-        // Traiter périodiquement les requêtes en attente (chaque seconde)
-        if (be.level != null && (be.level.getGameTime() + be.worldPosition.hashCode()) % PENDING_PROCESS_INTERVAL == 0) {
-            be.processPendingRequests();
-            // Scan periodique en backup (rattrape les cas ou le flag a ete manque)
-            be.needsDepositScan = true;
-        }
-        // Scanner les deposit slots quand marque (joueur a ajoute/retire des items)
-        if (be.needsDepositScan) {
-            be.scanDepositSlots();
-            be.needsDepositScan = false;
-        }
     }
 
     // === Slots Handlers ===
@@ -587,7 +576,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
         if (controller != null) {
             essenceSlots = controller.getEssenceSlots();
         } else {
-            essenceSlots = new net.neoforged.neoforge.items.ItemStackHandler(4);
+            essenceSlots = new net.neoforged.neoforge.items.ItemStackHandler(HiveManager.MAX_ESSENCE_SLOTS);
         }
         return new StorageTerminalMenu(containerId, playerInventory, this, worldPosition, essenceSlots);
     }

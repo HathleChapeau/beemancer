@@ -75,62 +75,26 @@ public class DeliveryTask {
     private int priority;
     private final List<UUID> dependencies;
 
-    /**
-     * Constructeur standard (priorite 0, pas de dependances, pas de preload).
-     */
-    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
-                        BlockPos destPos, TaskOrigin origin,
-                        @Nullable BlockPos requesterPos) {
-        this(template, count, sourcePos, destPos, 0, Collections.emptyList(),
-            origin, false, requesterPos, null, null, null);
-    }
+    // [AW] Timeout FLYING: tick auquel la tache est passee en FLYING
+    private long flyingStartTick = -1;
+    // [AV] Retry limit: nombre de retries + prochain tick de retry autorise
+    private static final int MAX_RETRIES = 3;
+    private int retryCount = 0;
+    private long nextRetryTick = 0;
 
     /**
-     * Constructeur avec preloaded.
+     * Constructeur maitre (prive). Utiliser builder() pour creer des instances.
      */
-    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
-                        BlockPos destPos, TaskOrigin origin, boolean preloaded,
-                        @Nullable BlockPos requesterPos) {
-        this(template, count, sourcePos, destPos, 0, Collections.emptyList(),
-            origin, preloaded, requesterPos, null, null, null);
-    }
-
-    /**
-     * Constructeur complet (sans interface).
-     */
-    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
-                        BlockPos destPos, int priority, List<UUID> dependencies,
-                        TaskOrigin origin, boolean preloaded,
-                        @Nullable BlockPos requesterPos,
-                        @Nullable UUID parentTaskId) {
-        this(template, count, sourcePos, destPos, priority, dependencies,
-            origin, preloaded, requesterPos, parentTaskId, null, null);
-    }
-
-    /**
-     * Constructeur complet avec interface task.
-     */
-    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
-                        BlockPos destPos, TaskOrigin origin, boolean preloaded,
-                        @Nullable BlockPos requesterPos,
-                        @Nullable UUID parentTaskId,
-                        @Nullable UUID interfaceTaskId,
-                        @Nullable BlockPos interfacePos) {
-        this(template, count, sourcePos, destPos, 0, Collections.emptyList(),
-            origin, preloaded, requesterPos, parentTaskId, interfaceTaskId, interfacePos);
-    }
-
-    /**
-     * Constructeur maitre.
-     */
-    public DeliveryTask(ItemStack template, int count, BlockPos sourcePos,
-                        BlockPos destPos, int priority, List<UUID> dependencies,
-                        TaskOrigin origin, boolean preloaded,
-                        @Nullable BlockPos requesterPos,
-                        @Nullable UUID parentTaskId,
-                        @Nullable UUID interfaceTaskId,
-                        @Nullable BlockPos interfacePos) {
-        this.taskId = UUID.randomUUID();
+    private DeliveryTask(UUID taskId, ItemStack template, int count,
+                         BlockPos sourcePos, BlockPos destPos,
+                         TaskOrigin origin, boolean preloaded,
+                         int priority, List<UUID> dependencies,
+                         @Nullable BlockPos requesterPos,
+                         @Nullable UUID parentTaskId,
+                         @Nullable UUID interfaceTaskId,
+                         @Nullable BlockPos interfacePos,
+                         DeliveryState state) {
+        this.taskId = taskId;
         this.parentTaskId = parentTaskId;
         this.interfaceTaskId = interfaceTaskId;
         this.interfacePos = interfacePos;
@@ -141,35 +105,65 @@ public class DeliveryTask {
         this.requesterPos = requesterPos;
         this.origin = origin;
         this.preloaded = preloaded;
-        this.state = DeliveryState.QUEUED;
+        this.state = state;
         this.priority = priority;
         this.dependencies = new ArrayList<>(dependencies);
     }
 
     /**
-     * Constructeur interne (pour load NBT).
+     * [BS] Cree un builder pour construire une DeliveryTask.
+     * @param template Item a transporter
+     * @param count    Quantite
+     * @param sourcePos Position source (coffre extraction)
+     * @param destPos   Position destination (coffre depot)
+     * @param origin    Origine (REQUEST = joueur, AUTOMATION = interface)
      */
-    private DeliveryTask(UUID taskId, @Nullable UUID parentTaskId, ItemStack template,
-                         int count, BlockPos sourcePos, BlockPos destPos,
-                         @Nullable BlockPos requesterPos, DeliveryState state,
-                         int priority, List<UUID> dependencies,
-                         TaskOrigin origin, boolean preloaded,
-                         @Nullable UUID interfaceTaskId,
-                         @Nullable BlockPos interfacePos) {
-        this.taskId = taskId;
-        this.parentTaskId = parentTaskId;
-        this.interfaceTaskId = interfaceTaskId;
-        this.interfacePos = interfacePos;
-        this.template = template;
-        this.count = count;
-        this.sourcePos = sourcePos;
-        this.destPos = destPos;
-        this.requesterPos = requesterPos;
-        this.origin = origin;
-        this.preloaded = preloaded;
-        this.state = state;
-        this.priority = priority;
-        this.dependencies = new ArrayList<>(dependencies);
+    public static Builder builder(ItemStack template, int count,
+                                   BlockPos sourcePos, BlockPos destPos,
+                                   TaskOrigin origin) {
+        return new Builder(template, count, sourcePos, destPos, origin);
+    }
+
+    /**
+     * [BS] Builder fluide pour construire des DeliveryTask.
+     */
+    public static class Builder {
+        private final ItemStack template;
+        private final int count;
+        private final BlockPos sourcePos;
+        private final BlockPos destPos;
+        private final TaskOrigin origin;
+
+        private int priority = 0;
+        private List<UUID> dependencies = Collections.emptyList();
+        private boolean preloaded = false;
+        @Nullable private BlockPos requesterPos = null;
+        @Nullable private UUID parentTaskId = null;
+        @Nullable private UUID interfaceTaskId = null;
+        @Nullable private BlockPos interfacePos = null;
+
+        private Builder(ItemStack template, int count, BlockPos sourcePos,
+                        BlockPos destPos, TaskOrigin origin) {
+            this.template = template;
+            this.count = count;
+            this.sourcePos = sourcePos;
+            this.destPos = destPos;
+            this.origin = origin;
+        }
+
+        public Builder priority(int priority) { this.priority = priority; return this; }
+        public Builder dependencies(List<UUID> deps) { this.dependencies = deps; return this; }
+        public Builder preloaded(boolean preloaded) { this.preloaded = preloaded; return this; }
+        public Builder requesterPos(@Nullable BlockPos pos) { this.requesterPos = pos; return this; }
+        public Builder parentTaskId(@Nullable UUID id) { this.parentTaskId = id; return this; }
+        public Builder interfaceTaskId(@Nullable UUID id) { this.interfaceTaskId = id; return this; }
+        public Builder interfacePos(@Nullable BlockPos pos) { this.interfacePos = pos; return this; }
+
+        public DeliveryTask build() {
+            return new DeliveryTask(UUID.randomUUID(), template, count, sourcePos, destPos,
+                origin, preloaded, priority, dependencies, requesterPos,
+                parentTaskId, interfaceTaskId, interfacePos, DeliveryState.QUEUED);
+        }
     }
 
     // === Getters ===
@@ -200,6 +194,14 @@ public class DeliveryTask {
     public void setCount(int count) { this.count = count; }
     public void setPriority(int priority) { this.priority = priority; }
 
+    // [AW] Flying timeout
+    public long getFlyingStartTick() { return flyingStartTick; }
+    public void setFlyingStartTick(long tick) { this.flyingStartTick = tick; }
+
+    // [AV] Retry
+    public int getRetryCount() { return retryCount; }
+    public long getNextRetryTick() { return nextRetryTick; }
+
     // === Logic ===
 
     public boolean isActive() {
@@ -215,6 +217,29 @@ public class DeliveryTask {
     }
 
     /**
+     * [AV] Verifie si la tache peut encore etre retentee (< MAX_RETRIES).
+     */
+    public boolean canRetry() {
+        return retryCount < MAX_RETRIES;
+    }
+
+    /**
+     * [AV] Incremente le compteur de retry et calcule le prochain tick autorise.
+     * Backoff exponentiel: 20, 60, 180 ticks (1s, 3s, 9s).
+     */
+    public void incrementRetry(long currentTick) {
+        retryCount++;
+        nextRetryTick = currentTick + 20L * (long) Math.pow(3, retryCount - 1);
+    }
+
+    /**
+     * [AV] Verifie si le prochain retry est autorise au tick actuel.
+     */
+    public boolean isRetryReady(long currentTick) {
+        return currentTick >= nextRetryTick;
+    }
+
+    /**
      * Divise cette tache: reduit le count a beeCapacity et retourne
      * une nouvelle tache avec le reste des items.
      * La subtask herite du rootTaskId pour garder le lien avec la request parente.
@@ -226,12 +251,13 @@ public class DeliveryTask {
         int remaining = count - beeCapacity;
         this.count = beeCapacity;
 
-        UUID rootId = getRootTaskId();
-        DeliveryTask splitTask = new DeliveryTask(
-            template.copy(), remaining, sourcePos, destPos,
-            priority, dependencies, origin, preloaded, requesterPos, rootId
-        );
-        return splitTask;
+        return DeliveryTask.builder(template.copy(), remaining, sourcePos, destPos, origin)
+            .priority(priority)
+            .dependencies(dependencies)
+            .preloaded(preloaded)
+            .requesterPos(requesterPos)
+            .parentTaskId(getRootTaskId())
+            .build();
     }
 
     // === NBT ===
@@ -260,6 +286,16 @@ public class DeliveryTask {
         tag.putString("State", state.name());
         tag.putInt("Priority", priority);
 
+        // [AW] Timeout FLYING
+        if (flyingStartTick >= 0) {
+            tag.putLong("FlyingStartTick", flyingStartTick);
+        }
+        // [AV] Retry limit
+        if (retryCount > 0) {
+            tag.putInt("RetryCount", retryCount);
+            tag.putLong("NextRetryTick", nextRetryTick);
+        }
+
         if (!dependencies.isEmpty()) {
             ListTag depTag = new ListTag();
             for (UUID dep : dependencies) {
@@ -278,36 +314,14 @@ public class DeliveryTask {
         UUID parentId = tag.contains("ParentTaskId") ? tag.getUUID("ParentTaskId") : null;
         ItemStack template = ItemStack.parseOptional(registries, tag.getCompound("Template"));
         int count = tag.getInt("Count");
-
-        // Backward compat: accepter TargetPos ou SourcePos
-        BlockPos source;
-        if (tag.contains("SourcePos")) {
-            source = BlockPos.of(tag.getLong("SourcePos"));
-        } else if (tag.contains("TargetPos")) {
-            source = BlockPos.of(tag.getLong("TargetPos"));
-        } else {
-            source = BlockPos.of(tag.getLong("TargetChest"));
-        }
-
-        // Backward compat: accepter DestPos ou TerminalPos
-        BlockPos dest;
-        if (tag.contains("DestPos")) {
-            dest = BlockPos.of(tag.getLong("DestPos"));
-        } else {
-            dest = BlockPos.of(tag.getLong("TerminalPos"));
-        }
-
+        BlockPos source = BlockPos.of(tag.getLong("SourcePos"));
+        BlockPos dest = BlockPos.of(tag.getLong("DestPos"));
         DeliveryState state = DeliveryState.valueOf(tag.getString("State"));
         int priority = tag.getInt("Priority");
-
-        TaskOrigin origin = tag.contains("Origin")
-            ? TaskOrigin.valueOf(tag.getString("Origin"))
-            : TaskOrigin.REQUEST;
-
+        TaskOrigin origin = TaskOrigin.valueOf(tag.getString("Origin"));
         boolean preloaded = tag.getBoolean("Preloaded");
         BlockPos requesterPos = tag.contains("RequesterPos")
             ? BlockPos.of(tag.getLong("RequesterPos")) : null;
-
         UUID interfaceTaskId = tag.contains("InterfaceTaskId")
             ? tag.getUUID("InterfaceTaskId") : null;
         BlockPos interfacePos = tag.contains("InterfacePos")
@@ -321,7 +335,20 @@ public class DeliveryTask {
             }
         }
 
-        return new DeliveryTask(id, parentId, template, count, source, dest, requesterPos,
-            state, priority, dependencies, origin, preloaded, interfaceTaskId, interfacePos);
+        DeliveryTask task = new DeliveryTask(id, template, count, source, dest,
+            origin, preloaded, priority, dependencies, requesterPos,
+            parentId, interfaceTaskId, interfacePos, state);
+
+        // [AW] Timeout FLYING
+        if (tag.contains("FlyingStartTick")) {
+            task.flyingStartTick = tag.getLong("FlyingStartTick");
+        }
+        // [AV] Retry limit
+        if (tag.contains("RetryCount")) {
+            task.retryCount = tag.getInt("RetryCount");
+            task.nextRetryTick = tag.getLong("NextRetryTick");
+        }
+
+        return task;
     }
 }

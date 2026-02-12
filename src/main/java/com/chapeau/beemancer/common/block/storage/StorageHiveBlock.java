@@ -121,7 +121,7 @@ public class StorageHiveBlock extends Block implements EntityBlock {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof StorageHiveBlockEntity hive) {
-                StorageControllerBlockEntity controller = hive.getController();
+                StorageControllerBlockEntity controller = hive.getControllerRaw();
                 if (controller != null) {
                     controller.unlinkHive(pos);
                 }

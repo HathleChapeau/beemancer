@@ -9,13 +9,14 @@
  * | Dependance                     | Raison                | Utilisation               |
  * |--------------------------------|----------------------|---------------------------|
  * | StorageControllerBlockEntity   | Parent controller    | Back-reference            |
- * | DeliveryTask                   | Tache de livraison   | Queue et etat             |
+ * | HoneyEnergyManager             | Consommation miel    | Delegation                |
+ * | DeliveryTaskLifecycle          | Completion/echec     | Delegation                |
+ * | DeliveryTaskCanceller          | Annulation           | Delegation                |
  * | DeliveryBeeSpawner             | Spawn/recall bees    | spawnDeliveryBee, recall  |
  * | DeliveryContainerOps           | Operations coffres   | Delegation                |
  * | DeliveryNetworkPathfinder      | Pathfinding reseau   | Delegation                |
  * | DeliveryTaskDisplayBuilder     | Affichage Tasks tab  | buildDisplayData          |
- * | ControllerStats                | Stats essences       | Capacite, consommation    |
- * | HoneyReservoirBlockEntity      | Drain miel           | consumeHoney              |
+ * | ControllerStats                | Stats essences       | Capacite bee              |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -30,169 +31,132 @@ import com.chapeau.beemancer.common.block.storage.ControllerStats;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.block.storage.InterfaceRequest;
 import com.chapeau.beemancer.common.block.storage.TaskDisplayData;
-import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
-import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.UUID;
 
 /**
- * Orchestrateur du systeme de livraison: queue de taches, ticks, cancel, NBT.
- * Delegue les operations specifiques a DeliveryBeeSpawner, DeliveryContainerOps,
- * DeliveryNetworkPathfinder et DeliveryTaskDisplayBuilder.
+ * Orchestrateur du systeme de livraison: queue de taches, ticks, NBT.
+ * Possede les donnees partagees (queue, activeTasks, completedTaskIds)
+ * et delegue la logique aux managers specialises:
+ * - HoneyEnergyManager: consommation de miel
+ * - DeliveryTaskLifecycle: completion, echec, retry
+ * - DeliveryTaskCanceller: annulation, dependances
+ * - DeliveryBeeSpawner: spawn, recall, redirect des bees
+ * - DeliveryContainerOps: operations sur les coffres du reseau
+ * - DeliveryNetworkPathfinder: pathfinding via relays
  */
 public class StorageDeliveryManager {
     private final StorageControllerBlockEntity parent;
 
     private static final int DELIVERY_PROCESS_INTERVAL = 10;
     private static final int REEVALUATE_INTERVAL = 20;
-    private static final int MAX_COMPLETED_IDS = 100;
-    private static final int HONEY_CONSUME_INTERVAL = 20;
+    // [AW] Timeout pour les taches FLYING: 1 minute (1200 ticks)
+    private static final int FLYING_TIMEOUT_TICKS = 1200;
+    // [AT] TTL pour les completedTaskIds: 30 secondes (600 ticks)
+    private static final int COMPLETED_TTL_TICKS = 600;
+    // [BB] Sleep mode: seuil d'inactivite avant passage en sleep (30 sec = 600 ticks)
+    private static final int IDLE_SLEEP_THRESHOLD = 600;
+    // [BB] Intervalle de tick en mode sleep (2 sec = 40 ticks)
+    private static final int SLEEP_TICK_INTERVAL = 40;
+    // [BC] Backpressure: taille max de la queue par bee (interfaces seulement)
+    private static final int QUEUE_SIZE_PER_BEE = 50;
 
-    private final Queue<DeliveryTask> deliveryQueue = new LinkedList<>();
+    // === Donnees partagees (accessibles via package-private getters par les sub-managers) ===
+    private final PriorityQueue<DeliveryTask> deliveryQueue =
+        new PriorityQueue<>(Comparator.comparingInt(DeliveryTask::getPriority));
     private final List<DeliveryTask> activeTasks = new ArrayList<>();
-    private final Set<UUID> completedTaskIds = new LinkedHashSet<>();
-    private boolean honeyDepleted = false;
-    private boolean queueDirty = false;
+    private final Map<UUID, Long> completedTaskIds = new HashMap<>();
+    private boolean tasksDirty = true;
+    private int idleTicks = 0;
+    private boolean sleeping = false;
 
+    // === Managers delegues ===
+    private final HoneyEnergyManager honeyManager;
+    private final DeliveryTaskLifecycle lifecycle;
+    private final DeliveryTaskCanceller canceller;
     private final DeliveryNetworkPathfinder pathfinder;
     private final DeliveryContainerOps containerOps;
     private final DeliveryBeeSpawner beeSpawner;
 
     public StorageDeliveryManager(StorageControllerBlockEntity parent) {
         this.parent = parent;
+        this.honeyManager = new HoneyEnergyManager(parent);
+        this.lifecycle = new DeliveryTaskLifecycle(this);
+        this.canceller = new DeliveryTaskCanceller(this);
         this.pathfinder = new DeliveryNetworkPathfinder(parent);
         this.containerOps = new DeliveryContainerOps(parent);
         this.beeSpawner = new DeliveryBeeSpawner(parent, pathfinder, containerOps);
     }
 
-    public DeliveryNetworkPathfinder getPathfinder() {
-        return pathfinder;
-    }
+    // === Package-private accessors pour les sub-managers ===
 
-    public DeliveryContainerOps getContainerOps() {
-        return containerOps;
-    }
+    StorageControllerBlockEntity getParent() { return parent; }
+    PriorityQueue<DeliveryTask> getDeliveryQueue() { return deliveryQueue; }
+    List<DeliveryTask> getActiveTasks() { return activeTasks; }
+    Map<UUID, Long> getCompletedTaskIds() { return completedTaskIds; }
+    void markTasksDirty() { tasksDirty = true; }
 
-    public DeliveryBeeSpawner getBeeSpawner() {
-        return beeSpawner;
-    }
+    // === Public accessors ===
+
+    public DeliveryNetworkPathfinder getPathfinder() { return pathfinder; }
+    public DeliveryContainerOps getContainerOps() { return containerOps; }
+    public DeliveryBeeSpawner getBeeSpawner() { return beeSpawner; }
+    public boolean isHoneyDepleted() { return honeyManager.isHoneyDepleted(); }
 
     // === Task Management ===
 
-    /**
-     * Ajoute une tâche de livraison à la queue.
-     */
     public void addDeliveryTask(DeliveryTask task) {
         deliveryQueue.add(task);
-        queueDirty = true;
+        idleTicks = 0;
+        sleeping = false;
+        tasksDirty = true;
         parent.setChanged();
     }
 
-    // === Honey Consumption ===
+    // === Delegation: Completion/Failure (DeliveryTaskLifecycle) ===
 
-    /**
-     * Consomme du miel depuis les 2 HoneyReservoirs du multibloc.
-     */
-    private void consumeHoney() {
-        if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
+    public void completeTask(UUID taskId) { lifecycle.completeTask(taskId); }
+    public void failTask(UUID taskId) { lifecycle.failTask(taskId); }
 
-        int consumptionPerSecond = ControllerStats.getHoneyConsumption(
-            parent.getEssenceSlots(), parent.getChestManager().getRegisteredChestCount(),
-            parent.getHiveMultiplier(), parent.getRelayCount());
-        int remaining = consumptionPerSecond;
+    // === Delegation: Cancellation (DeliveryTaskCanceller) ===
 
-        int rotation = parent.getMultiblockManager().getRotation();
-        for (int xOff : new int[]{-1, 1}) {
-            if (remaining <= 0) break;
-            Vec3i rotatedOffset = MultiblockPattern.rotateY(new Vec3i(xOff, 0, 0), rotation);
-            BlockPos reservoirPos = parent.getBlockPos().offset(rotatedOffset);
-            if (!parent.getLevel().hasChunkAt(reservoirPos)) continue;
-            BlockEntity be = parent.getLevel().getBlockEntity(reservoirPos);
-            if (be instanceof HoneyReservoirBlockEntity reservoir) {
-                FluidStack drained = reservoir.drain(remaining, IFluidHandler.FluidAction.EXECUTE);
-                if (!drained.isEmpty()) {
-                    remaining -= drained.getAmount();
-                }
-            }
-        }
-
-        boolean wasDepleted = honeyDepleted;
-        honeyDepleted = remaining > 0;
-        if (!wasDepleted && honeyDepleted) {
-            parent.notifyViewers(Component.translatable("gui.beemancer.network.honey_depleted"));
-            parent.syncToClient();
-        } else if (wasDepleted && !honeyDepleted) {
-            parent.notifyViewers(Component.translatable("gui.beemancer.network.honey_restored"));
-            parent.syncToClient();
-        }
-    }
-
-    public boolean isHoneyDepleted() {
-        return honeyDepleted;
-    }
+    public boolean cancelTask(UUID taskId) { return canceller.cancelTask(taskId); }
 
     // === Queue Processing ===
 
-    /**
-     * Traite la queue de livraison: spawne des bees pour les tâches en attente.
-     */
-    private void processDeliveryQueue() {
+    private void processDeliveryQueue(long gameTick) {
         if (parent.getLevel() == null || parent.getLevel().isClientSide()
-            || !parent.getMultiblockManager().isFormed() || honeyDepleted) return;
+            || !parent.getMultiblockManager().isFormed() || honeyManager.isHoneyDepleted()) return;
 
         activeTasks.removeIf(task -> {
             if (task.getState() == DeliveryTask.DeliveryState.COMPLETED) {
-                completedTaskIds.add(task.getTaskId());
+                completedTaskIds.put(task.getTaskId(), gameTick);
                 return true;
             }
-            if (task.getState() == DeliveryTask.DeliveryState.FAILED) {
-                return true;
-            }
-            return false;
+            return task.getState() == DeliveryTask.DeliveryState.FAILED;
         });
 
-        if (completedTaskIds.size() > MAX_COMPLETED_IDS) {
-            Iterator<UUID> it = completedTaskIds.iterator();
-            while (completedTaskIds.size() > MAX_COMPLETED_IDS / 2 && it.hasNext()) {
-                it.next();
-                it.remove();
-            }
-        }
-
-        if (queueDirty) {
-            List<DeliveryTask> sortedQueue = new ArrayList<>(deliveryQueue);
-            sortedQueue.sort(Comparator.comparingInt(DeliveryTask::getPriority));
-            deliveryQueue.clear();
-            deliveryQueue.addAll(sortedQueue);
-            queueDirty = false;
-        }
+        completedTaskIds.entrySet().removeIf(
+            entry -> gameTick - entry.getValue() > COMPLETED_TTL_TICKS);
 
         while (activeTasks.size() < parent.getMaxDeliveryBees()) {
-            DeliveryTask eligible = findEligibleTask();
+            DeliveryTask eligible = findEligibleTask(gameTick);
             if (eligible == null) break;
 
             deliveryQueue.remove(eligible);
 
-            // Interface tasks sont deja dimensionnees, ne pas re-split
             if (eligible.getInterfaceTaskId() == null) {
                 int beeCapacity = Math.min(
                     ControllerStats.getQuantity(parent.getEssenceSlots()),
@@ -209,6 +173,7 @@ public class StorageDeliveryManager {
             boolean spawned = beeSpawner.spawnDeliveryBee(eligible);
             if (spawned) {
                 eligible.setState(DeliveryTask.DeliveryState.FLYING);
+                eligible.setFlyingStartTick(gameTick);
                 activeTasks.add(eligible);
             } else {
                 eligible.setState(DeliveryTask.DeliveryState.FAILED);
@@ -218,290 +183,102 @@ public class StorageDeliveryManager {
 
     /**
      * Reevalue les taches en fonction de la demande actuelle.
-     * - QUEUED: met a jour le count, split si necessaire, cancel si demande nulle
-     * - FLYING: cree des sous-taches si demande augmente, cancel si demande tombe a 0
+     * [AW] Timeout FLYING, annulation si demande tombe a 0, nettoyage requests orphelines.
      */
-    private void reevaluateTasks() {
+    private void reevaluateTasks(long gameTick) {
         if (parent.getLevel() == null || parent.getLevel().isClientSide()
             || !parent.getMultiblockManager().isFormed()) return;
+
+        // [AW] Timeout FLYING
+        for (DeliveryTask task : new ArrayList<>(activeTasks)) {
+            if (task.getState() == DeliveryTask.DeliveryState.FLYING
+                    && task.getFlyingStartTick() >= 0
+                    && (gameTick - task.getFlyingStartTick()) > FLYING_TIMEOUT_TICKS) {
+                lifecycle.failTask(task.getTaskId());
+            }
+        }
 
         RequestManager requestManager = parent.getRequestManager();
 
         // Reevaluer les taches en queue: annuler si demande tombe a 0
-        // (seulement les tasks terminal, les tasks interface sont gerees par l'interface)
         Iterator<DeliveryTask> queueIt = deliveryQueue.iterator();
         while (queueIt.hasNext()) {
             DeliveryTask task = queueIt.next();
             if (task.getState() != DeliveryTask.DeliveryState.QUEUED) continue;
-            if (task.getInterfaceTaskId() != null) continue; // Geree par l'interface
+            if (task.getInterfaceTaskId() != null) continue;
 
             InterfaceRequest request = requestManager.findRequestByTaskId(task.getRootTaskId());
             if (request == null) continue;
 
             if (request.getCount() <= 0) {
                 queueIt.remove();
-                handleCancelledTask(task);
+                canceller.handleCancelledTask(task);
+                tasksDirty = true;
                 parent.setChanged();
             }
         }
 
         // Reevaluer les taches actives: annuler si demande tombe a 0
-        // (seulement les tasks terminal)
         for (DeliveryTask task : new ArrayList<>(activeTasks)) {
             if (task.getState() != DeliveryTask.DeliveryState.FLYING) continue;
-            if (task.getInterfaceTaskId() != null) continue; // Geree par l'interface
+            if (task.getInterfaceTaskId() != null) continue;
 
             InterfaceRequest request = requestManager.findRequestByTaskId(task.getRootTaskId());
             if (request == null) continue;
 
             if (request.getCount() <= 0) {
-                cancelTask(task.getTaskId());
+                canceller.cancelTask(task.getTaskId());
             }
         }
 
-        // Nettoyer les requests orphelines: ASSIGNED mais plus aucune subtask en cours
-        // (arrive quand des subtasks echouent au spawn, ex: deposit vide)
+        // Nettoyer les requests orphelines
         for (InterfaceRequest request : new ArrayList<>(requestManager.getAllRequests())) {
             if (request.getStatus() != InterfaceRequest.RequestStatus.ASSIGNED) continue;
             UUID assignedId = request.getAssignedTaskId();
             if (assignedId == null) continue;
-            if (!hasRemainingSubtasks(assignedId)) {
+            if (!lifecycle.hasRemainingSubtasks(assignedId)) {
                 requestManager.onTaskCompleted(assignedId);
             }
         }
     }
 
-    private DeliveryTask findEligibleTask() {
+    /**
+     * Trouve la tache eligible avec la plus haute priorite.
+     * Package-private pour acces par DeliveryTaskCanceller (redirect bee).
+     */
+    DeliveryTask findEligibleTask(long gameTick) {
+        DeliveryTask best = null;
         for (DeliveryTask task : deliveryQueue) {
             if (task.getState() == DeliveryTask.DeliveryState.QUEUED
-                && task.isReady(completedTaskIds)) {
-                return task;
+                && task.isReady(completedTaskIds.keySet())
+                && task.isRetryReady(gameTick)) {
+                if (best == null || task.getPriority() < best.getPriority()) {
+                    best = task;
+                }
             }
         }
-        return null;
+        return best;
     }
 
     // === Bee Management ===
 
-    /**
-     * Tue toutes les DeliveryBeeEntity liees a ce controller.
-     */
-    public void killAllDeliveryBees() {
-        beeSpawner.killAllDeliveryBees();
-    }
+    public void killAllDeliveryBees() { beeSpawner.killAllDeliveryBees(); }
 
-    /**
-     * Vide toute la queue et les tâches actives.
-     */
     public void clearAllTasks() {
         deliveryQueue.clear();
         activeTasks.clear();
         completedTaskIds.clear();
     }
 
-    // === Task Completion ===
+    // === Query ===
 
-    /**
-     * Marque une tâche active comme complétée par son UUID.
-     * Appelé par la DeliveryBeeEntity quand elle termine sa livraison.
-     */
-    public void completeTask(UUID taskId) {
-        finishTask(taskId, DeliveryTask.DeliveryState.COMPLETED);
-    }
-
-    /**
-     * Marque une tâche active comme échouée par son UUID.
-     * Appelé par la DeliveryBeeEntity en cas de timeout.
-     */
-    public void failTask(UUID taskId) {
-        finishTask(taskId, DeliveryTask.DeliveryState.FAILED);
-    }
-
-    /**
-     * Termine une tache active: met a jour l'etat, retire de la liste, marque pour sync.
-     * Pour les taches COMPLETED, ne notifie le RequestManager que quand toutes les
-     * subtasks du meme groupe (meme rootTaskId) sont terminees.
-     */
-    private void finishTask(UUID taskId, DeliveryTask.DeliveryState state) {
-        Iterator<DeliveryTask> it = activeTasks.iterator();
-        while (it.hasNext()) {
-            DeliveryTask task = it.next();
-            if (task.getTaskId().equals(taskId)) {
-                task.setState(state);
-                UUID rootId = task.getRootTaskId();
-                it.remove();
-
-                if (state == DeliveryTask.DeliveryState.COMPLETED) {
-                    completedTaskIds.add(taskId);
-                    if (task.getInterfaceTaskId() == null) {
-                        // Terminal task: utiliser RequestManager
-                        if (!hasRemainingSubtasks(rootId)) {
-                            parent.getRequestManager().onTaskCompleted(rootId);
-                        }
-                    }
-                    // Interface tasks: notification faite par la bee dans notifyTaskCompleted()
-                } else if (state == DeliveryTask.DeliveryState.FAILED) {
-                    if (task.getInterfaceTaskId() == null) {
-                        parent.getRequestManager().onTaskFailed(rootId);
-                    } else {
-                        // Interface task echouee: remettre en NEEDED pour re-tentative
-                        notifyInterfaceTaskFailed(task);
-                    }
-                }
-
-                parent.setChanged();
-                parent.getItemAggregator().setNeedsSync(true);
-                return;
-            }
-        }
-    }
-
-    /**
-     * Notifie l'interface qu'une task a echoue: remet la task en NEEDED pour re-tentative.
-     */
-    private void notifyInterfaceTaskFailed(DeliveryTask task) {
-        if (task.getInterfacePos() == null || task.getInterfaceTaskId() == null) return;
-        if (parent.getLevel() == null) return;
-        if (!parent.getLevel().hasChunkAt(task.getInterfacePos())) return;
-        BlockEntity be = parent.getLevel().getBlockEntity(task.getInterfacePos());
-        if (be instanceof NetworkInterfaceBlockEntity iface) {
-            iface.unlockTask(task.getInterfaceTaskId());
-        }
-    }
-
-    /**
-     * Verifie s'il reste des subtasks actives ou en queue pour un meme rootTaskId.
-     */
-    private boolean hasRemainingSubtasks(UUID rootId) {
-        for (DeliveryTask t : activeTasks) {
-            if (t.getRootTaskId().equals(rootId)
-                    && (t.getState() == DeliveryTask.DeliveryState.FLYING
-                        || t.getState() == DeliveryTask.DeliveryState.QUEUED)) {
-                return true;
-            }
-        }
-        for (DeliveryTask t : deliveryQueue) {
-            if (t.getRootTaskId().equals(rootId)
-                    && t.getState() == DeliveryTask.DeliveryState.QUEUED) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // === Task Cancellation ===
-
-    /**
-     * Annule une tâche par son ID.
-     * Si la tâche est en queue, la retire. Si active, marque comme FAILED et tue la bee.
-     * Annule aussi récursivement les tâches dépendantes.
-     *
-     * @return true si la tâche a été trouvée et annulée
-     */
-    public boolean cancelTask(UUID taskId) {
-        // Verifier dans la queue
-        Iterator<DeliveryTask> it = deliveryQueue.iterator();
-        while (it.hasNext()) {
-            DeliveryTask task = it.next();
-            if (task.getTaskId().equals(taskId)) {
-                it.remove();
-                handleCancelledTask(task);
-                cancelDependentTasks(taskId);
-                parent.setChanged();
-                return true;
-            }
-        }
-
-        // Verifier dans les taches actives
-        for (DeliveryTask task : activeTasks) {
-            if (task.getTaskId().equals(taskId)) {
-                task.setState(DeliveryTask.DeliveryState.FAILED);
-
-                // Chercher une tache en queue pour rediriger la bee
-                DeliveryTask nextTask = findEligibleTask();
-                if (nextTask != null) {
-                    deliveryQueue.remove(nextTask);
-                    DeliveryTask activated = beeSpawner.redirectBee(task, nextTask);
-                    if (activated != null) {
-                        activeTasks.add(activated);
-                    }
-                } else {
-                    beeSpawner.recallBeeForTask(task);
-                }
-
-                handleCancelledTask(task);
-                cancelDependentTasks(taskId);
-                parent.setChanged();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Annule recursivement toutes les taches qui dependent de la tache donnee,
-     * ainsi que toutes les subtasks du meme groupe (meme rootTaskId).
-     */
-    private void cancelDependentTasks(UUID cancelledTaskId) {
-        List<DeliveryTask> toCancel = new ArrayList<>();
-        for (DeliveryTask task : deliveryQueue) {
-            if (task.getDependencies().contains(cancelledTaskId)) {
-                toCancel.add(task);
-            }
-        }
-        // Annuler les subtasks du meme groupe
-        for (DeliveryTask task : deliveryQueue) {
-            if (cancelledTaskId.equals(task.getParentTaskId()) && !toCancel.contains(task)) {
-                toCancel.add(task);
-            }
-        }
-        for (DeliveryTask task : toCancel) {
-            deliveryQueue.remove(task);
-            handleCancelledTask(task);
-            cancelDependentTasks(task.getTaskId());
-        }
-        // Annuler les subtasks actives (bees en vol)
-        for (DeliveryTask task : new ArrayList<>(activeTasks)) {
-            if (cancelledTaskId.equals(task.getParentTaskId())) {
-                task.setState(DeliveryTask.DeliveryState.FAILED);
-                beeSpawner.recallBeeForTask(task);
-                handleCancelledTask(task);
-            }
-        }
-    }
-
-    /**
-     * Gere les consequences de l'annulation d'une tache.
-     * Pour les taches preloaded: remet les items dans le reseau (drop au sol si plein).
-     */
-    private void handleCancelledTask(DeliveryTask task) {
-        if (task.isPreloaded()) {
-            ItemStack toReturn = task.getTemplate().copyWithCount(task.getCount());
-            ItemStack remaining = parent.getItemAggregator().depositItem(toReturn);
-            if (!remaining.isEmpty() && parent.getLevel() != null) {
-                Containers.dropItemStack(parent.getLevel(),
-                    parent.getBlockPos().getX() + 0.5,
-                    parent.getBlockPos().getY() + 1.0,
-                    parent.getBlockPos().getZ() + 0.5, remaining);
-            }
-        }
-    }
-
-    // === Task Display Data ===
-
-    /**
-     * Retourne les donnees d'affichage pour l'onglet Tasks du terminal.
-     */
     public List<TaskDisplayData> getTaskDisplayData() {
         return DeliveryTaskDisplayBuilder.buildDisplayData(
-            activeTasks, deliveryQueue, honeyDepleted,
-            parent.getMaxDeliveryBees(), completedTaskIds,
+            activeTasks, deliveryQueue, honeyManager.isHoneyDepleted(),
+            parent.getMaxDeliveryBees(), completedTaskIds.keySet(),
             parent.getRequestManager(), containerOps, parent.getLevel());
     }
 
-    /**
-     * Verifie si une tache est encore en attente (queue ou active).
-     */
     public boolean isTaskPending(UUID taskId) {
         for (DeliveryTask t : activeTasks) {
             if (t.getTaskId().equals(taskId)) return true;
@@ -512,76 +289,73 @@ public class StorageDeliveryManager {
         return false;
     }
 
-    /**
-     * Retourne le nombre de tâches actives (bees en vol).
-     */
-    public int getActiveTaskCount() {
-        return activeTasks.size();
-    }
+    public int getActiveTaskCount() { return activeTasks.size(); }
+    public int getQueuedTaskCount() { return deliveryQueue.size(); }
+    public boolean isTasksDirty() { return tasksDirty; }
+    public void resetTasksDirty() { tasksDirty = false; }
 
-    /**
-     * Retourne le nombre de tâches en queue.
-     */
-    public int getQueuedTaskCount() {
-        return deliveryQueue.size();
+    public boolean isTooBusyFor(DeliveryTask.TaskOrigin origin) {
+        if (origin == DeliveryTask.TaskOrigin.REQUEST) return false;
+        int maxQueueSize = QUEUE_SIZE_PER_BEE * parent.getMaxDeliveryBees();
+        return (deliveryQueue.size() + activeTasks.size()) >= maxQueueSize;
     }
 
     // === Tick ===
 
-    /**
-     * Tick du timer de livraison et reevaluation.
-     * Utilise gameTick + offset pour stagger entre controllers.
-     */
     public void tickDelivery(long gameTick) {
+        if (deliveryQueue.isEmpty() && activeTasks.isEmpty()) {
+            idleTicks++;
+            if (idleTicks >= IDLE_SLEEP_THRESHOLD) {
+                sleeping = true;
+            }
+        } else {
+            idleTicks = 0;
+            sleeping = false;
+        }
+
+        if (sleeping && gameTick % SLEEP_TICK_INTERVAL != 0) {
+            return;
+        }
+
         long offset = parent.getBlockPos().hashCode();
         if ((gameTick + offset) % DELIVERY_PROCESS_INTERVAL == 0) {
-            processDeliveryQueue();
+            processDeliveryQueue(gameTick);
         }
         if ((gameTick + offset) % REEVALUATE_INTERVAL == 0) {
-            reevaluateTasks();
+            reevaluateTasks(gameTick);
         }
     }
 
-    /**
-     * Tick de la consommation de miel.
-     * Utilise gameTick + offset pour stagger entre controllers.
-     */
     public void tickHoneyConsumption(long gameTick) {
-        long offset = parent.getBlockPos().hashCode();
-        if ((gameTick + offset) % HONEY_CONSUME_INTERVAL == 0) {
-            consumeHoney();
-        }
+        honeyManager.tickHoneyConsumption(gameTick);
     }
 
     // === NBT ===
 
     public void save(CompoundTag tag, HolderLookup.Provider registries) {
-        tag.putBoolean("HoneyDepleted", honeyDepleted);
+        tag.putBoolean("HoneyDepleted", honeyManager.isHoneyDepleted());
 
         ListTag queueTag = new ListTag();
         for (DeliveryTask task : deliveryQueue) {
             queueTag.add(task.save(registries));
         }
-        // Sauvegarder les taches actives comme QUEUED SANS muter l'original
-        // (getUpdateTag appelle aussi saveAdditional, muter ici corromprait l'etat)
         for (DeliveryTask task : activeTasks) {
-            CompoundTag taskTag = task.save(registries);
-            taskTag.putString("State", DeliveryTask.DeliveryState.QUEUED.name());
-            queueTag.add(taskTag);
+            queueTag.add(task.save(registries));
         }
         tag.put("DeliveryQueue", queueTag);
 
         ListTag completedTag = new ListTag();
-        for (UUID id : completedTaskIds) {
+        for (Map.Entry<UUID, Long> entry : completedTaskIds.entrySet()) {
             CompoundTag idTag = new CompoundTag();
-            idTag.putUUID("Id", id);
+            idTag.putUUID("Id", entry.getKey());
+            idTag.putLong("Tick", entry.getValue());
             completedTag.add(idTag);
         }
         tag.put("CompletedTaskIds", completedTag);
     }
 
     public void load(CompoundTag tag, HolderLookup.Provider registries) {
-        honeyDepleted = tag.getBoolean("HoneyDepleted");
+        honeyManager.setHoneyDepleted(tag.getBoolean("HoneyDepleted"));
 
         deliveryQueue.clear();
         activeTasks.clear();
@@ -589,7 +363,15 @@ public class StorageDeliveryManager {
             ListTag queueTag = tag.getList("DeliveryQueue", Tag.TAG_COMPOUND);
             for (int i = 0; i < queueTag.size(); i++) {
                 DeliveryTask task = DeliveryTask.load(queueTag.getCompound(i), registries);
-                deliveryQueue.add(task);
+                if (task.getState() == DeliveryTask.DeliveryState.FLYING) {
+                    if (task.getInterfaceTaskId() != null) {
+                        // Interface task: l'interface gere ses propres items
+                    } else {
+                        returnPreloadedItems(task);
+                    }
+                } else {
+                    deliveryQueue.add(task);
+                }
             }
         }
 
@@ -597,12 +379,28 @@ public class StorageDeliveryManager {
         if (tag.contains("CompletedTaskIds")) {
             ListTag completedTag = tag.getList("CompletedTaskIds", Tag.TAG_COMPOUND);
             for (int i = 0; i < completedTag.size(); i++) {
-                completedTaskIds.add(completedTag.getCompound(i).getUUID("Id"));
+                CompoundTag entry = completedTag.getCompound(i);
+                UUID id = entry.getUUID("Id");
+                long tick = entry.contains("Tick") ? entry.getLong("Tick") : 0L;
+                completedTaskIds.put(id, tick);
             }
         }
 
         if (!deliveryQueue.isEmpty()) {
-            queueDirty = true;
+            tasksDirty = true;
+        }
+    }
+
+    private void returnPreloadedItems(DeliveryTask task) {
+        if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
+        ItemStack toReturn = task.getTemplate().copyWithCount(task.getCount());
+        ItemStack remainder = parent.depositItem(toReturn);
+        if (!remainder.isEmpty()) {
+            Containers.dropItemStack(parent.getLevel(),
+                parent.getBlockPos().getX() + 0.5,
+                parent.getBlockPos().getY() + 1.0,
+                parent.getBlockPos().getZ() + 0.5,
+                remainder);
         }
     }
 }

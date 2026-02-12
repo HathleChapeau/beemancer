@@ -3,6 +3,243 @@
 ################################################################################
 
 ================================================================================
+2026-02-11 - Storage Brainstorm Groupe 5 — Énergie et Progression
+================================================================================
+
+Implementation de 14 changements issus du brainstorming (CX→DV).
+
+BUGFIXES TRIVIALES:
+- [DL]: isFormed() check dans StorageHiveBlockEntity.getController()
+  + getControllerRaw() pour les cleanup paths (onRemove)
+  Fichiers: StorageHiveBlockEntity.java, StorageHiveBlock.java
+- [DP]: Tick stagger — (gameTick + worldPosition.hashCode()) % 100
+  Fichier: StorageHiveBlockEntity.java
+- [DV]: Suppression double validation hive→controller — le controller valide seul
+  Fichier: StorageHiveBlockEntity.java (suppression validateTimer, serverTick simplifie)
+
+HONEY BUFFER [DS]:
+- Buffer miel interne au controller (base 8000 mB)
+- HoneyEnergyManager: pull depuis reservoirs (10 ticks), consume depuis buffer (20 ticks)
+- NBT save/load: HoneyStored, HoneyCapacity
+  Fichiers: StorageControllerBlockEntity.java, HoneyEnergyManager.java
+
+ESSENCE REPURPOSE [DF, DG, DH]:
+- TOLERANCE: "Craft Speed" supprime → "Honey Reserve" (+1000/+2000/+4000/+8000 mB capacite)
+- DIURNAL: Tier 1 efficiency, jour seulement (level × 10%)
+- NOCTURNAL: Tier 1 efficiency, nuit seulement (level × 10%)
+- INSOMNIA: Tier 2 efficiency, toujours (level × 10%)
+- TOLERANCE/DIURNAL/NOCTURNAL/INSOMNIA ne coutent plus de miel
+  Fichiers: ControllerStats.java, EssenceItem.java, en_us.json, fr_fr.json
+
+BALANCE [DT, DI, DM]:
+- [DT]: Cout quadratique essences: LESSER=5, NORMAL=15, GREATER=30, PERFECT=50 mB/s
+- [DI]: Suppression plafond efficiency (plus de Math.min(total, 100))
+- [DM]: Multiplicateurs hive reduits: T1=1.15, T2=1.30, T3=1.50 (etait 1.5/2.0/2.5)
+  Fichier: ControllerStats.java
+
+INTERFACE RELAY COST [CY]:
+- Interfaces coutent 5 × relay_depth en miel
+- BFS depuis controller pour calculer profondeur de chaque relay
+  Fichier: StorageControllerBlockEntity.java (+getInterfaceRelayCost())
+
+GUI UPDATES [CZ, DJ, DM-display]:
+- [CZ]: Jauge de miel (ambre > 20%, rouge < 20%) avec texte "X / Y mB"
+- [DJ]: Barres visuelles pour Flight Speed, Search Speed, Quantity, Honey Reserve
+- [DM]: Affichage multiplicateur hive "x1.50"
+- Remplacement "Craft Speed" par "Honey Reserve"
+- ContainerData etendu a 18 indices (+honeyStored, +honeyCapacity, +hiveMultiplier)
+  Fichiers: StorageTerminalScreen.java, StorageTerminalMenu.java
+
+LANG:
+- en_us.json: +honey_gauge, +honey_reserve, +hive_multiplier, +delivery_bees, +hives,
+  +7 essence role tooltips, mise a jour essence type names
+- fr_fr.json: idem en francais
+
+================================================================================
+2026-02-11 - Storage Brainstorm Groupe 4 — Automation et Interfaces
+================================================================================
+
+Implementation de 13 changements issus du brainstorming 4 experts.
+
+BUGFIXES P0 TRIVIALES:
+- [BU]: isFormed() check dans getController() — evite operations sur controller non forme
+  Fichier: NetworkInterfaceBlockEntity.java
+- [CH]: matchesTag() exact match — path.contains → path.equals
+  Fichier: InterfaceFilter.java
+- [BV]: Tick stagger — (gameTick + blockPos.hashCode()) % 40 au lieu de scanTimer++
+  Fichier: NetworkInterfaceBlockEntity.java
+
+BUGFIXES P1:
+- [CC]: Deduire locked count du calcul needed — evite doublons de tasks
+  Fichiers: ImportInterfaceBlockEntity.java, ExportInterfaceBlockEntity.java
+- [CM]: lockedTick timeout 1 min (1200 ticks) — unlock tasks zombies
+  Fichier: InterfaceTaskManager.java
+
+MIGRATION IItemHandler + needsScan:
+- [BW]: Container → IItemHandler — NeoForge capabilities au lieu de Container
+  Fichiers: NetworkInterfaceBlockEntity.java, ImportInterfaceBlockEntity.java,
+    ExportInterfaceBlockEntity.java, ContainerHelper.java (+4 overloads),
+    DeliveryPhaseGoal.java (rename getAdjacentInventory → getAdjacentItemHandler)
+- [BY]: needsScan flag — scan immediat sur changement filtre/active/delivery
+  Fichier: NetworkInterfaceBlockEntity.java (+ wiring dans toutes les methodes setter)
+
+TASK IMPROVEMENTS:
+- [CN]: Ne pas sauvegarder les LOCKED tasks — evite fantomes au reload
+  Fichiers: InterfaceTask.java (save simplifie), InterfaceTaskManager.java (filtre save)
+- [CO]: List → Map<UUID, InterfaceTask> — lookup O(1)
+  Fichier: InterfaceTaskManager.java (LinkedHashMap)
+
+FEATURES:
+- [CI]: Blocklist mode (inverted) — toggle Allow/Block par filtre + GUI [A/B]
+  Fichiers: InterfaceFilter.java, InterfaceActionPacket.java (+ACTION 9),
+    NetworkInterfaceScreen.java (+bouton toggle), NetworkInterfaceBlockEntity.java
+- [CF]: Export verification espace reseau — skip task si pas d'espace
+  Fichier: ExportInterfaceBlockEntity.java
+
+DECOMPOSITION:
+- [BZ]: NetworkInterfaceBlockEntity decompose en 3 classes (~775L → ~400L + 2 managers)
+  Crees: InterfaceTaskManager.java (~260L), InterfaceFilterManager.java (~180L)
+  Reecrit: NetworkInterfaceBlockEntity.java (~400L orchestrateur)
+
+PARTICULES:
+- [CP]: RUNE particles conditionnelles
+  Fichiers: StorageRelayBlock.java (conditionnel si connecte),
+    ImportInterfaceBlock.java (+animateTick si lie),
+    ExportInterfaceBlock.java (+animateTick si lie)
+
+================================================================================
+2026-02-11 - Storage Brainstorm Groupe 3 — Transport et Livraison
+================================================================================
+
+Implementation de 22 changements issus du brainstorming 4 experts.
+
+BUGFIXES P0 TRIVIALES:
+- [AR]: Fix consumeHoney() chest count — getNetworkRegistry().getChestCount()
+  Fichier: HoneyEnergyManager.java (ex-StorageDeliveryManager)
+- [BF]: Bee spawn position y+1.0 — au-dessus du bloc au lieu de y+0.5
+  Fichier: DeliveryBeeSpawner.java
+
+BUGFIX CRITIQUE:
+- [AS]: Fix item dupe/loss au reload — save etat exact, load restitue items FLYING
+  Fichiers: StorageDeliveryManager.java, DeliveryBeeEntity.java
+
+TIMEOUT + RETRY:
+- [AW]: Timeout FLYING 1 min (1200 ticks) — failTask sur timeout
+  Fichiers: DeliveryTask.java, StorageDeliveryManager.java
+- [AV]: Retry limit 3x + backoff exponentiel (20, 60, 180 ticks)
+  Fichier: DeliveryTask.java, DeliveryTaskLifecycle.java
+- [AT]: completedTaskIds TTL 30 sec — Map<UUID,Long> au lieu de Set<UUID>
+  Fichier: StorageDeliveryManager.java
+
+PERFORMANCE + FIXES:
+- [AX]: PriorityQueue — Comparator.comparingInt(DeliveryTask::getPriority)
+  Fichier: StorageDeliveryManager.java
+- [BD]: Map<UUID,Bee> (WeakReference) — lookup O(1) au lieu de AABB scan
+  Fichier: DeliveryBeeSpawner.java
+- [BE]: TOCTOU extract atomique — extract items AVANT spawn, restitution si echec
+  Fichier: DeliveryBeeSpawner.java
+- [BH]: Validation destination IItemHandler — check capability avant spawn
+  Fichier: DeliveryBeeSpawner.java
+- [BT]: cancelDependentTasks iteratif — Deque<UUID> au lieu de recursion
+  Fichier: DeliveryTaskCanceller.java
+- [BN]: Deferred recheckBlockedRequests — needsRecheck flag + requestRecheck()
+  Fichier: RequestManager.java
+
+FEATURES:
+- [BB]: Sleep mode — 30 sec inactivite, tick interval 40 au lieu de 10
+  Fichier: StorageDeliveryManager.java
+- [BC]: Backpressure isTooBusyFor — 50*maxBees, interfaces seulement
+  Fichier: StorageDeliveryManager.java
+- [AU]: Bee idle deposit — retrait discard premature, restitution items au reseau
+  Fichiers: DeliveryBeeEntity.java, DeliveryPhaseGoal.java
+
+DEDUPLICATION:
+- [BM]: Protection cross-network + outline vert epais en edit mode
+  Fichiers: StorageEvents.java, MultiblockEvents.java, StorageControllerBlockEntity.java,
+    StorageControllerRenderer.java, StorageRelayRenderer.java
+
+BUILDER + DECOMPOSITIONS:
+- [BS]: Builder pattern DeliveryTask — 5 constructeurs -> 1 private + Builder
+  Fichiers: DeliveryTask.java, StorageControllerBlockEntity.java, RequestManager.java
+- [AY][AZ]: Decomposition StorageDeliveryManager (735L -> 4 classes)
+  Crees: HoneyEnergyManager.java (~100L), DeliveryTaskLifecycle.java (~140L),
+    DeliveryTaskCanceller.java (~155L), StorageDeliveryManager.java (~405L orchestrateur)
+- [BI][BO]: Decomposition RequestManager (525L -> 3 classes)
+  Crees: RequestQueue.java (~150L), RequestProcessor.java (~160L),
+    RequestManager.java (~240L orchestrateur)
+
+Lang: +1 cle en_us/fr_fr: message.beemancer.chest_already_registered
+
+================================================================================
+2026-02-11 - Storage Brainstorm Groupe 2 — Items et Stockage
+================================================================================
+
+Implementation de 16 changements + 1 suppression issus du brainstorming 4 experts.
+
+BUGFIXES P0:
+- [AI]: Fix honey consumption source — appel surcharge 4 params ControllerStats
+  Fichier: StorageTerminalMenu.java
+- [AK]: isFormed() check dans getController() — evite NPE sur controller non forme
+  Fichier: StorageTerminalBlockEntity.java
+- [AJ]: Deferred processPendingRequests — needsProcessPending flag, execute au tick
+  Fichier: StorageTerminalBlockEntity.java
+- [T]: Dirty flag periodique pour changements externes — EXTERNAL_CHANGE_CHECK_INTERVAL=100
+  Fichier: StorageItemAggregator.java
+- [Z]: Tasks dirty flag dans StorageDeliveryManager — skip TasksSyncPacket si inchange
+  Fichier: StorageDeliveryManager.java, StorageItemAggregator.java
+- [AA]: SYNC_INTERVAL 40→20 ticks
+  Fichier: StorageItemAggregator.java
+
+SYNC OPTIMIZATIONS:
+- [W]: Tri cote client au lieu de server — sort dans setAggregatedItems/applyDeltaItems
+  Fichier: StorageItemAggregator.java, StorageTerminalMenu.java
+- [AB]: BigItemStack full sync — template+VarInt au lieu de ItemStack entier
+  Fichier: StorageItemsSyncPacket.java
+- [AE]: Binary search insert dans applyDeltaItems — Collections.binarySearch+add
+  Fichier: StorageTerminalMenu.java
+- [AF]: Reponse fragmentee gros inventaires — MAX_ITEMS_PER_PACKET=100, lastPacket flag
+  Fichier: StorageItemsSyncPacket.java, StorageItemAggregator.java, StorageTerminalMenu.java
+
+CACHE INCREMENTAL:
+- [U]: Cache incremental dans deposit/extract — Map<ItemStackKey, Integer>
+  Fichier: StorageItemAggregator.java (→AggregationCache.java)
+- [V]: Index coffres par contenu — Map<ItemStackKey, Set<BlockPos>> pour depot O(1)
+  Fichier: StorageItemAggregator.java (→AggregationCache.java, DepositStrategy.java)
+
+REQUEST INDEX:
+- [AP]: Index requests pour lookup O(1) — RequestKey record + Map dans RequestManager
+  Fichier: RequestManager.java, StorageTerminalBlockEntity.java
+
+CONTROLLER MENU REMOVAL:
+- [AQ]: Port 8 essence slots + DynamicTabEssenceSlot dans terminal
+  Fichiers supprimes: StorageControllerMenu.java, StorageControllerScreen.java
+  Fichiers modifies: StorageTerminalMenu.java, StorageTerminalScreen.java,
+    StorageControllerBlockEntity.java, StorageControllerBlock.java,
+    StorageTerminalBlockEntity.java, ClientSetup.java, BeemancerMenus.java
+  Lang: +1 cle (storage_controller.use_terminal)
+
+DECOMPOSITION AGGREGATOR:
+- [X]: StorageItemAggregator decompose en 4 classes + coordinateur
+  Fichiers crees: AggregationCache.java, DepositStrategy.java,
+    ViewerSyncManager.java, ItemStackKey.java
+  Fichier reecrit: StorageItemAggregator.java (~195L coordinateur)
+
+TERMINAL REFACTORING:
+- [AL]: Terminal = ecran pur — logique scan/process delegee au controller
+  Fichier: StorageTerminalBlockEntity.java (retire serverTick, scan, process)
+  Fichier: StorageControllerBlockEntity.java (+processTerminals)
+  Fichier: StorageTerminalBlock.java (getTicker → null)
+
+INVENTAIRE ILLIMITE + PAGINATION:
+- [AN]: Buffer 27 slots (3 pages x 9) deposit + pickup
+  Fichier: StorageTerminalBlockEntity.java (PAGE_SIZE=9, PAGES=3, setSize migration)
+  Fichier: StorageTerminalMenu.java (+PaginatedTabSlot, clickMenuButton, page data)
+  Fichier: StorageTerminalScreen.java (+page arrows rendering, click handling)
+
+DIFFERE:
+- [AD] Serial numbers → storage_brainstorm_differe.txt
+
+================================================================================
 2026-02-11 - Storage Brainstorm Groupe 1 — Reseau et Topologie
 ================================================================================
 

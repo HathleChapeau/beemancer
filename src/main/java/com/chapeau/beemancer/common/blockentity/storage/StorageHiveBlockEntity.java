@@ -39,8 +39,9 @@ import org.jetbrains.annotations.Nullable;
  * Stocke la position du controller lié et met à jour l'état visuel du bloc.
  * Le tier est lu depuis le bloc parent (StorageHiveBlock).
  *
- * Vérifie périodiquement que le controller existe toujours (toutes les 100 ticks).
- * Met à jour le blockstate HIVE_STATE quand notifié par le controller.
+ * Met à jour le blockstate HIVE_STATE periodiquement via tick stagger.
+ * La validation du lien controller→hive est faite par le controller
+ * dans validateNetworkBlocksAmortized() (pas de double validation).
  *
  * Sécurité: updateBlockState() vérifie l'état RÉEL du monde avant setBlock()
  * pour éviter de recréer un bloc fantôme pendant onRemove().
@@ -51,7 +52,6 @@ public class StorageHiveBlockEntity extends BlockEntity {
 
     @Nullable
     private BlockPos controllerPos = null;
-    private int validateTimer = 0;
 
     public StorageHiveBlockEntity(BlockPos pos, BlockState blockState) {
         super(BeemancerBlockEntities.STORAGE_HIVE.get(), pos, blockState);
@@ -90,9 +90,23 @@ public class StorageHiveBlockEntity extends BlockEntity {
 
         BlockEntity be = level.getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
+            if (!controller.isFormed()) return null;
             return controller;
         }
         return null;
+    }
+
+    /**
+     * Retourne le controller lie sans verifier isFormed().
+     * Utiliser UNIQUEMENT dans les cleanup paths (onRemove, unlinkController)
+     * ou le controller doit etre accessible meme si le multibloc n'est pas forme.
+     */
+    @Nullable
+    public StorageControllerBlockEntity getControllerRaw() {
+        if (controllerPos == null || level == null) return null;
+        if (!level.hasChunkAt(controllerPos)) return null;
+        BlockEntity be = level.getBlockEntity(controllerPos);
+        return be instanceof StorageControllerBlockEntity ctrl ? ctrl : null;
     }
 
     /**
@@ -148,24 +162,10 @@ public class StorageHiveBlockEntity extends BlockEntity {
 
     public void serverTick() {
         if (level == null || level.isClientSide()) return;
-
-        validateTimer++;
-        if (validateTimer >= VALIDATE_INTERVAL) {
-            validateTimer = 0;
-            if (controllerPos != null) {
-                if (!level.hasChunkAt(controllerPos)) {
-                    return;
-                }
-                BlockEntity be = level.getBlockEntity(controllerPos);
-                if (!(be instanceof StorageControllerBlockEntity)) {
-                    controllerPos = null;
-                    setChanged();
-                    updateBlockState(StorageHiveBlock.HiveState.UNLINKED);
-                    syncToClient();
-                } else {
-                    updateVisualState();
-                }
-            }
+        if (controllerPos == null) return;
+        long gameTick = level.getGameTime();
+        if ((gameTick + worldPosition.hashCode()) % VALIDATE_INTERVAL == 0) {
+            updateVisualState();
         }
     }
 

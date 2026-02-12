@@ -48,6 +48,7 @@ public class InterfaceFilter {
     public static final int MAX_FILTERS = 3;
 
     private FilterMode mode = FilterMode.ITEM;
+    private boolean inverted = false;
     private final ItemStackHandler items = new ItemStackHandler(SLOTS_PER_FILTER);
     private String textFilter = "";
     private final Set<Integer> selectedSlots = new HashSet<>();
@@ -63,6 +64,16 @@ public class InterfaceFilter {
 
     public void setMode(FilterMode mode) {
         this.mode = mode;
+    }
+
+    // === Inverted (blocklist) ===
+
+    public boolean isInverted() {
+        return inverted;
+    }
+
+    public void setInverted(boolean inverted) {
+        this.inverted = inverted;
     }
 
     // === Items (ghost slots) ===
@@ -133,13 +144,16 @@ public class InterfaceFilter {
     /**
      * Verifie si un item correspond a ce filtre.
      * Retourne true si le filtre est vide et checkEmpty est true.
+     * En mode inverted (blocklist), le resultat est inverse.
      */
     public boolean matches(ItemStack stack, boolean checkEmpty) {
+        boolean result;
         if (mode == FilterMode.ITEM) {
-            return matchesItem(stack, checkEmpty);
+            result = matchesItem(stack, checkEmpty);
         } else {
-            return matchesText(stack, checkEmpty);
+            result = matchesText(stack, checkEmpty);
         }
+        return inverted ? !result : result;
     }
 
     private boolean matchesItem(ItemStack stack, boolean checkEmpty) {
@@ -178,8 +192,7 @@ public class InterfaceFilter {
         for (var tag : tags) {
             String fullPath = tag.location().toString();
             String path = tag.location().getPath();
-            if (path.equals(tagName) || fullPath.equals(tagName)
-                || path.contains(tagName)) {
+            if (path.equals(tagName) || fullPath.equals(tagName)) {
                 return true;
             }
         }
@@ -191,6 +204,7 @@ public class InterfaceFilter {
     public CompoundTag save(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
         tag.putString("Mode", mode.name());
+        tag.putBoolean("Inverted", inverted);
         tag.put("Items", items.serializeNBT(registries));
         tag.putString("TextFilter", textFilter);
         tag.putInt("Quantity", quantity);
@@ -209,6 +223,8 @@ public class InterfaceFilter {
         } catch (IllegalArgumentException e) {
             mode = FilterMode.ITEM;
         }
+
+        inverted = tag.getBoolean("Inverted");
 
         if (tag.contains("Items")) {
             items.deserializeNBT(registries, tag.getCompound("Items"));

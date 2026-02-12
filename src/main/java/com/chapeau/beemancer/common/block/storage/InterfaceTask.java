@@ -154,17 +154,7 @@ public class InterfaceTask {
         tag.putString("Type", type.name());
         tag.put("Template", template.saveOptional(registries));
         tag.putInt("Count", count);
-        tag.putInt("LockedCount", lockedCount);
-        // LOCKED sauvegarde comme NEEDED (bees ephemeres au reload)
-        if (state == TaskState.LOCKED) {
-            tag.putString("State", TaskState.NEEDED.name());
-        } else {
-            tag.putString("State", state.name());
-        }
-        if (assignedBeeTaskId != null && state != TaskState.LOCKED) {
-            tag.putUUID("AssignedBeeTaskId", assignedBeeTaskId);
-        }
-        tag.putLong("LockedTick", lockedTick);
+        tag.putString("State", state.name());
         return tag;
     }
 
@@ -173,21 +163,9 @@ public class InterfaceTask {
         TaskType type = TaskType.valueOf(tag.getString("Type"));
         ItemStack template = ItemStack.parseOptional(registries, tag.getCompound("Template"));
         int count = tag.getInt("Count");
-        int lockedCount = tag.getInt("LockedCount");
         TaskState state = TaskState.valueOf(tag.getString("State"));
-        UUID assignedBeeTaskId = tag.contains("AssignedBeeTaskId")
-            ? tag.getUUID("AssignedBeeTaskId") : null;
-        long lockedTick = tag.getLong("LockedTick");
 
-        // Reset locked state on load (bees ephemeres)
-        if (state == TaskState.LOCKED) {
-            state = TaskState.NEEDED;
-            lockedCount = 0;
-            assignedBeeTaskId = null;
-            lockedTick = 0;
-        }
-
-        return new InterfaceTask(taskId, type, template, count, lockedCount,
-            state, assignedBeeTaskId, lockedTick);
+        return new InterfaceTask(taskId, type, template, count, 0,
+            state, null, 0);
     }
 }

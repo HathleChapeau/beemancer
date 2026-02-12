@@ -291,4 +291,71 @@ public final class ContainerHelper {
     public static boolean hasSpaceFor(IItemHandler handler, ItemStack template, int count) {
         return availableSpace(handler, template) >= count;
     }
+
+    /**
+     * Insere un ItemStack dans un IItemHandler sur les slots specifies.
+     * Merge d'abord dans les stacks existants, puis remplit les slots vides.
+     */
+    public static ItemStack insertItem(IItemHandler handler, ItemStack stack, int[] slots) {
+        if (stack.isEmpty()) return ItemStack.EMPTY;
+        ItemStack remaining = stack.copy();
+        for (int slot : slots) {
+            if (remaining.isEmpty()) break;
+            remaining = handler.insertItem(slot, remaining, false);
+        }
+        return remaining;
+    }
+
+    /**
+     * Compte le nombre d'items d'un type dans des slots specifiques d'un IItemHandler.
+     */
+    public static int countItem(IItemHandler handler, ItemStack template, int[] slots) {
+        if (template.isEmpty()) return 0;
+        int count = 0;
+        for (int slot : slots) {
+            if (slot < 0 || slot >= handler.getSlots()) continue;
+            ItemStack existing = handler.getStackInSlot(slot);
+            if (ItemStack.isSameItemSameComponents(existing, template)) {
+                count += existing.getCount();
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Calcule l'espace disponible total pour un type d'item dans des slots specifiques.
+     */
+    public static int availableSpace(IItemHandler handler, ItemStack template, int[] slots) {
+        if (template.isEmpty()) return 0;
+        int space = 0;
+        for (int slot : slots) {
+            if (slot < 0 || slot >= handler.getSlots()) continue;
+            ItemStack existing = handler.getStackInSlot(slot);
+            if (existing.isEmpty()) {
+                space += handler.getSlotLimit(slot);
+            } else if (ItemStack.isSameItemSameComponents(existing, template)) {
+                space += Math.min(handler.getSlotLimit(slot), existing.getMaxStackSize()) - existing.getCount();
+            }
+        }
+        return space;
+    }
+
+    /**
+     * Calcule la capacite totale d'un IItemHandler pour un type d'item dans des slots specifiques.
+     * Slots vides ou contenant le meme item sont comptes.
+     */
+    public static int calculateCapacity(IItemHandler handler, ItemStack template, int[] slots) {
+        if (template.isEmpty()) return 0;
+        int capacity = 0;
+        for (int slot : slots) {
+            if (slot < 0 || slot >= handler.getSlots()) continue;
+            ItemStack existing = handler.getStackInSlot(slot);
+            if (existing.isEmpty()) {
+                capacity += Math.min(handler.getSlotLimit(slot), template.getMaxStackSize());
+            } else if (ItemStack.isSameItemSameComponents(existing, template)) {
+                capacity += Math.min(handler.getSlotLimit(slot), existing.getMaxStackSize());
+            }
+        }
+        return capacity;
+    }
 }

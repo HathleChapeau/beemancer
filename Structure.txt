@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-02-11                     #
-#  (Storage Network Brainstorm G1 - 2026-02-11)                                 #
+#  (Storage Network Brainstorm G5 - 2026-02-11)                                 #
 ################################################################################
 
 ================================================================================
@@ -85,13 +85,24 @@ Philosophie:
 │ common/entity/bee/goal/MoveToTargetGoal│ Goal navigation bee via BeeWand    │
 │ common/blockentity/storage/           │                                        │
 │   StorageChestManager               │ Gestion coffres réseau stockage      │
-│   StorageItemAggregator             │ Agrégation/dépôt/extraction items    │
-│   StorageDeliveryManager            │ Orchestrateur queues/tick/cancel/NBT │
+│   StorageItemAggregator             │ Coordinateur agrégation (délègue)    │
+│   AggregationCache                  │ Caches items, fingerprints, index    │
+│   DepositStrategy                   │ Dépôt/extraction items 5 passes      │
+│   ViewerSyncManager                 │ Sync viewers, delta, fragmentation   │
+│   ItemStackKey                      │ Clé d'agrégation item+components     │
+│   StorageDeliveryManager            │ Orchestrateur livraison (delegue)    │
+│   DeliveryTaskLifecycle             │ Completion, echec, retry taches      │
+│   DeliveryTaskCanceller             │ Annulation taches + dependances      │
+│   HoneyEnergyManager                │ Pull reservoirs + consume buffer miel │
 │   DeliveryNetworkPathfinder         │ BFS pathfinding graphe reseau        │
 │   DeliveryContainerOps              │ Recherche/extraction/depot coffres   │
 │   DeliveryTaskDisplayBuilder        │ Construction donnees affichage Tasks │
 │   DeliveryBeeSpawner                │ Spawn, recall, redirect, kill bees   │
-│   RequestManager                    │ Demandes terminaux (joueur)          │
+│   RequestManager                    │ Orchestrateur demandes (delegue)     │
+│   RequestQueue                      │ Collection + index demandes          │
+│   RequestProcessor                  │ Traitement import/export/validation  │
+│   InterfaceTaskManager             │ Gestion tasks interfaces (Map UUID)  │
+│   InterfaceFilterManager           │ Gestion filtres interfaces           │
 │   StorageMultiblockManager          │ Formation/destruction multibloc      │
 │   HiveManager                       │ Gestion hives liees au controller    │
 │ common/block/hive/                    │                                        │
@@ -335,7 +346,7 @@ LISTE DES FEATURES:
   Assets modifiés: blockstates/centrifuge_heart.json
 
 → Storage Hive (3 Tiers)
-  Description: Bloc ruche liee directement au Storage Controller. 3 tiers (T1=+1 bee, T2=+2, T3=+3). Consommation miel multiplicative (T1=x1.5, T2=x2.0, T3=x2.5). +1 slot essence par hive (max 4 hives = 8 slots total). 3 etats visuels: UNLINKED, LINKED, ACTIVE.
+  Description: Bloc ruche liee directement au Storage Controller. 3 tiers (T1=+1 bee, T2=+2, T3=+3). Consommation miel multiplicative [G5]: T1=x1.15, T2=x1.30, T3=x1.50. +1 slot essence par hive (max 4 hives = 8 slots total). 3 etats visuels: UNLINKED, LINKED, ACTIVE. Tick stagger [G5]: updateVisualState() seulement, pas de double validation.
   Scripts crees: StorageHiveBlock.java, StorageHiveBlockEntity.java
   Scripts modifies: StorageControllerBlockEntity.java, StorageNetworkRegistry.java, StorageEvents.java, ControllerStats.java, StorageDeliveryManager.java, StorageMultiblockManager.java, StorageControllerMenu.java, StorageControllerScreen.java
   Assets: 3 blockstates, 9 block models, 3 item models, 3 loot tables
@@ -393,6 +404,93 @@ LISTE DES FEATURES:
   Scripts crees: HiveManager.java
   Scripts modifies: StorageTerminalBlockEntity.java, StorageChestManager.java, StorageControllerBlockEntity.java, ControllerStats.java, StorageDeliveryManager.java, StorageItemAggregator.java, DeliveryContainerOps.java, StorageHelper.java, ContainerHelper.java, StorageEvents.java, StorageControllerMenu.java
   Dependances: StorageHelper (IItemHandler methods), ContainerHelper (IItemHandler overloads)
+  Registres modifies: aucun
+
+→ Storage Brainstorm Groupe 2 — Items et Stockage (16 changements + 1 suppression)
+  Description: Ameliorations items/stockage/sync/terminal issues du brainstorming 4 experts. 8 etapes implementees:
+    Etape 1 — Bugfixes P0:
+      [AI] Fix honey consumption source (surcharge 4 params)
+      [AK] isFormed() check dans getController()
+      [AJ] Deferred processPendingRequests (needsProcessPending flag)
+      [T] Dirty flag periodique pour changements externes (100 ticks)
+      [Z] Tasks dirty flag dans StorageDeliveryManager
+      [AA] SYNC_INTERVAL 40→20 ticks
+    Etape 2 — Sync optimizations:
+      [W] Tri cote client au lieu de server
+      [AB] BigItemStack full sync (template+VarInt)
+      [AE] Binary search insert dans applyDeltaItems
+      [AF] Reponse fragmentee pour gros inventaires (MAX_ITEMS_PER_PACKET=100)
+    Etape 3 — Aggregator cache:
+      [U] Cache incremental dans deposit/extract (Map<ItemStackKey, Integer>)
+      [V] Index coffres par contenu pour depot O(1) (Map<ItemStackKey, Set<BlockPos>>)
+    Etape 4 — Request index:
+      [AP] Index requests pour lookup O(1) (hasActiveRequest)
+    Etape 5 — Controller menu removal:
+      [AQ] Port 8 essence slots + DynamicTabEssenceSlot dans terminal, retrait StorageControllerMenu/Screen
+    Etape 6 — Decomposition aggregator:
+      [X] StorageItemAggregator decompose en: AggregationCache, DepositStrategy, ViewerSyncManager, ItemStackKey
+    Etape 7 — Terminal refactoring:
+      [AL] Terminal = ecran pur, logique scan/process delegee au controller via processTerminals()
+    Etape 8 — Inventaire illimite + pagination:
+      [AN] Buffer 27 slots (3 pages) deposit + pickup, PaginatedTabSlot, page arrows dans Screen
+  Scripts crees: AggregationCache.java, DepositStrategy.java, ViewerSyncManager.java, ItemStackKey.java
+  Scripts supprimes: StorageControllerMenu.java, StorageControllerScreen.java
+  Scripts modifies: StorageItemAggregator.java, StorageTerminalBlockEntity.java, StorageTerminalMenu.java, StorageTerminalScreen.java, StorageControllerBlockEntity.java, StorageControllerBlock.java, StorageTerminalBlock.java, StorageDeliveryManager.java, StorageItemsSyncPacket.java, RequestManager.java, ControllerStats.java, BeemancerMenu.java, ClientSetup.java, BeemancerMenus.java
+  Lang: +1 cle en_us/fr_fr (storage_controller.use_terminal)
+  Dependances: aucune nouvelle
+  Registres modifies: BeemancerMenus (-STORAGE_CONTROLLER)
+
+→ Storage Brainstorm Groupe 3 — Transport et Livraison (22 changements)
+  Description: Ameliorations transport/livraison issues du brainstorming 4 experts. 10 etapes implementees:
+    Etape 1 — Bugfixes P0 triviales:
+      [AR] Fix consumeHoney() chest count (getNetworkRegistry au lieu de getChestManager)
+      [BF] Bee spawn position y+1.0 (au-dessus du bloc)
+    Etape 2 — Bugfix CRITIQUE save/load dupe:
+      [AS] Fix item dupe au reload (save etat exact, load restitue items FLYING)
+    Etape 3 — Timeout FLYING + retry limit:
+      [AW] Timeout FLYING 1 min (1200 ticks)
+      [AV] Retry limit 3x avec backoff exponentiel (20, 60, 180 ticks)
+      [AT] completedTaskIds eviction TTL 30 sec (Map<UUID,Long>)
+    Etape 4 — Performance + fixes preventifs:
+      [AX] PriorityQueue au lieu de LinkedList pour deliveryQueue
+      [BD] Map<UUID,Bee> (WeakReference) au lieu de AABB scan
+      [BE] TOCTOU extract atomique avant spawn
+      [BH] Validation destination IItemHandler
+      [BT] cancelDependentTasks iteratif (Deque au lieu de recursion)
+      [BN] Deferred recheckBlockedRequests (needsRecheck flag)
+    Etape 5 — Features:
+      [BB] Sleep mode apres 30 sec inactivite (SLEEP_TICK_INTERVAL=40)
+      [BC] Backpressure isTooBusyFor (50*maxBees, interfaces seulement)
+      [AU] Bee idle+items deposit automatique (retrait discard premature)
+    Etape 6 — Deduplication coffre + visuel edit mode:
+      [BM] Protection cross-network + outline vert epais en edit mode
+    Etape 7 — Builder DeliveryTask:
+      [BS] Builder pattern (5 constructeurs -> 1 private + Builder class)
+    Etape 8 — Decomposition StorageDeliveryManager:
+      [AY] HoneyEnergyManager extrait (consommation miel)
+      [AZ] StorageDeliveryManager decompose en 4 classes (orchestrateur + lifecycle + canceller + honey)
+    Etape 9 — Decomposition RequestManager:
+      [BI] RequestManager decompose en 3 classes (orchestrateur + queue + processor)
+      [BO] RequestQueue avec index composite
+    Etape 10 — Cleanup:
+      Suppression references autocraft (deja nettoyees), mise a jour Structure
+  Scripts crees: HoneyEnergyManager.java, DeliveryTaskLifecycle.java, DeliveryTaskCanceller.java, RequestQueue.java, RequestProcessor.java
+  Scripts modifies: StorageDeliveryManager.java, DeliveryTask.java, DeliveryBeeSpawner.java, DeliveryBeeEntity.java, DeliveryPhaseGoal.java, RequestManager.java, StorageControllerBlockEntity.java, StorageControllerRenderer.java, StorageRelayRenderer.java, StorageEvents.java, MultiblockEvents.java
+  Lang: +1 cle en_us/fr_fr (chest_already_registered)
+  Dependances: aucune nouvelle
+  Registres modifies: aucun
+
+→ Storage Brainstorm Groupe 4 — Automation et Interfaces (13 changements)
+  Description: Ameliorations interfaces import/export: isFormed() check, tick stagger, IItemHandler migration, needsScan flag, lockedTick timeout, blocklist mode, export space check, decomposition NetworkInterfaceBlockEntity, particules RUNE conditionnelles.
+  Details: voir Structure/changelog.txt (entree 2026-02-11 G4)
+  Scripts crees: InterfaceTaskManager.java, InterfaceFilterManager.java
+  Scripts modifies: NetworkInterfaceBlockEntity.java, ImportInterfaceBlockEntity.java, ExportInterfaceBlockEntity.java, InterfaceFilter.java, InterfaceTask.java, InterfaceActionPacket.java, NetworkInterfaceScreen.java, ContainerHelper.java, DeliveryPhaseGoal.java, StorageRelayBlock.java, ImportInterfaceBlock.java, ExportInterfaceBlock.java
+
+→ Storage Brainstorm Groupe 5 — Energie et Progression (14 changements)
+  Description: Honey buffer interne au controller, repurpose essences (TOLERANCE=capacite, DIURNAL/NOCTURNAL=efficiency), cout quadratique, multiplicateurs hive reduits, interface relay cost, GUI jauge miel + barres stats.
+  Details: voir Structure/changelog.txt (entree 2026-02-11 G5)
+  Scripts modifies: StorageControllerBlockEntity.java, HoneyEnergyManager.java, ControllerStats.java, StorageHiveBlockEntity.java, StorageHiveBlock.java, StorageTerminalMenu.java, StorageTerminalScreen.java, EssenceItem.java
+  Lang: +honey_gauge, +honey_reserve, +hive_multiplier, +delivery_bees, +hives, +7 essence.role.*, MAJ essence.type.* (en_us + fr_fr)
   Registres modifies: aucun
 
 ================================================================================

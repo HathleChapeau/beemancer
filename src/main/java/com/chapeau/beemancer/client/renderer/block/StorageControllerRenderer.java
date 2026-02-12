@@ -223,6 +223,21 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
             }
         }
 
+        // [BM] Coffres pris par d'autres reseaux: double outline vert epais
+        for (BlockPos takenPos : blockEntity.getTakenChestPositions()) {
+            float dx = takenPos.getX() - controllerPos.getX();
+            float dy = takenPos.getY() - controllerPos.getY();
+            float dz = takenPos.getZ() - controllerPos.getZ();
+            DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
+                dx - 0.04f, dy - 0.04f, dz - 0.04f,
+                dx + 1.04f, dy + 1.04f, dz + 1.04f,
+                0.0f, 0.9f, 0.0f, 1.0f);
+            DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
+                dx - 0.06f, dy - 0.06f, dz - 0.06f,
+                dx + 1.06f, dy + 1.06f, dz + 1.06f,
+                0.0f, 0.7f, 0.0f, 0.8f);
+        }
+
         poseStack.popPose();
     }
 

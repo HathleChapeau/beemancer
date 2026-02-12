@@ -29,6 +29,7 @@ import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEn
 import com.chapeau.beemancer.common.blockentity.storage.StorageHiveBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageNetworkRegistry;
 import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
+import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.util.ParticleHelper;
 import com.chapeau.beemancer.core.util.StorageHelper;
 import net.minecraft.core.BlockPos;
@@ -285,6 +286,18 @@ public class StorageEvents {
             }
         }
 
+        // [BM] Deduplication: empecher l'enregistrement d'un coffre deja dans un autre reseau
+        if (!node.getRegisteredChests().contains(clickedPos) && controllerPos != null) {
+            BlockPos otherOwner = findOtherNetworkOwner(level, clickedPos, controllerPos);
+            if (otherOwner != null) {
+                player.displayClientMessage(
+                        Component.translatable("message.beemancer.chest_already_registered"), true);
+                event.setCanceled(true);
+                event.setCancellationResult(InteractionResult.SUCCESS);
+                return;
+            }
+        }
+
         Set<BlockPos> oldChests = new HashSet<>(node.getRegisteredChests());
         boolean success = node.toggleChest(clickedPos);
 
@@ -327,6 +340,23 @@ public class StorageEvents {
             event.setCanceled(true);
             event.setCancellationResult(InteractionResult.SUCCESS);
         }
+    }
+
+    /**
+     * [BM] Verifie si un coffre est deja enregistre dans un autre reseau.
+     * @return la position du controller proprietaire, ou null si libre
+     */
+    @javax.annotation.Nullable
+    private static BlockPos findOtherNetworkOwner(Level level, BlockPos chestPos, BlockPos excludeCtrl) {
+        for (BlockPos ctrlPos : MultiblockEvents.getActiveControllers()) {
+            if (ctrlPos.equals(excludeCtrl)) continue;
+            if (!level.isLoaded(ctrlPos)) continue;
+            BlockEntity be = level.getBlockEntity(ctrlPos);
+            if (be instanceof StorageControllerBlockEntity otherCtrl && otherCtrl.isFormed()) {
+                if (otherCtrl.getNetworkRegistry().isRegistered(chestPos)) return ctrlPos;
+            }
+        }
+        return null;
     }
 
     /**

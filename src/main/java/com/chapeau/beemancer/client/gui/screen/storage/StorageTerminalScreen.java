@@ -34,6 +34,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import net.minecraft.client.Minecraft;
 
 /**
  * Screen du Storage Terminal avec layout panneau gauche + droite.
@@ -72,6 +73,12 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     private static final int PICKUP_LABEL_Y = 160;
     private static final int PICKUP_RENDER_X = 23;
     private static final int PICKUP_RENDER_Y = 170;
+
+    // Page arrows
+    private static final int PAGE_ARROW_W = 12;
+    private static final int PAGE_ARROW_H = 10;
+    private static final int DEPOSIT_PAGE_Y = 69;
+    private static final int PICKUP_PAGE_Y = 225;
 
     // Right panel — search
     private static final int SEARCH_X = 82;
@@ -195,6 +202,12 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             x + DEPOSIT_LABEL_X, y + DEPOSIT_LABEL_Y, 0x404040, false);
         GuiRenderHelper.renderSlotGrid(g, x + DEPOSIT_RENDER_X, y + DEPOSIT_RENDER_Y, 3, 3);
 
+        // Deposit page arrows (only if more than 1 page)
+        if (StorageTerminalMenu.DEPOSIT_PAGES > 1) {
+            renderPageArrows(g, x, y + DEPOSIT_PAGE_Y,
+                menu.getDepositPage(), StorageTerminalMenu.DEPOSIT_PAGES);
+        }
+
         // Craft
         g.drawString(font, Component.translatable("gui.beemancer.terminal.craft"),
             x + CRAFT_LABEL_X, y + CRAFT_LABEL_Y, 0x404040, false);
@@ -207,6 +220,53 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         g.drawString(font, Component.translatable("gui.beemancer.terminal.pickup"),
             x + PICKUP_LABEL_X, y + PICKUP_LABEL_Y, 0x404040, false);
         GuiRenderHelper.renderSlotGrid(g, x + PICKUP_RENDER_X, y + PICKUP_RENDER_Y, 3, 3);
+
+        // Pickup page arrows (only if more than 1 page)
+        if (StorageTerminalMenu.PICKUP_PAGES > 1) {
+            renderPageArrows(g, x, y + PICKUP_PAGE_Y,
+                menu.getPickupPage(), StorageTerminalMenu.PICKUP_PAGES);
+        }
+    }
+
+    /**
+     * Renders page navigation arrows: [<] 1/3 [>]
+     * Centered under the 3x3 slot grid (grid is at x+23, width 54).
+     */
+    private void renderPageArrows(GuiGraphics g, int x, int y, int currentPage, int totalPages) {
+        int gridCenterX = x + DEPOSIT_RENDER_X + 27; // center of 54px grid
+        String pageText = (currentPage + 1) + "/" + totalPages;
+        int textW = font.width(pageText);
+
+        // Draw page text centered
+        int textX = gridCenterX - textW / 2;
+        g.drawString(font, pageText, textX, y + 1, 0x404040, false);
+
+        // Left arrow
+        int leftArrowX = textX - PAGE_ARROW_W - 2;
+        boolean leftEnabled = currentPage > 0;
+        drawSmallArrow(g, leftArrowX, y, PAGE_ARROW_W, PAGE_ARROW_H, "<", leftEnabled);
+
+        // Right arrow
+        int rightArrowX = textX + textW + 2;
+        boolean rightEnabled = currentPage < totalPages - 1;
+        drawSmallArrow(g, rightArrowX, y, PAGE_ARROW_W, PAGE_ARROW_H, ">", rightEnabled);
+    }
+
+    /**
+     * Draws a small button with a label (< or >). Grayed out if disabled.
+     */
+    private void drawSmallArrow(GuiGraphics g, int x, int y, int w, int h, String label, boolean enabled) {
+        int bg = enabled ? 0xFFC6C6C6 : 0xFF8B8B8B;
+        g.fill(x, y, x + w, y + h, bg);
+        // 3D borders
+        g.fill(x, y, x + w, y + 1, enabled ? 0xFFFFFFFF : 0xFFAAAAAA);
+        g.fill(x, y, x + 1, y + h, enabled ? 0xFFFFFFFF : 0xFFAAAAAA);
+        g.fill(x, y + h - 1, x + w, y + h, enabled ? 0xFF555555 : 0xFF666666);
+        g.fill(x + w - 1, y, x + w, y + h, enabled ? 0xFF555555 : 0xFF666666);
+        // Label centered
+        int textColor = enabled ? 0x404040 : 0x606060;
+        int textW = font.width(label);
+        g.drawString(font, label, x + (w - textW) / 2, y + (h - 8) / 2, textColor, false);
     }
 
     private void renderPlayerInv(GuiGraphics g, int x, int y) {
@@ -237,46 +297,147 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     // === Controller Tab ===
 
     private void renderControllerTab(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        int statX = x + 82; // Right panel start X
+        int statX = x + 82;
         int statY = y + 10;
-        int lineHeight = 14;
+        int lineHeight = 12;
         int rightEdge = x + GUI_WIDTH - 8;
+        int barWidth = rightEdge - statX - 2;
 
         g.drawString(font, Component.translatable("container.beemancer.storage_controller"),
             statX, statY, 0x404040, false);
-        statY += lineHeight + 4;
+        statY += lineHeight + 2;
 
-        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.flight_speed",
-            menu.getFlightSpeed() + "%");
+        // Honey gauge [CZ]: amber > 20%, red < 20%
+        int honeyStored = menu.getHoneyStored();
+        int honeyCapacity = menu.getHoneyCapacity();
+        float honeyRatio = honeyCapacity > 0 ? (float) honeyStored / honeyCapacity : 0;
+        int gaugeColor = honeyRatio > 0.2f ? 0xFFD4A017 : 0xFFCC3333;
+        drawStatBar(g, statX, statY, barWidth,
+            "gui.beemancer.storage_controller.honey_gauge",
+            honeyStored, honeyCapacity, gaugeColor);
+        String honeyText = honeyStored + " / " + honeyCapacity + " mB";
+        int honeyTextW = font.width(honeyText);
+        g.drawString(font, honeyText, rightEdge - honeyTextW, statY, 0x404040, false);
+        statY += lineHeight + 2;
+
+        // Essence stat bars [DJ]
+        drawStatBar(g, statX, statY, barWidth,
+            "gui.beemancer.storage_controller.flight_speed",
+            menu.getFlightSpeed(), 300, 0xFF55BBEE);
         statY += lineHeight;
-        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.search_speed",
-            menu.getSearchSpeed() + "%");
+        drawStatBar(g, statX, statY, barWidth,
+            "gui.beemancer.storage_controller.search_speed",
+            menu.getSearchSpeed(), 300, 0xFF55CC55);
         statY += lineHeight;
-        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.craft_speed",
-            menu.getCraftSpeed() + "%");
+        drawStatBar(g, statX, statY, barWidth,
+            "gui.beemancer.storage_controller.quantity",
+            menu.getQuantity(), 96, 0xFFDDAA33);
         statY += lineHeight;
-        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.quantity",
-            String.valueOf(menu.getQuantity()));
-        statY += lineHeight;
+
+        // Honey Reserve (TOLERANCE bonus) — bar
+        int reserveBonus = menu.getHoneyReserveBonus();
+        drawStatBar(g, statX, statY, barWidth,
+            "gui.beemancer.storage_controller.honey_reserve",
+            reserveBonus, 16000, 0xFFCC4444);
+        statY += lineHeight + 2;
+
+        // Numeric stats
         drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.honey_consumption",
             menu.getHoneyConsumption() + " mB/s");
         statY += lineHeight;
 
         int effBonus = menu.getHoneyEfficiency();
-        String effText = effBonus > 0 ? "100% + " + effBonus + "%" : "100%";
+        String effText = effBonus > 0 ? "-" + effBonus + "%" : "0%";
         drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.honey_efficiency",
             effText);
-        statY += lineHeight + 8;
+        statY += lineHeight;
 
-        // Essence slots label + background
+        // Hive multiplier [DM]
+        float multiplier = menu.getHiveMultiplier() / 100.0f;
+        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.hive_multiplier",
+            "x" + String.format("%.2f", multiplier));
+        statY += lineHeight;
+
+        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.hives",
+            menu.getLinkedHiveCount() + " / 4");
+        statY += lineHeight;
+        drawStat(g, rightEdge, statX, statY, "gui.beemancer.storage_controller.delivery_bees",
+            String.valueOf(menu.getMaxBees()));
+        statY += lineHeight + 2;
+
+        // Essence slots label + background (4 base + 4 bonus)
         g.drawString(font, Component.translatable("gui.beemancer.terminal.essences"),
             statX, statY - 2, 0x404040, false);
 
         int essenceRenderX = x + 155;
         int essenceRenderY = y + 80;
+
+        // 4 base essence slots (always active)
         for (int i = 0; i < 4; i++) {
             GuiRenderHelper.renderSlot(g, essenceRenderX + i * 20, essenceRenderY);
         }
+
+        // 4 bonus essence slots (locked/unlocked per hive count)
+        int bonusRenderY = y + 100;
+        for (int i = 0; i < 4; i++) {
+            int slotIndex = 32 + i; // ESSENCE_BONUS_START + i
+            if (menu.isBonusSlotUnlocked(slotIndex)) {
+                drawSlotBackground(g, essenceRenderX + i * 20 - 1, bonusRenderY - 1);
+            } else {
+                drawLockedSlotBackground(g, essenceRenderX + i * 20 - 1, bonusRenderY - 1);
+            }
+        }
+    }
+
+    /**
+     * Dessine un label + barre de progression coloree.
+     * La barre a un fond sombre et se remplit proportionnellement.
+     */
+    private void drawStatBar(GuiGraphics g, int x, int y, int totalWidth,
+                              String labelKey, int value, int maxValue, int barColor) {
+        Component label = Component.translatable(labelKey);
+        g.drawString(font, label, x, y, 0x404040, false);
+        int labelWidth = font.width(label) + 4;
+        int barX = x + labelWidth;
+        int barW = totalWidth - labelWidth;
+        int barH = 7;
+        int barY = y + 1;
+
+        // Background
+        g.fill(barX, barY, barX + barW, barY + barH, 0xFF333333);
+        // Fill
+        float ratio = maxValue > 0 ? Math.min(1.0f, (float) value / maxValue) : 0;
+        int fillW = Math.round(barW * ratio);
+        if (fillW > 0) {
+            g.fill(barX, barY, barX + fillW, barY + barH, barColor);
+        }
+        // Value text (right-aligned, over bar)
+        String valText = String.valueOf(value);
+        int valWidth = font.width(valText);
+        g.drawString(font, valText, barX + barW - valWidth - 1, y, 0xFFFFFF, false);
+    }
+
+    /**
+     * Dessine un fond de slot 18x18 identique au style vanilla.
+     */
+    private void drawSlotBackground(GuiGraphics g, int x, int y) {
+        g.fill(x, y, x + 18, y + 1, 0xFF373737);
+        g.fill(x, y + 1, x + 1, y + 17, 0xFF373737);
+        g.fill(x, y + 17, x + 18, y + 18, 0xFFFFFFFF);
+        g.fill(x + 17, y, x + 18, y + 17, 0xFFFFFFFF);
+        g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF8B8B8B);
+    }
+
+    /**
+     * Dessine un fond de slot 18x18 verrouillé (grisé, pas assez de hives).
+     */
+    private void drawLockedSlotBackground(GuiGraphics g, int x, int y) {
+        g.fill(x, y, x + 18, y + 1, 0xFF2A2A2A);
+        g.fill(x, y + 1, x + 1, y + 17, 0xFF2A2A2A);
+        g.fill(x, y + 17, x + 18, y + 18, 0xFF9E9E9E);
+        g.fill(x + 17, y, x + 18, y + 17, 0xFF9E9E9E);
+        g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF555555);
+        g.fill(x + 4, y + 8, x + 14, y + 9, 0xFF3A3A3A);
     }
 
     private void drawStat(GuiGraphics g, int rightEdge, int labelX, int y,
@@ -327,6 +488,11 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             }
         }
 
+        // Page arrow clicks (left panel, visible on all tabs that show deposit/pickup)
+        if (handlePageArrowClick(mouseX, mouseY, x, y)) {
+            return true;
+        }
+
         // Storage tab interactions
         if (activeTab == StorageTab.STORAGE) {
             ItemStack clickedItem = storageTabRenderer.getClickedItem(
@@ -361,6 +527,65 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         }
     }
 
+    /**
+     * Checks if a page arrow was clicked and sends the button action to server.
+     * Returns true if a click was consumed.
+     */
+    private boolean handlePageArrowClick(double mouseX, double mouseY, int x, int y) {
+        // Deposit arrows
+        if (StorageTerminalMenu.DEPOSIT_PAGES > 1) {
+            int buttonId = getPageArrowButtonId(mouseX, mouseY, x, y + DEPOSIT_PAGE_Y,
+                menu.getDepositPage(), StorageTerminalMenu.DEPOSIT_PAGES,
+                StorageTerminalMenu.BUTTON_DEPOSIT_PREV, StorageTerminalMenu.BUTTON_DEPOSIT_NEXT);
+            if (buttonId >= 0) {
+                Minecraft.getInstance().gameMode.handleInventoryButtonClick(menu.containerId, buttonId);
+                return true;
+            }
+        }
+
+        // Pickup arrows
+        if (StorageTerminalMenu.PICKUP_PAGES > 1) {
+            int buttonId = getPageArrowButtonId(mouseX, mouseY, x, y + PICKUP_PAGE_Y,
+                menu.getPickupPage(), StorageTerminalMenu.PICKUP_PAGES,
+                StorageTerminalMenu.BUTTON_PICKUP_PREV, StorageTerminalMenu.BUTTON_PICKUP_NEXT);
+            if (buttonId >= 0) {
+                Minecraft.getInstance().gameMode.handleInventoryButtonClick(menu.containerId, buttonId);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines which page arrow button (prev/next) was clicked, if any.
+     * Returns the button ID, or -1 if no arrow was clicked.
+     */
+    private int getPageArrowButtonId(double mouseX, double mouseY, int x, int arrowY,
+                                      int currentPage, int totalPages,
+                                      int prevButtonId, int nextButtonId) {
+        int gridCenterX = x + DEPOSIT_RENDER_X + 27;
+        String pageText = (currentPage + 1) + "/" + totalPages;
+        int textW = font.width(pageText);
+        int textX = gridCenterX - textW / 2;
+
+        // Left arrow bounds
+        int leftX = textX - PAGE_ARROW_W - 2;
+        if (currentPage > 0 &&
+            mouseX >= leftX && mouseX < leftX + PAGE_ARROW_W &&
+            mouseY >= arrowY && mouseY < arrowY + PAGE_ARROW_H) {
+            return prevButtonId;
+        }
+
+        // Right arrow bounds
+        int rightX = textX + textW + 2;
+        if (currentPage < totalPages - 1 &&
+            mouseX >= rightX && mouseX < rightX + PAGE_ARROW_W &&
+            mouseY >= arrowY && mouseY < arrowY + PAGE_ARROW_H) {
+            return nextButtonId;
+        }
+
+        return -1;
+    }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {

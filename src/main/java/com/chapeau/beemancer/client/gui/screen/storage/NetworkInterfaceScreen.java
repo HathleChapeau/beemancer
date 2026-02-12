@@ -91,8 +91,12 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
     private static final int SELECT_W = 14;
     private static final int SELECT_H = 14;
 
-    private static final int QTY_X = 131;
-    private static final int QTY_W = 26;
+    private static final int INVERT_X = 131;
+    private static final int INVERT_W = 10;
+    private static final int INVERT_H = 14;
+
+    private static final int QTY_X = 143;
+    private static final int QTY_W = 20;
     private static final int QTY_H = 14;
 
     private static final int REMOVE_X = 159;
@@ -390,6 +394,19 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
         GuiRenderHelper.renderButton(g, font, x + SELECT_X, lineY,
             SELECT_W, SELECT_H, selectLabel, selectHovered);
 
+        // [A/B] Allow/Block toggle
+        boolean invertHovered = isMouseOver(mouseX, mouseY,
+            x + INVERT_X, lineY, INVERT_W, INVERT_H);
+        boolean isInverted = filter.isInverted();
+        String invertLabel = isInverted ? "B" : "A";
+        int invertBgColor = isInverted ? 0xFFAA4444 : 0xFF44AA44;
+        g.fill(x + INVERT_X, lineY,
+            x + INVERT_X + INVERT_W, lineY + INVERT_H,
+            invertHovered ? (invertBgColor + 0x222222) : invertBgColor);
+        int invertTextX = x + INVERT_X + (INVERT_W - font.width(invertLabel)) / 2;
+        int invertTextY = lineY + (INVERT_H - 8) / 2;
+        g.drawString(font, invertLabel, invertTextX, invertTextY, 0xFFFFFF, false);
+
         // [-] Remove button
         boolean removeHovered = isMouseOver(mouseX, mouseY,
             x + REMOVE_X, lineY, REMOVE_W, REMOVE_H);
@@ -603,6 +620,18 @@ public class NetworkInterfaceScreen extends AbstractContainerScreen<NetworkInter
             // [S] Select Slots
             if (isMouseOver(mouseX, mouseY, x + SELECT_X, lineY, SELECT_W, SELECT_H)) {
                 openSlotSelector(i);
+                return true;
+            }
+
+            // [A/B] Allow/Block toggle
+            if (isMouseOver(mouseX, mouseY, x + INVERT_X, lineY, INVERT_W, INVERT_H)) {
+                InterfaceFilter filter = be.getFilter(i);
+                if (filter != null) {
+                    PacketDistributor.sendToServer(new InterfaceActionPacket(
+                        menu.containerId, InterfaceActionPacket.ACTION_TOGGLE_FILTER_INVERTED,
+                        i, ""));
+                    filter.setInverted(!filter.isInverted());
+                }
                 return true;
             }
 

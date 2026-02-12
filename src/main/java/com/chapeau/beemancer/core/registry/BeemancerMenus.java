@@ -18,7 +18,6 @@ import com.chapeau.beemancer.common.menu.alchemy.ManualCentrifugeMenu;
 import com.chapeau.beemancer.common.menu.alchemy.MultiblockTankMenu;
 import com.chapeau.beemancer.common.menu.alchemy.PoweredCentrifugeMenu;
 import com.chapeau.beemancer.common.menu.storage.NetworkInterfaceMenu;
-import com.chapeau.beemancer.common.menu.storage.StorageControllerMenu;
 import com.chapeau.beemancer.common.menu.storage.StorageTerminalMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
@@ -36,10 +35,6 @@ public class BeemancerMenus {
     public static final Supplier<MenuType<StorageTerminalMenu>> STORAGE_TERMINAL =
             MENUS.register("storage_terminal",
                     () -> IMenuTypeExtension.create(StorageTerminalMenu::new));
-
-    public static final Supplier<MenuType<StorageControllerMenu>> STORAGE_CONTROLLER =
-            MENUS.register("storage_controller",
-                    () -> IMenuTypeExtension.create(StorageControllerMenu::new));
 
     public static final Supplier<MenuType<NetworkInterfaceMenu>> NETWORK_INTERFACE =
             MENUS.register("network_interface",

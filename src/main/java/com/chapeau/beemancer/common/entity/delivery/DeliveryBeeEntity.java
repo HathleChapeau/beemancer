@@ -506,6 +506,27 @@ public class DeliveryBeeEntity extends Bee {
     @Nullable public BlockPos getRedirectTarget() { return redirectTarget; }
     @Nullable public BlockPos getSavingChestPos() { return savingChestPos; }
 
+    /**
+     * [AU] Definit la position du coffre de sauvegarde pour le depot d'items.
+     */
+    public void setSavingChestPos(@Nullable BlockPos pos) { this.savingChestPos = pos; }
+
+    /**
+     * [AU] Trouve un coffre du reseau avec de la place pour les items transportes.
+     * Utilise le ContainerOps du controller pour trouver un coffre disponible.
+     */
+    @Nullable
+    public BlockPos findSavingChest() {
+        if (carriedItems.isEmpty() || controllerPos == null) return null;
+        if (level() == null || !level().hasChunkAt(controllerPos)) return null;
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            return controller.getDeliveryManager().getContainerOps()
+                .findChestWithSpace(carriedItems, carriedItems.getCount());
+        }
+        return null;
+    }
+
     @Nullable public UUID getInterfaceTaskId() { return interfaceTaskId; }
     @Nullable public BlockPos getInterfacePos() { return interfacePos; }
     public ItemStack getDeliveredSnapshot() { return deliveredSnapshot; }
@@ -593,8 +614,10 @@ public class DeliveryBeeEntity extends Bee {
                     level().registryAccess(), tag.getCompound("CarriedItems")
                 ).orElse(ItemStack.EMPTY);
             }
-            // Marquer pour discard (taskId reste null → cleanup au premier tick)
-            this.discard();
+            // [AS] Ne PAS appeler discard() ici: le tick() (taskId==null check)
+            // appellera returnCarriedItemsToNetwork() puis discard() au premier tick.
+            // L'ancien discard() premature empechait le tick de s'executer,
+            // causant la perte des items transportes.
         }
     }
 }

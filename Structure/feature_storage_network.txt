@@ -93,9 +93,11 @@ INTERFACE TERMINAL:
 - Inventaire joueur standard
 - Indicateur de requêtes en attente (badge orange)
 
-SYSTEME DE DEMANDES (RequestManager):
+SYSTEME DE DEMANDES (RequestManager → 3 classes [G3]):
+- RequestManager: orchestrateur (publish, cancel, callbacks, tick, NBT)
+- RequestQueue: collection indexee + requetes O(1) (source, type, item)
+- RequestProcessor: conversion PENDING → DeliveryTask (import/export), recheck blocked, validation sources
 - Interfaces et terminaux publient des InterfaceRequest (pas des DeliveryTask)
-- RequestManager centralise: fusion, validation, ordonnancement, annulation
 - IMPORT: coffre source → interface/terminal destination
 - EXPORT: source (adjacent/terminal) → coffre destination
 - Preloaded: terminal deposit pre-charge items sur la bee (skip source)
@@ -169,14 +171,20 @@ SPREAD SYSTEM:
 - Appliqué par les renderers (ControllerPipeRenderer, HoneyReservoirRenderer) via poseStack.translate()
 - Le reservoir formed model est rendu par le BER (le blockstate model est vide)
 
-HONEY CONSUMPTION:
-- Le controller consomme du miel en continu quand formé (toutes les secondes)
-- Drain depuis les 2 HoneyReservoirs du multibloc (positions y=-1 et y=+1)
-- Formule: (base 20 mB/s + coffres × 10 + essenceCost) × (1 - efficiency/100)
-- essenceCost: pour chaque essence DROP/SPEED/FORAGING/TOLERANCE → level × 10 mB/s
-- efficiency: insomnia essence → level × 10% (LESSER=10%, PERFECT=40%)
-- Si plus de miel: honeyDepleted → delivery bees bloquées
-- ContainerData étendu à 6 indices: +honey consumption (mB/s) + efficiency (%)
+HONEY CONSUMPTION [G5]:
+- Le controller a un buffer interne de miel (base 8000 mB, augmentable par TOLERANCE)
+- HoneyEnergyManager pull depuis les 2 HoneyReservoirs vers le buffer (chaque 10 ticks)
+- Consommation depuis le buffer interne (chaque 20 ticks = 1 seconde)
+- Formule: (base 20 + coffres×10 + relays×5 + interfaceCost + essenceCost) × hiveMultiplier × (1 - efficiency/100)
+- essenceCost: DROP/SPEED/FORAGING seulement, quadratique: LESSER=5, NORMAL=15, GREATER=30, PERFECT=50 mB/s
+- efficiency: INSOMNIA toujours (level×10%), DIURNAL jour seulement (level×10%), NOCTURNAL nuit seulement (level×10%)
+- TOLERANCE: augmente capacité buffer (+1000/+2000/+4000/+8000 mB), ne coûte pas de miel
+- DIURNAL/NOCTURNAL/INSOMNIA: ne coûtent pas de miel (essences d'efficacité)
+- interfaceCost: 5 × relay_depth par interface (BFS depuis controller)
+- Hive multiplier: multiplicatif entre hives (T1=×1.15, T2=×1.30, T3=×1.50)
+- Pas de plafond efficiency (cumul libre, min consommation = 1 mB/s)
+- Si buffer vide: honeyDepleted → delivery bees bloquées
+- GUI: jauge de miel (ambre > 20%, rouge < 20%), barres stats essence, multiplicateur hive
 
 DESTRUCTION:
 - Casser un bloc du multibloc → onRemove() du controller reset FORMED=false sur tous
@@ -295,14 +303,31 @@ DÉPÔT INTELLIGENT:
 - Phase 2: Slots vides dans n'importe quel coffre
 - Évite dispersion des items identiques
 
-SYSTEME DE LIVRAISON (refactored):
-- RequestManager attache au StorageControllerBlockEntity
-- Interfaces/terminaux publient InterfaceRequest via publishRequest()
-- RequestManager convertit PENDING → DeliveryTask via processRequests()
-- StorageDeliveryManager spawn les bees, gere queue + recall
+SYSTEME DE LIVRAISON (refactored, decompose [G3]):
+- StorageDeliveryManager: orchestrateur (queue, tick, NBT, sleep mode, backpressure)
+- DeliveryTaskLifecycle: completion, echec, retry (3x backoff exponentiel)
+- DeliveryTaskCanceller: annulation iterative + propagation dependances
+- HoneyEnergyManager: consommation miel depuis HoneyReservoirs multibloc
+- DeliveryBeeSpawner: spawn atomique (extract→spawn), bee registry WeakRef, recall/redirect
+- Timeout FLYING 1 min, completedTaskIds TTL 30 sec
+- PriorityQueue par priorite, sleep mode apres 30 sec inactivite
+- Backpressure: 50*maxBees queue max (interfaces seulement, pas terminal)
+- Protection cross-network: coffre deja enregistre = refuse + outline vert edit mode
 - Flux unifie 6 phases: FLY_TO_SOURCE → WAIT → FLY_TO_CONTROLLER → FLY_TO_DEST → WAIT → FLY_HOME
 - Preloaded: bee spawn avec items, saute source (terminal deposit)
-- Recall: annulation → bee vole directement retour controller
+- Recall: annulation → bee depose items dans coffre puis retour controller
 - Details complets: Structure/feature_delivery_refactoring.txt
+
+INTERFACES IMPORT/EXPORT (refactored, decompose [G4]):
+- NetworkInterfaceBlockEntity: orchestrateur (delegue a 2 managers)
+- InterfaceTaskManager: Map<UUID,InterfaceTask>, reconcile, publish, timeout 1min, save skip LOCKED
+- InterfaceFilterManager: List<InterfaceFilter>, globalSelectedSlots, matchesAnyFilter
+- InterfaceFilter: blocklist mode (inverted), tag exact match, ITEM/TEXT modes
+- IItemHandler migration: IItemHandler au lieu de Container via NeoForge capabilities
+- needsScan flag: scan immediat sur changement filtre/active/delivery
+- Tick stagger: (gameTick + blockPos.hashCode()) % 40 == 0
+- Export space check: verifie espace reseau avant creation task
+- Locked deduction: soustrait inTransit du needed (evite doublons)
+- Particules RUNE conditionnelles: interfaces (si liees) + relays (si connectes)
 
 ################################################################################

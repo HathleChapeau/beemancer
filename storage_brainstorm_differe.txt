@@ -2,7 +2,7 @@
 BRAINSTORM STORAGE — PROPOSITIONS DIFFÉRÉES
 ================================================================================
 Date: 2026-02-11
-Source: storage_brainstorm.txt — Groupe 1 (Réseau et Topologie)
+Source: storage_brainstorm.txt — Groupes 1 et 2
 
 Ces propositions ont été acceptées en principe mais différées pour implémentation
 après que les changements du Groupe 1 soient stabilisés.
@@ -38,5 +38,37 @@ Prérequis:
 Notes:
   L'utilisateur souhaite étudier la version Create (Behaviours) plutôt que
   la version pure AE2 (Grid Services). À évaluer après stabilisation.
+
+================================================================================
+
+[AD] Serial numbers
+---------------------------------------------------------------------------
+Proposé par: Expert AE2
+Catégorie: Amélioration
+Priorité: P3
+
+Description:
+  Ajouter un numéro de série (compteur monotone) au cache incrémental
+  pour détecter si le cache est stale (par exemple après un crash/reload).
+  Chaque modification du cache incrémente le serial. Les snapshots incluent
+  le serial, permettant de détecter les divergences client/serveur.
+
+Référence:
+  AE2: IGridStorage serial, MEInventoryHandler version tracking
+
+Motivation:
+  - Détection robuste de cache stale après crash
+  - Synchronisation optimiste client/serveur
+  - Fallback automatique vers full scan si serial mismatch
+
+Prérequis:
+  - Cache incrémental [U] implémenté (fait dans Groupe 2)
+  - ViewerSyncManager opérationnel (fait dans Groupe 2)
+  - Évaluer la fréquence réelle de cache stale en production
+
+Notes:
+  Le cache incrémental a un full scan backup toutes les ~100 ticks qui
+  devrait couvrir la plupart des cas. Les serial numbers ajouteraient
+  une couche de sécurité supplémentaire pour les edge cases.
 
 ================================================================================

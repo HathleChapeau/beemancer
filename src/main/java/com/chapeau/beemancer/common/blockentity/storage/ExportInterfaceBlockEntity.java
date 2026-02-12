@@ -26,9 +26,9 @@ import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.IItemHandler;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -57,41 +57,42 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
     // === Scan Logic ===
 
     @Override
-    protected void doScan(Container adjacent, StorageControllerBlockEntity controller) {
-        cleanupDeliveredTasks();
+    protected void doScan(IItemHandler adjacent, StorageControllerBlockEntity controller) {
+        taskManager.cleanupDeliveredTasks();
         int beeCapacity = controller.getBeeCapacity();
 
         Set<String> activeItemKeys = new HashSet<>();
 
-        if (filters.isEmpty()) {
-            doScanNoFilter(adjacent, beeCapacity, activeItemKeys);
+        if (filterManager.isEmpty()) {
+            doScanNoFilter(adjacent, controller, beeCapacity, activeItemKeys);
         } else {
-            for (InterfaceFilter filter : filters) {
-                doScanWithFilter(adjacent, filter, beeCapacity, activeItemKeys);
+            for (InterfaceFilter filter : filterManager.getFilters()) {
+                doScanWithFilter(adjacent, controller, filter, beeCapacity, activeItemKeys);
             }
         }
 
-        cleanupOrphanedTasks(activeItemKeys);
-        publishTodoTasks(controller);
+        taskManager.cleanupOrphanedTasks(activeItemKeys);
+        taskManager.publishTodoTasks(controller);
     }
 
     /**
      * Sans filtre: exporter tous les items des globalSelectedSlots.
      */
-    private void doScanNoFilter(Container adjacent, int beeCapacity,
-                                 Set<String> activeItemKeys) {
+    private void doScanNoFilter(IItemHandler adjacent, StorageControllerBlockEntity controller,
+                                 int beeCapacity, Set<String> activeItemKeys) {
         int[] slots = getGlobalOperableSlots(adjacent);
-        reconcileExportItems(adjacent, slots, 0, beeCapacity, null, activeItemKeys);
+        reconcileExportItems(adjacent, controller, slots, 0, beeCapacity, null, activeItemKeys);
     }
 
     /**
      * Avec filtre: exporter les items qui matchent, en respectant la quantite.
      */
-    private void doScanWithFilter(Container adjacent, InterfaceFilter filter,
-                                   int beeCapacity, Set<String> activeItemKeys) {
+    private void doScanWithFilter(IItemHandler adjacent, StorageControllerBlockEntity controller,
+                                   InterfaceFilter filter, int beeCapacity,
+                                   Set<String> activeItemKeys) {
         int[] slots = getOperableSlots(adjacent, filter.getSelectedSlots());
         int keepQty = filter.getQuantity();
-        reconcileExportItems(adjacent, slots, keepQty, beeCapacity, filter, activeItemKeys);
+        reconcileExportItems(adjacent, controller, slots, keepQty, beeCapacity, filter, activeItemKeys);
     }
 
     /**
@@ -99,19 +100,22 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
      * Met a jour les tasks existantes (LOCKED et NEEDED) au lieu de creer
      * de nouvelles tasks a chaque scan.
      *
+     * Verifie que le reseau a de l'espace avant de creer des tasks.
+     *
      * @param filter si non-null, seuls les items matchant ce filtre sont exportes
      * @param keepQty 0=tout exporter, N=garder N items
      * @param activeItemKeys set des itemKeys actifs (rempli par cette methode)
      */
-    private void reconcileExportItems(Container adjacent, int[] slots,
-                                       int keepQty, int beeCapacity,
+    private void reconcileExportItems(IItemHandler adjacent, StorageControllerBlockEntity controller,
+                                       int[] slots, int keepQty, int beeCapacity,
                                        InterfaceFilter filter,
                                        Set<String> activeItemKeys) {
         Map<String, ItemStack> templatesByKey = new LinkedHashMap<>();
         Map<String, Integer> totalCountsByKey = new LinkedHashMap<>();
 
         for (int slot : slots) {
-            ItemStack stack = adjacent.getItem(slot);
+            if (slot < 0 || slot >= adjacent.getSlots()) continue;
+            ItemStack stack = adjacent.getStackInSlot(slot);
             if (stack.isEmpty()) continue;
 
             if (filter != null && !filter.matches(stack, false)) continue;
@@ -127,10 +131,19 @@ public class ExportInterfaceBlockEntity extends NetworkInterfaceBlockEntity {
             int totalCount = totalCountsByKey.get(key);
             activeItemKeys.add(key);
 
-            // Le nombre total desire a exporter (sans deduire locked/needed existants)
+            // Verifier que le reseau a de l'espace pour cet item
+            if (controller.getItemAggregator().findSlotForItem(template) == null) {
+                taskManager.reconcileTasksForItem(template, 0, beeCapacity,
+                    InterfaceTask.TaskType.EXPORT);
+                continue;
+            }
+
             int exportable = Math.max(0, totalCount - keepQty);
 
-            reconcileTasksForItem(template, exportable, beeCapacity,
+            int inTransit = getLockedCount(template);
+            exportable = Math.max(0, exportable - inTransit);
+
+            taskManager.reconcileTasksForItem(template, exportable, beeCapacity,
                 InterfaceTask.TaskType.EXPORT);
         }
     }

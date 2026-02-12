@@ -151,8 +151,11 @@ public class StorageControllerBlock extends BaseEntityBlock {
                 );
             }
         } else {
-            // Formé: ouvrir le menu du controller
-            player.openMenu(controller, pos);
+            // Formé: indiquer d'utiliser un terminal
+            player.displayClientMessage(
+                Component.translatable("message.beemancer.storage_controller.use_terminal"),
+                true
+            );
         }
 
         return InteractionResult.SUCCESS;

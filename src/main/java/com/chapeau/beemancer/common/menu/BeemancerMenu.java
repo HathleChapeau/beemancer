@@ -15,7 +15,7 @@
  * UTILISÉ PAR:
  * - ManualCentrifugeMenu, PoweredCentrifugeMenu, AlembicMenu,
  *   InfuserMenu, CrystallizerMenu, HoneyTankMenu, MultiblockTankMenu,
- *   IncubatorMenu, MagicHiveMenu, StorageControllerMenu
+ *   IncubatorMenu, MagicHiveMenu
  *
  * ============================================================
  */

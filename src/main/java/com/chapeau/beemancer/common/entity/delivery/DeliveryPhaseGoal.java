@@ -147,12 +147,45 @@ public class DeliveryPhaseGoal extends Goal {
     // RECALL (prioritaire, force le retour)
     // =========================================================================
 
+    /**
+     * [AU] Recall avec depot automatique: si la bee transporte des items,
+     * elle les depose d'abord dans un coffre du reseau avant de rentrer.
+     * Comportement general: toute bee idle avec des items les depose.
+     */
     private void handleRecall() {
-        if (phase != Phase.FLY_HOME) {
+        // Si la bee a des items, deposer dans un coffre d'abord
+        if (!bee.getCarriedItems().isEmpty()) {
+            if (phase != Phase.SAVING_INVENTORY && phase != Phase.FLY_HOME) {
+                // Trouver un coffre pour deposer
+                if (bee.getSavingChestPos() == null) {
+                    BlockPos chest = bee.findSavingChest();
+                    if (chest != null) {
+                        bee.setSavingChestPos(chest);
+                    }
+                }
+                if (bee.getSavingChestPos() != null) {
+                    setPhase(Phase.SAVING_INVENTORY);
+                    savingIdx[0] = 0;
+                    navigationStarted = false;
+                } else {
+                    // Pas de coffre dispo: retour au controller (items restitues au reseau a l'arrivee)
+                    setPhase(Phase.FLY_HOME);
+                    homeIdx[0] = 0;
+                    navigationStarted = false;
+                }
+            }
+
+            if (phase == Phase.SAVING_INVENTORY) {
+                tickSavingInventory();
+                return;
+            }
+        } else if (phase != Phase.FLY_HOME) {
             setPhase(Phase.FLY_HOME);
             homeIdx[0] = 0;
             navigationStarted = false;
         }
+
+        // Phase FLY_HOME: retour au controller
         if (navigateWaypoints(List.of(), homeIdx, bee.getReturnPos())) {
             bee.returnCarriedItemsToNetwork();
             bee.notifyTaskFailed();
@@ -403,7 +436,7 @@ public class DeliveryPhaseGoal extends Goal {
             if (be instanceof NetworkInterfaceBlockEntity interfaceBe) {
                 if (!interfaceBe.isActive()) return false;
                 if (interfaceBe.getController() == null) return false;
-                if (interfaceBe.getAdjacentInventory() == null) return false;
+                if (interfaceBe.getAdjacentItemHandler() == null) return false;
             }
             return true;
         }

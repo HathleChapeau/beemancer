@@ -29,9 +29,9 @@ import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.IItemHandler;
 
 import java.util.HashSet;
 import java.util.List;
@@ -63,18 +63,18 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
 
     @Override
     public ItemStack receiveDeliveredItems(ItemStack items) {
-        Container adjacent = getAdjacentInventory();
+        IItemHandler adjacent = getAdjacentItemHandler();
         if (adjacent == null) return items;
 
         ItemStack remaining = items.copy();
 
         // Determiner les slots cibles en trouvant le filtre correspondant a l'item livre
         int[] slots;
-        if (filters.isEmpty()) {
+        if (filterManager.isEmpty()) {
             slots = getGlobalOperableSlots(adjacent);
         } else {
             InterfaceFilter matchingFilter = null;
-            for (InterfaceFilter filter : filters) {
+            for (InterfaceFilter filter : filterManager.getFilters()) {
                 if (filter.matches(items, false)) {
                     matchingFilter = filter;
                     break;
@@ -91,7 +91,7 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
         return insertIntoSlots(adjacent, remaining, slots);
     }
 
-    private ItemStack insertIntoSlots(Container adjacent, ItemStack remaining, int[] slots) {
+    private ItemStack insertIntoSlots(IItemHandler adjacent, ItemStack remaining, int[] slots) {
         remaining = ContainerHelper.insertItem(adjacent, remaining, slots);
 
         // Si reste non-insere, remettre dans le reseau
@@ -108,29 +108,29 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
     // === Scan Logic ===
 
     @Override
-    protected void doScan(Container adjacent, StorageControllerBlockEntity controller) {
-        cleanupDeliveredTasks();
+    protected void doScan(IItemHandler adjacent, StorageControllerBlockEntity controller) {
+        taskManager.cleanupDeliveredTasks();
         int beeCapacity = controller.getBeeCapacity();
 
-        if (filters.isEmpty()) {
-            cleanupOrphanedTasks(new HashSet<>());
+        if (filterManager.isEmpty()) {
+            taskManager.cleanupOrphanedTasks(new HashSet<>());
             return;
         }
 
         Set<String> activeItemKeys = new HashSet<>();
 
-        for (InterfaceFilter filter : filters) {
+        for (InterfaceFilter filter : filterManager.getFilters()) {
             doScanWithFilter(adjacent, controller, filter, beeCapacity, activeItemKeys);
         }
 
-        cleanupOrphanedTasks(activeItemKeys);
-        publishTodoTasks(controller);
+        taskManager.cleanupOrphanedTasks(activeItemKeys);
+        taskManager.publishTodoTasks(controller);
     }
 
     /**
      * Avec filtre: reconcilie les InterfaceTasks d'import pour les items matchant.
      */
-    private void doScanWithFilter(Container adjacent, StorageControllerBlockEntity controller,
+    private void doScanWithFilter(IItemHandler adjacent, StorageControllerBlockEntity controller,
                                    InterfaceFilter filter, int beeCapacity,
                                    Set<String> activeItemKeys) {
         int[] slots = getOperableSlots(adjacent, filter.getSelectedSlots());
@@ -146,7 +146,7 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
     /**
      * Mode ITEM: itere les slots du filtre pour trouver les items a importer.
      */
-    private void scanItemMode(Container adjacent, InterfaceFilter filter,
+    private void scanItemMode(IItemHandler adjacent, InterfaceFilter filter,
                                int[] slots, int beeCapacity, int targetQty,
                                Set<String> activeItemKeys) {
         for (int i = 0; i < InterfaceFilter.SLOTS_PER_FILTER; i++) {
@@ -160,7 +160,7 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
     /**
      * Mode TEXT: cherche dans le reseau les items matchant le filtre texte.
      */
-    private void scanTextMode(Container adjacent, StorageControllerBlockEntity controller,
+    private void scanTextMode(IItemHandler adjacent, StorageControllerBlockEntity controller,
                                InterfaceFilter filter, int[] slots, int beeCapacity,
                                int targetQty, Set<String> activeItemKeys) {
         List<ItemStack> networkItems = controller.getAggregatedItems();
@@ -178,48 +178,27 @@ public class ImportInterfaceBlockEntity extends NetworkInterfaceBlockEntity impl
      *
      * @param targetQty 0=remplir les slots, N=importer jusqu'a N items
      */
-    private void reconcileImportItem(Container adjacent, ItemStack filterItem,
+    private void reconcileImportItem(IItemHandler adjacent, ItemStack filterItem,
                                       int[] slots, int beeCapacity, int targetQty,
                                       Set<String> activeItemKeys) {
         String key = itemKey(filterItem);
         activeItemKeys.add(key);
 
-        int currentCount = countInSlots(adjacent, filterItem, slots);
+        int currentCount = ContainerHelper.countItem(adjacent, filterItem, slots);
 
         int needed;
         if (targetQty == 0) {
-            int capacity = calculateCapacity(adjacent, filterItem, slots);
+            int capacity = ContainerHelper.calculateCapacity(adjacent, filterItem, slots);
             needed = capacity - currentCount;
         } else {
             needed = targetQty - currentCount;
         }
 
-        reconcileTasksForItem(filterItem, needed, beeCapacity,
+        int inTransit = getLockedCount(filterItem);
+        needed = Math.max(0, needed - inTransit);
+
+        taskManager.reconcileTasksForItem(filterItem, needed, beeCapacity,
             InterfaceTask.TaskType.IMPORT);
-    }
-
-    // === Helpers ===
-
-    private int countInSlots(Container container, ItemStack template, int[] slots) {
-        return ContainerHelper.countItem(container, template, slots);
-    }
-
-    /**
-     * Calcule la capacite totale pour un item dans les slots donnes.
-     * Slots vides = maxStackSize, slots avec le meme item = maxStackSize,
-     * slots avec un item different = 0.
-     */
-    private int calculateCapacity(Container container, ItemStack template, int[] slots) {
-        int capacity = 0;
-        for (int slot : slots) {
-            ItemStack existing = container.getItem(slot);
-            if (existing.isEmpty()) {
-                capacity += template.getMaxStackSize();
-            } else if (ItemStack.isSameItemSameComponents(existing, template)) {
-                capacity += existing.getMaxStackSize();
-            }
-        }
-        return capacity;
     }
 
     // === NBT Hooks ===

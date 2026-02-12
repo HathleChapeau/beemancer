@@ -31,7 +31,6 @@ package com.chapeau.beemancer.common.blockentity.storage;
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.block.storage.InterfaceTask;
-import com.chapeau.beemancer.common.menu.storage.StorageControllerMenu;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
@@ -45,10 +44,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.Containers;
@@ -58,6 +54,8 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,12 +77,20 @@ import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
  * avec propriete exclusive (un bloc = un proprietaire).
  */
 public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
-        implements MultiblockController, MenuProvider {
+        implements MultiblockController {
 
     private static final int VALIDATION_BATCH_INTERVAL = 20;
     private static final int VALIDATION_SPREAD_TICKS = 10;
+    private static final int BASE_HONEY_CAPACITY = 8000;
     private int beeCapacity = ControllerStats.BASE_DROP;
     private int validationIndex = 0;
+
+    // Honey buffer interne au controller
+    private int honeyStored = 0;
+    private int honeyCapacity = BASE_HONEY_CAPACITY;
+
+    // [BM] Coffres deja pris par d'autres reseaux (transient, recalcule en edit mode)
+    private final Set<BlockPos> takenChestPositions = new HashSet<>();
 
     // === Registre central du reseau ===
     private final StorageNetworkRegistry networkRegistry = new StorageNetworkRegistry();
@@ -112,6 +118,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         protected void onContentsChanged(int slot) {
             setChanged();
             recalculateBeeCapacity();
+            recalculateHoneyCapacity();
             if (!isSaving) {
                 syncToClient();
             }
@@ -125,7 +132,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             return switch (index) {
                 case 0 -> ControllerStats.getFlightSpeed(essenceSlots);
                 case 1 -> ControllerStats.getSearchSpeed(essenceSlots);
-                case 2 -> ControllerStats.getCraftSpeed(essenceSlots);
+                case 2 -> ControllerStats.getHoneyCapacityBonus(essenceSlots);
                 case 3 -> ControllerStats.getQuantity(essenceSlots);
                 case 4 -> ControllerStats.getHoneyConsumption(essenceSlots, networkRegistry.getChestCount(), getHiveMultiplier(), getRelayCount());
                 case 5 -> ControllerStats.getHoneyEfficiency(essenceSlots);
@@ -259,6 +266,8 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             syncToClient();
         }
 
+        // [BM] Recalculer les coffres pris par d'autres reseaux (pour l'affichage edit mode)
+        computeTakenChestPositions();
     }
 
     /**
@@ -350,6 +359,35 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         }
     }
 
+    // === [BM] Deduplication inter-reseau ===
+
+    /**
+     * Calcule les positions des coffres deja enregistres dans d'AUTRES reseaux.
+     * Appele a l'entree en mode edition (depuis validateNetworkBlocks).
+     * Le resultat est synchronise au client pour l'affichage (outlines verts).
+     */
+    public void computeTakenChestPositions() {
+        takenChestPositions.clear();
+        if (level == null || level.isClientSide()) return;
+
+        for (BlockPos ctrlPos : MultiblockEvents.getActiveControllers()) {
+            if (ctrlPos.equals(worldPosition)) continue;
+            if (!level.isLoaded(ctrlPos)) continue;
+            BlockEntity be = level.getBlockEntity(ctrlPos);
+            if (be instanceof StorageControllerBlockEntity otherCtrl && otherCtrl.isFormed()) {
+                takenChestPositions.addAll(otherCtrl.getNetworkRegistry().getAllChests());
+            }
+        }
+    }
+
+    /**
+     * Retourne les positions des coffres pris par d'autres reseaux.
+     * Utilise par les renderers en mode edition pour afficher les outlines verts.
+     */
+    public Set<BlockPos> getTakenChestPositions() {
+        return Collections.unmodifiableSet(takenChestPositions);
+    }
+
     // === Reseau: relays, coffres, terminaux, interfaces (via registre) ===
 
     /**
@@ -379,6 +417,53 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         return count;
     }
 
+    /**
+     * Calcule le cout total en miel des interfaces en fonction de leur profondeur relay.
+     * Chaque interface coute 5 mB/s × nombre de relays qui la separent du controller.
+     * Interfaces directement sur le controller (owner == controllerPos) coutent 0.
+     */
+    public int getInterfaceRelayCost() {
+        if (level == null) return 0;
+
+        // BFS depuis le controller pour calculer la profondeur de chaque relay
+        java.util.Map<BlockPos, Integer> relayDepth = new java.util.HashMap<>();
+        java.util.Set<BlockPos> visited = new java.util.HashSet<>();
+        java.util.Queue<java.util.Map.Entry<BlockPos, Integer>> queue = new java.util.LinkedList<>();
+
+        visited.add(worldPosition);
+        for (BlockPos node : getConnectedNodes()) {
+            queue.add(java.util.Map.entry(node, 1));
+        }
+
+        while (!queue.isEmpty()) {
+            var entry = queue.poll();
+            BlockPos pos = entry.getKey();
+            int depth = entry.getValue();
+            if (!visited.add(pos)) continue;
+            if (!level.hasChunkAt(pos)) continue;
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof StorageRelayBlockEntity relay) {
+                relayDepth.put(pos, depth);
+                for (BlockPos neighbor : relay.getConnectedNodes()) {
+                    if (!visited.contains(neighbor)) {
+                        queue.add(java.util.Map.entry(neighbor, depth + 1));
+                    }
+                }
+            }
+        }
+
+        // Somme: 5 × profondeur relay pour chaque interface
+        int totalCost = 0;
+        for (BlockPos ifacePos : networkRegistry.getAllInterfaces()) {
+            BlockPos owner = networkRegistry.getOwner(ifacePos);
+            if (owner == null || owner.equals(worldPosition)) continue;
+            Integer depth = relayDepth.get(owner);
+            if (depth != null) {
+                totalCost += 5 * depth;
+            }
+        }
+        return totalCost;
+    }
 
     /**
      * Retourne TOUS les coffres du reseau via le registre central.
@@ -511,6 +596,26 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     public boolean isHoneyDepleted() { return deliveryManager.isHoneyDepleted(); }
 
+    // === Honey Buffer ===
+
+    public int getHoneyStored() { return honeyStored; }
+    public int getHoneyCapacity() { return honeyCapacity; }
+
+    public void setHoneyStored(int amount) {
+        this.honeyStored = Math.max(0, Math.min(amount, honeyCapacity));
+    }
+
+    /**
+     * Recalcule la capacite du buffer de miel en fonction des essences TOLERANCE.
+     * Base 8000 mB + bonus par essence TOLERANCE.
+     */
+    public void recalculateHoneyCapacity() {
+        this.honeyCapacity = BASE_HONEY_CAPACITY + ControllerStats.getHoneyCapacityBonus(essenceSlots);
+        if (honeyStored > honeyCapacity) {
+            honeyStored = honeyCapacity;
+        }
+    }
+
     // === Bee Capacity ===
 
     /**
@@ -536,13 +641,13 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             if (chest == null) return false;
             if (chest.equals(iface.getAdjacentPos())) return false;
 
-            DeliveryTask dt = new DeliveryTask(
-                task.getTemplate(), task.getCount(),
-                chest, iface.getBlockPos(),
-                DeliveryTask.TaskOrigin.AUTOMATION, false,
-                iface.getBlockPos(), null,
-                task.getTaskId(), iface.getBlockPos()
-            );
+            DeliveryTask dt = DeliveryTask.builder(
+                    task.getTemplate(), task.getCount(), chest, iface.getBlockPos(),
+                    DeliveryTask.TaskOrigin.AUTOMATION)
+                .requesterPos(iface.getBlockPos())
+                .interfaceTaskId(task.getTaskId())
+                .interfacePos(iface.getBlockPos())
+                .build();
             deliveryManager.addDeliveryTask(dt);
             task.lockTask(dt.getTaskId(), level.getGameTime());
             return true;
@@ -552,13 +657,13 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             if (dest == null) return false;
             if (dest.equals(iface.getAdjacentPos())) return false;
 
-            DeliveryTask dt = new DeliveryTask(
-                task.getTemplate(), task.getCount(),
-                iface.getAdjacentPos(), dest,
-                DeliveryTask.TaskOrigin.AUTOMATION, false,
-                iface.getBlockPos(), null,
-                task.getTaskId(), iface.getBlockPos()
-            );
+            DeliveryTask dt = DeliveryTask.builder(
+                    task.getTemplate(), task.getCount(), iface.getAdjacentPos(), dest,
+                    DeliveryTask.TaskOrigin.AUTOMATION)
+                .requesterPos(iface.getBlockPos())
+                .interfaceTaskId(task.getTaskId())
+                .interfacePos(iface.getBlockPos())
+                .build();
             deliveryManager.addDeliveryTask(dt);
             task.lockTask(dt.getTaskId(), level.getGameTime());
             return true;
@@ -577,6 +682,8 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     // === Tick ===
 
+    private static final int TERMINAL_BACKUP_INTERVAL = 20;
+
     public static void serverTick(StorageControllerBlockEntity be) {
         if (be.level == null) return;
         long gameTick = be.level.getGameTime();
@@ -590,6 +697,7 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
         be.requestManager.tick(gameTick);
         be.deliveryManager.tickDelivery(gameTick);
+        be.processTerminals(gameTick);
         be.tickEditMode();
         be.itemAggregator.cleanupViewers();
 
@@ -598,17 +706,34 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         }
     }
 
-    // === MenuProvider ===
+    /**
+     * Parcourt tous les terminaux du reseau et traite leurs flags:
+     * - needsProcessPending: requetes en attente a traiter (slot pickup libere)
+     * - needsDepositScan: deposit slots changes, creer des EXPORT requests
+     * - Backup periodique: force un scan toutes les TERMINAL_BACKUP_INTERVAL ticks
+     */
+    private void processTerminals(long gameTick) {
+        for (BlockPos terminalPos : networkRegistry.getAllTerminals()) {
+            if (!level.hasChunkAt(terminalPos)) continue;
+            BlockEntity tbe = level.getBlockEntity(terminalPos);
+            if (!(tbe instanceof StorageTerminalBlockEntity terminal)) continue;
 
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("container.beemancer.storage_controller");
-    }
+            // Backup periodique: force un rescan (rattrape les flags manques)
+            if ((gameTick + terminalPos.hashCode()) % TERMINAL_BACKUP_INTERVAL == 0) {
+                terminal.processPendingRequests();
+                terminal.needsDepositScan = true;
+            }
 
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
-        return new StorageControllerMenu(containerId, playerInv, essenceSlots, dataAccess);
+            if (terminal.needsProcessPending) {
+                terminal.processPendingRequests();
+                terminal.needsProcessPending = false;
+            }
+
+            if (terminal.needsDepositScan) {
+                terminal.scanDepositSlots();
+                terminal.needsDepositScan = false;
+            }
+        }
     }
 
     // === Lifecycle ===
@@ -651,6 +776,19 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             // Essence slots
             tag.put("EssenceSlots", essenceSlots.serializeNBT(registries));
 
+            // Honey buffer
+            tag.putInt("HoneyStored", honeyStored);
+            tag.putInt("HoneyCapacity", honeyCapacity);
+
+            // [BM] Coffres pris par d'autres reseaux (transient, pour sync client edit mode)
+            ListTag takenTag = new ListTag();
+            for (BlockPos pos : takenChestPositions) {
+                CompoundTag posTag = new CompoundTag();
+                posTag.put("Pos", NbtUtils.writeBlockPos(pos));
+                takenTag.add(posTag);
+            }
+            tag.put("TakenChests", takenTag);
+
         } finally {
             isSaving = false;
         }
@@ -673,6 +811,21 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
             essenceSlots.deserializeNBT(registries, tag.getCompound("EssenceSlots"));
         }
         recalculateBeeCapacity();
+        recalculateHoneyCapacity();
+
+        // Honey buffer
+        if (tag.contains("HoneyStored")) {
+            honeyStored = tag.getInt("HoneyStored");
+        }
+
+        // [BM] Coffres pris par d'autres reseaux (transient, depuis sync client)
+        takenChestPositions.clear();
+        if (tag.contains("TakenChests")) {
+            ListTag takenTag = tag.getList("TakenChests", Tag.TAG_COMPOUND);
+            for (int i = 0; i < takenTag.size(); i++) {
+                NbtUtils.readBlockPos(takenTag.getCompound(i), "Pos").ifPresent(takenChestPositions::add);
+            }
+        }
 
         // Registre central: charger ou migrer depuis l'ancien format
         if (tag.contains("NetworkRegistry")) {
