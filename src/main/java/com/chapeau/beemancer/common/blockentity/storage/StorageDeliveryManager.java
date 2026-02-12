@@ -362,15 +362,19 @@ public class StorageDeliveryManager {
         if (tag.contains("DeliveryQueue")) {
             ListTag queueTag = tag.getList("DeliveryQueue", Tag.TAG_COMPOUND);
             for (int i = 0; i < queueTag.size(); i++) {
-                DeliveryTask task = DeliveryTask.load(queueTag.getCompound(i), registries);
-                if (task.getState() == DeliveryTask.DeliveryState.FLYING) {
-                    if (task.getInterfaceTaskId() != null) {
-                        // Interface task: l'interface gere ses propres items
+                try {
+                    DeliveryTask task = DeliveryTask.load(queueTag.getCompound(i), registries);
+                    if (task.getState() == DeliveryTask.DeliveryState.FLYING) {
+                        if (task.getInterfaceTaskId() != null) {
+                            // Interface task: l'interface gere ses propres items
+                        } else {
+                            returnPreloadedItems(task);
+                        }
                     } else {
-                        returnPreloadedItems(task);
+                        deliveryQueue.add(task);
                     }
-                } else {
-                    deliveryQueue.add(task);
+                } catch (Exception e) {
+                    com.chapeau.beemancer.Beemancer.LOGGER.warn("Skipping corrupted delivery task at index {}", i, e);
                 }
             }
         }

@@ -187,8 +187,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
         BlockEntity be = level.getBlockEntity(controllerPos);
         if (be instanceof StorageControllerBlockEntity controller) {
-            // Controller existe mais pas formé: retourner null sans casser le lien
-            return controller.isFormed() ? controller : null;
+            return controller;
         }
 
         // Controller n'existe plus: casser le lien

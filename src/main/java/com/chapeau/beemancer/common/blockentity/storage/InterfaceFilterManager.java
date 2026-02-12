@@ -175,9 +175,13 @@ public class InterfaceFilterManager {
         if (parentTag.contains("Filters")) {
             ListTag filtersTag = parentTag.getList("Filters", Tag.TAG_COMPOUND);
             for (int i = 0; i < Math.min(filtersTag.size(), InterfaceFilter.MAX_FILTERS); i++) {
-                InterfaceFilter filter = new InterfaceFilter();
-                filter.load(filtersTag.getCompound(i), registries);
-                filters.add(filter);
+                try {
+                    InterfaceFilter filter = new InterfaceFilter();
+                    filter.load(filtersTag.getCompound(i), registries);
+                    filters.add(filter);
+                } catch (Exception e) {
+                    com.chapeau.beemancer.Beemancer.LOGGER.warn("Skipping corrupted filter at index {}", i, e);
+                }
             }
         }
 

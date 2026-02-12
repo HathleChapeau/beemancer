@@ -134,8 +134,8 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
                 case 1 -> ControllerStats.getSearchSpeed(essenceSlots);
                 case 2 -> ControllerStats.getHoneyCapacityBonus(essenceSlots);
                 case 3 -> ControllerStats.getQuantity(essenceSlots);
-                case 4 -> ControllerStats.getHoneyConsumption(essenceSlots, networkRegistry.getChestCount(), getHiveMultiplier(), getRelayCount());
-                case 5 -> ControllerStats.getHoneyEfficiency(essenceSlots);
+                case 4 -> ControllerStats.getHoneyConsumption(essenceSlots, networkRegistry.getChestCount(), getHiveMultiplier(), getRelayCount(), getInterfaceRelayCost(), level != null && level.isDay());
+                case 5 -> ControllerStats.getHoneyEfficiency(essenceSlots, level != null && level.isDay());
                 case 6 -> getLinkedHiveCount();
                 case 7 -> getMaxDeliveryBees();
                 default -> 0;
@@ -806,17 +806,17 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         deliveryManager.load(tag, registries);
         requestManager.load(tag, registries);
 
+        // Honey buffer (charger AVANT essence slots pour eviter clamping a 0)
+        if (tag.contains("HoneyStored")) {
+            honeyStored = tag.getInt("HoneyStored");
+        }
+
         // Essence slots
         if (tag.contains("EssenceSlots")) {
             essenceSlots.deserializeNBT(registries, tag.getCompound("EssenceSlots"));
         }
         recalculateBeeCapacity();
         recalculateHoneyCapacity();
-
-        // Honey buffer
-        if (tag.contains("HoneyStored")) {
-            honeyStored = tag.getInt("HoneyStored");
-        }
 
         // [BM] Coffres pris par d'autres reseaux (transient, depuis sync client)
         takenChestPositions.clear();

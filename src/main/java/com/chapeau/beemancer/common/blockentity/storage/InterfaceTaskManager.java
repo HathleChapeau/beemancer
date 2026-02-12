@@ -288,8 +288,12 @@ public class InterfaceTaskManager {
         if (parentTag.contains("InterfaceTasks")) {
             ListTag tasksTag = parentTag.getList("InterfaceTasks", Tag.TAG_COMPOUND);
             for (int i = 0; i < tasksTag.size(); i++) {
-                InterfaceTask task = InterfaceTask.load(tasksTag.getCompound(i), registries);
-                tasks.put(task.getTaskId(), task);
+                try {
+                    InterfaceTask task = InterfaceTask.load(tasksTag.getCompound(i), registries);
+                    tasks.put(task.getTaskId(), task);
+                } catch (Exception e) {
+                    com.chapeau.beemancer.Beemancer.LOGGER.warn("Skipping corrupted interface task at index {}", i, e);
+                }
             }
         }
     }

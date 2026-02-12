@@ -233,8 +233,12 @@ public class RequestManager {
         if (tag.contains("Requests")) {
             ListTag requestsTag = tag.getList("Requests", Tag.TAG_COMPOUND);
             for (int i = 0; i < requestsTag.size(); i++) {
-                InterfaceRequest request = InterfaceRequest.load(requestsTag.getCompound(i), registries);
-                queue.put(request);
+                try {
+                    InterfaceRequest request = InterfaceRequest.load(requestsTag.getCompound(i), registries);
+                    queue.put(request);
+                } catch (Exception e) {
+                    com.chapeau.beemancer.Beemancer.LOGGER.warn("Skipping corrupted request at index {}", i, e);
+                }
             }
         }
         if (!queue.isEmpty()) { dirty = true; }
