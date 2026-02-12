@@ -756,6 +756,44 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         }
     }
 
+    // === Client Sync (override pour envoyer seulement les données client-relevant) ===
+
+    /**
+     * Override getUpdateTag pour envoyer un sous-ensemble leger au client.
+     * Le client n'a PAS besoin de: delivery tasks, requests, network registry details.
+     * Il a besoin de: edit mode, connected nodes, chests, formed state, honey, essences, taken positions.
+     * Ceci reduit drastiquement la taille des packets sendBlockUpdated et evite les save hangs
+     * causes par des serialisations excessives (chaque syncToClient() appelait saveAdditional complet).
+     */
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+
+        // Donnees communes: edit mode, connected nodes, chests enregistres
+        saveCommon(tag);
+
+        // Multibloc formed state (necessaire pour les renderers)
+        multiblockManager.save(tag);
+
+        // Honey buffer (necessaire pour la GUI jauge miel)
+        tag.putInt("HoneyStored", honeyStored);
+        tag.putInt("HoneyCapacity", honeyCapacity);
+
+        // Essence slots (necessaire pour la GUI stats)
+        tag.put("EssenceSlots", essenceSlots.serializeNBT(registries));
+
+        // [BM] Coffres pris par d'autres reseaux (necessaire pour outlines edit mode)
+        ListTag takenTag = new ListTag();
+        for (BlockPos pos : takenChestPositions) {
+            CompoundTag posTag = new CompoundTag();
+            posTag.put("Pos", NbtUtils.writeBlockPos(pos));
+            takenTag.add(posTag);
+        }
+        tag.put("TakenChests", takenTag);
+
+        return tag;
+    }
+
     // === NBT ===
 
     @Override

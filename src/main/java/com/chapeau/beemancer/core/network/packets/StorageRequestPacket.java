@@ -49,7 +49,7 @@ public record StorageRequestPacket(
     public static final StreamCodec<RegistryFriendlyByteBuf, StorageRequestPacket> STREAM_CODEC =
         StreamCodec.composite(
             BlockPos.STREAM_CODEC, StorageRequestPacket::terminalPos,
-            ItemStack.STREAM_CODEC, StorageRequestPacket::requestedItem,
+            ItemStack.OPTIONAL_STREAM_CODEC, StorageRequestPacket::requestedItem,
             ByteBufCodecs.INT, StorageRequestPacket::count,
             StorageRequestPacket::new
         );
@@ -74,6 +74,9 @@ public record StorageRequestPacket(
             // Récupérer le terminal
             BlockEntity be = player.level().getBlockEntity(packet.terminalPos);
             if (!(be instanceof StorageTerminalBlockEntity terminal)) return;
+
+            // Rejeter les requêtes vides (race condition client-side possible)
+            if (packet.requestedItem.isEmpty()) return;
 
             // Vérifier que le terminal est lié
             if (!terminal.isLinked()) return;

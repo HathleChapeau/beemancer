@@ -99,8 +99,7 @@ class ViewerSyncManager {
             if (isFullSync) {
                 sendFragmentedFullSync(player, entry.getValue(), aggregatedItems);
             } else if (!deltaItems.isEmpty()) {
-                PacketDistributor.sendToPlayer(player,
-                    new StorageItemsSyncPacket(entry.getValue(), false, true, deltaItems));
+                sendFragmentedDelta(player, entry.getValue(), deltaItems);
             }
 
             if (tasksDirty || isFullSync) {
@@ -125,6 +124,21 @@ class ViewerSyncManager {
 
     void removeViewersForTerminal(BlockPos terminalPos) {
         playersViewing.entrySet().removeIf(entry -> entry.getValue().equals(terminalPos));
+    }
+
+    private void sendFragmentedDelta(ServerPlayer player, BlockPos terminalPos,
+                                       List<ItemStack> deltaItems) {
+        if (deltaItems.size() <= MAX_ITEMS_PER_PACKET) {
+            PacketDistributor.sendToPlayer(player,
+                new StorageItemsSyncPacket(terminalPos, false, true, deltaItems));
+            return;
+        }
+        for (int offset = 0; offset < deltaItems.size(); offset += MAX_ITEMS_PER_PACKET) {
+            int end = Math.min(offset + MAX_ITEMS_PER_PACKET, deltaItems.size());
+            boolean last = (end >= deltaItems.size());
+            PacketDistributor.sendToPlayer(player,
+                new StorageItemsSyncPacket(terminalPos, false, last, deltaItems.subList(offset, end)));
+        }
     }
 
     private void sendFragmentedFullSync(ServerPlayer player, BlockPos terminalPos,

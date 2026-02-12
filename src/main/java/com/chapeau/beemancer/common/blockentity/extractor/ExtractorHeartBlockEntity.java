@@ -441,7 +441,7 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        CompoundTag tag = super.getUpdateTag(registries);
+        CompoundTag tag = new CompoundTag();
         saveAdditional(tag, registries);
         return tag;
     }

@@ -65,10 +65,12 @@ public record StorageItemsSyncPacket(
                 int count = buf.readVarInt();
                 List<ItemStack> items = new ArrayList<>(count);
                 for (int i = 0; i < count; i++) {
-                    ItemStack template = ItemStack.STREAM_CODEC.decode(buf);
+                    ItemStack template = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
                     int totalCount = buf.readVarInt();
-                    template.setCount(totalCount);
-                    items.add(template);
+                    if (!template.isEmpty()) {
+                        template.setCount(totalCount);
+                        items.add(template);
+                    }
                 }
                 return new StorageItemsSyncPacket(pos, full, last, items);
             }
@@ -82,7 +84,7 @@ public record StorageItemsSyncPacket(
                 for (ItemStack stack : packet.items) {
                     int totalCount = stack.getCount();
                     ItemStack template = stack.copyWithCount(1);
-                    ItemStack.STREAM_CODEC.encode(buf, template);
+                    ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, template);
                     buf.writeVarInt(totalCount);
                 }
             }
