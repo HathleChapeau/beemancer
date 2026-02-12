@@ -606,7 +606,9 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
                 controller.getNetworkRegistry().unregisterBlock(worldPosition);
                 controller.getItemAggregator().removeViewersForTerminal(worldPosition);
                 controller.getRequestManager().cancelRequestsFromSource(worldPosition);
-                controller.setChanged();
+                // [FIX] Pas de controller.setChanged() ici: pendant le world unload,
+                // re-dirtier le chunk du controller cause une boucle infinie dans saveAllChunks.
+                // StorageEvents gere le cleanup lors du block break en gameplay normal.
             }
             controllerPos = null;
             pendingRequests.clear();

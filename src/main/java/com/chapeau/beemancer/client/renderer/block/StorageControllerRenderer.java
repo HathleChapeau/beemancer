@@ -25,6 +25,7 @@ import com.chapeau.beemancer.client.renderer.util.DebugRenderHelper;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
+import com.chapeau.beemancer.core.util.StorageHelper;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.client.renderer.util.RenderHelper;
 import com.chapeau.beemancer.client.renderer.util.RotatingModelHelper;
@@ -43,10 +44,12 @@ import com.chapeau.beemancer.common.blockentity.storage.StorageNetworkRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -207,13 +210,22 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
         // Filtrer: afficher seulement les blocs directement possedes par le controller
         // Les blocs possedes par les relays sont visibles depuis le mode edition du relay
+        Level level = blockEntity.getLevel();
         StorageNetworkRegistry registry = blockEntity.getNetworkRegistry();
+        Set<BlockPos> renderedChestHalves = new HashSet<>();
         for (Map.Entry<BlockPos, StorageNetworkRegistry.NetworkEntry> entry : registry.getAll().entrySet()) {
             if (!entry.getValue().ownerNode().equals(controllerPos)) continue;
 
             BlockPos blockPos = entry.getKey();
             switch (entry.getValue().type()) {
-                case CHEST -> renderLineToChest(lineBuffer, matrix, controllerPos, blockPos);
+                case CHEST -> {
+                    // Dedup: si l'autre moitie du double chest a deja ete dessinee, skip
+                    if (renderedChestHalves.contains(blockPos)) continue;
+                    BlockPos otherHalf = (level != null)
+                        ? StorageHelper.getDoubleChestOtherHalf(level, blockPos) : null;
+                    if (otherHalf != null) renderedChestHalves.add(otherHalf);
+                    renderLineToChest(lineBuffer, matrix, controllerPos, blockPos, level);
+                }
                 case INTERFACE -> renderBlockLink(lineBuffer, matrix, controllerPos, blockPos,
                         1.0f, 0.6f, 0.1f, 1.0f, 0.8f);
                 case TERMINAL -> renderBlockLink(lineBuffer, matrix, controllerPos, blockPos,
@@ -271,19 +283,44 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
     /**
      * Dessine une ligne verte du controller vers un coffre et un outline bleu autour du coffre.
+     * Pour les doubles chests, dessine un seul grand outline couvrant les 2 blocs.
      */
     private void renderLineToChest(VertexConsumer buffer, Matrix4f matrix,
-                                    BlockPos controllerPos, BlockPos chestPos) {
+                                    BlockPos controllerPos, BlockPos chestPos, Level level) {
         float dx = chestPos.getX() - controllerPos.getX();
         float dy = chestPos.getY() - controllerPos.getY();
         float dz = chestPos.getZ() - controllerPos.getZ();
 
-        DebugRenderHelper.drawLine(buffer, matrix, 0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
+        float margin = 0.02f;
+        float minX = dx - margin;
+        float minY = dy - margin;
+        float minZ = dz - margin;
+        float maxX = dx + 1 + margin;
+        float maxY = dy + 1 + margin;
+        float maxZ = dz + 1 + margin;
+
+        // Double chest: etendre l'outline pour couvrir les 2 blocs
+        BlockPos otherHalf = StorageHelper.getDoubleChestOtherHalf(level, chestPos);
+        if (otherHalf != null) {
+            float ox = otherHalf.getX() - controllerPos.getX();
+            float oy = otherHalf.getY() - controllerPos.getY();
+            float oz = otherHalf.getZ() - controllerPos.getZ();
+            minX = Math.min(minX, ox - margin);
+            minY = Math.min(minY, oy - margin);
+            minZ = Math.min(minZ, oz - margin);
+            maxX = Math.max(maxX, ox + 1 + margin);
+            maxY = Math.max(maxY, oy + 1 + margin);
+            maxZ = Math.max(maxZ, oz + 1 + margin);
+        }
+
+        // Ligne vers le centre du coffre (ou du double chest)
+        float centerX = (minX + maxX) / 2f;
+        float centerY = (minY + maxY) / 2f;
+        float centerZ = (minZ + maxZ) / 2f;
+        DebugRenderHelper.drawLine(buffer, matrix, 0.5f, 0.5f, 0.5f, centerX, centerY, centerZ,
                 0.2f, 1.0f, 0.2f, 1.0f);
 
-        float min = -0.02f;
-        float max = 1.02f;
-        DebugRenderHelper.drawCubeOutline(buffer, matrix, dx + min, dy + min, dz + min, dx + max, dy + max, dz + max,
+        DebugRenderHelper.drawCubeOutline(buffer, matrix, minX, minY, minZ, maxX, maxY, maxZ,
                 0.2f, 0.6f, 1.0f, 1.0f);
     }
 

@@ -110,8 +110,9 @@ public class StorageRelayBlockEntity extends AbstractNetworkNodeBlockEntity {
             BlockEntity be = level.getBlockEntity(nodePos);
             if (be instanceof StorageControllerBlockEntity controller) {
                 controller.getNetworkRegistry().unregisterAllByOwner(worldPosition);
-                controller.setChanged();
-                // [FIX] Pas de syncNodeToClient() ici: evite les modifications monde pendant unload
+                // [FIX] Pas de controller.setChanged() ici: pendant le world unload,
+                // re-dirtier le chunk du controller cause une boucle infinie dans saveAllChunks.
+                // StorageEvents gere le cleanup lors du block break en gameplay normal.
                 return;
             }
             if (be instanceof INetworkNode node) {

@@ -26,6 +26,7 @@ import com.chapeau.beemancer.common.blockentity.storage.INetworkNode;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageNetworkRegistry;
 import com.chapeau.beemancer.common.blockentity.storage.StorageRelayBlockEntity;
+import com.chapeau.beemancer.core.util.StorageHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -34,6 +35,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
@@ -100,10 +102,12 @@ public class StorageRelayRenderer implements BlockEntityRenderer<StorageRelayBlo
         }
 
         // Afficher les blocs possedes par ce relay depuis le registre central
+        Level level = blockEntity.getNodeLevel();
         StorageControllerBlockEntity controller = findController(blockEntity);
         if (controller != null) {
             StorageNetworkRegistry registry = controller.getNetworkRegistry();
             Set<BlockPos> ownedBlocks = registry.getBlocksByOwner(relayPos);
+            Set<BlockPos> renderedChestHalves = new HashSet<>();
 
             for (BlockPos blockPos : ownedBlocks) {
                 StorageNetworkRegistry.NetworkBlockType type = registry.getType(blockPos);
@@ -111,16 +115,44 @@ public class StorageRelayRenderer implements BlockEntityRenderer<StorageRelayBlo
 
                 switch (type) {
                     case CHEST -> {
-                        // Vert + outline bleu
+                        // Dedup: si l'autre moitie du double chest a deja ete dessinee, skip
+                        if (renderedChestHalves.contains(blockPos)) continue;
+                        BlockPos otherHalf = (level != null)
+                            ? StorageHelper.getDoubleChestOtherHalf(level, blockPos) : null;
+                        if (otherHalf != null) renderedChestHalves.add(otherHalf);
                         float dx = blockPos.getX() - relayPos.getX();
                         float dy = blockPos.getY() - relayPos.getY();
                         float dz = blockPos.getZ() - relayPos.getZ();
+
+                        float margin = 0.02f;
+                        float minX = dx - margin;
+                        float minY = dy - margin;
+                        float minZ = dz - margin;
+                        float maxX = dx + 1 + margin;
+                        float maxY = dy + 1 + margin;
+                        float maxZ = dz + 1 + margin;
+
+                        // Double chest: etendre l'outline pour les 2 blocs (reutilise otherHalf du dedup)
+                        if (otherHalf != null) {
+                            float ox = otherHalf.getX() - relayPos.getX();
+                            float oy = otherHalf.getY() - relayPos.getY();
+                            float oz = otherHalf.getZ() - relayPos.getZ();
+                            minX = Math.min(minX, ox - margin);
+                            minY = Math.min(minY, oy - margin);
+                            minZ = Math.min(minZ, oz - margin);
+                            maxX = Math.max(maxX, ox + 1 + margin);
+                            maxY = Math.max(maxY, oy + 1 + margin);
+                            maxZ = Math.max(maxZ, oz + 1 + margin);
+                        }
+
+                        float centerX = (minX + maxX) / 2f;
+                        float centerY = (minY + maxY) / 2f;
+                        float centerZ = (minZ + maxZ) / 2f;
                         DebugRenderHelper.drawLine(lineBuffer, matrix,
-                                0.5f, 0.5f, 0.5f, dx + 0.5f, dy + 0.5f, dz + 0.5f,
+                                0.5f, 0.5f, 0.5f, centerX, centerY, centerZ,
                                 0.2f, 1.0f, 0.2f, 1.0f);
                         DebugRenderHelper.drawCubeOutline(lineBuffer, matrix,
-                                dx - 0.02f, dy - 0.02f, dz - 0.02f,
-                                dx + 1.02f, dy + 1.02f, dz + 1.02f,
+                                minX, minY, minZ, maxX, maxY, maxZ,
                                 0.2f, 0.6f, 1.0f, 1.0f);
                     }
                     case INTERFACE -> renderBlockLink(lineBuffer, matrix, relayPos, blockPos,

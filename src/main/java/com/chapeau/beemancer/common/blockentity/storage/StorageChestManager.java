@@ -28,6 +28,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Collections;
@@ -53,19 +54,24 @@ public class StorageChestManager {
 
     /**
      * Tente d'enregistrer ou de retirer un coffre.
-     * Si le coffre est déjà enregistré, le retire.
+     * Si le coffre est déjà enregistré, le retire (+ l'autre moitie si double chest).
      * Sinon, enregistre le coffre et ses adjacents (flood fill).
+     * Pour les doubles chests, seule la position canonique (LEFT) est enregistree.
      *
      * @return true si l'opération a réussi
      */
     public boolean toggleChest(BlockPos chestPos) {
-        if (parent.getNodeLevel() == null) return false;
+        Level level = parent.getNodeLevel();
+        if (level == null) return false;
 
         if (!isInRange(chestPos)) return false;
         if (!isChest(chestPos)) return false;
 
-        if (registeredChests.contains(chestPos)) {
-            registeredChests.remove(chestPos);
+        // Utiliser la position canonique pour les doubles chests
+        BlockPos canonical = StorageHelper.getCanonicalChestPos(level, chestPos);
+
+        if (registeredChests.contains(canonical)) {
+            registeredChests.remove(canonical);
             parent.markDirty();
             parent.syncNodeToClient();
             return true;
@@ -77,9 +83,12 @@ public class StorageChestManager {
 
     /**
      * Flood fill pour enregistrer un coffre et tous ses adjacents.
+     * Pour les doubles chests, seule la position canonique (LEFT) est enregistree.
+     * Le BFS explore les deux moities mais n'enregistre que la canonique.
      */
     private void registerChestWithNeighbors(BlockPos startPos) {
-        if (parent.getNodeLevel() == null) return;
+        Level level = parent.getNodeLevel();
+        if (level == null) return;
 
         Queue<BlockPos> toCheck = new LinkedList<>();
         Set<BlockPos> checked = new HashSet<>();
@@ -95,11 +104,20 @@ public class StorageChestManager {
             checked.add(current);
 
             if (!isChest(current)) continue;
-            if (registeredChests.contains(current)) continue;
             if (!isInRange(current)) continue;
 
-            registeredChests.add(current);
-            newlyRegistered++;
+            // Position canonique: pour un double chest, toujours LEFT
+            BlockPos canonical = StorageHelper.getCanonicalChestPos(level, current);
+            if (!registeredChests.contains(canonical)) {
+                registeredChests.add(canonical);
+                newlyRegistered++;
+            }
+
+            // Marquer aussi l'autre moitie comme "checked" pour ne pas la re-traiter
+            BlockPos otherHalf = StorageHelper.getDoubleChestOtherHalf(level, current);
+            if (otherHalf != null) {
+                checked.add(otherHalf);
+            }
 
             for (Direction dir : Direction.values()) {
                 BlockPos neighbor = current.relative(dir);
@@ -145,11 +163,17 @@ public class StorageChestManager {
 
     /**
      * Retire un coffre du registre (utilise par StorageEvents quand un coffre est casse).
+     * Essaie aussi la position canonique (au cas ou le coffre etait un double).
      *
      * @return true si le coffre existait
      */
     public boolean removeChest(BlockPos pos) {
         boolean removed = registeredChests.remove(pos);
+        // Si le coffre n'etait pas enregistre directement, verifier la position canonique
+        if (!removed && parent.getNodeLevel() != null) {
+            BlockPos canonical = StorageHelper.getCanonicalChestPos(parent.getNodeLevel(), pos);
+            removed = registeredChests.remove(canonical);
+        }
         if (removed) {
             parent.markDirty();
         }

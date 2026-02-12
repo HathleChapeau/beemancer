@@ -175,6 +175,15 @@ public class InterfaceTaskManager {
         parent.setChanged();
     }
 
+    /**
+     * Vide les tasks sans annuler les bees ni appeler setChanged().
+     * Utilise UNIQUEMENT dans setRemoved() pour eviter de re-dirtier des chunks
+     * pendant le world unload (cause boucle infinie saveAllChunks → save hang).
+     */
+    public void clearTasksSilent() {
+        tasks.clear();
+    }
+
     // === Reconciliation ===
 
     /**

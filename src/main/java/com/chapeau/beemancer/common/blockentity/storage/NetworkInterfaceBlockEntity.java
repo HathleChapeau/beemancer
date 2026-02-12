@@ -393,7 +393,12 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
     @Override
     public void setRemoved() {
         if (level != null && !level.isClientSide()) {
-            taskManager.cancelAllTasks();
+            // [FIX] Nettoyage silencieux: clear les tasks sans cancelTask() qui appelle
+            // controller.setChanged() / beeSpawner.redirectBee() / recallBee etc.
+            // Pendant le world unload, ces appels re-dirtient des chunks → boucle infinie saveAllChunks.
+            // Les bees seront cleanup par killAllDeliveryBees() du controller.
+            // Les tasks orphelines seront nettoyees au prochain chargement.
+            taskManager.clearTasksSilent();
         }
         super.setRemoved();
     }

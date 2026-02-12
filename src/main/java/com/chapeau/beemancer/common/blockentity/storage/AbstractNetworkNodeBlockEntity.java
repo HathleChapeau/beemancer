@@ -112,9 +112,13 @@ public abstract class AbstractNetworkNodeBlockEntity extends BlockEntity impleme
      * Utilise pendant setRemoved() pour eviter les modifications monde en cascade
      * durant le world unload (qui causent le hang "saving world").
      */
+    /**
+     * Deconnecte un noeud sans setChanged() ni syncToClient().
+     * Utilise UNIQUEMENT pendant setRemoved() pour eviter de re-dirtier des chunks
+     * pendant le world unload (cause boucle infinie saveAllChunks → save hang).
+     */
     public void disconnectNodeSilent(BlockPos nodePos) {
         connectedNodes.remove(nodePos);
-        setChanged();
     }
 
     // === INetworkNode: Edit Mode ===
