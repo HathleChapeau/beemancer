@@ -73,6 +73,17 @@ public class StorageHiveBlockEntity extends BlockEntity {
         syncToClient();
     }
 
+    /**
+     * Efface la reference au controller sans modifier le blockstate ni sync le client.
+     * Utilise par le controller dans setRemoved() pour eviter les modifications monde
+     * pendant le world unload (qui causent le hang "saving world").
+     * La hive mettra a jour son etat visuel d'elle-meme au prochain serverTick.
+     */
+    public void clearControllerRef() {
+        this.controllerPos = null;
+        setChanged();
+    }
+
     @Nullable
     public BlockPos getControllerPos() {
         return controllerPos;

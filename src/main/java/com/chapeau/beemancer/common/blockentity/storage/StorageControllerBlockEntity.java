@@ -744,7 +744,19 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     public void setRemoved() {
         super.setRemoved();
         deliveryManager.killAllDeliveryBees();
-        hiveManager.unlinkAllHives();
+        // [FIX] Silent hive cleanup: clear references without world modification (no setBlock/syncToClient)
+        // unlinkAllHives() appelait hive.unlinkController() qui fait level.setBlock() + syncToClient()
+        // Cela causait des modifications monde en cascade pendant le world unload → hang "saving world"
+        // Les hives corrigeront leur etat visuel au prochain serverTick (VALIDATE_INTERVAL)
+        if (level != null && !level.isClientSide()) {
+            for (BlockPos hivePos : networkRegistry.getAllHives()) {
+                if (!level.hasChunkAt(hivePos)) continue;
+                BlockEntity be = level.getBlockEntity(hivePos);
+                if (be instanceof StorageHiveBlockEntity hive) {
+                    hive.clearControllerRef();
+                }
+            }
+        }
         MultiblockEvents.unregisterController(worldPosition);
     }
 

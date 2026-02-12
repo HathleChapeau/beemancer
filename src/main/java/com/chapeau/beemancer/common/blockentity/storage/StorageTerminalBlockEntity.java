@@ -597,8 +597,19 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     @Override
     public void setRemoved() {
-        if (level != null && !level.isClientSide()) {
-            unlinkController();
+        if (level != null && !level.isClientSide() && controllerPos != null) {
+            // [FIX] Silent unlink: registry cleanup sans syncToClient()
+            // unlinkController() appelait syncToClient() et level.sendBlockUpdated()
+            // Cela causait des modifications monde pendant le world unload → hang "saving world"
+            BlockEntity be = level.getBlockEntity(controllerPos);
+            if (be instanceof StorageControllerBlockEntity controller) {
+                controller.getNetworkRegistry().unregisterBlock(worldPosition);
+                controller.getItemAggregator().removeViewersForTerminal(worldPosition);
+                controller.getRequestManager().cancelRequestsFromSource(worldPosition);
+                controller.setChanged();
+            }
+            controllerPos = null;
+            pendingRequests.clear();
         }
         super.setRemoved();
     }

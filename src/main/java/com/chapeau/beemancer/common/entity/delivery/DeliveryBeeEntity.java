@@ -84,6 +84,7 @@ public class DeliveryBeeEntity extends Bee {
     private float searchSpeedMultiplier = 1.0f;
     private int ticksAlive = 0;
     private boolean recalled = false;
+    private boolean preloaded = false;
 
     // Interface task fields (for adaptive count reading)
     @Nullable private UUID interfaceTaskId;
@@ -499,6 +500,9 @@ public class DeliveryBeeEntity extends Bee {
         this.newTransitWaypoints.clear();
         this.newHomeWaypoints.clear();
     }
+
+    public boolean isPreloaded() { return preloaded; }
+    public void setPreloaded(boolean preloaded) { this.preloaded = preloaded; }
 
     public boolean isRecalled() { return recalled; }
     public boolean isTaskCancelled() { return taskCancelled; }

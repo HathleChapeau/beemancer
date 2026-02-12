@@ -76,12 +76,13 @@ public class StorageRelayBlockEntity extends AbstractNetworkNodeBlockEntity {
     public void setRemoved() {
         super.setRemoved();
         if (level != null && !level.isClientSide()) {
-            // Deconnecter des noeuds lies
+            // [FIX] Silent disconnect: disconnectNode() appelait syncToClient() sur chaque noeud
+            // Cela causait des modifications monde en cascade pendant le world unload → hang "saving world"
             for (BlockPos nodePos : new ArrayList<>(getConnectedNodes())) {
                 if (!level.hasChunkAt(nodePos)) continue;
                 BlockEntity be = level.getBlockEntity(nodePos);
-                if (be instanceof INetworkNode node) {
-                    node.disconnectNode(worldPosition);
+                if (be instanceof AbstractNetworkNodeBlockEntity node) {
+                    node.disconnectNodeSilent(worldPosition);
                 }
             }
 
@@ -110,7 +111,7 @@ public class StorageRelayBlockEntity extends AbstractNetworkNodeBlockEntity {
             if (be instanceof StorageControllerBlockEntity controller) {
                 controller.getNetworkRegistry().unregisterAllByOwner(worldPosition);
                 controller.setChanged();
-                controller.syncNodeToClient();
+                // [FIX] Pas de syncNodeToClient() ici: evite les modifications monde pendant unload
                 return;
             }
             if (be instanceof INetworkNode node) {

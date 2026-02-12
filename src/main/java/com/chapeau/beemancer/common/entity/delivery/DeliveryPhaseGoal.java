@@ -32,6 +32,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.EnumSet;
 import java.util.List;
 
@@ -53,6 +56,7 @@ import java.util.List;
  */
 public class DeliveryPhaseGoal extends Goal {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeliveryPhaseGoal.class);
     private static final double ARRIVAL_DISTANCE_SQ = 4.0;
     private static final int BASE_WAIT_TICKS = 60;
 
@@ -109,12 +113,20 @@ public class DeliveryPhaseGoal extends Goal {
 
     @Override
     public void start() {
-        if (!bee.getCarriedItems().isEmpty()) {
+        if (bee.isPreloaded()) {
+            // Preloaded (export terminal): items charges depuis deposit slots, vol direct vers destination
             setPhase(Phase.FLY_TO_DEST);
             transitIdx[0] = 0;
+            LOGGER.debug("[Phase] Bee {} start: PRELOADED → FLY_TO_DEST (carried: {}x{})",
+                bee.getTaskId(), bee.getCarriedItems().getCount(), bee.getCarriedItems().getItem());
         } else {
+            // Non-preloaded: toujours voler vers la source d'abord (meme avec items G3 pre-extraits)
+            // Cela donne le visuel correct: bee sort du controller → vole au coffre → revient
             setPhase(Phase.FLY_TO_SOURCE);
             outboundIdx[0] = 0;
+            LOGGER.debug("[Phase] Bee {} start: → FLY_TO_SOURCE {} (carried: {})",
+                bee.getTaskId(), bee.getSourcePos(),
+                bee.getCarriedItems().isEmpty() ? "empty" : bee.getCarriedItems().getCount() + "x" + bee.getCarriedItems().getItem());
         }
         homeIdx[0] = 0;
         navigationStarted = false;
@@ -361,6 +373,8 @@ public class DeliveryPhaseGoal extends Goal {
         if (navigateWaypoints(bee.getOutboundWaypoints(), outboundIdx, bee.getSourcePos())) {
             setPhase(Phase.WAIT_AT_SOURCE);
             waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
+            LOGGER.debug("[Phase] Bee {} arrived at source {} → WAIT_AT_SOURCE ({}t)",
+                bee.getTaskId(), bee.getSourcePos(), waitTimer);
         }
     }
 
@@ -371,7 +385,18 @@ public class DeliveryPhaseGoal extends Goal {
         Level level = bee.level();
         if (level.isClientSide()) return;
 
-        performExtraction(level);
+        // [FIX] Si la bee transporte deja des items (G3 pre-extraction atomique), skip l'extraction
+        // Les items ont ete extraits AVANT le spawn pour eviter les TOCTOU,
+        // mais la bee doit quand meme visuellement voler jusqu'au coffre source
+        if (bee.getCarriedItems().isEmpty()) {
+            LOGGER.debug("[Phase] Bee {} WAIT_AT_SOURCE: extracting from {}", bee.getTaskId(), bee.getSourcePos());
+            performExtraction(level);
+            LOGGER.debug("[Phase] Bee {} extraction result: {}", bee.getTaskId(),
+                bee.getCarriedItems().isEmpty() ? "EMPTY (failed)" : bee.getCarriedItems().getCount() + "x" + bee.getCarriedItems().getItem());
+        } else {
+            LOGGER.debug("[Phase] Bee {} WAIT_AT_SOURCE: skip extraction (G3 pre-extracted {}x{})",
+                bee.getTaskId(), bee.getCarriedItems().getCount(), bee.getCarriedItems().getItem());
+        }
 
         if (bee.getCarriedItems().isEmpty()) {
             bee.notifyTaskFailed();
@@ -388,6 +413,9 @@ public class DeliveryPhaseGoal extends Goal {
         if (navigateWaypoints(bee.getTransitWaypoints(), transitIdx, bee.getDestPos())) {
             setPhase(Phase.WAIT_AT_DEST);
             waitTimer = Math.max(10, Math.round(BASE_WAIT_TICKS / bee.getSearchSpeedMultiplier()));
+            LOGGER.debug("[Phase] Bee {} arrived at dest {} → WAIT_AT_DEST (carrying {}x{})",
+                bee.getTaskId(), bee.getDestPos(),
+                bee.getCarriedItems().getCount(), bee.getCarriedItems().getItem());
         }
     }
 
@@ -405,6 +433,9 @@ public class DeliveryPhaseGoal extends Goal {
                 return;
             }
             bee.snapshotCarriedItems();
+            LOGGER.debug("[Phase] Bee {} delivering {}x{} at {}",
+                bee.getTaskId(), bee.getCarriedItems().getCount(),
+                bee.getCarriedItems().getItem(), bee.getDestPos());
             performDelivery();
         }
 
@@ -415,6 +446,7 @@ public class DeliveryPhaseGoal extends Goal {
 
     private void tickFlyHome() {
         if (navigateWaypoints(bee.getHomeWaypoints(), homeIdx, bee.getReturnPos())) {
+            LOGGER.debug("[Phase] Bee {} arrived home → task complete", bee.getTaskId());
             bee.notifyTaskCompleted();
             bee.discard();
         }

@@ -67,12 +67,17 @@ class AggregationCache {
         Map<ItemStackKey, Set<BlockPos>> newContentIndex = new HashMap<>();
         Set<BlockPos> activeChests = new LinkedHashSet<>();
 
+        // [FIX] Deduplication double chests: les deux moities retournent le meme IItemHandler (54 slots)
+        // Sans dedup, les items sont comptes 2x dans l'agregation → affichage incorrect
+        java.util.Set<IItemHandler> seenHandlers = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+
         for (BlockPos chestPos : validChests) {
             if (!level.hasChunkAt(chestPos)) continue;
             activeChests.add(chestPos);
 
             IItemHandler handler = StorageHelper.getItemHandler(level, chestPos, null);
             if (handler == null) continue;
+            if (!seenHandlers.add(handler)) continue; // Double chest: meme handler deja scanne
 
             long fingerprint = computeFingerprint(handler);
             Long cached = chestFingerprints.get(chestPos);

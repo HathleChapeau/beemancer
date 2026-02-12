@@ -74,10 +74,16 @@ public class DeliveryContainerOps {
         List<ChestItemInfo> result = new ArrayList<>();
         if (parent.getLevel() == null || template.isEmpty()) return result;
 
+        // [FIX] Deduplication double chests: les deux moities retournent le meme IItemHandler (54 slots)
+        // Sans dedup, le meme coffre est reporte 2x → creation de 2 tasks pour le meme handler
+        // → extraction double (demander 3, retirer 6 du reseau mais recevoir 3)
+        java.util.Set<IItemHandler> seenHandlers = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+
         for (BlockPos chestPos : parent.getAllNetworkChests()) {
             if (!parent.getLevel().hasChunkAt(chestPos)) continue;
             IItemHandler handler = StorageHelper.getItemHandler(parent.getLevel(), chestPos, null);
             if (handler != null) {
+                if (!seenHandlers.add(handler)) continue; // Double chest: meme handler deja vu
                 int count = ContainerHelper.countItem(handler, template);
                 if (count > 0) {
                     result.add(new ChestItemInfo(chestPos, count));

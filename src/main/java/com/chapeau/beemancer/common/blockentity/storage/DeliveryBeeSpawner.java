@@ -37,6 +37,9 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +52,7 @@ import java.util.UUID;
  * Gere le spawn, le recall, la redirection et le kill des DeliveryBeeEntity.
  */
 public class DeliveryBeeSpawner {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeliveryBeeSpawner.class);
     private final StorageControllerBlockEntity parent;
     private final DeliveryNetworkPathfinder pathfinder;
     private final DeliveryContainerOps containerOps;
@@ -131,13 +135,25 @@ public class DeliveryBeeSpawner {
         ItemStack carried = ItemStack.EMPTY;
         if (task.isPreloaded()) {
             carried = task.getTemplate().copyWithCount(task.getCount());
+            LOGGER.debug("[Spawner] Task {} preloaded: {}x{}", task.getTaskId(),
+                task.getCount(), task.getTemplate().getItem());
         } else if (task.getInterfaceTaskId() == null) {
             // [BE] Extraction atomique: extraire AVANT de spawner
+            LOGGER.debug("[Spawner] Task {} G3 pre-extract: {}x{} from {}",
+                task.getTaskId(), task.getCount(), task.getTemplate().getItem(), task.getSourcePos());
             ItemStack extracted = containerOps.extractItemForDelivery(
                 task.getTemplate(), task.getCount(), task.getSourcePos());
-            if (extracted.isEmpty()) return false;
+            if (extracted.isEmpty()) {
+                LOGGER.debug("[Spawner] Task {} G3 extraction FAILED (empty)", task.getTaskId());
+                return false;
+            }
             task.setCount(extracted.getCount());
             carried = extracted;
+            LOGGER.debug("[Spawner] Task {} G3 extracted: {}x{}", task.getTaskId(),
+                extracted.getCount(), extracted.getItem());
+        } else {
+            LOGGER.debug("[Spawner] Task {} interface import: bee will extract at source {}",
+                task.getTaskId(), task.getSourcePos());
         }
         // Else: interface import task — la bee vole a la source pour extraire
 
@@ -175,13 +191,15 @@ public class DeliveryBeeSpawner {
             task.getInterfaceTaskId(),
             task.getInterfacePos()
         );
+        bee.setPreloaded(task.isPreloaded());
 
         // Calculer les waypoints via relays
         List<BlockPos> pathToSource = List.of();
         List<BlockPos> pathToDest = List.of();
 
-        // [BE] Si items deja sur la bee, pas besoin de voler a la source
-        if (carried.isEmpty()) {
+        // [FIX] Toujours calculer le chemin vers la source pour le vol visuel
+        // Meme avec G3 pre-extraction, la bee doit visuellement voler au coffre source
+        if (task.getSourcePos() != null) {
             pathToSource = pathfinder.findPathToChest(task.getSourcePos(), task.getRequesterPos());
         }
         if (task.getDestPos() != null && !task.getDestPos().equals(parent.getBlockPos())) {

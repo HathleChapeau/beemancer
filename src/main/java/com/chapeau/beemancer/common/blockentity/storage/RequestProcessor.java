@@ -27,6 +27,9 @@ import com.chapeau.beemancer.common.block.storage.InterfaceRequest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +41,7 @@ import java.util.UUID;
  * Gere aussi le recheck des demandes bloquees et la validation des sources.
  */
 public class RequestProcessor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestProcessor.class);
     private final RequestManager manager;
 
     public RequestProcessor(RequestManager manager) {
@@ -48,12 +52,18 @@ public class RequestProcessor {
      * IMPORT: trouver un coffre source, creer une tache (coffre -> requester).
      */
     void processImportRequest(InterfaceRequest request, StorageDeliveryManager delivery) {
+        LOGGER.debug("[Request] IMPORT {}x{} for {} from {}",
+            request.getCount(), request.getTemplate().getItem(),
+            request.getRequesterPos(), request.getSourcePos());
+
         List<DeliveryContainerOps.ChestItemInfo> chests =
             delivery.getContainerOps().findAllChestsWithItem(request.getTemplate());
 
+        LOGGER.debug("[Request] Found {} chests with item (before filter)", chests.size());
         chests.removeIf(info -> info.pos().equals(request.getSourcePos()));
 
         if (chests.isEmpty()) {
+            LOGGER.debug("[Request] BLOCKED: no chests with item available");
             request.setStatus(InterfaceRequest.RequestStatus.BLOCKED);
             request.setBlockedReason("gui.beemancer.tasks.blocked.items_unavailable");
             return;
@@ -64,6 +74,7 @@ public class RequestProcessor {
 
         int remaining = request.getCount();
         DeliveryTask rootTask = null;
+        int taskCount = 0;
 
         for (DeliveryContainerOps.ChestItemInfo chest : chests) {
             if (remaining <= 0) break;
@@ -79,12 +90,18 @@ public class RequestProcessor {
 
             delivery.addDeliveryTask(task);
             remaining -= toTake;
+            taskCount++;
+
+            LOGGER.debug("[Request] Created task {}: {}x{} from {} → {}",
+                task.getTaskId(), toTake, request.getTemplate().getItem(),
+                chest.pos(), request.getSourcePos());
 
             if (rootTask == null) {
                 rootTask = task;
             }
         }
 
+        LOGGER.debug("[Request] IMPORT assigned: {} tasks, remaining={}", taskCount, remaining);
         request.setAssignedTaskId(rootTask.getTaskId());
         request.setStatus(InterfaceRequest.RequestStatus.ASSIGNED);
         request.setBlockedReason("");

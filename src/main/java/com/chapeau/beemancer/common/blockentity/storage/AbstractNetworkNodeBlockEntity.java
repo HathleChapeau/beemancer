@@ -107,6 +107,16 @@ public abstract class AbstractNetworkNodeBlockEntity extends BlockEntity impleme
         syncToClient();
     }
 
+    /**
+     * Retire un noeud connecte sans declencher de sync client.
+     * Utilise pendant setRemoved() pour eviter les modifications monde en cascade
+     * durant le world unload (qui causent le hang "saving world").
+     */
+    public void disconnectNodeSilent(BlockPos nodePos) {
+        connectedNodes.remove(nodePos);
+        setChanged();
+    }
+
     // === INetworkNode: Edit Mode ===
 
     @Override
