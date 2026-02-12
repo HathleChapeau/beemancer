@@ -233,10 +233,10 @@ public class MultiblockPatterns {
             .add(0, 1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))      // Sud
             .add(1, 1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))      // Est
             .add(-1, 1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))     // Ouest
-            .add(-1, 1, -1, block(BeemancerBlocks.IRON_FOUNDATION))      // Coin NO
-            .add(1, 1, -1, block(BeemancerBlocks.IRON_FOUNDATION))       // Coin NE
-            .add(-1, 1, 1, block(BeemancerBlocks.IRON_FOUNDATION))       // Coin SO
-            .add(1, 1, 1, block(BeemancerBlocks.IRON_FOUNDATION))        // Coin SE
+            .add(-1, 1, -1, air())      // Coin NO
+            .add(1, 1, -1, air())       // Coin NE
+            .add(-1, 1, 1, air())       // Coin SO
+            .add(1, 1, 1, air())        // Coin SE
 
             .build()
     );

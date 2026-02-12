@@ -1,6 +1,9 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube_bottom_top",
   "textures": {
-    "all": "beemancer:block/machines/magic_hive"
+    "top": "beemancer:block/machines/beehive_end",
+    "bottom": "beemancer:block/machines/beehive_end",
+    "front": "beemancer:block/machines/beehive_front",
+    "side": "beemancer:block/machines/beehive_side"
   }
 }
