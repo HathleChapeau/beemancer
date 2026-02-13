@@ -93,6 +93,11 @@ public class DebugPanelRenderer {
         String hint2 = "[←→] ±0.1";
         String hint3 = "[Shift + ←→] ±1.0";
         String hint4 = "[Shift+R] Reset";
+        String hint5 = "[Shift+V] Shader: ";
+
+        if(DebugWandItem.selectedShader == 0) hint5 += "none";
+        if(DebugWandItem.selectedShader == 1) hint5 += "Display";
+        if(DebugWandItem.selectedShader == 2) hint5 += "Logic";
 
         // Calculer dimensions
         int maxWidth = font.width(title);
@@ -100,6 +105,7 @@ public class DebugPanelRenderer {
         maxWidth = Math.max(maxWidth, font.width(hint2));
         maxWidth = Math.max(maxWidth, font.width(hint3));
         maxWidth = Math.max(maxWidth, font.width(hint4));
+        maxWidth = Math.max(maxWidth, font.width(hint5));
 
         for (int i = 1; i <= 9; i++) {
             String line = "Value " + i + ": " + formatValue(DebugWandItem.getValue(i));
@@ -171,7 +177,7 @@ public class DebugPanelRenderer {
         graphics.fill(x + 2, textY - 1, x + boxWidth - 2, textY, BORDER_COLOR);
         textY += 3;
 
-        // Hints (3 lignes)
+        // Hints (5 lignes)
         graphics.drawString(font, hint1, textX, textY, HINT_COLOR, false);
         textY += LINE_HEIGHT;
         graphics.drawString(font, hint2, textX, textY, HINT_COLOR, false);
@@ -179,6 +185,8 @@ public class DebugPanelRenderer {
         graphics.drawString(font, hint3, textX, textY, HINT_COLOR, false);
         textY += LINE_HEIGHT;
         graphics.drawString(font, hint4, textX, textY, HINT_COLOR, false);
+        textY += LINE_HEIGHT;
+        graphics.drawString(font, hint5, textX, textY, HINT_COLOR, false);
     }
 
     private static void drawBorder(GuiGraphics graphics, int x, int y, int width, int height, int color) {

@@ -40,6 +40,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
@@ -55,6 +56,10 @@ public class AltarHeartBlock extends Block implements EntityBlock {
 
     // Forme: petit cube centré
     private static final VoxelShape SHAPE = Block.box(4, 4, 4, 12, 12, 12);
+    private static final VoxelShape SHAPE_FORMED = Shapes.or(
+            Block.box(0, 0, 0, 16, 16, 16),
+            Block.box(0, -16, 0, 16, 0, 16),
+            Block.box(0, 16, 0, 16, 32, 16));
 
     public AltarHeartBlock(Properties properties) {
         super(properties);
@@ -68,7 +73,10 @@ public class AltarHeartBlock extends Block implements EntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        if(state.getValue(MULTIBLOCK) != MultiblockProperty.NONE)
+            return SHAPE_FORMED;
+        else
+            return SHAPE;
     }
 
     @Override

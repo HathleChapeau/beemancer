@@ -1,9 +1,10 @@
 {
-  "parent": "minecraft:block/cube_bottom_top",
+  "parent": "minecraft:block/orientable_with_bottom",
   "textures": {
-    "top": "beemancer:block/machines/beehive_end",
-    "bottom": "beemancer:block/machines/beehive_end",
+    "bottom": "beemancer:block/machines/beehive_bottom",
     "front": "beemancer:block/machines/beehive_front",
-    "side": "beemancer:block/machines/beehive_side"
+    "particle": "beemancer:block/machines/beehive_side",
+    "side": "beemancer:block/machines/beehive_side",
+    "top": "beemancer:block/machines/beehive_end"
   }
 }

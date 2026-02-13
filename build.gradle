@@ -71,6 +71,16 @@ repositories {
 			includeGroup "mysticdrew"
 		}
 	}
+
+	maven {
+		url "https://www.cursemaven.com"
+		content { includeGroup "curse.maven" }
+	}
+
+	maven {
+		name 'Lucko Maven' // Officiel pour Spark
+		url 'https://maven.lucko.me/'
+	}
 }
 
 dependencies {
@@ -100,6 +110,16 @@ dependencies {
 		compileOnly("cc.tweaked:cc-tweaked-$minecraft_version-core-api:$cc_tweaked_version")
 		compileOnly("cc.tweaked:cc-tweaked-$minecraft_version-forge-api:$cc_tweaked_version")
 		runtimeOnly("cc.tweaked:cc-tweaked-$minecraft_version-forge:$cc_tweaked_version")
+	}
+
+	if (profiler_enable.toBoolean()) {
+		//compileOnly("cc.tweaked:cc-tweaked-$minecraft_version-core-api:$spark_version")
+		//compileOnly("cc.tweaked:cc-tweaked-$minecraft_version-forge-api:$spark_version")
+		//runtimeOnly("curse.maven:spark-$minecraft_version:$spark_version")
+		runtimeOnly("curse.maven:spark-$spark_version")
+		runtimeOnly("curse.maven:kotlin-for-forge-$kotlin_for_forge_version")
+		runtimeOnly("curse.maven:architectury-api-$architectury_version")
+		runtimeOnly("curse.maven:observable-$observable_version")
 	}
 
 	// FTB Mods (minimap) - désactivé

@@ -13,6 +13,8 @@
  */
 package com.chapeau.beemancer.common.item.debug;
 
+import com.chapeau.beemancer.client.LogicCostVisualizer;
+import com.chapeau.beemancer.client.RenderCostVisualizer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -67,6 +69,9 @@ public class DebugWandItem extends Item {
     // Index de la valeur sélectionnée (1-9)
     public static int selectedIndex = 1;
 
+    // Index de selection du Shader (0 = no shader)
+    public static int selectedShader = 0;
+
     // Mode d'affichage debug (toggle avec clic droit)
     public static boolean displayDebug = false;
 
@@ -96,6 +101,14 @@ public class DebugWandItem extends Item {
             displayDebug = !displayDebug;
         }
         return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
+    }
+
+    public static void RenderShader(int shader){
+        RenderCostVisualizer.ENABLED = false;
+        LogicCostVisualizer.ENABLED = false;;
+
+        if(shader == 1) RenderCostVisualizer.ENABLED = true;
+        if(shader == 2) LogicCostVisualizer.ENABLED = true;
     }
 
     /**

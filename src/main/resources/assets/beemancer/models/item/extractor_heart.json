@@ -1,3 +1,6 @@
 {
-  "parent": "beemancer:block/machines/extractor_heart"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "beemancer:block/machines/essence_extractor_heart"
+  }
 }

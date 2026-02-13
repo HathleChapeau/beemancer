@@ -201,10 +201,10 @@ public class MultiblockPatterns {
             .add(0, -2, 1, block(BeemancerBlocks.HONEY_PEDESTAL))   // Sud
             .add(1, -2, 0, block(BeemancerBlocks.HONEY_PEDESTAL))   // Est
             .add(-1, -2, 0, block(BeemancerBlocks.HONEY_PEDESTAL))  // Ouest
-            .add(-1, -2, -1, block(BeemancerBlocks.IRON_FOUNDATION))  // Coin NO
-            .add(1, -2, -1, block(BeemancerBlocks.IRON_FOUNDATION))   // Coin NE
-            .add(-1, -2, 1, block(BeemancerBlocks.IRON_FOUNDATION))   // Coin SO
-            .add(1, -2, 1, block(BeemancerBlocks.IRON_FOUNDATION))    // Coin SE
+            .add(-1, -2, -1, air())  // Coin NO
+            .add(1, -2, -1, air())   // Coin NE
+            .add(-1, -2, 1, air())   // Coin SO
+            .add(1, -2, 1, air())    // Coin SE
 
             // Étage 2 (Y-1): Vide
             .add(0, -1, 0, air())

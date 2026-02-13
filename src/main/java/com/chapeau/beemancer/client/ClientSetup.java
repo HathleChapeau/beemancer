@@ -113,6 +113,11 @@ public class ClientSetup {
 
         // Fix outline translucent pour blocs comme le Crystallizer
         NeoForge.EVENT_BUS.register(TranslucentOutlineRenderer.class);
+
+
+        // Debug Opti
+        NeoForge.EVENT_BUS.register(RenderCostVisualizer.class);
+        NeoForge.EVENT_BUS.register(LogicCostVisualizer.class);
     }
 
     private static void registerScreens(final RegisterMenuScreensEvent event) {

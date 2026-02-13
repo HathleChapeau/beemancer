@@ -66,6 +66,19 @@ public class DebugKeyHandler {
         boolean shift = (event.getModifiers() & GLFW.GLFW_MOD_SHIFT) != 0;
         boolean ctrl = (event.getModifiers() & GLFW.GLFW_MOD_CONTROL) != 0;
 
+        DebugWandValue(key, shift, ctrl);
+        DebugWandShader(key, shift, ctrl);
+    }
+
+    private static void DebugWandShader(int key, boolean shift, boolean ctrl)
+    {
+        if (key == GLFW.GLFW_KEY_V && shift) {
+            DebugWandItem.selectedShader = (DebugWandItem.selectedShader + 1) % 3;
+            DebugWandItem.RenderShader(DebugWandItem.selectedShader);
+        }
+    }
+
+    private static void DebugWandValue(int key, boolean shift, boolean ctrl){
         // Touches du pavé numérique 1-9 uniquement (pas les touches normales pour éviter conflit hotbar)
         if (key >= GLFW.GLFW_KEY_KP_1 && key <= GLFW.GLFW_KEY_KP_9) {
             int index = key - GLFW.GLFW_KEY_KP_1 + 1;

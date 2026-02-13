@@ -1,6 +1,10 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/orientable_with_bottom",
   "textures": {
-    "all": "beemancer:block/machines/hive_multiblock"
+    "bottom": "beemancer:block/machines/hiveblock_end",
+    "front": "beemancer:block/machines/hiveblock_side",
+    "particle": "beemancer:block/machines/hiveblock_side",
+    "side": "beemancer:block/machines/hiveblock_side",
+    "top": "beemancer:block/machines/hiveblock_end"
   }
 }

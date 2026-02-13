@@ -1,7 +1,10 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "cutout",
   "textures": {
-    "core": "beemancer:block/storage/storage_hive",
+    "core": "beemancer:block/storage/hive_side",
+    "coreframe": "beemancer:block/storage/hive_frame",
+    "top": "beemancer:block/storage/hive_end",
     "frame": "beemancer:block/iron",
     "glass": "beemancer:block/honey"
   },
@@ -15,8 +18,21 @@
         "south": {"texture": "#core", "uv": [0,0,16,16]},
         "east": {"texture": "#core", "uv": [0,0,16,16]},
         "west": {"texture": "#core", "uv": [0,0,16,16]},
-        "up": {"texture": "#core", "uv": [0,0,16,16]},
-        "down": {"texture": "#core", "uv": [0,0,16,16]}
+        "up": {"texture": "#top", "uv": [0,0,16,16]},
+        "down": {"texture": "#top", "uv": [0,0,16,16]}
+      }
+    },
+    {
+      "name": "frame",
+      "from": [2.25, 2.25, 2.25],
+      "to": [13.25, 13.25, 13.25],
+      "faces": {
+        "north": {"texture": "#coreframe", "uv": [0,0,16,16]},
+        "south": {"texture": "#coreframe", "uv": [0,0,16,16]},
+        "east": {"texture": "#coreframe", "uv": [0,0,16,16]},
+        "west": {"texture": "#coreframe", "uv": [0,0,16,16]},
+        "up": {"texture": "#coreframe", "uv": [0,0,16,16]},
+        "down": {"texture": "#coreframe", "uv": [0,0,16,16]}
       }
     },
     {

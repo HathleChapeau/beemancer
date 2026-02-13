@@ -22,6 +22,7 @@ package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.common.menu.MagicHiveMenu;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
@@ -36,7 +37,7 @@ public class MagicHiveScreen extends AbstractBeemancerScreen<MagicHiveMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Beemancer.MOD_ID, "textures/gui/beehive/bg_beehive.png");
     private static final ResourceLocation BEE_SLOT_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/beehive/beehive-slot.png");
+        Beemancer.MOD_ID, "textures/gui/beehive/beehive-slot2.png");
     private static final ResourceLocation COMB_TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Beemancer.MOD_ID, "textures/gui/beehive/beehive-comb.png");
 
@@ -45,7 +46,7 @@ public class MagicHiveScreen extends AbstractBeemancerScreen<MagicHiveMenu> {
     private static final int ICON_SPACING = 2;
 
     private static final int HONEYCOMB_CENTER_X = 108;
-    private static final int HONEYCOMB_CENTER_Y = 70;
+    private static final int HONEYCOMB_CENTER_Y = 73;
     private static final int COMB_W = 66;
     private static final int COMB_H = 62;
 
@@ -62,8 +63,8 @@ public class MagicHiveScreen extends AbstractBeemancerScreen<MagicHiveMenu> {
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
         // Bee assignment slots (5 orange slots at top)
-        for (int i = 0; i < 5; i++) {
-            g.blit(BEE_SLOT_TEXTURE, x + 63 + i * 18, y + 23, 0, 0, 18, 18, 18, 18);
+        for (int i = 0; i < 2; i++) {
+            g.blit(BEE_SLOT_TEXTURE, x + 63 + i * 22, y + 14, 0, 0, 22, 22, 22, 22);
         }
 
         // Honeycomb output area (single image for 7 slots)

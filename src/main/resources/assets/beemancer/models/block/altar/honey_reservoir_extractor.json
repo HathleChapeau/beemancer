@@ -2,7 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "dark_iron": "beemancer:block/iron",
-    "amber_glass": "beemancer:block/glass",
+    "amber_glass": "beemancer:block/machines/extractor_glass",
     "particle": "beemancer:block/iron"
   },
   "elements": [

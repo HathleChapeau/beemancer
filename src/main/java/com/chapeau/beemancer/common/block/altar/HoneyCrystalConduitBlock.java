@@ -44,7 +44,7 @@ public class HoneyCrystalConduitBlock extends Block {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     // Forme: pilier vertical fin
-    private static final VoxelShape SHAPE = Block.box(4, 0, 4, 12, 16, 12);
+    private static final VoxelShape SHAPE = Block.box(3, 3, 3, 13, 13, 13);
 
     public HoneyCrystalConduitBlock(Properties properties) {
         super(properties);

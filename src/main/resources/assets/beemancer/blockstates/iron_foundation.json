@@ -1,5 +1,13 @@
 {
   "variants": {
-    "": { "model": "beemancer:block/building/iron_foundation" }
+    "multiblock=none": {
+      "model": "beemancer:block/building/iron_foundation"
+    },
+    "multiblock=altar": {
+      "model": "beemancer:block/invisible"
+    },
+    "multiblock=extractor": {
+      "model": "beemancer:block/building/iron_foundation"
+    }
   }
 }

@@ -51,7 +51,7 @@ public class MagicHiveMenu extends BeemancerMenu {
         addDataSlots(data);
 
         // Bee assignment slots (5 slots in a row at top, centered in 216px container)
-        int beeSlotY = 24;
+        int beeSlotY = 17;
         int beeSlotStartX = 64;
         for (int i = 0; i < MagicHiveBlockEntity.BEE_SLOTS; i++) {
             addSlot(new BeeAssignmentSlot(container, i, beeSlotStartX + i * 18, beeSlotY));
