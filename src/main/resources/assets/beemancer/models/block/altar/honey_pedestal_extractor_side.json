@@ -1,0 +1,37 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "cutout",
+  "textures": {
+    "base": "beemancer:block/iron",
+    "top": "beemancer:block/altar/altar_pedestal_base",
+    "crystal": "beemancer:block/machines/pedestal_essence",
+    "particle": "beemancer:block/altar/honey_pedestal_column"
+  },
+  "elements": [
+    {
+      "name": "Base",
+      "from": [0, 0, 0],
+      "to": [16, 8, 16],
+      "faces": {
+        "north": {"texture": "#base"},
+        "east": {"texture": "#base"},
+        "south": {"texture": "#base"},
+        "west": {"texture": "#base"},
+        "up": {"texture": "#top"},
+        "down": {"texture": "#base"}
+      }
+    },
+    {
+      "name": "Crystal_Small",
+      "from": [4, 8, 4],
+      "to": [12, 12, 12],
+      "faces": {
+        "north": {"texture": "#crystal", "uv": [4, 12, 12, 16]},
+        "east": {"texture": "#crystal", "uv": [4, 12, 12, 16]},
+        "south": {"texture": "#crystal", "uv": [4, 12, 12, 16]},
+        "west": {"texture": "#crystal", "uv": [4, 12, 12, 16]},
+        "up": {"texture": "#crystal", "uv": [4, 4, 12, 12]}
+      }
+    }
+  ]
+}

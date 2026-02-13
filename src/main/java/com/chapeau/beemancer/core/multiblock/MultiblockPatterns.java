@@ -242,53 +242,41 @@ public class MultiblockPatterns {
     );
 
     // ==================== STORAGE CONTROLLER ====================
-    // Structure 3x3x3, contrôleur au centre Y+0
+    // Structure 3x3x2, contrôleur au centre Y+0
     //
-    // Vue de face (Nord vers le joueur):
+    // Vue 3D:
     //
-    // Étage 3 (Y+1):  [P][H][P]    P=Controller Pipe, H=Controlled Hive
-    // Étage 2 (Y+0):  [R][C][R]    R=Reservoir, C=Controller, T=Terminal (devant)
-    // Étage 1 (Y-1):  [P][S][P]    S=Honeyed Stone
+    // Étage 2 (Y+0):  [R][T][R]    R=Reservoir, T=Terminal, C=Controller (centre)
+    //                 [T][C][T]
+    //                 [R][T][R]
     //
-    // Terminal à z=-1 (devant le controller)
+    // Étage 1 (Y-1):  [R][P][R]    R=Reservoir, P=Controller Pipe, F=Iron Foundation
+    //                 [P][F][P]
+    //                 [R][P][R]
 
     public static final MultiblockPattern STORAGE_CONTROLLER = register(
         MultiblockPattern.builder("storage_controller")
-            // Étage 1 (Y-1): Controller Pipes + Honeyed Stone en ligne (z=0)
-            .add(-1, -1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))   // Pipe gauche
-            .add(0, -1, 0, block(BeemancerBlocks.IRON_FOUNDATION))      // Pierre centre
-            .add(1, -1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))    // Pipe droite
-            // Positions air autour de l'étage 1
-            .add(-1, -1, -1, air())
-            .add(0, -1, -1, air())
-            .add(1, -1, -1, air())
-            .add(-1, -1, 1, air())
-            .add(0, -1, 1, air())
-            .add(1, -1, 1, air())
+            // Étage 1 (Y-1): Reservoirs aux coins + Controller Pipes cardinaux + Iron Foundation centre
+            .add(-1, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))  // Coin NO
+            .add(0, -1, -1, block(BeemancerBlocks.CONTROLLER_PIPE))   // Nord
+            .add(1, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin NE
+            .add(-1, -1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))   // Ouest
+            .add(0, -1, 0, block(BeemancerBlocks.IRON_FOUNDATION))    // Centre
+            .add(1, -1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))    // Est
+            .add(-1, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin SO
+            .add(0, -1, 1, block(BeemancerBlocks.CONTROLLER_PIPE))    // Sud
+            .add(1, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin SE
 
-            // Étage 2 (Y+0): Reservoirs + Controller + Terminal devant
-            .add(-1, 0, 0, block(BeemancerBlocks.HONEY_RESERVOIR))    // Reservoir gauche
+            // Étage 2 (Y+0): Reservoirs aux coins + Terminals cardinaux + Controller centre
+            .add(-1, 0, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin NO
+            .add(0, 0, -1, block(BeemancerBlocks.STORAGE_TERMINAL))   // Terminal Nord
+            .add(1, 0, -1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin NE
+            .add(-1, 0, 0, block(BeemancerBlocks.STORAGE_TERMINAL))   // Terminal Ouest
             // (0, 0, 0) = Controller - skip
-            .add(1, 0, 0, block(BeemancerBlocks.HONEY_RESERVOIR))     // Reservoir droite
-            .add(0, 0, -1, block(BeemancerBlocks.STORAGE_TERMINAL))   // Terminal devant
-            // Positions air autour de l'étage 2
-            .add(-1, 0, -1, air())
-            .add(1, 0, -1, air())
-            .add(-1, 0, 1, air())
-            .add(0, 0, 1, air())
-            .add(1, 0, 1, air())
-
-            // Étage 3 (Y+1): Controller Pipes + Controlled Hive en ligne (z=0)
-            .add(-1, 1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))    // Pipe gauche
-            .add(0, 1, 0, block(BeemancerBlocks.CONTROLLED_HIVE))     // Controlled Hive
-            .add(1, 1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))     // Pipe droite
-            // Positions air autour de l'étage 3
-            .add(-1, 1, -1, air())
-            .add(0, 1, -1, air())
-            .add(1, 1, -1, air())
-            .add(-1, 1, 1, air())
-            .add(0, 1, 1, air())
-            .add(1, 1, 1, air())
+            .add(1, 0, 0, block(BeemancerBlocks.STORAGE_TERMINAL))    // Terminal Est
+            .add(-1, 0, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin SO
+            .add(0, 0, 1, block(BeemancerBlocks.STORAGE_TERMINAL))    // Terminal Sud
+            .add(1, 0, 1, block(BeemancerBlocks.HONEY_RESERVOIR))     // Coin SE
 
             .build()
     );

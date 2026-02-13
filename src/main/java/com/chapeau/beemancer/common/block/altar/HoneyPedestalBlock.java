@@ -47,6 +47,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 import javax.annotation.Nullable;
 
@@ -56,11 +57,17 @@ import javax.annotation.Nullable;
  * Clic droit avec item = place l'item sur le piedestal.
  * Clic droit sans item = retire l'item.
  * Participe aux multiblocs Altar et Extractor.
+ *
+ * FORMED_ROTATION pour Essence Extractor:
+ * - 0: pedestal normal (non formé)
+ * - 1: pedestal extractor centre
+ * - 2-5: pedestals extractor côtés (après rotation Y)
  */
 public class HoneyPedestalBlock extends Block implements EntityBlock {
 
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK =
         MultiblockProperty.create("altar", "extractor");
+    public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 5);
 
     // Forme: 3 blocs de base du modele (colonne + caps)
     private static final VoxelShape SHAPE = Shapes.or(
@@ -72,12 +79,13 @@ public class HoneyPedestalBlock extends Block implements EntityBlock {
     public HoneyPedestalBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(MULTIBLOCK, MultiblockProperty.NONE));
+            .setValue(MULTIBLOCK, MultiblockProperty.NONE)
+            .setValue(FORMED_ROTATION, 0));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(MULTIBLOCK);
+        builder.add(MULTIBLOCK, FORMED_ROTATION);
     }
 
     @Override

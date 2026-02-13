@@ -202,7 +202,16 @@ public class StorageMultiblockManager {
      */
     private int computeBlockRotation(Vec3i originalOffset, BlockState state) {
         if (state.getBlock() instanceof ControllerPipeBlock) {
-            int baseRotation = (originalOffset.getX() < 0 ? 0 : 2);
+            int baseRotation;
+            if (originalOffset.getX() < 0) {
+                baseRotation = 0;
+            } else if (originalOffset.getX() > 0) {
+                baseRotation = 2;
+            } else if (originalOffset.getZ() < 0) {
+                baseRotation = 3;
+            } else {
+                baseRotation = 1;
+            }
             int yRotation = (baseRotation + multiblockRotation) & 3;
             boolean bottom = originalOffset.getY() < 0;
             return bottom ? yRotation + 4 : yRotation;

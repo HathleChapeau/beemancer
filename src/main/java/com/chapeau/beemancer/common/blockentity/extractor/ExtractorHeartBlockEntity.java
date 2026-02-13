@@ -352,7 +352,7 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     }
 
     /**
-     * Met à jour la propriété MULTIBLOCK sur tous les blocs de la structure.
+     * Met à jour la propriété MULTIBLOCK et FORMED_ROTATION sur tous les blocs de la structure.
      */
     private void setFormedOnStructureBlocks(boolean formed) {
         if (level == null) return;
@@ -360,6 +360,10 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
             if (BlockMatcher.isAirMatcher(element.matcher())) continue;
             BlockPos blockPos = worldPosition.offset(element.offset());
             BlockState state = level.getBlockState(blockPos);
+
+            boolean changed = false;
+
+            // Mise à jour MULTIBLOCK
             for (var prop : state.getProperties()) {
                 if (prop.getName().equals("multiblock") && prop instanceof net.minecraft.world.level.block.state.properties.EnumProperty<?> enumProp) {
                     @SuppressWarnings("unchecked")
@@ -367,12 +371,53 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
                         (net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty>) enumProp;
                     MultiblockProperty value = formed ? MultiblockProperty.EXTRACTOR : MultiblockProperty.NONE;
                     if (mbProp.getPossibleValues().contains(value) && state.getValue(mbProp) != value) {
-                        level.setBlock(blockPos, state.setValue(mbProp, value), 3);
+                        state = state.setValue(mbProp, value);
+                        changed = true;
                     }
                     break;
                 }
             }
+
+            // Mise à jour FORMED_ROTATION pour les pedestals
+            if (state.getBlock() instanceof com.chapeau.beemancer.common.block.altar.HoneyPedestalBlock) {
+                int rotation = computePedestalRotation(element.offset(), formed);
+                if (state.hasProperty(com.chapeau.beemancer.common.block.altar.HoneyPedestalBlock.FORMED_ROTATION)) {
+                    if (state.getValue(com.chapeau.beemancer.common.block.altar.HoneyPedestalBlock.FORMED_ROTATION) != rotation) {
+                        state = state.setValue(com.chapeau.beemancer.common.block.altar.HoneyPedestalBlock.FORMED_ROTATION, rotation);
+                        changed = true;
+                    }
+                }
+            }
+
+            if (changed) {
+                level.setBlock(blockPos, state, 3);
+            }
         }
+    }
+
+    /**
+     * Calcule la rotation du pedestal selon sa position dans le multibloc.
+     * - 0: pedestal normal (non formé)
+     * - 1: pedestal extractor centre (0, -2, 0)
+     * - 2-5: pedestals extractor côtés (N, E, S, W)
+     */
+    private int computePedestalRotation(net.minecraft.core.Vec3i offset, boolean formed) {
+        if (!formed) return 0;
+
+        // Centre
+        if (offset.getX() == 0 && offset.getY() == -2 && offset.getZ() == 0) {
+            return 1;
+        }
+
+        // Côtés (Y=-2 uniquement)
+        if (offset.getY() == -2) {
+            if (offset.getZ() == -1) return 2; // Nord
+            if (offset.getX() == 1) return 3;  // Est
+            if (offset.getZ() == 1) return 4;  // Sud
+            if (offset.getX() == -1) return 5; // Ouest
+        }
+
+        return 0;
     }
 
     // ==================== Public API ====================
