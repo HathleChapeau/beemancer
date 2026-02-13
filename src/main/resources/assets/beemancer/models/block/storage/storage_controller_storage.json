@@ -4,5 +4,19 @@
     "all": "beemancer:block/storage/storage_controller",
     "particle": "beemancer:block/storage/storage_controller"
   },
-  "elements": []
+  "elements": [
+    {
+      "name": "Core Cube",
+      "from": [3, 3, 3],
+      "to": [13, 13, 13],
+      "faces": {
+        "north": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "east": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "south": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "west": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "up": {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "down": {"texture": "#all", "uv": [3, 3, 13, 13]}
+      }
+    }
+  ]
 }

@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [StorageControllerRenderer.java]
- * Description: Renderer pour le Storage Controller (mode édition + animation formé)
+ * Description: Renderer pour le Storage Controller (mode édition)
  * ============================================================
  *
  * DÉPENDANCES:
@@ -9,8 +9,7 @@
  * | Dépendance                      | Raison                  | Utilisation           |
  * |---------------------------------|------------------------|-----------------------|
  * | StorageControllerBlockEntity    | BlockEntity            | Données de rendu      |
- * | StorageControllerBlock          | FORMED property        | État formé            |
- * | RenderType                      | Type de rendu          | Lignes debug + solid  |
+ * | RenderType                      | Type de rendu          | Lignes debug          |
  * | DebugRenderHelper               | Rendu lignes/outlines  | drawLine/CubeOutline  |
  * ------------------------------------------------------------
  *
@@ -22,30 +21,18 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.client.renderer.util.DebugRenderHelper;
-import com.chapeau.beemancer.Beemancer;
-import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
-import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
 import com.chapeau.beemancer.core.util.StorageHelper;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
-import com.chapeau.beemancer.client.renderer.util.RenderHelper;
-import com.chapeau.beemancer.client.renderer.util.RotatingModelHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import com.chapeau.beemancer.common.blockentity.storage.StorageNetworkRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 
@@ -60,26 +47,10 @@ import java.util.Set;
  * - Outline rouge autour du controller
  * - Lignes vertes vers chaque coffre enregistré
  * - Outlines bleus autour des coffres enregistrés
- *
- * Mode formé:
- * - 2 petits cubes à x=2 et x=14, le tout tourne sur X/Y/Z à des rythmes différents
- * - 2 gros cubes 6x6x6 au centre, tournent rapidement sur eux-mêmes (même pattern XYZ)
  */
 public class StorageControllerRenderer implements BlockEntityRenderer<StorageControllerBlockEntity> {
 
-    private final BlockRenderDispatcher blockRenderer;
-    private final RandomSource random = RandomSource.create();
-
-    public static final ModelResourceLocation CUBE_MODEL_LOC =
-        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "block/storage/storage_controller_cube"));
-
-    public static final ModelResourceLocation CUBE_BIG_MODEL_LOC =
-        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "block/storage/storage_controller_cube_big"));
-
     public StorageControllerRenderer(BlockEntityRendererProvider.Context context) {
-        this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
     }
 
     @Override
@@ -87,94 +58,11 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
                        PoseStack poseStack, MultiBufferSource bufferSource,
                        int packedLight, int packedOverlay) {
 
-        BlockState state = blockEntity.getBlockState();
-        boolean formed = state.hasProperty(StorageControllerBlock.MULTIBLOCK) &&
-                         !state.getValue(StorageControllerBlock.MULTIBLOCK).equals(MultiblockProperty.NONE);
-
-        if (formed) {
-            renderFormedAnimation(blockEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
-        }
-
         if (blockEntity.isEditMode()) {
             renderEditMode(blockEntity, poseStack, bufferSource);
         }
     }
 
-    /**
-     * Rend l'animation du controller formé.
-     * Quand alimenté en miel:
-     *   2 petits cubes à x=2 et x=14 tournent ensemble sur X/Y/Z.
-     *   2 gros cubes 6x6x6 au centre tournent rapidement sur eux-mêmes.
-     * Quand sans miel (honey depleted):
-     *   Tous les cubes sont immobiles au centre, superposés.
-     */
-    private void renderFormedAnimation(StorageControllerBlockEntity blockEntity, float partialTick,
-                                        PoseStack poseStack, MultiBufferSource bufferSource,
-                                        int packedLight, int packedOverlay) {
-
-        BakedModel cubeModel = Minecraft.getInstance().getModelManager()
-            .getModel(CUBE_MODEL_LOC);
-        BakedModel cubeBigModel = Minecraft.getInstance().getModelManager()
-            .getModel(CUBE_BIG_MODEL_LOC);
-
-        BlockState state = blockEntity.getBlockState();
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.solid());
-
-        boolean depleted = blockEntity.isHoneyDepleted();
-
-        if (depleted) {
-            // Mode eteint: tous les cubes au centre, immobiles
-            RenderHelper.tesselateModel(blockRenderer, cubeBigModel, blockEntity.getLevel(),
-                state, blockEntity.getBlockPos(), poseStack, vertexConsumer, random,
-                packedLight, packedOverlay, RenderType.solid());
-            RenderHelper.tesselateModel(blockRenderer, cubeModel, blockEntity.getLevel(),
-                state, blockEntity.getBlockPos(), poseStack, vertexConsumer, random,
-                packedLight, packedOverlay, RenderType.solid());
-            return;
-        }
-
-        // Mode actif: animation complete
-        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
-        float time = (gameTime + partialTick);
-
-        // === 2 gros cubes au centre (rotation rapide sur eux-memes) ===
-        RotatingModelHelper.renderWithXYZRotation(blockRenderer, cubeBigModel,
-            blockEntity.getLevel(), state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, random, packedLight, packedOverlay,
-            RenderType.solid(), time * 3.0f, time * 4.5f, time * 2.1f, 1.0f);
-
-        RotatingModelHelper.renderWithXYZRotation(blockRenderer, cubeBigModel,
-            blockEntity.getLevel(), state, blockEntity.getBlockPos(),
-            poseStack, vertexConsumer, random, packedLight, packedOverlay,
-            RenderType.translucent(),
-            time * 3.0f + 90, time * 4.5f + 60, time * 2.1f + 45, 1.0f);
-
-        // === Rotation globale des 2 petits cubes ===
-        poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
-        poseStack.mulPose(Axis.XP.rotationDegrees(time * 1.0f));
-        poseStack.mulPose(Axis.YP.rotationDegrees(time * 1.5f));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(time * 0.7f));
-        poseStack.translate(-0.5, -0.5, -0.5);
-
-        // Petit cube 1 (position x=2/16)
-        poseStack.pushPose();
-        poseStack.translate((2.0 / 16.0) - (7.0 / 16.0), 0, 0);
-        RenderHelper.tesselateModel(blockRenderer, cubeModel, blockEntity.getLevel(),
-            state, blockEntity.getBlockPos(), poseStack, vertexConsumer, random,
-            packedLight, packedOverlay, RenderType.translucent());
-        poseStack.popPose();
-
-        // Petit cube 2 (position x=14/16)
-        poseStack.pushPose();
-        poseStack.translate((14.0 / 16.0) - (7.0 / 16.0), 0, 0);
-        RenderHelper.tesselateModel(blockRenderer, cubeModel, blockEntity.getLevel(),
-            state, blockEntity.getBlockPos(), poseStack, vertexConsumer, random,
-            packedLight, packedOverlay, RenderType.endPortal());
-        poseStack.popPose();
-
-        poseStack.popPose(); // Fin rotation globale petits cubes
-    }
 
     /**
      * Rend le mode édition (outlines et lignes debug).
@@ -326,7 +214,7 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
     @Override
     public boolean shouldRenderOffScreen(StorageControllerBlockEntity blockEntity) {
-        return blockEntity.isEditMode() || blockEntity.isFormed();
+        return blockEntity.isEditMode();
     }
 
     @Override
