@@ -1,26 +1,31 @@
 /**
  * ============================================================
  * [StorageControllerRenderer.java]
- * Description: Renderer pour le Storage Controller (mode édition)
+ * Description: Renderer pour le Storage Controller (coeur anime + mode edition)
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance                      | Raison                  | Utilisation           |
- * |---------------------------------|------------------------|-----------------------|
- * | StorageControllerBlockEntity    | BlockEntity            | Données de rendu      |
- * | RenderType                      | Type de rendu          | Lignes debug          |
- * | DebugRenderHelper               | Rendu lignes/outlines  | drawLine/CubeOutline  |
+ * | Dependance                      | Raison                  | Utilisation                    |
+ * |---------------------------------|------------------------|--------------------------------|
+ * | StorageControllerBlockEntity    | BlockEntity            | Donnees de rendu               |
+ * | StorageControllerAnimator       | Animation coeur        | Tick, apply rotations          |
+ * | AnimationController             | Apply animations       | tick(), applyAnimation()       |
+ * | DebugRenderHelper               | Rendu lignes/outlines  | drawLine/CubeOutline           |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
- * - ClientSetup.java (enregistrement du renderer)
+ * UTILISE PAR:
+ * - ClientSetup.java (enregistrement du renderer + modele additionnel)
  *
  * ============================================================
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.animation.AnimationController;
+import com.chapeau.beemancer.client.animation.StorageControllerAnimator;
 import com.chapeau.beemancer.client.renderer.util.DebugRenderHelper;
+import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.util.StorageHelper;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -28,12 +33,19 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import com.chapeau.beemancer.common.blockentity.storage.StorageNetworkRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 
 import java.util.HashSet;
@@ -43,14 +55,25 @@ import java.util.Set;
 /**
  * Renderer pour le Storage Controller.
  *
- * Mode édition:
+ * Quand forme: rend le coeur (core) avec rotation animee par quarts de tour.
+ * Le coeur ne tourne que si le niveau de miel est au dessus de 0.
+ *
+ * Mode edition:
  * - Outline rouge autour du controller
- * - Lignes vertes vers chaque coffre enregistré
- * - Outlines bleus autour des coffres enregistrés
+ * - Lignes vertes vers chaque coffre enregistre
+ * - Outlines bleus autour des coffres enregistres
  */
 public class StorageControllerRenderer implements BlockEntityRenderer<StorageControllerBlockEntity> {
 
+    public static final ModelResourceLocation CORE_MODEL_LOC =
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "block/multibloc/storage/storage_controller_core"));
+
+    private final BlockRenderDispatcher blockRenderer;
+    private final RandomSource random = RandomSource.create();
+
     public StorageControllerRenderer(BlockEntityRendererProvider.Context context) {
+        this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
     }
 
     @Override
@@ -58,14 +81,50 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
                        PoseStack poseStack, MultiBufferSource bufferSource,
                        int packedLight, int packedOverlay) {
 
+        if (blockEntity.isFormed() && blockEntity.getLevel() != null) {
+            renderAnimatedCore(blockEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+        } else {
+            StorageControllerAnimator.remove(blockEntity.getBlockPos());
+        }
+
         if (blockEntity.isEditMode()) {
             renderEditMode(blockEntity, poseStack, bufferSource);
         }
     }
 
+    /**
+     * Rend le coeur anime du controller forme.
+     * Rotation par quarts de tour avec ease-in, axe cyclique X->Y->Z.
+     * Ne tourne que si honey > 0.
+     */
+    private void renderAnimatedCore(StorageControllerBlockEntity blockEntity, float partialTick,
+                                     PoseStack poseStack, MultiBufferSource bufferSource,
+                                     int packedLight, int packedOverlay) {
+        BlockPos pos = blockEntity.getBlockPos();
+        float currentTime = blockEntity.getLevel().getGameTime() + partialTick;
+        boolean shouldAnimate = blockEntity.getHoneyStored() > 0;
+
+        StorageControllerAnimator.tick(pos, currentTime, shouldAnimate);
+        AnimationController ctrl = StorageControllerAnimator.getController(pos);
+
+        BlockState controllerState = BeemancerBlocks.STORAGE_CONTROLLER.get().defaultBlockState();
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.cutout());
+
+        poseStack.pushPose();
+        ctrl.applyAnimation("heart_x", poseStack);
+        ctrl.applyAnimation("heart_y", poseStack);
+        ctrl.applyAnimation("heart_z", poseStack);
+
+        BakedModel coreModel = Minecraft.getInstance().getModelManager().getModel(CORE_MODEL_LOC);
+        blockRenderer.getModelRenderer().tesselateBlock(
+            blockEntity.getLevel(), coreModel, controllerState, pos,
+            poseStack, vertexConsumer, false, random, packedLight, packedOverlay,
+            ModelData.EMPTY, RenderType.cutout());
+        poseStack.popPose();
+    }
 
     /**
-     * Rend le mode édition (outlines et lignes debug).
+     * Rend le mode edition (outlines et lignes debug).
      */
     private void renderEditMode(StorageControllerBlockEntity blockEntity,
                                  PoseStack poseStack, MultiBufferSource bufferSource) {
@@ -83,21 +142,17 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
         renderControllerOutline(lineBuffer, matrix);
 
-        // Sphère de rayon d'action (centrée sur le bloc)
         DebugRenderHelper.drawSphereOutline(lineBuffer, matrix,
             0.5f, 0.5f, 0.5f, StorageControllerBlockEntity.MAX_RANGE, 48,
             1.0f, 0.8f, 0.2f, 0.4f);
 
         BlockPos controllerPos = blockEntity.getBlockPos();
 
-        // Lignes magenta vers les noeuds connectes (relays)
         for (BlockPos nodePos : blockEntity.getConnectedNodes()) {
             renderBlockLink(lineBuffer, matrix, controllerPos, nodePos,
                     0.8f, 0.2f, 1.0f, 1.0f, 0.8f);
         }
 
-        // Filtrer: afficher seulement les blocs directement possedes par le controller
-        // Les blocs possedes par les relays sont visibles depuis le mode edition du relay
         Level level = blockEntity.getLevel();
         StorageNetworkRegistry registry = blockEntity.getNetworkRegistry();
         Set<BlockPos> renderedChestHalves = new HashSet<>();
@@ -107,7 +162,6 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
             BlockPos blockPos = entry.getKey();
             switch (entry.getValue().type()) {
                 case CHEST -> {
-                    // Dedup: si l'autre moitie du double chest a deja ete dessinee, skip
                     if (renderedChestHalves.contains(blockPos)) continue;
                     BlockPos otherHalf = (level != null)
                         ? StorageHelper.getDoubleChestOtherHalf(level, blockPos) : null;
@@ -123,7 +177,6 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
             }
         }
 
-        // [BM] Coffres pris par d'autres reseaux: double outline vert epais
         for (BlockPos takenPos : blockEntity.getTakenChestPositions()) {
             float dx = takenPos.getX() - controllerPos.getX();
             float dy = takenPos.getY() - controllerPos.getY();
@@ -187,7 +240,6 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         float maxY = dy + 1 + margin;
         float maxZ = dz + 1 + margin;
 
-        // Double chest: etendre l'outline pour couvrir les 2 blocs
         BlockPos otherHalf = StorageHelper.getDoubleChestOtherHalf(level, chestPos);
         if (otherHalf != null) {
             float ox = otherHalf.getX() - controllerPos.getX();
@@ -201,7 +253,6 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
             maxZ = Math.max(maxZ, oz + 1 + margin);
         }
 
-        // Ligne vers le centre du coffre (ou du double chest)
         float centerX = (minX + maxX) / 2f;
         float centerY = (minY + maxY) / 2f;
         float centerZ = (minZ + maxZ) / 2f;

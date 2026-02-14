@@ -315,9 +315,8 @@ public class ClientSetup {
         event.register(AltarHeartRenderer.TOP_MODEL_LOC);
         event.register(AltarHeartRenderer.CONDUIT_MODEL_LOC);
 
-        // Modèles cubes du Storage Controller formé (cubes animés)
-        //event.register(StorageControllerRenderer.CUBE_MODEL_LOC);
-        //event.register(StorageControllerRenderer.CUBE_BIG_MODEL_LOC);
+        // Modele core du Storage Controller forme (coeur anime)
+        event.register(StorageControllerRenderer.CORE_MODEL_LOC);
 
         // Modèle formed du honey reservoir (rendu par BER avec spread offset)
         event.register(HoneyReservoirRenderer.FORMED_MODEL_LOC);
