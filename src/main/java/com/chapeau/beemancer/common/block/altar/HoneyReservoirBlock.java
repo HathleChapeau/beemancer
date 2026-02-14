@@ -65,7 +65,7 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
     public static final MapCodec<HoneyReservoirBlock> CODEC = simpleCodec(HoneyReservoirBlock::new);
 
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK =
-        MultiblockProperty.create("altar", "extractor", "storage", "storage_0", "storage_1", "alembic", "alembic_0", "alembic_1", "centrifuge", "infuser");
+        MultiblockProperty.create("altar", "extractor", "storage", "alembic", "alembic_0", "alembic_1", "centrifuge", "infuser");
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     // Forme: bloc complet (carre de base)

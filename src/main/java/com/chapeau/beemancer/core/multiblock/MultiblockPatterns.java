@@ -246,37 +246,37 @@ public class MultiblockPatterns {
     //
     // Vue 3D:
     //
-    // Étage 2 (Y+0):  [R][T][R]    R=Reservoir, T=Terminal, C=Controller (centre)
+    // Étage 2 (Y+0):  [ ][T][ ]    T=Terminal, C=Controller (centre), [ ]=Air
     //                 [T][C][T]
-    //                 [R][T][R]
+    //                 [ ][T][ ]
     //
-    // Étage 1 (Y-1):  [R][P][R]    R=Reservoir, P=Controller Pipe, F=Iron Foundation
-    //                 [P][F][P]
-    //                 [R][P][R]
+    // Étage 1 (Y-1):  [F][R][F]    F=Iron Foundation, R=Reservoir
+    //                 [R][F][R]
+    //                 [F][R][F]
 
     public static final MultiblockPattern STORAGE_CONTROLLER = register(
         MultiblockPattern.builder("storage_controller")
-            // Étage 1 (Y-1): Reservoirs aux coins + Controller Pipes cardinaux + Iron Foundation centre
-            .add(-1, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))  // Coin NO
-            .add(0, -1, -1, block(BeemancerBlocks.CONTROLLER_PIPE))   // Nord
-            .add(1, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin NE
-            .add(-1, -1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))   // Ouest
+            // Étage 1 (Y-1): Iron Foundation aux coins + Reservoirs cardinaux + Iron Foundation centre
+            .add(-1, -1, -1, block(BeemancerBlocks.IRON_FOUNDATION))  // Coin NO
+            .add(0, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Nord
+            .add(1, -1, -1, block(BeemancerBlocks.IRON_FOUNDATION))   // Coin NE
+            .add(-1, -1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))   // Ouest
             .add(0, -1, 0, block(BeemancerBlocks.IRON_FOUNDATION))    // Centre
-            .add(1, -1, 0, block(BeemancerBlocks.CONTROLLER_PIPE))    // Est
-            .add(-1, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin SO
-            .add(0, -1, 1, block(BeemancerBlocks.CONTROLLER_PIPE))    // Sud
-            .add(1, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin SE
+            .add(1, -1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))    // Est
+            .add(-1, -1, 1, block(BeemancerBlocks.IRON_FOUNDATION))   // Coin SO
+            .add(0, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Sud
+            .add(1, -1, 1, block(BeemancerBlocks.IRON_FOUNDATION))    // Coin SE
 
-            // Étage 2 (Y+0): Reservoirs aux coins + Terminals cardinaux + Controller centre
-            .add(-1, 0, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Coin NO
+            // Étage 2 (Y+0): Air aux coins + Terminals cardinaux + Controller centre
+            .add(-1, 0, -1, air())                                    // Coin NO
             .add(0, 0, -1, block(BeemancerBlocks.STORAGE_TERMINAL))   // Terminal Nord
-            .add(1, 0, -1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin NE
+            .add(1, 0, -1, air())                                     // Coin NE
             .add(-1, 0, 0, block(BeemancerBlocks.STORAGE_TERMINAL))   // Terminal Ouest
             // (0, 0, 0) = Controller - skip
             .add(1, 0, 0, block(BeemancerBlocks.STORAGE_TERMINAL))    // Terminal Est
-            .add(-1, 0, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Coin SO
+            .add(-1, 0, 1, air())                                     // Coin SO
             .add(0, 0, 1, block(BeemancerBlocks.STORAGE_TERMINAL))    // Terminal Sud
-            .add(1, 0, 1, block(BeemancerBlocks.HONEY_RESERVOIR))     // Coin SE
+            .add(1, 0, 1, air())                                      // Coin SE
 
             .build()
     );

@@ -37,8 +37,6 @@ public enum MultiblockProperty implements StringRepresentable {
     ALTAR("altar"),
     EXTRACTOR("extractor"),
     STORAGE("storage"),
-    STORAGE_0("storage_0"),
-    STORAGE_1("storage_1"),
     HIVE("hive"),
     ALEMBIC("alembic"),
     ALEMBIC_0("alembic_0"),

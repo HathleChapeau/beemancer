@@ -221,20 +221,9 @@ public class StorageMultiblockManager {
 
     /**
      * Calcule la valeur de la property MULTIBLOCK pour un bloc selon sa position.
-     * Pour les HoneyReservoirBlock dans le Storage Controller:
-     * - Y=-1 → STORAGE_0
-     * - Y=0 → STORAGE_1
-     * - Autres → STORAGE
      */
     private MultiblockProperty computeMultiblockValue(Vec3i offset, BlockState state, boolean formed) {
         if (!formed) return MultiblockProperty.NONE;
-
-        // Reservoirs: distinguer par étage
-        if (state.getBlock() instanceof HoneyReservoirBlock) {
-            if (offset.getY() == -1) return MultiblockProperty.STORAGE_0;
-            if (offset.getY() == 0) return MultiblockProperty.STORAGE_1;
-        }
-
         return MultiblockProperty.STORAGE;
     }
 
