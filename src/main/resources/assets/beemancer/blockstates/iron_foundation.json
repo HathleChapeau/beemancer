@@ -8,6 +8,15 @@
     },
     "multiblock=extractor": {
       "model": "beemancer:block/building/iron_foundation"
+    },
+    "multiblock=storage": {
+      "model": "beemancer:block/building/iron_foundation_storage"
+    },
+    "multiblock=infuser": {
+      "model": "beemancer:block/building/iron_foundation_infuser"
+    },
+    "multiblock=centrifuge": {
+      "model": "beemancer:block/building/iron_foundation_centrifuge"
     }
   }
 }

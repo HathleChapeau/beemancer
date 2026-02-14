@@ -250,18 +250,18 @@ public class MultiblockPatterns {
     //                 [T][C][T]
     //                 [ ][T][ ]
     //
-    // Étage 1 (Y-1):  [F][R][F]    F=Iron Foundation, R=Reservoir
-    //                 [R][F][R]
+    // Étage 1 (Y-1):  [F][R][F]    F=Iron Foundation, R=Reservoir, H=Controlled Hive
+    //                 [R][H][R]
     //                 [F][R][F]
 
     public static final MultiblockPattern STORAGE_CONTROLLER = register(
         MultiblockPattern.builder("storage_controller")
-            // Étage 1 (Y-1): Iron Foundation aux coins + Reservoirs cardinaux + Iron Foundation centre
+            // Étage 1 (Y-1): Iron Foundation aux coins + Reservoirs cardinaux + Controlled Hive centre
             .add(-1, -1, -1, block(BeemancerBlocks.IRON_FOUNDATION))  // Coin NO
             .add(0, -1, -1, block(BeemancerBlocks.HONEY_RESERVOIR))   // Nord
             .add(1, -1, -1, block(BeemancerBlocks.IRON_FOUNDATION))   // Coin NE
             .add(-1, -1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))   // Ouest
-            .add(0, -1, 0, block(BeemancerBlocks.IRON_FOUNDATION))    // Centre
+            .add(0, -1, 0, block(BeemancerBlocks.CONTROLLED_HIVE))    // Centre
             .add(1, -1, 0, block(BeemancerBlocks.HONEY_RESERVOIR))    // Est
             .add(-1, -1, 1, block(BeemancerBlocks.IRON_FOUNDATION))   // Coin SO
             .add(0, -1, 1, block(BeemancerBlocks.HONEY_RESERVOIR))    // Sud
