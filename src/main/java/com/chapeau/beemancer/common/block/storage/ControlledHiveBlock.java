@@ -36,7 +36,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
  */
 public class ControlledHiveBlock extends Block {
 
-    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("storage");
+    public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("storage", "storage_top");
 
     public ControlledHiveBlock(Properties properties) {
         super(properties);

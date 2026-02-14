@@ -1,6 +1,7 @@
 {
   "variants": {
     "multiblock=none": { "model": "beemancer:block/multibloc/controlled_hive" },
-    "multiblock=storage": { "model": "beemancer:block/multibloc/storage/controlled_hive_storage" }
+    "multiblock=storage": { "model": "beemancer:block/multibloc/storage/controlled_hive_storage" },
+    "multiblock=storage_top": { "model": "beemancer:block/multibloc/storage/controlled_hive_storage", "x": 180 }
   }
 }

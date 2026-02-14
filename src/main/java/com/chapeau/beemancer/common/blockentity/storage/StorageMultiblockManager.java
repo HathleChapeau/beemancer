@@ -33,6 +33,7 @@ import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
 import com.chapeau.beemancer.core.multiblock.MultiblockValidator;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -125,7 +126,7 @@ public class StorageMultiblockManager {
     }
 
     /**
-     * Met à jour FORMED et FORMED_ROTATION sur tous les blocs structurels du multibloc.
+     * Met à jour MULTIBLOCK, FORMED_ROTATION et FACING sur tous les blocs structurels.
      */
     private void setFormedOnStructureBlocks(boolean formed) {
         if (parent.getLevel() == null) return;
@@ -139,32 +140,41 @@ public class StorageMultiblockManager {
             if (!parent.getLevel().hasChunkAt(blockPos)) continue;
             BlockState state = parent.getLevel().getBlockState(blockPos);
 
-            float spreadX = 0.0f;
-            float spreadZ = 0.0f;
-            if (formed && originalOffset.getX() != 0) {
-                spreadX = rotatedOffset.getX() * 1.0f / 16.0f;
-                spreadZ = rotatedOffset.getZ() * 1.0f / 16.0f;
-            }
+            boolean changed = false;
 
+            // --- Reservoir: spread + facing ---
             if (state.getBlock() instanceof HoneyReservoirBlock) {
                 BlockEntity be = parent.getLevel().getBlockEntity(blockPos);
                 if (be instanceof HoneyReservoirBlockEntity reservoirBe) {
+                    float spreadX = 0.0f;
+                    float spreadZ = 0.0f;
+                    if (formed) {
+                        spreadX = rotatedOffset.getX() * 1.0f / 16.0f;
+                        spreadZ = rotatedOffset.getZ() * 1.0f / 16.0f;
+                    }
                     reservoirBe.setFormedSpread(spreadX, spreadZ);
+                }
+                if (state.hasProperty(HoneyReservoirBlock.FACING)) {
+                    Direction facing = formed ? computeReservoirFacing(originalOffset) : Direction.NORTH;
+                    if (state.getValue(HoneyReservoirBlock.FACING) != facing) {
+                        state = state.setValue(HoneyReservoirBlock.FACING, facing);
+                        changed = true;
+                    }
                 }
             }
 
-            boolean changed = false;
-
+            // --- Multiblock property ---
             EnumProperty<MultiblockProperty> multiblockProp = findMultiblockProperty(state);
-            MultiblockProperty multiblockValue = computeMultiblockValue(element.offset(), state, formed);
+            MultiblockProperty multiblockValue = computeMultiblockValue(originalOffset, state, formed);
             if (multiblockProp != null && state.getValue(multiblockProp) != multiblockValue) {
                 state = state.setValue(multiblockProp, multiblockValue);
                 changed = true;
             }
 
+            // --- Formed rotation (only set when forming, keep value when breaking) ---
             IntegerProperty rotProp = findFormedRotationProperty(state);
-            if (rotProp != null) {
-                int rotation = formed ? computeBlockRotation(originalOffset, state) : 0;
+            if (rotProp != null && formed) {
+                int rotation = computeBlockRotation(originalOffset);
                 if (state.getValue(rotProp) != rotation) {
                     state = state.setValue(rotProp, rotation);
                     changed = true;
@@ -178,21 +188,48 @@ public class StorageMultiblockManager {
     }
 
     /**
-     * Calcule la rotation à appliquer sur un bloc de la structure.
+     * Calcule la rotation à appliquer sur un bloc de la structure selon sa position.
+     * Les blocs cardinaux sont orientés pour pointer vers l'extérieur (terminaux)
+     * ou vers le centre (foundations). Les coins gardent la rotation de base.
      */
-    private int computeBlockRotation(Vec3i originalOffset, BlockState state) {
-        return multiblockRotation;
+    private int computeBlockRotation(Vec3i originalOffset) {
+        int base = 0;
+        int ox = originalOffset.getX();
+        int oz = originalOffset.getZ();
+
+        if (oz < 0 && ox == 0) base = 0;       // Nord
+        else if (ox > 0 && oz == 0) base = 1;   // Est
+        else if (oz > 0 && ox == 0) base = 2;   // Sud
+        else if (ox < 0 && oz == 0) base = 3;   // Ouest
+
+        return (base + multiblockRotation) % 4;
+    }
+
+    /**
+     * Calcule la direction FACING d'un reservoir pour pointer vers le centre du multibloc.
+     * La direction de base (vers le centre) est ensuite tournée selon la rotation du multibloc.
+     */
+    private Direction computeReservoirFacing(Vec3i originalOffset) {
+        Direction baseFacing;
+        if (originalOffset.getZ() < 0) baseFacing = Direction.SOUTH;
+        else if (originalOffset.getZ() > 0) baseFacing = Direction.NORTH;
+        else if (originalOffset.getX() > 0) baseFacing = Direction.WEST;
+        else baseFacing = Direction.EAST;
+
+        Direction facing = baseFacing;
+        for (int i = 0; i < multiblockRotation; i++) {
+            facing = facing.getClockWise();
+        }
+        return facing;
     }
 
     /**
      * Calcule la valeur de la property MULTIBLOCK pour un bloc selon sa position.
+     * Y+1 (couche supérieure) = STORAGE_TOP, sinon STORAGE.
      */
     private MultiblockProperty computeMultiblockValue(Vec3i offset, BlockState state, boolean formed) {
         if (!formed) return MultiblockProperty.NONE;
-        // Le centre de l'étage Y-2 (iron foundation) garde le skin de base
-        if (offset.getX() == 0 && offset.getY() == -2 && offset.getZ() == 0) {
-            return MultiblockProperty.NONE;
-        }
+        if (offset.getY() > 0) return MultiblockProperty.STORAGE_TOP;
         return MultiblockProperty.STORAGE;
     }
 

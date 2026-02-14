@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -39,19 +40,21 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class IronFoundationBlock extends Block {
 
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK =
-        MultiblockProperty.create("altar", "extractor", "infuser", "centrifuge", "storage");
+        MultiblockProperty.create("altar", "extractor", "infuser", "centrifuge", "storage", "storage_top");
+    public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 3);
 
     private static final VoxelShape SHAPE_REDUCED = Block.box(2, 2, 2, 14, 14, 14);
 
     public IronFoundationBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
-            .setValue(MULTIBLOCK, MultiblockProperty.NONE));
+            .setValue(MULTIBLOCK, MultiblockProperty.NONE)
+            .setValue(FORMED_ROTATION, 0));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(MULTIBLOCK);
+        builder.add(MULTIBLOCK, FORMED_ROTATION);
     }
 
     @Override
