@@ -90,7 +90,7 @@ public class HiveMultiblockBlock extends BaseEntityBlock {
                 // Try to find the master controller
                 HiveMultiblockBlockEntity master = hive.findOrBecomeController();
                 if (master != null && master.isFormed()) {
-                    serverPlayer.openMenu(master, buf -> buf.writeBlockPos(master.getBlockPos()));
+                    serverPlayer.openMenu(master, buf -> buf.writeBoolean(true));
                 }
             }
         }

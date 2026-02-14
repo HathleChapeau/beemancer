@@ -33,6 +33,29 @@ public class GuiRenderHelper {
     private static final ResourceLocation SLOTS_2X2_TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Beemancer.MOD_ID, "textures/gui/machin-slots-0.png");
 
+    // Texture-based honey bars (16x50 each)
+    private static final ResourceLocation LEFT_HONEYBAR_BG = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/left_honeybar_bg.png");
+    private static final ResourceLocation LEFT_HONEYBAR = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/left_honeybar.png");
+    private static final ResourceLocation RIGHT_HONEYBAR_BG = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/right_honeybar_bg.png");
+    private static final ResourceLocation RIGHT_HONEYBAR = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/right_honeybar.png");
+
+    // Texture-based progress bar (bg: 54x10, fill: 50x6)
+    private static final ResourceLocation PROGRESSBAR_BG = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/progressbar_bg.png");
+    private static final ResourceLocation PROGRESSBAR = ResourceLocation.fromNamespaceAndPath(
+        Beemancer.MOD_ID, "textures/gui/progressbar.png");
+
+    private static final int HONEYBAR_W = 16;
+    private static final int HONEYBAR_H = 50;
+    private static final int PROGRESSBAR_BG_W = 54;
+    private static final int PROGRESSBAR_BG_H = 10;
+    private static final int PROGRESSBAR_FILL_W = 50;
+    private static final int PROGRESSBAR_FILL_H = 6;
+
     /**
      * Fond de container Minecraft avec bordures 3D, labels et separateur.
      */
@@ -270,6 +293,55 @@ public class GuiRenderHelper {
         int textX = x + (w - textWidth) / 2;
         int textY = y + (h - 8) / 2;
         g.drawString(font, label, textX, textY, active ? 0x404040 : 0x606060, false);
+    }
+
+    // === Texture-based rendering ===
+
+    /**
+     * Rend une barre de miel (gauche) via texture. Remplit de bas en haut.
+     */
+    public static void renderLeftHoneyBar(GuiGraphics g, int x, int y, float ratio) {
+        g.blit(LEFT_HONEYBAR_BG, x, y, 0, 0, HONEYBAR_W, HONEYBAR_H, HONEYBAR_W, HONEYBAR_H);
+        int fillH = (int) (HONEYBAR_H * Math.min(1f, ratio));
+        if (fillH > 0) {
+            int srcY = HONEYBAR_H - fillH;
+            g.blit(LEFT_HONEYBAR, x, y + srcY, 0, srcY, HONEYBAR_W, fillH, HONEYBAR_W, HONEYBAR_H);
+        }
+    }
+
+    /**
+     * Rend une barre de miel (droite) via texture. Remplit de bas en haut.
+     */
+    public static void renderRightHoneyBar(GuiGraphics g, int x, int y, float ratio) {
+        g.blit(RIGHT_HONEYBAR_BG, x, y, 0, 0, HONEYBAR_W, HONEYBAR_H, HONEYBAR_W, HONEYBAR_H);
+        int fillH = (int) (HONEYBAR_H * Math.min(1f, ratio));
+        if (fillH > 0) {
+            int srcY = HONEYBAR_H - fillH;
+            g.blit(RIGHT_HONEYBAR, x, y + srcY, 0, srcY, HONEYBAR_W, fillH, HONEYBAR_W, HONEYBAR_H);
+        }
+    }
+
+    /**
+     * Rend une barre de progression via texture. Remplit de gauche a droite.
+     */
+    public static void renderTextureProgressBar(GuiGraphics g, int x, int y, float ratio) {
+        g.blit(PROGRESSBAR_BG, x, y, 0, 0, PROGRESSBAR_BG_W, PROGRESSBAR_BG_H,
+               PROGRESSBAR_BG_W, PROGRESSBAR_BG_H);
+        int fillW = (int) (PROGRESSBAR_FILL_W * Math.min(1f, ratio));
+        if (fillW > 0) {
+            g.blit(PROGRESSBAR, x + 2, y + 2, 0, 0, fillW, PROGRESSBAR_FILL_H,
+                   PROGRESSBAR_FILL_W, PROGRESSBAR_FILL_H);
+        }
+    }
+
+    /**
+     * Verifie si la souris survole une barre de miel (16x50).
+     */
+    public static boolean isHoneyBarHovered(int barX, int barY, int screenX, int screenY,
+                                              int mouseX, int mouseY) {
+        int ax = screenX + barX;
+        int ay = screenY + barY;
+        return mouseX >= ax && mouseX < ax + HONEYBAR_W && mouseY >= ay && mouseY < ay + HONEYBAR_H;
     }
 
     /**

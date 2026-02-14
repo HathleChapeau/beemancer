@@ -67,7 +67,7 @@ public class MagicHiveBlock extends BaseEntityBlock {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof MagicHiveBlockEntity hive) {
-                serverPlayer.openMenu(hive, pos);
+                serverPlayer.openMenu(hive, buf -> buf.writeBoolean(false));
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide());

@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [CrystallizerScreen.java]
- * Description: GUI pour le cristalliseur (rendu programmatique)
+ * Description: GUI pour le cristalliseur avec reduced_bg et texture honey bar
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,8 +9,7 @@
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | CrystallizerMenu        | Donnees container    | Output slot, progress, fluid   |
- * | FluidGaugeWidget        | Jauge de fluide      | Input tank                     |
- * | GuiRenderHelper         | Rendu programmatique | Background, slots, progress    |
+ * | GuiRenderHelper         | Rendu textures       | Honey bar, slots, progress     |
  * | AbstractBeemancerScreen | Base screen          | Boilerplate GUI                |
  * ------------------------------------------------------------
  *
@@ -24,49 +23,67 @@ package com.chapeau.beemancer.client.gui.screen.alchemy;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.screen.AbstractBeemancerScreen;
-import com.chapeau.beemancer.client.gui.widget.FluidGaugeWidget;
 import com.chapeau.beemancer.common.menu.alchemy.CrystallizerMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
+import java.util.List;
+
 public class CrystallizerScreen extends AbstractBeemancerScreen<CrystallizerMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/bg.png");
-    private FluidGaugeWidget inputGauge;
+        Beemancer.MOD_ID, "textures/gui/reduced_bg.png");
+
+    private static final int PANEL_W = 110;
+    private static final int PANEL_OFFSET = (176 - PANEL_W) / 2; // 33
+
+    // Positions relatives au panel (110px)
+    private static final int HONEYBAR_X = 14;
+    private static final int HONEYBAR_Y = 22;
+    private static final int SLOT_X = 65; // slot bg render = panel + 65
+    private static final int SLOT_Y = 36;
+    private static final int PROGRESS_X = 10;
+    private static final int PROGRESS_Y = 78;
 
     public CrystallizerScreen(CrystallizerMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 99);
+        super(menu, playerInventory, title, 176, 99, 0);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
     @Override protected String getTitleKey() { return "container.beemancer.crystallizer"; }
-
-    @Override
-    protected void init() {
-        super.init();
-        inputGauge = new FluidGaugeWidget(
-            15, 27, 16, 52, 4000,
-            () -> menu.getBlockEntity().getInputTank().getFluid(),
-            menu::getFluidAmount
-        );
-    }
+    @Override protected int getPanelXOffset() { return PANEL_OFFSET; }
+    @Override protected int getPanelWidth() { return PANEL_W; }
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        GuiRenderHelper.renderSlot(g, x + 86, y + 40);
+        int px = x + PANEL_OFFSET;
+
+        // Texture honey bar (gauche)
+        int cap = 4000;
+        float fluidRatio = cap > 0 ? (float) menu.getFluidAmount() / cap : 0;
+        GuiRenderHelper.renderLeftHoneyBar(g, px + HONEYBAR_X, y + HONEYBAR_Y, fluidRatio);
+
+        // Output slot
+        GuiRenderHelper.renderSlot(g, px + SLOT_X, y + SLOT_Y);
+
+        // Progress bar (ancienne version programmatique conservee)
         int processTime = menu.getProcessTime();
         float ratio = processTime > 0 ? (float) menu.getProgress() / processTime : 0;
-        GuiRenderHelper.renderProgressBar(g, x + 67, y + 65, 56, 6, ratio);
-        inputGauge.render(g, x, y);
+        GuiRenderHelper.renderProgressBar(g, px + PROGRESS_X, y + PROGRESS_Y, 90, 6, ratio);
     }
 
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        if (inputGauge.isMouseOver(x, y, mouseX, mouseY)) {
+        int px = x + PANEL_OFFSET;
+        if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, px, y, mouseX, mouseY)) {
             String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getInputTank().getFluid());
-            g.renderComponentTooltip(font, inputGauge.getTooltip(name), mouseX, mouseY);
+            int amount = menu.getFluidAmount();
+            g.renderComponentTooltip(font, List.of(
+                Component.literal(name + ": " + amount + " / 4000 mB"),
+                Component.literal(String.format("%.1f%%", amount / 4000f * 100))
+                    .withStyle(s -> s.withColor(0xAAAAAA))
+            ), mouseX, mouseY);
         }
     }
 }

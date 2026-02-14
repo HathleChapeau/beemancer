@@ -74,9 +74,10 @@ import java.util.UUID;
 
 public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, net.minecraft.world.Container, IHiveBeeHost, IHiveInternals {
 
-    public static final int BEE_SLOTS = 5;
+    public static final int BEE_SLOTS = 2;
     public static final int OUTPUT_SLOTS = 7;
     public static final int TOTAL_SLOTS = BEE_SLOTS + OUTPUT_SLOTS;
+    private static final int MAX_OUTPUT_STACK = 16;
 
     // === Manager ===
     private final HiveBeeLifecycleManager lifecycleManager = new HiveBeeLifecycleManager(this, HiveConfig.MAGIC_HIVE);
@@ -222,6 +223,9 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         return level != null && level.getBlockEntity(worldPosition) == this
                 && player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) <= 64;
     }
+
+    @Override
+    public int getMaxStackSize() { return MAX_OUTPUT_STACK; }
 
     @Override
     public void clearContent() {

@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [HoneyTankScreen.java]
- * Description: GUI pour le tank de miel (rendu programmatique)
+ * Description: GUI pour le tank de miel avec reduced_bg et texture honey bar
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,8 +9,7 @@
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | HoneyTankMenu           | Donnees container    | Bucket slot, fluid data        |
- * | FluidGaugeWidget        | Jauge de fluide      | Affichage stockage             |
- * | GuiRenderHelper         | Rendu programmatique | Background, slots              |
+ * | GuiRenderHelper         | Rendu textures       | Honey bar, slots               |
  * | AbstractBeemancerScreen | Base screen          | Boilerplate GUI                |
  * ------------------------------------------------------------
  *
@@ -24,46 +23,61 @@ package com.chapeau.beemancer.client.gui.screen.alchemy;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.GuiRenderHelper;
 import com.chapeau.beemancer.client.gui.screen.AbstractBeemancerScreen;
-import com.chapeau.beemancer.client.gui.widget.FluidGaugeWidget;
 import com.chapeau.beemancer.common.menu.alchemy.HoneyTankMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
+import java.util.List;
+
 public class HoneyTankScreen extends AbstractBeemancerScreen<HoneyTankMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Beemancer.MOD_ID, "textures/gui/bg.png");
-    private FluidGaugeWidget storageGauge;
+        Beemancer.MOD_ID, "textures/gui/reduced_bg.png");
+
+    private static final int PANEL_W = 110;
+    private static final int PANEL_OFFSET = (176 - PANEL_W) / 2; // 33
+
+    // Positions relatives au panel (110px)
+    private static final int BUCKET_SLOT_X = 14;
+    private static final int BUCKET_SLOT_Y = 37;
+    private static final int HONEYBAR_X = 60;
+    private static final int HONEYBAR_Y = 22;
 
     public HoneyTankScreen(HoneyTankMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 99);
+        super(menu, playerInventory, title, 176, 99, 0);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
     @Override protected String getTitleKey() { return "container.beemancer.honey_tank"; }
-
-    @Override
-    protected void init() {
-        super.init();
-        storageGauge = new FluidGaugeWidget(
-            69, 27, 52, 52, 16000,
-            () -> menu.getBlockEntity().getFluid(),
-            menu::getFluidAmount
-        );
-    }
+    @Override protected int getPanelXOffset() { return PANEL_OFFSET; }
+    @Override protected int getPanelWidth() { return PANEL_W; }
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        GuiRenderHelper.renderSlot(g, x + 32, y + 44);
-        storageGauge.render(g, x, y);
+        int px = x + PANEL_OFFSET;
+
+        // Bucket slot
+        GuiRenderHelper.renderSlot(g, px + BUCKET_SLOT_X, y + BUCKET_SLOT_Y);
+
+        // Texture honey bar
+        int cap = 16000;
+        float ratio = cap > 0 ? (float) menu.getFluidAmount() / cap : 0;
+        GuiRenderHelper.renderLeftHoneyBar(g, px + HONEYBAR_X, y + HONEYBAR_Y, ratio);
     }
 
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        if (storageGauge.isMouseOver(x, y, mouseX, mouseY)) {
+        int px = x + PANEL_OFFSET;
+        if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, px, y, mouseX, mouseY)) {
             String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getFluid());
-            g.renderComponentTooltip(font, storageGauge.getTooltip(name), mouseX, mouseY);
+            int amount = menu.getFluidAmount();
+            int cap = 16000;
+            g.renderComponentTooltip(font, List.of(
+                Component.literal(name + ": " + amount + " / " + cap + " mB"),
+                Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
+                    .withStyle(s -> s.withColor(0xAAAAAA))
+            ), mouseX, mouseY);
         }
     }
 }

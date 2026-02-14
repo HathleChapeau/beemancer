@@ -69,6 +69,12 @@ public abstract class AbstractBeemancerScreen<T extends AbstractContainerMenu>
 
     protected int getBlitHeight() { return 95; }
 
+    /** Decalage X du panneau machine par rapport au container. 0 par defaut. */
+    protected int getPanelXOffset() { return 0; }
+
+    /** Largeur du panneau machine (texture bg). Par defaut = imageWidth. */
+    protected int getPanelWidth() { return imageWidth; }
+
     /** Rendu des tooltips specifiques a la machine. Appele apres renderTooltip. */
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {}
 
@@ -78,9 +84,11 @@ public abstract class AbstractBeemancerScreen<T extends AbstractContainerMenu>
         int y = (height - imageHeight) / 2;
 
         int blitH = getBlitHeight();
-        g.blit(getTexture(), x, y, 0, 0, imageWidth, blitH, imageWidth, blitH);
+        int panelX = x + getPanelXOffset();
+        int panelW = getPanelWidth();
+        g.blit(getTexture(), panelX, y, 0, 0, panelW, blitH, panelW, blitH);
         g.drawString(font, Component.translatable(getTitleKey()),
-            x + 8, y + getTitleY(), getTitleColor(), false);
+            panelX + 8, y + getTitleY(), getTitleColor(), false);
 
         renderMachineContent(g, x, y, partialTick);
         playerInventory.render(g, x, y);
