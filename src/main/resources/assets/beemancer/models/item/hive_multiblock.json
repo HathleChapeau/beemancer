@@ -1,3 +1,3 @@
 {
-  "parent": "beemancer:block/machines/hive_multiblock"
+  "parent": "beemancer:block/multibloc/hive/hive_multiblock"
 }

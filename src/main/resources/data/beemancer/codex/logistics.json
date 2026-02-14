@@ -8,8 +8,8 @@
     {"id": "interface", "position": {"x": 5, "y": -4}, "icon": "beemancer:textures/block/storage_terminal.png", "category": "NORMAL", "parent": "relay", "hidden_until_parent_unlocked": false},
     {"id": "import", "position": {"x": 5, "y": -6}, "icon": "beemancer:textures/block/import_interface.png", "category": "NORMAL", "parent": "interface", "hidden_until_parent_unlocked": false},
     {"id": "export", "position": {"x": 7, "y": -5}, "icon": "beemancer:textures/block/export_interface.png", "category": "NORMAL", "parent": "interface", "hidden_until_parent_unlocked": false},
-    {"id": "pipe_t2", "position": {"x": 0, "y": 3}, "icon": "beemancer:textures/block/controller_pipe.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": true},
-    {"id": "pipe_t3", "position": {"x": 0, "y": 4}, "icon": "beemancer:textures/block/controller_pipe.png", "category": "NORMAL", "parent": "pipe_t2", "hidden_until_parent_unlocked": true},
-    {"id": "pipe_t4", "position": {"x": 0, "y": 5}, "icon": "beemancer:textures/block/controller_pipe.png", "category": "GOAL", "parent": "pipe_t3", "hidden_until_parent_unlocked": true}
+    {"id": "pipe_t2", "position": {"x": 0, "y": 3}, "icon": "beemancer:textures/block/pipes/pipe_frame.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": true},
+    {"id": "pipe_t3", "position": {"x": 0, "y": 4}, "icon": "beemancer:textures/block/pipes/pipe_frame.png", "category": "NORMAL", "parent": "pipe_t2", "hidden_until_parent_unlocked": true},
+    {"id": "pipe_t4", "position": {"x": 0, "y": 5}, "icon": "beemancer:textures/block/pipes/pipe_frame.png", "category": "GOAL", "parent": "pipe_t3", "hidden_until_parent_unlocked": true}
   ]
 }

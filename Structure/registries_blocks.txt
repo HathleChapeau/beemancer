@@ -51,7 +51,6 @@
 
 --- STORAGE ---
 | controlled_hive        | ControlledHiveBlock       | Non          | Storage Network |
-| controller_pipe        | ControllerPipeBlock       | Oui          | Storage Network |
 | storage_hive           | StorageHiveBlock          | Oui          | Storage Hive    |
 | storage_hive_tier2     | StorageHiveBlock          | Oui          | Storage Hive    |
 | storage_hive_tier3     | StorageHiveBlock          | Oui          | Storage Hive    |

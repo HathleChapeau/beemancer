@@ -3,6 +3,56 @@
 ################################################################################
 
 ================================================================================
+2026-02-14 - Refonte Storage Controller + Nettoyage + Reorganisation Models
+================================================================================
+
+Refonte du multiblock Storage Controller (3x3x2 -> 3x3x3), suppression du
+controller pipe obsolete, nettoyage honeyed_stone/honeyed_slab des multiblocs,
+reorganisation de tous les modeles multiblocs dans un dossier multibloc/.
+
+SUPPRESSION CONTROLLER PIPE:
+- Suppression complete: ControllerPipeBlock, ControllerPipeBlockEntity, ControllerPipeRenderer
+- Retrait de tous les registres (blocks, items, block entities, creative tabs)
+- Suppression assets: blockstate, models, item model, loot table
+- Suppression lang: en_us.json + fr_fr.json
+- Nettoyage codex: remplacement icones controller_pipe par pipe_frame
+
+NOUVEAU PATTERN STORAGE CONTROLLER (3x3x3):
+- Y+0: Controller heart (centre seul)
+- Y-1: 4 terminals cardinaux + controlled hive centre
+- Y-2: 4 iron foundations coins + 4 reservoirs cotes + 1 iron foundation centre (skin base)
+- Centre Y-2 garde multiblock=none (pas de skin storage)
+  Fichiers: MultiblockPatterns.java, StorageMultiblockManager.java
+
+TERMINAL SANS CONTRAINTE:
+- Le terminal peut etre place n'importe ou (plus de contrainte adjacent au controller)
+- Suppression canSurvive(), updateShape(), setPlacedBy() auto-link
+  Fichier: StorageTerminalBlock.java
+
+NETTOYAGE HONEYED STONE/SLAB:
+- Suppression propriete MULTIBLOCK de HoneyedStoneBlock (simplifie en Block)
+- Suppression propriete MULTIBLOCK de HoneyedSlabBlock (simplifie en SlabBlock)
+- Remplacement HONEYED_SLAB par IRON_FOUNDATION_SLAB dans hive multiblock
+- Suppression 8 modeles orphelins (honeyed_stone_*_formed, honeyed_slab_*_hive)
+  Fichiers: HoneyedStoneBlock.java, HoneyedSlabBlock.java, HiveMultiblockBlockEntity.java
+
+REORGANISATION MODELES (multibloc/):
+- Cree dossier models/block/multibloc/ avec sous-dossiers par multibloc
+- Racine multibloc/: modeles de base (hearts, reservoir, pedestal, conduit, iron_foundation, etc.)
+- multibloc/altar/: altar_formed_*, honey_pedestal_altar, honey_reservoir_altar*
+- multibloc/storage/: storage_terminal*, storage_controller_storage, controlled_hive_storage, etc.
+- multibloc/extractor/: extractor_heart_extractor, honey_pedestal_extractor*
+- multibloc/centrifuge/: centrifuge_heart_*, iron_foundation_centrifuge, honey_reservoir_centrifuge
+- multibloc/infuser/: infuser_heart_*, iron_foundation_infuser, honey_reservoir_infuser
+- multibloc/alembic/: alembic_heart_alembic, honey_reservoir_alembic*
+- multibloc/hive/: hive_multiblock*
+- Mise a jour de TOUS les blockstates (13 fichiers) vers les nouveaux chemins
+- Mise a jour de 8 item models (parent references)
+- Mise a jour de 4 BER Java (ResourceLocation dans AltarHeartRenderer, HoneyReservoirRenderer,
+  CentrifugeHeartRenderer, InfuserHeartRenderer)
+- Correction reference interne centrifuge_heart_core_working parent
+
+================================================================================
 2026-02-11 - Storage Brainstorm Groupe 5 — Énergie et Progression
 ================================================================================
 

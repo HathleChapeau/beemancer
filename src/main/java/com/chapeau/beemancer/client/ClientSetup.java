@@ -32,7 +32,6 @@ import com.chapeau.beemancer.client.renderer.block.AltarHeartRenderer;
 import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyPedestalRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyReservoirRenderer;
-import com.chapeau.beemancer.client.renderer.block.ControllerPipeRenderer;
 import com.chapeau.beemancer.client.renderer.block.CentrifugeHeartRenderer;
 import com.chapeau.beemancer.client.renderer.block.CrankRenderer;
 import com.chapeau.beemancer.client.renderer.block.InfuserHeartRenderer;
@@ -164,9 +163,6 @@ public class ClientSetup {
         // HoneyPedestalRenderer - item flottant au-dessus du pedestal
         event.registerBlockEntityRenderer(BeemancerBlockEntities.HONEY_PEDESTAL.get(),
             HoneyPedestalRenderer::new);
-        // ControllerPipeRenderer - rendu coude formé pour le multibloc storage
-        event.registerBlockEntityRenderer(BeemancerBlockEntities.CONTROLLER_PIPE.get(),
-            ControllerPipeRenderer::new);
         // CrankRenderer - rotation quand la centrifugeuse tourne
         event.registerBlockEntityRenderer(BeemancerBlockEntities.CRANK.get(),
             CrankRenderer::new);
@@ -322,9 +318,6 @@ public class ClientSetup {
         // Modèles cubes du Storage Controller formé (cubes animés)
         //event.register(StorageControllerRenderer.CUBE_MODEL_LOC);
         //event.register(StorageControllerRenderer.CUBE_BIG_MODEL_LOC);
-
-        // Modèle formed du controller pipe (coude, rendu par BER)
-        event.register(ControllerPipeRenderer.FORMED_MODEL_LOC);
 
         // Modèle formed du honey reservoir (rendu par BER avec spread offset)
         event.register(HoneyReservoirRenderer.FORMED_MODEL_LOC);

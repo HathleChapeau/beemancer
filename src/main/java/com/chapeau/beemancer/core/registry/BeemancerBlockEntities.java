@@ -29,7 +29,6 @@ import com.chapeau.beemancer.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.block.statue.BeeStatueBlockEntity;
 import com.chapeau.beemancer.common.blockentity.extractor.ExtractorHeartBlockEntity;
-import com.chapeau.beemancer.common.blockentity.storage.ControllerPipeBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.ExportInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.ImportInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
@@ -66,13 +65,6 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             StorageTerminalBlockEntity::new,
                             BeemancerBlocks.STORAGE_TERMINAL.get()
-                    ).build(null));
-
-    public static final Supplier<BlockEntityType<ControllerPipeBlockEntity>> CONTROLLER_PIPE =
-            BLOCK_ENTITIES.register("controller_pipe",
-                    () -> BlockEntityType.Builder.of(
-                            ControllerPipeBlockEntity::new,
-                            BeemancerBlocks.CONTROLLER_PIPE.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<StorageHiveBlockEntity>> STORAGE_HIVE =

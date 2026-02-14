@@ -1,24 +1,24 @@
 {
   "variants": {
-    "formed_rotation=0,multiblock=none": { "model": "beemancer:block/altar/honey_pedestal" },
-    "formed_rotation=1,multiblock=none": { "model": "beemancer:block/altar/honey_pedestal" },
-    "formed_rotation=2,multiblock=none": { "model": "beemancer:block/altar/honey_pedestal" },
-    "formed_rotation=3,multiblock=none": { "model": "beemancer:block/altar/honey_pedestal" },
-    "formed_rotation=4,multiblock=none": { "model": "beemancer:block/altar/honey_pedestal" },
-    "formed_rotation=5,multiblock=none": { "model": "beemancer:block/altar/honey_pedestal" },
+    "formed_rotation=0,multiblock=none": { "model": "beemancer:block/multibloc/honey_pedestal" },
+    "formed_rotation=1,multiblock=none": { "model": "beemancer:block/multibloc/honey_pedestal" },
+    "formed_rotation=2,multiblock=none": { "model": "beemancer:block/multibloc/honey_pedestal" },
+    "formed_rotation=3,multiblock=none": { "model": "beemancer:block/multibloc/honey_pedestal" },
+    "formed_rotation=4,multiblock=none": { "model": "beemancer:block/multibloc/honey_pedestal" },
+    "formed_rotation=5,multiblock=none": { "model": "beemancer:block/multibloc/honey_pedestal" },
 
-    "formed_rotation=0,multiblock=altar": { "model": "beemancer:block/altar/honey_pedestal_altar" },
-    "formed_rotation=1,multiblock=altar": { "model": "beemancer:block/altar/honey_pedestal_altar" },
-    "formed_rotation=2,multiblock=altar": { "model": "beemancer:block/altar/honey_pedestal_altar" },
-    "formed_rotation=3,multiblock=altar": { "model": "beemancer:block/altar/honey_pedestal_altar" },
-    "formed_rotation=4,multiblock=altar": { "model": "beemancer:block/altar/honey_pedestal_altar" },
-    "formed_rotation=5,multiblock=altar": { "model": "beemancer:block/altar/honey_pedestal_altar" },
+    "formed_rotation=0,multiblock=altar": { "model": "beemancer:block/multibloc/altar/honey_pedestal_altar" },
+    "formed_rotation=1,multiblock=altar": { "model": "beemancer:block/multibloc/altar/honey_pedestal_altar" },
+    "formed_rotation=2,multiblock=altar": { "model": "beemancer:block/multibloc/altar/honey_pedestal_altar" },
+    "formed_rotation=3,multiblock=altar": { "model": "beemancer:block/multibloc/altar/honey_pedestal_altar" },
+    "formed_rotation=4,multiblock=altar": { "model": "beemancer:block/multibloc/altar/honey_pedestal_altar" },
+    "formed_rotation=5,multiblock=altar": { "model": "beemancer:block/multibloc/altar/honey_pedestal_altar" },
 
-    "formed_rotation=0,multiblock=extractor": { "model": "beemancer:block/altar/honey_pedestal_extractor" },
-    "formed_rotation=1,multiblock=extractor": { "model": "beemancer:block/altar/honey_pedestal_extractor_center" },
-    "formed_rotation=2,multiblock=extractor": { "model": "beemancer:block/altar/honey_pedestal_extractor_side" },
-    "formed_rotation=3,multiblock=extractor": { "model": "beemancer:block/altar/honey_pedestal_extractor_side" },
-    "formed_rotation=4,multiblock=extractor": { "model": "beemancer:block/altar/honey_pedestal_extractor_side" },
-    "formed_rotation=5,multiblock=extractor": { "model": "beemancer:block/altar/honey_pedestal_extractor_side" }
+    "formed_rotation=0,multiblock=extractor": { "model": "beemancer:block/multibloc/extractor/honey_pedestal_extractor" },
+    "formed_rotation=1,multiblock=extractor": { "model": "beemancer:block/multibloc/extractor/honey_pedestal_extractor_center" },
+    "formed_rotation=2,multiblock=extractor": { "model": "beemancer:block/multibloc/extractor/honey_pedestal_extractor_side" },
+    "formed_rotation=3,multiblock=extractor": { "model": "beemancer:block/multibloc/extractor/honey_pedestal_extractor_side" },
+    "formed_rotation=4,multiblock=extractor": { "model": "beemancer:block/multibloc/extractor/honey_pedestal_extractor_side" },
+    "formed_rotation=5,multiblock=extractor": { "model": "beemancer:block/multibloc/extractor/honey_pedestal_extractor_side" }
   }
 }

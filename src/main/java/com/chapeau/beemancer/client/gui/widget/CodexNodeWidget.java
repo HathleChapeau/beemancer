@@ -71,9 +71,9 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("interface", "beemancer:storage_terminal");
         NODE_TO_ITEM.put("import", "beemancer:import_interface");
         NODE_TO_ITEM.put("export", "beemancer:export_interface");
-        NODE_TO_ITEM.put("pipe_t2", "beemancer:controller_pipe");
-        NODE_TO_ITEM.put("pipe_t3", "beemancer:controller_pipe");
-        NODE_TO_ITEM.put("pipe_t4", "beemancer:controller_pipe");
+        NODE_TO_ITEM.put("pipe_t2", "beemancer:honey_pipe");
+        NODE_TO_ITEM.put("pipe_t3", "beemancer:honey_pipe");
+        NODE_TO_ITEM.put("pipe_t4", "beemancer:honey_pipe");
 
         // Textures pour les nodes sans item correspondant
         NODE_TO_TEXTURE.put("the_beginning", ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "textures/gui/codex/icon_start.png"));

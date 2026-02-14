@@ -37,7 +37,6 @@
 
 --- STORAGE ---
 | controlled_hive          | BlockItem        | Storage Network |
-| controller_pipe          | BlockItem        | Storage Network |
 | storage_hive             | BlockItem        | Storage Hive    |
 | storage_hive_tier2       | BlockItem        | Storage Hive    |
 | storage_hive_tier3       | BlockItem        | Storage Hive    |

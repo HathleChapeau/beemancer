@@ -140,13 +140,20 @@ ClientSetup.java:
 MULTIBLOC STORAGE CONTROLLER (3x3x3)
 ================================================================================
 
-Le Storage Controller est maintenant un multibloc 3 étages (3x3x3).
-Le controller est au centre (0,0,0). Vue de côté (axe X horizontal, Y vertical):
+Le Storage Controller est un multibloc 3 étages (3x3x3).
+Le controller est au sommet (0,0,0). Vue de dessus par étage:
 
-  Étage 3 (Y+1):  controller_pipe(-1,1,0) | controlled_hive(0,1,0) | controller_pipe(1,1,0)
-  Étage 2 (Y=0):  reservoir(-1,0,0)      | CONTROLLER(0,0,0)      | reservoir(1,0,0)
-                   + terminal(0,0,-1) devant le controller
-  Étage 1 (Y-1):  controller_pipe(-1,-1,0) | honeyed_stone(0,-1,0) | controller_pipe(1,-1,0)
+  Étage Y+0 (top):     [ ]  [ ]  [ ]
+                        [ ] [CT]  [ ]       CT = Controller (centre seul)
+                        [ ]  [ ]  [ ]
+
+  Étage Y-1 (mid):     [ ] [TM]  [ ]
+                        [TM][CH] [TM]       TM = Terminal, CH = Controlled Hive
+                        [ ] [TM]  [ ]
+
+  Étage Y-2 (base):    [IF][RS] [IF]
+                        [RS][if] [RS]       IF = Iron Foundation (coins), RS = Reservoir (cotés)
+                        [IF][RS] [IF]       if = Iron Foundation centre (skin base, multiblock=none)
 
   Toutes les autres positions du 3x3x3 = air
 
@@ -158,17 +165,17 @@ FORMATION:
 
 FORMED VISUALS:
 - Controller: 2 cubes de 2×2×2 pixels centrés ([6,6,6]-[8,8,8] et [8,8,8]-[10,10,10])
-- Controller Pipes: coude (elbow) vertical+horizontal, rendu par ControllerPipeRenderer
-- Honeyed Stone (bas): base 16×16×16 + ailes latérales 10×10×2
-- Controlled Hive (haut): cube 16×16×16 (bloc passif, le controller gère les abeilles)
-- Reservoir: cube vertical 8×16×8 ([4,0,4]-[12,16,12]), spread ±3px vers l'extérieur
-- Terminal: modèle de base pour toutes les variantes (formed et non-formed identiques)
+- Controlled Hive (Y-1 centre): cube 16×16×16 (bloc passif, le controller gère les abeilles)
+- Terminals (Y-1 cotés): modèle formed, placés librement (plus de contrainte adjacente)
+- Iron Foundation (Y-2 coins): modèle storage
+- Iron Foundation (Y-2 centre): modèle de base (multiblock=none)
+- Reservoir (Y-2 cotés): cube vertical, spread ±3px vers l'extérieur
 
 SPREAD SYSTEM:
-- Les colonnes pipe-reservoir-pipe sont écartées de 3px (3/16 bloc) du centre
+- Les reservoirs sont écartés de 3px (3/16 bloc) du centre
 - Le spread est calculé en world-space par StorageControllerBlockEntity
-- Stocké dans ControllerPipeBlockEntity.formedSpreadX/Z et HoneyReservoirBlockEntity.formedSpreadX/Z
-- Appliqué par les renderers (ControllerPipeRenderer, HoneyReservoirRenderer) via poseStack.translate()
+- Stocké dans HoneyReservoirBlockEntity.formedSpreadX/Z
+- Appliqué par HoneyReservoirRenderer via poseStack.translate()
 - Le reservoir formed model est rendu par le BER (le blockstate model est vide)
 
 HONEY CONSUMPTION [G5]:
@@ -193,21 +200,14 @@ DESTRUCTION:
 FICHIERS AJOUTÉS (Multibloc):
 - core/multiblock/MultiblockPatterns.java: +STORAGE_CONTROLLER pattern
 - common/block/storage/ControlledHiveBlock.java: bloc passif FORMED + FORMED_ROTATION
-- common/block/storage/ControllerPipeBlock.java: conduit structurel FORMED
-- common/blockentity/storage/ControllerPipeBlockEntity.java: rotation + spread
-- client/renderer/block/ControllerPipeRenderer.java: rendu coude formed
-- models/block/storage/storage_controller_formed.json
-- models/block/storage/controlled_hive.json + controlled_hive_formed.json
-- models/block/storage/controller_pipe.json (cube) + controller_pipe_formed.json (coude)
-- models/block/pipes/honey_pipe_formed.json (legacy, non utilisé par multibloc)
-- models/block/altar/honeyed_stone_formed.json (déjà existant, réutilisé)
-- models/block/altar/honey_reservoir_formed.json (vidé, rendu par BER)
-- models/block/altar/honey_reservoir_formed_render.json (modèle pour le BER)
+- models/block/multibloc/storage_controller.json + storage/storage_controller_storage.json
+- models/block/multibloc/controlled_hive.json + storage/controlled_hive_storage.json
+- models/block/multibloc/storage/storage_terminal.json + storage_terminal_storage.json
+- models/block/multibloc/storage/iron_foundation_storage.json
+- models/block/multibloc/storage/honey_reservoir_storage.json
+- models/block/multibloc/altar/honey_reservoir_altar_render.json (modèle pour le BER)
 - blockstates/controlled_hive.json
-- blockstates/controller_pipe.json
 - textures/block/storage/controlled_hive.png
-- textures/block/storage/controller_pipe.png (copie honeyed_stone)
-- data/beemancer/loot_table/blocks/controller_pipe.json
 
 FICHIERS MODIFIÉS (Multibloc):
 - StorageControllerBlock.java: +FORMED property, formation logic, onRemove

@@ -53,7 +53,7 @@ public class InfuserHeartRenderer implements BlockEntityRenderer<InfuserHeartBlo
 
     public static final ModelResourceLocation CORE_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "block/alchemy/infuser_heart_core"));
+            Beemancer.MOD_ID, "block/multibloc/infuser/infuser_heart_core"));
 
     public InfuserHeartRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();

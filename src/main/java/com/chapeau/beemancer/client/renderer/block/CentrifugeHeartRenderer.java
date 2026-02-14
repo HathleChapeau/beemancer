@@ -55,11 +55,11 @@ public class CentrifugeHeartRenderer implements BlockEntityRenderer<CentrifugeHe
 
     public static final ModelResourceLocation CORE_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "block/alchemy/centrifuge_heart_core"));
+            Beemancer.MOD_ID, "block/multibloc/centrifuge/centrifuge_heart_core"));
 
     public static final ModelResourceLocation CORE_WORKING_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "block/alchemy/centrifuge_heart_core_working"));
+            Beemancer.MOD_ID, "block/multibloc/centrifuge/centrifuge_heart_core_working"));
 
     public CentrifugeHeartRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();

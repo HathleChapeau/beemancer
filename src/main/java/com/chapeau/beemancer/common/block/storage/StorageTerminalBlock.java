@@ -9,8 +9,7 @@
  * | Dépendance                      | Raison                  | Utilisation           |
  * |---------------------------------|------------------------|-----------------------|
  * | StorageTerminalBlockEntity      | BlockEntity associé    | Interface réseau      |
- * | StorageControllerBlockEntity    | Controller lié         | Liaison manuelle      |
- * | StorageControllerBlock          | Placement validation   | canSurvive            |
+ * | StorageControllerBlockEntity    | Controller lié         | Cleanup on remove     |
  * | BeemancerBlockEntities          | Type du BlockEntity    | Création              |
  * ------------------------------------------------------------
  *
@@ -34,8 +33,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -54,7 +51,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Bloc terminal pour accéder au réseau de stockage.
- * Se pose uniquement sur un Storage Controller (comme un item frame).
+ * Peut être placé librement sur n'importe quelle surface horizontale.
  * Modèle plat 12×12×3 orienté selon la face de placement.
  *
  * formed_rotation:
@@ -69,11 +66,7 @@ public class StorageTerminalBlock extends BaseEntityBlock {
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("storage");
     public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 3);
 
-    // VoxelShapes pour chaque rotation (plaque 12×12×3 flush contre le controller)
-    // rotation=0 (y=0): plate au sud (z=13-16)
-    // rotation=1 (y=90): plate à l'ouest (x=0-3)
-    // rotation=2 (y=180): plate au nord (z=0-3)
-    // rotation=3 (y=270): plate à l'est (x=13-16)
+    // VoxelShapes pour chaque rotation (plaque 12×12×3)
     private static final VoxelShape SHAPE_ROT0 = Block.box(2, 2, 13, 14, 14, 16);
     private static final VoxelShape SHAPE_ROT1 = Block.box(0, 2, 2, 3, 14, 14);
     private static final VoxelShape SHAPE_ROT2 = Block.box(2, 2, 0, 14, 14, 3);
@@ -121,14 +114,13 @@ public class StorageTerminalBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
                                                                    BlockEntityType<T> blockEntityType) {
-        // Terminal tick logic driven by the controller via processTerminals()
         return null;
     }
 
     /**
      * Détermine la rotation lors du placement.
-     * Le terminal se pose sur la face horizontale d'un controller.
-     * La plaque est collée contre le controller (face arrière = vers le controller).
+     * Le terminal peut être placé sur n'importe quelle face horizontale.
+     * La rotation est déterminée par la face cliquée.
      */
     @Nullable
     @Override
@@ -140,50 +132,12 @@ public class StorageTerminalBlock extends BaseEntityBlock {
             return null;
         }
 
-        // Vérifier que le bloc derrière (là où on clique) est un controller
-        BlockPos behind = context.getClickedPos().relative(clickedFace.getOpposite());
-        BlockState behindState = context.getLevel().getBlockState(behind);
-        if (!(behindState.getBlock() instanceof StorageControllerBlock)) {
-            return null;
-        }
-
-        // La plaque face vers la direction cliquée (away from controller)
         int rotation = clickedFaceToRotation(clickedFace);
-
         return this.defaultBlockState().setValue(FORMED_ROTATION, rotation);
     }
 
     /**
-     * Vérifie que le terminal est toujours attaché à un controller.
-     */
-    @Override
-    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        int rotation = state.getValue(FORMED_ROTATION);
-        Direction toController = rotationToControllerDirection(rotation);
-        BlockPos controllerPos = pos.relative(toController);
-        return level.getBlockState(controllerPos).getBlock() instanceof StorageControllerBlock;
-    }
-
-    /**
-     * Quand un bloc voisin change, vérifier que le controller est toujours là.
-     */
-    @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
-                                   LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        int rotation = state.getValue(FORMED_ROTATION);
-        Direction toController = rotationToControllerDirection(rotation);
-        if (direction == toController) {
-            if (!canSurvive(state, (LevelReader) level, pos)) {
-                return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
-            }
-        }
-        return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
-    }
-
-    /**
-     * Convertit la face cliquée du controller en rotation du terminal.
-     * Le terminal est flush contre la face cliquée.
-     * Click north face → terminal au nord → plate côté sud (contre le controller) → rotation=0
+     * Convertit la face cliquée en rotation du terminal.
      */
     private static int clickedFaceToRotation(Direction clickedFace) {
         return switch (clickedFace) {
@@ -192,23 +146,6 @@ public class StorageTerminalBlock extends BaseEntityBlock {
             case SOUTH -> 2;
             case WEST -> 3;
             default -> 0;
-        };
-    }
-
-    /**
-     * Retourne la direction vers le controller (là où la plate est flush).
-     * rotation=0: plate au sud → controller au sud
-     * rotation=1: plate à l'ouest → controller à l'ouest
-     * rotation=2: plate au nord → controller au nord
-     * rotation=3: plate à l'est → controller à l'est
-     */
-    private static Direction rotationToControllerDirection(int rotation) {
-        return switch (rotation) {
-            case 0 -> Direction.SOUTH;
-            case 1 -> Direction.WEST;
-            case 2 -> Direction.NORTH;
-            case 3 -> Direction.EAST;
-            default -> Direction.SOUTH;
         };
     }
 
@@ -263,7 +200,6 @@ public class StorageTerminalBlock extends BaseEntityBlock {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof StorageTerminalBlockEntity terminal) {
-                // Retirer du registre reseau avant de delinker
                 BlockPos ctrlPos = terminal.getControllerPos();
                 if (ctrlPos != null && level.isLoaded(ctrlPos)) {
                     BlockEntity ctrlBe = level.getBlockEntity(ctrlPos);
@@ -282,38 +218,5 @@ public class StorageTerminalBlock extends BaseEntityBlock {
             }
         }
         super.onRemove(state, level, pos, newState, moved);
-    }
-
-    /**
-     * Appelé quand le bloc est placé.
-     * Lie automatiquement au controller adjacent.
-     */
-    @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state,
-                            @Nullable net.minecraft.world.entity.LivingEntity placer,
-                            net.minecraft.world.item.ItemStack stack) {
-        super.setPlacedBy(level, pos, state, placer, stack);
-
-        if (level.isClientSide() || !(placer instanceof Player player)) {
-            return;
-        }
-
-        // Le controller est dans la direction du flush (basé sur la rotation)
-        int rotation = state.getValue(FORMED_ROTATION);
-        Direction toController = rotationToControllerDirection(rotation);
-        BlockPos controllerPos = pos.relative(toController);
-
-        BlockEntity be = level.getBlockEntity(controllerPos);
-        if (be instanceof StorageControllerBlockEntity controller) {
-            BlockEntity terminalBe = level.getBlockEntity(pos);
-            if (terminalBe instanceof StorageTerminalBlockEntity terminal) {
-                terminal.linkToController(controllerPos);
-
-                player.displayClientMessage(
-                    Component.translatable("message.beemancer.storage_terminal.auto_linked"),
-                    true
-                );
-            }
-        }
     }
 }

@@ -41,7 +41,6 @@ BLOCS MIS A JOUR (16 blocs existants)
 | honeyed_slab           | formed=true/false  | multiblock=none/...        |
 | hive_multiblock        | formed=true/false  | multiblock=none/hive       |
 | storage_controller     | formed=true/false  | multiblock=none/storage    |
-| controller_pipe        | formed=true/false  | multiblock=none/storage    |
 | storage_terminal       | formed=true/false  | multiblock=none/storage    |
 | controlled_hive        | formed=true/false  | multiblock=none/storage    |
 

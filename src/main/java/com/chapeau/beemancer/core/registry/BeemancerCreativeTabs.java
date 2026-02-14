@@ -153,7 +153,6 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.IMPORT_INTERFACE.get());
         output.accept(BeemancerItems.EXPORT_INTERFACE.get());
         output.accept(BeemancerItems.CONTROLLED_HIVE.get());
-        output.accept(BeemancerItems.CONTROLLER_PIPE.get());
         output.accept(BeemancerItems.STORAGE_HIVE.get());
         output.accept(BeemancerItems.STORAGE_HIVE_TIER2.get());
         output.accept(BeemancerItems.STORAGE_HIVE_TIER3.get());

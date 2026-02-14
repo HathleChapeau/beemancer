@@ -61,13 +61,13 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     private final RandomSource random = RandomSource.create();
 
     public static final ModelResourceLocation PEDESTAL_MODEL_LOC =
-        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_pedestal"));
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/multibloc/altar/altar_formed_pedestal"));
     public static final ModelResourceLocation CORE_MODEL_LOC =
-        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_core"));
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/multibloc/altar/altar_formed_core"));
     public static final ModelResourceLocation TOP_MODEL_LOC =
-        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_top"));
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/multibloc/altar/altar_formed_top"));
     public static final ModelResourceLocation CONDUIT_MODEL_LOC =
-        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/altar/altar_formed_conduit"));
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "block/multibloc/altar/altar_formed_conduit"));
 
     // Rotation Y par conduit pour orienter le modele vers l'exterieur
     // Modele de base pointe vers le nord (-Z)

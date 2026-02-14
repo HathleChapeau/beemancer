@@ -1,5 +1,5 @@
 {
-  "parent": "beemancer:block/alchemy/centrifuge_heart_core",
+  "parent": "beemancer:block/multibloc/centrifuge/centrifuge_heart_core",
   "textures": {
     "honey": "beemancer:block/alchemy/powered_centrifuge_heart_working"
   }

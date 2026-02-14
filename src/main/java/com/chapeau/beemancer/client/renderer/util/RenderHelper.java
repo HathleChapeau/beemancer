@@ -16,7 +16,7 @@
  * UTILISE PAR:
  * - HoneyTankRenderer, HoneyReservoirRenderer, MultiblockTankRenderer
  * - CentrifugeHeartRenderer, InfuserHeartRenderer, CrystallizerRenderer
- * - StorageControllerRenderer, CrankRenderer, ControllerPipeRenderer
+ * - StorageControllerRenderer, CrankRenderer
  *
  * ============================================================
  */

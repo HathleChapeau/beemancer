@@ -24,7 +24,6 @@ package com.chapeau.beemancer.common.blockentity.storage;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
-import com.chapeau.beemancer.common.block.storage.ControllerPipeBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
@@ -147,25 +146,6 @@ public class StorageMultiblockManager {
                 spreadZ = rotatedOffset.getZ() * 1.0f / 16.0f;
             }
 
-            if (state.getBlock() instanceof ControllerPipeBlock) {
-                int rotation = formed ? computeBlockRotation(originalOffset, state) : 0;
-                BlockEntity be = parent.getLevel().getBlockEntity(blockPos);
-                if (be instanceof ControllerPipeBlockEntity pipeBe) {
-                    if (formed) {
-                        pipeBe.setFormed(spreadX, spreadZ);
-                    } else {
-                        pipeBe.clearFormed();
-                    }
-                }
-                BlockState newState = state
-                    .setValue(ControllerPipeBlock.MULTIBLOCK, formed ? MultiblockProperty.STORAGE : MultiblockProperty.NONE)
-                    .setValue(ControllerPipeBlock.FORMED_ROTATION, rotation);
-                if (!newState.equals(state)) {
-                    parent.getLevel().setBlock(blockPos, newState, 3);
-                }
-                continue;
-            }
-
             if (state.getBlock() instanceof HoneyReservoirBlock) {
                 BlockEntity be = parent.getLevel().getBlockEntity(blockPos);
                 if (be instanceof HoneyReservoirBlockEntity reservoirBe) {
@@ -201,21 +181,6 @@ public class StorageMultiblockManager {
      * Calcule la rotation à appliquer sur un bloc de la structure.
      */
     private int computeBlockRotation(Vec3i originalOffset, BlockState state) {
-        if (state.getBlock() instanceof ControllerPipeBlock) {
-            int baseRotation;
-            if (originalOffset.getX() < 0) {
-                baseRotation = 0;
-            } else if (originalOffset.getX() > 0) {
-                baseRotation = 2;
-            } else if (originalOffset.getZ() < 0) {
-                baseRotation = 3;
-            } else {
-                baseRotation = 1;
-            }
-            int yRotation = (baseRotation + multiblockRotation) & 3;
-            boolean bottom = originalOffset.getY() < 0;
-            return bottom ? yRotation + 4 : yRotation;
-        }
         return multiblockRotation;
     }
 
@@ -224,6 +189,10 @@ public class StorageMultiblockManager {
      */
     private MultiblockProperty computeMultiblockValue(Vec3i offset, BlockState state, boolean formed) {
         if (!formed) return MultiblockProperty.NONE;
+        // Le centre de l'étage Y-2 (iron foundation) garde le skin de base
+        if (offset.getX() == 0 && offset.getY() == -2 && offset.getZ() == 0) {
+            return MultiblockProperty.NONE;
+        }
         return MultiblockProperty.STORAGE;
     }
 

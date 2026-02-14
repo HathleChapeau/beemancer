@@ -1,22 +1,22 @@
 {
   "variants": {
     "multiblock=none": {
-      "model": "beemancer:block/building/iron_foundation"
+      "model": "beemancer:block/multibloc/iron_foundation"
     },
     "multiblock=altar": {
       "model": "beemancer:block/invisible"
     },
     "multiblock=extractor": {
-      "model": "beemancer:block/building/iron_foundation"
+      "model": "beemancer:block/multibloc/iron_foundation"
     },
     "multiblock=storage": {
-      "model": "beemancer:block/building/iron_foundation_storage"
+      "model": "beemancer:block/multibloc/storage/iron_foundation_storage"
     },
     "multiblock=infuser": {
-      "model": "beemancer:block/building/iron_foundation_infuser"
+      "model": "beemancer:block/multibloc/infuser/iron_foundation_infuser"
     },
     "multiblock=centrifuge": {
-      "model": "beemancer:block/building/iron_foundation_centrifuge"
+      "model": "beemancer:block/multibloc/centrifuge/iron_foundation_centrifuge"
     }
   }
 }

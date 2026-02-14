@@ -29,7 +29,6 @@ import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
 import com.chapeau.beemancer.core.gene.BeeGeneData;
 import com.chapeau.beemancer.core.gene.Gene;
 import com.chapeau.beemancer.core.gene.GeneCategory;
-import com.chapeau.beemancer.common.block.altar.HoneyedSlabBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import com.chapeau.beemancer.core.multiblock.MultiblockPatterns;
@@ -257,9 +256,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                 }
             }
 
-            if (blockState.hasProperty(HoneyedSlabBlock.MULTIBLOCK)) {
-                level.setBlock(structurePos, blockState.setValue(HoneyedSlabBlock.MULTIBLOCK, MultiblockProperty.HIVE), 3);
-            }
         }
 
         com.chapeau.beemancer.core.multiblock.MultiblockEvents.registerActiveController(level, worldPosition);
@@ -296,9 +292,6 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                     }
                 }
 
-                if (blockState.hasProperty(HoneyedSlabBlock.MULTIBLOCK)) {
-                    level.setBlock(structurePos, blockState.setValue(HoneyedSlabBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
-                }
             }
 
             com.chapeau.beemancer.core.multiblock.MultiblockEvents.unregisterController(worldPosition);

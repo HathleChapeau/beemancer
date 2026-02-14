@@ -1,10 +1,10 @@
 {
   "variants": {
     "multiblock=none": {
-      "model": "beemancer:block/altar/altar_heart"
+      "model": "beemancer:block/multibloc/altar_heart"
     },
     "multiblock=altar": {
-      "model": "beemancer:block/altar/altar_heart_altar"
+      "model": "beemancer:block/multibloc/altar/altar_heart_altar"
     }
   }
 }

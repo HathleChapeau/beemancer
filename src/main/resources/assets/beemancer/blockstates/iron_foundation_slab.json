@@ -2,6 +2,6 @@
   "variants": {
     "type=bottom": { "model": "beemancer:block/building/iron_foundation_slab" },
     "type=top": { "model": "beemancer:block/building/iron_foundation_slab_top" },
-    "type=double": { "model": "beemancer:block/building/iron_foundation" }
+    "type=double": { "model": "beemancer:block/multibloc/iron_foundation" }
   }
 }
