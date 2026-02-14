@@ -120,7 +120,10 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
             return controller;
         }
         controllerPos = null;
-        setChanged();
+        // [FIX] Ne pas re-dirtier le chunk pendant le shutdown (saveAllChunks boucle infinie)
+        if (!com.chapeau.beemancer.common.block.storage.StorageEvents.isShuttingDown()) {
+            setChanged();
+        }
         return null;
     }
 
@@ -272,6 +275,8 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     public void serverTick() {
         if (level == null || level.isClientSide()) return;
+        // [FIX] Pendant le shutdown, ne plus modifier le monde (setChanged dans getController, etc.)
+        if (com.chapeau.beemancer.common.block.storage.StorageEvents.isShuttingDown()) return;
 
         long gameTick = level.getGameTime();
 

@@ -241,10 +241,16 @@ public class DeliveryBeeSpawner {
 
     /**
      * Tue toutes les DeliveryBeeEntity liees a ce controller.
-     * Restitue les items transportes au reseau avant de discard.
+     * [FIX] Ne PAS appeler returnCarriedItemsToNetwork() pendant le world unload.
+     * Deposer des items dans les coffres appelle setChanged() sur les chests,
+     * ce qui re-dirtie des chunks deja sauvegardes → boucle infinie dans saveAllChunks.
+     * Les items transportes sont perdus, mais le monde ne hang plus.
+     * En gameplay normal (controller casse hors shutdown), les items sont restitues.
      */
     public void killAllDeliveryBees() {
         if (parent.getLevel() == null || parent.getLevel().isClientSide()) return;
+
+        boolean isShutdown = com.chapeau.beemancer.common.block.storage.StorageEvents.isShuttingDown();
 
         List<DeliveryBeeEntity> bees = parent.getLevel().getEntitiesOfClass(
             DeliveryBeeEntity.class,
@@ -252,7 +258,9 @@ public class DeliveryBeeSpawner {
             bee -> parent.getBlockPos().equals(bee.getControllerPos())
         );
         for (DeliveryBeeEntity bee : bees) {
-            bee.returnCarriedItemsToNetwork();
+            if (!isShutdown) {
+                bee.returnCarriedItemsToNetwork();
+            }
             bee.discard();
         }
         // [BD] Vider le registre

@@ -45,6 +45,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import java.util.HashSet;
@@ -467,8 +468,24 @@ public class StorageEvents {
         StorageEditModeHandler.stopEditing(event.getEntity().getUUID());
     }
 
+    // === Shutdown Guard ===
+    // Flag global pour empecher les modifications monde (setChanged, syncToClient, level.setBlock)
+    // pendant le shutdown du serveur. Pendant saveAllChunks(), re-dirtier un chunk deja sauve
+    // cause une boucle infinie -> hang "saving world".
+    private static volatile boolean shuttingDown = false;
+
+    public static boolean isShuttingDown() {
+        return shuttingDown;
+    }
+
+    @SubscribeEvent
+    public static void onServerStarting(ServerStartingEvent event) {
+        shuttingDown = false;
+    }
+
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
+        shuttingDown = true;
         StorageEditModeHandler.clearAll();
     }
 }

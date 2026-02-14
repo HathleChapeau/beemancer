@@ -174,6 +174,8 @@ public class StorageHiveBlockEntity extends BlockEntity {
 
     public void serverTick() {
         if (level == null || level.isClientSide()) return;
+        // [FIX] Pendant le shutdown, ne plus modifier le monde (level.setBlock dans updateVisualState).
+        if (com.chapeau.beemancer.common.block.storage.StorageEvents.isShuttingDown()) return;
         if (controllerPos == null) return;
         long gameTick = level.getGameTime();
         if ((gameTick + worldPosition.hashCode()) % VALIDATE_INTERVAL == 0) {

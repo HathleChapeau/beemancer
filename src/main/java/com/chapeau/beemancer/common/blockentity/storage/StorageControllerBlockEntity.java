@@ -31,6 +31,7 @@ package com.chapeau.beemancer.common.blockentity.storage;
 import com.chapeau.beemancer.common.block.storage.ControllerStats;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.block.storage.InterfaceTask;
+import com.chapeau.beemancer.common.block.storage.StorageEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
@@ -691,6 +692,9 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     public static void serverTick(StorageControllerBlockEntity be) {
         if (be.level == null) return;
+        // [FIX] Pendant le shutdown, ne plus modifier le monde (setChanged, syncToClient, level.setBlock).
+        // saveAllChunks() boucle infiniment si des chunks sont re-dirtied apres sauvegarde.
+        if (StorageEvents.isShuttingDown()) return;
         long gameTick = be.level.getGameTime();
         long offset = be.worldPosition.hashCode();
 
