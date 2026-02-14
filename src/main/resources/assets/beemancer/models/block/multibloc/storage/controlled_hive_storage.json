@@ -12,7 +12,7 @@
     {
       "name": "Base",
       "from": [0, 0, 0],
-      "to": [16, 8, 16],
+      "to": [16, 5, 16],
       "faces": {
         "north": {"texture": "#base"},
         "east": {"texture": "#base"},
@@ -24,8 +24,8 @@
     },
     {
       "name": "Crystal",
-      "from": [0, 8, 0],
-      "to": [16, 13, 16],
+      "from": [0, 5, 0],
+      "to": [16, 10, 16],
       "faces": {
         "north": {"texture": "#crystal", "uv": [0, 11, 16, 16]},
         "east": {"texture": "#crystal", "uv": [0, 11, 16, 16]},
@@ -35,8 +35,8 @@
     },
     {
       "name": "Crystalr",
-      "from": [0.02, 13, 0.02],
-      "to": [15.98, 8, 15.98],
+      "from": [0.02, 10, 0.02],
+      "to": [15.98, 5, 15.98],
       "faces": {
         "north": {"texture": "#crystalr", "uv": [0, 0, 16, 5]},
         "east": {"texture": "#crystalr", "uv": [0, 0, 16, 5]},
