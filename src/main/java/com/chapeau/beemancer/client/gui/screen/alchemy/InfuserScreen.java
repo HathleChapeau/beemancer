@@ -59,7 +59,7 @@ public class InfuserScreen extends AbstractBeemancerScreen<InfuserMenu> {
         GuiRenderHelper.renderSlot(g, x + 122, y + 44);
         int processTime = menu.getProcessTime();
         float ratio = processTime > 0 ? (float) menu.getProgress() / processTime : 0;
-        GuiRenderHelper.renderProgressArrow(g, x + 75, y + 45, ratio);
+        GuiRenderHelper.renderTextureProgressBar(g, x + 73, y + 45, ratio);
         honeyGauge.render(g, x, y);
     }
 

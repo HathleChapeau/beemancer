@@ -42,6 +42,6 @@ public class IncubatorScreen extends AbstractBeemancerScreen<IncubatorMenu> {
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
         GuiRenderHelper.renderSlot(g, x + 86, y + 44);
-        GuiRenderHelper.renderProgressArrow(g, x + 107, y + 45, menu.getProgressRatio());
+        GuiRenderHelper.renderTextureProgressBar(g, x + 107, y + 45, menu.getProgressRatio());
     }
 }

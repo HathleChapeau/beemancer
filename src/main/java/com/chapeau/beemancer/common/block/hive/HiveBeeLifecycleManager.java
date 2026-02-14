@@ -56,16 +56,18 @@ import java.util.UUID;
  * Ne possede aucun champ — opere sur les donnees du parent via IHiveInternals.
  */
 public class HiveBeeLifecycleManager {
-    private static final int BEE_SLOTS = MagicHiveBlockEntity.BEE_SLOTS;
-    private static final int TOTAL_SLOTS = MagicHiveBlockEntity.TOTAL_SLOTS;
     private static final double BREEDING_CHANCE_ON_ENTRY = 0.15;
 
     private final IHiveInternals parent;
     private final HiveConfig config;
+    private final int beeSlotCount;
+    private final int totalSlotCount;
 
-    public HiveBeeLifecycleManager(IHiveInternals parent, HiveConfig config) {
+    public HiveBeeLifecycleManager(IHiveInternals parent, HiveConfig config, int beeSlotCount, int totalSlotCount) {
         this.parent = parent;
         this.config = config;
+        this.beeSlotCount = beeSlotCount;
+        this.totalSlotCount = totalSlotCount;
     }
 
     // === Static Helper ===
@@ -78,7 +80,7 @@ public class HiveBeeLifecycleManager {
     // === Bee Release/Entry ===
 
     public void releaseBee(int slot) {
-        if (slot < 0 || slot >= BEE_SLOTS) return;
+        if (slot < 0 || slot >= beeSlotCount) return;
 
         HiveBeeSlot[] beeSlots = parent.getBeeSlots();
         if (!beeSlots[slot].isInside()) return;
@@ -116,7 +118,7 @@ public class HiveBeeLifecycleManager {
     public boolean canBeeEnter(MagicBeeEntity bee) {
         if (!bee.hasAssignedHive() || !parent.getBlockPos().equals(bee.getAssignedHivePos())) return false;
         int slot = bee.getAssignedSlot();
-        if (slot < 0 || slot >= BEE_SLOTS) return false;
+        if (slot < 0 || slot >= beeSlotCount) return false;
 
         HiveBeeSlot beeSlot = parent.getBeeSlots()[slot];
         if (!beeSlot.isOutside()) return false;
@@ -127,7 +129,7 @@ public class HiveBeeLifecycleManager {
 
     public void addBee(MagicBeeEntity bee) {
         int slot = bee.getAssignedSlot();
-        if (slot < 0 || slot >= BEE_SLOTS) return;
+        if (slot < 0 || slot >= beeSlotCount) return;
 
         bee.markAsEnteredHive();
 
@@ -165,7 +167,7 @@ public class HiveBeeLifecycleManager {
         HiveBeeSlot[] beeSlots = parent.getBeeSlots();
         NonNullList<ItemStack> items = parent.getItems();
 
-        for (int i = 0; i < BEE_SLOTS; i++) {
+        for (int i = 0; i < beeSlotCount; i++) {
             if (beeUUID.equals(beeSlots[i].getBeeUUID()) && beeSlots[i].isOutside()) {
                 parent.returnAssignedFlower(i);
                 items.set(i, ItemStack.EMPTY);
@@ -180,7 +182,7 @@ public class HiveBeeLifecycleManager {
 
     public boolean handleBeePing(MagicBeeEntity bee) {
         int slot = bee.getAssignedSlot();
-        if (slot < 0 || slot >= BEE_SLOTS) return false;
+        if (slot < 0 || slot >= beeSlotCount) return false;
 
         HiveBeeSlot beeSlot = parent.getBeeSlots()[slot];
         UUID beeUUID = bee.getUUID();
@@ -210,7 +212,7 @@ public class HiveBeeLifecycleManager {
         HiveBeeSlot[] beeSlots = parent.getBeeSlots();
         NonNullList<ItemStack> items = parent.getItems();
 
-        for (int i = 0; i < BEE_SLOTS; i++) {
+        for (int i = 0; i < beeSlotCount; i++) {
             if (!beeSlots[i].isOutside()) continue;
 
             UUID uuid = beeSlots[i].getBeeUUID();
@@ -258,7 +260,7 @@ public class HiveBeeLifecycleManager {
 
         NonNullList<ItemStack> items = parent.getItems();
 
-        for (int i = BEE_SLOTS; i < TOTAL_SLOTS && !stack.isEmpty(); i++) {
+        for (int i = beeSlotCount; i < totalSlotCount && !stack.isEmpty(); i++) {
             ItemStack existing = items.get(i);
             if (!existing.isEmpty() && ItemStack.isSameItemSameComponents(existing, stack)) {
                 int toAdd = Math.min(existing.getMaxStackSize() - existing.getCount(), stack.getCount());
@@ -269,7 +271,7 @@ public class HiveBeeLifecycleManager {
             }
         }
 
-        for (int i = BEE_SLOTS; i < TOTAL_SLOTS && !stack.isEmpty(); i++) {
+        for (int i = beeSlotCount; i < totalSlotCount && !stack.isEmpty(); i++) {
             if (items.get(i).isEmpty()) {
                 items.set(i, stack.copy());
                 stack.setCount(0);
@@ -287,7 +289,7 @@ public class HiveBeeLifecycleManager {
         NonNullList<ItemStack> items = parent.getItems();
 
         List<Integer> insidePartners = new ArrayList<>();
-        for (int i = 0; i < BEE_SLOTS; i++) {
+        for (int i = 0; i < beeSlotCount; i++) {
             if (i != enteringSlot && beeSlots[i].isInside() && !items.get(i).isEmpty()) {
                 insidePartners.add(i);
             }
@@ -297,7 +299,7 @@ public class HiveBeeLifecycleManager {
         int partnerSlot = insidePartners.get(random.nextInt(insidePartners.size()));
 
         int outputSlot = -1;
-        for (int i = BEE_SLOTS; i < TOTAL_SLOTS; i++) {
+        for (int i = beeSlotCount; i < totalSlotCount; i++) {
             if (items.get(i).isEmpty()) {
                 outputSlot = i;
                 break;

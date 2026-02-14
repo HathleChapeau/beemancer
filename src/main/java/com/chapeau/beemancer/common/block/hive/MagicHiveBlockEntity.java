@@ -80,7 +80,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     private static final int MAX_OUTPUT_STACK = 16;
 
     // === Manager ===
-    private final HiveBeeLifecycleManager lifecycleManager = new HiveBeeLifecycleManager(this, HiveConfig.MAGIC_HIVE);
+    private final HiveBeeLifecycleManager lifecycleManager = new HiveBeeLifecycleManager(this, HiveConfig.MAGIC_HIVE, BEE_SLOTS, TOTAL_SLOTS);
 
     // Inventaire
     private final NonNullList<ItemStack> items = NonNullList.withSize(TOTAL_SLOTS, ItemStack.EMPTY);

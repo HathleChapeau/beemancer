@@ -80,7 +80,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     public static final int TOTAL_SLOTS = BEE_SLOTS + OUTPUT_SLOTS;
 
     // === Manager ===
-    private final HiveBeeLifecycleManager lifecycleManager = new HiveBeeLifecycleManager(this, HiveConfig.MULTIBLOCK);
+    private final HiveBeeLifecycleManager lifecycleManager = new HiveBeeLifecycleManager(this, HiveConfig.MULTIBLOCK, BEE_SLOTS, TOTAL_SLOTS);
 
     // Controller position (null = not part of a formed multiblock, or this IS the controller)
     @Nullable

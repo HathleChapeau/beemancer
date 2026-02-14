@@ -63,7 +63,7 @@ public class PoweredCentrifugeScreen extends AbstractBeemancerScreen<PoweredCent
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
         GuiRenderHelper.renderSlot(g, x + 39, y + 44);
         GuiRenderHelper.renderSlots2x2(g, x + 115, y + 35);
-        GuiRenderHelper.renderProgressBar(g, x + 61, y + 50, 50, 6, menu.getProgressRatio());
+        GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 48, menu.getProgressRatio());
         fuelGauge.render(g, x, y);
         outputGauge.render(g, x, y);
     }
