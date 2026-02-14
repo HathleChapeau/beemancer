@@ -56,10 +56,7 @@ public class AltarHeartBlock extends Block implements EntityBlock {
 
     // Forme: petit cube centré
     private static final VoxelShape SHAPE = Block.box(4, 4, 4, 12, 12, 12);
-    private static final VoxelShape SHAPE_FORMED = Shapes.or(
-            Block.box(0, 0, 0, 16, 16, 16),
-            Block.box(0, -16, 0, 16, 0, 16),
-            Block.box(0, 16, 0, 16, 32, 16));
+    private static final VoxelShape SHAPE_FORMED = Block.box(3, 3, 3, 13, 13, 13);
 
     public AltarHeartBlock(Properties properties) {
         super(properties);

@@ -320,8 +320,8 @@ public class ClientSetup {
         event.register(AltarHeartRenderer.CONDUIT_MODEL_LOC);
 
         // Modèles cubes du Storage Controller formé (cubes animés)
-        event.register(StorageControllerRenderer.CUBE_MODEL_LOC);
-        event.register(StorageControllerRenderer.CUBE_BIG_MODEL_LOC);
+        //event.register(StorageControllerRenderer.CUBE_MODEL_LOC);
+        //event.register(StorageControllerRenderer.CUBE_BIG_MODEL_LOC);
 
         // Modèle formed du controller pipe (coude, rendu par BER)
         event.register(ControllerPipeRenderer.FORMED_MODEL_LOC);

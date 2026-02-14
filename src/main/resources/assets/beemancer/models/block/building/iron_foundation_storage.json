@@ -1,6 +1,69 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "block/block",
+  "render_type": "cutout",
   "textures": {
-    "all": "beemancer:block/iron"
-  }
+    "bottom": "beemancer:block/iron",
+    "side": "beemancer:block/storage/relay_side",
+    "crystal": "beemancer:block/altar/honey_crystal",
+    "inner_top": "beemancer:block/storage/relay_top",
+    "particle": "beemancer:block/storage/relay_bottom"
+  },
+  "elements": [
+    {
+      "name": "bottom_slab",
+      "from": [0, 0, 0],
+      "to": [16, 6, 16],
+      "faces": {
+        "north": {"uv": [0, 11, 16, 16], "texture": "#side", "cullface": "north"},
+        "east": {"uv": [0, 11, 16, 16], "texture": "#side", "cullface": "east"},
+        "south": {"uv": [0, 11, 16, 16], "texture": "#side", "cullface": "south"},
+        "west": {"uv": [0, 11, 16, 16], "texture": "#side", "cullface": "west"},
+        "up": {"uv": [0, 0, 16, 16], "texture": "#inner_top"},
+        "down": {"uv": [0, 0, 16, 16], "texture": "#bottom", "cullface": "down"}
+      }
+    },
+    {
+      "name": "top_slab",
+      "from": [3, 6, 3],
+      "to": [13, 13, 13],
+      "faces": {
+        "north": {"uv": [3, 1, 13, 8], "texture": "#side"},
+        "east": {"uv": [3, 1, 13, 8], "texture": "#side"},
+        "south": {"uv": [3, 1, 13, 8], "texture": "#side"},
+        "west": {"uv": [3, 1, 13, 8], "texture": "#side"}
+      }
+    },
+    {
+      "name": "south",
+      "from": [3, 6, 12.98],
+      "to": [13, 13, 12.98],
+      "faces": {
+        "north": {"uv": [3, 1, 13, 8], "texture": "#side"}
+      }
+    },
+    {
+      "name": "north",
+      "from": [3, 6, 3.02],
+      "to": [13, 13, 3.02],
+      "faces": {
+        "south": {"uv": [3, 1, 13, 8], "texture": "#side"}
+      }
+    },
+    {
+      "name": "east",
+      "from": [12.98, 6, 3],
+      "to": [12.98, 13, 13],
+      "faces": {
+        "west": {"uv": [3, 1, 13, 8], "texture": "#side"}
+      }
+    },
+    {
+      "name": "west",
+      "from": [3.02, 6, 3],
+      "to": [3.02, 13, 13],
+      "faces": {
+        "east": {"uv": [3, 1, 13, 8], "texture": "#side"}
+      }
+    }
+  ]
 }

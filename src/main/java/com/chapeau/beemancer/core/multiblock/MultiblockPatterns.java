@@ -268,15 +268,15 @@ public class MultiblockPatterns {
             .add(1, -1, 1, block(BeemancerBlocks.IRON_FOUNDATION))    // Coin SE
 
             // Étage 2 (Y+0): Air aux coins + Terminals cardinaux + Controller centre
-            .add(-1, 0, -1, air())                                    // Coin NO
+            //.add(-1, 0, -1, air())                                    // Coin NO
             .add(0, 0, -1, block(BeemancerBlocks.STORAGE_TERMINAL))   // Terminal Nord
-            .add(1, 0, -1, air())                                     // Coin NE
+            //.add(1, 0, -1, air())                                     // Coin NE
             .add(-1, 0, 0, block(BeemancerBlocks.STORAGE_TERMINAL))   // Terminal Ouest
             // (0, 0, 0) = Controller - skip
             .add(1, 0, 0, block(BeemancerBlocks.STORAGE_TERMINAL))    // Terminal Est
-            .add(-1, 0, 1, air())                                     // Coin SO
+            //.add(-1, 0, 1, air())                                     // Coin SO
             .add(0, 0, 1, block(BeemancerBlocks.STORAGE_TERMINAL))    // Terminal Sud
-            .add(1, 0, 1, air())                                      // Coin SE
+            //.add(1, 0, 1, air())                                      // Coin SE
 
             .build()
     );
