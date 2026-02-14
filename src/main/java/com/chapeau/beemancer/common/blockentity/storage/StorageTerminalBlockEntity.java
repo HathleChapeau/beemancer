@@ -608,12 +608,16 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
             // Tous ces setChanged() re-dirtient le chunk du controller pendant le world unload
             // → boucle infinie dans saveAllChunks → "saving world" hang
             //
-            // Seuls les nettoyages in-memory sans side-effects sont autorises ici.
-            // Le registre et les requests orphelines seront nettoyes au reload via validation.
-            BlockEntity be = level.getBlockEntity(controllerPos);
-            if (be instanceof StorageControllerBlockEntity controller) {
-                controller.getNetworkRegistry().unregisterBlock(worldPosition);
-                controller.getItemAggregator().removeViewersForTerminal(worldPosition);
+            // [FIX] Pendant le shutdown, NE PAS appeler level.getBlockEntity(controllerPos).
+            // Si le controller a deja ete remove du chunk, getBlockEntity() le RE-CREE
+            // (EntityCreationType.IMMEDIATE), ce qui re-dirtie le chunk → boucle infinie.
+            // Le registre sera nettoye au reload via validation.
+            if (!com.chapeau.beemancer.common.block.storage.StorageEvents.isShuttingDown()) {
+                BlockEntity be = level.getBlockEntity(controllerPos);
+                if (be instanceof StorageControllerBlockEntity controller) {
+                    controller.getNetworkRegistry().unregisterBlock(worldPosition);
+                    controller.getItemAggregator().removeViewersForTerminal(worldPosition);
+                }
             }
             controllerPos = null;
             pendingRequests.clear();

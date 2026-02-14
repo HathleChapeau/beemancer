@@ -759,7 +759,9 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         // unlinkAllHives() appelait hive.unlinkController() qui fait level.setBlock() + syncToClient()
         // Cela causait des modifications monde en cascade pendant le world unload → hang "saving world"
         // Les hives corrigeront leur etat visuel au prochain serverTick (VALIDATE_INTERVAL)
-        if (level != null && !level.isClientSide()) {
+        // [FIX] Pendant le shutdown, NE PAS appeler level.getBlockEntity() car si la hive a deja
+        // ete remove du chunk, getBlockEntity() la RE-CREE → re-dirtie le chunk → boucle infinie.
+        if (level != null && !level.isClientSide() && !StorageEvents.isShuttingDown()) {
             for (BlockPos hivePos : networkRegistry.getAllHives()) {
                 if (!level.hasChunkAt(hivePos)) continue;
                 BlockEntity be = level.getBlockEntity(hivePos);

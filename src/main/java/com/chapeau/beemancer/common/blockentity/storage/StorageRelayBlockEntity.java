@@ -76,6 +76,11 @@ public class StorageRelayBlockEntity extends AbstractNetworkNodeBlockEntity {
     public void setRemoved() {
         super.setRemoved();
         if (level != null && !level.isClientSide()) {
+            // [FIX] Pendant le shutdown, NE PAS appeler level.getBlockEntity().
+            // Si un noeud a deja ete remove du chunk, getBlockEntity() le RE-CREE
+            // (EntityCreationType.IMMEDIATE), ce qui re-dirtie le chunk → boucle infinie.
+            if (com.chapeau.beemancer.common.block.storage.StorageEvents.isShuttingDown()) return;
+
             // [FIX] Silent disconnect: disconnectNode() appelait syncToClient() sur chaque noeud
             // Cela causait des modifications monde en cascade pendant le world unload → hang "saving world"
             for (BlockPos nodePos : new ArrayList<>(getConnectedNodes())) {
