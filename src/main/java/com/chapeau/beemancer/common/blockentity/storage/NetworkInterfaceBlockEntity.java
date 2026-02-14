@@ -320,8 +320,14 @@ public abstract class NetworkInterfaceBlockEntity extends BlockEntity implements
 
     // === NBT ===
 
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(NetworkInterfaceBlockEntity.class);
+
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        if (com.chapeau.beemancer.common.block.storage.StorageEvents.isShuttingDown()) {
+            LOGGER.info("[Beemancer] Saving Interface at {} — controller:{}, tasks:{}, active:{}",
+                worldPosition, controllerPos, taskManager.size(), active);
+        }
         isSaving = true;
         try {
             super.saveAdditional(tag, registries);

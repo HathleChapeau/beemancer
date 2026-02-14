@@ -48,6 +48,9 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -478,6 +481,8 @@ public class StorageEvents {
         return shuttingDown;
     }
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageEvents.class);
+
     @SubscribeEvent
     public static void onServerStarting(ServerStartingEvent event) {
         shuttingDown = false;
@@ -486,6 +491,7 @@ public class StorageEvents {
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         shuttingDown = true;
+        LOGGER.info("[Beemancer] Server stopping: shutdown guard ENABLED — all storage ticks disabled");
         StorageEditModeHandler.clearAll();
     }
 }

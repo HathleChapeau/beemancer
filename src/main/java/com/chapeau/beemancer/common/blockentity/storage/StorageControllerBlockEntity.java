@@ -749,6 +749,9 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     @Override
     public void setRemoved() {
+        if (StorageEvents.isShuttingDown()) {
+            LOGGER.info("[Beemancer] Removing Controller at {} (shutdown)", worldPosition);
+        }
         LOGGER.debug("[Controller] setRemoved START at {}", worldPosition);
         super.setRemoved();
         deliveryManager.killAllDeliveryBees();
@@ -819,6 +822,14 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        if (StorageEvents.isShuttingDown()) {
+            LOGGER.info("[Beemancer] Saving Controller at {} — chests:{}, terminals:{}, hives:{}, honey:{}/{}",
+                worldPosition,
+                networkRegistry.getAllChests().size(),
+                networkRegistry.getAllTerminals().size(),
+                networkRegistry.getAllHives().size(),
+                honeyStored, honeyCapacity);
+        }
         LOGGER.debug("[Controller] saveAdditional START at {}", worldPosition);
         isSaving = true;
         try {

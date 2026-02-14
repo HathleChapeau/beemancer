@@ -625,6 +625,10 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        if (com.chapeau.beemancer.common.block.storage.StorageEvents.isShuttingDown()) {
+            LOGGER.info("[Beemancer] Saving Terminal at {} — controller:{}, pendingRequests:{}",
+                worldPosition, controllerPos, pendingRequests.size());
+        }
         LOGGER.debug("[Terminal] saveAdditional START at {}", worldPosition);
         isSaving = true;
         try {

@@ -211,8 +211,13 @@ public class StorageHiveBlockEntity extends BlockEntity {
 
     // === NBT ===
 
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StorageHiveBlockEntity.class);
+
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        if (com.chapeau.beemancer.common.block.storage.StorageEvents.isShuttingDown()) {
+            LOGGER.info("[Beemancer] Saving Hive at {} — controller:{}", worldPosition, controllerPos);
+        }
         super.saveAdditional(tag, registries);
         if (controllerPos != null) {
             tag.put("ControllerPos", NbtUtils.writeBlockPos(controllerPos));

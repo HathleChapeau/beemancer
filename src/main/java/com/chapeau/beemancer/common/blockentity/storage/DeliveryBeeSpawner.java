@@ -257,6 +257,10 @@ public class DeliveryBeeSpawner {
             new AABB(parent.getBlockPos()).inflate(MAX_RANGE),
             bee -> parent.getBlockPos().equals(bee.getControllerPos())
         );
+        if (isShutdown && !bees.isEmpty()) {
+            LOGGER.info("[Beemancer] Shutdown: discarding {} delivery bees (skipping item return to avoid setChanged)",
+                bees.size());
+        }
         for (DeliveryBeeEntity bee : bees) {
             if (!isShutdown) {
                 bee.returnCarriedItemsToNetwork();
