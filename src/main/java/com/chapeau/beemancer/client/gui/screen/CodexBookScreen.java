@@ -32,6 +32,7 @@ import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.codex.book.CodexBookContent;
 import com.chapeau.beemancer.common.codex.book.CodexBookManager;
 import com.chapeau.beemancer.common.codex.book.CodexBookSection;
+import com.chapeau.beemancer.common.codex.book.HeaderSection;
 import com.chapeau.beemancer.common.codex.book.StickyNote;
 import com.chapeau.beemancer.core.registry.BeemancerAttachments;
 import com.chapeau.beemancer.core.registry.BeemancerSounds;
@@ -117,6 +118,14 @@ public class CodexBookScreen extends Screen {
         pageWidth = (spineX - bookX - MARGIN_LEFT) - PAGE_PADDING * 2;
 
         CodexBookContent content = CodexBookManager.getContent(node.getId());
+
+        // Pass node reference to HeaderSections for breeding display
+        for (CodexBookSection section : content.getSections()) {
+            if (section instanceof HeaderSection header) {
+                header.setNode(node);
+            }
+        }
+
         List<List<CodexBookSection>> split = BookPageLayout.splitAtPageBreak(content.getSections());
         leftSections = split.get(0);
         rightSections = split.get(1);
