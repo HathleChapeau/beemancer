@@ -35,7 +35,8 @@ public abstract class CodexBookSection {
         STATS("stats"),
         PAGE_BREAK("page_break"),
         HANDRAW_LINE("handraw_line"),
-        CRAFT("craft");
+        CRAFT("craft"),
+        PROCESS("process");
 
         private final String id;
 
@@ -98,6 +99,7 @@ public abstract class CodexBookSection {
             case PAGE_BREAK -> new PageBreakSection();
             case HANDRAW_LINE -> new HandrawLineSection();
             case CRAFT -> CraftSection.fromJson(json);
+            case PROCESS -> ProcessSection.fromJson(json);
         };
     }
 }

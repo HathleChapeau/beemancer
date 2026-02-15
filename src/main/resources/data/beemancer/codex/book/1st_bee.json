@@ -8,11 +8,20 @@
       "key": "codex.beemancer.apica.1st_bee.lore"
     },
     {
+      "type": "text",
+      "key": "codex.beemancer.apica.1st_bee.lore2"
+    },
+    {
       "type": "page_break"
     },
     {
       "type": "craft",
       "result": "beemancer:scoop"
+    },
+    {
+      "type": "process",
+      "input": "minecraft:bee_nest",
+      "output": "minecraft:honeycomb"
     }
   ],
   "sticky_notes": []
