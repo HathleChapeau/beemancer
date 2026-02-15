@@ -33,10 +33,14 @@ import com.chapeau.beemancer.core.registry.BeemancerEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +78,11 @@ public class BeeNestBlockEntity extends BlockEntity {
         tickCounter++;
         if (tickCounter < SPAWN_INTERVAL) return;
         tickCounter = 0;
+
+        // Sync periodique au client (toutes les 10 ticks pour les timers)
+        if (tickCounter % 10 == 0) {
+            syncToClient();
+        }
 
         // Spawn initial: s'il reste de la place et pas de respawn en attente
         int totalBees = activeBeeUUIDs.size() + respawnTimers.size();
@@ -136,6 +145,7 @@ public class BeeNestBlockEntity extends BlockEntity {
 
         bee.discard();
         setChanged();
+        syncToClient();
     }
 
     private void spawnBee() {
@@ -165,6 +175,41 @@ public class BeeNestBlockEntity extends BlockEntity {
         serverLevel.addFreshEntity(bee);
         activeBeeUUIDs.add(bee.getUUID());
         setChanged();
+    }
+
+    // --- Client Getters (for debug display) ---
+
+    public int getMaxBees() {
+        return maxBees;
+    }
+
+    public int getActiveBeeCount() {
+        return activeBeeUUIDs.size();
+    }
+
+    public List<Integer> getRespawnTimers() {
+        return respawnTimers;
+    }
+
+    // --- Client Sync ---
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    private void syncToClient() {
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
 
     @Override
