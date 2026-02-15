@@ -20,6 +20,8 @@
  */
 package com.chapeau.beemancer.common.codex.book;
 
+import com.chapeau.beemancer.common.codex.CodexManager;
+import com.chapeau.beemancer.common.codex.CodexNode;
 import com.chapeau.beemancer.core.bee.BeeSpeciesManager;
 import com.chapeau.beemancer.core.bee.BeeSpeciesManager.BeeSpeciesData;
 import com.chapeau.beemancer.core.bee.BeeSpeciesManager.StatType;
@@ -57,7 +59,15 @@ public class StatsSection extends CodexBookSection {
         int lineH = font.lineHeight + LINE_SPACING;
         // Tier + sep + Activity + Flower + sep + 6 stats + sep + Loot + sep + 3 traits + padding
         // 1 + 2 + 6 + 1 + 3 = 13 lines + 4 separators (3px each)
-        return lineH * 13 + 3 + 3 + 3 + 3 + PADDING_BOTTOM;
+        int base = lineH * 13 + 3 + 3 + 3 + 3 + PADDING_BOTTOM;
+
+        // Breeding line if available
+        CodexNode node = CodexManager.getNode("bees:" + species + "_bee");
+        if (node != null && node.hasBreedingParents()) {
+            base += 3 + lineH; // separator + breeding line
+        }
+
+        return base;
     }
 
     @Override
@@ -131,6 +141,18 @@ public class StatsSection extends CodexBookSection {
 
         yesNo = data.aggressiveToPassiveMobs ? "Yes" : "No";
         renderTraitLine(graphics, font, x, currentY, "Aggr. to Passives", yesNo);
+        currentY += lineH;
+
+        // Breeding parents (if available)
+        CodexNode node = CodexManager.getNode("bees:" + species + "_bee");
+        if (node != null && node.hasBreedingParents()) {
+            graphics.fill(x, currentY, x + pageWidth, currentY + 1, SEPARATOR_COLOR);
+            currentY += 3;
+
+            String p1 = formatSpeciesName(node.getBreedingParent1());
+            String p2 = formatSpeciesName(node.getBreedingParent2());
+            graphics.drawString(font, "Breeding: " + p1 + " + " + p2, x, currentY, INFO_COLOR, false);
+        }
     }
 
     private void renderStatLine(GuiGraphics graphics, Font font,
@@ -163,6 +185,12 @@ public class StatsSection extends CodexBookSection {
             case "both" -> "Day & Night";
             default -> dayNight;
         };
+    }
+
+    private static String formatSpeciesName(String nodeId) {
+        // "rocky_bee" -> "Rocky Bee"
+        if (nodeId == null) return "?";
+        return capitalize(nodeId.replace('_', ' '));
     }
 
     private static String formatItemName(String itemId) {

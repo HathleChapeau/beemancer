@@ -1,0 +1,200 @@
+/**
+ * ============================================================
+ * [CraftSection.java]
+ * Description: Module craft du Codex Book - affiche une recette de crafting
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | CodexBookSection    | Classe parente       | Systeme de sections modulaires |
+ * | RecipeManager       | Acces recettes       | Recherche par item resultat    |
+ * | Minecraft           | Client instance      | Acces RecipeManager et rendu   |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - CodexBookContent (sections de craft)
+ * - CodexBookScreen (rendu des recettes)
+ *
+ * ============================================================
+ */
+package com.chapeau.beemancer.common.codex.book;
+
+import com.chapeau.beemancer.Beemancer;
+import com.google.gson.JsonObject;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
+
+import java.util.List;
+
+public class CraftSection extends CodexBookSection {
+
+    private static final ResourceLocation CRAFT_BG = ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "textures/gui/codex/Codex_book/codex_book_craft.png");
+    private static final int BG_WIDTH = 118;
+    private static final int BG_HEIGHT = 57;
+
+    private static final int PADDING_BOTTOM = 6;
+    private static final int RESULT_PADDING_BOTTOM = 4;
+    private static final int ITEM_RENDER_SIZE = 16;
+
+    // ============================================================
+    // SLOT POSITIONS — Relatifs au coin haut-gauche de l'image
+    // Editer ces valeurs pour aligner les items sur la grille en
+    // perspective du craft table.
+    // Format: {x, y} pour chaque slot, item rendu a ITEM_SCALE
+    // ============================================================
+
+    // Taille de rendu des items sur la grille (fraction de 16px)
+    private static final float ITEM_SCALE = 0.55f;
+
+    // Grille 3x3 — row-major order [0..8]
+    // Slot 0=top-left, 1=top-center, 2=top-right
+    // Slot 3=mid-left, 4=mid-center, 5=mid-right
+    // Slot 6=bot-left, 7=bot-center, 8=bot-right
+    private static final int[][] GRID_SLOTS = {
+        {22, 10},   // [0] top-left
+        {44, 10},   // [1] top-center
+        {66, 10},   // [2] top-right
+        {22, 24},   // [3] mid-left
+        {44, 24},   // [4] mid-center
+        {66, 24},   // [5] mid-right
+        {22, 38},   // [6] bot-left
+        {44, 38},   // [7] bot-center
+        {66, 38},   // [8] bot-right
+    };
+
+    // Position du resultat (au-dessus de l'image craft)
+    private static final int RESULT_OFFSET_X = 50; // relatif au centre de l'image
+    private static final float RESULT_SCALE = 0.75f;
+
+    // ============================================================
+
+    private final String resultItem;
+    private boolean resolved = false;
+    private ItemStack resultStack = ItemStack.EMPTY;
+    private ItemStack[] gridStacks = new ItemStack[9];
+
+    public CraftSection(String resultItem) {
+        this.resultItem = resultItem;
+        for (int i = 0; i < 9; i++) gridStacks[i] = ItemStack.EMPTY;
+    }
+
+    @Override
+    public SectionType getType() {
+        return SectionType.CRAFT;
+    }
+
+    @Override
+    public int getHeight(Font font, int pageWidth) {
+        int resultHeight = Math.round(ITEM_RENDER_SIZE * RESULT_SCALE) + RESULT_PADDING_BOTTOM;
+        return resultHeight + BG_HEIGHT + PADDING_BOTTOM;
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, Font font, int x, int y,
+                       int pageWidth, String nodeTitle, long relativeDay) {
+        resolveRecipe();
+
+        int resultHeight = Math.round(ITEM_RENDER_SIZE * RESULT_SCALE) + RESULT_PADDING_BOTTOM;
+
+        // Resultat au-dessus de l'image, centre
+        if (!resultStack.isEmpty()) {
+            int resultX = x + (pageWidth / 2) - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE / 2) + RESULT_OFFSET_X - (pageWidth / 2);
+            int resultX2 = x + (pageWidth - BG_WIDTH) / 2 + RESULT_OFFSET_X;
+            renderScaledItem(graphics, resultStack, resultX2, y, RESULT_SCALE);
+        }
+
+        // Image de fond (table de craft)
+        int bgX = x + (pageWidth - BG_WIDTH) / 2;
+        int bgY = y + resultHeight;
+        graphics.blit(CRAFT_BG, bgX, bgY, 0, 0, BG_WIDTH, BG_HEIGHT, BG_WIDTH, BG_HEIGHT);
+
+        // Items de la grille
+        for (int i = 0; i < 9; i++) {
+            if (!gridStacks[i].isEmpty()) {
+                int slotX = bgX + GRID_SLOTS[i][0];
+                int slotY = bgY + GRID_SLOTS[i][1];
+                renderScaledItem(graphics, gridStacks[i], slotX, slotY, ITEM_SCALE);
+            }
+        }
+    }
+
+    private void renderScaledItem(GuiGraphics graphics, ItemStack stack, int x, int y, float scale) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0);
+        graphics.pose().scale(scale, scale, 1.0f);
+        graphics.renderItem(stack, 0, 0);
+        graphics.pose().popPose();
+    }
+
+    /**
+     * Recherche la recette correspondant au resultItem (lazy, une seule fois).
+     */
+    private void resolveRecipe() {
+        if (resolved) return;
+        resolved = true;
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return;
+
+        ResourceLocation targetId = ResourceLocation.parse(resultItem);
+        var targetItem = BuiltInRegistries.ITEM.get(targetId);
+        if (targetItem == null) return;
+
+        List<RecipeHolder<CraftingRecipe>> recipes = mc.level.getRecipeManager()
+                .getAllRecipesFor(RecipeType.CRAFTING);
+
+        for (RecipeHolder<CraftingRecipe> holder : recipes) {
+            CraftingRecipe recipe = holder.value();
+            ItemStack result = recipe.getResultItem(mc.level.registryAccess());
+
+            if (result.getItem() == targetItem) {
+                resultStack = result;
+                extractIngredients(recipe);
+                return;
+            }
+        }
+    }
+
+    private void extractIngredients(CraftingRecipe recipe) {
+        if (recipe instanceof ShapedRecipe shaped) {
+            int w = shaped.getWidth();
+            int h = shaped.getHeight();
+            List<Ingredient> ingredients = shaped.getIngredients();
+
+            for (int row = 0; row < h; row++) {
+                for (int col = 0; col < w; col++) {
+                    int srcIdx = row * w + col;
+                    int dstIdx = row * 3 + col;
+                    if (srcIdx < ingredients.size() && dstIdx < 9) {
+                        ItemStack[] items = ingredients.get(srcIdx).getItems();
+                        gridStacks[dstIdx] = items.length > 0 ? items[0] : ItemStack.EMPTY;
+                    }
+                }
+            }
+        } else if (recipe instanceof ShapelessRecipe shapeless) {
+            List<Ingredient> ingredients = shapeless.getIngredients();
+            for (int i = 0; i < Math.min(ingredients.size(), 9); i++) {
+                ItemStack[] items = ingredients.get(i).getItems();
+                gridStacks[i] = items.length > 0 ? items[0] : ItemStack.EMPTY;
+            }
+        }
+    }
+
+    public static CraftSection fromJson(JsonObject json) {
+        String result = json.has("result") ? json.get("result").getAsString() : "";
+        return new CraftSection(result);
+    }
+}

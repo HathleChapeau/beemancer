@@ -6,6 +6,13 @@
     {
       "type": "text",
       "key": "codex.beemancer.apica.1st_bee.lore"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "craft",
+      "result": "beemancer:scoop"
     }
   ],
   "sticky_notes": []
