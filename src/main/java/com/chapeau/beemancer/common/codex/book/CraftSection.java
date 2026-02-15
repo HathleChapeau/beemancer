@@ -137,6 +137,10 @@ public class CraftSection extends CodexBookSection {
         graphics.pose().scale(scale, scale, 1.0f);
         graphics.renderItem(stack, 0, 0);
         graphics.pose().popPose();
+
+        // Reactiver le blend apres renderItem (qui le desactive)
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
     }
 
     /**
