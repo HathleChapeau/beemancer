@@ -11,6 +11,7 @@
  * | MagicBeeEntity      | Entite abeille       | Acces position, nid, mouvement |
  * | BeePathfinding      | Navigation Theta*    | Deplacement vers waypoints     |
  * | BeeBehaviorConfig   | Configuration        | Vitesse de vol                 |
+ * | BeeNestBlockEntity  | Nid d'origine        | Notification retour au nid     |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -20,6 +21,7 @@
  */
 package com.chapeau.beemancer.common.entity.bee.goal;
 
+import com.chapeau.beemancer.common.block.hive.BeeNestBlockEntity;
 import com.chapeau.beemancer.common.entity.bee.BeePathfinding;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
@@ -34,7 +36,7 @@ import java.util.List;
 
 /**
  * Patrouille sauvage pour abeilles issues de bee nests.
- * Cycle: sort du nid → visite 3 points (rayon 15) → retourne au nid → repos 10-20s → recommence.
+ * Cycle: sort du nid → visite 3 points (rayon 15) → retourne au nid → bee supprimee → respawn par le nid.
  * A chaque point, attend 2-10 secondes avant de passer au suivant.
  */
 public class WildBeePatrolGoal extends Goal {
@@ -43,14 +45,11 @@ public class WildBeePatrolGoal extends Goal {
     private static final int WAYPOINT_COUNT = 3;
     private static final int MIN_WAIT_TICKS = 40;   // 2 secondes
     private static final int MAX_WAIT_TICKS = 200;   // 10 secondes
-    private static final int MIN_REST_TICKS = 200;   // 10 secondes
-    private static final int MAX_REST_TICKS = 400;   // 20 secondes
     private static final double REACH_DISTANCE = 2.0;
     private static final double FLIGHT_SPEED_FACTOR = 0.15;
     private static final int MOVE_TIMEOUT = 600;     // 30 secondes max pour atteindre un point
 
     private enum PatrolState {
-        RESTING_AT_NEST,
         MOVING_TO_WAYPOINT,
         WAITING_AT_WAYPOINT,
         RETURNING_TO_NEST
@@ -59,11 +58,10 @@ public class WildBeePatrolGoal extends Goal {
     private final MagicBeeEntity bee;
     private BeePathfinding pathfinding;
 
-    private PatrolState state = PatrolState.RESTING_AT_NEST;
+    private PatrolState state = PatrolState.MOVING_TO_WAYPOINT;
     private final List<BlockPos> waypoints = new ArrayList<>();
     private int currentWaypointIndex = 0;
     private int timer = 0;
-    private boolean firstActivation = true;
 
     public WildBeePatrolGoal(MagicBeeEntity bee) {
         this.bee = bee;
@@ -92,51 +90,26 @@ public class WildBeePatrolGoal extends Goal {
         pathfinding.clearPath();
         waypoints.clear();
         currentWaypointIndex = 0;
-
-        if (firstActivation) {
-            // Premiere activation: partir en patrouille immediatement
-            firstActivation = false;
-            startNewPatrol();
-        } else {
-            // Activations suivantes: repos au nid
-            state = PatrolState.RESTING_AT_NEST;
-            timer = randomRange(MIN_REST_TICKS, MAX_REST_TICKS);
-            bee.setDebugDestination(bee.getHomeNestPos());
-        }
+        startNewPatrol();
     }
 
     @Override
     public void tick() {
         switch (state) {
-            case RESTING_AT_NEST -> tickRestingAtNest();
             case MOVING_TO_WAYPOINT -> tickMovingToWaypoint();
             case WAITING_AT_WAYPOINT -> tickWaitingAtWaypoint();
             case RETURNING_TO_NEST -> tickReturningToNest();
         }
     }
 
-    private void tickRestingAtNest() {
-        BlockPos nestPos = bee.getHomeNestPos();
-        if (nestPos != null) {
-            hoverNear(nestPos);
-        }
-
-        timer--;
-        if (timer <= 0) {
-            startNewPatrol();
-        }
-    }
-
     /**
      * Genere les waypoints et demarre une nouvelle patrouille.
-     * Si la generation echoue, retombe en repos.
+     * Si la generation echoue, retourne directement au nid.
      */
     private void startNewPatrol() {
         generateWaypoints();
         if (waypoints.isEmpty()) {
-            state = PatrolState.RESTING_AT_NEST;
-            timer = randomRange(MIN_REST_TICKS, MAX_REST_TICKS);
-            bee.setDebugDestination(bee.getHomeNestPos());
+            startReturning();
             return;
         }
         currentWaypointIndex = 0;
@@ -209,27 +182,38 @@ public class WildBeePatrolGoal extends Goal {
         double distance = bee.position().distanceTo(Vec3.atCenterOf(nestPos));
 
         if (distance <= REACH_DISTANCE) {
-            bee.setDeltaMovement(Vec3.ZERO);
-            state = PatrolState.RESTING_AT_NEST;
-            timer = randomRange(MIN_REST_TICKS, MAX_REST_TICKS);
-            pathfinding.clearPath();
-            bee.setDebugDestination(nestPos);
-            bee.setDebugPath(null);
+            enterNest(nestPos);
             return;
         }
 
         timer--;
         if (timer <= 0) {
+            // Timeout: teleporter au nid puis entrer
             bee.setPos(Vec3.atCenterOf(nestPos).add(0, 1, 0));
-            state = PatrolState.RESTING_AT_NEST;
-            timer = randomRange(MIN_REST_TICKS, MAX_REST_TICKS);
-            pathfinding.clearPath();
-            bee.setDebugDestination(nestPos);
-            bee.setDebugPath(null);
+            enterNest(nestPos);
             return;
         }
 
         navigateWithPathfinding(nestPos);
+    }
+
+    /**
+     * L'abeille entre dans le nid: notifie le BlockEntity qui la supprime et programme un respawn.
+     */
+    private void enterNest(BlockPos nestPos) {
+        bee.setDeltaMovement(Vec3.ZERO);
+        bee.clearDebugDestination();
+        bee.setDebugPath(null);
+        if (pathfinding != null) {
+            pathfinding.clearPath();
+        }
+
+        if (bee.level().getBlockEntity(nestPos) instanceof BeeNestBlockEntity nest) {
+            nest.onBeeReturned(bee);
+        } else {
+            // Le nid n'existe plus, l'abeille disparait
+            bee.discard();
+        }
     }
 
     private void startReturning() {
@@ -370,8 +354,6 @@ public class WildBeePatrolGoal extends Goal {
         bee.clearDebugDestination();
         bee.setDebugPath(null);
         waypoints.clear();
-        state = PatrolState.RESTING_AT_NEST;
-        firstActivation = true;
         if (pathfinding != null) {
             pathfinding.clearPath();
         }
