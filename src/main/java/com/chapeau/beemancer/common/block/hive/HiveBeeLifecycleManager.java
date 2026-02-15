@@ -263,7 +263,8 @@ public class HiveBeeLifecycleManager {
         for (int i = beeSlotCount; i < totalSlotCount && !stack.isEmpty(); i++) {
             ItemStack existing = items.get(i);
             if (!existing.isEmpty() && ItemStack.isSameItemSameComponents(existing, stack)) {
-                int toAdd = Math.min(existing.getMaxStackSize() - existing.getCount(), stack.getCount());
+                int maxStack = Math.min(existing.getMaxStackSize(), parent.getOutputSlotLimit());
+                int toAdd = Math.min(maxStack - existing.getCount(), stack.getCount());
                 if (toAdd > 0) {
                     existing.grow(toAdd);
                     stack.shrink(toAdd);
@@ -271,10 +272,16 @@ public class HiveBeeLifecycleManager {
             }
         }
 
+        int outputLimit = parent.getOutputSlotLimit();
         for (int i = beeSlotCount; i < totalSlotCount && !stack.isEmpty(); i++) {
             if (items.get(i).isEmpty()) {
-                items.set(i, stack.copy());
-                stack.setCount(0);
+                ItemStack toPlace = stack.copy();
+                int limit = Math.min(toPlace.getMaxStackSize(), outputLimit);
+                if (toPlace.getCount() > limit) {
+                    toPlace.setCount(limit);
+                }
+                items.set(i, toPlace);
+                stack.shrink(toPlace.getCount());
             }
         }
         parent.setChanged();

@@ -1,0 +1,132 @@
+================================================================================
+FEATURE: Bee Nests + Scoop (Worldgen)
+================================================================================
+
+Description:
+  7 nids d'abeilles generes naturellement dans le monde (1 par espece Tier I).
+  Chaque nid spawne periodiquement une MagicBee de son espece.
+  Casser le nid drop un honeycomb (n'importe quel outil).
+  Outil Scoop pour capturer les MagicBees par clic droit.
+
+Statut: IMPLEMENTE
+
+================================================================================
+SCRIPTS CREES
+================================================================================
+
+| Fichier                                    | Responsabilite                    |
+|--------------------------------------------|-----------------------------------|
+| common/block/hive/BeeNestBlock.java        | Bloc nid avec EnumProperty SPECIES|
+| common/block/hive/BeeNestBlockEntity.java  | Spawning periodique 1 bee max     |
+| common/item/tool/ScoopItem.java            | Capture MagicBee clic droit       |
+| content/worldgen/BeeNestFeature.java       | Feature placement 5 algorithmes   |
+| content/worldgen/BeeNestFeatureConfig.java | Config (species + placement type) |
+| core/registry/BeemancerFeatures.java       | DeferredRegister Feature<?>       |
+
+================================================================================
+SCRIPTS MODIFIES
+================================================================================
+
+| Fichier                        | Modification                               |
+|--------------------------------|--------------------------------------------|
+| BeemancerBlocks.java           | +BEE_NEST                                  |
+| BeemancerItems.java            | +BEE_NEST (block item), +SCOOP             |
+| BeemancerBlockEntities.java    | +BEE_NEST                                  |
+| Beemancer.java                 | +BeemancerFeatures.register()              |
+
+================================================================================
+ASSETS & DATA
+================================================================================
+
+Blockstate:
+  - blockstates/bee_nest.json (7 variants par species)
+
+Block models (7):
+  - models/block/bee_nest_meadow.json -> bee_nest_forest/rocky/river/dune/nether/end.json
+
+Item models (2):
+  - models/item/bee_nest.json (parent block meadow)
+  - models/item/scoop.json (handheld)
+
+Textures (8 — PLACEHOLDER manquantes):
+  - textures/block/nest/bee_nest_meadow.png ... bee_nest_end.png
+  - textures/item/scoop.png
+
+Loot table:
+  - data/beemancer/loot_table/blocks/bee_nest.json -> drop 1 honeycomb
+
+Worldgen configured features (7):
+  - data/beemancer/worldgen/configured_feature/bee_nest_meadow.json ... bee_nest_end.json
+
+Worldgen placed features (7):
+  - data/beemancer/worldgen/placed_feature/bee_nest_meadow.json ... bee_nest_end.json
+
+Biome modifiers NeoForge (7):
+  - data/beemancer/neoforge/biome_modifier/bee_nest_meadow.json ... bee_nest_end.json
+
+Lang:
+  - block.beemancer.bee_nest = "Bee Nest"
+  - item.beemancer.scoop = "Scoop"
+
+================================================================================
+MAPPING ESPECES -> BIOMES
+================================================================================
+
+| Espece | Placement    | Rarity | Biomes                                         |
+|--------|-------------|--------|-------------------------------------------------|
+| meadow | SURFACE     | 1/12   | plains, meadow, sunflower_plains                |
+| forest | TREE        | 1/10   | forest, birch_forest, old_growth_birch, dark,   |
+|        |             |        | flower_forest                                   |
+| rocky  | UNDERGROUND | 1/14   | stony_peaks, windswept_hills,                   |
+|        |             |        | windswept_gravelly_hills, stony_shore            |
+| river  | SURFACE     | 1/16   | river, frozen_river, swamp, mangrove_swamp      |
+| dune   | SURFACE     | 1/14   | desert, badlands, eroded_badlands, savanna      |
+| nether | NETHER_SURF | 1/10   | nether_wastes, crimson_forest, warped_forest,   |
+|        |             |        | soul_sand_valley, basalt_deltas                  |
+| end    | END_SURFACE | 1/12   | the_end, end_highlands, end_midlands,           |
+|        |             |        | small_end_islands                                |
+
+================================================================================
+ALGORITHMES DE PLACEMENT
+================================================================================
+
+SURFACE: sol solide + air dessus + air au-dessus
+TREE: scan 7x7x6 pour logs, place contre le tronc
+UNDERGROUND: 5+ faces stone, remplace la pierre
+NETHER_SURFACE: netherrack/soul_sand/nylium + air dessus
+END_SURFACE: end_stone + air dessus
+
+================================================================================
+BEE NEST BLOCK ENTITY
+================================================================================
+
+- Spawn interval: 200 ticks (10 secondes)
+- Max 1 bee active par nid (track UUID)
+- Bee spawne avec genes par defaut + gene espece
+- Pas d'assignation hive (bee sauvage)
+- NBT: TickCounter (int), SpawnedBee (UUID)
+
+================================================================================
+SCOOP ITEM
+================================================================================
+
+- Durabilite: 64
+- Degats: 1 (base player)
+- Clic droit sur MagicBee: capture via MagicBeeItem.captureFromEntity()
+- Perd 1 durabilite par capture
+- Son: BEEHIVE_WORK
+- Si inventaire plein: drop l'item
+
+================================================================================
+DEPENDANCES
+================================================================================
+
+| Dependance            | Raison                                          |
+|-----------------------|-------------------------------------------------|
+| MagicBeeEntity        | Entite cible (scoop) et spawn (nest)            |
+| MagicBeeItem          | captureFromEntity(), createWithGenes()           |
+| BeeGeneData           | Genes par defaut pour abeilles spawned           |
+| GeneRegistry          | Lookup gene espece par ID                        |
+| BeemancerEntities     | Creation MagicBee                                |
+| BeemancerBlocks       | Acces bloc BEE_NEST                              |
+| BeemancerBlockEntities| Type BlockEntity BEE_NEST                        |

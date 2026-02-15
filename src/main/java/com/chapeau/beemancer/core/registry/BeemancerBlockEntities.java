@@ -7,6 +7,7 @@
 package com.chapeau.beemancer.core.registry;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.block.hive.BeeNestBlockEntity;
 import com.chapeau.beemancer.common.block.hive.HiveMultiblockBlockEntity;
 import com.chapeau.beemancer.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlockEntity;
@@ -297,6 +298,14 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             CentrifugeHeartBlockEntity::new,
                             BeemancerBlocks.CENTRIFUGE_HEART.get()
+                    ).build(null));
+
+    // --- BEE NEST ---
+    public static final Supplier<BlockEntityType<BeeNestBlockEntity>> BEE_NEST =
+            BLOCK_ENTITIES.register("bee_nest",
+                    () -> BlockEntityType.Builder.of(
+                            BeeNestBlockEntity::new,
+                            BeemancerBlocks.BEE_NEST.get()
                     ).build(null));
 
     // --- ASSEMBLY TABLE ---

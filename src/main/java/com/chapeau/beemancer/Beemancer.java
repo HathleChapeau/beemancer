@@ -49,6 +49,7 @@ import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.registry.BeemancerCreativeTabs;
 import com.chapeau.beemancer.core.registry.BeemancerEntities;
+import com.chapeau.beemancer.core.registry.BeemancerFeatures;
 import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerItems;
 import com.chapeau.beemancer.core.registry.BeemancerMenus;
@@ -129,6 +130,9 @@ public class Beemancer {
         BeemancerFluids.register(modEventBus);
         BeemancerRecipeTypes.register(modEventBus);
         BeemancerRecipeSerializers.register(modEventBus);
+
+        // Worldgen features
+        BeemancerFeatures.register(modEventBus);
 
         // Particles
         BeemancerParticles.register(modEventBus);

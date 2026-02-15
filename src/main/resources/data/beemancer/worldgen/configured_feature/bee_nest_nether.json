@@ -1,0 +1,7 @@
+{
+  "type": "beemancer:bee_nest",
+  "config": {
+    "species_id": "nether",
+    "placement_type": "nether_surface"
+  }
+}

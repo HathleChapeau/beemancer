@@ -88,4 +88,7 @@
 --- HOVERBIKE ---
 | assembly_table         | AssemblyTableBlock        | Oui          | Hoverbike       |
 
+--- BEE NESTS ---
+| bee_nest               | BeeNestBlock              | Oui          | Worldgen        |
+
 ################################################################################

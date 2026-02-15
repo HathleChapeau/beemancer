@@ -156,6 +156,9 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     void setBreedingCooldown(int value) { this.breedingCooldown = value; }
 
     @Override
+    public int getOutputSlotLimit() { return MAX_OUTPUT_STACK; }
+
+    @Override
     public boolean shouldReleaseBee(int slot) {
         return canBeeForage(slot);
     }

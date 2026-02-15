@@ -16,6 +16,7 @@ import com.chapeau.beemancer.common.entity.mount.HoverbikePart;
 import com.chapeau.beemancer.common.item.mount.HoverbikePartItem;
 import com.chapeau.beemancer.common.item.mount.HoverbikeSpawnItem;
 import com.chapeau.beemancer.common.item.tool.BuildingWandItem;
+import com.chapeau.beemancer.common.item.tool.ScoopItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
@@ -618,6 +619,14 @@ public class BeemancerItems {
 
     public static final DeferredItem<Item> ROYAL_HONEY_CRYSTAL = ITEMS.register("royal_honey_crystal",
             () -> new Item(new Item.Properties()));
+
+    // --- BEE NEST ---
+    public static final DeferredItem<BlockItem> BEE_NEST = ITEMS.register("bee_nest",
+            () -> new BlockItem(BeemancerBlocks.BEE_NEST.get(), new Item.Properties()));
+
+    // --- SCOOP ---
+    public static final DeferredItem<ScoopItem> SCOOP = ITEMS.register("scoop",
+            () -> new ScoopItem(new Item.Properties()));
 
     // --- FLYWHEEL TEST ---
     public static final DeferredItem<BlockItem> BEE_SPAWNER = ITEMS.register("bee_spawner",

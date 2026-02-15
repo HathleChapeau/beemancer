@@ -1,0 +1,13 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "minecraft:stony_peaks",
+    "minecraft:windswept_hills",
+    "minecraft:windswept_gravelly_hills",
+    "minecraft:stony_shore"
+  ],
+  "features": [
+    "beemancer:bee_nest_rocky"
+  ],
+  "step": "vegetal_decoration"
+}

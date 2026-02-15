@@ -96,6 +96,10 @@
 | bee_wand                 | BeeWandItem      | Bee Control     |
 | building_wand            | BuildingWandItem | Building Tool   |
 | debug_wand               | DebugWandItem    | Debug Tools     |
+| scoop                    | ScoopItem        | Bee Capture     |
+
+--- BEE NESTS ---
+| bee_nest                 | BlockItem        | Worldgen        |
 
 --- CODEX ---
 | codex                    | CodexItem        | Codex           |

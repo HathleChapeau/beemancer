@@ -540,6 +540,10 @@ LISTE DES FEATURES:
   Lang: +honey_gauge, +honey_reserve, +hive_multiplier, +delivery_bees, +hives, +7 essence.role.*, MAJ essence.type.* (en_us + fr_fr)
   Registres modifies: aucun
 
+→ Bee Nests + Scoop (Worldgen)
+  Fichier: Structure/feature_bee_nests_scoop.txt
+  Description: 7 nids d'abeilles naturels (1 par espece Tier I) generes dans le monde + outil Scoop pour capturer les MagicBees
+
 ================================================================================
 6. FEATURES EN COURS
 ================================================================================

@@ -51,6 +51,12 @@ interface IHiveInternals {
     BlockPos getBlockPos();
 
     /**
+     * Limite de stack pour les slots de sortie.
+     * MagicHive: 16, Multiblock: 64.
+     */
+    int getOutputSlotLimit();
+
+    /**
      * Determine si l'abeille dans le slot peut etre relachee.
      * MagicHive: check canBeeForage (fleurs, jour/nuit, temperature, pas antibreeding).
      * Multiblock: check !breedingMode.

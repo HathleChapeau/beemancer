@@ -33,6 +33,7 @@ import com.chapeau.beemancer.common.block.building.HoneyedGlassBlock;
 import com.chapeau.beemancer.common.block.building.HoneyedStoneWallBlock;
 import com.chapeau.beemancer.common.block.building.IronFoundationBlock;
 import com.chapeau.beemancer.common.block.building.RoyalGoldBlock;
+import com.chapeau.beemancer.common.block.hive.BeeNestBlock;
 import com.chapeau.beemancer.common.block.mount.AssemblyTableBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
 import com.chapeau.beemancer.common.block.extractor.ExtractorHeartBlock;
@@ -521,6 +522,12 @@ public class BeemancerBlocks {
             () -> new BeeSpawnerBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.METAL)));
+
+    // --- BEE NEST ---
+    public static final DeferredBlock<BeeNestBlock> BEE_NEST = BLOCKS.register("bee_nest",
+            () -> new BeeNestBlock(BlockBehaviour.Properties.of()
+                    .strength(0.6f)
+                    .sound(SoundType.WOOD)));
 
     // --- FLUID BLOCKS ---
     public static final DeferredBlock<LiquidBlock> HONEY_FLUID_BLOCK = BLOCKS.register("honey",

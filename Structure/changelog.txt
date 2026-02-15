@@ -3,6 +3,40 @@
 ################################################################################
 
 ================================================================================
+2026-02-15 - Bee Nests + Scoop (Worldgen)
+================================================================================
+
+BEE NESTS (7):
+- BeeNestBlock avec EnumProperty SPECIES (meadow, forest, rocky, river, dune, nether, end)
+- BeeNestBlockEntity: spawn 1 MagicBee toutes les 200 ticks, max 1 active
+- Genes par defaut + gene espece via GeneRegistry
+- Casser le nid drop 1 honeycomb (loot table, tout outil)
+
+WORLDGEN:
+- BeeNestFeature custom avec 5 algorithmes: SURFACE, TREE, UNDERGROUND, NETHER_SURFACE, END_SURFACE
+- BeeNestFeatureConfig record avec Codec
+- BeemancerFeatures registre (DeferredRegister<Feature<?>>)
+- 7 configured features + 7 placed features + 7 biome modifiers NeoForge
+- Rarity: meadow 1/12, forest 1/10, rocky 1/14, river 1/16, dune 1/14, nether 1/10, end 1/12
+
+SCOOP:
+- ScoopItem: durabilite 64, -1 par capture
+- Clic droit sur MagicBee: MagicBeeItem.captureFromEntity() + add to inventory
+- Son BEEHIVE_WORK, drop si inventaire plein
+
+REGISTRES:
+- BeemancerBlocks: +BEE_NEST
+- BeemancerItems: +BEE_NEST, +SCOOP
+- BeemancerBlockEntities: +BEE_NEST
+- Beemancer.java: +BeemancerFeatures.register()
+
+ASSETS:
+- 1 blockstate (7 variants), 7 block models, 2 item models, 1 loot table
+- 21 fichiers worldgen JSON (7 configured + 7 placed + 7 biome modifiers)
+- Lang: block.beemancer.bee_nest, item.beemancer.scoop
+- Textures placeholder manquantes (8 fichiers .png a creer)
+
+================================================================================
 2026-02-15 - Storage Controller: Beams, Auto-link, Oscillation, Reservoir Fix
 ================================================================================
 

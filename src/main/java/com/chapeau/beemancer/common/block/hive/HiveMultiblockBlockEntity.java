@@ -129,6 +129,9 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     @Override public HiveFlowerPool getFlowerPool() { return flowerPool; }
 
     @Override
+    public int getOutputSlotLimit() { return 64; }
+
+    @Override
     public boolean shouldReleaseBee(int slot) {
         return !breedingMode;
     }
