@@ -85,4 +85,7 @@
 | royal_jelly            | LiquidBlock               | Non          | Fluids          |
 | nectar                 | LiquidBlock               | Non          | Fluids          |
 
+--- HOVERBIKE ---
+| assembly_table         | AssemblyTableBlock        | Oui          | Hoverbike       |
+
 ################################################################################

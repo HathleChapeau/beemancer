@@ -6,5 +6,7 @@
 |--------------|--------------------| ---------------|
 | magic_bee    | MagicBeeEntity     | Gene System    |
 | rideable_bee | RideableBeeEntity  | Rideable Bee   |
+| delivery_bee | DeliveryBeeEntity  | Storage Network|
+| hoverbike    | HoverbikeEntity    | Hoverbike      |
 
 ################################################################################

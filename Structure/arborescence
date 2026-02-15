@@ -1,6 +1,6 @@
 ################################################################################
 #                       ARBORESCENCE COMPLÈTE                                  #
-#                    Dernière mise à jour: 2026-02-11                          #
+#                    Dernière mise à jour: 2026-02-15                          #
 ################################################################################
 
 src/main/java/com/chapeau/beemancer/
@@ -155,6 +155,9 @@ src/main/java/com/chapeau/beemancer/
 │   │   │   ├── PollenPotBlockEntity.java
 │   │   │   └── PollenPotEvents.java
 │   │   │
+│   │   ├── mount/
+│   │   │   └── AssemblyTableBlock.java
+│   │   │
 │   │   ├── statue/
 │   │   │   ├── BeeStatueBlock.java
 │   │   │   └── BeeStatueBlockEntity.java
@@ -199,6 +202,9 @@ src/main/java/com/chapeau/beemancer/
 │   │   │
 │   │   ├── extractor/
 │   │   │   └── ExtractorHeartBlockEntity.java
+│   │   │
+│   │   ├── mount/
+│   │   │   └── AssemblyTableBlockEntity.java
 │   │   │
 │   │   └── storage/                           # Réseau de stockage — logique
 │   │       ├── AbstractNetworkNodeBlockEntity.java
@@ -271,11 +277,16 @@ src/main/java/com/chapeau/beemancer/
 │   │   │   └── DeliveryPhaseGoal.java
 │   │   │
 │   │   └── mount/
+│   │       ├── HoverbikeConfigManager.java
+│   │       ├── HoverbikeDefaultConfigs.java
 │   │       ├── HoverbikeEntity.java
 │   │       ├── HoverbikeMode.java
+│   │       ├── HoverbikeModifier.java
 │   │       ├── HoverbikePart.java
 │   │       ├── HoverbikePhysics.java
-│   │       └── HoverbikeSettings.java
+│   │       ├── HoverbikeSettings.java
+│   │       ├── HoverbikeStatObject.java
+│   │       └── HoverbikeStatType.java
 │   │
 │   ├── event/
 │   │   └── BeeInteractionHandler.java
@@ -295,6 +306,7 @@ src/main/java/com/chapeau/beemancer/
 │   │   ├── essence/
 │   │   │   └── EssenceItem.java
 │   │   ├── mount/
+│   │   │   ├── HoverbikePartItem.java
 │   │   │   └── HoverbikeSpawnItem.java
 │   │   └── tool/
 │   │       └── BuildingWandItem.java
@@ -465,6 +477,7 @@ src/main/java/com/chapeau/beemancer/
     │   │
     │   ├── block/
     │   │   ├── AltarHeartRenderer.java
+    │   │   ├── AssemblyTableRenderer.java
     │   │   ├── BeeStatueRenderer.java
     │   │   ├── CentrifugeHeartRenderer.java
     │   │   ├── ControllerPipeRenderer.java

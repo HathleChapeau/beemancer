@@ -3,6 +3,32 @@
 ################################################################################
 
 ================================================================================
+2026-02-15 - Mise a jour Structure Hoverbike (documentation complete)
+================================================================================
+
+Mise a jour de la documentation Structure pour refleter l'etat complet
+du systeme Hoverbike apres les dernieres implementations (V1 config moto).
+
+FEATURE HOVERBIKE (feature_hoverbike.txt):
+- Rewrite complet du fichier feature (96 lignes → 290 lignes)
+- Documentation de tous les composants: core (10), items (2), assembly table (2),
+  renderers (3), modeles (14+), HUDs/edit mode (8), reseau (1)
+- Documentation architecture physique, modes, parties modulaires, edit mode,
+  assembly table, systeme de modifiers
+- Section registres complete (entities, items, blocks, block entities, tabs, network)
+- Section assets (4 JSON parts, 3 shaders, 4 config runtime, block assets)
+
+REGISTRES MIS A JOUR:
+- registries_items.txt: +14 items (hoverbike_spawn, assembly_table, 12 part items)
+- registries_blocks.txt: +1 bloc (assembly_table)
+- registries_entities.txt: +2 entites (delivery_bee, hoverbike)
+
+STRUCTURE.TXT:
+- Section 3 (Core files): +35 fichiers hoverbike documentes
+- Section 5 (Features): description hoverbike mise a jour (complete avec details)
+- Date mise a jour: 2026-02-15
+
+================================================================================
 2026-02-14 - Refonte Storage Controller + Nettoyage + Reorganisation Models
 ================================================================================
 

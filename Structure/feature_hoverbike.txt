@@ -2,88 +2,281 @@
 #                         FEATURE: Hoverbike                                   #
 ################################################################################
 
-Description: Moto flottante avec 2 modes (Hover/Run), physique velocite/acceleration
+Description: Moto flottante modulaire avec 2 modes (Hover/Run), physique
+             velocite/acceleration, systeme de pieces (4 categories x 3 variantes),
+             edit mode avec shader, assembly table, config JSON externe, modifiers 8 tiers
 Statut: COMPLETE
-Reference: Pattern Cobblemon (simplifie), architecture originale
+Reference: Pattern Cobblemon PokemonEntity (simplifie), architecture originale
 
 ================================================================================
-COMPOSANTS
+COMPOSANTS — CORE (common/entity/mount/)
 ================================================================================
 
-Core (common/entity/mount/):
-- HoverbikeMode.java: Enum HOVER/RUN
-- HoverbikeSettings.java: Record immutable des parametres physiques
-- HoverbikePhysics.java: Classe stateless pour calculs physiques
-- HoverbikeEntity.java: Entite principale (extends Mob, implements PlayerRideable)
-
-Client:
-- client/model/HoverbikeModel.java: Modele test 2 cubes (arriere + avant)
-- client/renderer/entity/HoverbikeRenderer.java: MobRenderer simple
-- client/gui/hud/HoverbikeDebugHud.java: HUD debug haut a droite
-- client/camera/HoverbikeCameraController.java: Camera controller
-
-Item:
-- common/item/mount/HoverbikeSpawnItem.java: Item spawn hoverbike
+| Fichier                    | Responsabilite                                |
+|----------------------------|-----------------------------------------------|
+| HoverbikeEntity.java      | Entite principale (extends Mob, PlayerRideable)|
+|                            | - 2 modes (HOVER/RUN), physique, anti-tunneling|
+|                            | - Edit mode (synched data, shader toggle)     |
+|                            | - Part variants (4x synched int, save/load)   |
+| HoverbikeMode.java        | Enum HOVER / RUN                              |
+| HoverbikeSettings.java    | Record 15 parametres physiques, JSON serde     |
+| HoverbikePhysics.java     | Calculs stateless (velocity, rotation, gravity)|
+|                            | - localToWorld/worldToLocal, anti-tunneling    |
+| HoverbikeStatType.java    | Enum 15 stats (cles JSON pour config)          |
+| HoverbikeStatObject.java  | Modification stat (type + ranges par tier)     |
+| HoverbikeModifier.java    | Modifier complet (nom, prefix/suffix, tags,    |
+|                            |   pool tiers T1-T8, liste stat_objects)        |
+| HoverbikePart.java        | Enum: CHASSIS, COEUR, PROPULSEUR, RADIATEUR    |
+| HoverbikeConfigManager.java| Chargement 4 JSONs dans config/beemancer/hoverbike/|
+| HoverbikeDefaultConfigs.java| Generation defaults V1 (tags, stats, categories)|
 
 ================================================================================
-ARCHITECTURE
+COMPOSANTS — ITEMS (common/item/mount/)
+================================================================================
+
+| Fichier                    | Responsabilite                                |
+|----------------------------|-----------------------------------------------|
+| HoverbikeSpawnItem.java   | Item spawn hoverbike (clic droit sur bloc)     |
+| HoverbikePartItem.java    | Item piece modulaire (category + variantIndex) |
+
+================================================================================
+COMPOSANTS — ASSEMBLY TABLE (common/block/mount/ + common/blockentity/mount/)
+================================================================================
+
+| Fichier                        | Responsabilite                            |
+|--------------------------------|-------------------------------------------|
+| AssemblyTableBlock.java        | Bloc slab, place/retire HoverbikePartItem |
+| AssemblyTableBlockEntity.java  | Stockage 1 piece, sync client, NBT        |
+
+================================================================================
+COMPOSANTS — CLIENT (Renderers)
+================================================================================
+
+| Fichier                        | Responsabilite                            |
+|--------------------------------|-------------------------------------------|
+| HoverbikeRenderer.java        | MobRenderer base (texture placeholder)    |
+|                                | - Fullbright en edit mode                 |
+| HoverbikePartLayer.java       | RenderLayer parties modulaires            |
+|                                | - AnimationController expand/collapse     |
+|                                | - Glow overlay sur partie hover           |
+| AssemblyTableRenderer.java    | Rendu piece 3D rotative sur assembly table|
+
+================================================================================
+COMPOSANTS — CLIENT (Modeles)
+================================================================================
+
+| Fichier                      | Responsabilite                              |
+|------------------------------|---------------------------------------------|
+| HoverbikeModel.java         | Modele base 2 cubes (placeholder)           |
+| HoverbikePartModel.java     | Classe abstraite parent parties modulaires  |
+|                              | - getPartType(), getTextureLocation()       |
+|                              | - getEditModeOffset()                       |
+| HoverbikePartVariants.java  | Registre dynamique variantes (charge JSON)  |
+|                              | - ModelFactory (layer + constructor)        |
+|                              | - VariantEntry (nom, model, stats)          |
+
+Variantes par categorie (3 chacune = 12 modeles) :
+| Categorie   | Variante A (index 0)  | Variante B (index 1) | Variante C (index 2) |
+|-------------|-----------------------|----------------------|----------------------|
+| CHASSIS     | ChassisPartModel      | ChassisPartModelB    | ChassisPartModelC    |
+| COEUR       | CoeurPartModel        | CoeurPartModelB      | CoeurPartModelC      |
+| PROPULSEUR  | PropulseurPartModel   | PropulseurPartModelB | PropulseurPartModelC |
+| RADIATEUR   | RadiateurPartModel    | RadiateurPartModelB  | RadiateurPartModelC  |
+
+================================================================================
+COMPOSANTS — CLIENT (HUDs, Edit Mode, Camera)
+================================================================================
+
+| Fichier                        | Responsabilite                            |
+|--------------------------------|-------------------------------------------|
+| HoverbikeGaugeHud.java        | Jauge d'envol au-dessus hotbar             |
+| HoverbikeDebugHud.java        | HUD debug (haut droit, displayDebug=true)  |
+| HoverbikeEditStatsHud.java    | Panneau stats en edit mode (haut gauche)   |
+| HoverbikeEditModeHandler.java | Interactions edit mode (raycast + clic)     |
+| HoverbikePartPicker.java      | Raycast custom → detection partie visee    |
+| HoverbikePartScreen.java      | GUI selection variante (3D preview, arrows) |
+| HoverbikeCameraController.java| Force 3P au montage, FOV boost en RUN      |
+| HoverbikeEditModeEffect.java  | Blit entity_outline → shader mask          |
+
+================================================================================
+COMPOSANTS — RESEAU
+================================================================================
+
+| Fichier                        | Responsabilite                            |
+|--------------------------------|-------------------------------------------|
+| HoverbikeVariantPacket.java   | Packet C2S changement variante            |
+|                                | - Validation: distance, edit mode, range  |
+
+================================================================================
+COMPOSANTS — ASSETS
+================================================================================
+
+JSON Parts (assets/beemancer/hoverbike/parts/):
+  - chassis.json       : 3 variantes (Standard, Heavy Frame, Armored)
+  - coeur.json         : 3 variantes (Cube, Pyramid, Crystal)
+  - propulseur.json    : 3 variantes (Dual Exhaust, Quad Nozzles, Mega Reactor)
+  - radiateur.json     : 3 variantes (Panels, Fin Array, Wide Panels)
+
+Shaders (assets/beemancer/shaders/):
+  - post/edit_mode.json       : PostChain pipeline edit mode
+  - program/edit_darken.json  : Program definition
+  - program/edit_darken.fsh   : Fragment shader (assombrit hors masque)
+
+Config (generee au runtime dans config/beemancer/hoverbike/):
+  - base_stats.json           : 15 parametres physiques
+  - tags.json                 : 7 tags (speed, acceleration, handling, flight, engine, weight, aerodynamics)
+  - statistics.json           : 6 modifiers avec tiers T1-T8
+  - part_categories.json      : 4 categories avec 2 stats chacune
+
+Block Assets (assembly_table):
+  - blockstates/assembly_table.json
+  - models/block/mount/assembly_table.json
+  - models/item/assembly_table.json
+  - loot_table/blocks/assembly_table.json
+
+================================================================================
+ARCHITECTURE — PHYSIQUE
 ================================================================================
 
 Separation claire des responsabilites:
 
 1. HoverbikeSettings (record immutable):
-   - maxHoverSpeed, maxRunSpeed, runThresholdSpeed
-   - hoverAcceleration, runAcceleration, deceleration, brakeDeceleration, hoverFriction
-   - gravity, terminalVelocity
-   - rotationSpeedMax, rotationSpeedMin
+   maxHoverSpeed, maxRunSpeed, runThresholdSpeed,
+   hoverAcceleration, runAcceleration, deceleration, brakeDeceleration, hoverFriction,
+   gravity, terminalVelocity, rotationSpeedMax, rotationSpeedMin,
+   gaugeFillRate, gaugeDrainRate, liftSpeed
 
 2. HoverbikePhysics (classe stateless):
    - calculateHoverVelocity(): 4 directions, friction glace, gravite reduite
    - calculateRunVelocity(): avant uniquement, decel, brake, gravite
    - calculateYawDelta(): rotation progressive vers curseur joueur
    - shouldTransitionToRun() / shouldTransitionToHover(): conditions de mode
-   - localToWorld(): conversion espace local -> monde via yRot
+   - localToWorld() / worldToLocal(): conversion espaces
 
 3. HoverbikeEntity (logique entite):
-   - tickRidden(): rotation + transitions de mode
-   - travel(): calcul velocite locale, conversion world, inertie, move
-   - Input direct via driver.zza, driver.xxa, driver.isSprinting()
-
-4. HoverbikeModel (presentation):
-   - 2 cubes 16x16x16: arriere (siege) + avant
-   - Texture: iron_block (placeholder)
+   - tickRidden(): rotation + transitions de mode + gauge fill
+   - travel(): calcul velocite, envol, conversion world, inertie, collision feedback
+   - move(): anti-tunneling (subdivision grandes vitesses, max 8 steps)
+   - Edit mode: synched data, shader toggle, distance check
 
 ================================================================================
 MODES DE DEPLACEMENT
 ================================================================================
 
 Mode HOVER (par defaut):
-- WASD: 4 directions relatives a l'orientation entite
+- WASD: 4 directions relatives a l'orientation
 - Acceleration: hoverAcceleration (0.008)
 - Friction: hoverFriction (0.002) - style glace
 - Gravite: reduite (0.025 vs 0.08 normal)
 - Vitesse max: maxHoverSpeed (0.15)
-- Rotation: constante, rotationSpeedMax (6 deg/tick)
+- Rotation: constante (rotationSpeedMax 6 deg/tick)
+- Envol: maintenir SPACE consomme jauge, monte a liftSpeed (0.06)
 
 Mode RUN (sprint + seuil):
 - W: accelere (runAcceleration 0.012)
 - S: frein (brakeDeceleration 0.015)
-- Rien: deceleration naturelle (deceleration 0.003)
+- Rien: deceleration naturelle (0.003)
 - Vitesse max: maxRunSpeed (0.6)
-- Rotation: variable selon vitesse (rotationSpeedMin 1.5 a rotationSpeedMax 6.0)
-  Plus rapide = tourne moins vite
+- Rotation: variable (6.0 → 1.5 deg/tick selon vitesse)
+- FOV: boost +15 degres proportionnel a la vitesse
 
 Transitions:
-- HOVER -> RUN: sprint presse + W + speed > runThresholdSpeed (0.2)
-- RUN -> HOVER: speed < runThresholdSpeed (automatique)
+- HOVER → RUN: sprint + W + speed > runThresholdSpeed (0.1125)
+- RUN → HOVER: speed < runThresholdSpeed (automatique)
+
+================================================================================
+SYSTEME DE PARTIES MODULAIRES
+================================================================================
+
+4 categories x 3 variantes = 12 pieces :
+- Chaque variante a un modele 3D Java, une texture, un nom, et 2 stats
+- Les variantes sont chargees depuis JSON (data-driven)
+- Les modeles sont enregistres en Java (geometrie code)
+- L'index de variante est synche via EntityDataAccessor (int par categorie)
+- Changement de variante via HoverbikePartScreen → HoverbikeVariantPacket (C2S)
+
+Categorie → Stats affectees:
+  CHASSIS    : Hover_Max_Speed, Run_Max_Speed
+  COEUR      : Hover_Acceleration, Run_Acceleration
+  PROPULSEUR : Lift_Speed, Gauge_Fill_Rate
+  RADIATEUR  : Hover_Friction, Brake_Deceleration
+
+================================================================================
+EDIT MODE
+================================================================================
+
+Activation: Shift+clic droit sur le hoverbike (toggle)
+Effets:
+  - Shader edit_darken.fsh assombrit tout sauf la moto (via masque entity_outline)
+  - Les 4 parties s'ecartent avec animation smooth (AnimationController + MoveAnimation)
+  - Panneau stats affiche en haut a gauche (HoverbikeEditStatsHud)
+  - Raycast custom detecte la partie visee (HoverbikePartPicker → hitboxes locales)
+  - Glow overlay blanc sur la partie hover
+  - Clic droit sur partie → ouvre HoverbikePartScreen
+  - Auto-exit si joueur trop loin (5 blocs)
+
+================================================================================
+ASSEMBLY TABLE
+================================================================================
+
+- Bloc slab (demi-bloc bas) pour exposer les pieces
+- Accepte uniquement les HoverbikePartItem
+- Clic droit avec piece = place. Clic droit main vide = retire
+- Renderer: piece 3D rotative au-dessus du slab (AssemblyTableRenderer)
+- Drop item on break
+
+================================================================================
+SYSTEME DE MODIFIERS (config JSON)
+================================================================================
+
+6 modifiers par defaut, 8 tiers chacun:
+  Prefixes: Swift (speed), Turbocharged (accel), Agile (handling), Soaring (flight)
+  Suffixes: of Stability (weight/aerodynamics), of Precision (handling/accel)
+
+Chaque modifier contient:
+  - name, is_prefix, tags[], T1_pool..T8_pool (poids random)
+  - stat_objects[]: {statistic, value_type (+/%), T1..T8 ranges [min,max]}
+
+Note: Les modifiers sont charges et disponibles mais pas encore appliques
+      aux stats reelles de l'entite (systeme de roll/application a implementer).
 
 ================================================================================
 REGISTRES
 ================================================================================
 
-- BeemancerEntities: HOVERBIKE (sized 1.2x1.0, MobCategory.MISC)
-- BeemancerItems: HOVERBIKE_SPAWN (stacksTo 1)
-- BeemancerCreativeTabs: dans addBees()
+BeemancerEntities:
+  - HOVERBIKE (sized 1.0x1.0, MobCategory.MISC)
+
+BeemancerItems:
+  - HOVERBIKE_SPAWN (HoverbikeSpawnItem, stacksTo 1)
+  - ASSEMBLY_TABLE (BlockItem)
+  - CHASSIS_STANDARD, CHASSIS_HEAVY_FRAME, CHASSIS_ARMORED (HoverbikePartItem)
+  - COEUR_CUBE, COEUR_PYRAMID, COEUR_CRYSTAL (HoverbikePartItem)
+  - PROPULSEUR_DUAL_EXHAUST, PROPULSEUR_QUAD_NOZZLES, PROPULSEUR_MEGA_REACTOR (HoverbikePartItem)
+  - RADIATEUR_PANELS, RADIATEUR_FIN_ARRAY, RADIATEUR_WIDE_PANELS (HoverbikePartItem)
+
+BeemancerBlocks:
+  - ASSEMBLY_TABLE (AssemblyTableBlock)
+
+BeemancerBlockEntities:
+  - ASSEMBLY_TABLE (AssemblyTableBlockEntity)
+
+BeemancerCreativeTabs:
+  - HOVERBIKE_TAB (tab dedie avec toutes les pieces)
+
+BeemancerNetwork:
+  - HoverbikeVariantPacket (C2S)
+
+ClientSetup:
+  - HoverbikeRenderer (entity renderer)
+  - AssemblyTableRenderer (block entity renderer)
+  - HoverbikeModel layer + 12 part model layers (dynamique)
+  - 6 event handlers (DebugHud, GaugeHud, CameraController, EditModeEffect,
+    EditModeHandler, EditStatsHud)
+
+Beemancer.java:
+  - HoverbikeConfigManager.init() (FMLCommonSetupEvent)
+  - HoverbikeEntity.createAttributes() (EntityAttributeCreationEvent)
 
 ================================================================================
 COMMANDES TEST
@@ -91,5 +284,7 @@ COMMANDES TEST
 
 /summon beemancer:hoverbike ~ ~ ~
 /give @p beemancer:hoverbike_spawn
+/give @p beemancer:assembly_table
+/give @p beemancer:chassis_standard
 
 ################################################################################

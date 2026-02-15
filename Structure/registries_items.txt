@@ -141,4 +141,20 @@
 --- MOUNT ITEMS ---
 | rideable_bee_spawn       | RideableBeeSpawnItem | Rideable Bee |
 
+--- HOVERBIKE ---
+| hoverbike_spawn          | HoverbikeSpawnItem   | Hoverbike     |
+| assembly_table           | BlockItem            | Hoverbike     |
+| chassis_standard         | HoverbikePartItem    | Hoverbike     |
+| chassis_heavy_frame      | HoverbikePartItem    | Hoverbike     |
+| chassis_armored          | HoverbikePartItem    | Hoverbike     |
+| coeur_cube               | HoverbikePartItem    | Hoverbike     |
+| coeur_pyramid            | HoverbikePartItem    | Hoverbike     |
+| coeur_crystal            | HoverbikePartItem    | Hoverbike     |
+| propulseur_dual_exhaust  | HoverbikePartItem    | Hoverbike     |
+| propulseur_quad_nozzles  | HoverbikePartItem    | Hoverbike     |
+| propulseur_mega_reactor  | HoverbikePartItem    | Hoverbike     |
+| radiateur_panels         | HoverbikePartItem    | Hoverbike     |
+| radiateur_fin_array      | HoverbikePartItem    | Hoverbike     |
+| radiateur_wide_panels    | HoverbikePartItem    | Hoverbike     |
+
 ################################################################################

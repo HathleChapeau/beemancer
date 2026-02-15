@@ -1,7 +1,7 @@
 ################################################################################
 #                              BEEMANCER - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-11                     #
-#  (Storage Network Brainstorm G5 - 2026-02-11)                                 #
+#                         Dernière mise à jour: 2026-02-15                     #
+#  (Hoverbike Structure Update - 2026-02-15)                                    #
 ################################################################################
 
 ================================================================================
@@ -119,6 +119,41 @@ Philosophie:
 │ core/multiblock/MultiblockIOConfig.java│ Config IO complète d'un multibloc  │
 │ core/util/SplitFluidHandler.java      │ Wrapper fill→input, drain→output + factories│
 │ core/util/SplitItemHandler.java       │ Wrapper insert→input, extract→output + factories│
+│ common/entity/mount/                    │                                        │
+│   HoverbikeEntity                    │ Entite moto (Mob, PlayerRideable)      │
+│   HoverbikeMode                      │ Enum HOVER / RUN                       │
+│   HoverbikeSettings                  │ Record 15 parametres physiques          │
+│   HoverbikePhysics                   │ Calculs stateless (velocity, rotation)  │
+│   HoverbikePart                      │ Enum CHASSIS/COEUR/PROPULSEUR/RADIATEUR│
+│   HoverbikeStatType                  │ Enum 15 stats (cles JSON config)       │
+│   HoverbikeStatObject                │ Modification stat (type + ranges tier)  │
+│   HoverbikeModifier                  │ Modifier complet (prefix/suffix, tiers)│
+│   HoverbikeConfigManager             │ Chargement 4 JSONs config hoverbike    │
+│   HoverbikeDefaultConfigs            │ Generation defaults V1 pour configs     │
+│ common/item/mount/                      │                                        │
+│   HoverbikeSpawnItem                 │ Item spawn hoverbike (clic droit)       │
+│   HoverbikePartItem                  │ Item piece modulaire (cat + variant)    │
+│ common/block/mount/                     │                                        │
+│   AssemblyTableBlock                 │ Table slab pour exposer les pieces      │
+│ common/blockentity/mount/               │                                        │
+│   AssemblyTableBlockEntity           │ Stockage 1 piece + sync client          │
+│ client/renderer/entity/                 │                                        │
+│   HoverbikeRenderer                  │ MobRenderer base + fullbright edit mode│
+│   HoverbikePartLayer                 │ RenderLayer parties modulaires + anim   │
+│ client/renderer/block/                  │                                        │
+│   AssemblyTableRenderer              │ Piece 3D rotative sur assembly table    │
+│ client/model/HoverbikeModel          │ Modele base 2 cubes (placeholder)       │
+│ client/model/hoverbike/                 │                                        │
+│   HoverbikePartModel                │ Classe abstraite parent pieces           │
+│   HoverbikePartVariants             │ Registre dynamique variantes (JSON)      │
+│   [12 PartModel classes]            │ 3 variantes x 4 categories              │
+│ client/gui/hud/HoverbikeGaugeHud    │ Jauge d'envol au-dessus hotbar           │
+│ client/gui/hud/HoverbikeEditModeHandler│ Interactions edit mode (raycast+clic)  │
+│ client/gui/hud/HoverbikePartPicker   │ Raycast custom detection partie visee   │
+│ client/gui/hud/HoverbikeEditStatsHud │ Panneau stats en edit mode              │
+│ client/gui/screen/HoverbikePartScreen│ GUI selection variante (3D preview)     │
+│ client/HoverbikeEditModeEffect       │ Blit entity_outline → shader mask       │
+│ core/network/packets/HoverbikeVariantPacket│ Packet C2S changement variante   │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -276,7 +311,9 @@ LISTE DES FEATURES:
 
 → Hoverbike
   Fichier: Structure/feature_hoverbike.txt
-  Description: Moto flottante avec 2 modes (Hover/Run), physique velocite/acceleration, gravite reduite, friction glace
+  Description: Moto flottante modulaire avec 2 modes (Hover/Run), physique velocite/acceleration,
+    systeme de pieces (4 categories x 3 variantes), edit mode avec shader, assembly table,
+    config JSON externe, modifiers 8 tiers, jauge d'envol, camera controller
 
 → Debug Display System
   Fichier: Structure/feature_debug_display.txt
