@@ -190,6 +190,8 @@ public class HiveBeeLifecycleManager {
 
         if (beeSlot.isOutside()) {
             if (slotUUID != null && slotUUID.equals(beeUUID)) {
+                beeSlot.setLastKnownPos(bee.blockPosition());
+                beeSlot.resetOrphanTimer();
                 return true;
             }
             verifyOutsideBees();
@@ -206,6 +208,15 @@ public class HiveBeeLifecycleManager {
         return false;
     }
 
+    private static final int ORPHAN_TIMEOUT = 2400; // 120 secondes
+
+    /**
+     * Verifie les abeilles dehors avec systeme 2-tier chunk-safe:
+     * - Entity trouvee → reset orphan timer
+     * - Chunk pas charge → skip (attente infinie, bee en transit virtuel)
+     * - Chunk charge + entity null → incrementer orphan timer
+     * - Timer >= 2400 ticks → confirmed orphan, resetSlotToInside()
+     */
     void verifyOutsideBees() {
         if (!(parent.getLevel() instanceof ServerLevel serverLevel)) return;
 
@@ -222,7 +233,29 @@ public class HiveBeeLifecycleManager {
             }
 
             Entity entity = serverLevel.getEntity(uuid);
-            if (entity == null || entity.isRemoved() || !(entity instanceof MagicBeeEntity)) {
+
+            // Entity found and alive → reset orphan timer
+            if (entity != null && !entity.isRemoved() && entity instanceof MagicBeeEntity) {
+                beeSlots[i].resetOrphanTimer();
+                continue;
+            }
+
+            // Entity not found — check chunk at last known position
+            BlockPos lastPos = beeSlots[i].getLastKnownPos();
+            if (lastPos == null) {
+                lastPos = parent.getBlockPos().above();
+            }
+
+            // Chunk not loaded → skip (infinite wait, bee in virtual transit)
+            if (!serverLevel.hasChunkAt(lastPos)) {
+                continue;
+            }
+
+            // Chunk loaded + entity null → increment orphan timer
+            beeSlots[i].incrementOrphanTimer();
+
+            // Timer expired → confirmed orphan, reset slot to inside
+            if (beeSlots[i].getOrphanTimer() >= ORPHAN_TIMEOUT) {
                 resetSlotToInside(i, beeSlots[i], items.get(i));
             }
         }

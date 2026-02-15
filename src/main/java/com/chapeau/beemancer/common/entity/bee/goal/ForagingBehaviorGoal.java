@@ -64,7 +64,6 @@ public class ForagingBehaviorGoal extends Goal {
 
     private static final double REACH_DISTANCE = 1.5;
     private static final double REACH_DISTANCE_VERTICAL = 0.8;
-    private static final double FLIGHT_SPEED_FACTOR = 0.2;
     private static final double FLIGHT_ALTITUDE = 1.0; // Altitude de vol au-dessus des destinations
     private static final double HOVER_HEIGHT = 0.4; // Hauteur au-dessus de la fleur pour l'approche finale
     private static final double APPROACH_OFFSET = 0.2; // Décalage d'approche depuis la ruche
@@ -124,11 +123,14 @@ public class ForagingBehaviorGoal extends Goal {
 
     @Override
     public void tick() {
-        // Tick la machine à états (gère les timeouts)
+        // Tick la machine à états AVANT le throttle (timeouts doivent rester precis)
         boolean timedOut = stateMachine.tick();
 
         // Si timeout géré, ne pas continuer le tick normal
         if (timedOut) return;
+
+        // Throttle N=4: traitement mouvement 1 tick sur 4, offset par UUID
+        if (bee.tickCount % 4 != (int)(bee.getUUID().getLeastSignificantBits() & 0x3)) return;
 
         switch (stateMachine.getState()) {
             case SEEKING_FLOWER -> tickSeekingFlower();
@@ -293,6 +295,12 @@ public class ForagingBehaviorGoal extends Goal {
             return;
         }
 
+        // Si le chunk de la ruche n'est pas charge, rester sur place
+        if (!bee.level().isLoaded(hivePos)) {
+            bee.setDeltaMovement(Vec3.ZERO);
+            return;
+        }
+
         Vec3 hiveVec = Vec3.atCenterOf(hivePos);
         double distance = bee.position().distanceTo(hiveVec);
 
@@ -362,10 +370,7 @@ public class ForagingBehaviorGoal extends Goal {
         Vec3 direction = targetVec.subtract(bee.position()).normalize();
 
         BeeBehaviorConfig config = bee.getBehaviorConfig();
-        double speed = config.getFlyingSpeed() * FLIGHT_SPEED_FACTOR;
-        if (bee.isEnraged()) {
-            speed = config.getEnragedFlyingSpeed() * FLIGHT_SPEED_FACTOR;
-        }
+        double speed = bee.isEnraged() ? config.getEnragedForagingSpeed() : config.getForagingSpeed();
 
         bee.setDeltaMovement(direction.scale(speed));
 

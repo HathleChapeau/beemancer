@@ -46,8 +46,7 @@ public class CodexNodeWidget extends AbstractWidget {
 
     static {
         // Mapping des nodes vers les items/blocs du mod
-        NODE_TO_ITEM.put("the_beginning", "beemancer:codex");
-        NODE_TO_ITEM.put("1st_bee", "beemancer:bee_jar");
+        NODE_TO_ITEM.put("1st_bee", "beemancer:scoop");
         NODE_TO_ITEM.put("hive", "beemancer:controlled_hive");
         NODE_TO_ITEM.put("hive_multibloc", "beemancer:magic_hive");
         NODE_TO_ITEM.put("manual_centrifuge", "beemancer:manual_centrifuge");
@@ -77,7 +76,7 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("pipe_t4", "beemancer:honey_pipe");
 
         // Textures pour les nodes sans item correspondant
-        NODE_TO_TEXTURE.put("the_beginning", ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "textures/gui/codex/icon_start.png"));
+        NODE_TO_TEXTURE.put("apica", ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "textures/gui/codex/icon_unknown.png"));
     }
 
     private final CodexNode node;

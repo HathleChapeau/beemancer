@@ -43,7 +43,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -59,11 +61,16 @@ public class BeeNestBlockEntity extends BlockEntity {
     private static final int SPAWN_INTERVAL = 200;
     private static final int MIN_RESPAWN_TICKS = 200;  // 10 secondes
     private static final int MAX_RESPAWN_TICKS = 400;  // 20 secondes
+    private static final int LOAD_GRACE_TICKS = 100;   // 5s grace period au chargement
+    private static final int DEATH_GRACE_TICKS = 1200; // 60s avant confirmation de mort
 
     private int maxBees = DEFAULT_MAX_BEES;
     private int tickCounter;
+    private int loadGraceTicks = 0;
     private final List<UUID> activeBeeUUIDs = new ArrayList<>();
     private final List<Integer> respawnTimers = new ArrayList<>();
+    private final Map<UUID, BlockPos> lastKnownPositions = new HashMap<>();
+    private final Map<UUID, Integer> deathGraceTimers = new HashMap<>();
 
     public BeeNestBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.BEE_NEST.get(), pos, state);
@@ -71,6 +78,10 @@ public class BeeNestBlockEntity extends BlockEntity {
 
     public void serverTick() {
         if (level == null || level.isClientSide()) return;
+
+        if (loadGraceTicks > 0) {
+            loadGraceTicks--;
+        }
 
         tickRespawnTimers();
         detectDeadBees();
@@ -115,19 +126,45 @@ public class BeeNestBlockEntity extends BlockEntity {
 
     /**
      * Detecte les abeilles mortes (tuees) et reduit maxBees pour chacune.
+     * Utilise un systeme 2-tier pour eviter les faux positifs lors du chunk unload:
+     * - Chunk pas charge → SKIP (attente infinie, l'abeille est en transit virtuel)
+     * - Chunk charge + entity null → demarrer un grace timer de 60s
+     * - Grace timer expire → bee confirmee morte, maxBees--
      */
     private void detectDeadBees() {
         if (!(level instanceof ServerLevel serverLevel)) return;
+        if (loadGraceTicks > 0) return;
 
         activeBeeUUIDs.removeIf(uuid -> {
             Entity entity = serverLevel.getEntity(uuid);
-            if (entity == null || entity.isRemoved() || !(entity instanceof MagicBeeEntity)) {
-                // L'abeille est morte (pas retournee via onBeeReturned)
-                maxBees = Math.max(0, maxBees - 1);
-                setChanged();
-                return true;
+
+            if (entity != null && !entity.isRemoved() && entity instanceof MagicBeeEntity) {
+                deathGraceTimers.remove(uuid);
+                return false;
             }
-            return false;
+
+            BlockPos lastPos = lastKnownPositions.getOrDefault(uuid, worldPosition.above());
+
+            if (!serverLevel.hasChunkAt(lastPos)) {
+                return false;
+            }
+
+            if (!deathGraceTimers.containsKey(uuid)) {
+                deathGraceTimers.put(uuid, DEATH_GRACE_TICKS);
+                return false;
+            }
+
+            int remaining = deathGraceTimers.get(uuid) - 1;
+            if (remaining > 0) {
+                deathGraceTimers.put(uuid, remaining);
+                return false;
+            }
+
+            maxBees = Math.max(0, maxBees - 1);
+            lastKnownPositions.remove(uuid);
+            deathGraceTimers.remove(uuid);
+            setChanged();
+            return true;
         });
     }
 
@@ -136,7 +173,10 @@ public class BeeNestBlockEntity extends BlockEntity {
      * Retire l'UUID et reduit la capacite max du nid de 1 (perte permanente).
      */
     public void onBeeScooped(MagicBeeEntity bee) {
-        activeBeeUUIDs.remove(bee.getUUID());
+        UUID uuid = bee.getUUID();
+        activeBeeUUIDs.remove(uuid);
+        lastKnownPositions.remove(uuid);
+        deathGraceTimers.remove(uuid);
         maxBees = Math.max(0, maxBees - 1);
         setChanged();
         syncToClient();
@@ -147,8 +187,10 @@ public class BeeNestBlockEntity extends BlockEntity {
      * Retire l'abeille du monde et programme un respawn apres repos.
      */
     public void onBeeReturned(MagicBeeEntity bee) {
-        // Retirer l'UUID AVANT de discard pour que detectDeadBees ne la compte pas comme morte
-        activeBeeUUIDs.remove(bee.getUUID());
+        UUID uuid = bee.getUUID();
+        activeBeeUUIDs.remove(uuid);
+        lastKnownPositions.remove(uuid);
+        deathGraceTimers.remove(uuid);
 
         // Programmer le respawn
         int restTime = MIN_RESPAWN_TICKS + level.getRandom().nextInt(
@@ -186,6 +228,7 @@ public class BeeNestBlockEntity extends BlockEntity {
 
         serverLevel.addFreshEntity(bee);
         activeBeeUUIDs.add(bee.getUUID());
+        lastKnownPositions.put(bee.getUUID(), spawnPos);
         setChanged();
     }
 
@@ -239,6 +282,17 @@ public class BeeNestBlockEntity extends BlockEntity {
         for (int i = 0; i < respawnTimers.size(); i++) {
             tag.putInt("Respawn" + i, respawnTimers.get(i));
         }
+
+        // Bee Ledger: positions connues + grace timers
+        int ledgerIdx = 0;
+        for (Map.Entry<UUID, BlockPos> entry : lastKnownPositions.entrySet()) {
+            tag.putUUID("LedgerUUID" + ledgerIdx, entry.getKey());
+            tag.putLong("LedgerPos" + ledgerIdx, entry.getValue().asLong());
+            tag.putInt("LedgerGrace" + ledgerIdx,
+                    deathGraceTimers.getOrDefault(entry.getKey(), 0));
+            ledgerIdx++;
+        }
+        tag.putInt("LedgerCount", ledgerIdx);
     }
 
     @Override
@@ -260,5 +314,22 @@ public class BeeNestBlockEntity extends BlockEntity {
         for (int i = 0; i < respawnCount; i++) {
             respawnTimers.add(tag.getInt("Respawn" + i));
         }
+
+        // Bee Ledger: positions connues + grace timers
+        lastKnownPositions.clear();
+        deathGraceTimers.clear();
+        int ledgerCount = tag.getInt("LedgerCount");
+        for (int i = 0; i < ledgerCount; i++) {
+            if (tag.hasUUID("LedgerUUID" + i)) {
+                UUID uuid = tag.getUUID("LedgerUUID" + i);
+                lastKnownPositions.put(uuid, BlockPos.of(tag.getLong("LedgerPos" + i)));
+                int grace = tag.getInt("LedgerGrace" + i);
+                if (grace > 0) {
+                    deathGraceTimers.put(uuid, grace);
+                }
+            }
+        }
+
+        loadGraceTicks = LOAD_GRACE_TICKS;
     }
 }

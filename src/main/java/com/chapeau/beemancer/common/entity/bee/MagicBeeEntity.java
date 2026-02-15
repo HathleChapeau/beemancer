@@ -27,7 +27,6 @@ package com.chapeau.beemancer.common.entity.bee;
 import com.chapeau.beemancer.common.block.hive.IHiveBeeHost;
 import com.chapeau.beemancer.common.entity.bee.goal.BeeRevengeGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.ForagingBehaviorGoal;
-import com.chapeau.beemancer.common.entity.bee.goal.MoveToTargetGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.ReturnToHiveWhenLowHealthGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.WildBeePatrolGoal;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
@@ -92,10 +91,6 @@ public class MagicBeeEntity extends Bee {
     // --- Gene Data ---
     private final BeeGeneData geneData = new BeeGeneData();
 
-    // --- Navigation ---
-    @Nullable
-    private BlockPos targetPos = null;
-
     // --- Wild Bee Nest ---
     @Nullable
     private BlockPos homeNestPos = null;
@@ -121,6 +116,10 @@ public class MagicBeeEntity extends Bee {
 
     // --- Hive Ping Timer (transient, not saved) ---
     private int hivePingTimer = 0;
+
+    // --- Orphan Timer (transient): bee with no hive and no nest is discarded after 2400 ticks ---
+    private static final int ORPHAN_ENTITY_TIMEOUT = 2400; // 120 secondes
+    private int orphanTicks = 0;
 
     public MagicBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
@@ -218,9 +217,6 @@ public class MagicBeeEntity extends Bee {
 
         // Priorité 3: Patrouille sauvage (abeilles de nids naturels)
         this.goalSelector.addGoal(3, new WildBeePatrolGoal(this));
-
-        // Priorité 4: Navigation manuelle (BeeWand)
-        this.goalSelector.addGoal(4, new MoveToTargetGoal(this));
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -373,6 +369,21 @@ public class MagicBeeEntity extends Bee {
         }
     }
 
+    /**
+     * Si l'abeille n'a ni ruche assignee ni nid d'origine, elle est orpheline.
+     * Apres 2400 ticks (120s), elle se supprime pour eviter les entites perdues.
+     */
+    private void tickOrphanCleanup() {
+        if (!hasAssignedHive() && !hasHomeNest()) {
+            orphanTicks++;
+            if (orphanTicks >= ORPHAN_ENTITY_TIMEOUT) {
+                discard();
+            }
+        } else {
+            orphanTicks = 0;
+        }
+    }
+
     // --- Returning State ---
 
     public boolean isReturning() {
@@ -445,6 +456,8 @@ public class MagicBeeEntity extends Bee {
             tickEnragedTimer();
             // Ping la ruche pour validation UUID
             tickHivePing();
+            // Orphan entity cleanup: bee without hive or nest is discarded after timeout
+            tickOrphanCleanup();
         }
 
         // Apply gene behaviors
@@ -529,25 +542,6 @@ public class MagicBeeEntity extends Bee {
         return homeNestPos != null;
     }
 
-    // --- Navigation ---
-
-    @Nullable
-    public BlockPos getTargetPos() {
-        return targetPos;
-    }
-
-    public void setTargetPos(@Nullable BlockPos pos) {
-        this.targetPos = pos;
-    }
-
-    public boolean hasTarget() {
-        return targetPos != null;
-    }
-
-    public void clearTarget() {
-        this.targetPos = null;
-    }
-
     // --- Debug Destination (pour affichage visuel) ---
 
     /**
@@ -623,12 +617,6 @@ public class MagicBeeEntity extends Bee {
         super.addAdditionalSaveData(tag);
         tag.put("GeneData", geneData.save());
 
-        if (targetPos != null) {
-            tag.putInt("TargetX", targetPos.getX());
-            tag.putInt("TargetY", targetPos.getY());
-            tag.putInt("TargetZ", targetPos.getZ());
-        }
-
         if (assignedHivePos != null) {
             tag.putInt("HiveX", assignedHivePos.getX());
             tag.putInt("HiveY", assignedHivePos.getY());
@@ -657,10 +645,6 @@ public class MagicBeeEntity extends Bee {
             for (Gene gene : geneData.getAllGenes()) {
                 syncGeneToData(gene);
             }
-        }
-
-        if (tag.contains("TargetX")) {
-            targetPos = new BlockPos(tag.getInt("TargetX"), tag.getInt("TargetY"), tag.getInt("TargetZ"));
         }
 
         if (tag.contains("HiveX")) {

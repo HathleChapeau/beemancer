@@ -75,6 +75,8 @@ public class BeePathfinding {
     private static final double ALTITUDE_BONUS = 0.3;
     private static final double OFF_PATH_THRESHOLD = 5.0;
     private static final double WAYPOINT_REACH_DISTANCE = 0.7;
+    private static final int RECOMPUTE_INTERVAL = 20;    // TTL: 1 seconde min entre recalculs
+    private static final int STALL_THRESHOLD = 60;       // Force recalcul si aucune progression en 3s
 
     // Directions 3D pour l'expansion des noeuds (26 directions)
     private static final int[][] DIRECTIONS = {
@@ -98,6 +100,11 @@ public class BeePathfinding {
     @Nullable private BlockPos cachedStart = null;
     @Nullable private BlockPos cachedEnd = null;
 
+    // TTL cache + stall detection (PERF-01)
+    private long lastComputeGameTime = 0;
+    private int progressStallCounter = 0;
+    private int lastTrackedPathIndex = 0;
+
     // Debug
     private boolean debugMode = false;
     private long lastParticleTime = 0;
@@ -113,13 +120,19 @@ public class BeePathfinding {
      */
     @Nullable
     public List<BlockPos> findPath(BlockPos start, BlockPos end) {
-        // Cache hit - reutiliser le chemin existant
-        if (end.equals(cachedEnd) && cachedStart != null && start.closerThan(cachedStart, 3) && currentPath != null) {
+        long gameTime = level.getGameTime();
+
+        // TTL cache: meme destination + calcul < 20 ticks → reutiliser le chemin
+        if (end.equals(cachedEnd) && currentPath != null
+                && (gameTime - lastComputeGameTime) < RECOMPUTE_INTERVAL) {
             return currentPath;
         }
 
         cachedStart = start;
         cachedEnd = end;
+        lastComputeGameTime = gameTime;
+        progressStallCounter = 0;
+        lastTrackedPathIndex = 0;
 
         // Etape 1: Essayer le vol direct (ligne de vue)
         if (hasLineOfSight(start, end)) {
@@ -148,6 +161,18 @@ public class BeePathfinding {
     public BlockPos getNextWaypoint(Vec3 currentPos, double reachDistance) {
         if (currentPath == null || currentPath.isEmpty()) {
             return null;
+        }
+
+        // Stall detection: si aucune progression en 60 ticks, forcer recalcul
+        if (currentPathIndex == lastTrackedPathIndex) {
+            progressStallCounter++;
+            if (progressStallCounter >= STALL_THRESHOLD) {
+                clearPath();
+                return null;
+            }
+        } else {
+            lastTrackedPathIndex = currentPathIndex;
+            progressStallCounter = 0;
         }
 
         // Avancer dans le chemin
@@ -469,6 +494,8 @@ public class BeePathfinding {
         currentPathIndex = 0;
         cachedStart = null;
         cachedEnd = null;
+        progressStallCounter = 0;
+        lastTrackedPathIndex = 0;
     }
 
     public boolean isPathComplete() {

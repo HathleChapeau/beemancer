@@ -1,9 +1,9 @@
 {
   "nodes": [
     {
-      "id": "the_beginning",
+      "id": "apica",
       "position": {"x": 0, "y": 0},
-      "icon": "beemancer:textures/item/codex.png",
+      "icon": "beemancer:textures/gui/codex/icon_unknown.png",
       "category": "ROOT",
       "parent": null,
       "hidden_until_parent_unlocked": false,
@@ -12,9 +12,9 @@
     {
       "id": "1st_bee",
       "position": {"x": 0, "y": -2},
-      "icon": "beemancer:textures/item/bee_jar.png",
+      "icon": "beemancer:textures/item/scoop.png",
       "category": "NORMAL",
-      "parent": "the_beginning",
+      "parent": "apica",
       "hidden_until_parent_unlocked": false,
       "visibility": "VISIBLE",
       "quest_id": "obtain_magic_bee"

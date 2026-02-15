@@ -8,6 +8,7 @@
 	  "./gradlew"
     ],
     "allow": [
+      "WebFetch",
       "Read(/home/adri/beemancer/*)",
       "Write(/home/adri/beemancer/*)",
       "Edit(/home/adri/beemancer/*)",

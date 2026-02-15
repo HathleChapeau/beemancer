@@ -39,6 +39,10 @@ public class HiveBeeSlot {
     private float maxHealth = 10;
     @Nullable private BlockPos assignedFlower = null;
 
+    // Orphan tracking (FIX-02): chunk-safe verification for outside bees
+    private int orphanTimer = 0;
+    @Nullable private BlockPos lastKnownPos = null;
+
     // --- State Management ---
 
     public State getState() {
@@ -142,6 +146,33 @@ public class HiveBeeSlot {
         this.assignedFlower = null;
     }
 
+    // --- Orphan Tracking ---
+
+    public int getOrphanTimer() {
+        return orphanTimer;
+    }
+
+    public void setOrphanTimer(int timer) {
+        this.orphanTimer = timer;
+    }
+
+    public void incrementOrphanTimer() {
+        orphanTimer++;
+    }
+
+    public void resetOrphanTimer() {
+        orphanTimer = 0;
+    }
+
+    @Nullable
+    public BlockPos getLastKnownPos() {
+        return lastKnownPos;
+    }
+
+    public void setLastKnownPos(@Nullable BlockPos pos) {
+        this.lastKnownPos = pos;
+    }
+
     // --- Reset ---
 
     public void clear() {
@@ -152,6 +183,8 @@ public class HiveBeeSlot {
         currentHealth = 0;
         maxHealth = 10;
         assignedFlower = null;
+        orphanTimer = 0;
+        lastKnownPos = null;
     }
 
     // --- NBT ---
@@ -170,6 +203,10 @@ public class HiveBeeSlot {
             tag.putInt("FlowerX", assignedFlower.getX());
             tag.putInt("FlowerY", assignedFlower.getY());
             tag.putInt("FlowerZ", assignedFlower.getZ());
+        }
+        tag.putInt("OrphanTimer", orphanTimer);
+        if (lastKnownPos != null) {
+            tag.putLong("LastKnownPos", lastKnownPos.asLong());
         }
         return tag;
     }
@@ -190,5 +227,7 @@ public class HiveBeeSlot {
         } else {
             assignedFlower = null;
         }
+        orphanTimer = tag.getInt("OrphanTimer");
+        lastKnownPos = tag.contains("LastKnownPos") ? BlockPos.of(tag.getLong("LastKnownPos")) : null;
     }
 }

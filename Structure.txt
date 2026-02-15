@@ -82,7 +82,7 @@ Philosophie:
 │ client/gui/screen/AbstractBeemancerScreen│ Base commune pour tous les screens│
 │ common/block/alchemy/AbstractPipeBlock │ Base commune pipes (Item+Honey)    │
 │ common/menu/BeemancerMenu              │ Base menus (player inv/hotbar)     │
-│ common/entity/bee/goal/MoveToTargetGoal│ Goal navigation bee via BeeWand    │
+│ (supprime: MoveToTargetGoal)           │ BeeWand supprimee (DESIGN-01)      │
 │ common/blockentity/storage/           │                                        │
 │   StorageChestManager               │ Gestion coffres réseau stockage      │
 │   StorageItemAggregator             │ Coordinateur agrégation (délègue)    │
@@ -249,9 +249,8 @@ LISTE DES FEATURES:
   Fichier: Structure/feature_magic_hive.txt
   Description: Ruche magique pour héberger les MagicBees
 
-→ Bee Wand
-  Fichier: Structure/feature_bee_wand.txt
-  Description: Baguette pour observer et contrôler les entités
+→ Bee Wand [SUPPRIME - DESIGN-01]
+  Description: Supprimee (MoveToTargetGoal + targetPos retires de MagicBeeEntity)
 
 → Breeding System
   Fichier: Structure/feature_breeding_system.txt

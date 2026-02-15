@@ -3,6 +3,43 @@
 ################################################################################
 
 ================================================================================
+2026-02-15 - Bee Behavior & Hive Improvements (6 propositions)
+================================================================================
+
+FIX-01: Bee Ledger — Chunk safety nids sauvages (CRITIQUE)
+- BeeNestBlockEntity: lastKnownPositions + deathGraceTimers maps
+- detectDeadBees() 2-tier: chunk pas charge = skip, charge = timer 60s
+- Grace period 100 ticks au load, persistence NBT complete
+- WildBeePatrolGoal: isLoaded(nestPos) dans tickReturningToNest()
+
+FIX-02: Orphan timer domestic bees + entity cleanup
+- HiveBeeSlot: orphanTimer + lastKnownPos avec NBT
+- HiveBeeLifecycleManager.verifyOutsideBees(): 2-tier chunk-safe (2400 ticks timeout)
+- handleBeePing(): stocke lastKnownPos + reset orphanTimer
+- ForagingBehaviorGoal: isLoaded(hivePos) dans tickReturning()
+- MagicBeeEntity: orphan entity cleanup (ni hive ni nest > 2400 ticks = discard)
+
+PERF-01: TTL cache pathfinding 3 couches
+- BeePathfinding: TTL 20 ticks (max 1 recalcul/seconde)
+- Suppression du check closerThan(cachedStart, 3)
+- Stall detection: progressStallCounter, force recalcul apres 60 ticks sans progression
+
+PERF-02: Goal-level tick throttle N=4
+- ForagingBehaviorGoal + WildBeePatrolGoal: movement 1 tick sur 4
+- Guard UUID-based: tickCount % 4 != (UUID & 0x3) pour etalement
+- Timers/stateMachine tick AVANT le guard (precision timeouts)
+- Non throttle: ReturnToHiveWhenLowHealthGoal, BeeRevengeGoal
+
+CLEAN-01: Centraliser vitesses de vol
+- BeeBehaviorConfig: getForagingSpeed(), getPatrolSpeed(), getFleeSpeed(), getEnragedForagingSpeed()
+- Facteurs: foraging=0.2, patrol=0.15, flee=0.2 (appliques a flyingSpeed)
+- Remplacement constantes hardcodees dans ForagingBehaviorGoal, WildBeePatrolGoal, ReturnToHiveWhenLowHealthGoal
+
+DESIGN-01: Suppression BeeWand (reliquat)
+- Supprime MoveToTargetGoal.java
+- Retire import, registration goal, targetPos field/methods/NBT de MagicBeeEntity
+
+================================================================================
 2026-02-15 - Bee Nests + Scoop (Worldgen)
 ================================================================================
 

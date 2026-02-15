@@ -19,6 +19,7 @@
 package com.chapeau.beemancer.common.entity.bee.goal;
 
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
+import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.phys.Vec3;
@@ -33,7 +34,6 @@ public class ReturnToHiveWhenLowHealthGoal extends Goal {
     
     private static final float FLEE_THRESHOLD = 0.3f; // 30%
     private static final double REACH_DISTANCE = 1.5;
-    private static final double FLEE_SPEED = 0.12;
     private static final double FLIGHT_ALTITUDE = 1.0; // Altitude de vol
     
     private final MagicBeeEntity bee;
@@ -87,7 +87,8 @@ public class ReturnToHiveWhenLowHealthGoal extends Goal {
 
         Vec3 direction = targetVec.subtract(bee.position()).normalize();
 
-        bee.setDeltaMovement(direction.scale(FLEE_SPEED));
+        BeeBehaviorConfig config = bee.getBehaviorConfig();
+        bee.setDeltaMovement(direction.scale(config.getFleeSpeed()));
 
         // Rotation vers la ruche
         double dx = hiveVec.x - bee.getX();

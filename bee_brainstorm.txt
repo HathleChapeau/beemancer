@@ -1,0 +1,579 @@
+
+################################################################################
+#                    BEEMANCER — BRAINSTORM BEE & HIVE SYSTEM                  #
+#                              Date: 2026-02-15                                 #
+################################################################################
+
+================================================================================
+TABLE DES MATIERES
+================================================================================
+1. GROUPE 1 — Comportement et IA des abeilles
+2. GROUPE 2 — Ruches et cycle de vie
+3. GROUPE 3 — Genetique, especes et breeding
+4. GROUPE 4 — Nids naturels, capture et worldgen
+5. GROUPE 5 — Progression, feedback et gameplay loop
+6. GROUPE 6 — Matrice de priorite globale
+
+EXPERTS:
+- [FORESTRY] Expert Forestry (breeding Mendelien, apiaries, queen/drone lifecycle)
+- [PB] Expert Productive Bees (configurable species, hive blocks, gene editing)
+- [CREATE] Expert Create (SmartBlockEntity, BlockEntityBehaviour, animations)
+- [ARCH] Architecte Beemancer (faits du code, pas d'opinions)
+
+METHODE: Pour chaque groupe, l'architecte presente les faits du code, les 3
+experts proposent des ameliorations sourcees, l'architecte challenge.
+
+Tags consensus: [CONV] = 2+ experts d'accord, [UNAN] = 3/3 experts d'accord
+
+################################################################################
+#                                                                              #
+#                              GROUPE 1                                        #
+#                    Comportement et IA des abeilles                           #
+#                                                                              #
+################################################################################
+
+================================================================================
+1.1 ETAT ACTUEL DU CODE (presente par l'architecte)
+================================================================================
+
+Fichiers analyses: 9 fichiers, ~2,883 lignes totales
+
+ENTITE PRINCIPALE — MagicBeeEntity.java (701L)
+  - Extends Bee vanilla, FlyingMoveControl, noGravity
+  - Attributs: HP=10, FLYING_SPEED=0.6, MOVEMENT_SPEED=0.3, ATTACK=2
+  - 8 SynchedEntityData: species, environment, flower, pollinated, enraged,
+    returning, debugDest, debugPath
+  - Server fields: geneData, targetPos, homeNestPos, assignedHivePos/Slot,
+    enragedTimer (200 ticks=10s), hivePingTimer (40 ticks)
+  - tick(): force vol + tick enraged timer + tick hive ping + gene.applyBehavior()
+  - NBT save/load: 66 lignes (27 save + 39 load)
+
+5 GOALS ENREGISTRES:
+  | Prio | Goal                          | Lignes | Description                    |
+  |------|-------------------------------|--------|--------------------------------|
+  | P0   | FloatGoal                     | vanilla| Flotte sur l'eau               |
+  | P1   | ReturnToHiveWhenLowHealthGoal | 111L   | Fuite non-interruptible, v=0.12|
+  | P2   | BeeRevengeGoal                | 143L   | Attaque, timer 10s, CD 20 ticks|
+  | P3   | ForagingBehaviorGoal          | 500L   | Butinage complet, state machine|
+  | P3   | WildBeePatrolGoal             | 361L   | Patrouille nids, 3 waypoints   |
+  | P4   | MoveToTargetGoal              | 79L    | Navigation manuelle BeeWand    |
+
+EXCLUSIVITE P3: ForagingGoal requiert hasAssignedHive(),
+               WildBeePatrol requiert !hasAssignedHive()+hasHomeNest()
+
+STATE MACHINE — BeeAIStateMachine.java (227L)
+  6 etats: IDLE → LEAVING_HIVE → SEEKING_FLOWER → WORKING → RETURNING → RESTING
+  Timeouts: SEEKING_FLOWER=800 ticks (40s), RETURNING=800 ticks
+  ATTENTION: Utilisee SEULEMENT par ForagingBehaviorGoal.
+  WildBeePatrolGoal a sa PROPRE state machine interne (PatrolState enum).
+
+PATHFINDING — BeePathfinding.java (507L)
+  Algorithme Theta* 3D (Any-Angle), 26 directions
+  DDA 3D line-of-sight, wall penalty +0.5, altitude bonus -0.3
+  Cache: invalidation si start > 3 blocs ou end change
+  Replanning si hors chemin > 5 blocs, string pulling smoothing
+  MAX_ITERATIONS=1000, MAX_PATH_LENGTH=100
+  En pratique: recalcul toutes les ~25 ticks (1.25s) grace au cache
+
+CYCLES DE COMPORTEMENT:
+  Butinage: getAndAssignFlower → Theta* → approach from above → descend →
+    work (pitch 40deg, 100 ticks) → setPollinated → return → enter hive
+  Patrouille: sort nid → 3 waypoints aleatoires (rayon 15, 2-4 blocs au-dessus
+    sol) → attend 2-10s chaque → retour nid → bee supprimee → respawn par nid
+  Combat: hurt() → enraged 200 ticks → poursuit → attaque CD 20 ticks
+  Fuite: vie < 30% → P1 non-interruptible → nav directe v=0.12
+
+GENES EXISTANTS PERTINENTS (EnvironmentGene):
+  - canWorkAtNight(): VERIFIE dans MagicHiveBlockEntity.canBeeForage() L382-389
+  - canWorkInRain(): EXISTE mais N'EST VERIFIE NULLE PART
+  - temperatureTolerance: VERIFIE dans canBeeForage(), echelle -2 a +2
+  - 3 implementations: Normal(night=F, rain=F, tol=0), Nocturnal(night=T),
+    Robust(rain=T, tol=1)
+  - gene.applyBehavior() appele chaque tick mais TOUTES implementations sont NO-OP
+
+POINT PERFORMANCE IDENTIFIE:
+  FlowerSearchHelper.findAllFlowers() = scan brute-force O((2r+1)^3)
+  Avec rayon=16: ~35,937 lookups de BlockState par appel
+  C'est la cible #1 pour l'optimisation, impacte directement la recherche de
+  fleurs, la pollinisation, et le territoire variable.
+
+BUG POTENTIEL IDENTIFIE:
+  Les deux state machines (ForagingGoal.BeeAIStateMachine vs
+  WildBeePatrolGoal.PatrolState) ne communiquent PAS. Si une abeille sauvage
+  est attaquee pendant la patrouille, BeeRevengeGoal prend le dessus (P2 vs P3)
+  mais WildBeePatrolGoal n'est pas reset proprement.
+
+DUPLICATION DE CODE IDENTIFIEE:
+  navigateToVec3() duplique dans 5 fichiers avec variations de vitesse:
+  | Goal           | Speed source          | Factor | Extra                    |
+  |----------------|-----------------------|--------|--------------------------|
+  | Foraging       | config.flyingSpeed    | * 0.2  | enraged check            |
+  | WildPatrol     | config.flyingSpeed    | * 0.15 | zero distance guard      |
+  | Revenge        | config.enragedSpeed   | / 10   | target entity center     |
+  | FleeHP         | fixe                  | 0.12   |                          |
+  | MoveTarget     | fixe                  | 0.08   |                          |
+  La partie rotation (yaw+bodyRot) est IDENTIQUE dans les 5 cas.
+
+================================================================================
+1.2 PROPOSITIONS DES EXPERTS
+================================================================================
+
+22 propositions au total: 7 Forestry + 8 Productive Bees + 7 Create
+
+--------------------------------------------------------------------------------
+1.2.1 PROPOSITIONS FORESTRY (7)
+--------------------------------------------------------------------------------
+
+[FORESTRY-1] Systeme d'Effets de Territoire par Espece
+  Quoi: Chaque espece applique un effet dans sa zone (regen, freeze, growth,
+    light, etc.) — 15+ effets dans Forestry (Beatific, Aggress, Flammable...)
+  Pourquoi: Rend chaque espece unique au-dela de la production. Sans effets,
+    les abeilles ne sont que des fermes automatiques.
+  Comment: Effets cote RUCHE (pas entite) dans MagicHiveBlockEntity.serverTick().
+    Scan incremental via LazyTick (CREATE-3). TerritoryEffectBehaviour composable.
+  Reference: https://ftb.fandom.com/wiki/Effect — 15+ effets Forestry
+  Priorite: P1 | Effort: Moyen | Risque: Faible
+  [ARCH] Confirme: aucun systeme d'effet dans le code actuel.
+  [CREATE] Synergie: combiner avec CREATE-1 (behaviour) + CREATE-3 (lazy tick).
+  [FORESTRY] Precision: effets cote ruche, pas cote entite — pattern Forestry.
+
+[FORESTRY-2] Tolerance Climatique (Humidite)
+  Quoi: Ajouter l'axe humidite (Arid/Normal/Damp) au systeme temperature existant.
+  Pourquoi: La temperature existe deja mais l'humidite manque. Double axe =
+    plus de diversite de biomes pertinents.
+  Comment: Enrichir BiomeTemperatureManager avec getHumidity(biome). Ajouter
+    humidityTolerance dans EnvironmentGene. Check dans canBeeForage().
+  Reference: https://ftbwiki.org/Climate — Forestry Temperature x Humidity grid
+  Priorite: P2 | Effort: Faible | Risque: Aucun
+  [ARCH] Correction: la temperature EST DEJA implementee (echelle -2 a +2).
+    Seule l'humidite manque. Effort reduit de Moyen a Faible.
+
+[FORESTRY-3] Pollinisation Active (propagation de fleurs)
+  Quoi: Les abeilles font pousser des fleurs/cultures autour de la ruche.
+    Forestry: trait Pollination (5% a 99%), zone = territoire x3.
+  Pourquoi: Feedback visuel gratifiant, role des abeilles dans la ferme.
+  Comment: Apres butinage, pollinateArea() via file d'attente incrementale.
+    5-10 blocs par lazy tick, pas de scan complet.
+  Reference: https://ftbwiki.org/Pollination — 8 niveaux de pollination
+  Priorite: P2 | Effort: Moyen | Risque: Faible
+  [ARCH] Confirme: aucune propagation de fleurs dans le code actuel.
+  [CREATE] ALERTE PERF: scan brute-force O(n^3). OBLIGATOIRE: scan incremental
+    via Queue<BlockPos>, 5-10 blocs par lazy tick. Pattern Create Basin.
+
+[FORESTRY-4] canWorkInRain Check Manquant (CORRIGE)
+  Quoi: Ajouter le check canWorkInRain qui manque + rappel des abeilles si
+    conditions changent pendant butinage.
+  Pourquoi: canWorkAtNight est deja verifie cote ruche, mais canWorkInRain
+    n'est verifie NULLE PART. Et aucun rappel si conditions changent en cours.
+  Comment: (a) Ajouter canWorkInRain dans MagicHiveBlockEntity.canBeeForage()
+    (b) Ajouter checks dans ForagingBehaviorGoal.canContinueToUse() pour rappel
+    (c) Optionnel: ReturnToHiveOnBadConditionsGoal (approche PB)
+  Reference: https://ftbwiki.org/Bee_Breeding — traits Nocturnal, Flyer, Cave
+  Priorite: P0 | Effort: Trivial | Risque: Aucun
+  [ARCH] Correction: canWorkAtNight DEJA verifie cote ruche. Seul rain manque.
+  [PB] Convergence avec PB-2. Debat: modifier canContinueToUse() vs nouveau Goal.
+
+[FORESTRY-5] Speed Gene (Vitesse de Production Heritable)
+  Quoi: Gene multiplicateur de duree de production (0.3x a 1.7x), heritable.
+    7 niveaux: Slowest(0.3) a Fastest(1.7).
+  Pourquoi: Ajoute une dimension de breeding. Le joueur cherche des Fastest.
+  Comment: SpeedGene.java dans GeneCategory.PRODUCTION. Point d'insertion:
+    ForagingBehaviorGoal L228 — multiplier foragingDuration par le gene.
+    La config JSON definit le defaut, le gene peut le depasser via breeding.
+  Reference: https://ftbwiki.org/Bee_Breeding — Speed trait 0.3x-1.7x
+  Priorite: P1 | Effort: Faible | Risque: Aucun
+  [ARCH] Fait: foragingDuration=100 configurable par JSON, pas heritable.
+  [CREATE] Synergie avec CREATE-2 (LerpedFloat) pour transition smooth.
+
+[FORESTRY-6] Territory Gene (Zone de Travail Heritable)
+  Quoi: Rayon de travail heritable au lieu de fixe par config.
+    6 niveaux: Smallest(4) a Largest(18).
+  Pourquoi: Dimension breeding supplementaire. Crucial si effets de territoire.
+  Comment: TerritoryGene.java. Remplace config.getAreaOfEffect() dans
+    ForagingBehaviorGoal.findRandomNearbyFlower() L411.
+  Reference: https://ftbwiki.org/Area — Territory trait Forestry
+  Priorite: P2 | Effort: Faible | Risque: Faible
+  [ARCH] Fait: areaOfEffect=16 configurable par JSON, pas heritable.
+  [CREATE] CRITIQUE: rayon variable + scan O(n^3) = performance killer.
+    OBLIGATOIRE: scan incremental (octants) + cache avec TTL.
+
+[FORESTRY-7] Specialty Products en Biome Prefere
+  Quoi: Loot bonus uniquement si l'abeille est dans son biome prefere.
+    Forestry: "specialty" vs "primary" products.
+  Pourquoi: Incentive pour placer les abeilles dans le bon biome.
+  Comment: Ajouter specialtyLoot dans BeeBehaviorConfig + check
+    BiomeClimateHelper.isPreferredBiome() dans le calcul de loot.
+  Reference: https://ftb.fandom.com/wiki/Apiculture — Specialty Products
+  Priorite: P2 | Effort: Faible | Risque: Aucun
+  [CREATE] Court terme: seconde LootEntry list. Long terme: ForagingRecipe (C5).
+
+--------------------------------------------------------------------------------
+1.2.2 PROPOSITIONS PRODUCTIVE BEES (8)
+--------------------------------------------------------------------------------
+
+[PB-1] Systeme d'Attributs Comportementaux
+  Quoi: 5 attributs: Productivity, Temper, Endurance, ActivityPattern,
+    WeatherTolerance. Stockes via SynchedEntityData + NBT.
+  Pourquoi: Toutes les abeilles se comportent identiquement. Les attributs
+    ajoutent de la profondeur et des raisons de preferer une espece.
+  Comment: Ajouter EntityDataAccessor<Integer> dans MagicBeeEntity pour chaque
+    attribut. Sauvegarder/charger en NBT. Defaults = niveau 0 (Normal).
+  Reference: https://github.com/JDKDigital/productive-bees — ProductiveBee.java
+  Priorite: P1 | Effort: Moyen | Risque: Faible
+  [ARCH] Correction: EnvironmentGene couvre DEJA ActivityPattern et
+    WeatherTolerance. Enrichir l'existant, pas recreer.
+  [PB] Affine: Seuls Productivity, Temper, Endurance sont vraiment nouveaux.
+
+[PB-2] Tolerance Meteo + Cycle Jour/Nuit (Rappel)
+  Quoi: Checks dans canUse() + rappel si conditions changent pendant butinage.
+    Mecanisme PB: laisse dehors pendant mauvaises conditions = chance d'evolution.
+  Pourquoi: Les abeilles travaillent 24/7 sans contrainte. Pas de challenge.
+  Comment: Checks dans ForagingBehaviorGoal.canUse() + transitions forcees
+    dans BeeAIStateMachine si conditions changent. Optionnel: evolution par laisse.
+  Reference: https://productive-bees.readthedocs.io/ — Leashing mechanic
+  Priorite: P1 | Effort: Faible | Risque: Faible
+  [ARCH] Correction: canWorkAtNight deja verifie COTE RUCHE. Pas de rappel.
+  [FORESTRY] Convergence avec F-4. Quick win = rain check + rappel.
+
+[PB-3] Multiplicateur de Production (Productivity)
+  Quoi: Gene heritable: Normal=1.0x, Medium=1.5x, High=2.0x, Very High=2.5x.
+    Affecte la quantite de ressources deposees par cycle.
+  Pourquoi: LE moteur de progression principal dans PB. Min-maxing gratifiant.
+  Comment: Multiplicateur dans ForagingBehaviorGoal phase WORKING→RETURNING
+    sur le stack.setCount(). Methode getProductivityMultiplier() dans BeeGeneData.
+  Reference: https://github.com/JDKDigital/productive-bees/issues/392
+  Priorite: P0 | Effort: Trivial | Risque: Aucun
+  [FORESTRY] Convergence avec F-5 (Speed Gene). Meme concept, echelles differentes.
+  Debat: PB 4 niveaux (1.0-2.5x) vs Forestry 7 niveaux (0.3-1.7x).
+
+[PB-4] Temper Dynamique et Defensif Gradue
+  Quoi: 4 niveaux: Passive (jamais), Normal (actuel), Aggressive (+ mobs
+    hostiles), Hostile (tout sauf owner). Calming via Honey Treat item.
+  Pourquoi: BeeRevengeGoal actuel est binaire. Temper ajoute personnalite.
+  Comment: Switch sur Temper dans BeeRevengeGoal.canUse(). Passive: return false.
+    Aggressive: ajouter NearestAttackableTargetGoal(Monster.class).
+    Hostile: target LivingEntity sauf owner. Timer enraged permanent pour Agg/Host.
+  Reference: https://allthemods.github.io/alltheguides/atm9/productivebees/
+  Priorite: P2 | Effort: Faible | Risque: Faible
+  [PB] Affine: enrichit le systeme enraged existant, ne le remplace pas.
+
+[PB-5] Abeilles Solitaires
+  Quoi: Type SOLITARY: ne vit pas en ruche, pas de production, breeding only.
+    Rayon patrouille reduit (8 blocs). SolitaryNestBlock accepte 1 abeille.
+  Pourquoi: PB: phase exploration (solitaires) → phase production (ruches).
+    Ajoute de la progression.
+  Comment: Flag BeeNestingType (HIVE/SOLITARY) dans BeeGeneData. Logique
+    conditionnelle dans WildBeePatrolGoal et entree en ruche.
+  Reference: https://github.com/JDKDigital/productive-bees — SolitaryBee.java
+  Priorite: P2 | Effort: Moyen | Risque: Moyen
+  [ARCH] Observation: l'exclusivite P3 est deja un proto-solitaire.
+
+[PB-6] Reassignation Ruche par Cage + Sneak
+  Quoi: Sneak+clic droit sur ruche = adopte nouvelle ruche. Sneak+clic droit
+    sur fleur = set flower pos. Sans sneak = release normal.
+  Pourquoi: Probleme classique: abeilles "remembrent" l'ancienne ruche.
+    QoL critique pour la gestion.
+  Comment: Modifier ScoopItem.useOn() pour gerer le Sneak. Setter hivePos,
+    trigger handleBeePing() immediat, reset savedFlowerPos.
+  Reference: https://github.com/JDKDigital/productive-bees/issues/595
+  Priorite: P1 | Effort: Faible | Risque: Aucun
+
+[PB-7] Simulation Mode pour Ruches Avancees
+  Quoi: Upgrade qui simule le cycle sans spawner d'entite. Production calculee
+    toutes les 600 ticks (30s) en fonction des attributs.
+  Pourquoi: Theta* 3D couteux. Beaucoup d'abeilles = lag. Trade-off: pas
+    d'effets visuels, pas de defense (Temper inutile en simulation).
+  Comment: SimulationUpgrade item. SimulatedProductionHelper.java (~80L) dans
+    core/util/. Calcul base sur Productivity + ActivityPattern + Weather.
+  Reference: https://allthemods.github.io/alltheguides/atm9/productivebees/
+  Priorite: P3 | Effort: Moyen | Risque: Moyen
+
+[PB-8] Abeilles a Capacites Speciales (Block Interaction)
+  Quoi: Goals differents par type de bloc: Mining (minerais), Garden (crops
+    bonemeal), Soul (soul blocks), Wax (blocs miel).
+  Pourquoi: Le ForagingGoal actuel cible uniquement les fleurs. Varier la
+    cible par espece = farms specialisees, abeilles "ouvrieres".
+  Comment: Interface ISpecialForagingBehavior avec getTargetBlockPredicate().
+    SpecialForagingGoal.java adaptant ForagingBehaviorGoal. HarvestHelper
+    reutilisable pour les interactions blocs.
+  Reference: https://toxicfrog.github.io/getting-started-with-productive-bees/
+  Priorite: P2 | Effort: Eleve | Risque: Moyen
+  [CREATE] Synergie forte avec CREATE-1 (BeeGoalBehaviour composable).
+  [ARCH] HarvestHelper existe deja dans core/util — reutilisable.
+
+--------------------------------------------------------------------------------
+1.2.3 PROPOSITIONS CREATE (7)
+--------------------------------------------------------------------------------
+
+[CREATE-1] Composable BeeGoalBehaviour (pattern SmartBlockEntity)
+  Quoi: Interface BeeEntityBehaviour avec lifecycle (init, tick, save, load,
+    destroy). MagicBeeEntity gere une Map<Type, Behaviour>. Chaque behaviour
+    encapsule son Goal + son etat NBT + ses SynchedEntityData.
+  Pourquoi: MagicBeeEntity (701L) depasse la limite 150L. Ajout de goals
+    necessite modification de l'entite. Les deux state machines ne communiquent pas.
+  Comment: BeeEntityBehaviour.java (abstraite) + BeeEntityBehaviourType.java.
+    Migrer les 5 goals en: ForagingBehaviour, PatrolBehaviour, CombatBehaviour,
+    FleeToHiveBehaviour. registerGoals() delegue aux behaviours.
+  Reference: https://github.com/Creators-of-Create/Create/blob/mc1.21.1/dev/
+    src/main/java/com/simibubi/create/foundation/blockEntity/SmartBlockEntity.java
+  Priorite: P1 | Effort: Moyen | Risque: Moyen
+  [ARCH] Fait: couplage via API publique (getters/setters), pas direct.
+    La taille (701L) est le vrai probleme.
+  [FORESTRY] Distinction cle: Behaviours = ACTIONS, Genes = MODIFICATEURS.
+    Ne pas tout mettre dans les behaviours.
+
+[CREATE-2] LerpedFloat pour Animations Smooth
+  Quoi: Interpolation des rotations (pitch 40deg snap, yaw changes brusques)
+    via LerpedFloat (valeur courante → cible avec courbe d'interpolation).
+  Pourquoi: Les 5 goals ecrivent tous directement setYRot()+yBodyRot sans
+    interpolation. Le lerp vanilla inter-frame existe mais pas inter-tick.
+  Comment: LerpedFloat.java dans core/util/. Ajouter pitchLerp + bodyRotLerp
+    dans MagicBeeEntity. Goals: chase(target, speed). Renderer: getValue(partial).
+  Reference: https://github.com/Creators-of-Create/Create/blob/mc1.21.1/dev/
+    src/main/java/com/simibubi/create/content/processing/basin/BasinBlockEntity.java
+  Priorite: P0 | Effort: Faible | Risque: Aucun
+  [ARCH] Confirme: aucune interpolation custom dans MagicBeeRenderer.
+    Lerp vanilla inter-frame existe mais pas inter-tick.
+
+[CREATE-3] LazyTick pour Optimisation Pathfinding et Scans
+  Quoi: Operations couteuses (flower search, replanning) toutes les N ticks
+    au lieu de chaque tick. Pattern SmartBlockEntity.lazyTick().
+  Pourquoi: FlowerSearchHelper.findAllFlowers() = O(n^3) brute force.
+    Rayon 16 = 35,937 lookups. CIBLE #1 pour l'optimisation.
+  Comment: LazyTick dans MagicBeeEntity ou BeeAIStateMachine. Separer
+    navigation (chaque tick pour smooth) et recherche/replanning (lazy).
+    BeePathfinding.needsReplan flag verifie en lazy tick.
+  Reference: https://github.com/Creators-of-Create/Create/blob/mc1.21.1/dev/
+    src/main/java/com/simibubi/create/foundation/blockEntity/SmartBlockEntity.java
+  Priorite: P0 | Effort: Faible | Risque: Aucun
+  [ARCH] Correction: le cache pathfinding est deja efficace (~25 ticks entre
+    recalculs). La VRAIE cible = FlowerSearchHelper scan, pas le pathfinding.
+  [FORESTRY+PB] Prerequis pour: pollinisation (F3), territoire variable (F6),
+    effets de territoire (F1), simulation (PB-7).
+
+[CREATE-4] Stress/Budget System pour Actions d'Abeilles
+  Quoi: Chaque ruche a une capacite d'activite, chaque abeille consomme du
+    "stress" selon son comportement (FORAGER=4, GUARD=6, PATROL=2).
+  Pourquoi: Aucun mecanisme de balance/cout. Toutes les abeilles a 100%.
+    Cree des tiers de ruches et des choix strategiques.
+  Comment: BeeStressValues.java (registre couts). stressCapacity dans
+    HiveBlockEntity (configurable par tier). Check avant sortie de ruche.
+  Reference: https://github.com/Creators-of-Create/Create/blob/mc1.21.1/dev/
+    src/main/java/com/simibubi/create/api/stress/BlockStressValues.java
+  Priorite: P2 | Effort: Moyen | Risque: Faible
+  [FORESTRY] Complementaire aux Frames de Forestry (consommables qui boostent).
+    Stress = limite capacite, Frames = boost stats.
+
+[CREATE-5] ForagingRecipe Data-Driven (cycle butinage comme recette JSON)
+  Quoi: Le cycle de butinage comme recette: input (fleur tag) + conditions
+    (biome, weather) → outputs (items avec chances) + duration.
+  Pourquoi: Systeme actuel (LootEntry custom) non-standard. Pas de JEI, pas
+    de datapacks pour modpackers. Create a demontre l'extensibilite des recettes.
+  Comment: ForagingRecipe.java + FORAGING RecipeType + serializer. JSONs dans
+    data/beemancer/recipe/foraging/. Fallback sur BeeBehaviorConfig.
+  Reference: https://github.com/Creators-of-Create/Create/blob/mc1.21.1/dev/
+    src/main/java/com/simibubi/create/content/processing/recipe/ProcessingRecipe.java
+  Priorite: P3 | Effort: Eleve | Risque: Moyen
+  [FORESTRY] Synergie avec F-7 (specialty products comme recettes conditionnelles).
+  [CREATE] Court terme: seconde LootEntry list suffit. Long terme: recettes.
+
+[CREATE-6] BeeNavigationHelper (eliminer duplication)
+  Quoi: Extraire le code de navigation duplique dans 5 fichiers en un helper
+    statique. Au minimum: la partie rotation (identique dans les 5 cas).
+  Pourquoi: 5 implementations similaires avec variations de vitesse.
+    ~60 lignes de code duplique.
+  Comment: BeeNavigationHelper.java dans core/util/:
+    - flyToward(bee, target, speed) — mouvement + rotation
+    - hoverAt(bee, target, correctionFactor) — stationnaire
+    - calculateYaw(from, to) — calcul yaw
+  Reference: https://github.com/Creators-of-Create/Create/tree/mc1.21.1/dev/
+    src/main/java/com/simibubi/create/foundation/utility
+  Priorite: P0 | Effort: Trivial | Risque: Aucun
+  [ARCH] Nuance: la logique de vitesse est specifique a chaque goal.
+    La partie rotation est identique. Helper parametrable recommande.
+
+[CREATE-7] Validation Periodique Centralisee
+  Quoi: Centraliser les timers ad-hoc (hivePingTimer=40, etc.) en un cycle
+    de validation periodique configurable.
+  Pourquoi: Chaque nouveau check = nouveau timer. Le pattern Create centralise.
+  Comment: validate() appele via lazyTick. Migrer tickHivePing(), ajouter:
+    - Verifier assignedHivePos valide
+    - Verifier homeNestPos intact
+    - Verifier fleur cible existante
+    Frequence configurable (actuellement hard-code 40).
+  Reference: https://github.com/Creators-of-Create/Create/blob/mc1.21.1/dev/
+    src/main/java/com/simibubi/create/content/kinetics/base/KineticBlockEntity.java
+  Priorite: P1 | Effort: Faible | Risque: Aucun
+  [FORESTRY] Synergie: check climatique = validation periodique (F-2).
+
+================================================================================
+1.3 CONVERGENCES ET DIVERGENCES
+================================================================================
+
+--------------------------------------------------------------------------------
+CONVERGENCES UNANIMES [UNAN] (3/3 experts d'accord)
+--------------------------------------------------------------------------------
+
+[UNAN-1] canWorkInRain manquant + rappel pendant butinage
+  Sources: FORESTRY-4 + PB-2
+  Tous d'accord: c'est le quick win #1. canWorkInRain existe dans EnvironmentGene
+  mais n'est verifie NULLE PART. Ajouter: (a) check dans canBeeForage(),
+  (b) rappel si conditions changent (dans canContinueToUse ou nouveau Goal).
+  Priorite: P0 | Effort: Trivial
+
+[UNAN-2] BeeNavigationHelper (deduplication)
+  Source: CREATE-6
+  Tous d'accord: la rotation est dupliquee identiquement dans 5 fichiers.
+  Extraire en helper parametrable (speed en argument, rotation partagee).
+  Priorite: P0 | Effort: Trivial
+
+[UNAN-3] LerpedFloat pour animations smooth
+  Source: CREATE-2
+  Tous d'accord: pas d'interpolation inter-tick. Les changements brusques de
+  direction sont visuellement saccades. Quick win visuel.
+  Priorite: P0 | Effort: Faible
+
+[UNAN-4] LazyTick / Scan incremental (FlowerSearchHelper)
+  Source: CREATE-3, valide par tous
+  Tous d'accord: FlowerSearchHelper.findAllFlowers() O(n^3) = cible #1.
+  Prerequis technique pour: pollinisation (F3), territoire variable (F6),
+  effets zone (F1). Scan incremental (octants ou queue) + cache TTL.
+  Priorite: P0 | Effort: Faible
+
+--------------------------------------------------------------------------------
+CONVERGENCES FORTES [CONV] (2+ experts d'accord)
+--------------------------------------------------------------------------------
+
+[CONV-1] Multiplicateur de production heritable
+  Sources: FORESTRY-5 (Speed Gene) + PB-3 (Productivity)
+  Meme concept: gene heritable qui multiplie la production.
+  DIVERGENCE D'ECHELLE: PB: 4 niveaux (1.0-2.5x) vs Forestry: 7 niveaux (0.3-1.7x)
+  RECOMMANDATION: Echelle PB plus simple et accessible pour un premier jet.
+    L'echelle Forestry (inclut des malus < 1.0x) ajoute de la profondeur
+    mais complexifie le breeding. A debattre.
+  Priorite: P1 | Effort: Faible
+
+[CONV-2] Enrichir le systeme de genes
+  Sources: FORESTRY (categories EFFECT, PRODUCTION, TERRITORY) + PB (5 attributs)
+  Tous veulent plus de genes. 3 categories actuelles (SPECIES, ENVIRONMENT, FLOWER)
+  sont insuffisantes.
+  DIVERGENCE D'APPROCHE: Forestry = categories separees, PB = attributs formalises.
+  CONSENSUS ARCHITECTURAL: Behaviours = ACTIONS (Foraging, Patrol, Effect),
+    Genes = MODIFICATEURS (Speed, Territory, Tolerance). Ne pas confondre.
+  Priorite: P1
+
+[CONV-3] Effets de territoire par espece
+  Sources: FORESTRY-1 (effets de zone) + PB-8 (block interaction bees)
+  Approches complementaires: F-1 = effets passifs de zone (regen, freeze),
+    PB-8 = interactions actives avec blocs specifiques (mining, garden).
+  Les deux enrichissent les especes au-dela de la production.
+  Priorite: P1-P2
+
+[CONV-4] Composable BeeGoalBehaviour
+  Sources: CREATE-1 + soutien FORESTRY + PB
+  Pattern architectural pour faciliter l'ajout de futures features (F-1, PB-8).
+  Resout le probleme des deux state machines deconnectees.
+  Priorite: P1
+
+[CONV-5] Validation periodique centralisee
+  Sources: CREATE-7, approuve par FORESTRY (check climatique = validation)
+  Centraliser hivePing + futurs checks (hive valide, fleur existante, biome).
+  Priorite: P1
+
+[CONV-6] Specialty products en biome prefere
+  Sources: FORESTRY-7, soutenu par CREATE-5 (ForagingRecipe a long terme)
+  Court terme: seconde loot list + check biome. Long terme: recettes JSON.
+  Priorite: P2
+
+--------------------------------------------------------------------------------
+DIVERGENCES
+--------------------------------------------------------------------------------
+
+[DIV-1] Echelle du multiplicateur de production
+  PB: 4 niveaux (1.0x, 1.5x, 2.0x, 2.5x) — simple, accessible
+  Forestry: 7 niveaux (0.3x, 0.6x, 0.8x, 1.0x, 1.2x, 1.4x, 1.7x) — avec malus
+  Impact: avec malus, le breeding a plus de risque mais aussi plus de profondeur.
+
+[DIV-2] Gene editing vs pure breeding
+  PB: Honey Treat + Gene Indexer = transfert direct de genes
+  Forestry: Breeding Mendelien pur (croisement aleatoire avec probabilites)
+  Impact: PB est plus accessible, Forestry plus profond. Beemancer a deja un
+    BreedingManager — la question est: ajouter aussi du gene editing?
+
+[DIV-3] Simulation mode
+  PB: Pour (upgrade end-game, evite lag)
+  Forestry: N'existe pas dans Forestry (tout passe par la reine dans l'Apiary)
+  Create: Neutre (complementaire au stress system)
+  Impact: si implemente, Temper/Endurance deviennent inutiles en simulation.
+    Trade-off gameplay interessant.
+
+[DIV-4] Rappel meteo: nouveau Goal vs canContinueToUse()
+  PB: ReturnToHiveOnBadConditionsGoal (nouveau goal dedie)
+  Forestry: Modifier canContinueToUse() du ForagingBehaviorGoal
+  Impact technique: nouveau goal = plus modulaire mais +1 fichier;
+    canContinueToUse = plus simple mais couple au ForagingGoal.
+
+================================================================================
+1.4 PRINCIPE ARCHITECTURAL EMERGENT
+================================================================================
+
+Consensus entre les 3 experts sur une separation claire:
+
+  BEHAVIOURS (pattern Create) = ACTIONS que l'abeille FAIT
+    ForagingBehaviour, PatrolBehaviour, CombatBehaviour, EffectBehaviour...
+    → Composables, encapsulent leur Goal + etat + NBT
+    → Ajoutables/retirables sans modifier MagicBeeEntity
+
+  GENES (pattern Forestry/PB) = MODIFICATEURS qui affectent les behaviours
+    SpeedGene, TerritoryGene, TemperGene, ProductivityGene...
+    → Heritables via breeding
+    → Modifient les PARAMETRES des behaviours (pas les behaviours eux-memes)
+    → Config JSON definit les defauts, le gene peut les depasser via breeding
+
+  CONFIG JSON (existant) = DEFAUTS par espece
+    foragingDuration, flyingSpeed, areaOfEffect, pollinationLoot...
+    → Baseline definies par le modder/datapack
+    → Les genes MODIFIENT ces valeurs, ne les remplacent pas
+
+================================================================================
+1.5 ORDRE D'IMPLEMENTATION RECOMMANDE (Groupe 1)
+================================================================================
+
+PHASE 0 — Quick Wins (P0, 1-2 jours)
+  1. [UNAN-1] canWorkInRain check + rappel meteo    (~20 lignes)
+  2. [UNAN-2] BeeNavigationHelper.java              (~40 lignes)
+  3. [UNAN-3] LerpedFloat.java + integration        (~100 lignes)
+  4. [UNAN-4] FlowerSearchHelper scan incremental    (~50 lignes modifiees)
+
+PHASE 1 — Fondations (P1, 1 semaine)
+  5. [CONV-4] BeeEntityBehaviour framework           (~200 lignes framework)
+  6. [CONV-1] ProductivityGene (multiplicateur)      (~80 lignes)
+  7. [CONV-5] Validation periodique centralisee      (~60 lignes)
+  8. [PB-6]   Cage+Sneak reassignation              (~30 lignes modifiees)
+
+PHASE 2 — Enrichissement (P2, 2 semaines)
+  9.  [F-2]   Humidite dans BiomeTemperatureManager (~40 lignes)
+  10. [F-6]   TerritoryGene (rayon heritable)        (~60 lignes)
+  11. [F-1]   EffectBehaviour (2-3 effets initiaux)  (~200 lignes)
+  12. [PB-4]  TemperGene (defensif gradue)           (~60 lignes)
+  13. [F-3]   Pollinisation active (incremental)     (~100 lignes)
+  14. [F-7]   Specialty products                     (~40 lignes)
+
+PHASE 3 — Contenu (P2-P3, futur)
+  15. [PB-8]  Block interaction bees (3-5 types)     (~300+ lignes)
+  16. [PB-5]  Abeilles solitaires                    (~150 lignes)
+  17. [C-5]   ForagingRecipe data-driven             (~400+ lignes)
+  18. [C-4]   Stress/Budget system                   (~200 lignes)
+  19. [PB-7]  Simulation mode                        (~150 lignes)
+
+--- FIN GROUPE 1 ---
+
+################################################################################
+#                                                                              #
+#                              GROUPE 2                                        #
+#                         Ruches et cycle de vie                               #
+#                                                                              #
+################################################################################
+
+--- EN COURS ---
+

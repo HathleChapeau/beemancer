@@ -1,0 +1,603 @@
+{
+  "metadata": {
+    "title": "Beemancer - Propositions d'amelioration Bee Behavior & Hive System",
+    "date": "2026-02-15",
+    "scope": "MagicBee, WildBee (BeeNest), Hive system - PAS DeliveryBee",
+    "team": [
+      "create-specialist: Pathfinding, optimisation NeoForge, AI Goals",
+      "forestry-specialist: Patterns Forestry (virtual bee, hive-centric), bugs mods abeilles",
+      "complicated-bees-specialist: Complicated Bees, Productive Bees, mods modernes",
+      "beemancer-architect: Audit codebase, validation faisabilite, architecture"
+    ],
+    "total_effort_lines": 195,
+    "total_files_impacted": 10,
+    "implementation_order": ["FIX-01", "FIX-02", "PERF-01", "PERF-02", "CLEAN-01", "PERF-03", "PERF-04", "DESIGN-01"]
+  },
+
+  "proposals": [
+    {
+      "id": "FIX-01",
+      "title": "Bee Ledger — Chunk safety pour BeeNestBlockEntity",
+      "type": "bug_fix",
+      "priority": "CRITIQUE",
+      "effort_lines": 45,
+
+      "problem": {
+        "description": "BeeNestBlockEntity.detectDeadBees() appelle serverLevel.getEntity(uuid) qui retourne null pour une abeille dans un chunk decharge. Le nid reduit maxBees de facon PERMANENTE et irrecuperable.",
+        "location": "BeeNestBlockEntity.java:119-132",
+        "code_pattern": "activeBeeUUIDs.removeIf(uuid -> { Entity entity = serverLevel.getEntity(uuid); if (entity == null || entity.isRemoved()) { maxBees = Math.max(0, maxBees - 1); return true; } })",
+        "impact": "Bug silencieux et destructif. Les nids sauvages se degradent indefiniment quand le joueur s'eloigne. La capacite du nid est IRRECUPERABLE une fois reduite.",
+        "reproduction": "1. Trouver un nid avec abeille active. 2. S'eloigner de >128 blocs (chunk unload). 3. Revenir. 4. Le nid a perdu 1 maxBees definitivement."
+      },
+
+      "why": {
+        "root_cause": "serverLevel.getEntity(uuid) ne distingue pas 'entite morte' de 'entite dans un chunk decharge'. Les deux retournent null.",
+        "who_identified": "beemancer-architect (audit initial) + forestry-specialist (pattern Forestry compare)",
+        "other_mods_affected": [
+          "Productive Bees: AUCUNE protection chunk unload (confirme par forestry-specialist)",
+          "ResourcefulBees: meme bug documente (ATM-6 issue #966)",
+          "Vanilla MC: MC-229321 — bees inside hives sometimes despawn (fix en 1.18.1)"
+        ]
+      },
+
+      "solution": {
+        "approach": "Bee Ledger + 2-tier Grace Timer + Load Grace Period + isLoaded() cote bee",
+        "description": "Stocker la derniere position connue de chaque abeille. Avant de declarer une abeille morte, verifier si son chunk est charge. Si chunk decharge: attente INFINIE (bee en transit virtuel). Si chunk charge + entity null: demarrer un timer de 60s avant confirmation de mort. Ajouter une grace period au chargement du monde. Cote bee: verifier isLoaded() avant de naviguer vers le nid.",
+        "steps": [
+          "1. Ajouter Map<UUID, BlockPos> lastKnownPositions au BeeNestBlockEntity",
+          "2. Ajouter Map<UUID, Integer> deathGraceTimers au BeeNestBlockEntity",
+          "3. Enregistrer la position au spawn dans spawnBee() (= worldPosition.above())",
+          "4. Dans detectDeadBees() — flow 2-tier quand getEntity(uuid) retourne null:",
+          "   4a. hasChunkAt(lastKnownPos) == false → SKIP (attente infinie, bee en transit virtuel)",
+          "   4b. hasChunkAt(lastKnownPos) == true + pas de grace timer → creer deathGraceTimers.put(uuid, 1200) soit 60s, SKIP",
+          "   4c. Grace timer > 0 → decrementer, SKIP",
+          "   4d. Grace timer <= 0 → bee confirmee morte, maxBees--, cleanup maps",
+          "5. Ajouter loadGraceTicks = 100 (5s) dans loadAdditional(). detectDeadBees() skip tant que loadGraceTicks > 0",
+          "6. Persister lastKnownPositions et deathGraceTimers en NBT (saveAdditional/loadAdditional)",
+          "7. Dans onBeeReturned() et onBeeScooped(): cleanup lastKnownPositions et deathGraceTimers",
+          "8. COTE BEE: Dans WildBeePatrolGoal.tickReturningToNest(), ajouter: if (!bee.level().isLoaded(nestPos)) { hoverNear(bee.blockPosition()); timer--; return; }"
+        ],
+        "rationale": "Le pattern 2-tier (propose par forestry-specialist, valide par l'architecte) distingue 3 cas: chunk decharge (attente infinie), chunk charge + entity absente recemment (timer 60s), chunk charge + entity absente longtemps (confirmee morte). Le timer 60s couvre les delais de cleanup. Le check isLoaded() cote bee empeche le forcement de chargement de chunks (bug vanilla MC-255743). Productive Bees n'a AUCUNE de ces protections — ce systeme serait best-in-class parmi les mods d'abeilles."
+      },
+
+      "files_impacted": [
+        "common/entity/bee/nest/BeeNestBlockEntity.java",
+        "common/entity/bee/ai/WildBeePatrolGoal.java"
+      ],
+
+      "sources": [
+        {
+          "title": "Mojang MC-168556: Bees not leaving hive unless chunks updated",
+          "url": "https://bugs.mojang.com/browse/MC-168556",
+          "relevance": "Bug vanilla confirme: les chunks doivent etre updates pour que les bees reagissent"
+        },
+        {
+          "title": "Mojang MC-229321: Bees inside hives sometimes despawn",
+          "url": "https://bugs.mojang.com/browse/MC-229321",
+          "relevance": "Bug vanilla fixe en 1.18.1: les bees >128 blocs perdaient leur persistence. Pattern de fix applicable."
+        },
+        {
+          "title": "ATM-6 Issue #966: ResourcefulBees get lost and don't go back",
+          "url": "https://github.com/AllTheMods/ATM-6/issues/966",
+          "relevance": "Meme bug dans un autre mod d'abeilles avec entites visibles"
+        },
+        {
+          "title": "Productive Bees: aucune protection chunk unload",
+          "url": "https://github.com/JDKDigital/productive-bees",
+          "relevance": "Confirme par analyse du code source: PB n'a ni timer, ni isLoaded(), ni recovery"
+        },
+        {
+          "title": "ForestryMC GitHub: BeekeepingLogic.java (virtual bee pattern)",
+          "url": "https://github.com/ForestryMC/ForestryMC",
+          "relevance": "Forestry evite le probleme entierement car pas d'entite. Modele de reference pour le save/load."
+        },
+        {
+          "title": "FTB Wiki: Forestry Apiary",
+          "url": "https://ftb.fandom.com/wiki/Apiary_(Forestry)",
+          "relevance": "Documentation du cycle de vie des abeilles Forestry (100% tick-based)"
+        }
+      ]
+    },
+
+    {
+      "id": "FIX-02",
+      "title": "Orphan timer pour domestic bees (verifyOutsideBees)",
+      "type": "bug_fix",
+      "priority": "IMPORTANT",
+      "effort_lines": 45,
+
+      "problem": {
+        "description": "HiveBeeLifecycleManager.verifyOutsideBees() fait un resetSlotToInside() immediatement quand getEntity(uuid) retourne null. Si la bee est dans un chunk decharge, elle est 'teleportee' dans la ruche. Quand le chunk se recharge, l'entite orpheline continue d'exister sans slot correspondant. De plus, les abeilles completement orphelines (ni hive ni nest) restent indefiniment dans le monde.",
+        "location": "HiveBeeLifecycleManager.java:209-229",
+        "code_pattern": "Entity entity = serverLevel.getEntity(uuid); if (entity == null) { resetSlotToInside(slot); }",
+        "impact": "Comportement incoherent. Abeilles qui disparaissent et reapparaissent. Le ping UUID rattrape les orphelins mais c'est un workaround tardif.",
+        "reproduction": "1. Avoir une abeille en butinage. 2. S'eloigner (chunk unload de la bee). 3. Revenir. 4. La ruche montre l'abeille INSIDE alors qu'elle est encore dehors."
+      },
+
+      "why": {
+        "root_cause": "Meme cause que FIX-01: getEntity() ne distingue pas 'morte' de 'chunk decharge'. La reaction est moins grave (pas de perte permanente) mais cree un desync etat ruche/realite.",
+        "who_identified": "beemancer-architect (audit) + complicated-bees-specialist (comparaison PB/RB)",
+        "other_mods_affected": [
+          "Productive Bees #292: Bees wander off and go missing",
+          "Productive Bees #248: Bees exit and immediately re-enter hive",
+          "ResourcefulBees: timer 10min avant despawn comme protection"
+        ]
+      },
+
+      "solution": {
+        "approach": "Orphan timer + Bee Ledger (position via ping) + isLoaded() cote bee + entity orphan cleanup",
+        "description": "Au lieu de resetSlotToInside() immediatement, demarrer un timer de 2 minutes. Si l'abeille revient (via ping) pendant le timer, annuler. Si le timer expire ET le chunk est charge, ALORS resetSlotToInside(). Cote bee: verifier isLoaded() avant de naviguer vers la ruche. Pour les entites completement orphelines (ni hive ni nest): auto-discard apres 2 minutes.",
+        "steps": [
+          "1. Ajouter int orphanTimer dans HiveBeeSlot (persiste en NBT)",
+          "2. Modifier handleBeePing() pour stocker la BlockPos de l'abeille (lastKnownPos par slot)",
+          "3. Dans verifyOutsideBees(): si getEntity() null + chunk charge → incrementer orphanTimer",
+          "4. Si chunk PAS charge → ne pas incrementer (bee en transit virtuel)",
+          "5. Si orphanTimer >= 2400 ticks (2 min) → resetSlotToInside()",
+          "6. Si ping recu (entity revient) → reset orphanTimer a 0",
+          "7. COTE BEE: Dans ForagingBehaviorGoal.tickReturning(), ajouter: if (!bee.level().isLoaded(hivePos)) { bee.setDeltaMovement(Vec3.ZERO); return; } — le timeout existant gerera le cas",
+          "8. ENTITY ORPHAN: Dans MagicBeeEntity.tick(), apres tickHivePing(): if (!hasAssignedHive() && !hasHomeNest()) { orphanTimer++; if (orphanTimer > 2400) discard(); } else { orphanTimer = 0; } — persister en NBT"
+        ],
+        "rationale": "Le timer de 2 minutes (propose par complicated-bees-specialist, base sur les cycles courts des abeilles Beemancer) est plus court que RB (10 min) car les cycles de butinage Beemancer sont plus rapides. 2 min = ~3 cycles complets de butinage, largement suffisant pour couvrir un chunk unload temporaire. Le isLoaded() cote bee empeche le forcement de chunks (MC-255743). L'orphan cleanup dans MagicBeeEntity couvre le cas ou un nid est detruit pendant que l'abeille est en patrouille (pas encore en RETURNING)."
+      },
+
+      "files_impacted": [
+        "common/entity/bee/hive/HiveBeeLifecycleManager.java",
+        "common/entity/bee/hive/HiveBeeSlot.java",
+        "common/entity/bee/hive/IHiveBeeHost.java",
+        "common/entity/bee/ai/ForagingBehaviorGoal.java",
+        "common/entity/bee/MagicBeeEntity.java"
+      ],
+
+      "sources": [
+        {
+          "title": "Productive Bees Issue #292: Bees wander off and go missing",
+          "url": "https://github.com/JDKDigital/productive-bees/issues/292",
+          "relevance": "PB n'a PAS de timeout global pour les bees dehors — source directe de bugs"
+        },
+        {
+          "title": "Productive Bees Issue #248: Bees exit and immediately re-enter hive",
+          "url": "https://github.com/JDKDigital/productive-bees/issues/248",
+          "relevance": "Desync entre etat ruche et entite — meme type de probleme"
+        },
+        {
+          "title": "ResourcefulBees: timer despawn 10 min",
+          "url": "https://github.com/Team-Resourceful/ResourcefulBees",
+          "relevance": "Reference pour le timer de grace: RB utilise 10 min, Beemancer adapte a 2 min (cycles plus courts)"
+        },
+        {
+          "title": "Complicated Bees GitHub: BaseBeeHousing.java",
+          "url": "https://github.com/ACCBDD/complicated_bees",
+          "relevance": "CB evite le probleme (pas d'entite) mais le cycle de vie tick-based est un modele de reference"
+        }
+      ]
+    },
+
+    {
+      "id": "PERF-01",
+      "title": "TTL cache pathfinding (3 couches)",
+      "type": "performance",
+      "priority": "IMPORTANT",
+      "effort_lines": 25,
+
+      "problem": {
+        "description": "BeePathfinding.findPath() est appele a chaque tick du goal. Le cache existant s'invalide quand l'abeille bouge de 3+ blocs (start.closerThan(cachedStart, 3)), ce qui arrive chaque seconde de vol. Resultat: recalcul Theta* complet (1000 iterations max * 6 getBlockState) chaque seconde par abeille.",
+        "location": "BeePathfinding.java:115-136",
+        "code_pattern": "if (end.equals(cachedEnd) && cachedStart != null && start.closerThan(cachedStart, 3) && currentPath != null) { return currentPath; }",
+        "impact": "50 abeilles = ~5000 block reads/tick lors des pics de recalcul. Lag spikes periodiques.",
+        "reproduction": "Avoir 20+ abeilles actives. Observer les TPS drops periodiques (~1/sec) via spark profiler."
+      },
+
+      "why": {
+        "root_cause": "Le check start.closerThan(cachedStart, 3) invalide le cache trop agressivement. L'abeille se deplace de 3 blocs en ~15-20 ticks, donc le cache est invalide toutes les secondes.",
+        "who_identified": "create-specialist (analyse pathfinding) + beemancer-architect (validation code)",
+        "other_mods_affected": [
+          "Lithium Issue #136: 90% des block reads dans le pathfinding vanilla sont du danger scanning",
+          "MC-255743: pathfinding performance issues",
+          "Mobtimizations: disable re-pathfinding quand un path est deja suivi"
+        ]
+      },
+
+      "solution": {
+        "approach": "Cache 3 couches: TTL + destination + stall detection",
+        "description": "Remplacer le cache base sur la position du start par un systeme TTL (Time To Live). Ne recalculer le path que si la destination change, ou si le TTL expire (1 recalcul/sec max), ou si l'abeille est bloquee (stall detection).",
+        "steps": [
+          "1. Ajouter lastComputeGameTime (long) dans BeePathfinding",
+          "2. Ajouter RECOMPUTE_INTERVAL = 20 ticks (1 sec)",
+          "3. Dans findPath(): si destination changee → recalculer immediatement",
+          "4. Si currentPath != null ET gameTime - lastComputeGameTime < RECOMPUTE_INTERVAL → retourner currentPath",
+          "5. Supprimer le check start.closerThan(cachedStart, 3)",
+          "6. Ajouter progressStallCounter: si l'abeille n'a pas progresse vers le prochain waypoint en 60 ticks → forcer recalcul"
+        ],
+        "rationale": "Le TTL rate limiting seul divise les block reads par 20 (de 5000/tick a 250/tick pour 50 bees). Combine avec PERF-02 (goal throttle), le resultat est ~1 recalcul/sec/abeille au lieu de 1/tick. La stall detection (couche 3) empeche les abeilles de rester bloquees si le cache est trop agressif. Pattern inspire de Create trains: recalcul event-driven, pas periodique."
+      },
+
+      "files_impacted": [
+        "common/entity/bee/ai/BeePathfinding.java"
+      ],
+
+      "sources": [
+        {
+          "title": "CaffeineMC Lithium Issue #136: Bee pathfinding block reads optimization",
+          "url": "https://github.com/CaffeineMC/lithium/issues/136",
+          "relevance": "Analyse detaillee: 90% des block reads sont du danger scanning. Cache chunk section = -50% temps de tick. Commit e3de204f."
+        },
+        {
+          "title": "Mojang MC-255743: Pathfinding performance issues",
+          "url": "https://bugs.mojang.com/browse/MC-255743",
+          "relevance": "Bug vanilla confirme: le pathfinding des abeilles cause des problemes de performance"
+        },
+        {
+          "title": "Mobtimizations: Disable re-pathfinding",
+          "url": "https://github.com/Corosauce/mobtimizations",
+          "relevance": "Mod d'optimisation valide: desactive le recalcul de path quand un path est deja suivi"
+        },
+        {
+          "title": "Create: Navigation.java — event-driven path recalculation",
+          "url": "https://github.com/Creators-of-Create/Create",
+          "relevance": "Create trains calculent le path UNE fois puis font du suivi incremental. Meme pattern recommande."
+        },
+        {
+          "title": "DeepWiki: Create Schematic/Navigation System",
+          "url": "https://deepwiki.com/Creators-of-Create/Create/7-schematic-system",
+          "relevance": "Documentation de l'architecture navigation/caching de Create"
+        }
+      ]
+    },
+
+    {
+      "id": "PERF-02",
+      "title": "Goal-level tick throttle (N=4 avec offset UUID)",
+      "type": "performance",
+      "priority": "IMPORTANT",
+      "effort_lines": 15,
+
+      "problem": {
+        "description": "ForagingBehaviorGoal.tick() et WildBeePatrolGoal.tick() executent toute la logique AI (state machine + pathfinding + navigation) a chaque tick serveur. Avec N abeilles, c'est N executions completes par tick.",
+        "location": "ForagingBehaviorGoal.java:126-139 et WildBeePatrolGoal.java:97-103",
+        "code_pattern": "public void tick() { switch (stateMachine.getState()) { case SEEKING -> ...; case WORKING -> ...; case RETURNING -> ...; } }",
+        "impact": "Le foraging/patrol est le composant le plus couteux du tick d'une abeille. 50 abeilles = 50 executions completes par tick serveur.",
+        "reproduction": "Profiler avec spark: ForagingBehaviorGoal.tick() domine le temps CPU des entites."
+      },
+
+      "why": {
+        "root_cause": "Le goal system de Minecraft appelle tick() chaque tick serveur pour chaque goal actif. Il n'y a pas de mecanisme integre de throttling.",
+        "who_identified": "create-specialist (pattern SmartBlockEntity.lazyTick de Create) + complicated-bees-specialist (patterns Spigot/Paper)",
+        "other_mods_affected": [
+          "Create: SmartBlockEntity.lazyTick() avec lazyTickRate=10 et offset",
+          "Create Issue #9098: bug de sync apres reload (fix: random initial offset)",
+          "Mobtimizations: throttle wander pathfinding base sur distance joueur",
+          "Complicated Bees: BeeLogic.checkConditions() throttle par SATISFY_CYCLE_LENGTH"
+        ]
+      },
+
+      "solution": {
+        "approach": "Throttle N=4 avec offset UUID, hors goals critiques",
+        "description": "Les goals de foraging et patrol ne tickent leur logique AI que tous les 4 ticks, avec un offset base sur l'UUID de l'abeille pour distribuer la charge. Le mouvement reste fluide car setDeltaMovement() persiste et travel() l'applique chaque tick.",
+        "steps": [
+          "1. Dans ForagingBehaviorGoal.tick(): deplacer stateMachine.tick() AVANT le guard (les timeouts doivent rester precis)",
+          "2. Ajouter le guard: if (bee.tickCount % 4 != (int)(bee.getUUID().getLeastSignificantBits() & 0x3)) return;",
+          "3. Le reste du tick() (switch des etats) reste APRES le guard",
+          "4. Meme pattern dans WildBeePatrolGoal.tick()",
+          "5. NE PAS throttler: ReturnToHiveWhenLowHealthGoal, BeeRevengeGoal, MoveToTargetGoal"
+        ],
+        "rationale": "N=4 est le compromis optimal: divise le CPU par 4 avec seulement ~30% de perte de velocite entre les ticks (friction 0.91^4). L'offset UUID evite que toutes les abeilles recalculent au meme tick (spike). Le pattern est directement inspire de Create SmartBlockEntity.lazyTick() (lazyTickRate=10, offset par position). Le stagger DANS le goal (pas au niveau entity) garantit que travel(), collision et rendering restent fluides."
+      },
+
+      "files_impacted": [
+        "common/entity/bee/ai/ForagingBehaviorGoal.java",
+        "common/entity/bee/ai/WildBeePatrolGoal.java"
+      ],
+
+      "sources": [
+        {
+          "title": "Create: SmartBlockEntity.lazyTick() pattern",
+          "url": "https://github.com/Creators-of-Create/Create",
+          "relevance": "Pattern de reference: lazyTickRate=10 avec offset par position pour eviter les spikes"
+        },
+        {
+          "title": "Create Issue #9098: Sync bug apres reload",
+          "url": "https://github.com/Creators-of-Create/Create/issues/9098",
+          "relevance": "Bug connu: apres reload les compteurs se sync → fix avec random initial offset. A prevoir."
+        },
+        {
+          "title": "Mobtimizations: Throttle wander pathfinding",
+          "url": "https://github.com/Corosauce/mobtimizations",
+          "relevance": "Mod d'optimisation valide: reduit la frequence du pathfinding, configurable par mob"
+        },
+        {
+          "title": "Complicated Bees: BeeLogic condition check throttle",
+          "url": "https://github.com/ACCBDD/complicated_bees",
+          "relevance": "CB throttle ses checks environnementaux par SATISFY_CYCLE_LENGTH — meme concept"
+        },
+        {
+          "title": "Paper/Spigot: Entity activation range",
+          "url": "https://docs.papermc.io/paper/reference/configuration",
+          "relevance": "Paper utilise 32 blocs activation range + wake-up periodique — reference pour les seuils"
+        }
+      ]
+    },
+
+    {
+      "id": "PERF-03",
+      "title": "Distance-based pathfinding skip (>48 blocs)",
+      "type": "performance",
+      "priority": "MOYEN",
+      "effort_lines": 20,
+
+      "problem": {
+        "description": "Le pathfinding Theta* a le meme cout CPU quelle que soit la distance (MAX_ITERATIONS=1000). Pour les destinations >48 blocs, le path complet ne sera souvent pas trouve (trop long) et le pathfinding est gaspille.",
+        "location": "ForagingBehaviorGoal.java (navigateWithPathfinding) et WildBeePatrolGoal.java (navigateWithPathfinding)",
+        "code_pattern": "List<BlockPos> path = pathfinding.findPath(bee.blockPosition(), target);",
+        "impact": "Gaspillage CPU pour des destinations lointaines ou un vol direct en altitude serait suffisant.",
+        "reproduction": "Observer le pathfinding quand une abeille retourne a sa ruche depuis >48 blocs — le Theta* tourne 1000 iterations pour un trajet en ligne droite."
+      },
+
+      "why": {
+        "root_cause": "Le Theta* ne fait pas de distinction entre destinations proches (obstacles possibles) et lointaines (vol direct possible). MAX_ITERATIONS=1000 est un budget fixe.",
+        "who_identified": "complicated-bees-specialist (distance-based tick reduction) + beemancer-architect (validation)",
+        "other_mods_affected": [
+          "Spigot: activation range 32 blocs pour les entites",
+          "Paper: wake-up periodique pour entites distantes",
+          "Tick Tweaks: ajuste le tick rate selon distance au joueur"
+        ]
+      },
+
+      "solution": {
+        "approach": "Vol direct en altitude pour distances >48 blocs",
+        "description": "Si la destination est a plus de 48 blocs, bypasser le Theta* et utiliser un vol direct: monter en altitude (+10 blocs), voler en ligne droite vers la destination, puis descendre. Le Theta* reste utilise pour les distances courtes ou les obstacles sont reels.",
+        "steps": [
+          "1. Dans navigateWithPathfinding(): calculer la distance horizontale vers la destination",
+          "2. Si distance > 48: generer un path simplifie [position actuelle → position + (0,10,0) → destination + (0,10,0) → destination]",
+          "3. Si distance <= 48: utiliser le Theta* normal",
+          "4. Le seuil de 48 blocs est configurable (base sur PATROL_RADIUS 15 + areaOfEffect 16 + marge)"
+        ],
+        "rationale": "A >48 blocs de distance, les obstacles au sol sont irrelevants pour une entite volante. Le vol en altitude est la solution naturelle. Le seuil de 48 blocs provient de Paper (activation range 32 blocs + marge pour les mods d'abeilles)."
+      },
+
+      "files_impacted": [
+        "common/entity/bee/ai/ForagingBehaviorGoal.java",
+        "common/entity/bee/ai/WildBeePatrolGoal.java"
+      ],
+
+      "sources": [
+        {
+          "title": "Paper: Entity activation range documentation",
+          "url": "https://docs.papermc.io/paper/reference/configuration",
+          "relevance": "Seuil de 32 blocs pour l'activation des entites, 48 blocs recommande pour les abeilles"
+        },
+        {
+          "title": "Tick Tweaks: Distance-based tick rate",
+          "url": "https://modrinth.com/mod/tick-tweaks",
+          "relevance": "Ajuste le taux de tick selon la distance au joueur — meme concept de reduction basee sur la distance"
+        },
+        {
+          "title": "Mobtimizations: Distance-based pathfinding reduction",
+          "url": "https://github.com/Corosauce/mobtimizations",
+          "relevance": "Reduit la frequence du pathfinding quand l'entite est loin des joueurs"
+        }
+      ]
+    },
+
+    {
+      "id": "CLEAN-01",
+      "title": "Centraliser les vitesses de vol dans BeeBehaviorConfig",
+      "type": "maintenance",
+      "priority": "MOYEN",
+      "effort_lines": 20,
+
+      "problem": {
+        "description": "Les vitesses de vol sont dispersees en constantes hard-codees dans 4 fichiers differents. MoveToTargetGoal (0.08) et ReturnToHiveWhenLowHealthGoal (0.12) ignorent completement BeeBehaviorConfig.flyingSpeed.",
+        "location": "ForagingBehaviorGoal.java:67, WildBeePatrolGoal.java:49, MoveToTargetGoal.java:63, ReturnToHiveWhenLowHealthGoal.java:36",
+        "code_pattern": "private static final double FLIGHT_SPEED_FACTOR = 0.2; // hard-coded, pas relie a la config",
+        "impact": "Si flyingSpeed change par espece (via JSON), les ratios entre comportements deviennent incoherents. MoveToTarget et ReturnToHive ne reagissent pas du tout aux changements de config.",
+        "reproduction": "Modifier flyingSpeed dans le JSON d'une espece → le foraging change de vitesse mais le flee et le move-to-target restent identiques."
+      },
+
+      "why": {
+        "root_cause": "Les constantes ont ete ajoutees independamment dans chaque goal sans reference commune. Pas de convention de nommage ou de source unique.",
+        "who_identified": "beemancer-architect (audit)",
+        "design_principle": "DRY (Don't Repeat Yourself) + Single Source of Truth pour les parametres de comportement"
+      },
+
+      "solution": {
+        "approach": "Methodes centralisees dans BeeBehaviorConfig",
+        "description": "Ajouter des methodes derivees dans BeeBehaviorConfig qui calculent chaque vitesse comme un ratio de flyingSpeed. Remplacer toutes les constantes hard-codees.",
+        "steps": [
+          "1. Dans BeeBehaviorConfig: ajouter getForagingSpeed() = flyingSpeed * 0.2",
+          "2. Ajouter getPatrolSpeed() = flyingSpeed * 0.15",
+          "3. Ajouter getFleeSpeed() = flyingSpeed * 0.2",
+          "4. Ajouter getManualSpeed() = flyingSpeed * 0.13",
+          "5. Remplacer les constantes dans ForagingBehaviorGoal, WildBeePatrolGoal, MoveToTargetGoal, ReturnToHiveWhenLowHealthGoal",
+          "6. Valider que les vitesses effectives restent identiques (pas de changement de gameplay)"
+        ],
+        "rationale": "Les vitesses derivees de flyingSpeed permettent au systeme de genes de modifier la vitesse de base par espece, et tous les comportements s'ajustent proportionnellement. C'est le pattern standard de Forestry (modifiers multiplicatifs) et Complicated Bees (gene Speed)."
+      },
+
+      "files_impacted": [
+        "common/entity/bee/behavior/BeeBehaviorConfig.java",
+        "common/entity/bee/ai/ForagingBehaviorGoal.java",
+        "common/entity/bee/ai/WildBeePatrolGoal.java",
+        "common/entity/bee/ai/MoveToTargetGoal.java",
+        "common/entity/bee/ai/ReturnToHiveWhenLowHealthGoal.java"
+      ],
+
+      "sources": [
+        {
+          "title": "ForestryMC: IBeeModifier system",
+          "url": "https://github.com/ForestryMC/ForestryMC",
+          "relevance": "Forestry utilise des multiplicateurs centralises pour tous les parametres de comportement (production, lifespan, territory)"
+        },
+        {
+          "title": "FTB Wiki: Forestry Speed trait",
+          "url": "https://ftbwiki.org/Speed",
+          "relevance": "Le trait Speed de Forestry modifie la vitesse de production — meme concept de facteur centralise"
+        },
+        {
+          "title": "Complicated Bees: Gene Productivity",
+          "url": "https://github.com/ACCBDD/complicated_bees",
+          "relevance": "CB utilise des genes multiplicatifs (0.3x a 1.7x) appliques a une base — meme pattern"
+        }
+      ]
+    },
+
+    {
+      "id": "PERF-04",
+      "title": "Soft cap densite abeilles (16 bees / 32 blocs)",
+      "type": "performance",
+      "priority": "MOYEN",
+      "effort_lines": 15,
+
+      "problem": {
+        "description": "Pas de limite au nombre d'abeilles volantes dans une zone. Un joueur avec 10 ruches peut avoir 20+ abeilles actives simultanement dans un rayon de 32 blocs, toutes executant du pathfinding Theta*.",
+        "location": "HiveBeeLifecycleManager.java (releaseBee method)",
+        "code_pattern": "Pas de check de densite avant le spawn d'une abeille",
+        "impact": "Performance et lisibilite visuelle. 20+ abeilles = lag spikes + confusion visuelle.",
+        "reproduction": "Placer 10+ ruches avec abeilles dans un rayon de 32 blocs. Observer le TPS et le rendu."
+      },
+
+      "why": {
+        "root_cause": "Chaque ruche gere independamment ses abeilles sans connaissance du nombre total d'abeilles actives dans la zone.",
+        "who_identified": "complicated-bees-specialist (comparaison PB/RB/vanilla)",
+        "other_mods_affected": [
+          "Productive Bees: cap soft implicite (breeding stop si trop de bees)",
+          "ResourcefulBees: timer despawn comme population management indirect",
+          "Vanilla: creature mob cap = 10 (spawn seulement, n'affecte pas les existantes)",
+          "Forestry Issue #1415: 3600 worldgen hives = lag massif"
+        ]
+      },
+
+      "solution": {
+        "approach": "Soft cap par radius avec getEntitiesOfClass",
+        "description": "Avant de relacher une abeille, compter les MagicBeeEntity dans un rayon de 32 blocs. Si >= 16, garder l'abeille INSIDE et reessayer au prochain cycle.",
+        "steps": [
+          "1. Dans HiveBeeLifecycleManager.releaseBee(): avant le spawn, appeler level.getEntitiesOfClass(MagicBeeEntity.class, AABB.ofCenter(hivePos, 32, 32, 32))",
+          "2. Si count >= MAX_NEARBY_BEES (16): ne pas spawner, garder slot INSIDE, ajouter un cooldown de 100 ticks avant le prochain essai",
+          "3. C'est un SOFT cap: les abeilles deja dehors ne sont pas rappelees",
+          "4. Le check utilise le meme pattern AABB que checkReturningBees() — deja en place",
+          "5. Ajouter MAX_NEARBY_BEES et NEARBY_BEES_RADIUS dans HiveConfig (configurable)"
+        ],
+        "rationale": "Le soft cap est le meilleur compromis: il n'interrompt pas les abeilles actives (pas de gameplay breaking) mais previent l'accumulation. Le seuil de 16 est base sur: vanilla creature cap (10) + marge pour les mods (x1.6). Le rayon de 32 blocs est le standard Spigot/Paper pour l'activation range."
+      },
+
+      "files_impacted": [
+        "common/entity/bee/hive/HiveBeeLifecycleManager.java",
+        "common/entity/bee/hive/HiveConfig.java"
+      ],
+
+      "sources": [
+        {
+          "title": "Minecraft Wiki: Mob spawning — Mob cap",
+          "url": "https://minecraft.wiki/w/Mob_spawning",
+          "relevance": "Vanilla utilise un creature cap de 10 par joueur — reference pour le seuil"
+        },
+        {
+          "title": "Forestry Issue #1415: Performance with many hives",
+          "url": "https://github.com/ForestryMC/ForestryMC/issues/1415",
+          "relevance": "3600 worldgen hives loaded = lag massif. Fix: random block ticks au lieu de tick constant."
+        },
+        {
+          "title": "Paper: Entity activation range",
+          "url": "https://docs.papermc.io/paper/reference/configuration",
+          "relevance": "Seuil de 32 blocs pour l'activation — reference pour le rayon"
+        },
+        {
+          "title": "Productive Bees: implicit population cap",
+          "url": "https://github.com/JDKDigital/productive-bees",
+          "relevance": "PB utilise un cap implicite via breeding stop — soft cap est le pattern standard"
+        }
+      ]
+    },
+
+    {
+      "id": "DESIGN-01",
+      "title": "MoveToTargetGoal priority (BeeWand preemption)",
+      "type": "ux_design",
+      "priority": "MOYEN",
+      "effort_lines": 10,
+
+      "problem": {
+        "description": "MoveToTargetGoal est priority 4 vs ForagingBehaviorGoal priority 3. Les deux utilisent Flag.MOVE (mutuellement exclusifs). Le joueur ne peut pas utiliser la BeeWand pour commander une abeille qui butine.",
+        "location": "MagicBeeEntity.java:217-223",
+        "code_pattern": "goalSelector.addGoal(3, foragingGoal); goalSelector.addGoal(4, moveToTargetGoal);",
+        "impact": "UX. La BeeWand est inutile sur les abeilles actives. Le joueur s'attend a pouvoir rappeler une abeille.",
+        "reproduction": "1. Avoir une abeille en butinage. 2. Utiliser BeeWand pour definir un target. 3. L'abeille continue de butiner, ignorant la BeeWand."
+      },
+
+      "why": {
+        "root_cause": "Le systeme de goals Minecraft donne la priorite au numero le plus BAS. Priority 4 ne peut pas preempter priority 3 quand ils partagent le Flag.MOVE.",
+        "who_identified": "create-specialist (analyse du Goal system) + beemancer-architect (validation)",
+        "design_note": "C'est un CHOIX DE DESIGN, pas un bug technique. La question est: la BeeWand doit-elle etre plus prioritaire que le butinage automatique?"
+      },
+
+      "solution": {
+        "approach": "Priority 2 + timeout 30s",
+        "description": "Passer MoveToTargetGoal en priority 2 (entre ReturnToHiveWhenLowHealth et ForagingBehaviorGoal). Ajouter un timeout de 30 secondes pour empecher le blocage indefini du butinage.",
+        "steps": [
+          "1. Dans MagicBeeEntity.registerGoals(): changer addGoal(4, moveToTargetGoal) → addGoal(2, moveToTargetGoal)",
+          "2. Dans MoveToTargetGoal: ajouter ticksActive compteur, incremente dans tick()",
+          "3. Si ticksActive >= 600 (30s): clear targetPos, stop le goal",
+          "4. Reset ticksActive dans start()",
+          "5. Le joueur peut reappliquer la BeeWand pour relancer un cycle de 30s"
+        ],
+        "rationale": "Le joueur devrait pouvoir controler ses abeilles. Le timeout de 30s empeche l'abus (bloquer le butinage indefiniment). Apres 30s, l'abeille reprend automatiquement son comportement normal. C'est un pattern similaire a Forestry ou les frames modifient temporairement le comportement."
+      },
+
+      "files_impacted": [
+        "common/entity/bee/MagicBeeEntity.java",
+        "common/entity/bee/ai/MoveToTargetGoal.java"
+      ],
+
+      "sources": [
+        {
+          "title": "NeoForge GoalSelector documentation",
+          "url": "https://nekoyue.github.io/ForgeJavaDocs-NG/javadoc/1.16.5/net/minecraft/entity/ai/goal/Goal.html",
+          "relevance": "Documentation du systeme de priorites et flags — reference technique"
+        },
+        {
+          "title": "Minecraft Wiki: Mob AI / Goal system",
+          "url": "https://minecraft.wiki/w/Mob",
+          "relevance": "Documentation vanilla du systeme de priorites des goals"
+        },
+        {
+          "title": "Vanilla Bee: 12 inner goal classes",
+          "url": "https://minecraft.wiki/w/Bee",
+          "relevance": "La Bee vanilla a BeeGoToHiveGoal (priority haute) qui preempte le wander — meme pattern"
+        }
+      ]
+    }
+  ],
+
+  "excluded_proposals": [
+    {
+      "id": "P5",
+      "title": "Conflit de fleurs (2 bees meme fleur)",
+      "reason": "Impact trop faible. Le fallback findRandomNearbyFlower est rarement utilise (pool de fleurs suffisant). Meme si 2 abeilles butinent la meme fleur, pas de consequence mecanique (pas de consommation de fleur). A revisiter si plus de bee slots par ruche."
+    },
+    {
+      "id": "P6",
+      "title": "Timeout RETURNING sans teleport fallback",
+      "reason": "DEJA GERE. ForagingBehaviorGoal.onStateTimeout() RETURNING teleporte deja l'abeille 1 bloc au-dessus de la ruche. Le code etait lu trop superficiellement par les specialistes."
+    },
+    {
+      "id": "P8",
+      "title": "WanderGoal pour abeilles sans tache",
+      "reason": "Pure polish visuel. En gameplay normal, une abeille a toujours un goal actif (foraging, patrol, ou assignee a une ruche). Le cas 'aucun goal' est rare (abeille capturee/relachee sans assignation)."
+    },
+    {
+      "id": "P10",
+      "title": "Fleur detruite pendant WORKING",
+      "reason": "DEJA GERE. tickWorking() verifie isValidFlower(targetFlower) a chaque tick. Si fleur detruite → transition immediate vers SEEKING_FLOWER."
+    }
+  ],
+
+  "discussion_notes": {
+    "key_insight_forestry": "Forestry evite 100% des problemes d'entites en utilisant un systeme 100% virtuel (ItemStack + compteurs). Beemancer fait le choix d'entites visibles pour l'immersion — accepter les compromis.",
+    "key_insight_create": "Create utilise des patterns event-driven (recalcul sur evenement, pas periodique) et du tick staggering dans SmartBlockEntity. Applicables directement au systeme de goals Beemancer.",
+    "key_insight_complicated_bees": "CB est aussi 100% virtuel. Les seuls mods avec entites visibles (Productive Bees, ResourcefulBees) ont TOUS les memes bugs de chunk unload et d'orphelins. Beemancer avec le ping UUID fait deja mieux que PB.",
+    "key_insight_architect": "2 des 10 problemes signales (P6, P10) etaient deja resolus dans le code. Le cache pathfinding (P2) etait partiellement en place. L'audit approfondi du code est indispensable avant toute modification.",
+    "combined_perf_impact": "PERF-01 + PERF-02 combines: reduction de ~20x des recalculs pathfinding (de 1/tick/bee a ~1/sec/bee, distribue sur 4 groupes). Block reads: de ~5000/tick peak a ~250/tick pour 50 abeilles.",
+    "chunk_safety_best_in_class": "Avec FIX-01 (Bee Ledger + 2-tier timer) et FIX-02 (orphan timer + isLoaded()), Beemancer aurait la meilleure protection chunk unload parmi TOUS les mods d'abeilles. Productive Bees n'a aucune protection. ResourcefulBees a un timer simple. Forestry evite le probleme (pas d'entite). Beemancer combinerait: ledger de position, grace period au load, 2-tier death timer, isLoaded() cote bee, et orphan cleanup.",
+    "false_positives_eliminated": "L'architecte a elimine 2 faux problemes (P6 RETURNING teleport et P10 fleur detruite) qui etaient en realite deja geres dans le code. L'audit du code AVANT proposition est indispensable.",
+    "design_decision_pending": "DESIGN-01 (MoveToTargetGoal priority) necessite une decision du team lead: la BeeWand doit-elle preempter le butinage? Si oui, priority 2 + timeout 30s. Si non, laisser priority 4."
+  }
+}

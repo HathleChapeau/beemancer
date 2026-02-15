@@ -46,7 +46,6 @@ public class WildBeePatrolGoal extends Goal {
     private static final int MIN_WAIT_TICKS = 40;   // 2 secondes
     private static final int MAX_WAIT_TICKS = 200;   // 10 secondes
     private static final double REACH_DISTANCE = 2.0;
-    private static final double FLIGHT_SPEED_FACTOR = 0.15;
     private static final int MOVE_TIMEOUT = 600;     // 30 secondes max pour atteindre un point
 
     private enum PatrolState {
@@ -95,6 +94,12 @@ public class WildBeePatrolGoal extends Goal {
 
     @Override
     public void tick() {
+        // Timer decrement AVANT le throttle (timeouts doivent rester precis)
+        timer--;
+
+        // Throttle N=4: traitement mouvement 1 tick sur 4, offset par UUID
+        if (bee.tickCount % 4 != (int)(bee.getUUID().getLeastSignificantBits() & 0x3)) return;
+
         switch (state) {
             case MOVING_TO_WAYPOINT -> tickMovingToWaypoint();
             case WAITING_AT_WAYPOINT -> tickWaitingAtWaypoint();
@@ -139,7 +144,6 @@ public class WildBeePatrolGoal extends Goal {
             return;
         }
 
-        timer--;
         if (timer <= 0) {
             advanceToNextWaypoint();
             return;
@@ -153,7 +157,6 @@ public class WildBeePatrolGoal extends Goal {
             hoverNear(waypoints.get(currentWaypointIndex));
         }
 
-        timer--;
         if (timer <= 0) {
             advanceToNextWaypoint();
         }
@@ -179,6 +182,12 @@ public class WildBeePatrolGoal extends Goal {
         BlockPos nestPos = bee.getHomeNestPos();
         if (nestPos == null) return;
 
+        // Si le chunk du nid n'est pas charge, rester sur place et attendre
+        if (!bee.level().isLoaded(nestPos)) {
+            hoverNear(bee.blockPosition());
+            return;
+        }
+
         double distance = bee.position().distanceTo(Vec3.atCenterOf(nestPos));
 
         if (distance <= REACH_DISTANCE) {
@@ -186,7 +195,6 @@ public class WildBeePatrolGoal extends Goal {
             return;
         }
 
-        timer--;
         if (timer <= 0) {
             // Timeout: teleporter au nid puis entrer
             bee.setPos(Vec3.atCenterOf(nestPos).add(0, 1, 0));
@@ -321,7 +329,7 @@ public class WildBeePatrolGoal extends Goal {
 
         Vec3 direction = diff.normalize();
         BeeBehaviorConfig config = bee.getBehaviorConfig();
-        double speed = config.getFlyingSpeed() * FLIGHT_SPEED_FACTOR;
+        double speed = config.getPatrolSpeed();
 
         bee.setDeltaMovement(direction.scale(speed));
 

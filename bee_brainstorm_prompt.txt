@@ -1,0 +1,250 @@
+================================================================================
+PROMPT — SESSION BRAINSTORMING BEE BEHAVIOR & HIVE SYSTEM
+================================================================================
+Date: 2026-02-15
+Document de sortie: /home/adri/beemancer/beemancer-linux/bee_brainstorm.txt
+================================================================================
+
+INSTRUCTIONS:
+Copier-coller ce prompt dans une nouvelle session Claude Code.
+
+================================================================================
+DEBUT DU PROMPT
+================================================================================
+
+Fais toi une equipe Forestry expert, Productive Bees expert, Create expert et un
+expert de l'architecture de Beemancer.
+
+On va creer un document de brainstorming pour le systeme d'abeilles et de ruches
+de Beemancer. Le document sera ecrit dans:
+  /home/adri/beemancer/beemancer-linux/bee_brainstorm.txt
+
+AVANT DE COMMENCER: Lis Structure.txt et les fichiers sources du systeme d'abeilles
+pour comprendre l'etat actuel. L'architecte doit faire ca en premier et presenter
+factuellement aux experts.
+
+== SUJET DU BRAINSTORM ==
+
+Le comportement des abeilles et des ruches. Comment les ameliorer, les optimiser, et fix pour s'assurer d'avoir le comportement désiré.
+On couvre:
+- Le comportement IA des abeilles (goals, pathfinding, etats)
+- Le cycle de vie dans les ruches (slots, lifecycle, foraging)
+- La genetique et les especes (genes, breeding, mutations)
+- Les nids naturels et la capture (worldgen nests, scoop)
+- La progression des ruches (tiers, upgrades, capacites)
+- L'interaction joueur-abeille (feedback visuel, sons, particules)
+- Le gameplay loop global (pourquoi le joueur veut elever des abeilles)
+
+== ORGANISATION EN GROUPES ==
+
+GROUPE 1 — Comportement et IA des abeilles
+  Features a analyser:
+  - MagicBeeEntity (~700L): Entity principale, goals, synched data
+  - BeeAIStateMachine (~227L): Machine a etats comportementaux
+  - BeeActivityState (~56L): Etats d'activite
+  - ForagingBehaviorGoal (~500L): Butinage complexe (fleurs, ressources)
+  - WildBeePatrolGoal (~361L): Patrouille abeilles sauvages (nids naturels)
+  - BeeRevengeGoal (~143L): Comportement defensif quand attaquee
+  - ReturnToHiveWhenLowHealthGoal (~111L): Retour ruche quand blessée
+  - MoveToTargetGoal (~79L): Deplacement simple vers cible
+  - BeePathfinding (~507L): Pathfinding Theta* avance
+
+GROUPE 2 — Ruches et cycle de vie
+  Features a analyser:
+  - HiveMultiblockBlockEntity (~658L): Ruche multibloc, slots, inventaire
+  - MagicHiveBlockEntity (~595L): Ruche simple single-block
+  - HiveBeeLifecycleManager (~369L): Naissance, vieillissement, mort
+  - HiveBeeSlot (~194L): Slot individuel par abeille
+  - HiveFlowerPool (~176L): Tracking fleurs disponibles
+  - IHiveInternals (~72L) + IHiveBeeHost (~63L): Interfaces ruche
+  - HiveConfig (~34L): Configuration
+
+GROUPE 3 — Genetique, especes et breeding
+  Features a analyser:
+  - BeeGeneData (~142L): Donnees genetiques par abeille
+  - GeneRegistry (~133L): Registre central des genes
+  - AbstractGene (~98L) + Gene (~76L): Framework genes
+  - GeneCategory (~64L): Categories (species, behavior, appearance)
+  - DataDrivenSpeciesGene (~134L): Especes configurables par JSON
+  - 7 FlowerGenes: Preferences florales par espece
+  - 4 EnvironmentGenes: Adaptations environnement
+  - GeneInit (~157L): Registration des genes
+  - BeeSpeciesManager (~423L): Definitions especes, traits, metadata JSON
+  - BeeBehaviorManager (~258L): Configurations comportementales
+  - BeeBehaviorConfig (~256L): Config avec loot tables et parametres
+
+GROUPE 4 — Nids naturels, capture et worldgen
+  Features a analyser:
+  - BeeNestBlock (~97L) + BeeNestBlockEntity (~264L): Nids 7 especes Tier I
+  - Cycle: spawn 3 bees -> patrouille 15 blocs -> retour -> repos 10-20s
+  - Si bee meurt ou scoopee: maxBees -1 permanent
+  - ScoopItem (~69L): Capture clic droit
+  - BeeNestFeature + BeeNestFeatureConfig: Worldgen placement
+  - 7 biome modifiers (meadow, forest, rocky, river, dune, nether, end)
+
+GROUPE 5 — Progression, feedback et gameplay loop
+  Features a analyser:
+  - 3 tiers de ruches: T1 (+1bee/x1.5), T2 (+2bees/x2.0), T3 (+3bees/x2.5)
+  - Essence System: 7 types (SPEED, FORAGING, TOLERANCE, DROP, INSOMNIA,
+    DIURNAL, NOCTURNAL), 4 tiers (LESSER +25% -> PERFECT +100%)
+  - MagicBeeRenderer (~140L): Rendu entite + animation
+  - DeliveryBeeEntity (~627L): Variante livraison (storage system)
+  - MagicBeeItem (~309L) + BeeLarvaItem (~95L): Items abeille
+  - BiomeTemperatureManager (~219L): Temperature effective par biome
+
+GROUPE 6 — Matrice de priorite globale
+  Synthese de tous les groupes, priorites P0 a P4, convergences/divergences.
+
+== ROLES DES AGENTS ==
+
+- beemancer-architect: Moderateur STRICT. Son role:
+  1. Presenter les features FACTUELLEMENT (pas de jugement, pas d'opinion)
+  2. Repondre aux questions techniques sur le code Beemancer (lire les fichiers)
+  3. Poser des questions aux experts pour challenger leurs propositions
+  4. Rappatrier des informations du codebase quand les experts en ont besoin
+  5. Verifier le contexte: s'assurer que les propositions sont faisables dans le code
+  6. Relancer des recherches internet si une affirmation n'est pas sourcee
+  ** NE PROPOSE JAMAIS d'ameliorations, d'idees ou de solutions lui-meme **
+  ** Ne donne JAMAIS son avis sur une proposition, seulement des FAITS du code **
+
+- forestry-expert: Expert Forestry (le mod d'abeilles original de Minecraft).
+  Connait: systeme de breeding Mendelien, apiaries, queen/drone/princess lifecycle,
+  climate tolerance, flower requirements, bee housing progression, produits,
+  mutations, effet des frames, bee species trees.
+  Propose des ameliorations en comparant avec Forestry. Sources OBLIGATOIRES.
+  Source principale: https://ftb.fandom.com/wiki/Forestry, code source Forestry.
+
+- productive-bees-expert: Expert Productive Bees (mod abeilles moderne populaire).
+  Connait: configurable bee species, advanced hive blocks, breeding chamber,
+  gene editing, expansion boxes, centrifuge processing, nests worldgen, JEI
+  integration, upgrades system.
+  Propose des ameliorations en comparant avec Productive Bees. Sources OBLIGATOIRES.
+  Source principale: https://wiki.productivebees.com/, code source Productive Bees.
+
+- create-expert: Expert Create mod (patterns techniques, entity behaviors).
+  Connait: SmartBlockEntity, BlockEntityBehaviour, LerpedFloat animation,
+  entity contraptions, processing recipes, kinetic system, progression mecanique.
+  Propose des patterns techniques applicables au systeme d'abeilles.
+  Source principale: code source Create mc1.21.1/dev.
+
+- team-lead (toi): Coordonne, relaie les propositions si l'architecte perd son
+  contexte (probleme frequent de compaction), met a jour le document.
+
+== METHODE DE TRAVAIL ==
+
+Pour CHAQUE proposition:
+- L'information doit être documenté et validé par les pairs
+- Doit toujours faire l'objet de recherche sur internet, ainsi que de recherche complémentaire sur internet
+
+Pour CHAQUE groupe:
+1. L'architecte LIT les fichiers sources et presente FACTUELLEMENT:
+   - Ce que chaque fichier fait
+   - Les dimensions (lignes, complexite)
+   - Les patterns utilises
+   - Les interactions entre fichiers
+   ** SANS jugement ni suggestion **
+
+2. Les 3 experts proposent des ameliorations/nouvelles features basees sur
+   leur mod de reference. Chaque proposition suit le format:
+   [TAG] Titre proposition
+     Quoi: Description
+     Pourquoi: Motivation/probleme resolu
+     Comment: Implementation technique dans le code Beemancer
+     Reference: [MOD] Feature/classe/pattern de reference + source URL
+     Priorite: P0 (quick win) a P4 (futur)
+     Effort: Trivial/Faible/Moyen/Eleve
+     Risque: Aucun/Faible/Moyen/Eleve
+
+3. L'architecte challenge les propositions:
+   - "Est-ce que ca existe deja dans le code?" (verifier)
+   - "Quel fichier serait modifie?" (concret)
+   - "Source?" (si pas de reference)
+   ** TOUJOURS en posant des QUESTIONS, jamais en proposant **
+
+4. Synthese avec convergences/divergences par le team-lead
+
+== REGLES IMPORTANTES ==
+
+1. L'architecte perd souvent ses messages a cause de la compaction de contexte.
+   Solution: les experts envoient AUSSI leurs propositions au team-lead en backup.
+   Le team-lead relaie si necessaire.
+
+2. Chaque proposition doit avoir: quoi, pourquoi, comment, reference mod, priorite.
+
+3. Les experts doivent faire des recherches internet pour sourcer leurs propositions.
+   Pas de propositions "de memoire" sans verification.
+
+4. Le document bee_brainstorm.txt est mis a jour incrementalement apres chaque
+   groupe (pas a la fin).
+
+5. L'architecte a acces au codebase complet. Quand un expert demande "comment
+   c'est implemente dans Beemancer?", l'architecte LIT le fichier et repond
+   avec les FAITS (numeros de ligne, noms de methodes, patterns utilises).
+
+6. On veut des propositions CONCRETES et IMPLEMENTABLES, pas des voeux pieux.
+   "Les abeilles devraient etre plus intelligentes" = INTERDIT.
+   "Ajouter un goal PollinateFlowerGoal qui..." = CORRECT.
+
+7. Tags experts: [FORESTRY], [PB] (Productive Bees), [CREATE]
+   Tags consensus: [CONV] (2+), [UNAN] (3/3)
+
+== CATALOGUE DES FEATURES ACTUELLES (pour l'architecte) ==
+
+Les fichiers a lire sont dans:
+  src/main/java/com/chapeau/beemancer/
+
+Systeme d'abeilles (~10,500 lignes, 52+ fichiers):
+
+ENTITES:
+  common/entity/bee/MagicBeeEntity.java (~700L) — Entite principale
+  common/entity/bee/BeePathfinding.java (~507L) — Pathfinding Theta*
+  common/entity/bee/BeeAIStateMachine.java (~227L) — Machine a etats
+  common/entity/bee/BeeActivityState.java (~56L) — Enum etats
+
+GOALS IA:
+  common/entity/bee/goal/ForagingBehaviorGoal.java (~500L) — Butinage
+  common/entity/bee/goal/WildBeePatrolGoal.java (~361L) — Patrouille sauvage
+  common/entity/bee/goal/BeeRevengeGoal.java (~143L) — Defense
+  common/entity/bee/goal/ReturnToHiveWhenLowHealthGoal.java (~111L) — Retour sante basse
+  common/entity/bee/goal/MoveToTargetGoal.java (~79L) — Deplacement cible
+
+RUCHES:
+  common/block/hive/HiveMultiblockBlockEntity.java (~658L) — Ruche multibloc
+  common/block/hive/MagicHiveBlockEntity.java (~595L) — Ruche single-block
+  common/block/hive/HiveBeeLifecycleManager.java (~369L) — Cycle de vie
+  common/block/hive/HiveBeeSlot.java (~194L) — Slot abeille
+  common/block/hive/HiveFlowerPool.java (~176L) — Pool fleurs
+  common/block/hive/BeeNestBlock.java (~97L) + BeeNestBlockEntity.java (~264L) — Nids
+
+GENETIQUE:
+  core/gene/BeeGeneData.java (~142L) — Donnees genes
+  core/gene/GeneRegistry.java (~133L) — Registre genes
+  core/gene/AbstractGene.java (~98L) + Gene.java (~76L) — Framework
+  core/gene/GeneCategory.java (~64L) — Categories
+  content/gene/species/DataDrivenSpeciesGene.java (~134L) — Especes JSON
+  content/gene/flower/ (7 fichiers) — Preferences florales
+  content/gene/environment/ (4 fichiers) — Adaptations environnement
+  content/gene/GeneInit.java (~157L) — Registration
+
+BEHAVIOR:
+  core/behavior/BeeBehaviorManager.java (~258L) — Manager config
+  core/behavior/BeeBehaviorConfig.java (~256L) — Config + loot tables
+  core/bee/BeeSpeciesManager.java (~423L) — Especes + traits
+  core/bee/BiomeTemperatureManager.java (~219L) — Temperature biome
+
+ITEMS:
+  common/item/bee/MagicBeeItem.java (~309L) — Item spawn abeille
+  common/item/bee/BeeLarvaItem.java (~95L) — Larve
+  common/item/tool/ScoopItem.java (~69L) — Capture
+
+RENDERERS:
+  client/renderer/entity/MagicBeeRenderer.java (~140L) — Rendu abeille
+  client/renderer/debug/BeeDebugRenderer.java (~250L) — Debug visuel
+
+ESPECES TIER I (7):
+  meadow, forest, rocky, river, dune, nether, end
+  Chaque espece a: nid naturel, biomes specifiques, preferences florales
+
+================================================================================
+FIN DU PROMPT
+================================================================================

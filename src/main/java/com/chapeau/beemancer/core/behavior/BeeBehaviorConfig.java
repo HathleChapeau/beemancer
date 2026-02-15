@@ -40,6 +40,11 @@ public class BeeBehaviorConfig {
     // Loot de pollinisation
     private final List<LootEntry> pollinationLoot = new ArrayList<>();
 
+    // Facteurs de vitesse centralises (CLEAN-01)
+    private static final double FORAGING_SPEED_FACTOR = 0.2;
+    private static final double PATROL_SPEED_FACTOR = 0.15;
+    private static final double FLEE_SPEED_FACTOR = 0.2;
+
     // --- Getters ---
 
     public BeeBehaviorType getBehaviorType() {
@@ -92,6 +97,26 @@ public class BeeBehaviorConfig {
 
     public int getForagingDuration() {
         return foragingDuration;
+    }
+
+    /** Vitesse effective de butinage (flyingSpeed * 0.2). */
+    public double getForagingSpeed() {
+        return flyingSpeed * FORAGING_SPEED_FACTOR;
+    }
+
+    /** Vitesse effective de butinage en mode enrage (enragedSpeed * 0.2). */
+    public double getEnragedForagingSpeed() {
+        return enragedFlyingSpeed * FORAGING_SPEED_FACTOR;
+    }
+
+    /** Vitesse effective de patrouille sauvage (flyingSpeed * 0.15). */
+    public double getPatrolSpeed() {
+        return flyingSpeed * PATROL_SPEED_FACTOR;
+    }
+
+    /** Vitesse effective de fuite vers la ruche (flyingSpeed * 0.2). */
+    public double getFleeSpeed() {
+        return flyingSpeed * FLEE_SPEED_FACTOR;
     }
 
     public List<LootEntry> getPollinationLoot() {
