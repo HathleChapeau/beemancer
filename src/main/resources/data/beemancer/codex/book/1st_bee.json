@@ -13,10 +13,6 @@
     {
       "type": "craft",
       "result": "beemancer:scoop"
-    },
-    {
-      "type": "craft",
-      "result": "minecraft:diamond_block"
     }
   ],
   "sticky_notes": []
