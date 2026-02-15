@@ -23,6 +23,7 @@ package com.chapeau.beemancer.client.gui.widget;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.codex.CodexManager;
 import com.chapeau.beemancer.common.codex.CodexNode;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.common.quest.NodeState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -189,6 +190,11 @@ public class CodexNodeWidget extends AbstractWidget {
         if (nodeState == NodeState.DISCOVERED) {
             renderNewBadge(graphics);
         }
+
+        // Debug: afficher le quest_id dans l'encadré du node
+        if (DebugWandItem.displayDebug && node.hasQuest()) {
+            renderDebugQuestId(graphics);
+        }
     }
 
     private void renderNewBadge(GuiGraphics graphics) {
@@ -215,6 +221,21 @@ public class CodexNodeWidget extends AbstractWidget {
         graphics.drawString(font, text, 0, 0, 0xFFFFFFFF, false);
 
         graphics.pose().popPose();
+    }
+
+    private void renderDebugQuestId(GuiGraphics graphics) {
+        Font font = Minecraft.getInstance().font;
+        String questId = node.getQuestId();
+
+        int x = getX();
+        int y = getY() + NODE_SIZE + 1;
+
+        // Fond sombre pour lisibilité
+        int textWidth = font.width(questId);
+        graphics.fill(x - 1, y - 1, x + textWidth + 1, y + font.lineHeight + 1, 0xCC000000);
+
+        // Texte quest_id en cyan
+        graphics.drawString(font, questId, x, y, 0xFF00FFFF, false);
     }
 
     private void renderBackground(GuiGraphics graphics) {

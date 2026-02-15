@@ -173,8 +173,8 @@ public class ClientSetup {
         // InfuserRenderer - item flottant + particules miel
         event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER.get(),
             InfuserRenderer::new);
-        event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER_TIER2.get(),
-            InfuserRenderer::new);
+        // event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER_TIER2.get(),
+        //     InfuserRenderer::new);
         // HoneyTankRenderer - fluide dynamique
         event.registerBlockEntityRenderer(BeemancerBlockEntities.HONEY_TANK.get(),
             HoneyTankRenderer::new);
@@ -194,8 +194,8 @@ public class ClientSetup {
         event.registerBlockEntityRenderer(BeemancerBlockEntities.CENTRIFUGE_HEART.get(),
             CentrifugeHeartRenderer::new);
         // InfuserHeartRenderer - cubes centraux statiques de l'infuser multibloc
-        event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER_HEART.get(),
-            InfuserHeartRenderer::new);
+        // event.registerBlockEntityRenderer(BeemancerBlockEntities.INFUSER_HEART.get(),
+        //     InfuserHeartRenderer::new);
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {

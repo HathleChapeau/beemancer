@@ -61,7 +61,7 @@ public class InfuserBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return switch (tier) {
-            case 2 -> InfuserBlockEntity.createTier2(pos, state);
+            // case 2 -> InfuserBlockEntity.createTier2(pos, state);
             default -> new InfuserBlockEntity(pos, state);
         };
     }
@@ -71,7 +71,7 @@ public class InfuserBlock extends BaseEntityBlock {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
         BlockEntityType<?> expectedType = switch (tier) {
-            case 2 -> BeemancerBlockEntities.INFUSER_TIER2.get();
+            // case 2 -> BeemancerBlockEntities.INFUSER_TIER2.get();
             default -> BeemancerBlockEntities.INFUSER.get();
         };
         return createTickerHelper(type, (BlockEntityType<InfuserBlockEntity>) expectedType, InfuserBlockEntity::serverTick);

@@ -13,6 +13,8 @@
  * | StandardPageRenderer| Pages standard       | Rendu nodes classiques         |
  * | CodexManager        | Donnees nodes        | Chargement des nodes           |
  * | BeemancerSounds     | Sons                 | Feedback audio                 |
+ * | CodexDebugQuestPanel| Panneau debug quetes | Affichage quetes en mode debug |
+ * | DebugWandItem       | Flag displayDebug    | Activation mode debug          |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -24,6 +26,7 @@ package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.screen.codex.BeeTreePageRenderer;
+import com.chapeau.beemancer.client.gui.screen.codex.CodexDebugQuestPanel;
 import com.chapeau.beemancer.client.gui.screen.codex.CodexDecorationRenderer;
 import com.chapeau.beemancer.client.gui.screen.codex.CodexPageRenderer;
 import com.chapeau.beemancer.client.gui.screen.codex.StandardPageRenderer;
@@ -31,6 +34,7 @@ import com.chapeau.beemancer.common.codex.CodexManager;
 import com.chapeau.beemancer.common.codex.CodexNode;
 import com.chapeau.beemancer.common.codex.CodexPage;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.common.quest.QuestManager;
 import com.chapeau.beemancer.common.quest.QuestPlayerData;
 import com.chapeau.beemancer.core.network.packets.CodexFirstOpenPacket;
@@ -110,6 +114,9 @@ public class CodexScreen extends Screen {
     private double minScrollY = 0;
     private double maxScrollY = 0;
     private static final int SCROLL_MARGIN = 40; // Marge autour des nodes extremes
+
+    // Debug quest panel
+    private final CodexDebugQuestPanel debugQuestPanel = new CodexDebugQuestPanel();
 
     public CodexScreen() {
         this(CodexPage.APICA);
@@ -244,6 +251,9 @@ public class CodexScreen extends Screen {
                 addRenderableWidget(abstractWidget);
             }
         }
+
+        // Reconstruire le panneau debug quetes (dynamique selon la page courante)
+        debugQuestPanel.rebuild(nodes, completedQuests, frameX + FRAME_WIDTH, frameY, FRAME_HEIGHT);
     }
 
     private void clearCurrentWidgets() {
@@ -294,6 +304,12 @@ public class CodexScreen extends Screen {
 
         // 6. Progress
         renderProgress(graphics);
+
+        // 7. Debug quest panel (visible uniquement en mode debug)
+        if (DebugWandItem.displayDebug) {
+            debugQuestPanel.updateCompletion(getCompletedQuests());
+            debugQuestPanel.render(graphics, font, mouseX, mouseY);
+        }
     }
 
     private void renderFrame(GuiGraphics graphics) {
@@ -400,6 +416,11 @@ public class CodexScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Debug panel intercepte les clics en priorite
+        if (DebugWandItem.displayDebug && debugQuestPanel.mouseClicked(mouseX, mouseY, button, font)) {
+            return true;
+        }
+
         if (button == 0) {
             boolean handled = currentRenderer.handleClick(mouseX, mouseY, this::handleNodeClick);
             if (handled) {
@@ -450,6 +471,11 @@ public class CodexScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollXDelta, double scrollYDelta) {
+        // Debug panel scroll
+        if (DebugWandItem.displayDebug && debugQuestPanel.mouseScrolled(mouseX, mouseY, scrollYDelta)) {
+            return true;
+        }
+
         if (isInContentArea(mouseX, mouseY)) {
             this.scrollY += scrollYDelta * 20;
             clampScroll();

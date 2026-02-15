@@ -225,12 +225,12 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.INFUSER.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<InfuserBlockEntity>> INFUSER_TIER2 =
-            BLOCK_ENTITIES.register("infuser_tier2",
-                    () -> BlockEntityType.Builder.of(
-                            InfuserBlockEntity::createTier2,
-                            BeemancerBlocks.INFUSER_TIER2.get()
-                    ).build(null));
+    // public static final Supplier<BlockEntityType<InfuserBlockEntity>> INFUSER_TIER2 =
+    //         BLOCK_ENTITIES.register("infuser_tier2",
+    //                 () -> BlockEntityType.Builder.of(
+    //                         InfuserBlockEntity::createTier2,
+    //                         BeemancerBlocks.INFUSER_TIER2.get()
+    //                 ).build(null));
 
     public static final Supplier<BlockEntityType<MultiblockTankBlockEntity>> MULTIBLOCK_TANK =
             BLOCK_ENTITIES.register("multiblock_tank",
@@ -285,12 +285,12 @@ public class BeemancerBlockEntities {
                             BeemancerBlocks.ALEMBIC_HEART.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<InfuserHeartBlockEntity>> INFUSER_HEART =
-            BLOCK_ENTITIES.register("infuser_heart",
-                    () -> BlockEntityType.Builder.of(
-                            InfuserHeartBlockEntity::new,
-                            BeemancerBlocks.INFUSER_HEART.get()
-                    ).build(null));
+    // public static final Supplier<BlockEntityType<InfuserHeartBlockEntity>> INFUSER_HEART =
+    //         BLOCK_ENTITIES.register("infuser_heart",
+    //                 () -> BlockEntityType.Builder.of(
+    //                         InfuserHeartBlockEntity::new,
+    //                         BeemancerBlocks.INFUSER_HEART.get()
+    //                 ).build(null));
 
     public static final Supplier<BlockEntityType<CentrifugeHeartBlockEntity>> CENTRIFUGE_HEART =
             BLOCK_ENTITIES.register("centrifuge_heart",

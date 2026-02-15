@@ -116,8 +116,8 @@ public class BeemancerItems {
     public static final DeferredItem<BlockItem> INFUSER = ITEMS.register("infuser",
             () -> new BlockItem(BeemancerBlocks.INFUSER.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> INFUSER_TIER2 = ITEMS.register("infuser_tier2",
-            () -> new BlockItem(BeemancerBlocks.INFUSER_TIER2.get(), new Item.Properties()));
+    // public static final DeferredItem<BlockItem> INFUSER_TIER2 = ITEMS.register("infuser_tier2",
+    //         () -> new BlockItem(BeemancerBlocks.INFUSER_TIER2.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> MULTIBLOCK_TANK = ITEMS.register("multiblock_tank",
             () -> new BlockItem(BeemancerBlocks.MULTIBLOCK_TANK.get(), new Item.Properties()));
@@ -161,8 +161,8 @@ public class BeemancerItems {
     // --- ALCHEMY HEARTS ---
     public static final DeferredItem<BlockItem> ALEMBIC_HEART = ITEMS.register("alembic_heart",
             () -> new BlockItem(BeemancerBlocks.ALEMBIC_HEART.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> INFUSER_HEART = ITEMS.register("infuser_heart",
-            () -> new BlockItem(BeemancerBlocks.INFUSER_HEART.get(), new Item.Properties()));
+    // public static final DeferredItem<BlockItem> INFUSER_HEART = ITEMS.register("infuser_heart",
+    //         () -> new BlockItem(BeemancerBlocks.INFUSER_HEART.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> CENTRIFUGE_HEART = ITEMS.register("centrifuge_heart",
             () -> new BlockItem(BeemancerBlocks.CENTRIFUGE_HEART.get(), new Item.Properties()));
 

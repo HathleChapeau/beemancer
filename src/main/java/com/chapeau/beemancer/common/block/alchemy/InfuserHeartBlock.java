@@ -111,9 +111,10 @@ public class InfuserHeartBlock extends Block implements EntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
-        return type == BeemancerBlockEntities.INFUSER_HEART.get()
-            ? (lvl, pos, st, be) -> InfuserHeartBlockEntity.serverTick(lvl, pos, st, (InfuserHeartBlockEntity) be)
-            : null;
+        // return type == BeemancerBlockEntities.INFUSER_HEART.get()
+        //     ? (lvl, pos, st, be) -> InfuserHeartBlockEntity.serverTick(lvl, pos, st, (InfuserHeartBlockEntity) be)
+        //     : null;
+        return null;
     }
 
     @Override

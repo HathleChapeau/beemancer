@@ -192,7 +192,8 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
     };
 
     public InfuserHeartBlockEntity(BlockPos pos, BlockState state) {
-        super(BeemancerBlockEntities.INFUSER_HEART.get(), pos, state);
+        // super(BeemancerBlockEntities.INFUSER_HEART.get(), pos, state);
+        super(BeemancerBlockEntities.ALEMBIC_HEART.get(), pos, state); // placeholder — INFUSER_HEART disabled
     }
 
     // ==================== MultiblockController ====================

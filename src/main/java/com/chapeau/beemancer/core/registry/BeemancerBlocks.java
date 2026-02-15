@@ -248,12 +248,12 @@ public class BeemancerBlocks {
                     .requiresCorrectToolForDrops()
                     .lightLevel(state -> state.getValue(InfuserBlock.WORKING) ? 10 : 0)));
 
-    public static final DeferredBlock<InfuserBlock> INFUSER_TIER2 = BLOCKS.register("infuser_tier2",
-            () -> new InfuserBlock(BlockBehaviour.Properties.of()
-                    .strength(3.5f)
-                    .sound(SoundType.WOOD)
-                    .requiresCorrectToolForDrops()
-                    .lightLevel(state -> state.getValue(InfuserBlock.WORKING) ? 10 : 0), 2));
+    // public static final DeferredBlock<InfuserBlock> INFUSER_TIER2 = BLOCKS.register("infuser_tier2",
+    //         () -> new InfuserBlock(BlockBehaviour.Properties.of()
+    //                 .strength(3.5f)
+    //                 .sound(SoundType.WOOD)
+    //                 .requiresCorrectToolForDrops()
+    //                 .lightLevel(state -> state.getValue(InfuserBlock.WORKING) ? 10 : 0), 2));
 
     public static final DeferredBlock<MultiblockTankBlock> MULTIBLOCK_TANK = BLOCKS.register("multiblock_tank",
             () -> new MultiblockTankBlock(BlockBehaviour.Properties.of()
@@ -351,13 +351,13 @@ public class BeemancerBlocks {
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
-    public static final DeferredBlock<InfuserHeartBlock> INFUSER_HEART = BLOCKS.register("infuser_heart",
-            () -> new InfuserHeartBlock(BlockBehaviour.Properties.of()
-                    .strength(3.0f)
-                    .sound(SoundType.AMETHYST)
-                    .lightLevel(state -> 4)
-                    .noOcclusion()
-                    .requiresCorrectToolForDrops()));
+    // public static final DeferredBlock<InfuserHeartBlock> INFUSER_HEART = BLOCKS.register("infuser_heart",
+    //         () -> new InfuserHeartBlock(BlockBehaviour.Properties.of()
+    //                 .strength(3.0f)
+    //                 .sound(SoundType.AMETHYST)
+    //                 .lightLevel(state -> 4)
+    //                 .noOcclusion()
+    //                 .requiresCorrectToolForDrops()));
 
     public static final DeferredBlock<CentrifugeHeartBlock> CENTRIFUGE_HEART = BLOCKS.register("centrifuge_heart",
             () -> new CentrifugeHeartBlock(BlockBehaviour.Properties.of()

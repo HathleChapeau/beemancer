@@ -128,8 +128,8 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.CRYSTALLIZER.get());
         output.accept(BeemancerItems.ALEMBIC_HEART.get());
         output.accept(BeemancerItems.INFUSER.get());
-        output.accept(BeemancerItems.INFUSER_TIER2.get());
-        output.accept(BeemancerItems.INFUSER_HEART.get());
+        // output.accept(BeemancerItems.INFUSER_TIER2.get());
+        // output.accept(BeemancerItems.INFUSER_HEART.get());
         output.accept(BeemancerItems.POLLEN_POT.get());
         output.accept(BeemancerItems.CRANK.get());
     }

@@ -141,10 +141,10 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     // Factory methods for tiered versions
-    public static InfuserBlockEntity createTier2(BlockPos pos, BlockState state) {
-        return new InfuserBlockEntity(BeemancerBlockEntities.INFUSER_TIER2.get(), pos, state,
-            TIER2_TANK_CAPACITY, TIER2_PROCESS_MULTIPLIER);
-    }
+    // public static InfuserBlockEntity createTier2(BlockPos pos, BlockState state) {
+    //     return new InfuserBlockEntity(BeemancerBlockEntities.INFUSER_TIER2.get(), pos, state,
+    //         TIER2_TANK_CAPACITY, TIER2_PROCESS_MULTIPLIER);
+    // }
 
     public int getTankCapacity() { return tankCapacity; }
     public float getProcessTimeMultiplier() { return processTimeMultiplier; }

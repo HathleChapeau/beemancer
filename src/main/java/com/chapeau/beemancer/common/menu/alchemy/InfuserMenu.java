@@ -142,7 +142,7 @@ public class InfuserMenu extends BeemancerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, BeemancerBlocks.INFUSER.get())
-            || stillValid(access, player, BeemancerBlocks.INFUSER_HEART.get());
+        return stillValid(access, player, BeemancerBlocks.INFUSER.get());
+            // || stillValid(access, player, BeemancerBlocks.INFUSER_HEART.get());
     }
 }
