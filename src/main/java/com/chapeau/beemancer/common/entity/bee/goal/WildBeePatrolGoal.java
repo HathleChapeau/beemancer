@@ -63,6 +63,7 @@ public class WildBeePatrolGoal extends Goal {
     private final List<BlockPos> waypoints = new ArrayList<>();
     private int currentWaypointIndex = 0;
     private int timer = 0;
+    private boolean firstActivation = true;
 
     public WildBeePatrolGoal(MagicBeeEntity bee) {
         this.bee = bee;
@@ -89,11 +90,19 @@ public class WildBeePatrolGoal extends Goal {
             pathfinding = new BeePathfinding(bee.level());
         }
         pathfinding.clearPath();
-
-        state = PatrolState.RESTING_AT_NEST;
-        timer = randomRange(MIN_REST_TICKS, MAX_REST_TICKS);
         waypoints.clear();
         currentWaypointIndex = 0;
+
+        if (firstActivation) {
+            // Premiere activation: partir en patrouille immediatement
+            firstActivation = false;
+            startNewPatrol();
+        } else {
+            // Activations suivantes: repos au nid
+            state = PatrolState.RESTING_AT_NEST;
+            timer = randomRange(MIN_REST_TICKS, MAX_REST_TICKS);
+            bee.setDebugDestination(bee.getHomeNestPos());
+        }
     }
 
     @Override
@@ -107,7 +116,6 @@ public class WildBeePatrolGoal extends Goal {
     }
 
     private void tickRestingAtNest() {
-        // Rester stationnaire pres du nid
         BlockPos nestPos = bee.getHomeNestPos();
         if (nestPos != null) {
             hoverNear(nestPos);
@@ -115,17 +123,28 @@ public class WildBeePatrolGoal extends Goal {
 
         timer--;
         if (timer <= 0) {
-            generateWaypoints();
-            if (waypoints.isEmpty()) {
-                timer = randomRange(MIN_REST_TICKS, MAX_REST_TICKS);
-                return;
-            }
-            currentWaypointIndex = 0;
-            state = PatrolState.MOVING_TO_WAYPOINT;
-            timer = MOVE_TIMEOUT;
-            pathfinding.clearPath();
-            bee.setDebugDestination(waypoints.get(0));
+            startNewPatrol();
         }
+    }
+
+    /**
+     * Genere les waypoints et demarre une nouvelle patrouille.
+     * Si la generation echoue, retombe en repos.
+     */
+    private void startNewPatrol() {
+        generateWaypoints();
+        if (waypoints.isEmpty()) {
+            state = PatrolState.RESTING_AT_NEST;
+            timer = randomRange(MIN_REST_TICKS, MAX_REST_TICKS);
+            bee.setDebugDestination(bee.getHomeNestPos());
+            return;
+        }
+        currentWaypointIndex = 0;
+        state = PatrolState.MOVING_TO_WAYPOINT;
+        timer = MOVE_TIMEOUT;
+        pathfinding.clearPath();
+        bee.setDebugDestination(waypoints.get(0));
+        updateDebugPatrolPath();
     }
 
     private void tickMovingToWaypoint() {
@@ -138,25 +157,18 @@ public class WildBeePatrolGoal extends Goal {
         double distance = bee.position().distanceTo(Vec3.atCenterOf(target));
 
         if (distance <= REACH_DISTANCE) {
-            // Arrive au waypoint, commencer a attendre
             bee.setDeltaMovement(Vec3.ZERO);
             state = PatrolState.WAITING_AT_WAYPOINT;
             timer = randomRange(MIN_WAIT_TICKS, MAX_WAIT_TICKS);
             pathfinding.clearPath();
+            bee.setDebugDestination(target);
+            updateDebugPatrolPath();
             return;
         }
 
-        // Timeout: passer au waypoint suivant
         timer--;
         if (timer <= 0) {
-            currentWaypointIndex++;
-            if (currentWaypointIndex >= waypoints.size()) {
-                startReturning();
-            } else {
-                timer = MOVE_TIMEOUT;
-                pathfinding.clearPath();
-                bee.setDebugDestination(waypoints.get(currentWaypointIndex));
-            }
+            advanceToNextWaypoint();
             return;
         }
 
@@ -164,22 +176,29 @@ public class WildBeePatrolGoal extends Goal {
     }
 
     private void tickWaitingAtWaypoint() {
-        // Rester stationnaire au waypoint
         if (currentWaypointIndex < waypoints.size()) {
             hoverNear(waypoints.get(currentWaypointIndex));
         }
 
         timer--;
         if (timer <= 0) {
-            currentWaypointIndex++;
-            if (currentWaypointIndex >= waypoints.size()) {
-                startReturning();
-            } else {
-                state = PatrolState.MOVING_TO_WAYPOINT;
-                timer = MOVE_TIMEOUT;
-                pathfinding.clearPath();
-                bee.setDebugDestination(waypoints.get(currentWaypointIndex));
-            }
+            advanceToNextWaypoint();
+        }
+    }
+
+    /**
+     * Passe au waypoint suivant, ou retourne au nid si c'etait le dernier.
+     */
+    private void advanceToNextWaypoint() {
+        currentWaypointIndex++;
+        if (currentWaypointIndex >= waypoints.size()) {
+            startReturning();
+        } else {
+            state = PatrolState.MOVING_TO_WAYPOINT;
+            timer = MOVE_TIMEOUT;
+            pathfinding.clearPath();
+            bee.setDebugDestination(waypoints.get(currentWaypointIndex));
+            updateDebugPatrolPath();
         }
     }
 
@@ -191,21 +210,22 @@ public class WildBeePatrolGoal extends Goal {
 
         if (distance <= REACH_DISTANCE) {
             bee.setDeltaMovement(Vec3.ZERO);
-            bee.clearDebugDestination();
-            bee.setDebugPath(null);
             state = PatrolState.RESTING_AT_NEST;
             timer = randomRange(MIN_REST_TICKS, MAX_REST_TICKS);
             pathfinding.clearPath();
+            bee.setDebugDestination(nestPos);
+            bee.setDebugPath(null);
             return;
         }
 
-        // Timeout: teleporter pres du nid (fallback)
         timer--;
         if (timer <= 0) {
             bee.setPos(Vec3.atCenterOf(nestPos).add(0, 1, 0));
             state = PatrolState.RESTING_AT_NEST;
             timer = randomRange(MIN_REST_TICKS, MAX_REST_TICKS);
             pathfinding.clearPath();
+            bee.setDebugDestination(nestPos);
+            bee.setDebugPath(null);
             return;
         }
 
@@ -218,11 +238,28 @@ public class WildBeePatrolGoal extends Goal {
         timer = MOVE_TIMEOUT;
         pathfinding.clearPath();
         bee.setDebugDestination(nestPos);
+        updateDebugPatrolPath();
+    }
+
+    /**
+     * Met a jour le chemin de debug pour afficher la route de patrouille restante.
+     * Inclut les waypoints non visites + retour au nid.
+     */
+    private void updateDebugPatrolPath() {
+        List<BlockPos> debugPath = new ArrayList<>();
+        for (int i = currentWaypointIndex; i < waypoints.size(); i++) {
+            debugPath.add(waypoints.get(i));
+        }
+        BlockPos nestPos = bee.getHomeNestPos();
+        if (nestPos != null) {
+            debugPath.add(nestPos);
+        }
+        bee.setDebugPath(debugPath);
     }
 
     /**
      * Genere 3 waypoints aleatoires dans un rayon de 15 blocs autour du nid.
-     * Les waypoints sont en l'air (traversables par l'abeille).
+     * Les waypoints sont dans des blocs traversables (non-solides).
      */
     private void generateWaypoints() {
         waypoints.clear();
@@ -240,30 +277,34 @@ public class WildBeePatrolGoal extends Goal {
     }
 
     /**
-     * Trouve un waypoint valide (air) dans le rayon de patrouille.
-     * Essaie plusieurs fois avant d'abandonner.
+     * Trouve un waypoint valide (non-solide) dans le rayon de patrouille.
+     * Cherche au-dessus du sol, dans des blocs traversables.
      */
     private BlockPos findValidWaypoint(BlockPos center, Level level) {
-        for (int attempt = 0; attempt < 15; attempt++) {
+        for (int attempt = 0; attempt < 30; attempt++) {
             int dx = randomRange(-PATROL_RADIUS, PATROL_RADIUS);
             int dz = randomRange(-PATROL_RADIUS, PATROL_RADIUS);
-            int dy = randomRange(-3, 5);
 
-            BlockPos candidate = center.offset(dx, dy, dz);
+            BlockPos groundSearch = center.offset(dx, 5, dz);
 
-            // Verifier que c'est de l'air et pas trop loin verticalement
-            if (!level.getBlockState(candidate).isAir()) continue;
-            if (!level.getBlockState(candidate.above()).isAir()) continue;
-
-            // Verifier qu'on est au-dessus du sol (pas en l'air libre trop haut)
-            boolean hasGround = false;
-            for (int y = 0; y < 10; y++) {
-                if (level.getBlockState(candidate.below(y + 1)).isSolid()) {
-                    hasGround = true;
+            // Chercher le sol depuis le haut
+            BlockPos groundPos = null;
+            for (int y = 0; y < 15; y++) {
+                BlockPos check = groundSearch.below(y);
+                if (level.getBlockState(check).isSolid()) {
+                    groundPos = check;
                     break;
                 }
             }
-            if (!hasGround) continue;
+            if (groundPos == null) continue;
+
+            // Le waypoint est 2-4 blocs au-dessus du sol
+            int flyHeight = randomRange(2, 4);
+            BlockPos candidate = groundPos.above(flyHeight);
+
+            // Verifier que le bloc et le bloc au-dessus sont traversables
+            if (level.getBlockState(candidate).isSolid()) continue;
+            if (level.getBlockState(candidate.above()).isSolid()) continue;
 
             return candidate;
         }
@@ -277,9 +318,6 @@ public class WildBeePatrolGoal extends Goal {
         BlockPos flightDest = destination.above(1);
         pathfinding.findPath(bee.blockPosition(), flightDest);
 
-        List<BlockPos> path = pathfinding.getCurrentPath();
-        bee.setDebugPath(path);
-
         BlockPos nextWaypoint = pathfinding.getNextWaypoint(bee.position(), REACH_DISTANCE);
         if (nextWaypoint == null) {
             nextWaypoint = flightDest;
@@ -292,15 +330,19 @@ public class WildBeePatrolGoal extends Goal {
      * Deplacement vers un Vec3 precis.
      */
     private void navigateToVec3(Vec3 targetVec) {
-        Vec3 direction = targetVec.subtract(bee.position()).normalize();
+        Vec3 beePos = bee.position();
+        Vec3 diff = targetVec.subtract(beePos);
+        double length = diff.length();
+        if (length < 0.01) return;
 
+        Vec3 direction = diff.normalize();
         BeeBehaviorConfig config = bee.getBehaviorConfig();
         double speed = config.getFlyingSpeed() * FLIGHT_SPEED_FACTOR;
 
         bee.setDeltaMovement(direction.scale(speed));
 
-        double dx = targetVec.x - bee.getX();
-        double dz = targetVec.z - bee.getZ();
+        double dx = targetVec.x - beePos.x;
+        double dz = targetVec.z - beePos.z;
         float targetYaw = (float) (Math.atan2(dz, dx) * (180.0 / Math.PI)) - 90.0F;
         bee.setYRot(targetYaw);
         bee.yBodyRot = targetYaw;
@@ -329,6 +371,7 @@ public class WildBeePatrolGoal extends Goal {
         bee.setDebugPath(null);
         waypoints.clear();
         state = PatrolState.RESTING_AT_NEST;
+        firstActivation = true;
         if (pathfinding != null) {
             pathfinding.clearPath();
         }
