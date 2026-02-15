@@ -78,7 +78,7 @@ public class StorageHiveRenderer implements BlockEntityRenderer<StorageHiveBlock
 
         // LINKED ou ACTIVE: rendre le modele avec animation d'oscillation
         BlockPos pos = blockEntity.getBlockPos();
-        float currentTime = blockEntity.getLevel().getGameTime() + partialTick;
+        float currentTime = blockEntity.getLevel().getGameTime() + partialTick + pos.hashCode();
 
         StorageHiveAnimator.tick(pos, currentTime, true);
         AnimationController ctrl = StorageHiveAnimator.getController(pos);

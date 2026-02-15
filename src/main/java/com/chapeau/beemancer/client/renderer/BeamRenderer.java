@@ -84,11 +84,12 @@ public class BeamRenderer {
         poseStack.mulPose(Axis.XP.rotation(pitch));
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
 
-        // Inner beam: section en losange, opaque
+        // Inner beam: section carree, opaque
         float vMaxInner = height * (0.5F / innerRadius) + vMin;
         renderPart(poseStack, buffer.getBuffer(RenderType.beaconBeam(BEAM_TEXTURE, false)),
             red, green, blue, 1.0F, height,
-            0, innerRadius, innerRadius, 0, -innerRadius, 0, 0, -innerRadius,
+            -innerRadius, -innerRadius, innerRadius, -innerRadius,
+            -innerRadius, innerRadius, innerRadius, innerRadius,
             0, 1, vMaxInner, vMin);
 
         // Outer glow: section carree, translucide

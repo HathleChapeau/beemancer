@@ -145,9 +145,9 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
         Vec3 hiveBelow = new Vec3(0.5, -0.5, 0.5);
         Vec3 hiveAbove = new Vec3(0.5, 1.5, 0.5);
         BeamRenderer.renderBeam(poseStack, bufferSource, hiveBelow, heartCenter,
-            partialTick, gameTime, 0.03f, 0.07f, 1.0f, 0.85f, 0.2f);
+            partialTick, gameTime, 0.06f, 0.14f, 1.0f, 0.85f, 0.2f);
         BeamRenderer.renderBeam(poseStack, bufferSource, hiveAbove, heartCenter,
-            partialTick, gameTime, 0.03f, 0.07f, 1.0f, 0.85f, 0.2f);
+            partialTick, gameTime, 0.06f, 0.14f, 1.0f, 0.85f, 0.2f);
 
         // Beams: Heart -> Terminals (cyan)
         Vec3[] terminalCenters = {
