@@ -52,14 +52,12 @@ import java.util.function.Supplier;
 /**
  * Registre central pour les variantes de modeles du hoverbike.
  * Les factories de modeles sont enregistrees statiquement en Java (geometrie).
- * Les variantes disponibles par partie sont chargees depuis
- * assets/beemancer/hoverbike/parts.json (configuration dynamique).
+ * Les variantes sont chargees depuis assets/beemancer/hoverbike/parts/{category}.json.
  */
 public final class HoverbikePartVariants {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HoverbikePartVariants.class);
-    private static final ResourceLocation PARTS_JSON =
-            ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "hoverbike/parts.json");
+    private static final String PARTS_DIR = "hoverbike/parts/";
 
     /** Factory de modele enregistree en Java (geometrie + constructeur). */
     public record ModelFactory(
@@ -68,8 +66,12 @@ public final class HoverbikePartVariants {
             Function<ModelPart, HoverbikePartModel> constructor
     ) {}
 
-    /** Variante chargee depuis le JSON (nom + factory Java). */
-    public record VariantEntry(String modelKey, String name, ModelFactory factory) {}
+    /** Variante chargee depuis le JSON (donnees + factory Java). */
+    public record VariantEntry(
+            String modelKey, String name, ModelFactory factory,
+            String stat1Name, double stat1Value,
+            String stat2Name, double stat2Value
+    ) {}
 
     /** Factories Java enregistrees par cle de modele. */
     private static final Map<String, ModelFactory> MODEL_FACTORIES = new HashMap<>();
@@ -122,60 +124,61 @@ public final class HoverbikePartVariants {
         return MODEL_FACTORIES;
     }
 
-    /** Charge les variantes depuis le JSON si pas encore fait. */
+    /** Charge les variantes depuis les JSONs par categorie si pas encore fait. */
     private static void ensureLoaded() {
         if (loadedVariants != null) return;
         loadedVariants = new EnumMap<>(HoverbikePart.class);
 
         try {
             Minecraft mc = Minecraft.getInstance();
-            Optional<Resource> resource = mc.getResourceManager().getResource(PARTS_JSON);
-            if (resource.isEmpty()) {
-                LOGGER.warn("Hoverbike parts JSON not found: {}, using defaults", PARTS_JSON);
-                buildDefaults();
-                return;
-            }
+            for (HoverbikePart part : HoverbikePart.values()) {
+                String categoryKey = part.name().toLowerCase();
+                ResourceLocation partFile = ResourceLocation.fromNamespaceAndPath(
+                        Beemancer.MOD_ID, PARTS_DIR + categoryKey + ".json");
 
-            try (InputStream is = resource.get().open();
-                 InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
-                parseJson(root);
+                Optional<Resource> resource = mc.getResourceManager().getResource(partFile);
+                if (resource.isEmpty()) {
+                    LOGGER.warn("Part file not found: {}", partFile);
+                    continue;
+                }
+
+                try (InputStream is = resource.get().open();
+                     InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                    JsonArray array = JsonParser.parseReader(reader).getAsJsonArray();
+                    List<VariantEntry> entries = parsePartArray(array);
+                    if (!entries.isEmpty()) {
+                        loadedVariants.put(part, entries);
+                    }
+                }
             }
+            LOGGER.info("Loaded hoverbike parts for {} categories", loadedVariants.size());
         } catch (Exception e) {
-            LOGGER.error("Failed to load hoverbike parts JSON, using defaults", e);
+            LOGGER.error("Failed to load hoverbike parts, using defaults", e);
             buildDefaults();
         }
     }
 
-    private static void parseJson(JsonObject root) {
-        for (HoverbikePart part : HoverbikePart.values()) {
-            String partKey = part.name().toLowerCase();
-            if (!root.has(partKey)) continue;
+    /** Parse un tableau JSON de variantes pour une categorie. */
+    private static List<VariantEntry> parsePartArray(JsonArray array) {
+        List<VariantEntry> entries = new ArrayList<>();
+        for (JsonElement elem : array) {
+            JsonObject obj = elem.getAsJsonObject();
+            String name = obj.get("name").getAsString();
+            String modelKey = obj.get("model").getAsString();
+            String stat1Name = obj.has("stat_1") ? obj.get("stat_1").getAsString() : "";
+            double stat1Value = obj.has("stat_1_value") ? obj.get("stat_1_value").getAsDouble() : 0.0;
+            String stat2Name = obj.has("stat_2") ? obj.get("stat_2").getAsString() : "";
+            double stat2Value = obj.has("stat_2_value") ? obj.get("stat_2_value").getAsDouble() : 0.0;
 
-            JsonObject partObj = root.getAsJsonObject(partKey);
-            if (!partObj.has("variants")) continue;
-
-            JsonArray variantsArray = partObj.getAsJsonArray("variants");
-            List<VariantEntry> entries = new ArrayList<>();
-
-            for (JsonElement elem : variantsArray) {
-                JsonObject varObj = elem.getAsJsonObject();
-                String modelKey = varObj.get("model").getAsString();
-                String name = varObj.has("name") ? varObj.get("name").getAsString() : modelKey;
-
-                ModelFactory factory = MODEL_FACTORIES.get(modelKey);
-                if (factory == null) {
-                    LOGGER.warn("Unknown model key '{}' for part {}, skipping", modelKey, partKey);
-                    continue;
-                }
-
-                entries.add(new VariantEntry(modelKey, name, factory));
+            ModelFactory factory = MODEL_FACTORIES.get(modelKey);
+            if (factory == null) {
+                LOGGER.warn("Unknown model key '{}' for part '{}', skipping", modelKey, name);
+                continue;
             }
 
-            if (!entries.isEmpty()) {
-                loadedVariants.put(part, entries);
-            }
+            entries.add(new VariantEntry(modelKey, name, factory, stat1Name, stat1Value, stat2Name, stat2Value));
         }
+        return entries;
     }
 
     /** Fallback : une seule variante par partie (le modele A). */
@@ -184,12 +187,13 @@ public final class HoverbikePartVariants {
             String key = part.name().toLowerCase();
             ModelFactory factory = MODEL_FACTORIES.get(key);
             if (factory != null) {
-                loadedVariants.put(part, List.of(new VariantEntry(key, "Default", factory)));
+                loadedVariants.put(part, List.of(
+                        new VariantEntry(key, "Default", factory, "", 0.0, "", 0.0)));
             }
         }
     }
 
-    /** Force le rechargement depuis le JSON (utile lors d'un resource reload). */
+    /** Force le rechargement depuis les JSONs (utile lors d'un resource reload). */
     public static void reload() {
         loadedVariants = null;
     }

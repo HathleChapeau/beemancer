@@ -22,10 +22,28 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
- * Construit les JsonArray par defaut pour tags.json et statistics.json.
+ * Construit les JsonArray par defaut pour tags.json, statistics.json et part_categories.json.
  * Les valeurs sont des placeholders equilibres, ajustables via les fichiers config.
  */
 public class HoverbikeDefaultConfigs {
+
+    static JsonArray defaultPartCategories() {
+        JsonArray a = new JsonArray();
+        a.add(cat("chassis", "Hover_Max_Speed", "Run_Max_Speed"));
+        a.add(cat("coeur", "Hover_Acceleration", "Run_Acceleration"));
+        a.add(cat("propulseur", "Lift_Speed", "Gauge_Fill_Rate"));
+        a.add(cat("radiateur", "Hover_Friction", "Brake_Deceleration"));
+        return a;
+    }
+
+    private static JsonObject cat(String category, String... stats) {
+        JsonObject o = new JsonObject();
+        o.addProperty("category", category);
+        JsonArray arr = new JsonArray();
+        for (String s : stats) arr.add(s);
+        o.add("stats", arr);
+        return o;
+    }
 
     static JsonArray defaultTags() {
         JsonArray a = new JsonArray();

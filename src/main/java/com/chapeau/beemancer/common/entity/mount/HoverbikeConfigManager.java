@@ -40,14 +40,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Gestionnaire des fichiers de configuration JSON du hoverbike.
- * Gere 3 fichiers dans config/beemancer/hoverbike/:
+ * Gere 4 fichiers dans config/beemancer/hoverbike/:
  * - base_stats.json: statistiques de base
  * - tags.json: liste de tags pour les modifiers
  * - statistics.json: definitions des modifiers avec tiers T1-T8
+ * - part_categories.json: categories de pieces et leurs stats associees
  */
 public class HoverbikeConfigManager {
 
@@ -59,6 +62,7 @@ public class HoverbikeConfigManager {
     private static HoverbikeSettings baseStats = HoverbikeSettings.createDefaults();
     private static List<String> tags = new ArrayList<>();
     private static List<HoverbikeModifier> modifiers = new ArrayList<>();
+    private static Map<String, List<String>> partCategories = new LinkedHashMap<>();
 
     /**
      * Initialise le dossier config et charge tous les fichiers.
@@ -80,6 +84,7 @@ public class HoverbikeConfigManager {
         writeIfMissing("base_stats.json", GSON.toJson(HoverbikeSettings.createDefaults().toJsonObject()));
         writeIfMissing("tags.json", GSON.toJson(HoverbikeDefaultConfigs.defaultTags()));
         writeIfMissing("statistics.json", GSON.toJson(HoverbikeDefaultConfigs.defaultStatistics()));
+        writeIfMissing("part_categories.json", GSON.toJson(HoverbikeDefaultConfigs.defaultPartCategories()));
     }
 
     private static void writeIfMissing(String filename, String content) {
@@ -97,6 +102,7 @@ public class HoverbikeConfigManager {
         loadBaseStats();
         loadTags();
         loadStatistics();
+        loadPartCategories();
     }
 
     private static void loadBaseStats() {
@@ -186,6 +192,27 @@ public class HoverbikeConfigManager {
         return new HoverbikeStatObject(stat, valueType, ranges);
     }
 
+    private static void loadPartCategories() {
+        try {
+            String content = Files.readString(configDir.resolve("part_categories.json"));
+            JsonArray array = JsonParser.parseString(content).getAsJsonArray();
+            partCategories = new LinkedHashMap<>();
+            for (JsonElement el : array) {
+                JsonObject obj = el.getAsJsonObject();
+                String category = obj.get("category").getAsString();
+                List<String> stats = new ArrayList<>();
+                for (JsonElement s : obj.getAsJsonArray("stats")) {
+                    stats.add(s.getAsString());
+                }
+                partCategories.put(category, stats);
+            }
+            LOGGER.info("Loaded {} hoverbike part categories", partCategories.size());
+        } catch (Exception e) {
+            LOGGER.error("Failed to load part_categories.json", e);
+            partCategories = new LinkedHashMap<>();
+        }
+    }
+
     // --- Getters ---
 
     public static HoverbikeSettings getBaseStats() {
@@ -240,5 +267,15 @@ public class HoverbikeConfigManager {
     /** Verifie si un tag existe dans la liste chargee. */
     public static boolean hasTag(String tag) {
         return tags.contains(tag);
+    }
+
+    /** Retourne toutes les categories de pieces avec leurs stats. */
+    public static Map<String, List<String>> getPartCategories() {
+        return Collections.unmodifiableMap(partCategories);
+    }
+
+    /** Retourne les noms de stats associes a une categorie, ou liste vide. */
+    public static List<String> getCategoryStats(String category) {
+        return partCategories.getOrDefault(category, List.of());
     }
 }
