@@ -1,5 +1,6 @@
 {
-  "parent": "beemancer:block/storage/storage_hive_tier3",
+  "parent": "beemancer:block/storage/storage_hive",
   "textures": {
+    "core": "beemancer:block/storage/hive_side_t3"
   }
 }
