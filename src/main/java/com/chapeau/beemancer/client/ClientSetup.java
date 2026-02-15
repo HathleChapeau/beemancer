@@ -28,6 +28,7 @@ import com.chapeau.beemancer.client.gui.screen.alchemy.PoweredCentrifugeScreen;
 import com.chapeau.beemancer.client.gui.screen.storage.NetworkInterfaceScreen;
 import com.chapeau.beemancer.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.beemancer.client.renderer.BuildingWandPreviewRenderer;
+import com.chapeau.beemancer.client.renderer.block.AssemblyTableRenderer;
 import com.chapeau.beemancer.client.renderer.block.AltarHeartRenderer;
 import com.chapeau.beemancer.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.beemancer.client.renderer.block.HoneyPedestalRenderer;
@@ -186,6 +187,9 @@ public class ClientSetup {
         // IncubatorRenderer - item flottant au centre de l'incubateur
         event.registerBlockEntityRenderer(BeemancerBlockEntities.INCUBATOR.get(),
             IncubatorRenderer::new);
+        // AssemblyTableRenderer - piece de moto sur la table
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.ASSEMBLY_TABLE.get(),
+            AssemblyTableRenderer::new);
         // CentrifugeHeartRenderer - cubes centraux animés de la centrifuge multibloc
         event.registerBlockEntityRenderer(BeemancerBlockEntities.CENTRIFUGE_HEART.get(),
             CentrifugeHeartRenderer::new);

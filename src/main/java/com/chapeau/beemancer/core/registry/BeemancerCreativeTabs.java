@@ -75,6 +75,19 @@ public class BeemancerCreativeTabs {
                     .build());
 
     // =========================================================================
+    // HOVERBIKE TAB - Hoverbike Parts and Assembly
+    // =========================================================================
+
+    public static final Supplier<CreativeModeTab> HOVERBIKE_TAB = CREATIVE_TABS.register("hoverbike_tab",
+            () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup." + Beemancer.MOD_ID + ".hoverbike"))
+                    .icon(() -> new ItemStack(BeemancerItems.HOVERBIKE_SPAWN.get()))
+                    .displayItems((parameters, output) -> {
+                        addHoverbikeParts(output);
+                    })
+                    .build());
+
+    // =========================================================================
     // DEBUG TAB - Debug and Creative Tools
     // =========================================================================
 
@@ -98,7 +111,6 @@ public class BeemancerCreativeTabs {
     private static void addBees(CreativeModeTab.Output output) {
         output.accept(BeemancerItems.MAGIC_BEE.get());
         output.accept(BeemancerItems.BEE_LARVA.get());
-        output.accept(BeemancerItems.HOVERBIKE_SPAWN.get());
     }
 
     private static void addBeeMachines(CreativeModeTab.Output output) {
@@ -266,6 +278,31 @@ public class BeemancerCreativeTabs {
         output.accept(BeemancerItems.DIURNAL_ESSENCE.get());
         output.accept(BeemancerItems.NOCTURNAL_ESSENCE.get());
         output.accept(BeemancerItems.INSOMNIA_ESSENCE.get());
+    }
+
+    // =========================================================================
+    // HELPER METHODS - HOVERBIKE TAB
+    // =========================================================================
+
+    private static void addHoverbikeParts(CreativeModeTab.Output output) {
+        output.accept(BeemancerItems.HOVERBIKE_SPAWN.get());
+        output.accept(BeemancerItems.ASSEMBLY_TABLE.get());
+        // Chassis
+        output.accept(BeemancerItems.CHASSIS_STANDARD.get());
+        output.accept(BeemancerItems.CHASSIS_HEAVY_FRAME.get());
+        output.accept(BeemancerItems.CHASSIS_ARMORED.get());
+        // Coeur
+        output.accept(BeemancerItems.COEUR_CUBE.get());
+        output.accept(BeemancerItems.COEUR_PYRAMID.get());
+        output.accept(BeemancerItems.COEUR_CRYSTAL.get());
+        // Propulseur
+        output.accept(BeemancerItems.PROPULSEUR_DUAL_EXHAUST.get());
+        output.accept(BeemancerItems.PROPULSEUR_QUAD_NOZZLES.get());
+        output.accept(BeemancerItems.PROPULSEUR_MEGA_REACTOR.get());
+        // Radiateur
+        output.accept(BeemancerItems.RADIATEUR_PANELS.get());
+        output.accept(BeemancerItems.RADIATEUR_FIN_ARRAY.get());
+        output.accept(BeemancerItems.RADIATEUR_WIDE_PANELS.get());
     }
 
     // =========================================================================

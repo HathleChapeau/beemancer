@@ -33,6 +33,7 @@ import com.chapeau.beemancer.common.block.building.HoneyedGlassBlock;
 import com.chapeau.beemancer.common.block.building.HoneyedStoneWallBlock;
 import com.chapeau.beemancer.common.block.building.IronFoundationBlock;
 import com.chapeau.beemancer.common.block.building.RoyalGoldBlock;
+import com.chapeau.beemancer.common.block.mount.AssemblyTableBlock;
 import com.chapeau.beemancer.common.block.crystal.MagicBreedingCrystalBlock;
 import com.chapeau.beemancer.common.block.extractor.ExtractorHeartBlock;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
@@ -507,6 +508,13 @@ public class BeemancerBlocks {
                     .noOcclusion()
                     .requiresCorrectToolForDrops(),
                     Block.box(3, 0, 3, 13, 14, 13)));
+
+    // --- ASSEMBLY TABLE ---
+    public static final DeferredBlock<AssemblyTableBlock> ASSEMBLY_TABLE = BLOCKS.register("assembly_table",
+            () -> new AssemblyTableBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()));
 
     // --- FLYWHEEL TEST ---
     public static final DeferredBlock<BeeSpawnerBlock> BEE_SPAWNER = BLOCKS.register("bee_spawner",

@@ -12,6 +12,8 @@ import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
 import com.chapeau.beemancer.common.item.codex.CodexItem;
 import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.chapeau.beemancer.common.item.essence.EssenceItem;
+import com.chapeau.beemancer.common.entity.mount.HoverbikePart;
+import com.chapeau.beemancer.common.item.mount.HoverbikePartItem;
 import com.chapeau.beemancer.common.item.mount.HoverbikeSpawnItem;
 import com.chapeau.beemancer.common.item.tool.BuildingWandItem;
 import net.minecraft.world.item.BlockItem;
@@ -624,6 +626,42 @@ public class BeemancerItems {
     // --- MOUNT ITEMS ---
     public static final DeferredItem<HoverbikeSpawnItem> HOVERBIKE_SPAWN = ITEMS.register("hoverbike_spawn",
             () -> new HoverbikeSpawnItem(new Item.Properties()));
+
+    // --- ASSEMBLY TABLE ---
+    public static final DeferredItem<BlockItem> ASSEMBLY_TABLE = ITEMS.register("assembly_table",
+            () -> new BlockItem(BeemancerBlocks.ASSEMBLY_TABLE.get(), new Item.Properties()));
+
+    // --- HOVERBIKE PARTS: CHASSIS ---
+    public static final DeferredItem<HoverbikePartItem> CHASSIS_STANDARD = ITEMS.register("chassis_standard",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.CHASSIS, 0));
+    public static final DeferredItem<HoverbikePartItem> CHASSIS_HEAVY_FRAME = ITEMS.register("chassis_heavy_frame",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.CHASSIS, 1));
+    public static final DeferredItem<HoverbikePartItem> CHASSIS_ARMORED = ITEMS.register("chassis_armored",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.CHASSIS, 2));
+
+    // --- HOVERBIKE PARTS: COEUR ---
+    public static final DeferredItem<HoverbikePartItem> COEUR_CUBE = ITEMS.register("coeur_cube",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.COEUR, 0));
+    public static final DeferredItem<HoverbikePartItem> COEUR_PYRAMID = ITEMS.register("coeur_pyramid",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.COEUR, 1));
+    public static final DeferredItem<HoverbikePartItem> COEUR_CRYSTAL = ITEMS.register("coeur_crystal",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.COEUR, 2));
+
+    // --- HOVERBIKE PARTS: PROPULSEUR ---
+    public static final DeferredItem<HoverbikePartItem> PROPULSEUR_DUAL_EXHAUST = ITEMS.register("propulseur_dual_exhaust",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.PROPULSEUR, 0));
+    public static final DeferredItem<HoverbikePartItem> PROPULSEUR_QUAD_NOZZLES = ITEMS.register("propulseur_quad_nozzles",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.PROPULSEUR, 1));
+    public static final DeferredItem<HoverbikePartItem> PROPULSEUR_MEGA_REACTOR = ITEMS.register("propulseur_mega_reactor",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.PROPULSEUR, 2));
+
+    // --- HOVERBIKE PARTS: RADIATEUR ---
+    public static final DeferredItem<HoverbikePartItem> RADIATEUR_PANELS = ITEMS.register("radiateur_panels",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.RADIATEUR, 0));
+    public static final DeferredItem<HoverbikePartItem> RADIATEUR_FIN_ARRAY = ITEMS.register("radiateur_fin_array",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.RADIATEUR, 1));
+    public static final DeferredItem<HoverbikePartItem> RADIATEUR_WIDE_PANELS = ITEMS.register("radiateur_wide_panels",
+            () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.RADIATEUR, 2));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

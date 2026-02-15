@@ -28,6 +28,7 @@ import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.common.block.statue.BeeStatueBlockEntity;
+import com.chapeau.beemancer.common.blockentity.mount.AssemblyTableBlockEntity;
 import com.chapeau.beemancer.common.blockentity.extractor.ExtractorHeartBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.ExportInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.ImportInterfaceBlockEntity;
@@ -296,6 +297,14 @@ public class BeemancerBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             CentrifugeHeartBlockEntity::new,
                             BeemancerBlocks.CENTRIFUGE_HEART.get()
+                    ).build(null));
+
+    // --- ASSEMBLY TABLE ---
+    public static final Supplier<BlockEntityType<AssemblyTableBlockEntity>> ASSEMBLY_TABLE =
+            BLOCK_ENTITIES.register("assembly_table",
+                    () -> BlockEntityType.Builder.of(
+                            AssemblyTableBlockEntity::new,
+                            BeemancerBlocks.ASSEMBLY_TABLE.get()
                     ).build(null));
 
     // --- BEE STATUE ---
