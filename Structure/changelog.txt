@@ -39,6 +39,13 @@ DESIGN-01: Suppression BeeWand (reliquat)
 - Supprime MoveToTargetGoal.java
 - Retire import, registration goal, targetPos field/methods/NBT de MagicBeeEntity
 
+HIVE-PROXIMITY: Blocage sortie si ruche voisine < 4 blocs
+- IHiveInternals: default hasNearbyHive(int radius) — scan cube, detecte tout IHiveInternals
+- MagicHiveBlockEntity + HiveMultiblockBlockEntity: crowded + crowdedCheckTimer (transient)
+- Scan toutes les 100 ticks (5 secondes), shouldReleaseBee() bloque si crowded
+- Multiblock: mesure depuis le bloc master (serverTick filtre par isController)
+- Getter isCrowded() pour debug HUD
+
 ================================================================================
 2026-02-15 - Bee Nests + Scoop (Worldgen)
 ================================================================================

@@ -98,6 +98,10 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     // UUID sync verification timer (transient, not saved)
     private int outsideVerifyTimer = 0;
 
+    // Proximity check (transient, not saved)
+    private boolean crowded = false;
+    private int crowdedCheckTimer = 0;
+
     // Conditions de ruche (pour GUI)
     private boolean hasFlowers = false;
     private boolean hasMushrooms = false;
@@ -160,6 +164,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     @Override
     public boolean shouldReleaseBee(int slot) {
+        if (crowded) return false;
         return canBeeForage(slot);
     }
 
@@ -411,6 +416,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         return states;
     }
 
+    public boolean isCrowded() { return crowded; }
     public int getFlowerScanCooldown() { return flowerPool.getScanCooldown(); }
 
     public List<BlockPos>[] getBeeFlowers() {
@@ -444,6 +450,12 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         hive.antibreedingMode = level.getBlockState(pos.above()).is(BeemancerBlocks.BREEDING_CRYSTAL.get());
 
         hive.updateHiveConditions(level, pos);
+
+        hive.crowdedCheckTimer++;
+        if (hive.crowdedCheckTimer >= 100) {
+            hive.crowdedCheckTimer = 0;
+            hive.crowded = hive.hasNearbyHive(4);
+        }
 
         if (hive.flowerPool.tickScanCooldown()) {
             hive.triggerFlowerScan();

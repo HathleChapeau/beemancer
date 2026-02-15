@@ -69,4 +69,21 @@ interface IHiveInternals {
      * Multiblock: toujours true.
      */
     boolean shouldBreedOnEntry();
+
+    /**
+     * Detecte si une autre ruche (IHiveInternals) se trouve dans le rayon donne.
+     * Utilisee pour bloquer la sortie des abeilles si ruches trop proches.
+     */
+    default boolean hasNearbyHive(int radius) {
+        Level level = getLevel();
+        if (level == null) return false;
+        BlockPos pos = getBlockPos();
+        for (BlockPos check : BlockPos.betweenClosed(
+                pos.offset(-radius, -radius, -radius),
+                pos.offset(radius, radius, radius))) {
+            if (check.equals(pos)) continue;
+            if (level.getBlockEntity(check) instanceof IHiveInternals) return true;
+        }
+        return false;
+    }
 }

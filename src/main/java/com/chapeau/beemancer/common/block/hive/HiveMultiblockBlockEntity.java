@@ -100,6 +100,10 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     // UUID sync verification timer (transient, not saved)
     private int outsideVerifyTimer = 0;
 
+    // Proximity check (transient, not saved)
+    private boolean crowded = false;
+    private int crowdedCheckTimer = 0;
+
     public final ContainerData containerData = new ContainerData() {
         @Override
         public int get(int index) {
@@ -133,7 +137,9 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
     @Override
     public boolean shouldReleaseBee(int slot) {
-        return !breedingMode;
+        if (breedingMode) return false;
+        if (crowded) return false;
+        return true;
     }
 
     @Override
@@ -505,6 +511,12 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
         hive.breedingMode = level.getBlockState(pos.above(4)).is(BeemancerBlocks.BREEDING_CRYSTAL.get());
 
+        hive.crowdedCheckTimer++;
+        if (hive.crowdedCheckTimer >= 100) {
+            hive.crowdedCheckTimer = 0;
+            hive.crowded = hive.hasNearbyHive(4);
+        }
+
         if (hive.flowerPool.tickScanCooldown()) {
             hive.triggerFlowerScan();
         }
@@ -521,6 +533,8 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
             hive.lifecycleManager.verifyOutsideBees();
         }
     }
+
+    public boolean isCrowded() { return crowded; }
 
     // ==================== Helpers ====================
 
