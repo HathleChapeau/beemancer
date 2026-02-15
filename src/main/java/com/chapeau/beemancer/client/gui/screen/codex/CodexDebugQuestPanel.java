@@ -66,7 +66,7 @@ public class CodexDebugQuestPanel {
      */
     public void rebuild(List<CodexNode> nodes, Set<String> completedQuests,
                         int frameRightX, int frameY, int frameHeight) {
-        this.panelX = frameRightX + PANEL_GAP;
+        this.panelX = frameRightX + PANEL_GAP - 50;
         this.panelY = frameY;
         this.panelHeight = frameHeight;
         this.scrollOffset = 0;
