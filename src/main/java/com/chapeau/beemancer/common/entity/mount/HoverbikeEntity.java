@@ -92,7 +92,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     public HoverbikeEntity(EntityType<? extends HoverbikeEntity> entityType, Level level) {
         super(entityType, level);
-        this.settings = HoverbikeSettings.createDefaults();
+        this.settings = HoverbikeConfigManager.getBaseStats();
     }
 
     @Override

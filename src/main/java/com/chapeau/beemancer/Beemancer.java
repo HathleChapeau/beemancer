@@ -27,6 +27,7 @@ import com.chapeau.beemancer.core.command.BeemancerCommands;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.entity.delivery.DeliveryBeeEntity;
+import com.chapeau.beemancer.common.entity.mount.HoverbikeConfigManager;
 import com.chapeau.beemancer.common.entity.mount.HoverbikeEntity;
 import com.chapeau.beemancer.content.gene.GeneInit;
 import com.chapeau.beemancer.core.bee.BeeSpeciesManager;
@@ -90,6 +91,9 @@ public class Beemancer {
         registerModEventListeners(modEventBus);
         registerForgeEventListeners();
         registerClientSetup(modEventBus);
+
+        // Hoverbike config (fichiers JSON dans config/beemancer/hoverbike/)
+        HoverbikeConfigManager.init();
 
         LOGGER.info("Beemancer initialized!");
     }
