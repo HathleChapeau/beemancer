@@ -1,22 +1,22 @@
 /**
  * ============================================================
  * [CodexBookScreen.java]
- * Description: Écran livre du Codex - affiche le contenu détaillé d'un node
+ * Description: Ecran livre du Codex - affiche le contenu detaille d'un node
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation                    |
+ * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | CodexBookContent    | Contenu à afficher   | Sections modulaires            |
- * | CodexBookManager    | Chargement contenu   | Récupération par nodeId        |
- * | BookPageLayout      | Pagination           | Répartition sur les pages      |
- * | CodexPlayerData     | Jour relatif         | Calcul Day X dans l'en-tête    |
+ * | CodexBookContent    | Contenu a afficher   | Sections modulaires            |
+ * | CodexBookManager    | Chargement contenu   | Recuperation par nodeId        |
+ * | BookPageLayout      | Split gauche/droite  | Separation au page_break       |
+ * | CodexPlayerData     | Jour relatif         | Calcul Day X dans l'en-tete    |
  * | StickyNote          | Notes collantes      | Boutons et overlay             |
  * | BeemancerSounds     | Sons                 | Feedback audio                 |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - CodexScreen (ouverture lors du clic sur un node)
  *
  * ============================================================
@@ -52,7 +52,7 @@ public class CodexBookScreen extends Screen {
     private static final int BOOK_WIDTH = 330;
     private static final int BOOK_HEIGHT = 224;
 
-    // Marges intérieures (proportionnelles à la texture upscalée)
+    // Marges interieures (proportionnelles a la texture upscalee)
     private static final int MARGIN_LEFT = 22;
     private static final int MARGIN_RIGHT = 20;
     private static final int MARGIN_TOP = 16;
@@ -63,7 +63,6 @@ public class CodexBookScreen extends Screen {
     private static final int PAGE_PADDING = 4;
     private static final float CONTENT_SCALE = 0.93f;
     private static final int RIGHT_PAGE_EXTRA_MARGIN = 3;
-    private static final int ARROW_DISABLED_COLOR = 0xFF9C8A70;
 
     // Sticky note constants
     private static final int NOTE_BUTTON_WIDTH = 16;
@@ -84,14 +83,10 @@ public class CodexBookScreen extends Screen {
     private int leftPageX;
     private int rightPageX;
     private int pageWidth;
-    private int pageHeight;
 
-    private List<List<CodexBookSection>> paginatedContent;
-    private int currentSpread = 0;
-    private int totalSpreads = 1;
+    private List<CodexBookSection> leftSections;
+    private List<CodexBookSection> rightSections;
 
-    private Button prevButton;
-    private Button nextButton;
     private Button backButton;
 
     private List<StickyNote> stickyNotes = List.of();
@@ -113,66 +108,33 @@ public class CodexBookScreen extends Screen {
         bookX = (width - BOOK_WIDTH) / 2;
         bookY = (height - BOOK_HEIGHT) / 2;
 
-        // Calculer les zones de page à partir des marges de la texture
+        // Calculer les zones de page a partir des marges de la texture
         int spineX = bookX + (BOOK_WIDTH - SPINE_WIDTH) / 2;
 
         leftPageX = bookX + MARGIN_LEFT + PAGE_PADDING;
         rightPageX = spineX + SPINE_WIDTH + PAGE_PADDING;
         pageWidth = (spineX - bookX - MARGIN_LEFT) - PAGE_PADDING * 2;
-        pageHeight = BOOK_HEIGHT - MARGIN_TOP - MARGIN_BOTTOM - PAGE_PADDING * 2;
 
         CodexBookContent content = CodexBookManager.getContent(node.getId());
-        paginatedContent = BookPageLayout.paginate(content.getSections(), font, pageWidth, pageHeight);
-        totalSpreads = BookPageLayout.getSpreadCount(paginatedContent.size());
-        currentSpread = 0;
+        List<List<CodexBookSection>> split = BookPageLayout.splitAtPageBreak(content.getSections());
+        leftSections = split.get(0);
+        rightSections = split.get(1);
         stickyNotes = content.getStickyNotes();
         openedNoteIndex = -1;
 
-        createButtons();
+        createBackButton();
     }
 
-    private void createButtons() {
-        if (prevButton != null) removeWidget(prevButton);
-        if (nextButton != null) removeWidget(nextButton);
+    private void createBackButton() {
         if (backButton != null) removeWidget(backButton);
 
         int buttonY = bookY + BOOK_HEIGHT - 18;
 
-        // Flèche retour pour revenir au codex (onglet précédent)
         backButton = Button.builder(Component.literal("\u2190 Back"), btn -> {
             playSound(BeemancerSounds.CODEX_PAGE_TURN.get());
             Minecraft.getInstance().setScreen(new CodexScreen(returnPage));
         }).bounds(bookX + BOOK_WIDTH / 2 - 25, buttonY, 50, 14).build();
         addRenderableWidget(backButton);
-
-        // Flèche page précédente
-        prevButton = Button.builder(Component.literal("<"), btn -> {
-            if (currentSpread > 0) {
-                currentSpread--;
-                playSound(BeemancerSounds.CODEX_PAGE_TURN.get());
-                updateButtonStates();
-            }
-        }).bounds(bookX + BOOK_WIDTH / 2 - 30, buttonY, 20, 14).build();
-        addRenderableWidget(prevButton);
-
-        // Flèche page suivante
-        nextButton = Button.builder(Component.literal(">"), btn -> {
-            if (currentSpread < totalSpreads - 1) {
-                currentSpread++;
-                playSound(BeemancerSounds.CODEX_PAGE_TURN.get());
-                updateButtonStates();
-            }
-        }).bounds(bookX + BOOK_WIDTH / 2 + 10, buttonY, 20, 14).build();
-        addRenderableWidget(nextButton);
-
-        updateButtonStates();
-    }
-
-    private void updateButtonStates() {
-        prevButton.active = currentSpread > 0;
-        nextButton.active = currentSpread < totalSpreads - 1;
-        prevButton.visible = totalSpreads > 1;
-        nextButton.visible = totalSpreads > 1;
     }
 
     @Override
@@ -188,38 +150,24 @@ public class CodexBookScreen extends Screen {
         String nodeTitle = node.getTitle().getString();
         long relativeDay = playerData.getRelativeDay(node.getFullId());
 
-        int[] spreadPages = BookPageLayout.getSpreadPages(currentSpread);
-
         int contentTopY = bookY + MARGIN_TOP + PAGE_PADDING;
 
         // Page gauche
-        if (spreadPages[0] < paginatedContent.size()) {
-            renderPageSections(graphics, paginatedContent.get(spreadPages[0]),
+        if (!leftSections.isEmpty()) {
+            renderPageSections(graphics, leftSections,
                     leftPageX, contentTopY, pageWidth, nodeTitle, relativeDay);
         }
 
-        // Page droite (marge supplémentaire à gauche et à droite)
-        if (spreadPages[1] < paginatedContent.size()) {
-            int rightEffectiveWidth = pageWidth;// - RIGHT_PAGE_EXTRA_MARGIN * 2;
-            renderPageSections(graphics, paginatedContent.get(spreadPages[1]),
-                    rightPageX + RIGHT_PAGE_EXTRA_MARGIN, contentTopY, rightEffectiveWidth, nodeTitle, relativeDay);
+        // Page droite
+        if (!rightSections.isEmpty()) {
+            renderPageSections(graphics, rightSections,
+                    rightPageX + RIGHT_PAGE_EXTRA_MARGIN, contentTopY, pageWidth, nodeTitle, relativeDay);
         }
 
-        // Numéro de page
-        if (totalSpreads > 1) {
-            String pageNum = (currentSpread + 1) + "/" + totalSpreads;
-            int numWidth = font.width(pageNum);
-            graphics.drawString(font, pageNum,
-                    bookX + BOOK_WIDTH / 2 - numWidth / 2,
-                    bookY + BOOK_HEIGHT - 16, ARROW_DISABLED_COLOR, false);
-        }
-
-        // Boutons
+        // Bouton retour
         backButton.render(graphics, mouseX, mouseY, partialTick);
-        prevButton.render(graphics, mouseX, mouseY, partialTick);
-        nextButton.render(graphics, mouseX, mouseY, partialTick);
 
-        // Sticky note buttons (à droite du livre)
+        // Sticky note buttons (a droite du livre)
         renderStickyNoteButtons(graphics, mouseX, mouseY);
 
         // Sticky note overlay (par dessus tout)
@@ -314,14 +262,12 @@ public class CodexBookScreen extends Screen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         // Si une note est ouverte, cliquer ferme la note
         if (openedNoteIndex >= 0) {
-            // Check if click is ON the note (don't close)
             int noteX = (width - NOTE_WIDTH) / 2;
             int noteY = (height - NOTE_HEIGHT) / 2;
             if (mouseX >= noteX && mouseX < noteX + NOTE_WIDTH
                     && mouseY >= noteY && mouseY < noteY + NOTE_HEIGHT) {
                 return true;
             }
-            // Click outside the note → close
             openedNoteIndex = -1;
             return true;
         }
@@ -347,7 +293,6 @@ public class CodexBookScreen extends Screen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (openedNoteIndex >= 0) {
-            // Escape closes the note
             if (keyCode == 256) {
                 openedNoteIndex = -1;
                 return true;

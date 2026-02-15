@@ -1,101 +1,55 @@
 /**
  * ============================================================
  * [BookPageLayout.java]
- * Description: Calcul de la pagination des sections sur les pages du Codex Book
+ * Description: Separation des sections en page gauche/droite du Codex Book
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation                    |
+ * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | CodexBookSection    | Sections à paginer   | Calcul des hauteurs            |
- * | Font                | Mesure du texte      | Hauteur dynamique des sections |
+ * | CodexBookSection    | Sections a repartir  | Detection du page_break        |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
- * - CodexBookScreen (pagination du contenu)
+ * UTILISE PAR:
+ * - CodexBookScreen (split gauche/droite du contenu)
  *
  * ============================================================
  */
 package com.chapeau.beemancer.client.gui.screen.codex;
 
 import com.chapeau.beemancer.common.codex.book.CodexBookSection;
-import net.minecraft.client.gui.Font;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class BookPageLayout {
 
     /**
-     * Répartit les sections sur des pages individuelles selon la hauteur disponible.
-     * Les sections sont empilées verticalement jusqu'à dépasser la hauteur de page,
-     * puis débordent sur la page suivante.
+     * Separe les sections en deux listes au premier PAGE_BREAK rencontre.
+     * Tout ce qui est avant le page_break va a gauche, tout ce qui est apres va a droite.
+     * S'il n'y a pas de page_break, tout va a gauche et la droite est vide.
      *
-     * @param sections Les sections à paginer
-     * @param font Le font pour calculer les hauteurs
-     * @param pageWidth Largeur d'une page
-     * @param pageHeight Hauteur disponible sur une page
-     * @return Liste de pages, chaque page contenant ses sections
+     * @param sections Les sections a repartir
+     * @return Liste de 2 elements: [0] = page gauche, [1] = page droite
      */
-    public static List<List<CodexBookSection>> paginate(List<CodexBookSection> sections,
-                                                         Font font, int pageWidth, int pageHeight) {
-        if (sections.isEmpty()) {
-            return Collections.emptyList();
-        }
+    public static List<List<CodexBookSection>> splitAtPageBreak(List<CodexBookSection> sections) {
+        List<CodexBookSection> left = new ArrayList<>();
+        List<CodexBookSection> right = new ArrayList<>();
 
-        List<List<CodexBookSection>> pages = new ArrayList<>();
-        List<CodexBookSection> currentPage = new ArrayList<>();
-        int currentHeight = 0;
-
+        boolean afterBreak = false;
         for (CodexBookSection section : sections) {
             if (section.getType() == CodexBookSection.SectionType.PAGE_BREAK) {
-                if (!currentPage.isEmpty()) {
-                    pages.add(currentPage);
-                    currentPage = new ArrayList<>();
-                    currentHeight = 0;
-                }
+                afterBreak = true;
                 continue;
             }
-
-            int sectionHeight = section.getHeight(font, pageWidth);
-
-            if (!currentPage.isEmpty() && currentHeight + sectionHeight > pageHeight) {
-                pages.add(currentPage);
-                currentPage = new ArrayList<>();
-                currentHeight = 0;
+            if (afterBreak) {
+                right.add(section);
+            } else {
+                left.add(section);
             }
-
-            currentPage.add(section);
-            currentHeight += sectionHeight;
         }
 
-        if (!currentPage.isEmpty()) {
-            pages.add(currentPage);
-        }
-
-        return pages;
-    }
-
-    /**
-     * Retourne le nombre total de paires de pages (spreads) nécessaires.
-     * Un spread = 2 pages visibles côte à côte.
-     * @param totalPages Le nombre total de pages individuelles
-     * @return Le nombre de spreads
-     */
-    public static int getSpreadCount(int totalPages) {
-        return Math.max(1, (totalPages + 1) / 2);
-    }
-
-    /**
-     * Retourne les indices des pages gauche et droite pour un spread donné.
-     * @param spreadIndex L'index du spread (0-based)
-     * @return Tableau [leftPageIndex, rightPageIndex], -1 si la page n'existe pas
-     */
-    public static int[] getSpreadPages(int spreadIndex) {
-        int left = spreadIndex * 2;
-        int right = left + 1;
-        return new int[]{left, right};
+        return List.of(left, right);
     }
 }
