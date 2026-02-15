@@ -43,8 +43,11 @@ public class CraftSection extends CodexBookSection {
 
     private static final ResourceLocation CRAFT_BG = ResourceLocation.fromNamespaceAndPath(
             Beemancer.MOD_ID, "textures/gui/codex/codex_book/codex_book_craft.png");
+    private static final ResourceLocation CRAFT_SLOT = ResourceLocation.fromNamespaceAndPath(
+            Beemancer.MOD_ID, "textures/gui/codex/codex_book/craft_slot.png");
     private static final int BG_WIDTH = 118;
     private static final int BG_HEIGHT = 57;
+    private static final int SLOT_SIZE = 26;
 
     private static final int PADDING_BOTTOM = 6;
     private static final int RESULT_PADDING_BOTTOM = 4;
@@ -78,7 +81,7 @@ public class CraftSection extends CodexBookSection {
 
     // Position du resultat (au-dessus de l'image craft)
     private static final int RESULT_OFFSET_X = 50; // relatif au centre de l'image
-    private static final float RESULT_SCALE = 0.75f;
+    private static final float RESULT_SCALE = 1.5f;
 
     // ============================================================
 
@@ -112,8 +115,14 @@ public class CraftSection extends CodexBookSection {
 
         // Resultat au-dessus de l'image, centre
         if (!resultStack.isEmpty()) {
-            int resultX = x + (pageWidth / 2) - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE / 2) + RESULT_OFFSET_X - (pageWidth / 2);
             int resultX2 = x + (pageWidth - BG_WIDTH) / 2 + RESULT_OFFSET_X;
+
+            // Slot derriere le resultat
+            int slotX = resultX2 - (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE)) / 2;
+            int slotY = y - (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE)) / 2;
+            graphics.blit(CRAFT_SLOT, slotX, slotY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
+
+            // Item par dessus le slot
             renderScaledItem(graphics, resultStack, resultX2, y, RESULT_SCALE);
         }
 
