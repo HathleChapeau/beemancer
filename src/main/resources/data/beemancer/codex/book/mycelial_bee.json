@@ -14,7 +14,7 @@
     {
       "type": "model",
       "species": "mycelial",
-      "height": 5,
+      "height": -10,
       "scale": -90,
       "y": -80
     },
