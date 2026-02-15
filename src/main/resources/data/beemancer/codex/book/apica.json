@@ -5,7 +5,14 @@
     },
     {
       "type": "text",
-      "key": "codex.beemancer.apica.apica.lore"
+      "key": "codex.beemancer.apica.apica.lore.p1"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.apica.apica.lore.p2"
     }
   ],
   "sticky_notes": []

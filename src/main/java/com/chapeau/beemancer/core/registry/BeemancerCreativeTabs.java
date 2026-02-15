@@ -106,6 +106,7 @@ public class BeemancerCreativeTabs {
 
     private static void addCodexAndTools(CreativeModeTab.Output output) {
         output.accept(BeemancerItems.CODEX.get());
+        output.accept(BeemancerItems.SCOOP.get());
     }
 
     private static void addBees(CreativeModeTab.Output output) {

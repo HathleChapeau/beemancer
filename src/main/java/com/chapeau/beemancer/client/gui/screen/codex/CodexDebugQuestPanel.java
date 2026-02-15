@@ -9,6 +9,8 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | CodexNode           | Donnees des nodes    | Quest IDs et node IDs          |
+ * | QuestManager        | Acces aux quetes     | Details et conditions          |
+ * | Quest               | Definition quete     | Type, item, machine, species   |
  * | DebugWandItem       | Flag debug           | Activation du panneau          |
  * ------------------------------------------------------------
  *
@@ -20,6 +22,8 @@
 package com.chapeau.beemancer.client.gui.screen.codex;
 
 import com.chapeau.beemancer.common.codex.CodexNode;
+import com.chapeau.beemancer.common.quest.Quest;
+import com.chapeau.beemancer.common.quest.QuestManager;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -31,7 +35,10 @@ public class CodexDebugQuestPanel {
 
     private static final int PANEL_WIDTH = 320;
     private static final int PANEL_GAP = -40;
-    private static final int ROW_HEIGHT = 12;
+    private static final int LINE_HEIGHT = 11;
+    private static final int ENTRY_SPACING = 4;
+    private static final int LINES_PER_ENTRY = 3;
+    private static final int ENTRY_HEIGHT = LINES_PER_ENTRY * LINE_HEIGHT + ENTRY_SPACING;
     private static final int ARROW_HEIGHT = 12;
     private static final int PADDING = 4;
     private static final int TITLE_COLOR = 0xFF00FFFF;
@@ -39,7 +46,9 @@ public class CodexDebugQuestPanel {
     private static final int BORDER_COLOR = 0xFF555555;
     private static final int COMPLETED_COLOR = 0xFF00FF00;
     private static final int INCOMPLETE_COLOR = 0xFFFF4444;
-    private static final int TEXT_COLOR = 0xFFCCCCCC;
+    private static final int LABEL_COLOR = 0xFF888888;
+    private static final int VALUE_COLOR = 0xFFCCCCCC;
+    private static final int SEPARATOR_COLOR = 0xFF333333;
     private static final int ARROW_ACTIVE_COLOR = 0xFFFFFFFF;
     private static final int ARROW_INACTIVE_COLOR = 0xFF555555;
 
@@ -62,11 +71,15 @@ public class CodexDebugQuestPanel {
         this.panelHeight = frameHeight;
         this.scrollOffset = 0;
 
+        QuestManager.ensureClientLoaded();
+
         entries.clear();
         for (CodexNode node : nodes) {
             if (node.hasQuest()) {
                 boolean completed = completedQuests.contains(node.getQuestId());
-                entries.add(new QuestEntry(node.getId(), node.getQuestId(), completed));
+                Quest quest = QuestManager.getQuest(node.getQuestId());
+                String condition = buildConditionText(quest);
+                entries.add(new QuestEntry(node.getId(), node.getQuestId(), completed, condition));
             }
         }
     }
@@ -79,7 +92,7 @@ public class CodexDebugQuestPanel {
             QuestEntry e = entries.get(i);
             boolean completed = completedQuests.contains(e.questId());
             if (completed != e.completed()) {
-                entries.set(i, new QuestEntry(e.nodeId(), e.questId(), completed));
+                entries.set(i, new QuestEntry(e.nodeId(), e.questId(), completed, e.condition()));
             }
         }
     }
@@ -103,7 +116,8 @@ public class CodexDebugQuestPanel {
         // Zone de liste
         int listStartY = arrowUpY + ARROW_HEIGHT;
         int listEndY = panelY + panelHeight - ARROW_HEIGHT - PADDING;
-        maxVisible = (listEndY - listStartY) / ROW_HEIGHT;
+        int availableHeight = listEndY - listStartY;
+        maxVisible = Math.max(1, availableHeight / ENTRY_HEIGHT);
 
         int maxScroll = Math.max(0, entries.size() - maxVisible);
         scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
@@ -111,20 +125,36 @@ public class CodexDebugQuestPanel {
         graphics.enableScissor(panelX, listStartY, panelX + PANEL_WIDTH, listEndY);
         for (int i = 0; i < maxVisible && (i + scrollOffset) < entries.size(); i++) {
             QuestEntry entry = entries.get(i + scrollOffset);
-            int entryY = listStartY + i * ROW_HEIGHT;
+            int entryY = listStartY + i * ENTRY_HEIGHT;
 
             // Indicateur de statut
             String status = entry.completed() ? "\u2713" : "\u2717";
             int statusColor = entry.completed() ? COMPLETED_COLOR : INCOMPLETE_COLOR;
             graphics.drawString(font, status, panelX + PADDING, entryY, statusColor, false);
 
-            // Quest ID (tronque si trop long)
-            String text = entry.questId();
-            int maxTextWidth = PANEL_WIDTH - PADDING * 2 - 14;
-            if (font.width(text) > maxTextWidth) {
-                text = font.plainSubstrByWidth(text, maxTextWidth - font.width("..")) + "..";
-            }
-            graphics.drawString(font, text, panelX + PADDING + 12, entryY, TEXT_COLOR, false);
+            // Ligne 1: Node
+            String nodeLabel = "Node: ";
+            int labelEnd = panelX + PADDING + 12;
+            graphics.drawString(font, nodeLabel, labelEnd, entryY, LABEL_COLOR, false);
+            graphics.drawString(font, entry.nodeId(), labelEnd + font.width(nodeLabel), entryY, VALUE_COLOR, false);
+
+            // Ligne 2: Quest
+            int line2Y = entryY + LINE_HEIGHT;
+            String questLabel = "Quest: ";
+            graphics.drawString(font, questLabel, labelEnd, line2Y, LABEL_COLOR, false);
+            String questText = truncate(font, entry.questId(), PANEL_WIDTH - PADDING * 2 - 12 - font.width(questLabel));
+            graphics.drawString(font, questText, labelEnd + font.width(questLabel), line2Y, VALUE_COLOR, false);
+
+            // Ligne 3: Condition
+            int line3Y = entryY + LINE_HEIGHT * 2;
+            String condLabel = "Cond: ";
+            graphics.drawString(font, condLabel, labelEnd, line3Y, LABEL_COLOR, false);
+            String condText = truncate(font, entry.condition(), PANEL_WIDTH - PADDING * 2 - 12 - font.width(condLabel));
+            graphics.drawString(font, condText, labelEnd + font.width(condLabel), line3Y, 0xFFFFAA00, false);
+
+            // Separateur entre les entrees
+            int sepY = entryY + ENTRY_HEIGHT - 2;
+            graphics.fill(panelX + PADDING, sepY, panelX + PANEL_WIDTH - PADDING, sepY + 1, SEPARATOR_COLOR);
         }
         graphics.disableScissor();
 
@@ -153,7 +183,7 @@ public class CodexDebugQuestPanel {
         int centerX = panelX + PANEL_WIDTH / 2;
         int color = active ? ARROW_ACTIVE_COLOR : ARROW_INACTIVE_COLOR;
 
-        // Surbrillance si survolé et actif
+        // Surbrillance si survole et actif
         if (active && isInArrowZone(mouseX, mouseY, y)) {
             color = 0xFFFFFF00;
         }
@@ -212,5 +242,36 @@ public class CodexDebugQuestPanel {
                 && mouseY >= arrowY && mouseY < arrowY + ARROW_HEIGHT;
     }
 
-    private record QuestEntry(String nodeId, String questId, boolean completed) {}
+    /**
+     * Construit le texte de condition a partir d'un Quest.
+     */
+    private static String buildConditionText(Quest quest) {
+        if (quest == null) return "???";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(quest.getType().name());
+
+        if (quest.getTargetItem() != null) {
+            String item = quest.getTargetItem().toString();
+            sb.append(" | item:").append(item);
+        }
+        if (quest.getTargetMachine() != null) {
+            sb.append(" | machine:").append(quest.getTargetMachine());
+        }
+        if (quest.getTargetSpecies() != null) {
+            sb.append(" | species:").append(quest.getTargetSpecies());
+        }
+        if (quest.getTargetCount() > 1) {
+            sb.append(" x").append(quest.getTargetCount());
+        }
+
+        return sb.toString();
+    }
+
+    private static String truncate(Font font, String text, int maxWidth) {
+        if (font.width(text) <= maxWidth) return text;
+        return font.plainSubstrByWidth(text, maxWidth - font.width("..")) + "..";
+    }
+
+    private record QuestEntry(String nodeId, String questId, boolean completed, String condition) {}
 }
