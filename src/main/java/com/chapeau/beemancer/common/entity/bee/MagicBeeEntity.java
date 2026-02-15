@@ -29,6 +29,7 @@ import com.chapeau.beemancer.common.entity.bee.goal.BeeRevengeGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.ForagingBehaviorGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.MoveToTargetGoal;
 import com.chapeau.beemancer.common.entity.bee.goal.ReturnToHiveWhenLowHealthGoal;
+import com.chapeau.beemancer.common.entity.bee.goal.WildBeePatrolGoal;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorConfig;
 import com.chapeau.beemancer.core.behavior.BeeBehaviorManager;
 import com.chapeau.beemancer.core.gene.BeeGeneData;
@@ -94,6 +95,10 @@ public class MagicBeeEntity extends Bee {
     // --- Navigation ---
     @Nullable
     private BlockPos targetPos = null;
+
+    // --- Wild Bee Nest ---
+    @Nullable
+    private BlockPos homeNestPos = null;
 
     // --- Hive Assignment ---
     @Nullable
@@ -208,8 +213,11 @@ public class MagicBeeEntity extends Bee {
         // Priorité 2: Vengeance si attaqué
         this.targetSelector.addGoal(2, new BeeRevengeGoal(this));
 
-        // Priorité 3: Comportement de butinage
+        // Priorité 3: Comportement de butinage (abeilles assignées à une ruche)
         this.goalSelector.addGoal(3, new ForagingBehaviorGoal(this));
+
+        // Priorité 3: Patrouille sauvage (abeilles de nids naturels)
+        this.goalSelector.addGoal(3, new WildBeePatrolGoal(this));
 
         // Priorité 4: Navigation manuelle (BeeWand)
         this.goalSelector.addGoal(4, new MoveToTargetGoal(this));
@@ -506,6 +514,21 @@ public class MagicBeeEntity extends Bee {
         this.assignedSlot = -1;
     }
 
+    // --- Wild Bee Nest ---
+
+    @Nullable
+    public BlockPos getHomeNestPos() {
+        return homeNestPos;
+    }
+
+    public void setHomeNestPos(@Nullable BlockPos pos) {
+        this.homeNestPos = pos;
+    }
+
+    public boolean hasHomeNest() {
+        return homeNestPos != null;
+    }
+
     // --- Navigation ---
 
     @Nullable
@@ -613,6 +636,12 @@ public class MagicBeeEntity extends Bee {
             tag.putInt("HiveSlot", assignedSlot);
         }
 
+        if (homeNestPos != null) {
+            tag.putInt("NestX", homeNestPos.getX());
+            tag.putInt("NestY", homeNestPos.getY());
+            tag.putInt("NestZ", homeNestPos.getZ());
+        }
+
         // Sauvegarder l'état de comportement
         tag.putBoolean("Pollinated", isPollinated());
         tag.putInt("EnragedTimer", enragedTimer);
@@ -637,6 +666,10 @@ public class MagicBeeEntity extends Bee {
         if (tag.contains("HiveX")) {
             assignedHivePos = new BlockPos(tag.getInt("HiveX"), tag.getInt("HiveY"), tag.getInt("HiveZ"));
             assignedSlot = tag.getInt("HiveSlot");
+        }
+
+        if (tag.contains("NestX")) {
+            homeNestPos = new BlockPos(tag.getInt("NestX"), tag.getInt("NestY"), tag.getInt("NestZ"));
         }
 
         if (tag.contains("Pollinated")) {

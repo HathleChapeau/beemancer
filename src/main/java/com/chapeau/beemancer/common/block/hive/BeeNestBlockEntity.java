@@ -37,18 +37,21 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
- * Spawne periodiquement une MagicBee de l'espece correspondante.
- * Maximum 1 abeille active par nid. L'espece est lue depuis le blockstate.
+ * Spawne periodiquement des MagicBees de l'espece correspondante.
+ * Maximum 3 abeilles actives par nid. L'espece est lue depuis le blockstate.
  */
 public class BeeNestBlockEntity extends BlockEntity {
 
     private static final int SPAWN_INTERVAL = 200;
+    private static final int MAX_BEES = 3;
 
     private int tickCounter;
-    private UUID spawnedBeeUUID;
+    private final List<UUID> spawnedBeeUUIDs = new ArrayList<>();
 
     public BeeNestBlockEntity(BlockPos pos, BlockState state) {
         super(BeemancerBlockEntities.BEE_NEST.get(), pos, state);
@@ -61,16 +64,18 @@ public class BeeNestBlockEntity extends BlockEntity {
         if (tickCounter < SPAWN_INTERVAL) return;
         tickCounter = 0;
 
-        if (isSpawnedBeeAlive()) return;
-        spawnedBeeUUID = null;
+        removeDeadBees();
+        if (spawnedBeeUUIDs.size() >= MAX_BEES) return;
 
         spawnBee();
     }
 
-    private boolean isSpawnedBeeAlive() {
-        if (spawnedBeeUUID == null || !(level instanceof ServerLevel serverLevel)) return false;
-        Entity entity = serverLevel.getEntity(spawnedBeeUUID);
-        return entity != null && !entity.isRemoved() && entity instanceof MagicBeeEntity;
+    private void removeDeadBees() {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        spawnedBeeUUIDs.removeIf(uuid -> {
+            Entity entity = serverLevel.getEntity(uuid);
+            return entity == null || entity.isRemoved() || !(entity instanceof MagicBeeEntity);
+        });
     }
 
     private void spawnBee() {
@@ -94,8 +99,10 @@ public class BeeNestBlockEntity extends BlockEntity {
             bee.setGene(gene);
         }
 
+        bee.setHomeNestPos(worldPosition);
+
         serverLevel.addFreshEntity(bee);
-        spawnedBeeUUID = bee.getUUID();
+        spawnedBeeUUIDs.add(bee.getUUID());
         setChanged();
     }
 
@@ -103,8 +110,9 @@ public class BeeNestBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putInt("TickCounter", tickCounter);
-        if (spawnedBeeUUID != null) {
-            tag.putUUID("SpawnedBee", spawnedBeeUUID);
+        tag.putInt("BeeCount", spawnedBeeUUIDs.size());
+        for (int i = 0; i < spawnedBeeUUIDs.size(); i++) {
+            tag.putUUID("SpawnedBee" + i, spawnedBeeUUIDs.get(i));
         }
     }
 
@@ -112,8 +120,12 @@ public class BeeNestBlockEntity extends BlockEntity {
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         tickCounter = tag.getInt("TickCounter");
-        if (tag.hasUUID("SpawnedBee")) {
-            spawnedBeeUUID = tag.getUUID("SpawnedBee");
+        spawnedBeeUUIDs.clear();
+        int count = tag.getInt("BeeCount");
+        for (int i = 0; i < count; i++) {
+            if (tag.hasUUID("SpawnedBee" + i)) {
+                spawnedBeeUUIDs.add(tag.getUUID("SpawnedBee" + i));
+            }
         }
     }
 }
