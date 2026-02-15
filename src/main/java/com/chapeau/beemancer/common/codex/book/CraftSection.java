@@ -57,7 +57,7 @@ public class CraftSection extends CodexBookSection {
     // ============================================================
 
     // Taille de rendu des items sur la grille (fraction de 16px)
-    private static final float ITEM_SCALE = 0.55f;
+    private static final float ITEM_SCALE = 1.10f;
 
     // Grille 3x3 — row-major order [0..8]
     // Slot 0=top-left, 1=top-center, 2=top-right

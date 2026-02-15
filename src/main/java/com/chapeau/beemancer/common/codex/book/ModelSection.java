@@ -123,10 +123,10 @@ public class ModelSection extends CodexBookSection {
 
     public static ModelSection fromJson(JsonObject json) {
         String species = json.has("species") ? json.get("species").getAsString() : "meadow";
-        int height = json.has("height") ? json.get("height").getAsInt() : 80;
+        int height = json.has("height") ? json.get("height").getAsInt() : 85;
         float scale = json.has("scale") ? json.get("scale").getAsFloat() : -30f;
         float x = json.has("x") ? json.get("x").getAsFloat() : 0f;
-        float y = json.has("y") ? json.get("y").getAsFloat() : -40f;
+        float y = json.has("y") ? json.get("y").getAsFloat() : -45f;
         float z = json.has("z") ? json.get("z").getAsFloat() : 100f;
         float rotX = json.has("rot_x") ? json.get("rot_x").getAsFloat() : 160f;
         float rotY = json.has("rot_y") ? json.get("rot_y").getAsFloat() : 144f;
