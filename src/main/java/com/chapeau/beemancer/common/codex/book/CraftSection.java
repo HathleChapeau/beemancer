@@ -47,7 +47,7 @@ public class CraftSection extends CodexBookSection {
             Beemancer.MOD_ID, "textures/gui/codex/codex_book/craft_slot.png");
     private static final int BG_WIDTH = 118;
     private static final int BG_HEIGHT = 57;
-    private static final int SLOT_SIZE = 26;
+    private static final int SLOT_SIZE = 20;
 
     private static final int PADDING_BOTTOM = 6;
     private static final int RESULT_PADDING_BOTTOM = 4;
@@ -82,7 +82,7 @@ public class CraftSection extends CodexBookSection {
     // Position du resultat (au-dessus de l'image craft)
     private static final int RESULT_OFFSET_X = 102; // relatif au centre de l'image
     private static final int RESULT_OFFSET_Y = 14; // relatif au centre de l'image
-    private static final float RESULT_SCALE = 1.5f;
+    private static final float RESULT_SCALE = 1.1f;
 
     // ============================================================
 
