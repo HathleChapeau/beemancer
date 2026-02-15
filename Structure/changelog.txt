@@ -6,12 +6,13 @@
 2026-02-15 - Storage Controller: Beams, Auto-link, Oscillation, Reservoir Fix
 ================================================================================
 
-PARTICULES LASER (server-side):
-- Ajout spawnNetworkBeams() dans StorageControllerBlockEntity.serverTick()
-- Condition: isFormed() && honeyStored > 0, throttle: gameTick % 4 == 0
-- 2 beams dores (Controlled Hive -> Heart) via ParticleHelper.spawnLine()
-- 4 beams cyan (Heart -> Terminal) avec rotation multibloc
-- DustParticleOptions: doré (1.0/0.85/0.2), cyan (0.3/0.8/1.0)
+RAYONS LASER (client-side, BeamRenderer):
+- Ajout renderNetworkBeams() dans StorageControllerRenderer
+- Condition: isFormed() && honeyStored > 0 (beams visibles quand alimente)
+- 2 beams dores (Controlled Hive -> Heart) via BeamRenderer.renderBeam()
+- 4 beams cyan (Heart -> Terminal) via BeamRenderer.renderBeam()
+- Style beacon: inner losange opaque + outer glow translucide
+- Couleurs: doré (1.0/0.85/0.2), cyan (0.3/0.8/1.0)
 
 AUTO-LINK TERMINALS:
 - linkMultiblockTerminals() appele dans onMultiblockFormed()

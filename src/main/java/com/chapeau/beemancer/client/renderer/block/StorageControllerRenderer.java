@@ -11,6 +11,7 @@
  * | StorageControllerBlockEntity    | BlockEntity            | Donnees de rendu               |
  * | StorageControllerAnimator       | Animation coeur        | Tick, apply rotations          |
  * | AnimationController             | Apply animations       | tick(), applyAnimation()       |
+ * | BeamRenderer                    | Rayons laser           | renderBeam() hive/terminal     |
  * | DebugRenderHelper               | Rendu lignes/outlines  | drawLine/CubeOutline           |
  * ------------------------------------------------------------
  *
@@ -24,6 +25,7 @@ package com.chapeau.beemancer.client.renderer.block;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.animation.AnimationController;
 import com.chapeau.beemancer.client.animation.StorageControllerAnimator;
+import com.chapeau.beemancer.client.renderer.BeamRenderer;
 import com.chapeau.beemancer.client.renderer.util.DebugRenderHelper;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
 import com.chapeau.beemancer.core.util.StorageHelper;
@@ -45,6 +47,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 
@@ -57,6 +60,7 @@ import java.util.Set;
  *
  * Quand forme: rend le coeur (core) avec rotation animee par quarts de tour.
  * Le coeur ne tourne que si le niveau de miel est au dessus de 0.
+ * Quand alimente (honey > 0): rend des rayons laser entre les composants du multibloc.
  *
  * Mode edition:
  * - Outline rouge autour du controller
@@ -121,6 +125,41 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
             poseStack, vertexConsumer, false, random, packedLight, packedOverlay,
             ModelData.EMPTY, RenderType.cutout());
         poseStack.popPose();
+
+        if (shouldAnimate) {
+            renderNetworkBeams(blockEntity, partialTick, poseStack, bufferSource);
+        }
+    }
+
+    /**
+     * Rend les rayons laser entre les composants du multibloc.
+     * Controlled Hives -> Heart (couleur doree), Heart -> Terminals (couleur cyan).
+     * Utilise BeamRenderer pour un rendu style beacon (inner + outer glow).
+     */
+    private void renderNetworkBeams(StorageControllerBlockEntity blockEntity, float partialTick,
+                                     PoseStack poseStack, MultiBufferSource bufferSource) {
+        long gameTime = blockEntity.getLevel().getGameTime();
+        Vec3 heartCenter = new Vec3(0.5, 0.5, 0.5);
+
+        // Beams: Controlled Hives -> Heart (doré)
+        Vec3 hiveBelow = new Vec3(0.5, -0.5, 0.5);
+        Vec3 hiveAbove = new Vec3(0.5, 1.5, 0.5);
+        BeamRenderer.renderBeam(poseStack, bufferSource, hiveBelow, heartCenter,
+            partialTick, gameTime, 0.03f, 0.07f, 1.0f, 0.85f, 0.2f);
+        BeamRenderer.renderBeam(poseStack, bufferSource, hiveAbove, heartCenter,
+            partialTick, gameTime, 0.03f, 0.07f, 1.0f, 0.85f, 0.2f);
+
+        // Beams: Heart -> Terminals (cyan)
+        Vec3[] terminalCenters = {
+            new Vec3(0.5, 0.5, -0.5),
+            new Vec3(-0.5, 0.5, 0.5),
+            new Vec3(1.5, 0.5, 0.5),
+            new Vec3(0.5, 0.5, 1.5)
+        };
+        for (Vec3 terminal : terminalCenters) {
+            BeamRenderer.renderBeam(poseStack, bufferSource, heartCenter, terminal,
+                partialTick, gameTime, 0.02f, 0.05f, 0.3f, 0.8f, 1.0f);
+        }
     }
 
     /**
@@ -265,13 +304,16 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
 
     @Override
     public boolean shouldRenderOffScreen(StorageControllerBlockEntity blockEntity) {
-        return blockEntity.isEditMode();
+        return blockEntity.isEditMode() || blockEntity.isFormed();
     }
 
     @Override
     public AABB getRenderBoundingBox(StorageControllerBlockEntity blockEntity) {
         if (blockEntity.isEditMode()) {
             return new AABB(blockEntity.getBlockPos()).inflate(StorageControllerBlockEntity.MAX_RANGE);
+        }
+        if (blockEntity.isFormed()) {
+            return new AABB(blockEntity.getBlockPos()).inflate(2.0);
         }
         return new AABB(blockEntity.getBlockPos()).inflate(1.0);
     }

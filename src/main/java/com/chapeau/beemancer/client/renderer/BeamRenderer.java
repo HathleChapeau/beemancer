@@ -15,6 +15,7 @@
  *
  * UTILISE PAR:
  * - AltarHeartRenderer.java (beam conduit vers coeur)
+ * - StorageControllerRenderer.java (beams hive/terminal vers coeur)
  *
  * ============================================================
  */
