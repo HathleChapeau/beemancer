@@ -25,6 +25,7 @@ package com.chapeau.beemancer.common.blockentity.storage;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.beemancer.common.block.storage.StorageControllerBlock;
+import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.beemancer.core.multiblock.BlockMatcher;
 import com.chapeau.beemancer.core.multiblock.MultiblockProperty;
@@ -79,6 +80,8 @@ public class StorageMultiblockManager {
                 parent.getBlockState().setValue(StorageControllerBlock.MULTIBLOCK, MultiblockProperty.STORAGE), 3);
             setFormedOnStructureBlocks(true);
             MultiblockEvents.registerActiveController(parent.getLevel(), parent.getBlockPos());
+            linkMultiblockTerminals();
+            linkMultiblockHives();
             parent.notifyLinkedHives();
             parent.setChanged();
         }
@@ -90,6 +93,8 @@ public class StorageMultiblockManager {
             parent.getDeliveryManager().killAllDeliveryBees();
             parent.getDeliveryManager().clearAllTasks();
 
+            unlinkMultiblockTerminals();
+            unlinkMultiblockHives();
             setFormedOnStructureBlocks(false);
             multiblockRotation = 0;
             if (parent.getLevel().getBlockState(parent.getBlockPos())
@@ -142,17 +147,30 @@ public class StorageMultiblockManager {
 
             boolean changed = false;
 
-            // --- Reservoir: spread + facing ---
+            // --- Reservoir: controllerPos + spread + honey transfer + facing ---
             if (state.getBlock() instanceof HoneyReservoirBlock) {
                 BlockEntity be = parent.getLevel().getBlockEntity(blockPos);
                 if (be instanceof HoneyReservoirBlockEntity reservoirBe) {
-                    float spreadX = 0.0f;
-                    float spreadZ = 0.0f;
                     if (formed) {
-                        spreadX = rotatedOffset.getX() * 1.0f / 16.0f;
-                        spreadZ = rotatedOffset.getZ() * 1.0f / 16.0f;
+                        // Transferer le miel existant du reservoir vers le buffer du controller
+                        int existingHoney = reservoirBe.getFluidAmount();
+                        if (existingHoney > 0) {
+                            int space = parent.getHoneyCapacity() - parent.getHoneyStored();
+                            int toTransfer = Math.min(existingHoney, space);
+                            if (toTransfer > 0) {
+                                reservoirBe.getFluidTank().drain(toTransfer,
+                                    net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                                parent.setHoneyStored(parent.getHoneyStored() + toTransfer);
+                            }
+                        }
+                        reservoirBe.setControllerPos(parent.getBlockPos());
+                        float spreadX = rotatedOffset.getX() * 1.0f / 16.0f;
+                        float spreadZ = rotatedOffset.getZ() * 1.0f / 16.0f;
+                        reservoirBe.setFormedSpread(spreadX, spreadZ);
+                    } else {
+                        reservoirBe.setControllerPos(null);
+                        reservoirBe.setFormedSpread(0.0f, 0.0f);
                     }
-                    reservoirBe.setFormedSpread(spreadX, spreadZ);
                 }
                 if (state.hasProperty(HoneyReservoirBlock.FACING)) {
                     Direction facing = formed ? computeReservoirFacing(originalOffset) : Direction.NORTH;
@@ -252,6 +270,96 @@ public class StorageMultiblockManager {
             }
         }
         return null;
+    }
+
+    // === Auto-link terminals et hives du multibloc ===
+
+    /** Offsets des 4 terminals dans le pattern (avant rotation) */
+    private static final Vec3i[] TERMINAL_OFFSETS = {
+        new Vec3i(0, 0, -1), new Vec3i(-1, 0, 0),
+        new Vec3i(1, 0, 0), new Vec3i(0, 0, 1)
+    };
+
+    /** Offsets des 4 coins (Y+0) pour les storage hives optionnelles */
+    private static final Vec3i[] HIVE_CORNER_OFFSETS = {
+        new Vec3i(-1, 0, -1), new Vec3i(1, 0, -1),
+        new Vec3i(-1, 0, 1), new Vec3i(1, 0, 1)
+    };
+
+    /**
+     * Lie automatiquement les 4 terminals du multibloc au controller.
+     * Appele lors de la formation.
+     */
+    private void linkMultiblockTerminals() {
+        if (parent.getLevel() == null) return;
+        for (Vec3i offset : TERMINAL_OFFSETS) {
+            Vec3i rotated = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockPos terminalPos = parent.getBlockPos().offset(rotated);
+            if (!parent.getLevel().hasChunkAt(terminalPos)) continue;
+            BlockEntity be = parent.getLevel().getBlockEntity(terminalPos);
+            if (be instanceof StorageTerminalBlockEntity terminal) {
+                terminal.linkToController(parent.getBlockPos());
+                parent.linkTerminal(terminalPos);
+            }
+        }
+    }
+
+    /**
+     * Delie les 4 terminals du multibloc.
+     * Appele lors de la destruction du multibloc.
+     */
+    private void unlinkMultiblockTerminals() {
+        if (parent.getLevel() == null) return;
+        for (Vec3i offset : TERMINAL_OFFSETS) {
+            Vec3i rotated = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockPos terminalPos = parent.getBlockPos().offset(rotated);
+            if (!parent.getLevel().hasChunkAt(terminalPos)) continue;
+            BlockEntity be = parent.getLevel().getBlockEntity(terminalPos);
+            if (be instanceof StorageTerminalBlockEntity terminal) {
+                terminal.unlinkController();
+            }
+        }
+    }
+
+    /**
+     * Lie automatiquement les storage hives presentes aux 4 coins Y+0 du multibloc.
+     * Appele lors de la formation.
+     */
+    private void linkMultiblockHives() {
+        if (parent.getLevel() == null) return;
+        for (Vec3i offset : HIVE_CORNER_OFFSETS) {
+            Vec3i rotated = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockPos cornerPos = parent.getBlockPos().offset(rotated);
+            if (!parent.getLevel().hasChunkAt(cornerPos)) continue;
+            BlockState state = parent.getLevel().getBlockState(cornerPos);
+            if (state.getBlock() instanceof StorageHiveBlock) {
+                BlockEntity be = parent.getLevel().getBlockEntity(cornerPos);
+                if (be instanceof StorageHiveBlockEntity hive && hive.getControllerPos() == null) {
+                    if (parent.getHiveManager().getLinkedHiveCount() < HiveManager.MAX_LINKED_HIVES) {
+                        parent.linkHive(cornerPos);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Delie les storage hives aux 4 coins Y+0 du multibloc.
+     * Appele lors de la destruction du multibloc.
+     */
+    private void unlinkMultiblockHives() {
+        if (parent.getLevel() == null) return;
+        for (Vec3i offset : HIVE_CORNER_OFFSETS) {
+            Vec3i rotated = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockPos cornerPos = parent.getBlockPos().offset(rotated);
+            if (!parent.getLevel().hasChunkAt(cornerPos)) continue;
+            BlockEntity be = parent.getLevel().getBlockEntity(cornerPos);
+            if (be instanceof StorageHiveBlockEntity hive) {
+                if (parent.getBlockPos().equals(hive.getControllerPos())) {
+                    parent.unlinkHive(cornerPos);
+                }
+            }
+        }
     }
 
     // === NBT ===

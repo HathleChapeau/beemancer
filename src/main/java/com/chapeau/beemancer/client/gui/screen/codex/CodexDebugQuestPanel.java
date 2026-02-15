@@ -29,7 +29,7 @@ import java.util.Set;
 
 public class CodexDebugQuestPanel {
 
-    private static final int PANEL_WIDTH = 160;
+    private static final int PANEL_WIDTH = 320;
     private static final int PANEL_GAP = 8;
     private static final int ROW_HEIGHT = 12;
     private static final int ARROW_HEIGHT = 12;

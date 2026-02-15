@@ -22,21 +22,14 @@
  */
 package com.chapeau.beemancer.common.block.storage;
 
-import com.chapeau.beemancer.common.blockentity.storage.HiveManager;
 import com.chapeau.beemancer.common.blockentity.storage.INetworkNode;
 import com.chapeau.beemancer.common.blockentity.storage.NetworkInterfaceBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
-import com.chapeau.beemancer.common.blockentity.storage.StorageHiveBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageNetworkRegistry;
-import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
-import com.chapeau.beemancer.core.util.ParticleHelper;
 import com.chapeau.beemancer.core.util.StorageHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -86,18 +79,6 @@ public class StorageEvents {
         BlockState clickedState = level.getBlockState(clickedPos);
         BlockEntity be = level.getBlockEntity(clickedPos);
 
-        // Terminal: toggle link/unlink (en edit mode, pas besoin de shift)
-        if (be instanceof StorageTerminalBlockEntity terminal) {
-            handleTerminalToggle(player, level, node, terminal, clickedPos, event);
-            return;
-        }
-
-        // Storage Hive: toggle link/unlink (controller edit mode only)
-        if (be instanceof StorageHiveBlockEntity hive) {
-            handleHiveToggle(player, level, node, hive, clickedPos, event);
-            return;
-        }
-
         // Interface: toggle link/unlink (en edit mode, pas besoin de shift)
         if (be instanceof NetworkInterfaceBlockEntity iface) {
             handleInterfaceToggle(player, level, node, iface, clickedPos, event);
@@ -120,43 +101,6 @@ public class StorageEvents {
 
         // Enregistrer/desenregistrer le coffre via le noeud + registre
         handleChestToggle(player, level, node, clickedPos, event);
-    }
-
-    /**
-     * Toggle un terminal: si deja lie, delie; sinon, lie au reseau.
-     */
-    private static void handleTerminalToggle(Player player, Level level, INetworkNode node,
-                                              StorageTerminalBlockEntity terminal, BlockPos clickedPos,
-                                              PlayerInteractEvent.RightClickBlock event) {
-        BlockPos controllerPos = findControllerInNetwork(node, level);
-        if (controllerPos == null) return;
-
-        BlockEntity ctrlBe = level.getBlockEntity(controllerPos);
-        if (!(ctrlBe instanceof StorageControllerBlockEntity controller)) return;
-
-        StorageNetworkRegistry registry = controller.getNetworkRegistry();
-
-        if (terminal.getControllerPos() != null) {
-            // Deja lie: delink
-            registry.unregisterBlock(clickedPos);
-            terminal.unlinkController();
-            player.displayClientMessage(
-                    Component.translatable("message.beemancer.storage_terminal.unlinked"),
-                    true);
-        } else {
-            // Pas lie: link
-            registry.registerBlock(
-                    clickedPos, node.getNodePos(), StorageNetworkRegistry.NetworkBlockType.TERMINAL);
-            terminal.linkToController(controllerPos);
-            player.displayClientMessage(
-                    Component.translatable("message.beemancer.storage_terminal.linked_manually"),
-                    true);
-        }
-
-        controller.setChanged();
-        controller.syncNodeToClient();
-        event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.SUCCESS);
     }
 
     /**
@@ -188,63 +132,6 @@ public class StorageEvents {
             player.displayClientMessage(
                     Component.translatable("message.beemancer.network_interface.linked_manually"),
                     true);
-        }
-
-        controller.setChanged();
-        controller.syncNodeToClient();
-        event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.SUCCESS);
-    }
-
-    /**
-     * Toggle une Storage Hive: lien direct au controller uniquement (pas relay).
-     * Max 4 hives par controller.
-     */
-    private static void handleHiveToggle(Player player, Level level, INetworkNode node,
-                                          StorageHiveBlockEntity hive, BlockPos clickedPos,
-                                          PlayerInteractEvent.RightClickBlock event) {
-        // Les hives ne peuvent etre liees qu'en mode edition du controller
-        if (!(node instanceof StorageControllerBlockEntity controller)) {
-            player.displayClientMessage(
-                    Component.translatable("message.beemancer.storage_hive.controller_only"),
-                    true);
-            event.setCanceled(true);
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            return;
-        }
-
-        StorageNetworkRegistry registry = controller.getNetworkRegistry();
-
-        // Utiliser le registre comme source de verite unique (pas hive.getControllerPos())
-        boolean isRegistered = registry.isRegistered(clickedPos);
-
-        if (isRegistered) {
-            controller.unlinkHive(clickedPos);
-            player.displayClientMessage(
-                    Component.translatable("message.beemancer.storage_hive.unlinked"),
-                    true);
-            if (level instanceof ServerLevel serverLevel) {
-                ParticleHelper.burst(serverLevel, clickedPos.getCenter(), ParticleHelper.EffectType.FAILURE, 8);
-                level.playSound(null, clickedPos, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0f, 0.8f);
-            }
-        } else {
-            if (registry.getHiveCount() >= HiveManager.MAX_LINKED_HIVES) {
-                player.displayClientMessage(
-                        Component.translatable("message.beemancer.storage_hive.max_reached"),
-                        true);
-                event.setCanceled(true);
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                return;
-            }
-
-            controller.linkHive(clickedPos);
-            player.displayClientMessage(
-                    Component.translatable("message.beemancer.storage_hive.linked"),
-                    true);
-            if (level instanceof ServerLevel serverLevel) {
-                ParticleHelper.burst(serverLevel, clickedPos.getCenter(), ParticleHelper.EffectType.SUCCESS, 8);
-                level.playSound(null, clickedPos, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0f, 1.2f);
-            }
         }
 
         controller.setChanged();

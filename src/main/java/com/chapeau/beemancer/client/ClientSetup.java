@@ -46,6 +46,7 @@ import com.chapeau.beemancer.core.registry.BeemancerParticles;
 import com.chapeau.beemancer.client.renderer.block.MultiblockTankRenderer;
 import com.chapeau.beemancer.client.renderer.block.PollenPotRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageControllerRenderer;
+import com.chapeau.beemancer.client.renderer.block.StorageHiveRenderer;
 import com.chapeau.beemancer.client.renderer.block.StorageTerminalRenderer;
 import com.chapeau.beemancer.client.renderer.block.TranslucentOutlineRenderer;
 import com.chapeau.beemancer.client.renderer.debug.BeeDebugRenderer;
@@ -153,6 +154,9 @@ public class ClientSetup {
             com.chapeau.beemancer.client.renderer.block.StorageRelayRenderer::new);
         event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_TERMINAL.get(),
             StorageTerminalRenderer::new);
+        // StorageHiveRenderer - oscillation verticale quand linkee
+        event.registerBlockEntityRenderer(BeemancerBlockEntities.STORAGE_HIVE.get(),
+            StorageHiveRenderer::new);
         event.registerBlockEntityRenderer(BeemancerBlockEntities.BEE_STATUE.get(),
             BeeStatueRenderer::new);
         // HoneyReservoirRenderer - rendu dynamique du fluide avec scale

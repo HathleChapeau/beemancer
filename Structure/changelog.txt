@@ -3,6 +3,69 @@
 ################################################################################
 
 ================================================================================
+2026-02-15 - Storage Controller: Beams, Auto-link, Oscillation, Reservoir Fix
+================================================================================
+
+PARTICULES LASER (server-side):
+- Ajout spawnNetworkBeams() dans StorageControllerBlockEntity.serverTick()
+- Condition: isFormed() && honeyStored > 0, throttle: gameTick % 4 == 0
+- 2 beams dores (Controlled Hive -> Heart) via ParticleHelper.spawnLine()
+- 4 beams cyan (Heart -> Terminal) avec rotation multibloc
+- DustParticleOptions: doré (1.0/0.85/0.2), cyan (0.3/0.8/1.0)
+
+AUTO-LINK TERMINALS:
+- linkMultiblockTerminals() appele dans onMultiblockFormed()
+- unlinkMultiblockTerminals() appele dans onMultiblockBroken()
+- Calcul positions via TERMINAL_OFFSETS + rotateY(rotation)
+
+AUTO-LINK STORAGE HIVES:
+- StorageHiveBlock.setPlacedBy(): auto-link aux 4 coins (±1,0,±1)
+- linkMultiblockHives() dans onMultiblockFormed() pour hives deja presentes
+- unlinkMultiblockHives() dans onMultiblockBroken()
+- Suppression edit mode linking (handleTerminalToggle, handleHiveToggle)
+
+OSCILLATION STORAGE HIVE:
+- Nouveau: StorageHiveAnimator.java (client/animation/)
+  - MoveAnimation from(0,0,0) to(0,0.15,0), BOOMERANG, SLOW_IN_SLOW_OUT
+  - API: tick(), getController(), remove()
+- Nouveau: StorageHiveRenderer.java (client/renderer/block/)
+  - UNLINKED: ne rien faire (chunk mesh rend le modele)
+  - LINKED/ACTIVE: bobbing animation via tesselateBlock()
+- StorageHiveBlock.getRenderShape(): MODEL si UNLINKED, ENTITYBLOCK_ANIMATED sinon
+- ClientSetup.java: +StorageHiveRenderer registration
+
+TERMINAL RENDERER SIMPLIFIE:
+- Suppression OFF_TEXTURE et check isHoneyDepleted()
+- Toujours utiliser PORTAL_TEXTURE (honey2.png)
+
+RESERVOIR PASS-THROUGH (Storage Controller):
+- StorageControllerBlockEntity implements MultiblockCapabilityProvider
+- IFluidHandler honeyBufferHandler: wrapper remplissant le buffer miel interne
+- StorageMultiblockManager: set controllerPos sur reservoirs a la formation
+  - Transfert miel existant du reservoir vers buffer controller
+  - invalidateCapabilities pour que les pipes detectent le nouveau handler
+- HoneyEnergyManager: suppression pullHoneyFromReservoirs() (plus necessaire)
+- HoneyReservoirRenderer: skip rendu fluide pour STORAGE/STORAGE_TOP
+
+CODEX DEBUG QUEST PANEL:
+- PANEL_WIDTH: 160 -> 320 (x2)
+
+Scripts modifies:
+  StorageControllerBlockEntity.java (+MultiblockCapabilityProvider, +honeyBufferHandler, +spawnNetworkBeams)
+  StorageMultiblockManager.java (+linkTerminals, +unlinkTerminals, +linkHives, +unlinkHives, +controllerPos reservoir)
+  StorageHiveBlock.java (+setPlacedBy auto-link, +getRenderShape)
+  StorageEvents.java (-handleTerminalToggle, -handleHiveToggle)
+  StorageTerminalRenderer.java (-OFF_TEXTURE, -depleted check)
+  HoneyEnergyManager.java (-pullHoneyFromReservoirs)
+  HoneyReservoirRenderer.java (+skip STORAGE/STORAGE_TOP fluid rendering)
+  ClientSetup.java (+StorageHiveRenderer registration)
+  CodexDebugQuestPanel.java (PANEL_WIDTH x2)
+
+Scripts crees:
+  StorageHiveAnimator.java (client/animation/)
+  StorageHiveRenderer.java (client/renderer/block/)
+
+================================================================================
 2026-02-15 - Mise a jour Structure Hoverbike (documentation complete)
 ================================================================================
 

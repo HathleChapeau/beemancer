@@ -10,7 +10,6 @@
  * |---------------------------------|------------------------|-----------------------|
  * | StorageTerminalBlockEntity      | BlockEntity            | Données de rendu      |
  * | StorageTerminalBlock            | FORMED_ROTATION        | Orientation           |
- * | StorageControllerBlockEntity    | Controller lié         | État honey depleted   |
  * | RenderType                      | Type de rendu          | Entity translucent    |
  * ------------------------------------------------------------
  *
@@ -23,7 +22,6 @@ package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.common.block.storage.StorageTerminalBlock;
-import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageTerminalBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -52,8 +50,6 @@ public class StorageTerminalRenderer implements BlockEntityRenderer<StorageTermi
 
     private static final ResourceLocation PORTAL_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "textures/block/honey2.png");
-    private static final ResourceLocation OFF_TEXTURE =
-        ResourceLocation.fromNamespaceAndPath(Beemancer.MOD_ID, "textures/block/logistic/storage_terminal_off.png");
 
     public StorageTerminalRenderer(BlockEntityRendererProvider.Context context) {
         // Context non utilisé
@@ -67,15 +63,7 @@ public class StorageTerminalRenderer implements BlockEntityRenderer<StorageTermi
         BlockState state = blockEntity.getBlockState();
         int rotation = state.getValue(StorageTerminalBlock.FORMED_ROTATION);
 
-        // Déterminer la texture selon l'état du controller
-        boolean depleted = false;
-        StorageControllerBlockEntity controller = blockEntity.getController();
-        if (controller != null) {
-            depleted = controller.isHoneyDepleted();
-        }
-
-        ResourceLocation texture = depleted ? OFF_TEXTURE : PORTAL_TEXTURE;
-        VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(texture));
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(PORTAL_TEXTURE));
 
         poseStack.pushPose();
 

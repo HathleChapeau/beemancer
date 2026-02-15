@@ -74,8 +74,10 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
         float spreadZ = blockEntity.getFormedSpreadZ();
         boolean hasSpread = spreadX != 0.0f || spreadZ != 0.0f;
 
-        // Ne rien rendre pour les reservoirs de la centrifuge et de l'infuser (invisible)
-        if (multiblock == MultiblockProperty.CENTRIFUGE || multiblock == MultiblockProperty.INFUSER) {
+        // Ne rien rendre pour les reservoirs qui ne stockent pas de fluide localement
+        // Centrifuge/Infuser: invisible. Storage: intermediaire pur (delegation vers controller).
+        if (multiblock == MultiblockProperty.CENTRIFUGE || multiblock == MultiblockProperty.INFUSER
+                || multiblock == MultiblockProperty.STORAGE || multiblock == MultiblockProperty.STORAGE_TOP) {
             return;
         }
 

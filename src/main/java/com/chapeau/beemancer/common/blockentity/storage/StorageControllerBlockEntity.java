@@ -32,10 +32,12 @@ import com.chapeau.beemancer.common.block.storage.ControllerStats;
 import com.chapeau.beemancer.common.block.storage.DeliveryTask;
 import com.chapeau.beemancer.common.block.storage.InterfaceTask;
 import com.chapeau.beemancer.common.block.storage.StorageEvents;
+import com.chapeau.beemancer.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.beemancer.core.multiblock.MultiblockController;
 import com.chapeau.beemancer.core.multiblock.MultiblockEvents;
 import com.chapeau.beemancer.core.multiblock.MultiblockPattern;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
+import com.chapeau.beemancer.core.registry.BeemancerFluids;
 import com.chapeau.beemancer.core.registry.BeemancerTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -65,6 +67,15 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
+import com.chapeau.beemancer.core.util.ParticleHelper;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import org.joml.Vector3f;
 
 /**
  * Unite centrale du reseau de stockage.
@@ -80,7 +91,7 @@ import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
  * avec propriete exclusive (un bloc = un proprietaire).
  */
 public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
-        implements MultiblockController {
+        implements MultiblockController, MultiblockCapabilityProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageControllerBlockEntity.class);
     private static final int VALIDATION_BATCH_INTERVAL = 20;
@@ -622,6 +633,60 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         }
     }
 
+    // === Capability delegation (reservoirs -> controller honey buffer) ===
+
+    /**
+     * IFluidHandler exposant le buffer miel interne du controller.
+     * Les reservoirs du multibloc deleguent leurs capabilities vers ce handler,
+     * permettant aux pipes de remplir le buffer directement sans stocker dans le reservoir.
+     */
+    private final IFluidHandler honeyBufferHandler = new IFluidHandler() {
+        @Override
+        public int getTanks() { return 1; }
+
+        @Override
+        public FluidStack getFluidInTank(int tank) {
+            if (honeyStored <= 0) return FluidStack.EMPTY;
+            return new FluidStack(BeemancerFluids.HONEY_SOURCE.get(), honeyStored);
+        }
+
+        @Override
+        public int getTankCapacity(int tank) { return honeyCapacity; }
+
+        @Override
+        public boolean isFluidValid(int tank, FluidStack stack) {
+            return stack.getFluid() == BeemancerFluids.HONEY_SOURCE.get();
+        }
+
+        @Override
+        public int fill(FluidStack resource, FluidAction action) {
+            if (resource.getFluid() != BeemancerFluids.HONEY_SOURCE.get()) return 0;
+            int space = honeyCapacity - honeyStored;
+            int toFill = Math.min(resource.getAmount(), space);
+            if (toFill <= 0) return 0;
+            if (action.execute()) {
+                honeyStored += toFill;
+                setChanged();
+            }
+            return toFill;
+        }
+
+        @Override
+        public FluidStack drain(FluidStack resource, FluidAction action) {
+            return FluidStack.EMPTY;
+        }
+
+        @Override
+        public FluidStack drain(int maxDrain, FluidAction action) {
+            return FluidStack.EMPTY;
+        }
+    };
+
+    @Override
+    public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
+        return honeyBufferHandler;
+    }
+
     // === Bee Capacity ===
 
     /**
@@ -686,6 +751,48 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
         return deliveryManager.getTaskDisplayData();
     }
 
+    // === Particle Beams ===
+
+    private static final int BEAM_INTERVAL = 4;
+    private static final int BEAM_PARTICLES = 6;
+    private static final DustParticleOptions HIVE_BEAM_PARTICLE =
+        new DustParticleOptions(new Vector3f(1.0f, 0.85f, 0.2f), 0.6f);
+    private static final DustParticleOptions TERMINAL_BEAM_PARTICLE =
+        new DustParticleOptions(new Vector3f(0.3f, 0.8f, 1.0f), 0.6f);
+
+    /** Offsets des 2 controlled hives dans le pattern (invariants sous rotation Y) */
+    private static final Vec3i[] CONTROLLED_HIVE_OFFSETS = {
+        new Vec3i(0, -1, 0), new Vec3i(0, 1, 0)
+    };
+
+    /** Offsets des 4 terminals dans le pattern (avant rotation) */
+    private static final Vec3i[] TERMINAL_OFFSETS = {
+        new Vec3i(0, 0, -1), new Vec3i(-1, 0, 0),
+        new Vec3i(1, 0, 0), new Vec3i(0, 0, 1)
+    };
+
+    /**
+     * Spawne des particules en ligne entre les composants du multibloc.
+     * Controlled Hives -> Heart (couleur doree), Heart -> Terminals (couleur cyan).
+     */
+    private void spawnNetworkBeams(ServerLevel serverLevel) {
+        Vec3 heartCenter = Vec3.atCenterOf(worldPosition);
+        int rotation = multiblockManager.getRotation();
+
+        // Beams: Controlled Hives -> Heart
+        for (Vec3i offset : CONTROLLED_HIVE_OFFSETS) {
+            Vec3 hiveCenter = Vec3.atCenterOf(worldPosition.offset(offset));
+            ParticleHelper.spawnLine(serverLevel, HIVE_BEAM_PARTICLE, hiveCenter, heartCenter, BEAM_PARTICLES);
+        }
+
+        // Beams: Heart -> Terminals
+        for (Vec3i offset : TERMINAL_OFFSETS) {
+            Vec3i rotated = MultiblockPattern.rotateY(offset, rotation);
+            Vec3 terminalCenter = Vec3.atCenterOf(worldPosition.offset(rotated));
+            ParticleHelper.spawnLine(serverLevel, TERMINAL_BEAM_PARTICLE, heartCenter, terminalCenter, BEAM_PARTICLES);
+        }
+    }
+
     // === Tick ===
 
     private static final int TERMINAL_BACKUP_INTERVAL = 20;
@@ -702,6 +809,10 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
 
         if (be.multiblockManager.isFormed()) {
             be.deliveryManager.tickHoneyConsumption(gameTick);
+            if (be.honeyStored > 0 && gameTick % BEAM_INTERVAL == 0
+                    && be.level instanceof ServerLevel serverLevel) {
+                be.spawnNetworkBeams(serverLevel);
+            }
         }
 
         be.requestManager.tick(gameTick);

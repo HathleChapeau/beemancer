@@ -23,15 +23,19 @@
  */
 package com.chapeau.beemancer.common.block.storage;
 
+import com.chapeau.beemancer.common.blockentity.storage.HiveManager;
 import com.chapeau.beemancer.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.beemancer.common.blockentity.storage.StorageHiveBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -113,6 +117,42 @@ public class StorageHiveBlock extends Block implements EntityBlock {
         if (level.isClientSide()) return null;
         if (type != BeemancerBlockEntities.STORAGE_HIVE.get()) return null;
         return (lvl, pos, st, be) -> ((StorageHiveBlockEntity) be).serverTick();
+    }
+
+    /**
+     * Quand la hive est posee, cherche un controller forme adjacent (position de coin).
+     * Les coins valides sont a (±1, 0, ±1) du controller. Auto-link si trouve.
+     */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (level.isClientSide()) return;
+
+        int[][] offsets = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+        for (int[] off : offsets) {
+            BlockPos controllerPos = pos.offset(off[0], 0, off[1]);
+            if (!level.hasChunkAt(controllerPos)) continue;
+            BlockEntity be = level.getBlockEntity(controllerPos);
+            if (be instanceof StorageControllerBlockEntity controller && controller.isFormed()) {
+                if (controller.getLinkedHiveCount() < HiveManager.MAX_LINKED_HIVES) {
+                    controller.linkHive(pos);
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Quand linked ou active, le rendu est gere par StorageHiveRenderer (oscillation).
+     * Quand unlinked, le modele blockstate normal est utilise.
+     */
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        HiveState hiveState = state.getValue(HIVE_STATE);
+        if (hiveState == HiveState.UNLINKED) {
+            return RenderShape.MODEL;
+        }
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @SuppressWarnings("deprecation")

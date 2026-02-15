@@ -523,6 +523,16 @@ LISTE DES FEATURES:
   Scripts crees: InterfaceTaskManager.java, InterfaceFilterManager.java
   Scripts modifies: NetworkInterfaceBlockEntity.java, ImportInterfaceBlockEntity.java, ExportInterfaceBlockEntity.java, InterfaceFilter.java, InterfaceTask.java, InterfaceActionPacket.java, NetworkInterfaceScreen.java, ContainerHelper.java, DeliveryPhaseGoal.java, StorageRelayBlock.java, ImportInterfaceBlock.java, ExportInterfaceBlock.java
 
+→ Storage Controller Visual Feedback + Auto-linking
+  Description: Particules laser (hive->heart, heart->terminal), auto-link terminals/hives a la formation,
+    oscillation storage hives linkees, reservoir pass-through (capability delegation), suppression edit mode linking
+  Scripts crees: StorageHiveAnimator.java, StorageHiveRenderer.java
+  Scripts modifies: StorageControllerBlockEntity.java, StorageMultiblockManager.java, StorageHiveBlock.java,
+    StorageEvents.java, StorageTerminalRenderer.java, HoneyEnergyManager.java, HoneyReservoirRenderer.java,
+    ClientSetup.java
+  Dependances: ParticleHelper, AnimationController, MoveAnimation, MultiblockCapabilityProvider
+  Registres modifies: aucun
+
 → Storage Brainstorm Groupe 5 — Energie et Progression (14 changements)
   Description: Honey buffer interne au controller, repurpose essences (TOLERANCE=capacite, DIURNAL/NOCTURNAL=efficiency), cout quadratique, multiplicateurs hive reduits, interface relay cost, GUI jauge miel + barres stats.
   Details: voir Structure/changelog.txt (entree 2026-02-11 G5)
