@@ -25,6 +25,7 @@ package com.chapeau.beemancer.client.renderer.block;
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.animation.AltarCraftAnimator;
 import com.chapeau.beemancer.client.animation.AnimationController;
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.chapeau.beemancer.client.renderer.BeamRenderer;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.beemancer.core.registry.BeemancerBlocks;
@@ -87,7 +88,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
             return;
         }
 
-        float currentTime = blockEntity.getLevel().getGameTime() + partialTick;
+        float currentTime = AnimationTimer.getRenderTime(partialTick);
         BlockState heartState = BeemancerBlocks.ALTAR_HEART.get().defaultBlockState();
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.cutout());
 
@@ -141,7 +142,7 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
                                  MultiBufferSource buffer, VertexConsumer vertexConsumer,
                                  float partialTick, int packedLight, int packedOverlay) {
         BlockPos blockPos = blockEntity.getBlockPos();
-        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
+        long gameTime = AnimationTimer.getTicks();
         boolean beamActive = AltarCraftAnimator.isBeamActive(blockPos);
         boolean particleActive = AltarCraftAnimator.isCenterParticleActive(blockPos);
         int conduitCount = AltarCraftAnimator.getConduitCount();

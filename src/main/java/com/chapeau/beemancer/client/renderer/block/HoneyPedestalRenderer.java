@@ -20,6 +20,7 @@
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.chapeau.beemancer.client.renderer.util.FloatingItemHelper;
 import com.chapeau.beemancer.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
@@ -64,7 +65,7 @@ public class HoneyPedestalRenderer implements BlockEntityRenderer<HoneyPedestalB
     private void renderBeeItem(HoneyPedestalBlockEntity blockEntity, float partialTick,
                                 PoseStack poseStack, MultiBufferSource buffer,
                                 int packedLight, int packedOverlay, ItemStack storedItem) {
-        float time = (blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0) + partialTick;
+        float time = AnimationTimer.getRenderTime(partialTick);
         float bob = (float) Math.sin(time * 0.1) * 0.05f;
 
         poseStack.pushPose();

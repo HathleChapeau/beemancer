@@ -80,7 +80,11 @@ public class StorageHiveAnimator {
 
         if (shouldAnimate && !state.active) {
             state.active = true;
+            // Decaler le startTime pour desynchroniser les hives entre elles
+            float phaseOffset = Math.abs(pos.hashCode()) % BOB_DURATION;
+            state.controller.tick(currentTime - phaseOffset);
             state.controller.playAnimation(BOB_CHANNEL);
+            state.controller.tick(currentTime);
         } else if (!shouldAnimate && state.active) {
             state.active = false;
             state.controller.stopAnimation(BOB_CHANNEL);

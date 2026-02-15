@@ -21,6 +21,7 @@
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.chapeau.beemancer.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.beemancer.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.beemancer.common.blockentity.mount.AssemblyTableBlockEntity;
@@ -85,8 +86,7 @@ public class AssemblyTableRenderer implements BlockEntityRenderer<AssemblyTableB
         int clampedIndex = Math.floorMod(variantIndex, models.size());
         HoverbikePartModel model = models.get(clampedIndex);
 
-        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
-        float rotation = ((gameTime + partialTick) * ROTATION_SPEED) % 360f;
+        float rotation = (AnimationTimer.getRenderTime(partialTick) * ROTATION_SPEED) % 360f;
 
         poseStack.pushPose();
 

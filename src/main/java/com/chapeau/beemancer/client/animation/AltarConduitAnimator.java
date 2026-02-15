@@ -22,6 +22,7 @@
  */
 package com.chapeau.beemancer.client.animation;
 
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.chapeau.beemancer.common.blockentity.altar.AltarHeartBlockEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -57,7 +58,7 @@ public class AltarConduitAnimator {
         if (blockEntity == null || !blockEntity.isFormed() || blockEntity.getLevel() == null) {
             return 0f;
         }
-        return (blockEntity.getLevel().getGameTime() + partialTick) * DEFAULT_ROTATION_SPEED;
+        return AnimationTimer.getRenderTime(partialTick) * DEFAULT_ROTATION_SPEED;
     }
 
     /**

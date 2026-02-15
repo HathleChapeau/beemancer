@@ -19,6 +19,7 @@
  */
 package com.chapeau.beemancer.client.renderer.util;
 
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -59,7 +60,7 @@ public final class FloatingItemHelper {
                                            int light, int overlay,
                                            double x, double y, double z,
                                            float scale, float bobAmplitude, float rotationSpeed) {
-        float time = level.getGameTime() + partialTick;
+        float time = AnimationTimer.getRenderTime(partialTick);
         float bob = (float) Math.sin(time * 0.1) * bobAmplitude;
 
         poseStack.pushPose();

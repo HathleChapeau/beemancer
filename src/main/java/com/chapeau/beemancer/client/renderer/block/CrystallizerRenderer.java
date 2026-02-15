@@ -21,6 +21,7 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.chapeau.beemancer.common.block.alchemy.CrystallizerBlock;
 import com.chapeau.beemancer.common.blockentity.alchemy.CrystallizerBlockEntity;
 import com.chapeau.beemancer.client.renderer.util.RotatingModelHelper;
@@ -94,8 +95,7 @@ public class CrystallizerRenderer implements BlockEntityRenderer<CrystallizerBlo
             shouldRotate = false;
         }
 
-        long gameTime = blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0;
-        float time = gameTime + partialTick;
+        float time = AnimationTimer.getRenderTime(partialTick);
 
         float xRot1 = shouldRotate ? time * 3.0f : 0;
         float yRot1 = shouldRotate ? time * 4.5f : 0;

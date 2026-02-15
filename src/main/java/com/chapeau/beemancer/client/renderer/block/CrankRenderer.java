@@ -20,6 +20,7 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.chapeau.beemancer.common.block.alchemy.ManualCentrifugeBlock;
 import com.chapeau.beemancer.common.blockentity.alchemy.CrankBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -73,7 +74,7 @@ public class CrankRenderer implements BlockEntityRenderer<CrankBlockEntity> {
         poseStack.pushPose();
 
         if (spinning) {
-            float time = level.getGameTime() + partialTick;
+            float time = AnimationTimer.getRenderTime(partialTick);
             poseStack.translate(0.5, 0.0, 0.5);
             poseStack.mulPose(Axis.YP.rotationDegrees(time * 8.0f));
             poseStack.translate(-0.5, 0.0, -0.5);

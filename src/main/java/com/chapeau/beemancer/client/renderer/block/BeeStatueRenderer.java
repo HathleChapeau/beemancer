@@ -20,6 +20,7 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.chapeau.beemancer.common.block.statue.BeeStatueBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -73,7 +74,7 @@ public class BeeStatueRenderer implements BlockEntityRenderer<BeeStatueBlockEnti
         poseStack.translate(0.5, 1.85, 0.5);
 
         // Rotation pour faire face au joueur (ou rotation fixe)
-        float time = (blockEntity.getLevel() != null ? blockEntity.getLevel().getGameTime() : 0) + partialTick;
+        float time = AnimationTimer.getRenderTime(partialTick);
         poseStack.mulPose(Axis.YP.rotationDegrees(time * 2)); // Rotation lente
 
         // Rotation 180° sur X pour retourner le modèle (au lieu de scale négatif qui inverse les normales)

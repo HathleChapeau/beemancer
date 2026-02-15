@@ -22,6 +22,7 @@
 package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.client.animation.AnimationController;
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.chapeau.beemancer.client.animation.StorageHiveAnimator;
 import com.chapeau.beemancer.common.block.storage.StorageHiveBlock;
 import com.chapeau.beemancer.common.blockentity.storage.StorageHiveBlockEntity;
@@ -78,7 +79,7 @@ public class StorageHiveRenderer implements BlockEntityRenderer<StorageHiveBlock
 
         // LINKED ou ACTIVE: rendre le modele avec animation d'oscillation
         BlockPos pos = blockEntity.getBlockPos();
-        float currentTime = blockEntity.getLevel().getGameTime() + partialTick + pos.hashCode();
+        float currentTime = AnimationTimer.getRenderTime(partialTick);
 
         StorageHiveAnimator.tick(pos, currentTime, true);
         AnimationController ctrl = StorageHiveAnimator.getController(pos);

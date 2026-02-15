@@ -66,6 +66,7 @@ import com.chapeau.beemancer.core.registry.BeemancerMenus;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -77,6 +78,7 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ClientTickEvent;
 import net.neoforged.neoforge.fluids.FluidType;
 
 import java.util.function.Supplier;
@@ -92,6 +94,9 @@ public class ClientSetup {
         modEventBus.addListener(ClientSetup::registerAdditionalModels);
         modEventBus.addListener(ClientSetup::registerParticleProviders);
         modEventBus.addListener(ClientSetup::onClientSetup);
+
+        // AnimationTimer: compteur client-side pour animations sans stutter (pattern Create)
+        NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> AnimationTimer.tick());
 
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);

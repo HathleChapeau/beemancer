@@ -20,6 +20,7 @@
  */
 package com.chapeau.beemancer.client.renderer.block;
 
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.chapeau.beemancer.client.renderer.util.FloatingItemHelper;
 import com.chapeau.beemancer.common.block.incubator.IncubatorBlockEntity;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
@@ -68,7 +69,7 @@ public class IncubatorRenderer implements BlockEntityRenderer<IncubatorBlockEnti
     private void renderBeeItem(IncubatorBlockEntity blockEntity, float partialTick,
                                 PoseStack poseStack, MultiBufferSource buffer,
                                 int packedLight, int packedOverlay, ItemStack displayItem) {
-        float time = blockEntity.getLevel().getGameTime() + partialTick;
+        float time = AnimationTimer.getRenderTime(partialTick);
         float bob = (float) Math.sin(time * 0.1) * 0.03f;
 
         poseStack.pushPose();

@@ -24,6 +24,7 @@ package com.chapeau.beemancer.client.renderer.block;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.animation.AnimationController;
+import com.chapeau.beemancer.client.animation.AnimationTimer;
 import com.chapeau.beemancer.client.animation.StorageControllerAnimator;
 import com.chapeau.beemancer.client.renderer.BeamRenderer;
 import com.chapeau.beemancer.client.renderer.util.DebugRenderHelper;
@@ -105,7 +106,7 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
                                      PoseStack poseStack, MultiBufferSource bufferSource,
                                      int packedLight, int packedOverlay) {
         BlockPos pos = blockEntity.getBlockPos();
-        float currentTime = blockEntity.getLevel().getGameTime() + partialTick;
+        float currentTime = AnimationTimer.getRenderTime(partialTick);
         boolean shouldAnimate = blockEntity.getHoneyStored() > 0;
 
         StorageControllerAnimator.tick(pos, currentTime, shouldAnimate);
@@ -138,7 +139,7 @@ public class StorageControllerRenderer implements BlockEntityRenderer<StorageCon
      */
     private void renderNetworkBeams(StorageControllerBlockEntity blockEntity, float partialTick,
                                      PoseStack poseStack, MultiBufferSource bufferSource) {
-        long gameTime = blockEntity.getLevel().getGameTime();
+        long gameTime = AnimationTimer.getTicks();
         Vec3 heartCenter = new Vec3(0.5, 0.5, 0.5);
 
         // Beams: Controlled Hives -> Heart (doré)
