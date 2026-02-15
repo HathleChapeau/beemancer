@@ -79,8 +79,8 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
             return;
         }
 
-        // Rendre le modèle formé avec spread via renderer (le blockstate formed model est vide)
-        if (formed && hasSpread) {
+        // Rendre le modèle formé avec spread via renderer (altar uniquement)
+        if (multiblock == MultiblockProperty.ALTAR && hasSpread) {
             renderFormedModel(blockEntity, poseStack, buffer, packedLight, packedOverlay, spreadX, spreadZ);
         }
 
