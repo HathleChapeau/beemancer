@@ -133,24 +133,18 @@ public class CodexDebugQuestPanel {
             graphics.drawString(font, status, panelX + PADDING, entryY, statusColor, false);
 
             // Ligne 1: Node
-            String nodeLabel = "Node: ";
             int labelEnd = panelX + PADDING + 12;
-            graphics.drawString(font, nodeLabel, labelEnd, entryY, LABEL_COLOR, false);
-            graphics.drawString(font, entry.nodeId(), labelEnd + font.width(nodeLabel), entryY, VALUE_COLOR, false);
+            graphics.drawString(font, entry.nodeId(), labelEnd, entryY, VALUE_COLOR, false);
 
             // Ligne 2: Quest
             int line2Y = entryY + LINE_HEIGHT;
-            String questLabel = "Quest: ";
-            graphics.drawString(font, questLabel, labelEnd, line2Y, LABEL_COLOR, false);
-            String questText = truncate(font, entry.questId(), PANEL_WIDTH - PADDING * 2 - 12 - font.width(questLabel));
-            graphics.drawString(font, questText, labelEnd + font.width(questLabel), line2Y, VALUE_COLOR, false);
+            String questText = truncate(font, entry.questId(), PANEL_WIDTH - PADDING * 2 - 12);
+            graphics.drawString(font, questText, labelEnd, line2Y, VALUE_COLOR, false);
 
             // Ligne 3: Condition
             int line3Y = entryY + LINE_HEIGHT * 2;
-            String condLabel = "Cond: ";
-            graphics.drawString(font, condLabel, labelEnd, line3Y, LABEL_COLOR, false);
-            String condText = truncate(font, entry.condition(), PANEL_WIDTH - PADDING * 2 - 12 - font.width(condLabel));
-            graphics.drawString(font, condText, labelEnd + font.width(condLabel), line3Y, 0xFFFFAA00, false);
+            String condText = truncate(font, entry.condition(), PANEL_WIDTH - PADDING * 2 - 12);
+            graphics.drawString(font, condText, labelEnd, line3Y, 0xFFFFAA00, false);
 
             // Separateur entre les entrees
             int sepY = entryY + ENTRY_HEIGHT - 2;
