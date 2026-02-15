@@ -80,7 +80,8 @@ public class CraftSection extends CodexBookSection {
     };
 
     // Position du resultat (au-dessus de l'image craft)
-    private static final int RESULT_OFFSET_X = 50; // relatif au centre de l'image
+    private static final int RESULT_OFFSET_X = 102; // relatif au centre de l'image
+    private static final int RESULT_OFFSET_Y = 14; // relatif au centre de l'image
     private static final float RESULT_SCALE = 1.5f;
 
     // ============================================================
@@ -119,11 +120,11 @@ public class CraftSection extends CodexBookSection {
 
             // Slot derriere le resultat
             int slotX = resultX2 - (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE)) / 2;
-            int slotY = y - (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE)) / 2;
+            int slotY = y + RESULT_OFFSET_Y - (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE)) / 2;
             graphics.blit(CRAFT_SLOT, slotX, slotY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
 
             // Item par dessus le slot
-            renderScaledItem(graphics, resultStack, resultX2, y, RESULT_SCALE);
+            renderScaledItem(graphics, resultStack, resultX2, y + RESULT_OFFSET_Y, RESULT_SCALE);
         }
 
         // Image de fond (table de craft)
@@ -136,13 +137,7 @@ public class CraftSection extends CodexBookSection {
             if (!gridStacks[i].isEmpty()) {
                 int slotX = bgX + GRID_SLOTS[i][0];
                 int slotY = bgY + GRID_SLOTS[i][1];
-                int xOff = 0;
-                int yOff = 0;
-                if(i == 0) { xOff = (int)DebugWandItem.value1; yOff = (int)DebugWandItem.value2; }
-                if(i == 1) { xOff = (int)DebugWandItem.value3; yOff = (int)DebugWandItem.value4; }
-                if(i == 2) { xOff = (int)DebugWandItem.value5; yOff = (int)DebugWandItem.value6; }
-                if(i == 3) { xOff = (int)DebugWandItem.value7; yOff = (int)DebugWandItem.value8; }
-                renderScaledItem(graphics, gridStacks[i], slotX + xOff, slotY + yOff, ITEM_SCALE);
+                renderScaledItem(graphics, gridStacks[i], slotX, slotY, ITEM_SCALE);
             }
         }
     }
