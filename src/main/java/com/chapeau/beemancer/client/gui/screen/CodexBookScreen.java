@@ -25,6 +25,7 @@ package com.chapeau.beemancer.client.gui.screen;
 
 import com.chapeau.beemancer.Beemancer;
 import com.chapeau.beemancer.client.gui.screen.codex.BookPageLayout;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.chapeau.beemancer.common.codex.CodexNode;
 import com.chapeau.beemancer.common.codex.CodexPage;
 import com.chapeau.beemancer.common.codex.CodexPlayerData;
@@ -187,6 +188,8 @@ public class CodexBookScreen extends Screen {
 
         int currentY = scaledY;
         for (CodexBookSection section : sections) {
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
             section.render(graphics, font, scaledX, currentY, scaledWidth, nodeTitle, relativeDay);
             currentY += section.getHeight(font, scaledWidth);
         }
