@@ -12,6 +12,7 @@
  * | HoverbikeStatType   | Enum stats           | Mapping cles JSON              |
  * | HoverbikeStatObject | Modification stat    | Parsing stat_objects           |
  * | HoverbikeModifier   | Modifier complet     | Parsing statistics.json        |
+ * | HoverbikeDefaultConfigs | Defaults V1      | Generation fichiers initiaux   |
  * | FMLPaths            | Chemin config        | Dossier config/beemancer/      |
  * | Gson                | Parsing JSON         | Lecture/ecriture fichiers      |
  * ------------------------------------------------------------
@@ -46,7 +47,7 @@ import java.util.List;
  * Gere 3 fichiers dans config/beemancer/hoverbike/:
  * - base_stats.json: statistiques de base
  * - tags.json: liste de tags pour les modifiers
- * - statistics.json: definitions des modifiers
+ * - statistics.json: definitions des modifiers avec tiers T1-T8
  */
 public class HoverbikeConfigManager {
 
@@ -61,7 +62,7 @@ public class HoverbikeConfigManager {
 
     /**
      * Initialise le dossier config et charge tous les fichiers.
-     * Genere les fichiers par defaut s'ils n'existent pas.
+     * Genere les fichiers par defaut avec contenu V1 s'ils n'existent pas.
      */
     public static void init() {
         configDir = FMLPaths.CONFIGDIR.get().resolve("beemancer").resolve("hoverbike");
@@ -77,8 +78,8 @@ public class HoverbikeConfigManager {
 
     private static void generateDefaultsIfMissing() {
         writeIfMissing("base_stats.json", GSON.toJson(HoverbikeSettings.createDefaults().toJsonObject()));
-        writeIfMissing("tags.json", GSON.toJson(new JsonArray()));
-        writeIfMissing("statistics.json", GSON.toJson(new JsonArray()));
+        writeIfMissing("tags.json", GSON.toJson(HoverbikeDefaultConfigs.defaultTags()));
+        writeIfMissing("statistics.json", GSON.toJson(HoverbikeDefaultConfigs.defaultStatistics()));
     }
 
     private static void writeIfMissing(String filename, String content) {
@@ -197,5 +198,47 @@ public class HoverbikeConfigManager {
 
     public static List<HoverbikeModifier> getModifiers() {
         return Collections.unmodifiableList(modifiers);
+    }
+
+    // --- Query ---
+
+    /** Trouve un modifier par son nom exact, ou null. */
+    public static HoverbikeModifier getModifier(String name) {
+        for (HoverbikeModifier mod : modifiers) {
+            if (mod.getName().equals(name)) return mod;
+        }
+        return null;
+    }
+
+    /** Retourne tous les modifiers qui possedent le tag donne. */
+    public static List<HoverbikeModifier> getModifiersByTag(String tag) {
+        List<HoverbikeModifier> result = new ArrayList<>();
+        for (HoverbikeModifier mod : modifiers) {
+            if (mod.getTags().contains(tag)) result.add(mod);
+        }
+        return result;
+    }
+
+    /** Retourne tous les prefixes. */
+    public static List<HoverbikeModifier> getPrefixes() {
+        List<HoverbikeModifier> result = new ArrayList<>();
+        for (HoverbikeModifier mod : modifiers) {
+            if (mod.isPrefix()) result.add(mod);
+        }
+        return result;
+    }
+
+    /** Retourne tous les suffixes. */
+    public static List<HoverbikeModifier> getSuffixes() {
+        List<HoverbikeModifier> result = new ArrayList<>();
+        for (HoverbikeModifier mod : modifiers) {
+            if (!mod.isPrefix()) result.add(mod);
+        }
+        return result;
+    }
+
+    /** Verifie si un tag existe dans la liste chargee. */
+    public static boolean hasTag(String tag) {
+        return tags.contains(tag);
     }
 }
