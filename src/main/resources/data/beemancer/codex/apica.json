@@ -16,27 +16,17 @@
       "category": "NORMAL",
       "parent": "apica",
       "hidden_until_parent_unlocked": false,
-      "visibility": "VISIBLE",
-      "quest_id": "obtain_magic_bee"
+      "visibility": "VISIBLE"
     },
     {
       "id": "hive",
       "position": {"x": 2, "y": -1},
-      "icon": "beemancer:textures/block/controlled_hive.png",
+      "icon": "beemancer:textures/block/magic_hive.png",
       "category": "NORMAL",
       "parent": "1st_bee",
       "hidden_until_parent_unlocked": false,
       "visibility": "VISIBLE",
-      "quest_id": "obtain_controlled_hive"
-    },
-    {
-      "id": "hive_multibloc",
-      "position": {"x": -2, "y": -1},
-      "icon": "beemancer:textures/block/magic_hive.png",
-      "category": "NORMAL",
-      "parent": "hive",
-      "hidden_until_parent_unlocked": false,
-      "visibility": "VISIBLE"
+      "quest_id": "obtain_magic_bee"
     },
     {
       "id": "manual_centrifuge",
@@ -46,7 +36,7 @@
       "parent": "hive",
       "hidden_until_parent_unlocked": false,
       "visibility": "VISIBLE",
-      "quest_id": "obtain_manual_centrifuge"
+      "quest_id": "obtain_magic_hive"
     },
     {
       "id": "crystallyzer",
@@ -55,8 +45,8 @@
       "category": "NORMAL",
       "parent": "manual_centrifuge",
       "hidden_until_parent_unlocked": false,
-      "visibility": "SECRET",
-      "quest_id": "crystallizer_output"
+      "visibility": "VISIBLE",
+      "quest_id": "obtain_manual_centrifuge"
     },
     {
       "id": "altar",
@@ -65,7 +55,18 @@
       "category": "NORMAL",
       "parent": "crystallyzer",
       "hidden_until_parent_unlocked": false,
-      "visibility": "VISIBLE"
+      "visibility": "VISIBLE",
+      "quest_id": "obtain_honey_crystal"
+    },
+    {
+      "id": "hive_multibloc",
+      "position": {"x": -2, "y": -1},
+      "icon": "beemancer:textures/block/controlled_hive.png",
+      "category": "NORMAL",
+      "parent": "altar",
+      "hidden_until_parent_unlocked": false,
+      "visibility": "VISIBLE",
+      "quest_id": "centrifuge_royal_comb"
     }
   ]
 }

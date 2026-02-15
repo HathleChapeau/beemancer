@@ -1,0 +1,19 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.apica.manual_centrifuge.lore"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "craft",
+      "result": "beemancer:manual_centrifuge"
+    }
+  ],
+  "sticky_notes": []
+}

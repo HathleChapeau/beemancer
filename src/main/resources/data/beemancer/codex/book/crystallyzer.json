@@ -1,0 +1,19 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.apica.crystallyzer.lore"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "craft",
+      "result": "beemancer:crystallizer"
+    }
+  ],
+  "sticky_notes": []
+}

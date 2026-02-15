@@ -2,28 +2,34 @@
   "quests": [
     {
       "id": "obtain_magic_bee",
-      "node": "apica:1st_bee",
+      "node": "apica:hive",
       "type": "OBTAIN",
       "item": "beemancer:magic_bee"
     },
     {
-      "id": "obtain_controlled_hive",
-      "node": "apica:hive",
+      "id": "obtain_magic_hive",
+      "node": "apica:manual_centrifuge",
       "type": "OBTAIN",
-      "item": "beemancer:controlled_hive"
+      "item": "beemancer:magic_hive"
     },
     {
       "id": "obtain_manual_centrifuge",
-      "node": "apica:manual_centrifuge",
+      "node": "apica:crystallyzer",
       "type": "OBTAIN",
       "item": "beemancer:manual_centrifuge"
     },
     {
-      "id": "crystallizer_output",
-      "node": "apica:crystallyzer",
-      "type": "MACHINE_OUTPUT",
-      "machine": "crystallizer",
+      "id": "obtain_honey_crystal",
+      "node": "apica:altar",
+      "type": "OBTAIN",
       "item": "beemancer:honey_crystal"
+    },
+    {
+      "id": "centrifuge_royal_comb",
+      "node": "apica:hive_multibloc",
+      "type": "MACHINE_OUTPUT",
+      "machine": "manual_centrifuge",
+      "item": "beemancer:royal_comb"
     },
     {
       "id": "meadow_bee_incubator",

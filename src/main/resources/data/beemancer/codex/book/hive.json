@@ -1,0 +1,19 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.apica.hive.lore"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "craft",
+      "result": "beemancer:magic_hive"
+    }
+  ],
+  "sticky_notes": []
+}

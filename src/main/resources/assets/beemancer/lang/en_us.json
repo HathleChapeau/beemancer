@@ -859,5 +859,20 @@
   "codex.beemancer.apica.1st_bee.title": "1st Bee",
   "codex.beemancer.apica.1st_bee.desc": "Craft a Scoop.",
   "codex.beemancer.apica.1st_bee.lore": "Can't learn much just watching. I need a specimen. A \u00a76\u00a7lScoop\u00a7r should do the job. From what I can tell, there are about five different species around here. Might as well start with whichever one I find first.",
-  "codex.beemancer.apica.1st_bee.lore2": "I should also \u00a76\u00a7lbreak the hive\u00a7r to collect some honey."
+  "codex.beemancer.apica.1st_bee.lore2": "I should also \u00a76\u00a7lbreak the hive\u00a7r to collect some honey.",
+  "codex.beemancer.apica.hive.title": "Hive",
+  "codex.beemancer.apica.hive.desc": "Craft your first hive.",
+  "codex.beemancer.apica.hive.lore": "The bees need a proper home. With planks and honeycomb, I can build a hive. Should keep them contained and productive.",
+  "codex.beemancer.apica.manual_centrifuge.title": "Manual Centrifuge",
+  "codex.beemancer.apica.manual_centrifuge.desc": "Process honeycombs.",
+  "codex.beemancer.apica.manual_centrifuge.lore": "The combs are full of resources. A centrifuge should extract them. Manual work, but it'll do for now.",
+  "codex.beemancer.apica.crystallyzer.title": "Crystallizer",
+  "codex.beemancer.apica.crystallyzer.desc": "Crystallize honey.",
+  "codex.beemancer.apica.crystallyzer.lore": "Pure honey can crystallize under the right conditions. This device might concentrate it into something more stable. Worth testing.",
+  "codex.beemancer.apica.altar.title": "Altar",
+  "codex.beemancer.apica.altar.desc": "Harness bee magic.",
+  "codex.beemancer.apica.altar.lore": "The crystals hum with energy. An altar could focus that power. Not sure what I'm dealing with yet, but the potential is clear.",
+  "codex.beemancer.apica.hive_multibloc.title": "Controlled Hive",
+  "codex.beemancer.apica.hive_multibloc.desc": "Advanced bee housing.",
+  "codex.beemancer.apica.hive_multibloc.lore": "A larger structure for managing colonies. More control over breeding and production. The bees seem to respond better to organized space."
 }

@@ -1,0 +1,19 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.apica.altar.lore"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "craft",
+      "result": "beemancer:altar"
+    }
+  ],
+  "sticky_notes": []
+}
