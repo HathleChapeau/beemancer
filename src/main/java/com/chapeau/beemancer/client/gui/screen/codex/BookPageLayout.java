@@ -50,6 +50,15 @@ public class BookPageLayout {
         int currentHeight = 0;
 
         for (CodexBookSection section : sections) {
+            if (section.getType() == CodexBookSection.SectionType.PAGE_BREAK) {
+                if (!currentPage.isEmpty()) {
+                    pages.add(currentPage);
+                    currentPage = new ArrayList<>();
+                    currentHeight = 0;
+                }
+                continue;
+            }
+
             int sectionHeight = section.getHeight(font, pageWidth);
 
             if (!currentPage.isEmpty() && currentHeight + sectionHeight > pageHeight) {

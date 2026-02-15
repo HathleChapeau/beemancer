@@ -1,9 +1,29 @@
 {
   "sections": [
-    {"type": "header"},
-    {"type": "text", "key": "codex.beemancer.bees.sediment_bee.lore"},
-    {"type": "text", "key": "codex.beemancer.bees.sediment_bee.desc"},
-    {"type": "model", "species": "sediment", "height": 80, "scale": -90, "y": -80},
-    {"type": "stats", "species": "sediment"}
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.sediment_bee.lore"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.sediment_bee.desc"
+    },
+    {
+      "type": "model",
+      "species": "sediment",
+      "height": 80,
+      "scale": -90,
+      "y": -80
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "stats",
+      "species": "sediment"
+    }
   ]
 }

@@ -1,9 +1,29 @@
 {
   "sections": [
-    {"type": "header"},
-    {"type": "text", "key": "codex.beemancer.bees.chorus_bee.lore"},
-    {"type": "text", "key": "codex.beemancer.bees.chorus_bee.desc"},
-    {"type": "model", "species": "chorus", "height": 80, "scale": -90, "y": -80},
-    {"type": "stats", "species": "chorus"}
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.chorus_bee.lore"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.chorus_bee.desc"
+    },
+    {
+      "type": "model",
+      "species": "chorus",
+      "height": 80,
+      "scale": -90,
+      "y": -80
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "stats",
+      "species": "chorus"
+    }
   ]
 }

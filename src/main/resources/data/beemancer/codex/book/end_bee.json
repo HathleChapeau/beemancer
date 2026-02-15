@@ -1,9 +1,29 @@
 {
   "sections": [
-    {"type": "header"},
-    {"type": "text", "key": "codex.beemancer.bees.end_bee.lore"},
-    {"type": "text", "key": "codex.beemancer.bees.end_bee.desc"},
-    {"type": "model", "species": "end", "height": 80, "scale": -90, "y": -80},
-    {"type": "stats", "species": "end"}
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.end_bee.lore"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.end_bee.desc"
+    },
+    {
+      "type": "model",
+      "species": "end",
+      "height": 80,
+      "scale": -90,
+      "y": -80
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "stats",
+      "species": "end"
+    }
   ]
 }

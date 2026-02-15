@@ -1,9 +1,29 @@
 {
   "sections": [
-    {"type": "header"},
-    {"type": "text", "key": "codex.beemancer.bees.volatile_bee.lore"},
-    {"type": "text", "key": "codex.beemancer.bees.volatile_bee.desc"},
-    {"type": "model", "species": "volatile", "height": 80, "scale": -90, "y": -80},
-    {"type": "stats", "species": "volatile"}
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.volatile_bee.lore"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.volatile_bee.desc"
+    },
+    {
+      "type": "model",
+      "species": "volatile",
+      "height": 80,
+      "scale": -90,
+      "y": -80
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "stats",
+      "species": "volatile"
+    }
   ]
 }

@@ -1,9 +1,29 @@
 {
   "sections": [
-    {"type": "header"},
-    {"type": "text", "key": "codex.beemancer.bees.loam_bee.lore"},
-    {"type": "text", "key": "codex.beemancer.bees.loam_bee.desc"},
-    {"type": "model", "species": "loam", "height": 80, "scale": -90, "y": -80},
-    {"type": "stats", "species": "loam"}
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.loam_bee.lore"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.loam_bee.desc"
+    },
+    {
+      "type": "model",
+      "species": "loam",
+      "height": 80,
+      "scale": -90,
+      "y": -80
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "stats",
+      "species": "loam"
+    }
   ]
 }

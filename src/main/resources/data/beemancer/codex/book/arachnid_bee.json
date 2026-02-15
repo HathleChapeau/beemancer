@@ -1,9 +1,29 @@
 {
   "sections": [
-    {"type": "header"},
-    {"type": "text", "key": "codex.beemancer.bees.arachnid_bee.lore"},
-    {"type": "text", "key": "codex.beemancer.bees.arachnid_bee.desc"},
-    {"type": "model", "species": "arachnid", "height": 80, "scale": -90, "y": -80},
-    {"type": "stats", "species": "arachnid"}
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.arachnid_bee.lore"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.bees.arachnid_bee.desc"
+    },
+    {
+      "type": "model",
+      "species": "arachnid",
+      "height": 80,
+      "scale": -90,
+      "y": -80
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "stats",
+      "species": "arachnid"
+    }
   ]
 }

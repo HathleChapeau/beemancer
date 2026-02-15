@@ -32,7 +32,8 @@ public abstract class CodexBookSection {
         TEXT("text"),
         IMAGE("image"),
         MODEL("model"),
-        STATS("stats");
+        STATS("stats"),
+        PAGE_BREAK("page_break");
 
         private final String id;
 
@@ -92,6 +93,7 @@ public abstract class CodexBookSection {
             case IMAGE -> ImageSection.fromJson(json);
             case MODEL -> ModelSection.fromJson(json);
             case STATS -> StatsSection.fromJson(json);
+            case PAGE_BREAK -> new PageBreakSection();
         };
     }
 }
