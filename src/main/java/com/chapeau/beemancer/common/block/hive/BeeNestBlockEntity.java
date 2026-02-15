@@ -76,13 +76,14 @@ public class BeeNestBlockEntity extends BlockEntity {
         detectDeadBees();
 
         tickCounter++;
-        if (tickCounter < SPAWN_INTERVAL) return;
-        tickCounter = 0;
 
         // Sync periodique au client (toutes les 10 ticks pour les timers)
         if (tickCounter % 10 == 0) {
             syncToClient();
         }
+
+        if (tickCounter < SPAWN_INTERVAL) return;
+        tickCounter = 0;
 
         // Spawn initial: s'il reste de la place et pas de respawn en attente
         int totalBees = activeBeeUUIDs.size() + respawnTimers.size();
@@ -128,6 +129,17 @@ public class BeeNestBlockEntity extends BlockEntity {
             }
             return false;
         });
+    }
+
+    /**
+     * Appelee par ScoopItem quand une abeille sauvage est capturee.
+     * Retire l'UUID et reduit la capacite max du nid de 1 (perte permanente).
+     */
+    public void onBeeScooped(MagicBeeEntity bee) {
+        activeBeeUUIDs.remove(bee.getUUID());
+        maxBees = Math.max(0, maxBees - 1);
+        setChanged();
+        syncToClient();
     }
 
     /**

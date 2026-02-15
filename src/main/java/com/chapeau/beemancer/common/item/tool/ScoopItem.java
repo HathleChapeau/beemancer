@@ -10,6 +10,7 @@
  * |--------------------------|------------------------|--------------------------------|
  * | MagicBeeEntity           | Entite cible           | Detection + discard            |
  * | MagicBeeItem             | Capture factory        | captureFromEntity              |
+ * | BeeNestBlockEntity       | Nid d'origine          | Reduction maxBees sur capture  |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -19,8 +20,10 @@
  */
 package com.chapeau.beemancer.common.item.tool;
 
+import com.chapeau.beemancer.common.block.hive.BeeNestBlockEntity;
 import com.chapeau.beemancer.common.entity.bee.MagicBeeEntity;
 import com.chapeau.beemancer.common.item.bee.MagicBeeItem;
+import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -49,6 +52,12 @@ public class ScoopItem extends Item {
         ItemStack captured = MagicBeeItem.captureFromEntity(bee);
         if (!player.getInventory().add(captured)) {
             player.drop(captured, false);
+        }
+
+        // Notifier le nid d'origine: reduit maxBees de 1 (perte permanente)
+        BlockPos nestPos = bee.getHomeNestPos();
+        if (nestPos != null && player.level().getBlockEntity(nestPos) instanceof BeeNestBlockEntity nest) {
+            nest.onBeeScooped(bee);
         }
 
         bee.discard();

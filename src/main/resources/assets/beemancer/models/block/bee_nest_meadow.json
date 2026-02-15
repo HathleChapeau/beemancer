@@ -1,6 +1,8 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube_bottom_top",
   "textures": {
-    "all": "beemancer:block/nest/bee_nest_meadow"
+    "top": "beemancer:block/nest/bee_nest_meadow_top",
+    "bottom": "beemancer:block/nest/bee_nest_meadow_top",
+    "side": "beemancer:block/nest/bee_nest_meadow_side"
   }
 }
