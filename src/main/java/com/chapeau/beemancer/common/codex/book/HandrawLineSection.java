@@ -64,7 +64,7 @@ public class HandrawLineSection extends CodexBookSection {
 
         ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(
                 Beemancer.MOD_ID,
-                "textures/gui/codex/Codex_book/hand_line_" + (variant + 1) + ".png");
+                "textures/gui/codex/codex_book/hand_line_" + (variant + 1) + ".png");
 
         int drawX = x + (pageWidth - lineW) / 2;
         int drawY = y + PADDING_TOP + (MAX_LINE_HEIGHT - lineH) / 2;

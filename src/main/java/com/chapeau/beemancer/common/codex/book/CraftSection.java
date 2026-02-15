@@ -41,7 +41,7 @@ import java.util.List;
 public class CraftSection extends CodexBookSection {
 
     private static final ResourceLocation CRAFT_BG = ResourceLocation.fromNamespaceAndPath(
-            Beemancer.MOD_ID, "textures/gui/codex/Codex_book/codex_book_craft.png");
+            Beemancer.MOD_ID, "textures/gui/codex/codex_book/codex_book_craft.png");
     private static final int BG_WIDTH = 118;
     private static final int BG_HEIGHT = 57;
 
