@@ -5,18 +5,6 @@
     "core": "beemancer:block/altar/altar_pedestal_base"
   },
   "elements": [
-    {
-      "name": "core",
-      "from": [0.5, 0.5, 0.5],
-      "to": [15.5, 15.5, 15.5],
-      "faces": {
-        "north": {"texture": "#core", "uv": [0,0,16,16]},
-        "south": {"texture": "#core", "uv": [0,0,16,16]},
-        "east": {"texture": "#core", "uv": [0,0,16,16]},
-        "west": {"texture": "#core", "uv": [0,0,16,16]},
-        "up": {"texture": "#core", "uv": [0,0,16,16]},
-        "down": {"texture": "#core", "uv": [0,0,16,16]}
-      }
-    }
+
   ]
 }

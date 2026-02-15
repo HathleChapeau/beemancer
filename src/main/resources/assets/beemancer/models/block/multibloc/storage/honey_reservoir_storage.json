@@ -7,7 +7,7 @@
     "side": "beemancer:block/storage/iron_side",
     "front": "beemancer:block/storage/reservoir",
     "center": "beemancer:block/storage/center",
-    "end": "beemancer:block/storage/iron_bottom",
+    "end": "beemancer:block/storage/iron_bottom_2",
     "particle": "beemancer:block/iron"
   },
   "elements": [
@@ -24,7 +24,7 @@
       }
     },
     {
-      "from": [0, 0, 4],
+      "from": [0, 2, 4],
       "to": [16, 12, 12],
       "faces": {
         "east": {"texture": "#center"},
