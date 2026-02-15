@@ -22,6 +22,7 @@
 package com.chapeau.beemancer.common.codex.book;
 
 import com.chapeau.beemancer.Beemancer;
+import com.chapeau.beemancer.common.item.debug.DebugWandItem;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -64,15 +65,15 @@ public class CraftSection extends CodexBookSection {
     // Slot 3=mid-left, 4=mid-center, 5=mid-right
     // Slot 6=bot-left, 7=bot-center, 8=bot-right
     private static final int[][] GRID_SLOTS = {
-        {22, 10},   // [0] top-left
-        {44, 10},   // [1] top-center
-        {66, 10},   // [2] top-right
-        {22, 24},   // [3] mid-left
-        {44, 24},   // [4] mid-center
-        {66, 24},   // [5] mid-right
-        {22, 38},   // [6] bot-left
-        {44, 38},   // [7] bot-center
-        {66, 38},   // [8] bot-right
+        {9, 9},   // [0] top-left
+        {34, 2},   // [1] top-center
+        {60, -5},   // [2] top-right
+        {20, 21},   // [3] mid-left
+        {45, 14},   // [4] mid-center
+        {71, 7},   // [5] mid-right
+        {31, 33},   // [6] bot-left
+        {56, 26},   // [7] bot-center
+        {82, 19},   // [8] bot-right
     };
 
     // Position du resultat (au-dessus de l'image craft)
@@ -126,7 +127,13 @@ public class CraftSection extends CodexBookSection {
             if (!gridStacks[i].isEmpty()) {
                 int slotX = bgX + GRID_SLOTS[i][0];
                 int slotY = bgY + GRID_SLOTS[i][1];
-                renderScaledItem(graphics, gridStacks[i], slotX, slotY, ITEM_SCALE);
+                int xOff = 0;
+                int yOff = 0;
+                if(i == 0) { xOff = (int)DebugWandItem.value1; yOff = (int)DebugWandItem.value2; }
+                if(i == 1) { xOff = (int)DebugWandItem.value3; yOff = (int)DebugWandItem.value4; }
+                if(i == 2) { xOff = (int)DebugWandItem.value5; yOff = (int)DebugWandItem.value6; }
+                if(i == 3) { xOff = (int)DebugWandItem.value7; yOff = (int)DebugWandItem.value8; }
+                renderScaledItem(graphics, gridStacks[i], slotX + xOff, slotY + yOff, ITEM_SCALE);
             }
         }
     }
