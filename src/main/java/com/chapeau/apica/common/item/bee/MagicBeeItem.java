@@ -12,20 +12,16 @@ import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.gene.BeeGeneData;
 import com.chapeau.apica.core.gene.Gene;
 import com.chapeau.apica.core.gene.GeneCategory;
-import com.chapeau.apica.core.registry.ApicaEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -35,49 +31,15 @@ public class MagicBeeItem extends Item {
         super(properties.stacksTo(1));
     }
 
-    @Override
-    public InteractionResult useOn(UseOnContext context) {
-        Level level = context.getLevel();
-        Player player = context.getPlayer();
-        ItemStack stack = context.getItemInHand();
-        BlockPos pos = context.getClickedPos();
-
-        if (player == null || player.isShiftKeyDown()) return InteractionResult.PASS;
-
-        if (!level.isClientSide()) {
-            BlockPos spawnPos = pos.above();
-            MagicBeeEntity bee = ApicaEntities.MAGIC_BEE.get().create(level);
-
-            if (bee != null) {
-                bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 0, 0);
-
-                // Load genes from item
-                BeeGeneData itemGenes = getGeneData(stack);
-                bee.getGeneData().copyFrom(itemGenes);
-                for (Gene gene : itemGenes.getAllGenes()) {
-                    bee.setGene(gene);
-                }
-
-                // Load hive assignment
-                BlockPos hivePos = getAssignedHivePos(stack);
-                int slot = getAssignedSlot(stack);
-                if (hivePos != null && slot >= 0) {
-                    bee.setAssignedHive(hivePos, slot);
-                }
-
-                // Load stored health
-                float storedHealth = getStoredHealth(stack, bee.getMaxHealth());
-                bee.setStoredHealth(storedHealth);
-
-                level.addFreshEntity(bee);
-
-                if (!player.getAbilities().instabuild) {
-                    stack.shrink(1);
-                }
-            }
-        }
-
-        return InteractionResult.sidedSuccess(level.isClientSide());
+    /**
+     * Retourne l'espece de l'abeille stockee dans l'item.
+     * @return l'identifiant de l'espece (ex: "meadow") ou null si absent
+     */
+    @Nullable
+    public static String getSpeciesId(ItemStack stack) {
+        BeeGeneData geneData = getGeneData(stack);
+        Gene speciesGene = geneData.getGene(GeneCategory.SPECIES);
+        return speciesGene != null ? speciesGene.getId() : null;
     }
 
     // --- Factory Methods ---

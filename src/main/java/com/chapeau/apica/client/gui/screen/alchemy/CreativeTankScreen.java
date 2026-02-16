@@ -71,9 +71,11 @@ public class CreativeTankScreen extends AbstractApicaScreen<CreativeTankMenu> {
         int px = x + PANEL_OFFSET;
         if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, px, y, mouseX, mouseY)) {
             String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getFluid());
-            g.renderComponentTooltip(font, List.of(
-                Component.literal(name)
-            ), mouseX, mouseY);
+            if (!name.isEmpty()) {
+                g.renderComponentTooltip(font, List.of(
+                    Component.literal(name)
+                ), mouseX, mouseY);
+            }
         }
     }
 }

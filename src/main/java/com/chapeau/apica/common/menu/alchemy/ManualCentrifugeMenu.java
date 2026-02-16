@@ -90,9 +90,26 @@ public class ManualCentrifugeMenu extends ApicaMenu {
     }
 
     @Override
+    public void clicked(int slotId, int button, net.minecraft.world.inventory.ClickType clickType, Player player) {
+        ItemStack before = slotId == INPUT_SLOT ? slots.get(INPUT_SLOT).getItem().copy() : ItemStack.EMPTY;
+        super.clicked(slotId, button, clickType, player);
+        if (slotId == INPUT_SLOT && before.isEmpty()) {
+            ItemStack after = slots.get(INPUT_SLOT).getItem();
+            if (!after.isEmpty()) {
+                QuestEvents.onMachineInsert(player, "manual_centrifuge", after);
+            }
+        }
+    }
+
+    @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        return doQuickMove(index, PLAYER_INV_START, INPUT_SLOT, INPUT_SLOT + 1,
+        ItemStack before = slots.get(INPUT_SLOT).getItem().copy();
+        ItemStack result = doQuickMove(index, PLAYER_INV_START, INPUT_SLOT, INPUT_SLOT + 1,
                            stack -> blockEntity.isValidComb(stack));
+        if (before.isEmpty() && !slots.get(INPUT_SLOT).getItem().isEmpty()) {
+            QuestEvents.onMachineInsert(player, "manual_centrifuge", slots.get(INPUT_SLOT).getItem());
+        }
+        return result;
     }
 
     @Override

@@ -20,6 +20,7 @@
  */
 package com.chapeau.apica.common.quest;
 
+import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -124,6 +125,7 @@ public class Quest {
 
     /**
      * Vérifie si la quête OBTAIN est complétée (item dans inventaire).
+     * Si targetSpecies est défini, vérifie aussi que l'item porte le bon tag d'espèce.
      */
     public boolean checkObtainQuest(Player player) {
         if (type != QuestType.OBTAIN || targetItem == null) {
@@ -137,6 +139,12 @@ public class Quest {
                         .map(key -> key.location())
                         .orElse(null);
                 if (targetItem.equals(itemId)) {
+                    if (targetSpecies != null) {
+                        String species = MagicBeeItem.getSpeciesId(stack);
+                        if (!targetSpecies.equals(species)) {
+                            continue;
+                        }
+                    }
                     count += stack.getCount();
                     if (count >= targetCount) {
                         return true;

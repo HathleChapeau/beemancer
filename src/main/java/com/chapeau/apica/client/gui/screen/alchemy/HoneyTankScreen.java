@@ -73,8 +73,11 @@ public class HoneyTankScreen extends AbstractApicaScreen<HoneyTankMenu> {
             String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getFluid());
             int amount = menu.getFluidAmount();
             int cap = 16000;
+            String line1 = name.isEmpty()
+                    ? amount + " / " + cap + " mB"
+                    : name + ": " + amount + " / " + cap + " mB";
             g.renderComponentTooltip(font, List.of(
-                Component.literal(name + ": " + amount + " / " + cap + " mB"),
+                Component.literal(line1),
                 Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
                     .withStyle(s -> s.withColor(0xAAAAAA))
             ), mouseX, mouseY);

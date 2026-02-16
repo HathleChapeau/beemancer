@@ -348,7 +348,7 @@ public class GuiRenderHelper {
      * Nom lisible d'un fluide Apica.
      */
     public static String getFluidName(FluidStack fluid) {
-        if (fluid.isEmpty()) return "Empty";
+        if (fluid.isEmpty()) return "";
         String path = fluid.getFluid().builtInRegistryHolder().key().location().getPath();
         if (path.contains("honey")) return "Honey";
         if (path.contains("royal_jelly")) return "Royal Jelly";

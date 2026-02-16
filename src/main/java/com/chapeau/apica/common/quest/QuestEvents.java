@@ -68,6 +68,37 @@ public class QuestEvents {
     }
 
     /**
+     * Appelé quand un joueur place un item dans le slot d'entrée d'une machine.
+     * Vérifie si une quête MACHINE_OUTPUT correspond à cet item sur ce type de machine.
+     *
+     * @param player Le joueur qui insère
+     * @param machineType Le type de machine (ex: "manual_centrifuge", "powered_centrifuge")
+     * @param insertedItem L'item inséré
+     */
+    public static void onMachineInsert(Player player, String machineType, ItemStack insertedItem) {
+        if (player.level().isClientSide() || insertedItem.isEmpty()) {
+            return;
+        }
+
+        ResourceLocation itemId = insertedItem.getItemHolder().unwrapKey()
+                .map(key -> key.location())
+                .orElse(null);
+
+        if (itemId == null) {
+            return;
+        }
+
+        Quest quest = QuestManager.findMachineOutputQuest(machineType, itemId);
+        if (quest != null && !QuestManager.isQuestCompleted(player, quest.getId())) {
+            if (QuestManager.completeQuest(player, quest.getId())) {
+                syncQuestData(player);
+                Apica.LOGGER.info("Player {} completed MACHINE_OUTPUT quest (on insert): {}",
+                        player.getName().getString(), quest.getId());
+            }
+        }
+    }
+
+    /**
      * Appelé quand un joueur extrait une abeille magique de l'incubateur.
      * Vérifie si une quête BEE_INCUBATOR correspond à l'espèce.
      *

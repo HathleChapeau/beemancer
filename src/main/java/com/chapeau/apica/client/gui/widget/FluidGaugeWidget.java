@@ -213,8 +213,11 @@ public class FluidGaugeWidget {
     public List<Component> getTooltip(String fluidName) {
         int amount = amountSupplier.get();
         int cap = capacitySupplier.get();
+        String line1 = fluidName.isEmpty()
+                ? amount + " / " + cap + " mB"
+                : fluidName + ": " + amount + " / " + cap + " mB";
         return List.of(
-            Component.literal(fluidName + ": " + amount + " / " + cap + " mB"),
+            Component.literal(line1),
             Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
                 .withStyle(style -> style.withColor(0xAAAAAA))
         );
