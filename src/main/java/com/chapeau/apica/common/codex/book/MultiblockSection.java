@@ -45,7 +45,7 @@ public class MultiblockSection extends CodexBookSection {
     private static final float ITEM_SCALE = 1.28f;
     private static final int SPACING_X = 16;
     private static final int SPACING_Z = 10;
-    private static final int SPACING_Y_UP = 22;
+    private static final int SPACING_Y_UP = 44;
     private static final int PADDING_TOP = 4;
     private static final int PADDING_BOTTOM = 4;
     private static final int ITEM_SIZE = 16;
