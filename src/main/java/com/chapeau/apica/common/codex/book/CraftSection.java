@@ -121,7 +121,9 @@ public class CraftSection extends CodexBookSection {
         if (!resultStack.isEmpty()) {
             int resultX2 = x + (pageWidth - BG_WIDTH) / 2 + RESULT_OFFSET_X;
 
-            // Slot derriere le resultat
+            // Slot derriere le resultat (activer le blend pour la transparence du PNG)
+            com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+            com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
             int slotX = resultX2 - (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE)) / 2;
             int slotY = y + PADDING_TOP + RESULT_OFFSET_Y - (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE)) / 2;
             graphics.blit(CRAFT_SLOT, slotX, slotY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);

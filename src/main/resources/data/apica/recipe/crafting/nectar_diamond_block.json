@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": { "item": "apica:nectar_diamond" }
+  },
+  "pattern": [ "DDD", "DDD", "DDD" ],
+  "result": { "id": "apica:nectar_diamond_block", "count": 1 }
+}

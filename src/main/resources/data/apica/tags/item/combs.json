@@ -2,9 +2,6 @@
   "replace": false,
   "values": [
     "minecraft:honeycomb",
-    "apica:common_comb",
-    "apica:noble_comb",
-    "apica:diligent_comb",
     "apica:royal_comb",
     "apica:meadow_comb",
     "apica:forest_comb",

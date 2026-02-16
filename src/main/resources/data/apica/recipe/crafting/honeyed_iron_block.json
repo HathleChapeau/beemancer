@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "apica:honeyed_iron" }
+  },
+  "pattern": [ "III", "III", "III" ],
+  "result": { "id": "apica:honeyed_iron_block", "count": 1 }
+}

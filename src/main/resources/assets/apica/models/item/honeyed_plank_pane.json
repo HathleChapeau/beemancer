@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "apica:item/ingredient/enriched_honey_crystal"
+    "layer0": "apica:block/building/honeyed_plank"
   }
 }

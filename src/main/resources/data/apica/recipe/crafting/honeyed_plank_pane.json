@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": { "#": { "item": "apica:honeyed_plank" } },
+  "pattern": [ "###", "###" ],
+  "result": { "id": "apica:honeyed_plank_pane", "count": 16 }
+}

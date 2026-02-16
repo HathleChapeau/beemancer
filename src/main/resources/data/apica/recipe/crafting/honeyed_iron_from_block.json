@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:honeyed_iron_block" }
+  ],
+  "result": { "id": "apica:honeyed_iron", "count": 9 }
+}

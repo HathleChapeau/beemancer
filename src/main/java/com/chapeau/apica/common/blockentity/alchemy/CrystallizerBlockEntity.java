@@ -5,8 +5,7 @@
  * ============================================================
  *
  * FONCTIONNEMENT:
- * - Honey (500mB) -> HONEY_CRYSTAL (ou selon recette JSON)
- * - Royal Jelly (500mB) -> ROYAL_HONEY_CRYSTAL
+ * - Transforme les fluides en cristaux selon les recettes JSON
  * - Process time: configurable via recette
  * ============================================================
  */

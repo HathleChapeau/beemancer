@@ -222,6 +222,10 @@ public class ApicaItems {
             () -> new BlockItem(ApicaBlocks.HONEYED_GLASS.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> HONEYED_GLASS_PANE = ITEMS.register("honeyed_glass_pane",
             () -> new BlockItem(ApicaBlocks.HONEYED_GLASS_PANE.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> HONEYED_PLANK_PANE = ITEMS.register("honeyed_plank_pane",
+            () -> new BlockItem(ApicaBlocks.HONEYED_PLANK_PANE.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> HONEYED_STONE_PANE = ITEMS.register("honeyed_stone_pane",
+            () -> new BlockItem(ApicaBlocks.HONEYED_STONE_PANE.get(), new Item.Properties()));
 
     // --- MATERIAL STORAGE BLOCKS ---
     public static final DeferredItem<BlockItem> HONEYED_IRON_BLOCK = ITEMS.register("honeyed_iron_block",
@@ -324,15 +328,6 @@ public class ApicaItems {
                     new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
 
     // --- COMBS (legacy) ---
-    public static final DeferredItem<Item> COMMON_COMB = ITEMS.register("common_comb",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> NOBLE_COMB = ITEMS.register("noble_comb",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> DILIGENT_COMB = ITEMS.register("diligent_comb",
-            () -> new Item(new Item.Properties()));
-
     public static final DeferredItem<Item> ROYAL_COMB = ITEMS.register("royal_comb",
             () -> new Item(new Item.Properties()));
 
@@ -598,26 +593,6 @@ public class ApicaItems {
     public static final DeferredItem<Item> DRAGON_BREATH_FRAGMENT = ITEMS.register("dragon_breath_fragment",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> NETHER_STAR_FRAGMENT = ITEMS.register("nether_star_fragment",
-            () -> new Item(new Item.Properties()));
-
-    // --- CRYSTAL SHARDS ---
-    public static final DeferredItem<Item> RAW_CRYSTAL_SHARD = ITEMS.register("raw_crystal_shard",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> ENRICHED_CRYSTAL_SHARD = ITEMS.register("enriched_crystal_shard",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> RADIANT_CRYSTAL_SHARD = ITEMS.register("radiant_crystal_shard",
-            () -> new Item(new Item.Properties()));
-
-    // --- HONEY CRYSTALS (higher tiers, item only) ---
-    public static final DeferredItem<Item> ENRICHED_HONEY_CRYSTAL = ITEMS.register("enriched_honey_crystal",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> RADIANT_HONEY_CRYSTAL = ITEMS.register("radiant_honey_crystal",
-            () -> new Item(new Item.Properties()));
-
-    public static final DeferredItem<Item> ROYAL_HONEY_CRYSTAL = ITEMS.register("royal_honey_crystal",
             () -> new Item(new Item.Properties()));
 
     // --- BEE NEST ---

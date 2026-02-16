@@ -30,6 +30,7 @@ import com.chapeau.apica.client.gui.screen.codex.CodexDebugQuestPanel;
 import com.chapeau.apica.client.gui.screen.codex.CodexDecorationRenderer;
 import com.chapeau.apica.client.gui.screen.codex.CodexPageRenderer;
 import com.chapeau.apica.client.gui.screen.codex.StandardPageRenderer;
+import com.chapeau.apica.client.gui.widget.CodexTabButtonWidget;
 import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPage;
@@ -40,16 +41,19 @@ import com.chapeau.apica.common.quest.QuestPlayerData;
 import com.chapeau.apica.core.network.packets.CodexFirstOpenPacket;
 import com.chapeau.apica.core.network.packets.CodexUnlockPacket;
 import com.chapeau.apica.core.registry.ApicaAttachments;
+import com.chapeau.apica.core.registry.ApicaItems;
 import com.chapeau.apica.core.registry.ApicaSounds;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.EnumMap;
@@ -79,8 +83,10 @@ public class CodexScreen extends Screen {
     // Dimensions de la frame
     private static final int FRAME_WIDTH = 300;
     private static final int FRAME_HEIGHT = 200;
-    private static final int TAB_HEIGHT = 20;
+    private static final int TAB_HEIGHT = CodexTabButtonWidget.TEX_HEIGHT;
     private static final int TAB_SPACING = 4;
+    private static final int TAB_LABEL_HEIGHT = 12;
+    private static final int TAB_LABEL_PADDING = 3;
 
     // Background color #F3E1BB (couleur unie, pas de tiling)
     private static final int BG_COLOR = 0xFFF3E1BB;
@@ -89,7 +95,7 @@ public class CodexScreen extends Screen {
     private static final int NODE_SPACING = 30;
 
     private CodexPage currentPage = CodexPage.APICA;
-    private final Map<CodexPage, Button> tabButtons = new EnumMap<>(CodexPage.class);
+    private final Map<CodexPage, CodexTabButtonWidget> tabButtons = new EnumMap<>(CodexPage.class);
     private final Map<CodexPage, CodexPageRenderer> pageRenderers = new EnumMap<>(CodexPage.class);
     private CodexPageRenderer currentRenderer;
 
@@ -180,19 +186,20 @@ public class CodexScreen extends Screen {
         tabButtons.clear();
 
         CodexPage[] pages = CodexPage.values();
-        int tabWidth = 55;
+        int tabWidth = CodexTabButtonWidget.TEX_WIDTH;
         int totalWidth = pages.length * tabWidth + (pages.length - 1) * TAB_SPACING;
         int tabX = (width - totalWidth) / 2;
         int tabY = frameY - TAB_HEIGHT - TAB_SPACING;
 
         for (CodexPage page : pages) {
             final CodexPage currentPageRef = page;
-            Button tabButton = Button.builder(page.getDisplayName(), btn -> {
+            CodexTabButtonWidget tabButton = new CodexTabButtonWidget(
+                    tabX, tabY, page, getTabIcon(page), () -> {
                 if (currentPage != currentPageRef) {
                     playSound(ApicaSounds.CODEX_PAGE_TURN.get());
                     switchToPage(currentPageRef);
                 }
-            }).bounds(tabX, tabY, tabWidth, TAB_HEIGHT).build();
+            });
 
             tabButtons.put(page, tabButton);
             addRenderableWidget(tabButton);
@@ -200,6 +207,16 @@ public class CodexScreen extends Screen {
         }
 
         updateTabButtonStyles();
+    }
+
+    private ItemStack getTabIcon(CodexPage page) {
+        return switch (page) {
+            case APICA -> new ItemStack(ApicaItems.CODEX.get());
+            case BEES -> new ItemStack(Items.HONEYCOMB);
+            case ALCHEMY -> new ItemStack(ApicaItems.POLLEN_POT.get());
+            case ARTIFACTS -> new ItemStack(ApicaItems.NECTAR_DIAMOND.get());
+            case LOGISTICS -> new ItemStack(ApicaItems.STORAGE_CONTROLLER.get());
+        };
     }
 
     private void switchToPage(CodexPage page) {
@@ -222,10 +239,8 @@ public class CodexScreen extends Screen {
     }
 
     private void updateTabButtonStyles() {
-        for (Map.Entry<CodexPage, Button> entry : tabButtons.entrySet()) {
-            Button btn = entry.getValue();
-            boolean isActive = entry.getKey() == currentPage;
-            btn.active = !isActive;
+        for (Map.Entry<CodexPage, CodexTabButtonWidget> entry : tabButtons.entrySet()) {
+            entry.getValue().setSelected(entry.getKey() == currentPage);
         }
     }
 
@@ -294,18 +309,24 @@ public class CodexScreen extends Screen {
         // 3. Rendu de la frame PAR-DESSUS le contenu
         renderFrame(graphics);
 
-        // 4. Rendu des boutons de tab (en dehors de la frame)
-        for (Button btn : tabButtons.values()) {
+        // 4. Rendu des boutons de tab (en dehors de la frame) avec blend
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        for (CodexTabButtonWidget btn : tabButtons.values()) {
             btn.render(graphics, mouseX, mouseY, partialTick);
         }
+        RenderSystem.disableBlend();
 
-        // 5. Tooltips
+        // 5. Encadre avec le nom de la tab selectionnee, centre sous les boutons
+        renderTabLabel(graphics);
+
+        // 7. Tooltips
         currentRenderer.renderTooltips(graphics, mouseX, mouseY);
 
-        // 6. Progress
+        // 8. Progress
         renderProgress(graphics);
 
-        // 7. Debug quest panel (visible uniquement en mode debug)
+        // 9. Debug quest panel (visible uniquement en mode debug)
         if (DebugWandItem.displayDebug) {
             debugQuestPanel.updateCompletion(getCompletedQuests());
             debugQuestPanel.render(graphics, font, mouseX, mouseY);
@@ -412,6 +433,32 @@ public class CodexScreen extends Screen {
         String progress = unlocked + "/" + total;
         graphics.drawString(font, progress, frameX + FRAME_WIDTH - font.width(progress) - 8,
                 frameY + FRAME_HEIGHT - 14, 0x805030);
+    }
+
+    /**
+     * Dessine un petit encadre sous les boutons de tab avec le nom de la tab selectionnee.
+     */
+    private void renderTabLabel(GuiGraphics graphics) {
+        Component tabName = currentPage.getDisplayName();
+        int textWidth = font.width(tabName);
+        int boxWidth = textWidth + TAB_LABEL_PADDING * 2;
+        int boxHeight = TAB_LABEL_HEIGHT;
+
+        int tabY = frameY - TAB_HEIGHT - TAB_SPACING;
+        int labelX = (width - boxWidth) / 2;
+        int labelY = tabY + TAB_HEIGHT + 1;
+
+        // Fond semi-transparent
+        graphics.fill(labelX, labelY, labelX + boxWidth, labelY + boxHeight, 0xAA3B2412);
+
+        // Bordure fine (1px)
+        graphics.fill(labelX, labelY, labelX + boxWidth, labelY + 1, 0xFF5C3A1E);
+        graphics.fill(labelX, labelY + boxHeight - 1, labelX + boxWidth, labelY + boxHeight, 0xFF5C3A1E);
+        graphics.fill(labelX, labelY, labelX + 1, labelY + boxHeight, 0xFF5C3A1E);
+        graphics.fill(labelX + boxWidth - 1, labelY, labelX + boxWidth, labelY + boxHeight, 0xFF5C3A1E);
+
+        // Texte centre
+        graphics.drawString(font, tabName, labelX + TAB_LABEL_PADDING, labelY + 2, 0xFFE8D5B0, false);
     }
 
     @Override

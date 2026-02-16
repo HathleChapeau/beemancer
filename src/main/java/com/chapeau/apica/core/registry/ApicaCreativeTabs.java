@@ -183,12 +183,6 @@ public class ApicaCreativeTabs {
     }
 
     private static void addCrystalItems(CreativeModeTab.Output output) {
-        output.accept(ApicaItems.RAW_CRYSTAL_SHARD.get());
-        output.accept(ApicaItems.ENRICHED_CRYSTAL_SHARD.get());
-        output.accept(ApicaItems.RADIANT_CRYSTAL_SHARD.get());
-        output.accept(ApicaItems.ENRICHED_HONEY_CRYSTAL.get());
-        output.accept(ApicaItems.RADIANT_HONEY_CRYSTAL.get());
-        output.accept(ApicaItems.ROYAL_HONEY_CRYSTAL.get());
     }
 
     private static void addEssenceExtractor(CreativeModeTab.Output output) {
@@ -237,6 +231,8 @@ public class ApicaCreativeTabs {
         // Honeyed Glass
         output.accept(ApicaItems.HONEYED_GLASS.get());
         output.accept(ApicaItems.HONEYED_GLASS_PANE.get());
+        output.accept(ApicaItems.HONEYED_PLANK_PANE.get());
+        output.accept(ApicaItems.HONEYED_STONE_PANE.get());
     }
 
     private static void addCraftingMaterials(CreativeModeTab.Output output) {
@@ -314,9 +310,6 @@ public class ApicaCreativeTabs {
     }
 
     private static void addLegacyCombs(CreativeModeTab.Output output) {
-        output.accept(ApicaItems.COMMON_COMB.get());
-        output.accept(ApicaItems.NOBLE_COMB.get());
-        output.accept(ApicaItems.DILIGENT_COMB.get());
         output.accept(ApicaItems.ROYAL_COMB.get());
     }
 

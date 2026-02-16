@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": { "item": "apica:royal_gold" }
+  },
+  "pattern": [ "GGG", "GGG", "GGG" ],
+  "result": { "id": "apica:royal_gold_block", "count": 1 }
+}

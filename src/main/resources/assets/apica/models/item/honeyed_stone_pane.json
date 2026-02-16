@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "apica:item/ingredient/enriched_crystal_shard"
+    "layer0": "apica:block/altar/honeyed_stone"
   }
 }

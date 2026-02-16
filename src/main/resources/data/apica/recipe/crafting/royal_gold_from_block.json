@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:royal_gold_block" }
+  ],
+  "result": { "id": "apica:royal_gold", "count": 9 }
+}

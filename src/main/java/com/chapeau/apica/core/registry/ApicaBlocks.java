@@ -439,6 +439,14 @@ public class ApicaBlocks {
             () -> new IronBarsBlock(BlockBehaviour.Properties.of()
                     .strength(0.3f).sound(SoundType.GLASS).noOcclusion()));
 
+    public static final DeferredBlock<IronBarsBlock> HONEYED_PLANK_PANE = BLOCKS.register("honeyed_plank_pane",
+            () -> new IronBarsBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    public static final DeferredBlock<IronBarsBlock> HONEYED_STONE_PANE = BLOCKS.register("honeyed_stone_pane",
+            () -> new IronBarsBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f).sound(SoundType.STONE).noOcclusion()));
+
     // --- IRON FOUNDATION ---
     public static final DeferredBlock<IronFoundationBlock> IRON_FOUNDATION = BLOCKS.register("iron_foundation",
             () -> new IronFoundationBlock(BlockBehaviour.Properties.of()

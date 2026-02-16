@@ -91,6 +91,7 @@ public class ClientSetup {
         modEventBus.addListener(ClientSetup::registerLayerDefinitions);
         modEventBus.addListener(ClientSetup::registerClientExtensions);
         modEventBus.addListener(ClientSetup::registerBlockColors);
+        modEventBus.addListener(ClientSetup::registerItemColors);
         modEventBus.addListener(ClientSetup::registerAdditionalModels);
         modEventBus.addListener(ClientSetup::registerParticleProviders);
         modEventBus.addListener(ClientSetup::onClientSetup);
@@ -314,6 +315,18 @@ public class ClientSetup {
             ApicaBlocks.HONEY_PIPE_TIER2.get(),
             ApicaBlocks.HONEY_PIPE_TIER3.get(),
             ApicaBlocks.HONEY_PIPE_TIER4.get()
+        );
+
+        // Creative Tank - teinte rose creative
+        event.register((state, level, pos, tintIndex) -> 0xFFFF69B4,
+            ApicaBlocks.CREATIVE_TANK.get()
+        );
+    }
+
+    private static void registerItemColors(final RegisterColorHandlersEvent.Item event) {
+        // Creative Tank item - teinte rose creative
+        event.register((stack, tintIndex) -> 0xFFFF69B4,
+            ApicaBlocks.CREATIVE_TANK.get().asItem()
         );
     }
 

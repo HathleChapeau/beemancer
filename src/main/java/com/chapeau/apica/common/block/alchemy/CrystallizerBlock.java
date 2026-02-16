@@ -96,15 +96,7 @@ public class CrystallizerBlock extends BaseEntityBlock {
         }
 
         // Insert crystals
-        if (stack.is(ApicaItems.HONEY_CRYSTAL.get()) || 
-            stack.is(ApicaItems.ENRICHED_HONEY_CRYSTAL.get()) ||
-            stack.is(ApicaItems.RADIANT_HONEY_CRYSTAL.get())) {
-            /*
-            if (crystallizer.insertCrystal(stack.copyWithCount(1))) {
-                if (!player.isCreative()) stack.shrink(1);
-                level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_PLACE, SoundSource.BLOCKS, 1.0f, 1.2f);
-                return ItemInteractionResult.SUCCESS;
-            }*/
+        if (stack.is(ApicaItems.HONEY_CRYSTAL.get())) {
         }
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
