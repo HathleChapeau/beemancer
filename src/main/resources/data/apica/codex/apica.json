@@ -65,7 +65,7 @@
       "category": "NORMAL",
       "parent": "altar",
       "hidden_until_parent_unlocked": false,
-      "visibility": "VISIBLE",
+      "visibility": "SECRET",
       "quest_id": "centrifuge_royal_comb"
     }
   ]

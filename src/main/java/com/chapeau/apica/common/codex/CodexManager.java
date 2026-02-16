@@ -284,10 +284,10 @@ public class CodexManager {
      * Retourne le texte à afficher pour la description d'un node.
      * @param node Le node
      * @param state L'état du node
-     * @return La description ou "???" si SECRET et LOCKED
+     * @return La description ou "???" si LOCKED
      */
     public static Component getDisplayDescription(CodexNode node, NodeState state) {
-        if (node.getVisibility() == NodeVisibility.SECRET && state == NodeState.LOCKED) {
+        if (state == NodeState.LOCKED) {
             return Component.literal("???");
         }
         return node.getDescription();
