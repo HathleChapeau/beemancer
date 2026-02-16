@@ -73,10 +73,8 @@ public record QuestSyncPacket(Set<String> completedQuests) implements CustomPack
         context.enqueueWork(() -> {
             Player player = Minecraft.getInstance().player;
             if (player != null) {
-                QuestPlayerData data = player.getData(ApicaAttachments.QUEST_DATA);
-                for (String questId : packet.completedQuests) {
-                    data.complete(questId);
-                }
+                QuestPlayerData freshData = new QuestPlayerData(packet.completedQuests);
+                player.setData(ApicaAttachments.QUEST_DATA, freshData);
                 Apica.LOGGER.debug("Synced {} completed quests from server", packet.completedQuests.size());
             }
         });

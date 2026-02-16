@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "G": { "item": "apica:honeyed_glass" },
+    "P": { "item": "apica:honeyed_planks" }
+  },
+  "pattern": [ "III", "G G", "IPI" ],
+  "result": { "id": "apica:incubator", "count": 1 }
+}

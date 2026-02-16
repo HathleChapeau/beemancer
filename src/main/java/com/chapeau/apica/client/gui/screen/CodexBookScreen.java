@@ -266,6 +266,10 @@ public class CodexBookScreen extends Screen {
     }
 
     private void renderStickyNoteOverlay(GuiGraphics graphics, StickyNote note, int noteIndex) {
+        // Pousser le Z au-dessus des items 3D (qui rendent a z~150)
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, 300);
+
         // Semi-transparent dark overlay (clicking here closes the note)
         graphics.fill(0, 0, width, height, NOTE_OVERLAY_BG);
 
@@ -305,6 +309,8 @@ public class CodexBookScreen extends Screen {
             int craftWidth = NOTE_WIDTH - 16;
             craft.render(graphics, font, noteX + 8, craftY, craftWidth, "", -1);
         }
+
+        graphics.pose().popPose();
     }
 
     @Override
