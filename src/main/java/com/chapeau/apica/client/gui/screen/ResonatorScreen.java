@@ -44,7 +44,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private static final int SLIDER_Y = 76;
     private static final int SLIDER_W = 148;
     private static final int SLIDER_H = 10;
-    private static final int KNOB_Y = 105;
+    private static final int KNOB_Y = 125;
     private static final int KNOB_RADIUS = 18;
     private static final int KNOB_SPACING = 60;
     private static final float KNOB_MIN_DEG = 20.0f;
@@ -54,7 +54,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     // Drag state
     private int dragIndex = -1; // -1=none, 0=slider, 1=knobAmp, 2=knobPhase, 3=knobHarm
-    private int dragStartY;
+    private int dragStartX;
     private int dragStartValue;
 
     // Local values (updated from ContainerData, modified by drag)
@@ -255,19 +255,19 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
         if (isInKnob(mouseX, mouseY, knobBaseX - KNOB_SPACING, ky)) {
             dragIndex = 1;
-            dragStartY = (int) mouseY;
+            dragStartX = (int) mouseX;
             dragStartValue = localAmp;
             return true;
         }
         if (isInKnob(mouseX, mouseY, knobBaseX, ky)) {
             dragIndex = 2;
-            dragStartY = (int) mouseY;
+            dragStartX = (int) mouseX;
             dragStartValue = localPhase;
             return true;
         }
         if (isInKnob(mouseX, mouseY, knobBaseX + KNOB_SPACING, ky)) {
             dragIndex = 3;
-            dragStartY = (int) mouseY;
+            dragStartX = (int) mouseX;
             dragStartValue = localHarm;
             return true;
         }
@@ -284,21 +284,21 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         if (dragIndex == 0) {
             updateSliderFromMouse(mouseX, x);
         } else {
-            // Knob: vertical drag, up = increase, down = decrease
-            int deltaY = dragStartY - (int) mouseY;
+            // Knob: horizontal drag, right = increase, left = decrease
+            int deltaX = (int) mouseX - dragStartX;
             int sensitivity = 2; // pixels per unit
 
             switch (dragIndex) {
                 case 1 -> { // Amplitude (0-100)
-                    localAmp = clamp(dragStartValue + deltaY / sensitivity, 0, 100);
+                    localAmp = clamp(dragStartValue + deltaX / sensitivity, 0, 100);
                     sendUpdate(1, localAmp);
                 }
                 case 2 -> { // Phase (0-360)
-                    localPhase = clamp(dragStartValue + deltaY / sensitivity * 3, 0, 360);
+                    localPhase = clamp(dragStartValue + deltaX / sensitivity * 3, 0, 360);
                     sendUpdate(2, localPhase);
                 }
                 case 3 -> { // Harmonics (0-100)
-                    localHarm = clamp(dragStartValue + deltaY / sensitivity, 0, 100);
+                    localHarm = clamp(dragStartValue + deltaX / sensitivity, 0, 100);
                     sendUpdate(3, localHarm);
                 }
             }
