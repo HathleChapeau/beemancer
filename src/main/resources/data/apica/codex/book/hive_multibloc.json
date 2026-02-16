@@ -20,5 +20,8 @@
       "controller": "apica:hive_multiblock"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:hive_multiblock"},
+    {"craft": "apica:iron_foundation_slab"}
+  ]
 }

@@ -23,5 +23,11 @@
       "controller": "apica:altar_heart"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:altar_heart"},
+    {"craft": "apica:honey_pedestal"},
+    {"craft": "apica:iron_foundation"},
+    {"craft": "apica:honey_crystal_conduit"},
+    {"craft": "apica:honey_reservoir"}
+  ]
 }
