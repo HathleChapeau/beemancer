@@ -294,7 +294,10 @@ public class CodexBookScreen extends Screen {
     }
 
     private void renderStickyNoteOverlay(GuiGraphics graphics, StickyNote note, int noteIndex) {
-        // Pousser le Z au-dessus des items 3D (qui rendent a z~150)
+        // Desactiver le depth test pour que l'overlay 2D passe devant
+        // tous les modeles 3D rendus par renderItem() sur la page
+        RenderSystem.disableDepthTest();
+
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, 300);
 
@@ -329,6 +332,9 @@ public class CodexBookScreen extends Screen {
         graphics.fill(noteX + 6, noteY + 8 + font.lineHeight + 2,
                 noteX + NOTE_WIDTH - 6, noteY + 8 + font.lineHeight + 3,
                 NOTE_BORDER_COLOR);
+
+        // Reactiver le depth test pour les items 3D de la note
+        RenderSystem.enableDepthTest();
 
         // Craft section rendering
         if (noteIndex < noteCraftSections.size() && noteCraftSections.get(noteIndex) != null) {
