@@ -181,11 +181,8 @@ public class MultiblockSection extends CodexBookSection {
             maxPy = Math.max(maxPy, py + scaledItem);
         }
 
-        // Trier back-to-front: Y asc, Z desc, X asc
-        displayElements.sort(Comparator
-                .comparingInt((DisplayElement e) -> e.gridY)
-                .thenComparingInt(e -> -e.gridZ)
-                .thenComparingInt(e -> e.gridX));
+        // Trier par position pixel Y croissante (haut de l'ecran d'abord, bas en dernier)
+        displayElements.sort(Comparator.comparingInt((DisplayElement e) -> e.py));
 
         computedHeight = PADDING_TOP + (maxPy - minPy) + PADDING_BOTTOM;
     }
