@@ -65,6 +65,7 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("infuser_t1", "apica:infuser");
         NODE_TO_ITEM.put("alembic", "apica:alembic_heart");
         NODE_TO_ITEM.put("incubator", "apica:incubator");
+        NODE_TO_ITEM.put("pollen_pot", "apica:pollen_pot");
         NODE_TO_ITEM.put("storage_controller_heart", "apica:storage_controller");
         NODE_TO_ITEM.put("relay", "apica:storage_relay");
         NODE_TO_ITEM.put("interface", "apica:storage_terminal");

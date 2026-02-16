@@ -949,5 +949,9 @@
   "codex.apica.apica.hive_multibloc.title": "Apiary",
   "codex.apica.apica.hive_multibloc.desc": "Scaling up the apiary.",
   "codex.apica.apica.hive_multibloc.lore.p1": "One hive is not enough. I need more specimens running simultaneously, more data points, more comb variety. The current setup cannot keep pace with the questions I have.",
-  "codex.apica.apica.hive_multibloc.lore.p2": "Assembled an \u00a76\u00a7lApiary\u00a7r. Five bee slots instead of two. The increased density has an unexpected benefit: the bees coordinate. Production is noticeably higher. Real research begins now."
+  "codex.apica.apica.hive_multibloc.lore.p2": "Assembled an \u00a76\u00a7lApiary\u00a7r. Five bee slots instead of two. The increased density has an unexpected benefit: the bees coordinate. Production is noticeably higher. Real research begins now.",
+
+  "codex.apica.artifacts.pollen_pot.title": "Pollen Pot",
+  "codex.apica.artifacts.pollen_pot.desc": "TBD.",
+  "codex.apica.artifacts.pollen_pot.lore.p1": "TBD"
 }
