@@ -8,11 +8,13 @@
       "key": "codex.apica.apica.manual_centrifuge.lore.p1"
     },
     {
-      "type": "handraw_line"
+      "type": "handraw_line",
+      "quest": "centrifuge_insert_comb"
     },
     {
       "type": "text",
-      "key": "codex.apica.apica.manual_centrifuge.lore.p2"
+      "key": "codex.apica.apica.manual_centrifuge.lore.p2",
+      "quest": "centrifuge_insert_comb"
     },
     {
       "type": "page_break"

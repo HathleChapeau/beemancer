@@ -35,6 +35,7 @@ import com.chapeau.apica.common.codex.book.CodexBookSection;
 import com.chapeau.apica.common.codex.book.CraftSection;
 import com.chapeau.apica.common.codex.book.HeaderSection;
 import com.chapeau.apica.common.codex.book.StickyNote;
+import com.chapeau.apica.common.quest.QuestPlayerData;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.registry.ApicaSounds;
 import net.minecraft.client.Minecraft;
@@ -47,7 +48,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CodexBookScreen extends Screen {
 
@@ -163,6 +166,7 @@ public class CodexBookScreen extends Screen {
 
         // Rendu du contenu des pages
         CodexPlayerData playerData = getPlayerData();
+        Set<String> completedQuests = getCompletedQuests();
         String nodeTitle = node.getTitle().getString();
         long relativeDay = playerData.getRelativeDay(node.getFullId());
 
@@ -171,13 +175,13 @@ public class CodexBookScreen extends Screen {
         // Page gauche
         if (!leftSections.isEmpty()) {
             renderPageSections(graphics, leftSections,
-                    leftPageX, contentTopY, pageWidth, nodeTitle, relativeDay);
+                    leftPageX, contentTopY, pageWidth, nodeTitle, relativeDay, completedQuests);
         }
 
         // Page droite
         if (!rightSections.isEmpty()) {
             renderPageSections(graphics, rightSections,
-                    rightPageX + RIGHT_PAGE_EXTRA_MARGIN, contentTopY, pageWidth, nodeTitle, relativeDay);
+                    rightPageX + RIGHT_PAGE_EXTRA_MARGIN, contentTopY, pageWidth, nodeTitle, relativeDay, completedQuests);
         }
 
         // Bouton retour
@@ -193,7 +197,8 @@ public class CodexBookScreen extends Screen {
     }
 
     private void renderPageSections(GuiGraphics graphics, List<CodexBookSection> sections,
-                                     int pageX, int pageY, int effectiveWidth, String nodeTitle, long relativeDay) {
+                                     int pageX, int pageY, int effectiveWidth, String nodeTitle,
+                                     long relativeDay, Set<String> completedQuests) {
         graphics.pose().pushPose();
         graphics.pose().scale(CONTENT_SCALE, CONTENT_SCALE, 1.0f);
 
@@ -203,10 +208,16 @@ public class CodexBookScreen extends Screen {
 
         int currentY = scaledY;
         for (CodexBookSection section : sections) {
+            int height = section.getHeight(font, scaledWidth);
+            String sectionQuest = section.getQuestId();
+            if (sectionQuest != null && !completedQuests.contains(sectionQuest)) {
+                currentY += height;
+                continue;
+            }
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             section.render(graphics, font, scaledX, currentY, scaledWidth, nodeTitle, relativeDay);
-            currentY += section.getHeight(font, scaledWidth);
+            currentY += height;
         }
 
         graphics.pose().popPose();
@@ -366,6 +377,14 @@ public class CodexBookScreen extends Screen {
     }
 
     // ==================== Utils ====================
+
+    private Set<String> getCompletedQuests() {
+        if (Minecraft.getInstance().player != null) {
+            QuestPlayerData questData = Minecraft.getInstance().player.getData(ApicaAttachments.QUEST_DATA);
+            return questData.getCompletedQuests();
+        }
+        return new HashSet<>();
+    }
 
     private CodexPlayerData getPlayerData() {
         if (Minecraft.getInstance().player != null) {

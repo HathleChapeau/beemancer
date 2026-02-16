@@ -96,6 +96,15 @@ public class QuestEvents {
                         player.getName().getString(), quest.getId());
             }
         }
+
+        Quest insertQuest = QuestManager.findMachineInsertQuest(machineType, insertedItem);
+        if (insertQuest != null && !QuestManager.isQuestCompleted(player, insertQuest.getId())) {
+            if (QuestManager.completeQuest(player, insertQuest.getId())) {
+                syncQuestData(player);
+                Apica.LOGGER.info("Player {} completed MACHINE_INSERT quest: {}",
+                        player.getName().getString(), insertQuest.getId());
+            }
+        }
     }
 
     /**
@@ -116,6 +125,28 @@ public class QuestEvents {
                 syncQuestData(player);
                 Apica.LOGGER.info("Player {} completed BEE_INCUBATOR quest: {} (species: {})",
                         player.getName().getString(), quest.getId(), species);
+            }
+        }
+    }
+
+    /**
+     * Appele quand un joueur ouvre le menu d'une machine.
+     * Verifie si une quete OPEN_MENU correspond.
+     *
+     * @param player Le joueur qui ouvre le menu
+     * @param menuType Le type de machine (ex: "hive_multiblock")
+     */
+    public static void onMenuOpen(Player player, String menuType) {
+        if (player.level().isClientSide() || menuType == null || menuType.isEmpty()) {
+            return;
+        }
+
+        Quest quest = QuestManager.findOpenMenuQuest(menuType);
+        if (quest != null && !QuestManager.isQuestCompleted(player, quest.getId())) {
+            if (QuestManager.completeQuest(player, quest.getId())) {
+                syncQuestData(player);
+                Apica.LOGGER.info("Player {} completed OPEN_MENU quest: {}",
+                        player.getName().getString(), quest.getId());
             }
         }
     }

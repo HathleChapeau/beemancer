@@ -179,6 +179,9 @@
     {"id": "void_bee_incubator", "node": "bees:void_bee", "type": "BEE_INCUBATOR", "species": "void"},
 
     {"id": "draconic_bee_incubator", "node": "bees:draconic_bee", "type": "BEE_INCUBATOR", "species": "draconic"},
-    {"id": "stellar_bee_incubator", "node": "bees:stellar_bee", "type": "BEE_INCUBATOR", "species": "stellar"}
+    {"id": "stellar_bee_incubator", "node": "bees:stellar_bee", "type": "BEE_INCUBATOR", "species": "stellar"},
+
+    {"id": "centrifuge_insert_comb", "node": "apica:manual_centrifuge", "type": "MACHINE_INSERT", "machine": "centrifuge", "tag": "apica:combs"},
+    {"id": "open_apiary_menu", "node": "apica:hive_multibloc", "type": "OPEN_MENU", "machine": "hive_multiblock"}
   ]
 }

@@ -33,7 +33,19 @@ public enum QuestType {
      * Récupérer une magic bee depuis un incubateur.
      * L'espèce doit correspondre au node.
      */
-    BEE_INCUBATOR;
+    BEE_INCUBATOR,
+
+    /**
+     * Insérer un item (par tag) dans le slot d'entrée d'une machine.
+     * Détecté via onMachineInsert avec vérification de tag.
+     */
+    MACHINE_INSERT,
+
+    /**
+     * Ouvrir le menu d'une machine spécifique.
+     * Détecté à l'ouverture du menu côté serveur.
+     */
+    OPEN_MENU;
 
     /**
      * Parse depuis une string JSON (case-insensitive).

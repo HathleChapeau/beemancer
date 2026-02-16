@@ -27,6 +27,16 @@ import net.minecraft.client.gui.GuiGraphics;
 
 public abstract class CodexBookSection {
 
+    private String questId;
+
+    public String getQuestId() {
+        return questId;
+    }
+
+    public void setQuestId(String questId) {
+        this.questId = questId;
+    }
+
     public enum SectionType {
         HEADER("header"),
         TEXT("text"),
@@ -91,7 +101,7 @@ public abstract class CodexBookSection {
         String typeStr = json.has("type") ? json.get("type").getAsString() : "text";
         SectionType type = SectionType.fromId(typeStr);
 
-        return switch (type) {
+        CodexBookSection section = switch (type) {
             case HEADER -> new HeaderSection();
             case TEXT -> TextSection.fromJson(json);
             case IMAGE -> ImageSection.fromJson(json);
@@ -103,5 +113,11 @@ public abstract class CodexBookSection {
             case PROCESS -> ProcessSection.fromJson(json);
             case MULTIBLOCK -> MultiblockSection.fromJson(json);
         };
+
+        if (json.has("quest")) {
+            section.setQuestId(json.get("quest").getAsString());
+        }
+
+        return section;
     }
 }

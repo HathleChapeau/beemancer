@@ -10,6 +10,7 @@ import com.chapeau.apica.common.block.hive.HiveMultiblockBlockEntity;
 import com.chapeau.apica.common.block.hive.MagicHiveBlockEntity;
 import com.chapeau.apica.common.menu.slot.BeeAssignmentSlot;
 import com.chapeau.apica.common.menu.slot.OutputOnlySlot;
+import com.chapeau.apica.common.quest.QuestEvents;
 import com.chapeau.apica.core.registry.ApicaMenus;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
@@ -74,6 +75,9 @@ public class MagicHiveMenu extends ApicaMenu {
     public MagicHiveMenu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
         this(containerId, playerInventory, container, data,
              container.getContainerSize() == HiveMultiblockBlockEntity.TOTAL_SLOTS);
+        if (container.getContainerSize() == HiveMultiblockBlockEntity.TOTAL_SLOTS) {
+            QuestEvents.onMenuOpen(playerInventory.player, "hive_multiblock");
+        }
     }
 
     private MagicHiveMenu(int containerId, Inventory playerInventory, Container container,

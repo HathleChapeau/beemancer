@@ -33,6 +33,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.io.InputStreamReader;
@@ -202,6 +203,35 @@ public class QuestManager {
     public static Quest findBeeIncubatorQuest(String species) {
         for (Quest quest : QUESTS_BY_ID.values()) {
             if (quest.getType() == QuestType.BEE_INCUBATOR && quest.matchesSpecies(species)) {
+                return quest;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Cherche une quête MACHINE_INSERT correspondant a un item insere dans une machine.
+     * Verifie le tag de l'item et le type de machine.
+     */
+    @Nullable
+    public static Quest findMachineInsertQuest(String machineType, ItemStack insertedItem) {
+        for (Quest quest : QUESTS_BY_ID.values()) {
+            if (quest.getType() == QuestType.MACHINE_INSERT
+                    && quest.matchesMachine(machineType)
+                    && quest.matchesTag(insertedItem)) {
+                return quest;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Cherche une quête OPEN_MENU correspondant a un type de menu ouvert.
+     */
+    @Nullable
+    public static Quest findOpenMenuQuest(String menuType) {
+        for (Quest quest : QUESTS_BY_ID.values()) {
+            if (quest.getType() == QuestType.OPEN_MENU && quest.matchesMachine(menuType)) {
                 return quest;
             }
         }

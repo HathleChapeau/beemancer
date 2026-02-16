@@ -22,8 +22,11 @@ package com.chapeau.apica.common.quest;
 
 import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.google.gson.JsonObject;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
@@ -40,10 +43,12 @@ public class Quest {
     private final int targetCount;
     private final String targetMachine;
     private final String targetSpecies;
+    private final String targetTag;
 
     public Quest(String id, String nodeId, QuestType type,
                  @Nullable ResourceLocation targetItem, int targetCount,
-                 @Nullable String targetMachine, @Nullable String targetSpecies) {
+                 @Nullable String targetMachine, @Nullable String targetSpecies,
+                 @Nullable String targetTag) {
         this.id = id;
         this.nodeId = nodeId;
         this.type = type;
@@ -51,6 +56,7 @@ public class Quest {
         this.targetCount = Math.max(1, targetCount);
         this.targetMachine = targetMachine;
         this.targetSpecies = targetSpecies;
+        this.targetTag = targetTag;
     }
 
     // ============================================================
@@ -88,6 +94,11 @@ public class Quest {
         return targetSpecies;
     }
 
+    @Nullable
+    public String getTargetTag() {
+        return targetTag;
+    }
+
     // ============================================================
     // VERIFICATION
     // ============================================================
@@ -121,6 +132,15 @@ public class Quest {
         if (targetMachine == null || machineType == null) return false;
         if (targetMachine.equals(machineType)) return true;
         return machineType.endsWith("_" + targetMachine) || machineType.startsWith(targetMachine + "_");
+    }
+
+    /**
+     * Vérifie si un item correspond au tag cible de cette quête.
+     */
+    public boolean matchesTag(ItemStack stack) {
+        if (targetTag == null || stack.isEmpty()) return false;
+        TagKey<Item> tag = TagKey.create(Registries.ITEM, ResourceLocation.parse(targetTag));
+        return stack.is(tag);
     }
 
     /**
@@ -175,7 +195,8 @@ public class Quest {
         int targetCount = json.has("count") ? json.get("count").getAsInt() : 1;
         String targetMachine = json.has("machine") ? json.get("machine").getAsString() : null;
         String targetSpecies = json.has("species") ? json.get("species").getAsString() : null;
+        String targetTag = json.has("tag") ? json.get("tag").getAsString() : null;
 
-        return new Quest(id, nodeId, type, targetItem, targetCount, targetMachine, targetSpecies);
+        return new Quest(id, nodeId, type, targetItem, targetCount, targetMachine, targetSpecies, targetTag);
     }
 }

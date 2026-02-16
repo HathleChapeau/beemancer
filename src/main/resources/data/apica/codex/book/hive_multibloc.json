@@ -9,7 +9,8 @@
     },
     {
       "type": "text",
-      "key": "codex.apica.apica.hive_multibloc.lore.p2"
+      "key": "codex.apica.apica.hive_multibloc.lore.p2",
+      "quest": "open_apiary_menu"
     },
     {
       "type": "page_break"
