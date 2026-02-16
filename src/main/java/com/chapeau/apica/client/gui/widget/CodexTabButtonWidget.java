@@ -39,8 +39,6 @@ public class CodexTabButtonWidget extends AbstractWidget {
     public static final int RENDER_WIDTH = (int) (TEX_WIDTH * RENDER_SCALE);
     public static final int RENDER_HEIGHT = (int) (TEX_HEIGHT * RENDER_SCALE);
 
-    private static final int HOVER_OVERLAY = 0x1A000000;
-
     private final CodexPage page;
     private final ItemStack iconStack;
     private final Runnable onClick;
@@ -70,6 +68,11 @@ public class CodexTabButtonWidget extends AbstractWidget {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
+        // Teinte hover: assombrir a 0.90
+        if (isHovered && !selected) {
+            graphics.setColor(0.90f, 0.90f, 0.90f, 1.0f);
+        }
+
         // Fond texture (reduit a 80%)
         graphics.pose().pushPose();
         graphics.pose().translate(getX(), getY(), 0);
@@ -77,10 +80,8 @@ public class CodexTabButtonWidget extends AbstractWidget {
         graphics.blit(TAB_TEXTURE, 0, 0, 0, 0, TEX_WIDTH, TEX_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
         graphics.pose().popPose();
 
-        // Hover: assombrir a 0.90 (overlay 10% noir)
-        if (isHovered && !selected) {
-            graphics.fill(getX(), getY(), getX() + RENDER_WIDTH, getY() + RENDER_HEIGHT, HOVER_OVERLAY);
-        }
+        // Reset teinte
+        graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         // Item centre dans la zone reduite
         int itemX = getX() + (RENDER_WIDTH - 16) / 2;
