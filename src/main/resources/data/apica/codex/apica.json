@@ -31,7 +31,7 @@
     {
       "id": "manual_centrifuge",
       "position": {"x": 2, "y": 1},
-      "icon": "apica:textures/block/alchemy/manual_centrifuge_top.png",
+      "icon": "apica:textures/block/manual_centrifuge.png",
       "category": "NORMAL",
       "parent": "hive",
       "hidden_until_parent_unlocked": false,
@@ -41,7 +41,7 @@
     {
       "id": "crystallyzer",
       "position": {"x": 0, "y": 2},
-      "icon": "apica:textures/block/machines/crystal_piston.png",
+      "icon": "apica:textures/block/crystallizer.png",
       "category": "NORMAL",
       "parent": "manual_centrifuge",
       "hidden_until_parent_unlocked": false,

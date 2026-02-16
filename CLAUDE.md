@@ -365,12 +365,16 @@ Quand l'utilisateur signale un bug ou un comportement manquant:
 
 ## Vérification Avant Code
 
+### OBLIGATION: Comprendre avant d'implémenter
+**RÈGLE ABSOLUE**: Avant d'implémenter ou modifier quoi que ce soit, **VÉRIFIER COMMENT LE SYSTÈME FONCTIONNE**. Lire le code existant qui gère la feature concernée. Ne JAMAIS supposer le fonctionnement d'un système — toujours le vérifier dans le code source. Ne JAMAIS inventer des chemins de fichiers, des noms de registres, ou des mécanismes sans les avoir confirmés dans le code.
+
 ### Avant de modifier du code
 1. **LIRE** le fichier complet, pas seulement la zone à modifier
 2. **COMPRENDRE** le flux: qui appelle quoi, dans quel ordre
-3. Si modification de multibloc/pattern: vérifier **TOUS** les fichiers qui référencent les positions (BlockEntity, Renderer, Pattern)
-4. Si modification de rendu: comprendre la chaîne de transforms complète
-5. Si correction de bug: reproduire mentalement le bug AVANT de coder
+3. **TRACER** le système de bout en bout: où les données sont définies, comment elles sont lues, où elles sont rendues
+4. Si modification de multibloc/pattern: vérifier **TOUS** les fichiers qui référencent les positions (BlockEntity, Renderer, Pattern)
+5. Si modification de rendu: comprendre la chaîne de transforms complète
+6. Si correction de bug: reproduire mentalement le bug AVANT de coder
 
 ### Avant de répondre à un bug report
 1. Relire le message utilisateur **2 fois**
