@@ -59,7 +59,7 @@ public class MultiblockSection extends CodexBookSection {
             Apica.MOD_ID, "textures/gui/codex/codex_book/down_multibloc.png");
     private static final int GROUND_TEX_W = 101;
     private static final int GROUND_TEX_H = 55;
-    private static final int GROUND_PADDING_Y = 0;
+    private static final int GROUND_PADDING_Y = 59;
 
     private final String patternId;
     private final String controllerId;
@@ -102,7 +102,7 @@ public class MultiblockSection extends CodexBookSection {
             FloorGroup group = floorGroups.get(g);
             currentY += (group.maxPy - group.minPy);
             if (g < floorGroups.size() - 1) {
-                currentY += GROUP_SPACING + (int)DebugWandItem.value1;
+                currentY += GROUP_SPACING;
             }
         }
 
@@ -110,7 +110,7 @@ public class MultiblockSection extends CodexBookSection {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         int groundX = x + pageWidth / 2 - GROUND_TEX_W / 2;
-        int groundY = currentY - GROUND_TEX_H + GROUND_PADDING_Y + groundOffsetY + (int) DebugWandItem.value2;
+        int groundY = currentY - GROUND_TEX_H + GROUND_PADDING_Y + groundOffsetY;
         graphics.blit(GROUND_TEXTURE, groundX, groundY, GROUND_TEX_W, GROUND_TEX_H,
                 0, 0, GROUND_TEX_W, GROUND_TEX_H, GROUND_TEX_W, GROUND_TEX_H);
 
@@ -132,7 +132,7 @@ public class MultiblockSection extends CodexBookSection {
             }
 
             currentY -= (group.maxPy - group.minPy);
-            currentY -= GROUP_SPACING + (int)DebugWandItem.value1;
+            currentY -= GROUP_SPACING;
             /*
             if (g < floorGroups.size() - 1) {
                 currentY -= GROUP_SPACING + (int)DebugWandItem.value1;
@@ -241,7 +241,7 @@ public class MultiblockSection extends CodexBookSection {
 
         // Ajouter l'espacement entre groupes
         if (floorGroups.size() > 1) {
-            totalHeight += (GROUP_SPACING+(int)DebugWandItem.value1) * (floorGroups.size() - 1);
+            totalHeight += GROUP_SPACING * (floorGroups.size() - 1);
         }
 
         computedHeight = totalHeight + PADDING_BOTTOM + paddingY;

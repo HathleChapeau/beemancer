@@ -79,7 +79,7 @@ public class CodexBookScreen extends Screen {
     // Sticky note constants
     private static final int NOTE_BUTTON_SIZE = 32;
     private static final int NOTE_BUTTON_GAP = 1;
-    private static final int NOTE_BUTTON_OFFSET_X = -14;
+    private static final int NOTE_BUTTON_OFFSET_X = -40;
     private static final int NOTE_OVERLAY_BG = 0xA0000000;
 
     private static final ResourceLocation[] NOTE_TEXTURES = {

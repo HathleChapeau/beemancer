@@ -36,58 +36,41 @@ public class MultiblockPatterns {
     private static final Map<String, MultiblockPattern> PATTERNS = new HashMap<>();
 
     // ==================== HONEY ALTAR ====================
-    // Structure 3x3x5, contrôleur au Y+2 (Honey Crystal)
-    //
-    // Étage 5 (Y+2 relatif):     [S]
-    //                         [S][S][S]
-    //                            [S]
-    //
-    // Étage 4 (Y+1 relatif):     [C]
-    //                         [C][S][C]
-    //                            [C]
-    //
-    // Étage 3 (Y+0 relatif):     (contrôleur)
-    //
-    // Étage 2 (Y-1 relatif):    (vide)
-    //
-    // Étage 1 (Y-2 relatif):     [T]
-    //                         [T][P][T]
-    //                            [T]
 
     public static final MultiblockPattern HONEY_ALTAR = register(
         MultiblockPattern.builder("honey_altar")
             // Étage 1 (Y-2): Pedestal + Honeyed Stone cardinaux
             .add(0, -2, 0, block(ApicaBlocks.HONEY_PEDESTAL))
-            .add(0, -2, -1, air())   // Nord
-            .add(0, -2, 1, air())    // Sud
-            .add(1, -2, 0, air())    // Est
-            .add(-1, -2, 0, air())   // Ouest
-            .add(-1, -2, -1, air())  // Coins vides
-            .add(1, -2, -1, air())
-            .add(-1, -2, 1, air())
-            .add(1, -2, 1, air())
+            //.add(0, -2, -1, air())   // Nord
+            //.add(0, -2, 1, air())    // Sud
+            //.add(1, -2, 0, air())    // Est
+            //.add(-1, -2, 0, air())   // Ouest
+            //.add(-1, -2, -1, air())  // Coins vides
+            //.add(1, -2, -1, air())
+            //.add(-1, -2, 1, air())
+            //.add(1, -2, 1, air())
 
             // Étage 2 (Y-1): Vide
             .add(0, -1, 0, air())
-            .add(0, -1, -1, air())
-            .add(0, -1, 1, air())
-            .add(1, -1, 0, air())
-            .add(-1, -1, 0, air())
-            .add(-1, -1, -1, air())
-            .add(1, -1, -1, air())
-            .add(-1, -1, 1, air())
-            .add(1, -1, 1, air())
+            //.add(0, -1, -1, air())
+            //.add(0, -1, 1, air())
+            //.add(1, -1, 0, air())
+            //.add(-1, -1, 0, air())
+            //.add(-1, -1, -1, air())
+            //.add(1, -1, -1, air())
+            //.add(-1, -1, 1, air())
+            //.add(1, -1, 1, air())
 
             // Étage 3 (Y+0): Contrôleur (Honey Crystal) - pas besoin de vérifier
             // Les positions autour doivent être vides
-            .add(0, 0, -1, air())
-            .add(0, 0, 1, air())
-            .add(1, 0, 0, air())
-            .add(-1, 0, 0, air())
-            .add(-1, 0, -1, air())
-            .add(1, 0, -1, air())
-            .add(-1, 0, 1, air())
-            .add(1, 0, 1, air())
+            //.add(0, 0, -1, air())
+            //.add(0, 0, 1, air())
+            //.add(1, 0, 0, air())
+            //.add(-1, 0, 0, air())
+            //.add(-1, 0, -1, air())
+            //.add(1, 0, -1, air())
+            //.add(-1, 0, 1, air())
+            //.add(1, 0, 1, air())
 
             // Étage 4 (Y+1): Honeyed Stone centre + 4 Conduits cardinaux
             .add(0, 1, 0, block(ApicaBlocks.IRON_FOUNDATION))
@@ -95,10 +78,10 @@ public class MultiblockPatterns {
             .add(0, 1, 1, block(ApicaBlocks.HONEY_CRYSTAL_CONDUIT))    // S
             .add(1, 1, 0, block(ApicaBlocks.HONEY_CRYSTAL_CONDUIT))    // E
             .add(-1, 1, 0, block(ApicaBlocks.HONEY_CRYSTAL_CONDUIT))   // W
-            .add(-1, 1, -1, air())  // Coins vides (pas de conduits)
-            .add(1, 1, -1, air())
-            .add(-1, 1, 1, air())
-            .add(1, 1, 1, air())
+            .add(-1, 1, -1, block(ApicaBlocks.IRON_FOUNDATION))  // Coins vides (pas de conduits)
+            .add(1, 1, -1, block(ApicaBlocks.IRON_FOUNDATION))
+            .add(-1, 1, 1, block(ApicaBlocks.IRON_FOUNDATION))
+            .add(1, 1, 1, block(ApicaBlocks.IRON_FOUNDATION))
 
             // Étage 5 (Y+2): Centre Honeyed Stone + 4 Honey Reservoirs
             .add(0, 2, 0, block(ApicaBlocks.IRON_FOUNDATION))
@@ -106,10 +89,10 @@ public class MultiblockPatterns {
             .add(0, 2, 1, block(ApicaBlocks.HONEY_RESERVOIR))    // S
             .add(1, 2, 0, block(ApicaBlocks.HONEY_RESERVOIR))    // E
             .add(-1, 2, 0, block(ApicaBlocks.HONEY_RESERVOIR))   // W
-            .add(-1, 2, -1, air())  // Coins vides
-            .add(1, 2, -1, air())
-            .add(-1, 2, 1, air())
-            .add(1, 2, 1, air())
+            .add(-1, 2, -1, block(ApicaBlocks.IRON_FOUNDATION))  // Coins vides
+            .add(1, 2, -1, block(ApicaBlocks.IRON_FOUNDATION))
+            .add(-1, 2, 1, block(ApicaBlocks.IRON_FOUNDATION))
+            .add(1, 2, 1, block(ApicaBlocks.IRON_FOUNDATION))
 
             .build()
     );
@@ -218,14 +201,14 @@ public class MultiblockPatterns {
             .add(1, -1, 1, air())
 
             // Étage 3 (Y+0): Contrôleur au centre (ne pas vérifier), reste vide
-            .add(0, 0, -1, air())
+            /*.add(0, 0, -1, air())
             .add(0, 0, 1, air())
             .add(1, 0, 0, air())
             .add(-1, 0, 0, air())
             .add(-1, 0, -1, air())
             .add(1, 0, -1, air())
             .add(-1, 0, 1, air())
-            .add(1, 0, 1, air())
+            .add(1, 0, 1, air())*/
 
             // Étage 4 (Y+1): Honeyed Stone aux coins/centre + Reservoirs aux bords (N/S/E/W)
             .add(0, 1, 0, block(ApicaBlocks.IRON_FOUNDATION))        // Centre
