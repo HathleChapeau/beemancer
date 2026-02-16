@@ -1,0 +1,385 @@
+{
+  "brainstorm": {
+    "sujet": "Améliorations du système de pathfinding des MagicBee",
+    "date": "2026-02-16",
+    "participants": [
+      { "id": "expert-create", "role": "Expert mod Create (entities, machines, patterns)", "type": "proposant" },
+      { "id": "expert-cobblemon", "role": "Expert mod Cobblemon (OmniPath, Brain API, créatures)", "type": "proposant" },
+      { "id": "expert-alexmobs", "role": "Expert mod Alex's Mobs (vol, FlightMoveController, goals)", "type": "proposant" },
+      { "id": "expert-pathfinding", "role": "Expert IA/Pathfinding Java NeoForge (algorithmes, vanilla)", "type": "proposant" },
+      { "id": "expert-archi", "role": "Expert Architecture Apica (validateur)", "type": "validateur" }
+    ],
+    "contexte": {
+      "fichier_principal": "BeePathfinding.java (534 lignes)",
+      "algorithme_actuel": "Theta* (Any-Angle Pathfinding) avec DDA 3D",
+      "entite": "MagicBeeEntity extends Bee, FlyingMoveControl + FlyingPathNavigation",
+      "points_faibles_identifies": [
+        "FlyingPathNavigation vanilla instanciée mais jamais utilisée (dead code)",
+        "MAX_ITERATIONS = 1000 potentiellement lourd avec beaucoup d'abeilles",
+        "Pas de multi-threading (Level non thread-safe)",
+        "Pas d'évitement entre abeilles",
+        "Fichier 534 lignes (dépasse limite 150 du projet)",
+        "isPassable() ne gère pas fences, trapdoors, cobwebs, cactus, etc."
+      ]
+    }
+  },
+
+  "propositions_validees": [
+    {
+      "id": "P1",
+      "titre": "Décomposition de BeePathfinding.java en sous-package",
+      "statut": "VALIDÉE",
+      "priorite": "P0 — prérequis pour toutes les autres",
+      "ou": "common/entity/bee/pathfinding/ (nouveau sous-package, 4 fichiers)",
+      "pourquoi": "Le fichier fait 534 lignes, violation majeure de la règle 150 lignes du projet. Il mélange 4 responsabilités : façade/cache, algorithme, collision, et helpers de vol.",
+      "comment": {
+        "description": "Découper en 4 fichiers avec une responsabilité unique chacun",
+        "structure_cible": {
+          "BeePathfinding.java": "Façade publique : findPath(), getNextWaypoint(), clearPath(), cache TTL, stall detection, debug particles (~100 lignes)",
+          "ThetaStarSolver.java": "Algorithme Lazy Theta* pur : computeThetaStar(), expansion noeuds, reconstruction, smoothPath(), classe Node (~140 lignes)",
+          "PathCollisionHelper.java": "Collision : isPassable() enrichi, hasLineOfSight() DDA 3D, computeWallPenalty(), clearance entity (~100 lignes)",
+          "BeeFlightHelper.java": "Helpers de vol : séparation boids, calcul banking visuel (~80 lignes)"
+        }
+      },
+      "qui_propose": "expert-create (initial), expert-pathfinding (convergence), expert-archi (validation structure)",
+      "valide_par": ["expert-archi", "expert-cobblemon", "expert-pathfinding", "expert-alexmobs"],
+      "sources": [
+        {
+          "mod": "Create",
+          "reference": "Séparation Navigation.java + TrackGraph + TravellingPoint — chaque fichier a une responsabilité unique",
+          "chemin": "/home/adri/Create-mc1.21.1-dev/src/main/java/com/simibubi/create/content/trains/entity/Navigation.java"
+        },
+        {
+          "mod": "Cobblemon",
+          "reference": "Séparation OmniPathNavigation + OmniPathNodeMaker + PokemonMoveControl",
+          "chemin": "/home/adri/cobblemon-1.7/common/src/main/kotlin/com/cobblemon/mod/common/entity/ai/OmniPathNavigation.kt"
+        }
+      ]
+    },
+
+    {
+      "id": "P2",
+      "titre": "Migrer Theta* vers Lazy Theta*",
+      "statut": "VALIDÉE",
+      "priorite": "HAUTE — intégrer lors de la décomposition",
+      "ou": "ThetaStarSolver.java (nouveau fichier, dans le cadre de P1)",
+      "pourquoi": "Le Theta* actuel effectue un hasLineOfSight() (DDA 3D) pour CHAQUE voisin de CHAQUE noeud expansé. Sur 26 directions, c'est extrêmement coûteux. Lazy Theta* reporte le LOS check au moment du poll() au lieu de l'expansion, réduisant les checks d'un ordre de grandeur (60-80% d'économie CPU).",
+      "comment": {
+        "description": "Au lieu de vérifier la ligne de vue pour chaque voisin lors de l'expansion, on suppose optimistiquement que le parent du noeud courant a une LOS vers le voisin. Au moment du poll(), on vérifie alors la LOS. Si elle n'existe pas, on cherche le meilleur parent parmi les voisins déjà dans le closed set.",
+        "changement_principal": "Déplacer hasLineOfSight() de la boucle des voisins vers le poll() du noeud courant",
+        "risque": "Chemins marginalement sous-optimaux — imperceptible pour des abeilles"
+      },
+      "qui_propose": "expert-pathfinding",
+      "valide_par": ["expert-archi", "expert-create"],
+      "sources": [
+        {
+          "type": "paper_academique",
+          "reference": "Nash et al. 'Lazy Theta*: Any-Angle Path Planning and Path Length Analysis in 3D' (AAAI 2010)",
+          "url": "http://idm-lab.org/bib/abstracts/papers/aaai10b.pdf"
+        },
+        {
+          "type": "paper_academique",
+          "reference": "Nash et al. 2007 'Theta*: Any-Angle Path Planning on Grids' — base théorique",
+          "url": "https://arxiv.org/pdf/1401.3843"
+        }
+      ]
+    },
+
+    {
+      "id": "P3",
+      "titre": "Enrichir isPassable() pour les blocs spéciaux",
+      "statut": "VALIDÉE",
+      "priorite": "HAUTE — corriger lors de la décomposition",
+      "ou": "PathCollisionHelper.java (nouveau fichier, dans le cadre de P1)",
+      "pourquoi": "isPassable() ne vérifie que isSolid() et liquid(). Les blocs suivants sont ignorés : fences, trapdoors fermées, cobwebs, cactus, pointed dripstone, wither rose, sweet berry bush, powder snow, feu. Les abeilles tentent de traverser ces obstacles ou se coincent.",
+      "comment": {
+        "description": "Approche en 2 niveaux : (1) Utiliser le hook vanilla isPathfindable(PathComputationType.AIR) comme vérification principale — c'est le mécanisme que Create utilise sur 50+ blocs. (2) Ajouter des vérifications explicites pour les blocs dangereux (feu, cactus, wither rose) et les blocs à collision partielle. Les cobwebs sont passables mais avec une pénalité élevée dans computeWallPenalty().",
+        "blocs_a_bloquer": ["fire", "soul_fire", "cactus", "wither_rose", "powder_snow", "sweet_berry_bush", "pointed_dripstone"],
+        "blocs_penalises": ["cobweb (pénalité élevée, passable mais très lent)"],
+        "hook_vanilla": "BlockState.isPathfindable(PathComputationType.AIR)"
+      },
+      "qui_propose": "expert-create (initial, pattern isPathfindable), expert-pathfinding (liste blocs), expert-cobblemon (référence adjustNodeType)",
+      "valide_par": ["expert-archi", "expert-alexmobs"],
+      "sources": [
+        {
+          "mod": "Create",
+          "reference": "50+ blocs avec @Override isPathfindable() { return false; } — pattern systématique",
+          "chemin": "/home/adri/Create-mc1.21.1-dev/src/main/java/com/simibubi/create/content/processing/basin/BasinBlock.java:223"
+        },
+        {
+          "mod": "Cobblemon",
+          "reference": "OmniPathNodeMaker.adjustNodeType() — vérifie tous les PathType pour déterminer la traversabilité",
+          "chemin": "/home/adri/cobblemon-1.7/common/src/main/kotlin/com/cobblemon/mod/common/pokemon/ai/OmniPathNodeMaker.kt:474-486"
+        },
+        {
+          "type": "bug_tracker",
+          "reference": "Mojira MC-96319 — pathfinding vanilla ignore certains blocs dangereux",
+          "url": "https://bugs.mojang.com/browse/MC-96319"
+        }
+      ]
+    },
+
+    {
+      "id": "P4",
+      "titre": "Cache de passabilité local par calcul",
+      "statut": "VALIDÉE SOUS CONDITIONS",
+      "priorite": "MOYENNE",
+      "ou": "ThetaStarSolver.java (intégré dans computeThetaStar)",
+      "pourquoi": "isPassable() est appelé des centaines de fois par calcul de chemin, avec des positions qui se recoupent souvent (voisins communs dans l'expansion 26 directions). Chaque appel fait 2x level.getBlockState(). computeWallPenalty() ajoute 6x de plus. Un cache local réduit ces appels de 30-50%.",
+      "comment": {
+        "description": "HashMap<BlockPos, Boolean> LOCAL à une invocation de computeThetaStar(). Créé au début du calcul, garbage-collecté à la fin. PAS de cache persistant entre ticks, PAS de cache partagé entre abeilles.",
+        "conditions": [
+          "Cache créé/détruit dans computeThetaStar() uniquement",
+          "Aucun risque de stale inter-tick",
+          "~200KB max, libéré immédiatement",
+          "Utiliser computeIfAbsent() pour simplicité"
+        ],
+        "code_pattern": "passableCache.computeIfAbsent(pos, p -> checkPassable(p))"
+      },
+      "qui_propose": "expert-pathfinding",
+      "valide_par": ["expert-archi (sous conditions local-only)", "expert-create"],
+      "sources": [
+        {
+          "mod": "PerViamInvenire / MineColonies",
+          "reference": "Cache de chunks entre source et cible pour éviter les accès répétitifs au monde",
+          "url": "https://github.com/ldtteam/PerViamInvenire"
+        }
+      ]
+    },
+
+    {
+      "id": "P5",
+      "titre": "Nettoyage dead code vanilla (FlyingPathNavigation)",
+      "statut": "VALIDÉE AVEC RÉSERVE",
+      "priorite": "MOYENNE",
+      "ou": "MagicBeeEntity.java — createNavigation()",
+      "pourquoi": "FlyingPathNavigation est instanciée mais jamais utilisée : les goals appellent setDeltaMovement() directement via BeePathfinding, pas navigation.moveTo(). Les vanilla goals sont tous supprimés dans registerGoals(). La navigation et le FlyingMoveControl vanilla tickent dans le vide = CPU gaspillé.",
+      "comment": {
+        "description": "Remplacer par un NoOpPathNavigation (FlyingPathNavigation anonyme avec tick() et moveTo() no-op). Alternative : DirectPathNavigator pattern Alex's Mobs (25 lignes). Réserve : auditer Bee.customServerAiStep() dans le décompilé vanilla avant de désactiver — vérifier qu'aucun hook vanilla n'est critique.",
+        "option_recommandee": "NoOp inline dans createNavigation() — pas de nouveau fichier nécessaire",
+        "reserve": "Auditer Bee.customServerAiStep() avant"
+      },
+      "qui_propose": "expert-create (initial), expert-alexmobs (DirectPathNavigator), expert-pathfinding (NoOp)",
+      "valide_par": ["expert-archi (avec réserve audit vanilla)"],
+      "sources": [
+        {
+          "mod": "Create",
+          "reference": "Navigation.java — système de navigation complètement indépendant de vanilla pour les trains",
+          "chemin": "/home/adri/Create-mc1.21.1-dev/src/main/java/com/simibubi/create/content/trains/entity/Navigation.java"
+        },
+        {
+          "mod": "Alex's Mobs",
+          "reference": "DirectPathNavigator.java — navigator léger qui bypass le pathfinding vanilla, 25 lignes",
+          "url": "https://github.com/AlexModGuy/AlexsMobs"
+        }
+      ]
+    },
+
+    {
+      "id": "P6",
+      "titre": "Séparation anti-clustering entre abeilles (boids simplifié)",
+      "statut": "VALIDÉE",
+      "priorite": "MOYENNE",
+      "ou": "BeeFlightHelper.java (nouveau fichier dans P1) + intégration dans ForagingBehaviorGoal et WildBeePatrolGoal",
+      "pourquoi": "Les abeilles se superposent quand elles vont vers la même zone. Pas de boids complet (alignment/cohésion inutiles pour des destinations individuelles), seulement la SÉPARATION : un vecteur de répulsion par rapport aux abeilles proches.",
+      "comment": {
+        "description": "Force répulsive appliquée dans navigateToVec3() des goals (post-pathfinding, pas dans le solver). O(nearby_bees) une seule fois par tick de goal. Rayon 1.5 blocs, poids 0.1-0.15, throttlé à 1 tick sur 8.",
+        "implementation": "getEntitiesOfClass(MagicBeeEntity.class, AABB.inflate(1.5)) → calcul vecteur répulsion → ajout au deltaMovement",
+        "debat_tranche": "Les pénalités dynamiques dans le pathfinding (expert-create) sont INVALIDÉES car O(bees) par noeud est trop coûteux. La séparation post-pathfinding est O(nearby_bees) une fois par tick = bien moins cher pour le même résultat visuel."
+      },
+      "qui_propose": "expert-pathfinding",
+      "valide_par": ["expert-archi", "expert-alexmobs (confirme qu'Alex's Mobs n'a aucun anti-chevauchement et ça suffit)"],
+      "sources": [
+        {
+          "type": "mod",
+          "reference": "Boids mod — implémente les 3 règles de Reynolds pour les poissons Minecraft",
+          "url": "https://modrinth.com/mod/boids"
+        },
+        {
+          "type": "paper_academique",
+          "reference": "Craig Reynolds 'Flocks, Herds, and Schools' (1987) — règle de séparation uniquement",
+          "url": "https://www.red3d.com/cwr/boids/"
+        }
+      ]
+    },
+
+    {
+      "id": "P7",
+      "titre": "Banking visuel en virage (client-side)",
+      "statut": "VALIDÉE",
+      "priorite": "MOYENNE",
+      "ou": "MagicBeeRenderer.java (client-side) ou BeeFlightHelper.java pour le calcul",
+      "pourquoi": "Les abeilles volent en lignes droites brisées sans inclinaison naturelle. Un banking visuel (rotation Z proportionnelle au changement de direction) donne un vol organique réaliste.",
+      "comment": {
+        "description": "Calcul du roll à partir du delta yRot entre deux ticks. Appliqué UNIQUEMENT côté client dans le renderer. Zéro coût serveur. Pattern commun entre Alex's Mobs et Cobblemon.",
+        "debat_tranche": "expert-cobblemon proposait un banking server-side dans le MoveControl (modifie la trajectoire réelle). expert-alexmobs proposait un banking client-side dans le renderer (effet purement visuel). Consensus : client-side pour les abeilles (petites, nombreuses, l'inclinaison n'a pas besoin d'affecter la physique)."
+      },
+      "qui_propose": "expert-cobblemon (initial, CircleAroundTask), expert-alexmobs (convergence client-side)",
+      "valide_par": ["expert-archi"],
+      "sources": [
+        {
+          "mod": "Cobblemon",
+          "reference": "PokemonMoveControl.kt — banking server-side avec bankRightDegreesPerTick",
+          "chemin": "/home/adri/cobblemon-1.7/common/src/main/kotlin/com/cobblemon/mod/common/entity/pokemon/ai/PokemonMoveControl.kt:53-73"
+        },
+        {
+          "mod": "Cobblemon",
+          "reference": "CircleAroundTask.kt — banking pour vol orbital",
+          "chemin": "/home/adri/cobblemon-1.7/common/src/main/kotlin/com/cobblemon/mod/common/entity/ai/CircleAroundTask.kt:64-69"
+        },
+        {
+          "mod": "Alex's Mobs",
+          "reference": "EntityBaldEagle — birdPitch reflète la vélocité verticale pour l'animation",
+          "url": "https://github.com/AlexModGuy/AlexsMobs"
+        }
+      ]
+    },
+
+    {
+      "id": "P8",
+      "titre": "Budget d'itérations partagé entre abeilles",
+      "statut": "À DISCUTER — reporté",
+      "priorite": "BASSE — seulement si profiling le justifie",
+      "ou": "BeePathfinding.java ou ThetaStarSolver.java",
+      "pourquoi": "MAX_ITERATIONS = 1000 par abeille. Avec 20+ abeilles calculant simultanément, le budget total peut exploser. Un compteur global par tick server (ex: 3000 itérations max partagées entre toutes les abeilles) limiterait la charge CPU.",
+      "comment": {
+        "description": "Compteur statique AtomicInteger remis à 0 chaque tick serveur via TickEvent. Chaque appel à computeThetaStar() décrémente le compteur partagé. Si budget épuisé, fallback au noeud le plus proche. Le throttle N=4 existant dans les goals + le cache TTL 20 ticks limitent déjà le nombre de calculs simultanés.",
+        "verdict": "Reporter. Implémenter seulement si le profiling montre un bottleneck réel."
+      },
+      "qui_propose": "expert-create (initial), expert-pathfinding (convergence)",
+      "valide_par": ["expert-archi (reporté)"],
+      "sources": [
+        {
+          "mod": "Create",
+          "reference": "Navigation.search() — maxCost implicite via PriorityQueue et FrontierEntry",
+          "chemin": "/home/adri/Create-mc1.21.1-dev/src/main/java/com/simibubi/create/content/trains/entity/Navigation.java:571-593"
+        },
+        {
+          "mod": "PerViamInvenire / MineColonies",
+          "reference": "Thread pool avec calculs répartis entre colonistes",
+          "url": "https://github.com/ldtteam/PerViamInvenire"
+        }
+      ]
+    }
+  ],
+
+  "propositions_invalidees": [
+    {
+      "id": "X1",
+      "titre": "Remplacer Theta* par vanilla A* + NodeEvaluator custom",
+      "qui_proposait": "expert-cobblemon",
+      "raison_invalidation": "Theta* any-angle produit des chemins quasi-optimaux en espace continu 3D, jusqu'à 13% plus courts que A* grille. Le NodeEvaluator vanilla ne supporte que des parents sur la grille, incompatible avec les parents arbitraires de Theta*. L'expert-cobblemon a lui-même retiré cette proposition après le cadrage technique.",
+      "source_invalidation": "expert-pathfinding (analyse technique, paper Nash et al. JAIR 2010), expert-archi (validation)"
+    },
+    {
+      "id": "X2",
+      "titre": "Heuristique octile 3D (remplacer euclidienne)",
+      "qui_proposait": "expert-create",
+      "raison_invalidation": "L'heuristique octile est conçue pour le mouvement sur grille (26 directions). Pour Theta* any-angle, l'octile SURESTIME le coût réel (les chemins Theta* sont en ligne droite = coût euclidien). L'octile n'est donc PAS admissible pour Theta* et pourrait empêcher de trouver le chemin optimal. L'euclidienne actuelle est CORRECTE.",
+      "source_invalidation": "expert-pathfinding (analyse, ref Red Blob Games: http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html)"
+    },
+    {
+      "id": "X3",
+      "titre": "Pénalités dynamiques dans le pathfinding (positions des autres abeilles)",
+      "qui_proposait": "expert-create",
+      "raison_invalidation": "Coût O(bees) par expansion de noeud = trop cher. La séparation boids post-pathfinding (P6) est O(nearby_bees) une fois par tick, bien moins coûteux pour le même résultat visuel anti-clustering.",
+      "source_invalidation": "expert-archi (analyse coût), expert-alexmobs (confirme inutilité chez Alex's Mobs)"
+    },
+    {
+      "id": "X4",
+      "titre": "Multi-threading du pathfinding",
+      "qui_proposait": "mentionné dans le brief initial",
+      "raison_invalidation": "Level Minecraft n'est pas thread-safe. getBlockState() depuis un thread non-serveur = crash ou race condition. Risque/bénéfice inacceptable pour un mod.",
+      "source_invalidation": "expert-archi (règle absolue), expert-pathfinding (confirmation technique)"
+    },
+    {
+      "id": "X5",
+      "titre": "Flocking complet (alignment + cohésion + séparation)",
+      "qui_proposait": "mentionné dans le brief initial",
+      "raison_invalidation": "Les abeilles Apica ont des destinations individuelles (fleur spécifique, ruche assignée). L'alignment (aller dans la même direction) et la cohésion (rester groupées) n'ont pas de sens. Seule la séparation est pertinente (retenue en P6).",
+      "source_invalidation": "expert-archi, expert-alexmobs"
+    }
+  ],
+
+  "debats_majeurs": [
+    {
+      "sujet": "Theta* custom vs A* vanilla avec NodeEvaluator",
+      "participants": ["expert-create", "expert-cobblemon", "expert-pathfinding", "expert-archi"],
+      "positions": {
+        "expert-create": "Garder Theta* custom + NoOpPathNavigation",
+        "expert-cobblemon": "Remplacer par A* vanilla + BeePathNodeMaker custom (retiré ensuite)",
+        "expert-pathfinding": "Garder Theta* (supérieur en 3D) mais migrer vers Lazy Theta*",
+        "expert-alexmobs": "Approche hybride : vol direct + Theta* allégé en fallback",
+        "expert-archi": "Garder Theta* — le code fonctionne, pas de raison de tout réécrire"
+      },
+      "resolution": "CONSENSUS : Garder Theta* custom, migrer vers Lazy Theta* (P2). La FlyingPathNavigation vanilla est dead code à nettoyer (P5).",
+      "argument_decisif": "Les chemins A* grille 3D sont jusqu'à 13% plus longs que les vrais plus courts chemins. Theta* produit des chemins quasi-optimaux nativement sans post-processing (Nash et al. JAIR 2010)."
+    },
+    {
+      "sujet": "Heuristique octile vs euclidienne",
+      "participants": ["expert-create", "expert-pathfinding", "expert-archi"],
+      "positions": {
+        "expert-create": "Octile 3D (évite sqrt, plus serrée pour grille 26-dir)",
+        "expert-pathfinding": "CONTRE — octile inadmissible pour Theta* any-angle",
+        "expert-archi": "Euclidienne correcte pour Theta*"
+      },
+      "resolution": "INVALIDÉE. L'octile surestime le coût pour les chemins any-angle → non admissible pour Theta*. Garder l'euclidienne.",
+      "argument_decisif": "Red Blob Games : l'euclidienne est le bon choix quand les entités 'move at any angle'."
+    },
+    {
+      "sujet": "Pénalités dynamiques vs séparation boids vs rien",
+      "participants": ["expert-create", "expert-pathfinding", "expert-alexmobs", "expert-archi"],
+      "positions": {
+        "expert-create": "Pénalités dynamiques dans le solver (coût par noeud)",
+        "expert-pathfinding": "Séparation boids post-pathfinding (force répulsive)",
+        "expert-alexmobs": "Ni l'un ni l'autre — l'orbite suffit",
+        "expert-archi": "Boids separation seulement, pénalités trop coûteuses"
+      },
+      "resolution": "Séparation boids légère retenue (P6). Pénalités dynamiques invalidées (X3). L'orbite (P7) complémente pour le butinage.",
+      "argument_decisif": "O(nearby_bees) une fois par tick >> O(bees) par noeud du solver."
+    },
+    {
+      "sujet": "Banking server-side vs client-side",
+      "participants": ["expert-cobblemon", "expert-alexmobs", "expert-archi"],
+      "positions": {
+        "expert-cobblemon": "Banking server-side dans le MoveControl (modifie trajectoire)",
+        "expert-alexmobs": "Banking client-side dans le renderer (effet visuel pur)",
+        "expert-archi": "Client-side seulement"
+      },
+      "resolution": "CONSENSUS : Banking purement client-side dans le renderer. Pour des abeilles (petites, nombreuses), l'inclinaison n'a pas besoin d'affecter la physique réelle.",
+      "argument_decisif": "Zéro coût serveur, pattern Alex's Mobs prouvé sur des dizaines de créatures volantes."
+    }
+  ],
+
+  "ordre_implementation": [
+    { "etape": 1, "id": "P1", "description": "Décomposition BeePathfinding → 4 fichiers dans common/entity/bee/pathfinding/" },
+    { "etape": 2, "id": "P2", "description": "Lazy Theta* (intégrer dans ThetaStarSolver lors de la décomposition)" },
+    { "etape": 3, "id": "P3", "description": "isPassable() enrichi (intégrer dans PathCollisionHelper lors de la décomposition)" },
+    { "etape": 4, "id": "P4", "description": "Cache passabilité local (dans ThetaStarSolver)" },
+    { "etape": 5, "id": "P5", "description": "Nettoyage dead code vanilla (après audit Bee.customServerAiStep())" },
+    { "etape": 6, "id": "P6", "description": "Séparation boids (BeeFlightHelper + intégration dans les goals)" },
+    { "etape": 7, "id": "P7", "description": "Banking visuel (MagicBeeRenderer ou BeeFlightHelper)" },
+    { "etape": 8, "id": "P8", "description": "Budget itérations partagé (seulement si profiling le justifie)" }
+  ],
+
+  "proposition_tardive": {
+    "id": "P9",
+    "titre": "Direction Pruning (réduction des 26 expansions par noeud)",
+    "statut": "VALIDÉE",
+    "priorite": "MOYENNE",
+    "ou": "ThetaStarSolver.java — boucle d'expansion des voisins",
+    "pourquoi": "Chaque noeud génère 26 voisins. Beaucoup sont dans la direction opposée à la destination et ne seront jamais sur le chemin optimal. Éliminer ces directions réduit de 30-40% le nombre de noeuds expansés.",
+    "comment": "Calculer le vecteur noeud→destination. Éliminer les directions dont le dot product avec ce vecteur est fortement négatif (< -0.5). Compatible avec Lazy Theta*. Alternatives évaluées et rejetées : JPS 3D (incompatible Theta*), HPA* (overkill pour rayon 15-30 blocs).",
+    "qui_propose": "expert-pathfinding (issu de la discussion avec expert-create)",
+    "valide_par": ["expert-create"],
+    "sources": [
+      {
+        "type": "technique",
+        "reference": "Harabor & Grastien — techniques de pruning pour pathfinding sur grille",
+        "url": "https://www.researchgate.net/publication/259337700"
+      }
+    ]
+  },
+
+  "note_batch": "Les étapes 1-4 peuvent être réalisées en un seul batch car elles concernent toutes la décomposition/réécriture de BeePathfinding.java."
+}
