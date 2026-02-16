@@ -22,6 +22,7 @@
  */
 package com.chapeau.apica.common.codex.book;
 
+import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.core.multiblock.BlockMatcher;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
@@ -52,6 +53,13 @@ public class MultiblockSection extends CodexBookSection {
     private static final int PADDING_BOTTOM = 4;
     private static final int ITEM_SIZE = 16;
     private static final int GROUP_SPACING = -20;
+
+    // Ground background texture
+    private static final ResourceLocation GROUND_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            Apica.MOD_ID, "textures/gui/codex/codex_book/down_multibloc.png");
+    private static final int GROUND_TEX_W = 101;
+    private static final int GROUND_TEX_H = 55;
+    private static final int GROUND_PADDING_Y = 0;
 
     private final String patternId;
     private final String controllerId;
@@ -93,6 +101,14 @@ public class MultiblockSection extends CodexBookSection {
                 currentY += GROUP_SPACING + (int)DebugWandItem.value1;
             }
         }
+
+        // Ground texture: dessine en premier (derriere tout) au bas de la structure
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        int groundX = x + pageWidth / 2 - GROUND_TEX_W / 2;
+        int groundY = currentY - GROUND_TEX_H + GROUND_PADDING_Y + (int) DebugWandItem.value2;
+        graphics.blit(GROUND_TEXTURE, groundX, groundY, GROUND_TEX_W, GROUND_TEX_H,
+                0, 0, GROUND_TEX_W, GROUND_TEX_H, GROUND_TEX_W, GROUND_TEX_H);
 
         for (int g = floorGroups.size() - 1; g >= 0 ; g--) {
             FloorGroup group = floorGroups.get(g);

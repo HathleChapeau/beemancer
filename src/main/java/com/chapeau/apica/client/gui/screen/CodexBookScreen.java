@@ -35,6 +35,9 @@ import com.chapeau.apica.common.codex.book.CodexBookSection;
 import com.chapeau.apica.common.codex.book.CraftSection;
 import com.chapeau.apica.common.codex.book.HeaderSection;
 import com.chapeau.apica.common.codex.book.StickyNote;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
+import com.chapeau.apica.common.quest.Quest;
+import com.chapeau.apica.common.quest.QuestManager;
 import com.chapeau.apica.common.quest.QuestPlayerData;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.registry.ApicaSounds;
@@ -74,10 +77,19 @@ public class CodexBookScreen extends Screen {
     private static final int RIGHT_PAGE_EXTRA_MARGIN = 3;
 
     // Sticky note constants
-    private static final int NOTE_BUTTON_SIZE = 20;
-    private static final int NOTE_BUTTON_GAP = 3;
-    private static final int NOTE_BUTTON_OFFSET_X = 6;
+    private static final int NOTE_BUTTON_SIZE = 32;
+    private static final int NOTE_BUTTON_GAP = 1;
+    private static final int NOTE_BUTTON_OFFSET_X = -14;
     private static final int NOTE_OVERLAY_BG = 0xA0000000;
+
+    private static final ResourceLocation[] NOTE_TEXTURES = {
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/gui/codex/codex_book/stickynote_1.png"),
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/gui/codex/codex_book/stickynote_2.png"),
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/gui/codex/codex_book/stickynote_3.png")
+    };
+    private static final int[][] NOTE_TEX_SIZES = {
+        {31, 31}, {32, 34}, {32, 33}
+    };
     private static final int NOTE_WIDTH = 180;
     private static final int NOTE_HEIGHT = 130;
     private static final int NOTE_BORDER_COLOR = 0xFF5C3A1E;
@@ -191,8 +203,16 @@ public class CodexBookScreen extends Screen {
         renderStickyNoteButtons(graphics, mouseX, mouseY);
 
         // Sticky note overlay (par dessus tout)
+        // flush() force le GPU a dessiner tout le contenu batche (items 3D inclus)
+        // AVANT de rendre l'overlay, garantissant l'ordre de dessin correct
         if (openedNoteIndex >= 0 && openedNoteIndex < stickyNotes.size()) {
+            graphics.flush();
             renderStickyNoteOverlay(graphics, stickyNotes.get(openedNoteIndex), openedNoteIndex);
+        }
+
+        // Debug: section quests panel
+        if (DebugWandItem.displayDebug) {
+            renderDebugSectionQuests(graphics, completedQuests);
         }
     }
 
@@ -250,27 +270,26 @@ public class CodexBookScreen extends Screen {
         int btnY = bookY + MARGIN_TOP;
 
         for (int i = 0; i < stickyNotes.size(); i++) {
-            StickyNote note = stickyNotes.get(i);
+            int texIdx = i % NOTE_TEXTURES.length;
+            int texW = NOTE_TEX_SIZES[texIdx][0];
+            int texH = NOTE_TEX_SIZES[texIdx][1];
             int y = btnY + i * (NOTE_BUTTON_SIZE + NOTE_BUTTON_GAP);
 
-            boolean hovered = mouseX >= btnX && mouseX < btnX + NOTE_BUTTON_SIZE
-                    && mouseY >= y && mouseY < y + NOTE_BUTTON_SIZE;
+            boolean hovered = mouseX >= btnX && mouseX < btnX + texW
+                    && mouseY >= y && mouseY < y + texH;
 
-            // Background
-            int bgColor = hovered ? brighten(note.color(), 30) : note.color();
-            graphics.fill(btnX, y, btnX + NOTE_BUTTON_SIZE, y + NOTE_BUTTON_SIZE, bgColor);
+            // Texture background
+            if (hovered || openedNoteIndex == i) {
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+            }
+            graphics.blit(NOTE_TEXTURES[texIdx], btnX, y, texW, texH,
+                    0, 0, texW, texH, texW, texH);
 
-            // Border
-            int borderColor = openedNoteIndex == i ? 0xFFFFFFFF : NOTE_BORDER_COLOR;
-            graphics.fill(btnX, y, btnX + NOTE_BUTTON_SIZE, y + 1, borderColor);
-            graphics.fill(btnX, y + NOTE_BUTTON_SIZE - 1, btnX + NOTE_BUTTON_SIZE, y + NOTE_BUTTON_SIZE, borderColor);
-            graphics.fill(btnX, y, btnX + 1, y + NOTE_BUTTON_SIZE, borderColor);
-            graphics.fill(btnX + NOTE_BUTTON_SIZE - 1, y, btnX + NOTE_BUTTON_SIZE, y + NOTE_BUTTON_SIZE, borderColor);
-
-            // Item icon (centered in button)
+            // Item icon (centered in texture)
             if (i < noteIconStacks.size() && !noteIconStacks.get(i).isEmpty()) {
-                int itemX = btnX + (NOTE_BUTTON_SIZE - 16) / 2;
-                int itemY = y + (NOTE_BUTTON_SIZE - 16) / 2;
+                int itemX = btnX + (texW - 16) / 2;
+                int itemY = y + (texH - 16) / 2;
                 graphics.renderItem(noteIconStacks.get(i), itemX, itemY);
             }
         }
@@ -344,9 +363,12 @@ public class CodexBookScreen extends Screen {
             int btnY = bookY + MARGIN_TOP;
 
             for (int i = 0; i < stickyNotes.size(); i++) {
+                int texIdx = i % NOTE_TEXTURES.length;
+                int texW = NOTE_TEX_SIZES[texIdx][0];
+                int texH = NOTE_TEX_SIZES[texIdx][1];
                 int y = btnY + i * (NOTE_BUTTON_SIZE + NOTE_BUTTON_GAP);
-                if (mouseX >= btnX && mouseX < btnX + NOTE_BUTTON_SIZE
-                        && mouseY >= y && mouseY < y + NOTE_BUTTON_SIZE) {
+                if (mouseX >= btnX && mouseX < btnX + texW
+                        && mouseY >= y && mouseY < y + texH) {
                     openedNoteIndex = i;
                     return true;
                 }
@@ -374,6 +396,69 @@ public class CodexBookScreen extends Screen {
         int g = Math.min(255, ((color >> 8) & 0xFF) + amount);
         int b = Math.min(255, (color & 0xFF) + amount);
         return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    // ==================== Debug ====================
+
+    private void renderDebugSectionQuests(GuiGraphics graphics, Set<String> completedQuests) {
+        QuestManager.ensureClientLoaded();
+
+        List<CodexBookSection> allSections = new ArrayList<>();
+        allSections.addAll(leftSections);
+        allSections.addAll(rightSections);
+
+        // Collect sections with quest IDs
+        List<String[]> questInfos = new ArrayList<>();
+        for (CodexBookSection section : allSections) {
+            String questId = section.getQuestId();
+            if (questId != null) {
+                String sectionType = section.getType().getId();
+                boolean completed = completedQuests.contains(questId);
+                Quest quest = QuestManager.getQuest(questId);
+                String condition = quest != null ? quest.getType().name() : "???";
+                if (quest != null && quest.getTargetMachine() != null) {
+                    condition += " | " + quest.getTargetMachine();
+                }
+                if (quest != null && quest.getTargetTag() != null) {
+                    condition += " | #" + quest.getTargetTag();
+                }
+                questInfos.add(new String[]{
+                        sectionType, questId, completed ? "\u2713" : "\u2717", condition,
+                        completed ? "completed" : "incomplete"
+                });
+            }
+        }
+
+        if (questInfos.isEmpty()) return;
+
+        int lineH = font.lineHeight + 2;
+        int panelH = 4 + lineH + questInfos.size() * lineH + 4;
+        int panelW = 260;
+        int px = bookX - panelW - 10;
+        int py = bookY;
+
+        // Panel background
+        graphics.fill(px, py, px + panelW, py + panelH, 0xCC1A1A1A);
+        graphics.fill(px, py, px + panelW, py + 1, 0xFF555555);
+        graphics.fill(px, py + panelH - 1, px + panelW, py + panelH, 0xFF555555);
+        graphics.fill(px, py, px + 1, py + panelH, 0xFF555555);
+        graphics.fill(px + panelW - 1, py, px + panelW, py + panelH, 0xFF555555);
+
+        // Title
+        graphics.drawString(font, "Section Quests [Debug]", px + 4, py + 4, 0xFF00FFFF, false);
+
+        // Entries
+        int entryY = py + 4 + lineH;
+        for (String[] info : questInfos) {
+            int statusColor = "completed".equals(info[4]) ? 0xFF00FF00 : 0xFFFF4444;
+            graphics.drawString(font, info[2], px + 4, entryY, statusColor, false);
+            String line = "[" + info[0] + "] " + info[1] + " | " + info[3];
+            if (font.width(line) > panelW - 20) {
+                line = font.plainSubstrByWidth(line, panelW - 24) + "..";
+            }
+            graphics.drawString(font, line, px + 16, entryY, 0xFFCCCCCC, false);
+            entryY += lineH;
+        }
     }
 
     // ==================== Utils ====================
