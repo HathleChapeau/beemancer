@@ -21,7 +21,7 @@
     {
       "id": "hive",
       "position": {"x": 2, "y": -1},
-      "icon": "beemancer:textures/block/magic_hive.png",
+      "icon": "beemancer:textures/block/machines/magic_hive.png",
       "category": "NORMAL",
       "parent": "1st_bee",
       "hidden_until_parent_unlocked": false,
@@ -51,7 +51,7 @@
     {
       "id": "altar",
       "position": {"x": -2, "y": 1},
-      "icon": "beemancer:textures/block/altar.png",
+      "icon": "beemancer:textures/block/altar/altar_heart_center.png",
       "category": "NORMAL",
       "parent": "crystallyzer",
       "hidden_until_parent_unlocked": false,

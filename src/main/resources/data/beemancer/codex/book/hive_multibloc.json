@@ -5,7 +5,11 @@
     },
     {
       "type": "text",
-      "key": "codex.beemancer.apica.hive_multibloc.lore"
+      "key": "codex.beemancer.apica.hive_multibloc.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.apica.hive_multibloc.lore.p2"
     }
   ],
   "sticky_notes": []

@@ -5,7 +5,11 @@
     },
     {
       "type": "text",
-      "key": "codex.beemancer.apica.hive.lore"
+      "key": "codex.beemancer.apica.hive.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.apica.hive.lore.p2"
     },
     {
       "type": "page_break"

@@ -47,11 +47,11 @@ public class CodexNodeWidget extends AbstractWidget {
     static {
         // Mapping des nodes vers les items/blocs du mod
         NODE_TO_ITEM.put("1st_bee", "beemancer:scoop");
-        NODE_TO_ITEM.put("hive", "beemancer:controlled_hive");
-        NODE_TO_ITEM.put("hive_multibloc", "beemancer:magic_hive");
+        NODE_TO_ITEM.put("hive", "beemancer:magic_hive");
+        NODE_TO_ITEM.put("hive_multibloc", "beemancer:hive_multiblock");
         NODE_TO_ITEM.put("manual_centrifuge", "beemancer:manual_centrifuge");
         NODE_TO_ITEM.put("crystallyzer", "beemancer:crystallizer");
-        NODE_TO_ITEM.put("altar", "beemancer:altar");
+        NODE_TO_ITEM.put("altar", "beemancer:altar_heart");
         NODE_TO_ITEM.put("extractor", "beemancer:extractor");
         NODE_TO_ITEM.put("anti_breeding_crystal", "beemancer:anti_breeding_crystal");
         NODE_TO_ITEM.put("honey_pipe", "beemancer:honey_pipe");

@@ -5,7 +5,14 @@
     },
     {
       "type": "text",
-      "key": "codex.beemancer.apica.crystallyzer.lore"
+      "key": "codex.beemancer.apica.crystallyzer.lore.p1"
+    },
+    {
+      "type": "handraw_line"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.apica.crystallyzer.lore.p2"
     },
     {
       "type": "page_break"

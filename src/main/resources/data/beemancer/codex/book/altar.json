@@ -5,14 +5,21 @@
     },
     {
       "type": "text",
-      "key": "codex.beemancer.apica.altar.lore"
+      "key": "codex.beemancer.apica.altar.lore.p1"
+    },
+    {
+      "type": "handraw_line"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.apica.altar.lore.p2"
     },
     {
       "type": "page_break"
     },
     {
       "type": "craft",
-      "result": "beemancer:altar"
+      "result": "beemancer:altar_heart"
     }
   ],
   "sticky_notes": []
