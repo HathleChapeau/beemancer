@@ -129,11 +129,44 @@ public class WaveformRenderer {
     }
 
     /**
+     * Calcule la similarite entre deux formes d'onde par comparaison echantillon par echantillon.
+     * Retourne un pourcentage 0-100 (100 = identique).
+     */
+    static float computeSimilarity(float freqA, float ampA, float phaseDegA, float harmA,
+                                   float freqB, float ampB, float phaseDegB, float harmB) {
+        int samples = 256;
+        float phaseRadA = (float) Math.toRadians(phaseDegA);
+        float phaseRadB = (float) Math.toRadians(phaseDegB);
+
+        int numHarmA = (int) (harmA * MAX_HARMONICS);
+        float fracA = (harmA * MAX_HARMONICS) - numHarmA;
+        int numHarmB = (int) (harmB * MAX_HARMONICS);
+        float fracB = (harmB * MAX_HARMONICS) - numHarmB;
+
+        float sumSqDiff = 0;
+        float sumSqMax = 0;
+
+        for (int i = 0; i < samples; i++) {
+            float t = (i / (float) samples) * 4.0f;
+
+            float sA = computeSample(t, freqA, phaseRadA, numHarmA, fracA) * ampA;
+            float sB = computeSample(t, freqB, phaseRadB, numHarmB, fracB) * ampB;
+
+            float diff = sA - sB;
+            sumSqDiff += diff * diff;
+            sumSqMax += 4.0f; // max possible diff^2 = (-1 - 1)^2 = 4
+        }
+
+        float mse = sumSqDiff / sumSqMax;
+        return (1.0f - mse) * 100.0f;
+    }
+
+    /**
      * Calcule un echantillon par synthese additive (serie de Fourier approximation onde carree).
      * Fondamentale + harmoniques impaires (3e, 5e, 7e...) avec amplitude decroissante 1/n.
      */
-    private static float computeSample(float t, float freqHz, float phaseRad,
-                                        int numHarmonics, float harmonicFrac) {
+    static float computeSample(float t, float freqHz, float phaseRad,
+                               int numHarmonics, float harmonicFrac) {
         float omega = (float) (2.0 * Math.PI * freqHz * t * 0.01);
         float sample = (float) Math.sin(omega + phaseRad);
 
@@ -160,7 +193,7 @@ public class WaveformRenderer {
     }
 
     /** Somme des amplitudes des harmoniques (pour normalisation). */
-    private static float computeHarmonicSum(int numHarmonics, float harmonicFrac) {
+    static float computeHarmonicSum(int numHarmonics, float harmonicFrac) {
         float sum = 0;
         for (int n = 1; n <= numHarmonics + 1; n++) {
             int harmonic = 2 * n + 1;

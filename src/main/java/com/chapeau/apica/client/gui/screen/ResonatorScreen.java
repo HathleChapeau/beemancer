@@ -31,11 +31,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     // Layout
     private static final int GUI_W = 200;
     private static final int GUI_H = 170;
+    private static final int PANEL_W = 80;
+    private static final int PANEL_GAP = 6;
     private static final int WAVE_X = 12;
     private static final int WAVE_Y = 18;
     private static final int WAVE_W = 176;
@@ -65,6 +69,13 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     private BlockPos blockPos = BlockPos.ZERO;
 
+    // Debug panel: target values (generated once on open)
+    private int targetFreq;
+    private int targetAmp;
+    private int targetPhase;
+    private int targetHarm;
+    private boolean targetsGenerated = false;
+
     public ResonatorScreen(ResonatorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         this.imageWidth = GUI_W;
@@ -78,11 +89,20 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         super.init();
         // Extract block pos from menu if available
         if (menu instanceof ResonatorMenu rm) {
-            // The pos was written to buf in openMenu; we use ContainerData to read current values
             localFreq = rm.getFrequency();
             localAmp = rm.getAmplitude();
             localPhase = rm.getPhase();
             localHarm = rm.getHarmonics();
+        }
+
+        // Generate random target values once per GUI open
+        if (!targetsGenerated) {
+            ThreadLocalRandom rng = ThreadLocalRandom.current();
+            targetFreq = rng.nextInt(FREQ_MIN, FREQ_MAX + 1);
+            targetAmp = rng.nextInt(10, 101);
+            targetPhase = rng.nextInt(0, 361);
+            targetHarm = rng.nextInt(0, 101);
+            targetsGenerated = true;
         }
     }
 
@@ -100,8 +120,14 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        int x = (width - imageWidth) / 2;
+        // Offset main GUI to the right to leave room for debug panel
+        int totalW = PANEL_W + PANEL_GAP + GUI_W;
+        int baseX = (width - totalW) / 2;
+        int x = baseX + PANEL_W + PANEL_GAP;
         int y = (height - imageHeight) / 2;
+
+        // Debug panel (left side)
+        renderDebugPanel(g, baseX, y);
 
         // Background
         GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, GUI_W, GUI_H);
@@ -129,6 +155,72 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                 localPhase / 360.0f, "PHASE", localPhase + "\u00B0", mouseX, mouseY);
         renderKnob(g, knobBaseX + KNOB_SPACING, y + KNOB_Y, KNOB_RADIUS,
                 localHarm / 100.0f, "HARM", String.format("%.1f", localHarm / 100.0f), mouseX, mouseY);
+    }
+
+    private void renderDebugPanel(GuiGraphics g, int px, int py) {
+        int panelH = GUI_H;
+
+        // Panel background (dark)
+        g.fill(px, py, px + PANEL_W, py + panelH, 0xCC222222);
+        // Border
+        g.fill(px, py, px + PANEL_W, py + 1, 0xFF444444);
+        g.fill(px, py + panelH - 1, px + PANEL_W, py + panelH, 0xFF444444);
+        g.fill(px, py, px + 1, py + panelH, 0xFF444444);
+        g.fill(px + PANEL_W - 1, py, px + PANEL_W, py + panelH, 0xFF444444);
+
+        // Title
+        g.drawString(font, "TARGET", px + 4, py + 4, 0xFFFF8844, false);
+
+        // Target values
+        int lineY = py + 18;
+        int lineH = 14;
+
+        g.drawString(font, "Freq:", px + 4, lineY, 0xFF888888, false);
+        g.drawString(font, targetFreq + " Hz", px + 4, lineY + 9, 0xFFAABBDD, false);
+        lineY += lineH + 8;
+
+        g.drawString(font, "Amp:", px + 4, lineY, 0xFF888888, false);
+        g.drawString(font, String.format("%.1f", targetAmp / 100.0f), px + 4, lineY + 9, 0xFFAABBDD, false);
+        lineY += lineH + 8;
+
+        g.drawString(font, "Phase:", px + 4, lineY, 0xFF888888, false);
+        g.drawString(font, targetPhase + "\u00B0", px + 4, lineY + 9, 0xFFAABBDD, false);
+        lineY += lineH + 8;
+
+        g.drawString(font, "Harm:", px + 4, lineY, 0xFF888888, false);
+        g.drawString(font, String.format("%.1f", targetHarm / 100.0f), px + 4, lineY + 9, 0xFFAABBDD, false);
+        lineY += lineH + 14;
+
+        // Separator
+        g.fill(px + 4, lineY - 4, px + PANEL_W - 4, lineY - 3, 0xFF444444);
+
+        // Similarity percentage
+        float similarity = WaveformRenderer.computeSimilarity(
+                localFreq, localAmp / 100.0f, localPhase, localHarm / 100.0f,
+                targetFreq, targetAmp / 100.0f, targetPhase, targetHarm / 100.0f);
+        similarity = Math.max(0, Math.min(100, similarity));
+
+        // Color: red → yellow → green based on percentage
+        int simColor = getSimilarityColor(similarity);
+
+        g.drawString(font, "Match:", px + 4, lineY, 0xFF888888, false);
+        String pctText = String.format("%.0f%%", similarity);
+        g.drawString(font, pctText, px + 4, lineY + 12, simColor, false);
+    }
+
+    /** Retourne une couleur rouge → jaune → vert selon le pourcentage 0-100. */
+    private static int getSimilarityColor(float pct) {
+        if (pct < 50) {
+            // Rouge → Jaune (0-50%)
+            int r = 255;
+            int gr = (int) (pct / 50.0f * 255);
+            return 0xFF000000 | (r << 16) | (gr << 8);
+        } else {
+            // Jaune → Vert (50-100%)
+            int r = (int) ((1.0f - (pct - 50) / 50.0f) * 255);
+            int gr = 255;
+            return 0xFF000000 | (r << 16) | (gr << 8);
+        }
     }
 
     private void renderFreqSlider(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
@@ -233,11 +325,17 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     // INTERACTION
     // =========================================================================
 
+    /** Calcule le X du coin gauche du GUI principal (decale par le panel debug). */
+    private int getGuiX() {
+        int totalW = PANEL_W + PANEL_GAP + GUI_W;
+        return (width - totalW) / 2 + PANEL_W + PANEL_GAP;
+    }
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
 
-        int x = (width - imageWidth) / 2;
+        int x = getGuiX();
         int y = (height - imageHeight) / 2;
 
         // Check slider
@@ -279,13 +377,13 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (button != 0 || dragIndex < 0) return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
 
-        int x = (width - imageWidth) / 2;
+        int x = getGuiX();
 
         if (dragIndex == 0) {
             updateSliderFromMouse(mouseX, x);
         } else {
-            // Knob: horizontal drag, right = increase, left = decrease
-            int deltaX = (int) mouseX - dragStartX;
+            // Knob: horizontal drag, left = increase, right = decrease
+            int deltaX = dragStartX - (int) mouseX;
             int sensitivity = 2; // pixels per unit
 
             switch (dragIndex) {
@@ -318,7 +416,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        int x = (width - imageWidth) / 2;
+        int x = getGuiX();
         int y = (height - imageHeight) / 2;
         int knobBaseX = x + GUI_W / 2;
         int ky = y + KNOB_Y;
