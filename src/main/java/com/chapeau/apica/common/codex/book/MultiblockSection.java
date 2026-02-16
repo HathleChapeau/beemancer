@@ -22,6 +22,7 @@
  */
 package com.chapeau.apica.common.codex.book;
 
+import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.core.multiblock.BlockMatcher;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
@@ -47,10 +48,10 @@ public class MultiblockSection extends CodexBookSection {
     private static final float ITEM_SCALE = 1.28f;
     private static final int SPACING_X = 11;
     private static final int SPACING_Z = 8;
-    private static final int PADDING_TOP = 4;
+    private static final int PADDING_TOP = -55;
     private static final int PADDING_BOTTOM = 4;
     private static final int ITEM_SIZE = 16;
-    private static final int GROUP_SPACING = 8;
+    private static final int GROUP_SPACING = -20;
 
     private final String patternId;
     private final String controllerId;
@@ -85,7 +86,15 @@ public class MultiblockSection extends CodexBookSection {
         int currentY = y + PADDING_TOP;
         float zOffset = 0;
 
-        for (int g = 0; g < floorGroups.size(); g++) {
+        for (int g = 0; g < floorGroups.size(); g++){
+            FloorGroup group = floorGroups.get(g);
+            currentY += (group.maxPy - group.minPy);
+            if (g < floorGroups.size() - 1) {
+                currentY += GROUP_SPACING + (int)DebugWandItem.value1;
+            }
+        }
+
+        for (int g = floorGroups.size() - 1; g >= 0 ; g--) {
             FloorGroup group = floorGroups.get(g);
             int centerX = x + pageWidth / 2 - (group.minPx + group.maxPx) / 2;
             int originY = currentY - group.minPy;
@@ -102,10 +111,12 @@ public class MultiblockSection extends CodexBookSection {
                 zOffset += 10.0f;
             }
 
-            currentY += (group.maxPy - group.minPy);
+            currentY -= (group.maxPy - group.minPy);
+            currentY -= GROUP_SPACING + (int)DebugWandItem.value1;
+            /*
             if (g < floorGroups.size() - 1) {
-                currentY += GROUP_SPACING;
-            }
+                currentY -= GROUP_SPACING + (int)DebugWandItem.value1;
+            }*/
         }
 
         RenderSystem.enableBlend();
@@ -210,7 +221,7 @@ public class MultiblockSection extends CodexBookSection {
 
         // Ajouter l'espacement entre groupes
         if (floorGroups.size() > 1) {
-            totalHeight += GROUP_SPACING * (floorGroups.size() - 1);
+            totalHeight += (GROUP_SPACING+(int)DebugWandItem.value1) * (floorGroups.size() - 1);
         }
 
         computedHeight = totalHeight + PADDING_BOTTOM;

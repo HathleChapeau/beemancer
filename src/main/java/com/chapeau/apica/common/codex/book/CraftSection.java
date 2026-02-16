@@ -49,7 +49,8 @@ public class CraftSection extends CodexBookSection {
     private static final int BG_HEIGHT = 57;
     private static final int SLOT_SIZE = 20;
 
-    private static final int PADDING_BOTTOM = 2;
+    private static final int PADDING_TOP = -10;
+    private static final int PADDING_BOTTOM = -10;
     private static final int RESULT_PADDING_BOTTOM = 2;
     private static final int ITEM_RENDER_SIZE = 16;
 
@@ -122,16 +123,16 @@ public class CraftSection extends CodexBookSection {
 
             // Slot derriere le resultat
             int slotX = resultX2 - (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE)) / 2;
-            int slotY = y + RESULT_OFFSET_Y - (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE)) / 2;
+            int slotY = y + PADDING_TOP + RESULT_OFFSET_Y - (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * RESULT_SCALE)) / 2;
             graphics.blit(CRAFT_SLOT, slotX, slotY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
 
             // Item par dessus le slot
-            renderScaledItem(graphics, resultStack, resultX2, y + RESULT_OFFSET_Y, RESULT_SCALE);
+            renderScaledItem(graphics, resultStack, resultX2, y + PADDING_TOP + RESULT_OFFSET_Y, RESULT_SCALE);
         }
 
         // Image de fond (table de craft)
         int bgX = x + (pageWidth - BG_WIDTH) / 2;
-        int bgY = y + resultHeight;
+        int bgY = y + resultHeight + PADDING_TOP;
         graphics.blit(CRAFT_BG, bgX, bgY, 0, 0, BG_WIDTH, BG_HEIGHT, BG_WIDTH, BG_HEIGHT);
 
         // Items de la grille

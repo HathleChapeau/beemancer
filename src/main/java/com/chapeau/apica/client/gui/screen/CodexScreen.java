@@ -253,7 +253,7 @@ public class CodexScreen extends Screen {
         }
 
         // Reconstruire le panneau debug quetes (dynamique selon la page courante)
-        debugQuestPanel.rebuild(nodes, completedQuests, frameX + FRAME_WIDTH, frameY, FRAME_HEIGHT);
+        debugQuestPanel.rebuild(nodes, completedQuests, 0, frameY, FRAME_HEIGHT);
     }
 
     private void clearCurrentWidgets() {
