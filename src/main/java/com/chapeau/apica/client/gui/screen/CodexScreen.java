@@ -83,7 +83,7 @@ public class CodexScreen extends Screen {
     // Dimensions de la frame
     private static final int FRAME_WIDTH = 300;
     private static final int FRAME_HEIGHT = 200;
-    private static final int TAB_HEIGHT = CodexTabButtonWidget.TEX_HEIGHT;
+    private static final int TAB_HEIGHT = CodexTabButtonWidget.RENDER_HEIGHT;
     private static final int TAB_SPACING = 4;
     private static final int TAB_LABEL_HEIGHT = 12;
     private static final int TAB_LABEL_PADDING = 3;
@@ -161,9 +161,9 @@ public class CodexScreen extends Screen {
             }
         }
 
-        // Position de la frame (centrée, avec espace pour les tabs au-dessus)
+        // Position de la frame (centrée, tabs collées au-dessus)
         frameX = (width - FRAME_WIDTH) / 2;
-        frameY = (height - FRAME_HEIGHT - TAB_HEIGHT - TAB_SPACING) / 2 + TAB_HEIGHT + TAB_SPACING;
+        frameY = (height - FRAME_HEIGHT - TAB_HEIGHT) / 2 + TAB_HEIGHT;
 
         // Zone de contenu (à l'intérieur de la frame)
         contentX = frameX + BORDER;
@@ -186,10 +186,10 @@ public class CodexScreen extends Screen {
         tabButtons.clear();
 
         CodexPage[] pages = CodexPage.values();
-        int tabWidth = CodexTabButtonWidget.TEX_WIDTH;
+        int tabWidth = CodexTabButtonWidget.RENDER_WIDTH;
         int totalWidth = pages.length * tabWidth + (pages.length - 1) * TAB_SPACING;
         int tabX = (width - totalWidth) / 2;
-        int tabY = frameY - TAB_HEIGHT - TAB_SPACING;
+        int tabY = frameY - TAB_HEIGHT;
 
         for (CodexPage page : pages) {
             final CodexPage currentPageRef = page;
@@ -444,18 +444,17 @@ public class CodexScreen extends Screen {
         int boxWidth = textWidth + TAB_LABEL_PADDING * 2;
         int boxHeight = TAB_LABEL_HEIGHT;
 
-        int tabY = frameY - TAB_HEIGHT - TAB_SPACING;
         int labelX = (width - boxWidth) / 2;
-        int labelY = tabY + TAB_HEIGHT + 1;
+        int labelY = frameY + 2;
 
-        // Fond semi-transparent
-        graphics.fill(labelX, labelY, labelX + boxWidth, labelY + boxHeight, 0xAA3B2412);
+        // Fond marron fonce opaque
+        graphics.fill(labelX, labelY, labelX + boxWidth, labelY + boxHeight, 0xFF2A1A0A);
 
-        // Bordure fine (1px)
-        graphics.fill(labelX, labelY, labelX + boxWidth, labelY + 1, 0xFF5C3A1E);
-        graphics.fill(labelX, labelY + boxHeight - 1, labelX + boxWidth, labelY + boxHeight, 0xFF5C3A1E);
-        graphics.fill(labelX, labelY, labelX + 1, labelY + boxHeight, 0xFF5C3A1E);
-        graphics.fill(labelX + boxWidth - 1, labelY, labelX + boxWidth, labelY + boxHeight, 0xFF5C3A1E);
+        // Bordure encore plus foncee (1px)
+        graphics.fill(labelX, labelY, labelX + boxWidth, labelY + 1, 0xFF1A0E04);
+        graphics.fill(labelX, labelY + boxHeight - 1, labelX + boxWidth, labelY + boxHeight, 0xFF1A0E04);
+        graphics.fill(labelX, labelY, labelX + 1, labelY + boxHeight, 0xFF1A0E04);
+        graphics.fill(labelX + boxWidth - 1, labelY, labelX + boxWidth, labelY + boxHeight, 0xFF1A0E04);
 
         // Texte centre
         graphics.drawString(font, tabName, labelX + TAB_LABEL_PADDING, labelY + 2, 0xFFE8D5B0, false);

@@ -33,8 +33,11 @@ public class CodexTabButtonWidget extends AbstractWidget {
     private static final ResourceLocation TAB_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "textures/gui/codex/codex_tab_button.png");
 
-    public static final int TEX_WIDTH = 45;
-    public static final int TEX_HEIGHT = 35;
+    private static final int TEX_WIDTH = 45;
+    private static final int TEX_HEIGHT = 35;
+    private static final float RENDER_SCALE = 0.8f;
+    public static final int RENDER_WIDTH = (int) (TEX_WIDTH * RENDER_SCALE);
+    public static final int RENDER_HEIGHT = (int) (TEX_HEIGHT * RENDER_SCALE);
 
     private static final int HOVER_OVERLAY = 0x1A000000;
 
@@ -44,7 +47,7 @@ public class CodexTabButtonWidget extends AbstractWidget {
     private boolean selected;
 
     public CodexTabButtonWidget(int x, int y, CodexPage page, ItemStack iconStack, Runnable onClick) {
-        super(x, y, TEX_WIDTH, TEX_HEIGHT, page.getDisplayName());
+        super(x, y, RENDER_WIDTH, RENDER_HEIGHT, page.getDisplayName());
         this.page = page;
         this.iconStack = iconStack;
         this.onClick = onClick;
@@ -67,17 +70,21 @@ public class CodexTabButtonWidget extends AbstractWidget {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        // Fond texture
-        graphics.blit(TAB_TEXTURE, getX(), getY(), 0, 0, TEX_WIDTH, TEX_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
+        // Fond texture (reduit a 80%)
+        graphics.pose().pushPose();
+        graphics.pose().translate(getX(), getY(), 0);
+        graphics.pose().scale(RENDER_SCALE, RENDER_SCALE, 1);
+        graphics.blit(TAB_TEXTURE, 0, 0, 0, 0, TEX_WIDTH, TEX_HEIGHT, TEX_WIDTH, TEX_HEIGHT);
+        graphics.pose().popPose();
 
         // Hover: assombrir a 0.90 (overlay 10% noir)
         if (isHovered && !selected) {
-            graphics.fill(getX(), getY(), getX() + width, getY() + height, HOVER_OVERLAY);
+            graphics.fill(getX(), getY(), getX() + RENDER_WIDTH, getY() + RENDER_HEIGHT, HOVER_OVERLAY);
         }
 
-        // Item centre
-        int itemX = getX() + (TEX_WIDTH - 16) / 2;
-        int itemY = getY() + (TEX_HEIGHT - 16) / 2;
+        // Item centre dans la zone reduite
+        int itemX = getX() + (RENDER_WIDTH - 16) / 2;
+        int itemY = getY() + (RENDER_HEIGHT - 16) / 2;
         graphics.renderItem(iconStack, itemX, itemY);
 
         RenderSystem.disableBlend();
