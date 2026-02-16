@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": { "item": "apica:iron_foundation" },
+    "C": { "item": "apica:honey_crystal" },
+    "P": { "item": "apica:honeyed_planks" }
+  },
+  "pattern": [ "FCF", "CPC", "FCF" ],
+  "result": { "id": "apica:controlled_hive", "count": 2 }
+}
