@@ -63,15 +63,17 @@ public class MultiblockSection extends CodexBookSection {
 
     private final String patternId;
     private final String controllerId;
+    private final int paddingY;
 
     private boolean resolved = false;
     private ItemStack airStack = null;
     private final List<FloorGroup> floorGroups = new ArrayList<>();
     private int computedHeight = 0;
 
-    public MultiblockSection(String patternId, String controllerId) {
+    public MultiblockSection(String patternId, String controllerId, int paddingY) {
         this.patternId = patternId;
         this.controllerId = controllerId;
+        this.paddingY = paddingY;
     }
 
     @Override
@@ -91,7 +93,7 @@ public class MultiblockSection extends CodexBookSection {
         resolve();
         if (floorGroups.isEmpty()) return;
 
-        int currentY = y + PADDING_TOP;
+        int currentY = y + PADDING_TOP + paddingY;
         float zOffset = 0;
 
         for (int g = 0; g < floorGroups.size(); g++){
@@ -240,13 +242,14 @@ public class MultiblockSection extends CodexBookSection {
             totalHeight += (GROUP_SPACING+(int)DebugWandItem.value1) * (floorGroups.size() - 1);
         }
 
-        computedHeight = totalHeight + PADDING_BOTTOM;
+        computedHeight = totalHeight + PADDING_BOTTOM + paddingY;
     }
 
     public static MultiblockSection fromJson(JsonObject json) {
         String pattern = json.has("pattern") ? json.get("pattern").getAsString() : "";
         String controller = json.has("controller") ? json.get("controller").getAsString() : "";
-        return new MultiblockSection(pattern, controller);
+        int paddingY = json.has("padding_y") ? json.get("padding_y").getAsInt() : 0;
+        return new MultiblockSection(pattern, controller, paddingY);
     }
 
     private static class FloorGroup {

@@ -280,7 +280,7 @@ public class CodexBookScreen extends Screen {
 
             // Teinte hover : plus foncé quand survolé
             if (hovered) {
-                graphics.setColor(0.75f, 0.75f, 0.75f, 1.0f);
+                graphics.setColor(0.85f, 0.85f, 0.85f, 1.0f);
             }
 
             // Texture background (blend toujours actif pour l'alpha des PNG)
@@ -307,7 +307,7 @@ public class CodexBookScreen extends Screen {
         RenderSystem.disableDepthTest();
 
         graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 300);
+        graphics.pose().translate(0, 0, 600);
 
         // Semi-transparent dark overlay (clicking here closes the note)
         graphics.fill(0, 0, width, height, NOTE_OVERLAY_BG);
