@@ -24,7 +24,9 @@ import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPage;
 import com.chapeau.apica.common.codex.CodexPlayerData;
+import com.chapeau.apica.common.quest.QuestPlayerData;
 import com.chapeau.apica.core.network.packets.CodexSyncPacket;
+import com.chapeau.apica.core.network.packets.QuestSyncPacket;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -48,6 +50,10 @@ public class ApicaCommands {
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> unlockAllKnowledge(context.getSource()))
                     )
+                    .then(Commands.literal("resetQuests")
+                        .requires(source -> source.hasPermission(2))
+                        .executes(context -> resetQuests(context.getSource()))
+                    )
                 )
         );
     }
@@ -62,6 +68,21 @@ public class ApicaCommands {
             PacketDistributor.sendToPlayer(player, new CodexSyncPacket(freshData));
 
             source.sendSuccess(() -> Component.literal("Codex knowledge has been reset!"), true);
+            return Command.SINGLE_SUCCESS;
+        }
+
+        source.sendFailure(Component.literal("This command can only be used by a player."));
+        return 0;
+    }
+
+    private static int resetQuests(CommandSourceStack source) {
+        if (source.getEntity() instanceof ServerPlayer player) {
+            QuestPlayerData freshData = new QuestPlayerData();
+            player.setData(ApicaAttachments.QUEST_DATA, freshData);
+
+            PacketDistributor.sendToPlayer(player, new QuestSyncPacket(freshData));
+
+            source.sendSuccess(() -> Component.literal("All quests have been reset!"), true);
             return Command.SINGLE_SUCCESS;
         }
 

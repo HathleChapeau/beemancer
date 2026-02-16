@@ -9,9 +9,8 @@
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | PoweredCentrifugeMenu   | Donnees container    | Slots, progress, fluids        |
- * | FluidGaugeWidget        | Jauges de fluide     | Fuel et output tanks           |
- * | GuiRenderHelper         | Rendu programmatique | Background, slots, progress    |
- * | AbstractApicaScreen | Base screen          | Boilerplate GUI                |
+ * | GuiRenderHelper         | Rendu programmatique | Background, slots, honey bars  |
+ * | AbstractApicaScreen     | Base screen          | Boilerplate GUI                |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -24,18 +23,22 @@ package com.chapeau.apica.client.gui.screen.alchemy;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.client.gui.screen.AbstractApicaScreen;
-import com.chapeau.apica.client.gui.widget.FluidGaugeWidget;
 import com.chapeau.apica.common.menu.alchemy.PoweredCentrifugeMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
+import java.util.List;
+
 public class PoweredCentrifugeScreen extends AbstractApicaScreen<PoweredCentrifugeMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Apica.MOD_ID, "textures/gui/bg.png");
-    private FluidGaugeWidget fuelGauge;
-    private FluidGaugeWidget outputGauge;
+
+    private static final int FUEL_BAR_X = 15;
+    private static final int FUEL_BAR_Y = 27;
+    private static final int OUTPUT_BAR_X = 159;
+    private static final int OUTPUT_BAR_Y = 27;
 
     public PoweredCentrifugeScreen(PoweredCentrifugeMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 99);
@@ -45,38 +48,57 @@ public class PoweredCentrifugeScreen extends AbstractApicaScreen<PoweredCentrifu
     @Override protected String getTitleKey() { return "container.apica.powered_centrifuge"; }
 
     @Override
-    protected void init() {
-        super.init();
-        fuelGauge = new FluidGaugeWidget(
-            15, 27, 16, 52, menu::getFuelCapacity,
-            () -> menu.getFuelTank().getFluid(),
-            menu::getFuelAmount
-        );
-        outputGauge = new FluidGaugeWidget(
-            159, 27, 16, 52, menu::getOutputCapacity,
-            () -> menu.getOutputTank().getFluid(),
-            menu::getOutputAmount
-        );
-    }
-
-    @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
         GuiRenderHelper.renderSlot(g, x + 39, y + 44);
         GuiRenderHelper.renderSlots2x2(g, x + 115, y + 35);
         GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 48, menu.getProgressRatio());
-        fuelGauge.render(g, x, y);
-        outputGauge.render(g, x, y);
+
+        // Honey bars: gauche = fuel, droite = output
+        int fuelCap = menu.getFuelCapacity();
+        float fuelRatio = fuelCap > 0 ? (float) menu.getFuelAmount() / fuelCap : 0;
+        GuiRenderHelper.renderLeftHoneyBar(g, x + FUEL_BAR_X, y + FUEL_BAR_Y, fuelRatio);
+
+        int outputCap = menu.getOutputCapacity();
+        float outputRatio = outputCap > 0 ? (float) menu.getOutputAmount() / outputCap : 0;
+        GuiRenderHelper.renderRightHoneyBar(g, x + OUTPUT_BAR_X, y + OUTPUT_BAR_Y, outputRatio);
     }
 
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        if (fuelGauge.isMouseOver(x, y, mouseX, mouseY)) {
-            String fuelName = GuiRenderHelper.getFluidName(menu.getFuelTank().getFluid());
-            g.renderComponentTooltip(font, fuelGauge.getTooltip(fuelName), mouseX, mouseY);
+        // Fuel gauge tooltip (gauche)
+        if (GuiRenderHelper.isHoneyBarHovered(FUEL_BAR_X, FUEL_BAR_Y, x, y, mouseX, mouseY)) {
+            String name = GuiRenderHelper.getFluidName(menu.getFuelTank().getFluid());
+            if (name.isEmpty() && menu.getFuelAmount() > 0) {
+                name = "Honey";
+            }
+            int amount = menu.getFuelAmount();
+            int cap = menu.getFuelCapacity();
+            String line1 = name.isEmpty()
+                    ? amount + " / " + cap + " mB"
+                    : name + ": " + amount + " / " + cap + " mB";
+            g.renderComponentTooltip(font, List.of(
+                Component.literal(line1),
+                Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
+                    .withStyle(s -> s.withColor(0xAAAAAA))
+            ), mouseX, mouseY);
         }
-        if (outputGauge.isMouseOver(x, y, mouseX, mouseY)) {
+
+        // Output gauge tooltip (droite)
+        if (GuiRenderHelper.isHoneyBarHovered(OUTPUT_BAR_X, OUTPUT_BAR_Y, x, y, mouseX, mouseY)) {
             String name = GuiRenderHelper.getFluidName(menu.getOutputTank().getFluid());
-            g.renderComponentTooltip(font, outputGauge.getTooltip(name), mouseX, mouseY);
+            if (name.isEmpty() && menu.getOutputAmount() > 0) {
+                name = "Honey";
+            }
+            int amount = menu.getOutputAmount();
+            int cap = menu.getOutputCapacity();
+            String line1 = name.isEmpty()
+                    ? amount + " / " + cap + " mB"
+                    : name + ": " + amount + " / " + cap + " mB";
+            g.renderComponentTooltip(font, List.of(
+                Component.literal(line1),
+                Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
+                    .withStyle(s -> s.withColor(0xAAAAAA))
+            ), mouseX, mouseY);
         }
     }
 }

@@ -9,9 +9,8 @@
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | ManualCentrifugeMenu    | Donnees container    | Slots, progress, fluid         |
- * | FluidGaugeWidget        | Jauge de fluide      | Affichage tank                 |
- * | GuiRenderHelper         | Rendu programmatique | Background, slots, progress    |
- * | AbstractApicaScreen | Base screen          | Boilerplate GUI                |
+ * | GuiRenderHelper         | Rendu programmatique | Background, slots, honey bar   |
+ * | AbstractApicaScreen     | Base screen          | Boilerplate GUI                |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -24,17 +23,20 @@ package com.chapeau.apica.client.gui.screen.alchemy;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.client.gui.screen.AbstractApicaScreen;
-import com.chapeau.apica.client.gui.widget.FluidGaugeWidget;
 import com.chapeau.apica.common.menu.alchemy.ManualCentrifugeMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
+import java.util.List;
+
 public class ManualCentrifugeScreen extends AbstractApicaScreen<ManualCentrifugeMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Apica.MOD_ID, "textures/gui/bg.png");
-    private FluidGaugeWidget fluidGauge;
+
+    private static final int HONEYBAR_X = 159;
+    private static final int HONEYBAR_Y = 27;
 
     public ManualCentrifugeScreen(ManualCentrifugeMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 99);
@@ -44,29 +46,38 @@ public class ManualCentrifugeScreen extends AbstractApicaScreen<ManualCentrifuge
     @Override protected String getTitleKey() { return "container.apica.manual_centrifuge"; }
 
     @Override
-    protected void init() {
-        super.init();
-        fluidGauge = new FluidGaugeWidget(
-            159, 27, 16, 52, 4000,
-            () -> menu.getBlockEntity().getFluidTank().getFluid(),
-            menu::getFluidAmount
-        );
-    }
-
-    @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
         GuiRenderHelper.renderSlot(g, x + 39, y + 44);
         GuiRenderHelper.renderSlots2x2(g, x + 115, y + 35);
         GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 48, menu.getProgressRatio());
-        fluidGauge.render(g, x, y);
+
+        // Honey bar droite (output)
+        int cap = 4000;
+        float ratio = cap > 0 ? (float) menu.getFluidAmount() / cap : 0;
+        GuiRenderHelper.renderRightHoneyBar(g, x + HONEYBAR_X, y + HONEYBAR_Y, ratio);
     }
 
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        if (fluidGauge.isMouseOver(x, y, mouseX, mouseY)) {
+        // Honey bar tooltip
+        if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, x, y, mouseX, mouseY)) {
             String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getFluidTank().getFluid());
-            g.renderComponentTooltip(font, fluidGauge.getTooltip(name), mouseX, mouseY);
+            if (name.isEmpty() && menu.getFluidAmount() > 0) {
+                name = "Honey";
+            }
+            int amount = menu.getFluidAmount();
+            int cap = 4000;
+            String line1 = name.isEmpty()
+                    ? amount + " / " + cap + " mB"
+                    : name + ": " + amount + " / " + cap + " mB";
+            g.renderComponentTooltip(font, List.of(
+                Component.literal(line1),
+                Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
+                    .withStyle(s -> s.withColor(0xAAAAAA))
+            ), mouseX, mouseY);
         }
+
+        // Progress bar tooltip
         float ratio = menu.getProgressRatio();
         if (ratio > 0 && mouseX >= x + 72 && mouseX < x + 108 && mouseY >= y + 45 && mouseY < y + 62) {
             g.renderTooltip(font, Component.literal(String.format("%.0f%%", ratio * 100)), mouseX, mouseY);

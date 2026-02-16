@@ -71,6 +71,9 @@ public class HoneyTankScreen extends AbstractApicaScreen<HoneyTankMenu> {
         int px = x + PANEL_OFFSET;
         if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, px, y, mouseX, mouseY)) {
             String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getFluid());
+            if (name.isEmpty() && menu.getFluidAmount() > 0) {
+                name = "Honey";
+            }
             int amount = menu.getFluidAmount();
             int cap = 16000;
             String line1 = name.isEmpty()
