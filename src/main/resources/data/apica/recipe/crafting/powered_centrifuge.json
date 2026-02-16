@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": { "item": "minecraft:iron_ingot" },
+    "I": { "item": "apica:honeyed_iron" },
     "C": { "item": "apica:manual_centrifuge" },
     "H": { "item": "apica:honey_crystal" }
   },

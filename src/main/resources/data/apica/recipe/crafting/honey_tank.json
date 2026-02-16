@@ -3,8 +3,9 @@
   "category": "misc",
   "key": {
     "P": { "item": "apica:honeyed_planks" },
-    "G": { "item": "apica:honeyed_glass" }
+    "G": { "item": "apica:honeyed_glass" },
+    "I": { "item": "apica:honeyed_iron" }
   },
-  "pattern": [ "PPP", "GGG", "PPP" ],
+  "pattern": [ "PIP", "GGG", "PIP" ],
   "result": { "id": "apica:honey_tank", "count": 1 }
 }

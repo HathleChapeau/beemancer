@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": { "item": "apica:iron_foundation" },
+    "G": { "item": "apica:honeyed_glass" },
+    "C": { "item": "apica:honey_crystal" }
+  },
+  "pattern": [ " F ", "GCG", " F " ],
+  "result": { "id": "apica:honey_crystal_conduit", "count": 2 }
+}

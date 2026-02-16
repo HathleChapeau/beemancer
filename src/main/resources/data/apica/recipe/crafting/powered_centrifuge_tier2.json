@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "A": { "item": "apica:honeyed_iron" },
+    "A": { "item": "apica:royal_gold" },
     "C": { "item": "apica:powered_centrifuge" },
     "H": { "item": "apica:honey_crystal" }
   },

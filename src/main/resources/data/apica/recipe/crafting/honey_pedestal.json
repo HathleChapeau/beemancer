@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": { "item": "apica:iron_foundation_slab" },
+    "F": { "item": "apica:iron_foundation" }
+  },
+  "pattern": [ "SS", "FF" ],
+  "result": { "id": "apica:honey_pedestal", "count": 1 }
+}

@@ -305,6 +305,8 @@ public class CodexBookScreen extends Screen {
         // Desactiver le depth test pour que l'overlay 2D passe devant
         // tous les modeles 3D rendus par renderItem() sur la page
         RenderSystem.disableDepthTest();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
 
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, 600);
