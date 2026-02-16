@@ -528,6 +528,7 @@
   "item.apica.essence.role.insomnia": "Réduit le coût en miel en permanence",
   "item.apica.essence.level": "Niveau %d",
   "block.apica.bee_statue": "Statue d'Abeille",
+  "block.apica.resonator": "Résonateur",
   "message.apica.bee_statue.species_changed": "Espèce changée vers %s (%d/%d)",
   "message.apica.bee_statue.bee_given": "Vous avez reçu une %s !",
   "block.apica.assembly_table": "Table d'Assemblage",

@@ -310,6 +310,10 @@ public class ApicaItems {
     public static final DeferredItem<DebugWandItem> DEBUG_WAND = ITEMS.register("debug_wand",
             () -> new DebugWandItem(new Item.Properties()));
 
+    // --- RESONATOR ---
+    public static final DeferredItem<BlockItem> RESONATOR = ITEMS.register("resonator",
+            () -> new BlockItem(ApicaBlocks.RESONATOR.get(), new Item.Properties()));
+
     // --- CODEX ---
     public static final DeferredItem<CodexItem> CODEX = ITEMS.register("codex",
             () -> new CodexItem(new Item.Properties()));

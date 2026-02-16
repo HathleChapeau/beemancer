@@ -543,6 +543,20 @@ LISTE DES FEATURES:
   Fichier: Structure/feature_bee_nests_scoop.txt
   Description: 7 nids d'abeilles naturels (1 par espece Tier I) generes dans le monde + outil Scoop pour capturer les MagicBees
 
+→ Resonator
+  Description: Bloc resonateur avec GUI interactive: affichage d'onde en temps reel par synthese additive (Fourier),
+    slider de frequence (1-80 Hz), 3 potards rotatifs (Amplitude, Phase, Harmoniques) avec drag vertical et scroll.
+    L'onde morphe de sinusoide pure a quasi-onde carree via ajout d'harmoniques impaires.
+  Scripts crees: ResonatorBlock.java, ResonatorBlockEntity.java, ResonatorMenu.java, ResonatorScreen.java,
+    WaveformRenderer.java, ResonatorUpdatePacket.java
+  Scripts modifies: ApicaBlocks.java (+RESONATOR), ApicaItems.java (+RESONATOR), ApicaBlockEntities.java (+RESONATOR),
+    ApicaMenus.java (+RESONATOR), ApicaCreativeTabs.java (+resonator dans tools), ClientSetup.java (+screen),
+    ApicaNetwork.java (+packet C2S)
+  Assets: blockstates/resonator.json, models/block/resonator.json, models/item/resonator.json,
+    loot_table/blocks/resonator.json, lang en_us+fr_fr (+block.apica.resonator)
+  Dependances: GuiRenderHelper, ApicaMenu, ContainerData
+  Registres modifies: ApicaBlocks (+1), ApicaItems (+1), ApicaBlockEntities (+1), ApicaMenus (+1)
+
 ================================================================================
 6. FEATURES EN COURS
 ================================================================================

@@ -9,6 +9,7 @@ package com.chapeau.apica.core.registry;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.menu.IncubatorMenu;
 import com.chapeau.apica.common.menu.MagicHiveMenu;
+import com.chapeau.apica.common.menu.ResonatorMenu;
 import com.chapeau.apica.common.menu.alchemy.AlembicMenu;
 import com.chapeau.apica.common.menu.alchemy.CreativeTankMenu;
 import com.chapeau.apica.common.menu.alchemy.CrystallizerMenu;
@@ -80,6 +81,11 @@ public class ApicaMenus {
     public static final Supplier<MenuType<MultiblockTankMenu>> MULTIBLOCK_TANK =
             MENUS.register("multiblock_tank",
                     () -> IMenuTypeExtension.create(MultiblockTankMenu::new));
+
+    // --- RESONATOR ---
+    public static final Supplier<MenuType<ResonatorMenu>> RESONATOR =
+            MENUS.register("resonator",
+                    () -> IMenuTypeExtension.create(ResonatorMenu::new));
 
     public static void register(IEventBus eventBus) {
         MENUS.register(eventBus);

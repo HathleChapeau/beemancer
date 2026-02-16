@@ -600,6 +600,7 @@
   "item.apica.essence.role.insomnia": "Reduces honey cost at all times",
   "item.apica.essence.level": "Level %d",
   "block.apica.bee_statue": "Bee Statue",
+  "block.apica.resonator": "Resonator",
   "message.apica.bee_statue.species_changed": "Species changed to %s (%d/%d)",
   "message.apica.bee_statue.bee_given": "You received a %s!",
   "codex.apica.bees.meadow_bee.title": "Meadow Bee",

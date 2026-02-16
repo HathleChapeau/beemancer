@@ -47,6 +47,7 @@ import com.chapeau.apica.common.block.storage.ControlledHiveBlock;
 import com.chapeau.apica.common.block.storage.ExportInterfaceBlock;
 import com.chapeau.apica.common.block.storage.ImportInterfaceBlock;
 import com.chapeau.apica.common.block.storage.StorageControllerBlock;
+import com.chapeau.apica.common.block.resonator.ResonatorBlock;
 import com.chapeau.apica.common.block.storage.StorageHiveBlock;
 import com.chapeau.apica.common.block.storage.StorageRelayBlock;
 import com.chapeau.apica.common.block.storage.StorageTerminalBlock;
@@ -517,6 +518,12 @@ public class ApicaBlocks {
                     .noOcclusion()
                     .requiresCorrectToolForDrops(),
                     Block.box(3, 0, 3, 13, 14, 13)));
+
+    // --- RESONATOR ---
+    public static final DeferredBlock<ResonatorBlock> RESONATOR = BLOCKS.register("resonator",
+            () -> new ResonatorBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.METAL)));
 
     // --- ASSEMBLY TABLE ---
     public static final DeferredBlock<AssemblyTableBlock> ASSEMBLY_TABLE = BLOCKS.register("assembly_table",

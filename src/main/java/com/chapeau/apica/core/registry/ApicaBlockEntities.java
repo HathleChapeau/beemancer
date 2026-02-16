@@ -28,6 +28,7 @@ import com.chapeau.apica.common.blockentity.alchemy.PoweredCentrifugeBlockEntity
 import com.chapeau.apica.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
+import com.chapeau.apica.common.block.resonator.ResonatorBlockEntity;
 import com.chapeau.apica.common.block.statue.BeeStatueBlockEntity;
 import com.chapeau.apica.common.blockentity.mount.AssemblyTableBlockEntity;
 import com.chapeau.apica.common.blockentity.extractor.ExtractorHeartBlockEntity;
@@ -314,6 +315,14 @@ public class ApicaBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             AssemblyTableBlockEntity::new,
                             ApicaBlocks.ASSEMBLY_TABLE.get()
+                    ).build(null));
+
+    // --- RESONATOR ---
+    public static final Supplier<BlockEntityType<ResonatorBlockEntity>> RESONATOR =
+            BLOCK_ENTITIES.register("resonator",
+                    () -> BlockEntityType.Builder.of(
+                            ResonatorBlockEntity::new,
+                            ApicaBlocks.RESONATOR.get()
                     ).build(null));
 
     // --- BEE STATUE ---

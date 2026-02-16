@@ -107,6 +107,7 @@ public class ApicaCreativeTabs {
     private static void addCodexAndTools(CreativeModeTab.Output output) {
         output.accept(ApicaItems.CODEX.get());
         output.accept(ApicaItems.SCOOP.get());
+        output.accept(ApicaItems.RESONATOR.get());
     }
 
     private static void addBees(CreativeModeTab.Output output) {

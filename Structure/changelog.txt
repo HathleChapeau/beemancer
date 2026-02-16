@@ -3,6 +3,22 @@
 ################################################################################
 
 ================================================================================
+2026-02-16 - Resonator Block
+================================================================================
+
+Ajouts:
+- ResonatorBlock + ResonatorBlockEntity: bloc avec GUI interactive
+- ResonatorMenu: menu sans slots, sync 4 parametres via ContainerData
+- ResonatorScreen: GUI avec waveform display, slider Hz, 3 potards rotatifs
+- WaveformRenderer: moteur de rendu d'onde par synthese additive (Fourier)
+  - Harmoniques impaires (3e,5e,7e...) avec amplitude 1/n
+  - Scrolling temps reel, glow effect, grille de reference
+- ResonatorUpdatePacket: packet C2S pour sync parametres
+- Assets: blockstate, models, loot table, lang EN/FR
+- Ajout au creative tab (section tools)
+Registres: ApicaBlocks (+1), ApicaItems (+1), ApicaBlockEntities (+1), ApicaMenus (+1)
+
+================================================================================
 2026-02-15 - Bee Behavior & Hive Improvements (6 propositions)
 ================================================================================
 

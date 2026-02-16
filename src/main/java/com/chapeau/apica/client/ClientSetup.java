@@ -23,6 +23,7 @@ import com.chapeau.apica.client.gui.screen.alchemy.CrystallizerScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.HoneyTankScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.InfuserScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.ManualCentrifugeScreen;
+import com.chapeau.apica.client.gui.screen.ResonatorScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.MultiblockTankScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.PoweredCentrifugeScreen;
 import com.chapeau.apica.client.gui.screen.storage.NetworkInterfaceScreen;
@@ -143,6 +144,9 @@ public class ClientSetup {
         event.register(ApicaMenus.ALEMBIC.get(), AlembicScreen::new);
         event.register(ApicaMenus.INFUSER.get(), InfuserScreen::new);
         event.register(ApicaMenus.MULTIBLOCK_TANK.get(), MultiblockTankScreen::new);
+
+        // Resonator
+        event.register(ApicaMenus.RESONATOR.get(), ResonatorScreen::new);
     }
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {

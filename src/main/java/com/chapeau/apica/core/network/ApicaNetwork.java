@@ -16,6 +16,7 @@ import com.chapeau.apica.core.network.packets.StorageRequestPacket;
 import com.chapeau.apica.core.network.packets.InterfaceActionPacket;
 import com.chapeau.apica.core.network.packets.HoverbikeVariantPacket;
 import com.chapeau.apica.core.network.packets.StorageTaskCancelPacket;
+import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
 import com.chapeau.apica.core.network.packets.StorageTasksSyncPacket;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -64,6 +65,12 @@ public class ApicaNetwork {
                 HoverbikeVariantPacket.TYPE,
                 HoverbikeVariantPacket.STREAM_CODEC,
                 HoverbikeVariantPacket::handle
+        );
+
+        registrar.playToServer(
+                ResonatorUpdatePacket.TYPE,
+                ResonatorUpdatePacket.STREAM_CODEC,
+                ResonatorUpdatePacket::handle
         );
 
         // Server to Client packets
