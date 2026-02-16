@@ -14,6 +14,7 @@
  * UTILISÉ PAR:
  * - MultiblockPattern (définition patterns)
  * - MultiblockValidator (validation)
+ * - MultiblockSection (rendu codex book)
  *
  * ============================================================
  */
@@ -65,36 +66,55 @@ public class BlockMatcher {
     }
 
     /**
+     * Matcher qui stocke la référence au bloc pour le rendu (codex multiblock module).
+     */
+    public static class BlockMatcherImpl implements Matcher {
+        private final Supplier<? extends Block> blockSupplier;
+
+        BlockMatcherImpl(Supplier<? extends Block> blockSupplier) {
+            this.blockSupplier = blockSupplier;
+        }
+
+        @Override
+        public boolean matches(Level level, BlockPos pos) {
+            return level.getBlockState(pos).is(blockSupplier.get());
+        }
+
+        public Block getBlock() {
+            return blockSupplier.get();
+        }
+    }
+
+    /**
+     * Retourne le bloc associé à un matcher, ou null si le matcher n'est pas un BlockMatcherImpl.
+     */
+    public static Block getDisplayBlock(Matcher matcher) {
+        if (matcher instanceof BlockMatcherImpl impl) {
+            return impl.getBlock();
+        }
+        return null;
+    }
+
+    /**
      * Accepte un bloc spécifique.
      */
     public static Matcher block(Supplier<? extends Block> blockSupplier) {
-        return (level, pos) -> level.getBlockState(pos).is(blockSupplier.get());
+        return new BlockMatcherImpl(blockSupplier);
     }
 
     /**
      * Accepte un escalier pointant dans une direction spécifique.
      */
     public static Matcher stairFacing(Supplier<? extends Block> blockSupplier, Direction facing) {
-        return (level, pos) -> {
-            BlockState state = level.getBlockState(pos);
-
-            if (!state.is(blockSupplier.get())) {
-                return false;
+        return new BlockMatcherImpl(blockSupplier) {
+            @Override
+            public boolean matches(Level level, BlockPos pos) {
+                BlockState state = level.getBlockState(pos);
+                if (!state.is(blockSupplier.get())) return false;
+                if (state.hasProperty(StairBlock.FACING) && state.getValue(StairBlock.FACING) != facing) return false;
+                if (state.hasProperty(StairBlock.HALF) && state.getValue(StairBlock.HALF) != Half.BOTTOM) return false;
+                return true;
             }
-
-            if (state.hasProperty(StairBlock.FACING)) {
-                if (state.getValue(StairBlock.FACING) != facing) {
-                    return false;
-                }
-            }
-
-            if (state.hasProperty(StairBlock.HALF)) {
-                if (state.getValue(StairBlock.HALF) != Half.BOTTOM) {
-                    return false;
-                }
-            }
-
-            return true;
         };
     }
 
@@ -133,6 +153,6 @@ public class BlockMatcher {
      * Accepte une slab (top ou bottom).
      */
     public static Matcher slab(Supplier<? extends Block> blockSupplier) {
-        return (level, pos) -> level.getBlockState(pos).is(blockSupplier.get());
+        return new BlockMatcherImpl(blockSupplier);
     }
 }

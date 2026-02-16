@@ -20,6 +20,11 @@
     {
       "type": "craft",
       "result": "apica:altar_heart"
+    },
+    {
+      "type": "multiblock",
+      "pattern": "honey_altar",
+      "controller": "apica:altar_heart"
     }
   ],
   "sticky_notes": []

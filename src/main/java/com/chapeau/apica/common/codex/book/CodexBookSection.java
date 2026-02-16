@@ -36,7 +36,8 @@ public abstract class CodexBookSection {
         PAGE_BREAK("page_break"),
         HANDRAW_LINE("handraw_line"),
         CRAFT("craft"),
-        PROCESS("process");
+        PROCESS("process"),
+        MULTIBLOCK("multiblock");
 
         private final String id;
 
@@ -100,6 +101,7 @@ public abstract class CodexBookSection {
             case HANDRAW_LINE -> new HandrawLineSection();
             case CRAFT -> CraftSection.fromJson(json);
             case PROCESS -> ProcessSection.fromJson(json);
+            case MULTIBLOCK -> MultiblockSection.fromJson(json);
         };
     }
 }

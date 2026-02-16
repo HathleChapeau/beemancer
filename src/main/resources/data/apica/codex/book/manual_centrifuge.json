@@ -23,7 +23,8 @@
     },
     {
       "type": "craft",
-      "result": "apica:crank"
+      "result": "apica:crank",
+      "height": -20
     },
     {
       "type": "process",

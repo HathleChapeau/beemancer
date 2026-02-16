@@ -34,7 +34,7 @@ import java.util.Set;
 public class CodexDebugQuestPanel {
 
     private static final int PANEL_WIDTH = 320;
-    private static final int PANEL_GAP = -40;
+    private static final int PANEL_GAP = -10;
     private static final int LINE_HEIGHT = 11;
     private static final int ENTRY_SPACING = 4;
     private static final int LINES_PER_ENTRY = 3;
@@ -66,7 +66,7 @@ public class CodexDebugQuestPanel {
      */
     public void rebuild(List<CodexNode> nodes, Set<String> completedQuests,
                         int frameRightX, int frameY, int frameHeight) {
-        this.panelX = frameRightX + PANEL_GAP - 50;
+        this.panelX = frameRightX + 30;
         this.panelY = frameY;
         this.panelHeight = frameHeight;
         this.scrollOffset = 0;

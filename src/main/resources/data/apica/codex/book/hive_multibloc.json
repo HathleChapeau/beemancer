@@ -10,6 +10,14 @@
     {
       "type": "text",
       "key": "codex.apica.apica.hive_multibloc.lore.p2"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "multiblock",
+      "pattern": "hive_multiblock",
+      "controller": "apica:hive_multiblock"
     }
   ],
   "sticky_notes": []

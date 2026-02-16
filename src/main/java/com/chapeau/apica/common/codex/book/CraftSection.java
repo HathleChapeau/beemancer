@@ -87,12 +87,14 @@ public class CraftSection extends CodexBookSection {
     // ============================================================
 
     private final String resultItem;
+    private final int heightOffset;
     private boolean resolved = false;
     private ItemStack resultStack = ItemStack.EMPTY;
     private ItemStack[] gridStacks = new ItemStack[9];
 
-    public CraftSection(String resultItem) {
+    public CraftSection(String resultItem, int heightOffset) {
         this.resultItem = resultItem;
+        this.heightOffset = heightOffset;
         for (int i = 0; i < 9; i++) gridStacks[i] = ItemStack.EMPTY;
     }
 
@@ -104,7 +106,7 @@ public class CraftSection extends CodexBookSection {
     @Override
     public int getHeight(Font font, int pageWidth) {
         int resultHeight = Math.round(ITEM_RENDER_SIZE * RESULT_SCALE) + RESULT_PADDING_BOTTOM;
-        return resultHeight + BG_HEIGHT + PADDING_BOTTOM;
+        return resultHeight + BG_HEIGHT + PADDING_BOTTOM + heightOffset;
     }
 
     @Override
@@ -210,6 +212,7 @@ public class CraftSection extends CodexBookSection {
 
     public static CraftSection fromJson(JsonObject json) {
         String result = json.has("result") ? json.get("result").getAsString() : "";
-        return new CraftSection(result);
+        int height = json.has("height") ? json.get("height").getAsInt() : 0;
+        return new CraftSection(result, height);
     }
 }
