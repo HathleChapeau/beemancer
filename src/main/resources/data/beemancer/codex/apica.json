@@ -61,7 +61,7 @@
     {
       "id": "hive_multibloc",
       "position": {"x": -2, "y": -1},
-      "icon": "beemancer:textures/block/controlled_hive.png",
+      "icon": "beemancer:textures/block/machines/hive_multiblock.png",
       "category": "NORMAL",
       "parent": "altar",
       "hidden_until_parent_unlocked": false,
