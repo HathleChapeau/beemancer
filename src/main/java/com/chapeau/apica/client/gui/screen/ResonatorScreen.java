@@ -120,14 +120,11 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        // Offset main GUI to the right to leave room for debug panel
-        int totalW = PANEL_W + PANEL_GAP + GUI_W;
-        int baseX = (width - totalW) / 2;
-        int x = baseX + PANEL_W + PANEL_GAP;
+        int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        // Debug panel (left side)
-        renderDebugPanel(g, baseX, y);
+        // Debug panel (left of main GUI)
+        renderDebugPanel(g, x - PANEL_GAP - PANEL_W, y);
 
         // Background
         GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, GUI_W, GUI_H);
@@ -325,17 +322,11 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     // INTERACTION
     // =========================================================================
 
-    /** Calcule le X du coin gauche du GUI principal (decale par le panel debug). */
-    private int getGuiX() {
-        int totalW = PANEL_W + PANEL_GAP + GUI_W;
-        return (width - totalW) / 2 + PANEL_W + PANEL_GAP;
-    }
-
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
 
-        int x = getGuiX();
+        int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
         // Check slider
@@ -377,7 +368,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (button != 0 || dragIndex < 0) return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
 
-        int x = getGuiX();
+        int x = (width - imageWidth) / 2;
 
         if (dragIndex == 0) {
             updateSliderFromMouse(mouseX, x);
@@ -416,7 +407,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        int x = getGuiX();
+        int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
         int knobBaseX = x + GUI_W / 2;
         int ky = y + KNOB_Y;
