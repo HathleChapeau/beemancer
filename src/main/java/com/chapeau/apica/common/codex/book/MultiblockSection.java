@@ -22,10 +22,12 @@
  */
 package com.chapeau.apica.common.codex.book;
 
+import com.chapeau.apica.Apica;
 import com.chapeau.apica.core.multiblock.BlockMatcher;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
 import com.google.gson.JsonObject;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Vec3i;
@@ -40,10 +42,14 @@ import java.util.List;
 
 public class MultiblockSection extends CodexBookSection {
 
-    private static final float ITEM_SCALE = 0.85f;
+    private static final ResourceLocation AIR_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            Apica.MOD_ID, "textures/gui/air.png");
+    private static final int AIR_TEX_SIZE = 16;
+
+    private static final float ITEM_SCALE = 1.28f;
     private static final int SPACING_X = 11;
     private static final int SPACING_Z = 6;
-    private static final int SPACING_Y_UP = 14;
+    private static final int SPACING_Y_UP = 22;
     private static final int PADDING_TOP = 4;
     private static final int PADDING_BOTTOM = 4;
     private static final int ITEM_SIZE = 16;
@@ -87,11 +93,16 @@ public class MultiblockSection extends CodexBookSection {
         for (DisplayElement elem : displayElements) {
             int drawX = centerX + elem.px;
             int drawY = originY + elem.py;
-            renderScaledItem(graphics, elem.stack, drawX, drawY, ITEM_SCALE);
+
+            if (elem.isAir) {
+                renderAirBlock(graphics, drawX, drawY, ITEM_SCALE);
+            } else {
+                renderScaledItem(graphics, elem.stack, drawX, drawY, ITEM_SCALE);
+            }
         }
 
-        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
-        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
     }
 
     private void renderScaledItem(GuiGraphics graphics, ItemStack stack, int x, int y, float scale) {
@@ -101,8 +112,18 @@ public class MultiblockSection extends CodexBookSection {
         graphics.renderItem(stack, 0, 0);
         graphics.pose().popPose();
 
-        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
-        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+    }
+
+    private void renderAirBlock(GuiGraphics graphics, int x, int y, float scale) {
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0);
+        graphics.pose().scale(scale, scale, 1.0f);
+        graphics.blit(AIR_TEXTURE, 0, 0, 0, 0, AIR_TEX_SIZE, AIR_TEX_SIZE, AIR_TEX_SIZE, AIR_TEX_SIZE);
+        graphics.pose().popPose();
     }
 
     private void resolve() {
@@ -112,19 +133,26 @@ public class MultiblockSection extends CodexBookSection {
         MultiblockPattern pattern = MultiblockPatterns.get(patternId);
         if (pattern == null) return;
 
-        // Collecter les elements non-air avec leur bloc
+        // Collecter TOUS les elements (air et non-air)
         for (MultiblockPattern.PatternElement element : pattern.getElements()) {
-            if (BlockMatcher.isAirMatcher(element.matcher())) continue;
-
-            Block block = BlockMatcher.getDisplayBlock(element.matcher());
-            if (block == null) continue;
-
-            ItemStack stack = new ItemStack(block.asItem());
-            if (stack.isEmpty()) continue;
-
             Vec3i offset = element.offset();
-            displayElements.add(new DisplayElement(
-                    offset.getX(), offset.getY(), offset.getZ(), stack, 0, 0));
+            boolean isAir = BlockMatcher.isAirMatcher(element.matcher());
+
+            if (isAir) {
+                displayElements.add(new DisplayElement(
+                        offset.getX(), offset.getY(), offset.getZ(),
+                        ItemStack.EMPTY, true, 0, 0));
+            } else {
+                Block block = BlockMatcher.getDisplayBlock(element.matcher());
+                if (block == null) continue;
+
+                ItemStack stack = new ItemStack(block.asItem());
+                if (stack.isEmpty()) continue;
+
+                displayElements.add(new DisplayElement(
+                        offset.getX(), offset.getY(), offset.getZ(),
+                        stack, false, 0, 0));
+            }
         }
 
         // Ajouter le controleur (0,0,0) qui n'est pas dans le pattern
@@ -134,7 +162,8 @@ public class MultiblockSection extends CodexBookSection {
             if (ctrlBlock != null) {
                 ItemStack ctrlStack = new ItemStack(ctrlBlock.asItem());
                 if (!ctrlStack.isEmpty()) {
-                    displayElements.add(new DisplayElement(0, 0, 0, ctrlStack, 0, 0));
+                    displayElements.add(new DisplayElement(
+                            0, 0, 0, ctrlStack, false, 0, 0));
                 }
             }
         }
@@ -151,7 +180,8 @@ public class MultiblockSection extends CodexBookSection {
             int px = (elem.gridX - elem.gridZ) * SPACING_X;
             int py = (elem.gridX + elem.gridZ) * SPACING_Z - elem.gridY * SPACING_Y_UP;
             displayElements.set(i, new DisplayElement(
-                    elem.gridX, elem.gridY, elem.gridZ, elem.stack, px, py));
+                    elem.gridX, elem.gridY, elem.gridZ,
+                    elem.stack, elem.isAir, px, py));
 
             minPx = Math.min(minPx, px);
             maxPx = Math.max(maxPx, px + scaledItem);
@@ -177,13 +207,16 @@ public class MultiblockSection extends CodexBookSection {
     private static class DisplayElement {
         final int gridX, gridY, gridZ;
         final ItemStack stack;
+        final boolean isAir;
         final int px, py;
 
-        DisplayElement(int gridX, int gridY, int gridZ, ItemStack stack, int px, int py) {
+        DisplayElement(int gridX, int gridY, int gridZ, ItemStack stack,
+                       boolean isAir, int px, int py) {
             this.gridX = gridX;
             this.gridY = gridY;
             this.gridZ = gridZ;
             this.stack = stack;
+            this.isAir = isAir;
             this.px = px;
             this.py = py;
         }
