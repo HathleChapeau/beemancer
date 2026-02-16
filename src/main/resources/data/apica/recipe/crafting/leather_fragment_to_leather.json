@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:leather_fragment" },
+    { "item": "apica:leather_fragment" },
+    { "item": "apica:leather_fragment" },
+    { "item": "apica:leather_fragment" }
+  ],
+  "result": { "id": "minecraft:leather", "count": 1 }
+}

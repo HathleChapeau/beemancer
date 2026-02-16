@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:quartz_fragment" },
+    { "item": "apica:quartz_fragment" },
+    { "item": "apica:quartz_fragment" },
+    { "item": "apica:quartz_fragment" }
+  ],
+  "result": { "id": "minecraft:quartz", "count": 1 }
+}

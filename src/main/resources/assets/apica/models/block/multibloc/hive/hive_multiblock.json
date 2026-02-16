@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "apica:block/machines/hiveblock_end",
+    "front": "apica:block/machines/hiveblock_side",
+    "particle": "apica:block/machines/hiveblock_side",
+    "side": "apica:block/machines/hiveblock_side",
+    "top": "apica:block/machines/hiveblock_end"
+  }
+}

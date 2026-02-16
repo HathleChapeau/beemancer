@@ -1,0 +1,50 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "cutout",
+  "textures": {
+    "conduit": "apica:block/altar/altar_conduit",
+    "honey": "apica:block/honey_no_alpha",
+    "particle": "apica:block/altar/honey_crystal_conduit"
+  },
+  "elements": [
+    {
+      "name": "Conduit",
+      "from": [3, 3, 3],
+      "to": [13, 13, 13],
+      "faces": {
+        "north": {"texture": "#conduit", "uv": [0,0,16,16]},
+        "east": {"texture": "#conduit", "uv": [0,0,16,16]},
+        "south": {"texture": "#conduit", "uv": [0,0,16,16]},
+        "west": {"texture": "#conduit", "uv": [0,0,16,16]},
+        "up": {"texture": "#conduit", "uv": [0,0,16,16]},
+        "down": {"texture": "#conduit", "uv": [0,0,16,16]}
+      }
+    },
+    {
+      "name": "Conduit",
+      "from": [3, 13, 3],
+      "to": [13, 3, 13],
+      "faces": {
+        "north": {"texture": "#conduit", "uv": [0,0,16,16]},
+        "east": {"texture": "#conduit", "uv": [0,0,16,16]},
+        "south": {"texture": "#conduit", "uv": [0,0,16,16]},
+        "west": {"texture": "#conduit", "uv": [0,0,16,16]},
+        "up": {"texture": "#conduit", "uv": [0,0,16,16]},
+        "down": {"texture": "#conduit", "uv": [0,0,16,16]}
+      }
+    },
+    {
+      "name": "Conduit",
+      "from": [4, 4, 4],
+      "to": [12, 12, 12],
+      "faces": {
+        "north": {"texture": "#honey"},
+        "east": {"texture": "#honey"},
+        "south": {"texture": "#honey"},
+        "west": {"texture": "#honey"},
+        "up": {"texture": "#honey"},
+        "down": {"texture": "#honey"}
+      }
+    }
+  ]
+}

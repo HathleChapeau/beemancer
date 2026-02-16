@@ -1,0 +1,6 @@
+{
+  "type": "apica:crystallizing",
+  "fluid_ingredient": { "fluid": "apica:nectar", "amount": 1000 },
+  "result": { "id": "apica:nectar_crystal" },
+  "processing_time": 400
+}

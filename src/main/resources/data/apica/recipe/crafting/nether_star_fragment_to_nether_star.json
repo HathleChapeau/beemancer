@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:nether_star_fragment" },
+    { "item": "apica:nether_star_fragment" },
+    { "item": "apica:nether_star_fragment" },
+    { "item": "apica:nether_star_fragment" }
+  ],
+  "result": { "id": "minecraft:nether_star", "count": 1 }
+}

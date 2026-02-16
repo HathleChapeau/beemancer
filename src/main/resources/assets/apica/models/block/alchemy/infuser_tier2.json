@@ -1,0 +1,8 @@
+{
+  "parent": "apica:block/alchemy/infuser",
+  "textures": {
+    "top": "apica:block/alchemy/infuser_tier2_top",
+    "bottom": "apica:block/alchemy/powered_centrifuge_tier2_bottom",
+    "frame": "apica:block/alchemy/powered_centrifuge_tier2_side"
+  }
+}

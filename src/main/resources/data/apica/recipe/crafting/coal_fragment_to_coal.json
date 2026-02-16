@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:coal_fragment" },
+    { "item": "apica:coal_fragment" },
+    { "item": "apica:coal_fragment" },
+    { "item": "apica:coal_fragment" }
+  ],
+  "result": { "id": "minecraft:coal", "count": 1 }
+}

@@ -1,0 +1,23 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.alchemy.alembic.lore.p1"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.alchemy.alembic.lore.p2"
+    },
+    {
+      "type": "craft",
+      "result": "apica:alembic_heart"
+    }
+  ],
+  "sticky_notes": []
+}

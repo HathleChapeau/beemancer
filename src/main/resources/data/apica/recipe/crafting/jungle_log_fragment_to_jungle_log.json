@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:jungle_log_fragment" },
+    { "item": "apica:jungle_log_fragment" },
+    { "item": "apica:jungle_log_fragment" },
+    { "item": "apica:jungle_log_fragment" }
+  ],
+  "result": { "id": "minecraft:jungle_log", "count": 1 }
+}

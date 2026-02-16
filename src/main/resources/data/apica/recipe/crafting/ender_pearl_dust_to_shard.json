@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "DDD",
+    "DDD",
+    "DDD"
+  ],
+  "key": {
+    "D": { "item": "apica:ender_pearl_dust" }
+  },
+  "result": { "id": "apica:ender_pearl_shard", "count": 1 }
+}

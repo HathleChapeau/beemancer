@@ -1,0 +1,204 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "base2": "apica:block/plank",
+    "base": "apica:block/altar/pedestal_side",
+    "base1": "apica:block/iron",
+    "pipe": "apica:block/honey",
+    "frame": "apica:block/iron",
+    "particle": "apica:block/iron"
+  },
+  "elements": [
+    {
+      "name": "Base",
+      "from": [2, 0, 2],
+      "to": [14, 14, 14],
+      "faces": {
+        "north": {"texture": "#base"},
+        "east": {"texture": "#base"},
+        "south": {"texture": "#base"},
+        "west": {"texture": "#base"}
+      }
+    },{
+      "name": "Base1",
+      "from": [1, 13, 1],
+      "to": [15, 14, 15],
+      "faces": {
+        "north": {"texture": "#base1"},
+        "east": {"texture": "#base1"},
+        "south": {"texture": "#base1"},
+        "west": {"texture": "#base1"},
+        "up": {"texture": "#base1"},
+        "down": {"texture": "#base1"}
+      }
+    },{
+      "name": "Base2",
+      "from": [1, 0, 1],
+      "to": [15, 1, 15],
+      "faces": {
+        "north": {"texture": "#base1"},
+        "east": {"texture": "#base1"},
+        "south": {"texture": "#base1"},
+        "west": {"texture": "#base1"},
+        "up": {"texture": "#base1"},
+        "down": {"texture": "#base1"}
+      }
+    },
+    {
+      "name": "pipe_1",
+      "from": [-1, 2, 6],
+      "to": [1, 12, 8],
+      "faces": {
+        "north": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "east": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "south": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "west": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "up": {"texture": "#pipe", "uv": [7, 7, 9, 9]},
+        "down": {"texture": "#pipe", "uv": [7, 7, 9, 9]}
+      }
+    },
+    {
+      "name": "pipe_1_entrance_1",
+      "from": [1, 1.5, 5.5],
+      "to": [2, 4.5, 8.5],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "pipe_1_entrance_2",
+      "from": [1, 9.5, 5.5],
+      "to": [2, 12.5, 8.5],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "pipe_2",
+      "from": [15, 2, 6],
+      "to": [17, 10, 8],
+      "faces": {
+        "north": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "east": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "south": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "west": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "up": {"texture": "#pipe", "uv": [7, 7, 9, 9]},
+        "down": {"texture": "#pipe", "uv": [7, 7, 9, 9]}
+      }
+    },
+    {
+      "name": "pipe_2_entrance_1",
+      "from": [14, 1.5, 5.5],
+      "to": [15, 4.5, 8.5],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "pipe_2_entrance_2",
+      "from": [14, 7.5, 5.5],
+      "to": [15, 10.5, 8.5],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "pipe_3",
+      "from": [8, 3, -1],
+      "to": [10, 12, 1],
+      "faces": {
+        "north": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "east": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "south": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "west": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "up": {"texture": "#pipe", "uv": [7, 7, 9, 9]},
+        "down": {"texture": "#pipe", "uv": [7, 7, 9, 9]}
+      }
+    },
+    {
+      "name": "pipe_3_entrance_1",
+      "from": [7.5, 2.5, 1],
+      "to": [10.5, 5.5, 2],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "pipe_3_entrance_2",
+      "from": [7.5, 9.5, 1],
+      "to": [10.5, 12.5, 2],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "pipe_4",
+      "from": [8, 3, 15],
+      "to": [10, 12, 17],
+      "faces": {
+        "north": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "east": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "south": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "west": {"texture": "#pipe", "uv": [7, 2, 9, 14]},
+        "up": {"texture": "#pipe", "uv": [7, 7, 9, 9]},
+        "down": {"texture": "#pipe", "uv": [7, 7, 9, 9]}
+      }
+    },
+    {
+      "name": "pipe_4_entrance_1",
+      "from": [7.5, 2.5, 14],
+      "to": [10.5, 5.5, 15],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    },
+    {
+      "name": "pipe_4_entrance_2",
+      "from": [7.5, 9.5, 14],
+      "to": [10.5, 12.5, 15],
+      "faces": {
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
+      }
+    }
+  ]
+}

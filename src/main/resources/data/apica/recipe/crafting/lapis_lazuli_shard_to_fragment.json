@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "apica:lapis_lazuli_shard" }
+  },
+  "result": { "id": "apica:lapis_lazuli_fragment", "count": 1 }
+}

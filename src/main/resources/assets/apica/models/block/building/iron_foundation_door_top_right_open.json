@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_top_right_open",
+  "textures": {
+    "bottom": "apica:block/building/iron_foundation_door_top",
+    "top": "apica:block/building/iron_foundation_door_top"
+  }
+}

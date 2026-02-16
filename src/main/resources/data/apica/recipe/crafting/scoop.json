@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": { "item": "minecraft:stick" },
+    "W": { "tag": "minecraft:wool" }
+  },
+  "pattern": [
+    "SWS",
+    " S ",
+    " S "
+  ],
+  "result": { "id": "apica:scoop", "count": 1 }
+}

@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "apica:flower_pollen",
+    "apica:mushroom_spore",
+    "apica:tree_pollen",
+    "apica:crystal_pollen",
+    "apica:pollen_of_wind",
+    "apica:pollen_of_thunder",
+    "apica:pollen_of_water",
+    "apica:pollen_of_fire",
+    "apica:pollen_of_light",
+    "apica:pollen_of_darkness",
+    "apica:void_pollen"
+  ]
+}

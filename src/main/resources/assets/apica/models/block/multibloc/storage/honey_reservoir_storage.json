@@ -1,0 +1,39 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "cutout",
+  "textures": {
+    "top": "apica:block/storage/reservoir_top",
+    "sideTop": "apica:block/storage/reservoir_side",
+    "side": "apica:block/storage/iron_side",
+    "front": "apica:block/storage/reservoir",
+    "center": "apica:block/storage/center",
+    "end": "apica:block/storage/iron_bottom_2",
+    "particle": "apica:block/iron"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 8, 16],
+      "faces": {
+        "east": {"texture": "#front"},
+        "north": {"texture": "#side"},
+        "west": {"texture": "#front"},
+        "south": {"texture": "#side"},
+        "down": {"texture": "#end"},
+        "up": {"texture": "#top"}
+      }
+    },
+    {
+      "from": [0, 2, 4],
+      "to": [16, 12, 12],
+      "faces": {
+        "east": {"texture": "#center"},
+        "west": {"texture": "#center"},
+        "north": {"texture": "#sideTop"},
+        "south": {"texture": "#sideTop"},
+        "up": {"texture": "#sideTop"},
+        "down": {"texture": "#sideTop"}
+      }
+    }
+  ]
+}

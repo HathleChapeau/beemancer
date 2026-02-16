@@ -1,0 +1,11 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:nectar_diamond" },
+  "pedestal_items": [
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" }
+  ],
+  "result": { "id": "apica:honey_crystal" }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "apica:block/altar/honey_pedestal_column"
+  },
+  "elements": []
+}

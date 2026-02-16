@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": { "item": "apica:honeyed_iron" },
+    "W": { "item": "apica:honeyed_log" },
+    "I": { "item": "apica:infuser" },
+    "R": { "item": "apica:royal_crystal" }
+  },
+  "pattern": [ "AIA", "WRW", "AWA" ],
+  "result": { "id": "apica:infuser_tier2", "count": 1 }
+}

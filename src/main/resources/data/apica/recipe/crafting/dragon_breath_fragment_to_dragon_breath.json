@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:dragon_breath_fragment" },
+    { "item": "apica:dragon_breath_fragment" },
+    { "item": "apica:dragon_breath_fragment" },
+    { "item": "apica:dragon_breath_fragment" }
+  ],
+  "result": { "id": "minecraft:dragon_breath", "count": 1 }
+}

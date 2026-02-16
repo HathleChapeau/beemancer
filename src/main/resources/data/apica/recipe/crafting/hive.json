@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": { "tag": "minecraft:planks" },
+    "H": { "item": "minecraft:honeycomb" }
+  },
+  "pattern": [
+    "PPP",
+    "PHP",
+    "PPP"
+  ],
+  "result": { "id": "apica:magic_hive", "count": 1 }
+}

@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "working=false": { "model": "apica:block/alchemy/powered_centrifuge_tier2" },
+    "working=true": { "model": "apica:block/alchemy/powered_centrifuge_tier2_working" }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "apica:block/storage/storage_hive",
+  "textures": {
+    "core": "apica:block/storage/hive_side_t2"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "spinning=false": { "model": "apica:block/alchemy/manual_centrifuge" },
+    "spinning=true": { "model": "apica:block/alchemy/manual_centrifuge" }
+  }
+}

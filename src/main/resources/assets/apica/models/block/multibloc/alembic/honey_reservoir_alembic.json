@@ -1,0 +1,47 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "gold": "apica:block/royal_gold_block",
+    "glass": "apica:block/building/honeyed_glass",
+    "particle": "apica:block/building/honeyed_glass"
+  },
+  "elements": [
+    {
+      "name": "Glass",
+      "from": [2, 4, 2],
+      "to": [14, 24, 14],
+      "faces": {
+        "north": {"texture": "#glass"},
+        "east": {"texture": "#glass"},
+        "south": {"texture": "#glass"},
+        "west": {"texture": "#glass"}
+      }
+    },
+    {
+      "name": "Bottom",
+      "from": [1, 2, 1],
+      "to": [15, 4, 15],
+      "faces": {
+        "north": {"texture": "#gold"},
+        "east": {"texture": "#gold"},
+        "south": {"texture": "#gold"},
+        "west": {"texture": "#gold"},
+        "up": {"texture": "#gold"},
+        "down": {"texture": "#gold"}
+      }
+    },
+    {
+      "name": "Top",
+      "from": [1, 24, 1],
+      "to": [15, 26, 15],
+      "faces": {
+        "north": {"texture": "#gold"},
+        "east": {"texture": "#gold"},
+        "south": {"texture": "#gold"},
+        "west": {"texture": "#gold"},
+        "up": {"texture": "#gold"},
+        "down": {"texture": "#gold"}
+      }
+    }
+  ]
+}

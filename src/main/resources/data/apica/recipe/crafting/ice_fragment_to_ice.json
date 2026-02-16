@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:ice_fragment" },
+    { "item": "apica:ice_fragment" },
+    { "item": "apica:ice_fragment" },
+    { "item": "apica:ice_fragment" }
+  ],
+  "result": { "id": "minecraft:ice", "count": 1 }
+}

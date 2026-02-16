@@ -1,0 +1,7 @@
+{
+  "type": "apica:infusing",
+  "ingredient": { "tag": "c:stones" },
+  "fluid_ingredient": { "fluid": "apica:honey", "amount": 500 },
+  "result": { "id": "apica:honeyed_stone" },
+  "processing_time": 200
+}

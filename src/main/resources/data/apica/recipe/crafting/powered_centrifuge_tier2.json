@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": { "item": "apica:honeyed_iron" },
+    "C": { "item": "apica:powered_centrifuge" },
+    "H": { "item": "apica:honey_crystal" }
+  },
+  "pattern": [ "A A", "ACA", "AHA" ],
+  "result": { "id": "apica:powered_centrifuge_tier2", "count": 1 }
+}

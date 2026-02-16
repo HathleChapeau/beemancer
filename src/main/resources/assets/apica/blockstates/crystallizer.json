@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "active=false": { "model": "apica:block/alchemy/crystallizer" },
+    "active=true": { "model": "apica:block/alchemy/crystallizer_active" }
+  }
+}

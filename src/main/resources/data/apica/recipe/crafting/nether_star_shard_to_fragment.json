@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "apica:nether_star_shard" }
+  },
+  "result": { "id": "apica:nether_star_fragment", "count": 1 }
+}

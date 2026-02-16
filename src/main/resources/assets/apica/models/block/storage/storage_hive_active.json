@@ -1,0 +1,5 @@
+{
+  "parent": "apica:block/storage/storage_hive",
+  "textures": {
+  }
+}

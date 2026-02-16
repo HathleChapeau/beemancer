@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:obsidian_fragment" },
+    { "item": "apica:obsidian_fragment" },
+    { "item": "apica:obsidian_fragment" },
+    { "item": "apica:obsidian_fragment" }
+  ],
+  "result": { "id": "minecraft:obsidian", "count": 1 }
+}

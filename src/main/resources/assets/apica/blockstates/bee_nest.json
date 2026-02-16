@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "species=meadow": { "model": "apica:block/bee_nest_meadow" },
+    "species=forest": { "model": "apica:block/bee_nest_forest" },
+    "species=rocky": { "model": "apica:block/bee_nest_rocky" },
+    "species=river": { "model": "apica:block/bee_nest_river" },
+    "species=dune": { "model": "apica:block/bee_nest_dune" },
+    "species=nether": { "model": "apica:block/bee_nest_nether" },
+    "species=end": { "model": "apica:block/bee_nest_end" }
+  }
+}

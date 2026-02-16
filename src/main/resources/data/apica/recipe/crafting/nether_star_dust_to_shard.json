@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "DDD",
+    "DDD",
+    "DDD"
+  ],
+  "key": {
+    "D": { "item": "apica:nether_star_dust" }
+  },
+  "result": { "id": "apica:nether_star_shard", "count": 1 }
+}

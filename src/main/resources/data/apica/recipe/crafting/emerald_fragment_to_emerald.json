@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:emerald_fragment" },
+    { "item": "apica:emerald_fragment" },
+    { "item": "apica:emerald_fragment" },
+    { "item": "apica:emerald_fragment" }
+  ],
+  "result": { "id": "minecraft:emerald", "count": 1 }
+}

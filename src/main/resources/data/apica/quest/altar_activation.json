@@ -1,0 +1,7 @@
+{
+  "type": "altar",
+  "parameter": "activate",
+  "unlocks": [
+    "codex:altar_rituals"
+  ]
+}

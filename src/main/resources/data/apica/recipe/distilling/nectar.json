@@ -1,0 +1,9 @@
+{
+  "type": "apica:distilling",
+  "fluid_ingredients": [
+    { "fluid": "apica:honey", "amount": 500 },
+    { "fluid": "apica:royal_jelly", "amount": 250 }
+  ],
+  "fluid_result": { "fluid": "apica:nectar", "amount": 500 },
+  "processing_time": 80
+}

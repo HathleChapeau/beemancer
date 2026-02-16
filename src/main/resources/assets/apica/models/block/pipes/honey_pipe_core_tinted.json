@@ -1,0 +1,6 @@
+{
+  "parent": "apica:block/pipes/honey_pipe_core",
+  "textures": {
+    "core": "apica:block/pipes/pipe_core_white"
+  }
+}

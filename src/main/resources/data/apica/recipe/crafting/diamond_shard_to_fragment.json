@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "apica:diamond_shard" }
+  },
+  "result": { "id": "apica:diamond_fragment", "count": 1 }
+}

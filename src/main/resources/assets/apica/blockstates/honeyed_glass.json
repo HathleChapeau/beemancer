@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "multiblock=none": { "model": "apica:block/building/honeyed_glass" },
+    "multiblock=alembic": { "model": "apica:block/building/honeyed_glass_alembic" }
+  }
+}

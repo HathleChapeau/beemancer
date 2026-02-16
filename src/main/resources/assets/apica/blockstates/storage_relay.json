@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "apica:block/storage/storage_relay"
+    }
+  }
+}

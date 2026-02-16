@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "apica:item/combproduct/dark_oak_log_fragment"
+  }
+}

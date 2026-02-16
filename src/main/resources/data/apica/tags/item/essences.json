@@ -1,0 +1,24 @@
+{
+  "replace": false,
+  "values": [
+    "apica:lesser_drop_essence",
+    "apica:drop_essence",
+    "apica:greater_drop_essence",
+    "apica:perfect_drop_essence",
+    "apica:lesser_speed_essence",
+    "apica:speed_essence",
+    "apica:greater_speed_essence",
+    "apica:perfect_speed_essence",
+    "apica:lesser_foraging_essence",
+    "apica:foraging_essence",
+    "apica:greater_foraging_essence",
+    "apica:perfect_foraging_essence",
+    "apica:lesser_tolerance_essence",
+    "apica:tolerance_essence",
+    "apica:greater_tolerance_essence",
+    "apica:perfect_tolerance_essence",
+    "apica:diurnal_essence",
+    "apica:nocturnal_essence",
+    "apica:insomnia_essence"
+  ]
+}

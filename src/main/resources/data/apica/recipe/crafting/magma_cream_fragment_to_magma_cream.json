@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:magma_cream_fragment" },
+    { "item": "apica:magma_cream_fragment" },
+    { "item": "apica:magma_cream_fragment" },
+    { "item": "apica:magma_cream_fragment" }
+  ],
+  "result": { "id": "minecraft:magma_cream", "count": 1 }
+}

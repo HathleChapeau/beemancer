@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": { "item": "apica:honeyed_log" },
+    "A": { "item": "apica:honeyed_iron" },
+    "G": { "item": "apica:honeyed_glass" },
+    "C": { "item": "apica:honey_crystal" }
+  },
+  "pattern": [ "AWA", "GCG", "AWA" ],
+  "result": { "id": "apica:multiblock_tank", "count": 2 }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": { "item": "apica:honeyed_planks" },
+    "R": { "item": "apica:royal_crystal" }
+  },
+  "pattern": [ "PPP", "PRP", "PPP" ],
+  "result": { "id": "apica:hive_multiblock", "count": 2 }
+}

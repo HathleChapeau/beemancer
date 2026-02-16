@@ -1,0 +1,6 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:debug_wand" },
+  "pedestal_items": [],
+  "result": { "id": "apica:debug_wand" }
+}

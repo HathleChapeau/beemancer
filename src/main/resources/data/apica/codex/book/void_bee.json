@@ -1,0 +1,29 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.bees.void_bee.lore"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.bees.void_bee.desc"
+    },
+    {
+      "type": "model",
+      "species": "void",
+      "height": -20,
+      "scale": -90,
+      "y": -80
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "stats",
+      "species": "void"
+    }
+  ]
+}

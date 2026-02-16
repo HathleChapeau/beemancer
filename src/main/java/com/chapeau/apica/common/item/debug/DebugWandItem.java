@@ -1,0 +1,254 @@
+/**
+ * ============================================================
+ * [DebugWandItem.java]
+ * Description: Baguette de debug avec 9 valeurs ajustables en temps réel
+ * ============================================================
+ *
+ * UTILISÉ PAR:
+ * - DebugPanelRenderer.java: Affichage HUD
+ * - DebugKeyHandler.java: Gestion des touches
+ * - MagicBeeItemRenderer.java: Utilisation des valeurs pour ajustements
+ *
+ * ============================================================
+ */
+package com.chapeau.apica.common.item.debug;
+
+import com.chapeau.apica.client.LogicCostVisualizer;
+import com.chapeau.apica.client.RenderCostVisualizer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
+
+/**
+ * Baguette de debug permettant d'ajuster 9 valeurs en temps réel.
+ *
+ * Utilisation:
+ * - Tenir la baguette en main pour voir le panneau
+ * - Touches 1-9 du PAVÉ NUMÉRIQUE pour sélectionner une valeur
+ * - Flèche gauche/droite pour ajuster de 0.1
+ * - Shift + flèche pour ajuster de 1.0
+ */
+public class DebugWandItem extends Item {
+
+    // Valeurs par défaut
+    private static final float DEFAULT_1 = 0f;   // Pos X
+    private static final float DEFAULT_2 = 0f;   // Pos Y
+    private static final float DEFAULT_3 = 0f;   // Pos Z
+    private static final float DEFAULT_4 = 0f; // Rot X
+    private static final float DEFAULT_5 = 0f; // Rot Y
+    private static final float DEFAULT_6 = 0.0f;
+    private static final float DEFAULT_7 = 0f;   // Scale
+    private static final float DEFAULT_8 = 0.0f;
+    private static final float DEFAULT_9 = 0.0f;
+
+    // Les 9 valeurs ajustables
+    public static float value1 = DEFAULT_1;
+    public static float value2 = DEFAULT_2;
+    public static float value3 = DEFAULT_3;
+    public static float value4 = DEFAULT_4;
+    public static float value5 = DEFAULT_5;
+    public static float value6 = DEFAULT_6;
+    public static float value7 = DEFAULT_7;
+    public static float value8 = DEFAULT_8;
+    public static float value9 = DEFAULT_9;
+
+    // Index de la valeur sélectionnée (1-9)
+    public static int selectedIndex = 1;
+
+    // Index de selection du Shader (0 = no shader)
+    public static int selectedShader = 0;
+
+    // Mode d'affichage debug (toggle avec clic droit)
+    public static boolean displayDebug = false;
+
+    // --- Debug Display System ---
+    private static final Vec3 DEFAULT_DISPLAY_OFFSET = new Vec3(0, 0.6f, 0);
+    private static final int DEFAULT_DISPLAY_COLOR = 0xFFFFFFFF;
+    private static final List<DebugDisplayEntry> displayEntries = new CopyOnWriteArrayList<>();
+
+    public DebugWandItem(Properties properties) {
+        super(properties.stacksTo(1).attributes(createAttributes()));
+    }
+
+    private static ItemAttributeModifiers createAttributes() {
+        return ItemAttributeModifiers.builder()
+                .add(Attributes.ATTACK_DAMAGE,
+                        new AttributeModifier(BASE_ATTACK_DAMAGE_ID, 98.0, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.MAINHAND)
+                .add(Attributes.ATTACK_SPEED,
+                        new AttributeModifier(BASE_ATTACK_SPEED_ID, 6.0, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.MAINHAND)
+                .build();
+    }
+
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        if (level.isClientSide()) {
+            displayDebug = !displayDebug;
+        }
+        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
+    }
+
+    public static void RenderShader(int shader){
+        RenderCostVisualizer.ENABLED = false;
+        LogicCostVisualizer.ENABLED = false;;
+
+        if(shader == 1) RenderCostVisualizer.ENABLED = true;
+        if(shader == 2) LogicCostVisualizer.ENABLED = true;
+    }
+
+    /**
+     * Reset displayDebug quand la baguette n'est plus tenue.
+     * Appelé par DebugPanelRenderer.
+     */
+    public static void onNotHolding() {
+        if (displayDebug) {
+            displayDebug = false;
+        }
+    }
+
+    /**
+     * Récupère la valeur à l'index donné (1-9)
+     */
+    public static float getValue(int index) {
+        return switch (index) {
+            case 1 -> value1;
+            case 2 -> value2;
+            case 3 -> value3;
+            case 4 -> value4;
+            case 5 -> value5;
+            case 6 -> value6;
+            case 7 -> value7;
+            case 8 -> value8;
+            case 9 -> value9;
+            default -> 0f;
+        };
+    }
+
+    /**
+     * Définit la valeur à l'index donné (1-9)
+     */
+    public static void setValue(int index, float value) {
+        switch (index) {
+            case 1 -> value1 = value;
+            case 2 -> value2 = value;
+            case 3 -> value3 = value;
+            case 4 -> value4 = value;
+            case 5 -> value5 = value;
+            case 6 -> value6 = value;
+            case 7 -> value7 = value;
+            case 8 -> value8 = value;
+            case 9 -> value9 = value;
+        }
+    }
+
+    /**
+     * Ajuste la valeur sélectionnée
+     * @param delta Le montant à ajouter (positif ou négatif)
+     */
+    public static void adjustSelectedValue(float delta) {
+        float current = getValue(selectedIndex);
+        setValue(selectedIndex, Math.round((current + delta) * 100f) / 100f);
+    }
+
+    /**
+     * Sélectionne une valeur (1-9)
+     */
+    public static void selectValue(int index) {
+        if (index >= 1 && index <= 9) {
+            selectedIndex = index;
+        }
+    }
+
+    /**
+     * Remet toutes les valeurs aux valeurs par défaut
+     */
+    public static void resetAll() {
+        value1 = DEFAULT_1;
+        value2 = DEFAULT_2;
+        value3 = DEFAULT_3;
+        value4 = DEFAULT_4;
+        value5 = DEFAULT_5;
+        value6 = DEFAULT_6;
+        value7 = DEFAULT_7;
+        value8 = DEFAULT_8;
+        value9 = DEFAULT_9;
+    }
+
+    // =========================================================================
+    // DEBUG DISPLAY — addDisplay()
+    // =========================================================================
+
+    /**
+     * Enregistre un affichage debug (version complète).
+     * Appelable depuis n'importe quel constructeur (BlockEntity, Entity, etc.).
+     * L'entrée est automatiquement retirée quand positionFn renvoie null.
+     *
+     * @param positionFn fournit la position monde (null = objet supprimé → retrait auto)
+     * @param textFn     fournit le texte à afficher (exception → "Str. Error")
+     * @param offset     décalage par rapport à la position
+     * @param color      couleur ARGB du texte (ex: 0xFFFFFF00 pour jaune)
+     */
+    public static void addDisplay(Supplier<Vec3> positionFn, Supplier<String> textFn, Vec3 offset, int color) {
+        displayEntries.add(new DebugDisplayEntry(positionFn, textFn, offset, color));
+    }
+
+    /** Surcharge avec couleur par défaut (blanc). */
+    public static void addDisplay(Supplier<Vec3> positionFn, Supplier<String> textFn, Vec3 offset) {
+        addDisplay(positionFn, textFn, offset, DEFAULT_DISPLAY_COLOR);
+    }
+
+    /** Surcharge avec offset par défaut (0, 1, 0) et blanc. */
+    public static void addDisplay(Supplier<Vec3> positionFn, Supplier<String> textFn) {
+        addDisplay(positionFn, textFn, DEFAULT_DISPLAY_OFFSET, DEFAULT_DISPLAY_COLOR);
+    }
+
+    /** Surcharge BlockEntity avec offset et couleur custom. */
+    public static void addDisplay(BlockEntity be, Supplier<String> textFn, Vec3 offset, int color) {
+        addDisplay(() -> be.isRemoved() ? null : Vec3.atCenterOf(be.getBlockPos()), textFn, offset, color);
+    }
+
+    /** Surcharge BlockEntity avec offset custom, blanc. */
+    public static void addDisplay(BlockEntity be, Supplier<String> textFn, Vec3 offset) {
+        addDisplay(be, textFn, offset, DEFAULT_DISPLAY_COLOR);
+    }
+
+    /** Surcharge BlockEntity avec offset par défaut (0, 1, 0) et blanc. */
+    public static void addDisplay(BlockEntity be, Supplier<String> textFn) {
+        addDisplay(be, textFn, DEFAULT_DISPLAY_OFFSET, DEFAULT_DISPLAY_COLOR);
+    }
+
+    /** Surcharge Entity avec offset et couleur custom. */
+    public static void addDisplay(Entity entity, Supplier<String> textFn, Vec3 offset, int color) {
+        addDisplay(() -> entity.isRemoved() ? null : entity.position(), textFn, offset, color);
+    }
+
+    /** Surcharge Entity avec offset custom, blanc. */
+    public static void addDisplay(Entity entity, Supplier<String> textFn, Vec3 offset) {
+        addDisplay(entity, textFn, offset, DEFAULT_DISPLAY_COLOR);
+    }
+
+    /** Surcharge Entity avec offset par défaut (0, 1, 0) et blanc. */
+    public static void addDisplay(Entity entity, Supplier<String> textFn) {
+        addDisplay(entity, textFn, DEFAULT_DISPLAY_OFFSET, DEFAULT_DISPLAY_COLOR);
+    }
+
+    /** Retourne la liste des entrées debug display (utilisé par le renderer). */
+    public static List<DebugDisplayEntry> getDisplayEntries() {
+        return displayEntries;
+    }
+}

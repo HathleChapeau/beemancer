@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Cube",
+    "stat_1": "Hover_Acceleration",
+    "stat_1_value": 0.0,
+    "stat_2": "Run_Acceleration",
+    "stat_2_value": 0.0,
+    "model": "coeur"
+  },
+  {
+    "name": "Pyramid",
+    "stat_1": "Hover_Acceleration",
+    "stat_1_value": 0.002,
+    "stat_2": "Run_Acceleration",
+    "stat_2_value": -0.001,
+    "model": "coeur_b"
+  },
+  {
+    "name": "Crystal",
+    "stat_1": "Hover_Acceleration",
+    "stat_1_value": 0.003,
+    "stat_2": "Run_Acceleration",
+    "stat_2_value": 0.004,
+    "model": "coeur_c"
+  }
+]

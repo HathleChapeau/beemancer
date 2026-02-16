@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": { "item": "apica:honeyed_log" },
+    "G": { "item": "minecraft:glass" }
+  },
+  "pattern": [ "WGW" ],
+  "result": { "id": "apica:honey_pipe", "count": 4 }
+}

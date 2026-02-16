@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "DDD",
+    "DDD",
+    "DDD"
+  ],
+  "key": {
+    "D": { "item": "apica:dragon_breath_dust" }
+  },
+  "result": { "id": "apica:dragon_breath_shard", "count": 1 }
+}

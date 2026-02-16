@@ -1,0 +1,13 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": [
+    "minecraft:desert",
+    "minecraft:badlands",
+    "minecraft:eroded_badlands",
+    "minecraft:savanna"
+  ],
+  "features": [
+    "apica:bee_nest_dune"
+  ],
+  "step": "vegetal_decoration"
+}

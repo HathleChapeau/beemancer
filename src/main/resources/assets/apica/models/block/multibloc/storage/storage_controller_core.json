@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "cutout",
+  "textures": {
+    "core": "apica:block/altar/altar_pedestal_base"
+  },
+  "elements": [
+
+  ]
+}

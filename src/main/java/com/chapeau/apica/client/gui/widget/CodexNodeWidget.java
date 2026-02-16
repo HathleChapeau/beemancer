@@ -1,0 +1,339 @@
+/**
+ * ============================================================
+ * [CodexNodeWidget.java]
+ * Description: Widget pour afficher un node individuel du Codex avec icône
+ * ============================================================
+ *
+ * DÉPENDANCES:
+ * ------------------------------------------------------------
+ * | Dépendance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | CodexNode           | Données du node      | Affichage et interaction       |
+ * | CodexNodeCategory   | Style visuel         | Sélection du background        |
+ * ------------------------------------------------------------
+ *
+ * UTILISÉ PAR:
+ * - CodexScreen (création et rendu des nodes)
+ * - StandardPageRenderer (rendu des nodes)
+ *
+ * ============================================================
+ */
+package com.chapeau.apica.client.gui.widget;
+
+import com.chapeau.apica.Apica;
+import com.chapeau.apica.common.codex.CodexManager;
+import com.chapeau.apica.common.codex.CodexNode;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
+import com.chapeau.apica.common.quest.NodeState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class CodexNodeWidget extends AbstractWidget {
+    public static final int NODE_SIZE = 24;
+
+    private static final Map<String, String> NODE_TO_ITEM = new HashMap<>();
+    private static final Map<String, ResourceLocation> NODE_TO_TEXTURE = new HashMap<>();
+
+    static {
+        // Mapping des nodes vers les items/blocs du mod
+        NODE_TO_ITEM.put("1st_bee", "apica:scoop");
+        NODE_TO_ITEM.put("hive", "apica:magic_hive");
+        NODE_TO_ITEM.put("hive_multibloc", "apica:hive_multiblock");
+        NODE_TO_ITEM.put("manual_centrifuge", "apica:manual_centrifuge");
+        NODE_TO_ITEM.put("crystallyzer", "apica:crystallizer");
+        NODE_TO_ITEM.put("altar", "apica:altar_heart");
+        NODE_TO_ITEM.put("extractor", "apica:extractor");
+        NODE_TO_ITEM.put("anti_breeding_crystal", "apica:anti_breeding_crystal");
+        NODE_TO_ITEM.put("honey_pipe", "apica:honey_pipe");
+        NODE_TO_ITEM.put("item_pipe", "apica:item_pipe");
+        NODE_TO_ITEM.put("centrifuge_t1", "apica:centrifuge");
+        NODE_TO_ITEM.put("centrifuge_t2", "apica:centrifuge");
+        NODE_TO_ITEM.put("centrifuge_t3", "apica:centrifuge");
+        NODE_TO_ITEM.put("portable_tank", "apica:portable_tank");
+        NODE_TO_ITEM.put("tank", "apica:tank");
+        NODE_TO_ITEM.put("infuser_t1", "apica:infuser");
+        NODE_TO_ITEM.put("infuser_t2", "apica:infuser");
+        NODE_TO_ITEM.put("infuser_t3", "apica:infuser");
+        NODE_TO_ITEM.put("alembic", "apica:alembic");
+        NODE_TO_ITEM.put("incubator", "apica:incubator");
+        NODE_TO_ITEM.put("storage_controller_heart", "apica:storage_controller");
+        NODE_TO_ITEM.put("relay", "apica:storage_relay");
+        NODE_TO_ITEM.put("interface", "apica:storage_terminal");
+        NODE_TO_ITEM.put("import", "apica:import_interface");
+        NODE_TO_ITEM.put("export", "apica:export_interface");
+        NODE_TO_ITEM.put("pipe_t2", "apica:honey_pipe");
+        NODE_TO_ITEM.put("pipe_t3", "apica:honey_pipe");
+        NODE_TO_ITEM.put("pipe_t4", "apica:honey_pipe");
+
+        // Textures pour les nodes sans item correspondant
+        NODE_TO_TEXTURE.put("apica", ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/gui/codex/icon_unknown.png"));
+    }
+
+    private final CodexNode node;
+    private final String displayName;
+    private final Component displayTitle;
+    private final Component displayDescription;
+    private final ItemStack iconItem;
+    private final ResourceLocation iconTexture;
+    private boolean unlocked;
+    private boolean canUnlock;
+    private boolean hovered;
+    private final boolean isHeader;
+    private final NodeState nodeState;
+
+    public CodexNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock) {
+        this(node, screenX, screenY, unlocked, canUnlock, false, null);
+    }
+
+    public CodexNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock, NodeState state) {
+        this(node, screenX, screenY, unlocked, canUnlock, false, state);
+    }
+
+    public CodexNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock, boolean isHeader) {
+        this(node, screenX, screenY, unlocked, canUnlock, isHeader, null);
+    }
+
+    public CodexNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock, boolean isHeader, NodeState state) {
+        super(screenX, screenY, NODE_SIZE, NODE_SIZE, node.getTitle());
+        this.node = node;
+        this.unlocked = unlocked;
+        this.canUnlock = canUnlock;
+        this.isHeader = isHeader;
+        this.nodeState = state != null ? state : (unlocked ? NodeState.UNLOCKED : (canUnlock ? NodeState.DISCOVERED : NodeState.LOCKED));
+
+        // Calculer le texte à afficher (??? si SECRET et LOCKED)
+        this.displayTitle = CodexManager.getDisplayTitle(node, this.nodeState);
+        this.displayDescription = CodexManager.getDisplayDescription(node, this.nodeState);
+
+        String id = node.getId();
+        this.displayName = formatDisplayName(id);
+
+        // Chercher l'item correspondant
+        String itemId = NODE_TO_ITEM.get(id);
+        if (itemId != null) {
+            ResourceLocation itemLoc = ResourceLocation.parse(itemId);
+            this.iconItem = new ItemStack(BuiltInRegistries.ITEM.get(itemLoc));
+            this.iconTexture = null;
+        } else {
+            this.iconItem = ItemStack.EMPTY;
+            this.iconTexture = NODE_TO_TEXTURE.getOrDefault(id,
+                ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/gui/codex/icon_unknown.png"));
+        }
+    }
+
+    private String formatDisplayName(String id) {
+        String[] parts = id.split("_");
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            if (!part.isEmpty()) {
+                if (result.length() > 0) result.append(" ");
+                result.append(Character.toUpperCase(part.charAt(0)));
+                if (part.length() > 1) {
+                    result.append(part.substring(1));
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    public CodexNode getNode() {
+        return node;
+    }
+
+    public void setUnlocked(boolean unlocked) {
+        this.unlocked = unlocked;
+    }
+
+    public boolean isUnlocked() {
+        return unlocked;
+    }
+
+    public void setCanUnlock(boolean canUnlock) {
+        this.canUnlock = canUnlock;
+    }
+
+    public boolean canUnlock() {
+        return canUnlock;
+    }
+
+    public boolean isHeader() {
+        return isHeader;
+    }
+
+    @Override
+    protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        this.hovered = isMouseOver(mouseX, mouseY);
+
+        // Dessiner le fond du node
+        renderBackground(graphics);
+
+        // Dessiner l'icône
+        renderIcon(graphics);
+
+        // Effet de survol
+        if (hovered && canUnlock && !unlocked) {
+            renderGlow(graphics);
+        }
+
+        // Badge "New" si DISCOVERED
+        if (nodeState == NodeState.DISCOVERED) {
+            renderNewBadge(graphics);
+        }
+
+        // Debug: afficher le quest_id dans l'encadré du node
+        if (DebugWandItem.displayDebug && node.hasQuest()) {
+            renderDebugQuestId(graphics);
+        }
+    }
+
+    private void renderNewBadge(GuiGraphics graphics) {
+        Font font = Minecraft.getInstance().font;
+        String text = "New";
+        int badgeX = getX() + NODE_SIZE - 2;
+        int badgeY = getY() - 4;
+
+        // Encadré vert
+        int textWidth = font.width(text);
+        int padding = 2;
+        int bgColor = 0xFF228B22; // Vert forêt
+        int borderColor = 0xFF32CD32; // Vert lime
+
+        graphics.pose().pushPose();
+        graphics.pose().translate(badgeX, badgeY, 0);
+        graphics.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(15)); // Penché
+
+        // Fond + bordure
+        graphics.fill(-padding, -padding, textWidth + padding, font.lineHeight + padding, borderColor);
+        graphics.fill(-padding + 1, -padding + 1, textWidth + padding - 1, font.lineHeight + padding - 1, bgColor);
+
+        // Texte
+        graphics.drawString(font, text, 0, 0, 0xFFFFFFFF, false);
+
+        graphics.pose().popPose();
+    }
+
+    private void renderDebugQuestId(GuiGraphics graphics) {
+        Font font = Minecraft.getInstance().font;
+        String questId = node.getQuestId();
+
+        int x = getX();
+        int y = getY() + NODE_SIZE + 1;
+
+        // Fond sombre pour lisibilité
+        int textWidth = font.width(questId);
+        graphics.fill(x - 1, y - 1, x + textWidth + 1, y + font.lineHeight + 1, 0xCC000000);
+
+        // Texte quest_id en cyan
+        graphics.drawString(font, questId, x, y, 0xFF00FFFF, false);
+    }
+
+    private void renderBackground(GuiGraphics graphics) {
+        int bgColor;
+        int borderColor;
+
+        if (isHeader) {
+            bgColor = 0xFF1A3A5C;      // Fond bleu foncé
+            borderColor = 0xFF3498DB;  // Bordure bleue
+        } else if (unlocked) {
+            bgColor = 0xFF2C2C2C;      // Fond sombre
+            borderColor = 0xFFF1C40F;  // Bordure dorée
+        } else if (canUnlock) {
+            bgColor = 0xFF1A1A1A;      // Fond très sombre
+            borderColor = 0xFF888888;  // Bordure grise
+        } else {
+            bgColor = 0xFF0F0F0F;      // Fond noir
+            borderColor = 0xFF444444;  // Bordure sombre
+        }
+
+        int x = getX();
+        int y = getY();
+
+        // Fond
+        graphics.fill(x, y, x + NODE_SIZE, y + NODE_SIZE, bgColor);
+
+        // Bordure (2px)
+        graphics.fill(x, y, x + NODE_SIZE, y + 2, borderColor);                         // Haut
+        graphics.fill(x, y + NODE_SIZE - 2, x + NODE_SIZE, y + NODE_SIZE, borderColor); // Bas
+        graphics.fill(x, y, x + 2, y + NODE_SIZE, borderColor);                         // Gauche
+        graphics.fill(x + NODE_SIZE - 2, y, x + NODE_SIZE, y + NODE_SIZE, borderColor); // Droite
+    }
+
+    private void renderIcon(GuiGraphics graphics) {
+        int x = getX();
+        int y = getY();
+
+        if (!iconItem.isEmpty()) {
+            // Rendre l'item (16x16 centré dans 24x24)
+            int iconX = x + (NODE_SIZE - 16) / 2;
+            int iconY = y + (NODE_SIZE - 16) / 2;
+
+            if (!unlocked && !canUnlock) {
+                // Assombrir l'item si verrouillé
+                graphics.setColor(0.3f, 0.3f, 0.3f, 1.0f);
+            } else if (!unlocked) {
+                graphics.setColor(0.6f, 0.6f, 0.6f, 1.0f);
+            }
+
+            graphics.renderItem(iconItem, iconX, iconY);
+            graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        } else if (iconTexture != null) {
+            // Rendre la texture (16x16 centré dans 24x24)
+            int iconX = x + (NODE_SIZE - 16) / 2;
+            int iconY = y + (NODE_SIZE - 16) / 2;
+
+            if (!unlocked && !canUnlock) {
+                graphics.setColor(0.3f, 0.3f, 0.3f, 1.0f);
+            } else if (!unlocked) {
+                graphics.setColor(0.6f, 0.6f, 0.6f, 1.0f);
+            }
+
+            graphics.blit(iconTexture, iconX, iconY, 0, 0, 16, 16, 16, 16);
+            graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        } else {
+            // Fallback: afficher un point d'interrogation
+            Font font = Minecraft.getInstance().font;
+            int textColor = unlocked ? 0xFFFFFFFF : 0xFF888888;
+            graphics.drawCenteredString(font, "?", x + NODE_SIZE / 2, y + (NODE_SIZE - font.lineHeight) / 2, textColor);
+        }
+    }
+
+    private void renderGlow(GuiGraphics graphics) {
+        int x = getX();
+        int y = getY();
+        graphics.fill(x - 2, y - 2, x + NODE_SIZE + 2, y + NODE_SIZE + 2, 0x40FFFF00);
+    }
+
+    public void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+        if (hovered) {
+            Minecraft mc = Minecraft.getInstance();
+
+            // Simple: titre (bold si unlocked) + description
+            // displayTitle/displayDescription sont déjà "???" si SECRET et LOCKED
+            graphics.renderTooltip(mc.font, java.util.List.of(
+                displayTitle.copy().withStyle(style -> style.withBold(unlocked)),
+                displayDescription
+            ), java.util.Optional.empty(), mouseX, mouseY);
+        }
+    }
+
+    @Override
+    protected void updateWidgetNarration(NarrationElementOutput narration) {
+        defaultButtonNarrationText(narration);
+    }
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return mouseX >= getX() && mouseX < getX() + NODE_SIZE
+            && mouseY >= getY() && mouseY < getY() + NODE_SIZE;
+    }
+}

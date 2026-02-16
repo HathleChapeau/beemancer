@@ -1,0 +1,51 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "translucent",
+  "textures": {
+    "particle": "apica:block/building/honeyed_plank",
+    "bottom": "minecraft:block/honey_block_top",
+    "side": "minecraft:block/honey_block_top",
+    "top": "apica:block/machines/pollen_jar_top",
+    "inside": "apica:block/plank_3_bis"
+  },
+  "elements": [
+    {
+      "name": "Base",
+      "from": [3, 0, 3],
+      "to": [13, 1, 13],
+      "faces": {
+        "north": {"texture": "#side"},
+        "east": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "down": {"texture": "#bottom"}
+      }
+    },
+    {
+      "name": "Body",
+      "from": [2, 1, 2],
+      "to": [14, 10, 14],
+      "faces": {
+        "north": {"texture": "#side"},
+        "east": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "down": {"texture": "#bottom"},
+        "up": {"texture": "#bottom"}
+      }
+    },
+    {
+      "name": "Rim",
+      "from": [3, 10, 3],
+      "to": [13, 12, 13],
+      "faces": {
+        "north": {"texture": "#inside"},
+        "east": {"texture": "#inside"},
+        "south": {"texture": "#inside"},
+        "west": {"texture": "#inside"},
+        "up": {"texture": "#top"},
+        "down": {"texture": "#inside"}
+      }
+    }
+  ]
+}

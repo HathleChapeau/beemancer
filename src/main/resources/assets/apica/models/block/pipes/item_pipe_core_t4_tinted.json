@@ -1,0 +1,6 @@
+{
+  "parent": "apica:block/pipes/item_pipe_core_t4",
+  "textures": {
+    "core": "apica:block/pipes/pipe_core_white"
+  }
+}

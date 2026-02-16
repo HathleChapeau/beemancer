@@ -1,0 +1,12 @@
+{
+  "type": "apica:centrifuging",
+  "ingredient": {
+    "item": "minecraft:honeycomb"
+  },
+  "results": [],
+  "fluid_result": {
+    "fluid": "apica:honey",
+    "amount": 100
+  },
+  "processing_time": 60
+}

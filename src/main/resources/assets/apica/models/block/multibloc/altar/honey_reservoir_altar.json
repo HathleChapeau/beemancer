@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "body": "apica:block/altar/reservoir_body_formed",
+    "cap": "apica:block/altar/reservoir_cap_formed",
+    "particle": "apica:block/altar/reservoir_cap_formed"
+  },
+  "elements": []
+}

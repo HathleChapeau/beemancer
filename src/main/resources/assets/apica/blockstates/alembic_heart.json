@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "multiblock=none": {
+      "model": "apica:block/multibloc/alembic_heart"
+    },
+    "multiblock=alembic": {
+      "model": "apica:block/multibloc/alembic/alembic_heart_alembic"
+    }
+  }
+}

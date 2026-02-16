@@ -1,0 +1,6 @@
+{
+  "parent": "apica:block/pipes/honey_pipe_side",
+  "textures": {
+    "pipe": "apica:block/plank"
+  }
+}

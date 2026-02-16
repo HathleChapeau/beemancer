@@ -1,0 +1,7 @@
+{
+  "parent": "apica:block/pipes/honey_pipe_core",
+  "textures": {
+    "core": "apica:block/plank",
+    "frame": "apica:block/royal_gold_block"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "_comment": "Configuration des genes d'environnement (Environment)",
+  "genes": {
+    "normal": {
+      "displayName": "Normal",
+      "canWorkInRain": false,
+      "canWorkAtNight": false,
+      "temperatureTolerance": 0,
+      "incompatibleGenes": []
+    },
+    "robust": {
+      "displayName": "Robust",
+      "canWorkInRain": true,
+      "canWorkAtNight": false,
+      "temperatureTolerance": 1,
+      "incompatibleGenes": []
+    },
+    "nocturnal": {
+      "displayName": "Nocturnal",
+      "canWorkInRain": false,
+      "canWorkAtNight": true,
+      "temperatureTolerance": 0,
+      "incompatibleGenes": []
+    }
+  }
+}

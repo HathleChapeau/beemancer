@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "apica:raw_iron_shard" }
+  },
+  "result": { "id": "apica:raw_iron_fragment", "count": 1 }
+}

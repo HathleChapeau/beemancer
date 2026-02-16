@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:gunpowder_fragment" },
+    { "item": "apica:gunpowder_fragment" },
+    { "item": "apica:gunpowder_fragment" },
+    { "item": "apica:gunpowder_fragment" }
+  ],
+  "result": { "id": "minecraft:gunpowder", "count": 1 }
+}

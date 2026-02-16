@@ -1,0 +1,27 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.logistics.pipe_t2.lore.p1"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.logistics.pipe_t2.lore.p2"
+    },
+    {
+      "type": "craft",
+      "result": "apica:honey_pipe_tier2"
+    },
+    {
+      "type": "craft",
+      "result": "apica:item_pipe_tier2"
+    }
+  ],
+  "sticky_notes": []
+}

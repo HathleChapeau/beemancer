@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "multiblock=none": { "model": "apica:block/multibloc/controlled_hive" },
+    "multiblock=storage": { "model": "apica:block/multibloc/storage/controlled_hive_storage" },
+    "multiblock=storage_top": { "model": "apica:block/multibloc/storage/controlled_hive_storage", "x": 180 }
+  }
+}

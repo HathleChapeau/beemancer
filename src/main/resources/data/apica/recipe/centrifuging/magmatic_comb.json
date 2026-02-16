@@ -1,0 +1,9 @@
+{
+  "type": "apica:centrifuging",
+  "ingredient": { "item": "apica:magmatic_comb" },
+  "results": [
+    { "item": { "id": "apica:magma_cream_shard" }, "chance": 0.7 }
+  ],
+  "fluid_result": { "fluid": "apica:honey", "amount": 250 },
+  "processing_time": 80
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "apica:magma_cream_shard" }
+  },
+  "result": { "id": "apica:magma_cream_fragment", "count": 1 }
+}

@@ -1,0 +1,9 @@
+{
+  "type": "apica:centrifuging",
+  "ingredient": { "item": "apica:ancient_comb" },
+  "results": [
+    { "item": { "id": "apica:netherite_scrap_dust" }, "chance": 0.3 }
+  ],
+  "fluid_result": { "fluid": "apica:honey", "amount": 250 },
+  "processing_time": 150
+}

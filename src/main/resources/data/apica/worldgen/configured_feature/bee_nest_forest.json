@@ -1,0 +1,7 @@
+{
+  "type": "apica:bee_nest",
+  "config": {
+    "species_id": "forest",
+    "placement_type": "tree"
+  }
+}

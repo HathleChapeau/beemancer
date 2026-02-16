@@ -1,0 +1,269 @@
+/**
+ * ============================================================
+ * [HoneyReservoirBlockEntity.java]
+ * Description: BlockEntity pour le réservoir de fluide de l'Honey Altar
+ * ============================================================
+ *
+ * DÉPENDANCES:
+ * ------------------------------------------------------------
+ * | Dépendance                    | Raison                | Utilisation                    |
+ * |-------------------------------|----------------------|--------------------------------|
+ * | ApicaBlockEntities        | Type registration    | super()                        |
+ * | ApicaFluids               | Fluides acceptés     | isFluidValid                   |
+ * | MultiblockController          | Multiblock check     | isPartOfFormedMultiblock       |
+ * | MultiblockCapabilityProvider  | Délégation caps      | findCapabilityProvider         |
+ * | MultiblockController          | Vérif formed         | findCapabilityProvider         |
+ * ------------------------------------------------------------
+ *
+ * UTILISÉ PAR:
+ * - HoneyReservoirBlock.java
+ * - HoneyCrystalBlockEntity.java (query reservoirs)
+ * - Apica.java (capability delegation lambdas)
+ *
+ * ============================================================
+ */
+package com.chapeau.apica.common.blockentity.altar;
+
+import com.chapeau.apica.core.multiblock.MultiblockCapabilityProvider;
+import com.chapeau.apica.core.multiblock.MultiblockController;
+import com.chapeau.apica.core.registry.ApicaBlockEntities;
+import com.chapeau.apica.core.registry.ApicaFluids;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+
+import javax.annotation.Nullable;
+
+/**
+ * Stocke jusqu'à 4000mB de miel, royal jelly ou nectar.
+ * Un seul type de fluide à la fois.
+ */
+public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHandler {
+    public static final int CAPACITY = 4000;
+
+    private final FluidTank fluidTank;
+
+    // Position du contrôleur multibloc (pour délégation de capabilities)
+    @Nullable
+    private BlockPos controllerPos = null;
+
+    // Spread offset pour le multibloc Storage Controller (en blocs, coordonnées monde)
+    private float formedSpreadX = 0.0f;
+    private float formedSpreadZ = 0.0f;
+
+    public HoneyReservoirBlockEntity(BlockPos pos, BlockState state) {
+        super(ApicaBlockEntities.HONEY_RESERVOIR.get(), pos, state);
+        this.fluidTank = new FluidTank(CAPACITY) {
+            @Override
+            public boolean isFluidValid(FluidStack stack) {
+                return stack.getFluid() == ApicaFluids.HONEY_SOURCE.get()
+                    || stack.getFluid() == ApicaFluids.ROYAL_JELLY_SOURCE.get()
+                    || stack.getFluid() == ApicaFluids.NECTAR_SOURCE.get();
+            }
+
+            @Override
+            protected void onContentsChanged() {
+                setChanged();
+                if (level != null && !level.isClientSide()) {
+                    level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                }
+            }
+        };
+    }
+
+    public void serverTick() {
+        // Pas de logique tick pour l'instant
+    }
+
+    /**
+     * Calcule le ratio de remplissage (0.0 à 1.0) pour le renderer.
+     */
+    public float getFillRatio() {
+        if (fluidTank.isEmpty()) return 0f;
+        return (float) fluidTank.getFluidAmount() / CAPACITY;
+    }
+
+    // --- Controller delegation ---
+
+    public void setControllerPos(@Nullable BlockPos pos) {
+        this.controllerPos = pos;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.invalidateCapabilities(worldPosition);
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    /**
+     * Set le controllerPos sans déclencher invalidateCapabilities.
+     * Utilisé par le contrôleur multibloc qui fait l'invalidation globale après coup.
+     */
+    public void setControllerPosQuiet(@Nullable BlockPos pos) {
+        this.controllerPos = pos;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Nullable
+    public BlockPos getControllerPos() {
+        return controllerPos;
+    }
+
+    /**
+     * Cherche le MultiblockCapabilityProvider du contrôleur associé.
+     * Retourne null si pas de contrôleur, pas formé, ou pas un provider.
+     */
+    @Nullable
+    public MultiblockCapabilityProvider findCapabilityProvider() {
+        if (controllerPos == null || level == null) return null;
+        BlockEntity be = level.getBlockEntity(controllerPos);
+        if (be instanceof MultiblockCapabilityProvider provider
+                && be instanceof MultiblockController controller
+                && controller.isFormed()) {
+            return provider;
+        }
+        return null;
+    }
+
+    /**
+     * Vérifie si ce réservoir fait partie d'un multiblock formé.
+     */
+    public boolean isPartOfFormedMultiblock() {
+        if (controllerPos == null || level == null) return false;
+        BlockEntity be = level.getBlockEntity(controllerPos);
+        if (be instanceof MultiblockController controller) {
+            return controller.isFormed();
+        }
+        return false;
+    }
+
+    // --- IFluidHandler implementation ---
+
+    @Override
+    public int getTanks() {
+        return 1;
+    }
+
+    @Override
+    public FluidStack getFluidInTank(int tank) {
+        return fluidTank.getFluid();
+    }
+
+    @Override
+    public int getTankCapacity(int tank) {
+        return CAPACITY;
+    }
+
+    @Override
+    public boolean isFluidValid(int tank, FluidStack stack) {
+        return fluidTank.isFluidValid(stack);
+    }
+
+    @Override
+    public int fill(FluidStack resource, FluidAction action) {
+        return fluidTank.fill(resource, action);
+    }
+
+    @Override
+    public FluidStack drain(FluidStack resource, FluidAction action) {
+        return fluidTank.drain(resource, action);
+    }
+
+    @Override
+    public FluidStack drain(int maxDrain, FluidAction action) {
+        return fluidTank.drain(maxDrain, action);
+    }
+
+    // --- Spread (Storage Controller multibloc) ---
+
+    public float getFormedSpreadX() {
+        return formedSpreadX;
+    }
+
+    public float getFormedSpreadZ() {
+        return formedSpreadZ;
+    }
+
+    public void setFormedSpread(float spreadX, float spreadZ) {
+        this.formedSpreadX = spreadX;
+        this.formedSpreadZ = spreadZ;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    // --- Accessors ---
+
+    public FluidTank getFluidTank() {
+        return fluidTank;
+    }
+
+    public int getFluidAmount() {
+        return fluidTank.getFluidAmount();
+    }
+
+    public FluidStack getFluid() {
+        return fluidTank.getFluid();
+    }
+
+    // --- NBT ---
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
+        if (controllerPos != null) {
+            tag.putLong("ControllerPos", controllerPos.asLong());
+        }
+        if (formedSpreadX != 0.0f) {
+            tag.putFloat("FormedSpreadX", formedSpreadX);
+        }
+        if (formedSpreadZ != 0.0f) {
+            tag.putFloat("FormedSpreadZ", formedSpreadZ);
+        }
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        if (tag.contains("Fluid")) {
+            fluidTank.readFromNBT(registries, tag.getCompound("Fluid"));
+        }
+        controllerPos = tag.contains("ControllerPos") ? BlockPos.of(tag.getLong("ControllerPos")) : null;
+        formedSpreadX = tag.getFloat("FormedSpreadX");
+        formedSpreadZ = tag.getFloat("FormedSpreadZ");
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        tag.put("Fluid", fluidTank.writeToNBT(registries, new CompoundTag()));
+        if (controllerPos != null) {
+            tag.putLong("ControllerPos", controllerPos.asLong());
+        }
+        if (formedSpreadX != 0.0f) {
+            tag.putFloat("FormedSpreadX", formedSpreadX);
+        }
+        if (formedSpreadZ != 0.0f) {
+            tag.putFloat("FormedSpreadZ", formedSpreadZ);
+        }
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+}

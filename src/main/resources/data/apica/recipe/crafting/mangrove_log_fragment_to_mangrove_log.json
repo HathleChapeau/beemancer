@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:mangrove_log_fragment" },
+    { "item": "apica:mangrove_log_fragment" },
+    { "item": "apica:mangrove_log_fragment" },
+    { "item": "apica:mangrove_log_fragment" }
+  ],
+  "result": { "id": "minecraft:mangrove_log", "count": 1 }
+}

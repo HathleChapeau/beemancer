@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "apica:ghast_tear_shard" }
+  },
+  "result": { "id": "apica:ghast_tear_fragment", "count": 1 }
+}

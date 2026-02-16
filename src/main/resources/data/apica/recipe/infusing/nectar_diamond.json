@@ -1,0 +1,7 @@
+{
+  "type": "apica:infusing",
+  "ingredient": { "item": "minecraft:diamond" },
+  "fluid_ingredient": { "fluid": "apica:nectar", "amount": 1000 },
+  "result": { "id": "apica:nectar_diamond" },
+  "processing_time": 200
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "C": { "item": "apica:manual_centrifuge" },
+    "H": { "item": "apica:honey_crystal" }
+  },
+  "pattern": [ "I I", "IHI", "ICI" ],
+  "result": { "id": "apica:powered_centrifuge", "count": 1 }
+}

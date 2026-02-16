@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "apica:ender_pearl_shard" }
+  },
+  "result": { "id": "apica:ender_pearl_fragment", "count": 1 }
+}

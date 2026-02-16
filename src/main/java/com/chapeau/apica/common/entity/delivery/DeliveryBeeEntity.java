@@ -1,0 +1,627 @@
+/**
+ * ============================================================
+ * [DeliveryBeeEntity.java]
+ * Description: Abeille visuelle de livraison pour le reseau de stockage
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance                    | Raison                | Utilisation                    |
+ * |-------------------------------|----------------------|--------------------------------|
+ * | Bee                           | Entite parent        | Skin vanilla                   |
+ * | StorageControllerBlockEntity  | Controller parent    | Extraction/depot items         |
+ * | DeliveryPhaseGoal             | AI unique            | Vol → attente → retour         |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - StorageDeliveryManager.java (spawn)
+ * - ClientSetup.java (renderer = vanilla BeeRenderer)
+ *
+ * ============================================================
+ */
+package com.chapeau.apica.common.entity.delivery;
+
+import com.chapeau.apica.common.block.storage.InterfaceTask;
+import com.chapeau.apica.common.blockentity.storage.NetworkInterfaceBlockEntity;
+import com.chapeau.apica.common.blockentity.storage.StorageControllerBlockEntity;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.control.FlyingMoveControl;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * Abeille de livraison pour le reseau de stockage.
+ * Purement visuelle: skin de Bee vanilla avec pathfinding volant.
+ * Tous les comportements vanilla (anger, sting, pollination, hive, breeding,
+ * sons, drops, interactions) sont neutralises.
+ *
+ * Flux unifie: source → extraction → controller → dest → depot → controller.
+ * Si preloaded (items deja charges), saute la phase source.
+ *
+ * Timeout: se discard apres 2400 ticks (2 min).
+ * Verifie chaque tick que le controller est encore forme.
+ */
+public class DeliveryBeeEntity extends Bee {
+
+    private static final int TIMEOUT_TICKS = 2400;
+    private static final EntityDataAccessor<String> DATA_PHASE = SynchedEntityData.defineId(
+        DeliveryBeeEntity.class, EntityDataSerializers.STRING);
+
+    private BlockPos controllerPos;
+    private BlockPos sourcePos;
+    private BlockPos returnPos;
+    private BlockPos destPos;
+    private ItemStack template = ItemStack.EMPTY;
+    private int requestCount;
+    private ItemStack carriedItems = ItemStack.EMPTY;
+    private UUID taskId;
+    private float flySpeedMultiplier = 1.0f;
+    private float searchSpeedMultiplier = 1.0f;
+    private int ticksAlive = 0;
+    private boolean recalled = false;
+    private boolean preloaded = false;
+
+    // Interface task fields (for adaptive count reading)
+    @Nullable private UUID interfaceTaskId;
+    @Nullable private BlockPos interfacePos;
+
+    private ItemStack deliveredSnapshot = ItemStack.EMPTY;
+
+    // Redirect / reassignment fields
+    private boolean taskCancelled = false;
+    @Nullable private BlockPos redirectTarget = null;
+    @Nullable private BlockPos savingChestPos = null;
+    @Nullable private BlockPos newSourcePos = null;
+    @Nullable private BlockPos newDestPos = null;
+    @Nullable private BlockPos newRequesterPos = null;
+    private ItemStack newTemplate = ItemStack.EMPTY;
+    @Nullable private UUID newTaskId = null;
+    private boolean hasNewTask = false;
+    private List<BlockPos> newOutboundWaypoints = new ArrayList<>();
+    private List<BlockPos> newTransitWaypoints = new ArrayList<>();
+    private List<BlockPos> newHomeWaypoints = new ArrayList<>();
+
+    // Waypoints pour le trajet multi-relais
+    // outboundWaypoints: controller → relay1 → relay2 → ... → source
+    // transitWaypoints: source → ... → LCA → ... → dest (chemin direct via ancetre commun)
+    // homeWaypoints: dest → ... → relay1 → controller
+    private List<BlockPos> outboundWaypoints = new ArrayList<>();
+    private List<BlockPos> transitWaypoints = new ArrayList<>();
+    private List<BlockPos> homeWaypoints = new ArrayList<>();
+
+    public DeliveryBeeEntity(EntityType<? extends Bee> entityType, Level level) {
+        super(entityType, level);
+        this.moveControl = new FlyingMoveControl(this, 20, true);
+        this.setNoGravity(true);
+        DebugWandItem.addDisplay(this, this::getSyncedPhase, new Vec3(0, 0.5, 0), 0xFFFFFF00);
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_PHASE, "");
+    }
+
+    public static AttributeSupplier.Builder createAttributes() {
+        return Bee.createAttributes()
+            .add(Attributes.MAX_HEALTH, 10.0)
+            .add(Attributes.FLYING_SPEED, 0.6)
+            .add(Attributes.MOVEMENT_SPEED, 0.3);
+    }
+
+    @Override
+    protected PathNavigation createNavigation(Level level) {
+        FlyingPathNavigation nav = new FlyingPathNavigation(this, level);
+        nav.setCanOpenDoors(false);
+        nav.setCanFloat(true);
+        nav.setCanPassDoors(true);
+        return nav;
+    }
+
+    @Override
+    protected void registerGoals() {
+        // Appeler super pour initialiser les champs internes de Bee (beePollinateGoal, etc.)
+        // requis par BeeLookControl, puis vider les goal selectors.
+        super.registerGoals();
+        this.goalSelector.removeAllGoals(goal -> true);
+        this.targetSelector.removeAllGoals(goal -> true);
+    }
+
+    /**
+     * Initialise la tache de livraison apres le spawn.
+     * Doit etre appele immediatement apres avoir spawn l'entite.
+     */
+    private DeliveryPhaseGoal deliveryGoal;
+
+    public void initDeliveryTask(BlockPos controllerPos, BlockPos sourcePos, BlockPos returnPos,
+                                  BlockPos destPos, ItemStack template, int requestCount,
+                                  ItemStack carriedItems,
+                                  float flySpeedMultiplier, float searchSpeedMultiplier,
+                                  UUID taskId,
+                                  @Nullable UUID interfaceTaskId,
+                                  @Nullable BlockPos interfacePos) {
+        this.controllerPos = controllerPos;
+        this.sourcePos = sourcePos;
+        this.returnPos = returnPos;
+        this.destPos = destPos;
+        this.template = template.copy();
+        this.requestCount = requestCount;
+        this.carriedItems = carriedItems.copy();
+        this.flySpeedMultiplier = flySpeedMultiplier;
+        this.searchSpeedMultiplier = searchSpeedMultiplier;
+        this.taskId = taskId;
+        this.interfaceTaskId = interfaceTaskId;
+        this.interfacePos = interfacePos;
+
+        this.deliveryGoal = new DeliveryPhaseGoal(this);
+        this.goalSelector.addGoal(0, deliveryGoal);
+    }
+
+    @Nullable
+    public DeliveryPhaseGoal getDeliveryGoal() {
+        return deliveryGoal;
+    }
+
+    /**
+     * Met a jour la phase synchronisee (appele par DeliveryPhaseGoal cote serveur).
+     */
+    public void setSyncedPhase(String phase) {
+        this.entityData.set(DATA_PHASE, phase);
+    }
+
+    /**
+     * Retourne la phase synchronisee (lisible cote client pour le renderer).
+     */
+    public String getSyncedPhase() {
+        return this.entityData.get(DATA_PHASE);
+    }
+
+    @Override
+    public void tick() {
+        this.noPhysics = true;
+        super.tick();
+        ticksAlive++;
+
+        if (!level().isClientSide()) {
+            // Abeille chargee depuis une sauvegarde sans tache: cleanup et discard
+            if (taskId == null) {
+                returnCarriedItemsToNetwork();
+                discard();
+                return;
+            }
+            if (ticksAlive > TIMEOUT_TICKS) {
+                notifyTaskFailed();
+                returnCarriedItemsToNetwork();
+                discard();
+                return;
+            }
+            if (!isControllerValid()) {
+                discard();
+            }
+        }
+    }
+
+    /**
+     * Restitue les items transportes dans le reseau de stockage si possible.
+     * Si le reseau est plein ou inaccessible, drop les items au sol.
+     * Appele lors du discard pour eviter la perte d'items en transit.
+     */
+    public void returnCarriedItemsToNetwork() {
+        if (carriedItems.isEmpty() || level() == null) return;
+
+        if (controllerPos == null || !level().hasChunkAt(controllerPos)) {
+            spawnAtLocation(carriedItems);
+            carriedItems = ItemStack.EMPTY;
+            return;
+        }
+
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            ItemStack remaining = controller.depositItemForDelivery(carriedItems, null);
+            if (!remaining.isEmpty()) {
+                spawnAtLocation(remaining);
+            }
+        } else {
+            spawnAtLocation(carriedItems);
+        }
+        carriedItems = ItemStack.EMPTY;
+    }
+
+    private boolean isControllerValid() {
+        if (controllerPos == null || level() == null) return false;
+        if (!level().hasChunkAt(controllerPos)) return true;
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            return controller.isFormed();
+        }
+        return false;
+    }
+
+    // =========================================================================
+    // INVULNERABILITE — Aucun degat, aucune mort, aucun loot
+    // =========================================================================
+
+    @Override
+    public boolean isInvulnerable() { return true; }
+
+    @Override
+    public boolean hurt(DamageSource source, float amount) { return false; }
+
+    @Override
+    public boolean isInvulnerableTo(DamageSource source) { return true; }
+
+    @Override
+    public boolean fireImmune() { return true; }
+
+    @Override
+    protected void dropExperience(Entity killer) { }
+
+    // =========================================================================
+    // COLLISION / PHYSIQUE — Pas de collision, pas de push, pas de pickup
+    // =========================================================================
+
+    @Override
+    public boolean isPushable() { return false; }
+
+    @Override
+    public boolean canBeCollidedWith() { return false; }
+
+    @Override
+    protected void doPush(Entity entity) { }
+
+    @Override
+    protected void pushEntities() { }
+
+    @Override
+    public boolean canBeLeashed() { return false; }
+
+    // =========================================================================
+    // DESPAWN — Ne despawn jamais (gere par timeout interne)
+    // =========================================================================
+
+    @Override
+    public boolean shouldDespawnInPeaceful() { return false; }
+
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) { return false; }
+
+    @Override
+    public boolean requiresCustomPersistence() { return true; }
+
+    // =========================================================================
+    // INTERACTIONS — Aucune interaction joueur
+    // =========================================================================
+
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        return InteractionResult.PASS;
+    }
+
+    // =========================================================================
+    // ANGER / STING — Desactives
+    // =========================================================================
+
+    @Override
+    public void setRemainingPersistentAngerTime(int time) { }
+
+    @Override
+    public int getRemainingPersistentAngerTime() { return 0; }
+
+    @Override
+    public boolean isAngry() { return false; }
+
+    @Override
+    public boolean hasStung() { return false; }
+
+    @Override
+    public boolean doHurtTarget(Entity target) { return false; }
+
+    // =========================================================================
+    // POLLINATION / HIVE / NECTAR — Desactives
+    // =========================================================================
+
+    @Override
+    public boolean hasNectar() { return false; }
+
+    // =========================================================================
+    // SONS — Silencieux
+    // =========================================================================
+
+    @Override
+    protected void playStepSound(BlockPos pos, BlockState state) { }
+
+    @Override
+    public void playAmbientSound() { }
+
+    @Nullable
+    @Override
+    protected SoundEvent getAmbientSound() { return null; }
+
+    @Nullable
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) { return null; }
+
+    @Nullable
+    @Override
+    protected SoundEvent getDeathSound() { return null; }
+
+    @Override
+    protected float getSoundVolume() { return 0.0f; }
+
+    // =========================================================================
+    // BREEDING — Desactive
+    // =========================================================================
+
+    @Override
+    public boolean canBreed() { return false; }
+
+    @Override
+    public boolean isFood(ItemStack stack) { return false; }
+
+    // =========================================================================
+    // GETTERS
+    // =========================================================================
+
+    /**
+     * Notifie le controller que la tache est completee.
+     * Si c'est une tache d'interface, notifie aussi l'interface (markTaskDelivered).
+     */
+    public void notifyTaskCompleted() {
+        if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
+        if (!level().hasChunkAt(controllerPos)) return;
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            controller.getDeliveryManager().completeTask(taskId);
+        }
+        // Notifier l'interface que la task est livree
+        if (interfaceTaskId != null && interfacePos != null
+                && level().hasChunkAt(interfacePos)) {
+            BlockEntity ifBe = level().getBlockEntity(interfacePos);
+            if (ifBe instanceof NetworkInterfaceBlockEntity iface) {
+                iface.markTaskDelivered(interfaceTaskId);
+            }
+        }
+    }
+
+    /**
+     * Notifie le controller que la tache a echoue (timeout).
+     */
+    public void notifyTaskFailed() {
+        if (taskId == null || controllerPos == null || level() == null || level().isClientSide()) return;
+        if (!level().hasChunkAt(controllerPos)) return;
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            controller.getDeliveryManager().failTask(taskId);
+        }
+    }
+
+    /**
+     * Rappelle la bee vers le controller. Elle volera directement vers returnPos,
+     * restituera ses items au reseau, puis se discard.
+     */
+    public void recall() {
+        this.recalled = true;
+    }
+
+    /**
+     * Annule la tache courante et redirige la bee vers un nouveau noeud du reseau.
+     * Si une nouvelle tache est fournie, la bee l'executera apres redirection.
+     * Sinon, la bee rentrera au controller.
+     *
+     * @param nearestNode noeud reseau le plus proche (relay ou controller) pour la redirection
+     * @param savingChest coffre ou deposer les items transportes (null si pas d'items)
+     * @param newTaskId nouvelle tache a executer (null si retour au controller)
+     * @param newSource source de la nouvelle tache
+     * @param newDest destination de la nouvelle tache
+     * @param newTmpl template item de la nouvelle tache
+     * @param outbound waypoints: redirectNode → nouvelle source
+     * @param transit waypoints: nouvelle source → nouvelle dest
+     * @param home waypoints: nouvelle dest → controller
+     */
+    public void cancelAndRedirect(@Nullable BlockPos nearestNode,
+                                   @Nullable BlockPos savingChest,
+                                   @Nullable UUID newTaskId,
+                                   @Nullable BlockPos newSource,
+                                   @Nullable BlockPos newDest,
+                                   @Nullable BlockPos newRequester,
+                                   ItemStack newTmpl,
+                                   List<BlockPos> outbound,
+                                   List<BlockPos> transit,
+                                   List<BlockPos> home) {
+        this.taskCancelled = true;
+        this.redirectTarget = nearestNode;
+        this.savingChestPos = savingChest;
+
+        if (newTaskId != null) {
+            this.newTaskId = newTaskId;
+            this.newSourcePos = newSource;
+            this.newDestPos = newDest;
+            this.newRequesterPos = newRequester;
+            this.newTemplate = newTmpl.copy();
+            this.newOutboundWaypoints = new ArrayList<>(outbound);
+            this.newTransitWaypoints = new ArrayList<>(transit);
+            this.newHomeWaypoints = new ArrayList<>(home);
+            this.hasNewTask = true;
+        }
+    }
+
+    /**
+     * Applique la nouvelle tache sur la bee (apres redirection au relay).
+     * Remplace les donnees de tache et les waypoints.
+     */
+    public void applyNewTask() {
+        if (!hasNewTask) return;
+
+        this.taskId = newTaskId;
+        this.sourcePos = newSourcePos;
+        this.destPos = newDestPos;
+        this.template = newTemplate.copy();
+
+        this.outboundWaypoints = new ArrayList<>(newOutboundWaypoints);
+        this.transitWaypoints = new ArrayList<>(newTransitWaypoints);
+        this.homeWaypoints = new ArrayList<>(newHomeWaypoints);
+
+        // Reset redirect state
+        this.taskCancelled = false;
+        this.hasNewTask = false;
+        this.redirectTarget = null;
+        this.savingChestPos = null;
+        this.newTaskId = null;
+        this.newSourcePos = null;
+        this.newDestPos = null;
+        this.newRequesterPos = null;
+        this.newTemplate = ItemStack.EMPTY;
+        this.newOutboundWaypoints.clear();
+        this.newTransitWaypoints.clear();
+        this.newHomeWaypoints.clear();
+    }
+
+    public boolean isPreloaded() { return preloaded; }
+    public void setPreloaded(boolean preloaded) { this.preloaded = preloaded; }
+
+    public boolean isRecalled() { return recalled; }
+    public boolean isTaskCancelled() { return taskCancelled; }
+    public boolean hasNewTask() { return hasNewTask; }
+    @Nullable public BlockPos getRedirectTarget() { return redirectTarget; }
+    @Nullable public BlockPos getSavingChestPos() { return savingChestPos; }
+
+    /**
+     * [AU] Definit la position du coffre de sauvegarde pour le depot d'items.
+     */
+    public void setSavingChestPos(@Nullable BlockPos pos) { this.savingChestPos = pos; }
+
+    /**
+     * [AU] Trouve un coffre du reseau avec de la place pour les items transportes.
+     * Utilise le ContainerOps du controller pour trouver un coffre disponible.
+     */
+    @Nullable
+    public BlockPos findSavingChest() {
+        if (carriedItems.isEmpty() || controllerPos == null) return null;
+        if (level() == null || !level().hasChunkAt(controllerPos)) return null;
+        BlockEntity be = level().getBlockEntity(controllerPos);
+        if (be instanceof StorageControllerBlockEntity controller) {
+            return controller.getDeliveryManager().getContainerOps()
+                .findChestWithSpace(carriedItems, carriedItems.getCount());
+        }
+        return null;
+    }
+
+    @Nullable public UUID getInterfaceTaskId() { return interfaceTaskId; }
+    @Nullable public BlockPos getInterfacePos() { return interfacePos; }
+    public ItemStack getDeliveredSnapshot() { return deliveredSnapshot; }
+
+    /**
+     * Prend un snapshot des items transportes avant la livraison.
+     */
+    public void snapshotCarriedItems() {
+        if (!carriedItems.isEmpty()) {
+            deliveredSnapshot = carriedItems.copy();
+        }
+    }
+
+    /**
+     * Lit le count actuel de l'InterfaceTask depuis l'interface.
+     * Permet a la bee de s'adapter si le count change pendant le transit.
+     *
+     * @return count actuel, ou -1 si task introuvable/annulee/interface inaccessible
+     */
+    public int readCurrentInterfaceTaskCount() {
+        if (interfaceTaskId == null || interfacePos == null) return -1;
+        if (level() == null || !level().hasChunkAt(interfacePos)) return -1;
+        BlockEntity be = level().getBlockEntity(interfacePos);
+        if (be instanceof NetworkInterfaceBlockEntity iface) {
+            InterfaceTask task = iface.getTask(interfaceTaskId);
+            if (task != null) return task.getCount();
+        }
+        return -1;
+    }
+
+    public UUID getTaskId() { return taskId; }
+    public BlockPos getControllerPos() { return controllerPos; }
+    public List<BlockPos> getOutboundWaypoints() { return outboundWaypoints; }
+    public List<BlockPos> getTransitWaypoints() { return transitWaypoints; }
+    public List<BlockPos> getHomeWaypoints() { return homeWaypoints; }
+
+    public void setAllWaypoints(List<BlockPos> outbound, List<BlockPos> transit, List<BlockPos> home) {
+        this.outboundWaypoints = new ArrayList<>(outbound);
+        this.transitWaypoints = new ArrayList<>(transit);
+        this.homeWaypoints = new ArrayList<>(home);
+    }
+
+    public BlockPos getSourcePos() { return sourcePos; }
+    public BlockPos getReturnPos() { return returnPos; }
+    public BlockPos getDestPos() { return destPos; }
+    public ItemStack getTemplate() { return template; }
+    public int getRequestCount() { return requestCount; }
+    public ItemStack getCarriedItems() { return carriedItems; }
+    public float getFlySpeedMultiplier() { return flySpeedMultiplier; }
+    public float getSearchSpeedMultiplier() { return searchSpeedMultiplier; }
+
+    public void setCarriedItems(ItemStack items) {
+        this.carriedItems = items.copy();
+    }
+
+    // =========================================================================
+    // NBT — Ephemere, discard au rechargement
+    // =========================================================================
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putBoolean("IsDeliveryBee", true);
+        if (controllerPos != null) {
+            tag.putInt("CtrlX", controllerPos.getX());
+            tag.putInt("CtrlY", controllerPos.getY());
+            tag.putInt("CtrlZ", controllerPos.getZ());
+        }
+        if (!carriedItems.isEmpty()) {
+            tag.put("CarriedItems", carriedItems.save(level().registryAccess()));
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.getBoolean("IsDeliveryBee")) {
+            // Restaurer le minimum pour le cleanup (restitution items, notification)
+            if (tag.contains("CtrlX")) {
+                controllerPos = new BlockPos(
+                    tag.getInt("CtrlX"), tag.getInt("CtrlY"), tag.getInt("CtrlZ"));
+            }
+            if (tag.contains("CarriedItems")) {
+                carriedItems = ItemStack.parse(
+                    level().registryAccess(), tag.getCompound("CarriedItems")
+                ).orElse(ItemStack.EMPTY);
+            }
+            // [AS] Ne PAS appeler discard() ici: le tick() (taskId==null check)
+            // appellera returnCarriedItemsToNetwork() puis discard() au premier tick.
+            // L'ancien discard() premature empechait le tick de s'executer,
+            // causant la perte des items transportes.
+        }
+    }
+}

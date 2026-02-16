@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "apica:slime_ball_shard" }
+  },
+  "result": { "id": "apica:slime_ball_fragment", "count": 1 }
+}

@@ -1,0 +1,6 @@
+{
+  "type": "apica:crystallizing",
+  "fluid_ingredient": { "fluid": "apica:honey", "amount": 1000 },
+  "result": { "id": "apica:honey_crystal" },
+  "processing_time": 400
+}

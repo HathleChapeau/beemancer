@@ -1,0 +1,23 @@
+{
+  "_comment": "Configuration des genes de fleur (Flower)",
+  "genes": {
+    "flowers": {
+      "displayName": "Flowers",
+      "pollinationRange": 3,
+      "flowerTag": "minecraft:flowers",
+      "incompatibleGenes": []
+    },
+    "crops": {
+      "displayName": "Crops",
+      "pollinationRange": 5,
+      "flowerTag": "minecraft:crops",
+      "incompatibleGenes": []
+    },
+    "cave_plants": {
+      "displayName": "Cave Plants",
+      "pollinationRange": 4,
+      "flowerTag": "minecraft:cave_vines",
+      "incompatibleGenes": ["normal"]
+    }
+  }
+}

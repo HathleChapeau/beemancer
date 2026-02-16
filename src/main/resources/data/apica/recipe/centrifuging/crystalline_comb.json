@@ -1,0 +1,9 @@
+{
+  "type": "apica:centrifuging",
+  "ingredient": { "item": "apica:crystalline_comb" },
+  "results": [
+    { "item": { "id": "minecraft:prismarine_crystals" }, "chance": 0.5 }
+  ],
+  "fluid_result": { "fluid": "apica:honey", "amount": 250 },
+  "processing_time": 80
+}

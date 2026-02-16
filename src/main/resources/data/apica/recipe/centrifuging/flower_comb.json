@@ -1,0 +1,12 @@
+{
+  "type": "apica:centrifuging",
+  "ingredient": {
+    "item": "apica:flower_comb"
+  },
+  "results": [],
+  "fluid_result": {
+    "fluid": "apica:honey",
+    "amount": 250
+  },
+  "processing_time": 60
+}

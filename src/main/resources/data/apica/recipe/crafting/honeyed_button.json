@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    { "item": "apica:honeyed_planks" }
+  ],
+  "result": {
+    "id": "apica:honeyed_button",
+    "count": 1
+  }
+}

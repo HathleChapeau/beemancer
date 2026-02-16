@@ -1,0 +1,9 @@
+{
+  "type": "apica:centrifuging",
+  "ingredient": { "item": "apica:tanner_comb" },
+  "results": [
+    { "item": { "id": "apica:leather_fragment" }, "chance": 0.8 }
+  ],
+  "fluid_result": { "fluid": "apica:honey", "amount": 250 },
+  "processing_time": 60
+}

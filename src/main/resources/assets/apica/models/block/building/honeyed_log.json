@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "apica:block/honeyed/honeyed_wood_top_bottom",
+    "side": "apica:block/honeyed/honeyed_wood"
+  }
+}

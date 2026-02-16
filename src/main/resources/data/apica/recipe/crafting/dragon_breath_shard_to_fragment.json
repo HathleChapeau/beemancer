@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "apica:dragon_breath_shard" }
+  },
+  "result": { "id": "apica:dragon_breath_fragment", "count": 1 }
+}

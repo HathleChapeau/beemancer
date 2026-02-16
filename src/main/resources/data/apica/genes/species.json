@@ -1,0 +1,23 @@
+{
+  "_comment": "Configuration des genes d'espece (Species)",
+  "genes": {
+    "common": {
+      "displayName": "Common",
+      "speedModifier": 1.0,
+      "productionModifier": 1.0,
+      "incompatibleGenes": []
+    },
+    "noble": {
+      "displayName": "Noble",
+      "speedModifier": 0.9,
+      "productionModifier": 1.5,
+      "incompatibleGenes": []
+    },
+    "diligent": {
+      "displayName": "Diligent",
+      "speedModifier": 1.5,
+      "productionModifier": 0.8,
+      "incompatibleGenes": []
+    }
+  }
+}

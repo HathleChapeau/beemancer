@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Panels",
+    "stat_1": "Hover_Friction",
+    "stat_1_value": 0.0,
+    "stat_2": "Brake_Deceleration",
+    "stat_2_value": 0.0,
+    "model": "radiateur"
+  },
+  {
+    "name": "Fin Array",
+    "stat_1": "Hover_Friction",
+    "stat_1_value": -0.001,
+    "stat_2": "Brake_Deceleration",
+    "stat_2_value": 0.005,
+    "model": "radiateur_b"
+  },
+  {
+    "name": "Wide Panels",
+    "stat_1": "Hover_Friction",
+    "stat_1_value": -0.0015,
+    "stat_2": "Brake_Deceleration",
+    "stat_2_value": 0.008,
+    "model": "radiateur_c"
+  }
+]

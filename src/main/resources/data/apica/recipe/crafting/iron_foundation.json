@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": { "item": "minecraft:iron_ingot" }
+  },
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "result": { "id": "apica:iron_foundation", "count": 2 }
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Dual Exhaust",
+    "stat_1": "Lift_Speed",
+    "stat_1_value": 0.0,
+    "stat_2": "Gauge_Fill_Rate",
+    "stat_2_value": 0.0,
+    "model": "propulseur"
+  },
+  {
+    "name": "Quad Nozzles",
+    "stat_1": "Lift_Speed",
+    "stat_1_value": 0.01,
+    "stat_2": "Gauge_Fill_Rate",
+    "stat_2_value": -0.002,
+    "model": "propulseur_b"
+  },
+  {
+    "name": "Mega Reactor",
+    "stat_1": "Lift_Speed",
+    "stat_1_value": 0.02,
+    "stat_2": "Gauge_Fill_Rate",
+    "stat_2_value": 0.003,
+    "model": "propulseur_c"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/door_top_right_open",
+  "render_type": "cutout",
+  "textures": {
+    "bottom": "apica:block/building/honeyed_plank_door_top",
+    "top": "apica:block/building/honeyed_plank_door_top"
+  }
+}

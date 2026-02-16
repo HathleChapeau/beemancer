@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "type=bottom": { "model": "apica:block/building/honeyed_wood_slab" },
+    "type=top": { "model": "apica:block/building/honeyed_wood_slab_top" },
+    "type=double": { "model": "apica:block/building/honeyed_planks" }
+  }
+}

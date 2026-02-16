@@ -1,0 +1,7 @@
+{
+  "multipart": [
+    { "apply": { "model": "apica:block/altar/nectar_crystal" } },
+    { "apply": { "model": "apica:block/altar/nectar_crystal_translucent" } }
+  ]
+}
+

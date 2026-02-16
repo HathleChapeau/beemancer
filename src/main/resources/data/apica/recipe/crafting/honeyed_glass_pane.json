@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": { "#": { "item": "apica:honeyed_glass" } },
+  "pattern": [ "###", "###" ],
+  "result": { "id": "apica:honeyed_glass_pane", "count": 16 }
+}

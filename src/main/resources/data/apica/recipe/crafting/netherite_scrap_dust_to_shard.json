@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "DDD",
+    "DDD",
+    "DDD"
+  ],
+  "key": {
+    "D": { "item": "apica:netherite_scrap_dust" }
+  },
+  "result": { "id": "apica:netherite_scrap_shard", "count": 1 }
+}

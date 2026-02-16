@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "apica:obsidian_shard" }
+  },
+  "result": { "id": "apica:obsidian_fragment", "count": 1 }
+}

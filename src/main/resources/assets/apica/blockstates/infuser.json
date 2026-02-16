@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "working=false": { "model": "apica:block/alchemy/infuser" },
+    "working=true": { "model": "apica:block/alchemy/infuser" }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:oak_log_fragment" },
+    { "item": "apica:oak_log_fragment" },
+    { "item": "apica:oak_log_fragment" },
+    { "item": "apica:oak_log_fragment" }
+  ],
+  "result": { "id": "minecraft:oak_log", "count": 1 }
+}

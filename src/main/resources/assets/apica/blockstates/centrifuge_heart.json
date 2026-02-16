@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "multiblock=none,working=false": {
+      "model": "apica:block/multibloc/centrifuge_heart"
+    },
+    "multiblock=none,working=true": {
+      "model": "apica:block/multibloc/centrifuge_heart"
+    },
+    "multiblock=centrifuge,working=false": {
+      "model": "apica:block/multibloc/centrifuge/centrifuge_heart_centrifuge"
+    },
+    "multiblock=centrifuge,working=true": {
+      "model": "apica:block/multibloc/centrifuge/centrifuge_heart_centrifuge"
+    }
+  }
+}

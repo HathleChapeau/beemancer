@@ -1,0 +1,15 @@
+{
+  "nodes": [
+    {"id": "crystallyzer", "position": {"x": 0, "y": 0}, "icon": "apica:textures/block/crystallizer.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false},
+    {"id": "honey_pipe", "position": {"x": 1, "y": 2}, "icon": "apica:textures/block/honey_pipe.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "item_pipe", "position": {"x": -1, "y": 2}, "icon": "apica:textures/block/item_pipe.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "storage_controller_heart", "position": {"x": 2, "y": -1}, "icon": "apica:textures/block/storage_controller.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "relay", "position": {"x": 2, "y": -3}, "icon": "apica:textures/block/storage_relay.png", "category": "NORMAL", "parent": "storage_controller_heart", "hidden_until_parent_unlocked": false},
+    {"id": "interface", "position": {"x": 5, "y": -4}, "icon": "apica:textures/block/storage_terminal.png", "category": "NORMAL", "parent": "relay", "hidden_until_parent_unlocked": false},
+    {"id": "import", "position": {"x": 5, "y": -6}, "icon": "apica:textures/block/import_interface.png", "category": "NORMAL", "parent": "interface", "hidden_until_parent_unlocked": false},
+    {"id": "export", "position": {"x": 7, "y": -5}, "icon": "apica:textures/block/export_interface.png", "category": "NORMAL", "parent": "interface", "hidden_until_parent_unlocked": false},
+    {"id": "pipe_t2", "position": {"x": 0, "y": 3}, "icon": "apica:textures/block/pipes/pipe_frame.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": true},
+    {"id": "pipe_t3", "position": {"x": 0, "y": 4}, "icon": "apica:textures/block/pipes/pipe_frame.png", "category": "NORMAL", "parent": "pipe_t2", "hidden_until_parent_unlocked": true},
+    {"id": "pipe_t4", "position": {"x": 0, "y": 5}, "icon": "apica:textures/block/pipes/pipe_frame.png", "category": "GOAL", "parent": "pipe_t3", "hidden_until_parent_unlocked": true}
+  ]
+}

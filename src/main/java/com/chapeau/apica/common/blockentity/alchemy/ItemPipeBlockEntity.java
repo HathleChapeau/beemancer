@@ -1,0 +1,477 @@
+/**
+ * ============================================================
+ * [ItemPipeBlockEntity.java]
+ * Description: BlockEntity pour les pipes de transport d'items
+ * ============================================================
+ *
+ * FONCTIONNEMENT:
+ * - Mode extraction (par direction): tire les items du bloc connecte
+ * - Mode normal: pousse les items vers les pipes connectees
+ * - Round-robin entre les pipes disponibles
+ * - Evite les va-et-vient en trackant l'origine des items
+ * - Drop les items si cul-de-sac (seule sortie = pipe source)
+ * ============================================================
+ */
+package com.chapeau.apica.common.blockentity.alchemy;
+
+import com.chapeau.apica.common.block.alchemy.ItemPipeBlock;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
+import com.chapeau.apica.core.registry.ApicaBlockEntities;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+
+public class ItemPipeBlockEntity extends BlockEntity {
+    // --- TIER CONFIG ---
+    public static final int TIER1_BUFFER = 4;
+    public static final int TIER1_TRANSFER = 4;
+
+    public static final int TIER2_BUFFER = 8;
+    public static final int TIER2_TRANSFER = 8;
+
+    public static final int TIER3_BUFFER = 16;
+    public static final int TIER3_TRANSFER = 16;
+
+    public static final int TIER4_BUFFER = 32;
+    public static final int TIER4_TRANSFER = 32;
+
+    private final int transferAmount;
+    private final ItemStackHandler buffer;
+
+    private int transferCooldown = 0;
+    private int roundRobinIndex = 0;
+
+    // Position de la pipe d'ou viennent les items actuels (pour eviter les va-et-vient)
+    @Nullable
+    private BlockPos sourcePos = null;
+
+    // Directions manuellement deconnectees par le joueur
+    private final EnumSet<Direction> disconnectedDirections = EnumSet.noneOf(Direction.class);
+
+    // Couleur de teinte du core (-1 = pas de teinte)
+    private int tintColor = -1;
+
+    public ItemPipeBlockEntity(BlockPos pos, BlockState state) {
+        this(ApicaBlockEntities.ITEM_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
+    }
+
+    public ItemPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+                               int bufferSize, int transferAmount) {
+        super(type, pos, state);
+        this.transferAmount = transferAmount;
+        this.buffer = new ItemStackHandler(bufferSize) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                setChanged();
+            }
+        };
+
+        for (int i = 0; i < buffer.getSlots(); i++) {
+            ItemStack stack = buffer.getStackInSlot(i);
+            if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
+
+            }
+        }
+
+
+        DebugWandItem.addDisplay(this, () -> {
+            StringBuilder str = new StringBuilder();
+            for (int i = 0; i < buffer.getSlots(); i++) {
+                ItemStack stack = buffer.getStackInSlot(i);
+                if(!stack.isEmpty())
+                    str.append(stack.getHoverName().getString()).append(": ").append(stack.getCount()).append("\n");
+            }
+            return "Item: " + str;
+        }, new Vec3(0,1,0));
+    }
+
+    // Factory methods for tiered versions
+    public static ItemPipeBlockEntity createTier2(BlockPos pos, BlockState state) {
+        return new ItemPipeBlockEntity(ApicaBlockEntities.ITEM_PIPE_TIER2.get(), pos, state,
+            TIER2_BUFFER, TIER2_TRANSFER);
+    }
+
+    public static ItemPipeBlockEntity createTier3(BlockPos pos, BlockState state) {
+        return new ItemPipeBlockEntity(ApicaBlockEntities.ITEM_PIPE_TIER3.get(), pos, state,
+            TIER3_BUFFER, TIER3_TRANSFER);
+    }
+
+    public static ItemPipeBlockEntity createTier4(BlockPos pos, BlockState state) {
+        return new ItemPipeBlockEntity(ApicaBlockEntities.ITEM_PIPE_TIER4.get(), pos, state,
+            TIER4_BUFFER, TIER4_TRANSFER);
+    }
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, ItemPipeBlockEntity be) {
+        if (be.transferCooldown > 0) {
+            be.transferCooldown--;
+            return;
+        }
+
+        // Reset source tracking si buffer est vide
+        if (be.isBufferEmpty()) {
+            be.sourcePos = null;
+        }
+
+        // Push d'abord les items existants (du cycle precedent)
+        be.pushToNeighbors(level, pos, state);
+
+        // Puis extraire de nouveaux items (resteront dans le buffer jusqu'au prochain cycle)
+        be.processExtractions(level, pos, state);
+
+        be.transferCooldown = 8; // Slower than fluid pipes
+    }
+
+    private void processExtractions(Level level, BlockPos pos, BlockState state) {
+        if (isBufferFull()) {
+            return;
+        }
+
+        for (Direction dir : Direction.values()) {
+            if (!ItemPipeBlock.isConnected(state, dir)) continue;
+            if (!ItemPipeBlock.isExtracting(state, dir)) continue;
+
+            BlockPos neighborPos = pos.relative(dir);
+
+            // Don't extract from other item pipes
+            if (level.getBlockEntity(neighborPos) instanceof ItemPipeBlockEntity) continue;
+
+            var cap = level.getCapability(Capabilities.ItemHandler.BLOCK, neighborPos, dir.getOpposite());
+            if (cap != null) {
+                extractFromHandler(cap);
+                // Mark source as non-pipe (null = from machine)
+                sourcePos = null;
+            }
+        }
+    }
+
+    private void extractFromHandler(IItemHandler handler) {
+        for (int i = 0; i < handler.getSlots() && !isBufferFull(); i++) {
+            ItemStack extracted = handler.extractItem(i, transferAmount, true);
+            if (!extracted.isEmpty()) {
+                ItemStack remaining = insertIntoBuffer(extracted, true);
+                int toExtract = extracted.getCount() - remaining.getCount();
+                if (toExtract > 0) {
+                    ItemStack actualExtracted = handler.extractItem(i, toExtract, false);
+                    insertIntoBuffer(actualExtracted, false);
+                    break; // Un seul slot extrait par tick pour performance
+                }
+            }
+        }
+    }
+
+    private void pushToNeighbors(Level level, BlockPos pos, BlockState state) {
+        if (isBufferEmpty()) {
+            return;
+        }
+
+        // Construire la liste des destinations disponibles
+        List<PipeDestination> availableDestinations = new ArrayList<>();
+        // Compter les connexions non-source (structurelles, indépendamment de l'état plein/vide)
+        int nonSourceConnections = 0;
+        boolean hasSourceConnection = false;
+
+        for (Direction dir : Direction.values()) {
+            if (!ItemPipeBlock.isConnected(state, dir)) continue;
+            if (ItemPipeBlock.isExtracting(state, dir)) continue;
+
+            BlockPos neighborPos = pos.relative(dir);
+
+            // Skip si c'est la source (evite va-et-vient)
+            if (neighborPos.equals(sourcePos)) {
+                hasSourceConnection = true;
+                continue;
+            }
+
+            // Check si c'est une pipe
+            BlockEntity neighborBe = level.getBlockEntity(neighborPos);
+            if (neighborBe instanceof ItemPipeBlockEntity neighborPipe) {
+                nonSourceConnections++;
+                // Skip si la pipe voisine est pleine (temporaire)
+                if (neighborPipe.isBufferFull()) continue;
+
+                availableDestinations.add(new PipeDestination(dir, neighborPos, true));
+            } else {
+                // C'est un bloc normal avec capacite d'items
+                var cap = level.getCapability(Capabilities.ItemHandler.BLOCK, neighborPos, dir.getOpposite());
+                if (cap != null) {
+                    nonSourceConnections++;
+                    // Verifier si on peut inserer quelque chose
+                    if (canInsertAnyIntoHandler(cap)) {
+                        availableDestinations.add(new PipeDestination(dir, neighborPos, false));
+                    }
+                }
+            }
+        }
+
+        if (availableDestinations.isEmpty()) {
+            // Drop uniquement si dead-end structurel: aucune connexion non-source existante
+            if (nonSourceConnections == 0 && hasSourceConnection) {
+                dropAllBufferItems(level, pos);
+            }
+            // Sinon, les voisins sont temporairement pleins: attendre
+            return;
+        }
+
+        // Round-robin: choisir la prochaine destination
+        roundRobinIndex = roundRobinIndex % availableDestinations.size();
+        PipeDestination dest = availableDestinations.get(roundRobinIndex);
+        roundRobinIndex = (roundRobinIndex + 1) % availableDestinations.size();
+
+        // Transferer vers la destination choisie
+        if (dest.isPipe) {
+            BlockEntity neighborBe = level.getBlockEntity(dest.pos);
+            if (neighborBe instanceof ItemPipeBlockEntity neighborPipe) {
+                transferToPipe(neighborPipe, pos);
+            }
+        } else {
+            var cap = level.getCapability(Capabilities.ItemHandler.BLOCK, dest.pos, dest.direction.getOpposite());
+            if (cap != null) {
+                pushToHandler(cap);
+            }
+        }
+    }
+
+    private void dropAllBufferItems(Level level, BlockPos pos) {
+        for (int i = 0; i < buffer.getSlots(); i++) {
+            ItemStack stack = buffer.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                dropItem(level, pos, stack);
+                buffer.setStackInSlot(i, ItemStack.EMPTY);
+            }
+        }
+        sourcePos = null;
+    }
+
+    private void dropItem(Level level, BlockPos pos, ItemStack stack) {
+        if (!stack.isEmpty() && !level.isClientSide()) {
+            double x = pos.getX() + 0.5;
+            double y = pos.getY() + 0.5;
+            double z = pos.getZ() + 0.5;
+
+            ItemEntity entity = new ItemEntity(level, x, y, z, stack);
+            entity.setDefaultPickUpDelay();
+            level.addFreshEntity(entity);
+        }
+    }
+
+    private void transferToPipe(ItemPipeBlockEntity neighborPipe, BlockPos myPos) {
+        for (int bufferSlot = 0; bufferSlot < buffer.getSlots(); bufferSlot++) {
+            ItemStack stack = buffer.getStackInSlot(bufferSlot);
+            if (stack.isEmpty()) continue;
+
+            ItemStack toInsert = stack.copyWithCount(Math.min(stack.getCount(), transferAmount));
+            ItemStack remaining = neighborPipe.insertIntoBuffer(toInsert, false);
+
+            int inserted = toInsert.getCount() - remaining.getCount();
+            if (inserted > 0) {
+                buffer.extractItem(bufferSlot, inserted, false);
+                // Marquer notre position comme source pour la pipe voisine
+                neighborPipe.sourcePos = myPos;
+                break; // Un seul transfert par tick
+            }
+        }
+    }
+
+    private void pushToHandler(IItemHandler handler) {
+        for (int bufferSlot = 0; bufferSlot < buffer.getSlots(); bufferSlot++) {
+            ItemStack stack = buffer.getStackInSlot(bufferSlot);
+            if (stack.isEmpty()) continue;
+
+            ItemStack toInsert = stack.copyWithCount(Math.min(stack.getCount(), transferAmount));
+            ItemStack remaining = insertIntoHandler(handler, toInsert);
+
+            int inserted = toInsert.getCount() - remaining.getCount();
+            if (inserted > 0) {
+                buffer.extractItem(bufferSlot, inserted, false);
+                break; // Un seul transfert par tick
+            }
+        }
+    }
+
+    private boolean canInsertAnyIntoHandler(IItemHandler handler) {
+        for (int bufferSlot = 0; bufferSlot < buffer.getSlots(); bufferSlot++) {
+            ItemStack stack = buffer.getStackInSlot(bufferSlot);
+            if (!stack.isEmpty()) {
+                ItemStack testStack = stack.copyWithCount(1);
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    ItemStack remaining = handler.insertItem(i, testStack, true);
+                    if (remaining.isEmpty()) return true;
+                }
+                // Continuer: d'autres slots du buffer pourraient être insérables
+            }
+        }
+        return false;
+    }
+
+    private ItemStack insertIntoHandler(IItemHandler handler, ItemStack stack) {
+        ItemStack remaining = stack.copy();
+        for (int i = 0; i < handler.getSlots() && !remaining.isEmpty(); i++) {
+            remaining = handler.insertItem(i, remaining, false);
+        }
+        return remaining;
+    }
+
+    public ItemStack insertIntoBuffer(ItemStack stack, boolean simulate) {
+        ItemStack remaining = stack.copy();
+        for (int i = 0; i < buffer.getSlots() && !remaining.isEmpty(); i++) {
+            remaining = buffer.insertItem(i, remaining, simulate);
+        }
+        return remaining;
+    }
+
+    private boolean isBufferFull() {
+        for (int i = 0; i < buffer.getSlots(); i++) {
+            ItemStack stack = buffer.getStackInSlot(i);
+            if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isBufferEmpty() {
+        for (int i = 0; i < buffer.getSlots(); i++) {
+            if (!buffer.getStackInSlot(i).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public ItemStackHandler getBuffer() {
+        return buffer;
+    }
+
+    public boolean isDisconnected(Direction dir) {
+        return disconnectedDirections.contains(dir);
+    }
+
+    public void setDisconnected(Direction dir, boolean disconnected) {
+        if (disconnected) {
+            disconnectedDirections.add(dir);
+        } else {
+            disconnectedDirections.remove(dir);
+        }
+        setChanged();
+    }
+
+    public int getTintColor() {
+        return tintColor;
+    }
+
+    public void setTintColor(int color) {
+        this.tintColor = color;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public boolean hasTint() {
+        return tintColor != -1;
+    }
+
+    // --- Sync client ---
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("Buffer", buffer.serializeNBT(registries));
+        tag.putInt("RoundRobin", roundRobinIndex);
+        if (sourcePos != null) {
+            tag.put("SourcePos", NbtUtils.writeBlockPos(sourcePos));
+        }
+        int disconnectedBits = 0;
+        for (Direction dir : disconnectedDirections) {
+            disconnectedBits |= (1 << dir.ordinal());
+        }
+        if (disconnectedBits != 0) {
+            tag.putInt("DisconnectedDirs", disconnectedBits);
+        }
+        if (tintColor != -1) {
+            tag.putInt("TintColor", tintColor);
+        }
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        if (tag.contains("Buffer")) {
+            buffer.deserializeNBT(registries, tag.getCompound("Buffer"));
+        }
+        roundRobinIndex = tag.getInt("RoundRobin");
+        disconnectedDirections.clear();
+        if (tag.contains("DisconnectedDirs")) {
+            int bits = tag.getInt("DisconnectedDirs");
+            for (Direction dir : Direction.values()) {
+                if ((bits & (1 << dir.ordinal())) != 0) {
+                    disconnectedDirections.add(dir);
+                }
+            }
+        }
+        if (tag.contains("SourcePos")) {
+            sourcePos = NbtUtils.readBlockPos(tag, "SourcePos").orElse(null);
+        }
+        tintColor = tag.contains("TintColor") ? tag.getInt("TintColor") : -1;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        super.handleUpdateTag(tag, registries);
+        requestModelDataUpdate();
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
+        super.onDataPacket(net, pkt, registries);
+        // Force re-render côté client pour mettre à jour le BlockColor
+        if (level != null && level.isClientSide()) {
+            level.invalidateCapabilities(worldPosition);
+            requestModelDataUpdate();
+        }
+    }
+
+    @Override
+    public void requestModelDataUpdate() {
+        super.requestModelDataUpdate();
+        if (level != null && level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    private record PipeDestination(Direction direction, BlockPos pos, boolean isPipe) {}
+}

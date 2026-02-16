@@ -1,0 +1,29 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.bees.festering_bee.lore"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.bees.festering_bee.desc"
+    },
+    {
+      "type": "model",
+      "species": "festering",
+      "height": -20,
+      "scale": -90,
+      "y": -80
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "stats",
+      "species": "festering"
+    }
+  ]
+}

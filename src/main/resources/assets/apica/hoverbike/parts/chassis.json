@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Standard",
+    "stat_1": "Hover_Max_Speed",
+    "stat_1_value": 0.0,
+    "stat_2": "Run_Max_Speed",
+    "stat_2_value": 0.0,
+    "model": "chassis"
+  },
+  {
+    "name": "Heavy Frame",
+    "stat_1": "Hover_Max_Speed",
+    "stat_1_value": -0.02,
+    "stat_2": "Run_Max_Speed",
+    "stat_2_value": 0.1,
+    "model": "chassis_b"
+  },
+  {
+    "name": "Armored",
+    "stat_1": "Hover_Max_Speed",
+    "stat_1_value": -0.03,
+    "stat_2": "Run_Max_Speed",
+    "stat_2_value": -0.05,
+    "model": "chassis_c"
+  }
+]

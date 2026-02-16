@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "W": { "tag": "minecraft:logs" },
+    "H": { "item": "apica:honey_crystal" }
+  },
+  "pattern": [ "IWI", "WHW", "IWI" ],
+  "result": { "id": "apica:infuser", "count": 1 }
+}

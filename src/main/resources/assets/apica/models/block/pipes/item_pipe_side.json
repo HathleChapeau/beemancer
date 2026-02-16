@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "pipe": "minecraft:block/stone"
+  },
+  "elements": [
+    {
+      "name": "connection_tube",
+      "from": [5, 5, 0],
+      "to": [11, 11, 4],
+      "faces": {
+        "north": {"texture": "#pipe"},
+        "east": {"texture": "#pipe"},
+        "west": {"texture": "#pipe"},
+        "up": {"texture": "#pipe"},
+        "down": {"texture": "#pipe"}
+      }
+    }
+  ]
+}

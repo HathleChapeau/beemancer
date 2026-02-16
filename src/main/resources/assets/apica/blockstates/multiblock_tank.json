@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "multiblock=none,master=false": {
+      "model": "apica:block/alchemy/multiblock_tank_single"
+    },
+    "multiblock=none,master=true": {
+      "model": "apica:block/alchemy/multiblock_tank_single"
+    },
+    "multiblock=tank,master=false": {
+      "model": "apica:block/alchemy/multiblock_tank_single"
+    },
+    "multiblock=tank,master=true": {
+      "model": "apica:block/alchemy/multiblock_tank_single"
+    }
+  }
+}

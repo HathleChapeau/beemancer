@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    { "item": "apica:honeyed_log" }
+  ],
+  "result": { "id": "apica:honeyed_planks", "count": 4 }
+}

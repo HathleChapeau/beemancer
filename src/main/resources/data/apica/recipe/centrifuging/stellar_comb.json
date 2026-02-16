@@ -1,0 +1,9 @@
+{
+  "type": "apica:centrifuging",
+  "ingredient": { "item": "apica:stellar_comb" },
+  "results": [
+    { "item": { "id": "apica:nether_star_dust" }, "chance": 0.2 }
+  ],
+  "fluid_result": { "fluid": "apica:honey", "amount": 250 },
+  "processing_time": 200
+}

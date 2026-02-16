@@ -1,0 +1,23 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.alchemy.infuser_t1.lore.p1"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.alchemy.infuser_t1.lore.p2"
+    },
+    {
+      "type": "craft",
+      "result": "apica:infuser"
+    }
+  ],
+  "sticky_notes": []
+}

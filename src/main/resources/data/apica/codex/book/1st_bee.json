@@ -1,0 +1,28 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.apica.1st_bee.lore"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.apica.1st_bee.lore2"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "craft",
+      "result": "apica:scoop"
+    },
+    {
+      "type": "process",
+      "input": "minecraft:bee_nest",
+      "output": "minecraft:honeycomb"
+    }
+  ],
+  "sticky_notes": []
+}

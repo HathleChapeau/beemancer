@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "multiblock=none": {
+      "model": "apica:block/multibloc/storage_controller"
+    },
+    "multiblock=storage": {
+      "model": "apica:block/multibloc/storage/storage_controller_storage"
+    }
+  }
+}

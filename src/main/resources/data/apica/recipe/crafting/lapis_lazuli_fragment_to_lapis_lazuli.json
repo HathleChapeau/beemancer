@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:lapis_lazuli_fragment" },
+    { "item": "apica:lapis_lazuli_fragment" },
+    { "item": "apica:lapis_lazuli_fragment" },
+    { "item": "apica:lapis_lazuli_fragment" }
+  ],
+  "result": { "id": "minecraft:lapis_lazuli", "count": 1 }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "multiblock=none": {
+      "model": "apica:block/multibloc/extractor_heart"
+    },
+    "multiblock=extractor": {
+      "model": "apica:block/multibloc/extractor/extractor_heart_extractor"
+    }
+  }
+}

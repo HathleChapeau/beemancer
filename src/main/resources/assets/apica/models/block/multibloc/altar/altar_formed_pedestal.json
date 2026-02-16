@@ -1,0 +1,91 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "cube": "apica:block/iron18",
+    "body": "apica:block/altar/altar_pedestal_base",
+    "particle": "apica:block/iron"
+  },
+  "elements": [
+    {
+      "name": "Main Body",
+      "from": [2, 0, 2],
+      "to": [14, 16, 14],
+      "faces": {
+        "north": {"texture": "#body"},
+        "east": {"texture": "#body"},
+        "south": {"texture": "#body"},
+        "west": {"texture": "#body"}
+      }
+    },
+    {
+      "from": [1, 0, 1],
+      "to": [15, 4, 15],
+      "faces": {
+        "north": {"texture": "#cube"},
+        "east": {"texture": "#cube"},
+        "south": {"texture": "#cube"},
+        "west": {"texture": "#cube"},
+        "up": {"texture": "#cube"}
+      }
+    },
+    {
+      "from": [-1, 0, 1],
+      "to": [17, 3, 15],
+      "faces": {
+        "north": {"texture": "#cube", "uv": [0,0,16,2.5]},
+        "east": {"texture": "#cube"},
+        "south": {"texture": "#cube", "uv": [0,0,16,2.5]},
+        "west": {"texture": "#cube"},
+        "up": {"texture": "#cube", "uv": [0,1,16,15]},
+        "down": {"texture": "#cube", "uv": [0,1,16,15]}
+      }
+    },
+    {
+      "from": [1, 0, -1],
+      "to": [15, 3, 17],
+      "faces": {
+        "north": {"texture": "#cube"},
+        "east": {"texture": "#cube", "uv": [0,0,16,2.5]},
+        "south": {"texture": "#cube"},
+        "west": {"texture": "#cube", "uv": [0,0,16,2.5]},
+        "up": {"texture": "#cube", "uv": [1,0,15,16]},
+        "down": {"texture": "#cube", "uv": [1,0,15,16]}
+      }
+    },
+    {
+      "from": [1, 12, 1],
+      "to": [15, 16, 15],
+      "faces": {
+        "north": {"texture": "#cube"},
+        "east": {"texture": "#cube"},
+        "south": {"texture": "#cube"},
+        "west": {"texture": "#cube"},
+        "down": {"texture": "#cube"}
+      }
+    },
+    {
+      "from": [-1, 13, 1],
+      "to": [17, 16, 15],
+      "faces": {
+        "north": {"texture": "#cube", "uv": [0,0,16,2.5]},
+        "east": {"texture": "#cube"},
+        "south": {"texture": "#cube", "uv": [0,0,16,2.5]},
+        "west": {"texture": "#cube"},
+        "up": {"texture": "#cube", "uv": [0,1,16,15]},
+        "down": {"texture": "#cube", "uv": [0,1,16,15]}
+      }
+    },
+    {
+      "from": [1, 13, -1],
+      "to": [15, 16, 17],
+      "faces": {
+        "north": {"texture": "#cube"},
+        "east": {"texture": "#cube", "uv": [0,0,16,2.5]},
+        "south": {"texture": "#cube"},
+        "west": {"texture": "#cube", "uv": [0,0,16,2.5]},
+        "up": {"texture": "#cube", "uv": [1,0,15,16]},
+        "down": {"texture": "#cube", "uv": [1,0,15,16]}
+      }
+    }
+  ]
+}

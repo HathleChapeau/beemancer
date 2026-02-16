@@ -1,0 +1,6 @@
+{
+  "parent": "apica:block/multibloc/centrifuge/centrifuge_heart_core",
+  "textures": {
+    "honey": "apica:block/alchemy/powered_centrifuge_heart_working"
+  }
+}

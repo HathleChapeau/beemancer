@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "multiblock=none": { "model": "apica:block/multibloc/hive/hive_multiblock" },
+    "multiblock=hive": { "model": "apica:block/multibloc/hive/hive_multiblock_hive" }
+  }
+}

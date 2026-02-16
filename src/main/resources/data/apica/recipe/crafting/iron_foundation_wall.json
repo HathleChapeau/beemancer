@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "#": { "item": "apica:iron_foundation" }
+  },
+  "pattern": [
+    "###",
+    "###"
+  ],
+  "result": { "id": "apica:iron_foundation_wall", "count": 6 }
+}

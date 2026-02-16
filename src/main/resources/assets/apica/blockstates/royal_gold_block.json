@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "multiblock=none": { "model": "apica:block/royal_gold_block" },
+    "multiblock=alembic": { "model": "apica:block/royal_gold_block_alembic" }
+  }
+}

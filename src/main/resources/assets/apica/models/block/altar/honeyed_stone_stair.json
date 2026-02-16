@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "apica:block/altar/honeyed_stone",
+    "top": "apica:block/altar/honeyed_stone",
+    "side": "apica:block/altar/honeyed_stone"
+  }
+}

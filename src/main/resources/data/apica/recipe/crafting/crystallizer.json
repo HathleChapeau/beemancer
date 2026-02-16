@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "G": { "item": "minecraft:glass" },
+    "H": { "item": "minecraft:honeycomb" }
+  },
+  "pattern": [ "IHI", "G G", "IHI" ],
+  "result": { "id": "apica:crystallizer", "count": 1 }
+}

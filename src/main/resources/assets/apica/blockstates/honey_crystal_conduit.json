@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,multiblock=none": { "model": "apica:block/multibloc/honey_crystal_conduit" },
+    "facing=south,multiblock=none": { "model": "apica:block/multibloc/honey_crystal_conduit" },
+    "facing=east,multiblock=none": { "model": "apica:block/multibloc/honey_crystal_conduit" },
+    "facing=west,multiblock=none": { "model": "apica:block/multibloc/honey_crystal_conduit" },
+    "facing=north,multiblock=altar": { "model": "apica:block/multibloc/honey_crystal_conduit" },
+    "facing=south,multiblock=altar": { "model": "apica:block/multibloc/honey_crystal_conduit" },
+    "facing=east,multiblock=altar": { "model": "apica:block/multibloc/honey_crystal_conduit" },
+    "facing=west,multiblock=altar": { "model": "apica:block/multibloc/honey_crystal_conduit" }
+  }
+}

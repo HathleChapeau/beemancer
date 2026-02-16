@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "apica:block/iron",
+    "top": "apica:block/iron",
+    "side": "apica:block/iron"
+  }
+}
