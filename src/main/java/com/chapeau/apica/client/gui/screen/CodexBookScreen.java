@@ -278,11 +278,9 @@ public class CodexBookScreen extends Screen {
             boolean hovered = mouseX >= btnX && mouseX < btnX + texW
                     && mouseY >= y && mouseY < y + texH;
 
-            // Texture background
-            if (hovered || openedNoteIndex == i) {
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
-            }
+            // Texture background (blend toujours actif pour l'alpha des PNG)
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
             graphics.blit(NOTE_TEXTURES[texIdx], btnX, y, texW, texH,
                     0, 0, texW, texH, texW, texH);
 
