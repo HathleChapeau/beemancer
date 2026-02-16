@@ -28,7 +28,8 @@ package com.chapeau.apica.common.entity.bee.goal;
 import com.chapeau.apica.common.block.hive.IHiveBeeHost;
 import com.chapeau.apica.common.entity.bee.BeeAIStateMachine;
 import com.chapeau.apica.common.entity.bee.BeeActivityState;
-import com.chapeau.apica.common.entity.bee.BeePathfinding;
+import com.chapeau.apica.common.entity.bee.pathfinding.BeeFlightHelper;
+import com.chapeau.apica.common.entity.bee.pathfinding.BeePathfinding;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.content.gene.flower.FlowerGene;
 import com.chapeau.apica.core.behavior.BeeBehaviorConfig;
@@ -372,7 +373,13 @@ public class ForagingBehaviorGoal extends Goal {
         BeeBehaviorConfig config = bee.getBehaviorConfig();
         double speed = bee.isEnraged() ? config.getEnragedForagingSpeed() : config.getForagingSpeed();
 
-        bee.setDeltaMovement(direction.scale(speed));
+        Vec3 movement = direction.scale(speed);
+
+        // Separation boids: evite la superposition avec les abeilles voisines
+        Vec3 separation = BeeFlightHelper.computeSeparation(bee);
+        movement = movement.add(separation);
+
+        bee.setDeltaMovement(movement);
 
         // Rotation
         double dx = targetVec.x - bee.getX();

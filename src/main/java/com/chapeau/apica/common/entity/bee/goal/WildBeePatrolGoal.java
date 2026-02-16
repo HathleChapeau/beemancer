@@ -22,7 +22,8 @@
 package com.chapeau.apica.common.entity.bee.goal;
 
 import com.chapeau.apica.common.block.hive.BeeNestBlockEntity;
-import com.chapeau.apica.common.entity.bee.BeePathfinding;
+import com.chapeau.apica.common.entity.bee.pathfinding.BeeFlightHelper;
+import com.chapeau.apica.common.entity.bee.pathfinding.BeePathfinding;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.core.behavior.BeeBehaviorConfig;
 import net.minecraft.core.BlockPos;
@@ -331,7 +332,13 @@ public class WildBeePatrolGoal extends Goal {
         BeeBehaviorConfig config = bee.getBehaviorConfig();
         double speed = config.getPatrolSpeed();
 
-        bee.setDeltaMovement(direction.scale(speed));
+        Vec3 movement = direction.scale(speed);
+
+        // Separation boids: evite la superposition avec les abeilles voisines
+        Vec3 separation = BeeFlightHelper.computeSeparation(bee);
+        movement = movement.add(separation);
+
+        bee.setDeltaMovement(movement);
 
         double dx = targetVec.x - beePos.x;
         double dz = targetVec.z - beePos.z;

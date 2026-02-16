@@ -49,9 +49,9 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import com.chapeau.apica.common.entity.bee.pathfinding.NoOpNavigation;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.level.Level;
@@ -130,11 +130,9 @@ public class MagicBeeEntity extends Bee {
 
     @Override
     protected PathNavigation createNavigation(Level level) {
-        FlyingPathNavigation navigation = new FlyingPathNavigation(this, level);
-        navigation.setCanOpenDoors(false);
-        navigation.setCanFloat(true);
-        navigation.setCanPassDoors(true);
-        return navigation;
+        // NoOp: les goals utilisent setDeltaMovement() + Theta* custom,
+        // FlyingPathNavigation est du code mort qui gaspille des ticks.
+        return new NoOpNavigation(this, level);
     }
 
     @Override
