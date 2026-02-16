@@ -71,6 +71,10 @@ public class MultiblockSection extends CodexBookSection {
     private final List<FloorGroup> floorGroups = new ArrayList<>();
     private int computedHeight = 0;
 
+    // Bounds globales (calculées une fois, utilisées par tous les étages pour un alignement cohérent)
+    private int globalMinPx = 0, globalMaxPx = 0;
+    private int globalMinPy = 0, globalMaxPy = 0;
+
     public MultiblockSection(String patternId, String controllerId, int paddingY, int groundOffsetY) {
         this.patternId = patternId;
         this.controllerId = controllerId;
@@ -95,12 +99,15 @@ public class MultiblockSection extends CodexBookSection {
         resolve();
         if (floorGroups.isEmpty()) return;
 
+        // Utiliser les bounds globales pour un alignement coherent entre etages
+        int floorHeight = globalMaxPy - globalMinPy;
+        int centerX = x + pageWidth / 2 - (globalMinPx + globalMaxPx) / 2;
+
         int currentY = y + PADDING_TOP + paddingY;
         float zOffset = 0;
 
         for (int g = 0; g < floorGroups.size(); g++){
-            FloorGroup group = floorGroups.get(g);
-            currentY += (group.maxPy - group.minPy);
+            currentY += floorHeight;
             if (g < floorGroups.size() - 1) {
                 currentY += GROUP_SPACING;
             }
@@ -116,8 +123,7 @@ public class MultiblockSection extends CodexBookSection {
 
         for (int g = floorGroups.size() - 1; g >= 0 ; g--) {
             FloorGroup group = floorGroups.get(g);
-            int centerX = x + pageWidth / 2 - (group.minPx + group.maxPx) / 2;
-            int originY = currentY - group.minPy;
+            int originY = currentY - globalMinPy;
 
             for (DisplayElement elem : group.elements) {
                 int drawX = centerX + elem.px;
@@ -131,12 +137,8 @@ public class MultiblockSection extends CodexBookSection {
                 zOffset += 10.0f;
             }
 
-            currentY -= (group.maxPy - group.minPy);
+            currentY -= floorHeight;
             currentY -= GROUP_SPACING;
-            /*
-            if (g < floorGroups.size() - 1) {
-                currentY -= GROUP_SPACING + (int)DebugWandItem.value1;
-            }*/
         }
 
         RenderSystem.enableBlend();
@@ -206,12 +208,11 @@ public class MultiblockSection extends CodexBookSection {
 
         // Construire les groupes par etage (Y descendant = etage le plus haut en premier)
         int scaledItem = Math.round(ITEM_SIZE * ITEM_SCALE);
-        int totalHeight = PADDING_TOP;
 
+        // Phase 1: construire les groupes avec leurs positions isometriques
         for (Map.Entry<Integer, List<DisplayElement>> entry : byFloor.descendingMap().entrySet()) {
             List<DisplayElement> elements = entry.getValue();
 
-            // Calculer les positions pixel isometriques pour cet etage (sans composante Y)
             int gMinPx = Integer.MAX_VALUE, gMaxPx = Integer.MIN_VALUE;
             int gMinPy = Integer.MAX_VALUE, gMaxPy = Integer.MIN_VALUE;
 
@@ -229,17 +230,29 @@ public class MultiblockSection extends CodexBookSection {
                 gMaxPy = Math.max(gMaxPy, py + scaledItem);
             }
 
-            // Trier par py croissant pour le z-order correct
             elements.sort(Comparator.comparingInt((DisplayElement e) -> e.py));
 
             FloorGroup group = new FloorGroup(entry.getKey(), elements,
                     gMinPx, gMaxPx, gMinPy, gMaxPy);
             floorGroups.add(group);
-
-            totalHeight += (gMaxPy - gMinPy);
         }
 
-        // Ajouter l'espacement entre groupes
+        // Phase 2: calculer les bounds globales (max de tous les etages)
+        // Tous les etages utilisent ces bounds pour un alignement coherent
+        globalMinPx = Integer.MAX_VALUE;
+        globalMaxPx = Integer.MIN_VALUE;
+        globalMinPy = Integer.MAX_VALUE;
+        globalMaxPy = Integer.MIN_VALUE;
+        for (FloorGroup group : floorGroups) {
+            globalMinPx = Math.min(globalMinPx, group.minPx);
+            globalMaxPx = Math.max(globalMaxPx, group.maxPx);
+            globalMinPy = Math.min(globalMinPy, group.minPy);
+            globalMaxPy = Math.max(globalMaxPy, group.maxPy);
+        }
+
+        // Phase 3: calculer la hauteur totale avec bounds globales
+        int floorHeight = globalMaxPy - globalMinPy;
+        int totalHeight = PADDING_TOP + floorHeight * floorGroups.size();
         if (floorGroups.size() > 1) {
             totalHeight += GROUP_SPACING * (floorGroups.size() - 1);
         }
