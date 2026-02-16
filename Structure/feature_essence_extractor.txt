@@ -62,13 +62,13 @@ Assets:
 REGISTRES MODIFIÉS
 ================================================================================
 
-BeemancerBlocks.java:
+ApicaBlocks.java:
 - +EXTRACTOR_HEART
 
-BeemancerBlockEntities.java:
+ApicaBlockEntities.java:
 - +EXTRACTOR_HEART
 
-BeemancerItems.java:
+ApicaItems.java:
 - +EXTRACTOR_HEART (BlockItem)
 - +LESSER_DROP_ESSENCE, +DROP_ESSENCE, +GREATER_DROP_ESSENCE, +PERFECT_DROP_ESSENCE
 - +LESSER_SPEED_ESSENCE, +SPEED_ESSENCE, +GREATER_SPEED_ESSENCE, +PERFECT_SPEED_ESSENCE
@@ -76,7 +76,7 @@ BeemancerItems.java:
 - +LESSER_TOLERANCE_ESSENCE, +TOLERANCE_ESSENCE, +GREATER_TOLERANCE_ESSENCE, +PERFECT_TOLERANCE_ESSENCE
 - +DIURNAL_ESSENCE, +NOCTURNAL_ESSENCE, +INSOMNIA_ESSENCE
 
-BeemancerCreativeTabs.java:
+ApicaCreativeTabs.java:
 - +addEssenceExtractor()
 - +addEssences()
 
@@ -124,7 +124,7 @@ DÉPENDANCES
 - core/multiblock/MultiblockValidator.java (validation)
 - core/multiblock/MultiblockController.java (interface)
 - core/multiblock/MultiblockEvents.java (détection destruction)
-- BeemancerBlocks.HONEY_PEDESTAL (composant structure)
-- BeemancerBlocks.HONEYED_STONE (composant structure)
+- ApicaBlocks.HONEY_PEDESTAL (composant structure)
+- ApicaBlocks.HONEYED_STONE (composant structure)
 
 ################################################################################

@@ -1,13 +1,13 @@
 {
   "metadata": {
-    "title": "Beemancer - Propositions d'amelioration Bee Behavior & Hive System",
+    "title": "Apica - Propositions d'amelioration Bee Behavior & Hive System",
     "date": "2026-02-15",
     "scope": "MagicBee, WildBee (BeeNest), Hive system - PAS DeliveryBee",
     "team": [
       "create-specialist: Pathfinding, optimisation NeoForge, AI Goals",
       "forestry-specialist: Patterns Forestry (virtual bee, hive-centric), bugs mods abeilles",
       "complicated-bees-specialist: Complicated Bees, Productive Bees, mods modernes",
-      "beemancer-architect: Audit codebase, validation faisabilite, architecture"
+      "apica-architect: Audit codebase, validation faisabilite, architecture"
     ],
     "total_effort_lines": 195,
     "total_files_impacted": 10,
@@ -32,7 +32,7 @@
 
       "why": {
         "root_cause": "serverLevel.getEntity(uuid) ne distingue pas 'entite morte' de 'entite dans un chunk decharge'. Les deux retournent null.",
-        "who_identified": "beemancer-architect (audit initial) + forestry-specialist (pattern Forestry compare)",
+        "who_identified": "apica-architect (audit initial) + forestry-specialist (pattern Forestry compare)",
         "other_mods_affected": [
           "Productive Bees: AUCUNE protection chunk unload (confirme par forestry-specialist)",
           "ResourcefulBees: meme bug documente (ATM-6 issue #966)",
@@ -116,7 +116,7 @@
 
       "why": {
         "root_cause": "Meme cause que FIX-01: getEntity() ne distingue pas 'morte' de 'chunk decharge'. La reaction est moins grave (pas de perte permanente) mais cree un desync etat ruche/realite.",
-        "who_identified": "beemancer-architect (audit) + complicated-bees-specialist (comparaison PB/RB)",
+        "who_identified": "apica-architect (audit) + complicated-bees-specialist (comparaison PB/RB)",
         "other_mods_affected": [
           "Productive Bees #292: Bees wander off and go missing",
           "Productive Bees #248: Bees exit and immediately re-enter hive",
@@ -137,7 +137,7 @@
           "7. COTE BEE: Dans ForagingBehaviorGoal.tickReturning(), ajouter: if (!bee.level().isLoaded(hivePos)) { bee.setDeltaMovement(Vec3.ZERO); return; } — le timeout existant gerera le cas",
           "8. ENTITY ORPHAN: Dans MagicBeeEntity.tick(), apres tickHivePing(): if (!hasAssignedHive() && !hasHomeNest()) { orphanTimer++; if (orphanTimer > 2400) discard(); } else { orphanTimer = 0; } — persister en NBT"
         ],
-        "rationale": "Le timer de 2 minutes (propose par complicated-bees-specialist, base sur les cycles courts des abeilles Beemancer) est plus court que RB (10 min) car les cycles de butinage Beemancer sont plus rapides. 2 min = ~3 cycles complets de butinage, largement suffisant pour couvrir un chunk unload temporaire. Le isLoaded() cote bee empeche le forcement de chunks (MC-255743). L'orphan cleanup dans MagicBeeEntity couvre le cas ou un nid est detruit pendant que l'abeille est en patrouille (pas encore en RETURNING)."
+        "rationale": "Le timer de 2 minutes (propose par complicated-bees-specialist, base sur les cycles courts des abeilles Apica) est plus court que RB (10 min) car les cycles de butinage Apica sont plus rapides. 2 min = ~3 cycles complets de butinage, largement suffisant pour couvrir un chunk unload temporaire. Le isLoaded() cote bee empeche le forcement de chunks (MC-255743). L'orphan cleanup dans MagicBeeEntity couvre le cas ou un nid est detruit pendant que l'abeille est en patrouille (pas encore en RETURNING)."
       },
 
       "files_impacted": [
@@ -162,7 +162,7 @@
         {
           "title": "ResourcefulBees: timer despawn 10 min",
           "url": "https://github.com/Team-Resourceful/ResourcefulBees",
-          "relevance": "Reference pour le timer de grace: RB utilise 10 min, Beemancer adapte a 2 min (cycles plus courts)"
+          "relevance": "Reference pour le timer de grace: RB utilise 10 min, Apica adapte a 2 min (cycles plus courts)"
         },
         {
           "title": "Complicated Bees GitHub: BaseBeeHousing.java",
@@ -189,7 +189,7 @@
 
       "why": {
         "root_cause": "Le check start.closerThan(cachedStart, 3) invalide le cache trop agressivement. L'abeille se deplace de 3 blocs en ~15-20 ticks, donc le cache est invalide toutes les secondes.",
-        "who_identified": "create-specialist (analyse pathfinding) + beemancer-architect (validation code)",
+        "who_identified": "create-specialist (analyse pathfinding) + apica-architect (validation code)",
         "other_mods_affected": [
           "Lithium Issue #136: 90% des block reads dans le pathfinding vanilla sont du danger scanning",
           "MC-255743: pathfinding performance issues",
@@ -334,7 +334,7 @@
 
       "why": {
         "root_cause": "Le Theta* ne fait pas de distinction entre destinations proches (obstacles possibles) et lointaines (vol direct possible). MAX_ITERATIONS=1000 est un budget fixe.",
-        "who_identified": "complicated-bees-specialist (distance-based tick reduction) + beemancer-architect (validation)",
+        "who_identified": "complicated-bees-specialist (distance-based tick reduction) + apica-architect (validation)",
         "other_mods_affected": [
           "Spigot: activation range 32 blocs pour les entites",
           "Paper: wake-up periodique pour entites distantes",
@@ -395,7 +395,7 @@
 
       "why": {
         "root_cause": "Les constantes ont ete ajoutees independamment dans chaque goal sans reference commune. Pas de convention de nommage ou de source unique.",
-        "who_identified": "beemancer-architect (audit)",
+        "who_identified": "apica-architect (audit)",
         "design_principle": "DRY (Don't Repeat Yourself) + Single Source of Truth pour les parametres de comportement"
       },
 
@@ -525,7 +525,7 @@
 
       "why": {
         "root_cause": "Le systeme de goals Minecraft donne la priorite au numero le plus BAS. Priority 4 ne peut pas preempter priority 3 quand ils partagent le Flag.MOVE.",
-        "who_identified": "create-specialist (analyse du Goal system) + beemancer-architect (validation)",
+        "who_identified": "create-specialist (analyse du Goal system) + apica-architect (validation)",
         "design_note": "C'est un CHOIX DE DESIGN, pas un bug technique. La question est: la BeeWand doit-elle etre plus prioritaire que le butinage automatique?"
       },
 
@@ -591,12 +591,12 @@
   ],
 
   "discussion_notes": {
-    "key_insight_forestry": "Forestry evite 100% des problemes d'entites en utilisant un systeme 100% virtuel (ItemStack + compteurs). Beemancer fait le choix d'entites visibles pour l'immersion — accepter les compromis.",
-    "key_insight_create": "Create utilise des patterns event-driven (recalcul sur evenement, pas periodique) et du tick staggering dans SmartBlockEntity. Applicables directement au systeme de goals Beemancer.",
-    "key_insight_complicated_bees": "CB est aussi 100% virtuel. Les seuls mods avec entites visibles (Productive Bees, ResourcefulBees) ont TOUS les memes bugs de chunk unload et d'orphelins. Beemancer avec le ping UUID fait deja mieux que PB.",
+    "key_insight_forestry": "Forestry evite 100% des problemes d'entites en utilisant un systeme 100% virtuel (ItemStack + compteurs). Apica fait le choix d'entites visibles pour l'immersion — accepter les compromis.",
+    "key_insight_create": "Create utilise des patterns event-driven (recalcul sur evenement, pas periodique) et du tick staggering dans SmartBlockEntity. Applicables directement au systeme de goals Apica.",
+    "key_insight_complicated_bees": "CB est aussi 100% virtuel. Les seuls mods avec entites visibles (Productive Bees, ResourcefulBees) ont TOUS les memes bugs de chunk unload et d'orphelins. Apica avec le ping UUID fait deja mieux que PB.",
     "key_insight_architect": "2 des 10 problemes signales (P6, P10) etaient deja resolus dans le code. Le cache pathfinding (P2) etait partiellement en place. L'audit approfondi du code est indispensable avant toute modification.",
     "combined_perf_impact": "PERF-01 + PERF-02 combines: reduction de ~20x des recalculs pathfinding (de 1/tick/bee a ~1/sec/bee, distribue sur 4 groupes). Block reads: de ~5000/tick peak a ~250/tick pour 50 abeilles.",
-    "chunk_safety_best_in_class": "Avec FIX-01 (Bee Ledger + 2-tier timer) et FIX-02 (orphan timer + isLoaded()), Beemancer aurait la meilleure protection chunk unload parmi TOUS les mods d'abeilles. Productive Bees n'a aucune protection. ResourcefulBees a un timer simple. Forestry evite le probleme (pas d'entite). Beemancer combinerait: ledger de position, grace period au load, 2-tier death timer, isLoaded() cote bee, et orphan cleanup.",
+    "chunk_safety_best_in_class": "Avec FIX-01 (Bee Ledger + 2-tier timer) et FIX-02 (orphan timer + isLoaded()), Apica aurait la meilleure protection chunk unload parmi TOUS les mods d'abeilles. Productive Bees n'a aucune protection. ResourcefulBees a un timer simple. Forestry evite le probleme (pas d'entite). Apica combinerait: ledger de position, grace period au load, 2-tier death timer, isLoaded() cote bee, et orphan cleanup.",
     "false_positives_eliminated": "L'architecte a elimine 2 faux problemes (P6 RETURNING teleport et P10 fleur detruite) qui etaient en realite deja geres dans le code. L'audit du code AVANT proposition est indispensable.",
     "design_decision_pending": "DESIGN-01 (MoveToTargetGoal priority) necessite une decision du team lead: la BeeWand doit-elle preempter le butinage? Si oui, priority 2 + timeout 30s. Si non, laisser priority 4."
   }

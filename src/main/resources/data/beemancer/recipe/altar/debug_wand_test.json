@@ -1,6 +1,0 @@
-{
-  "type": "beemancer:altar",
-  "center_item": { "item": "beemancer:debug_wand" },
-  "pedestal_items": [],
-  "result": { "id": "beemancer:debug_wand" }
-}

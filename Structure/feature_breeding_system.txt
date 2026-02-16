@@ -46,7 +46,7 @@ INCUBATION
 CONFIG
 ================================================================================
 
-- data/beemancer/breeding/species_combinations.json
+- data/apica/breeding/species_combinations.json
 
 ================================================================================
 FICHIERS LIÉS

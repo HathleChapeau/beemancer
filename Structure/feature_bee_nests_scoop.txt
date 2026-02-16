@@ -21,7 +21,7 @@ SCRIPTS CREES
 | common/item/tool/ScoopItem.java            | Capture MagicBee clic droit       |
 | content/worldgen/BeeNestFeature.java       | Feature placement 5 algorithmes   |
 | content/worldgen/BeeNestFeatureConfig.java | Config (species + placement type) |
-| core/registry/BeemancerFeatures.java       | DeferredRegister Feature<?>       |
+| core/registry/ApicaFeatures.java       | DeferredRegister Feature<?>       |
 
 ================================================================================
 SCRIPTS MODIFIES
@@ -29,10 +29,10 @@ SCRIPTS MODIFIES
 
 | Fichier                        | Modification                               |
 |--------------------------------|--------------------------------------------|
-| BeemancerBlocks.java           | +BEE_NEST                                  |
-| BeemancerItems.java            | +BEE_NEST (block item), +SCOOP             |
-| BeemancerBlockEntities.java    | +BEE_NEST                                  |
-| Beemancer.java                 | +BeemancerFeatures.register()              |
+| ApicaBlocks.java           | +BEE_NEST                                  |
+| ApicaItems.java            | +BEE_NEST (block item), +SCOOP             |
+| ApicaBlockEntities.java    | +BEE_NEST                                  |
+| Apica.java                 | +ApicaFeatures.register()              |
 
 ================================================================================
 ASSETS & DATA
@@ -53,20 +53,20 @@ Textures (8 — PLACEHOLDER manquantes):
   - textures/item/scoop.png
 
 Loot table:
-  - data/beemancer/loot_table/blocks/bee_nest.json -> drop 1 honeycomb
+  - data/apica/loot_table/blocks/bee_nest.json -> drop 1 honeycomb
 
 Worldgen configured features (7):
-  - data/beemancer/worldgen/configured_feature/bee_nest_meadow.json ... bee_nest_end.json
+  - data/apica/worldgen/configured_feature/bee_nest_meadow.json ... bee_nest_end.json
 
 Worldgen placed features (7):
-  - data/beemancer/worldgen/placed_feature/bee_nest_meadow.json ... bee_nest_end.json
+  - data/apica/worldgen/placed_feature/bee_nest_meadow.json ... bee_nest_end.json
 
 Biome modifiers NeoForge (7):
-  - data/beemancer/neoforge/biome_modifier/bee_nest_meadow.json ... bee_nest_end.json
+  - data/apica/neoforge/biome_modifier/bee_nest_meadow.json ... bee_nest_end.json
 
 Lang:
-  - block.beemancer.bee_nest = "Bee Nest"
-  - item.beemancer.scoop = "Scoop"
+  - block.apica.bee_nest = "Bee Nest"
+  - item.apica.scoop = "Scoop"
 
 ================================================================================
 MAPPING ESPECES -> BIOMES
@@ -127,6 +127,6 @@ DEPENDANCES
 | MagicBeeItem          | captureFromEntity(), createWithGenes()           |
 | BeeGeneData           | Genes par defaut pour abeilles spawned           |
 | GeneRegistry          | Lookup gene espece par ID                        |
-| BeemancerEntities     | Creation MagicBee                                |
-| BeemancerBlocks       | Acces bloc BEE_NEST                              |
-| BeemancerBlockEntities| Type BlockEntity BEE_NEST                        |
+| ApicaEntities     | Creation MagicBee                                |
+| ApicaBlocks       | Acces bloc BEE_NEST                              |
+| ApicaBlockEntities| Type BlockEntity BEE_NEST                        |

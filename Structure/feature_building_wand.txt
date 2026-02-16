@@ -57,18 +57,18 @@ SCRIPTS:
   - Dessine contours avec LevelRenderer.renderLineBox()
 
 ASSETS:
-- assets/beemancer/models/item/building_wand.json
-- assets/beemancer/textures/item/building_wand.png
+- assets/apica/models/item/building_wand.json
+- assets/apica/textures/item/building_wand.png
 
 TRADUCTIONS:
-- item.beemancer.building_wand: "Building Wand" / "Baguette de Construction"
+- item.apica.building_wand: "Building Wand" / "Baguette de Construction"
 
 ================================================================================
 REGISTRES MODIFIÉS
 ================================================================================
 
-- BeemancerItems.java: BUILDING_WAND
-- BeemancerCreativeTabs.java: BUILDING_WAND (Tools section)
+- ApicaItems.java: BUILDING_WAND
+- ApicaCreativeTabs.java: BUILDING_WAND (Tools section)
 
 ================================================================================
 AMÉLIORATIONS POSSIBLES

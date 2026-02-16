@@ -1,7 +1,0 @@
-{
-  "multipart": [
-    { "apply": { "model": "beemancer:block/altar/nectar_crystal" } },
-    { "apply": { "model": "beemancer:block/altar/nectar_crystal_translucent" } }
-  ]
-}
-

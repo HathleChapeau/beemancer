@@ -1,7 +1,0 @@
-{
-  "type": "beemancer:bee_nest",
-  "config": {
-    "species_id": "end",
-    "placement_type": "end_surface"
-  }
-}

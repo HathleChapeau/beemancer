@@ -14,7 +14,7 @@ ARCHITECTURE
 
 Le terminal utilise un menu unique (StorageTerminalMenu) contenant tous les slots
 pour les 3 onglets. Les slots sont masqués/affichés via isActive() sur des sous-classes de Slot
-(TabSlot, OutputOnlyTabSlot, TabResultSlot, TabBeemancerSlot).
+(TabSlot, OutputOnlyTabSlot, TabResultSlot, TabApicaSlot).
 
 SLOTS (68 total):
 | Indices | Contenu                    | Onglet     |
@@ -52,7 +52,7 @@ MODIFIES:
 - common/blockentity/storage/StorageTerminalBlockEntity.java
 - common/blockentity/storage/StorageDeliveryManager.java
 - common/blockentity/storage/StorageControllerBlockEntity.java
-- core/network/BeemancerNetwork.java
+- core/network/ApicaNetwork.java
 - client/gui/GuiRenderHelper.java
 - client/gui/screen/storage/StorageTerminalScreen.java (1071L -> 431L, delegue aux 3 helpers)
 - lang/en_us.json, lang/fr_fr.json

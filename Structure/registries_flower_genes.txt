@@ -7,9 +7,9 @@
 | flowers     | FlowersFlowerGene      | minecraft:flowers                |
 | crops       | CropsFlowerGene        | minecraft:crops                  |
 | cave_plants | CavePlantsFlowerGene   | minecraft:cave_vines             |
-| trees       | TreesFlowerGene        | beemancer:bee_flowers_trees      |
-| mushrooms   | MushroomsFlowerGene    | beemancer:bee_flowers_mushrooms  |
-| crystals    | CrystalsFlowerGene     | beemancer:bee_flowers_crystals   |
-| nether_wart | NetherWartFlowerGene   | beemancer:bee_flowers_nether_wart|
+| trees       | TreesFlowerGene        | apica:bee_flowers_trees      |
+| mushrooms   | MushroomsFlowerGene    | apica:bee_flowers_mushrooms  |
+| crystals    | CrystalsFlowerGene     | apica:bee_flowers_crystals   |
+| nether_wart | NetherWartFlowerGene   | apica:bee_flowers_nether_wart|
 
 ################################################################################

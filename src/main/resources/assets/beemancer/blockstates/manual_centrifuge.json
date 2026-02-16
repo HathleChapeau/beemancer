@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "spinning=false": { "model": "beemancer:block/alchemy/manual_centrifuge" },
-    "spinning=true": { "model": "beemancer:block/alchemy/manual_centrifuge" }
-  }
-}

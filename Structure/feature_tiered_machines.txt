@@ -117,7 +117,7 @@ NOTE: HoneyTankBlock n'a plus de tiers (remplacé par MultiblockTankBlock)
 REGISTRES MODIFIÉS
 ================================================================================
 
-BeemancerBlocks.java:
+ApicaBlocks.java:
 - +POWERED_CENTRIFUGE_TIER2
 - +POWERED_CENTRIFUGE_TIER3
 - +INFUSER_TIER2
@@ -129,7 +129,7 @@ BeemancerBlocks.java:
 - +ITEM_PIPE_TIER3
 - +ITEM_PIPE_TIER4
 
-BeemancerBlockEntities.java:
+ApicaBlockEntities.java:
 - +POWERED_CENTRIFUGE_TIER2
 - +POWERED_CENTRIFUGE_TIER3
 - +INFUSER_TIER2
@@ -141,7 +141,7 @@ BeemancerBlockEntities.java:
 - +ITEM_PIPE_TIER3
 - +ITEM_PIPE_TIER4
 
-BeemancerItems.java:
+ApicaItems.java:
 - +POWERED_CENTRIFUGE_TIER2 (BlockItem)
 - +POWERED_CENTRIFUGE_TIER3 (BlockItem)
 - +INFUSER_TIER2 (BlockItem)
@@ -153,14 +153,14 @@ BeemancerItems.java:
 - +ITEM_PIPE_TIER3 (BlockItem)
 - +ITEM_PIPE_TIER4 (BlockItem)
 
-BeemancerCreativeTabs.java:
+ApicaCreativeTabs.java:
 - Ajout des items tiered dans l'onglet Alchemy Machines
 
 ================================================================================
 ASSETS
 ================================================================================
 
-BLOCKSTATES (assets/beemancer/blockstates/):
+BLOCKSTATES (assets/apica/blockstates/):
 - powered_centrifuge_tier2.json
 - powered_centrifuge_tier3.json
 - infuser_tier2.json
@@ -172,7 +172,7 @@ BLOCKSTATES (assets/beemancer/blockstates/):
 - item_pipe_tier3.json
 - item_pipe_tier4.json
 
-BLOCK MODELS (assets/beemancer/models/block/):
+BLOCK MODELS (assets/apica/models/block/):
 - powered_centrifuge_tier2.json
 - powered_centrifuge_tier2_working.json
 - powered_centrifuge_tier3.json
@@ -182,7 +182,7 @@ BLOCK MODELS (assets/beemancer/models/block/):
 - infuser_tier3.json
 - infuser_tier3_working.json
 
-ITEM MODELS (assets/beemancer/models/item/):
+ITEM MODELS (assets/apica/models/item/):
 - powered_centrifuge_tier2.json
 - powered_centrifuge_tier3.json
 - infuser_tier2.json
@@ -194,7 +194,7 @@ ITEM MODELS (assets/beemancer/models/item/):
 - item_pipe_tier3.json
 - item_pipe_tier4.json
 
-TEXTURES (assets/beemancer/textures/block/):
+TEXTURES (assets/apica/textures/block/):
 - alchemy/powered_centrifuge_tier2_*.png (placeholders)
 - alchemy/powered_centrifuge_tier3_*.png (placeholders)
 - alchemy/infuser_tier2.png (placeholder)
@@ -208,28 +208,28 @@ TRADUCTIONS
 ================================================================================
 
 EN (en_us.json):
-- block.beemancer.powered_centrifuge_tier2: Powered Centrifuge Tier 2
-- block.beemancer.powered_centrifuge_tier3: Powered Centrifuge Tier 3
-- block.beemancer.infuser_tier2: Infuser Tier 2
-- block.beemancer.infuser_tier3: Infuser Tier 3
-- block.beemancer.honey_pipe_tier2: Honey Pipe Tier 2
-- block.beemancer.honey_pipe_tier3: Honey Pipe Tier 3
-- block.beemancer.honey_pipe_tier4: Honey Pipe Tier 4
-- block.beemancer.item_pipe_tier2: Item Pipe Tier 2
-- block.beemancer.item_pipe_tier3: Item Pipe Tier 3
-- block.beemancer.item_pipe_tier4: Item Pipe Tier 4
+- block.apica.powered_centrifuge_tier2: Powered Centrifuge Tier 2
+- block.apica.powered_centrifuge_tier3: Powered Centrifuge Tier 3
+- block.apica.infuser_tier2: Infuser Tier 2
+- block.apica.infuser_tier3: Infuser Tier 3
+- block.apica.honey_pipe_tier2: Honey Pipe Tier 2
+- block.apica.honey_pipe_tier3: Honey Pipe Tier 3
+- block.apica.honey_pipe_tier4: Honey Pipe Tier 4
+- block.apica.item_pipe_tier2: Item Pipe Tier 2
+- block.apica.item_pipe_tier3: Item Pipe Tier 3
+- block.apica.item_pipe_tier4: Item Pipe Tier 4
 
 FR (fr_fr.json):
-- block.beemancer.powered_centrifuge_tier2: Centrifugeuse Automatique Tier 2
-- block.beemancer.powered_centrifuge_tier3: Centrifugeuse Automatique Tier 3
-- block.beemancer.infuser_tier2: Infuseur Tier 2
-- block.beemancer.infuser_tier3: Infuseur Tier 3
-- block.beemancer.honey_pipe_tier2: Tuyau de Miel Tier 2
-- block.beemancer.honey_pipe_tier3: Tuyau de Miel Tier 3
-- block.beemancer.honey_pipe_tier4: Tuyau de Miel Tier 4
-- block.beemancer.item_pipe_tier2: Tuyau d'Items Tier 2
-- block.beemancer.item_pipe_tier3: Tuyau d'Items Tier 3
-- block.beemancer.item_pipe_tier4: Tuyau d'Items Tier 4
+- block.apica.powered_centrifuge_tier2: Centrifugeuse Automatique Tier 2
+- block.apica.powered_centrifuge_tier3: Centrifugeuse Automatique Tier 3
+- block.apica.infuser_tier2: Infuseur Tier 2
+- block.apica.infuser_tier3: Infuseur Tier 3
+- block.apica.honey_pipe_tier2: Tuyau de Miel Tier 2
+- block.apica.honey_pipe_tier3: Tuyau de Miel Tier 3
+- block.apica.honey_pipe_tier4: Tuyau de Miel Tier 4
+- block.apica.item_pipe_tier2: Tuyau d'Items Tier 2
+- block.apica.item_pipe_tier3: Tuyau d'Items Tier 3
+- block.apica.item_pipe_tier4: Tuyau d'Items Tier 4
 
 ================================================================================
 AMÉLIORATIONS FUTURES

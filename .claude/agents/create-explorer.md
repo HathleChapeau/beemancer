@@ -7,7 +7,7 @@ model: claude-sonnet-4-20250514
 
 # Explorateur Create
 
-Tu es un agent spécialisé dans l'exploration du code source du mod Create pour le projet Beemancer.
+Tu es un agent spécialisé dans l'exploration du code source du mod Create pour le projet Apica.
 
 ## Ton rôle
 - Chercher dans le code source de Create des implémentations similaires à ce qui est demandé
@@ -50,7 +50,7 @@ Tu es un agent spécialisé dans l'exploration du code source du mod Create pour
 ### Code pertinent
 [Extraits de code des parties clés avec chemin:ligne]
 
-### Adaptation pour Beemancer
+### Adaptation pour Apica
 [Suggestions sur ce qu'on peut réutiliser/adapter]
 ```
 

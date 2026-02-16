@@ -82,23 +82,23 @@ RENDU FLUIDE (HoneyReservoirRenderer):
 REGISTRES MODIFIES
 ================================================================================
 
-BeemancerBlocks.java:
+ApicaBlocks.java:
 - +HONEY_RESERVOIR
 - +ALTAR_HEART
 
-BeemancerBlockEntities.java:
+ApicaBlockEntities.java:
 - +HONEY_RESERVOIR
 - +ALTAR_HEART
 
-BeemancerItems.java:
+ApicaItems.java:
 - +HONEY_RESERVOIR (BlockItem)
 - +ALTAR_HEART (BlockItem)
 
-BeemancerCreativeTabs.java:
+ApicaCreativeTabs.java:
 - +HONEY_RESERVOIR (onglet Honey Altar)
 - +ALTAR_HEART (onglet Honey Altar)
 
-Beemancer.java:
+Apica.java:
 - +Capability FluidHandler.BLOCK pour HONEY_RESERVOIR
 
 ClientSetup.java:
@@ -137,7 +137,7 @@ Textures (dans textures/block/altar/):
 - reservoir_body_formed.png (corps verre, forme)
 
 Loot Tables:
-- data/beemancer/loot_table/blocks/altar_heart.json
+- data/apica/loot_table/blocks/altar_heart.json
 
 ================================================================================
 DESIGN 3D
@@ -159,8 +159,8 @@ Elements:
 - Rivets: petits cubes sur les capuchons de fer
 
 Texture reference:
-- Capuchon: beemancer:block/altar/reservoir_cap
-- Corps: beemancer:block/altar/reservoir_body
+- Capuchon: apica:block/altar/reservoir_cap
+- Corps: apica:block/altar/reservoir_body
 - Fluide: rendu dynamique via renderer (couleur du FluidType)
 
 ================================================================================
@@ -184,7 +184,7 @@ DEPENDANCES
 
 | Dependance              | Raison                              |
 |-------------------------|-------------------------------------|
-| BeemancerFluids         | Types de fluides acceptes           |
+| ApicaFluids         | Types de fluides acceptes           |
 | MultiblockValidator     | Detection multiblock forme          |
 | FluidUtil               | Interaction buckets NeoForge        |
 | IClientFluidTypeExtensions | Couleur du fluide pour renderer  |

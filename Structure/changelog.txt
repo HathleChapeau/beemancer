@@ -59,7 +59,7 @@ BEE NESTS (7):
 WORLDGEN:
 - BeeNestFeature custom avec 5 algorithmes: SURFACE, TREE, UNDERGROUND, NETHER_SURFACE, END_SURFACE
 - BeeNestFeatureConfig record avec Codec
-- BeemancerFeatures registre (DeferredRegister<Feature<?>>)
+- ApicaFeatures registre (DeferredRegister<Feature<?>>)
 - 7 configured features + 7 placed features + 7 biome modifiers NeoForge
 - Rarity: meadow 1/12, forest 1/10, rocky 1/14, river 1/16, dune 1/14, nether 1/10, end 1/12
 
@@ -69,15 +69,15 @@ SCOOP:
 - Son BEEHIVE_WORK, drop si inventaire plein
 
 REGISTRES:
-- BeemancerBlocks: +BEE_NEST
-- BeemancerItems: +BEE_NEST, +SCOOP
-- BeemancerBlockEntities: +BEE_NEST
-- Beemancer.java: +BeemancerFeatures.register()
+- ApicaBlocks: +BEE_NEST
+- ApicaItems: +BEE_NEST, +SCOOP
+- ApicaBlockEntities: +BEE_NEST
+- Apica.java: +ApicaFeatures.register()
 
 ASSETS:
 - 1 blockstate (7 variants), 7 block models, 2 item models, 1 loot table
 - 21 fichiers worldgen JSON (7 configured + 7 placed + 7 biome modifiers)
-- Lang: block.beemancer.bee_nest, item.beemancer.scoop
+- Lang: block.apica.bee_nest, item.apica.scoop
 - Textures placeholder manquantes (8 fichiers .png a creer)
 
 ================================================================================
@@ -386,7 +386,7 @@ BUILDER + DECOMPOSITIONS:
   Crees: RequestQueue.java (~150L), RequestProcessor.java (~160L),
     RequestManager.java (~240L orchestrateur)
 
-Lang: +1 cle en_us/fr_fr: message.beemancer.chest_already_registered
+Lang: +1 cle en_us/fr_fr: message.apica.chest_already_registered
 
 ================================================================================
 2026-02-11 - Storage Brainstorm Groupe 2 — Items et Stockage
@@ -433,7 +433,7 @@ CONTROLLER MENU REMOVAL:
   Fichiers supprimes: StorageControllerMenu.java, StorageControllerScreen.java
   Fichiers modifies: StorageTerminalMenu.java, StorageTerminalScreen.java,
     StorageControllerBlockEntity.java, StorageControllerBlock.java,
-    StorageTerminalBlockEntity.java, ClientSetup.java, BeemancerMenus.java
+    StorageTerminalBlockEntity.java, ClientSetup.java, ApicaMenus.java
   Lang: +1 cle (storage_controller.use_terminal)
 
 DECOMPOSITION AGGREGATOR:
@@ -542,7 +542,7 @@ Scripts supprimes (4):
   StorageCraftRequestPacket.java, TerminalCraftMaterialsPanel.java
 
 Scripts nettoyes (8):
-- BeemancerNetwork.java: retire 2 packets (StorageCraftablesSyncPacket, StorageCraftRequestPacket)
+- ApicaNetwork.java: retire 2 packets (StorageCraftablesSyncPacket, StorageCraftRequestPacket)
 - StorageItemAggregator.java: retire scan crafter library, craftableRecipes, sync craftables
 - StorageTerminalMenu.java: retire craftable recipes cache et methodes associees
 - TerminalStorageTabRenderer.java: retire badge "C" et texte "Craft"
@@ -551,7 +551,7 @@ Scripts nettoyes (8):
 - CraftManager.java: retire pendingCraftQueue, queueCrafts(), auto-start
 - CrafterScreen.java: retire library result overlay
 
-Lang: retire gui.beemancer.terminal.materials, gui.beemancer.terminal.missing
+Lang: retire gui.apica.terminal.materials, gui.apica.terminal.missing
 
 ================================================================================
 2026-02-10 - Crafter System (Crafting Automatique)
@@ -577,7 +577,7 @@ Scripts crees:
 
 Scripts modifies:
 - Registres: +CRAFTER bloc/item/BE/menu, +CRAFTING_PAPER, +PART_CRAFTING_PAPER
-- BeemancerNetwork: +3 packets crafter
+- ApicaNetwork: +3 packets crafter
 - ClientSetup: +CrafterScreen registration
 - StorageNetworkRegistry: +CRAFTER dans NetworkBlockType
 - StorageEvents: +handleCrafterToggle() pour edit mode
@@ -904,7 +904,7 @@ SCRIPTS MODIFIES (12):
 - StorageControllerBlockEntity, StorageNetworkRegistry, StorageEvents
 - ControllerStats, StorageDeliveryManager, StorageMultiblockManager
 - StorageControllerMenu, StorageControllerScreen
-- BeemancerBlocks, BeemancerItems, BeemancerBlockEntities, BeemancerCreativeTabs
+- ApicaBlocks, ApicaItems, ApicaBlockEntities, ApicaCreativeTabs
 
 ASSETS: 3 blockstates, 9 block models, 3 item models, 3 loot tables, lang
 
@@ -961,11 +961,11 @@ CREATIVE TAB:
 - Ajout 4 honeyed logs/wood dans addBuildingBlocks()
 
 REGISTRES MODIFIES:
-- BeemancerBlocks: +HONEYED_LOG, +STRIPPED_HONEYED_LOG, +HONEYED_WOOD, +STRIPPED_HONEYED_WOOD,
+- ApicaBlocks: +HONEYED_LOG, +STRIPPED_HONEYED_LOG, +HONEYED_WOOD, +STRIPPED_HONEYED_WOOD,
   +HONEYED_WOOD_STAIR, +HONEYED_WOOD_SLAB, +ROYAL_CRYSTAL, +NECTAR_CRYSTAL
-- BeemancerItems: +6 BlockItems logs/wood, ROYAL_CRYSTAL et NECTAR_CRYSTAL convertis Item->BlockItem,
+- ApicaItems: +6 BlockItems logs/wood, ROYAL_CRYSTAL et NECTAR_CRYSTAL convertis Item->BlockItem,
   -HONEYED_WOOD (item alchimie)
-- BeemancerCreativeTabs: +4 honeyed bois dans building
+- ApicaCreativeTabs: +4 honeyed bois dans building
 
 ================================================================================
 2026-02-06 - Multiblock IO Config System + Centrifuge IO Inversion
@@ -998,7 +998,7 @@ ALEMBIC HEART:
 - invalidateAllCapabilities(): force NeoForge à re-query les capabilities
 - onMultiblockFormed/Broken: link → blockstates → invalidate (ordre correct)
 
-BEEMANCER.java:
+APICA.java:
 - ALEMBIC_HEART fluid: délègue via getFluidHandlerForBlock quand formé
 - INFUSER_HEART item: nouvelle capability (DOWN=outputOnly, autres=inputOnly)
 - HONEY_RESERVOIR: suppression debug logging
@@ -1013,7 +1013,7 @@ FICHIERS MODIFIÉS (5):
 - core/util/SplitItemHandler.java (+inputOnly, +outputOnly)
 - common/blockentity/alchemy/CentrifugeHeartBlockEntity.java (IO_CONFIG, inversion, rotation)
 - common/blockentity/alchemy/AlembicHeartBlockEntity.java (+MultiblockCapabilityProvider)
-- Beemancer.java (Alembic delegation, Infuser item cap, -debug logs)
+- Apica.java (Alembic delegation, Infuser item cap, -debug logs)
 
 ================================================================================
 2026-02-06 - Multiblock Capability Delegation + Codex Book Features
@@ -1025,7 +1025,7 @@ MULTIBLOCK CAPABILITY DELEGATION:
 - Nouveau: SplitItemHandler (insertItem→input, extractItem→output)
 - Modifié: HoneyReservoirBlockEntity — controllerPos + findCapabilityProvider()
 - Modifié: CentrifugeHeartBlockEntity — implements MultiblockCapabilityProvider
-- Modifié: Beemancer.java — capability registration fluid+item pour reservoir+heart
+- Modifié: Apica.java — capability registration fluid+item pour reservoir+heart
 - Les pipes fluide/item se connectent aux réservoirs et délèguent au coeur
 
 CODEX BOOK:
@@ -1037,7 +1037,7 @@ CODEX BOOK:
 CENTRIFUGE:
 - Nouveau: centrifuge_heart_centrifuge_working.json (texture honey_crystal)
 - Modifié: blockstates/centrifuge_heart.json — working=true pointe vers working model
-- Modifié: PoweredCentrifugeMenu — filtre par tag beemancer:combs
+- Modifié: PoweredCentrifugeMenu — filtre par tag apica:combs
 
 CODEX DECORATIONS:
 - CodexDecorationRenderer revu pour suivre le scroll (coordonnées relatives)
@@ -1096,7 +1096,7 @@ Phase finale du refactoring du systeme de livraison (5/5).
 
 LOCALIZATION:
 - getStateLabel() dans StorageTerminalScreen utilise maintenant des cles i18n
-- Ajout cles gui.beemancer.tasks.state.* dans en_us.json et fr_fr.json
+- Ajout cles gui.apica.tasks.state.* dans en_us.json et fr_fr.json
   (flying, queued, completed, failed)
 
 CLEANUP:
@@ -1381,7 +1381,7 @@ FICHIERS MODIFIES (7):
 - StorageDeliveryManager.java: +findPathToOwnerNode(), findPathToChest() refacto,
   -findPathToPosition(), spawnDeliveryBee() simplifie
 - NetworkInterfaceScreen.java: +bouton ON/OFF toggle, renderStatus + mouseClicked
-- Lang en_us/fr_fr: +gui.beemancer.interface.active/inactive
+- Lang en_us/fr_fr: +gui.apica.interface.active/inactive
 
 ================================================================================
 2026-02-04 - Refacto DeliveryTask: TaskOrigin + GUI Requests/Automation
@@ -1448,17 +1448,17 @@ CORRECTIONS POST-IMPLEMENTATION:
 - Visual: frequence ailes acceleree (time * 2.5, amplitude 0.5 rad)
 
 REGISTRES MODIFIES:
-- BeemancerEntities: +FLYWHEEL_TEST_BEE
-- BeemancerBlocks: +BEE_SPAWNER
-- BeemancerItems: +BEE_SPAWNER (BlockItem)
-- BeemancerCreativeTabs: +addFlywheelTest()
+- ApicaEntities: +FLYWHEEL_TEST_BEE
+- ApicaBlocks: +BEE_SPAWNER
+- ApicaItems: +BEE_SPAWNER (BlockItem)
+- ApicaCreativeTabs: +addFlywheelTest()
 - ClientSetup: +NoopRenderer, +FlywheelTestBeeVisualizer
 
 ASSETS CREES (4):
 - blockstates/bee_spawner.json
 - models/block/test/bee_spawner.json
 - models/item/bee_spawner.json
-- data/beemancer/loot_table/blocks/bee_spawner.json
+- data/apica/loot_table/blocks/bee_spawner.json
 
 LANG:
 - en_us.json: +2 entrees (bee_spawner, flywheel_test_bee)
@@ -1495,7 +1495,7 @@ BLOCKENTITES MODIFIES (6):
 - AlembicHeartBlockEntity: +setFormedOnStructureBlocks (ALEMBIC)
 - StorageMultiblockManager: supprime skipMultiblock HoneyedStone
 
-REGISTRE BeemancerBlocks.java:
+REGISTRE ApicaBlocks.java:
 - HONEYED_STONE_WALL: WallBlock → HoneyedStoneWallBlock
 - HONEYED_GLASS: TransparentBlock → HoneyedGlassBlock
 - ROYAL_GOLD_BLOCK: Block → RoyalGoldBlock
@@ -1563,10 +1563,10 @@ FICHIERS MODIFIÉS (~30+):
 - Tous les blockstate JSONs (formed=true/false → multiblock=none/xxx)
 
 REGISTRES:
-- BeemancerBlocks: +ALEMBIC_HEART, +INFUSER_HEART, +CENTRIFUGE_HEART,
+- ApicaBlocks: +ALEMBIC_HEART, +INFUSER_HEART, +CENTRIFUGE_HEART,
   +HONEYED_IRON_BLOCK, +ROYAL_GOLD_BLOCK, +NECTAR_DIAMOND_BLOCK
-- BeemancerItems: +6 BlockItems correspondants
-- BeemancerBlockEntities: +ALEMBIC_HEART, +INFUSER_HEART, +CENTRIFUGE_HEART
+- ApicaItems: +6 BlockItems correspondants
+- ApicaBlockEntities: +ALEMBIC_HEART, +INFUSER_HEART, +CENTRIFUGE_HEART
 
 ================================================================================
 2026-02-03 - Pollen Pot: refonte rendu (BlockEntityRenderer + textures)
@@ -1579,7 +1579,7 @@ le remplissage.
 FICHIERS CRÉÉS (2):
 - client/color/PollenTextures.java — mapping pollen → texture ResourceLocation
 - client/renderer/block/PollenPotRenderer.java — BER avec FluidCubeRenderer
-- assets/beemancer/textures/pollen_textures.json — données JSON du mapping
+- assets/apica/textures/pollen_textures.json — données JSON du mapping
 
 FICHIERS MODIFIÉS (2):
 - client/ClientSetup.java — +enregistrement BER, -block color pollen pot
@@ -1672,7 +1672,7 @@ Refonte complète du layout GUI du Storage Terminal:
 
 4. SLOT VISIBILITY VIA isActive()
    - Remplacement du repositionnement Y=-9999 par isActive() override
-   - 4 inner classes: TabSlot, OutputOnlyTabSlot, TabResultSlot, TabBeemancerSlot
+   - 4 inner classes: TabSlot, OutputOnlyTabSlot, TabResultSlot, TabApicaSlot
 
 Fichiers modifiés:
 - StorageTerminalScreen.java (rewrite complet)
@@ -1739,7 +1739,7 @@ FICHIERS MODIFIÉS (10):
 - common/blockentity/storage/StorageTerminalBlockEntity.java (createMenu étendu)
 - common/blockentity/storage/StorageDeliveryManager.java (cancel + display)
 - common/blockentity/storage/StorageControllerBlockEntity.java (délégation)
-- core/network/BeemancerNetwork.java (+2 packets)
+- core/network/ApicaNetwork.java (+2 packets)
 - client/gui/GuiRenderHelper.java (tab rendering)
 - client/gui/screen/storage/StorageTerminalScreen.java (refonte complète)
 - lang/en_us.json + fr_fr.json (+10 clés traduction)
@@ -1752,11 +1752,11 @@ Suppression des 3 items non désirés (pollen de base, propolis, beeswax) et
 de toutes leurs références. Vérification et complétion de la creative tab.
 
 ITEMS SUPPRIMÉS (3):
-- BeemancerItems: POLLEN, PROPOLIS, BEESWAX
+- ApicaItems: POLLEN, PROPOLIS, BEESWAX
 
 JAVA MODIFIÉS (3):
-- BeemancerItems.java: suppression des 3 registrations
-- BeemancerCreativeTabs.java: suppression des 3 items + ajout 5 manquants
+- ApicaItems.java: suppression des 3 registrations
+- ApicaCreativeTabs.java: suppression des 3 items + ajout 5 manquants
   (CONTROLLED_HIVE, CONTROLLER_PIPE, CRANK, 8 shard fragments, 7 dust shards)
 - PollenColors.java: suppression référence POLLEN
 
@@ -1771,7 +1771,7 @@ LANG MODIFIÉS (2):
 - fr_fr.json: idem
 
 ASSETS MODIFIÉS (3):
-- tags/item/pollens.json: suppression beemancer:pollen
+- tags/item/pollens.json: suppression apica:pollen
 - codex/alchemy.json: remplacement node propolis → bee_products
 - CentrifugeRecipe.java: mise à jour exemple dans commentaire
 
@@ -1930,8 +1930,8 @@ FICHIERS CRÉÉS (5):
    - Contient: propriétés BlockState, VoxelShape cache, connexion, tinting, interactions
    - Template Method avec 8 méthodes abstraites pour les spécificités
 
-4. common/menu/BeemancerMenu.java
-   - Base classe pour tous les menus Beemancer
+4. common/menu/ApicaMenu.java
+   - Base classe pour tous les menus Apica
    - addPlayerInventory() et addPlayerHotbar() partagés par 10 menus
 
 5. common/entity/bee/goal/MoveToTargetGoal.java
@@ -1953,8 +1953,8 @@ Pipes (→ AbstractPipeBlock):
 - HoneyPipeBlock.java: extends AbstractPipeBlock (401→153 lignes)
 - ItemPipeBlock.java: extends AbstractPipeBlock (385→124 lignes)
 
-Menus (→ BeemancerMenu):
-- ManualCentrifugeMenu.java: extends BeemancerMenu, supprimé addPlayerInventory/Hotbar
+Menus (→ ApicaMenu):
+- ManualCentrifugeMenu.java: extends ApicaMenu, supprimé addPlayerInventory/Hotbar
 - PoweredCentrifugeMenu.java: idem
 - AlembicMenu.java: idem
 - InfuserMenu.java: idem
@@ -2003,17 +2003,17 @@ NETTOYAGE:
 - Terminal blockstate simplifié: toutes les variantes utilisent le modèle de base
 
 REGISTRES:
-- BeemancerBlocks: +CONTROLLER_PIPE
-- BeemancerItems: +CONTROLLER_PIPE (BlockItem)
-- BeemancerBlockEntities: +CONTROLLER_PIPE
+- ApicaBlocks: +CONTROLLER_PIPE
+- ApicaItems: +CONTROLLER_PIPE (BlockItem)
+- ApicaBlockEntities: +CONTROLLER_PIPE
 
 ASSETS:
 - blockstates/controller_pipe.json
 - models/block/storage/controller_pipe.json (cube, texture honeyed_stone)
 - models/block/storage/controller_pipe_formed.json (coude, copie honey_pipe_formed)
 - models/item/controller_pipe.json
-- data/beemancer/loot_table/blocks/controller_pipe.json
-- Lang EN/FR: block.beemancer.controller_pipe, gui honey_consumption, honey_efficiency
+- data/apica/loot_table/blocks/controller_pipe.json
+- Lang EN/FR: block.apica.controller_pipe, gui honey_consumption, honey_efficiency
 
 ================================================================================
 2026-01-30 - Storage Controller: Controlled Hive, Terminal 2px, Spread 3px
@@ -2038,8 +2038,8 @@ SPREAD COLONNES:
 - HoneyReservoirRenderer: rendu formed model via BER (blockstate model vidé)
 
 REGISTRES:
-- BeemancerBlocks: +CONTROLLED_HIVE
-- BeemancerItems: +CONTROLLED_HIVE (BlockItem)
+- ApicaBlocks: +CONTROLLED_HIVE
+- ApicaItems: +CONTROLLED_HIVE (BlockItem)
 
 ASSETS:
 - blockstates/controlled_hive.json (8 variants)
@@ -2047,8 +2047,8 @@ ASSETS:
 - models/block/altar/honey_reservoir_formed_render.json (modèle pour BER)
 - models/item/controlled_hive.json
 - textures/block/storage/controlled_hive.png
-- data/beemancer/loot_table/blocks/controlled_hive.json
-- lang/en_us.json + fr_fr.json: +block.beemancer.controlled_hive
+- data/apica/loot_table/blocks/controlled_hive.json
+- lang/en_us.json + fr_fr.json: +block.apica.controlled_hive
 
 ================================================================================
 2026-01-29 - Storage Controller Multibloc
@@ -2084,7 +2084,7 @@ JSON MODIFIÉS:
 SUPPRESSIONS:
 - content/gene/lifetime/ (dossier complet avec 3 gènes)
 - GeneCategory.LIFETIME
-- data/beemancer/genes/lifetime.json
+- data/apica/genes/lifetime.json
 - Structure/feature_lifetime_system.txt
 
 MODIFICATIONS:

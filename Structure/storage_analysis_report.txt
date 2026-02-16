@@ -1,5 +1,5 @@
 ================================================================================
-RAPPORT D'ANALYSE APPROFONDIE — SYSTEME DE STOCKAGE BEEMANCER
+RAPPORT D'ANALYSE APPROFONDIE — SYSTEME DE STOCKAGE APICA
 ================================================================================
 Date: 2026-02-11
 Methodologie: 5 agents de recherche (codebase, AE2, Refined Storage, Create, crash)
@@ -19,7 +19,7 @@ TABLE DES MATIERES
 1. ETAT ACTUEL DU SYSTEME
 ================================================================================
 
-Le systeme de stockage Beemancer est compose de ~9,000+ lignes de code reparties
+Le systeme de stockage Apica est compose de ~9,000+ lignes de code reparties
 sur 30+ fichiers organises en 6 sous-systemes:
 
 SOUS-SYSTEMES:
@@ -211,9 +211,9 @@ POINTS CLES:
 - Sleep/wake tick management: les machines inactives dorment et ne tickent
   plus (0 cost quand idle)
 - Channel system: limite le nombre de devices par cable (pas pertinent
-  pour Beemancer mais concept de limitation est interessant)
+  pour Apica mais concept de limitation est interessant)
 
-APPLICABLE A BEEMANCER:
+APPLICABLE A APICA:
 1. Delta sync pour StorageItemsSyncPacket (PRIORITE HAUTE)
 2. Sleep/wake pour les interfaces inactives
 3. Time-budgeted craft resolution
@@ -243,7 +243,7 @@ RS1 PROBLEMES CONNUS (a eviter):
 - External Storage trop lent pour transferts en masse
 - Search @mod/@tooltip causait du FPS stalling client
 
-APPLICABLE A BEEMANCER:
+APPLICABLE A APICA:
 1. Observer pattern pour les updates GUI (au lieu de polling)
 2. Priorite de stockage configurable
 3. Locking modes pour le crafter avec machines externes
@@ -273,7 +273,7 @@ CREATE 6.0 LOGISTICS NETWORK (nouveau):
 - Factory Panel: monitore les items, auto-requete sous seuil
 - Multi-level caching: 1 tick pour orders, 20 ticks pour display
 
-APPLICABLE A BEEMANCER:
+APPLICABLE A APICA:
 1. Promise pattern pour le delivery system (prevenir doublons) - DEJA
    partiellement implemente via les etats de DeliveryTask
 2. Stagger initialization pattern

@@ -43,7 +43,7 @@ neoForge {
 	}
 
 	mods {
-		beemancer {
+		apica {
 			sourceSet sourceSets.main
 		}
 	}

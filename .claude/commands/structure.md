@@ -32,8 +32,8 @@ Dépendances utilisées:
 - [Dep] : [pourquoi]
 
 Registres modifiés:
-- BeemancerItems: +[ids]
-- BeemancerBlocks: +[ids]
+- ApicaItems: +[ids]
+- ApicaBlocks: +[ids]
 
 Assets créés:
 - textures/[...]

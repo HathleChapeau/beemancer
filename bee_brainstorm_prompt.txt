@@ -2,7 +2,7 @@
 PROMPT — SESSION BRAINSTORMING BEE BEHAVIOR & HIVE SYSTEM
 ================================================================================
 Date: 2026-02-15
-Document de sortie: /home/adri/beemancer/beemancer-linux/bee_brainstorm.txt
+Document de sortie: /home/adri/apica/apica-linux/bee_brainstorm.txt
 ================================================================================
 
 INSTRUCTIONS:
@@ -13,11 +13,11 @@ DEBUT DU PROMPT
 ================================================================================
 
 Fais toi une equipe Forestry expert, Productive Bees expert, Create expert et un
-expert de l'architecture de Beemancer.
+expert de l'architecture de Apica.
 
 On va creer un document de brainstorming pour le systeme d'abeilles et de ruches
-de Beemancer. Le document sera ecrit dans:
-  /home/adri/beemancer/beemancer-linux/bee_brainstorm.txt
+de Apica. Le document sera ecrit dans:
+  /home/adri/apica/apica-linux/bee_brainstorm.txt
 
 AVANT DE COMMENCER: Lis Structure.txt et les fichiers sources du systeme d'abeilles
 pour comprendre l'etat actuel. L'architecte doit faire ca en premier et presenter
@@ -97,9 +97,9 @@ GROUPE 6 — Matrice de priorite globale
 
 == ROLES DES AGENTS ==
 
-- beemancer-architect: Moderateur STRICT. Son role:
+- apica-architect: Moderateur STRICT. Son role:
   1. Presenter les features FACTUELLEMENT (pas de jugement, pas d'opinion)
-  2. Repondre aux questions techniques sur le code Beemancer (lire les fichiers)
+  2. Repondre aux questions techniques sur le code Apica (lire les fichiers)
   3. Poser des questions aux experts pour challenger leurs propositions
   4. Rappatrier des informations du codebase quand les experts en ont besoin
   5. Verifier le contexte: s'assurer que les propositions sont faisables dans le code
@@ -149,7 +149,7 @@ Pour CHAQUE groupe:
    [TAG] Titre proposition
      Quoi: Description
      Pourquoi: Motivation/probleme resolu
-     Comment: Implementation technique dans le code Beemancer
+     Comment: Implementation technique dans le code Apica
      Reference: [MOD] Feature/classe/pattern de reference + source URL
      Priorite: P0 (quick win) a P4 (futur)
      Effort: Trivial/Faible/Moyen/Eleve
@@ -178,7 +178,7 @@ Pour CHAQUE groupe:
    groupe (pas a la fin).
 
 5. L'architecte a acces au codebase complet. Quand un expert demande "comment
-   c'est implemente dans Beemancer?", l'architecte LIT le fichier et repond
+   c'est implemente dans Apica?", l'architecte LIT le fichier et repond
    avec les FAITS (numeros de ligne, noms de methodes, patterns utilises).
 
 6. On veut des propositions CONCRETES et IMPLEMENTABLES, pas des voeux pieux.
@@ -191,7 +191,7 @@ Pour CHAQUE groupe:
 == CATALOGUE DES FEATURES ACTUELLES (pour l'architecte) ==
 
 Les fichiers a lire sont dans:
-  src/main/java/com/chapeau/beemancer/
+  src/main/java/com/chapeau/apica/
 
 Systeme d'abeilles (~10,500 lignes, 52+ fichiers):
 

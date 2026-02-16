@@ -27,34 +27,34 @@ SYSTEMES IMPACTES:
   StorageChestManager, StorageNetworkRegistry, StorageItemAggregator,
   AbstractNetworkNodeBlockEntity
 - Codex: CodexManager, CodexJsonLoader, CodexBookManager
-- Menus: BeemancerMenu, MagicHiveMenu, BeeCreatorMenu, StorageCrateMenu,
+- Menus: ApicaMenu, MagicHiveMenu, BeeCreatorMenu, StorageCrateMenu,
   StorageTerminalMenu, 7 menus alchemy
 - Screens: MagicHiveScreen, CodexScreen, IncubatorScreen, StorageTerminalScreen,
   StandardPageRenderer, 8 screens alchemy
 - Renderers: 11 block renderers (Centrifuge, Crystallizer, Pedestal, Reservoir,
   Tank, Incubator, Infuser x2, MultiblockTank, StorageController)
-- Core: Beemancer.java, ClientSetup.java, BeeSpeciesManager, BeemancerBlockEntities,
-  BeemancerBlocks, BeemancerMenus
+- Core: Apica.java, ClientSetup.java, BeeSpeciesManager, ApicaBlockEntities,
+  ApicaBlocks, ApicaMenus
 - Misc: BuildingWandItem, AltarHeartBlockEntity, QuestManager
 
 ================================================================================
 PHASE 2 — Menus refactoring
 ================================================================================
 
-Unification de la logique player inventory/hotbar dans BeemancerMenu.
+Unification de la logique player inventory/hotbar dans ApicaMenu.
 
 FICHIERS MODIFIES:
-- common/menu/BeemancerMenu.java — Base commune (addPlayerInventory/addPlayerHotbar)
-- common/menu/alchemy/AlembicMenu.java — Herite BeemancerMenu
-- common/menu/alchemy/CrystallizerMenu.java — Herite BeemancerMenu
-- common/menu/alchemy/HoneyTankMenu.java — Herite BeemancerMenu
-- common/menu/alchemy/InfuserMenu.java — Herite BeemancerMenu
-- common/menu/alchemy/ManualCentrifugeMenu.java — Herite BeemancerMenu
-- common/menu/alchemy/MultiblockTankMenu.java — Herite BeemancerMenu
-- common/menu/alchemy/PoweredCentrifugeMenu.java — Herite BeemancerMenu
-- common/menu/MagicHiveMenu.java — Herite BeemancerMenu
-- common/menu/BeeCreatorMenu.java — Herite BeemancerMenu
-- common/menu/StorageCrateMenu.java — Herite BeemancerMenu
+- common/menu/ApicaMenu.java — Base commune (addPlayerInventory/addPlayerHotbar)
+- common/menu/alchemy/AlembicMenu.java — Herite ApicaMenu
+- common/menu/alchemy/CrystallizerMenu.java — Herite ApicaMenu
+- common/menu/alchemy/HoneyTankMenu.java — Herite ApicaMenu
+- common/menu/alchemy/InfuserMenu.java — Herite ApicaMenu
+- common/menu/alchemy/ManualCentrifugeMenu.java — Herite ApicaMenu
+- common/menu/alchemy/MultiblockTankMenu.java — Herite ApicaMenu
+- common/menu/alchemy/PoweredCentrifugeMenu.java — Herite ApicaMenu
+- common/menu/MagicHiveMenu.java — Herite ApicaMenu
+- common/menu/BeeCreatorMenu.java — Herite ApicaMenu
+- common/menu/StorageCrateMenu.java — Herite ApicaMenu
 - common/menu/storage/StorageTerminalMenu.java — Adapte
 
 ================================================================================
@@ -179,13 +179,13 @@ PHASE 5 — Nettoyage architectural (screens + GUI)
 Base commune pour tous les screens du mod.
 
 FICHIERS CREES:
-- client/gui/screen/AbstractBeemancerScreen.java
+- client/gui/screen/AbstractApicaScreen.java
   Classe abstraite commune pour tous les screens: renderBg partagé,
   helpers de positionnement, constantes layout.
 
 FICHIERS MODIFIES:
 - client/gui/GuiRenderHelper.java — Methodes partagees refactorisees
-- Tous les screens alchemy — Heritent d'AbstractBeemancerScreen
+- Tous les screens alchemy — Heritent d'AbstractApicaScreen
 - client/gui/screen/MagicHiveScreen.java — Adapte
 - client/gui/screen/IncubatorScreen.java — Adapte
 - client/gui/screen/CodexScreen.java — Adapte

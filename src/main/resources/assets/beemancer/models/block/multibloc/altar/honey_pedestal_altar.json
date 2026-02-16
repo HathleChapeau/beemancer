@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/block",
-  "textures": {
-    "particle": "beemancer:block/altar/honey_pedestal_column"
-  },
-  "elements": []
-}

@@ -1,8 +1,0 @@
-{
-  "sources": [
-    {
-      "type": "minecraft:single",
-      "resource": "beemancer:gui/empty_slot_comb"
-    }
-  ]
-}

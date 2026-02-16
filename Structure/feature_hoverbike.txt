@@ -27,7 +27,7 @@ COMPOSANTS — CORE (common/entity/mount/)
 | HoverbikeModifier.java    | Modifier complet (nom, prefix/suffix, tags,    |
 |                            |   pool tiers T1-T8, liste stat_objects)        |
 | HoverbikePart.java        | Enum: CHASSIS, COEUR, PROPULSEUR, RADIATEUR    |
-| HoverbikeConfigManager.java| Chargement 4 JSONs dans config/beemancer/hoverbike/|
+| HoverbikeConfigManager.java| Chargement 4 JSONs dans config/apica/hoverbike/|
 | HoverbikeDefaultConfigs.java| Generation defaults V1 (tags, stats, categories)|
 
 ================================================================================
@@ -111,18 +111,18 @@ COMPOSANTS — RESEAU
 COMPOSANTS — ASSETS
 ================================================================================
 
-JSON Parts (assets/beemancer/hoverbike/parts/):
+JSON Parts (assets/apica/hoverbike/parts/):
   - chassis.json       : 3 variantes (Standard, Heavy Frame, Armored)
   - coeur.json         : 3 variantes (Cube, Pyramid, Crystal)
   - propulseur.json    : 3 variantes (Dual Exhaust, Quad Nozzles, Mega Reactor)
   - radiateur.json     : 3 variantes (Panels, Fin Array, Wide Panels)
 
-Shaders (assets/beemancer/shaders/):
+Shaders (assets/apica/shaders/):
   - post/edit_mode.json       : PostChain pipeline edit mode
   - program/edit_darken.json  : Program definition
   - program/edit_darken.fsh   : Fragment shader (assombrit hors masque)
 
-Config (generee au runtime dans config/beemancer/hoverbike/):
+Config (generee au runtime dans config/apica/hoverbike/):
   - base_stats.json           : 15 parametres physiques
   - tags.json                 : 7 tags (speed, acceleration, handling, flight, engine, weight, aerodynamics)
   - statistics.json           : 6 modifiers avec tiers T1-T8
@@ -244,10 +244,10 @@ Note: Les modifiers sont charges et disponibles mais pas encore appliques
 REGISTRES
 ================================================================================
 
-BeemancerEntities:
+ApicaEntities:
   - HOVERBIKE (sized 1.0x1.0, MobCategory.MISC)
 
-BeemancerItems:
+ApicaItems:
   - HOVERBIKE_SPAWN (HoverbikeSpawnItem, stacksTo 1)
   - ASSEMBLY_TABLE (BlockItem)
   - CHASSIS_STANDARD, CHASSIS_HEAVY_FRAME, CHASSIS_ARMORED (HoverbikePartItem)
@@ -255,16 +255,16 @@ BeemancerItems:
   - PROPULSEUR_DUAL_EXHAUST, PROPULSEUR_QUAD_NOZZLES, PROPULSEUR_MEGA_REACTOR (HoverbikePartItem)
   - RADIATEUR_PANELS, RADIATEUR_FIN_ARRAY, RADIATEUR_WIDE_PANELS (HoverbikePartItem)
 
-BeemancerBlocks:
+ApicaBlocks:
   - ASSEMBLY_TABLE (AssemblyTableBlock)
 
-BeemancerBlockEntities:
+ApicaBlockEntities:
   - ASSEMBLY_TABLE (AssemblyTableBlockEntity)
 
-BeemancerCreativeTabs:
+ApicaCreativeTabs:
   - HOVERBIKE_TAB (tab dedie avec toutes les pieces)
 
-BeemancerNetwork:
+ApicaNetwork:
   - HoverbikeVariantPacket (C2S)
 
 ClientSetup:
@@ -274,7 +274,7 @@ ClientSetup:
   - 6 event handlers (DebugHud, GaugeHud, CameraController, EditModeEffect,
     EditModeHandler, EditStatsHud)
 
-Beemancer.java:
+Apica.java:
   - HoverbikeConfigManager.init() (FMLCommonSetupEvent)
   - HoverbikeEntity.createAttributes() (EntityAttributeCreationEvent)
 
@@ -282,9 +282,9 @@ Beemancer.java:
 COMMANDES TEST
 ================================================================================
 
-/summon beemancer:hoverbike ~ ~ ~
-/give @p beemancer:hoverbike_spawn
-/give @p beemancer:assembly_table
-/give @p beemancer:chassis_standard
+/summon apica:hoverbike ~ ~ ~
+/give @p apica:hoverbike_spawn
+/give @p apica:assembly_table
+/give @p apica:chassis_standard
 
 ################################################################################

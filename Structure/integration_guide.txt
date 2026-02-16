@@ -9,7 +9,7 @@ POUR AJOUTER UN NOUVEAU GÈNE
 1. Créer une classe dans content/gene/[category]/
 2. Hériter de la classe de base de la catégorie (ex: SpeciesGene)
 3. Enregistrer dans GeneInit.registerAllGenes()
-4. Ajouter la config dans data/beemancer/genes/[category].json
+4. Ajouter la config dans data/apica/genes/[category].json
 5. Ajouter les traductions dans lang/*.json
 
 ================================================================================
@@ -20,7 +20,7 @@ POUR AJOUTER UN NOUVEAU FLOWERGENE
 2. Hériter de FlowerGene
 3. Définir le TagKey<Block> pour les blocs cibles
 4. Enregistrer dans GeneInit.registerAllGenes()
-5. Créer le tag dans data/beemancer/tags/blocks/
+5. Créer le tag dans data/apica/tags/blocks/
 6. Ajouter les traductions
 7. Mettre à jour Structure/registries_flower_genes.txt
 
@@ -38,7 +38,7 @@ POUR AJOUTER UNE NOUVELLE CATÉGORIE DE GÈNES
 POUR AJOUTER UNE NOUVELLE COMBINAISON DE BREEDING
 ================================================================================
 
-1. Modifier data/beemancer/breeding/species_combinations.json
+1. Modifier data/apica/breeding/species_combinations.json
 2. Ajouter un bloc { "parent1": "...", "parent2": "...", "results": [...] }
 3. Les probabilités doivent totaliser 100%
 4. "nothing" = pas de descendant
@@ -47,7 +47,7 @@ POUR AJOUTER UNE NOUVELLE COMBINAISON DE BREEDING
 POUR CONFIGURER UNE NOUVELLE ESPÈCE
 ================================================================================
 
-1. Modifier data/beemancer/behavior/species_behaviors.json
+1. Modifier data/apica/behavior/species_behaviors.json
 2. Ajouter un bloc dans "species" avec l'ID de l'espèce
 3. Définir behaviorType (FORAGER ou HARVESTER)
 4. Configurer les paramètres (vitesse, vie, loot, etc.)
@@ -67,7 +67,7 @@ POUR AJOUTER UN NOUVEAU TYPE DE RÉCOLTE
 POUR AJOUTER UN NOUVEL ITEM AU REGISTRE
 ================================================================================
 
-1. Ajouter l'item dans core/registry/BeemancerItems.java
+1. Ajouter l'item dans core/registry/ApicaItems.java
 2. Créer la classe de l'item si custom
 3. Créer le modèle JSON dans models/item/
 4. OBLIGATOIRE: Copier template_item.png → textures/item/[nom].png
@@ -77,9 +77,9 @@ POUR AJOUTER UN NOUVEL ITEM AU REGISTRE
 POUR AJOUTER UN NOUVEAU BLOC AU REGISTRE
 ================================================================================
 
-1. Ajouter le bloc dans core/registry/BeemancerBlocks.java
+1. Ajouter le bloc dans core/registry/ApicaBlocks.java
 2. Créer la classe du bloc
-3. Si BlockEntity: créer la classe BlockEntity et l'enregistrer dans BeemancerBlockEntities.java
+3. Si BlockEntity: créer la classe BlockEntity et l'enregistrer dans ApicaBlockEntities.java
 4. Créer blockstate JSON et modèle(s) block/item
 5. OBLIGATOIRE: Copier template_texture.png → textures/block/[nom].png
 6. Mettre à jour Structure/registries_blocks.txt
@@ -90,7 +90,7 @@ POUR AJOUTER UNE NOUVELLE GUI/SCREEN
 
 1. Créer le Menu dans common/menu/
 2. Créer le Screen dans client/gui/screen/
-3. Enregistrer le menu dans BeemancerMenus.java
+3. Enregistrer le menu dans ApicaMenus.java
 4. Enregistrer le screen dans ClientSetup.java
 5. OBLIGATOIRE: Copier template_gui.png → textures/gui/[nom].png
    (Redimensionner si nécessaire selon la taille de la GUI)

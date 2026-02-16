@@ -53,8 +53,8 @@ PARAMÈTRES CONFIGURABLES (par espèce)
 FICHIERS DE CONFIG
 ================================================================================
 
-- Config: data/beemancer/behavior/species_behaviors.json
-- Tags: data/beemancer/tags/blocks/bee_flowers_*.json
+- Config: data/apica/behavior/species_behaviors.json
+- Tags: data/apica/tags/blocks/bee_flowers_*.json
 
 ================================================================================
 FICHIERS LIÉS

@@ -7,7 +7,7 @@ model: claude-sonnet-4-20250514
 
 # Gardien Structure.txt
 
-Tu es le gardien de la documentation Structure.txt pour le projet Beemancer.
+Tu es le gardien de la documentation Structure.txt pour le projet Apica.
 
 ## Ton rôle
 - Comparer Structure.txt et ses sous-fichiers avec l'état réel du code
@@ -24,10 +24,10 @@ Tu es le gardien de la documentation Structure.txt pour le projet Beemancer.
 ### Sous-fichiers (Structure/)
 | Fichier | Contenu | Source de vérité Java |
 |---------|---------|----------------------|
-| registries_items.txt | Items documentés | BeemancerItems.java |
-| registries_blocks.txt | Blocs documentés | BeemancerBlocks.java |
-| registries_entities.txt | Entités documentées | BeemancerEntities.java |
-| registries_menus.txt | Menus documentés | BeemancerMenus.java |
+| registries_items.txt | Items documentés | ApicaItems.java |
+| registries_blocks.txt | Blocs documentés | ApicaBlocks.java |
+| registries_entities.txt | Entités documentées | ApicaEntities.java |
+| registries_menus.txt | Menus documentés | ApicaMenus.java |
 | registries_flower_genes.txt | Flower genes | core/gene/flower/*.java |
 | dependencies.txt | Utilitaires universels | core/util/*.java |
 | changelog.txt | Historique | Ajouts chronologiques |
@@ -37,18 +37,18 @@ Tu es le gardien de la documentation Structure.txt pour le projet Beemancer.
 
 ## Registres Java à comparer
 ```
-src/main/java/com/chapeau/beemancer/core/registry/
-├── BeemancerItems.java
-├── BeemancerBlocks.java
-├── BeemancerEntities.java
-├── BeemancerMenus.java
-├── BeemancerBlockEntities.java
-├── BeemancerFluids.java
-├── BeemancerCreativeTabs.java
-├── BeemancerParticles.java
-├── BeemancerSounds.java
-├── BeemancerAttachments.java
-└── BeemancerTags.java
+src/main/java/com/chapeau/apica/core/registry/
+├── ApicaItems.java
+├── ApicaBlocks.java
+├── ApicaEntities.java
+├── ApicaMenus.java
+├── ApicaBlockEntities.java
+├── ApicaFluids.java
+├── ApicaCreativeTabs.java
+├── ApicaParticles.java
+├── ApicaSounds.java
+├── ApicaAttachments.java
+└── ApicaTags.java
 ```
 
 ## Process de validation
@@ -67,7 +67,7 @@ POUR CHAQUE registre Java:
 ### 2. Validation Features
 ```
 POUR CHAQUE package dans content/:
-  1. Glob: src/main/java/com/chapeau/beemancer/content/*/ → lister packages
+  1. Glob: src/main/java/com/chapeau/apica/content/*/ → lister packages
   2. Glob: Structure/feature_*.txt → lister docs existantes
   3. Chercher correspondance package ↔ feature doc
   4. Si absent: signaler feature non documentée
@@ -76,15 +76,15 @@ POUR CHAQUE package dans content/:
 
 ### 3. Validation Dépendances universelles
 ```
-  1. Glob: src/main/java/com/chapeau/beemancer/core/util/*.java → lister helpers réels
+  1. Glob: src/main/java/com/chapeau/apica/core/util/*.java → lister helpers réels
   2. Read: Structure/dependencies.txt → extraire helpers documentés
   3. Comparer: signaler helpers manquants dans la doc
 ```
 
 ### 4. Validation Arborescence
 ```
-  1. Glob: src/main/java/com/chapeau/beemancer/*/ → packages de premier niveau
-  2. Glob: src/main/java/com/chapeau/beemancer/**/ → tous les sous-packages
+  1. Glob: src/main/java/com/chapeau/apica/*/ → packages de premier niveau
+  2. Glob: src/main/java/com/chapeau/apica/**/ → tous les sous-packages
   3. Read: Structure/arborescence → arborescence documentée
   4. Comparer: signaler nouveaux packages non documentés
 ```
@@ -108,12 +108,12 @@ POUR CHAQUE package dans content/:
 #### registries_items.txt
 | ID manquant | Classe Java | Ligne |
 |-------------|-------------|-------|
-| example_item | ExampleItem | BeemancerItems.java:123 |
+| example_item | ExampleItem | ApicaItems.java:123 |
 
 #### registries_blocks.txt
 | ID manquant | Classe Java | Ligne |
 |-------------|-------------|-------|
-| example_block | ExampleBlock | BeemancerBlocks.java:45 |
+| example_block | ExampleBlock | ApicaBlocks.java:45 |
 
 ### ⚠️ Registres — Entrées obsolètes (dans doc, absentes du code)
 | ID obsolète | Fichier doc | Ligne doc |

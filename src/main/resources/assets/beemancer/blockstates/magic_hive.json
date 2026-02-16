@@ -1,8 +1,0 @@
-{
-  "variants": {
-    "facing=north": { "model": "beemancer:block/machines/magic_hive" },
-    "facing=east": { "model": "beemancer:block/machines/magic_hive", "y": 90 },
-    "facing=south": { "model": "beemancer:block/machines/magic_hive", "y": 90 },
-    "facing=west": { "model": "beemancer:block/machines/magic_hive", "y": 270 }
-  }
-}

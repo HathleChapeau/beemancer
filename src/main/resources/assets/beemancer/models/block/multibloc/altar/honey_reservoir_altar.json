@@ -1,9 +1,0 @@
-{
-  "parent": "minecraft:block/block",
-  "textures": {
-    "body": "beemancer:block/altar/reservoir_body_formed",
-    "cap": "beemancer:block/altar/reservoir_cap_formed",
-    "particle": "beemancer:block/altar/reservoir_cap_formed"
-  },
-  "elements": []
-}

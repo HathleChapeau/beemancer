@@ -92,7 +92,7 @@ Suppression de la propriete LAYER du HoneyedStoneBlock.
 | ControlledHiveBlock    | +MULTIBLOCK (storage)                                |
 | StorageTerminalBlock   | +MULTIBLOCK (storage)                                |
 
---- Registre BeemancerBlocks.java ---
+--- Registre ApicaBlocks.java ---
 | Ancien type         | Nouveau type              | Bloc               |
 |---------------------|---------------------------|---------------------|
 | WallBlock           | HoneyedStoneWallBlock     | HONEYED_STONE_WALL |
@@ -159,7 +159,7 @@ DEPENDANCES
 ================================================================================
 
 - MultiblockProperty est utilise par TOUS les blocs multiblocs
-- Les Heart blocks dependent de BeemancerBlocks et BeemancerBlockEntities
+- Les Heart blocks dependent de ApicaBlocks et ApicaBlockEntities
 - Les blockstate JSONs referencent les valeurs de l'enum
 - Chaque BlockEntity multibloc set MULTIBLOCK sur ses blocs participants via
   setFormedOnStructureBlocks() ou updateGenericMultiblock()

@@ -113,22 +113,22 @@ SYNCHRONISATION:
 REGISTRES MODIFIÉS
 ================================================================================
 
-BeemancerBlocks.java:
+ApicaBlocks.java:
 - +STORAGE_CONTROLLER
 - +STORAGE_TERMINAL
 
-BeemancerBlockEntities.java:
+ApicaBlockEntities.java:
 - +STORAGE_CONTROLLER
 - +STORAGE_TERMINAL
 
-BeemancerItems.java:
+ApicaItems.java:
 - +STORAGE_CONTROLLER (BlockItem)
 - +STORAGE_TERMINAL (BlockItem)
 
-BeemancerMenus.java:
+ApicaMenus.java:
 - +STORAGE_TERMINAL
 
-BeemancerNetwork.java:
+ApicaNetwork.java:
 - +StorageRequestPacket (playToServer)
 - +StorageItemsSyncPacket (playToClient)
 
@@ -243,28 +243,28 @@ TRADUCTIONS
 ================================================================================
 
 EN:
-- block.beemancer.storage_controller: Storage Controller
-- block.beemancer.storage_terminal: Storage Terminal
-- container.beemancer.storage_terminal: Storage Terminal
-- message.beemancer.storage_controller.edit_mode_on: Edit mode enabled...
-- message.beemancer.storage_controller.edit_mode_off: Edit mode disabled
-- message.beemancer.storage_controller.status: Registered: %d chests, %d terminals
-- message.beemancer.storage_controller.chest_removed: Chest removed from network
-- message.beemancer.storage_controller.chests_registered: %d chests registered
-- message.beemancer.storage_terminal.linked: Linked to controller at (...)
-- message.beemancer.storage_terminal.not_linked: Not linked to any controller
-- message.beemancer.storage_terminal.auto_linked: Terminal linked to controller!
-- gui.beemancer.storage_terminal.search: Search...
-- gui.beemancer.storage_terminal.request: Request Items
-- gui.beemancer.storage_terminal.pending_title: Pending Requests
-- gui.beemancer.storage_terminal.pending_count: %d items waiting
-- gui.beemancer.storage_terminal.pending_types: %d different types
-- gui.beemancer.cancel: Cancel
-- gui.beemancer.request: Request
+- block.apica.storage_controller: Storage Controller
+- block.apica.storage_terminal: Storage Terminal
+- container.apica.storage_terminal: Storage Terminal
+- message.apica.storage_controller.edit_mode_on: Edit mode enabled...
+- message.apica.storage_controller.edit_mode_off: Edit mode disabled
+- message.apica.storage_controller.status: Registered: %d chests, %d terminals
+- message.apica.storage_controller.chest_removed: Chest removed from network
+- message.apica.storage_controller.chests_registered: %d chests registered
+- message.apica.storage_terminal.linked: Linked to controller at (...)
+- message.apica.storage_terminal.not_linked: Not linked to any controller
+- message.apica.storage_terminal.auto_linked: Terminal linked to controller!
+- gui.apica.storage_terminal.search: Search...
+- gui.apica.storage_terminal.request: Request Items
+- gui.apica.storage_terminal.pending_title: Pending Requests
+- gui.apica.storage_terminal.pending_count: %d items waiting
+- gui.apica.storage_terminal.pending_types: %d different types
+- gui.apica.cancel: Cancel
+- gui.apica.request: Request
 
 FR:
-- block.beemancer.storage_controller: Contrôleur de Stockage
-- block.beemancer.storage_terminal: Terminal de Stockage
+- block.apica.storage_controller: Contrôleur de Stockage
+- block.apica.storage_terminal: Terminal de Stockage
 - (+ toutes les traductions correspondantes)
 
 ================================================================================

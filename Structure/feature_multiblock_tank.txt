@@ -78,12 +78,12 @@ ALGORITHME D'ÉLECTION MASTER
 REGISTRES
 ================================================================================
 
-BeemancerBlocks.java: +MULTIBLOCK_TANK
-BeemancerBlockEntities.java: +MULTIBLOCK_TANK
-BeemancerItems.java: +MULTIBLOCK_TANK (BlockItem)
-BeemancerMenus.java: +MULTIBLOCK_TANK
-BeemancerCreativeTabs.java: +MULTIBLOCK_TANK (après HONEY_TANK)
-Beemancer.java: +FluidHandler capability registration
+ApicaBlocks.java: +MULTIBLOCK_TANK
+ApicaBlockEntities.java: +MULTIBLOCK_TANK
+ApicaItems.java: +MULTIBLOCK_TANK (BlockItem)
+ApicaMenus.java: +MULTIBLOCK_TANK
+ApicaCreativeTabs.java: +MULTIBLOCK_TANK (après HONEY_TANK)
+Apica.java: +FluidHandler capability registration
 
 ================================================================================
 ASSETS
@@ -100,11 +100,11 @@ textures/gui/multiblock_tank.png (copie honey_tank)
 TRADUCTIONS
 ================================================================================
 
-EN: "block.beemancer.multiblock_tank": "Fluid Tank"
-    "container.beemancer.multiblock_tank": "Fluid Tank"
+EN: "block.apica.multiblock_tank": "Fluid Tank"
+    "container.apica.multiblock_tank": "Fluid Tank"
 
-FR: "block.beemancer.multiblock_tank": "Réservoir de Fluide"
-    "container.beemancer.multiblock_tank": "Réservoir de Fluide"
+FR: "block.apica.multiblock_tank": "Réservoir de Fluide"
+    "container.apica.multiblock_tank": "Réservoir de Fluide"
 
 ================================================================================
 UTILISATION

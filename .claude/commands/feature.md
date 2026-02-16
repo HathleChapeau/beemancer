@@ -1,5 +1,5 @@
 ---
-description: Implémenter une nouvelle feature Beemancer avec workflow complet
+description: Implémenter une nouvelle feature Apica avec workflow complet
 argument-hint: <nom-feature> <description>
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash(./gradlew:*)
 ---

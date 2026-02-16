@@ -1,6 +1,6 @@
 
 ################################################################################
-#                    BEEMANCER — BRAINSTORM BEE & HIVE SYSTEM                  #
+#                    APICA — BRAINSTORM BEE & HIVE SYSTEM                  #
 #                              Date: 2026-02-15                                 #
 ################################################################################
 
@@ -18,7 +18,7 @@ EXPERTS:
 - [FORESTRY] Expert Forestry (breeding Mendelien, apiaries, queen/drone lifecycle)
 - [PB] Expert Productive Bees (configurable species, hive blocks, gene editing)
 - [CREATE] Expert Create (SmartBlockEntity, BlockEntityBehaviour, animations)
-- [ARCH] Architecte Beemancer (faits du code, pas d'opinions)
+- [ARCH] Architecte Apica (faits du code, pas d'opinions)
 
 METHODE: Pour chaque groupe, l'architecte presente les faits du code, les 3
 experts proposent des ameliorations sourcees, l'architecte challenge.
@@ -370,7 +370,7 @@ DUPLICATION DE CODE IDENTIFIEE:
   Pourquoi: Systeme actuel (LootEntry custom) non-standard. Pas de JEI, pas
     de datapacks pour modpackers. Create a demontre l'extensibilite des recettes.
   Comment: ForagingRecipe.java + FORAGING RecipeType + serializer. JSONs dans
-    data/beemancer/recipe/foraging/. Fallback sur BeeBehaviorConfig.
+    data/apica/recipe/foraging/. Fallback sur BeeBehaviorConfig.
   Reference: https://github.com/Creators-of-Create/Create/blob/mc1.21.1/dev/
     src/main/java/com/simibubi/create/content/processing/recipe/ProcessingRecipe.java
   Priorite: P3 | Effort: Eleve | Risque: Moyen
@@ -497,7 +497,7 @@ DIVERGENCES
 [DIV-2] Gene editing vs pure breeding
   PB: Honey Treat + Gene Indexer = transfert direct de genes
   Forestry: Breeding Mendelien pur (croisement aleatoire avec probabilites)
-  Impact: PB est plus accessible, Forestry plus profond. Beemancer a deja un
+  Impact: PB est plus accessible, Forestry plus profond. Apica a deja un
     BreedingManager — la question est: ajouter aussi du gene editing?
 
 [DIV-3] Simulation mode

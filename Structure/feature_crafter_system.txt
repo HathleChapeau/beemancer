@@ -49,12 +49,12 @@ SCRIPTS MODIFIES
 
 | Fichier                                           | Modification                            |
 |---------------------------------------------------|-----------------------------------------|
-| core/registry/BeemancerBlocks.java                | +CRAFTER                                |
-| core/registry/BeemancerItems.java                 | +CRAFTER, +CRAFTING_PAPER, +PART_CRAFTING_PAPER|
-| core/registry/BeemancerBlockEntities.java         | +CRAFTER                                |
-| core/registry/BeemancerMenus.java                 | +CRAFTER                                |
-| core/registry/BeemancerCreativeTabs.java          | +3 items dans l'onglet                  |
-| core/network/BeemancerNetwork.java                | +3 packets                              |
+| core/registry/ApicaBlocks.java                | +CRAFTER                                |
+| core/registry/ApicaItems.java                 | +CRAFTER, +CRAFTING_PAPER, +PART_CRAFTING_PAPER|
+| core/registry/ApicaBlockEntities.java         | +CRAFTER                                |
+| core/registry/ApicaMenus.java                 | +CRAFTER                                |
+| core/registry/ApicaCreativeTabs.java          | +3 items dans l'onglet                  |
+| core/network/ApicaNetwork.java                | +3 packets                              |
 | client/ClientSetup.java                           | +CrafterScreen registration             |
 | common/blockentity/storage/StorageNetworkRegistry.java | +CRAFTER dans NetworkBlockType      |
 | common/block/storage/StorageEvents.java           | +handleCrafterToggle() (edit mode)      |
@@ -140,7 +140,7 @@ DEPENDANCES
 - IDeliveryEndpoint (reception items par le crafter)
 - InterfaceTask pattern (modele pour CraftTask)
 - GuiRenderHelper (rendu programmatique screens)
-- AbstractBeemancerScreen (base class mais CrafterScreen extend directement AbstractContainerScreen)
+- AbstractApicaScreen (base class mais CrafterScreen extend directement AbstractContainerScreen)
 
 ================================================================================
 CONTRAINTES DESIGN

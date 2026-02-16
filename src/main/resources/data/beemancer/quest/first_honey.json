@@ -1,7 +1,0 @@
-{
-  "type": "obtain",
-  "parameter": "minecraft:honey_bottle",
-  "unlocks": [
-    "codex:honey_basics"
-  ]
-}

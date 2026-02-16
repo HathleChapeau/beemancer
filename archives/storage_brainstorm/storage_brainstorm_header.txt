@@ -1,8 +1,8 @@
 ================================================================================
-BEEMANCER — STORAGE SYSTEM BRAINSTORMING
+APICA — STORAGE SYSTEM BRAINSTORMING
 ================================================================================
 Date: 2026-02-11
-Equipe: AE2 Expert, Refined Storage Expert, Create Expert, Beemancer Architect
+Equipe: AE2 Expert, Refined Storage Expert, Create Expert, Apica Architect
 Methode: Presentation factuelle par l'architecte, propositions par les 3 experts,
          debat croise, moderation par l'architecte, synthese par le team-lead.
 ================================================================================

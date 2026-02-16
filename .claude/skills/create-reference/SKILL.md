@@ -57,7 +57,7 @@ public class AllBlocks {
 }
 ```
 
-**Pour Beemancer**: Adapter en `Beemancer*` avec DeferredRegister standard.
+**Pour Apica**: Adapter en `Apica*` avec DeferredRegister standard.
 
 ---
 
@@ -80,13 +80,13 @@ public class ProcessingRecipe extends Recipe<RecipeWrapper> {
 
 ---
 
-## Patterns à adapter pour Beemancer
+## Patterns à adapter pour Apica
 
-| Create | Beemancer |
+| Create | Apica |
 |--------|-----------|
-| SmartBlockEntity | BaseBeemancerBlockEntity |
+| SmartBlockEntity | BaseApicaBlockEntity |
 | BlockEntityBehaviour | Capability ou interface |
-| AllBlocks | BeemancerBlocks |
+| AllBlocks | ApicaBlocks |
 | Registrate | DeferredRegister |
 
 ---

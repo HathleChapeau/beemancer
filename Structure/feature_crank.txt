@@ -43,8 +43,8 @@ Modifiés:
 - common/block/alchemy/ManualCentrifugeBlock.java (clic droit = GUI)
 - common/blockentity/alchemy/ManualCentrifugeBlockEntity.java (pas de decay)
 - common/menu/alchemy/ManualCentrifugeMenu.java (filtre slot)
-- BeemancerBlocks.java (+CRANK)
-- BeemancerItems.java (+CRANK)
+- ApicaBlocks.java (+CRANK)
+- ApicaItems.java (+CRANK)
 
 Recette: 5 sticks en S dans grille 3x3
 
@@ -52,7 +52,7 @@ Recette: 5 sticks en S dans grille 3x3
 REGISTRES
 ================================================================================
 
-- BeemancerBlocks: +CRANK
-- BeemancerItems: +CRANK
+- ApicaBlocks: +CRANK
+- ApicaItems: +CRANK
 
 ################################################################################

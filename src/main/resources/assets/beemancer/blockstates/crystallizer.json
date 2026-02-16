@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "active=false": { "model": "beemancer:block/alchemy/crystallizer" },
-    "active=true": { "model": "beemancer:block/alchemy/crystallizer_active" }
-  }
-}

@@ -49,16 +49,16 @@ Assets:
 REGISTRES MODIFIÉS
 ================================================================================
 
-BeemancerBlocks.java:
+ApicaBlocks.java:
 - +BEE_STATUE
 
-BeemancerBlockEntities.java:
+ApicaBlockEntities.java:
 - +BEE_STATUE
 
-BeemancerItems.java:
+ApicaItems.java:
 - +BEE_STATUE (BlockItem)
 
-BeemancerCreativeTabs.java:
+ApicaCreativeTabs.java:
 - +addBeeStatue()
 
 ClientSetup.java:

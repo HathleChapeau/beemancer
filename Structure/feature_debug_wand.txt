@@ -86,8 +86,8 @@ ASSETS
 REGISTRES
 ================================================================================
 
-- BeemancerItems.DEBUG_WAND
-- BeemancerCreativeTabs: Section Tools
+- ApicaItems.DEBUG_WAND
+- ApicaCreativeTabs: Section Tools
 
 ================================================================================
 TRADUCTIONS

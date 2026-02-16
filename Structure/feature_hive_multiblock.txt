@@ -62,18 +62,18 @@ Défini dans MultiblockPatterns.java:
 REGISTRES
 ================================================================================
 
-BeemancerBlocks.java:
+ApicaBlocks.java:
   + HONEYED_SLAB
   + HIVE_MULTIBLOCK
 
-BeemancerBlockEntities.java:
+ApicaBlockEntities.java:
   + HIVE_MULTIBLOCK
 
-BeemancerItems.java:
+ApicaItems.java:
   + HONEYED_SLAB
   + HIVE_MULTIBLOCK
 
-BeemancerCreativeTabs.java:
+ApicaCreativeTabs.java:
   + HONEYED_SLAB (section Honey Altar)
   + HIVE_MULTIBLOCK (section Hive Multiblock)
 
@@ -104,12 +104,12 @@ TRADUCTIONS
 ================================================================================
 
 EN:
-  "block.beemancer.honeyed_slab": "Honeyed Stone Slab"
-  "block.beemancer.hive_multiblock": "Hive Block"
+  "block.apica.honeyed_slab": "Honeyed Stone Slab"
+  "block.apica.hive_multiblock": "Hive Block"
 
 FR:
-  "block.beemancer.honeyed_slab": "Dalle en Pierre Miellée"
-  "block.beemancer.hive_multiblock": "Bloc de Ruche"
+  "block.apica.honeyed_slab": "Dalle en Pierre Miellée"
+  "block.apica.hive_multiblock": "Bloc de Ruche"
 
 ================================================================================
 UTILISATION
@@ -183,6 +183,6 @@ BUG FIXES APPLIQUÉS (2026-01-25)
 
 3. Message de formation
    - Envoyé aux joueurs dans un rayon de 16 blocs
-   - Clé: "message.beemancer.hive_multiblock.formed"
+   - Clé: "message.apica.hive_multiblock.formed"
 
 ################################################################################

@@ -1,5 +1,5 @@
 ################################################################################
-#                              BEEMANCER - STRUCTURE                           #
+#                              APICA - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-02-15                     #
 #  (Hoverbike Structure Update - 2026-02-15)                                    #
 ################################################################################
@@ -21,10 +21,10 @@ TABLE DES MATIÈRES
 1. VUE D'ENSEMBLE
 ================================================================================
 
-Mod: Beemancer
+Mod: Apica
 Version MC: 1.21.1
 Loader: NeoForge
-Package racine: com.chapeau.beemancer
+Package racine: com.chapeau.apica
 
 Philosophie:
 - Modularité maximale (1 script = 1 responsabilité)
@@ -48,7 +48,7 @@ Philosophie:
 ┌─────────────────────────────────────┬────────────────────────────────────────┐
 │ Fichier                             │ Rôle                                   │
 ├─────────────────────────────────────┼────────────────────────────────────────┤
-│ Beemancer.java                      │ Point d'entrée, init gènes + behaviors │
+│ Apica.java                      │ Point d'entrée, init gènes + behaviors │
 │ core/gene/Gene.java                 │ Interface pour tous les gènes          │
 │ core/gene/GeneRegistry.java         │ Registre central des gènes             │
 │ core/gene/GeneCategory.java         │ Définition des catégories              │
@@ -57,8 +57,8 @@ Philosophie:
 │ core/breeding/BreedingManager.java  │ Logique breeding + héritage            │
 │ core/util/FlowerSearchHelper.java   │ Recherche de fleurs dans un rayon      │
 │ core/util/HarvestHelper.java        │ Logique récolte par type de bloc       │
-│ core/recipe/BeemancerRecipeTypes.java│ Registre des types de recettes        │
-│ core/recipe/BeemancerRecipeSerializers.java│ Registre des serializers        │
+│ core/recipe/ApicaRecipeTypes.java│ Registre des types de recettes        │
+│ core/recipe/ApicaRecipeSerializers.java│ Registre des serializers        │
 │ core/recipe/ProcessingOutput.java   │ Output avec probabilité                │
 │ core/recipe/FluidIngredient.java    │ Ingredient fluide pour recettes        │
 │ content/gene/GeneInit.java          │ Enregistrement de tous les gènes       │
@@ -79,9 +79,9 @@ Philosophie:
 │ client/renderer/util/RenderHelper      │ Push/pop, facing rotation partagés │
 │ client/renderer/util/FloatingItemHelper│ Rendu item flottant anime          │
 │ client/renderer/util/RotatingModelHelper│ Rendu modele rotatif partagé      │
-│ client/gui/screen/AbstractBeemancerScreen│ Base commune pour tous les screens│
+│ client/gui/screen/AbstractApicaScreen│ Base commune pour tous les screens│
 │ common/block/alchemy/AbstractPipeBlock │ Base commune pipes (Item+Honey)    │
-│ common/menu/BeemancerMenu              │ Base menus (player inv/hotbar)     │
+│ common/menu/ApicaMenu              │ Base menus (player inv/hotbar)     │
 │ (supprime: MoveToTargetGoal)           │ BeeWand supprimee (DESIGN-01)      │
 │ common/blockentity/storage/           │                                        │
 │   StorageChestManager               │ Gestion coffres réseau stockage      │
@@ -162,25 +162,25 @@ Philosophie:
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ FICHIER DE DÉTAIL: Structure/registries_items.txt                           │
-│ POUR AJOUTER: Éditer BeemancerItems.java puis mettre à jour le fichier      │
+│ POUR AJOUTER: Éditer ApicaItems.java puis mettre à jour le fichier      │
 └─────────────────────────────────────────────────────────────────────────────┘
 → Voir: Structure/registries_items.txt
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ FICHIER DE DÉTAIL: Structure/registries_blocks.txt                          │
-│ POUR AJOUTER: Éditer BeemancerBlocks.java puis mettre à jour le fichier     │
+│ POUR AJOUTER: Éditer ApicaBlocks.java puis mettre à jour le fichier     │
 └─────────────────────────────────────────────────────────────────────────────┘
 → Voir: Structure/registries_blocks.txt
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ FICHIER DE DÉTAIL: Structure/registries_entities.txt                        │
-│ POUR AJOUTER: Éditer BeemancerEntities.java puis mettre à jour le fichier   │
+│ POUR AJOUTER: Éditer ApicaEntities.java puis mettre à jour le fichier   │
 └─────────────────────────────────────────────────────────────────────────────┘
 → Voir: Structure/registries_entities.txt
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ FICHIER DE DÉTAIL: Structure/registries_menus.txt                           │
-│ POUR AJOUTER: Éditer BeemancerMenus.java puis mettre à jour le fichier      │
+│ POUR AJOUTER: Éditer ApicaMenus.java puis mettre à jour le fichier      │
 └─────────────────────────────────────────────────────────────────────────────┘
 → Voir: Structure/registries_menus.txt
 
@@ -193,13 +193,13 @@ Philosophie:
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ REGISTRES DE RECETTES (core/recipe/)                                        │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ BeemancerRecipeTypes:                                                        │
+│ ApicaRecipeTypes:                                                        │
 │   - CENTRIFUGING (1 item → fluide + items avec probas)                       │
 │   - INFUSING (1 item + fluide → 1 item)                                      │
 │   - CRYSTALLIZING (1 fluide → 1 item)                                        │
 │   - DISTILLING (2 fluides → 1 fluide)                                        │
 │                                                                              │
-│ BeemancerRecipeSerializers:                                                  │
+│ ApicaRecipeSerializers:                                                  │
 │   - CENTRIFUGE_SERIALIZER                                                    │
 │   - INFUSING_SERIALIZER                                                      │
 │   - CRYSTALLIZING_SERIALIZER                                                 │
@@ -270,7 +270,7 @@ LISTE DES FEATURES:
 
 → Honey Altar
   Fichier: Structure/feature_honey_altar.txt
-  Description: Multibloc 3x3x5 servant d'autel magique pour le Beemancer
+  Description: Multibloc 3x3x5 servant d'autel magique pour le Apica
 
 → Multiblock System
   Fichier: Structure/feature_multiblock_system.txt
@@ -349,7 +349,7 @@ LISTE DES FEATURES:
 → Multiblock Capability Delegation + IO Config System
   Description: Système déclaratif de délégation de capabilities (fluid+item) des blocs structurels vers le contrôleur multibloc, avec configuration IO per-face per-position
   Scripts créés: MultiblockCapabilityProvider.java, IOMode.java, BlockIORule.java, MultiblockIOConfig.java
-  Scripts modifiés: SplitFluidHandler.java (+inputOnly/outputOnly factories), SplitItemHandler.java (+inputOnly/outputOnly factories), CentrifugeHeartBlockEntity.java (IO_CONFIG déclaratif, top=INPUT/bottom=OUTPUT), AlembicHeartBlockEntity.java (+MultiblockCapabilityProvider, IO_CONFIG, reservoir linking), Beemancer.java (Alembic delegation, Infuser item capability)
+  Scripts modifiés: SplitFluidHandler.java (+inputOnly/outputOnly factories), SplitItemHandler.java (+inputOnly/outputOnly factories), CentrifugeHeartBlockEntity.java (IO_CONFIG déclaratif, top=INPUT/bottom=OUTPUT), AlembicHeartBlockEntity.java (+MultiblockCapabilityProvider, IO_CONFIG, reservoir linking), Apica.java (Alembic delegation, Infuser item capability)
   Dépendances: MultiblockController, IFluidHandler, IItemHandler, HoneyReservoirBlockEntity
   Registres modifiés: Capabilities (fluid+item) pour HONEY_RESERVOIR, CENTRIFUGE_HEART, ALEMBIC_HEART, INFUSER_HEART
 
@@ -357,7 +357,7 @@ LISTE DES FEATURES:
   Description: Système de livre modulaire avec sections (header, text, model, stats) et sticky notes en overlay
   Scripts créés: StickyNote.java, StatsSection.java, ModelSection.java
   Scripts modifiés: CodexBookScreen.java, CodexBookContent.java, meadow_bee.json + 97 bee JSONs
-  Assets: 97 fichiers data/beemancer/codex/book/*.json
+  Assets: 97 fichiers data/apica/codex/book/*.json
   Dépendances: CodexBookManager, BookPageLayout, BeeSpeciesManager
 
 → Codex Decorations (Cracks, Stains, Borders)
@@ -368,9 +368,9 @@ LISTE DES FEATURES:
   Dépendances: CodexPage
 
 → Centrifuge Comb Tag Filter
-  Description: La centrifugeuse accepte tout item du tag beemancer:combs au lieu d'une whitelist hardcodée
+  Description: La centrifugeuse accepte tout item du tag apica:combs au lieu d'une whitelist hardcodée
   Scripts modifiés: PoweredCentrifugeMenu.java
-  Dépendances: BeemancerTags.Items.COMBS
+  Dépendances: ApicaTags.Items.COMBS
 
 → Empty Comb Slot Texture
   Description: Affichage de la texture empty_slot_comb dans les slots comb input
@@ -386,7 +386,7 @@ LISTE DES FEATURES:
   Scripts crees: StorageHiveBlock.java, StorageHiveBlockEntity.java
   Scripts modifies: StorageControllerBlockEntity.java, StorageNetworkRegistry.java, StorageEvents.java, ControllerStats.java, StorageDeliveryManager.java, StorageMultiblockManager.java, StorageControllerMenu.java, StorageControllerScreen.java
   Assets: 3 blockstates, 9 block models, 3 item models, 3 loot tables
-  Registres modifies: BeemancerBlocks (+3), BeemancerItems (+3), BeemancerBlockEntities (+1)
+  Registres modifies: ApicaBlocks (+3), ApicaItems (+3), ApicaBlockEntities (+1)
 
 → Dynamic Delivery Task System
   Description: Systeme de taches de livraison dynamique. Les abeilles s'adaptent a la quantite disponible a la source (extraction dynamique jusqu'a maxStackSize). Le controller reevalue les taches toutes les 20 ticks (split/merge/cancel). Redirection mid-flight: quand une tache est annulee, l'abeille va au relay le plus proche et prend une nouvelle tache sans revenir au controller. Phase SAVING_INVENTORY pour deposer les items avant redirect. Slots bonus essence toujours visibles (verrouilles si hives insuffisantes).
@@ -471,10 +471,10 @@ LISTE DES FEATURES:
       [AN] Buffer 27 slots (3 pages) deposit + pickup, PaginatedTabSlot, page arrows dans Screen
   Scripts crees: AggregationCache.java, DepositStrategy.java, ViewerSyncManager.java, ItemStackKey.java
   Scripts supprimes: StorageControllerMenu.java, StorageControllerScreen.java
-  Scripts modifies: StorageItemAggregator.java, StorageTerminalBlockEntity.java, StorageTerminalMenu.java, StorageTerminalScreen.java, StorageControllerBlockEntity.java, StorageControllerBlock.java, StorageTerminalBlock.java, StorageDeliveryManager.java, StorageItemsSyncPacket.java, RequestManager.java, ControllerStats.java, BeemancerMenu.java, ClientSetup.java, BeemancerMenus.java
+  Scripts modifies: StorageItemAggregator.java, StorageTerminalBlockEntity.java, StorageTerminalMenu.java, StorageTerminalScreen.java, StorageControllerBlockEntity.java, StorageControllerBlock.java, StorageTerminalBlock.java, StorageDeliveryManager.java, StorageItemsSyncPacket.java, RequestManager.java, ControllerStats.java, ApicaMenu.java, ClientSetup.java, ApicaMenus.java
   Lang: +1 cle en_us/fr_fr (storage_controller.use_terminal)
   Dependances: aucune nouvelle
-  Registres modifies: BeemancerMenus (-STORAGE_CONTROLLER)
+  Registres modifies: ApicaMenus (-STORAGE_CONTROLLER)
 
 → Storage Brainstorm Groupe 3 — Transport et Livraison (22 changements)
   Description: Ameliorations transport/livraison issues du brainstorming 4 experts. 10 etapes implementees:

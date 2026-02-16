@@ -29,22 +29,22 @@ Le système est composé de:
    - CodexNodeWidget.java   : Widget pour afficher un node individuel
 
 4. REGISTRES (core/registry/)
-   - BeemancerAttachments.java : Attachment pour données joueur
-   - BeemancerSounds.java      : Sons du Codex
-   - BeemancerItems.java       : +CODEX item
+   - ApicaAttachments.java : Attachment pour données joueur
+   - ApicaSounds.java      : Sons du Codex
+   - ApicaItems.java       : +CODEX item
 
 5. ITEM (common/item/codex/)
    - CodexItem.java         : Item livre qui ouvre le CodexScreen
 
 --------------------------------------------------------------------------------
-FICHIERS JSON (data/beemancer/codex/)
+FICHIERS JSON (data/apica/codex/)
 --------------------------------------------------------------------------------
 
 Structure d'un node:
 {
   "id": "node_id",
   "position": { "x": 0, "y": 0 },
-  "icon": "beemancer:textures/item/example.png",
+  "icon": "apica:textures/item/example.png",
   "category": "NORMAL|ROOT|GOAL|CHALLENGE",
   "parent": "parent_node_id" | null,
   "hidden_until_parent_unlocked": true|false,
@@ -92,7 +92,7 @@ Modèle:
 UTILISATION
 --------------------------------------------------------------------------------
 
-1. Obtenir l'item "Codex" dans l'onglet créatif Beemancer
+1. Obtenir l'item "Codex" dans l'onglet créatif Apica
 2. Clic droit avec l'item pour ouvrir le Codex
 3. Naviguer entre les onglets (Bees, Alchemy, Logistics)
 4. Cliquer sur les nodes pour les débloquer (si parent débloqué)

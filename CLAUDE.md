@@ -1,7 +1,7 @@
-# CLAUDE.md — Beemancer
+# CLAUDE.md — Apica
 
 ## Projet
-- **Nom**: Beemancer
+- **Nom**: Apica
 - **Version Minecraft**: 1.21.1
 - **Type**: Mod Minecraft (NeoForge/Forge)
 - **Références architecturales**: Create, Cobblemon
@@ -38,8 +38,8 @@
 ## Mise à jour Structure.txt
 
 ### Registres ajoutés
-- BeemancerItems: +[item_id]
-- BeemancerBlocks: +[block_id]
+- ApicaItems: +[item_id]
+- ApicaBlocks: +[block_id]
 
 ### Feature documentée
 [Copier le bloc complet]
@@ -82,7 +82,7 @@ Chaque fichier commence par un bloc d'en-tête:
  * | Dépendance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | ExempleRegistry     | Accès registres      | Récupération des items/blocs   |
- * | BeemancerConfig     | Configuration mod    | Paramètres ajustables          |
+ * | ApicaConfig     | Configuration mod    | Paramètres ajustables          |
  * ------------------------------------------------------------
  * 
  * UTILISÉ PAR:
@@ -94,8 +94,8 @@ Chaque fichier commence par un bloc d'en-tête:
 
 ### 4. Structure de Packages
 ```
-com.beemancer/
-├── Beemancer.java                 # Point d'entrée unique
+com.chapeau.apica/
+├── Apica.java                 # Point d'entrée unique
 ├── core/                          # Fondations universelles
 │   ├── registry/                  # Registres (items, blocs, entities)
 │   ├── config/                    # Configuration
@@ -155,7 +155,7 @@ Pour chaque feature, documenter:
 ### Pattern d'implémentation utilisé
 [Description technique: comment ils ont résolu le problème]
 
-### Adaptation pour Beemancer
+### Adaptation pour Apica
 [Ce qu'on garde, ce qu'on adapte]
 ```
 
@@ -239,7 +239,7 @@ public boolean canHarvest() {}
 public Bee createBee() {}
 
 // Constantes: SCREAMING_SNAKE_CASE
-public static final String MOD_ID = "beemancer";
+public static final String MOD_ID = "apica";
 
 // Registres: suffixe _REGISTRY ou _REGISTER
 public static final DeferredRegister<Item> ITEMS = ...;
@@ -250,10 +250,10 @@ public static final DeferredRegister<Item> ITEMS = ...;
 #### Registres (style Create)
 ```java
 // Un fichier par type de registre
-// core/registry/BeemancerItems.java
-public class BeemancerItems {
+// core/registry/ApicaItems.java
+public class ApicaItems {
     public static final DeferredRegister<Item> ITEMS = 
-        DeferredRegister.create(Registries.ITEM, Beemancer.MOD_ID);
+        DeferredRegister.create(Registries.ITEM, Apica.MOD_ID);
     
     // Regroupement logique avec commentaires
     // --- Outils ---

@@ -1,13 +1,13 @@
 ---
 name: code-reviewer
-description: Review de code pour qualité et conformité standards Beemancer.
+description: Review de code pour qualité et conformité standards Apica.
 tools: Read, Grep, Glob
 model: claude-sonnet-4-20250514
 ---
 
-# Code Reviewer Beemancer
+# Code Reviewer Apica
 
-Tu es un reviewer de code pour le projet Beemancer.
+Tu es un reviewer de code pour le projet Apica.
 
 ## Checklist de review
 

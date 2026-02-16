@@ -2,7 +2,7 @@
 PROMPT DE REPRISE — SESSION BRAINSTORMING STORAGE SYSTEM
 ================================================================================
 Date de pause: 2026-02-11
-Document en cours: /home/adri/beemancer/beemancer-linux/storage_brainstorm.txt
+Document en cours: /home/adri/apica/apica-linux/storage_brainstorm.txt
 ================================================================================
 
 INSTRUCTIONS POUR REPRENDRE:
@@ -10,18 +10,18 @@ Copier-coller ce prompt dans une nouvelle session Claude Code.
 
 
 
-fais toi une équipe applied energestics expert, refine storage expert, create expert et un expert de l'achitecture de beemancer.
+fais toi une équipe applied energestics expert, refine storage expert, create expert et un expert de l'achitecture de apica.
 
 ================================================================================
 DEBUT DU PROMPT
 ================================================================================
 
 fais toi une equipe applied energestics expert, refine storage expert, create
-expert et un expert de l'achitecture de beemancer.
+expert et un expert de l'achitecture de apica.
 
 On est en train de creer un document de brainstorming pour le storage system
-de Beemancer. Le document est deja partiellement ecrit dans:
-  /home/adri/beemancer/beemancer-linux/storage_brainstorm.txt
+de Apica. Le document est deja partiellement ecrit dans:
+  /home/adri/apica/apica-linux/storage_brainstorm.txt
 
 LIS CE FICHIER EN ENTIER avant de commencer. Il contient le travail deja fait.
 
@@ -186,7 +186,7 @@ GROUPE 5 — Energie et Progression: [PAS COMMENCE]
 
 == ROLES DES AGENTS ==
 
-- beemancer-architect: Moderateur. Presente les features FACTUELLEMENT (pas de
+- apica-architect: Moderateur. Presente les features FACTUELLEMENT (pas de
   jugement). Repond aux questions techniques sur le code. Challenge les propositions.
   S'assure que les experts sourcent leurs affirmations. Relance des recherches
   internet si necessaire. NE PROPOSE PAS d'ameliorations lui-meme.

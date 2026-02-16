@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/door_bottom_right_open",
-  "render_type": "cutout",
-  "textures": {
-    "bottom": "beemancer:block/building/honeyed_plank_door_bottom",
-    "top": "beemancer:block/building/honeyed_plank_door_bottom"
-  }
-}

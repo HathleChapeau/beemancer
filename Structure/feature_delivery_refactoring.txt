@@ -93,7 +93,7 @@ PHASE 4: Fix Bee Identification + Recall + Item Recovery
 PHASE 5: GUI Localization + Finalization
 - getStateLabel() localise avec Component.translatable()
 - Suppression DeliveryState.WAITING et RETURNING (jamais utilises)
-- Ajout cles i18n gui.beemancer.tasks.state.* (en_us + fr_fr)
+- Ajout cles i18n gui.apica.tasks.state.* (en_us + fr_fr)
 
 ================================================================================
 FICHIERS CREES
@@ -155,8 +155,8 @@ GUI:
   - Supprime indicateur type, ajoute indicateur origin, localise state labels
 
 LANG:
-- assets/beemancer/lang/en_us.json: +gui.beemancer.tasks.state.*
-- assets/beemancer/lang/fr_fr.json: +gui.beemancer.tasks.state.*
+- assets/apica/lang/en_us.json: +gui.apica.tasks.state.*
+- assets/apica/lang/fr_fr.json: +gui.apica.tasks.state.*
 
 ================================================================================
 COMPATIBILITE NBT

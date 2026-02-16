@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/slab",
-  "textures": {
-    "bottom": "beemancer:block/iron",
-    "top": "beemancer:block/iron",
-    "side": "beemancer:block/iron"
-  }
-}

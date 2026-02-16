@@ -26,7 +26,7 @@ Pattern utilisé:
 Dépendances clés:
 - [dep]: [pourquoi]
 
-Adaptation Beemancer:
+Adaptation Apica:
 [ce qu'on garde, ce qu'on adapte]
 ```
 

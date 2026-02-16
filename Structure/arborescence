@@ -3,23 +3,23 @@
 #                    Dernière mise à jour: 2026-02-15                          #
 ################################################################################
 
-src/main/java/com/chapeau/beemancer/
+src/main/java/com/chapeau/apica/
 │
-├── Beemancer.java                         # [CORE] Point d'entrée du mod
+├── Apica.java                         # [CORE] Point d'entrée du mod
 │
 ├── core/                                  # === FONDATIONS UNIVERSELLES ===
 │   ├── registry/
-│   │   ├── BeemancerItems.java
-│   │   ├── BeemancerBlocks.java
-│   │   ├── BeemancerBlockEntities.java
-│   │   ├── BeemancerEntities.java
-│   │   ├── BeemancerMenus.java
-│   │   ├── BeemancerCreativeTabs.java
-│   │   ├── BeemancerFluids.java
-│   │   ├── BeemancerParticles.java
-│   │   ├── BeemancerSounds.java
-│   │   ├── BeemancerAttachments.java
-│   │   └── BeemancerTags.java
+│   │   ├── ApicaItems.java
+│   │   ├── ApicaBlocks.java
+│   │   ├── ApicaBlockEntities.java
+│   │   ├── ApicaEntities.java
+│   │   ├── ApicaMenus.java
+│   │   ├── ApicaCreativeTabs.java
+│   │   ├── ApicaFluids.java
+│   │   ├── ApicaParticles.java
+│   │   ├── ApicaSounds.java
+│   │   ├── ApicaAttachments.java
+│   │   └── ApicaTags.java
 │   │
 │   ├── gene/                              # Système de gènes
 │   │   ├── Gene.java
@@ -42,7 +42,7 @@ src/main/java/com/chapeau/beemancer/
 │   │   └── BreedingManager.java
 │   │
 │   ├── command/
-│   │   └── BeemancerCommands.java
+│   │   └── ApicaCommands.java
 │   │
 │   ├── multiblock/                        # Système multibloc
 │   │   ├── BlockIORule.java
@@ -59,8 +59,8 @@ src/main/java/com/chapeau/beemancer/
 │   │
 │   ├── recipe/                            # Recettes
 │   │   ├── AltarRecipeInput.java
-│   │   ├── BeemancerRecipeSerializers.java
-│   │   ├── BeemancerRecipeTypes.java
+│   │   ├── ApicaRecipeSerializers.java
+│   │   ├── ApicaRecipeTypes.java
 │   │   ├── FluidIngredient.java
 │   │   ├── ProcessingOutput.java
 │   │   ├── ProcessingRecipeInput.java
@@ -80,7 +80,7 @@ src/main/java/com/chapeau/beemancer/
 │   │   └── StorageHelper.java             # IItemHandler capability access
 │   │
 │   └── network/                           # Packets réseau
-│       ├── BeemancerNetwork.java
+│       ├── ApicaNetwork.java
 │       └── packets/
 │           ├── CodexFirstOpenPacket.java
 │           ├── CodexSyncPacket.java
@@ -312,7 +312,7 @@ src/main/java/com/chapeau/beemancer/
 │   │       └── BuildingWandItem.java
 │   │
 │   ├── menu/
-│   │   ├── BeemancerMenu.java                 # Base menus (player inv/hotbar)
+│   │   ├── ApicaMenu.java                 # Base menus (player inv/hotbar)
 │   │   ├── IncubatorMenu.java
 │   │   ├── MagicHiveMenu.java
 │   │   ├── alchemy/
@@ -400,7 +400,7 @@ src/main/java/com/chapeau/beemancer/
     │   │   └── HoverbikePartPicker.java
     │   │
     │   ├── screen/
-    │   │   ├── AbstractBeemancerScreen.java   # Base commune screens
+    │   │   ├── AbstractApicaScreen.java   # Base commune screens
     │   │   ├── CodexBookScreen.java
     │   │   ├── CodexScreen.java
     │   │   ├── DebugImageScreen.java
@@ -439,7 +439,7 @@ src/main/java/com/chapeau/beemancer/
     │   │
     │   └── widget/
     │       ├── BeeNodeWidget.java
-    │       ├── BeemancerSlot.java
+    │       ├── ApicaSlot.java
     │       ├── CodexNodeWidget.java
     │       ├── FluidGaugeWidget.java
     │       └── PlayerInventoryWidget.java

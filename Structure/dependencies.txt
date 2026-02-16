@@ -119,8 +119,8 @@ core/recipe/
 - ProcessingOutput.java: Output avec probabilité (0.0-1.0), méthode roll()
 - FluidIngredient.java: Ingrédient fluide avec codec, méthode test()
 - ProcessingRecipeInput.java: RecipeInput combiné items+fluides
-- BeemancerRecipeTypes.java: Registre des 4 types (CENTRIFUGING, INFUSING, CRYSTALLIZING, DISTILLING)
-- BeemancerRecipeSerializers.java: Registre des serializers de recettes
+- ApicaRecipeTypes.java: Registre des 4 types (CENTRIFUGING, INFUSING, CRYSTALLIZING, DISTILLING)
+- ApicaRecipeSerializers.java: Registre des serializers de recettes
 
 ================================================================================
 common/menu/slot/
@@ -134,7 +134,7 @@ common/menu/slot/
 client/gui/widget/
 ================================================================================
 
-- BeemancerSlot.java: Slot personnalisé avec image de fond optionnelle
+- ApicaSlot.java: Slot personnalisé avec image de fond optionnelle
   - Constructeur base: fond Minecraft par défaut
   - Constructeur avec image: fond personnalisé
   - Factory: combInput(), woodInput(), output()
@@ -229,7 +229,7 @@ common/block/alchemy/
 common/menu/
 ================================================================================
 
-- BeemancerMenu.java: Classe de base pour tous les menus Beemancer
+- ApicaMenu.java: Classe de base pour tous les menus Apica
   - addPlayerInventory(Inventory, int x, int y) — 27 slots inventaire principal
   - addPlayerHotbar(Inventory, int x, int y) — 9 slots hotbar
   - Utilisé par: ManualCentrifugeMenu, PoweredCentrifugeMenu, AlembicMenu,

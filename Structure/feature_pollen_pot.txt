@@ -39,7 +39,7 @@ MESSAGES:
 POLLENS SUPPORTÉS
 ================================================================================
 
-Tag: beemancer:pollens
+Tag: apica:pollens
 
 Items inclus:
 - pollen (générique)
@@ -102,7 +102,7 @@ FICHIERS:
   - Intercepte et annule si pollen retiré
   - Vérification MAIN_HAND pour éviter double exécution
 
-- core/registry/BeemancerTags.java
+- core/registry/ApicaTags.java
   - Définition du tag POLLENS pour items
 
 - client/color/PollenTextures.java
@@ -115,9 +115,9 @@ FICHIERS:
   - Utilise FluidCubeRenderer + PollenTextures
 
 REGISTRES:
-- BeemancerBlocks.POLLEN_POT
-- BeemancerBlockEntities.POLLEN_POT
-- BeemancerItems.POLLEN_POT (BlockItem)
+- ApicaBlocks.POLLEN_POT
+- ApicaBlockEntities.POLLEN_POT
+- ApicaItems.POLLEN_POT (BlockItem)
 
 ================================================================================
 ASSETS
@@ -134,17 +134,17 @@ TRADUCTIONS
 ================================================================================
 
 EN:
-- block.beemancer.pollen_pot: "Pollen Pot"
-- message.beemancer.pollen_pot.empty: "Pot is empty"
-- message.beemancer.pollen_pot.contents: "Contains %d/%d %s"
-- message.beemancer.pollen_pot.full: "Pot is full!"
-- message.beemancer.pollen_pot.wrong_type: "This pot already contains a different pollen type"
+- block.apica.pollen_pot: "Pollen Pot"
+- message.apica.pollen_pot.empty: "Pot is empty"
+- message.apica.pollen_pot.contents: "Contains %d/%d %s"
+- message.apica.pollen_pot.full: "Pot is full!"
+- message.apica.pollen_pot.wrong_type: "This pot already contains a different pollen type"
 
 FR:
-- block.beemancer.pollen_pot: "Pot à Pollen"
-- message.beemancer.pollen_pot.empty: "Le pot est vide"
-- message.beemancer.pollen_pot.contents: "Contient %d/%d %s"
-- message.beemancer.pollen_pot.full: "Le pot est plein !"
-- message.beemancer.pollen_pot.wrong_type: "Ce pot contient déjà un autre type de pollen"
+- block.apica.pollen_pot: "Pot à Pollen"
+- message.apica.pollen_pot.empty: "Le pot est vide"
+- message.apica.pollen_pot.contents: "Contient %d/%d %s"
+- message.apica.pollen_pot.full: "Le pot est plein !"
+- message.apica.pollen_pot.wrong_type: "Ce pot contient déjà un autre type de pollen"
 
 ################################################################################

@@ -160,7 +160,7 @@ public class ModCreativeTabs {
 
 ---
 
-## Convention Beemancer
+## Convention Apica
 
 Toujours séparer:
 1. `XxxBlock.java` — Le bloc

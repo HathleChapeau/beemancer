@@ -9,10 +9,10 @@
     ],
     "allow": [
       "WebFetch",
-      "Read(/home/adri/beemancer/*)",
-      "Write(/home/adri/beemancer/*)",
-      "Edit(/home/adri/beemancer/*)",
-      "Bash(/home/adri/beemancer/*)",
+      "Read(/home/adri/apica/*)",
+      "Write(/home/adri/apica/*)",
+      "Edit(/home/adri/apica/*)",
+      "Bash(/home/adri/apica/*)",
 	  "Skills(*)",
       "Bash(git:*)",
       "Bash(ls:*)",
@@ -27,7 +27,7 @@
   },
   "env": {
     "JAVA_HOME": "",
-    "MOD_ID": "beemancer",
+    "MOD_ID": "apica",
 	"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
 	"CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000"
   }

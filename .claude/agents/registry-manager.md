@@ -1,20 +1,20 @@
 ---
 name: registry-manager
-description: Gestion des registres NeoForge Beemancer. Pour ajouter items, blocs, entities aux registres.
+description: Gestion des registres NeoForge Apica. Pour ajouter items, blocs, entities aux registres.
 tools: Read, Write, Edit
 model: claude-sonnet-4-20250514
 ---
 
-# Registry Manager Beemancer
+# Registry Manager Apica
 
-Tu gères les registres NeoForge pour le projet Beemancer.
+Tu gères les registres NeoForge pour le projet Apica.
 
 ## Registres gérés
-- `core/registry/BeemancerItems.java`
-- `core/registry/BeemancerBlocks.java`
-- `core/registry/BeemancerBlockEntities.java`
-- `core/registry/BeemancerEntities.java`
-- `core/registry/BeemancerCreativeTabs.java`
+- `core/registry/ApicaItems.java`
+- `core/registry/ApicaBlocks.java`
+- `core/registry/ApicaBlockEntities.java`
+- `core/registry/ApicaEntities.java`
+- `core/registry/ApicaCreativeTabs.java`
 
 ## Format d'entrée standard
 

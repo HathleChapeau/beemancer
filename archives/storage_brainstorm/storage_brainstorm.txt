@@ -1,8 +1,8 @@
 ================================================================================
-BEEMANCER — STORAGE SYSTEM BRAINSTORMING
+APICA — STORAGE SYSTEM BRAINSTORMING
 ================================================================================
 Date: 2026-02-11
-Equipe: AE2 Expert, Refined Storage Expert, Create Expert, Beemancer Architect
+Equipe: AE2 Expert, Refined Storage Expert, Create Expert, Apica Architect
 Methode: Presentation factuelle par l'architecte, propositions par les 3 experts,
          debat croise, moderation par l'architecte, synthese par le team-lead.
 ================================================================================
@@ -1763,13 +1763,13 @@ INSOMNIA: RS a signale une erreur factuelle (NORMAL au lieu de PERFECT) — corr
 Divergences:
   - Multiplicatif vs Additif: AE2 utilise scaling lineaire (cout fixe par device),
     RS2 aussi (somme lineaire). Create utilise addition (stress capacity/impact).
-    Beemancer est le seul avec un multiplicateur exponentiel. Les 3 experts questionnent
+    Apica est le seul avec un multiplicateur exponentiel. Les 3 experts questionnent
     ce choix de design.
   - Granularite: RS2 a des upgrades par device (chaque importer a SA vitesse).
-    Beemancer a des essences globales (bonus pour TOUT le reseau). Design intentionnel
+    Apica a des essences globales (bonus pour TOUT le reseau). Design intentionnel
     mais perte de granularite (RS).
   - Reservoir: AE2 permet l'energie depuis n'importe quelle source sur le reseau.
-    Beemancer force 2 positions fixes dans le multibloc. Question de design, pas un bug.
+    Apica force 2 positions fixes dans le multibloc. Question de design, pas un bug.
   - setRemoved hive (5.3C/DN): Debat RESOLU P3. onRemove() existe dans le Block +
     validateNetworkBlocks() auto-corrige en 200 ticks max. Defense en profondeur.
   - Honey buffer: RS propose un buffer interne (pattern RS2 Controller 32k FE) pour
@@ -1942,10 +1942,10 @@ Etat actuel: 7 types d'essence (pas 5 comme initialement documente):
   - DIURNAL (1 tier: NORMAL): activite de jour [MagicBees seulement, PAS stockage]
   - NOCTURNAL (1 tier: NORMAL): activite de nuit [MagicBees seulement, PAS stockage]
   - INSOMNIA (1 tier: PERFECT): reduction consommation miel (efficiency %)
-19 items enregistres dans BeemancerItems.
+19 items enregistres dans ApicaItems.
 Bonus par essence: `level * 0.25f` cumulatif. Pas de cap.
 BASE_ESSENCE_SLOTS=4, MAX_ESSENCE_SLOTS=8 (dynamique selon hives connectees).
-Fichiers: EssenceType.java, EssenceItem.java, ControllerStats.java, BeemancerItems.java
+Fichiers: EssenceType.java, EssenceItem.java, ControllerStats.java, ApicaItems.java
 
 --- BUGS ---
 
@@ -1971,7 +1971,7 @@ Fichiers: EssenceType.java, EssenceItem.java, ControllerStats.java, BeemancerIte
      Experts: AE2 (5.2D), CREATE (C61), RS (RS-5.2A) — UNANIME 3/3
 
 [DG] DIURNAL/NOCTURNAL essences sans effet dans le stockage [CONFIRME P1]
-     Quoi: DIURNAL et NOCTURNAL sont dans le tag ESSENCES (ligne 104 BeemancerItems),
+     Quoi: DIURNAL et NOCTURNAL sont dans le tag ESSENCES (ligne 104 ApicaItems),
            donc placables dans les slots d'essence du controller. Mais ControllerStats
            ne les utilise PAS — aucun bonus. Seules les MagicBees les utilisent.
      Pourquoi: Un joueur peut placer ces essences dans le controller, occuper un slot
@@ -1996,7 +1996,7 @@ Fichiers: EssenceType.java, EssenceItem.java, ControllerStats.java, BeemancerIte
                permettant une progression. INSOMNIA force un choix binaire: 0% ou 40%.
                Pas de progression douce.
      Comment: Ajouter INSOMNIA_LESSER(10%), INSOMNIA_NORMAL(20%), INSOMNIA_GREATER(30%).
-              Enregistrer dans BeemancerItems + ajouter textures/modeles.
+              Enregistrer dans ApicaItems + ajouter textures/modeles.
      Reference: [AE2] Acceleration Cards: progression lineaire 1-4 cartes.
                 [RS] RS2 Speed Upgrade: stackable 1-4, progression lineaire.
      Priorite: P2 DESIGN (progression manquante)
@@ -2093,7 +2093,7 @@ Fichiers: StorageHiveBlock.java, StorageHiveBlockEntity.java, ControllerStats.ja
                config mid-game (20 base + 4 coffres + 2 SPEED PERFECT), 4x T3 =
                5468 mB/s avant INSOMNIA. Meme avec INSOMNIA PERFECT (x0.6) = 3281 mB/s.
                Les 2 reservoirs (8000 mB) se vident en 2.4 secondes.
-               AE2 utilise scaling lineaire. RS2 aussi. Create aussi (stress). Beemancer
+               AE2 utilise scaling lineaire. RS2 aussi. Create aussi (stress). Apica
                est le SEUL avec un multiplicateur exponentiel.
      Comment: QUESTION DE DESIGN — 3 options:
               1. Garder multiplicatif mais AFFICHER clairement le total ("x39.06")
@@ -2215,7 +2215,7 @@ Fichiers: StorageHiveBlock.java, StorageHiveBlockEntity.java, ControllerStats.ja
 [DT] Cout non-lineaire par tier d'essence
      Quoi: Actuellement cout = level * 10 mB/s (lineaire). PERFECT ne coute que
            40 mB/s pour +100% bonus. Pas assez de tradeoff pour les hauts tiers.
-     Pourquoi: RS Speed Upgrade a un scaling lineaire mais cumulatif. Beemancer
+     Pourquoi: RS Speed Upgrade a un scaling lineaire mais cumulatif. Apica
                pourrait beneficier d'un scaling quadratique pour punir le stacking.
      Comment: Modifier getEssenceConsumptionCost(): LESSER=5, NORMAL=15,
               GREATER=30, PERFECT=50 mB/s (scaling ~level^2).

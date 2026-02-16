@@ -54,10 +54,10 @@ UTILISATION
 public static final MultiblockPattern MY_MULTIBLOCK = register(
     MultiblockPattern.builder("my_multiblock")
         // Position relative au contrôleur (0,0,0)
-        .add(0, -1, 0, block(BeemancerBlocks.MY_BASE))
-        .add(0, 1, 0, block(BeemancerBlocks.MY_TOP))
+        .add(0, -1, 0, block(ApicaBlocks.MY_BASE))
+        .add(0, 1, 0, block(ApicaBlocks.MY_TOP))
         .add(1, 0, 0, air())  // Position doit être vide
-        .add(-1, 0, 0, stairFacing(BeemancerBlocks.MY_STAIR, Direction.EAST))
+        .add(-1, 0, 0, stairFacing(ApicaBlocks.MY_STAIR, Direction.EAST))
         .build()
 );
 ```
