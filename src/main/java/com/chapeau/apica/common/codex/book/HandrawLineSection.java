@@ -29,8 +29,8 @@ import java.util.Random;
 
 public class HandrawLineSection extends CodexBookSection {
 
-    private static final int PADDING_TOP = 4;
-    private static final int PADDING_BOTTOM = 4;
+    private static final int PADDING_TOP = 1;
+    private static final int PADDING_BOTTOM = 1;
 
     private static final int LINE_COUNT = 4;
     private static final int[][] LINE_SIZES = {
