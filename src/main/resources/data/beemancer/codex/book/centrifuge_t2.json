@@ -5,18 +5,18 @@
     },
     {
       "type": "text",
-      "key": "codex.beemancer.apica.hive.lore.p1"
+      "key": "codex.beemancer.alchemy.centrifuge_t2.lore.p1"
     },
     {
       "type": "page_break"
     },
     {
       "type": "text",
-      "key": "codex.beemancer.apica.hive.lore.p2"
+      "key": "codex.beemancer.alchemy.centrifuge_t2.lore.p2"
     },
     {
       "type": "craft",
-      "result": "beemancer:magic_hive"
+      "result": "beemancer:powered_centrifuge_tier2"
     }
   ],
   "sticky_notes": []

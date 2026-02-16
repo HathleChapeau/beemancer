@@ -1,0 +1,27 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.logistics.pipe_t4.lore.p1"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "text",
+      "key": "codex.beemancer.logistics.pipe_t4.lore.p2"
+    },
+    {
+      "type": "craft",
+      "result": "beemancer:honey_pipe_tier4"
+    },
+    {
+      "type": "craft",
+      "result": "beemancer:item_pipe_tier4"
+    }
+  ],
+  "sticky_notes": []
+}

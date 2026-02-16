@@ -49,8 +49,8 @@ public class CraftSection extends CodexBookSection {
     private static final int BG_HEIGHT = 57;
     private static final int SLOT_SIZE = 20;
 
-    private static final int PADDING_BOTTOM = 6;
-    private static final int RESULT_PADDING_BOTTOM = 4;
+    private static final int PADDING_BOTTOM = 2;
+    private static final int RESULT_PADDING_BOTTOM = 2;
     private static final int ITEM_RENDER_SIZE = 16;
 
     // ============================================================
