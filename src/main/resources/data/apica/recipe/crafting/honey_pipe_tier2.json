@@ -3,8 +3,9 @@
   "category": "misc",
   "key": {
     "W": { "item": "apica:honeyed_log" },
-    "H": { "item": "apica:honey_crystal" }
+    "H": { "item": "apica:honey_crystal" },
+    "I": { "item": "apica:honeyed_iron" }
   },
-  "pattern": [ "WHW" ],
+  "pattern": [ " I ", "WHW", " I " ],
   "result": { "id": "apica:honey_pipe_tier2", "count": 4 }
 }

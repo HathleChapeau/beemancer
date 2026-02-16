@@ -2,9 +2,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": { "item": "apica:nectar_diamond" },
-    "N": { "item": "apica:nectar_crystal" }
+    "W": { "item": "apica:honeyed_log" },
+    "N": { "item": "apica:nectar_crystal" },
+    "D": { "item": "apica:nectar_diamond" }
   },
-  "pattern": [ "DND" ],
+  "pattern": [ " D ", "WNW", " D " ],
   "result": { "id": "apica:honey_pipe_tier4", "count": 16 }
 }

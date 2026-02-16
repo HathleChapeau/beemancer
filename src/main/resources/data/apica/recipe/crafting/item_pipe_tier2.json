@@ -3,8 +3,9 @@
   "category": "misc",
   "key": {
     "S": { "item": "apica:honeyed_stone" },
-    "H": { "item": "apica:honey_crystal" }
+    "H": { "item": "apica:honey_crystal" },
+    "I": { "item": "apica:honeyed_iron" }
   },
-  "pattern": [ "SHS" ],
+  "pattern": [ " I ", "SHS", " I " ],
   "result": { "id": "apica:item_pipe_tier2", "count": 4 }
 }

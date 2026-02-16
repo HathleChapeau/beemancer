@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "W": { "item": "apica:honeyed_log" },
+    "W": { "tag": "minecraft:logs" },
     "G": { "item": "minecraft:glass" }
   },
   "pattern": [ "WGW" ],
