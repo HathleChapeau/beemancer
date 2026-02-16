@@ -278,11 +278,19 @@ public class CodexBookScreen extends Screen {
             boolean hovered = mouseX >= btnX && mouseX < btnX + texW
                     && mouseY >= y && mouseY < y + texH;
 
+            // Teinte hover : plus foncé quand survolé
+            if (hovered) {
+                graphics.setColor(0.75f, 0.75f, 0.75f, 1.0f);
+            }
+
             // Texture background (blend toujours actif pour l'alpha des PNG)
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             graphics.blit(NOTE_TEXTURES[texIdx], btnX, y, texW, texH,
                     0, 0, texW, texH, texW, texH);
+
+            // Reset de la teinte
+            graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
             // Item icon (centered in texture)
             if (i < noteIconStacks.size() && !noteIconStacks.get(i).isEmpty()) {

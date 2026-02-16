@@ -554,6 +554,10 @@ public class ApicaBlocks {
             () -> new Block(BlockBehaviour.Properties.of()
                     .noCollission().noLootTable().noOcclusion()));
 
+    public static final DeferredBlock<Block> TANK_PLACEHOLDER = BLOCKS.register("tank_placeholder",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .noCollission().noLootTable().noOcclusion()));
+
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
     }

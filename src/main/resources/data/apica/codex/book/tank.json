@@ -15,8 +15,9 @@
       "type": "page_break"
     },
     {
-      "type": "craft",
-      "result": "apica:multiblock_tank"
+      "type": "multiblock",
+      "pattern": "tank_multiblock",
+      "controller": "apica:tank_placeholder"
     }
   ],
   "sticky_notes": [

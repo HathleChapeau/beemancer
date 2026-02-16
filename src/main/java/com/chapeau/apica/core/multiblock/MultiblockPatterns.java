@@ -431,6 +431,31 @@ public class MultiblockPatterns {
             .build()
     );
 
+    // ==================== MULTIBLOCK TANK ====================
+    // Structure 2x2x2 de tank_placeholder (prévisualisation GUI uniquement)
+    //
+    // Étage 2 (Y+0): [T][T]
+    //                 [T][T]
+    //
+    // Étage 1 (Y-1): [T][T]
+    //                 [T][T]
+
+    public static final MultiblockPattern TANK_MULTIBLOCK = register(
+        MultiblockPattern.builder("tank_multiblock")
+            // Étage 1 (Y-1)
+            .add(0, -1, 0, block(ApicaBlocks.TANK_PLACEHOLDER))
+            .add(1, -1, 0, block(ApicaBlocks.TANK_PLACEHOLDER))
+            .add(0, -1, 1, block(ApicaBlocks.TANK_PLACEHOLDER))
+            .add(1, -1, 1, block(ApicaBlocks.TANK_PLACEHOLDER))
+
+            // Étage 2 (Y+0) — controller au (0,0,0)
+            .add(1, 0, 0, block(ApicaBlocks.TANK_PLACEHOLDER))
+            .add(0, 0, 1, block(ApicaBlocks.TANK_PLACEHOLDER))
+            .add(1, 0, 1, block(ApicaBlocks.TANK_PLACEHOLDER))
+
+            .build()
+    );
+
     private static MultiblockPattern register(MultiblockPattern pattern) {
         PATTERNS.put(pattern.getId(), pattern);
         return pattern;

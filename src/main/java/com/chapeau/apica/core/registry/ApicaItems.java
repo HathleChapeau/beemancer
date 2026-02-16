@@ -676,6 +676,9 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> AIR_PLACEHOLDER = ITEMS.register("air_placeholder",
             () -> new BlockItem(ApicaBlocks.AIR_PLACEHOLDER.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> TANK_PLACEHOLDER = ITEMS.register("tank_placeholder",
+            () -> new BlockItem(ApicaBlocks.TANK_PLACEHOLDER.get(), new Item.Properties()));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }
