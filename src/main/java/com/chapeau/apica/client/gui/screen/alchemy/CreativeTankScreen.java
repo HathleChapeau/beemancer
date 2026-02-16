@@ -60,8 +60,9 @@ public class CreativeTankScreen extends AbstractApicaScreen<CreativeTankMenu> {
         // Bucket slot
         GuiRenderHelper.renderSlot(g, px + BUCKET_SLOT_X, y + BUCKET_SLOT_Y);
 
-        // Texture honey bar (always full for creative)
-        float ratio = 1.0f;
+        // Honey bar: full si fluide configuré, vide sinon
+        boolean hasFLuid = menu.getFluidAmount() > 0;
+        float ratio = hasFLuid ? 1.0f : 0.0f;
         GuiRenderHelper.renderLeftHoneyBar(g, px + HONEYBAR_X, y + HONEYBAR_Y, ratio);
     }
 
@@ -69,8 +70,9 @@ public class CreativeTankScreen extends AbstractApicaScreen<CreativeTankMenu> {
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         int px = x + PANEL_OFFSET;
         if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, px, y, mouseX, mouseY)) {
+            String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getFluid());
             g.renderComponentTooltip(font, List.of(
-                Component.literal("Infinite")
+                Component.literal(name)
             ), mouseX, mouseY);
         }
     }

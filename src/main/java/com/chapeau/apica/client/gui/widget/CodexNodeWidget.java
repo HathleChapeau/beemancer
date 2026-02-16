@@ -25,6 +25,7 @@ import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.quest.NodeState;
+import com.chapeau.apica.common.quest.NodeVisibility;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -268,17 +269,31 @@ public class CodexNodeWidget extends AbstractWidget {
         graphics.fill(x + NODE_SIZE - 2, y, x + NODE_SIZE, y + NODE_SIZE, borderColor); // Droite
     }
 
+    private static final ResourceLocation ICON_UNKNOWN = ResourceLocation.fromNamespaceAndPath(
+            Apica.MOD_ID, "textures/gui/codex/icon_unknown.png");
+
     private void renderIcon(GuiGraphics graphics) {
         int x = getX();
         int y = getY();
 
+        // SECRET + pas encore DISCOVERED/UNLOCKED → icône "?"
+        boolean secretHidden = node.getVisibility() == NodeVisibility.SECRET
+                && nodeState == NodeState.LOCKED;
+
+        if (secretHidden) {
+            int iconX = x + (NODE_SIZE - 16) / 2;
+            int iconY = y + (NODE_SIZE - 16) / 2;
+            graphics.setColor(0.3f, 0.3f, 0.3f, 1.0f);
+            graphics.blit(ICON_UNKNOWN, iconX, iconY, 0, 0, 16, 16, 16, 16);
+            graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+            return;
+        }
+
         if (!iconItem.isEmpty()) {
-            // Rendre l'item (16x16 centré dans 24x24)
             int iconX = x + (NODE_SIZE - 16) / 2;
             int iconY = y + (NODE_SIZE - 16) / 2;
 
             if (!unlocked && !canUnlock) {
-                // Assombrir l'item si verrouillé
                 graphics.setColor(0.3f, 0.3f, 0.3f, 1.0f);
             } else if (!unlocked) {
                 graphics.setColor(0.6f, 0.6f, 0.6f, 1.0f);
@@ -287,7 +302,6 @@ public class CodexNodeWidget extends AbstractWidget {
             graphics.renderItem(iconItem, iconX, iconY);
             graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
         } else if (iconTexture != null) {
-            // Rendre la texture (16x16 centré dans 24x24)
             int iconX = x + (NODE_SIZE - 16) / 2;
             int iconY = y + (NODE_SIZE - 16) / 2;
 
@@ -300,7 +314,6 @@ public class CodexNodeWidget extends AbstractWidget {
             graphics.blit(iconTexture, iconX, iconY, 0, 0, 16, 16, 16, 16);
             graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
         } else {
-            // Fallback: afficher un point d'interrogation
             Font font = Minecraft.getInstance().font;
             int textColor = unlocked ? 0xFFFFFFFF : 0xFF888888;
             graphics.drawCenteredString(font, "?", x + NODE_SIZE / 2, y + (NODE_SIZE - font.lineHeight) / 2, textColor);

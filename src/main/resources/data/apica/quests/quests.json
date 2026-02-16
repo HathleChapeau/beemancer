@@ -28,7 +28,7 @@
       "id": "centrifuge_royal_comb",
       "node": "apica:hive_multibloc",
       "type": "MACHINE_OUTPUT",
-      "machine": "manual_centrifuge",
+      "machine": "centrifuge",
       "item": "apica:royal_comb"
     },
     {

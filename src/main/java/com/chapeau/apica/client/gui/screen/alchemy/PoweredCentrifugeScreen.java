@@ -71,7 +71,8 @@ public class PoweredCentrifugeScreen extends AbstractApicaScreen<PoweredCentrifu
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         if (fuelGauge.isMouseOver(x, y, mouseX, mouseY)) {
-            g.renderComponentTooltip(font, fuelGauge.getTooltip("Fuel"), mouseX, mouseY);
+            String fuelName = GuiRenderHelper.getFluidName(menu.getFuelTank().getFluid());
+            g.renderComponentTooltip(font, fuelGauge.getTooltip(fuelName), mouseX, mouseY);
         }
         if (outputGauge.isMouseOver(x, y, mouseX, mouseY)) {
             String name = GuiRenderHelper.getFluidName(menu.getOutputTank().getFluid());

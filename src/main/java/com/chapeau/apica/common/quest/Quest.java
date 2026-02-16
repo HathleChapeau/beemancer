@@ -113,9 +113,13 @@ public class Quest {
 
     /**
      * Vérifie si un type de machine correspond.
+     * Supporte les groupes: si targetMachine est un suffixe du machineType,
+     * la correspondance est acceptée (ex: "centrifuge" matche "manual_centrifuge" et "powered_centrifuge").
      */
     public boolean matchesMachine(String machineType) {
-        return targetMachine != null && targetMachine.equals(machineType);
+        if (targetMachine == null || machineType == null) return false;
+        if (targetMachine.equals(machineType)) return true;
+        return machineType.endsWith("_" + targetMachine) || machineType.startsWith(targetMachine + "_");
     }
 
     /**
