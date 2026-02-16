@@ -549,6 +549,11 @@ public class ApicaBlocks {
                     .pushReaction(PushReaction.DESTROY).noLootTable().liquid()
                     .lightLevel(state -> 8)));
 
+    // --- CODEX PLACEHOLDER (rendu uniquement, non placable en jeu) ---
+    public static final DeferredBlock<Block> AIR_PLACEHOLDER = BLOCKS.register("air_placeholder",
+            () -> new Block(BlockBehaviour.Properties.of()
+                    .noCollission().noLootTable().noOcclusion()));
+
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);
     }

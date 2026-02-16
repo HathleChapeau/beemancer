@@ -22,10 +22,10 @@
  */
 package com.chapeau.apica.common.codex.book;
 
-import com.chapeau.apica.Apica;
 import com.chapeau.apica.core.multiblock.BlockMatcher;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
+import com.chapeau.apica.core.registry.ApicaBlocks;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Font;
@@ -42,13 +42,9 @@ import java.util.List;
 
 public class MultiblockSection extends CodexBookSection {
 
-    private static final ResourceLocation AIR_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "textures/gui/air.png");
-    private static final int AIR_TEX_SIZE = 16;
-
     private static final float ITEM_SCALE = 1.28f;
-    private static final int SPACING_X = 11;
-    private static final int SPACING_Z = 6;
+    private static final int SPACING_X = 16;
+    private static final int SPACING_Z = 10;
     private static final int SPACING_Y_UP = 22;
     private static final int PADDING_TOP = 4;
     private static final int PADDING_BOTTOM = 4;
@@ -58,6 +54,7 @@ public class MultiblockSection extends CodexBookSection {
     private final String controllerId;
 
     private boolean resolved = false;
+    private ItemStack airStack = null;
     private final List<DisplayElement> displayElements = new ArrayList<>();
     private int computedHeight = 0;
     private int minPx = 0;
@@ -90,24 +87,27 @@ public class MultiblockSection extends CodexBookSection {
         int centerX = x + pageWidth / 2 - (minPx + maxPx) / 2;
         int originY = y + PADDING_TOP - minPy;
 
+        float zOffset = 0;
         for (DisplayElement elem : displayElements) {
             int drawX = centerX + elem.px;
             int drawY = originY + elem.py;
 
             if (elem.isAir) {
-                renderAirBlock(graphics, drawX, drawY, ITEM_SCALE);
+                renderScaledItem(graphics, airStack, drawX, drawY, ITEM_SCALE, zOffset);
             } else {
-                renderScaledItem(graphics, elem.stack, drawX, drawY, ITEM_SCALE);
+                renderScaledItem(graphics, elem.stack, drawX, drawY, ITEM_SCALE, zOffset);
             }
+            zOffset += 10.0f;
         }
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
     }
 
-    private void renderScaledItem(GuiGraphics graphics, ItemStack stack, int x, int y, float scale) {
+    private void renderScaledItem(GuiGraphics graphics, ItemStack stack,
+                                   int x, int y, float scale, float zOffset) {
         graphics.pose().pushPose();
-        graphics.pose().translate(x, y, 0);
+        graphics.pose().translate(x, y, zOffset);
         graphics.pose().scale(scale, scale, 1.0f);
         graphics.renderItem(stack, 0, 0);
         graphics.pose().popPose();
@@ -116,19 +116,11 @@ public class MultiblockSection extends CodexBookSection {
         RenderSystem.defaultBlendFunc();
     }
 
-    private void renderAirBlock(GuiGraphics graphics, int x, int y, float scale) {
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        graphics.pose().pushPose();
-        graphics.pose().translate(x, y, 0);
-        graphics.pose().scale(scale, scale, 1.0f);
-        graphics.blit(AIR_TEXTURE, 0, 0, 0, 0, AIR_TEX_SIZE, AIR_TEX_SIZE, AIR_TEX_SIZE, AIR_TEX_SIZE);
-        graphics.pose().popPose();
-    }
-
     private void resolve() {
         if (resolved) return;
         resolved = true;
+
+        airStack = new ItemStack(ApicaBlocks.AIR_PLACEHOLDER.get().asItem());
 
         MultiblockPattern pattern = MultiblockPatterns.get(patternId);
         if (pattern == null) return;
