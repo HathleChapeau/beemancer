@@ -8,16 +8,23 @@
       "key": "codex.apica.logistics.storage_controller_heart.lore.p1"
     },
     {
-      "type": "page_break"
-    },
-    {
       "type": "text",
       "key": "codex.apica.logistics.storage_controller_heart.lore.p2"
     },
     {
-      "type": "craft",
-      "result": "apica:storage_controller"
+      "type": "page_break"
+    },
+    {
+      "type": "multiblock",
+      "pattern": "storage_controller",
+      "controller": "apica:storage_controller"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:storage_controller"},
+    {"craft": "apica:storage_terminal"},
+    {"craft": "apica:iron_foundation"},
+    {"craft": "apica:honey_reservoir"},
+    {"craft": "apica:controlled_hive"}
+  ]
 }

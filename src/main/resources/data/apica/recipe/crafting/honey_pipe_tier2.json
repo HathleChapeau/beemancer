@@ -7,5 +7,5 @@
     "I": { "item": "apica:honeyed_iron" }
   },
   "pattern": [ " I ", "WHW", " I " ],
-  "result": { "id": "apica:honey_pipe_tier2", "count": 4 }
+  "result": { "id": "apica:honey_pipe_tier2", "count": 8 }
 }

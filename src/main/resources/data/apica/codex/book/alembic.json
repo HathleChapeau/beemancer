@@ -17,7 +17,9 @@
     {
       "type": "multiblock",
       "pattern": "alembic",
-      "controller": "apica:alembic_heart"
+      "controller": "apica:alembic_heart",
+      "padding_y": 20,
+      "ground_offset_y": -5
     }
   ],
   "sticky_notes": [

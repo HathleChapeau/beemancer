@@ -64,16 +64,18 @@ public class MultiblockSection extends CodexBookSection {
     private final String patternId;
     private final String controllerId;
     private final int paddingY;
+    private final int groundOffsetY;
 
     private boolean resolved = false;
     private ItemStack airStack = null;
     private final List<FloorGroup> floorGroups = new ArrayList<>();
     private int computedHeight = 0;
 
-    public MultiblockSection(String patternId, String controllerId, int paddingY) {
+    public MultiblockSection(String patternId, String controllerId, int paddingY, int groundOffsetY) {
         this.patternId = patternId;
         this.controllerId = controllerId;
         this.paddingY = paddingY;
+        this.groundOffsetY = groundOffsetY;
     }
 
     @Override
@@ -108,7 +110,7 @@ public class MultiblockSection extends CodexBookSection {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         int groundX = x + pageWidth / 2 - GROUND_TEX_W / 2;
-        int groundY = currentY - GROUND_TEX_H + GROUND_PADDING_Y + (int) DebugWandItem.value2;
+        int groundY = currentY - GROUND_TEX_H + GROUND_PADDING_Y + groundOffsetY + (int) DebugWandItem.value2;
         graphics.blit(GROUND_TEXTURE, groundX, groundY, GROUND_TEX_W, GROUND_TEX_H,
                 0, 0, GROUND_TEX_W, GROUND_TEX_H, GROUND_TEX_W, GROUND_TEX_H);
 
@@ -249,7 +251,8 @@ public class MultiblockSection extends CodexBookSection {
         String pattern = json.has("pattern") ? json.get("pattern").getAsString() : "";
         String controller = json.has("controller") ? json.get("controller").getAsString() : "";
         int paddingY = json.has("padding_y") ? json.get("padding_y").getAsInt() : 0;
-        return new MultiblockSection(pattern, controller, paddingY);
+        int groundOffsetY = json.has("ground_offset_y") ? json.get("ground_offset_y").getAsInt() : 0;
+        return new MultiblockSection(pattern, controller, paddingY, groundOffsetY);
     }
 
     private static class FloorGroup {

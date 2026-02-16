@@ -7,5 +7,5 @@
     "G": { "item": "apica:royal_gold" }
   },
   "pattern": [ " G ", "SRS", " G " ],
-  "result": { "id": "apica:item_pipe_tier3", "count": 8 }
+  "result": { "id": "apica:item_pipe_tier3", "count": 12 }
 }

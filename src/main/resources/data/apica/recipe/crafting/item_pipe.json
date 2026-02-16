@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "S": { "tag": "minecraft:stone_tool_materials" },
+    "S": { "tag": "minecraft:stones" },
     "G": { "item": "minecraft:glass" }
   },
   "pattern": [ "SGS" ],
