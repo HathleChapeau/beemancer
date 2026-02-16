@@ -173,11 +173,11 @@ public class MultiblockSection extends CodexBookSection {
             }
         }
 
-        // Construire les groupes par etage (Y croissant = bas vers haut)
+        // Construire les groupes par etage (Y descendant = etage le plus haut en premier)
         int scaledItem = Math.round(ITEM_SIZE * ITEM_SCALE);
         int totalHeight = PADDING_TOP;
 
-        for (Map.Entry<Integer, List<DisplayElement>> entry : byFloor.entrySet()) {
+        for (Map.Entry<Integer, List<DisplayElement>> entry : byFloor.descendingMap().entrySet()) {
             List<DisplayElement> elements = entry.getValue();
 
             // Calculer les positions pixel isometriques pour cet etage (sans composante Y)
