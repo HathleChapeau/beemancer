@@ -13,6 +13,10 @@
     {
       "type": "text",
       "key": "codex.beemancer.alchemy.centrifuge_t3.lore.p2"
+    },
+    {
+      "type": "craft",
+      "result": "beemancer:centrifuge_heart"
     }
   ],
   "sticky_notes": []

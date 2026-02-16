@@ -13,6 +13,10 @@
     {
       "type": "text",
       "key": "codex.beemancer.logistics.export.lore.p2"
+    },
+    {
+      "type": "craft",
+      "result": "beemancer:export_interface"
     }
   ],
   "sticky_notes": []
