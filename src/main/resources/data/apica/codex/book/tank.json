@@ -8,16 +8,18 @@
       "key": "codex.apica.alchemy.tank.lore.p1"
     },
     {
-      "type": "page_break"
-    },
-    {
       "type": "text",
       "key": "codex.apica.alchemy.tank.lore.p2"
+    },
+    {
+      "type": "page_break"
     },
     {
       "type": "craft",
       "result": "apica:multiblock_tank"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:multiblock_tank"}
+  ]
 }

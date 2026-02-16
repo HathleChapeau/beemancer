@@ -287,7 +287,7 @@ public class CodexBookScreen extends Screen {
             // Item icon (centered in texture)
             if (i < noteIconStacks.size() && !noteIconStacks.get(i).isEmpty()) {
                 int itemX = btnX + (texW - 16) / 2;
-                int itemY = y + (texH - 16) / 2;
+                int itemY = y + (texH - 16) / 2 + 2;
                 graphics.renderItem(noteIconStacks.get(i), itemX, itemY);
             }
         }

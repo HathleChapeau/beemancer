@@ -8,16 +8,21 @@
       "key": "codex.apica.alchemy.centrifuge_t3.lore.p1"
     },
     {
-      "type": "page_break"
-    },
-    {
       "type": "text",
       "key": "codex.apica.alchemy.centrifuge_t3.lore.p2"
     },
     {
-      "type": "craft",
-      "result": "apica:centrifuge_heart"
+      "type": "page_break"
+    },
+    {
+      "type": "multiblock",
+      "pattern": "centrifuge_multiblock",
+      "controller": "apica:centrifuge_heart"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:centrifuge_heart"},
+    {"craft": "apica:iron_foundation"},
+    {"craft": "apica:honey_reservoir"}
+  ]
 }
