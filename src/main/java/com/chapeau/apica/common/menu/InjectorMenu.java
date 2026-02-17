@@ -68,13 +68,13 @@ public class InjectorMenu extends ApicaMenu {
 
         addDataSlots(data);
 
-        // Essence slot (gauche)
-        addSlot(new ApicaSlot(blockEntity.getItemHandler(), BEE_SLOT, 35, 38)
+        // Essence slot (gauche) — handler index 1
+        addSlot(new ApicaSlot(blockEntity.getItemHandler(), ESSENCE_SLOT, 35, 38)
                 .withFilter(stack -> stack.getItem() instanceof EssenceItem
                         && !(stack.getItem() instanceof SpeciesEssenceItem)));
 
-        // Bee slot (droite)
-        addSlot(new ApicaSlot(blockEntity.getItemHandler(), ESSENCE_SLOT, 137, 38)
+        // Bee slot (droite) — handler index 0
+        addSlot(new ApicaSlot(blockEntity.getItemHandler(), BEE_SLOT, 137, 38)
                 .withFilter(stack -> stack.is(ApicaItems.MAGIC_BEE.get())));
 
         // Player inventory
@@ -125,13 +125,14 @@ public class InjectorMenu extends ApicaMenu {
                     return ItemStack.EMPTY;
                 }
             } else {
-                // Player → machine: router vers le bon slot
+                // Player → machine: router vers le bon menu slot
+                // Menu slot 0 = essence (handler ESSENCE_SLOT=1), menu slot 1 = bee (handler BEE_SLOT=0)
                 boolean moved = false;
                 if (stackInSlot.is(ApicaItems.MAGIC_BEE.get())) {
-                    moved = moveItemStackTo(stackInSlot, ESSENCE_SLOT, ESSENCE_SLOT + 1, false);
+                    moved = moveItemStackTo(stackInSlot, 1, 2, false);
                 } else if (stackInSlot.getItem() instanceof EssenceItem
                         && !(stackInSlot.getItem() instanceof SpeciesEssenceItem)) {
-                    moved = moveItemStackTo(stackInSlot, BEE_SLOT, BEE_SLOT + 1, false);
+                    moved = moveItemStackTo(stackInSlot, 0, 1, false);
                 }
                 if (!moved) {
                     if (index < PLAYER_INV_END) {
