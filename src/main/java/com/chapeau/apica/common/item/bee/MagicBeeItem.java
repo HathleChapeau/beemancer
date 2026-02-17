@@ -184,14 +184,23 @@ public class MagicBeeItem extends Item {
                 speciesData = BeeSpeciesManager.getSpecies(ddGene.getId());
             }
 
-            // Espece (violet clair si rassasiee, or sinon)
+            // Espece (violet + shimmer si rassasiee, or sinon)
             boolean satiated = BeeInjectionHelper.isSatiated(stack);
             if (speciesGene != null) {
-                ChatFormatting nameColor = satiated ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.GOLD;
+                Component nameComponent;
+                if (satiated) {
+                    nameComponent = Component.literal("\u2588\u2588").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.OBFUSCATED)
+                            .append(Component.literal(" ").withStyle(ChatFormatting.RESET))
+                            .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE))
+                            .append(Component.literal(" ").withStyle(ChatFormatting.RESET))
+                            .append(Component.literal("\u2588\u2588").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.OBFUSCATED));
+                } else {
+                    nameComponent = speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD);
+                }
                 tooltip.add(Component.translatable("tooltip.apica.species")
                         .withStyle(ChatFormatting.GRAY)
                         .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(speciesGene.getDisplayName().copy().withStyle(nameColor)));
+                        .append(nameComponent));
             }
 
             if (speciesData != null) {
@@ -272,11 +281,18 @@ public class MagicBeeItem extends Item {
             }
 
         } else {
-            // Affichage simple: juste le nom de l'espece (violet si rassasiee)
+            // Affichage simple: nom de l'espece (violet + shimmer si rassasiee)
             boolean satiated = BeeInjectionHelper.isSatiated(stack);
             if (speciesGene != null) {
-                ChatFormatting nameColor = satiated ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.GOLD;
-                tooltip.add(speciesGene.getDisplayName().copy().withStyle(nameColor));
+                if (satiated) {
+                    tooltip.add(Component.literal("\u2588\u2588").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.OBFUSCATED)
+                            .append(Component.literal(" ").withStyle(ChatFormatting.RESET))
+                            .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE))
+                            .append(Component.literal(" ").withStyle(ChatFormatting.RESET))
+                            .append(Component.literal("\u2588\u2588").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.OBFUSCATED)));
+                } else {
+                    tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
+                }
             }
             tooltip.add(Component.translatable("tooltip.apica.shift_for_details")
                     .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));

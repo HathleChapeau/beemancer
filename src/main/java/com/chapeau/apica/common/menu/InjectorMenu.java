@@ -120,11 +120,20 @@ public class InjectorMenu extends ApicaMenu {
             result = stackInSlot.copy();
 
             if (index < CONTAINER_SLOTS) {
+                // Machine → player inventory
                 if (!moveItemStackTo(stackInSlot, PLAYER_INV_START, HOTBAR_END, true)) {
                     return ItemStack.EMPTY;
                 }
             } else {
-                if (!moveItemStackTo(stackInSlot, 0, CONTAINER_SLOTS, false)) {
+                // Player → machine: router vers le bon slot
+                boolean moved = false;
+                if (stackInSlot.is(ApicaItems.MAGIC_BEE.get())) {
+                    moved = moveItemStackTo(stackInSlot, ESSENCE_SLOT, ESSENCE_SLOT + 1, false);
+                } else if (stackInSlot.getItem() instanceof EssenceItem
+                        && !(stackInSlot.getItem() instanceof SpeciesEssenceItem)) {
+                    moved = moveItemStackTo(stackInSlot, BEE_SLOT, BEE_SLOT + 1, false);
+                }
+                if (!moved) {
                     if (index < PLAYER_INV_END) {
                         if (!moveItemStackTo(stackInSlot, HOTBAR_START, HOTBAR_END, false)) {
                             return ItemStack.EMPTY;

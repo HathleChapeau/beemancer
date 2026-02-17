@@ -126,7 +126,15 @@ public class BeeTreePageRenderer implements CodexPageRenderer {
         int dx = Math.abs(toX - fromX);
         int dy = Math.abs(toY - fromY);
 
-        ConnectionMode mode = (dx >= dy) ? ConnectionMode.HORIZONTAL : ConnectionMode.VERTICAL;
+        String modeOverride = toWidget.getNode().getConnectionMode();
+        ConnectionMode mode;
+        if ("HORIZONTAL".equalsIgnoreCase(modeOverride)) {
+            mode = ConnectionMode.HORIZONTAL;
+        } else if ("VERTICAL".equalsIgnoreCase(modeOverride)) {
+            mode = ConnectionMode.VERTICAL;
+        } else {
+            mode = (dx > dy) ? ConnectionMode.HORIZONTAL : ConnectionMode.VERTICAL;
+        }
         float turnPercent = 0.5f;
 
         LineDrawingHelper.drawConnection(graphics, fromX, fromY, toX, toY, mode, turnPercent, unlocked);
