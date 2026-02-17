@@ -8,6 +8,7 @@ package com.chapeau.apica.core.registry;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.menu.IncubatorMenu;
+import com.chapeau.apica.common.menu.InjectorMenu;
 import com.chapeau.apica.common.menu.MagicHiveMenu;
 import com.chapeau.apica.common.menu.ResonatorMenu;
 import com.chapeau.apica.common.menu.alchemy.AlembicMenu;
@@ -45,9 +46,13 @@ public class ApicaMenus {
             MENUS.register("magic_hive",
                     () -> IMenuTypeExtension.create(MagicHiveMenu::new));
 
-    public static final Supplier<MenuType<IncubatorMenu>> INCUBATOR = 
+    public static final Supplier<MenuType<IncubatorMenu>> INCUBATOR =
             MENUS.register("incubator",
                     () -> IMenuTypeExtension.create(IncubatorMenu::new));
+
+    public static final Supplier<MenuType<InjectorMenu>> INJECTOR =
+            MENUS.register("injector",
+                    () -> IMenuTypeExtension.create(InjectorMenu::new));
 
     // --- ALCHEMY MENUS ---
     public static final Supplier<MenuType<ManualCentrifugeMenu>> MANUAL_CENTRIFUGE = 

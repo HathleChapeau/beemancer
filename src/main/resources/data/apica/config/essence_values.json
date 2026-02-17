@@ -1,0 +1,23 @@
+{
+  "essences": {
+    "DROP_LESSER":       { "stat_points": 5,  "hunger_cost": 10 },
+    "DROP_NORMAL":       { "stat_points": 15, "hunger_cost": 25 },
+    "DROP_GREATER":      { "stat_points": 30, "hunger_cost": 40 },
+    "DROP_PERFECT":      { "stat_points": 50, "hunger_cost": 60 },
+    "SPEED_LESSER":      { "stat_points": 5,  "hunger_cost": 10 },
+    "SPEED_NORMAL":      { "stat_points": 15, "hunger_cost": 25 },
+    "SPEED_GREATER":     { "stat_points": 30, "hunger_cost": 40 },
+    "SPEED_PERFECT":     { "stat_points": 50, "hunger_cost": 60 },
+    "FORAGING_LESSER":   { "stat_points": 5,  "hunger_cost": 10 },
+    "FORAGING_NORMAL":   { "stat_points": 15, "hunger_cost": 25 },
+    "FORAGING_GREATER":  { "stat_points": 30, "hunger_cost": 40 },
+    "FORAGING_PERFECT":  { "stat_points": 50, "hunger_cost": 60 },
+    "TOLERANCE_LESSER":  { "stat_points": 5,  "hunger_cost": 15 },
+    "TOLERANCE_NORMAL":  { "stat_points": 15, "hunger_cost": 30 },
+    "TOLERANCE_GREATER": { "stat_points": 30, "hunger_cost": 50 },
+    "TOLERANCE_PERFECT": { "stat_points": 50, "hunger_cost": 70 },
+    "DIURNAL_NORMAL":    { "stat_points": 50, "hunger_cost": 40 },
+    "NOCTURNAL_NORMAL":  { "stat_points": 50, "hunger_cost": 50 },
+    "INSOMNIA_PERFECT":  { "stat_points": 50, "hunger_cost": 80 }
+  }
+}

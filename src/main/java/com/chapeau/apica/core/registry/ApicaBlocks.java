@@ -344,6 +344,13 @@ public class ApicaBlocks {
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
+    // --- ESSENCE INJECTOR ---
+    public static final DeferredBlock<com.chapeau.apica.common.block.injector.InjectorBlock> INJECTOR = BLOCKS.register("injector",
+            () -> new com.chapeau.apica.common.block.injector.InjectorBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.WOOD)
+                    .requiresCorrectToolForDrops()));
+
     // --- ALCHEMY HEARTS ---
     public static final DeferredBlock<AlembicHeartBlock> ALEMBIC_HEART = BLOCKS.register("alembic_heart",
             () -> new AlembicHeartBlock(BlockBehaviour.Properties.of()

@@ -9,6 +9,7 @@ package com.chapeau.apica.common.item.bee;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.content.gene.species.DataDrivenSpeciesGene;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
+import com.chapeau.apica.core.util.BeeInjectionHelper;
 import com.chapeau.apica.core.gene.BeeGeneData;
 import com.chapeau.apica.core.gene.Gene;
 import com.chapeau.apica.core.gene.GeneCategory;
@@ -157,6 +158,13 @@ public class MagicBeeItem extends Item {
             return customData.copyTag();
         }
         return new CompoundTag();
+    }
+
+    // --- Foil (satiated bees glow) ---
+
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        return BeeInjectionHelper.isSatiated(stack);
     }
 
     // --- Tooltip ---

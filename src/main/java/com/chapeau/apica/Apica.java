@@ -374,6 +374,7 @@ public class Apica {
         CodexManager.load(server);
         CodexBookManager.load(server);
         QuestManager.load(server);
+        com.chapeau.apica.core.config.InjectionConfigManager.load(server);
     }
 
     // =========================================================================

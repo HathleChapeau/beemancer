@@ -271,6 +271,14 @@ public class ApicaBlockEntities {
                             ApicaBlocks.POLLEN_POT.get()
                     ).build(null));
 
+    // --- ESSENCE INJECTOR ---
+    public static final Supplier<BlockEntityType<com.chapeau.apica.common.blockentity.injector.InjectorBlockEntity>> INJECTOR =
+            BLOCK_ENTITIES.register("injector",
+                    () -> BlockEntityType.Builder.of(
+                            com.chapeau.apica.common.blockentity.injector.InjectorBlockEntity::new,
+                            ApicaBlocks.INJECTOR.get()
+                    ).build(null));
+
     // --- ESSENCE EXTRACTOR ---
     public static final Supplier<BlockEntityType<ExtractorHeartBlockEntity>> EXTRACTOR_HEART =
             BLOCK_ENTITIES.register("extractor_heart",

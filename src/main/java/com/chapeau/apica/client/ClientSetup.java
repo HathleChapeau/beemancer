@@ -134,6 +134,7 @@ public class ClientSetup {
         event.register(ApicaMenus.NETWORK_INTERFACE.get(), NetworkInterfaceScreen::new);
         event.register(ApicaMenus.MAGIC_HIVE.get(), MagicHiveScreen::new);
         event.register(ApicaMenus.INCUBATOR.get(), IncubatorScreen::new);
+        event.register(ApicaMenus.INJECTOR.get(), com.chapeau.apica.client.gui.screen.InjectorScreen::new);
 
         // Alchemy screens
         event.register(ApicaMenus.MANUAL_CENTRIFUGE.get(), ManualCentrifugeScreen::new);

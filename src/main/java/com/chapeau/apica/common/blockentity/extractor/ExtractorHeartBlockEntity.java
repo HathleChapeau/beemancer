@@ -29,6 +29,7 @@ import com.chapeau.apica.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.chapeau.apica.common.item.essence.EssenceItem;
+import com.chapeau.apica.common.item.essence.SpeciesEssenceItem;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.gene.BeeGeneData;
 import com.chapeau.apica.core.gene.Gene;
@@ -169,6 +170,10 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
 
         // Activity essences (diurnal/nocturnal/insomnia)
         addActivityEssences(weightedEssences, speciesData.dayNight);
+
+        // Species essence (faible poids, meme que PERFECT)
+        ItemStack speciesEssence = SpeciesEssenceItem.createForSpecies(speciesGene.getId());
+        weightedEssences.add(speciesEssence);
 
         if (weightedEssences.isEmpty()) return ItemStack.EMPTY;
 

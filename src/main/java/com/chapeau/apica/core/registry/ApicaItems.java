@@ -12,6 +12,7 @@ import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.chapeau.apica.common.item.codex.CodexItem;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.item.essence.EssenceItem;
+import com.chapeau.apica.common.item.essence.SpeciesEssenceItem;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import com.chapeau.apica.common.item.mount.HoverbikePartItem;
 import com.chapeau.apica.common.item.mount.HoverbikeSpawnItem;
@@ -295,6 +296,14 @@ public class ApicaItems {
             () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.NOCTURNAL, EssenceItem.EssenceLevel.NORMAL));
     public static final DeferredItem<EssenceItem> INSOMNIA_ESSENCE = ITEMS.register("insomnia_essence",
             () -> new EssenceItem(new Item.Properties(), EssenceItem.EssenceType.INSOMNIA, EssenceItem.EssenceLevel.PERFECT));
+
+    // Species Essence (metadata-driven, unique item)
+    public static final DeferredItem<SpeciesEssenceItem> SPECIES_ESSENCE = ITEMS.register("species_essence",
+            () -> new SpeciesEssenceItem(new Item.Properties()));
+
+    // --- ESSENCE INJECTOR ---
+    public static final DeferredItem<BlockItem> INJECTOR = ITEMS.register("injector",
+            () -> new BlockItem(ApicaBlocks.INJECTOR.get(), new Item.Properties()));
 
     // --- BEE ITEMS ---
     public static final DeferredItem<MagicBeeItem> MAGIC_BEE = ITEMS.register("magic_bee",
