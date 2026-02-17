@@ -191,7 +191,7 @@ public class MagicBeeItem extends Item {
                 if (satiated) {
                     nameComponent = Component.literal("\u2588\u2588").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.OBFUSCATED)
                             .append(Component.literal(" ").withStyle(ChatFormatting.RESET))
-                            .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE))
+                            .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                             .append(Component.literal(" ").withStyle(ChatFormatting.RESET))
                             .append(Component.literal("\u2588\u2588").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.OBFUSCATED));
                 } else {
@@ -287,7 +287,7 @@ public class MagicBeeItem extends Item {
                 if (satiated) {
                     tooltip.add(Component.literal("\u2588\u2588").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.OBFUSCATED)
                             .append(Component.literal(" ").withStyle(ChatFormatting.RESET))
-                            .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE))
+                            .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD))
                             .append(Component.literal(" ").withStyle(ChatFormatting.RESET))
                             .append(Component.literal("\u2588\u2588").withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.OBFUSCATED)));
                 } else {
