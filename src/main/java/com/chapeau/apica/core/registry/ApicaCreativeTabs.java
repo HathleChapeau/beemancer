@@ -188,6 +188,7 @@ public class ApicaCreativeTabs {
 
     private static void addEssenceExtractor(CreativeModeTab.Output output) {
         output.accept(ApicaItems.EXTRACTOR_HEART.get());
+        output.accept(ApicaItems.INJECTOR.get());
     }
 
     private static void addBeeStatue(CreativeModeTab.Output output) {
@@ -276,6 +277,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.DIURNAL_ESSENCE.get());
         output.accept(ApicaItems.NOCTURNAL_ESSENCE.get());
         output.accept(ApicaItems.INSOMNIA_ESSENCE.get());
+        output.accept(ApicaItems.SPECIES_ESSENCE.get());
     }
 
     // =========================================================================

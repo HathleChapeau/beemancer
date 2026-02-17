@@ -3,6 +3,36 @@
 ################################################################################
 
 ================================================================================
+2026-02-17 - Essence Injector + Species Essence
+================================================================================
+
+Ajouts:
+- core/config/EssenceValue.java: Record statPoints + hungerCost
+- core/config/InjectionConfigManager.java: Chargement JSON configs injection
+- core/util/BeeInjectionHelper.java: Read/write injection data sur bee items
+- common/item/essence/SpeciesEssenceItem.java: Item essence d'espece avec metadata
+- common/block/injector/InjectorBlock.java: BaseEntityBlock injector
+- common/blockentity/injector/InjectorBlockEntity.java: Logic processing, ContainerData(10)
+- common/menu/InjectorMenu.java: Menu 2 slots (bee + essence)
+- client/gui/widget/NotchedGaugeWidget.java: Widget jauge verticale crantee reutilisable
+- client/gui/screen/InjectorScreen.java: Screen avec hunger bar + 5 jauges + satiation
+- data/apica/config/injection_config.json: Config globale injection
+- data/apica/config/essence_values.json: Valeurs par type/niveau d'essence
+- 12 recettes essence_craft/ (4 types x 3 tiers: multiplication essences)
+- Assets: blockstates, models, texture placeholder species_essence
+- Lang: +7 cles en_us + fr_fr
+Modifications:
+- ApicaItems.java: +SPECIES_ESSENCE, +INJECTOR (block item)
+- ApicaBlocks.java: +INJECTOR
+- ApicaBlockEntities.java: +INJECTOR
+- ApicaMenus.java: +INJECTOR
+- Apica.java: +InjectionConfigManager.load() dans loadDataConfigurations
+- ClientSetup.java: +InjectorScreen registration
+- ExtractorHeartBlockEntity.java: +species essence dans weighted drops
+- MagicBeeItem.java: +isFoil() override pour abeilles rassasiees
+Registres: ApicaItems (+2), ApicaBlocks (+1), ApicaBlockEntities (+1), ApicaMenus (+1)
+
+================================================================================
 2026-02-17 - Hoverbike Collision System V2
 ================================================================================
 
