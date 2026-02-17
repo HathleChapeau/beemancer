@@ -142,7 +142,7 @@ public class BeeInjectionHelper {
 
     // ========== HELPERS INTERNES ==========
 
-    private static boolean isActivityType(EssenceItem.EssenceType type) {
+    public static boolean isActivityType(EssenceItem.EssenceType type) {
         return type == EssenceItem.EssenceType.DIURNAL
             || type == EssenceItem.EssenceType.NOCTURNAL
             || type == EssenceItem.EssenceType.INSOMNIA;

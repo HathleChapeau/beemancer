@@ -20,4 +20,10 @@
 | alembic            | AlembicMenu          | Alchemy        |
 | infuser            | InfuserMenu          | Alchemy        |
 
+--- ESSENCE INJECTOR ---
+| injector           | InjectorMenu         | Essence Injector |
+
+--- RESONATOR ---
+| resonator          | ResonatorMenu        | Resonator        |
+
 ################################################################################

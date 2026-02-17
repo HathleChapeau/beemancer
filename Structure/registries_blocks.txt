@@ -49,6 +49,9 @@
 --- ESSENCE EXTRACTOR ---
 | extractor_heart        | ExtractorHeartBlock       | Oui          | Essence Extractor |
 
+--- ESSENCE INJECTOR ---
+| injector               | InjectorBlock             | Oui          | Essence Injector  |
+
 --- STORAGE ---
 | controlled_hive        | ControlledHiveBlock       | Non          | Storage Network |
 | storage_hive           | StorageHiveBlock          | Oui          | Storage Hive    |

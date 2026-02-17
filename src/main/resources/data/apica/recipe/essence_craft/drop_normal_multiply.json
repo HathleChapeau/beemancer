@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": { "item": "apica:lesser_drop_essence" },
+    "N": { "item": "apica:drop_essence" }
+  },
+  "pattern": [ "LL ", "LN ", "L  " ],
+  "result": { "id": "apica:drop_essence", "count": 2 }
+}

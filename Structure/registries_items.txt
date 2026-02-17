@@ -87,6 +87,10 @@
 | diurnal_essence          | EssenceItem      | Essence Extractor |
 | nocturnal_essence        | EssenceItem      | Essence Extractor |
 | insomnia_essence         | EssenceItem      | Essence Extractor |
+| species_essence          | SpeciesEssenceItem| Essence Injector  |
+
+--- ESSENCE INJECTOR ---
+| injector                 | BlockItem        | Essence Injector  |
 
 --- BEE ITEMS ---
 | magic_bee                | MagicBeeItem     | Gene System     |

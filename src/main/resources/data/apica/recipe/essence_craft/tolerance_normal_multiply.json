@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": { "item": "apica:lesser_tolerance_essence" },
+    "N": { "item": "apica:tolerance_essence" }
+  },
+  "pattern": [ "LL ", "LN ", "L  " ],
+  "result": { "id": "apica:tolerance_essence", "count": 2 }
+}

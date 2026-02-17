@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": { "item": "apica:lesser_foraging_essence" },
+    "N": { "item": "apica:foraging_essence" }
+  },
+  "pattern": [ "LL ", "LN ", "L  " ],
+  "result": { "id": "apica:foraging_essence", "count": 2 }
+}
