@@ -33,12 +33,12 @@ import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 /**
  * Renderer du Hoverbike.
@@ -185,7 +185,7 @@ public class HoverbikeRenderer extends MobRenderer<HoverbikeEntity, HoverbikeMod
         Vec3 end = new Vec3(x, centerY - TERRAIN_RAY_DISTANCE, z);
 
         BlockHitResult result = level.clip(new ClipContext(
-                start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, (Entity) null));
+                start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()));
 
         if (result.getType() == HitResult.Type.BLOCK) {
             return result.getLocation().y - centerY;
