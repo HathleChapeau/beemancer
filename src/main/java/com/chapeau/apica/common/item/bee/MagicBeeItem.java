@@ -187,11 +187,17 @@ public class MagicBeeItem extends Item {
             // Espece (violet si rassasiee, or sinon)
             boolean satiated = BeeInjectionHelper.isSatiated(stack);
             if (speciesGene != null) {
-                ChatFormatting nameColor = satiated ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.GOLD;
-                tooltip.add(Component.translatable("tooltip.apica.species")
-                        .withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(speciesGene.getDisplayName().copy().withStyle(nameColor)));
+                if (satiated) {
+                    tooltip.add(Component.translatable("tooltip.apica.species")
+                            .withStyle(ChatFormatting.GRAY)
+                            .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                            .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD, ChatFormatting.ITALIC)));
+                } else {
+                    tooltip.add(Component.translatable("tooltip.apica.species")
+                            .withStyle(ChatFormatting.GRAY)
+                            .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                            .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD)));
+                }
             }
 
             if (speciesData != null) {
@@ -275,8 +281,11 @@ public class MagicBeeItem extends Item {
             // Affichage simple: nom de l'espece (violet + shimmer si rassasiee)
             boolean satiated = BeeInjectionHelper.isSatiated(stack);
             if (speciesGene != null) {
-                ChatFormatting nameColor = satiated ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.GOLD;
-                tooltip.add(speciesGene.getDisplayName().copy().withStyle(nameColor));
+                if (satiated) {
+                    tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD, ChatFormatting.ITALIC));
+                } else {
+                    tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
+                }
             }
             tooltip.add(Component.translatable("tooltip.apica.shift_for_details")
                     .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
