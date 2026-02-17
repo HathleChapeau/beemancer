@@ -239,8 +239,11 @@ public class CodexScreen extends Screen {
     }
 
     private void updateTabButtonStyles() {
+        int baseTabY = frameY - TAB_HEIGHT;
         for (Map.Entry<CodexPage, CodexTabButtonWidget> entry : tabButtons.entrySet()) {
-            entry.getValue().setSelected(entry.getKey() == currentPage);
+            boolean sel = entry.getKey() == currentPage;
+            entry.getValue().setSelected(sel);
+            entry.getValue().setY(sel ? baseTabY : baseTabY + 3);
         }
     }
 
