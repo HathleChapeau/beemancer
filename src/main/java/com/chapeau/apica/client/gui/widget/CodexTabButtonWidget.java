@@ -68,8 +68,8 @@ public class CodexTabButtonWidget extends AbstractWidget {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        // Teinte hover: assombrir a 0.90
-        if (isHovered && !selected) {
+        // Teinte: assombrir a 0.90 pour hover ou selected
+        if (selected || (isHovered && !selected)) {
             graphics.setColor(0.90f, 0.90f, 0.90f, 1.0f);
         }
 

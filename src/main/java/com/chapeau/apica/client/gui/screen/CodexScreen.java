@@ -289,10 +289,18 @@ public class CodexScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics, mouseX, mouseY, partialTick);
 
-        // 1. Rendu du background uni (pas de tiling!)
+        // 1. Rendu des boutons de tab EN PREMIER (passent derriere le panneau)
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        for (CodexTabButtonWidget btn : tabButtons.values()) {
+            btn.render(graphics, mouseX, mouseY, partialTick);
+        }
+        RenderSystem.disableBlend();
+
+        // 2. Rendu du background uni (pas de tiling!)
         graphics.fill(frameX, frameY, frameX + FRAME_WIDTH, frameY + FRAME_HEIGHT, BG_COLOR);
 
-        // 2. Rendu du contenu avec scissor (clippe aux bords)
+        // 3. Rendu du contenu avec scissor (clippe aux bords)
         graphics.enableScissor(contentX, contentY, contentX + contentWidth, contentY + contentHeight);
 
         // Décorations (cracks, stains, borders) — suivent le scroll
@@ -309,16 +317,8 @@ public class CodexScreen extends Screen {
 
         graphics.disableScissor();
 
-        // 3. Rendu de la frame PAR-DESSUS le contenu
+        // 4. Rendu de la frame PAR-DESSUS le contenu
         renderFrame(graphics);
-
-        // 4. Rendu des boutons de tab (en dehors de la frame) avec blend
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        for (CodexTabButtonWidget btn : tabButtons.values()) {
-            btn.render(graphics, mouseX, mouseY, partialTick);
-        }
-        RenderSystem.disableBlend();
 
         // 5. Encadre avec le nom de la tab selectionnee, centre sous les boutons
         renderTabLabel(graphics);
