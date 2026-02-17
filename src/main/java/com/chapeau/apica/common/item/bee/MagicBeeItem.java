@@ -9,6 +9,7 @@ package com.chapeau.apica.common.item.bee;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.content.gene.species.DataDrivenSpeciesGene;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
+import com.chapeau.apica.common.item.essence.EssenceItem;
 import com.chapeau.apica.core.util.BeeInjectionHelper;
 import com.chapeau.apica.core.gene.BeeGeneData;
 import com.chapeau.apica.core.gene.Gene;
@@ -183,12 +184,14 @@ public class MagicBeeItem extends Item {
                 speciesData = BeeSpeciesManager.getSpecies(ddGene.getId());
             }
 
-            // Espece
+            // Espece (violet clair si rassasiee, or sinon)
+            boolean satiated = BeeInjectionHelper.isSatiated(stack);
             if (speciesGene != null) {
+                ChatFormatting nameColor = satiated ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.GOLD;
                 tooltip.add(Component.translatable("tooltip.apica.species")
                         .withStyle(ChatFormatting.GRAY)
                         .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD)));
+                        .append(speciesGene.getDisplayName().copy().withStyle(nameColor)));
             }
 
             if (speciesData != null) {
@@ -240,33 +243,40 @@ public class MagicBeeItem extends Item {
                         .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                         .append(Component.translatable(climateKey).withStyle(climateColor)));
 
-                // Stats avec etoiles - couleurs essences
+                // Stats avec etoiles - base + bonus injection
+                int dropTotal = speciesData.dropLevel + BeeInjectionHelper.getBonusLevel(stack, EssenceItem.EssenceType.DROP);
+                int speedTotal = speciesData.flyingSpeedLevel + BeeInjectionHelper.getBonusLevel(stack, EssenceItem.EssenceType.SPEED);
+                int foragingTotal = speciesData.foragingDurationLevel + BeeInjectionHelper.getBonusLevel(stack, EssenceItem.EssenceType.FORAGING);
+                int toleranceTotal = speciesData.toleranceLevel + BeeInjectionHelper.getBonusLevel(stack, EssenceItem.EssenceType.TOLERANCE);
+
                 tooltip.add(Component.literal(""));
                 tooltip.add(Component.translatable("tooltip.apica.drop")
                         .withStyle(ChatFormatting.GRAY)
                         .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(formatStars(speciesData.dropLevel)).withStyle(ChatFormatting.GOLD)));
+                        .append(Component.literal(formatStars(dropTotal)).withStyle(ChatFormatting.GOLD)));
 
                 tooltip.add(Component.translatable("tooltip.apica.flyspeed")
                         .withStyle(ChatFormatting.GRAY)
                         .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(formatStars(speciesData.flyingSpeedLevel)).withStyle(ChatFormatting.AQUA)));
+                        .append(Component.literal(formatStars(speedTotal)).withStyle(ChatFormatting.AQUA)));
 
                 tooltip.add(Component.translatable("tooltip.apica.foraging")
                         .withStyle(ChatFormatting.GRAY)
                         .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(formatStars(speciesData.foragingDurationLevel)).withStyle(ChatFormatting.GREEN)));
+                        .append(Component.literal(formatStars(foragingTotal)).withStyle(ChatFormatting.GREEN)));
 
                 tooltip.add(Component.translatable("tooltip.apica.tolerance")
                         .withStyle(ChatFormatting.GRAY)
                         .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(formatStars(speciesData.toleranceLevel)).withStyle(ChatFormatting.RED)));
+                        .append(Component.literal(formatStars(toleranceTotal)).withStyle(ChatFormatting.RED)));
             }
 
         } else {
-            // Affichage simple: juste le nom de l'espece
+            // Affichage simple: juste le nom de l'espece (violet si rassasiee)
+            boolean satiated = BeeInjectionHelper.isSatiated(stack);
             if (speciesGene != null) {
-                tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
+                ChatFormatting nameColor = satiated ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.GOLD;
+                tooltip.add(speciesGene.getDisplayName().copy().withStyle(nameColor));
             }
             tooltip.add(Component.translatable("tooltip.apica.shift_for_details")
                     .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));

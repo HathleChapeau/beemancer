@@ -68,14 +68,14 @@ public class InjectorMenu extends ApicaMenu {
 
         addDataSlots(data);
 
-        // Bee slot (gauche)
+        // Essence slot (gauche)
         addSlot(new ApicaSlot(blockEntity.getItemHandler(), BEE_SLOT, 35, 38)
-                .withFilter(stack -> stack.is(ApicaItems.MAGIC_BEE.get())));
-
-        // Essence slot (droite)
-        addSlot(new ApicaSlot(blockEntity.getItemHandler(), ESSENCE_SLOT, 137, 38)
                 .withFilter(stack -> stack.getItem() instanceof EssenceItem
                         && !(stack.getItem() instanceof SpeciesEssenceItem)));
+
+        // Bee slot (droite)
+        addSlot(new ApicaSlot(blockEntity.getItemHandler(), ESSENCE_SLOT, 137, 38)
+                .withFilter(stack -> stack.is(ApicaItems.MAGIC_BEE.get())));
 
         // Player inventory
         addPlayerInventory(playerInventory, 15, 137);
