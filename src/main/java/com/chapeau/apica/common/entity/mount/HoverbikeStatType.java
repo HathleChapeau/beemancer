@@ -41,7 +41,8 @@ public enum HoverbikeStatType {
     ROTATION_SPEED_MIN("Rotation_Speed_Min"),
     GAUGE_FILL_RATE("Gauge_Fill_Rate"),
     GAUGE_DRAIN_RATE("Gauge_Drain_Rate"),
-    LIFT_SPEED("Lift_Speed");
+    LIFT_SPEED("Lift_Speed"),
+    COLLISION_PUSH_FORCE("Collision_Push_Force");
 
     private final String jsonKey;
 

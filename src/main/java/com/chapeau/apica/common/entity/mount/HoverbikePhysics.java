@@ -34,6 +34,9 @@ public final class HoverbikePhysics {
 
     private HoverbikePhysics() {}
 
+    /** Seuil en dessous duquel une composante de collision est traitee comme zero. */
+    public static final double COLLISION_EPSILON = 0.015625;
+
     // =========================================================================
     // HOVER MODE — Velocite
     // =========================================================================

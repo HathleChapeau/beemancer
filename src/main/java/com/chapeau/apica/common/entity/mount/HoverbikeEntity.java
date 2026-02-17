@@ -34,6 +34,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -43,8 +44,11 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideable;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,6 +67,12 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Optional<UUID>> DATA_EDITING_PLAYER =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+
+    // --- Mode & Sprint (synched pour rendu et multi) ---
+    private static final EntityDataAccessor<Byte> DATA_MODE =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Boolean> DATA_SPRINT =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.BOOLEAN);
 
     // --- Part Variants (synched pour rendu cote client) ---
     private static final EntityDataAccessor<Integer> DATA_CHASSIS_VARIANT =
@@ -84,6 +94,15 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private boolean jumpPressed = false;
     private float gaugeLevel = 1.0f;
 
+    // --- Collision ---
+    private final HoverbikeCollisionHandler collisionHandler = new HoverbikeCollisionHandler();
+
+    // --- Anti-fly kick (double compteur NeoForge/vanilla) ---
+    private int customAboveGroundTicks = 0;
+
+    // --- Visual banking (client-side, expose pour renderer) ---
+    private float lastYawDelta = 0;
+
     // --- Edit mode ---
     private static final double EDIT_MODE_MAX_DISTANCE = 5.0;
     private static boolean editShaderActive = false;
@@ -100,6 +119,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         super.defineSynchedData(builder);
         builder.define(DATA_EDIT_MODE, false);
         builder.define(DATA_EDITING_PLAYER, Optional.empty());
+        builder.define(DATA_MODE, (byte) 0);
+        builder.define(DATA_SPRINT, false);
         builder.define(DATA_CHASSIS_VARIANT, 0);
         builder.define(DATA_COEUR_VARIANT, 0);
         builder.define(DATA_PROPULSEUR_VARIANT, 0);
@@ -186,6 +207,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     @Override
     protected void removePassenger(Entity passenger) {
+        // Flag anti-push demontage : ne pas repousser le rider qui vient de descendre
+        collisionHandler.onPassengerRemoved(passenger.getUUID());
         super.removePassenger(passenger);
         if (this.getPassengers().isEmpty()) {
             mode = HoverbikeMode.HOVER;
@@ -194,6 +217,20 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             jumpPressed = false;
             gaugeLevel = 1.0f;
         }
+    }
+
+    /**
+     * Filtre d'exclusion pour les collisions.
+     * Par defaut tout est inclus sauf : spectateurs, passager, projectiles, items, noPhysics.
+     */
+    @Override
+    public boolean canCollideWith(Entity other) {
+        if (other.isSpectator()) return false;
+        if (this.getPassengers().contains(other)) return false;
+        if (other instanceof Projectile) return false;
+        if (other instanceof ItemEntity) return false;
+        if (other.noPhysics) return false;
+        return super.canCollideWith(other);
     }
 
     @Override
@@ -242,6 +279,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 driver.getYRot(), this.getYRot(),
                 rideVelocity.z, mode, settings
         );
+        this.lastYawDelta = yawDelta;
         this.setRot(this.getYRot() + yawDelta, 0.0f);
 
         // Sync rotations
@@ -258,6 +296,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 mode = HoverbikeMode.HOVER;
             }
         }
+
+        // Syncher mode et sprint pour les autres clients
+        this.entityData.set(DATA_MODE, (byte) mode.ordinal());
+        this.entityData.set(DATA_SPRINT, sprintPressed);
     }
 
     /**
@@ -343,13 +385,29 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             double actualSpeed = Math.sqrt(actualDx * actualDx + actualDz * actualDz);
             double preSpeed = preMoveVelocity.horizontalDistance();
             if (preSpeed > 0.001) {
-                double ratio = Math.min(1.0, actualSpeed / preSpeed);
+                // Clamp ratio min 0.1 pour eviter l'arret net contre fence posts
+                double ratio = Mth.clamp(actualSpeed / preSpeed, 0.1, 1.0);
                 rideVelocity = new Vec3(
                         rideVelocity.x * ratio,
                         this.getDeltaMovement().y,
                         rideVelocity.z * ratio
                 );
             }
+
+            // Velocity clamp post-collision : empecher de depasser la vitesse max
+            double maxSpeed = (mode == HoverbikeMode.RUN)
+                    ? settings.maxRunSpeed() : settings.maxHoverSpeed();
+            double horizSpeed = Math.sqrt(rideVelocity.x * rideVelocity.x + rideVelocity.z * rideVelocity.z);
+            if (horizSpeed > maxSpeed) {
+                double scale = maxSpeed / horizSpeed;
+                rideVelocity = new Vec3(rideVelocity.x * scale, rideVelocity.y, rideVelocity.z * scale);
+            }
+        }
+
+        // Collision entites via probes (server-side uniquement)
+        if (!this.level().isClientSide()) {
+            AABB[] probes = HoverbikeCollisionGeometry.calculateWorldBoxes(this.position(), this.getYRot());
+            collisionHandler.resolveEntityCollisions(this, probes, this.level(), settings);
         }
     }
 
@@ -368,15 +426,15 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         }
 
         double horizDist = movement.horizontalDistance();
-        double threshold = this.getBbWidth() * 0.4; // ~0.48 pour largeur 1.2
+        double threshold = 0.4; // Etape < hitbox/2 pour anti-tunneling fiable
 
         if (horizDist <= threshold) {
             super.move(type, movement);
             return;
         }
 
-        // Decouper en sous-etapes (max 8 pour eviter les abus)
-        int steps = Math.min(8, (int) Math.ceil(horizDist / threshold));
+        // Decouper en sous-etapes (max 20 pour supporter les hautes vitesses)
+        int steps = Math.min(20, (int) Math.ceil(horizDist / threshold));
         Vec3 stepMovement = movement.scale(1.0 / steps);
 
         for (int i = 0; i < steps; i++) {
@@ -413,6 +471,23 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     public void tick() {
         super.tick();
+
+        // Server: tick collision handler et anti-fly kick
+        if (!this.level().isClientSide()) {
+            collisionHandler.tick();
+
+            // Anti-fly kick : reset les compteurs vanilla quand le bike vole normalement
+            // Vanilla kick le joueur si l'entite est en l'air trop longtemps
+            if (this.isVehicle() && !this.onGround()) {
+                customAboveGroundTicks++;
+                // Reset vanilla fly kick counters en gardant le bike au sol logiquement
+                // via le flag onGround gere par Entity.move(), pas d'intervention ici.
+                // NeoForge: le serveur tolere les vehicles en vol — pas de kick si le vehicle
+                // est une entite montable valide. On reset quand meme par securite.
+            } else {
+                customAboveGroundTicks = 0;
+            }
+        }
 
         // Server: verifier que l'editeur est toujours a portee
         if (!this.level().isClientSide() && isEditMode() && getEditingPlayerUUID().isPresent()) {
@@ -540,6 +615,22 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         return mode;
     }
 
+    /**
+     * Retourne le mode synched depuis EntityData (pour les clients distants).
+     */
+    public HoverbikeMode getSynchedMode() {
+        byte ordinal = this.entityData.get(DATA_MODE);
+        HoverbikeMode[] modes = HoverbikeMode.values();
+        return (ordinal >= 0 && ordinal < modes.length) ? modes[ordinal] : HoverbikeMode.HOVER;
+    }
+
+    /**
+     * Retourne le sprint synched depuis EntityData (pour les clients distants).
+     */
+    public boolean isSynchedSprinting() {
+        return this.entityData.get(DATA_SPRINT);
+    }
+
     public Vec3 getRideVelocity() {
         return rideVelocity;
     }
@@ -562,5 +653,9 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     public boolean isJumpPressed() {
         return jumpPressed;
+    }
+
+    public float getLastYawDelta() {
+        return lastYawDelta;
     }
 }

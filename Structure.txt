@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-15                     #
-#  (Hoverbike Structure Update - 2026-02-15)                                    #
+#                         Dernière mise à jour: 2026-02-17                     #
+#  (Hoverbike Collision V2 - 2026-02-17)                                        #
 ################################################################################
 
 ================================================================================
@@ -122,13 +122,15 @@ Philosophie:
 │ common/entity/mount/                    │                                        │
 │   HoverbikeEntity                    │ Entite moto (Mob, PlayerRideable)      │
 │   HoverbikeMode                      │ Enum HOVER / RUN                       │
-│   HoverbikeSettings                  │ Record 15 parametres physiques          │
+│   HoverbikeSettings                  │ Record 16 parametres physiques (+pushForce)│
 │   HoverbikePhysics                   │ Calculs stateless (velocity, rotation)  │
 │   HoverbikePart                      │ Enum CHASSIS/COEUR/PROPULSEUR/RADIATEUR│
-│   HoverbikeStatType                  │ Enum 15 stats (cles JSON config)       │
+│   HoverbikeStatType                  │ Enum 16 stats (+COLLISION_PUSH_FORCE)  │
 │   HoverbikeStatObject                │ Modification stat (type + ranges tier)  │
 │   HoverbikeModifier                  │ Modifier complet (prefix/suffix, tiers)│
 │   HoverbikeConfigManager             │ Chargement 4 JSONs config hoverbike    │
+│   HoverbikeCollisionGeometry          │ 3 probes mini-AABB stateless (nez/corps/queue)│
+│   HoverbikeCollisionHandler           │ Push entites, cooldowns, sandwich detect│
 │   HoverbikeDefaultConfigs            │ Generation defaults V1 pour configs     │
 │ common/item/mount/                      │                                        │
 │   HoverbikeSpawnItem                 │ Item spawn hoverbike (clic droit)       │
@@ -138,7 +140,7 @@ Philosophie:
 │ common/blockentity/mount/               │                                        │
 │   AssemblyTableBlockEntity           │ Stockage 1 piece + sync client          │
 │ client/renderer/entity/                 │                                        │
-│   HoverbikeRenderer                  │ MobRenderer base + fullbright edit mode│
+│   HoverbikeRenderer                  │ MobRenderer + banking/tilt/flottement  │
 │   HoverbikePartLayer                 │ RenderLayer parties modulaires + anim   │
 │ client/renderer/block/                  │                                        │
 │   AssemblyTableRenderer              │ Piece 3D rotative sur assembly table    │
@@ -313,6 +315,15 @@ LISTE DES FEATURES:
   Description: Moto flottante modulaire avec 2 modes (Hover/Run), physique velocite/acceleration,
     systeme de pieces (4 categories x 3 variantes), edit mode avec shader, assembly table,
     config JSON externe, modifiers 8 tiers, jauge d'envol, camera controller
+
+→ Hoverbike Collision System V2
+  Description: Systeme de collision ameliore avec probes directionnelles, push entites,
+    anti-tunneling renforce, velocity clamp, banking visuel, inclinaison terrain et flottement
+  Scripts crees: HoverbikeCollisionGeometry.java, HoverbikeCollisionHandler.java
+  Scripts modifies: HoverbikeEntity.java, HoverbikePhysics.java, HoverbikeSettings.java,
+    HoverbikeStatType.java, HoverbikeRenderer.java
+  Dependances: HoverbikeSettings, HoverbikePhysics
+  Registres modifies: HoverbikeStatType (+COLLISION_PUSH_FORCE)
 
 → Debug Display System
   Fichier: Structure/feature_debug_display.txt

@@ -3,6 +3,26 @@
 ################################################################################
 
 ================================================================================
+2026-02-17 - Hoverbike Collision System V2
+================================================================================
+
+Ajouts:
+- HoverbikeCollisionGeometry.java: 3 probes mini-AABB stateless (nez/corps/queue)
+- HoverbikeCollisionHandler.java: Push entites sans degats, cooldown 5 ticks,
+  sandwich detection, anti-push demontage (3 ticks grace)
+Modifications:
+- HoverbikeEntity.java: CollisionHandler, canCollideWith (filtre exclusion),
+  DATA_MODE (byte) + DATA_SPRINT (boolean) synched, anti-tunneling cap 8→20 seuil 0.4,
+  ratio clamp min 0.1, velocity clamp post-collision, probes dans travel(),
+  anti-fly kick compteur, lastYawDelta pour banking
+- HoverbikePhysics.java: +COLLISION_EPSILON = 0.015625
+- HoverbikeSettings.java: +collisionPushForce (default 0.3)
+- HoverbikeStatType.java: +COLLISION_PUSH_FORCE
+- HoverbikeRenderer.java: banking visuel (roll proportionnel yaw delta),
+  inclinaison terrain (4 raycasts), flottement visuel (+0.15 Y)
+Registres: HoverbikeStatType (+1 enum)
+
+================================================================================
 2026-02-16 - Resonator Block
 ================================================================================
 

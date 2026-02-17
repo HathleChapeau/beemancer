@@ -52,7 +52,10 @@ public record HoverbikeSettings(
         // --- Jauge d'envol ---
         double gaugeFillRate,
         double gaugeDrainRate,
-        double liftSpeed
+        double liftSpeed,
+
+        // --- Collision ---
+        double collisionPushForce
 ) {
 
     /**
@@ -74,7 +77,8 @@ public record HoverbikeSettings(
                 1.5,     // rotationSpeedMin (deg/tick a vitesse max run)
                 0.01,    // gaugeFillRate (100 ticks = 5 sec pour remplir)
                 0.0125,  // gaugeDrainRate (80 ticks = 4 sec de vol)
-                0.06     // liftSpeed (montee douce, > gravity 0.025)
+                0.06,    // liftSpeed (montee douce, > gravity 0.025)
+                0.3      // collisionPushForce (force de poussee sur entites)
         );
     }
 
@@ -98,6 +102,7 @@ public record HoverbikeSettings(
         json.addProperty(HoverbikeStatType.GAUGE_FILL_RATE.getJsonKey(), gaugeFillRate);
         json.addProperty(HoverbikeStatType.GAUGE_DRAIN_RATE.getJsonKey(), gaugeDrainRate);
         json.addProperty(HoverbikeStatType.LIFT_SPEED.getJsonKey(), liftSpeed);
+        json.addProperty(HoverbikeStatType.COLLISION_PUSH_FORCE.getJsonKey(), collisionPushForce);
         return json;
     }
 
@@ -122,7 +127,8 @@ public record HoverbikeSettings(
                 getOr(json, HoverbikeStatType.ROTATION_SPEED_MIN, defaults.rotationSpeedMin()),
                 getOr(json, HoverbikeStatType.GAUGE_FILL_RATE, defaults.gaugeFillRate()),
                 getOr(json, HoverbikeStatType.GAUGE_DRAIN_RATE, defaults.gaugeDrainRate()),
-                getOr(json, HoverbikeStatType.LIFT_SPEED, defaults.liftSpeed())
+                getOr(json, HoverbikeStatType.LIFT_SPEED, defaults.liftSpeed()),
+                getOr(json, HoverbikeStatType.COLLISION_PUSH_FORCE, defaults.collisionPushForce())
         );
     }
 

@@ -1,0 +1,481 @@
+{
+  "brainstorm": {
+    "sujet": "Améliorations du système de collision, détection de collision et physique du hoverbike",
+    "date": "2026-02-17",
+    "participants": [
+      "expert-create (Expert Create mod - Contraptions, ContraptionCollider)",
+      "expert-iv (Expert Immersive Vehicles - OBB, multi-part hitboxes, physique véhicules)",
+      "expert-physics (Expert physique/collision NeoForge - AABB, SAT, CCD, Entity.move())",
+      "expert-apica (Architecte Apica - validation pertinence et conformité projet)"
+    ],
+    "scope": "Fixes et optimisations du système de collision uniquement. Pas d'améliorations de gameplay."
+  },
+
+  "etat_actuel": {
+    "fichiers_principaux": [
+      "common/entity/mount/HoverbikeEntity.java (566 lignes)",
+      "common/entity/mount/HoverbikePhysics.java (260 lignes)",
+      "common/entity/mount/HoverbikeSettings.java (133 lignes)"
+    ],
+    "hitbox": "AABB vanilla 1.2x1.2x1.0, carrée, fixe (EntityType.sized(1.2F, 1.0F))",
+    "collision_blocs": "Entity.move(MoverType.SELF, velocity) — système vanilla",
+    "anti_tunneling": "Subdivision max 8 steps, seuil getBbWidth()*0.4 (~0.48)",
+    "collision_entites": "Aucune (isPushable()=false, traverse tout)",
+    "feedback_collision": "Ratio-based: actualSpeed/preSpeed appliqué à rideVelocity",
+    "physique": "HoverbikePhysics stateless, inertie 0.85, gravité 0.025/tick, STEP_HEIGHT 1.3",
+    "modes": "HOVER (max 0.15 b/tick, 4 directions) et RUN (max 0.6 b/tick, avant seulement)",
+    "sync_serveur": "mode, sprint, rideVelocity NON synchés via EntityData"
+  },
+
+  "problemes_identifies": [
+    {
+      "id": "P1",
+      "titre": "Hitbox non orientée",
+      "description": "La hitbox AABB 1.2x1.2 est carrée et ne tourne pas avec le yaw. Aucune détection des entités aux extrémités du véhicule (nez, queue).",
+      "identifie_par": "expert-apica",
+      "severite": "HAUTE"
+    },
+    {
+      "id": "P2",
+      "titre": "Pas de collision entité-entité",
+      "description": "Le hoverbike traverse mobs, joueurs et autres entités sans interaction. isPushable()=false et aucun code de collision custom.",
+      "identifie_par": "expert-apica",
+      "severite": "HAUTE"
+    },
+    {
+      "id": "P3",
+      "titre": "États physiques client-only",
+      "description": "sprintPressed et jumpPressed lus client-side seulement. rideVelocity, mode, gaugeLevel non synchés via EntityData. En multijoueur, le serveur ne connaît pas les états internes.",
+      "identifie_par": "expert-apica",
+      "severite": "MOYENNE"
+    },
+    {
+      "id": "P4",
+      "titre": "Pas de dégâts de collision",
+      "description": "Aucun dégât quand le hoverbike percute un mur à haute vitesse. Aucun dégât infligé aux entités percutées.",
+      "identifie_par": "expert-apica",
+      "severite": "MOYENNE"
+    },
+    {
+      "id": "P5",
+      "titre": "Anti-tunneling fragile si vitesse augmente",
+      "description": "Cap 8 steps couvre jusqu'à ~3.84 b/tick. Suffisant pour 0.6 b/tick actuel mais fragile si modifiers augmentent la vitesse au-delà.",
+      "identifie_par": "expert-apica",
+      "severite": "BASSE",
+      "note_physics": "Le système actuel (cap 8, seuil 0.48) n'a PAS de bug de tunneling à 0.6 b/tick. Le changement est une amélioration de robustesse, pas un fix."
+    },
+    {
+      "id": "P7",
+      "titre": "Mode HOVER/RUN non synché serveur",
+      "description": "Le mode est stocké côté instance mais pas synché via EntityData. Le serveur ne sait pas si le hoverbike est en RUN ou HOVER.",
+      "identifie_par": "expert-apica",
+      "severite": "MOYENNE"
+    },
+    {
+      "id": "P8",
+      "titre": "Pas de résistance au terrain",
+      "description": "Même vitesse sur terre, sable, glace. Pas de friction par surface. Pas de ralentissement dans l'eau.",
+      "identifie_par": "expert-apica",
+      "severite": "BASSE"
+    }
+  ],
+
+  "propositions": [
+    {
+      "id": "PROP-01",
+      "titre": "Collision probes directionnelles (3 mini-AABB)",
+      "probleme_resolu": ["P1", "P2"],
+      "ou": "Nouvelle classe HoverbikeCollisionGeometry.java (~50 lignes) dans common/entity/mount/. Appelée depuis HoverbikeEntity.travel().",
+      "pourquoi": "La hitbox carrée 1.2x1.2 ne détecte pas les entités aux extrémités du véhicule. Les probes ajoutent une détection directionnelle (nez, queue, corps) sans modifier la hitbox vanilla.",
+      "comment": "3 points en coordonnées locales (nez +0.8Z, queue -0.7Z, corps 0,0,0) transformés en world space par sin/cos du yaw chaque tick. Chaque point génère une mini-AABB (~0.3x0.5x0.3) pour level.getEntities(). Classe STATELESS (méthodes statiques pures, retourne AABB[]). Compatible avec HoverbikePhysics.localToWorld() existant. Micro-inflate de 0.1 recommandé pour sécurité.",
+      "propose_par": "expert-create (option B) + expert-iv (multi-AABB repositionnées)",
+      "valide_par": ["expert-apica", "expert-physics", "expert-iv", "expert-create"],
+      "priorite": "HAUTE",
+      "solution_reference": {
+        "create": "ContraptionCollider safety lock (lignes 482-494) — raycasts aux coins de la BB. Pattern world-to-local/local-to-world via Matrix3d.",
+        "iv": "BoundingBox.updateToEntity() — globalCenter.rotate(entity.orientation).add(entity.position). Multi-AABB repositionnées chaque tick.",
+        "note": "OBB/SAT (Create) et multi-AABB custom mouvement (IV) ont été REJETÉS car incompatibles avec Entity.move() vanilla. Les probes complètent Entity.move() sans le remplacer."
+      },
+      "debat": "Option A (AABB recalculée par yaw) rejetée car hitbox déjà carrée 1.2x1.2 — rotation d'un carré = même carré. Multi-AABB pure (style IV) rejetée car nécessite de bypasser Entity.move() et réimplementer sliding/step-up (5000+ commits dans IV). Consensus unanime sur probes en complément."
+    },
+    {
+      "id": "PROP-02",
+      "titre": "HoverbikeCollisionHandler stateful (push + dégâts entités)",
+      "probleme_resolu": ["P2", "P4"],
+      "ou": "Nouvelle classe HoverbikeCollisionHandler.java (~100 lignes) dans common/entity/mount/. Instance stockée dans HoverbikeEntity.",
+      "pourquoi": "Le hoverbike traverse toutes les entités sans interaction. Besoin de push physique + dégâts proportionnels à la vitesse + tracker anti-multi-hit.",
+      "comment": "Classe STATEFUL (seul composant stateful, justifié pour les cooldowns). Map<UUID, Integer> hitCooldowns avec TTL 5 ticks PAR ENTITÉ (pas global). Méthodes: tick() décremente cooldowns, resolveEntityCollisions(bike, probes, level), canHit(entity) = canCollideWith pattern + cooldown check. Seuil dégâts: 0.35 b/tick. Formule dégâts: diff.length() * collisionDamageMultiplier. Knockback normalisé. Push avec composante Y +0.1 pour popup. Ne gère PAS la collision blocs (laissée à Entity.move() vanilla).",
+      "propose_par": "expert-create (pattern train Create) + expert-iv (pushNearbyEntities IV)",
+      "valide_par": ["expert-apica", "expert-physics", "expert-iv", "expert-create"],
+      "priorite": "HAUTE",
+      "solution_reference": {
+        "create": "handleDamageFromTrain() (lignes 502-558) — damage = diffMotion.length() * 16, knockback normalisé clampé à 3. nonDamageTicks grace period 10 ticks au spawn. collidingEntities Map<Entity, MutableInt> auto-nettoyage 3 ticks.",
+        "iv": "CollisionType enum (BLOCK, ENTITY, VEHICLE, ATTACK). doPostUpdateLogic() push entités. Debounce 60 ticks.",
+        "adaptation": "Multiplicateur x8 (pas x16 comme train), cooldown 5 ticks/entité (pas 60 comme IV), seuil 0.35 b/tick, valeurs dans HoverbikeSettings (configurable JSON)."
+      },
+      "debat": "Cooldown global 20 ticks (expert-IV initial) rejeté par expert-apica: à 12 b/s en RUN, on ne toucherait qu'une entité par seconde. Cooldown PAR ENTITÉ de 5 ticks validé unanimement."
+    },
+    {
+      "id": "PROP-03",
+      "titre": "canCollideWith() filtre d'entités",
+      "probleme_resolu": ["P2"],
+      "ou": "Override dans HoverbikeEntity.java, ~15 lignes.",
+      "pourquoi": "isPushable()=false empêche TOUTE interaction. canCollideWith() permet un filtrage fin de QUI le hoverbike peut impacter.",
+      "comment": "Exclure: spectateurs, passager du hoverbike, projectiles, items au sol, entités noPhysics. Inclure: mobs, joueurs, autres véhicules. isPushable()=false RESTE (empêche les autres entités de pousser le hoverbike). canCollideWith() gère l'inverse: quelles entités LE HOVERBIKE impacte.",
+      "propose_par": "expert-create",
+      "valide_par": ["expert-apica", "expert-iv"],
+      "priorite": "HAUTE",
+      "solution_reference": {
+        "create": "AbstractContraptionEntity.canCollideWith() (lignes 827-853) — filtre spectateurs, noPhysics, HangingEntity, Projectile, véhicule != null, PushReaction != NORMAL."
+      },
+      "debat": "Aucun désaccord."
+    },
+    {
+      "id": "PROP-04",
+      "titre": "Anti-tunneling adaptatif (cap 8→20, seuil 0.4)",
+      "probleme_resolu": ["P5"],
+      "ou": "HoverbikeEntity.move() — modification de 2 lignes existantes (lignes 379-380).",
+      "pourquoi": "Le cap actuel de 8 couvre 3.84 b/tick. Suffisant pour 0.6 mais fragile si modifiers augmentent la vitesse. Passer à 20 couvre 8 b/tick.",
+      "comment": "Changer: int steps = Math.min(8, ...) → Math.min(20, ...). Seuil: getBbWidth()*0.4 → 0.4 constant. Règle CCD respectée: step 0.4 < hitbox/2 (0.6) < mur (1.0). Modification triviale, zéro risque.",
+      "propose_par": "expert-create (option A anti-tunneling)",
+      "valide_par": ["expert-apica", "expert-physics", "expert-iv"],
+      "priorite": "BASSE",
+      "solution_reference": {
+        "create": "ContinuousOBBCollider.separate() — Time of Impact (TOI) mathématique. REJETÉ pour le hoverbike: trop complexe, incompatible step-up vanilla.",
+        "iv": "Prediction pré-mouvement (tester position future). REJETÉ: perd le step-up vanilla et double le travail de collision.",
+        "physics": "Règle d'or CCD: stepSize < min(hitboxWidth, wallThickness). 0.4 < min(1.2, 1.0) = 1.0 ✅."
+      },
+      "debat": "Swept AABB (expandTowards + collideBoundingBox) rejeté par expert-apica: perd le step-up vanilla. Pré-mouvement IV rejeté: double travail. Subdivision adaptative validée unanimement comme solution la plus simple et robuste.",
+      "note": "Expert-physics confirme que le système ACTUEL (cap 8, seuil 0.48) n'a PAS de bug. C'est une amélioration de robustesse, pas un fix critique."
+    },
+    {
+      "id": "PROP-05",
+      "titre": "SynchedEntityData pour mode et sprint",
+      "probleme_resolu": ["P3", "P7"],
+      "ou": "HoverbikeEntity.java — ajout dans defineSynchedData(), ~10 lignes.",
+      "pourquoi": "Le serveur ne connaît pas le mode HOVER/RUN ni l'état sprint. Problème pour la validation anti-cheat et la cohérence multijoueur.",
+      "comment": "DATA_MODE (EntityDataSerializers.BYTE): 0=HOVER, 1=RUN. DATA_SPRINT (EntityDataSerializers.BOOLEAN): état sprint. NE PAS syncher rideVelocity (Vec3 chaque tick = trop de bande passante). Le serveur voit le résultat via deltaMovement/position.",
+      "propose_par": "expert-create",
+      "valide_par": ["expert-apica", "expert-physics"],
+      "priorite": "MOYENNE",
+      "solution_reference": {
+        "create": "AbstractContraptionEntity.STALLED (EntityDataSerializers.BOOLEAN ligne 81-82). CarriageContraptionEntity.CARRIAGE_DATA (custom serializer ligne 61-66)."
+      },
+      "debat": "Unanime. Syncher la vélocité rejeté pour raison de bande passante."
+    },
+    {
+      "id": "PROP-06",
+      "titre": "Friction terrain via blockState.getFriction()",
+      "probleme_resolu": ["P8"],
+      "ou": "HoverbikePhysics.java — ajout paramètre float blockFriction aux méthodes calculate*Velocity(). HoverbikeEntity.travel() — lecture du bloc sous le véhicule.",
+      "pourquoi": "Même vitesse sur tous les terrains est irréaliste. La friction par bloc (soul sand 0.6, glace 0.989) existe déjà dans vanilla.",
+      "comment": "Lire blockState.getFriction(level, blockPos, entity) sous le véhicule. Passer en paramètre à HoverbikePhysics (stateless préservé). Appliquer comme multiplicateur sur le drag. Ne s'applique que quand onGround()==true (pas en vol). Facteur hauteur optionnel: plus le hover est haut, moins le sol affecte (terrainFactor = 1.0 - clamp(height/maxHeight, 0, 1)).",
+      "propose_par": "expert-create + expert-iv",
+      "valide_par": ["expert-apica"],
+      "priorite": "BASSE",
+      "solution_reference": {
+        "create": "ContraptionCollider (lignes 297-299) — blockState.getFriction() pour le slide.",
+        "iv": "PartGroundDevice.java — friction de base * slipperiness du bloc * conditions météo."
+      },
+      "debat": "Expert-apica valide mais précise: nécessite un raycast Y vers le bas pour la hauteur. Acceptable (1 raycast/tick). Changement de signature de HoverbikePhysics impacte les appels dans travel()."
+    },
+    {
+      "id": "PROP-07",
+      "titre": "Double compteur anti-fly kick",
+      "probleme_resolu": ["P3"],
+      "ou": "HoverbikeEntity serverTick — ajout ~5 lignes.",
+      "pourquoi": "Le serveur vanilla kick les joueurs en vol prolongé (anti-fly). Un véhicule volant déclenche ce kick. Il faut reset les DEUX compteurs vanilla.",
+      "comment": "if (getFirstPassenger() instanceof ServerPlayer sp) { sp.connection.aboveGroundTickCount = 0; sp.connection.aboveGroundVehicleTickCount = 0; }. Le second compteur (VehicleTickCount) est spécifique aux véhicules.",
+      "propose_par": "expert-create",
+      "valide_par": ["expert-apica"],
+      "priorite": "HAUTE",
+      "solution_reference": {
+        "create": "ContraptionCollider ligne 118 + ClientMotionPacket lignes 35-36 — reset des deux compteurs."
+      },
+      "debat": "Aucun désaccord. Point technique subtil identifié uniquement par l'expert Create."
+    },
+    {
+      "id": "PROP-08",
+      "titre": "Flag anti-dégâts au démontage",
+      "probleme_resolu": ["P4"],
+      "ou": "HoverbikeEntity — dans la méthode de démontage + CollisionHandler, ~5 lignes.",
+      "pourquoi": "Quand le rider descend du bike en mouvement, il atterrit avec une vélocité résiduelle et peut prendre les dégâts du bike qu'il vient de quitter.",
+      "comment": "Quand le rider démonte, marquer un flag qui empêche les dégâts de collision pendant 2-3 ticks. Pattern identique à ContraptionGrounded de Create.",
+      "propose_par": "expert-create",
+      "valide_par": ["expert-apica"],
+      "priorite": "MOYENNE",
+      "solution_reference": {
+        "create": "ContraptionCollider lignes 510-514 — persistentData.contains('ContraptionGrounded'), supprimé après 1 tick."
+      },
+      "debat": "Aucun désaccord."
+    },
+    {
+      "id": "PROP-09",
+      "titre": "Quantification epsilon (clamp 1/64 de bloc)",
+      "probleme_resolu": ["P5"],
+      "ou": "HoverbikePhysics.java — constante + usage dans les calculs de collision, ~3 lignes.",
+      "pourquoi": "Éviter les erreurs de floating-point dans les calculs de collision. Pattern défensif simple.",
+      "comment": "Constante COLLISION_EPSILON = 0.015625 (1/64 de bloc). Si un déplacement post-collision est inférieur à cette valeur, le traiter comme zéro. Le hoverbike a déjà un pattern similaire dans applyFriction().",
+      "propose_par": "expert-iv",
+      "valide_par": ["expert-apica"],
+      "priorite": "BASSE",
+      "solution_reference": {
+        "iv": "HITBOX_CLAMP = 0.015625 dans le système de collision IV."
+      },
+      "debat": "Aucun désaccord."
+    },
+    {
+      "id": "PROP-10",
+      "titre": "Velocity clamp défensif post-collision",
+      "probleme_resolu": ["P5"],
+      "ou": "HoverbikeEntity.travel() — après la boucle de subdivision, ~5 lignes.",
+      "pourquoi": "Après résolution de collisions multiples simultanées, la vélocité peut devenir aberrante (IV ne prévient pas ce cas). Clamp défensif.",
+      "comment": "Après la boucle anti-tunneling: if (finalVelocity.lengthSqr() > maxSpeed*maxSpeed) setDeltaMovement(finalVelocity.normalize().scale(maxSpeed)). Empêche les glitches de vélocité infinie.",
+      "propose_par": "expert-iv",
+      "valide_par": ["expert-apica", "expert-physics"],
+      "priorite": "BASSE",
+      "solution_reference": {
+        "iv": "IV NE FAIT PAS de clamp post-collision — identifié comme une lacune par l'expert IV lui-même."
+      },
+      "debat": "Aucun désaccord."
+    },
+    {
+      "id": "PROP-11",
+      "titre": "Détection sandwich (entité coincée contre un mur)",
+      "probleme_resolu": ["P2"],
+      "ou": "HoverbikeCollisionHandler.resolveEntityCollisions() — ~8 lignes supplémentaires.",
+      "pourquoi": "Si le hoverbike pousse une entité contre un mur, elle se retrouve comprimée dans un bloc. IV ne gère pas ce cas.",
+      "comment": "Avant de pousser: vérifier level.noCollision(entity, entity.getBoundingBox().move(pushDir)). Si l'entité ne PEUT PAS bouger dans cette direction, appliquer des dégâts d'écrasement au lieu de pousser. Coût: 1 appel noCollision() par entité touchée, négligeable.",
+      "propose_par": "expert-iv",
+      "valide_par": ["expert-apica"],
+      "priorite": "BASSE",
+      "solution_reference": {
+        "iv": "IV ne détecte PAS ce cas — identifié comme lacune par l'expert IV."
+      },
+      "debat": "Aucun désaccord."
+    },
+    {
+      "id": "PROP-12",
+      "titre": "Ratio velocity feedback: clamp minimum 0.1",
+      "probleme_resolu": ["P1"],
+      "ou": "HoverbikeEntity.travel() — lignes 340-353, modification ~2 lignes.",
+      "pourquoi": "Sur certaines shapes (fence posts), Entity.move() peut faire reculer légèrement l'entité, donnant un ratio proche de 0 qui écrase toute la vélocité. Clamp défensif.",
+      "comment": "Après le calcul du ratio actualSpeed/preSpeed, clamper à Math.max(ratio, 0.1). Empêche la perte totale de vélocité sur les shapes problématiques. Alternative avancée: ratio par axe séparé (ratio_x = actualDx/preDx, ratio_z = actualDz/preDz) pour un sliding plus précis.",
+      "propose_par": "expert-physics",
+      "valide_par": ["expert-apica"],
+      "priorite": "BASSE",
+      "solution_reference": {
+        "physics": "Le ratio-based est MEILLEUR que la collision depth soustraction car il délègue la physique de sliding à vanilla et ne fait que synchroniser rideVelocity avec le résultat."
+      },
+      "debat": "Ratio-based (actuel) vs collision depth soustraction: expert-physics tranche en faveur du ratio. La depth soustraction risque la double correction (vanilla + custom). Expert-apica avait initialement validé la depth soustraction d'IV mais se range sur la recommandation physics.",
+      "note_apica": "Clamp 0.1 validé. Cas concret: fence posts (hitbox 0.25x1.5x0.25) provoquent horizontalCollision avec micro-blocage, le ratio tombe à ~0.05 et écrase la vélocité de manière disproportionnée. Avec clamp 0.1, le hoverbike conserve 10% minimum de vélocité, comportement plus naturel. Modification: Mth.clamp(actualSpeed / preSpeed, 0.1, 1.0)."
+    },
+    {
+      "id": "PROP-13",
+      "titre": "Dégâts et seuils dans HoverbikeSettings (configurable JSON)",
+      "probleme_resolu": ["P4"],
+      "ou": "HoverbikeSettings.java — ajout 2 champs au record. HoverbikeDefaultConfigs.java — valeurs par défaut.",
+      "pourquoi": "Les valeurs de dégâts (multiplicateur, seuil) doivent être data-driven, cohérent avec l'architecture existante du hoverbike.",
+      "comment": "Ajouter: collisionDamageMultiplier (default 8.0f), collisionDamageThreshold (default 0.35f). Utilisés par HoverbikeCollisionHandler. Valeurs lues depuis base_stats.json.",
+      "propose_par": "expert-apica",
+      "valide_par": ["expert-create", "expert-iv"],
+      "priorite": "MOYENNE",
+      "solution_reference": {
+        "apica": "Architecture data-driven existante: HoverbikeSettings record 15 paramètres chargés depuis JSON."
+      },
+      "debat": "Aucun désaccord."
+    },
+    {
+      "id": "PROP-14",
+      "titre": "Inclinaison visuelle selon le terrain (client-only)",
+      "probleme_resolu": [],
+      "ou": "HoverbikeRenderer.java ou HoverbikePartLayer.java — poseStack.mulPose(), ~20 lignes client-side.",
+      "pourquoi": "Amélioration visuelle: le hoverbike s'incline légèrement selon le terrain sous lui (pitch/roll cosmétique).",
+      "comment": "4 raycasts vers le bas aux coins du véhicule, côté CLIENT uniquement. Calculer pitch (différence hauteur avant/arrière) et roll (différence gauche/droite). Appliquer via poseStack.mulPose() dans le renderer. NE PAS toucher à la physique (HoverbikePhysics reste 2D+Y).",
+      "propose_par": "expert-iv",
+      "valide_par": ["expert-apica (visuel seulement, basse priorité)"],
+      "priorite": "BASSE",
+      "solution_reference": {
+        "iv": "VehicleGroundDeviceCollection — 4 points FL/FR/RL/RR, angle = toDegrees(asin(heightDelta/distance))."
+      },
+      "debat": "Expert-apica accepte uniquement comme effet visuel client-side. Interdit dans la physique serveur."
+    }
+  ],
+
+  "propositions_rejetees": [
+    {
+      "titre": "OBB unique avec SAT (Separating Axis Theorem)",
+      "propose_par": "expert-create (initial)",
+      "rejete_par": "expert-apica, expert-iv",
+      "raison": "Nécessite de bypasser Entity.move() et réimplementer toute la collision terrain (step-up, slabs, fences, escaliers). Overkill pour 1 véhicule. Le SAT de Create est dimensionné pour des Contraptions multi-blocs, pas un véhicule unitaire."
+    },
+    {
+      "titre": "Multi-AABB custom mouvement (style IV)",
+      "propose_par": "expert-iv (initial)",
+      "rejete_par": "expert-apica, expert-iv (auto-correction)",
+      "raison": "IV utilise position.add(motionApplied) au lieu d'Entity.move(). Les multi-AABB sont incompatibles avec Entity.move() vanilla — il faudrait réimplementer sliding, step-up, sync client (5000+ commits dans IV). Disproportionné pour un mod avec un seul véhicule."
+    },
+    {
+      "titre": "AABB recalculée par yaw (Option A)",
+      "propose_par": "expert-create",
+      "rejete_par": "expert-apica",
+      "raison": "La hitbox actuelle est carrée (1.2x1.2). La rotation d'un carré donne le même carré. L'option A n'apporte rien avec les dimensions actuelles. Si le modèle est allongé à l'avenir, reconsidérer (YAGNI)."
+    },
+    {
+      "titre": "Swept AABB (expandTowards + collideBoundingBox)",
+      "propose_par": "expert-create (option B anti-tunneling)",
+      "rejete_par": "expert-apica",
+      "raison": "Perd le step-up vanilla (STEP_HEIGHT 1.3). collideBoundingBox() retourne la première collision brute sans essayer le step-up. Double travail avec Entity.move()."
+    },
+    {
+      "titre": "Pré-mouvement IV (tester position future avant de bouger)",
+      "propose_par": "expert-iv",
+      "rejete_par": "expert-apica",
+      "raison": "Même problème que swept AABB: perd le step-up. Entity.collide() et level.getBlockCollisions() ne gèrent pas le step-up. Double scan de collision (pré-mouvement + move())."
+    },
+    {
+      "titre": "CollisionList Structure-of-Arrays",
+      "propose_par": "expert-create",
+      "rejete_par": "expert-apica",
+      "raison": "Overkill pour 1 véhicule avec 3 probes. Conçu pour les Contraptions de centaines de blocs."
+    },
+    {
+      "titre": "Double-passe horizontal/vertical",
+      "propose_par": "expert-create",
+      "rejete_par": "expert-apica",
+      "raison": "Entity.move() vanilla + anti-tunneling subdivision suffisent. Ajouter une double-passe créerait 3 couches de collision superposées."
+    },
+    {
+      "titre": "Cached direction colliders",
+      "propose_par": "expert-create",
+      "rejete_par": "expert-apica",
+      "raison": "Pour structures multi-blocs asymétriques. Le hoverbike a une forme fixe — recalculer 3 probes par sin/cos chaque tick est négligeable."
+    },
+    {
+      "titre": "Ground Device Box (détection sol par box offset)",
+      "propose_par": "expert-iv",
+      "rejete_par": "expert-apica",
+      "raison": "Le hoverbike FLOTTE. onGround() vanilla suffit pour savoir si au sol. Interférerait avec le système anti-bounce existant."
+    },
+    {
+      "titre": "Réutilisation d'objets mutable (mutabilité IV)",
+      "propose_par": "expert-iv",
+      "rejete_par": "expert-apica",
+      "raison": "Contraire au design stateless de HoverbikePhysics. Le coût d'allocation de quelques Vec3/AABB par tick est négligeable (JVM eden space). Casserait la cohérence du codebase pour un gain non mesurable."
+    },
+    {
+      "titre": "ClimbHeight custom (style IV)",
+      "propose_par": "expert-iv",
+      "rejete_par": "expert-apica",
+      "raison": "STEP_HEIGHT 1.3 vanilla gère déjà automatiquement le franchissement. IV a besoin d'un système custom car ses véhicules multi-blocs ne peuvent pas utiliser le step-up vanilla."
+    },
+    {
+      "titre": "Collision depth soustraction (remplacement du ratio feedback)",
+      "propose_par": "expert-iv",
+      "rejete_par": "expert-physics",
+      "raison": "Le ratio-based actuel est plus correct pour le sliding. La depth soustraction risque la double correction (vanilla resolve + custom soustraction). Le ratio délègue la physique de sliding à vanilla."
+    },
+    {
+      "titre": "Retirer le break sur horizontalCollision dans la boucle anti-tunneling",
+      "propose_par": "expert-physics",
+      "rejete_par": "expert-apica",
+      "raison": "Sans break, les sub-steps restants après collision appliquent un mouvement Y résiduel → le hoverbike 'escalade' ou 'glisse' le long des murs (sliding vertical parasite). Potentiellement exploitable (monter un mur sans jauge). De plus, chaque super.move() supplémentaire après collision fait un scan complet pour rien. La perte de Y avec le break est négligeable (~0.0125 bloc de gravité par tick de collision)."
+    }
+  ],
+
+  "architecture_finale": {
+    "nouvelles_classes": [
+      {
+        "nom": "HoverbikeCollisionGeometry",
+        "package": "common/entity/mount/",
+        "lignes_estimees": 50,
+        "stateless": true,
+        "responsabilite": "Calcul des positions de probes en world space",
+        "api": [
+          "static AABB[] calculateWorldBoxes(Vec3 center, float yaw) → 3 AABB",
+          "static Vec3[] calculateProbePositions(Vec3 center, float yaw) → 3 Vec3",
+          "static Vec3 localToWorld(Vec3 offset, float yaw) → réutilise HoverbikePhysics"
+        ]
+      },
+      {
+        "nom": "HoverbikeCollisionHandler",
+        "package": "common/entity/mount/",
+        "lignes_estimees": 100,
+        "stateless": false,
+        "responsabilite": "Résolution collision entités, dégâts, push, tracking",
+        "etat": "Map<UUID, Integer> hitCooldowns (TTL 5 ticks par entité)",
+        "api": [
+          "void tick() — décremente cooldowns, évicte expirés",
+          "void resolveEntityCollisions(HoverbikeEntity bike, AABB[] probes, Level level)",
+          "void applyCollisionDamage(Entity target, Vec3 bikeVelocity, HoverbikeSettings settings)",
+          "boolean canHit(Entity target) — canCollideWith pattern + cooldown check"
+        ]
+      }
+    ],
+    "classes_modifiees": [
+      {
+        "nom": "HoverbikeEntity",
+        "modifications": [
+          "Instance de HoverbikeCollisionHandler (champ)",
+          "Override canCollideWith(Entity)",
+          "travel(): appel HoverbikeCollisionGeometry + CollisionHandler",
+          "move(): cap 8→20, seuil 0.48→0.4 (2 lignes)",
+          "serverTick: double compteur anti-fly kick (5 lignes)",
+          "SynchedEntityData: DATA_MODE byte + DATA_SPRINT boolean",
+          "Flag anti-dégâts au démontage",
+          "Velocity clamp post-collision"
+        ]
+      },
+      {
+        "nom": "HoverbikePhysics",
+        "modifications": [
+          "Ajout paramètre float blockFriction aux méthodes calculate*Velocity()",
+          "Constante COLLISION_EPSILON = 0.015625"
+        ]
+      },
+      {
+        "nom": "HoverbikeSettings",
+        "modifications": [
+          "Ajout champs: collisionDamageMultiplier (8.0f), collisionDamageThreshold (0.35f)"
+        ]
+      }
+    ],
+    "pipeline_par_tick": [
+      "1. tickRidden(): lire input, rotation, transitions mode",
+      "2. travel(): calculer vélocité locale (HoverbikePhysics)",
+      "3. travel(): convertir local → world (localToWorld existant)",
+      "4. travel(): appliquer inertie, anti-bounce",
+      "5. move(): anti-tunneling subdivision (cap 20, seuil 0.4)",
+      "6. move(): pour chaque sub-step → Entity.move(SELF, stepMotion)",
+      "7. travel(): feedback collision ratio-based (clamp min 0.1)",
+      "8. travel(): velocity clamp post-collision",
+      "9. travel(): calculer probes (HoverbikeCollisionGeometry.calculateWorldBoxes)",
+      "10. travel(): résoudre collisions entités (CollisionHandler.resolveEntityCollisions)",
+      "11. serverTick(): CollisionHandler.tick() (décremente cooldowns)",
+      "12. serverTick(): reset double compteur anti-fly kick"
+    ]
+  },
+
+  "priorites_implementation": {
+    "HAUTE": [
+      "PROP-01 — Collision probes directionnelles",
+      "PROP-02 — HoverbikeCollisionHandler",
+      "PROP-03 — canCollideWith() filtre",
+      "PROP-07 — Double compteur anti-fly kick"
+    ],
+    "MOYENNE": [
+      "PROP-05 — SynchedEntityData mode + sprint",
+      "PROP-08 — Flag anti-dégâts démontage",
+      "PROP-13 — Dégâts dans HoverbikeSettings"
+    ],
+    "BASSE": [
+      "PROP-04 — Anti-tunneling cap 8→20",
+      "PROP-06 — Friction terrain",
+      "PROP-09 — Quantification epsilon",
+      "PROP-10 — Velocity clamp post-collision",
+      "PROP-11 — Détection sandwich",
+      "PROP-12 — Ratio clamp min 0.1",
+      "PROP-14 — Inclinaison visuelle client-only"
+    ]
+  }
+}
