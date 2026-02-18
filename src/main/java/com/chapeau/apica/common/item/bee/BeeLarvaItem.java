@@ -20,12 +20,15 @@
  */
 package com.chapeau.apica.common.item.bee;
 
+import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.core.gene.BeeGeneData;
 import com.chapeau.apica.core.gene.Gene;
 import com.chapeau.apica.core.gene.GeneCategory;
 import com.chapeau.apica.core.gene.GeneRegistry;
+import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.registry.ApicaItems;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -89,7 +92,21 @@ public class BeeLarvaItem extends Item {
         BeeGeneData geneData = getGeneData(stack);
         Gene speciesGene = geneData.getGene(GeneCategory.SPECIES);
         if (speciesGene != null) {
-            tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
+            if (isSpeciesKnownClient(speciesGene.getId())) {
+                tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
+            } else {
+                tooltip.add(Component.literal("???").withStyle(ChatFormatting.DARK_GRAY));
+            }
         }
+    }
+
+    private static boolean isSpeciesKnownClient(String speciesId) {
+        if (speciesId == null) return false;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            CodexPlayerData data = mc.player.getData(ApicaAttachments.CODEX_DATA);
+            return data.isSpeciesKnown(speciesId);
+        }
+        return false;
     }
 }
