@@ -240,7 +240,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         if (level == null) return null;
 
         for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -2; dy <= 0; dy++) {
+            for (int dy = -1; dy <= 1; dy++) {
                 for (int dz = -1; dz <= 1; dz++) {
                     BlockPos potentialController = worldPosition.offset(dx, dy, dz);
 
@@ -541,7 +541,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     public static void serverTick(Level level, BlockPos pos, BlockState state, HiveMultiblockBlockEntity hive) {
         if (!hive.isController || !hive.formed) return;
 
-        hive.breedingMode = level.getBlockState(pos.above(3)).is(ApicaBlocks.BREEDING_CRYSTAL.get());
+        hive.breedingMode = level.getBlockState(pos.above(2)).is(ApicaBlocks.BREEDING_CRYSTAL.get());
 
         hive.crowdedCheckTimer++;
         if (hive.crowdedCheckTimer >= 100) {

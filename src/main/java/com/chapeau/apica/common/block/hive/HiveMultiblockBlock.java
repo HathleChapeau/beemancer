@@ -52,7 +52,7 @@ public class HiveMultiblockBlock extends BaseEntityBlock {
     public static final BooleanProperty CONTROLLER = BooleanProperty.create("controller");
 
     private static final VoxelShape SHAPE_NORMAL = Block.box(0, 0, 0, 16, 16, 16);
-    private static final VoxelShape SHAPE_CONTROLLER = Block.box(-16, 0, -16, 32, 48, 32);
+    private static final VoxelShape SHAPE_CONTROLLER = Block.box(-16, -16, -16, 32, 32, 32);
 
     public HiveMultiblockBlock(Properties properties) {
         super(properties);

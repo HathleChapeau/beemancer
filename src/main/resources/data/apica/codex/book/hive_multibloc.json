@@ -17,7 +17,7 @@
     },
     {
       "type": "multiblock",
-      "pattern": "hive_multiblock",
+      "pattern": "hive_multiblock_display",
       "controller": "apica:hive_multiblock"
     }
   ],

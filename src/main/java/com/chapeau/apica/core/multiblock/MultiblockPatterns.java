@@ -104,7 +104,18 @@ public class MultiblockPatterns {
 
     public static final MultiblockPattern HIVE_MULTIBLOCK = register(
         MultiblockPattern.builder("hive_multiblock")
-            // Layer 0 (Y+0): 3x3 hive blocks (center is controller, don't check it)
+            // Layer 0 (Y-1): 3x3 hive blocks (bottom layer)
+            .add(-1, -1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, -1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, -1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(-1, -1, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, -1, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, -1, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(-1, -1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, -1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, -1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+
+            // Layer 1 (Y+0): 3x3 hive blocks (middle layer, center is controller)
             .add(-1, 0, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
             .add(0, 0, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
             .add(1, 0, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
@@ -115,7 +126,7 @@ public class MultiblockPatterns {
             .add(0, 0, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
             .add(1, 0, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
 
-            // Layer 1 (Y+1): 3x3 hive blocks
+            // Layer 2 (Y+1): 3x3 hive blocks (top layer)
             .add(-1, 1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
             .add(0, 1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
             .add(1, 1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
@@ -126,16 +137,54 @@ public class MultiblockPatterns {
             .add(0, 1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
             .add(1, 1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
 
-            // Layer 2 (Y+2): 3x3 hive blocks
-            .add(-1, 2, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
-            .add(0, 2, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
-            .add(1, 2, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
-            .add(-1, 2, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
-            .add(0, 2, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
-            .add(1, 2, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
-            .add(-1, 2, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
-            .add(0, 2, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
-            .add(1, 2, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .build()
+    );
+
+    // Pattern display-only pour le codex (inclut les iron foundation slabs sous la structure)
+    public static final MultiblockPattern HIVE_MULTIBLOCK_DISPLAY = register(
+        MultiblockPattern.builder("hive_multiblock_display")
+            // Layer -2 (Y-2): 3x3 iron foundation slabs
+            .add(-1, -2, -1, block(ApicaBlocks.IRON_FOUNDATION_SLAB))
+            .add(0, -2, -1, block(ApicaBlocks.IRON_FOUNDATION_SLAB))
+            .add(1, -2, -1, block(ApicaBlocks.IRON_FOUNDATION_SLAB))
+            .add(-1, -2, 0, block(ApicaBlocks.IRON_FOUNDATION_SLAB))
+            .add(0, -2, 0, block(ApicaBlocks.IRON_FOUNDATION_SLAB))
+            .add(1, -2, 0, block(ApicaBlocks.IRON_FOUNDATION_SLAB))
+            .add(-1, -2, 1, block(ApicaBlocks.IRON_FOUNDATION_SLAB))
+            .add(0, -2, 1, block(ApicaBlocks.IRON_FOUNDATION_SLAB))
+            .add(1, -2, 1, block(ApicaBlocks.IRON_FOUNDATION_SLAB))
+
+            // Layer 0 (Y-1): 3x3 hive blocks (bottom layer)
+            .add(-1, -1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, -1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, -1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(-1, -1, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, -1, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, -1, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(-1, -1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, -1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, -1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+
+            // Layer 1 (Y+0): 3x3 hive blocks (middle layer, center is controller)
+            .add(-1, 0, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, 0, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, 0, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(-1, 0, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, 0, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(-1, 0, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, 0, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, 0, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+
+            // Layer 2 (Y+1): 3x3 hive blocks (top layer)
+            .add(-1, 1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, 1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, 1, -1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(-1, 1, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, 1, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, 1, 0, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(-1, 1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(0, 1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
+            .add(1, 1, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
 
             .build()
     );
