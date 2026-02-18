@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [InjectorScreen.java]
- * Description: GUI de l'injecteur d'essence avec barres teintees et barre de saturation
+ * Description: GUI de l'injecteur d'essence avec barres teintees et honey bar de saturation
  * ============================================================
  *
  * DÉPENDANCES:
@@ -37,15 +37,14 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "textures/gui/bg.png");
 
-    // Barre de saturation horizontale (au-dessus des barres de stats)
-    private static final int SAT_BAR_X = 42;
-    private static final int SAT_BAR_Y = 24;
-    private static final int SAT_BAR_W = 130;
-    private static final int SAT_BAR_H = 8;
+    // Honey bar de saturation (a droite des barres de stats)
+    private static final int SAT_BAR_X = 148;
+    private static final int SAT_BAR_Y = 40;
 
-    // Barres de stats: 5 barres teintees cote a cote (sous la barre de saturation)
-    private static final int FIRST_BAR_X = 42;
+    // Barres de stats: 5 barres teintees cote a cote (centrees entre colonne gauche et sat bar)
     private static final int BAR_SPACING = 20;
+    private static final int STAT_BARS_WIDTH = 4 * BAR_SPACING + 16;
+    private static final int FIRST_BAR_X = 36 + (SAT_BAR_X - 36 - STAT_BARS_WIDTH) / 2;
     private static final int BAR_Y = 40;
 
     // Couleurs des stats
@@ -54,8 +53,6 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
     private static final int COLOR_FORAGE = 0x55FF55;
     private static final int COLOR_TOLERANCE = 0xFF5555;
     private static final int COLOR_ACTIVITY = 0xAA00FF;
-    private static final int COLOR_SATURATION = 0xE8A317;
-    private static final int COLOR_SATIATED = 0xAA00FF;
 
     // Niveaux max par stat (notchCount)
     private static final int[] STAT_MAX_LEVELS = {4, 4, 4, 4, 2};
@@ -89,14 +86,14 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
         // Bee slot (bas-gauche, sous la barre de progression)
         GuiRenderHelper.renderSlot(g, x + 15, y + 80);
 
-        // Barre de saturation horizontale (au-dessus des barres de stats)
-        renderSaturationBar(g, x + SAT_BAR_X, y + SAT_BAR_Y, SAT_BAR_W, SAT_BAR_H);
+        // Honey bar de saturation (style crystallizer, a droite)
+        GuiRenderHelper.renderLeftHoneyBar(g, x + SAT_BAR_X, y + SAT_BAR_Y, menu.getHungerRatio());
 
         // Indicateur "Satiated/Harmonisee"
         if (menu.isSatiated() && menu.hasBee()) {
             g.drawCenteredString(font, Component.translatable("gui.apica.injector.satiated")
                     .withStyle(ChatFormatting.LIGHT_PURPLE),
-                    x + SAT_BAR_X + SAT_BAR_W / 2, y + SAT_BAR_Y - 10, 0xFFFFFF);
+                    x + SAT_BAR_X + 8, y + SAT_BAR_Y - 10, 0xFFFFFF);
         }
 
         // 5 barres de stats teintees (sans labels)
@@ -114,32 +111,12 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
         }
     }
 
-    private void renderSaturationBar(GuiGraphics g, int bx, int by, int bw, int bh) {
-        // Cadre enfonce
-        g.fill(bx, by, bx + bw, by + 1, 0xFF373737);
-        g.fill(bx, by, bx + 1, by + bh, 0xFF373737);
-        g.fill(bx, by + bh - 1, bx + bw, by + bh, 0xFFFFFFFF);
-        g.fill(bx + bw - 1, by, bx + bw, by + bh, 0xFFFFFFFF);
-        g.fill(bx + 1, by + 1, bx + bw - 1, by + bh - 1, 0xFF8B8B8B);
-
-        // Remplissage
-        float ratio = menu.getHungerRatio();
-        int fillW = (int) ((bw - 2) * ratio);
-        if (fillW > 0) {
-            int color = menu.isSatiated() ? COLOR_SATIATED : COLOR_SATURATION;
-            g.fill(bx + 1, by + 1, bx + 1 + fillW, by + bh - 1, 0xFF000000 | color);
-        }
-    }
-
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         if (!menu.hasBee()) return;
 
-        // Saturation bar tooltip
-        int sbx = x + SAT_BAR_X;
-        int sby = y + SAT_BAR_Y;
-        if (mouseX >= sbx && mouseX < sbx + SAT_BAR_W
-                && mouseY >= sby && mouseY < sby + SAT_BAR_H) {
+        // Saturation honey bar tooltip
+        if (GuiRenderHelper.isHoneyBarHovered(SAT_BAR_X, SAT_BAR_Y, x, y, mouseX, mouseY)) {
             g.renderComponentTooltip(font, List.of(
                     Component.literal("Saturation"),
                     Component.literal(menu.getHunger() + " / " + menu.getMaxHunger())
