@@ -23,7 +23,10 @@ package com.chapeau.apica.common.block.resonator;
 
 import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.item.bee.MagicBeeItem;
+import com.chapeau.apica.common.item.essence.EssenceItem;
+import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.registry.ApicaAttachments;
+import com.chapeau.apica.core.util.BeeInjectionHelper;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaItems;
 import com.mojang.serialization.MapCodec;
@@ -146,7 +149,7 @@ public class ResonatorBlock extends BaseEntityBlock {
                         String speciesId = MagicBeeItem.getSpeciesId(resonator.getStoredBee());
                         if (speciesId != null) {
                             CodexPlayerData codex = serverPlayer.getData(ApicaAttachments.CODEX_DATA);
-                            if (!codex.isSpeciesKnown(speciesId)) {
+                            if (hasUnknownKnowledge(codex, speciesId, resonator.getStoredBee())) {
                                 analysisMode = true;
                                 if (!resonator.isAnalysisInProgress()) {
                                     resonator.startAnalysis(serverPlayer.getUUID());
@@ -165,6 +168,34 @@ public class ResonatorBlock extends BaseEntityBlock {
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
+    }
+
+    /**
+     * Verifie si l'espece ou un des 5 traits de l'abeille est inconnu du joueur.
+     */
+    private static boolean hasUnknownKnowledge(CodexPlayerData codex, String speciesId, ItemStack bee) {
+        if (!codex.isSpeciesKnown(speciesId)) return true;
+
+        BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(speciesId);
+        if (data == null) return false;
+
+        int drop = data.dropLevel + BeeInjectionHelper.getBonusLevel(bee, EssenceItem.EssenceType.DROP);
+        if (!codex.isTraitKnown("drop:" + drop)) return true;
+
+        int speed = data.flyingSpeedLevel + BeeInjectionHelper.getBonusLevel(bee, EssenceItem.EssenceType.SPEED);
+        if (!codex.isTraitKnown("speed:" + speed)) return true;
+
+        int foraging = data.foragingDurationLevel + BeeInjectionHelper.getBonusLevel(bee, EssenceItem.EssenceType.FORAGING);
+        if (!codex.isTraitKnown("foraging:" + foraging)) return true;
+
+        int tolerance = data.toleranceLevel + BeeInjectionHelper.getBonusLevel(bee, EssenceItem.EssenceType.TOLERANCE);
+        if (!codex.isTraitKnown("tolerance:" + tolerance)) return true;
+
+        int activity = BeeInjectionHelper.getActivityLevel(data.dayNight)
+                + BeeInjectionHelper.getBonusLevel(bee, EssenceItem.EssenceType.DIURNAL);
+        if (!codex.isTraitKnown("activity:" + activity)) return true;
+
+        return false;
     }
 
     // Drop l'abeille quand le bloc est casse
