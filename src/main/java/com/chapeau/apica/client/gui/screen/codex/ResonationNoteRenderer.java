@@ -147,7 +147,7 @@ public class ResonationNoteRenderer {
             g.fill(contentX, y, contentX + contentW, y + 1, 0x40000000);
             y += 4;
 
-            g.drawString(font, "Harmonized:", contentX, y, HARMONIZED_COLOR, false);
+            g.drawString(font, "Harmonize:", contentX, y, HARMONIZED_COLOR, false);
             y += lineH;
 
             for (CompatParent cp : harmonized) {

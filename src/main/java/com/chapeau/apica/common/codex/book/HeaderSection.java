@@ -21,6 +21,9 @@
 package com.chapeau.apica.common.codex.book;
 
 import com.chapeau.apica.common.codex.CodexNode;
+import com.chapeau.apica.common.codex.CodexPlayerData;
+import com.chapeau.apica.core.registry.ApicaAttachments;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -60,11 +63,16 @@ public class HeaderSection extends CodexBookSection {
     @Override
     public void render(GuiGraphics graphics, Font font, int x, int y,
                        int pageWidth, String nodeTitle, long relativeDay) {
+        // Verifier si l'espece du node est connue
+        String speciesId = extractSpeciesId();
+        boolean speciesKnown = speciesId == null || isSpeciesKnownClient(speciesId);
+        String title = speciesKnown ? nodeTitle : "???";
+
         String displayText;
         if (relativeDay > 0) {
-            displayText = "Day " + relativeDay + " - " + nodeTitle;
+            displayText = "Day " + relativeDay + " - " + title;
         } else {
-            displayText = nodeTitle;
+            displayText = title;
         }
 
         // Titre en gras (dessiner 2 fois decale de 1px pour effet bold)
@@ -76,8 +84,8 @@ public class HeaderSection extends CodexBookSection {
         // Breeding parents (entre le titre et le separateur)
         if (node != null && node.hasBreedingParents()) {
             currentY += 2;
-            String p1 = formatSpeciesName(node.getBreedingParent1());
-            String p2 = formatSpeciesName(node.getBreedingParent2());
+            String p1 = resolveParentDisplay(node.getBreedingParent1());
+            String p2 = resolveParentDisplay(node.getBreedingParent2());
             graphics.drawString(font, p1 + " + " + p2, x, currentY, BREEDING_COLOR, false);
             currentY += font.lineHeight;
         }
@@ -85,6 +93,37 @@ public class HeaderSection extends CodexBookSection {
         // Ligne de separation
         int sepY = currentY + 4;
         graphics.fill(x, sepY, x + pageWidth, sepY + SEPARATOR_HEIGHT, SEPARATOR_COLOR);
+    }
+
+    @Nullable
+    private String extractSpeciesId() {
+        if (node == null) return null;
+        String nodeId = node.getId();
+        if (nodeId.endsWith("_bee")) {
+            return nodeId.substring(0, nodeId.length() - 4);
+        }
+        return nodeId;
+    }
+
+    private String resolveParentDisplay(String parentNodeId) {
+        if (parentNodeId == null) return "?";
+        String parentSpecies = parentNodeId.endsWith("_bee")
+                ? parentNodeId.substring(0, parentNodeId.length() - 4)
+                : parentNodeId;
+        if (isSpeciesKnownClient(parentSpecies)) {
+            return formatSpeciesName(parentNodeId);
+        }
+        return "???";
+    }
+
+    private static boolean isSpeciesKnownClient(String speciesId) {
+        if (speciesId == null) return false;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            CodexPlayerData data = mc.player.getData(ApicaAttachments.CODEX_DATA);
+            return data.isSpeciesKnown(speciesId);
+        }
+        return false;
     }
 
     private static String formatSpeciesName(String nodeId) {

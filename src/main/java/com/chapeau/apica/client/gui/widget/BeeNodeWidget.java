@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class BeeNodeWidget extends AbstractWidget {
     public static final int NODE_SIZE = 20;
@@ -321,31 +320,17 @@ public class BeeNodeWidget extends AbstractWidget {
             return null; // Base bees have no parents
         }
 
-        // Get player's unlocked nodes
-        Set<String> unlockedNodes = getUnlockedNodes();
+        String parent1Species = parent1.endsWith("_bee") ? parent1.substring(0, parent1.length() - 4) : parent1;
+        String parent2Species = parent2.endsWith("_bee") ? parent2.substring(0, parent2.length() - 4) : parent2;
 
-        String parent1Display = isParentUnlocked(parent1, unlockedNodes)
+        String parent1Display = isSpeciesKnownByPlayer(parent1Species)
             ? formatBeeName(parent1)
             : "???";
-        String parent2Display = isParentUnlocked(parent2, unlockedNodes)
+        String parent2Display = isSpeciesKnownByPlayer(parent2Species)
             ? formatBeeName(parent2)
             : "???";
 
         return Component.literal(parent1Display + " + " + parent2Display).withStyle(style -> style.withColor(0xAAAA55));
-    }
-
-    private Set<String> getUnlockedNodes() {
-        if (Minecraft.getInstance().player != null) {
-            CodexPlayerData data = Minecraft.getInstance().player.getData(ApicaAttachments.CODEX_DATA);
-            return data.getUnlockedNodes();
-        }
-        return Set.of();
-    }
-
-    private boolean isParentUnlocked(String parentId, Set<String> unlockedNodes) {
-        // The node ID in unlockedNodes includes the page prefix (e.g., "bees:meadow_bee")
-        String fullId = "bees:" + parentId;
-        return unlockedNodes.contains(fullId);
     }
 
     private String formatBeeName(String beeId) {
