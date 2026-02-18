@@ -27,7 +27,7 @@
       "texture": "Meadow_Bee",
       "color": "#F7C325",
       "waveform": {
-        "frequency": 11,
+        "frequency": 128,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -60,7 +60,7 @@
       "texture": "Forest_Bee",
       "color": "#4A7C4E",
       "waveform": {
-        "frequency": 11,
+        "frequency": 190,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -93,7 +93,7 @@
       "texture": "Rocky_Bee",
       "color": "#7A7A7A",
       "waveform": {
-        "frequency": 11,
+        "frequency": 246,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -126,7 +126,7 @@
       "texture": "River_Bee",
       "color": "#4A90B8",
       "waveform": {
-        "frequency": 11,
+        "frequency": 182,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -159,7 +159,7 @@
       "texture": "Dune_Bee",
       "color": "#DBD3A0",
       "waveform": {
-        "frequency": 11,
+        "frequency": 220,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -192,7 +192,7 @@
       "texture": "Neither_Bee",
       "color": "#8B0000",
       "waveform": {
-        "frequency": 11,
+        "frequency": 66,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -225,7 +225,7 @@
       "texture": "End_Bee",
       "color": "#E0D68A",
       "waveform": {
-        "frequency": 11,
+        "frequency": 51,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -261,7 +261,7 @@
       "texture": "Monsty_Bee",
       "color": "#7BC67B",
       "waveform": {
-        "frequency": 11,
+        "frequency": 23,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -297,7 +297,7 @@
       "texture": "Docile_Bee",
       "color": "#FFE4B5",
       "waveform": {
-        "frequency": 11,
+        "frequency": 179,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -333,7 +333,7 @@
       "texture": "Loam_Bee",
       "color": "#8B5A2B",
       "waveform": {
-        "frequency": 11,
+        "frequency": 223,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -369,7 +369,7 @@
       "texture": "Sediment_Bee",
       "color": "#8E8E8E",
       "waveform": {
-        "frequency": 11,
+        "frequency": 185,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -405,7 +405,7 @@
       "texture": "Spark_Bee",
       "color": "#3D3D3D",
       "waveform": {
-        "frequency": 11,
+        "frequency": 21,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -441,7 +441,7 @@
       "texture": "Cultural_Bee",
       "color": "#C4A35A",
       "waveform": {
-        "frequency": 11,
+        "frequency": 294,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -477,7 +477,7 @@
       "texture": "Carbon_Bee",
       "color": "#2F2F2F",
       "waveform": {
-        "frequency": 21,
+        "frequency": 280,
         "amplitude": 69,
         "phase": 158,
         "harmonics": 27
@@ -513,7 +513,7 @@
       "texture": "Cupric_Bee",
       "color": "#4A9B8C",
       "waveform": {
-        "frequency": 18,
+        "frequency": 72,
         "amplitude": 63,
         "phase": 208,
         "harmonics": 22
@@ -549,7 +549,7 @@
       "texture": "Festering_Bee",
       "color": "#B87333",
       "waveform": {
-        "frequency": 21,
+        "frequency": 207,
         "amplitude": 69,
         "phase": 158,
         "harmonics": 27
@@ -585,7 +585,7 @@
       "texture": "Skeletal_Bee",
       "color": "#E3DAC9",
       "waveform": {
-        "frequency": 18,
+        "frequency": 124,
         "amplitude": 63,
         "phase": 208,
         "harmonics": 22
@@ -621,7 +621,7 @@
       "texture": "Silken_Bee",
       "color": "#FFFAF0",
       "waveform": {
-        "frequency": 21,
+        "frequency": 151,
         "amplitude": 69,
         "phase": 158,
         "harmonics": 27
@@ -657,7 +657,7 @@
       "texture": "Arachnid_Bee",
       "color": "#2D2D2D",
       "waveform": {
-        "frequency": 21,
+        "frequency": 236,
         "amplitude": 69,
         "phase": 158,
         "harmonics": 27
@@ -693,7 +693,7 @@
       "texture": "Tanner_Bee",
       "color": "#8B4513",
       "waveform": {
-        "frequency": 11,
+        "frequency": 81,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -729,7 +729,7 @@
       "texture": "Plume_Bee",
       "color": "#4B4B4F",
       "waveform": {
-        "frequency": 19,
+        "frequency": 164,
         "amplitude": 54,
         "phase": 159,
         "harmonics": 22
@@ -765,7 +765,7 @@
       "texture": "Quercus_Bee",
       "color": "#B8945F",
       "waveform": {
-        "frequency": 16,
+        "frequency": 147,
         "amplitude": 62,
         "phase": 114,
         "harmonics": 20
@@ -801,7 +801,7 @@
       "texture": "Boreal_Bee",
       "color": "#D3D3D3",
       "waveform": {
-        "frequency": 11,
+        "frequency": 135,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -837,7 +837,7 @@
       "texture": "Tropical_Bee",
       "color": "#32CD32",
       "waveform": {
-        "frequency": 11,
+        "frequency": 268,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -873,7 +873,7 @@
       "texture": "Paperbark_Bee",
       "color": "#D2B48C",
       "waveform": {
-        "frequency": 16,
+        "frequency": 233,
         "amplitude": 62,
         "phase": 114,
         "harmonics": 20
@@ -909,7 +909,7 @@
       "texture": "Reed_Bee",
       "color": "#9ACD32",
       "waveform": {
-        "frequency": 19,
+        "frequency": 267,
         "amplitude": 66,
         "phase": 72,
         "harmonics": 24
@@ -945,7 +945,7 @@
       "texture": "Karot_Bee",
       "color": "#D6D0AD",
       "waveform": {
-        "frequency": 16,
+        "frequency": 289,
         "amplitude": 62,
         "phase": 114,
         "harmonics": 20
@@ -981,7 +981,7 @@
       "texture": "Tuber_Bee",
       "color": "#C4A35A",
       "waveform": {
-        "frequency": 19,
+        "frequency": 181,
         "amplitude": 66,
         "phase": 72,
         "harmonics": 24
@@ -1017,7 +1017,7 @@
       "texture": "Juicy_Bee",
       "color": "#FF8C00",
       "waveform": {
-        "frequency": 11,
+        "frequency": 192,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -1053,7 +1053,7 @@
       "texture": "Gourd_Bee",
       "color": "#C4A35A",
       "waveform": {
-        "frequency": 16,
+        "frequency": 155,
         "amplitude": 62,
         "phase": 114,
         "harmonics": 20
@@ -1089,7 +1089,7 @@
       "texture": "Agrarian_Bee",
       "color": "#AEDD00",
       "waveform": {
-        "frequency": 11,
+        "frequency": 175,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -1122,7 +1122,7 @@
       "texture": "Prince_Bee",
       "color": "#E67519",
       "waveform": {
-        "frequency": 16,
+        "frequency": 107,
         "amplitude": 62,
         "phase": 114,
         "harmonics": 20
@@ -1158,7 +1158,7 @@
       "texture": "Flower_Bee",
       "color": "#DEB887",
       "waveform": {
-        "frequency": 11,
+        "frequency": 100,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -1194,7 +1194,7 @@
       "texture": "Mushroom_Bee",
       "color": "#BC4A42",
       "waveform": {
-        "frequency": 21,
+        "frequency": 235,
         "amplitude": 69,
         "phase": 158,
         "harmonics": 27
@@ -1230,7 +1230,7 @@
       "texture": "Tree_Bee",
       "color": "#228B22",
       "waveform": {
-        "frequency": 16,
+        "frequency": 28,
         "amplitude": 62,
         "phase": 114,
         "harmonics": 20
@@ -1266,7 +1266,7 @@
       "texture": "Crystal_Bee",
       "color": "#9966CC",
       "waveform": {
-        "frequency": 23,
+        "frequency": 26,
         "amplitude": 71,
         "phase": 116,
         "harmonics": 29
@@ -1302,7 +1302,7 @@
       "texture": "Argil_Bee",
       "color": "#D2B48C",
       "waveform": {
-        "frequency": 11,
+        "frequency": 165,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -1338,7 +1338,7 @@
       "texture": "Umbra_Bee",
       "color": "#4A3B5C",
       "waveform": {
-        "frequency": 16,
+        "frequency": 91,
         "amplitude": 62,
         "phase": 114,
         "harmonics": 20
@@ -1374,7 +1374,7 @@
       "texture": "Savanna_Bee",
       "color": "#DAA520",
       "waveform": {
-        "frequency": 16,
+        "frequency": 226,
         "amplitude": 62,
         "phase": 114,
         "harmonics": 20
@@ -1410,7 +1410,7 @@
       "texture": "Frost_Bee",
       "color": "#A5F3FC",
       "waveform": {
-        "frequency": 19,
+        "frequency": 57,
         "amplitude": 66,
         "phase": 72,
         "harmonics": 24
@@ -1446,7 +1446,7 @@
       "texture": "Volatile_Bee",
       "color": "#FF6347",
       "waveform": {
-        "frequency": 11,
+        "frequency": 274,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -1482,7 +1482,7 @@
       "texture": "Ashen_Bee",
       "color": "#A9A9A9",
       "waveform": {
-        "frequency": 21,
+        "frequency": 189,
         "amplitude": 69,
         "phase": 158,
         "harmonics": 27
@@ -1518,7 +1518,7 @@
       "texture": "Igneous_Bee",
       "color": "#B22222",
       "waveform": {
-        "frequency": 21,
+        "frequency": 196,
         "amplitude": 69,
         "phase": 158,
         "harmonics": 27
@@ -1554,7 +1554,7 @@
       "texture": "Rose_Stone_Bee",
       "color": "#C4A4A4",
       "waveform": {
-        "frequency": 21,
+        "frequency": 230,
         "amplitude": 69,
         "phase": 158,
         "harmonics": 27
@@ -1587,7 +1587,7 @@
       "texture": "Infernalist_Bee",
       "color": "#6B2D5C",
       "waveform": {
-        "frequency": 31,
+        "frequency": 216,
         "amplitude": 52,
         "phase": 104,
         "harmonics": 36
@@ -1623,7 +1623,7 @@
       "texture": "Swift_Bee",
       "color": "#DFDEDE",
       "waveform": {
-        "frequency": 25,
+        "frequency": 121,
         "amplitude": 49,
         "phase": 159,
         "harmonics": 30
@@ -1659,7 +1659,7 @@
       "texture": "Royal_Bee",
       "color": "#9B6B53",
       "waveform": {
-        "frequency": 11,
+        "frequency": 275,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -1695,7 +1695,7 @@
       "texture": "Ferrous_Bee",
       "color": "#A8A8A8",
       "waveform": {
-        "frequency": 23,
+        "frequency": 13,
         "amplitude": 60,
         "phase": 191,
         "harmonics": 28
@@ -1731,7 +1731,7 @@
       "texture": "Flux_Bee",
       "color": "#AA0000",
       "waveform": {
-        "frequency": 23,
+        "frequency": 254,
         "amplitude": 60,
         "phase": 191,
         "harmonics": 28
@@ -1767,7 +1767,7 @@
       "texture": "Lazuli_Bee",
       "color": "#1F4DB4",
       "waveform": {
-        "frequency": 21,
+        "frequency": 290,
         "amplitude": 69,
         "phase": 158,
         "harmonics": 27
@@ -1803,7 +1803,7 @@
       "texture": "Quartzose_Bee",
       "color": "#EEEDE9",
       "waveform": {
-        "frequency": 36,
+        "frequency": 67,
         "amplitude": 51,
         "phase": 122,
         "harmonics": 41
@@ -1839,7 +1839,7 @@
       "texture": "Luminous_Bee",
       "color": "#AA0000",
       "waveform": {
-        "frequency": 30,
+        "frequency": 174,
         "amplitude": 49,
         "phase": 113,
         "harmonics": 34
@@ -1875,7 +1875,7 @@
       "texture": "Grim_Bee",
       "color": "#19398A",
       "waveform": {
-        "frequency": 21,
+        "frequency": 225,
         "amplitude": 54,
         "phase": 239,
         "harmonics": 24
@@ -1911,7 +1911,7 @@
       "texture": "Columnar_Bee",
       "color": "#EEEDE9",
       "waveform": {
-        "frequency": 23,
+        "frequency": 157,
         "amplitude": 60,
         "phase": 191,
         "harmonics": 28
@@ -1947,7 +1947,7 @@
       "texture": "Viscous_Bee",
       "color": "#FFBC5E",
       "waveform": {
-        "frequency": 29,
+        "frequency": 77,
         "amplitude": 66,
         "phase": 154,
         "harmonics": 36
@@ -1983,7 +1983,7 @@
       "texture": "Inky_Bee",
       "color": "#2D2429",
       "waveform": {
-        "frequency": 16,
+        "frequency": 63,
         "amplitude": 46,
         "phase": 208,
         "harmonics": 16
@@ -2019,7 +2019,7 @@
       "texture": "Fleece_Bee",
       "color": "#7FBF00",
       "waveform": {
-        "frequency": 19,
+        "frequency": 41,
         "amplitude": 54,
         "phase": 159,
         "harmonics": 22
@@ -2055,7 +2055,7 @@
       "texture": "Adobe_Bee",
       "color": "#CD853F",
       "waveform": {
-        "frequency": 19,
+        "frequency": 193,
         "amplitude": 54,
         "phase": 159,
         "harmonics": 22
@@ -2091,7 +2091,7 @@
       "texture": "Geode_Bee",
       "color": "#9966CC",
       "waveform": {
-        "frequency": 23,
+        "frequency": 64,
         "amplitude": 60,
         "phase": 191,
         "harmonics": 28
@@ -2127,7 +2127,7 @@
       "texture": "Marsh_Bee",
       "color": "#556B2F",
       "waveform": {
-        "frequency": 23,
+        "frequency": 79,
         "amplitude": 60,
         "phase": 191,
         "harmonics": 28
@@ -2163,7 +2163,7 @@
       "texture": "Majestic_Bee",
       "color": "#6E3735",
       "waveform": {
-        "frequency": 24,
+        "frequency": 22,
         "amplitude": 66,
         "phase": 117,
         "harmonics": 25
@@ -2199,7 +2199,7 @@
       "texture": "Steady_Bee",
       "color": "#A0826D",
       "waveform": {
-        "frequency": 37,
+        "frequency": 295,
         "amplitude": 72,
         "phase": 233,
         "harmonics": 44
@@ -2235,7 +2235,7 @@
       "texture": "Wind_Bee",
       "color": "#87CEEB",
       "waveform": {
-        "frequency": 28,
+        "frequency": 204,
         "amplitude": 52,
         "phase": 166,
         "harmonics": 33
@@ -2271,7 +2271,7 @@
       "texture": "Thunder_Bee",
       "color": "#FFD700",
       "waveform": {
-        "frequency": 20,
+        "frequency": 231,
         "amplitude": 51,
         "phase": 172,
         "harmonics": 24
@@ -2307,7 +2307,7 @@
       "texture": "Water_Bee",
       "color": "#1E90FF",
       "waveform": {
-        "frequency": 11,
+        "frequency": 261,
         "amplitude": 55,
         "phase": 165,
         "harmonics": 12
@@ -2343,7 +2343,7 @@
       "texture": "Fire_Bee",
       "color": "#FF6600",
       "waveform": {
-        "frequency": 20,
+        "frequency": 146,
         "amplitude": 51,
         "phase": 172,
         "harmonics": 24
@@ -2379,7 +2379,7 @@
       "texture": "Auric_Bee",
       "color": "#FFD700",
       "waveform": {
-        "frequency": 22,
+        "frequency": 85,
         "amplitude": 51,
         "phase": 242,
         "harmonics": 26
@@ -2415,7 +2415,7 @@
       "texture": "Magmatic_Bee",
       "color": "#FF6600",
       "waveform": {
-        "frequency": 30,
+        "frequency": 222,
         "amplitude": 56,
         "phase": 74,
         "harmonics": 34
@@ -2451,7 +2451,7 @@
       "texture": "Spirit_Bee",
       "color": "#E0FFFF",
       "waveform": {
-        "frequency": 31,
+        "frequency": 54,
         "amplitude": 48,
         "phase": 132,
         "harmonics": 35
@@ -2487,7 +2487,7 @@
       "texture": "Crimson_Bee",
       "color": "#8B0000",
       "waveform": {
-        "frequency": 31,
+        "frequency": 104,
         "amplitude": 48,
         "phase": 132,
         "harmonics": 35
@@ -2523,7 +2523,7 @@
       "texture": "Mycelial_Bee",
       "color": "#6B6067",
       "waveform": {
-        "frequency": 20,
+        "frequency": 90,
         "amplitude": 51,
         "phase": 172,
         "harmonics": 24
@@ -2559,7 +2559,7 @@
       "texture": "Humus_Bee",
       "color": "#3D2E1F",
       "waveform": {
-        "frequency": 16,
+        "frequency": 53,
         "amplitude": 46,
         "phase": 208,
         "harmonics": 16
@@ -2595,7 +2595,7 @@
       "texture": "Floral_Bee",
       "color": "#FF69B4",
       "waveform": {
-        "frequency": 28,
+        "frequency": 239,
         "amplitude": 52,
         "phase": 166,
         "harmonics": 33
@@ -2631,7 +2631,7 @@
       "texture": "Treasure_Bee",
       "color": "#FFD700",
       "waveform": {
-        "frequency": 23,
+        "frequency": 78,
         "amplitude": 57,
         "phase": 253,
         "harmonics": 28
@@ -2667,7 +2667,7 @@
       "texture": "Siphoning_Bee",
       "color": "#8B0000",
       "waveform": {
-        "frequency": 36,
+        "frequency": 122,
         "amplitude": 64,
         "phase": 181,
         "harmonics": 44
@@ -2703,7 +2703,7 @@
       "texture": "Zephyr_Bee",
       "color": "#ADD8E6",
       "waveform": {
-        "frequency": 41,
+        "frequency": 129,
         "amplitude": 78,
         "phase": 154,
         "harmonics": 48
@@ -2739,7 +2739,7 @@
       "texture": "Prismatic_Bee",
       "color": "#00CED1",
       "waveform": {
-        "frequency": 33,
+        "frequency": 62,
         "amplitude": 60,
         "phase": 164,
         "harmonics": 40
@@ -2775,7 +2775,7 @@
       "texture": "Crystalline_Bee",
       "color": "#63A8A0",
       "waveform": {
-        "frequency": 27,
+        "frequency": 25,
         "amplitude": 71,
         "phase": 155,
         "harmonics": 31
@@ -2811,7 +2811,7 @@
       "texture": "Insomnia_Bee",
       "color": "#4E6FA5",
       "waveform": {
-        "frequency": 20,
+        "frequency": 84,
         "amplitude": 51,
         "phase": 172,
         "harmonics": 24
@@ -2847,7 +2847,7 @@
       "texture": "Blazing_Bee",
       "color": "#F6C700",
       "waveform": {
-        "frequency": 31,
+        "frequency": 228,
         "amplitude": 56,
         "phase": 138,
         "harmonics": 37
@@ -2883,7 +2883,7 @@
       "texture": "Diamantine_Bee",
       "color": "#4AEDD9",
       "waveform": {
-        "frequency": 24,
+        "frequency": 177,
         "amplitude": 57,
         "phase": 200,
         "harmonics": 29
@@ -2919,7 +2919,7 @@
       "texture": "Venerable_Bee",
       "color": "#17DD62",
       "waveform": {
-        "frequency": 29,
+        "frequency": 120,
         "amplitude": 70,
         "phase": 137,
         "harmonics": 34
@@ -2955,7 +2955,7 @@
       "texture": "Volcanic_Bee",
       "color": "#B22222",
       "waveform": {
-        "frequency": 37,
+        "frequency": 30,
         "amplitude": 60,
         "phase": 160,
         "harmonics": 44
@@ -2991,7 +2991,7 @@
       "texture": "Xenolith_Bee",
       "color": "#100C14",
       "waveform": {
-        "frequency": 34,
+        "frequency": 168,
         "amplitude": 60,
         "phase": 85,
         "harmonics": 37
@@ -3027,7 +3027,7 @@
       "texture": "Traveler_Bee",
       "color": "#DBDE9F",
       "waveform": {
-        "frequency": 38,
+        "frequency": 112,
         "amplitude": 56,
         "phase": 88,
         "harmonics": 44
@@ -3063,7 +3063,7 @@
       "texture": "Sorrow_Bee",
       "color": "#0C7575",
       "waveform": {
-        "frequency": 34,
+        "frequency": 102,
         "amplitude": 61,
         "phase": 81,
         "harmonics": 39
@@ -3099,7 +3099,7 @@
       "texture": "Absorbent_Bee",
       "color": "#F0F0F0",
       "waveform": {
-        "frequency": 33,
+        "frequency": 103,
         "amplitude": 60,
         "phase": 164,
         "harmonics": 40
@@ -3135,7 +3135,7 @@
       "texture": "Light_Bee",
       "color": "#FFFF99",
       "waveform": {
-        "frequency": 34,
+        "frequency": 211,
         "amplitude": 65,
         "phase": 171,
         "harmonics": 41
@@ -3171,7 +3171,7 @@
       "texture": "Dark_Bee",
       "color": "#1A0A2E",
       "waveform": {
-        "frequency": 33,
+        "frequency": 137,
         "amplitude": 60,
         "phase": 164,
         "harmonics": 40
@@ -3207,7 +3207,7 @@
       "texture": "Imperial_Bee",
       "color": "#6A0DAD",
       "waveform": {
-        "frequency": 36,
+        "frequency": 35,
         "amplitude": 65,
         "phase": 85,
         "harmonics": 46
@@ -3243,7 +3243,7 @@
       "texture": "Demonic_Bee",
       "color": "#660000",
       "waveform": {
-        "frequency": 34,
+        "frequency": 126,
         "amplitude": 56,
         "phase": 182,
         "harmonics": 42
@@ -3279,7 +3279,7 @@
       "texture": "Paladin_Bee",
       "color": "#F5F5F5",
       "waveform": {
-        "frequency": 16,
+        "frequency": 173,
         "amplitude": 62,
         "phase": 114,
         "harmonics": 20
@@ -3315,7 +3315,7 @@
       "texture": "Chorus_Bee",
       "color": "#8F6BAE",
       "waveform": {
-        "frequency": 31,
+        "frequency": 288,
         "amplitude": 51,
         "phase": 117,
         "harmonics": 35
@@ -3351,7 +3351,7 @@
       "texture": "Ancient_Bee",
       "color": "#6B5C4A",
       "waveform": {
-        "frequency": 40,
+        "frequency": 111,
         "amplitude": 61,
         "phase": 141,
         "harmonics": 47
@@ -3387,7 +3387,7 @@
       "texture": "Void_Bee",
       "color": "#443A3B",
       "waveform": {
-        "frequency": 38,
+        "frequency": 59,
         "amplitude": 53,
         "phase": 110,
         "harmonics": 44
@@ -3423,7 +3423,7 @@
       "texture": "Draconic_Bee",
       "color": "#20002F",
       "waveform": {
-        "frequency": 33,
+        "frequency": 224,
         "amplitude": 58,
         "phase": 166,
         "harmonics": 40
@@ -3459,7 +3459,7 @@
       "texture": "Stellar_Bee",
       "color": "#9932CC",
       "waveform": {
-        "frequency": 47,
+        "frequency": 27,
         "amplitude": 68,
         "phase": 179,
         "harmonics": 56

@@ -1,33 +1,128 @@
 {
   "stat_waveforms": {
     "drop": {
-      "1": { "frequency": 8,  "amplitude": 60, "phase": 20,  "harmonics": 10 },
-      "2": { "frequency": 19, "amplitude": 45, "phase": 145, "harmonics": 25 },
-      "3": { "frequency": 33, "amplitude": 80, "phase": 265, "harmonics": 45 },
-      "4": { "frequency": 51, "amplitude": 55, "phase": 70,  "harmonics": 70 }
+      "1": {
+        "frequency": 260,
+        "amplitude": 60,
+        "phase": 20,
+        "harmonics": 10
+      },
+      "2": {
+        "frequency": 106,
+        "amplitude": 45,
+        "phase": 145,
+        "harmonics": 25
+      },
+      "3": {
+        "frequency": 150,
+        "amplitude": 80,
+        "phase": 265,
+        "harmonics": 45
+      },
+      "4": {
+        "frequency": 152,
+        "amplitude": 55,
+        "phase": 70,
+        "harmonics": 70
+      }
     },
     "speed": {
-      "1": { "frequency": 14, "amplitude": 50, "phase": 310, "harmonics": 15 },
-      "2": { "frequency": 27, "amplitude": 75, "phase": 85,  "harmonics": 35 },
-      "3": { "frequency": 44, "amplitude": 40, "phase": 200, "harmonics": 55 },
-      "4": { "frequency": 67, "amplitude": 90, "phase": 340, "harmonics": 80 }
+      "1": {
+        "frequency": 172,
+        "amplitude": 50,
+        "phase": 310,
+        "harmonics": 15
+      },
+      "2": {
+        "frequency": 283,
+        "amplitude": 75,
+        "phase": 85,
+        "harmonics": 35
+      },
+      "3": {
+        "frequency": 186,
+        "amplitude": 40,
+        "phase": 200,
+        "harmonics": 55
+      },
+      "4": {
+        "frequency": 184,
+        "amplitude": 90,
+        "phase": 340,
+        "harmonics": 80
+      }
     },
     "foraging": {
-      "1": { "frequency": 5,  "amplitude": 70, "phase": 155, "harmonics": 5 },
-      "2": { "frequency": 21, "amplitude": 35, "phase": 290, "harmonics": 20 },
-      "3": { "frequency": 38, "amplitude": 85, "phase": 50,  "harmonics": 40 },
-      "4": { "frequency": 56, "amplitude": 60, "phase": 225, "harmonics": 65 }
+      "1": {
+        "frequency": 89,
+        "amplitude": 70,
+        "phase": 155,
+        "harmonics": 5
+      },
+      "2": {
+        "frequency": 170,
+        "amplitude": 35,
+        "phase": 290,
+        "harmonics": 20
+      },
+      "3": {
+        "frequency": 93,
+        "amplitude": 85,
+        "phase": 50,
+        "harmonics": 40
+      },
+      "4": {
+        "frequency": 68,
+        "amplitude": 60,
+        "phase": 225,
+        "harmonics": 65
+      }
     },
     "tolerance": {
-      "1": { "frequency": 11, "amplitude": 40, "phase": 240, "harmonics": 12 },
-      "2": { "frequency": 24, "amplitude": 65, "phase": 30,  "harmonics": 30 },
-      "3": { "frequency": 42, "amplitude": 50, "phase": 175, "harmonics": 50 },
-      "4": { "frequency": 63, "amplitude": 85, "phase": 320, "harmonics": 75 }
+      "1": {
+        "frequency": 291,
+        "amplitude": 40,
+        "phase": 240,
+        "harmonics": 12
+      },
+      "2": {
+        "frequency": 127,
+        "amplitude": 65,
+        "phase": 30,
+        "harmonics": 30
+      },
+      "3": {
+        "frequency": 24,
+        "amplitude": 50,
+        "phase": 175,
+        "harmonics": 50
+      },
+      "4": {
+        "frequency": 69,
+        "amplitude": 85,
+        "phase": 320,
+        "harmonics": 75
+      }
     },
     "activity": {
-      "1": { "frequency": 18, "amplitude": 55, "phase": 100, "harmonics": 20 },
-      "2": { "frequency": 35, "amplitude": 80, "phase": 260, "harmonics": 45 },
-      "3": { "frequency": 54, "amplitude": 45, "phase": 15,  "harmonics": 60 }
+      "1": {
+        "frequency": 279,
+        "amplitude": 55,
+        "phase": 100,
+        "harmonics": 20
+      },
+      "2": {
+        "frequency": 18,
+        "amplitude": 80,
+        "phase": 260,
+        "harmonics": 45
+      },
+      "3": {
+        "frequency": 265,
+        "amplitude": 45,
+        "phase": 15,
+        "harmonics": 60
+      }
     }
   }
 }
