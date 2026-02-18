@@ -621,18 +621,18 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     public void tick() {
         super.tick();
 
-        // Server: tick collision handler et anti-fly kick
+        // Server: tick collision handler, unstick, anti-fly kick
         if (!this.level().isClientSide()) {
             collisionHandler.tick();
 
+            // Unstick server-side : si le bounding box du bike chevauche un bloc solide,
+            // le pousser vers le haut jusqu'a ce qu'il soit libre.
+            // Cote serveur = autoritaire, pas de "moved wrongly".
+            serverUnstick();
+
             // Anti-fly kick : reset les compteurs vanilla quand le bike vole normalement
-            // Vanilla kick le joueur si l'entite est en l'air trop longtemps
             if (this.isVehicle() && !this.onGround()) {
                 customAboveGroundTicks++;
-                // Reset vanilla fly kick counters en gardant le bike au sol logiquement
-                // via le flag onGround gere par Entity.move(), pas d'intervention ici.
-                // NeoForge: le serveur tolere les vehicles en vol — pas de kick si le vehicle
-                // est une entite montable valide. On reset quand meme par securite.
             } else {
                 customAboveGroundTicks = 0;
             }
@@ -697,6 +697,32 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
      */
     public static boolean isEditShaderActive() {
         return editShaderActive;
+    }
+
+    // --- Server-side Unstick ---
+
+    /**
+     * Verifie cote serveur si le bounding box du bike chevauche un bloc solide.
+     * Si oui, pousse le bike vers le haut par petits increments jusqu'a une position libre.
+     * Cote serveur = autoritaire, elimine les "moved wrongly" quand le bike est coince.
+     */
+    private void serverUnstick() {
+        AABB bbox = this.getBoundingBox();
+        if (this.level().noCollision(this, bbox)) {
+            return;
+        }
+
+        // Le bike est coince dans un bloc solide — chercher une position libre au-dessus
+        double originalY = this.getY();
+        for (int i = 1; i <= 5; i++) {
+            double testY = originalY + i * 0.25;
+            AABB testBox = bbox.move(0, testY - originalY, 0);
+            if (this.level().noCollision(this, testBox)) {
+                this.setPos(this.getX(), testY, this.getZ());
+                this.setDeltaMovement(this.getDeltaMovement().multiply(1, 0, 1));
+                return;
+            }
+        }
     }
 
     // --- AI ---
