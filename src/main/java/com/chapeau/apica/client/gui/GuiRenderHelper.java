@@ -24,6 +24,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Axis;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 public class GuiRenderHelper {
@@ -42,6 +44,12 @@ public class GuiRenderHelper {
         Apica.MOD_ID, "textures/gui/right_honeybar_bg.png");
     private static final ResourceLocation RIGHT_HONEYBAR = ResourceLocation.fromNamespaceAndPath(
         Apica.MOD_ID, "textures/gui/right_honeybar.png");
+
+    // Texture-based right bar (16x50, neutral tintable)
+    private static final ResourceLocation RIGHT_BAR = ResourceLocation.fromNamespaceAndPath(
+        Apica.MOD_ID, "textures/gui/right_bar.png");
+    private static final int BAR_W = 16;
+    private static final int BAR_H = 50;
 
     // Texture-based progress bar (bg: 54x10, fill: 50x6)
     private static final ResourceLocation PROGRESSBAR_BG = ResourceLocation.fromNamespaceAndPath(
@@ -332,6 +340,65 @@ public class GuiRenderHelper {
             g.blit(PROGRESSBAR, x + 2, y + 2, 0, 0, fillW, PROGRESSBAR_FILL_H,
                    PROGRESSBAR_FILL_W, PROGRESSBAR_FILL_H);
         }
+    }
+
+    /**
+     * Rend une barre de progression via texture, orientee verticalement (haut vers bas).
+     * Utilise les memes textures que la version horizontale, pivotees de 90 degres.
+     * Dimensions resultantes: 10 de large x 54 de haut.
+     */
+    public static void renderVerticalTextureProgressBar(GuiGraphics g, int x, int y, float ratio) {
+        g.pose().pushPose();
+        g.pose().translate(x + PROGRESSBAR_BG_H, y, 0);
+        g.pose().mulPose(Axis.ZP.rotationDegrees(90));
+        g.blit(PROGRESSBAR_BG, 0, 0, 0, 0, PROGRESSBAR_BG_W, PROGRESSBAR_BG_H,
+               PROGRESSBAR_BG_W, PROGRESSBAR_BG_H);
+        int fillW = (int) (PROGRESSBAR_FILL_W * Math.min(1f, ratio));
+        if (fillW > 0) {
+            g.blit(PROGRESSBAR, 2, 2, 0, 0, fillW, PROGRESSBAR_FILL_H,
+                   PROGRESSBAR_FILL_W, PROGRESSBAR_FILL_H);
+        }
+        g.pose().popPose();
+    }
+
+    /**
+     * Rend une barre via texture right_bar.png avec teinte de couleur.
+     * Le fond est rendu assombri, le remplissage teinte avec la couleur donnee.
+     * Remplit de bas en haut selon le ratio.
+     *
+     * @param g     contexte de rendu
+     * @param x     position X ecran
+     * @param y     position Y ecran
+     * @param ratio remplissage 0.0 a 1.0
+     * @param color couleur de teinte (RGB sans alpha, ex: 0xE8A317)
+     */
+    public static void renderTintedBar(GuiGraphics g, int x, int y, float ratio, int color) {
+        // Fond assombri (barre vide)
+        RenderSystem.setShaderColor(0.25f, 0.25f, 0.25f, 1.0f);
+        g.blit(RIGHT_BAR, x, y, 0, 0, BAR_W, BAR_H, BAR_W, BAR_H);
+
+        // Remplissage teinte (de bas en haut)
+        int fillH = (int) (BAR_H * Math.min(1f, ratio));
+        if (fillH > 0) {
+            float r = ((color >> 16) & 0xFF) / 255f;
+            float green = ((color >> 8) & 0xFF) / 255f;
+            float b = (color & 0xFF) / 255f;
+            RenderSystem.setShaderColor(r, green, b, 1.0f);
+            int srcY = BAR_H - fillH;
+            g.blit(RIGHT_BAR, x, y + srcY, 0, srcY, BAR_W, fillH, BAR_W, BAR_H);
+        }
+
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+    }
+
+    /**
+     * Verifie si la souris survole une barre tintee (16x50).
+     */
+    public static boolean isTintedBarHovered(int barX, int barY, int screenX, int screenY,
+                                              int mouseX, int mouseY) {
+        int ax = screenX + barX;
+        int ay = screenY + barY;
+        return mouseX >= ax && mouseX < ax + BAR_W && mouseY >= ay && mouseY < ay + BAR_H;
     }
 
     /**

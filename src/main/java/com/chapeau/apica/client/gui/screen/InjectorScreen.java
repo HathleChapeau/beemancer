@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [InjectorScreen.java]
- * Description: GUI de l'injecteur d'essence avec jauges de stats et barre de faim
+ * Description: GUI de l'injecteur d'essence avec barres teintees et barre de saturation
  * ============================================================
  *
  * DÉPENDANCES:
@@ -9,8 +9,7 @@
  * | Dépendance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | InjectorMenu            | Donnees container    | Slots, progress, jauges        |
- * | GuiRenderHelper         | Rendu programmatique | Slots, progress bar            |
- * | NotchedGaugeWidget      | Jauges crantees      | 5 jauges de stats              |
+ * | GuiRenderHelper         | Rendu programmatique | Slots, progress bar, barres    |
  * | AbstractApicaScreen     | Base screen          | Boilerplate GUI                |
  * ------------------------------------------------------------
  *
@@ -23,7 +22,6 @@ package com.chapeau.apica.client.gui.screen;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.gui.GuiRenderHelper;
-import com.chapeau.apica.client.gui.widget.NotchedGaugeWidget;
 import com.chapeau.apica.common.menu.InjectorMenu;
 import com.chapeau.apica.core.config.InjectionConfigManager;
 import net.minecraft.ChatFormatting;
@@ -39,17 +37,30 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "textures/gui/bg.png");
 
-    private static final int GAUGE_WIDTH = 14;
-    private static final int GAUGE_HEIGHT = 52;
-    private static final int GAUGE_Y = 68;
-    private static final int GAUGE_SPACING = 24;
-    private static final int FIRST_GAUGE_X = 27;
+    // Barres de stats: 5 barres teintees cote a cote
+    private static final int FIRST_BAR_X = 42;
+    private static final int BAR_SPACING = 20;
+    private static final int BAR_Y = 40;
 
-    private NotchedGaugeWidget dropGauge;
-    private NotchedGaugeWidget speedGauge;
-    private NotchedGaugeWidget foragingGauge;
-    private NotchedGaugeWidget toleranceGauge;
-    private NotchedGaugeWidget activityGauge;
+    // Barre de saturation (plus a droite)
+    private static final int SAT_BAR_X = 155;
+    private static final int SAT_BAR_Y = 40;
+
+    // Couleurs des stats
+    private static final int COLOR_DROP = 0xE8A317;
+    private static final int COLOR_SPEED = 0x55FFFF;
+    private static final int COLOR_FORAGE = 0x55FF55;
+    private static final int COLOR_TOLERANCE = 0xFF5555;
+    private static final int COLOR_ACTIVITY = 0xAA00FF;
+    private static final int COLOR_SATURATION = 0xE8A317;
+    private static final int COLOR_SATIATED = 0xAA00FF;
+
+    // Niveaux max par stat (notchCount)
+    private static final int[] STAT_MAX_LEVELS = {4, 4, 4, 4, 2};
+    private static final String[] STAT_NAMES = {"Drop", "Speed", "Forage", "Toler.", "Activ."};
+    private static final int[] STAT_COLORS = {COLOR_DROP, COLOR_SPEED, COLOR_FORAGE, COLOR_TOLERANCE, COLOR_ACTIVITY};
+
+    private int pointsPerLevel;
 
     public InjectorScreen(InjectorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 129);
@@ -58,99 +69,82 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
     @Override
     protected void init() {
         super.init();
-        int ppl = InjectionConfigManager.isLoaded() ? InjectionConfigManager.getPointsPerLevel() : 50;
-
-        dropGauge = new NotchedGaugeWidget(FIRST_GAUGE_X, GAUGE_Y, GAUGE_WIDTH, GAUGE_HEIGHT,
-                4, ppl, menu::getDropPoints, 0xFFE8A317, "Drop");
-        speedGauge = new NotchedGaugeWidget(FIRST_GAUGE_X + GAUGE_SPACING, GAUGE_Y, GAUGE_WIDTH, GAUGE_HEIGHT,
-                4, ppl, menu::getSpeedPoints, 0xFF55FFFF, "Speed");
-        foragingGauge = new NotchedGaugeWidget(FIRST_GAUGE_X + GAUGE_SPACING * 2, GAUGE_Y, GAUGE_WIDTH, GAUGE_HEIGHT,
-                4, ppl, menu::getForagingPoints, 0xFF55FF55, "Forage");
-        toleranceGauge = new NotchedGaugeWidget(FIRST_GAUGE_X + GAUGE_SPACING * 3, GAUGE_Y, GAUGE_WIDTH, GAUGE_HEIGHT,
-                4, ppl, menu::getTolerancePoints, 0xFFFF5555, "Toler.");
-        activityGauge = new NotchedGaugeWidget(FIRST_GAUGE_X + GAUGE_SPACING * 4 + 8, GAUGE_Y, GAUGE_WIDTH, GAUGE_HEIGHT,
-                2, ppl, menu::getActivityPoints, 0xFFAA00FF, "Activ.");
+        pointsPerLevel = InjectionConfigManager.isLoaded() ? InjectionConfigManager.getPointsPerLevel() : 50;
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
     @Override protected String getTitleKey() { return "container.apica.injector"; }
-    @Override protected int getBlitHeight() { return 95; }
+    @Override protected int getBlitHeight() { return 125; }
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        // Slots backgrounds
-        GuiRenderHelper.renderSlot(g, x + 34, y + 37);
-        GuiRenderHelper.renderSlot(g, x + 136, y + 37);
+        // Essence slot (haut-gauche)
+        GuiRenderHelper.renderSlot(g, x + 15, y + 22);
 
-        // Progress bar entre les deux slots
-        GuiRenderHelper.renderProgressBar(g, x + 58, y + 42, 72, 6, menu.getProgressRatio());
+        // Barre de progression verticale (texture centrifuge, haut vers bas)
+        GuiRenderHelper.renderVerticalTextureProgressBar(g, x + 19, y + 44, menu.getProgressRatio());
 
-        // Hunger bar (horizontal en haut)
-        renderHungerBar(g, x + 15, y + 22, 160, 8);
+        // Bee slot (bas-gauche, sous la barre de progression)
+        GuiRenderHelper.renderSlot(g, x + 15, y + 102);
 
-        // Satiation indicator
+        // Label "Saturation" au-dessus de la barre de saturation
+        g.drawCenteredString(font, Component.literal("Saturation"),
+                x + SAT_BAR_X + 8, y + SAT_BAR_Y - 10, 0x404040);
+
+        // Indicateur "Satiated/Harmonisee" sous le label
         if (menu.isSatiated() && menu.hasBee()) {
             g.drawCenteredString(font, Component.translatable("gui.apica.injector.satiated")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE), x + 95, y + 56, 0xFFFFFF);
+                    .withStyle(ChatFormatting.LIGHT_PURPLE), x + SAT_BAR_X + 8, y + SAT_BAR_Y + 52, 0xFFFFFF);
         }
 
-        // 5 jauges de stats
+        // Barre de saturation (teintee, a droite)
+        int satColor = menu.isSatiated() ? COLOR_SATIATED : COLOR_SATURATION;
+        GuiRenderHelper.renderTintedBar(g, x + SAT_BAR_X, y + SAT_BAR_Y, menu.getHungerRatio(), satColor);
+
+        // 5 barres de stats teintees (sans labels)
         if (menu.hasBee()) {
-            dropGauge.render(g, x, y);
-            speedGauge.render(g, x, y);
-            foragingGauge.render(g, x, y);
-            toleranceGauge.render(g, x, y);
-            activityGauge.render(g, x, y);
-
-            // Labels au-dessus des jauges
-            renderGaugeLabels(g, x, y);
+            int[] points = {
+                    menu.getDropPoints(), menu.getSpeedPoints(), menu.getForagingPoints(),
+                    menu.getTolerancePoints(), menu.getActivityPoints()
+            };
+            for (int i = 0; i < 5; i++) {
+                int barX = FIRST_BAR_X + i * BAR_SPACING;
+                int maxPts = STAT_MAX_LEVELS[i] * pointsPerLevel;
+                float ratio = maxPts > 0 ? Math.min(1f, (float) points[i] / maxPts) : 0f;
+                GuiRenderHelper.renderTintedBar(g, x + barX, y + BAR_Y, ratio, STAT_COLORS[i]);
+            }
         }
-    }
-
-    private void renderHungerBar(GuiGraphics g, int bx, int by, int bw, int bh) {
-        // Cadre enfonce
-        g.fill(bx, by, bx + bw, by + 1, 0xFF373737);
-        g.fill(bx, by, bx + 1, by + bh, 0xFF373737);
-        g.fill(bx, by + bh - 1, bx + bw, by + bh, 0xFFFFFFFF);
-        g.fill(bx + bw - 1, by, bx + bw, by + bh, 0xFFFFFFFF);
-        g.fill(bx + 1, by + 1, bx + bw - 1, by + bh - 1, 0xFF8B8B8B);
-
-        // Remplissage
-        float ratio = menu.getHungerRatio();
-        int fillW = (int) ((bw - 2) * ratio);
-        if (fillW > 0) {
-            int color = menu.isSatiated() ? 0xFFAA00FF : 0xFFE8A317;
-            g.fill(bx + 1, by + 1, bx + 1 + fillW, by + bh - 1, color);
-        }
-    }
-
-    private void renderGaugeLabels(GuiGraphics g, int x, int y) {
-        int labelY = y + GAUGE_Y - 8;
-        g.drawCenteredString(font, "D", x + FIRST_GAUGE_X + GAUGE_WIDTH / 2, labelY, 0xE8A317);
-        g.drawCenteredString(font, "S", x + FIRST_GAUGE_X + GAUGE_SPACING + GAUGE_WIDTH / 2, labelY, 0x55FFFF);
-        g.drawCenteredString(font, "F", x + FIRST_GAUGE_X + GAUGE_SPACING * 2 + GAUGE_WIDTH / 2, labelY, 0x55FF55);
-        g.drawCenteredString(font, "T", x + FIRST_GAUGE_X + GAUGE_SPACING * 3 + GAUGE_WIDTH / 2, labelY, 0xFF5555);
-        g.drawCenteredString(font, "A", x + FIRST_GAUGE_X + GAUGE_SPACING * 4 + 8 + GAUGE_WIDTH / 2, labelY, 0xAA00FF);
     }
 
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         if (!menu.hasBee()) return;
 
-        // Hunger bar tooltip
-        if (mouseX >= x + 15 && mouseX < x + 175 && mouseY >= y + 22 && mouseY < y + 30) {
+        // Saturation bar tooltip
+        if (GuiRenderHelper.isTintedBarHovered(SAT_BAR_X, SAT_BAR_Y, x, y, mouseX, mouseY)) {
             g.renderComponentTooltip(font, List.of(
-                    Component.translatable("gui.apica.injector.hunger"),
+                    Component.literal("Saturation"),
                     Component.literal(menu.getHunger() + " / " + menu.getMaxHunger())
                             .withStyle(s -> s.withColor(0xAAAAAA))
             ), mouseX, mouseY);
             return;
         }
 
-        // Gauge tooltips
-        for (NotchedGaugeWidget gauge : List.of(dropGauge, speedGauge, foragingGauge, toleranceGauge, activityGauge)) {
-            if (gauge.isMouseOver(x, y, mouseX, mouseY)) {
-                g.renderComponentTooltip(font, gauge.getTooltip(), mouseX, mouseY);
+        // Stat bar tooltips
+        int[] points = {
+                menu.getDropPoints(), menu.getSpeedPoints(), menu.getForagingPoints(),
+                menu.getTolerancePoints(), menu.getActivityPoints()
+        };
+        for (int i = 0; i < 5; i++) {
+            int barX = FIRST_BAR_X + i * BAR_SPACING;
+            if (GuiRenderHelper.isTintedBarHovered(barX, BAR_Y, x, y, mouseX, mouseY)) {
+                int filledLevels = points[i] / pointsPerLevel;
+                int partialPts = points[i] % pointsPerLevel;
+                g.renderComponentTooltip(font, List.of(
+                        Component.literal(STAT_NAMES[i] + ": " + filledLevels + "/" + STAT_MAX_LEVELS[i]),
+                        Component.literal(partialPts + "/" + pointsPerLevel + " pts")
+                                .withStyle(s -> s.withColor(0xAAAAAA))
+                ), mouseX, mouseY);
                 return;
             }
         }
