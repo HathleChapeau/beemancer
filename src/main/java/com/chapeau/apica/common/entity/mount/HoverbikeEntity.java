@@ -29,6 +29,7 @@ package com.chapeau.apica.common.entity.mount;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -391,8 +392,11 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             this.setDeltaMovement(movement);
         }
 
-        // Raycasts predictifs : ralentir avant de percuter un bloc
-        applyPredictiveRaycasts();
+        // Raycasts predictifs : mesurer les distances aux blocs devant le nez
+        updatePredictiveRaycasts();
+
+        // Step-up predictif : si un ray horizontal detecte un bloc montable, boost Y
+        applyPredictiveStepUp();
 
         // Sauvegarder position et velocite pre-collision
         double preX = this.getX();
@@ -471,45 +475,45 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     }
 
     // =========================================================================
-    // RAYCASTS PREDICTIFS — 6 rays depuis le nez du bike
+    // RAYCASTS PREDICTIFS — 6 rays depuis le nez du bike (informatifs)
     // =========================================================================
 
     /** Offset local du nez du bike (Z = avant). */
-    private static final Vec3 NOSE_OFFSET = new Vec3(0, 0.3, 0.8);
+    private static final Vec3 NOSE_OFFSET = new Vec3(0, 0.4, 0.8);
 
     /** Ecart lateral des rays gauche/droite par rapport au centre. */
     private static final double RAY_LATERAL_SPREAD = 0.4;
 
-    /** Offset Y vers le bas pour les 3 rays du dessous. */
-    private static final double RAY_BOTTOM_Y_OFFSET = -0.5;
+    /** Offset Y vers le bas pour l'origine des 3 rays du dessous. */
+    private static final double RAY_BOTTOM_Y_OFFSET = -0.3;
 
-    /** Angle de plongee des 3 rays bas (radians, ~25 degres). */
-    private static final double RAY_BOTTOM_PITCH = -0.44;
+    /** Angle de plongee des 3 rays bas (radians, ~30 degres). */
+    private static final double RAY_BOTTOM_PITCH = -0.52;
 
     /** Longueur minimale des rays (a vitesse quasi nulle). */
-    private static final double RAY_MIN_LENGTH = 0.3;
+    private static final double RAY_MIN_LENGTH = 0.5;
 
     /** Longueur maximale des rays (a vitesse max). */
-    private static final double RAY_MAX_LENGTH = 2.5;
+    private static final double RAY_MAX_LENGTH = 3.0;
 
     /** Seuil de vitesse en dessous duquel les raycasts ne s'activent pas. */
-    private static final double RAY_SPEED_THRESHOLD = 0.05;
+    private static final double RAY_SPEED_THRESHOLD = 0.03;
 
-    /** Facteur de freinage quand un ray touche (0 = arret total, 1 = aucun effet). */
-    private static final double RAY_BRAKE_FACTOR = 0.4;
+    /** Distances mesurees par les 6 raycasts (-1 = pas de hit). */
+    private final double[] rayDistances = new double[6];
 
     /**
-     * Lance 6 raycasts depuis le nez du bike :
+     * Lance 6 raycasts depuis le nez du bike (informatifs uniquement).
+     * Ne modifie PAS la velocite — stocke les distances pour debug et usage futur.
      * 3 horizontaux (gauche, centre, droite) pointant devant,
      * 3 diagonaux bas (bas-gauche, bas-centre, bas-droite) pointant devant-bas.
      * La longueur des rays est proportionnelle a la vitesse.
-     * Si un ray touche un bloc, la velocite est reduite proportionnellement a la distance.
-     * Stocke les resultats dans debugRay* pour affichage.
      */
-    private void applyPredictiveRaycasts() {
+    private void updatePredictiveRaycasts() {
         double speed = rideVelocity.horizontalDistance();
         if (speed < RAY_SPEED_THRESHOLD) {
             debugRaysActive = false;
+            for (int i = 0; i < 6; i++) rayDistances[i] = -1;
             return;
         }
 
@@ -547,7 +551,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 cosYaw * pitchCos
         );
 
-        // Origine des 3 rays bas (decalage Y vers le bas)
+        // Origine des 3 rays bas (meme X/Z que le nez, decale en Y)
         Vec3 noseBottom = noseWorld.add(0, RAY_BOTTOM_Y_OFFSET, 0);
 
         // Origines et directions des 6 rays
@@ -564,37 +568,78 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 forwardDownDir, forwardDownDir, forwardDownDir
         };
 
-        // Lancer les 6 rays et trouver le ratio de freinage le plus fort
-        double worstRatio = 1.0;
-
         for (int i = 0; i < 6; i++) {
             Vec3 end = origins[i].add(directions[i].scale(rayLength));
             debugRayStarts[i] = origins[i];
             debugRayEnds[i] = end;
             debugRayHits[i] = null;
+            rayDistances[i] = -1;
 
             BlockHitResult result = this.level().clip(new ClipContext(
                     origins[i], end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE,
                     CollisionContext.of(this)));
 
             if (result.getType() == HitResult.Type.BLOCK) {
-                debugRayHits[i] = result.getLocation();
                 double hitDist = result.getLocation().distanceTo(origins[i]);
-                double ratio = Mth.clamp(hitDist / rayLength, 0.0, 1.0);
-                worstRatio = Math.min(worstRatio, ratio);
+                debugRayHits[i] = result.getLocation();
+                rayDistances[i] = hitDist;
+            }
+        }
+    }
+
+    /** Distance max des rays horizontaux pour declencher le step-up predictif. */
+    private static final double STEPUP_RAY_TRIGGER_DIST = 1.0;
+
+    /** Vitesse Y appliquee pour monter un bloc detecte par les rays. */
+    private static final double STEPUP_LIFT_SPEED = 0.25;
+
+    /**
+     * Si un ray horizontal (L, C, R) detecte un bloc proche devant le nez,
+     * verifie si ce bloc est montable (hauteur <= stepHeight).
+     * Si oui, applique une velocite Y vers le haut pour que le bike monte
+     * par-dessus au lieu de se coincer dedans.
+     */
+    private void applyPredictiveStepUp() {
+        if (!debugRaysActive) return;
+
+        double speed = rideVelocity.horizontalDistance();
+        if (speed < RAY_SPEED_THRESHOLD) return;
+
+        double footY = this.getY();
+        double stepHeight = this.getAttributeValue(Attributes.STEP_HEIGHT);
+
+        // Chercher le hit le plus proche parmi les 3 rays horizontaux (indices 0, 1, 2)
+        double closestDist = Double.MAX_VALUE;
+        Vec3 closestHit = null;
+
+        for (int i = 0; i < 3; i++) {
+            if (rayDistances[i] < 0) continue;
+            if (rayDistances[i] < closestDist) {
+                closestDist = rayDistances[i];
+                closestHit = debugRayHits[i];
             }
         }
 
-        // Appliquer le freinage si un ray a touche
-        if (worstRatio < 1.0) {
-            double brakeFactor = Mth.lerp(worstRatio, RAY_BRAKE_FACTOR, 1.0);
-            rideVelocity = new Vec3(
-                    rideVelocity.x * brakeFactor,
-                    rideVelocity.y,
-                    rideVelocity.z * brakeFactor
-            );
+        // Pas de bloc devant ou trop loin
+        if (closestHit == null || closestDist > STEPUP_RAY_TRIGGER_DIST) return;
+
+        // Trouver le BlockPos touche et la hauteur du haut de sa collision shape
+        BlockPos hitBlock = BlockPos.containing(closestHit);
+        var shape = this.level().getBlockState(hitBlock).getCollisionShape(this.level(), hitBlock);
+        if (shape.isEmpty()) return;
+
+        double blockTopY = hitBlock.getY() + shape.max(Direction.Axis.Y);
+        double heightDiff = blockTopY - footY;
+
+        // Le bloc est montable si sa hauteur est dans le step height
+        // et qu'il est au-dessus du niveau des pieds (pas le sol sous le bike)
+        if (heightDiff > 0.05 && heightDiff <= stepHeight) {
+            // Boost Y proportionnel a la hauteur a franchir
+            double liftNeeded = Math.min(heightDiff * 0.5 + 0.05, STEPUP_LIFT_SPEED);
             Vec3 dm = this.getDeltaMovement();
-            this.setDeltaMovement(dm.x * brakeFactor, dm.y, dm.z * brakeFactor);
+            if (dm.y < liftNeeded) {
+                this.setDeltaMovement(dm.x, liftNeeded, dm.z);
+            }
         }
     }
 
@@ -867,5 +912,9 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     public Vec3[] getDebugRayHits() {
         return debugRayHits;
+    }
+
+    public double[] getRayDistances() {
+        return rayDistances;
     }
 }

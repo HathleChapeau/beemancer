@@ -129,36 +129,38 @@ public class WaveformRenderer {
     }
 
     /**
-     * Calcule la similarite entre deux formes d'onde par comparaison echantillon par echantillon.
+     * Calcule la similarite entre deux formes d'onde par moyenne des matchs individuels par categorie.
+     * Chaque parametre (freq, amp, phase, harm) donne un % de match individuel,
+     * puis on fait la moyenne des 4 pour obtenir le match global.
      * Retourne un pourcentage 0-100 (100 = identique).
+     *
+     * @param freqA    frequence A en Hz (1-80)
+     * @param ampA     amplitude A (0.0-1.0)
+     * @param phaseDegA phase A en degres (0-360)
+     * @param harmA    harmoniques A (0.0-1.0)
+     * @param freqB    frequence B en Hz (1-80)
+     * @param ampB     amplitude B (0.0-1.0)
+     * @param phaseDegB phase B en degres (0-360)
+     * @param harmB    harmoniques B (0.0-1.0)
      */
     static float computeSimilarity(float freqA, float ampA, float phaseDegA, float harmA,
                                    float freqB, float ampB, float phaseDegB, float harmB) {
-        int samples = 256;
-        float phaseRadA = (float) Math.toRadians(phaseDegA);
-        float phaseRadB = (float) Math.toRadians(phaseDegB);
+        // Freq match: range 1-80, max diff = 79
+        float freqMatch = 1.0f - Math.abs(freqA - freqB) / 79.0f;
 
-        int numHarmA = (int) (harmA * MAX_HARMONICS);
-        float fracA = (harmA * MAX_HARMONICS) - numHarmA;
-        int numHarmB = (int) (harmB * MAX_HARMONICS);
-        float fracB = (harmB * MAX_HARMONICS) - numHarmB;
+        // Amp match: range 0.0-1.0, max diff = 1.0
+        float ampMatch = 1.0f - Math.abs(ampA - ampB);
 
-        float sumSqDiff = 0;
-        float sumSqMax = 0;
+        // Phase match: circular, max diff = 180 degrees
+        float phaseDiff = Math.abs(phaseDegA - phaseDegB);
+        if (phaseDiff > 180.0f) phaseDiff = 360.0f - phaseDiff;
+        float phaseMatch = 1.0f - phaseDiff / 180.0f;
 
-        for (int i = 0; i < samples; i++) {
-            float t = (i / (float) samples) * 4.0f;
+        // Harm match: range 0.0-1.0, max diff = 1.0
+        float harmMatch = 1.0f - Math.abs(harmA - harmB);
 
-            float sA = computeSample(t, freqA, phaseRadA, numHarmA, fracA) * ampA;
-            float sB = computeSample(t, freqB, phaseRadB, numHarmB, fracB) * ampB;
-
-            float diff = sA - sB;
-            sumSqDiff += diff * diff;
-            sumSqMax += 4.0f; // max possible diff^2 = (-1 - 1)^2 = 4
-        }
-
-        float mse = sumSqDiff / sumSqMax;
-        return (1.0f - mse) * 100.0f;
+        // Moyenne des 4 matchs individuels
+        return (freqMatch + ampMatch + phaseMatch + harmMatch) / 4.0f * 100.0f;
     }
 
     /**
