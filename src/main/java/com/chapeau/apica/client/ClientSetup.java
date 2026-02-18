@@ -335,6 +335,15 @@ public class ClientSetup {
         event.register((stack, tintIndex) -> 0xFFFF69B4,
             ApicaBlocks.CREATIVE_TANK.get().asItem()
         );
+
+        // Species Essence - teinte selon la couleur de l'espece
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 0) return 0xFFFFFFFF;
+            String speciesId = com.chapeau.apica.common.item.essence.SpeciesEssenceItem.getSpeciesId(stack);
+            if (speciesId == null) return 0xFFFFFFFF;
+            com.chapeau.apica.core.bee.BeeSpeciesManager.ensureClientLoaded();
+            return 0xFF000000 | com.chapeau.apica.core.bee.BeeSpeciesManager.getSpeciesColor(speciesId);
+        }, ApicaItems.SPECIES_ESSENCE.get());
     }
 
     // =========================================================================

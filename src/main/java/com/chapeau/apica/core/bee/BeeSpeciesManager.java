@@ -226,6 +226,16 @@ public class BeeSpeciesManager {
             data.lootItem = loot.has("item") ? loot.get("item").getAsString() : "minecraft:honeycomb";
         }
 
+        // Couleur (hex string "#RRGGBB" → int RGB)
+        if (json.has("color")) {
+            String colorStr = json.get("color").getAsString().replace("#", "");
+            try {
+                data.color = Integer.parseInt(colorStr, 16);
+            } catch (NumberFormatException e) {
+                LOGGER.warn("Invalid color '{}' for species {}", json.get("color").getAsString(), id);
+            }
+        }
+
         return data;
     }
 
@@ -323,6 +333,15 @@ public class BeeSpeciesManager {
     }
 
     /**
+     * Retourne la couleur d'une espece (RGB int sans alpha).
+     * Retourne 0xFFFFFF (blanc) si l'espece n'existe pas.
+     */
+    public static int getSpeciesColor(String speciesId) {
+        BeeSpeciesData data = getSpecies(speciesId);
+        return data != null ? data.color : 0xFFFFFF;
+    }
+
+    /**
      * Verifie si le manager est charge.
      */
     public static boolean isLoaded() {
@@ -395,6 +414,9 @@ public class BeeSpeciesManager {
 
         // Loot
         public String lootItem = "minecraft:honeycomb";
+
+        // Couleur de l'espece (hex RGB, ex: "#F7C325")
+        public int color = 0xFFFFFF;
 
         public BeeSpeciesData(String id) {
             this.id = id;

@@ -395,45 +395,19 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         // Raycasts predictifs : mesurer les distances aux blocs devant le nez (debug only)
         updatePredictiveRaycasts();
 
-        // Sauvegarder position et velocite pre-collision
-        double preX = this.getX();
-        double preZ = this.getZ();
-        Vec3 preMoveVelocity = this.getDeltaMovement();
+        // Appliquer le mouvement (vanilla move gere step-up et collision)
+        this.move(MoverType.SELF, this.getDeltaMovement());
 
-        // Appliquer le mouvement
-        this.move(MoverType.SELF, preMoveVelocity);
-
-        // Feedback collision genereux : ignore les step-ups reussis, decouple X/Z,
-        // et ne penalise que les collisions significatives (ratio < 0.7).
-        if (this.horizontalCollision && !this.minorHorizontalCollision) {
-            double actualDx = this.getX() - preX;
-            double actualDz = this.getZ() - preZ;
-            double wantedDx = preMoveVelocity.x;
-            double wantedDz = preMoveVelocity.z;
-
-            // Ratio par axe : ne penaliser que l'axe vraiment bloque
-            double ratioX = (Math.abs(wantedDx) > 0.001)
-                    ? Mth.clamp(Math.abs(actualDx / wantedDx), 0.3, 1.0) : 1.0;
-            double ratioZ = (Math.abs(wantedDz) > 0.001)
-                    ? Mth.clamp(Math.abs(actualDz / wantedDz), 0.3, 1.0) : 1.0;
-            double bestRatio = Math.max(ratioX, ratioZ);
-
-            // Seuil genereux : si >70% du trajet voulu est parcouru, pas de penalite
-            if (bestRatio < 0.7) {
-                rideVelocity = new Vec3(
-                        rideVelocity.x * bestRatio,
-                        this.getDeltaMovement().y,
-                        rideVelocity.z * bestRatio
-                );
-            }
-
-            // Velocity clamp post-collision : empecher de depasser la vitesse max
-            double maxSpeed = (mode == HoverbikeMode.RUN)
-                    ? settings.maxRunSpeed() : settings.maxHoverSpeed();
-            double horizSpeed = Math.sqrt(rideVelocity.x * rideVelocity.x + rideVelocity.z * rideVelocity.z);
-            if (horizSpeed > maxSpeed) {
-                double scale = maxSpeed / horizSpeed;
-                rideVelocity = new Vec3(rideVelocity.x * scale, rideVelocity.y, rideVelocity.z * scale);
+        // Collision feedback (pattern Cobblemon HorseBehaviour L298-300) :
+        // Rediriger la velocite dans la direction du mouvement reel au lieu de la reduire.
+        // Le bike glisse le long des murs au lieu de s'arreter net.
+        if (this.horizontalCollision) {
+            Vec3 actualDelta = this.getDeltaMovement();
+            double actualHorizSpeed = actualDelta.horizontalDistance();
+            if (actualHorizSpeed > 0.001) {
+                double rideSpeed = rideVelocity.horizontalDistance();
+                Vec3 redirected = actualDelta.normalize().scale(rideSpeed);
+                rideVelocity = new Vec3(redirected.x, rideVelocity.y, redirected.z);
             }
         }
 
@@ -559,40 +533,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         }
     }
 
-    /**
-     * Anti-tunneling : subdivise les grands mouvements en sous-etapes.
-     * A haute vitesse (0.6 blocs/tick), l'entite peut depasser sa propre largeur
-     * en un tick et traverser les murs. On decoupe le mouvement en etapes assez
-     * petites pour que la collision vanilla detecte chaque mur.
-     */
-    @Override
-    public void move(MoverType type, Vec3 movement) {
-        // Ne subdiviser que le mouvement propre (pas piston, etc.)
-        if (type != MoverType.SELF) {
-            super.move(type, movement);
-            return;
-        }
-
-        double horizDist = movement.horizontalDistance();
-        double threshold = 0.55;
-
-        if (horizDist <= threshold) {
-            super.move(type, movement);
-            return;
-        }
-
-        // Decouper en sous-etapes (max 20 pour supporter les hautes vitesses)
-        int steps = Math.min(20, (int) Math.ceil(horizDist / threshold));
-        Vec3 stepMovement = movement.scale(1.0 / steps);
-
-        for (int i = 0; i < steps; i++) {
-            super.move(type, stepMovement);
-            // Ne break que sur collision significative (arret reel, pas glissement)
-            if (this.horizontalCollision && this.getDeltaMovement().horizontalDistanceSqr() < 0.001) {
-                break;
-            }
-        }
-    }
 
     @Override
     protected Vec3 getRiddenInput(Player driver, Vec3 movementInput) {

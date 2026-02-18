@@ -6,1164 +6,2786 @@
       "parents": null,
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Meadow_Bee"
+      "texture": "Meadow_Bee",
+      "color": "#F7C325"
     },
     "forest": {
       "tier": "I",
       "parents": null,
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Forest_Bee"
+      "texture": "Forest_Bee",
+      "color": "#4A7C4E"
     },
     "rocky": {
       "tier": "I",
       "parents": null,
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 2, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:cobblestone" },
+      "loot": {
+        "item": "minecraft:cobblestone"
+      },
       "pollen": null,
-      "texture": "Rocky_Bee"
+      "texture": "Rocky_Bee",
+      "color": "#7A7A7A"
     },
     "river": {
       "tier": "I",
       "parents": null,
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "River_Bee"
+      "texture": "River_Bee",
+      "color": "#4A90B8"
     },
     "dune": {
       "tier": "I",
       "parents": null,
       "environment": 1,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:sand" },
+      "loot": {
+        "item": "minecraft:sand"
+      },
       "pollen": null,
-      "texture": "Dune_Bee"
+      "texture": "Dune_Bee",
+      "color": "#DBD3A0"
     },
     "nether": {
       "tier": "I",
       "parents": null,
       "environment": 2,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": true
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Neither_Bee"
+      "texture": "Neither_Bee",
+      "color": "#8B0000"
     },
     "end": {
       "tier": "I",
       "parents": null,
       "environment": -2,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": true
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "End_Bee"
+      "texture": "End_Bee",
+      "color": "#E0D68A"
     },
     "monsty": {
       "tier": "II",
-      "parents": ["rocky", "meadow"],
+      "parents": [
+        "rocky",
+        "meadow"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Monsty_Bee"
+      "texture": "Monsty_Bee",
+      "color": "#7BC67B"
     },
     "docile": {
       "tier": "II",
-      "parents": ["forest", "meadow"],
+      "parents": [
+        "forest",
+        "meadow"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Docile_Bee"
+      "texture": "Docile_Bee",
+      "color": "#FFE4B5"
     },
     "loam": {
       "tier": "II",
-      "parents": ["forest", "rocky"],
+      "parents": [
+        "forest",
+        "rocky"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:dirt" },
+      "loot": {
+        "item": "minecraft:dirt"
+      },
       "pollen": null,
-      "texture": "Loam_Bee"
+      "texture": "Loam_Bee",
+      "color": "#8B5A2B"
     },
     "sediment": {
       "tier": "II",
-      "parents": ["rocky", "river"],
+      "parents": [
+        "rocky",
+        "river"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:gravel" },
+      "loot": {
+        "item": "minecraft:gravel"
+      },
       "pollen": null,
-      "texture": "Sediment_Bee"
+      "texture": "Sediment_Bee",
+      "color": "#8E8E8E"
     },
     "spark": {
       "tier": "II",
-      "parents": ["rocky", "dune"],
+      "parents": [
+        "rocky",
+        "dune"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:flint" },
+      "loot": {
+        "item": "minecraft:flint"
+      },
       "pollen": null,
-      "texture": "Spark_Bee"
+      "texture": "Spark_Bee",
+      "color": "#3D3D3D"
     },
     "cultural": {
       "tier": "II",
-      "parents": ["meadow", "river"],
+      "parents": [
+        "meadow",
+        "river"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Cultural_Bee"
+      "texture": "Cultural_Bee",
+      "color": "#C4A35A"
     },
     "carbon": {
       "tier": "III",
-      "parents": ["sediment", "rocky"],
+      "parents": [
+        "sediment",
+        "rocky"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "apica:coal_fragment" },
+      "loot": {
+        "item": "apica:coal_fragment"
+      },
       "pollen": null,
-      "texture": "Carbon_Bee"
+      "texture": "Carbon_Bee",
+      "color": "#2F2F2F"
     },
     "cupric": {
       "tier": "III",
-      "parents": ["spark", "rocky"],
+      "parents": [
+        "spark",
+        "rocky"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "apica:raw_copper_shard" },
+      "loot": {
+        "item": "apica:raw_copper_shard"
+      },
       "pollen": null,
-      "texture": "Cupric_Bee"
+      "texture": "Cupric_Bee",
+      "color": "#4A9B8C"
     },
     "festering": {
       "tier": "III",
-      "parents": ["monsty", "meadow"],
+      "parents": [
+        "monsty",
+        "meadow"
+      ],
       "environment": 0,
       "flower_type": "mushroom",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:rotten_flesh" },
+      "loot": {
+        "item": "minecraft:rotten_flesh"
+      },
       "pollen": null,
-      "texture": "Festering_Bee"
+      "texture": "Festering_Bee",
+      "color": "#B87333"
     },
     "skeletal": {
       "tier": "III",
-      "parents": ["monsty", "forest"],
+      "parents": [
+        "monsty",
+        "forest"
+      ],
       "environment": 0,
       "flower_type": "mushroom",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:bone" },
+      "loot": {
+        "item": "minecraft:bone"
+      },
       "pollen": null,
-      "texture": "Skeletal_Bee"
+      "texture": "Skeletal_Bee",
+      "color": "#E3DAC9"
     },
     "silken": {
       "tier": "III",
-      "parents": ["monsty", "rocky"],
+      "parents": [
+        "monsty",
+        "rocky"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:string" },
+      "loot": {
+        "item": "minecraft:string"
+      },
       "pollen": null,
-      "texture": "Silken_Bee"
+      "texture": "Silken_Bee",
+      "color": "#FFFAF0"
     },
     "arachnid": {
       "tier": "III",
-      "parents": ["monsty", "dune"],
+      "parents": [
+        "monsty",
+        "dune"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:spider_eye" },
+      "loot": {
+        "item": "minecraft:spider_eye"
+      },
       "pollen": null,
-      "texture": "Arachnid_Bee"
+      "texture": "Arachnid_Bee",
+      "color": "#2D2D2D"
     },
     "tanner": {
       "tier": "III",
-      "parents": ["docile", "meadow"],
+      "parents": [
+        "docile",
+        "meadow"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:leather_fragment" },
+      "loot": {
+        "item": "apica:leather_fragment"
+      },
       "pollen": null,
-      "texture": "Tanner_Bee"
+      "texture": "Tanner_Bee",
+      "color": "#8B4513"
     },
     "plume": {
       "tier": "III",
-      "parents": ["docile", "forest"],
+      "parents": [
+        "docile",
+        "forest"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:feather" },
+      "loot": {
+        "item": "minecraft:feather"
+      },
       "pollen": null,
-      "texture": "Plume_Bee"
+      "texture": "Plume_Bee",
+      "color": "#4B4B4F"
     },
     "quercus": {
       "tier": "III",
-      "parents": ["loam", "meadow"],
+      "parents": [
+        "loam",
+        "meadow"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:oak_log_fragment" },
+      "loot": {
+        "item": "apica:oak_log_fragment"
+      },
       "pollen": null,
-      "texture": "Quercus_Bee"
+      "texture": "Quercus_Bee",
+      "color": "#B8945F"
     },
     "boreal": {
       "tier": "III",
-      "parents": ["loam", "river"],
+      "parents": [
+        "loam",
+        "river"
+      ],
       "environment": -1,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:spruce_log_fragment" },
+      "loot": {
+        "item": "apica:spruce_log_fragment"
+      },
       "pollen": null,
-      "texture": "Boreal_Bee"
+      "texture": "Boreal_Bee",
+      "color": "#D3D3D3"
     },
     "tropical": {
       "tier": "III",
-      "parents": ["loam", "dune"],
+      "parents": [
+        "loam",
+        "dune"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:jungle_log_fragment" },
+      "loot": {
+        "item": "apica:jungle_log_fragment"
+      },
       "pollen": null,
-      "texture": "Tropical_Bee"
+      "texture": "Tropical_Bee",
+      "color": "#32CD32"
     },
     "paperbark": {
       "tier": "III",
-      "parents": ["loam", "forest"],
+      "parents": [
+        "loam",
+        "forest"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:birch_log_fragment" },
+      "loot": {
+        "item": "apica:birch_log_fragment"
+      },
       "pollen": null,
-      "texture": "Paperbark_Bee"
+      "texture": "Paperbark_Bee",
+      "color": "#D2B48C"
     },
     "reed": {
       "tier": "III",
-      "parents": ["sediment", "dune"],
+      "parents": [
+        "sediment",
+        "dune"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 2 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:sugar_cane" },
+      "loot": {
+        "item": "minecraft:sugar_cane"
+      },
       "pollen": null,
-      "texture": "Reed_Bee"
+      "texture": "Reed_Bee",
+      "color": "#9ACD32"
     },
     "karot": {
       "tier": "III",
-      "parents": ["cultural", "meadow"],
+      "parents": [
+        "cultural",
+        "meadow"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:carrot" },
+      "loot": {
+        "item": "minecraft:carrot"
+      },
       "pollen": null,
-      "texture": "Karot_Bee"
+      "texture": "Karot_Bee",
+      "color": "#D6D0AD"
     },
     "tuber": {
       "tier": "III",
-      "parents": ["cultural", "rocky"],
+      "parents": [
+        "cultural",
+        "rocky"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 2 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:potato" },
+      "loot": {
+        "item": "minecraft:potato"
+      },
       "pollen": null,
-      "texture": "Tuber_Bee"
+      "texture": "Tuber_Bee",
+      "color": "#C4A35A"
     },
     "juicy": {
       "tier": "III",
-      "parents": ["cultural", "river"],
+      "parents": [
+        "cultural",
+        "river"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:melon_slice" },
+      "loot": {
+        "item": "minecraft:melon_slice"
+      },
       "pollen": null,
-      "texture": "Juicy_Bee"
+      "texture": "Juicy_Bee",
+      "color": "#FF8C00"
     },
     "gourd": {
       "tier": "III",
-      "parents": ["cultural", "monsty"],
+      "parents": [
+        "cultural",
+        "monsty"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:pumpkin" },
+      "loot": {
+        "item": "minecraft:pumpkin"
+      },
       "pollen": null,
-      "texture": "Gourd_Bee"
+      "texture": "Gourd_Bee",
+      "color": "#C4A35A"
     },
     "agrarian": {
       "tier": "III",
-      "parents": ["cultural", "docile"],
+      "parents": [
+        "cultural",
+        "docile"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:wheat" },
+      "loot": {
+        "item": "minecraft:wheat"
+      },
       "pollen": null,
-      "texture": "Agrarian_Bee"
+      "texture": "Agrarian_Bee",
+      "color": "#AEDD00"
     },
     "prince": {
       "tier": "IV",
       "parents": null,
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": true, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": true,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Prince_Bee"
+      "texture": "Prince_Bee",
+      "color": "#E67519"
     },
     "flower": {
       "tier": "IV",
-      "parents": ["agrarian", "meadow"],
+      "parents": [
+        "agrarian",
+        "meadow"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "flower_pollen",
-      "texture": "Flower_Bee"
+      "texture": "Flower_Bee",
+      "color": "#DEB887"
     },
     "mushroom": {
       "tier": "IV",
-      "parents": ["tuber", "agrarian"],
+      "parents": [
+        "tuber",
+        "agrarian"
+      ],
       "environment": 0,
       "flower_type": "mushroom",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "mushroom_spore",
-      "texture": "Mushroom_Bee"
+      "texture": "Mushroom_Bee",
+      "color": "#BC4A42"
     },
     "tree": {
       "tier": "IV",
-      "parents": ["quercus", "forest"],
+      "parents": [
+        "quercus",
+        "forest"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "tree_pollen",
-      "texture": "Tree_Bee"
+      "texture": "Tree_Bee",
+      "color": "#228B22"
     },
     "crystal": {
       "tier": "IV",
-      "parents": ["carbon", "reed"],
+      "parents": [
+        "carbon",
+        "reed"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 2 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "crystal_pollen",
-      "texture": "Crystal_Bee"
+      "texture": "Crystal_Bee",
+      "color": "#9966CC"
     },
     "argil": {
       "tier": "IV",
-      "parents": ["reed", "loam"],
+      "parents": [
+        "reed",
+        "loam"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:clay_ball" },
+      "loot": {
+        "item": "minecraft:clay_ball"
+      },
       "pollen": null,
-      "texture": "Argil_Bee"
+      "texture": "Argil_Bee",
+      "color": "#D2B48C"
     },
     "umbra": {
       "tier": "IV",
-      "parents": ["reed", "carbon"],
+      "parents": [
+        "reed",
+        "carbon"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:dark_oak_log_fragment" },
+      "loot": {
+        "item": "apica:dark_oak_log_fragment"
+      },
       "pollen": null,
-      "texture": "Umbra_Bee"
+      "texture": "Umbra_Bee",
+      "color": "#4A3B5C"
     },
     "savanna": {
       "tier": "IV",
-      "parents": ["paperbark", "dune"],
+      "parents": [
+        "paperbark",
+        "dune"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:acacia_log_fragment" },
+      "loot": {
+        "item": "apica:acacia_log_fragment"
+      },
       "pollen": null,
-      "texture": "Savanna_Bee"
+      "texture": "Savanna_Bee",
+      "color": "#DAA520"
     },
     "frost": {
       "tier": "IV",
-      "parents": ["boreal", "river"],
+      "parents": [
+        "boreal",
+        "river"
+      ],
       "environment": -2,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 2 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:ice_fragment" },
+      "loot": {
+        "item": "apica:ice_fragment"
+      },
       "pollen": null,
-      "texture": "Frost_Bee"
+      "texture": "Frost_Bee",
+      "color": "#A5F3FC"
     },
     "volatile": {
       "tier": "IV",
-      "parents": ["carbon", "monsty"],
+      "parents": [
+        "carbon",
+        "monsty"
+      ],
       "environment": 0,
       "flower_type": "mushroom",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:gunpowder_fragment" },
+      "loot": {
+        "item": "apica:gunpowder_fragment"
+      },
       "pollen": null,
-      "texture": "Volatile_Bee"
+      "texture": "Volatile_Bee",
+      "color": "#FF6347"
     },
     "ashen": {
       "tier": "IV",
-      "parents": ["carbon", "rocky"],
+      "parents": [
+        "carbon",
+        "rocky"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:andesite" },
+      "loot": {
+        "item": "minecraft:andesite"
+      },
       "pollen": null,
-      "texture": "Ashen_Bee"
+      "texture": "Ashen_Bee",
+      "color": "#A9A9A9"
     },
     "igneous": {
       "tier": "IV",
-      "parents": ["skeletal", "rocky"],
+      "parents": [
+        "skeletal",
+        "rocky"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:diorite" },
+      "loot": {
+        "item": "minecraft:diorite"
+      },
       "pollen": null,
-      "texture": "Igneous_Bee"
+      "texture": "Igneous_Bee",
+      "color": "#B22222"
     },
     "rose_stone": {
       "tier": "IV",
-      "parents": ["arachnid", "rocky"],
+      "parents": [
+        "arachnid",
+        "rocky"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:granite" },
+      "loot": {
+        "item": "minecraft:granite"
+      },
       "pollen": null,
-      "texture": "Rose_Stone_Bee"
+      "texture": "Rose_Stone_Bee",
+      "color": "#C4A4A4"
     },
     "infernalist": {
       "tier": "V",
       "parents": null,
       "environment": 0,
       "flower_type": "mushroom",
-      "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 2 },
-      "aggression": { "players": false, "passive_mobs": true, "hostile_mobs": true },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": true,
+        "hostile_mobs": true
+      },
       "day_night": "both",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Infernalist_Bee"
+      "texture": "Infernalist_Bee",
+      "color": "#6B2D5C"
     },
     "swift": {
       "tier": "V",
-      "parents": ["prince", "plume"],
+      "parents": [
+        "prince",
+        "plume"
+      ],
       "environment": -1,
       "flower_type": "mushroom",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 3, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 3,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Swift_Bee"
+      "texture": "Swift_Bee",
+      "color": "#DFDEDE"
     },
     "royal": {
       "tier": "V",
-      "parents": ["prince", "prince"],
+      "parents": [
+        "prince",
+        "prince"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:royal_comb" },
+      "loot": {
+        "item": "apica:royal_comb"
+      },
       "pollen": null,
-      "texture": "Royal_Bee"
+      "texture": "Royal_Bee",
+      "color": "#9B6B53"
     },
     "ferrous": {
       "tier": "V",
-      "parents": ["ashen", "spark"],
+      "parents": [
+        "ashen",
+        "spark"
+      ],
       "environment": 1,
       "flower_type": "crystal",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": true },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": true
+      },
       "day_night": "night",
-      "loot": { "item": "apica:raw_iron_shard" },
+      "loot": {
+        "item": "apica:raw_iron_shard"
+      },
       "pollen": null,
-      "texture": "Ferrous_Bee"
+      "texture": "Ferrous_Bee",
+      "color": "#A8A8A8"
     },
     "flux": {
       "tier": "V",
-      "parents": ["rose_stone", "crystal"],
+      "parents": [
+        "rose_stone",
+        "crystal"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:redstone" },
+      "loot": {
+        "item": "minecraft:redstone"
+      },
       "pollen": null,
-      "texture": "Flux_Bee"
+      "texture": "Flux_Bee",
+      "color": "#AA0000"
     },
     "lazuli": {
       "tier": "V",
-      "parents": ["crystal", "cupric"],
+      "parents": [
+        "crystal",
+        "cupric"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "apica:lapis_lazuli_shard" },
+      "loot": {
+        "item": "apica:lapis_lazuli_shard"
+      },
       "pollen": null,
-      "texture": "Lazuli_Bee"
+      "texture": "Lazuli_Bee",
+      "color": "#1F4DB4"
     },
     "quartzose": {
       "tier": "V",
-      "parents": ["crystal", "nether"],
+      "parents": [
+        "crystal",
+        "nether"
+      ],
       "environment": 2,
       "flower_type": "crystal",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 3 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 3
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "both",
-      "loot": { "item": "apica:quartz_shard" },
+      "loot": {
+        "item": "apica:quartz_shard"
+      },
       "pollen": null,
-      "texture": "Quartzose_Bee"
+      "texture": "Quartzose_Bee",
+      "color": "#EEEDE9"
     },
     "luminous": {
       "tier": "V",
-      "parents": ["volatile", "nether"],
+      "parents": [
+        "volatile",
+        "nether"
+      ],
       "environment": 2,
       "flower_type": "crystal",
-      "stats": { "attack": 2, "health": 3, "drop_level": 1, "flying_speed": 1, "foraging_duration": 2, "tolerance": 2 },
-      "aggression": { "players": false, "passive_mobs": true, "hostile_mobs": true },
+      "stats": {
+        "attack": 2,
+        "health": 3,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 2,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": true,
+        "hostile_mobs": true
+      },
       "day_night": "both",
-      "loot": { "item": "minecraft:glowstone_dust" },
+      "loot": {
+        "item": "minecraft:glowstone_dust"
+      },
       "pollen": null,
-      "texture": "Luminous_Bee"
+      "texture": "Luminous_Bee",
+      "color": "#AA0000"
     },
     "grim": {
       "tier": "V",
-      "parents": ["ashen", "carbon"],
+      "parents": [
+        "ashen",
+        "carbon"
+      ],
       "environment": 2,
       "flower_type": "crystal",
-      "stats": { "attack": 3, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": true },
+      "stats": {
+        "attack": 3,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": true
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:blackstone" },
+      "loot": {
+        "item": "minecraft:blackstone"
+      },
       "pollen": null,
-      "texture": "Grim_Bee"
+      "texture": "Grim_Bee",
+      "color": "#19398A"
     },
     "columnar": {
       "tier": "V",
-      "parents": ["ashen", "rocky"],
+      "parents": [
+        "ashen",
+        "rocky"
+      ],
       "environment": 2,
       "flower_type": "crystal",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:basalt" },
+      "loot": {
+        "item": "minecraft:basalt"
+      },
       "pollen": null,
-      "texture": "Columnar_Bee"
+      "texture": "Columnar_Bee",
+      "color": "#EEEDE9"
     },
     "viscous": {
       "tier": "V",
-      "parents": ["argil", "monsty"],
+      "parents": [
+        "argil",
+        "monsty"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 3 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 3
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "apica:slime_ball_shard" },
+      "loot": {
+        "item": "apica:slime_ball_shard"
+      },
       "pollen": null,
-      "texture": "Viscous_Bee"
+      "texture": "Viscous_Bee",
+      "color": "#FFBC5E"
     },
     "inky": {
       "tier": "V",
-      "parents": ["argil", "docile"],
+      "parents": [
+        "argil",
+        "docile"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 1, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:ink_sac" },
+      "loot": {
+        "item": "minecraft:ink_sac"
+      },
       "pollen": null,
-      "texture": "Inky_Bee"
+      "texture": "Inky_Bee",
+      "color": "#2D2429"
     },
     "fleece": {
       "tier": "V",
-      "parents": ["flower", "docile"],
+      "parents": [
+        "flower",
+        "docile"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:white_wool" },
+      "loot": {
+        "item": "minecraft:white_wool"
+      },
       "pollen": null,
-      "texture": "Fleece_Bee"
+      "texture": "Fleece_Bee",
+      "color": "#7FBF00"
     },
     "adobe": {
       "tier": "V",
-      "parents": ["rose_stone", "river"],
+      "parents": [
+        "rose_stone",
+        "river"
+      ],
       "environment": 1,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:terracotta" },
+      "loot": {
+        "item": "minecraft:terracotta"
+      },
       "pollen": null,
-      "texture": "Adobe_Bee"
+      "texture": "Adobe_Bee",
+      "color": "#CD853F"
     },
     "geode": {
       "tier": "V",
-      "parents": ["crystal", "crystal"],
+      "parents": [
+        "crystal",
+        "crystal"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:amethyst_shard" },
+      "loot": {
+        "item": "minecraft:amethyst_shard"
+      },
       "pollen": null,
-      "texture": "Geode_Bee"
+      "texture": "Geode_Bee",
+      "color": "#9966CC"
     },
     "marsh": {
       "tier": "V",
-      "parents": ["umbra", "savanna"],
+      "parents": [
+        "umbra",
+        "savanna"
+      ],
       "environment": 0,
       "flower_type": "mushroom",
-      "stats": { "attack": 1, "health": 1, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 1,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "apica:mangrove_log_fragment" },
+      "loot": {
+        "item": "apica:mangrove_log_fragment"
+      },
       "pollen": null,
-      "texture": "Marsh_Bee"
+      "texture": "Marsh_Bee",
+      "color": "#556B2F"
     },
     "majestic": {
       "tier": "VI",
-      "parents": ["royal", "luminous"],
+      "parents": [
+        "royal",
+        "luminous"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 3, "drop_level": 1, "flying_speed": 1, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 3,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Majestic_Bee"
+      "texture": "Majestic_Bee",
+      "color": "#6E3735"
     },
     "steady": {
       "tier": "VI",
-      "parents": ["grim", "ferrous"],
+      "parents": [
+        "grim",
+        "ferrous"
+      ],
       "environment": 0,
       "flower_type": "mushroom",
-      "stats": { "attack": 4, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 4 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": true },
+      "stats": {
+        "attack": 4,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 4
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": true
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Steady_Bee"
+      "texture": "Steady_Bee",
+      "color": "#A0826D"
     },
     "wind": {
       "tier": "VI",
-      "parents": ["swift", "plume"],
+      "parents": [
+        "swift",
+        "plume"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 3 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 3
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "pollen_of_wind",
-      "texture": "Wind_Bee"
+      "texture": "Wind_Bee",
+      "color": "#87CEEB"
     },
     "thunder": {
       "tier": "VI",
-      "parents": ["ferrous", "dune"],
+      "parents": [
+        "ferrous",
+        "dune"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 3, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 3,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "pollen_of_thunder",
-      "texture": "Thunder_Bee"
+      "texture": "Thunder_Bee",
+      "color": "#FFD700"
     },
     "water": {
       "tier": "VI",
-      "parents": ["inky", "water"],
+      "parents": [
+        "inky",
+        "water"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "pollen_of_water",
-      "texture": "Water_Bee"
+      "texture": "Water_Bee",
+      "color": "#1E90FF"
     },
     "fire": {
       "tier": "VI",
-      "parents": ["luminous", "nether"],
+      "parents": [
+        "luminous",
+        "nether"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 1, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 1,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "pollen_of_fire",
-      "texture": "Fire_Bee"
+      "texture": "Fire_Bee",
+      "color": "#FF6600"
     },
     "auric": {
       "tier": "VI",
-      "parents": ["ferrous", "royal"],
+      "parents": [
+        "ferrous",
+        "royal"
+      ],
       "environment": 0,
       "flower_type": "crystal",
-      "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 1, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 1,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "apica:raw_gold_shard" },
+      "loot": {
+        "item": "apica:raw_gold_shard"
+      },
       "pollen": null,
-      "texture": "Auric_Bee"
+      "texture": "Auric_Bee",
+      "color": "#FFD700"
     },
     "magmatic": {
       "tier": "VI",
-      "parents": ["infernalist", "monsty"],
+      "parents": [
+        "infernalist",
+        "monsty"
+      ],
       "environment": 2,
       "flower_type": "mushroom",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 1, "tolerance": 2 },
-      "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 1,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "both",
-      "loot": { "item": "apica:magma_cream_shard" },
+      "loot": {
+        "item": "apica:magma_cream_shard"
+      },
       "pollen": null,
-      "texture": "Magmatic_Bee"
+      "texture": "Magmatic_Bee",
+      "color": "#FF6600"
     },
     "spirit": {
       "tier": "VI",
-      "parents": ["infernalist", "skeletal"],
+      "parents": [
+        "infernalist",
+        "skeletal"
+      ],
       "environment": -1,
       "flower_type": "mushroom",
-      "stats": { "attack": 1, "health": 3, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 3,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "both",
-      "loot": { "item": "minecraft:soul_sand" },
+      "loot": {
+        "item": "minecraft:soul_sand"
+      },
       "pollen": null,
-      "texture": "Spirit_Bee"
+      "texture": "Spirit_Bee",
+      "color": "#E0FFFF"
     },
     "crimson": {
       "tier": "VI",
-      "parents": ["infernalist", "agrarian"],
+      "parents": [
+        "infernalist",
+        "agrarian"
+      ],
       "environment": 2,
       "flower_type": "mushroom",
-      "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "both",
-      "loot": { "item": "minecraft:nether_wart" },
+      "loot": {
+        "item": "minecraft:nether_wart"
+      },
       "pollen": null,
-      "texture": "Crimson_Bee"
+      "texture": "Crimson_Bee",
+      "color": "#8B0000"
     },
     "mycelial": {
       "tier": "VI",
-      "parents": ["grim", "loam"],
+      "parents": [
+        "grim",
+        "loam"
+      ],
       "environment": 0,
       "flower_type": "mushroom",
-      "stats": { "attack": 2, "health": 1, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 1,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:mycelium" },
+      "loot": {
+        "item": "minecraft:mycelium"
+      },
       "pollen": null,
-      "texture": "Mycelial_Bee"
+      "texture": "Mycelial_Bee",
+      "color": "#6B6067"
     },
     "humus": {
       "tier": "VI",
-      "parents": ["columnar", "loam"],
+      "parents": [
+        "columnar",
+        "loam"
+      ],
       "environment": 0,
       "flower_type": "mushroom",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:podzol" },
+      "loot": {
+        "item": "minecraft:podzol"
+      },
       "pollen": null,
-      "texture": "Humus_Bee"
+      "texture": "Humus_Bee",
+      "color": "#3D2E1F"
     },
     "floral": {
       "tier": "VI",
-      "parents": ["royal", "meadow"],
+      "parents": [
+        "royal",
+        "meadow"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 3 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 3
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "#minecraft:small_flowers" },
+      "loot": {
+        "item": "#minecraft:small_flowers"
+      },
       "pollen": null,
-      "texture": "Floral_Bee"
+      "texture": "Floral_Bee",
+      "color": "#FF69B4"
     },
     "treasure": {
       "tier": "VII",
-      "parents": ["auric", "boreal"],
+      "parents": [
+        "auric",
+        "boreal"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 2, "drop_level": 3, "flying_speed": 1, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 2,
+        "drop_level": 3,
+        "flying_speed": 1,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Treasure_Bee"
+      "texture": "Treasure_Bee",
+      "color": "#FFD700"
     },
     "siphoning": {
       "tier": "VII",
-      "parents": ["wind", "end"],
+      "parents": [
+        "wind",
+        "end"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 4, "tolerance": 2 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 4,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Siphoning_Bee"
+      "texture": "Siphoning_Bee",
+      "color": "#8B0000"
     },
     "zephyr": {
       "tier": "VII",
-      "parents": ["wind", "swift"],
+      "parents": [
+        "wind",
+        "swift"
+      ],
       "environment": -2,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 4, "foraging_duration": 3, "tolerance": 2 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 4,
+        "foraging_duration": 3,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Zephyr_Bee"
+      "texture": "Zephyr_Bee",
+      "color": "#ADD8E6"
     },
     "prismatic": {
       "tier": "VII",
-      "parents": ["water", "crystal"],
+      "parents": [
+        "water",
+        "crystal"
+      ],
       "environment": -1,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 3,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:prismarine_shard" },
+      "loot": {
+        "item": "minecraft:prismarine_shard"
+      },
       "pollen": null,
-      "texture": "Prismatic_Bee"
+      "texture": "Prismatic_Bee",
+      "color": "#00CED1"
     },
     "crystalline": {
       "tier": "VII",
-      "parents": ["auric", "crystal"],
+      "parents": [
+        "auric",
+        "crystal"
+      ],
       "environment": -1,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:prismarine_crystals" },
+      "loot": {
+        "item": "minecraft:prismarine_crystals"
+      },
       "pollen": null,
-      "texture": "Crystalline_Bee"
+      "texture": "Crystalline_Bee",
+      "color": "#63A8A0"
     },
     "insomnia": {
       "tier": "VII",
-      "parents": ["magmatic", "end"],
+      "parents": [
+        "magmatic",
+        "end"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 3, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 3,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:phantom_membrane" },
+      "loot": {
+        "item": "minecraft:phantom_membrane"
+      },
       "pollen": null,
-      "texture": "Insomnia_Bee"
+      "texture": "Insomnia_Bee",
+      "color": "#4E6FA5"
     },
     "blazing": {
       "tier": "VII",
-      "parents": ["fire", "infernalist"],
+      "parents": [
+        "fire",
+        "infernalist"
+      ],
       "environment": 2,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 2, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 3,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "apica:blaze_rod_fragment" },
+      "loot": {
+        "item": "apica:blaze_rod_fragment"
+      },
       "pollen": null,
-      "texture": "Blazing_Bee"
+      "texture": "Blazing_Bee",
+      "color": "#F6C700"
     },
     "diamantine": {
       "tier": "VIII",
-      "parents": ["treasure", null],
+      "parents": [
+        "treasure",
+        null
+      ],
       "environment": 1,
       "flower_type": "crystal",
-      "stats": { "attack": 3, "health": 1, "drop_level": 2, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 3,
+        "health": 1,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "apica:diamond_dust" },
+      "loot": {
+        "item": "apica:diamond_dust"
+      },
       "pollen": null,
-      "texture": "Diamantine_Bee"
+      "texture": "Diamantine_Bee",
+      "color": "#4AEDD9"
     },
     "venerable": {
       "tier": "VIII",
-      "parents": ["treasure", null],
+      "parents": [
+        "treasure",
+        null
+      ],
       "environment": 1,
       "flower_type": "crystal",
-      "stats": { "attack": 2, "health": 3, "drop_level": 2, "flying_speed": 2, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 3,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "apica:emerald_dust" },
+      "loot": {
+        "item": "apica:emerald_dust"
+      },
       "pollen": null,
-      "texture": "Venerable_Bee"
+      "texture": "Venerable_Bee",
+      "color": "#17DD62"
     },
     "volcanic": {
       "tier": "VIII",
-      "parents": ["prismatic", null],
+      "parents": [
+        "prismatic",
+        null
+      ],
       "environment": 1,
       "flower_type": "crystal",
-      "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 3 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 3,
+        "foraging_duration": 3,
+        "tolerance": 3
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "apica:obsidian_dust" },
+      "loot": {
+        "item": "apica:obsidian_dust"
+      },
       "pollen": null,
-      "texture": "Volcanic_Bee"
+      "texture": "Volcanic_Bee",
+      "color": "#B22222"
     },
     "xenolith": {
       "tier": "VIII",
-      "parents": ["insomnia", null],
+      "parents": [
+        "insomnia",
+        null
+      ],
       "environment": -2,
       "flower_type": "crystal",
-      "stats": { "attack": 2, "health": 2, "drop_level": 1, "flying_speed": 1, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 1,
+        "flying_speed": 1,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "both",
-      "loot": { "item": "minecraft:end_stone" },
+      "loot": {
+        "item": "minecraft:end_stone"
+      },
       "pollen": null,
-      "texture": "Xenolith_Bee"
+      "texture": "Xenolith_Bee",
+      "color": "#100C14"
     },
     "traveler": {
       "tier": "VIII",
-      "parents": ["insomnia", null],
+      "parents": [
+        "insomnia",
+        null
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 1, "health": 2, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 2 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 1,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 3,
+        "foraging_duration": 3,
+        "tolerance": 2
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "both",
-      "loot": { "item": "apica:ender_pearl_dust" },
+      "loot": {
+        "item": "apica:ender_pearl_dust"
+      },
       "pollen": null,
-      "texture": "Traveler_Bee"
+      "texture": "Traveler_Bee",
+      "color": "#DBDE9F"
     },
     "sorrow": {
       "tier": "VIII",
-      "parents": ["blazing", "spirit"],
+      "parents": [
+        "blazing",
+        "spirit"
+      ],
       "environment": 2,
       "flower_type": "flower",
-      "stats": { "attack": 3, "health": 2, "drop_level": 2, "flying_speed": 2, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 3,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 2,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "both",
-      "loot": { "item": "apica:ghast_tear_shard" },
+      "loot": {
+        "item": "apica:ghast_tear_shard"
+      },
       "pollen": null,
-      "texture": "Sorrow_Bee"
+      "texture": "Sorrow_Bee",
+      "color": "#0C7575"
     },
     "absorbent": {
       "tier": "VIII",
-      "parents": ["prismatic", "loam"],
+      "parents": [
+        "prismatic",
+        "loam"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 2,
+        "flying_speed": 3,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:sponge" },
+      "loot": {
+        "item": "minecraft:sponge"
+      },
       "pollen": null,
-      "texture": "Absorbent_Bee"
+      "texture": "Absorbent_Bee",
+      "color": "#F0F0F0"
     },
     "light": {
       "tier": "VIII",
-      "parents": ["fire", "light"],
+      "parents": [
+        "fire",
+        "light"
+      ],
       "environment": 1,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 3, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 3,
+        "flying_speed": 3,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "pollen_of_light",
-      "texture": "Light_Bee"
+      "texture": "Light_Bee",
+      "color": "#FFFF99"
     },
     "dark": {
       "tier": "VIII",
-      "parents": ["water", "wind"],
+      "parents": [
+        "water",
+        "wind"
+      ],
       "environment": -1,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 3, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 3,
+        "drop_level": 2,
+        "flying_speed": 3,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "pollen_of_darkness",
-      "texture": "Dark_Bee"
+      "texture": "Dark_Bee",
+      "color": "#1A0A2E"
     },
     "imperial": {
       "tier": "VIII",
-      "parents": ["treasure", "majestic"],
+      "parents": [
+        "treasure",
+        "majestic"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 2, "health": 2, "drop_level": 4, "flying_speed": 2, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 2,
+        "health": 2,
+        "drop_level": 4,
+        "flying_speed": 2,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Imperial_Bee"
+      "texture": "Imperial_Bee",
+      "color": "#6A0DAD"
     },
     "demonic": {
       "tier": "IX",
-      "parents": ["dark", "infernalist"],
+      "parents": [
+        "dark",
+        "infernalist"
+      ],
       "environment": -2,
       "flower_type": "crystal",
-      "stats": { "attack": 4, "health": 4, "drop_level": 1, "flying_speed": 3, "foraging_duration": 1, "tolerance": 3 },
-      "aggression": { "players": false, "passive_mobs": true, "hostile_mobs": false },
+      "stats": {
+        "attack": 4,
+        "health": 4,
+        "drop_level": 1,
+        "flying_speed": 3,
+        "foraging_duration": 1,
+        "tolerance": 3
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": true,
+        "hostile_mobs": false
+      },
       "day_night": "night",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Demonic_Bee"
+      "texture": "Demonic_Bee",
+      "color": "#660000"
     },
     "paladin": {
       "tier": "IX",
-      "parents": ["light", "steady"],
+      "parents": [
+        "light",
+        "steady"
+      ],
       "environment": 2,
       "flower_type": "flower",
-      "stats": { "attack": 4, "health": 4, "drop_level": 1, "flying_speed": 2, "foraging_duration": 1, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": true },
+      "stats": {
+        "attack": 4,
+        "health": 4,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 1,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": true
+      },
       "day_night": "day",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": null,
-      "texture": "Paladin_Bee"
+      "texture": "Paladin_Bee",
+      "color": "#F5F5F5"
     },
     "chorus": {
       "tier": "IX",
-      "parents": ["traveler", "tuber"],
+      "parents": [
+        "traveler",
+        "tuber"
+      ],
       "environment": -2,
       "flower_type": "flower",
-      "stats": { "attack": 3, "health": 3, "drop_level": 1, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
+      "stats": {
+        "attack": 3,
+        "health": 3,
+        "drop_level": 1,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": true
+      },
       "day_night": "both",
-      "loot": { "item": "minecraft:chorus_fruit" },
+      "loot": {
+        "item": "minecraft:chorus_fruit"
+      },
       "pollen": null,
-      "texture": "Chorus_Bee"
+      "texture": "Chorus_Bee",
+      "color": "#8F6BAE"
     },
     "ancient": {
       "tier": "IX",
-      "parents": ["treasure", "infernalist"],
+      "parents": [
+        "treasure",
+        "infernalist"
+      ],
       "environment": 2,
       "flower_type": "crystal",
-      "stats": { "attack": 3, "health": 3, "drop_level": 3, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
+      "stats": {
+        "attack": 3,
+        "health": 3,
+        "drop_level": 3,
+        "flying_speed": 3,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": true
+      },
       "day_night": "both",
-      "loot": { "item": "apica:netherite_scrap_dust" },
+      "loot": {
+        "item": "apica:netherite_scrap_dust"
+      },
       "pollen": null,
-      "texture": "Ancient_Bee"
+      "texture": "Ancient_Bee",
+      "color": "#6B5C4A"
     },
     "void": {
       "tier": "IX",
-      "parents": ["light", "dark"],
+      "parents": [
+        "light",
+        "dark"
+      ],
       "environment": 0,
       "flower_type": "flower",
-      "stats": { "attack": 3, "health": 3, "drop_level": 2, "flying_speed": 3, "foraging_duration": 3, "tolerance": 1 },
-      "aggression": { "players": false, "passive_mobs": false, "hostile_mobs": false },
+      "stats": {
+        "attack": 3,
+        "health": 3,
+        "drop_level": 2,
+        "flying_speed": 3,
+        "foraging_duration": 3,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": false,
+        "passive_mobs": false,
+        "hostile_mobs": false
+      },
       "day_night": "both",
-      "loot": { "item": "minecraft:honeycomb" },
+      "loot": {
+        "item": "minecraft:honeycomb"
+      },
       "pollen": "void_pollen",
-      "texture": "Void_Bee"
+      "texture": "Void_Bee",
+      "color": "#443A3B"
     },
     "draconic": {
       "tier": "X",
-      "parents": ["chorus", "demonic"],
+      "parents": [
+        "chorus",
+        "demonic"
+      ],
       "environment": -2,
       "flower_type": "flower",
-      "stats": { "attack": 4, "health": 3, "drop_level": 3, "flying_speed": 2, "foraging_duration": 2, "tolerance": 1 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
+      "stats": {
+        "attack": 4,
+        "health": 3,
+        "drop_level": 3,
+        "flying_speed": 2,
+        "foraging_duration": 2,
+        "tolerance": 1
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": true
+      },
       "day_night": "both",
-      "loot": { "item": "apica:dragon_breath_dust" },
+      "loot": {
+        "item": "apica:dragon_breath_dust"
+      },
       "pollen": null,
-      "texture": "Draconic_Bee"
+      "texture": "Draconic_Bee",
+      "color": "#20002F"
     },
     "stellar": {
       "tier": "X",
-      "parents": ["void", "paladin"],
+      "parents": [
+        "void",
+        "paladin"
+      ],
       "environment": 2,
       "flower_type": "flower",
-      "stats": { "attack": 4, "health": 3, "drop_level": 3, "flying_speed": 3, "foraging_duration": 3, "tolerance": 4 },
-      "aggression": { "players": true, "passive_mobs": true, "hostile_mobs": true },
+      "stats": {
+        "attack": 4,
+        "health": 3,
+        "drop_level": 3,
+        "flying_speed": 3,
+        "foraging_duration": 3,
+        "tolerance": 4
+      },
+      "aggression": {
+        "players": true,
+        "passive_mobs": true,
+        "hostile_mobs": true
+      },
       "day_night": "both",
-      "loot": { "item": "apica:nether_star_dust" },
+      "loot": {
+        "item": "apica:nether_star_dust"
+      },
       "pollen": null,
-      "texture": "Stellar_Bee"
+      "texture": "Stellar_Bee",
+      "color": "#9932CC"
     }
   }
 }
