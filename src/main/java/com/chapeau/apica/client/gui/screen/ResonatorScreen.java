@@ -167,6 +167,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         float weightedFreq = 0;
         float weightedAmp = 0;
         float weightedPhase = 0;
+        float weightedHarm = 0;
 
         for (int i = 0; i < statNames.length; i++) {
             ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(statNames[i], levels[i]);
@@ -176,13 +177,14 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             weightedFreq += wf.frequency * weight;
             weightedAmp += wf.amplitude * weight;
             weightedPhase += wf.phase * weight;
+            weightedHarm += wf.harmonics * weight;
         }
 
         if (totalWeight > 0) {
             targetFreq = clamp(Math.round(weightedFreq / totalWeight), FREQ_MIN, FREQ_MAX);
             targetAmp = clamp(Math.round(weightedAmp / totalWeight), 0, 100);
             targetPhase = clamp(Math.round(weightedPhase / totalWeight) % 360, 0, 360);
-            targetHarm = 0;
+            targetHarm = clamp(Math.round(weightedHarm / totalWeight), 0, 100);
         } else {
             targetFreq = 20;
             targetAmp = 50;

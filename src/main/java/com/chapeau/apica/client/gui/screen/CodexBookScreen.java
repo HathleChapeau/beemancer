@@ -95,9 +95,8 @@ public class CodexBookScreen extends Screen {
     private static final int NOTE_HEIGHT = 130;
     private static final int NOTE_BORDER_COLOR = 0xFF5C3A1E;
     private static final int NOTE_TITLE_COLOR = 0xFF3B2A1A;
-    private static final int NOTE_RESONATION_COLOR = 0xFFB8D4E3;
     private static final ResourceLocation WAVE_ICON = ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "textures/gui/codex/codex_book/wave_icon.png");
+            Apica.MOD_ID, "textures/gui/codex/wave.png");
 
     private final CodexNode node;
     private final CodexPage returnPage;
@@ -324,9 +323,8 @@ public class CodexBookScreen extends Screen {
         int noteX = (width - NOTE_WIDTH) / 2;
         int noteY = (height - NOTE_HEIGHT) / 2;
 
-        // Note background (resonation uses special blue color)
-        int bgColor = note.isResonation() ? NOTE_RESONATION_COLOR : note.color();
-        graphics.fill(noteX, noteY, noteX + NOTE_WIDTH, noteY + NOTE_HEIGHT, bgColor);
+        // Note background
+        graphics.fill(noteX, noteY, noteX + NOTE_WIDTH, noteY + NOTE_HEIGHT, note.color());
 
         // Note border (2px)
         int b = NOTE_BORDER_COLOR;

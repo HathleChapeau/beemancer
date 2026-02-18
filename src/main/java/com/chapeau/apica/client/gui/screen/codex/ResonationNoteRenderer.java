@@ -32,7 +32,6 @@ import net.minecraft.client.gui.GuiGraphics;
 public class ResonationNoteRenderer {
 
     private static final int LABEL_COLOR = 0xFF3B2A1A;
-    private static final int VALUE_COLOR = 0xFF1A5A8A;
     private static final int UNKNOWN_COLOR = 0xFF888888;
     private static final int SPECIES_COLOR = 0xFF2A6B3A;
 
@@ -41,9 +40,6 @@ public class ResonationNoteRenderer {
 
     /**
      * Rend le contenu de la note Resonation a l'interieur de l'overlay sticky note.
-     * @param contentX X du debut du contenu (apres marge gauche)
-     * @param contentY Y du debut du contenu (sous le titre + separateur)
-     * @param contentW Largeur disponible
      */
     public static void render(GuiGraphics g, Font font, String speciesId,
                                int contentX, int contentY, int contentW) {
@@ -57,74 +53,53 @@ public class ResonationNoteRenderer {
         int y = contentY;
         int lineH = font.lineHeight + 3;
 
-        // Species name + combined wave
-        y = renderSpeciesLine(g, font, speciesId, data, knowledge, contentX, y, lineH);
+        // Species name + combined wave (one line)
+        boolean speciesKnown = speciesId != null && knowledge.isSpeciesKnown(speciesId);
+        if (speciesKnown) {
+            String combined = computeCombinedWave(data);
+            g.drawString(font, capitalize(speciesId) + ": " + combined, contentX, y, SPECIES_COLOR, false);
+        } else {
+            g.drawString(font, "???: ???", contentX, y, UNKNOWN_COLOR, false);
+        }
+        y += lineH;
 
         // Separator
-        y += 2;
+        y += 1;
         g.fill(contentX, y, contentX + contentW, y + 1, 0x40000000);
         y += 4;
 
-        // 5 traits
+        // 5 traits (each on one line)
         int[] levels = getStatLevels(data);
         for (int i = 0; i < STAT_NAMES.length; i++) {
-            y = renderTraitLine(g, font, STAT_NAMES[i], STAT_LABELS[i], levels[i],
-                    data, knowledge, contentX, y, lineH);
+            String traitKey = STAT_NAMES[i] + ":" + levels[i];
+            boolean known = knowledge.isTraitKnown(traitKey);
+
+            if (!known) {
+                g.drawString(font, "???: ???", contentX, y, UNKNOWN_COLOR, false);
+            } else {
+                String line = buildTraitLine(STAT_NAMES[i], STAT_LABELS[i], levels[i], data);
+                g.drawString(font, line, contentX, y, LABEL_COLOR, false);
+            }
+            y += lineH;
         }
     }
 
-    private static int renderSpeciesLine(GuiGraphics g, Font font, String speciesId,
-                                          BeeSpeciesManager.BeeSpeciesData data,
-                                          CodexPlayerData knowledge,
-                                          int x, int y, int lineH) {
-        boolean speciesKnown = speciesId != null && knowledge.isSpeciesKnown(speciesId);
-
-        if (!speciesKnown) {
-            g.drawString(font, "???: ???", x, y, UNKNOWN_COLOR, false);
-            return y + lineH;
-        }
-
-        // Species name
-        String name = capitalize(speciesId);
-        g.drawString(font, name, x, y, SPECIES_COLOR, false);
-        y += lineH;
-
-        // Combined wave
-        String combinedWave = computeCombinedWave(data);
-        g.drawString(font, combinedWave, x + 4, y, VALUE_COLOR, false);
-        return y + lineH;
-    }
-
-    private static int renderTraitLine(GuiGraphics g, Font font, String statName, String label,
-                                        int level, BeeSpeciesManager.BeeSpeciesData data,
-                                        CodexPlayerData knowledge,
-                                        int x, int y, int lineH) {
-        String traitKey = statName + ":" + level;
-        boolean known = knowledge.isTraitKnown(traitKey);
-
-        if (!known) {
-            g.drawString(font, "???: ???", x, y, UNKNOWN_COLOR, false);
-            return y + lineH;
-        }
-
-        // Activity uses special display (Day/Night/Both)
+    private static String buildTraitLine(String statName, String label, int level,
+                                          BeeSpeciesManager.BeeSpeciesData data) {
+        // Activity uses special display
+        String prefix;
         if ("activity".equals(statName)) {
-            String activityName = getActivityName(data);
-            g.drawString(font, label + ": " + activityName, x, y, LABEL_COLOR, false);
+            prefix = label + " (" + getActivityName(data) + ")";
         } else {
-            g.drawString(font, label + " " + level, x, y, LABEL_COLOR, false);
+            prefix = label + " " + level;
         }
 
-        // Wave values
         ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(statName, level);
-        if (wf != null) {
-            String waveText = formatWave(wf.frequency, wf.amplitude, wf.phase);
-            g.drawString(font, waveText, x + 4, y + lineH, VALUE_COLOR, false);
-            return y + lineH * 2;
+        if (wf == null) {
+            // Activity level 0 (Day) has no waveform
+            return prefix + ": ---";
         }
-
-        // Activity level 0 (Day) has no waveform
-        return y + lineH;
+        return prefix + ": " + formatWave(wf.frequency, wf.amplitude, wf.phase, wf.harmonics);
     }
 
     private static String computeCombinedWave(BeeSpeciesManager.BeeSpeciesData data) {
@@ -135,6 +110,7 @@ public class ResonationNoteRenderer {
         float weightedFreq = 0;
         float weightedAmp = 0;
         float weightedPhase = 0;
+        float weightedHarm = 0;
 
         for (int i = 0; i < STAT_NAMES.length; i++) {
             ResonatorConfigManager.StatWaveform wf =
@@ -145,6 +121,7 @@ public class ResonationNoteRenderer {
             weightedFreq += wf.frequency * weight;
             weightedAmp += wf.amplitude * weight;
             weightedPhase += wf.phase * weight;
+            weightedHarm += wf.harmonics * weight;
         }
 
         if (totalWeight <= 0) return "---";
@@ -152,7 +129,8 @@ public class ResonationNoteRenderer {
         int freq = Math.round(weightedFreq / totalWeight);
         int amp = Math.round(weightedAmp / totalWeight);
         int phase = Math.round(weightedPhase / totalWeight) % 360;
-        return formatWave(freq, amp, phase);
+        int harm = Math.round(weightedHarm / totalWeight);
+        return formatWave(freq, amp, phase, harm);
     }
 
     private static int[] getStatLevels(BeeSpeciesManager.BeeSpeciesData data) {
@@ -184,8 +162,9 @@ public class ResonationNoteRenderer {
         };
     }
 
-    private static String formatWave(int freq, int amp, int phase) {
-        return freq + "Hz / " + String.format("%.1f", amp / 100.0f) + "A / " + phase + "\u00B0";
+    private static String formatWave(int freq, int amp, int phase, int harm) {
+        return freq + "Hz " + String.format("%.1f", amp / 100.0f) + "A "
+                + phase + "\u00B0 " + String.format("%.1f", harm / 100.0f) + "H";
     }
 
     private static String capitalize(String s) {

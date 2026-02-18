@@ -81,7 +81,8 @@ public class ResonatorConfigManager {
                             int freq = wf.has("frequency") ? wf.get("frequency").getAsInt() : 20;
                             int amp = wf.has("amplitude") ? wf.get("amplitude").getAsInt() : 50;
                             int phase = wf.has("phase") ? wf.get("phase").getAsInt() : 0;
-                            waveforms.put(statName + ":" + level, new StatWaveform(freq, amp, phase));
+                            int harm = wf.has("harmonics") ? wf.get("harmonics").getAsInt() : 0;
+                            waveforms.put(statName + ":" + level, new StatWaveform(freq, amp, phase, harm));
                         }
                     }
                 }
@@ -95,25 +96,25 @@ public class ResonatorConfigManager {
     }
 
     private static void setupDefaults() {
-        waveforms.put("drop:1", new StatWaveform(8, 60, 20));
-        waveforms.put("drop:2", new StatWaveform(19, 45, 145));
-        waveforms.put("drop:3", new StatWaveform(33, 80, 265));
-        waveforms.put("drop:4", new StatWaveform(51, 55, 70));
-        waveforms.put("speed:1", new StatWaveform(14, 50, 310));
-        waveforms.put("speed:2", new StatWaveform(27, 75, 85));
-        waveforms.put("speed:3", new StatWaveform(44, 40, 200));
-        waveforms.put("speed:4", new StatWaveform(67, 90, 340));
-        waveforms.put("foraging:1", new StatWaveform(5, 70, 155));
-        waveforms.put("foraging:2", new StatWaveform(21, 35, 290));
-        waveforms.put("foraging:3", new StatWaveform(38, 85, 50));
-        waveforms.put("foraging:4", new StatWaveform(56, 60, 225));
-        waveforms.put("tolerance:1", new StatWaveform(11, 40, 240));
-        waveforms.put("tolerance:2", new StatWaveform(24, 65, 30));
-        waveforms.put("tolerance:3", new StatWaveform(42, 50, 175));
-        waveforms.put("tolerance:4", new StatWaveform(63, 85, 320));
-        waveforms.put("activity:1", new StatWaveform(18, 55, 100));
-        waveforms.put("activity:2", new StatWaveform(35, 80, 260));
-        waveforms.put("activity:3", new StatWaveform(54, 45, 15));
+        waveforms.put("drop:1", new StatWaveform(8, 60, 20, 10));
+        waveforms.put("drop:2", new StatWaveform(19, 45, 145, 25));
+        waveforms.put("drop:3", new StatWaveform(33, 80, 265, 45));
+        waveforms.put("drop:4", new StatWaveform(51, 55, 70, 70));
+        waveforms.put("speed:1", new StatWaveform(14, 50, 310, 15));
+        waveforms.put("speed:2", new StatWaveform(27, 75, 85, 35));
+        waveforms.put("speed:3", new StatWaveform(44, 40, 200, 55));
+        waveforms.put("speed:4", new StatWaveform(67, 90, 340, 80));
+        waveforms.put("foraging:1", new StatWaveform(5, 70, 155, 5));
+        waveforms.put("foraging:2", new StatWaveform(21, 35, 290, 20));
+        waveforms.put("foraging:3", new StatWaveform(38, 85, 50, 40));
+        waveforms.put("foraging:4", new StatWaveform(56, 60, 225, 65));
+        waveforms.put("tolerance:1", new StatWaveform(11, 40, 240, 12));
+        waveforms.put("tolerance:2", new StatWaveform(24, 65, 30, 30));
+        waveforms.put("tolerance:3", new StatWaveform(42, 50, 175, 50));
+        waveforms.put("tolerance:4", new StatWaveform(63, 85, 320, 75));
+        waveforms.put("activity:1", new StatWaveform(18, 55, 100, 20));
+        waveforms.put("activity:2", new StatWaveform(35, 80, 260, 45));
+        waveforms.put("activity:3", new StatWaveform(54, 45, 15, 60));
         loaded = true;
     }
 
@@ -150,11 +151,13 @@ public class ResonatorConfigManager {
         public final int frequency;
         public final int amplitude;
         public final int phase;
+        public final int harmonics;
 
-        public StatWaveform(int frequency, int amplitude, int phase) {
+        public StatWaveform(int frequency, int amplitude, int phase, int harmonics) {
             this.frequency = frequency;
             this.amplitude = amplitude;
             this.phase = phase;
+            this.harmonics = harmonics;
         }
     }
 }
