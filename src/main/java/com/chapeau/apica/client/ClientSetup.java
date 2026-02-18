@@ -52,6 +52,7 @@ import com.chapeau.apica.client.renderer.block.StorageTerminalRenderer;
 import com.chapeau.apica.client.renderer.block.TranslucentOutlineRenderer;
 import com.chapeau.apica.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.apica.client.renderer.debug.CustomDebugDisplayRenderer;
+import com.chapeau.apica.client.renderer.debug.HoverbikeDebugRenderer;
 import com.chapeau.apica.client.visual.FlywheelTestBeeVisualizer;
 import com.chapeau.apica.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
@@ -109,6 +110,7 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.register(CustomDebugDisplayRenderer.class);
 
         // Hoverbike system
+        NeoForge.EVENT_BUS.register(HoverbikeDebugRenderer.class);
         NeoForge.EVENT_BUS.register(HoverbikeDebugHud.class);
         NeoForge.EVENT_BUS.register(HoverbikeGaugeHud.class);
         NeoForge.EVENT_BUS.register(HoverbikeCameraController.class);

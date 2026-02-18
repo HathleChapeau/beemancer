@@ -90,6 +90,24 @@ public class HoverbikeDebugHud {
 
         // On ground
         drawRight(graphics, font, "Ground: " + hoverbike.onGround(), x, y, TEXT_COLOR);
+        y += LINE_HEIGHT;
+
+        // Gauge
+        drawRight(graphics, font, String.format("Gauge: %.0f%%", hoverbike.getGaugeLevel() * 100), x, y, TEXT_COLOR);
+        y += LINE_HEIGHT;
+
+        // Raycasts predictifs
+        if (hoverbike.isDebugRaysActive()) {
+            int hitCount = 0;
+            Vec3[] hits = hoverbike.getDebugRayHits();
+            for (Vec3 hit : hits) {
+                if (hit != null) hitCount++;
+            }
+            int rayColor = hitCount > 0 ? RUN_COLOR : HOVER_COLOR;
+            drawRight(graphics, font, "Rays: " + hitCount + "/6 hits", x, y, rayColor);
+        } else {
+            drawRight(graphics, font, "Rays: inactive", x, y, 0x888888);
+        }
     }
 
     private static void drawRight(GuiGraphics graphics, Font font, String text, int rightX, int y, int color) {

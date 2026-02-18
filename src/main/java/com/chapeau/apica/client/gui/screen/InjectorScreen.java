@@ -105,11 +105,35 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
                 ? new int[]{menu.getDropPoints(), menu.getSpeedPoints(), menu.getForagingPoints(),
                         menu.getTolerancePoints(), menu.getActivityPoints()}
                 : new int[]{0, 0, 0, 0, 0};
+        float matchSum = 0;
         for (int i = 0; i < 5; i++) {
             int barX = FIRST_BAR_X + i * BAR_SPACING;
             int maxPts = STAT_MAX_LEVELS[i] * pointsPerLevel;
             float ratio = maxPts > 0 ? Math.min(1f, (float) points[i] / maxPts) : 0f;
+            matchSum += ratio;
             GuiRenderHelper.renderTintedBar(g, x + barX, y + BAR_Y, ratio, STAT_COLORS[i], STAT_MAX_LEVELS[i]);
+        }
+
+        // Match % (moyenne des 5 ratios individuels)
+        if (hasBee) {
+            float matchPct = matchSum / 5f * 100f;
+            int matchColor = getMatchColor(matchPct);
+            String matchText = String.format("Match: %.0f%%", matchPct);
+            g.drawString(font, matchText, x + SAT_BAR_X + SAT_BAR_W - font.width(matchText),
+                    y + BAR_Y + 52, matchColor, false);
+        }
+    }
+
+    /** Couleur rouge → jaune → vert selon le pourcentage 0-100. */
+    private static int getMatchColor(float pct) {
+        if (pct < 50) {
+            int r = 255;
+            int green = (int) (pct / 50f * 255);
+            return 0xFF000000 | (r << 16) | (green << 8);
+        } else {
+            int r = (int) ((1f - (pct - 50) / 50f) * 255);
+            int green = 255;
+            return 0xFF000000 | (r << 16) | (green << 8);
         }
     }
 
