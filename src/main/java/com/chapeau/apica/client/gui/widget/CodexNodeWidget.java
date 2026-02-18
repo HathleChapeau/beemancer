@@ -261,7 +261,7 @@ public class CodexNodeWidget extends AbstractWidget {
             r = 0.95f; g = 0.77f; b = 0.06f;   // Or (#F1C40F)
         } else if (canUnlock) {
             frame = FRAME_UNOBTAINED;
-            r = 0.53f; g = 0.53f; b = 0.53f;   // Gris (#888888)
+            r = 1.0f; g = 1.0f; b = 1.0f;       // Blanc
         } else {
             frame = FRAME_UNOBTAINED;
             r = 0.27f; g = 0.27f; b = 0.27f;   // Sombre (#444444)

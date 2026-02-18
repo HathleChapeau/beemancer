@@ -28,6 +28,7 @@
 package com.chapeau.apica.common.entity.mount;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -247,7 +248,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     public boolean isControlledByLocalInstance() {
         LivingEntity passenger = this.getControllingPassenger();
-        return (passenger instanceof Player player) && player.isLocalPlayer();
+        if (passenger instanceof Player player) {
+            return player.isLocalPlayer();
+        }
+        return super.isControlledByLocalInstance();
     }
 
     // --- Core Riding Logic (Pattern Cobblemon) ---
@@ -273,8 +277,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             this.jumpPressed = isJumpKeyDown();
         }
 
-        // Jauge d'envol : se remplit uniquement au sol et sans appuyer sur saut
-        if (!jumpPressed && this.onGround()) {
+        // Jauge d'envol : se remplit au sol, sans saut, et uniquement en HOVER
+        if (!jumpPressed && this.onGround() && mode == HoverbikeMode.HOVER) {
             gaugeLevel = Math.min(1.0f, gaugeLevel + (float) settings.gaugeFillRate());
         }
 
@@ -350,10 +354,15 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             );
         }
 
-        // Envol : en hover, maintenir saut = montee douce qui consomme la jauge
-        if (mode == HoverbikeMode.HOVER && jumpPressed && gaugeLevel > 0) {
+        // Envol : maintenir saut = montee douce qui consomme la jauge
+        // En RUN: drain x1.3, jauge ne se remplit pas
+        if (jumpPressed && gaugeLevel > 0) {
             rideVelocity = new Vec3(rideVelocity.x, settings.liftSpeed(), rideVelocity.z);
-            gaugeLevel = Math.max(0, gaugeLevel - (float) settings.gaugeDrainRate());
+            float drain = (float) settings.gaugeDrainRate();
+            if (mode == HoverbikeMode.RUN) {
+                drain *= RUN_GAUGE_DRAIN_MULTIPLIER;
+            }
+            gaugeLevel = Math.max(0, gaugeLevel - drain);
         }
 
         // Convertir local -> world
@@ -414,10 +423,37 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             }
         }
 
+        // Unstick : si le bike est dans un bloc solide, le pousser vers le haut
+        unstickFromBlocks();
+
         // Collision entites via probes (server-side uniquement)
         if (!this.level().isClientSide()) {
             AABB[] probes = HoverbikeCollisionGeometry.calculateWorldBoxes(this.position(), this.getYRot());
             collisionHandler.resolveEntityCollisions(this, probes, this.level(), settings);
+        }
+    }
+
+    /**
+     * Detecte si le centre du bike est enfonce dans un bloc solide
+     * et le pousse vers le haut pour le degager.
+     * Gere le cas ou le bike va trop vite et depasse la detection de collision vanilla.
+     */
+    private void unstickFromBlocks() {
+        AABB box = this.getBoundingBox();
+        double checkY = box.minY + 0.1;
+        BlockPos centerPos = BlockPos.containing(this.getX(), checkY, this.getZ());
+
+        if (!this.level().getBlockState(centerPos).getCollisionShape(this.level(), centerPos).isEmpty()) {
+            // Le bike est dans un bloc — chercher l'espace libre au-dessus
+            for (int dy = 1; dy <= 3; dy++) {
+                BlockPos above = centerPos.above(dy);
+                if (this.level().getBlockState(above).getCollisionShape(this.level(), above).isEmpty()) {
+                    this.setPos(this.getX(), above.getY(), this.getZ());
+                    this.setDeltaMovement(this.getDeltaMovement().multiply(0.5, 0, 0.5));
+                    rideVelocity = new Vec3(rideVelocity.x * 0.5, 0, rideVelocity.z * 0.5);
+                    return;
+                }
+            }
         }
     }
 
