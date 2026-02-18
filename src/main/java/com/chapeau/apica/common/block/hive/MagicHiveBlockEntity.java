@@ -26,11 +26,13 @@ package com.chapeau.apica.common.block.hive;
 
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
+import com.chapeau.apica.common.item.bee.BeeLarvaItem;
 import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.chapeau.apica.common.menu.MagicHiveMenu;
 import com.chapeau.apica.content.gene.environment.EnvironmentGene;
 import com.chapeau.apica.content.gene.flower.FlowerGene;
 import com.chapeau.apica.core.bee.BiomeTemperatureManager;
+import com.chapeau.apica.core.breeding.BreedingManager;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.behavior.BeeBehaviorConfig;
 import com.chapeau.apica.core.behavior.BeeBehaviorManager;
@@ -475,7 +477,12 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
             hive.lifecycleManager.verifyOutsideBees();
         }
 
-        // Breeding géré uniquement à l'entrée des abeilles (voir addBee)
+        // Creative Breeding Crystal: force breeding chaque seconde
+        if (level.getBlockState(pos.above()).is(ApicaBlocks.CREATIVE_BREEDING_CRYSTAL.get())) {
+            if (level.getGameTime() % 20 == 0) {
+                hive.tryCreativeBreeding();
+            }
+        }
     }
 
     private void updateHiveConditions(Level level, BlockPos pos) {
@@ -483,6 +490,52 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
         temperature = BiomeTemperatureManager.getTemperature(level.getBiome(pos));
         hasFlowers = flowerPool.hasFlowers();
         hasMushrooms = flowerPool.hasMushrooms();
+    }
+
+    // ==================== Creative Breeding ====================
+
+    /**
+     * Force le breeding automatique (debug crystal).
+     * Verifie les conditions et cree une larve si possible.
+     */
+    private void tryCreativeBreeding() {
+        // Verifier que 2 abeilles sont presentes dans les bee slots
+        ItemStack bee1 = items.get(0);
+        ItemStack bee2 = items.get(1);
+        if (bee1.isEmpty() || !bee1.is(ApicaItems.MAGIC_BEE.get())) return;
+        if (bee2.isEmpty() || !bee2.is(ApicaItems.MAGIC_BEE.get())) return;
+
+        // Verifier si une larve existe deja dans les output slots
+        for (int i = BEE_SLOTS; i < TOTAL_SLOTS; i++) {
+            if (!items.get(i).isEmpty() && items.get(i).is(ApicaItems.BEE_LARVA.get())) {
+                return;
+            }
+        }
+
+        // Trouver un slot output vide
+        int outputSlot = -1;
+        for (int i = BEE_SLOTS; i < TOTAL_SLOTS; i++) {
+            if (items.get(i).isEmpty()) {
+                outputSlot = i;
+                break;
+            }
+        }
+        if (outputSlot < 0) return;
+
+        // Resoudre l'espece et creer la larve
+        BeeGeneData parent1Data = MagicBeeItem.getGeneData(bee1);
+        BeeGeneData parent2Data = MagicBeeItem.getGeneData(bee2);
+
+        Gene species1 = parent1Data.getGene(GeneCategory.SPECIES);
+        Gene species2 = parent2Data.getGene(GeneCategory.SPECIES);
+        if (species1 == null || species2 == null) return;
+
+        RandomSource random = level.getRandom();
+        String offspringSpecies = BreedingManager.resolveOffspringSpecies(species1.getId(), species2.getId(), random);
+
+        BeeGeneData offspringData = BreedingManager.createOffspringGeneData(parent1Data, parent2Data, offspringSpecies, random);
+        items.set(outputSlot, BeeLarvaItem.createWithGenes(offspringData));
+        setChanged();
     }
 
     // ==================== Helpers (restent sur parent) ====================

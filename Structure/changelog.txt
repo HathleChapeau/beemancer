@@ -3,6 +3,20 @@
 ################################################################################
 
 ================================================================================
+2026-02-19 - Creative Breeding Crystal + Creative Tab Audit
+================================================================================
+
+- MagicBreedingCrystalBlock.java → Renamed to AntiBreedingCrystalBlock.java
+- CreativeBreedingCrystalBlock.java: New debug block that forces breeding in hives
+- MagicHiveBlockEntity.java: +tryCreativeBreeding() method, detection in serverTick()
+- ApicaBlocks.java: +CREATIVE_BREEDING_CRYSTAL, updated AntiBreedingCrystalBlock import
+- ApicaItems.java: +CREATIVE_BREEDING_CRYSTAL
+- ApicaCreativeTabs.java: +CREATIVE_BREEDING_CRYSTAL in DEBUG tab, +BEE_NEST in MAIN tab
+- ClientSetup.java: +block/item color handlers for creative breeding crystal (pink tint)
+- Assets: blockstate, block model (tinted_cross), item model, lang entry
+- Creative tab audit: BEE_NEST was missing from all tabs, now added to addBeeMachines()
+
+================================================================================
 2026-02-18 - Resonation Sticky Note (Codex Book)
 ================================================================================
 

@@ -332,12 +332,22 @@ public class ClientSetup {
         event.register((state, level, pos, tintIndex) -> 0xFFFF69B4,
             ApicaBlocks.CREATIVE_TANK.get()
         );
+
+        // Creative Breeding Crystal - teinte rose creative
+        event.register((state, level, pos, tintIndex) -> 0xFFFF69B4,
+            ApicaBlocks.CREATIVE_BREEDING_CRYSTAL.get()
+        );
     }
 
     private static void registerItemColors(final RegisterColorHandlersEvent.Item event) {
         // Creative Tank item - teinte rose creative
         event.register((stack, tintIndex) -> 0xFFFF69B4,
             ApicaBlocks.CREATIVE_TANK.get().asItem()
+        );
+
+        // Creative Breeding Crystal item - teinte rose creative
+        event.register((stack, tintIndex) -> 0xFFFF69B4,
+            ApicaBlocks.CREATIVE_BREEDING_CRYSTAL.get().asItem()
         );
 
         // Species Essence - teinte selon la couleur de l'espece

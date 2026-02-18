@@ -1,10 +1,25 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "key": {
-    "L": { "item": "apica:lesser_speed_essence" },
-    "N": { "item": "apica:speed_essence" }
-  },
-  "pattern": [ "LL ", "LN ", "L  " ],
-  "result": { "id": "apica:speed_essence", "count": 2 }
+  "ingredients": [
+    {
+      "item": "apica:lesser_speed_essence"
+    },
+    {
+      "item": "apica:lesser_speed_essence"
+    },
+    {
+      "item": "apica:lesser_speed_essence"
+    },
+    {
+      "item": "apica:lesser_speed_essence"
+    },
+    {
+      "item": "apica:speed_essence"
+    }
+  ],
+  "result": {
+    "id": "apica:speed_essence",
+    "count": 2
+  }
 }

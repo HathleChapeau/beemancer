@@ -1,10 +1,25 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "key": {
-    "L": { "item": "apica:lesser_drop_essence" },
-    "N": { "item": "apica:drop_essence" }
-  },
-  "pattern": [ "LL ", "LN ", "L  " ],
-  "result": { "id": "apica:drop_essence", "count": 2 }
+  "ingredients": [
+    {
+      "item": "apica:lesser_drop_essence"
+    },
+    {
+      "item": "apica:lesser_drop_essence"
+    },
+    {
+      "item": "apica:lesser_drop_essence"
+    },
+    {
+      "item": "apica:lesser_drop_essence"
+    },
+    {
+      "item": "apica:drop_essence"
+    }
+  ],
+  "result": {
+    "id": "apica:drop_essence",
+    "count": 2
+  }
 }

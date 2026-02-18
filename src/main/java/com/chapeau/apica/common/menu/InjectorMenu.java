@@ -71,7 +71,7 @@ public class InjectorMenu extends ApicaMenu {
         // Essence slot (haut-gauche) — handler index 1
         addSlot(new ApicaSlot(blockEntity.getItemHandler(), ESSENCE_SLOT, 16, 23)
                 .withFilter(stack -> stack.getItem() instanceof EssenceItem
-                        && !(stack.getItem() instanceof SpeciesEssenceItem)));
+                        || stack.getItem() instanceof SpeciesEssenceItem));
 
         // Bee slot (bas-gauche) — handler index 0
         addSlot(new ApicaSlot(blockEntity.getItemHandler(), BEE_SLOT, 16, 81)
@@ -131,7 +131,7 @@ public class InjectorMenu extends ApicaMenu {
                 if (stackInSlot.is(ApicaItems.MAGIC_BEE.get())) {
                     moved = moveItemStackTo(stackInSlot, 1, 2, false);
                 } else if (stackInSlot.getItem() instanceof EssenceItem
-                        && !(stackInSlot.getItem() instanceof SpeciesEssenceItem)) {
+                        || stackInSlot.getItem() instanceof SpeciesEssenceItem) {
                     moved = moveItemStackTo(stackInSlot, 0, 1, false);
                 }
                 if (!moved) {

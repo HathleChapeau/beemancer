@@ -1,10 +1,25 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "key": {
-    "G": { "item": "apica:greater_tolerance_essence" },
-    "P": { "item": "apica:perfect_tolerance_essence" }
-  },
-  "pattern": [ "GG ", "GP ", "G  " ],
-  "result": { "id": "apica:perfect_tolerance_essence", "count": 2 }
+  "ingredients": [
+    {
+      "item": "apica:greater_tolerance_essence"
+    },
+    {
+      "item": "apica:greater_tolerance_essence"
+    },
+    {
+      "item": "apica:greater_tolerance_essence"
+    },
+    {
+      "item": "apica:greater_tolerance_essence"
+    },
+    {
+      "item": "apica:perfect_tolerance_essence"
+    }
+  ],
+  "result": {
+    "id": "apica:perfect_tolerance_essence",
+    "count": 2
+  }
 }

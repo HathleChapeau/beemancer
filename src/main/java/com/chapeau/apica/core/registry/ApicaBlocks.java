@@ -35,7 +35,8 @@ import com.chapeau.apica.common.block.building.IronFoundationBlock;
 import com.chapeau.apica.common.block.building.RoyalGoldBlock;
 import com.chapeau.apica.common.block.hive.BeeNestBlock;
 import com.chapeau.apica.common.block.mount.AssemblyTableBlock;
-import com.chapeau.apica.common.block.crystal.MagicBreedingCrystalBlock;
+import com.chapeau.apica.common.block.crystal.AntiBreedingCrystalBlock;
+import com.chapeau.apica.common.block.crystal.CreativeBreedingCrystalBlock;
 import com.chapeau.apica.common.block.extractor.ExtractorHeartBlock;
 import com.chapeau.apica.core.multiblock.MultiblockProperty;
 import com.chapeau.apica.common.block.hive.HiveMultiblockBlock;
@@ -142,7 +143,7 @@ public class ApicaBlocks {
 
     // --- ANTIBREEDING ---
     public static final DeferredBlock<Block> ANTIBREEDING_CRYSTAL = BLOCKS.register("antibreeding_crystal",
-            () -> new MagicBreedingCrystalBlock(BlockBehaviour.Properties.of()
+            () -> new AntiBreedingCrystalBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f)
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 7)
@@ -150,6 +151,14 @@ public class ApicaBlocks {
 
     // Legacy alias
     public static final DeferredBlock<Block> BREEDING_CRYSTAL = ANTIBREEDING_CRYSTAL;
+
+    // --- CREATIVE BREEDING CRYSTAL (debug) ---
+    public static final DeferredBlock<Block> CREATIVE_BREEDING_CRYSTAL = BLOCKS.register("creative_breeding_crystal",
+            () -> new CreativeBreedingCrystalBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 10)
+                    .noOcclusion()));
 
     // --- ALCHEMY MACHINES ---
     public static final DeferredBlock<ManualCentrifugeBlock> MANUAL_CENTRIFUGE = BLOCKS.register("manual_centrifuge",

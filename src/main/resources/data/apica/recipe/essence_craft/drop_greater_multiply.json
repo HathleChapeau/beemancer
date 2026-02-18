@@ -1,10 +1,25 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "key": {
-    "N": { "item": "apica:drop_essence" },
-    "G": { "item": "apica:greater_drop_essence" }
-  },
-  "pattern": [ "NN ", "NG ", "N  " ],
-  "result": { "id": "apica:greater_drop_essence", "count": 2 }
+  "ingredients": [
+    {
+      "item": "apica:drop_essence"
+    },
+    {
+      "item": "apica:drop_essence"
+    },
+    {
+      "item": "apica:drop_essence"
+    },
+    {
+      "item": "apica:drop_essence"
+    },
+    {
+      "item": "apica:greater_drop_essence"
+    }
+  ],
+  "result": {
+    "id": "apica:greater_drop_essence",
+    "count": 2
+  }
 }

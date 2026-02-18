@@ -69,6 +69,10 @@ public class ApicaItems {
     // Legacy alias
     public static final DeferredItem<BlockItem> BREEDING_CRYSTAL = ANTIBREEDING_CRYSTAL;
 
+    // --- CREATIVE BREEDING CRYSTAL (debug) ---
+    public static final DeferredItem<BlockItem> CREATIVE_BREEDING_CRYSTAL = ITEMS.register("creative_breeding_crystal",
+            () -> new BlockItem(ApicaBlocks.CREATIVE_BREEDING_CRYSTAL.get(), new Item.Properties()));
+
     // --- ALCHEMY MACHINES ---
     public static final DeferredItem<BlockItem> MANUAL_CENTRIFUGE = ITEMS.register("manual_centrifuge",
             () -> new BlockItem(ApicaBlocks.MANUAL_CENTRIFUGE.get(), new Item.Properties()));

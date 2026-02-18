@@ -1,18 +1,19 @@
 /**
  * ============================================================
- * [MagicBreedingCrystalBlock.java]
- * Description: Cristal magique activant le mode breeding des ruches
+ * [AntiBreedingCrystalBlock.java]
+ * Description: Cristal desactivant le breeding des ruches quand place au-dessus
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation                    |
+ * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | MagicHiveBlockEntity| Détection ruche      | Active breeding quand au-dessus|
+ * | ParticleEmitter     | Particules client    | Effet visuel ambiant           |
+ * | ApicaParticles      | Types particules     | RUNE particle                  |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
- * - MagicHiveBlockEntity (détection mode breeding)
+ * UTILISE PAR:
+ * - MagicHiveBlockEntity (detection mode anti-breeding via pos.above())
  *
  * ============================================================
  */
@@ -29,11 +30,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class MagicBreedingCrystalBlock extends Block {
-    // Crystal shape (centered, smaller than full block)
+public class AntiBreedingCrystalBlock extends Block {
     private static final VoxelShape SHAPE = Block.box(4, 0, 4, 12, 14, 12);
 
-    public MagicBreedingCrystalBlock(Properties properties) {
+    public AntiBreedingCrystalBlock(Properties properties) {
         super(properties);
     }
 
