@@ -99,8 +99,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private float gaugeLevel = 1.0f;
 
     // --- Terrain Following ---
-    /** Hauteur de hover au-dessus du sol (blocs). */
-    private static final double HOVER_HEIGHT = 0.6;
+    /** Hauteur de hover au-dessus du sol (blocs).
+     *  Valeur basse pour garder onGround=true (requis par vanilla pour step-up).
+     *  Le hover visuel est gere par le renderer (bob sinusoidal + offset Y). */
+    private static final double HOVER_HEIGHT = 0.05;
     /** Vitesse de montee vers le hover target (blocs/tick). */
     private static final double HOVER_RISE_SPEED = 0.15;
     /** Vitesse de descente vers le hover target (blocs/tick). */
