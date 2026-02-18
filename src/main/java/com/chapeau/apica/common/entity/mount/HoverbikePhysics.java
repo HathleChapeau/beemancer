@@ -242,6 +242,30 @@ public final class HoverbikePhysics {
     }
 
     /**
+     * Calcule la velocite Y pour le terrain following.
+     * Interpole progressivement vers la hauteur de hover cible.
+     * Montee rapide (franchir obstacles), descente lente (feeling hover).
+     *
+     * @param currentY    Position Y actuelle du bike
+     * @param groundY     Hauteur du sol (via raycast)
+     * @param hoverHeight Hauteur de hover au-dessus du sol
+     * @param riseSpeed   Vitesse de montee max (blocs/tick)
+     * @param fallSpeed   Vitesse de descente max (blocs/tick)
+     * @return Velocite Y a appliquer pour se rapprocher du target
+     */
+    public static double calculateHoverY(
+            double currentY, double groundY, double hoverHeight,
+            double riseSpeed, double fallSpeed
+    ) {
+        double targetY = groundY + hoverHeight;
+        double diff = targetY - currentY;
+        if (Math.abs(diff) < 0.01) {
+            return 0;
+        }
+        return diff > 0 ? Math.min(diff, riseSpeed) : Math.max(diff, -fallSpeed);
+    }
+
+    /**
      * Applique la gravite reduite.
      */
     private static double applyGravity(double vy, boolean onGround, HoverbikeSettings settings) {
