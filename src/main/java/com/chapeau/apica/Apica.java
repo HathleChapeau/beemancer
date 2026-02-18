@@ -375,6 +375,7 @@ public class Apica {
         CodexBookManager.load(server);
         QuestManager.load(server);
         com.chapeau.apica.core.config.InjectionConfigManager.load(server);
+        com.chapeau.apica.core.config.ResonatorConfigManager.load(server);
     }
 
     // =========================================================================

@@ -1,17 +1,19 @@
 /**
  * ============================================================
  * [ResonatorScreen.java]
- * Description: GUI du resonateur avec onde, slider Hz et 3 potards rotatifs
+ * Description: GUI du resonateur avec onde, slider Hz, 3 potards et slot abeille
  * ============================================================
  *
  * DÉPENDANCES:
  * ------------------------------------------------------------
  * | Dépendance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
- * | ResonatorMenu           | Menu associe         | Lecture ContainerData          |
+ * | ResonatorMenu           | Menu associe         | Lecture ContainerData + bee     |
  * | WaveformRenderer        | Rendu onde           | Affichage waveform             |
- * | GuiRenderHelper         | Rendu GUI            | Background, bordures           |
+ * | GuiRenderHelper         | Rendu GUI            | Background, bordures, slot     |
  * | ResonatorUpdatePacket   | Sync C2S             | Envoi parametres au serveur    |
+ * | ResonatorConfigManager  | Config waveforms     | Target values depuis stats bee |
+ * | BeeSpeciesManager       | Stats espece         | Lecture niveaux stats          |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -23,12 +25,16 @@ package com.chapeau.apica.client.gui.screen;
 
 import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.common.menu.ResonatorMenu;
+import com.chapeau.apica.core.bee.BeeSpeciesManager;
+import com.chapeau.apica.core.config.ResonatorConfigManager;
+import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -56,20 +62,22 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private static final int FREQ_MIN = 1;
     private static final int FREQ_MAX = 80;
 
+    // Bee slot position (right side)
+    private static final int BEE_SLOT_X = 178;
+    private static final int BEE_SLOT_Y = 6;
+
     // Drag state
-    private int dragIndex = -1; // -1=none, 0=slider, 1=knobAmp, 2=knobPhase, 3=knobHarm
+    private int dragIndex = -1;
     private int dragStartX;
     private int dragStartValue;
 
-    // Local values (updated from ContainerData, modified by drag)
+    // Local values
     private int localFreq = 20;
     private int localAmp = 70;
     private int localPhase = 0;
     private int localHarm = 0;
 
-    private BlockPos blockPos = BlockPos.ZERO;
-
-    // Debug panel: target values (generated once on open)
+    // Target values
     private int targetFreq;
     private int targetAmp;
     private int targetPhase;
@@ -87,7 +95,6 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     @Override
     protected void init() {
         super.init();
-        // Extract block pos from menu if available
         if (menu instanceof ResonatorMenu rm) {
             localFreq = rm.getFrequency();
             localAmp = rm.getAmplitude();
@@ -95,21 +102,98 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             localHarm = rm.getHarmonics();
         }
 
-        // Generate random target values once per GUI open
+        // Generer les target values
         if (!targetsGenerated) {
+            generateTargets();
+            targetsGenerated = true;
+        }
+    }
+
+    /**
+     * Genere les valeurs cibles. Si une abeille est posee, utilise ses stats + config waveforms.
+     * Sinon, valeurs aleatoires.
+     */
+    private void generateTargets() {
+        ItemStack bee = menu.getStoredBee();
+        if (!bee.isEmpty()) {
+            generateTargetsFromBee(bee);
+        } else {
             ThreadLocalRandom rng = ThreadLocalRandom.current();
             targetFreq = rng.nextInt(FREQ_MIN, FREQ_MAX + 1);
             targetAmp = rng.nextInt(10, 101);
             targetPhase = rng.nextInt(0, 361);
             targetHarm = rng.nextInt(0, 101);
-            targetsGenerated = true;
         }
+    }
+
+    /**
+     * Calcule les target values en combinant les waveforms de chaque stat de l'abeille,
+     * ponderees par le niveau de la stat.
+     */
+    private void generateTargetsFromBee(ItemStack bee) {
+        ResonatorConfigManager.ensureClientLoaded();
+        BeeSpeciesManager.ensureClientLoaded();
+
+        // Lire l'espece depuis le CustomData de l'abeille
+        String speciesId = getSpeciesFromBee(bee);
+        BeeSpeciesManager.BeeSpeciesData speciesData = speciesId != null
+                ? BeeSpeciesManager.getSpecies(speciesId) : null;
+
+        // Niveaux de base des 5 stats
+        int dropLvl = speciesData != null ? speciesData.dropLevel : 1;
+        int speedLvl = speciesData != null ? speciesData.flyingSpeedLevel : 1;
+        int forageLvl = speciesData != null ? speciesData.foragingDurationLevel : 1;
+        int toleranceLvl = speciesData != null ? speciesData.toleranceLevel : 1;
+        int activityLvl = getActivityLevel(speciesData);
+
+        // Combinaison ponderee des waveforms par stat
+        String[] statNames = {"drop", "speed", "foraging", "tolerance", "activity"};
+        int[] levels = {dropLvl, speedLvl, forageLvl, toleranceLvl, activityLvl};
+
+        float totalWeight = 0;
+        float weightedFreq = 0;
+        float weightedAmp = 0;
+        float weightedPhase = 0;
+
+        for (int i = 0; i < statNames.length; i++) {
+            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(statNames[i]);
+            if (wf == null) continue;
+            float weight = levels[i];
+            totalWeight += weight;
+            weightedFreq += wf.frequency * weight;
+            weightedAmp += wf.amplitude * weight;
+            weightedPhase += wf.phase * weight;
+        }
+
+        if (totalWeight > 0) {
+            targetFreq = clamp(Math.round(weightedFreq / totalWeight), FREQ_MIN, FREQ_MAX);
+            targetAmp = clamp(Math.round(weightedAmp / totalWeight), 0, 100);
+            targetPhase = clamp(Math.round(weightedPhase / totalWeight) % 360, 0, 360);
+            targetHarm = 0;
+        } else {
+            targetFreq = 20;
+            targetAmp = 50;
+            targetPhase = 0;
+            targetHarm = 0;
+        }
+    }
+
+    private static String getSpeciesFromBee(ItemStack bee) {
+        return MagicBeeItem.getSpeciesId(bee);
+    }
+
+    private static int getActivityLevel(BeeSpeciesManager.BeeSpeciesData data) {
+        if (data == null) return 0;
+        return switch (data.dayNight) {
+            case "night" -> 1;
+            case "both" -> 2;
+            default -> 0;
+        };
     }
 
     @Override
     public void containerTick() {
         super.containerTick();
-        // Sync from server if not dragging
         if (dragIndex < 0) {
             localFreq = menu.getFrequency();
             localAmp = menu.getAmplitude();
@@ -132,6 +216,9 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         // Title
         g.drawString(font, Component.translatable("block.apica.resonator"),
                 x + 8, y + 6, 0x404040, false);
+
+        // Bee slot (right side)
+        GuiRenderHelper.renderSlot(g, x + BEE_SLOT_X, y + BEE_SLOT_Y);
 
         // Waveform display
         float freqF = localFreq;
@@ -157,9 +244,8 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private void renderDebugPanel(GuiGraphics g, int px, int py) {
         int panelH = GUI_H;
 
-        // Panel background (dark)
+        // Panel background
         g.fill(px, py, px + PANEL_W, py + panelH, 0xCC222222);
-        // Border
         g.fill(px, py, px + PANEL_W, py + 1, 0xFF444444);
         g.fill(px, py + panelH - 1, px + PANEL_W, py + panelH, 0xFF444444);
         g.fill(px, py, px + 1, py + panelH, 0xFF444444);
@@ -197,7 +283,6 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                 targetFreq, targetAmp / 100.0f, targetPhase, targetHarm / 100.0f);
         similarity = Math.max(0, Math.min(100, similarity));
 
-        // Color: red → yellow → green based on percentage
         int simColor = getSimilarityColor(similarity);
 
         g.drawString(font, "Match:", px + 4, lineY, 0xFF888888, false);
@@ -205,15 +290,12 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         g.drawString(font, pctText, px + 4, lineY + 12, simColor, false);
     }
 
-    /** Retourne une couleur rouge → jaune → vert selon le pourcentage 0-100. */
     private static int getSimilarityColor(float pct) {
         if (pct < 50) {
-            // Rouge → Jaune (0-50%)
             int r = 255;
             int gr = (int) (pct / 50.0f * 255);
             return 0xFF000000 | (r << 16) | (gr << 8);
         } else {
-            // Jaune → Vert (50-100%)
             int r = (int) ((1.0f - (pct - 50) / 50.0f) * 255);
             int gr = 255;
             return 0xFF000000 | (r << 16) | (gr << 8);
@@ -224,14 +306,12 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         int sx = x + SLIDER_X;
         int sy = y + SLIDER_Y;
 
-        // Groove background
         g.fill(sx, sy, sx + SLIDER_W, sy + SLIDER_H, 0xFF1A1A1A);
         g.fill(sx, sy, sx + SLIDER_W, sy + 1, 0xFF373737);
         g.fill(sx, sy, sx + 1, sy + SLIDER_H, 0xFF373737);
         g.fill(sx + 1, sy + SLIDER_H - 1, sx + SLIDER_W, sy + SLIDER_H, 0xFFFFFFFF);
         g.fill(sx + SLIDER_W - 1, sy + 1, sx + SLIDER_W, sy + SLIDER_H, 0xFFFFFFFF);
 
-        // Fill
         float ratio = (localFreq - FREQ_MIN) / (float) (FREQ_MAX - FREQ_MIN);
         int fillW = (int) ((SLIDER_W - 2) * ratio);
         if (fillW > 0) {
@@ -239,12 +319,10 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             g.fill(sx + 1, sy + 1, sx + 1 + fillW, sy + 2, 0xFF77AAFF);
         }
 
-        // Cursor handle
         int handleX = sx + 1 + fillW;
         g.fill(handleX - 2, sy - 1, handleX + 2, sy + SLIDER_H + 1, 0xFFDDDDDD);
         g.fill(handleX - 2, sy - 1, handleX + 2, sy, 0xFFFFFFFF);
 
-        // Hz label
         String hzText = localFreq + " Hz";
         g.drawString(font, hzText, x + 12, y + SLIDER_Y + 1, 0xFF88BBFF, false);
     }
@@ -252,36 +330,29 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private void renderKnob(GuiGraphics g, int cx, int cy, int radius,
                               float ratio, String label, String valueText,
                               int mouseX, int mouseY) {
-        // Outer ring (dark background)
         fillCircle(g, cx, cy, radius, 0xFF222222);
         fillCircle(g, cx, cy, radius - 2, 0xFF444444);
         fillCircle(g, cx, cy, radius - 3, 0xFF333333);
 
-        // Arc used range indicator (subtle)
         float startAngle = KNOB_MIN_DEG;
         float endAngle = KNOB_MAX_DEG;
         float currentAngle = startAngle + ratio * (endAngle - startAngle);
         renderArc(g, cx, cy, radius - 1, startAngle, currentAngle, 0xFF5588DD);
 
-        // Pointer line
         double angleRad = Math.toRadians(currentAngle - 90);
         int px = cx + (int) (Math.cos(angleRad) * (radius - 5));
         int py = cy + (int) (Math.sin(angleRad) * (radius - 5));
         renderLine(g, cx, cy, px, py, 0xFFFFFFFF);
 
-        // Center dot
         fillCircle(g, cx, cy, 3, 0xFF666666);
 
-        // Label below
         int labelW = font.width(label);
         g.drawString(font, label, cx - labelW / 2, cy + radius + 4, 0xFF888888, false);
 
-        // Value above
         int valW = font.width(valueText);
         g.drawString(font, valueText, cx - valW / 2, cy - radius - 12, 0xFFAABBDD, false);
     }
 
-    /** Remplissage d'un cercle plein par lignes horizontales. */
     private void fillCircle(GuiGraphics g, int cx, int cy, int radius, int color) {
         for (int dy = -radius; dy <= radius; dy++) {
             int dx = (int) Math.sqrt(radius * radius - dy * dy);
@@ -289,7 +360,6 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         }
     }
 
-    /** Dessine un arc colore autour d'un cercle (par points). */
     private void renderArc(GuiGraphics g, int cx, int cy, int radius,
                             float startDeg, float endDeg, int color) {
         for (float deg = startDeg; deg <= endDeg; deg += 2.0f) {
@@ -300,7 +370,6 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         }
     }
 
-    /** Bresenham-style line. */
     private void renderLine(GuiGraphics g, int x0, int y0, int x1, int y1, int color) {
         int dx = Math.abs(x1 - x0);
         int dy = Math.abs(y1 - y0);
@@ -373,20 +442,19 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         if (dragIndex == 0) {
             updateSliderFromMouse(mouseX, x);
         } else {
-            // Knob: horizontal drag, left = increase, right = decrease
             int deltaX = dragStartX - (int) mouseX;
-            int sensitivity = 2; // pixels per unit
+            int sensitivity = 2;
 
             switch (dragIndex) {
-                case 1 -> { // Amplitude (0-100)
+                case 1 -> {
                     localAmp = clamp(dragStartValue + deltaX / sensitivity, 0, 100);
                     sendUpdate(1, localAmp);
                 }
-                case 2 -> { // Phase (0-360)
+                case 2 -> {
                     localPhase = clamp(dragStartValue + deltaX / sensitivity * 3, 0, 360);
                     sendUpdate(2, localPhase);
                 }
-                case 3 -> { // Harmonics (0-100)
+                case 3 -> {
                     localHarm = clamp(dragStartValue + deltaX / sensitivity, 0, 100);
                     sendUpdate(3, localHarm);
                 }
@@ -412,7 +480,6 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         int knobBaseX = x + GUI_W / 2;
         int ky = y + KNOB_Y;
 
-        // Scroll on knobs
         int scroll = (int) scrollY;
         if (scroll == 0) return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
 
@@ -432,7 +499,6 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             return true;
         }
 
-        // Scroll on slider area
         int sx = x + SLIDER_X;
         int sy = y + SLIDER_Y;
         if (mouseX >= sx && mouseX <= sx + SLIDER_W && mouseY >= sy - 5 && mouseY <= sy + SLIDER_H + 5) {
@@ -459,25 +525,10 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     }
 
     private void sendUpdate(int paramIndex, int value) {
-        // Get block pos from the block entity position stored during openMenu
-        if (minecraft != null && minecraft.player != null) {
-            // The pos was written in openMenu(resonator, pos), read from the buf in the menu client constructor
-            // We need to find the block pos — stored in the menu's extraData
-            // Since we don't have direct access, use the player's block interaction range
-            BlockPos pos = findResonatorPos();
-            if (pos != null) {
-                PacketDistributor.sendToServer(new ResonatorUpdatePacket(pos, paramIndex, value));
-            }
+        BlockPos pos = menu.getBlockPos();
+        if (pos != null) {
+            PacketDistributor.sendToServer(new ResonatorUpdatePacket(pos, paramIndex, value));
         }
-    }
-
-    private BlockPos findResonatorPos() {
-        // The block pos was passed to openMenu. In NeoForge, for IMenuTypeExtension,
-        // the buf contains the data written in openMenu callback.
-        // We stored it in init() — let's use a field instead.
-        // Actually, the pos is available from the FriendlyByteBuf in the client menu constructor.
-        // Let me store it in the menu instead.
-        return menu.getBlockPos();
     }
 
     private static int clamp(int value, int min, int max) {
@@ -487,7 +538,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         super.render(g, mouseX, mouseY, partialTick);
-        // No inventory tooltips needed (no slots)
+        renderTooltip(g, mouseX, mouseY);
     }
 
     @Override

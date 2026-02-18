@@ -24,6 +24,7 @@ import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.quest.NodeState;
+import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -135,6 +136,9 @@ public class BeeNodeWidget extends AbstractWidget {
             renderGlow(graphics);
         }
 
+        // Badge tier en haut à gauche
+        renderTierBadge(graphics);
+
         // Badge "New" si DISCOVERED
         if (nodeState == NodeState.DISCOVERED) {
             renderNewBadge(graphics);
@@ -165,6 +169,34 @@ public class BeeNodeWidget extends AbstractWidget {
         graphics.drawString(font, text, 0, 0, 0xFFFFFFFF, false);
 
         graphics.pose().popPose();
+    }
+
+    private void renderTierBadge(GuiGraphics graphics) {
+        BeeSpeciesManager.ensureClientLoaded();
+        BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(speciesId);
+        if (data == null) {
+            return;
+        }
+
+        String tier = data.tier;
+        net.minecraft.client.gui.Font font = Minecraft.getInstance().font;
+
+        int badgeX = getX() - 2;
+        int badgeY = getY() - 2;
+        int textWidth = font.width(tier);
+        int padding = 1;
+
+        // Fond semi-transparent noir avec bordure dorée
+        int bgColor = 0xCC000000;
+        int borderColor = 0xFFDAA520; // Goldenrod
+
+        graphics.fill(badgeX - padding, badgeY - padding,
+                badgeX + textWidth + padding, badgeY + font.lineHeight + padding, borderColor);
+        graphics.fill(badgeX - padding + 1, badgeY - padding + 1,
+                badgeX + textWidth + padding - 1, badgeY + font.lineHeight + padding - 1, bgColor);
+
+        // Texte doré
+        graphics.drawString(font, tier, badgeX, badgeY, 0xFFFFD700, false);
     }
 
     private void renderFrame(GuiGraphics graphics) {

@@ -4,7 +4,9 @@
   "package": "com.chapeau.apica.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "EntityCollisionMixin"
+    "EntityCollisionMixin",
+    "LivingEntitySuffocationMixin",
+    "PlayerDimensionsMixin"
   ],
   "client": [],
   "injectors": {

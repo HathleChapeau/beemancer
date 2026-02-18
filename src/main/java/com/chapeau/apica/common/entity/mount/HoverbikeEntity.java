@@ -254,6 +254,36 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         return new Vec3(0, dimensions.height() + 0.1, 0);
     }
 
+    // --- Movement Overrides (Pattern Cobblemon PokemonEntity.kt L1805-1813) ---
+
+    /**
+     * Reset la fall distance quand un joueur est monte et que le bike ne pique pas du nez.
+     * Empeche les degats de chute pendant le riding.
+     * Ref: Cobblemon PokemonEntity.kt L1805-1813
+     */
+    @Override
+    public void move(MoverType type, Vec3 movement) {
+        if (this.getControllingPassenger() != null) {
+            if (this.getDeltaMovement().y > -0.5 && this.fallDistance > 1.0f) {
+                this.fallDistance = 1.0f;
+            }
+        }
+        super.move(type, movement);
+    }
+
+    /**
+     * Desactive les interactions fluides quand le bike est monte.
+     * Empeche les courants d'eau de pousser la moto.
+     * Ref: Cobblemon PokemonEntity.kt L2459-2470
+     */
+    @Override
+    public boolean isAffectedByFluids() {
+        if (this.isVehicle()) {
+            return false;
+        }
+        return super.isAffectedByFluids();
+    }
+
     // --- Control ---
 
     @Override

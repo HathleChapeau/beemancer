@@ -1,0 +1,9 @@
+{
+  "stat_waveforms": {
+    "drop":       { "frequency": 12, "amplitude": 80, "phase": 0 },
+    "speed":      { "frequency": 35, "amplitude": 65, "phase": 90 },
+    "foraging":   { "frequency": 22, "amplitude": 75, "phase": 180 },
+    "tolerance":  { "frequency": 50, "amplitude": 55, "phase": 270 },
+    "activity":   { "frequency": 68, "amplitude": 90, "phase": 45 }
+  }
+}
