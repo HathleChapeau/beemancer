@@ -319,12 +319,41 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             g.fill(sx + 1, sy + 1, sx + 1 + fillW, sy + 2, 0xFF77AAFF);
         }
 
+        // Tirets des traits de l'abeille (au-dessus du fill pour qu'ils soient visibles)
+        if (menu.hasBee()) {
+            renderStatTicks(g, sx, sy);
+        }
+
         int handleX = sx + 1 + fillW;
         g.fill(handleX - 2, sy - 1, handleX + 2, sy + SLIDER_H + 1, 0xFFDDDDDD);
         g.fill(handleX - 2, sy - 1, handleX + 2, sy, 0xFFFFFFFF);
 
         String hzText = localFreq + " Hz";
         g.drawString(font, hzText, x + 12, y + SLIDER_Y + 1, 0xFF88BBFF, false);
+    }
+
+    private static final String[] STAT_NAMES = {"drop", "speed", "foraging", "tolerance", "activity"};
+    private static final int[] STAT_COLORS = {
+            0xFFFF8844, // drop - orange
+            0xFF44DDFF, // speed - cyan
+            0xFF44FF66, // foraging - vert
+            0xFFFFDD44, // tolerance - jaune
+            0xFFDD44FF  // activity - violet
+    };
+
+    /**
+     * Dessine un tiret vertical sur la barre Hz pour chaque trait de l'abeille.
+     */
+    private void renderStatTicks(GuiGraphics g, int sx, int sy) {
+        ResonatorConfigManager.ensureClientLoaded();
+        for (int i = 0; i < STAT_NAMES.length; i++) {
+            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i]);
+            if (wf == null) continue;
+            float tickRatio = (wf.frequency - FREQ_MIN) / (float) (FREQ_MAX - FREQ_MIN);
+            int tickX = sx + 1 + (int) ((SLIDER_W - 2) * tickRatio);
+            // Tiret vertical depassant au-dessus et en dessous de la barre
+            g.fill(tickX, sy - 2, tickX + 1, sy + SLIDER_H + 2, STAT_COLORS[i]);
+        }
     }
 
     private void renderKnob(GuiGraphics g, int cx, int cy, int radius,

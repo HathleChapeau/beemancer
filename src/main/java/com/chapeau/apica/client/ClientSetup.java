@@ -39,6 +39,7 @@ import com.chapeau.apica.client.renderer.block.CrankRenderer;
 import com.chapeau.apica.client.renderer.block.InfuserHeartRenderer;
 import com.chapeau.apica.client.renderer.block.CrystallizerRenderer;
 import com.chapeau.apica.client.renderer.block.InfuserRenderer;
+import com.chapeau.apica.client.renderer.block.ResonatorRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyTankRenderer;
 import com.chapeau.apica.client.renderer.block.IncubatorRenderer;
 import com.chapeau.apica.client.particle.HoneyPixelParticle;
@@ -213,6 +214,9 @@ public class ClientSetup {
         // InfuserHeartRenderer - cubes centraux statiques de l'infuser multibloc
         // event.registerBlockEntityRenderer(ApicaBlockEntities.INFUSER_HEART.get(),
         //     InfuserHeartRenderer::new);
+        // ResonatorRenderer - abeille flottante au-dessus du resonateur
+        event.registerBlockEntityRenderer(ApicaBlockEntities.RESONATOR.get(),
+            ResonatorRenderer::new);
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
