@@ -39,7 +39,7 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
 
     // Barre de saturation horizontale (style progress bar crystallizer)
     private static final int SAT_BAR_X = 42;
-    private static final int SAT_BAR_Y = 24;
+    private static final int SAT_BAR_Y = 27;
     private static final int SAT_BAR_W = 130;
     private static final int SAT_BAR_H = 6;
 
@@ -47,7 +47,7 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
     private static final int BAR_SPACING = 20;
     private static final int STAT_BARS_WIDTH = 4 * BAR_SPACING + 16;
     private static final int FIRST_BAR_X = SAT_BAR_X + (SAT_BAR_W - STAT_BARS_WIDTH) / 2;
-    private static final int BAR_Y = 38;
+    private static final int BAR_Y = 41;
 
     // Couleurs des stats
     private static final int COLOR_DROP = 0xE8A317;
@@ -100,17 +100,16 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
         }
 
         // 5 barres de stats teintees (centrees sous la barre de saturation)
-        if (menu.hasBee()) {
-            int[] points = {
-                    menu.getDropPoints(), menu.getSpeedPoints(), menu.getForagingPoints(),
-                    menu.getTolerancePoints(), menu.getActivityPoints()
-            };
-            for (int i = 0; i < 5; i++) {
-                int barX = FIRST_BAR_X + i * BAR_SPACING;
-                int maxPts = STAT_MAX_LEVELS[i] * pointsPerLevel;
-                float ratio = maxPts > 0 ? Math.min(1f, (float) points[i] / maxPts) : 0f;
-                GuiRenderHelper.renderTintedBar(g, x + barX, y + BAR_Y, ratio, STAT_COLORS[i], STAT_MAX_LEVELS[i]);
-            }
+        boolean hasBee = menu.hasBee();
+        int[] points = hasBee
+                ? new int[]{menu.getDropPoints(), menu.getSpeedPoints(), menu.getForagingPoints(),
+                        menu.getTolerancePoints(), menu.getActivityPoints()}
+                : new int[]{0, 0, 0, 0, 0};
+        for (int i = 0; i < 5; i++) {
+            int barX = FIRST_BAR_X + i * BAR_SPACING;
+            int maxPts = STAT_MAX_LEVELS[i] * pointsPerLevel;
+            float ratio = maxPts > 0 ? Math.min(1f, (float) points[i] / maxPts) : 0f;
+            GuiRenderHelper.renderTintedBar(g, x + barX, y + BAR_Y, ratio, STAT_COLORS[i], STAT_MAX_LEVELS[i]);
         }
     }
 
