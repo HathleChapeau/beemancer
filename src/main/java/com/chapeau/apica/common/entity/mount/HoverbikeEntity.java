@@ -47,13 +47,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -97,20 +93,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private boolean sprintPressed = false;
     private boolean jumpPressed = false;
     private float gaugeLevel = 1.0f;
-
-    // --- Terrain Following ---
-    /** Hauteur de hover au-dessus du sol (blocs).
-     *  Valeur basse pour garder onGround=true (requis par vanilla pour step-up).
-     *  Le hover visuel est gere par le renderer (bob sinusoidal + offset Y). */
-    private static final double HOVER_HEIGHT = 0.05;
-    /** Vitesse de montee vers le hover target (blocs/tick). */
-    private static final double HOVER_RISE_SPEED = 0.15;
-    /** Vitesse de descente vers le hover target (blocs/tick). */
-    private static final double HOVER_FALL_SPEED = 0.05;
-    /** Distance max de raycast pour detecter le sol (blocs). */
-    private static final double TERRAIN_RAY_DISTANCE = 4.0;
-    /** Facteur de reduction de la force de lift en mode RUN. */
-    private static final double RUN_LIFT_FACTOR = 1.0 / 1.3;
 
     // --- Collision ---
     private final HoverbikeCollisionHandler collisionHandler = new HoverbikeCollisionHandler();
@@ -288,8 +270,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             this.jumpPressed = isJumpKeyDown();
         }
 
-        // Jauge d'envol : se remplit uniquement au sol, sans appuyer sur saut, et PAS en RUN
-        if (!jumpPressed && this.onGround() && mode != HoverbikeMode.RUN) {
+        // Jauge d'envol : se remplit uniquement au sol et sans appuyer sur saut
+        if (!jumpPressed && this.onGround()) {
             gaugeLevel = Math.min(1.0f, gaugeLevel + (float) settings.gaugeFillRate());
         }
 
@@ -365,17 +347,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             );
         }
 
-        // Envol : maintenir saut = montee douce qui consomme la jauge
-        // En RUN : force reduite (1/1.3), jauge ne se regenere pas
-        boolean isLifting = false;
-        if (jumpPressed && gaugeLevel > 0) {
-            double liftForce = settings.liftSpeed();
-            if (mode == HoverbikeMode.RUN) {
-                liftForce *= RUN_LIFT_FACTOR;
-            }
-            rideVelocity = new Vec3(rideVelocity.x, liftForce, rideVelocity.z);
+        // Envol : en hover, maintenir saut = montee douce qui consomme la jauge
+        if (mode == HoverbikeMode.HOVER && jumpPressed && gaugeLevel > 0) {
+            rideVelocity = new Vec3(rideVelocity.x, settings.liftSpeed(), rideVelocity.z);
             gaugeLevel = Math.max(0, gaugeLevel - (float) settings.gaugeDrainRate());
-            isLifting = true;
         }
 
         // Convertir local -> world
@@ -386,25 +361,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         double inertia = 0.85;
         this.setDeltaMovement(this.getDeltaMovement().add(diff.scale(inertia)));
 
-        // Terrain following : hover au-dessus du sol (remplace gravite + anti-bounce)
-        // Desactive pendant le lift actif (jump + jauge) pour laisser le joueur monter
-        if (!isLifting) {
-            double groundY = raycastGroundBelow();
-            if (groundY > Double.NEGATIVE_INFINITY) {
-                double targetY = groundY + HOVER_HEIGHT;
-                double currentY = this.getY();
-                double yDiff = targetY - currentY;
-                // Montee rapide (franchir obstacles), descente lente (feeling hover)
-                double yVel = yDiff > 0
-                        ? Math.min(yDiff, HOVER_RISE_SPEED)
-                        : Math.max(yDiff, -HOVER_FALL_SPEED);
-                Vec3 dm = this.getDeltaMovement();
-                this.setDeltaMovement(dm.x, yVel, dm.z);
-            }
-            // Else: pas de sol detecte, laisser la gravite (deja dans deltaMovement)
-        }
-
-        // Anti-bounce trick : seulement si pas de terrain following actif et au sol
+        // Anti-bounce trick (Pattern Cobblemon PokemonEntity.kt L1785-1787)
+        // Micro offset Y negatif quand au sol pour eviter le flickering onGround
         Vec3 movement = this.getDeltaMovement();
         if (this.onGround() && movement.y == 0.0) {
             movement = movement.subtract(0, 0.0001, 0);
@@ -413,18 +371,11 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
         // Sauvegarder position et velocite pre-collision
         double preX = this.getX();
-        double preY = this.getY();
         double preZ = this.getZ();
         Vec3 preMoveVelocity = this.getDeltaMovement();
 
         // Appliquer le mouvement
         this.move(MoverType.SELF, preMoveVelocity);
-
-        // Fix D : reset Y apres step-up reussi pour eviter accumulation gravite
-        double postY = this.getY();
-        if ((postY - preY) > 0.1) {
-            rideVelocity = new Vec3(rideVelocity.x, 0, rideVelocity.z);
-        }
 
         // Feedback collision genereux : ignore les step-ups reussis, decouple X/Z,
         // et ne penalise que les collisions significatives (ratio < 0.7).
@@ -468,11 +419,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     }
 
     /**
-     * Anti-tunneling avec separation Y/XZ pour fiabiliser le step-up.
-     * Phase 1 : resoudre le Y negatif seul (gravite/descente) pour placer le bike
-     *           a la bonne hauteur AVANT les collisions horizontales.
-     * Phase 2 : anti-tunneling sur le mouvement horizontal pur, avec threshold
-     *           genereux (0.55) pour preserver le step-up en mode RUN.
+     * Anti-tunneling : subdivise les grands mouvements en sous-etapes.
+     * A haute vitesse (0.6 blocs/tick), l'entite peut depasser sa propre largeur
+     * en un tick et traverser les murs. On decoupe le mouvement en etapes assez
+     * petites pour que la collision vanilla detecte chaque mur.
      */
     @Override
     public void move(MoverType type, Vec3 movement) {
@@ -482,13 +432,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             return;
         }
 
-        // Phase 1 : resoudre Y negatif separement pour ne pas saborder le step-up
-        if (movement.y < -0.001) {
-            super.move(type, new Vec3(0, movement.y, 0));
-            movement = new Vec3(movement.x, 0, movement.z);
-        }
-
-        // Phase 2 : anti-tunneling sur le mouvement horizontal
         double horizDist = movement.horizontalDistance();
         double threshold = 0.55;
 
@@ -660,24 +603,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             case PROPULSEUR -> this.entityData.set(DATA_PROPULSEUR_VARIANT, variant);
             case RADIATEUR -> this.entityData.set(DATA_RADIATEUR_VARIANT, variant);
         }
-    }
-
-    // --- Terrain Following ---
-
-    /**
-     * Raycast vers le bas pour trouver la hauteur du sol sous le bike.
-     * Retourne le Y du point d'impact, ou Double.NEGATIVE_INFINITY si pas de sol.
-     */
-    private double raycastGroundBelow() {
-        Vec3 start = new Vec3(this.getX(), this.getY() + 0.5, this.getZ());
-        Vec3 end = new Vec3(this.getX(), this.getY() - TERRAIN_RAY_DISTANCE, this.getZ());
-        BlockHitResult result = this.level().clip(new ClipContext(
-                start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE,
-                CollisionContext.of(this)));
-        if (result.getType() == HitResult.Type.BLOCK) {
-            return result.getLocation().y;
-        }
-        return Double.NEGATIVE_INFINITY;
     }
 
     // --- Misc ---
