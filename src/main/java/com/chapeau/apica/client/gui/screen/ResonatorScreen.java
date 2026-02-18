@@ -444,37 +444,34 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                                               List<CompatSpecies> compatibles) {
         List<FreqEntry> entries = new ArrayList<>();
 
-        // Known section header
-        entries.add(new FreqEntry("Known:", 0xFF88FF88));
-
+        // Traits (known = details, unknown = ???)
         for (int i = 0; i < STAT_NAMES.length; i++) {
             String traitKey = STAT_NAMES[i] + ":" + levels[i];
-            if (!knowledge.isTraitKnown(traitKey)) continue;
-            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
-            if (wf == null) continue;
-            entries.add(new FreqEntry(STAT_SHORT_LABELS[i] + " " + levels[i] + ": " + wf.frequency + "Hz",
-                    STAT_COLORS[i]));
+            if (knowledge.isTraitKnown(traitKey)) {
+                ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
+                if (wf != null) {
+                    entries.add(new FreqEntry(STAT_SHORT_LABELS[i] + " " + levels[i] + ": " + wf.frequency + "Hz",
+                            STAT_COLORS[i]));
+                } else {
+                    entries.add(new FreqEntry(STAT_SHORT_LABELS[i] + " " + levels[i] + ": ---", STAT_COLORS[i]));
+                }
+            } else {
+                entries.add(new FreqEntry("???: ???", 0xFF666666));
+            }
         }
 
+        // Blank separator between traits and species
+        if (!compatibles.isEmpty()) {
+            entries.add(new FreqEntry("", 0));
+        }
+
+        // Compatible species (other parents)
         for (CompatSpecies cs : compatibles) {
             if (knowledge.isSpeciesKnown(cs.id)) {
                 entries.add(new FreqEntry(capitalize(cs.id) + ": " + cs.freq + "Hz", 0xFFDDAA88));
             } else if (knowledge.isFrequencyKnown(cs.id)) {
                 entries.add(new FreqEntry("???: " + cs.freq + "Hz", 0xFFDDAA88));
-            }
-        }
-
-        // Unknown section header
-        entries.add(new FreqEntry("Unknown:", 0xFFFF8888));
-
-        for (int i = 0; i < STAT_NAMES.length; i++) {
-            String traitKey = STAT_NAMES[i] + ":" + levels[i];
-            if (knowledge.isTraitKnown(traitKey)) continue;
-            entries.add(new FreqEntry("???: ???", 0xFF666666));
-        }
-
-        for (CompatSpecies cs : compatibles) {
-            if (!knowledge.isSpeciesKnown(cs.id) && !knowledge.isFrequencyKnown(cs.id)) {
+            } else {
                 entries.add(new FreqEntry("???: ???", 0xFF666666));
             }
         }
