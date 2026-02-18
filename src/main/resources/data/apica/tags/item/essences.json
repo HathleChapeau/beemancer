@@ -19,6 +19,7 @@
     "apica:perfect_tolerance_essence",
     "apica:diurnal_essence",
     "apica:nocturnal_essence",
-    "apica:insomnia_essence"
+    "apica:insomnia_essence",
+    "apica:species_essence"
   ]
 }
