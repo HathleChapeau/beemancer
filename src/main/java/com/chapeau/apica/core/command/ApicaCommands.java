@@ -86,6 +86,14 @@ public class ApicaCommands {
                 .then(Commands.literal("giveSpeciesEssence")
                     .requires(source -> source.hasPermission(2))
                     .then(Commands.argument("species", StringArgumentType.string())
+                        .suggests((context, builder) -> {
+                            for (String id : BeeSpeciesManager.getAllSpeciesIds()) {
+                                if (id.startsWith(builder.getRemainingLowerCase())) {
+                                    builder.suggest(id);
+                                }
+                            }
+                            return builder.buildFuture();
+                        })
                         .executes(context -> giveSpeciesEssence(
                             context.getSource(),
                             StringArgumentType.getString(context, "species")
