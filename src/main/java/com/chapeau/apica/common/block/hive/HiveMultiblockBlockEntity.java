@@ -104,19 +104,28 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     private boolean crowded = false;
     private int crowdedCheckTimer = 0;
 
+    // Indices alignés avec MagicHiveBlockEntity:
+    // 0: breedingMode, 1-9: non utilisés (retournent 0), 10: crowded
     public final ContainerData containerData = new ContainerData() {
         @Override
         public int get(int index) {
-            return index == 0 ? (breedingMode ? 1 : 0) : 0;
+            return switch (index) {
+                case 0 -> breedingMode ? 1 : 0;
+                case 10 -> crowded ? 1 : 0;
+                default -> 0;
+            };
         }
 
         @Override
         public void set(int index, int value) {
-            if (index == 0) breedingMode = value != 0;
+            switch (index) {
+                case 0 -> breedingMode = value != 0;
+                case 10 -> crowded = value != 0;
+            }
         }
 
         @Override
-        public int getCount() { return 1; }
+        public int getCount() { return 11; }
     };
 
     public HiveMultiblockBlockEntity(BlockPos pos, BlockState state) {

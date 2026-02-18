@@ -175,6 +175,19 @@ public class MagicHiveScreen extends AbstractApicaScreen<MagicHiveMenu> {
                 tt.add(Component.literal("Bees cannot breed").withStyle(ChatFormatting.GRAY));
                 g.renderComponentTooltip(font, tt, mouseX, mouseY);
             }
+            currentY += ICON_SIZE + ICON_SPACING;
+        }
+
+        // Crowded (nearby hive too close)
+        if (menu.isCrowded()) {
+            ResourceLocation crowdedIcon = getIcon("none");
+            g.blit(crowdedIcon, iconX, currentY, 0, 0, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
+            if (isHovering(iconX - leftPos, currentY - topPos, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {
+                List<Component> tt = new ArrayList<>();
+                tt.add(Component.literal("Crowded").withStyle(ChatFormatting.RED));
+                tt.add(Component.literal("Another hive is too close").withStyle(ChatFormatting.GRAY));
+                g.renderComponentTooltip(font, tt, mouseX, mouseY);
+            }
         }
     }
 

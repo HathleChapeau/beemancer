@@ -66,7 +66,7 @@ public class MagicHiveMenu extends ApicaMenu {
              buf.readBoolean()
                  ? new SimpleContainer(HiveMultiblockBlockEntity.TOTAL_SLOTS)
                  : new SimpleContainer(MagicHiveBlockEntity.TOTAL_SLOTS),
-             new SimpleContainerData(10),
+             new SimpleContainerData(11),
              false); // placeholder, will be overridden
         // Note: isMultiblock is determined from container size in the main constructor
     }
@@ -163,6 +163,11 @@ public class MagicHiveMenu extends ApicaMenu {
     /** @return la temperature du biome (-2 a 2) */
     public int getTemperature() {
         return data.get(4) - 2;
+    }
+
+    /** @return true si une ruche voisine est trop proche (rayon 4) */
+    public boolean isCrowded() {
+        return data.get(10) != 0;
     }
 
     /** @return true si l'abeille dans le slot peut aller butiner */

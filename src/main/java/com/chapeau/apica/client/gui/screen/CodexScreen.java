@@ -213,9 +213,9 @@ public class CodexScreen extends Screen {
         return switch (page) {
             case APICA -> new ItemStack(ApicaItems.CODEX.get());
             case BEES -> new ItemStack(Items.HONEYCOMB);
-            case ALCHEMY -> new ItemStack(ApicaItems.POLLEN_POT.get());
+            case ALCHEMY -> new ItemStack(ApicaItems.CRYSTALLIZER.get());
             case ARTIFACTS -> new ItemStack(ApicaItems.NECTAR_DIAMOND.get());
-            case LOGISTICS -> new ItemStack(ApicaItems.STORAGE_CONTROLLER.get());
+            case LOGISTICS -> new ItemStack(ApicaItems.STORAGE_RELAY.get());
         };
     }
 

@@ -191,9 +191,9 @@ public class BeeNodeWidget extends AbstractWidget {
         int borderColor = 0xFFDAA520; // Goldenrod
 
         graphics.fill(badgeX - padding, badgeY - padding,
-                badgeX + textWidth + padding, badgeY + font.lineHeight + padding, borderColor);
+                badgeX + textWidth + padding + 1, badgeY + font.lineHeight + padding, borderColor);
         graphics.fill(badgeX - padding + 1, badgeY - padding + 1,
-                badgeX + textWidth + padding - 1, badgeY + font.lineHeight + padding - 1, bgColor);
+                badgeX + textWidth + padding, badgeY + font.lineHeight + padding - 1, bgColor);
 
         // Texte doré (décalé +1px droite, +1px bas par rapport au fond)
         graphics.drawString(font, tier, badgeX + 1, badgeY + 1, 0xFFFFD700, false);

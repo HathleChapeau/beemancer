@@ -113,7 +113,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     // ContainerData for GUI sync
     // 0: antibreedingMode, 1: hasFlowers, 2: hasMushrooms, 3: isDaytime, 4: temperature (-2 to 2, offset +2 for positive)
-    // 5-9: canForage pour chaque slot d'abeille
+    // 5-9: canForage pour chaque slot d'abeille, 10: crowded
     public final ContainerData containerData = new ContainerData() {
         @Override
         public int get(int index) {
@@ -124,6 +124,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 case 3 -> isDaytime ? 1 : 0;
                 case 4 -> temperature + 2;
                 case 5, 6, 7, 8, 9 -> canBeeForage(index - 5) ? 1 : 0;
+                case 10 -> crowded ? 1 : 0;
                 default -> 0;
             };
         }
@@ -136,11 +137,12 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
                 case 2 -> hasMushrooms = value != 0;
                 case 3 -> isDaytime = value != 0;
                 case 4 -> temperature = value - 2;
+                case 10 -> crowded = value != 0;
             }
         }
 
         @Override
-        public int getCount() { return 10; }
+        public int getCount() { return 11; }
     };
 
     public MagicHiveBlockEntity(BlockPos pos, BlockState state) {

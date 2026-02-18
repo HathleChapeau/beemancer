@@ -17,6 +17,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -34,7 +35,7 @@ public class ApicaCreativeTabs {
     public static final Supplier<CreativeModeTab> MAIN_TAB = CREATIVE_TABS.register("main_tab",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup." + Apica.MOD_ID + ".main"))
-                    .icon(() -> new ItemStack(ApicaItems.MAGIC_HIVE.get()))
+                    .icon(() -> new ItemStack(ApicaItems.CODEX.get()))
                     .displayItems((parameters, output) -> {
                         addCodexAndTools(output);
                         addBees(output);
@@ -61,7 +62,7 @@ public class ApicaCreativeTabs {
     public static final Supplier<CreativeModeTab> COMBS_TAB = CREATIVE_TABS.register("combs_tab",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup." + Apica.MOD_ID + ".combs"))
-                    .icon(() -> new ItemStack(ApicaItems.ROYAL_COMB.get()))
+                    .icon(() -> new ItemStack(Items.HONEYCOMB))
                     .displayItems((parameters, output) -> {
                         addAlchemyIngredients(output);
                         addLegacyCombs(output);
