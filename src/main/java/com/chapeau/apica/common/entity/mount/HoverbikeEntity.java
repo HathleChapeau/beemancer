@@ -29,7 +29,6 @@ package com.chapeau.apica.common.entity.mount;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -393,11 +392,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             this.setDeltaMovement(movement);
         }
 
-        // Raycasts predictifs : mesurer les distances aux blocs devant le nez
+        // Raycasts predictifs : mesurer les distances aux blocs devant le nez (debug only)
         updatePredictiveRaycasts();
-
-        // Step-up predictif : si un ray horizontal detecte un bloc montable, boost Y
-        applyPredictiveStepUp();
 
         // Sauvegarder position et velocite pre-collision
         double preX = this.getX();
@@ -441,55 +437,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             }
         }
 
-        // Unstick : si le bike est dans un bloc solide, le pousser vers le haut
-        unstickFromBlocks();
-
         // Collision entites via probes (server-side uniquement)
         if (!this.level().isClientSide()) {
             AABB[] probes = HoverbikeCollisionGeometry.calculateWorldBoxes(this.position(), this.getYRot());
             collisionHandler.resolveEntityCollisions(this, probes, this.level(), settings);
-        }
-    }
-
-    /**
-     * Detecte si une partie du bounding box du bike est enfoncee dans un bloc solide
-     * et le pousse vers le haut pour le degager.
-     * Check 5 points : centre + 4 coins du bounding box au niveau des pieds.
-     * Gere le cas ou le bike va trop vite et depasse la detection de collision vanilla.
-     */
-    private void unstickFromBlocks() {
-        AABB box = this.getBoundingBox();
-        double checkY = box.minY + 0.1;
-
-        // 5 points de check : centre + 4 coins
-        double[][] checkPoints = {
-                {this.getX(), checkY, this.getZ()},
-                {box.minX + 0.05, checkY, box.minZ + 0.05},
-                {box.maxX - 0.05, checkY, box.minZ + 0.05},
-                {box.minX + 0.05, checkY, box.maxZ - 0.05},
-                {box.maxX - 0.05, checkY, box.maxZ - 0.05}
-        };
-
-        for (double[] point : checkPoints) {
-            BlockPos pos = BlockPos.containing(point[0], point[1], point[2]);
-            var shape = this.level().getBlockState(pos).getCollisionShape(this.level(), pos);
-            if (shape.isEmpty()) continue;
-
-            double blockTopY = pos.getY() + shape.max(Direction.Axis.Y);
-
-            // Le bike est dans ce bloc — chercher l'espace libre au-dessus
-            if (blockTopY > box.minY + 0.05) {
-                for (int dy = 0; dy <= 3; dy++) {
-                    double candidateY = blockTopY + (dy > 0 ? dy : 0);
-                    BlockPos above = BlockPos.containing(this.getX(), candidateY + 0.1, this.getZ());
-                    if (this.level().getBlockState(above).getCollisionShape(this.level(), above).isEmpty()) {
-                        this.setPos(this.getX(), candidateY, this.getZ());
-                        this.setDeltaMovement(this.getDeltaMovement().multiply(0.7, 0, 0.7));
-                        rideVelocity = new Vec3(rideVelocity.x * 0.7, 0, rideVelocity.z * 0.7);
-                        return;
-                    }
-                }
-            }
         }
     }
 
@@ -604,67 +555,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 debugRayHits[i] = result.getLocation();
                 rayHitResults[i] = result;
                 rayDistances[i] = hitDist;
-            }
-        }
-    }
-
-    /** Distance max d'un ray pour declencher le step-up predictif. */
-    private static final double STEPUP_RAY_TRIGGER_DIST = 1.2;
-
-    /** Vitesse Y max appliquee pour le step-up predictif. */
-    private static final double STEPUP_LIFT_SPEED = 0.3;
-
-    /**
-     * Utilise les BlockHitResult des raycasts pour detecter les blocs montables
-     * devant le bike. Si un bloc est dans le step height et qu'il y a de la place
-     * au-dessus, applique un boost Y AVANT move() pour que le bike passe par-dessus.
-     * Utilise getBlockPos() du hit result (fiable) au lieu de BlockPos.containing().
-     * Check les 6 rays (horizontaux + bas) pour couvrir les step-ups en pente.
-     */
-    private void applyPredictiveStepUp() {
-        if (!debugRaysActive) return;
-
-        double speed = rideVelocity.horizontalDistance();
-        if (speed < RAY_SPEED_THRESHOLD) return;
-
-        double footY = this.getY();
-        double stepHeight = this.getAttributeValue(Attributes.STEP_HEIGHT);
-        double bikeHeight = this.getBbHeight();
-        double bestLift = 0;
-
-        for (int i = 0; i < 6; i++) {
-            if (rayHitResults[i] == null) continue;
-            if (rayDistances[i] > STEPUP_RAY_TRIGGER_DIST) continue;
-
-            BlockPos hitBlockPos = rayHitResults[i].getBlockPos();
-            var shape = this.level().getBlockState(hitBlockPos).getCollisionShape(this.level(), hitBlockPos);
-            if (shape.isEmpty()) continue;
-
-            double blockTopY = hitBlockPos.getY() + shape.max(Direction.Axis.Y);
-            double heightDiff = blockTopY - footY;
-
-            // Ignorer le sol sous le bike (hauteur <= 0) et les blocs trop hauts
-            if (heightDiff <= 0.05 || heightDiff > stepHeight) continue;
-
-            // Verifier qu'il y a de la place au-dessus (headroom)
-            BlockPos headroomPos = BlockPos.containing(hitBlockPos.getX(), blockTopY + 0.1, hitBlockPos.getZ());
-            var headroomShape = this.level().getBlockState(headroomPos).getCollisionShape(this.level(), headroomPos);
-            if (!headroomShape.isEmpty()) {
-                double headroomTop = headroomPos.getY() + headroomShape.max(Direction.Axis.Y);
-                if (headroomTop - blockTopY < bikeHeight) continue;
-            }
-
-            // Calculer le lift necessaire : proportionnel a la hauteur + marge
-            double liftNeeded = Math.min(heightDiff * 0.6 + 0.08, STEPUP_LIFT_SPEED);
-
-            // Prendre le lift le plus fort parmi tous les rays qui detectent un step
-            bestLift = Math.max(bestLift, liftNeeded);
-        }
-
-        if (bestLift > 0) {
-            Vec3 dm = this.getDeltaMovement();
-            if (dm.y < bestLift) {
-                this.setDeltaMovement(dm.x, bestLift, dm.z);
             }
         }
     }
