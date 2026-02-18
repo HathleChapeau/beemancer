@@ -94,6 +94,9 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private boolean jumpPressed = false;
     private float gaugeLevel = 1.0f;
 
+    /** Facteur de surconsommation de la jauge en mode RUN. */
+    private static final float RUN_GAUGE_DRAIN_MULTIPLIER = 1.3f;
+
     // --- Collision ---
     private final HoverbikeCollisionHandler collisionHandler = new HoverbikeCollisionHandler();
 

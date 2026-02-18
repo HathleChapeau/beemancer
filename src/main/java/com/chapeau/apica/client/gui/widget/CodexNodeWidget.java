@@ -26,6 +26,7 @@ import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.quest.NodeState;
 import com.chapeau.apica.common.quest.NodeVisibility;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -41,6 +42,13 @@ import java.util.Map;
 
 public class CodexNodeWidget extends AbstractWidget {
     public static final int NODE_SIZE = 24;
+    private static final int FRAME_SIZE = 26;
+
+    // Vanilla advancement task frame textures
+    private static final ResourceLocation FRAME_OBTAINED = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/task_frame_obtained.png");
+    private static final ResourceLocation FRAME_UNOBTAINED = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/task_frame_unobtained.png");
 
     private static final Map<String, String> NODE_TO_ITEM = new HashMap<>();
     private static final Map<String, ResourceLocation> NODE_TO_TEXTURE = new HashMap<>();
@@ -238,34 +246,31 @@ public class CodexNodeWidget extends AbstractWidget {
     }
 
     private void renderBackground(GuiGraphics graphics) {
-        int bgColor;
-        int borderColor;
-
-        if (isHeader) {
-            bgColor = 0xFF1A3A5C;      // Fond bleu foncé
-            borderColor = 0xFF3498DB;  // Bordure bleue
-        } else if (unlocked) {
-            bgColor = 0xFF2C2C2C;      // Fond sombre
-            borderColor = 0xFFF1C40F;  // Bordure dorée
-        } else if (canUnlock) {
-            bgColor = 0xFF1A1A1A;      // Fond très sombre
-            borderColor = 0xFF888888;  // Bordure grise
-        } else {
-            bgColor = 0xFF0F0F0F;      // Fond noir
-            borderColor = 0xFF444444;  // Bordure sombre
-        }
-
         int x = getX();
         int y = getY();
 
-        // Fond
-        graphics.fill(x, y, x + NODE_SIZE, y + NODE_SIZE, bgColor);
+        // Choisir la texture et la teinte selon l'etat
+        ResourceLocation frame;
+        float r, g, b;
 
-        // Bordure (2px)
-        graphics.fill(x, y, x + NODE_SIZE, y + 2, borderColor);                         // Haut
-        graphics.fill(x, y + NODE_SIZE - 2, x + NODE_SIZE, y + NODE_SIZE, borderColor); // Bas
-        graphics.fill(x, y, x + 2, y + NODE_SIZE, borderColor);                         // Gauche
-        graphics.fill(x + NODE_SIZE - 2, y, x + NODE_SIZE, y + NODE_SIZE, borderColor); // Droite
+        if (isHeader) {
+            frame = FRAME_OBTAINED;
+            r = 0.2f; g = 0.58f; b = 0.86f;   // Bleu (#3498DB)
+        } else if (unlocked) {
+            frame = FRAME_OBTAINED;
+            r = 0.95f; g = 0.77f; b = 0.06f;   // Or (#F1C40F)
+        } else if (canUnlock) {
+            frame = FRAME_UNOBTAINED;
+            r = 0.53f; g = 0.53f; b = 0.53f;   // Gris (#888888)
+        } else {
+            frame = FRAME_UNOBTAINED;
+            r = 0.27f; g = 0.27f; b = 0.27f;   // Sombre (#444444)
+        }
+
+        // Rendre le frame vanilla teinte (26x26 centre sur le node 24x24)
+        RenderSystem.setShaderColor(r, g, b, 1.0f);
+        graphics.blit(frame, x - 1, y - 1, 0, 0, FRAME_SIZE, FRAME_SIZE, FRAME_SIZE, FRAME_SIZE);
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
     private static final ResourceLocation ICON_UNKNOWN = ResourceLocation.fromNamespaceAndPath(
