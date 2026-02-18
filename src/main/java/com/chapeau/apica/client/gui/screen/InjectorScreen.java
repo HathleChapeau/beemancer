@@ -88,9 +88,9 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
         // Bee slot (bas-gauche, sous la barre de progression)
         GuiRenderHelper.renderSlot(g, x + 15, y + 80);
 
-        // Barre de saturation horizontale (style crystallizer progress bar)
+        // Barre de saturation horizontale (style crystallizer, couleur violet attuned)
         GuiRenderHelper.renderProgressBar(g, x + SAT_BAR_X, y + SAT_BAR_Y, SAT_BAR_W, SAT_BAR_H,
-                menu.getHungerRatio());
+                menu.getHungerRatio(), 0xFFAA00FF, 0xFFCC55FF);
 
         // Indicateur "Satiated/Harmonisee"
         if (menu.isSatiated() && menu.hasBee()) {

@@ -151,9 +151,20 @@ public class GuiRenderHelper {
 
 
     /**
-     * Barre de progression simple (sans fleche).
+     * Barre de progression simple (sans fleche). Couleur doree par defaut.
      */
     public static void renderProgressBar(GuiGraphics g, int x, int y, int w, int h, float ratio) {
+        renderProgressBar(g, x, y, w, h, ratio, 0xFFD4A017, 0xFFE8B830);
+    }
+
+    /**
+     * Barre de progression simple (sans fleche) avec couleur personnalisee.
+     *
+     * @param fillColor      couleur principale de remplissage (ARGB)
+     * @param highlightColor couleur de la ligne de highlight en haut (ARGB)
+     */
+    public static void renderProgressBar(GuiGraphics g, int x, int y, int w, int h, float ratio,
+                                          int fillColor, int highlightColor) {
         // Background
         g.fill(x, y, x + w, y + h, 0xFF1A1A1A);
         // Border
@@ -165,8 +176,8 @@ public class GuiRenderHelper {
         // Fill
         int fillWidth = (int) (w * ratio);
         if (fillWidth > 0) {
-            g.fill(x, y, x + fillWidth, y + h, 0xFFD4A017);
-            g.fill(x, y, x + fillWidth, y + 1, 0xFFE8B830);
+            g.fill(x, y, x + fillWidth, y + h, fillColor);
+            g.fill(x, y, x + fillWidth, y + 1, highlightColor);
         }
     }
 
