@@ -48,12 +48,18 @@ public class BeeInjectionHelper {
     private static final String ACTIVITY_POINTS = "ActivityPoints";
     private static final String HUNGER = "Hunger";
     private static final String SATIATED = "Satiated";
+    private static final String HARMONIZED = "Harmonized";
 
     // ========== LECTURE ==========
 
     public static boolean isSatiated(ItemStack stack) {
         CompoundTag injection = getInjectionTag(stack);
         return injection != null && injection.getBoolean(SATIATED);
+    }
+
+    public static boolean isHarmonized(ItemStack stack) {
+        CompoundTag injection = getInjectionTag(stack);
+        return injection != null && injection.getBoolean(HARMONIZED);
     }
 
     public static int getHunger(ItemStack stack) {
@@ -137,6 +143,26 @@ public class BeeInjectionHelper {
             injection.putBoolean(SATIATED, true);
         }
         injection.putInt(HUNGER, hunger);
+        saveInjectionTag(stack, injection);
+    }
+
+    /**
+     * Marque l'abeille comme harmonized ou non.
+     */
+    public static void setHarmonized(ItemStack stack, boolean harmonized) {
+        CompoundTag injection = getOrCreateInjectionTag(stack);
+        injection.putBoolean(HARMONIZED, harmonized);
+        saveInjectionTag(stack, injection);
+    }
+
+    /**
+     * Sature l'abeille instantanement (hunger = max, satiated = true).
+     */
+    public static void saturateInstantly(ItemStack stack) {
+        CompoundTag injection = getOrCreateInjectionTag(stack);
+        int maxHunger = InjectionConfigManager.getMaxHunger();
+        injection.putInt(HUNGER, maxHunger);
+        injection.putBoolean(SATIATED, true);
         saveInjectionTag(stack, injection);
     }
 

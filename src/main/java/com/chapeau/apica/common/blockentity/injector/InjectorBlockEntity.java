@@ -75,7 +75,7 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         public boolean isItemValid(int slot, ItemStack stack) {
             if (slot == BEE_SLOT) return stack.is(ApicaItems.MAGIC_BEE.get());
             if (slot == ESSENCE_SLOT) return stack.getItem() instanceof EssenceItem
-                    && !(stack.getItem() instanceof SpeciesEssenceItem);
+                    || stack.getItem() instanceof SpeciesEssenceItem;
             return false;
         }
     };
@@ -128,7 +128,13 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         ItemStack essenceStack = be.itemHandler.getStackInSlot(ESSENCE_SLOT);
-        if (essenceStack.isEmpty() || !(essenceStack.getItem() instanceof EssenceItem essenceItem)) {
+        if (essenceStack.isEmpty()) {
+            be.resetTimer();
+            return;
+        }
+
+        boolean isSpeciesEssence = essenceStack.getItem() instanceof SpeciesEssenceItem;
+        if (!isSpeciesEssence && !(essenceStack.getItem() instanceof EssenceItem)) {
             be.resetTimer();
             return;
         }
@@ -137,7 +143,11 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         if (be.processTimer < InjectionConfigManager.getProcessTimeTicks()) return;
 
         // Processing complet: consommer l'essence
-        be.processEssence(beeStack, essenceItem);
+        if (isSpeciesEssence) {
+            be.processSpeciesEssence(beeStack, essenceStack);
+        } else {
+            be.processEssence(beeStack, (EssenceItem) essenceStack.getItem());
+        }
         be.processTimer = 0;
         be.itemHandler.extractItem(ESSENCE_SLOT, 1, false);
         be.setChanged();
@@ -163,6 +173,54 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
 
         // La faim monte TOUJOURS (meme si pas de gain de stat)
         BeeInjectionHelper.addHunger(beeStack, value.hungerCost());
+    }
+
+    /**
+     * Traite une essence d'espece : sature toujours l'abeille.
+     * Si les deux especes sont parents d'un enfant harmonized ET que les 5 stats
+     * de l'abeille (base+bonus) correspondent aux stats par defaut de l'essence,
+     * l'abeille obtient l'etat harmonized.
+     */
+    private void processSpeciesEssence(ItemStack beeStack, ItemStack essenceStack) {
+        BeeInjectionHelper.saturateInstantly(beeStack);
+
+        String beeSpeciesId = MagicBeeItem.getSpeciesId(beeStack);
+        String essenceSpeciesId = SpeciesEssenceItem.getSpeciesId(essenceStack);
+        if (beeSpeciesId == null || essenceSpeciesId == null) return;
+
+        BeeSpeciesManager.BeeSpeciesData beeData = BeeSpeciesManager.getSpecies(beeSpeciesId);
+        BeeSpeciesManager.BeeSpeciesData essenceData = BeeSpeciesManager.getSpecies(essenceSpeciesId);
+        if (beeData == null || essenceData == null) return;
+
+        // Chercher si un enfant harmonized a ces deux especes comme parents
+        boolean hasHarmonizedChild = false;
+        for (BeeSpeciesManager.BeeSpeciesData child : BeeSpeciesManager.getAllSpecies()) {
+            if (child.harmonized && child.parents != null
+                    && child.parents.contains(beeSpeciesId)
+                    && child.parents.contains(essenceSpeciesId)) {
+                hasHarmonizedChild = true;
+                break;
+            }
+        }
+        if (!hasHarmonizedChild) return;
+
+        // Verifier que les 5 stats de l'abeille (base+bonus) == stats par defaut de l'essence
+        int beeDrop = beeData.dropLevel + BeeInjectionHelper.getBonusLevel(beeStack, EssenceItem.EssenceType.DROP);
+        int beeSpeed = beeData.flyingSpeedLevel + BeeInjectionHelper.getBonusLevel(beeStack, EssenceItem.EssenceType.SPEED);
+        int beeForaging = beeData.foragingDurationLevel + BeeInjectionHelper.getBonusLevel(beeStack, EssenceItem.EssenceType.FORAGING);
+        int beeTolerance = beeData.toleranceLevel + BeeInjectionHelper.getBonusLevel(beeStack, EssenceItem.EssenceType.TOLERANCE);
+        int beeActivity = BeeInjectionHelper.getActivityLevel(beeData.dayNight)
+                + BeeInjectionHelper.getBonusLevel(beeStack, EssenceItem.EssenceType.DIURNAL);
+
+        int essenceActivity = BeeInjectionHelper.getActivityLevel(essenceData.dayNight);
+
+        if (beeDrop == essenceData.dropLevel
+                && beeSpeed == essenceData.flyingSpeedLevel
+                && beeForaging == essenceData.foragingDurationLevel
+                && beeTolerance == essenceData.toleranceLevel
+                && beeActivity == essenceActivity) {
+            BeeInjectionHelper.setHarmonized(beeStack, true);
+        }
     }
 
     private void resetTimer() {

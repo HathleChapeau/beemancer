@@ -31,7 +31,9 @@ import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.network.packets.CodexSyncPacket;
 import com.chapeau.apica.core.network.packets.QuestSyncPacket;
 import com.chapeau.apica.core.registry.ApicaAttachments;
+import com.chapeau.apica.common.item.essence.SpeciesEssenceItem;
 import com.chapeau.apica.core.util.BeeInjectionHelper;
+import net.minecraft.world.item.ItemStack;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -79,6 +81,15 @@ public class ApicaCommands {
                     .then(Commands.literal("getAllKnowledge")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> unlockAllKnowledge(context.getSource()))
+                    )
+                )
+                .then(Commands.literal("giveSpeciesEssence")
+                    .requires(source -> source.hasPermission(2))
+                    .then(Commands.argument("species", StringArgumentType.string())
+                        .executes(context -> giveSpeciesEssence(
+                            context.getSource(),
+                            StringArgumentType.getString(context, "species")
+                        ))
                     )
                 )
                 .then(Commands.literal("dimension")
@@ -198,6 +209,30 @@ public class ApicaCommands {
             PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
 
             source.sendSuccess(() -> Component.literal("Trait, species and frequency knowledge has been reset!"), true);
+            return Command.SINGLE_SUCCESS;
+        }
+
+        source.sendFailure(Component.literal("This command can only be used by a player."));
+        return 0;
+    }
+
+    // ============================================================
+    // GIVE COMMANDS
+    // ============================================================
+
+    private static int giveSpeciesEssence(CommandSourceStack source, String speciesId) {
+        if (source.getEntity() instanceof ServerPlayer player) {
+            if (!BeeSpeciesManager.hasSpecies(speciesId)) {
+                source.sendFailure(Component.literal("Unknown species: " + speciesId));
+                return 0;
+            }
+
+            ItemStack essence = SpeciesEssenceItem.createForSpecies(speciesId);
+            if (!player.getInventory().add(essence)) {
+                player.drop(essence, false);
+            }
+
+            source.sendSuccess(() -> Component.literal("Gave 1 Species Essence (" + speciesId + ")"), true);
             return Command.SINGLE_SUCCESS;
         }
 

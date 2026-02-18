@@ -197,10 +197,13 @@ public class MagicBeeItem extends Item {
                             .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                             .append(Component.literal("???").withStyle(ChatFormatting.DARK_GRAY)));
                 } else if (satiated) {
+                    Component name = BeeInjectionHelper.isHarmonized(stack)
+                            ? speciesGene.getDisplayName().copy().append("?")
+                            : speciesGene.getDisplayName().copy();
                     tooltip.add(Component.translatable("tooltip.apica.species")
                             .withStyle(ChatFormatting.GRAY)
                             .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                            .append(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD, ChatFormatting.ITALIC)));
+                            .append(name.copy().withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD, ChatFormatting.ITALIC)));
                 } else {
                     tooltip.add(Component.translatable("tooltip.apica.species")
                             .withStyle(ChatFormatting.GRAY)
@@ -285,7 +288,10 @@ public class MagicBeeItem extends Item {
                 if (!speciesKnown) {
                     tooltip.add(Component.literal("???").withStyle(ChatFormatting.DARK_GRAY));
                 } else if (satiated) {
-                    tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD, ChatFormatting.ITALIC));
+                    Component name = BeeInjectionHelper.isHarmonized(stack)
+                            ? speciesGene.getDisplayName().copy().append("?")
+                            : speciesGene.getDisplayName().copy();
+                    tooltip.add(name.copy().withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD, ChatFormatting.ITALIC));
                 } else {
                     tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
                 }
