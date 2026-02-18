@@ -57,6 +57,7 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
     public static final int BEE_SLOT = 0;
     public static final int ESSENCE_SLOT = 1;
     private static final int DATA_COUNT = 10;
+    private static final int SPECIES_ESSENCE_PROCESS_TICKS = 1200; // 60 seconds
 
     private final ItemStackHandler itemHandler = new ItemStackHandler(2) {
         @Override
@@ -90,7 +91,7 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
             int ppl = InjectionConfigManager.getPointsPerLevel();
             return switch (index) {
                 case 0 -> processTimer;
-                case 1 -> InjectionConfigManager.getProcessTimeTicks();
+                case 1 -> getMaxProcessTicks();
                 case 2 -> BeeInjectionHelper.getHunger(bee);
                 case 3 -> InjectionConfigManager.getMaxHunger();
                 case 4 -> species != null ? BeeInjectionHelper.getTotalGaugePoints(bee, EssenceItem.EssenceType.DROP, species.dropLevel) : 0;
@@ -140,7 +141,7 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         be.processTimer++;
-        if (be.processTimer < InjectionConfigManager.getProcessTimeTicks()) return;
+        if (be.processTimer < be.getMaxProcessTicks()) return;
 
         // Processing complet: consommer l'essence
         if (isSpeciesEssence) {
@@ -231,6 +232,14 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     // ========== HELPERS ==========
+
+    private int getMaxProcessTicks() {
+        ItemStack essenceStack = itemHandler.getStackInSlot(ESSENCE_SLOT);
+        if (essenceStack.getItem() instanceof SpeciesEssenceItem) {
+            return SPECIES_ESSENCE_PROCESS_TICKS;
+        }
+        return InjectionConfigManager.getProcessTimeTicks();
+    }
 
     @Nullable
     private static BeeSpeciesManager.BeeSpeciesData getSpeciesData(ItemStack beeStack) {

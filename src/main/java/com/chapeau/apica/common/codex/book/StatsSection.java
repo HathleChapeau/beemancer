@@ -58,9 +58,16 @@ public class StatsSection extends CodexBookSection {
     @Override
     public int getHeight(Font font, int pageWidth) {
         int lineH = font.lineHeight + LINE_SPACING;
-        // Tier + sep + Activity + Flower + sep + 6 stats + sep + Loot + sep + 3 traits + padding
-        // 1 + 2 + 6 + 1 + 3 = 13 lines + 4 separators (3px each)
-        return lineH * 13 + 3 + 3 + 3 + 3 + PADDING_BOTTOM;
+        // Tier + sep + Activity + Flower + sep + 6 stats + sep + Loot [+ Pollen] + sep + 3 traits + padding
+        int lines = 13;
+        if (hasPollen()) lines++;
+        return lineH * lines + 3 + 3 + 3 + 3 + PADDING_BOTTOM;
+    }
+
+    private boolean hasPollen() {
+        BeeSpeciesManager.ensureClientLoaded();
+        BeeSpeciesData data = BeeSpeciesManager.getSpecies(species);
+        return data != null && data.pollen != null && !data.pollen.isEmpty();
     }
 
     @Override
@@ -145,6 +152,12 @@ public class StatsSection extends CodexBookSection {
         // Loot
         graphics.drawString(font, "Loot: " + formatItemName(data.lootItem), x, currentY, INFO_COLOR, false);
         currentY += lineH;
+
+        // Pollen (only for species that produce pollen)
+        if (data.pollen != null && !data.pollen.isEmpty()) {
+            graphics.drawString(font, "Pollen: " + formatItemName(data.pollen), x, currentY, INFO_COLOR, false);
+            currentY += lineH;
+        }
 
         // Separator
         graphics.fill(x, currentY, x + pageWidth, currentY + 1, SEPARATOR_COLOR);
