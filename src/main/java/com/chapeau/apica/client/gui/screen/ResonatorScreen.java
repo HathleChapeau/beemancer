@@ -81,7 +81,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private static final int ANALYSIS_BTN_H = 18;
 
     // Info panel pagination
-    private static final int PAGE_SIZE = 5;
+    private static final int PAGE_SIZE = 8;
     private int infoPage = 0;
     private int infoPageCount = 1;
 
@@ -358,16 +358,12 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         ResonatorConfigManager.ensureClientLoaded();
         BeeSpeciesManager.ensureClientLoaded();
 
-        // Bee species + its combined waveform (3 states)
-        String beeWave = data != null ? formatWave(data.waveformFreq, data.waveformAmp, data.waveformPhase, data.waveformHarm) : "---";
+        // Bee species + its frequency (3 states)
+        String beeHz = data != null ? data.waveformFreq + "Hz" : "---";
         if (knowledge.isSpeciesKnown(speciesId)) {
-            g.drawString(font, capitalize(speciesId) + ":", px + 4, lineY, 0xFF88BBFF, false);
-            lineY += lineH;
-            g.drawString(font, beeWave, px + 4, lineY, 0xFF88BBFF, false);
+            g.drawString(font, capitalize(speciesId) + ": " + beeHz, px + 4, lineY, 0xFF88BBFF, false);
         } else if (knowledge.isFrequencyKnown(speciesId)) {
-            g.drawString(font, "???:", px + 4, lineY, 0xFF88BBFF, false);
-            lineY += lineH;
-            g.drawString(font, beeWave, px + 4, lineY, 0xFF88BBFF, false);
+            g.drawString(font, "???: " + beeHz, px + 4, lineY, 0xFF88BBFF, false);
         } else {
             g.drawString(font, "???: ???", px + 4, lineY, 0xFF666666, false);
         }
@@ -427,7 +423,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                 ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
                 if (wf != null) {
                     entries.add(new FreqEntry(STAT_SHORT_LABELS[i] + " " + levels[i] + ": "
-                            + formatWave(wf.frequency, wf.amplitude, wf.phase, wf.harmonics), STAT_COLORS[i]));
+                            + wf.frequency + "Hz", STAT_COLORS[i]));
                 } else {
                     entries.add(new FreqEntry(STAT_SHORT_LABELS[i] + " " + levels[i] + ": ---", STAT_COLORS[i]));
                 }
@@ -459,11 +455,11 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     }
 
     private FreqEntry buildCompatEntry(CodexPlayerData knowledge, CompatSpecies cs, int color) {
-        String wave = formatWave(cs.freq, cs.amp, cs.phase, cs.harm);
+        String hz = cs.freq + "Hz";
         if (knowledge.isSpeciesKnown(cs.id)) {
-            return new FreqEntry(capitalize(cs.id) + ":", color);
+            return new FreqEntry(capitalize(cs.id) + ": " + hz, color);
         } else if (knowledge.isFrequencyKnown(cs.id)) {
-            return new FreqEntry("???: " + wave, color);
+            return new FreqEntry("???: " + hz, color);
         } else {
             return new FreqEntry("???: ???", 0xFF666666);
         }
