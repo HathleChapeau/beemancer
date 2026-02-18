@@ -40,7 +40,8 @@ import java.util.Set;
 
 public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredNodes,
                                long firstOpenDay, Map<String, Long> unlockDays,
-                               Set<String> knownSpecies, Set<String> knownTraits) implements CustomPacketPayload {
+                               Set<String> knownSpecies, Set<String> knownTraits,
+                               Set<String> knownFrequencies) implements CustomPacketPayload {
 
     public static final Type<CodexSyncPacket> TYPE = new Type<>(
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "codex_sync"));
@@ -82,7 +83,13 @@ public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredN
                 traits.add(buf.readUtf());
             }
 
-            return new CodexSyncPacket(unlocked, discovered, openDay, days, species, traits);
+            int freqSize = buf.readVarInt();
+            Set<String> frequencies = new HashSet<>(freqSize);
+            for (int i = 0; i < freqSize; i++) {
+                frequencies.add(buf.readUtf());
+            }
+
+            return new CodexSyncPacket(unlocked, discovered, openDay, days, species, traits, frequencies);
         }
 
         @Override
@@ -114,13 +121,19 @@ public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredN
             for (String key : packet.knownTraits) {
                 buf.writeUtf(key);
             }
+
+            buf.writeVarInt(packet.knownFrequencies.size());
+            for (String id : packet.knownFrequencies) {
+                buf.writeUtf(id);
+            }
         }
     };
 
     public CodexSyncPacket(CodexPlayerData data) {
         this(new HashSet<>(data.getUnlockedNodes()), new HashSet<>(data.getDiscoveredNodes()),
              data.getFirstOpenDay(), new HashMap<>(data.getUnlockDays()),
-             new HashSet<>(data.getKnownSpecies()), new HashSet<>(data.getKnownTraits()));
+             new HashSet<>(data.getKnownSpecies()), new HashSet<>(data.getKnownTraits()),
+             new HashSet<>(data.getKnownFrequencies()));
     }
 
     @Override
@@ -144,9 +157,12 @@ public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredN
                 data.getKnownSpecies().addAll(packet.knownSpecies);
                 data.getKnownTraits().clear();
                 data.getKnownTraits().addAll(packet.knownTraits);
-                Apica.LOGGER.debug("Synced {} unlocked, {} discovered nodes, {} species, {} traits from server",
+                data.getKnownFrequencies().clear();
+                data.getKnownFrequencies().addAll(packet.knownFrequencies);
+                Apica.LOGGER.debug("Synced {} unlocked, {} discovered nodes, {} species, {} traits, {} frequencies from server",
                     packet.unlockedNodes.size(), packet.discoveredNodes.size(),
-                    packet.knownSpecies.size(), packet.knownTraits.size());
+                    packet.knownSpecies.size(), packet.knownTraits.size(),
+                    packet.knownFrequencies.size());
             }
         });
     }

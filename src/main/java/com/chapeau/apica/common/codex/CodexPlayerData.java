@@ -43,8 +43,9 @@ public class CodexPlayerData {
             Codec.LONG.fieldOf("first_open_day").forGetter(data -> data.firstOpenDay),
             Codec.unboundedMap(Codec.STRING, Codec.LONG).fieldOf("unlock_days").forGetter(data -> data.unlockDays),
             Codec.STRING.listOf().optionalFieldOf("known_species", List.of()).forGetter(data -> List.copyOf(data.knownSpecies)),
-            Codec.STRING.listOf().optionalFieldOf("known_traits", List.of()).forGetter(data -> List.copyOf(data.knownTraits))
-        ).apply(instance, (unlockedList, discoveredList, openDay, days, speciesList, traitsList) -> {
+            Codec.STRING.listOf().optionalFieldOf("known_traits", List.of()).forGetter(data -> List.copyOf(data.knownTraits)),
+            Codec.STRING.listOf().optionalFieldOf("known_frequencies", List.of()).forGetter(data -> List.copyOf(data.knownFrequencies))
+        ).apply(instance, (unlockedList, discoveredList, openDay, days, speciesList, traitsList, freqList) -> {
             CodexPlayerData data = new CodexPlayerData();
             data.unlockedNodes.addAll(unlockedList);
             data.discoveredNodes.addAll(discoveredList);
@@ -52,6 +53,7 @@ public class CodexPlayerData {
             data.unlockDays.putAll(days);
             data.knownSpecies.addAll(speciesList);
             data.knownTraits.addAll(traitsList);
+            data.knownFrequencies.addAll(freqList);
             return data;
         })
     );
@@ -62,6 +64,7 @@ public class CodexPlayerData {
     private final Map<String, Long> unlockDays = new HashMap<>();
     private final Set<String> knownSpecies = new HashSet<>();
     private final Set<String> knownTraits = new HashSet<>();
+    private final Set<String> knownFrequencies = new HashSet<>();
 
     public CodexPlayerData() {
     }
@@ -172,6 +175,22 @@ public class CodexPlayerData {
         return knownTraits.add(traitKey);
     }
 
+    public Set<String> getKnownFrequencies() {
+        return knownFrequencies;
+    }
+
+    /**
+     * Verifie si la frequence d'une espece est connue (sans forcement connaitre l'espece).
+     * @param speciesId l'ID de l'espece
+     */
+    public boolean isFrequencyKnown(String speciesId) {
+        return knownFrequencies.contains(speciesId);
+    }
+
+    public boolean learnFrequency(String speciesId) {
+        return knownFrequencies.add(speciesId);
+    }
+
     // ============================================================
     // DAY TRACKING
     // ============================================================
@@ -274,6 +293,12 @@ public class CodexPlayerData {
         }
         tag.put("known_traits", traitsList);
 
+        ListTag freqList = new ListTag();
+        for (String id : knownFrequencies) {
+            freqList.add(StringTag.valueOf(id));
+        }
+        tag.put("known_frequencies", freqList);
+
         return tag;
     }
 
@@ -312,6 +337,12 @@ public class CodexPlayerData {
                 data.knownTraits.add(list.getString(i));
             }
         }
+        if (tag.contains("known_frequencies", Tag.TAG_LIST)) {
+            ListTag list = tag.getList("known_frequencies", Tag.TAG_STRING);
+            for (int i = 0; i < list.size(); i++) {
+                data.knownFrequencies.add(list.getString(i));
+            }
+        }
         return data;
     }
 
@@ -323,6 +354,7 @@ public class CodexPlayerData {
         copy.unlockDays.putAll(this.unlockDays);
         copy.knownSpecies.addAll(this.knownSpecies);
         copy.knownTraits.addAll(this.knownTraits);
+        copy.knownFrequencies.addAll(this.knownFrequencies);
         return copy;
     }
 }

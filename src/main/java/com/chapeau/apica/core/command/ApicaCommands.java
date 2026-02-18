@@ -161,6 +161,7 @@ public class ApicaCommands {
 
             for (String speciesId : BeeSpeciesManager.getAllSpeciesIds()) {
                 data.learnSpecies(speciesId);
+                data.learnFrequency(speciesId);
                 BeeSpeciesManager.BeeSpeciesData speciesData = BeeSpeciesManager.getSpecies(speciesId);
                 if (speciesData != null) {
                     for (int lvl = 1; lvl <= 4; lvl++) {
@@ -192,10 +193,11 @@ public class ApicaCommands {
             CodexPlayerData data = player.getData(ApicaAttachments.CODEX_DATA);
             data.getKnownSpecies().clear();
             data.getKnownTraits().clear();
+            data.getKnownFrequencies().clear();
             player.setData(ApicaAttachments.CODEX_DATA, data);
             PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
 
-            source.sendSuccess(() -> Component.literal("Trait and species knowledge has been reset!"), true);
+            source.sendSuccess(() -> Component.literal("Trait, species and frequency knowledge has been reset!"), true);
             return Command.SINGLE_SUCCESS;
         }
 

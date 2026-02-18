@@ -80,6 +80,11 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private static final int ANALYSIS_BTN_W = 60;
     private static final int ANALYSIS_BTN_H = 18;
 
+    // Info panel pagination
+    private static final int PAGE_SIZE = 5;
+    private int infoPage = 0;
+    private int infoPageCount = 1;
+
     // Drag state
     private int dragIndex = -1;
     private int dragStartX;
@@ -381,64 +386,125 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         if (bee.isEmpty()) return;
 
         CodexPlayerData knowledge = getPlayerKnowledge();
+        ResonatorConfigManager.ensureClientLoaded();
+        BeeSpeciesManager.ensureClientLoaded();
+
+        // Bee species + its combined frequency (3 states)
+        int beeFreq = computeSpeciesFrequency(data);
+        if (knowledge.isSpeciesKnown(speciesId)) {
+            g.drawString(font, capitalize(speciesId) + ": " + beeFreq + "Hz", px + 4, lineY, 0xFF88BBFF, false);
+        } else if (knowledge.isFrequencyKnown(speciesId)) {
+            g.drawString(font, "???: " + beeFreq + "Hz", px + 4, lineY, 0xFF88BBFF, false);
+        } else {
+            g.drawString(font, "???: ???", px + 4, lineY, 0xFF666666, false);
+        }
+        lineY += lineH + 2;
+        g.fill(px + 4, lineY, px + PANEL_W - 4, lineY + 1, 0xFF444444);
+        lineY += 4;
+
+        // Build entry lists
         int[] levels = getStatLevels(data);
         List<CompatSpecies> compatibles = findCompatibleSpecies(speciesId);
+        List<FreqEntry> allEntries = buildFreqEntries(knowledge, levels, compatibles);
 
-        // Known Frequencies
-        g.drawString(font, "Known:", px + 4, lineY, 0xFF88FF88, false);
-        lineY += lineH;
+        // Paginate (PAGE_SIZE entries per page)
+        infoPageCount = Math.max(1, (allEntries.size() + PAGE_SIZE - 1) / PAGE_SIZE);
+        infoPage = clamp(infoPage, 0, infoPageCount - 1);
+
+        int start = infoPage * PAGE_SIZE;
+        int end = Math.min(start + PAGE_SIZE, allEntries.size());
+
+        for (int i = start; i < end; i++) {
+            FreqEntry entry = allEntries.get(i);
+            g.drawString(font, entry.text, px + 4, lineY, entry.color, false);
+            lineY += lineH;
+        }
+
+        // Page navigation (bottom of panel)
+        if (infoPageCount > 1) {
+            int navY = py + panelH - 14;
+            String pageText = (infoPage + 1) + "/" + infoPageCount;
+            int pageW = font.width(pageText);
+            g.drawString(font, pageText, px + PANEL_W / 2 - pageW / 2, navY, 0xFFAAAAAA, false);
+
+            // Left arrow
+            if (infoPage > 0) {
+                g.drawString(font, "<", px + 4, navY, 0xFFDDDDDD, false);
+            }
+            // Right arrow
+            if (infoPage < infoPageCount - 1) {
+                g.drawString(font, ">", px + PANEL_W - 10, navY, 0xFFDDDDDD, false);
+            }
+        }
+    }
+
+    private record FreqEntry(String text, int color) {}
+
+    private List<FreqEntry> buildFreqEntries(CodexPlayerData knowledge, int[] levels,
+                                              List<CompatSpecies> compatibles) {
+        List<FreqEntry> entries = new ArrayList<>();
+
+        // Known section header
+        entries.add(new FreqEntry("Known:", 0xFF88FF88));
 
         for (int i = 0; i < STAT_NAMES.length; i++) {
             String traitKey = STAT_NAMES[i] + ":" + levels[i];
             if (!knowledge.isTraitKnown(traitKey)) continue;
             ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
             if (wf == null) continue;
-            String label = STAT_SHORT_LABELS[i] + " " + levels[i] + ": " + wf.frequency + "Hz";
-            g.drawString(font, label, px + 4, lineY, STAT_COLORS[i], false);
-            lineY += lineH;
+            entries.add(new FreqEntry(STAT_SHORT_LABELS[i] + " " + levels[i] + ": " + wf.frequency + "Hz",
+                    STAT_COLORS[i]));
         }
 
         for (CompatSpecies cs : compatibles) {
-            if (!knowledge.isSpeciesKnown(cs.id)) continue;
-            String label = capitalize(cs.id) + ": " + cs.freq + "Hz";
-            g.drawString(font, label, px + 4, lineY, 0xFFDDAA88, false);
-            lineY += lineH;
+            if (knowledge.isSpeciesKnown(cs.id)) {
+                entries.add(new FreqEntry(capitalize(cs.id) + ": " + cs.freq + "Hz", 0xFFDDAA88));
+            } else if (knowledge.isFrequencyKnown(cs.id)) {
+                entries.add(new FreqEntry("???: " + cs.freq + "Hz", 0xFFDDAA88));
+            }
         }
 
-        // Separator
-        lineY += 2;
-        g.fill(px + 4, lineY, px + PANEL_W - 4, lineY + 1, 0xFF444444);
-        lineY += 4;
-
-        // Unknown Frequencies
-        g.drawString(font, "Unknown:", px + 4, lineY, 0xFFFF8888, false);
-        lineY += lineH;
+        // Unknown section header
+        entries.add(new FreqEntry("Unknown:", 0xFFFF8888));
 
         for (int i = 0; i < STAT_NAMES.length; i++) {
             String traitKey = STAT_NAMES[i] + ":" + levels[i];
             if (knowledge.isTraitKnown(traitKey)) continue;
-            g.drawString(font, "???: ???", px + 4, lineY, 0xFF666666, false);
-            lineY += lineH;
+            entries.add(new FreqEntry("???: ???", 0xFF666666));
         }
 
         for (CompatSpecies cs : compatibles) {
-            if (knowledge.isSpeciesKnown(cs.id)) continue;
-            g.drawString(font, "???: ???", px + 4, lineY, 0xFF666666, false);
-            lineY += lineH;
+            if (!knowledge.isSpeciesKnown(cs.id) && !knowledge.isFrequencyKnown(cs.id)) {
+                entries.add(new FreqEntry("???: ???", 0xFF666666));
+            }
         }
+
+        return entries;
     }
 
     private static final String[] STAT_SHORT_LABELS = {"Drp", "Spd", "Frg", "Tol", "Act"};
 
     private record CompatSpecies(String id, int freq) {}
 
+    /**
+     * Pour chaque espece enfant ayant speciesId comme parent,
+     * retourne l'AUTRE parent (celui avec lequel on doit croiser l'abeille actuelle).
+     */
     private static List<CompatSpecies> findCompatibleSpecies(String speciesId) {
         if (speciesId == null) return List.of();
         BeeSpeciesManager.ensureClientLoaded();
         List<CompatSpecies> result = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
         for (BeeSpeciesManager.BeeSpeciesData sp : BeeSpeciesManager.getAllSpecies()) {
             if (sp.parents != null && sp.parents.contains(speciesId)) {
-                result.add(new CompatSpecies(sp.id, computeSpeciesFrequency(sp)));
+                for (String parentId : sp.parents) {
+                    if (!parentId.equals(speciesId) && seen.add(parentId)) {
+                        BeeSpeciesManager.BeeSpeciesData parentData = BeeSpeciesManager.getSpecies(parentId);
+                        if (parentData != null) {
+                            result.add(new CompatSpecies(parentId, computeSpeciesFrequency(parentData)));
+                        }
+                    }
+                }
             }
         }
         return result;
@@ -536,7 +602,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     }
 
     /**
-     * Dessine un tiret blanc sur la barre Hz pour chaque espece compatible connue.
+     * Dessine un tiret sur la barre Hz pour chaque espece compatible dont la frequence est connue.
      */
     private void renderSpeciesTicks(GuiGraphics g, int sx, int sy) {
         ItemStack bee = menu.getStoredBee();
@@ -547,7 +613,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         List<CompatSpecies> compatibles = findCompatibleSpecies(speciesId);
 
         for (CompatSpecies cs : compatibles) {
-            if (!knowledge.isSpeciesKnown(cs.id)) continue;
+            if (!knowledge.isSpeciesKnown(cs.id) && !knowledge.isFrequencyKnown(cs.id)) continue;
             if (cs.freq < FREQ_MIN || cs.freq > FREQ_MAX) continue;
             float tickRatio = (cs.freq - FREQ_MIN) / (float) (FREQ_MAX - FREQ_MIN);
             int tickX = sx + 1 + (int) ((SLIDER_W - 2) * tickRatio);
@@ -653,6 +719,27 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
+
+        // Check info panel page arrows
+        if (infoPageCount > 1) {
+            int px = x - PANEL_GAP - PANEL_W;
+            int py = y;
+            int navY = py + GUI_H - 14;
+            // Left arrow "<"
+            if (mouseX >= px + 2 && mouseX <= px + 14 && mouseY >= navY - 2 && mouseY <= navY + font.lineHeight + 2) {
+                if (infoPage > 0) {
+                    infoPage--;
+                    return true;
+                }
+            }
+            // Right arrow ">"
+            if (mouseX >= px + PANEL_W - 14 && mouseX <= px + PANEL_W - 2 && mouseY >= navY - 2 && mouseY <= navY + font.lineHeight + 2) {
+                if (infoPage < infoPageCount - 1) {
+                    infoPage++;
+                    return true;
+                }
+            }
+        }
 
         // Check slider
         int sx = x + SLIDER_X;

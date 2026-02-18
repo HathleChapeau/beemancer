@@ -319,19 +319,27 @@ public class CodexBookScreen extends Screen {
         // Semi-transparent dark overlay (clicking here closes the note)
         graphics.fill(0, 0, width, height, NOTE_OVERLAY_BG);
 
+        // Dynamic height for resonation notes (content may vary with compatible species)
+        int noteH = NOTE_HEIGHT;
+        if (note.isResonation()) {
+            int titleH = 8 + font.lineHeight + 8;
+            int contentH = ResonationNoteRenderer.getContentHeight(font, note.species());
+            noteH = Math.max(NOTE_HEIGHT, titleH + contentH + 8);
+        }
+
         // Note centered on screen
         int noteX = (width - NOTE_WIDTH) / 2;
-        int noteY = (height - NOTE_HEIGHT) / 2;
+        int noteY = (height - noteH) / 2;
 
         // Note background
-        graphics.fill(noteX, noteY, noteX + NOTE_WIDTH, noteY + NOTE_HEIGHT, note.color());
+        graphics.fill(noteX, noteY, noteX + NOTE_WIDTH, noteY + noteH, note.color());
 
         // Note border (2px)
         int b = NOTE_BORDER_COLOR;
         graphics.fill(noteX, noteY, noteX + NOTE_WIDTH, noteY + 2, b);
-        graphics.fill(noteX, noteY + NOTE_HEIGHT - 2, noteX + NOTE_WIDTH, noteY + NOTE_HEIGHT, b);
-        graphics.fill(noteX, noteY, noteX + 2, noteY + NOTE_HEIGHT, b);
-        graphics.fill(noteX + NOTE_WIDTH - 2, noteY, noteX + NOTE_WIDTH, noteY + NOTE_HEIGHT, b);
+        graphics.fill(noteX, noteY + noteH - 2, noteX + NOTE_WIDTH, noteY + noteH, b);
+        graphics.fill(noteX, noteY, noteX + 2, noteY + noteH, b);
+        graphics.fill(noteX + NOTE_WIDTH - 2, noteY, noteX + NOTE_WIDTH, noteY + noteH, b);
 
         // Title (from note title, or auto-resolve from item name)
         String displayTitle = note.title();
