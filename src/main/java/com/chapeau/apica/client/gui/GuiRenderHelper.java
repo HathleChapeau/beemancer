@@ -345,12 +345,16 @@ public class GuiRenderHelper {
     /**
      * Rend une barre de progression via texture, orientee verticalement (haut vers bas).
      * Utilise les memes textures que la version horizontale, pivotees de 90 degres.
-     * Dimensions resultantes: 10 de large x 54 de haut.
+     * Largeur resultante: 10px. Hauteur parametrable via scale.
+     *
+     * @param height hauteur souhaitee en pixels (la texture native fait 54px)
      */
-    public static void renderVerticalTextureProgressBar(GuiGraphics g, int x, int y, float ratio) {
+    public static void renderVerticalTextureProgressBar(GuiGraphics g, int x, int y, float ratio, int height) {
+        float scale = (float) height / PROGRESSBAR_BG_W;
         g.pose().pushPose();
         g.pose().translate(x + PROGRESSBAR_BG_H, y, 0);
         g.pose().mulPose(Axis.ZP.rotationDegrees(90));
+        g.pose().scale(scale, 1, 1);
         g.blit(PROGRESSBAR_BG, 0, 0, 0, 0, PROGRESSBAR_BG_W, PROGRESSBAR_BG_H,
                PROGRESSBAR_BG_W, PROGRESSBAR_BG_H);
         int fillW = (int) (PROGRESSBAR_FILL_W * Math.min(1f, ratio));
@@ -363,8 +367,8 @@ public class GuiRenderHelper {
 
     /**
      * Rend une barre via texture right_bar.png avec teinte de couleur.
-     * Le fond est rendu assombri, le remplissage teinte avec la couleur donnee.
-     * Remplit de bas en haut selon le ratio.
+     * Le fond utilise right_honeybar_bg, le remplissage teinte avec la couleur donnee.
+     * Remplit de bas en haut selon le ratio. Sans marqueurs d'etapes.
      *
      * @param g     contexte de rendu
      * @param x     position X ecran
@@ -373,9 +377,25 @@ public class GuiRenderHelper {
      * @param color couleur de teinte (RGB sans alpha, ex: 0xE8A317)
      */
     public static void renderTintedBar(GuiGraphics g, int x, int y, float ratio, int color) {
-        // Fond assombri (barre vide)
-        RenderSystem.setShaderColor(0.25f, 0.25f, 0.25f, 1.0f);
-        g.blit(RIGHT_BAR, x, y, 0, 0, BAR_W, BAR_H, BAR_W, BAR_H);
+        renderTintedBar(g, x, y, ratio, color, 0);
+    }
+
+    /**
+     * Rend une barre via texture right_bar.png avec teinte de couleur et marqueurs d'etapes.
+     * Le fond utilise right_honeybar_bg, le remplissage teinte avec la couleur donnee.
+     * Remplit de bas en haut selon le ratio.
+     * Des lignes horizontales semi-transparentes sont dessinees par-dessus pour indiquer les niveaux.
+     *
+     * @param g       contexte de rendu
+     * @param x       position X ecran
+     * @param y       position Y ecran
+     * @param ratio   remplissage 0.0 a 1.0
+     * @param color   couleur de teinte (RGB sans alpha, ex: 0xE8A317)
+     * @param notches nombre de niveaux/etapes (0 = pas de marqueurs)
+     */
+    public static void renderTintedBar(GuiGraphics g, int x, int y, float ratio, int color, int notches) {
+        // Fond via right_honeybar_bg (barre vide)
+        g.blit(RIGHT_HONEYBAR_BG, x, y, 0, 0, BAR_W, BAR_H, BAR_W, BAR_H);
 
         // Remplissage teinte (de bas en haut)
         int fillH = (int) (BAR_H * Math.min(1f, ratio));
@@ -386,9 +406,17 @@ public class GuiRenderHelper {
             RenderSystem.setShaderColor(r, green, b, 1.0f);
             int srcY = BAR_H - fillH;
             g.blit(RIGHT_BAR, x, y + srcY, 0, srcY, BAR_W, fillH, BAR_W, BAR_H);
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         }
 
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        // Marqueurs d'etapes (lignes horizontales par-dessus)
+        if (notches > 1) {
+            int innerH = BAR_H - 4;
+            for (int i = 1; i < notches; i++) {
+                int notchY = y + BAR_H - 2 - (innerH * i / notches);
+                g.fill(x + 2, notchY, x + BAR_W - 2, notchY + 1, 0xAA000000);
+            }
+        }
     }
 
     /**

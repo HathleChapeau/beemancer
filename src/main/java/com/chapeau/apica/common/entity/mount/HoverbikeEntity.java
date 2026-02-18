@@ -101,6 +101,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private int customAboveGroundTicks = 0;
 
     // --- Visual banking (client-side, expose pour renderer) ---
+    private float prevYawDelta = 0;
     private float lastYawDelta = 0;
 
     // --- Edit mode ---
@@ -279,6 +280,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 driver.getYRot(), this.getYRot(),
                 rideVelocity.z, mode, settings
         );
+        this.prevYawDelta = this.lastYawDelta;
         this.lastYawDelta = yawDelta;
         this.setRot(this.getYRot() + yawDelta, 0.0f);
 
@@ -375,22 +377,27 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         // Appliquer le mouvement
         this.move(MoverType.SELF, preMoveVelocity);
 
-        // Feedback collision : ratio-based scaling basee sur le deplacement reel
-        // On utilise le delta de position (pas getDeltaMovement) car vanilla peut
-        // agressivement zeroer deltaMovement sur step-up echoue ou collision diagonale,
-        // meme si l'entite a physiquement glisse le long du mur.
-        if (this.horizontalCollision) {
+        // Feedback collision genereux : ignore les step-ups reussis, decouple X/Z,
+        // et ne penalise que les collisions significatives (ratio < 0.7).
+        if (this.horizontalCollision && !this.minorHorizontalCollision) {
             double actualDx = this.getX() - preX;
             double actualDz = this.getZ() - preZ;
-            double actualSpeed = Math.sqrt(actualDx * actualDx + actualDz * actualDz);
-            double preSpeed = preMoveVelocity.horizontalDistance();
-            if (preSpeed > 0.001) {
-                // Clamp ratio min 0.1 pour eviter l'arret net contre fence posts
-                double ratio = Mth.clamp(actualSpeed / preSpeed, 0.1, 1.0);
+            double wantedDx = preMoveVelocity.x;
+            double wantedDz = preMoveVelocity.z;
+
+            // Ratio par axe : ne penaliser que l'axe vraiment bloque
+            double ratioX = (Math.abs(wantedDx) > 0.001)
+                    ? Mth.clamp(Math.abs(actualDx / wantedDx), 0.3, 1.0) : 1.0;
+            double ratioZ = (Math.abs(wantedDz) > 0.001)
+                    ? Mth.clamp(Math.abs(actualDz / wantedDz), 0.3, 1.0) : 1.0;
+            double bestRatio = Math.max(ratioX, ratioZ);
+
+            // Seuil genereux : si >70% du trajet voulu est parcouru, pas de penalite
+            if (bestRatio < 0.7) {
                 rideVelocity = new Vec3(
-                        rideVelocity.x * ratio,
+                        rideVelocity.x * bestRatio,
                         this.getDeltaMovement().y,
-                        rideVelocity.z * ratio
+                        rideVelocity.z * bestRatio
                 );
             }
 
@@ -439,7 +446,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
         for (int i = 0; i < steps; i++) {
             super.move(type, stepMovement);
-            if (this.horizontalCollision) {
+            // Ne break que sur collision significative (arret reel, pas glissement)
+            if (this.horizontalCollision && this.getDeltaMovement().horizontalDistanceSqr() < 0.001) {
                 break;
             }
         }
@@ -657,5 +665,9 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     public float getLastYawDelta() {
         return lastYawDelta;
+    }
+
+    public float getPrevYawDelta() {
+        return prevYawDelta;
     }
 }

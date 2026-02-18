@@ -37,14 +37,16 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "textures/gui/bg.png");
 
-    // Barres de stats: 5 barres teintees cote a cote
+    // Barre de saturation horizontale (au-dessus des barres de stats)
+    private static final int SAT_BAR_X = 42;
+    private static final int SAT_BAR_Y = 24;
+    private static final int SAT_BAR_W = 130;
+    private static final int SAT_BAR_H = 8;
+
+    // Barres de stats: 5 barres teintees cote a cote (sous la barre de saturation)
     private static final int FIRST_BAR_X = 42;
     private static final int BAR_SPACING = 20;
     private static final int BAR_Y = 40;
-
-    // Barre de saturation (plus a droite)
-    private static final int SAT_BAR_X = 155;
-    private static final int SAT_BAR_Y = 40;
 
     // Couleurs des stats
     private static final int COLOR_DROP = 0xE8A317;
@@ -74,32 +76,28 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
     @Override protected String getTitleKey() { return "container.apica.injector"; }
-    @Override protected int getBlitHeight() { return 125; }
+    @Override protected int getBlitHeight() { return 105; }
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
         // Essence slot (haut-gauche)
         GuiRenderHelper.renderSlot(g, x + 15, y + 22);
 
-        // Barre de progression verticale (texture centrifuge, haut vers bas)
-        GuiRenderHelper.renderVerticalTextureProgressBar(g, x + 19, y + 44, menu.getProgressRatio());
+        // Barre de progression verticale (texture centrifuge, reduite)
+        GuiRenderHelper.renderVerticalTextureProgressBar(g, x + 19, y + 44, menu.getProgressRatio(), 30);
 
         // Bee slot (bas-gauche, sous la barre de progression)
-        GuiRenderHelper.renderSlot(g, x + 15, y + 102);
+        GuiRenderHelper.renderSlot(g, x + 15, y + 80);
 
-        // Label "Saturation" au-dessus de la barre de saturation
-        g.drawCenteredString(font, Component.literal("Saturation"),
-                x + SAT_BAR_X + 8, y + SAT_BAR_Y - 10, 0x404040);
+        // Barre de saturation horizontale (au-dessus des barres de stats)
+        renderSaturationBar(g, x + SAT_BAR_X, y + SAT_BAR_Y, SAT_BAR_W, SAT_BAR_H);
 
-        // Indicateur "Satiated/Harmonisee" sous le label
+        // Indicateur "Satiated/Harmonisee"
         if (menu.isSatiated() && menu.hasBee()) {
             g.drawCenteredString(font, Component.translatable("gui.apica.injector.satiated")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE), x + SAT_BAR_X + 8, y + SAT_BAR_Y + 52, 0xFFFFFF);
+                    .withStyle(ChatFormatting.LIGHT_PURPLE),
+                    x + SAT_BAR_X + SAT_BAR_W / 2, y + SAT_BAR_Y - 10, 0xFFFFFF);
         }
-
-        // Barre de saturation (teintee, a droite)
-        int satColor = menu.isSatiated() ? COLOR_SATIATED : COLOR_SATURATION;
-        GuiRenderHelper.renderTintedBar(g, x + SAT_BAR_X, y + SAT_BAR_Y, menu.getHungerRatio(), satColor);
 
         // 5 barres de stats teintees (sans labels)
         if (menu.hasBee()) {
@@ -111,8 +109,25 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
                 int barX = FIRST_BAR_X + i * BAR_SPACING;
                 int maxPts = STAT_MAX_LEVELS[i] * pointsPerLevel;
                 float ratio = maxPts > 0 ? Math.min(1f, (float) points[i] / maxPts) : 0f;
-                GuiRenderHelper.renderTintedBar(g, x + barX, y + BAR_Y, ratio, STAT_COLORS[i]);
+                GuiRenderHelper.renderTintedBar(g, x + barX, y + BAR_Y, ratio, STAT_COLORS[i], STAT_MAX_LEVELS[i]);
             }
+        }
+    }
+
+    private void renderSaturationBar(GuiGraphics g, int bx, int by, int bw, int bh) {
+        // Cadre enfonce
+        g.fill(bx, by, bx + bw, by + 1, 0xFF373737);
+        g.fill(bx, by, bx + 1, by + bh, 0xFF373737);
+        g.fill(bx, by + bh - 1, bx + bw, by + bh, 0xFFFFFFFF);
+        g.fill(bx + bw - 1, by, bx + bw, by + bh, 0xFFFFFFFF);
+        g.fill(bx + 1, by + 1, bx + bw - 1, by + bh - 1, 0xFF8B8B8B);
+
+        // Remplissage
+        float ratio = menu.getHungerRatio();
+        int fillW = (int) ((bw - 2) * ratio);
+        if (fillW > 0) {
+            int color = menu.isSatiated() ? COLOR_SATIATED : COLOR_SATURATION;
+            g.fill(bx + 1, by + 1, bx + 1 + fillW, by + bh - 1, 0xFF000000 | color);
         }
     }
 
@@ -121,7 +136,10 @@ public class InjectorScreen extends AbstractApicaScreen<InjectorMenu> {
         if (!menu.hasBee()) return;
 
         // Saturation bar tooltip
-        if (GuiRenderHelper.isTintedBarHovered(SAT_BAR_X, SAT_BAR_Y, x, y, mouseX, mouseY)) {
+        int sbx = x + SAT_BAR_X;
+        int sby = y + SAT_BAR_Y;
+        if (mouseX >= sbx && mouseX < sbx + SAT_BAR_W
+                && mouseY >= sby && mouseY < sby + SAT_BAR_H) {
             g.renderComponentTooltip(font, List.of(
                     Component.literal("Saturation"),
                     Component.literal(menu.getHunger() + " / " + menu.getMaxHunger())
