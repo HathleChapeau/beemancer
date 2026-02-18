@@ -321,14 +321,12 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.MEADOW_COMB.get());
         output.accept(ApicaItems.FOREST_COMB.get());
         output.accept(ApicaItems.RIVER_COMB.get());
-        output.accept(ApicaItems.NETHER_COMB.get());
         output.accept(ApicaItems.END_COMB.get());
 
         // Tier II combs
         output.accept(ApicaItems.MONSTY_COMB.get());
         output.accept(ApicaItems.DOCILE_COMB.get());
         output.accept(ApicaItems.SPARK_COMB.get());
-        output.accept(ApicaItems.CULTURAL_COMB.get());
 
         // Tier III combs
         output.accept(ApicaItems.CARBON_COMB.get());

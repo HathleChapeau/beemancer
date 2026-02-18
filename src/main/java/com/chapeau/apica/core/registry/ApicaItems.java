@@ -351,8 +351,6 @@ public class ApicaItems {
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> RIVER_COMB = ITEMS.register("river_comb",
             () -> new Item(new Item.Properties()));
-    public static final DeferredItem<Item> NETHER_COMB = ITEMS.register("nether_comb",
-            () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> END_COMB = ITEMS.register("end_comb",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> MONSTY_COMB = ITEMS.register("monsty_comb",
@@ -360,8 +358,6 @@ public class ApicaItems {
     public static final DeferredItem<Item> DOCILE_COMB = ITEMS.register("docile_comb",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> SPARK_COMB = ITEMS.register("spark_comb",
-            () -> new Item(new Item.Properties()));
-    public static final DeferredItem<Item> CULTURAL_COMB = ITEMS.register("cultural_comb",
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<Item> CARBON_COMB = ITEMS.register("carbon_comb",
             () -> new Item(new Item.Properties()));
