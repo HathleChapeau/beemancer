@@ -429,16 +429,12 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         this.move(MoverType.SELF, this.getDeltaMovement());
 
         // Collision feedback (pattern Cobblemon HorseBehaviour L298-300) :
-        // Rediriger la velocite dans la direction du mouvement reel au lieu de la reduire.
-        // Le bike glisse le long des murs au lieu de s'arreter net.
+        // Recalibrer rideVelocity sur la vitesse reelle post-collision.
+        // La direction reste celle du rideVelocity, mais la magnitude est ramenee
+        // a ce que le move() a reellement permis. Empeche l'acceleration dans les murs.
         if (this.horizontalCollision) {
-            Vec3 actualDelta = this.getDeltaMovement();
-            double actualHorizSpeed = actualDelta.horizontalDistance();
-            if (actualHorizSpeed > 0.001) {
-                double rideSpeed = rideVelocity.horizontalDistance();
-                Vec3 redirected = actualDelta.normalize().scale(rideSpeed);
-                rideVelocity = new Vec3(redirected.x, rideVelocity.y, redirected.z);
-            }
+            double postCollisionSpeed = this.getDeltaMovement().length();
+            rideVelocity = rideVelocity.normalize().scale(postCollisionSpeed);
         }
 
         // Collision entites via probes (server-side uniquement)
@@ -751,6 +747,15 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     @Override
     public boolean isPushable() {
+        return false;
+    }
+
+    /**
+     * Le joueur ne demonte pas automatiquement sous l'eau.
+     * Ref: Cobblemon PokemonEntity.kt L2490-2492
+     */
+    @Override
+    public boolean dismountsUnderwater() {
         return false;
     }
 

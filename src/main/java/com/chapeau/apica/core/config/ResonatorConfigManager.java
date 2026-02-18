@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ResonatorConfigManager.java]
- * Description: Gestionnaire de configuration des waveforms par stat pour le resonateur
+ * Description: Gestionnaire de configuration des waveforms par stat et niveau pour le resonateur
  * ============================================================
  *
  * DÉPENDANCES:
@@ -14,7 +14,7 @@
  *
  * UTILISÉ PAR:
  * - Apica.java (chargement au demarrage serveur)
- * - ResonatorScreen.java (lecture des waveforms cibles)
+ * - ResonatorScreen.java (lecture des waveforms cibles par trait/niveau)
  *
  * ============================================================
  */
@@ -37,8 +37,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Charge les parametres d'onde (freq, amp, phase) associes a chaque stat d'abeille.
- * Utilise par le resonateur pour determiner les valeurs cibles en fonction de l'abeille posee.
+ * Charge les parametres d'onde (freq, amp, phase) par stat ET par niveau.
+ * Structure JSON: stat_waveforms -> statName -> level -> {frequency, amplitude, phase}
  */
 public class ResonatorConfigManager {
 
@@ -46,6 +46,7 @@ public class ResonatorConfigManager {
     private static final ResourceLocation CONFIG_PATH = ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "config/resonator_waveforms.json");
 
+    /** Cle: "statName:level" (ex: "drop:2"), valeur: waveform correspondante. */
     private static final Map<String, StatWaveform> waveforms = new HashMap<>();
     private static boolean loaded = false;
 
@@ -71,17 +72,22 @@ public class ResonatorConfigManager {
                 JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
                 if (root.has("stat_waveforms")) {
                     JsonObject stats = root.getAsJsonObject("stat_waveforms");
-                    for (Map.Entry<String, JsonElement> entry : stats.entrySet()) {
-                        JsonObject wf = entry.getValue().getAsJsonObject();
-                        int freq = wf.has("frequency") ? wf.get("frequency").getAsInt() : 20;
-                        int amp = wf.has("amplitude") ? wf.get("amplitude").getAsInt() : 50;
-                        int phase = wf.has("phase") ? wf.get("phase").getAsInt() : 0;
-                        waveforms.put(entry.getKey(), new StatWaveform(freq, amp, phase));
+                    for (Map.Entry<String, JsonElement> statEntry : stats.entrySet()) {
+                        String statName = statEntry.getKey();
+                        JsonObject levels = statEntry.getValue().getAsJsonObject();
+                        for (Map.Entry<String, JsonElement> lvlEntry : levels.entrySet()) {
+                            String level = lvlEntry.getKey();
+                            JsonObject wf = lvlEntry.getValue().getAsJsonObject();
+                            int freq = wf.has("frequency") ? wf.get("frequency").getAsInt() : 20;
+                            int amp = wf.has("amplitude") ? wf.get("amplitude").getAsInt() : 50;
+                            int phase = wf.has("phase") ? wf.get("phase").getAsInt() : 0;
+                            waveforms.put(statName + ":" + level, new StatWaveform(freq, amp, phase));
+                        }
                     }
                 }
             }
             loaded = true;
-            LOGGER.info("Loaded {} resonator stat waveforms", waveforms.size());
+            LOGGER.info("Loaded {} resonator stat waveform entries", waveforms.size());
         } catch (Exception e) {
             LOGGER.error("Failed to load resonator_waveforms.json", e);
             setupDefaults();
@@ -89,24 +95,39 @@ public class ResonatorConfigManager {
     }
 
     private static void setupDefaults() {
-        waveforms.put("drop", new StatWaveform(12, 80, 0));
-        waveforms.put("speed", new StatWaveform(35, 65, 90));
-        waveforms.put("foraging", new StatWaveform(22, 75, 180));
-        waveforms.put("tolerance", new StatWaveform(50, 55, 270));
-        waveforms.put("activity", new StatWaveform(68, 90, 45));
+        waveforms.put("drop:1", new StatWaveform(8, 60, 20));
+        waveforms.put("drop:2", new StatWaveform(19, 45, 145));
+        waveforms.put("drop:3", new StatWaveform(33, 80, 265));
+        waveforms.put("drop:4", new StatWaveform(51, 55, 70));
+        waveforms.put("speed:1", new StatWaveform(14, 50, 310));
+        waveforms.put("speed:2", new StatWaveform(27, 75, 85));
+        waveforms.put("speed:3", new StatWaveform(44, 40, 200));
+        waveforms.put("speed:4", new StatWaveform(67, 90, 340));
+        waveforms.put("foraging:1", new StatWaveform(5, 70, 155));
+        waveforms.put("foraging:2", new StatWaveform(21, 35, 290));
+        waveforms.put("foraging:3", new StatWaveform(38, 85, 50));
+        waveforms.put("foraging:4", new StatWaveform(56, 60, 225));
+        waveforms.put("tolerance:1", new StatWaveform(11, 40, 240));
+        waveforms.put("tolerance:2", new StatWaveform(24, 65, 30));
+        waveforms.put("tolerance:3", new StatWaveform(42, 50, 175));
+        waveforms.put("tolerance:4", new StatWaveform(63, 85, 320));
+        waveforms.put("activity:1", new StatWaveform(18, 55, 100));
+        waveforms.put("activity:2", new StatWaveform(35, 80, 260));
+        waveforms.put("activity:3", new StatWaveform(54, 45, 15));
         loaded = true;
     }
 
     // ========== API PUBLIQUE ==========
 
     /**
-     * Retourne les parametres d'onde pour une stat donnee.
+     * Retourne les parametres d'onde pour une stat a un niveau donne.
      * @param statName nom de la stat (drop, speed, foraging, tolerance, activity)
+     * @param level niveau du trait (1, 2, 3, 4...)
      * @return la waveform ou null si inconnue
      */
-    public static StatWaveform getStatWaveform(String statName) {
+    public static StatWaveform getStatWaveform(String statName, int level) {
         if (!loaded) setupDefaults();
-        return waveforms.get(statName);
+        return waveforms.get(statName + ":" + level);
     }
 
     public static boolean isLoaded() { return loaded; }

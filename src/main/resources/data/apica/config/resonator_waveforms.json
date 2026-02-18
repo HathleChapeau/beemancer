@@ -1,9 +1,33 @@
 {
   "stat_waveforms": {
-    "drop":       { "frequency": 12, "amplitude": 80, "phase": 0 },
-    "speed":      { "frequency": 35, "amplitude": 65, "phase": 90 },
-    "foraging":   { "frequency": 22, "amplitude": 75, "phase": 180 },
-    "tolerance":  { "frequency": 50, "amplitude": 55, "phase": 270 },
-    "activity":   { "frequency": 68, "amplitude": 90, "phase": 45 }
+    "drop": {
+      "1": { "frequency": 8,  "amplitude": 60, "phase": 20 },
+      "2": { "frequency": 19, "amplitude": 45, "phase": 145 },
+      "3": { "frequency": 33, "amplitude": 80, "phase": 265 },
+      "4": { "frequency": 51, "amplitude": 55, "phase": 70 }
+    },
+    "speed": {
+      "1": { "frequency": 14, "amplitude": 50, "phase": 310 },
+      "2": { "frequency": 27, "amplitude": 75, "phase": 85 },
+      "3": { "frequency": 44, "amplitude": 40, "phase": 200 },
+      "4": { "frequency": 67, "amplitude": 90, "phase": 340 }
+    },
+    "foraging": {
+      "1": { "frequency": 5,  "amplitude": 70, "phase": 155 },
+      "2": { "frequency": 21, "amplitude": 35, "phase": 290 },
+      "3": { "frequency": 38, "amplitude": 85, "phase": 50 },
+      "4": { "frequency": 56, "amplitude": 60, "phase": 225 }
+    },
+    "tolerance": {
+      "1": { "frequency": 11, "amplitude": 40, "phase": 240 },
+      "2": { "frequency": 24, "amplitude": 65, "phase": 30 },
+      "3": { "frequency": 42, "amplitude": 50, "phase": 175 },
+      "4": { "frequency": 63, "amplitude": 85, "phase": 320 }
+    },
+    "activity": {
+      "1": { "frequency": 18, "amplitude": 55, "phase": 100 },
+      "2": { "frequency": 35, "amplitude": 80, "phase": 260 },
+      "3": { "frequency": 54, "amplitude": 45, "phase": 15 }
+    }
   }
 }

@@ -146,7 +146,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         int toleranceLvl = speciesData != null ? speciesData.toleranceLevel : 1;
         int activityLvl = getActivityLevel(speciesData);
 
-        // Combinaison ponderee des waveforms par stat
+        // Combinaison des waveforms par stat (chaque stat a sa courbe selon son niveau)
         String[] statNames = {"drop", "speed", "foraging", "tolerance", "activity"};
         int[] levels = {dropLvl, speedLvl, forageLvl, toleranceLvl, activityLvl};
 
@@ -156,7 +156,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         float weightedPhase = 0;
 
         for (int i = 0; i < statNames.length; i++) {
-            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(statNames[i]);
+            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(statNames[i], levels[i]);
             if (wf == null) continue;
             float weight = levels[i];
             totalWeight += weight;
@@ -343,17 +343,37 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     /**
      * Dessine un tiret vertical sur la barre Hz pour chaque trait de l'abeille.
+     * La frequence est lue du JSON par stat ET par niveau du trait.
      */
     private void renderStatTicks(GuiGraphics g, int sx, int sy) {
         ResonatorConfigManager.ensureClientLoaded();
+        BeeSpeciesManager.ensureClientLoaded();
+
+        ItemStack bee = menu.getStoredBee();
+        String speciesId = getSpeciesFromBee(bee);
+        BeeSpeciesManager.BeeSpeciesData data = speciesId != null
+                ? BeeSpeciesManager.getSpecies(speciesId) : null;
+
+        int[] levels = getStatLevels(data);
+
         for (int i = 0; i < STAT_NAMES.length; i++) {
-            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i]);
+            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
             if (wf == null) continue;
             float tickRatio = (wf.frequency - FREQ_MIN) / (float) (FREQ_MAX - FREQ_MIN);
             int tickX = sx + 1 + (int) ((SLIDER_W - 2) * tickRatio);
-            // Tiret vertical depassant au-dessus et en dessous de la barre
             g.fill(tickX, sy - 2, tickX + 1, sy + SLIDER_H + 2, STAT_COLORS[i]);
         }
+    }
+
+    private static int[] getStatLevels(BeeSpeciesManager.BeeSpeciesData data) {
+        if (data == null) return new int[]{1, 1, 1, 1, 1};
+        return new int[]{
+                data.dropLevel,
+                data.flyingSpeedLevel,
+                data.foragingDurationLevel,
+                data.toleranceLevel,
+                getActivityLevel(data)
+        };
     }
 
     private void renderKnob(GuiGraphics g, int cx, int cy, int radius,
