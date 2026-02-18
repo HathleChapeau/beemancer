@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "paperbark"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "paperbark"
+    }
   ]
 }

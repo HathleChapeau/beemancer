@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "paladin"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "paladin"
+    }
   ]
 }

@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "crystalline"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "crystalline"
+    }
   ]
 }

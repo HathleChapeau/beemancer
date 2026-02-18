@@ -21,6 +21,10 @@
  */
 package com.chapeau.apica.common.block.resonator;
 
+import com.chapeau.apica.common.codex.CodexPlayerData;
+import com.chapeau.apica.common.item.bee.MagicBeeItem;
+import com.chapeau.apica.core.registry.ApicaAttachments;
+import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaItems;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -37,6 +41,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -65,6 +71,14 @@ public class ResonatorBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new ResonatorBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide()) return null;
+        return createTickerHelper(type, ApicaBlockEntities.RESONATOR.get(),
+                ResonatorBlockEntity::serverTick);
     }
 
     // Clic droit avec item en main (abeille)
@@ -113,8 +127,8 @@ public class ResonatorBlock extends BaseEntityBlock {
         if (!level.isClientSide()) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof ResonatorBlockEntity resonator) {
-                // Shift+clic droit: reprendre l'abeille
-                if (player.isShiftKeyDown() && resonator.hasBee()) {
+                // Shift+clic droit: reprendre l'abeille (interdit pendant analyse)
+                if (player.isShiftKeyDown() && resonator.hasBee() && !resonator.isAnalysisInProgress()) {
                     ItemStack removed = resonator.removeBee();
                     if (!removed.isEmpty()) {
                         if (!player.getInventory().add(removed)) {
@@ -125,12 +139,27 @@ public class ResonatorBlock extends BaseEntityBlock {
                         return InteractionResult.CONSUME;
                     }
                 }
-                // Ouvrir le menu
+                // Ouvrir le menu (analyse ou normal)
                 if (player instanceof ServerPlayer serverPlayer) {
+                    boolean analysisMode = false;
+                    if (resonator.hasBee()) {
+                        String speciesId = MagicBeeItem.getSpeciesId(resonator.getStoredBee());
+                        if (speciesId != null) {
+                            CodexPlayerData codex = serverPlayer.getData(ApicaAttachments.CODEX_DATA);
+                            if (!codex.isSpeciesKnown(speciesId)) {
+                                analysisMode = true;
+                                if (!resonator.isAnalysisInProgress()) {
+                                    resonator.startAnalysis(serverPlayer.getUUID());
+                                }
+                            }
+                        }
+                    }
+                    final boolean sendAnalysisMode = analysisMode;
                     serverPlayer.openMenu(resonator, buf -> {
                         buf.writeBlockPos(pos);
                         ItemStack.OPTIONAL_STREAM_CODEC.encode(
                                 (RegistryFriendlyByteBuf) buf, resonator.getStoredBee());
+                        buf.writeBoolean(sendAnalysisMode);
                     });
                 }
             }

@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "volcanic"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "volcanic"
+    }
   ]
 }

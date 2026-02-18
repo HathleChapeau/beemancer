@@ -98,9 +98,7 @@ public class MultiblockPatterns {
     );
 
     // ==================== HIVE MULTIBLOCK ====================
-    // Structure 3x3x3 + 3x3 slabs on top, contrôleur au centre Y+0
-    //
-    // Étage 3 (Y+3 relatif): 3x3 Honeyed Slabs
+    // Structure 3x3x3 pure, contrôleur au centre Y+0
     // Étage 0-2 (Y+0 à Y+2 relatif): 3x3x3 Hive Multiblock blocks
     // Controller at (0, 0, 0) = center of bottom layer
 
@@ -138,17 +136,6 @@ public class MultiblockPatterns {
             .add(-1, 2, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
             .add(0, 2, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
             .add(1, 2, 1, block(ApicaBlocks.HIVE_MULTIBLOCK))
-
-            // Layer 3 (Y+3): 3x3 honeyed slabs on top
-            .add(-1, 3, -1, slab(ApicaBlocks.IRON_FOUNDATION_SLAB))
-            .add(0, 3, -1, slab(ApicaBlocks.IRON_FOUNDATION_SLAB))
-            .add(1, 3, -1, slab(ApicaBlocks.IRON_FOUNDATION_SLAB))
-            .add(-1, 3, 0, slab(ApicaBlocks.IRON_FOUNDATION_SLAB))
-            .add(0, 3, 0, slab(ApicaBlocks.IRON_FOUNDATION_SLAB))
-            .add(1, 3, 0, slab(ApicaBlocks.IRON_FOUNDATION_SLAB))
-            .add(-1, 3, 1, slab(ApicaBlocks.IRON_FOUNDATION_SLAB))
-            .add(0, 3, 1, slab(ApicaBlocks.IRON_FOUNDATION_SLAB))
-            .add(1, 3, 1, slab(ApicaBlocks.IRON_FOUNDATION_SLAB))
 
             .build()
     );

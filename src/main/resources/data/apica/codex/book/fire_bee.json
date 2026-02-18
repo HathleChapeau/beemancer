@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "fire"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "fire"
+    }
   ]
 }

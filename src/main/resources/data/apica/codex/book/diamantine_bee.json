@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "diamantine"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "diamantine"
+    }
   ]
 }

@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "rose_stone"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "rose_stone"
+    }
   ]
 }

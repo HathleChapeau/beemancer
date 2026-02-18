@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "floral"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "floral"
+    }
   ]
 }

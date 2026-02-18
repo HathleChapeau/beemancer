@@ -1,6 +1,8 @@
 {
   "variants": {
-    "multiblock=none": { "model": "apica:block/multibloc/hive/hive_multiblock" },
-    "multiblock=hive": { "model": "apica:block/multibloc/hive/hive_multiblock_hive" }
+    "controller=false,multiblock=none": { "model": "apica:block/multibloc/hive/hive_multiblock" },
+    "controller=false,multiblock=hive": { "model": "apica:block/multibloc/hive/hive_multiblock_formed" },
+    "controller=true,multiblock=none":  { "model": "apica:block/multibloc/hive/hive_multiblock" },
+    "controller=true,multiblock=hive":  { "model": "apica:block/multibloc/hive/hive_multiblock_controller" }
   }
 }

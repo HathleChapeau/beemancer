@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "royal"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "royal"
+    }
   ]
 }

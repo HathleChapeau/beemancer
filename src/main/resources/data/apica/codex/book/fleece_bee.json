@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "fleece"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "fleece"
+    }
   ]
 }

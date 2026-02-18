@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "wind"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "wind"
+    }
   ]
 }

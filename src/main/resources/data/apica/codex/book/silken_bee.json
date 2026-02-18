@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "silken"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "silken"
+    }
   ]
 }

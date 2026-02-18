@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "mycelial"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "mycelial"
+    }
   ]
 }

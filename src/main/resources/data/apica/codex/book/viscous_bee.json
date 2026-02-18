@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "viscous"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "viscous"
+    }
   ]
 }

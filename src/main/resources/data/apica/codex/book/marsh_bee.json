@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "marsh"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "marsh"
+    }
   ]
 }

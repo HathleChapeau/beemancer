@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ResonatorBlockEntity.java]
- * Description: Stocke les 4 parametres d'onde et une abeille optionnelle
+ * Description: Stocke les 4 parametres d'onde, une abeille optionnelle et l'etat d'analyse
  * ============================================================
  *
  * DÉPENDANCES:
@@ -10,19 +10,30 @@
  * |-------------------------|----------------------|--------------------------------|
  * | ApicaBlockEntities      | Type enregistre      | Construction                   |
  * | ResonatorMenu           | Menu associe         | createMenu()                   |
- * | ContainerData           | Sync serveur→client  | 5 valeurs (4 onde + hasBee)    |
+ * | ContainerData           | Sync serveur→client  | 7 valeurs (4 onde + hasBee + analysis) |
+ * | BeeSpeciesManager       | Donnees espece       | Tier pour duree analyse        |
+ * | BeeInjectionHelper      | Bonus traits         | Niveaux exacts des traits      |
+ * | CodexPlayerData         | Knowledge joueur     | Deblocage traits/espece        |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
- * - ResonatorBlock (newBlockEntity, openMenu, bee placement)
+ * - ResonatorBlock (newBlockEntity, openMenu, bee placement, ticker)
  * - ResonatorMenu (server constructor)
+ * - ResonatorFinishPacket (completeAnalysis)
  *
  * ============================================================
  */
 package com.chapeau.apica.common.block.resonator;
 
+import com.chapeau.apica.common.codex.CodexPlayerData;
+import com.chapeau.apica.common.item.bee.MagicBeeItem;
+import com.chapeau.apica.common.item.essence.EssenceItem;
 import com.chapeau.apica.common.menu.ResonatorMenu;
+import com.chapeau.apica.core.bee.BeeSpeciesManager;
+import com.chapeau.apica.core.network.packets.CodexSyncPacket;
+import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
+import com.chapeau.apica.core.util.BeeInjectionHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -30,16 +41,20 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -55,6 +70,14 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
     /** Abeille stockee sur le resonateur (visuel + target waveform). */
     private ItemStack storedBee = ItemStack.EMPTY;
 
+    // ========== ANALYSIS STATE ==========
+
+    private boolean analysisInProgress = false;
+    private int analysisProgress = 0;
+    private int analysisDuration = 0;
+    @Nullable
+    private UUID analyzingPlayerUUID = null;
+
     public final ContainerData containerData = new ContainerData() {
         @Override
         public int get(int index) {
@@ -64,6 +87,8 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
                 case 2 -> phase;
                 case 3 -> harmonics;
                 case 4 -> storedBee.isEmpty() ? 0 : 1;
+                case 5 -> analysisProgress;
+                case 6 -> analysisDuration;
                 default -> 0;
             };
         }
@@ -81,12 +106,107 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public int getCount() {
-            return 5;
+            return 7;
         }
     };
 
     public ResonatorBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.RESONATOR.get(), pos, state);
+    }
+
+    // ========== SERVER TICK ==========
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, ResonatorBlockEntity be) {
+        if (!be.analysisInProgress) return;
+        if (be.storedBee.isEmpty()) {
+            be.cancelAnalysis();
+            return;
+        }
+        if (be.analysisProgress < be.analysisDuration) {
+            be.analysisProgress++;
+            be.setChanged();
+        }
+    }
+
+    // ========== ANALYSIS ==========
+
+    public boolean isAnalysisInProgress() {
+        return analysisInProgress;
+    }
+
+    /**
+     * Demarre l'analyse d'une abeille inconnue.
+     * Duree = 10 secondes * tier de l'espece (en ticks).
+     */
+    public void startAnalysis(UUID playerUUID) {
+        String speciesId = MagicBeeItem.getSpeciesId(storedBee);
+        BeeSpeciesManager.BeeSpeciesData data = speciesId != null
+                ? BeeSpeciesManager.getSpecies(speciesId) : null;
+        int tierNum = data != null ? parseTierNumber(data.tier) : 1;
+        this.analysisDuration = tierNum * 10 * 20;
+        this.analysisProgress = 0;
+        this.analysisInProgress = true;
+        this.analyzingPlayerUUID = playerUUID;
+        setChanged();
+    }
+
+    /**
+     * Complete l'analyse: debloque l'espece et les niveaux exacts des 5 traits.
+     */
+    public void completeAnalysis(ServerPlayer player) {
+        if (!analysisInProgress || analysisProgress < analysisDuration) return;
+
+        String speciesId = MagicBeeItem.getSpeciesId(storedBee);
+        if (speciesId == null) {
+            cancelAnalysis();
+            return;
+        }
+
+        CodexPlayerData codex = player.getData(ApicaAttachments.CODEX_DATA);
+        codex.learnSpecies(speciesId);
+
+        BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(speciesId);
+        if (data != null) {
+            int dropTotal = data.dropLevel + BeeInjectionHelper.getBonusLevel(storedBee, EssenceItem.EssenceType.DROP);
+            codex.learnTrait("drop:" + dropTotal);
+
+            int speedTotal = data.flyingSpeedLevel + BeeInjectionHelper.getBonusLevel(storedBee, EssenceItem.EssenceType.SPEED);
+            codex.learnTrait("speed:" + speedTotal);
+
+            int foragingTotal = data.foragingDurationLevel + BeeInjectionHelper.getBonusLevel(storedBee, EssenceItem.EssenceType.FORAGING);
+            codex.learnTrait("foraging:" + foragingTotal);
+
+            int toleranceTotal = data.toleranceLevel + BeeInjectionHelper.getBonusLevel(storedBee, EssenceItem.EssenceType.TOLERANCE);
+            codex.learnTrait("tolerance:" + toleranceTotal);
+
+            int activityBase = BeeInjectionHelper.getActivityLevel(data.dayNight);
+            int activityBonus = BeeInjectionHelper.getBonusLevel(storedBee, EssenceItem.EssenceType.DIURNAL);
+            codex.learnTrait("activity:" + (activityBase + activityBonus));
+        }
+
+        player.setData(ApicaAttachments.CODEX_DATA, codex);
+        PacketDistributor.sendToPlayer(player, new CodexSyncPacket(codex));
+
+        cancelAnalysis();
+    }
+
+    public void cancelAnalysis() {
+        analysisInProgress = false;
+        analysisProgress = 0;
+        analysisDuration = 0;
+        analyzingPlayerUUID = null;
+        setChanged();
+    }
+
+    private static int parseTierNumber(String tier) {
+        return switch (tier) {
+            case "I" -> 1;
+            case "II" -> 2;
+            case "III" -> 3;
+            case "IV" -> 4;
+            case "V" -> 5;
+            default -> 1;
+        };
     }
 
     // ========== BEE STORAGE ==========
@@ -120,6 +240,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         if (storedBee.isEmpty()) return ItemStack.EMPTY;
         ItemStack removed = storedBee.copy();
         storedBee = ItemStack.EMPTY;
+        cancelAnalysis();
         setChanged();
         syncToClient();
         return removed;
@@ -135,7 +256,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new ResonatorMenu(containerId, playerInventory, containerData, worldPosition, storedBee);
+        return new ResonatorMenu(containerId, playerInventory, containerData, worldPosition, storedBee, false);
     }
 
     // ========== NBT ==========
@@ -149,6 +270,14 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         tag.putInt("Harmonics", harmonics);
         if (!storedBee.isEmpty()) {
             tag.put("StoredBee", storedBee.save(registries, new CompoundTag()));
+        }
+        if (analysisInProgress) {
+            tag.putBoolean("AnalysisInProgress", true);
+            tag.putInt("AnalysisProgress", analysisProgress);
+            tag.putInt("AnalysisDuration", analysisDuration);
+            if (analyzingPlayerUUID != null) {
+                tag.putUUID("AnalyzingPlayer", analyzingPlayerUUID);
+            }
         }
     }
 
@@ -164,6 +293,12 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
                     .orElse(ItemStack.EMPTY);
         } else {
             storedBee = ItemStack.EMPTY;
+        }
+        analysisInProgress = tag.getBoolean("AnalysisInProgress");
+        analysisProgress = tag.getInt("AnalysisProgress");
+        analysisDuration = tag.getInt("AnalysisDuration");
+        if (tag.hasUUID("AnalyzingPlayer")) {
+            analyzingPlayerUUID = tag.getUUID("AnalyzingPlayer");
         }
     }
 

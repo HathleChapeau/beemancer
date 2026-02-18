@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "spirit"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "spirit"
+    }
   ]
 }

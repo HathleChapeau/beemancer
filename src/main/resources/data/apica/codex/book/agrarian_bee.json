@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "agrarian"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "agrarian"
+    }
   ]
 }

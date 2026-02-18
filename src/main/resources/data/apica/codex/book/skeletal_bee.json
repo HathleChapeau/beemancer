@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "skeletal"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "skeletal"
+    }
   ]
 }

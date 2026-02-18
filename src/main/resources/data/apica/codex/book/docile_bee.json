@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "docile"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "docile"
+    }
   ]
 }

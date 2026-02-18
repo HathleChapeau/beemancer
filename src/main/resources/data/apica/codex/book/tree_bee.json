@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "tree"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "tree"
+    }
   ]
 }

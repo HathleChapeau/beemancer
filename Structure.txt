@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-17                     #
-#  (Essence Injector + Species Essence - 2026-02-17)                            #
+#                         Dernière mise à jour: 2026-02-18                     #
+#  (Resonator V2 + Hoverbike Mixins + Codex + Cleanup - 2026-02-18)            #
 ################################################################################
 
 ================================================================================
@@ -156,6 +156,12 @@ Philosophie:
 │ client/gui/screen/HoverbikePartScreen│ GUI selection variante (3D preview)     │
 │ client/HoverbikeEditModeEffect       │ Blit entity_outline → shader mask       │
 │ core/network/packets/HoverbikeVariantPacket│ Packet C2S changement variante   │
+│ core/config/ResonatorConfigManager       │ Config waveforms par stat/niveau    │
+│ client/renderer/block/ResonatorRenderer  │ Renderer abeille 3D sur resonateur  │
+│ client/renderer/debug/HoverbikeDebugRenderer│ Rendu debug 3D raycasts hoverbike│
+│ mixin/EntityCollisionMixin               │ Force step-up hoverbike (onGround)  │
+│ mixin/LivingEntitySuffocationMixin       │ Anti-suffocation joueur sur hoverbike│
+│ mixin/PlayerDimensionsMixin              │ Force STANDING dimensions sur hoverbike│
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -554,25 +560,28 @@ LISTE DES FEATURES:
   Fichier: Structure/feature_bee_nests_scoop.txt
   Description: 7 nids d'abeilles naturels (1 par espece Tier I) generes dans le monde + outil Scoop pour capturer les MagicBees
 
-→ Resonator
+→ Resonator V2
   Description: Bloc resonateur avec GUI interactive: affichage d'onde en temps reel par synthese additive (Fourier),
     slider de frequence (1-80 Hz), 3 potards rotatifs (Amplitude, Phase, Harmoniques) avec drag vertical et scroll.
     L'onde morphe de sinusoide pure a quasi-onde carree via ajout d'harmoniques impaires.
+    V2: slot abeille dans GUI + sur bloc (placement clic droit), renderer 3D abeille posee,
+    target waveform calculee depuis stats espece via ResonatorConfigManager (JSON data-driven),
+    tirets colores par stat sur le slider Hz, match % reactif
   Scripts crees: ResonatorBlock.java, ResonatorBlockEntity.java, ResonatorMenu.java, ResonatorScreen.java,
-    WaveformRenderer.java, ResonatorUpdatePacket.java
+    WaveformRenderer.java, ResonatorUpdatePacket.java, ResonatorConfigManager.java, ResonatorRenderer.java
   Scripts modifies: ApicaBlocks.java (+RESONATOR), ApicaItems.java (+RESONATOR), ApicaBlockEntities.java (+RESONATOR),
-    ApicaMenus.java (+RESONATOR), ApicaCreativeTabs.java (+resonator dans tools), ClientSetup.java (+screen),
-    ApicaNetwork.java (+packet C2S)
+    ApicaMenus.java (+RESONATOR), ApicaCreativeTabs.java (+resonator dans tools), ClientSetup.java (+screen+renderer),
+    ApicaNetwork.java (+packet C2S), Apica.java (+ResonatorConfigManager.load)
   Assets: blockstates/resonator.json, models/block/resonator.json, models/item/resonator.json,
-    loot_table/blocks/resonator.json, lang en_us+fr_fr (+block.apica.resonator)
-  Dependances: GuiRenderHelper, ApicaMenu, ContainerData
+    loot_table/blocks/resonator.json, data/apica/config/resonator_waveforms.json, lang en_us+fr_fr
+  Dependances: GuiRenderHelper, ApicaMenu, ContainerData, BeeSpeciesManager, ResonatorConfigManager, MagicBeeItem
   Registres modifies: ApicaBlocks (+1), ApicaItems (+1), ApicaBlockEntities (+1), ApicaMenus (+1)
 
 → Essence Injector + Species Essence
-  Description: Machine injecteur d'essence avec 5 jauges crantees (DROP/SPEED/FORAGING/TOLERANCE/ACTIVITY),
-    systeme de faim/satiation, cap par niveau d'essence, essence d'espece avec metadata, 12 recettes de multiplication
+  Description: Machine injecteur d'essence avec 5 barres teintees (DROP/SPEED/FORAGING/TOLERANCE/ACTIVITY),
+    systeme de saturation arcanique ("Attuned"), cap par niveau d'essence, essence d'espece avec metadata, 12 recettes de multiplication
   Scripts crees: EssenceValue.java, InjectionConfigManager.java, BeeInjectionHelper.java, SpeciesEssenceItem.java,
-    InjectorBlock.java, InjectorBlockEntity.java, InjectorMenu.java, NotchedGaugeWidget.java, InjectorScreen.java
+    InjectorBlock.java, InjectorBlockEntity.java, InjectorMenu.java, InjectorScreen.java
   Scripts modifies: ApicaItems.java (+SPECIES_ESSENCE, +INJECTOR), ApicaBlocks.java (+INJECTOR),
     ApicaBlockEntities.java (+INJECTOR), ApicaMenus.java (+INJECTOR), Apica.java (+InjectionConfigManager.load),
     ClientSetup.java (+InjectorScreen), ExtractorHeartBlockEntity.java (+species essence drop),
@@ -580,9 +589,93 @@ LISTE DES FEATURES:
   Assets: blockstates/injector.json, models/block/machines/injector.json, models/item/injector.json,
     models/item/species_essence.json, textures/item/essence/species_essence.png,
     12 recettes data/apica/recipe/essence_craft/*.json, 2 configs data/apica/config/
-  Lang: +7 cles en_us/fr_fr (species_essence, injector, container, satiated, hunger, desc)
+  Lang: +7 cles en_us/fr_fr (species_essence, injector, container, attuned, arcane_saturation, desc)
   Dependances: GuiRenderHelper, ApicaMenu, ApicaSlot, BeeSpeciesManager, EssenceItem, ContainerData
   Registres modifies: ApicaItems (+2), ApicaBlocks (+1), ApicaBlockEntities (+1), ApicaMenus (+1)
+
+→ Hoverbike Mixins + Physics V3
+  Description: 3 mixins NeoForge pour corriger le comportement du hoverbike: step-up force quand onGround=false
+    (pattern Cobblemon EntityMixin), anti-suffocation passager (pattern Cobblemon LivingEntityMixin),
+    force STANDING dimensions joueur (pattern Cobblemon PlayerMixin). Raycasts predictifs 6 rays depuis le nez,
+    debug renderer 3D des raycasts, server-side unstick, simplification collision feedback (pattern Cobblemon
+    HorseBehaviour), envol en mode RUN avec drain x1.5 + jauge ne se remplit pas, isAffectedByFluids=false,
+    dismountsUnderwater=false, fall damage prevention dans move(), prevYawDelta pour interpolation banking
+  Scripts crees: EntityCollisionMixin.java, LivingEntitySuffocationMixin.java, PlayerDimensionsMixin.java,
+    HoverbikeDebugRenderer.java, apica.mixins.json
+  Scripts modifies: HoverbikeEntity.java (raycasts, unstick, move override, collision simplification,
+    isAffectedByFluids, dismountsUnderwater, envol RUN, prevYawDelta),
+    HoverbikePhysics.java (+helper methods), HoverbikeRenderer.java (banking interpolation),
+    HoverbikeDebugHud.java (+raycast info), ClientSetup.java (+debug renderer event),
+    neoforge.mods.toml (+mixin config)
+  Dependances: HoverbikeEntity, HoverbikeCollisionGeometry, DebugRenderHelper, DebugWandItem
+  Registres modifies: aucun
+
+→ Injector GUI Refonte (Barres Teintees)
+  Description: Remplacement des NotchedGaugeWidget par des barres teintees verticales (renderTintedBar),
+    barre de saturation horizontale violette, layout restructure (essence slot haut-gauche, bee slot bas-gauche,
+    progress bar verticale), rename "Satiated"→"Attuned", "Hunger"→"Arcane Saturation"
+  Scripts modifies: InjectorScreen.java (refonte complete layout), InjectorMenu.java (hasBee),
+    GuiRenderHelper.java (+renderTintedBar, +isTintedBarHovered, +renderVerticalTextureProgressBar)
+  Lang: satiated→"ATTUNED", hunger→"Arcane Saturation"
+  Dependances: GuiRenderHelper
+  Registres modifies: aucun
+
+→ Codex Node Enhancements
+  Description: Ajout connectionMode sur CodexNode (routing des connexions entre nodes),
+    badges tier (I, II, III...) sur BeeNodeWidget, lecture couleur espece depuis BeeSpeciesManager
+  Scripts modifies: CodexNode.java (+connectionMode field, +fromJson parsing),
+    BeeNodeWidget.java (+renderTierBadge), CodexNodeWidget.java (connection rendering),
+    BeeTreePageRenderer.java (connection mode support), CodexScreen.java (minor adjustments),
+    CodexTabButtonWidget.java (visual tweak)
+  Dependances: BeeSpeciesManager, CodexManager
+  Registres modifies: aucun
+
+→ Bee Species Color System
+  Description: Ajout champ "color" (hex RGB "#RRGGBB") dans bee_species.json pour chaque espece,
+    parsing dans BeeSpeciesManager, getSpeciesColor() API. Expansion massive du JSON species
+    (formatage + 98 especes avec couleurs). Suppression nether_comb et cultural_comb (items, models, recettes)
+  Scripts modifies: BeeSpeciesManager.java (+color field, +getSpeciesColor),
+    ApicaItems.java (-NETHER_COMB, -CULTURAL_COMB), ApicaCreativeTabs.java (cleanup)
+  Assets supprimes: models/item/cultural_comb.json, models/item/nether_comb.json,
+    recipe/centrifuging/cultural_comb.json, recipe/centrifuging/nether_comb.json,
+    textures/block/fluid/fire_nectar_*.png, frost_nectar_*.png, storm_nectar_*.png,
+    textures/block/altar/stone.png
+  Assets ajoutes: textures/block/beehive_end.png, textures/block/beehive_side.png,
+    textures/gui/left_bar.png, textures/gui/right_bar.png
+  Lang: itemGroup.apica.combs→"Apica - Bee Products", -nether_comb, -cultural_comb
+  Registres modifies: ApicaItems (-2 combs)
+
+→ Bee Trait Knowledge System
+  Description: Systeme de decouverte des traits d'abeilles et especes. Traits/especes inconnus affichent "???".
+    Le resonateur permet d'analyser une abeille inconnue (barre de progression, duree = tier × 10s).
+    A la fin, debloque l'espece + les 5 niveaux de traits exacts (base + bonus injection).
+    Commandes: getAllKnowledge (debloque tout), reset all, reset traits.
+  Scripts modifies: CodexPlayerData.java (+knownSpecies, +knownTraits sets, CODEC, NBT, copy),
+    CodexSyncPacket.java (+2 sets encode/decode/handle),
+    ApicaCommands.java (+reset traits, +getAllKnowledge traits/species),
+    StatsSection.java (knowledge check pour 5 traits modifiables),
+    BeeNodeWidget.java (species knowledge check pour nom),
+    MagicBeeItem.java (knowledge checks dans tooltips),
+    ResonatorBlockEntity.java (+analysis state, serverTick, startAnalysis, completeAnalysis, cancelAnalysis, NBT),
+    ResonatorBlock.java (+getTicker, analysis mode detection, empechement retrait pendant analyse),
+    ResonatorMenu.java (+analysisMode, ContainerData 7 slots, getters analyse),
+    ResonatorScreen.java (+renderAnalysisMode, Finish button click, disable waveform en analyse),
+    ApicaNetwork.java (+ResonatorFinishPacket registration)
+  Scripts crees: ResonatorFinishPacket.java (packet C2S pour completer l'analyse)
+  Dependances: CodexPlayerData, BeeSpeciesManager, BeeInjectionHelper, ApicaAttachments
+  Registres modifies: ApicaNetwork (+1 packet)
+
+→ Resonation Sticky Note
+  Description: Sticky note "Resonation" ajoutee a chaque abeille du codex. Affiche le nom de l'espece
+    avec son onde combinee, et chaque trait par defaut avec son onde (freq/amp/phase). Les traits/especes
+    inconnus affichent "???: ???" via le systeme de knowledge. Icone wave_icon.png sur le bouton.
+  Scripts crees: ResonationNoteRenderer.java (rendu contenu note dans overlay)
+  Scripts modifies: StickyNote.java (+type, +species fields, +isResonation()),
+    CodexBookScreen.java (+delegation rendu resonation, +icone wave, +couleur note bleue)
+  Assets crees: wave_icon.png (16x16 icone onde)
+  Assets modifies: 97 fichiers codex/book/*_bee.json (+sticky note resonation)
+  Dependances: ResonatorConfigManager, BeeSpeciesManager, CodexPlayerData
+  Registres modifies: aucun
 
 ================================================================================
 6. FEATURES EN COURS

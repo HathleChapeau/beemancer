@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "loam"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "loam"
+    }
   ]
 }

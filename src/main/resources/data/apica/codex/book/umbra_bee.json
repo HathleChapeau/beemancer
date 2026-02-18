@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "umbra"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "umbra"
+    }
   ]
 }

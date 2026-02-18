@@ -1,0 +1,23 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "side": "apica:block/beehive_side",
+    "end": "apica:block/beehive_end",
+    "particle": "apica:block/beehive_side"
+  },
+  "elements": [
+    {
+      "name": "HiveBody",
+      "from": [-16, 0, -16],
+      "to": [32, 48, 32],
+      "faces": {
+        "north": { "texture": "#side", "uv": [0, 0, 16, 16] },
+        "south": { "texture": "#side", "uv": [0, 0, 16, 16] },
+        "east":  { "texture": "#side", "uv": [0, 0, 16, 16] },
+        "west":  { "texture": "#side", "uv": [0, 0, 16, 16] },
+        "up":    { "texture": "#end",  "uv": [0, 0, 16, 16] },
+        "down":  { "texture": "#end",  "uv": [0, 0, 16, 16] }
+      }
+    }
+  ]
+}

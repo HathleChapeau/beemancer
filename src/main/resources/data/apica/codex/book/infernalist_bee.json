@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "infernalist"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "infernalist"
+    }
   ]
 }

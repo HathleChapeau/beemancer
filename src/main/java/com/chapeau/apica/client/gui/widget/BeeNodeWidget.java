@@ -81,10 +81,6 @@ public class BeeNodeWidget extends AbstractWidget {
         this.canUnlock = canUnlock;
         this.nodeState = state != null ? state : (unlocked ? NodeState.UNLOCKED : (canUnlock ? NodeState.DISCOVERED : NodeState.LOCKED));
 
-        // Calculer le texte à afficher (??? si SECRET et LOCKED)
-        this.displayTitle = CodexManager.getDisplayTitle(node, this.nodeState);
-        this.displayDescription = CodexManager.getDisplayDescription(node, this.nodeState);
-
         // Extract species ID from node ID (e.g., "meadow_bee" -> "meadow")
         String nodeId = node.getId();
         if (nodeId.endsWith("_bee")) {
@@ -92,6 +88,23 @@ public class BeeNodeWidget extends AbstractWidget {
         } else {
             this.speciesId = nodeId;
         }
+
+        // Calculer le texte à afficher (??? si SECRET et LOCKED, ou si espece inconnue)
+        Component baseTitle = CodexManager.getDisplayTitle(node, this.nodeState);
+        if (!isSpeciesKnownByPlayer(this.speciesId) && this.nodeState != NodeState.LOCKED) {
+            this.displayTitle = Component.literal("???");
+        } else {
+            this.displayTitle = baseTitle;
+        }
+        this.displayDescription = CodexManager.getDisplayDescription(node, this.nodeState);
+    }
+
+    private static boolean isSpeciesKnownByPlayer(String speciesId) {
+        if (Minecraft.getInstance().player != null) {
+            CodexPlayerData data = Minecraft.getInstance().player.getData(ApicaAttachments.CODEX_DATA);
+            return data.isSpeciesKnown(speciesId);
+        }
+        return false;
     }
 
     private static BeeModel<?> getOrCreateModel() {

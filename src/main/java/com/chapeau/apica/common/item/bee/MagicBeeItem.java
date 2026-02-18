@@ -6,15 +6,18 @@
  */
 package com.chapeau.apica.common.item.bee;
 
+import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.content.gene.species.DataDrivenSpeciesGene;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.common.item.essence.EssenceItem;
+import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.util.BeeInjectionHelper;
 import com.chapeau.apica.core.gene.BeeGeneData;
 import com.chapeau.apica.core.gene.Gene;
 import com.chapeau.apica.core.gene.GeneCategory;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -176,18 +179,24 @@ public class MagicBeeItem extends Item {
 
         BeeGeneData geneData = getGeneData(stack);
         Gene speciesGene = geneData.getGene(GeneCategory.SPECIES);
+        String speciesId = speciesGene != null ? speciesGene.getId() : null;
+        boolean speciesKnown = isSpeciesKnownClient(speciesId);
 
         if (net.minecraft.client.gui.screens.Screen.hasShiftDown()) {
-            // Recuperer les donnees de l'espece
             BeeSpeciesManager.BeeSpeciesData speciesData = null;
             if (speciesGene instanceof DataDrivenSpeciesGene ddGene) {
                 speciesData = BeeSpeciesManager.getSpecies(ddGene.getId());
             }
 
-            // Espece (violet si rassasiee, or sinon)
+            // Espece (??? si inconnue, violet si rassasiee, or sinon)
             boolean satiated = BeeInjectionHelper.isSatiated(stack);
             if (speciesGene != null) {
-                if (satiated) {
+                if (!speciesKnown) {
+                    tooltip.add(Component.translatable("tooltip.apica.species")
+                            .withStyle(ChatFormatting.GRAY)
+                            .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                            .append(Component.literal("???").withStyle(ChatFormatting.DARK_GRAY)));
+                } else if (satiated) {
                     tooltip.add(Component.translatable("tooltip.apica.species")
                             .withStyle(ChatFormatting.GRAY)
                             .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
@@ -200,7 +209,7 @@ public class MagicBeeItem extends Item {
                 }
             }
 
-            if (speciesData != null) {
+            if (speciesData != null && speciesKnown) {
                 // Activite (Diurne/Nocturne/Insomniac) - couleurs essences
                 String activityKey = switch (speciesData.dayNight) {
                     case "night" -> "tooltip.apica.activity.nocturnal";
@@ -208,21 +217,28 @@ public class MagicBeeItem extends Item {
                     default -> "tooltip.apica.activity.diurnal";
                 };
                 ChatFormatting activityColor = switch (speciesData.dayNight) {
-                    case "night" -> ChatFormatting.DARK_AQUA;    // NOCTURNAL
-                    case "both" -> ChatFormatting.LIGHT_PURPLE;  // INSOMNIA
-                    default -> ChatFormatting.DARK_GREEN;        // DIURNAL
+                    case "night" -> ChatFormatting.DARK_AQUA;
+                    case "both" -> ChatFormatting.LIGHT_PURPLE;
+                    default -> ChatFormatting.DARK_GREEN;
                 };
-                tooltip.add(Component.translatable("tooltip.apica.activity")
-                        .withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.translatable(activityKey).withStyle(activityColor)));
+                int activityLevel = BeeInjectionHelper.getActivityLevel(speciesData.dayNight);
+                if (isTraitKnownClient("activity:" + activityLevel)) {
+                    tooltip.add(Component.translatable("tooltip.apica.activity")
+                            .withStyle(ChatFormatting.GRAY)
+                            .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                            .append(Component.translatable(activityKey).withStyle(activityColor)));
+                } else {
+                    tooltip.add(Component.translatable("tooltip.apica.activity")
+                            .withStyle(ChatFormatting.GRAY)
+                            .append(Component.literal(": ???").withStyle(ChatFormatting.DARK_GRAY)));
+                }
 
                 // Type de fleur
                 String flowerKey = "tooltip.apica.flower." + speciesData.flowerType;
                 ChatFormatting flowerColor = switch (speciesData.flowerType) {
                     case "mushroom" -> ChatFormatting.GOLD;
                     case "crystal" -> ChatFormatting.LIGHT_PURPLE;
-                    default -> ChatFormatting.GREEN; // flower
+                    default -> ChatFormatting.GREEN;
                 };
                 tooltip.add(Component.translatable("tooltip.apica.flower")
                         .withStyle(ChatFormatting.GRAY)
@@ -249,39 +265,26 @@ public class MagicBeeItem extends Item {
                         .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
                         .append(Component.translatable(climateKey).withStyle(climateColor)));
 
-                // Stats avec etoiles - base + bonus injection
+                // Stats avec etoiles - base + bonus injection (??? si trait inconnu)
                 int dropTotal = speciesData.dropLevel + BeeInjectionHelper.getBonusLevel(stack, EssenceItem.EssenceType.DROP);
                 int speedTotal = speciesData.flyingSpeedLevel + BeeInjectionHelper.getBonusLevel(stack, EssenceItem.EssenceType.SPEED);
                 int foragingTotal = speciesData.foragingDurationLevel + BeeInjectionHelper.getBonusLevel(stack, EssenceItem.EssenceType.FORAGING);
                 int toleranceTotal = speciesData.toleranceLevel + BeeInjectionHelper.getBonusLevel(stack, EssenceItem.EssenceType.TOLERANCE);
 
                 tooltip.add(Component.literal(""));
-                tooltip.add(Component.translatable("tooltip.apica.drop")
-                        .withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(formatStars(dropTotal)).withStyle(ChatFormatting.GOLD)));
-
-                tooltip.add(Component.translatable("tooltip.apica.flyspeed")
-                        .withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(formatStars(speedTotal)).withStyle(ChatFormatting.AQUA)));
-
-                tooltip.add(Component.translatable("tooltip.apica.foraging")
-                        .withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(formatStars(foragingTotal)).withStyle(ChatFormatting.GREEN)));
-
-                tooltip.add(Component.translatable("tooltip.apica.tolerance")
-                        .withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal(formatStars(toleranceTotal)).withStyle(ChatFormatting.RED)));
+                appendTraitLine(tooltip, "tooltip.apica.drop", "drop", dropTotal, ChatFormatting.GOLD);
+                appendTraitLine(tooltip, "tooltip.apica.flyspeed", "speed", speedTotal, ChatFormatting.AQUA);
+                appendTraitLine(tooltip, "tooltip.apica.foraging", "foraging", foragingTotal, ChatFormatting.GREEN);
+                appendTraitLine(tooltip, "tooltip.apica.tolerance", "tolerance", toleranceTotal, ChatFormatting.RED);
             }
 
         } else {
-            // Affichage simple: nom de l'espece (violet + shimmer si rassasiee)
+            // Affichage simple: nom de l'espece (??? si inconnue)
             boolean satiated = BeeInjectionHelper.isSatiated(stack);
             if (speciesGene != null) {
-                if (satiated) {
+                if (!speciesKnown) {
+                    tooltip.add(Component.literal("???").withStyle(ChatFormatting.DARK_GRAY));
+                } else if (satiated) {
                     tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD, ChatFormatting.ITALIC));
                 } else {
                     tooltip.add(speciesGene.getDisplayName().copy().withStyle(ChatFormatting.GOLD));
@@ -290,6 +293,38 @@ public class MagicBeeItem extends Item {
             tooltip.add(Component.translatable("tooltip.apica.shift_for_details")
                     .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
         }
+    }
+
+    private void appendTraitLine(List<Component> tooltip, String translationKey, String traitName, int level, ChatFormatting color) {
+        if (isTraitKnownClient(traitName + ":" + level)) {
+            tooltip.add(Component.translatable(translationKey)
+                    .withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(formatStars(level)).withStyle(color)));
+        } else {
+            tooltip.add(Component.translatable(translationKey)
+                    .withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(": ???").withStyle(ChatFormatting.DARK_GRAY)));
+        }
+    }
+
+    private static boolean isSpeciesKnownClient(String speciesId) {
+        if (speciesId == null) return false;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            CodexPlayerData data = mc.player.getData(ApicaAttachments.CODEX_DATA);
+            return data.isSpeciesKnown(speciesId);
+        }
+        return false;
+    }
+
+    private static boolean isTraitKnownClient(String traitKey) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            CodexPlayerData data = mc.player.getData(ApicaAttachments.CODEX_DATA);
+            return data.isTraitKnown(traitKey);
+        }
+        return false;
     }
 
     private String formatStars(int level) {

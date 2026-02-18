@@ -20,10 +20,14 @@
  */
 package com.chapeau.apica.common.codex.book;
 
+import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.bee.BeeSpeciesManager.BeeSpeciesData;
 import com.chapeau.apica.core.bee.BeeSpeciesManager.StatType;
+import com.chapeau.apica.core.registry.ApicaAttachments;
+import com.chapeau.apica.core.util.BeeInjectionHelper;
 import com.google.gson.JsonObject;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -80,8 +84,14 @@ public class StatsSection extends CodexBookSection {
         graphics.fill(x, currentY, x + pageWidth, currentY + 1, SEPARATOR_COLOR);
         currentY += 3;
 
-        // Activity
-        graphics.drawString(font, "Activity: " + formatActivity(data.dayNight), x, currentY, INFO_COLOR, false);
+        // Activity (check knowledge)
+        int activityLevel = BeeInjectionHelper.getActivityLevel(data.dayNight);
+        CodexPlayerData activityData = getPlayerKnowledge();
+        if (activityData != null && activityData.isTraitKnown("activity:" + activityLevel)) {
+            graphics.drawString(font, "Activity: " + formatActivity(data.dayNight), x, currentY, INFO_COLOR, false);
+        } else {
+            graphics.drawString(font, "Activity: ???", x, currentY, INFO_COLOR, false);
+        }
         currentY += lineH;
 
         // Flower
@@ -92,18 +102,40 @@ public class StatsSection extends CodexBookSection {
         graphics.fill(x, currentY, x + pageWidth, currentY + 1, SEPARATOR_COLOR);
         currentY += 3;
 
-        // Stat lines
+        // Stat lines (attack/health always visible, modifiable traits check knowledge)
+        CodexPlayerData playerData = getPlayerKnowledge();
+
         renderStatLine(graphics, font, x, currentY, pageWidth, "Attack", data.attackLevel);
         currentY += lineH;
         renderStatLine(graphics, font, x, currentY, pageWidth, "Health", data.healthLevel);
         currentY += lineH;
-        renderStatLine(graphics, font, x, currentY, pageWidth, "Production", data.dropLevel);
+
+        if (playerData != null && playerData.isTraitKnown("drop:" + data.dropLevel)) {
+            renderStatLine(graphics, font, x, currentY, pageWidth, "Production", data.dropLevel);
+        } else {
+            renderUnknownStatLine(graphics, font, x, currentY, "Production");
+        }
         currentY += lineH;
-        renderStatLine(graphics, font, x, currentY, pageWidth, "Speed", data.flyingSpeedLevel);
+
+        if (playerData != null && playerData.isTraitKnown("speed:" + data.flyingSpeedLevel)) {
+            renderStatLine(graphics, font, x, currentY, pageWidth, "Speed", data.flyingSpeedLevel);
+        } else {
+            renderUnknownStatLine(graphics, font, x, currentY, "Speed");
+        }
         currentY += lineH;
-        renderStatLine(graphics, font, x, currentY, pageWidth, "Foraging", data.foragingDurationLevel);
+
+        if (playerData != null && playerData.isTraitKnown("foraging:" + data.foragingDurationLevel)) {
+            renderStatLine(graphics, font, x, currentY, pageWidth, "Foraging", data.foragingDurationLevel);
+        } else {
+            renderUnknownStatLine(graphics, font, x, currentY, "Foraging");
+        }
         currentY += lineH;
-        renderStatLine(graphics, font, x, currentY, pageWidth, "Tolerance", data.toleranceLevel);
+
+        if (playerData != null && playerData.isTraitKnown("tolerance:" + data.toleranceLevel)) {
+            renderStatLine(graphics, font, x, currentY, pageWidth, "Tolerance", data.toleranceLevel);
+        } else {
+            renderUnknownStatLine(graphics, font, x, currentY, "Tolerance");
+        }
         currentY += lineH;
 
         // Separator
@@ -189,6 +221,19 @@ public class StatsSection extends CodexBookSection {
             }
         }
         return result.toString();
+    }
+
+    private static CodexPlayerData getPlayerKnowledge() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
+            return mc.player.getData(ApicaAttachments.CODEX_DATA);
+        }
+        return null;
+    }
+
+    private void renderUnknownStatLine(GuiGraphics graphics, Font font, int x, int y, String label) {
+        graphics.drawString(font, label, x, y, LABEL_COLOR, false);
+        graphics.drawString(font, "???", x + 62, y, STAR_EMPTY_COLOR, false);
     }
 
     public static StatsSection fromJson(JsonObject json) {

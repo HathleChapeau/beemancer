@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "steady"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "steady"
+    }
   ]
 }

@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "tuber"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "tuber"
+    }
   ]
 }

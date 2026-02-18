@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "plume"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "plume"
+    }
   ]
 }

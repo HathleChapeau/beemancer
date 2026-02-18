@@ -28,6 +28,7 @@ import com.chapeau.apica.common.menu.ResonatorMenu;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.config.ResonatorConfigManager;
 import com.chapeau.apica.common.item.bee.MagicBeeItem;
+import com.chapeau.apica.core.network.packets.ResonatorFinishPacket;
 import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -66,6 +67,14 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private static final int BEE_SLOT_X = 178;
     private static final int BEE_SLOT_Y = 6;
 
+    // Analysis mode layout
+    private static final int ANALYSIS_W = 140;
+    private static final int ANALYSIS_H = 120;
+    private static final int ANALYSIS_BAR_W = 100;
+    private static final int ANALYSIS_BAR_H = 12;
+    private static final int ANALYSIS_BTN_W = 60;
+    private static final int ANALYSIS_BTN_H = 18;
+
     // Drag state
     private int dragIndex = -1;
     private int dragStartX;
@@ -86,8 +95,13 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     public ResonatorScreen(ResonatorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
-        this.imageWidth = GUI_W;
-        this.imageHeight = GUI_H;
+        if (menu.isAnalysisMode()) {
+            this.imageWidth = ANALYSIS_W;
+            this.imageHeight = ANALYSIS_H;
+        } else {
+            this.imageWidth = GUI_W;
+            this.imageHeight = GUI_H;
+        }
         this.inventoryLabelY = -999;
         this.titleLabelY = -999;
     }
@@ -95,17 +109,16 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     @Override
     protected void init() {
         super.init();
-        if (menu instanceof ResonatorMenu rm) {
-            localFreq = rm.getFrequency();
-            localAmp = rm.getAmplitude();
-            localPhase = rm.getPhase();
-            localHarm = rm.getHarmonics();
-        }
+        if (!menu.isAnalysisMode()) {
+            localFreq = menu.getFrequency();
+            localAmp = menu.getAmplitude();
+            localPhase = menu.getPhase();
+            localHarm = menu.getHarmonics();
 
-        // Generer les target values
-        if (!targetsGenerated) {
-            generateTargets();
-            targetsGenerated = true;
+            if (!targetsGenerated) {
+                generateTargets();
+                targetsGenerated = true;
+            }
         }
     }
 
@@ -194,6 +207,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     @Override
     public void containerTick() {
         super.containerTick();
+        if (menu.isAnalysisMode()) return;
         if (dragIndex < 0) {
             localFreq = menu.getFrequency();
             localAmp = menu.getAmplitude();
@@ -204,6 +218,11 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
+        if (menu.isAnalysisMode()) {
+            renderAnalysisMode(g, mouseX, mouseY);
+            return;
+        }
+
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
@@ -239,6 +258,92 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                 localPhase / 360.0f, "PHASE", localPhase + "\u00B0", mouseX, mouseY);
         renderKnob(g, knobBaseX + KNOB_SPACING, y + KNOB_Y, KNOB_RADIUS,
                 localHarm / 100.0f, "HARM", String.format("%.1f", localHarm / 100.0f), mouseX, mouseY);
+    }
+
+    // =========================================================================
+    // ANALYSIS MODE
+    // =========================================================================
+
+    private void renderAnalysisMode(GuiGraphics g, int mouseX, int mouseY) {
+        int x = (width - ANALYSIS_W) / 2;
+        int y = (height - ANALYSIS_H) / 2;
+
+        // Background panel
+        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, ANALYSIS_W, ANALYSIS_H);
+
+        // Title
+        g.drawString(font, "Analysis", x + 8, y + 6, 0x404040, false);
+
+        // Bee slot (centered top)
+        int slotX = x + ANALYSIS_W / 2 - 8;
+        int slotY = y + 22;
+        GuiRenderHelper.renderSlot(g, slotX, slotY);
+
+        // Render the bee item in the slot
+        ItemStack bee = menu.getStoredBee();
+        if (!bee.isEmpty()) {
+            g.renderItem(bee, slotX + 1, slotY + 1);
+        }
+
+        // Progress bar
+        int barX = x + (ANALYSIS_W - ANALYSIS_BAR_W) / 2;
+        int barY = y + 50;
+        int progress = menu.getAnalysisProgress();
+        int duration = menu.getAnalysisDuration();
+
+        // Bar background
+        g.fill(barX, barY, barX + ANALYSIS_BAR_W, barY + ANALYSIS_BAR_H, 0xFF1A1A1A);
+        g.fill(barX, barY, barX + ANALYSIS_BAR_W, barY + 1, 0xFF373737);
+        g.fill(barX, barY, barX + 1, barY + ANALYSIS_BAR_H, 0xFF373737);
+        g.fill(barX + 1, barY + ANALYSIS_BAR_H - 1, barX + ANALYSIS_BAR_W, barY + ANALYSIS_BAR_H, 0xFF555555);
+        g.fill(barX + ANALYSIS_BAR_W - 1, barY + 1, barX + ANALYSIS_BAR_W, barY + ANALYSIS_BAR_H, 0xFF555555);
+
+        // Bar fill
+        if (duration > 0) {
+            int fillW = (int) ((ANALYSIS_BAR_W - 2) * ((float) Math.min(progress, duration) / duration));
+            if (fillW > 0) {
+                g.fill(barX + 1, barY + 1, barX + 1 + fillW, barY + ANALYSIS_BAR_H - 1, 0xFF5588DD);
+                g.fill(barX + 1, barY + 1, barX + 1 + fillW, barY + 2, 0xFF77AAFF);
+            }
+        }
+
+        // Percentage text
+        int pct = duration > 0 ? (int) (100f * Math.min(progress, duration) / duration) : 0;
+        String pctText = pct + "%";
+        int pctW = font.width(pctText);
+        g.drawString(font, pctText, x + ANALYSIS_W / 2 - pctW / 2, barY + 2, 0xFFFFFFFF, false);
+
+        // "Analyzing..." text
+        String statusText = menu.isAnalysisComplete() ? "Complete!" : "Analyzing...";
+        int statusW = font.width(statusText);
+        int statusColor = menu.isAnalysisComplete() ? 0xFF44FF44 : 0xFF888888;
+        g.drawString(font, statusText, x + ANALYSIS_W / 2 - statusW / 2, barY + ANALYSIS_BAR_H + 4, statusColor, false);
+
+        // Finish button
+        boolean complete = menu.isAnalysisComplete();
+        int btnX = x + (ANALYSIS_W - ANALYSIS_BTN_W) / 2;
+        int btnY = y + 88;
+
+        int btnColor = complete ? 0xFF336633 : 0xFF333333;
+        int btnBorder = complete ? 0xFF44AA44 : 0xFF555555;
+        boolean btnHovered = complete && mouseX >= btnX && mouseX <= btnX + ANALYSIS_BTN_W
+                && mouseY >= btnY && mouseY <= btnY + ANALYSIS_BTN_H;
+
+        if (btnHovered) {
+            btnColor = 0xFF448844;
+            btnBorder = 0xFF55CC55;
+        }
+
+        // Button border + fill
+        g.fill(btnX - 1, btnY - 1, btnX + ANALYSIS_BTN_W + 1, btnY + ANALYSIS_BTN_H + 1, btnBorder);
+        g.fill(btnX, btnY, btnX + ANALYSIS_BTN_W, btnY + ANALYSIS_BTN_H, btnColor);
+
+        // Button text
+        String btnText = "Finish";
+        int textColor = complete ? 0xFFFFFFFF : 0xFF666666;
+        int btnTextW = font.width(btnText);
+        g.drawString(font, btnText, btnX + ANALYSIS_BTN_W / 2 - btnTextW / 2,
+                btnY + (ANALYSIS_BTN_H - font.lineHeight) / 2 + 1, textColor, false);
     }
 
     private void renderDebugPanel(GuiGraphics g, int px, int py) {
@@ -444,6 +549,23 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
 
+        // Analysis mode: only handle Finish button
+        if (menu.isAnalysisMode()) {
+            if (menu.isAnalysisComplete()) {
+                int x = (width - ANALYSIS_W) / 2;
+                int y = (height - ANALYSIS_H) / 2;
+                int btnX = x + (ANALYSIS_W - ANALYSIS_BTN_W) / 2;
+                int btnY = y + 88;
+                if (mouseX >= btnX && mouseX <= btnX + ANALYSIS_BTN_W
+                        && mouseY >= btnY && mouseY <= btnY + ANALYSIS_BTN_H) {
+                    PacketDistributor.sendToServer(new ResonatorFinishPacket(menu.getBlockPos()));
+                    onClose();
+                    return true;
+                }
+            }
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
@@ -484,6 +606,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (menu.isAnalysisMode()) return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
         if (button != 0 || dragIndex < 0) return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
 
         int x = (width - imageWidth) / 2;
@@ -524,6 +647,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (menu.isAnalysisMode()) return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
         int knobBaseX = x + GUI_W / 2;

@@ -27,9 +27,11 @@ import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPage;
 import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.quest.QuestPlayerData;
+import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.network.packets.CodexSyncPacket;
 import com.chapeau.apica.core.network.packets.QuestSyncPacket;
 import com.chapeau.apica.core.registry.ApicaAttachments;
+import com.chapeau.apica.core.util.BeeInjectionHelper;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -69,6 +71,9 @@ public class ApicaCommands {
                         )
                         .then(Commands.literal("quests")
                             .executes(context -> resetQuests(context.getSource()))
+                        )
+                        .then(Commands.literal("traits")
+                            .executes(context -> resetTraits(context.getSource()))
                         )
                     )
                     .then(Commands.literal("getAllKnowledge")
@@ -154,11 +159,43 @@ public class ApicaCommands {
                 }
             }
 
+            for (String speciesId : BeeSpeciesManager.getAllSpeciesIds()) {
+                data.learnSpecies(speciesId);
+                BeeSpeciesManager.BeeSpeciesData speciesData = BeeSpeciesManager.getSpecies(speciesId);
+                if (speciesData != null) {
+                    for (int lvl = 1; lvl <= 4; lvl++) {
+                        data.learnTrait("drop:" + lvl);
+                        data.learnTrait("speed:" + lvl);
+                        data.learnTrait("foraging:" + lvl);
+                        data.learnTrait("tolerance:" + lvl);
+                    }
+                    for (int lvl = 0; lvl <= 2; lvl++) {
+                        data.learnTrait("activity:" + lvl);
+                    }
+                }
+            }
+
             player.setData(ApicaAttachments.CODEX_DATA, data);
             PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
 
             final int finalCount = count;
-            source.sendSuccess(() -> Component.literal("Unlocked " + finalCount + " codex entries!"), true);
+            source.sendSuccess(() -> Component.literal("Unlocked " + finalCount + " codex entries + all species & traits!"), true);
+            return Command.SINGLE_SUCCESS;
+        }
+
+        source.sendFailure(Component.literal("This command can only be used by a player."));
+        return 0;
+    }
+
+    private static int resetTraits(CommandSourceStack source) {
+        if (source.getEntity() instanceof ServerPlayer player) {
+            CodexPlayerData data = player.getData(ApicaAttachments.CODEX_DATA);
+            data.getKnownSpecies().clear();
+            data.getKnownTraits().clear();
+            player.setData(ApicaAttachments.CODEX_DATA, data);
+            PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
+
+            source.sendSuccess(() -> Component.literal("Trait and species knowledge has been reset!"), true);
             return Command.SINGLE_SUCCESS;
         }
 

@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "flux"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "flux"
+    }
   ]
 }

@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "xenolith"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "xenolith"
+    }
   ]
 }

@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "lazuli"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "lazuli"
+    }
   ]
 }

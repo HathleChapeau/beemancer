@@ -35,6 +35,7 @@ import com.chapeau.apica.common.codex.book.CodexBookSection;
 import com.chapeau.apica.common.codex.book.CraftSection;
 import com.chapeau.apica.common.codex.book.HeaderSection;
 import com.chapeau.apica.common.codex.book.StickyNote;
+import com.chapeau.apica.client.gui.screen.codex.ResonationNoteRenderer;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.quest.Quest;
 import com.chapeau.apica.common.quest.QuestManager;
@@ -94,6 +95,9 @@ public class CodexBookScreen extends Screen {
     private static final int NOTE_HEIGHT = 130;
     private static final int NOTE_BORDER_COLOR = 0xFF5C3A1E;
     private static final int NOTE_TITLE_COLOR = 0xFF3B2A1A;
+    private static final int NOTE_RESONATION_COLOR = 0xFFB8D4E3;
+    private static final ResourceLocation WAVE_ICON = ResourceLocation.fromNamespaceAndPath(
+            Apica.MOD_ID, "textures/gui/codex/codex_book/wave_icon.png");
 
     private final CodexNode node;
     private final CodexPage returnPage;
@@ -292,11 +296,13 @@ public class CodexBookScreen extends Screen {
             // Reset de la teinte
             graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-            // Item icon (centered in texture)
-            if (i < noteIconStacks.size() && !noteIconStacks.get(i).isEmpty()) {
-                int itemX = btnX + (texW - 16) / 2;
-                int itemY = y + (texH - 16) / 2 + 2;
-                graphics.renderItem(noteIconStacks.get(i), itemX, itemY);
+            // Icon (item or wave texture for resonation)
+            int iconX = btnX + (texW - 16) / 2;
+            int iconY = y + (texH - 16) / 2 + 2;
+            if (i < stickyNotes.size() && stickyNotes.get(i).isResonation()) {
+                graphics.blit(WAVE_ICON, iconX, iconY, 16, 16, 0, 0, 16, 16, 16, 16);
+            } else if (i < noteIconStacks.size() && !noteIconStacks.get(i).isEmpty()) {
+                graphics.renderItem(noteIconStacks.get(i), iconX, iconY);
             }
         }
     }
@@ -318,8 +324,9 @@ public class CodexBookScreen extends Screen {
         int noteX = (width - NOTE_WIDTH) / 2;
         int noteY = (height - NOTE_HEIGHT) / 2;
 
-        // Note background
-        graphics.fill(noteX, noteY, noteX + NOTE_WIDTH, noteY + NOTE_HEIGHT, note.color());
+        // Note background (resonation uses special blue color)
+        int bgColor = note.isResonation() ? NOTE_RESONATION_COLOR : note.color();
+        graphics.fill(noteX, noteY, noteX + NOTE_WIDTH, noteY + NOTE_HEIGHT, bgColor);
 
         // Note border (2px)
         int b = NOTE_BORDER_COLOR;
@@ -346,12 +353,17 @@ public class CodexBookScreen extends Screen {
         // Reactiver le depth test pour les items 3D de la note
         RenderSystem.enableDepthTest();
 
-        // Craft section rendering
-        if (noteIndex < noteCraftSections.size() && noteCraftSections.get(noteIndex) != null) {
+        // Content rendering (resonation or craft)
+        int contentX = noteX + 8;
+        int contentY = noteY + 8 + font.lineHeight + 8;
+        int contentW = NOTE_WIDTH - 16;
+
+        if (note.isResonation()) {
+            ResonationNoteRenderer.render(graphics, font, note.species(),
+                    contentX, contentY, contentW);
+        } else if (noteIndex < noteCraftSections.size() && noteCraftSections.get(noteIndex) != null) {
             CraftSection craft = noteCraftSections.get(noteIndex);
-            int craftY = noteY + 8 + font.lineHeight + 8;
-            int craftWidth = NOTE_WIDTH - 16;
-            craft.render(graphics, font, noteX + 8, craftY, craftWidth, "", -1);
+            craft.render(graphics, font, contentX, contentY, contentW, "", -1);
         }
 
         graphics.pose().popPose();

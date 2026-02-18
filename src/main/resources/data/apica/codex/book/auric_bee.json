@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "auric"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "auric"
+    }
   ]
 }

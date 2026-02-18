@@ -39,7 +39,8 @@ import java.util.Map;
 import java.util.Set;
 
 public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredNodes,
-                               long firstOpenDay, Map<String, Long> unlockDays) implements CustomPacketPayload {
+                               long firstOpenDay, Map<String, Long> unlockDays,
+                               Set<String> knownSpecies, Set<String> knownTraits) implements CustomPacketPayload {
 
     public static final Type<CodexSyncPacket> TYPE = new Type<>(
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "codex_sync"));
@@ -69,7 +70,19 @@ public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredN
                 days.put(nodeId, day);
             }
 
-            return new CodexSyncPacket(unlocked, discovered, openDay, days);
+            int speciesSize = buf.readVarInt();
+            Set<String> species = new HashSet<>(speciesSize);
+            for (int i = 0; i < speciesSize; i++) {
+                species.add(buf.readUtf());
+            }
+
+            int traitsSize = buf.readVarInt();
+            Set<String> traits = new HashSet<>(traitsSize);
+            for (int i = 0; i < traitsSize; i++) {
+                traits.add(buf.readUtf());
+            }
+
+            return new CodexSyncPacket(unlocked, discovered, openDay, days, species, traits);
         }
 
         @Override
@@ -91,12 +104,23 @@ public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredN
                 buf.writeUtf(entry.getKey());
                 buf.writeLong(entry.getValue());
             }
+
+            buf.writeVarInt(packet.knownSpecies.size());
+            for (String id : packet.knownSpecies) {
+                buf.writeUtf(id);
+            }
+
+            buf.writeVarInt(packet.knownTraits.size());
+            for (String key : packet.knownTraits) {
+                buf.writeUtf(key);
+            }
         }
     };
 
     public CodexSyncPacket(CodexPlayerData data) {
         this(new HashSet<>(data.getUnlockedNodes()), new HashSet<>(data.getDiscoveredNodes()),
-             data.getFirstOpenDay(), new HashMap<>(data.getUnlockDays()));
+             data.getFirstOpenDay(), new HashMap<>(data.getUnlockDays()),
+             new HashSet<>(data.getKnownSpecies()), new HashSet<>(data.getKnownTraits()));
     }
 
     @Override
@@ -116,8 +140,13 @@ public record CodexSyncPacket(Set<String> unlockedNodes, Set<String> discoveredN
                 data.setFirstOpenDay(packet.firstOpenDay);
                 data.getUnlockDays().clear();
                 data.getUnlockDays().putAll(packet.unlockDays);
-                Apica.LOGGER.debug("Synced {} unlocked, {} discovered nodes, day {} from server",
-                    packet.unlockedNodes.size(), packet.discoveredNodes.size(), packet.firstOpenDay);
+                data.getKnownSpecies().clear();
+                data.getKnownSpecies().addAll(packet.knownSpecies);
+                data.getKnownTraits().clear();
+                data.getKnownTraits().addAll(packet.knownTraits);
+                Apica.LOGGER.debug("Synced {} unlocked, {} discovered nodes, {} species, {} traits from server",
+                    packet.unlockedNodes.size(), packet.discoveredNodes.size(),
+                    packet.knownSpecies.size(), packet.knownTraits.size());
             }
         });
     }

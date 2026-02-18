@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "tropical"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "tropical"
+    }
   ]
 }

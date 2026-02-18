@@ -25,5 +25,12 @@
       "type": "stats",
       "species": "tanner"
     }
+  ],
+  "sticky_notes": [
+    {
+      "type": "resonation",
+      "title": "Resonation",
+      "species": "tanner"
+    }
   ]
 }

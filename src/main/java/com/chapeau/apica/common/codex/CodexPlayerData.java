@@ -41,13 +41,17 @@ public class CodexPlayerData {
             Codec.STRING.listOf().fieldOf("unlocked_nodes").forGetter(data -> List.copyOf(data.unlockedNodes)),
             Codec.STRING.listOf().fieldOf("discovered_nodes").forGetter(data -> List.copyOf(data.discoveredNodes)),
             Codec.LONG.fieldOf("first_open_day").forGetter(data -> data.firstOpenDay),
-            Codec.unboundedMap(Codec.STRING, Codec.LONG).fieldOf("unlock_days").forGetter(data -> data.unlockDays)
-        ).apply(instance, (unlockedList, discoveredList, openDay, days) -> {
+            Codec.unboundedMap(Codec.STRING, Codec.LONG).fieldOf("unlock_days").forGetter(data -> data.unlockDays),
+            Codec.STRING.listOf().optionalFieldOf("known_species", List.of()).forGetter(data -> List.copyOf(data.knownSpecies)),
+            Codec.STRING.listOf().optionalFieldOf("known_traits", List.of()).forGetter(data -> List.copyOf(data.knownTraits))
+        ).apply(instance, (unlockedList, discoveredList, openDay, days, speciesList, traitsList) -> {
             CodexPlayerData data = new CodexPlayerData();
             data.unlockedNodes.addAll(unlockedList);
             data.discoveredNodes.addAll(discoveredList);
             data.firstOpenDay = openDay;
             data.unlockDays.putAll(days);
+            data.knownSpecies.addAll(speciesList);
+            data.knownTraits.addAll(traitsList);
             return data;
         })
     );
@@ -56,6 +60,8 @@ public class CodexPlayerData {
     private final Set<String> discoveredNodes = new HashSet<>();
     private long firstOpenDay = -1;
     private final Map<String, Long> unlockDays = new HashMap<>();
+    private final Set<String> knownSpecies = new HashSet<>();
+    private final Set<String> knownTraits = new HashSet<>();
 
     public CodexPlayerData() {
     }
@@ -132,6 +138,38 @@ public class CodexPlayerData {
             }
         }
         return count;
+    }
+
+    // ============================================================
+    // TRAIT & SPECIES KNOWLEDGE
+    // ============================================================
+
+    public Set<String> getKnownSpecies() {
+        return knownSpecies;
+    }
+
+    public Set<String> getKnownTraits() {
+        return knownTraits;
+    }
+
+    public boolean isSpeciesKnown(String speciesId) {
+        return knownSpecies.contains(speciesId);
+    }
+
+    /**
+     * Verifie si un trait a un niveau connu.
+     * @param traitKey format "drop:2", "speed:3", etc.
+     */
+    public boolean isTraitKnown(String traitKey) {
+        return knownTraits.contains(traitKey);
+    }
+
+    public boolean learnSpecies(String speciesId) {
+        return knownSpecies.add(speciesId);
+    }
+
+    public boolean learnTrait(String traitKey) {
+        return knownTraits.add(traitKey);
     }
 
     // ============================================================
@@ -224,6 +262,18 @@ public class CodexPlayerData {
         }
         tag.put("unlock_days", daysTag);
 
+        ListTag speciesList = new ListTag();
+        for (String id : knownSpecies) {
+            speciesList.add(StringTag.valueOf(id));
+        }
+        tag.put("known_species", speciesList);
+
+        ListTag traitsList = new ListTag();
+        for (String key : knownTraits) {
+            traitsList.add(StringTag.valueOf(key));
+        }
+        tag.put("known_traits", traitsList);
+
         return tag;
     }
 
@@ -250,6 +300,18 @@ public class CodexPlayerData {
                 data.unlockDays.put(key, daysTag.getLong(key));
             }
         }
+        if (tag.contains("known_species", Tag.TAG_LIST)) {
+            ListTag list = tag.getList("known_species", Tag.TAG_STRING);
+            for (int i = 0; i < list.size(); i++) {
+                data.knownSpecies.add(list.getString(i));
+            }
+        }
+        if (tag.contains("known_traits", Tag.TAG_LIST)) {
+            ListTag list = tag.getList("known_traits", Tag.TAG_STRING);
+            for (int i = 0; i < list.size(); i++) {
+                data.knownTraits.add(list.getString(i));
+            }
+        }
         return data;
     }
 
@@ -259,6 +321,8 @@ public class CodexPlayerData {
         copy.discoveredNodes.addAll(this.discoveredNodes);
         copy.firstOpenDay = this.firstOpenDay;
         copy.unlockDays.putAll(this.unlockDays);
+        copy.knownSpecies.addAll(this.knownSpecies);
+        copy.knownTraits.addAll(this.knownTraits);
         return copy;
     }
 }

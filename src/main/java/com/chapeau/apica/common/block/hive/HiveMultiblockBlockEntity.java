@@ -30,6 +30,7 @@ import com.chapeau.apica.core.gene.BeeGeneData;
 import com.chapeau.apica.core.gene.Gene;
 import com.chapeau.apica.core.gene.GeneCategory;
 import com.chapeau.apica.core.multiblock.MultiblockController;
+import com.chapeau.apica.core.multiblock.MultiblockEvents;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
 import com.chapeau.apica.core.multiblock.MultiblockProperty;
@@ -135,6 +136,22 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         }
     }
 
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (isController && formed && level != null && !level.isClientSide()) {
+            MultiblockEvents.registerActiveController(level, worldPosition);
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (isController) {
+            MultiblockEvents.unregisterController(worldPosition);
+        }
+    }
+
     // ==================== IHiveInternals ====================
 
     @Override public NonNullList<ItemStack> getItems() { return items; }
@@ -191,7 +208,9 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         if (level != null) {
             BlockState blockState = level.getBlockState(worldPosition);
             if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
-                level.setBlock(worldPosition, blockState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
+                level.setBlock(worldPosition, blockState
+                        .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE)
+                        .setValue(HiveMultiblockBlock.CONTROLLER, false), 3);
             }
         }
         setChanged();
@@ -251,20 +270,25 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         formed = true;
         controllerPos = null;
 
+        // Set controller blockstate: MULTIBLOCK=HIVE, CONTROLLER=true
         BlockState controllerState = level.getBlockState(worldPosition);
         if (controllerState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
-            level.setBlock(worldPosition, controllerState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE), 3);
+            level.setBlock(worldPosition, controllerState
+                    .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE)
+                    .setValue(HiveMultiblockBlock.CONTROLLER, true), 3);
         }
 
+        // Set all structure members: MULTIBLOCK=HIVE, CONTROLLER=false
         MultiblockPattern pattern = getPattern();
         for (Vec3i offset : pattern.getStructurePositions()) {
             BlockPos structurePos = worldPosition.offset(offset);
             if (structurePos.equals(worldPosition)) continue;
 
             BlockState blockState = level.getBlockState(structurePos);
-
             if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
-                level.setBlock(structurePos, blockState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE), 3);
+                level.setBlock(structurePos, blockState
+                        .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE)
+                        .setValue(HiveMultiblockBlock.CONTROLLER, false), 3);
                 BlockEntity be = level.getBlockEntity(structurePos);
                 if (be instanceof HiveMultiblockBlockEntity hive) {
                     hive.controllerPos = worldPosition;
@@ -273,10 +297,9 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                     hive.setChanged();
                 }
             }
-
         }
 
-        com.chapeau.apica.core.multiblock.MultiblockEvents.registerActiveController(level, worldPosition);
+        MultiblockEvents.registerActiveController(level, worldPosition);
         setChanged();
 
         if (level instanceof ServerLevel serverLevel) {
@@ -298,9 +321,10 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                 if (structurePos.equals(worldPosition)) continue;
 
                 BlockState blockState = level.getBlockState(structurePos);
-
                 if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
-                    level.setBlock(structurePos, blockState.setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
+                    level.setBlock(structurePos, blockState
+                            .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE)
+                            .setValue(HiveMultiblockBlock.CONTROLLER, false), 3);
                     BlockEntity be = level.getBlockEntity(structurePos);
                     if (be instanceof HiveMultiblockBlockEntity hive) {
                         hive.controllerPos = null;
@@ -309,10 +333,9 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                         hive.setChanged();
                     }
                 }
-
             }
 
-            com.chapeau.apica.core.multiblock.MultiblockEvents.unregisterController(worldPosition);
+            MultiblockEvents.unregisterController(worldPosition);
         } else if (controllerPos != null) {
             BlockEntity be = level.getBlockEntity(controllerPos);
             if (be instanceof HiveMultiblockBlockEntity controller) {
@@ -518,7 +541,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     public static void serverTick(Level level, BlockPos pos, BlockState state, HiveMultiblockBlockEntity hive) {
         if (!hive.isController || !hive.formed) return;
 
-        hive.breedingMode = level.getBlockState(pos.above(4)).is(ApicaBlocks.BREEDING_CRYSTAL.get());
+        hive.breedingMode = level.getBlockState(pos.above(3)).is(ApicaBlocks.BREEDING_CRYSTAL.get());
 
         hive.crowdedCheckTimer++;
         if (hive.crowdedCheckTimer >= 100) {
