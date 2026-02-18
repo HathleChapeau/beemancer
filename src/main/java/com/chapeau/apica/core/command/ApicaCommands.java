@@ -31,7 +31,12 @@ import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.network.packets.CodexSyncPacket;
 import com.chapeau.apica.core.network.packets.QuestSyncPacket;
 import com.chapeau.apica.core.registry.ApicaAttachments;
+import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.chapeau.apica.common.item.essence.SpeciesEssenceItem;
+import com.chapeau.apica.core.gene.BeeGeneData;
+import com.chapeau.apica.core.gene.Gene;
+import com.chapeau.apica.core.gene.GeneCategory;
+import com.chapeau.apica.core.gene.GeneRegistry;
 import com.chapeau.apica.core.util.BeeInjectionHelper;
 import net.minecraft.world.item.ItemStack;
 import com.mojang.brigadier.Command;
@@ -81,6 +86,23 @@ public class ApicaCommands {
                     .then(Commands.literal("getAllKnowledge")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> unlockAllKnowledge(context.getSource()))
+                    )
+                )
+                .then(Commands.literal("giveSpecies")
+                    .requires(source -> source.hasPermission(2))
+                    .then(Commands.argument("species", StringArgumentType.string())
+                        .suggests((context, builder) -> {
+                            for (String id : BeeSpeciesManager.getAllSpeciesIds()) {
+                                if (id.startsWith(builder.getRemainingLowerCase())) {
+                                    builder.suggest(id);
+                                }
+                            }
+                            return builder.buildFuture();
+                        })
+                        .executes(context -> giveSpecies(
+                            context.getSource(),
+                            StringArgumentType.getString(context, "species")
+                        ))
                     )
                 )
                 .then(Commands.literal("giveSpeciesEssence")
@@ -227,6 +249,35 @@ public class ApicaCommands {
     // ============================================================
     // GIVE COMMANDS
     // ============================================================
+
+    private static int giveSpecies(CommandSourceStack source, String speciesId) {
+        if (source.getEntity() instanceof ServerPlayer player) {
+            if (!BeeSpeciesManager.hasSpecies(speciesId)) {
+                source.sendFailure(Component.literal("Unknown species: " + speciesId));
+                return 0;
+            }
+
+            Gene speciesGene = GeneRegistry.getGene(GeneCategory.SPECIES, speciesId);
+            if (speciesGene == null) {
+                source.sendFailure(Component.literal("No gene found for species: " + speciesId));
+                return 0;
+            }
+
+            BeeGeneData geneData = new BeeGeneData();
+            geneData.setGene(speciesGene);
+            ItemStack beeStack = MagicBeeItem.createWithGenes(geneData);
+
+            if (!player.getInventory().add(beeStack)) {
+                player.drop(beeStack, false);
+            }
+
+            source.sendSuccess(() -> Component.literal("Gave 1 " + speciesId + " bee"), true);
+            return Command.SINGLE_SUCCESS;
+        }
+
+        source.sendFailure(Component.literal("This command can only be used by a player."));
+        return 0;
+    }
 
     private static int giveSpeciesEssence(CommandSourceStack source, String speciesId) {
         if (source.getEntity() instanceof ServerPlayer player) {

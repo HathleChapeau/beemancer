@@ -65,8 +65,8 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private static final int KNOB_SPACING = 60;
     private static final float KNOB_MIN_DEG = 20.0f;
     private static final float KNOB_MAX_DEG = 340.0f;
-    private static final int FREQ_MIN = 10;
-    private static final int FREQ_MAX = 300;
+    private static final int FREQ_MIN = 1;
+    private static final int FREQ_MAX = 130;
 
     // Bee slot position (right side)
     private static final int BEE_SLOT_X = 178;
