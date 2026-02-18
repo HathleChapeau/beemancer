@@ -85,7 +85,7 @@ public class StatsSection extends CodexBookSection {
         currentY += 3;
 
         // Activity (check knowledge)
-        int activityLevel = BeeInjectionHelper.getActivityLevel(data.dayNight);
+        int activityLevel = BeeInjectionHelper.getActivityLevel(data.dayNight) + 1;
         CodexPlayerData activityData = getPlayerKnowledge();
         if (activityData != null && activityData.isTraitKnown("activity:" + activityLevel)) {
             graphics.drawString(font, "Activity: " + formatActivity(data.dayNight), x, currentY, INFO_COLOR, false);

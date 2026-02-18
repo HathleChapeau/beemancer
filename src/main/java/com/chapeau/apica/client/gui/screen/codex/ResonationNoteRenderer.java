@@ -8,8 +8,8 @@
  * ------------------------------------------------------------
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
- * | ResonatorConfigManager  | Waveforms par stat   | Lecture freq/amp/phase         |
- * | BeeSpeciesManager       | Stats espece         | Niveaux de base des traits     |
+ * | BeeSpeciesManager       | Stats + waveform     | Donnees espece et courbe       |
+ * | ResonatorConfigManager  | Waveforms par stat   | Lecture freq/amp/phase traits  |
  * | CodexPlayerData         | Knowledge joueur     | Verification traits connus     |
  * | ApicaAttachments        | Attachement data     | Acces CodexPlayerData          |
  * ------------------------------------------------------------
@@ -40,6 +40,7 @@ public class ResonationNoteRenderer {
     private static final int UNKNOWN_COLOR = 0xFF888888;
     private static final int SPECIES_COLOR = 0xFF2A6B3A;
     private static final int COMPAT_COLOR = 0xFF6B4A2A;
+    private static final int HARMONIZED_COLOR = 0xFF8B5CF6;
     private static final int HEADER_COLOR = 0xFF3B2A1A;
 
     private static final String[] STAT_NAMES = {"drop", "speed", "foraging", "tolerance", "activity"};
@@ -56,10 +57,18 @@ public class ResonationNoteRenderer {
 
         // Compatible section
         List<CompatParent> compatibles = findCompatibleParents(speciesId);
-        if (!compatibles.isEmpty()) {
+        List<CompatParent> normal = compatibles.stream().filter(cp -> !cp.harmonized).toList();
+        List<CompatParent> harmonized = compatibles.stream().filter(cp -> cp.harmonized).toList();
+
+        if (!normal.isEmpty()) {
             h += 5; // separator
             h += lineH; // "Compatible:" header
-            h += compatibles.size() * lineH;
+            h += normal.size() * lineH;
+        }
+        if (!harmonized.isEmpty()) {
+            h += 5; // separator
+            h += lineH; // "Harmonized:" header
+            h += harmonized.size() * lineH;
         }
         return h;
     }
@@ -83,10 +92,10 @@ public class ResonationNoteRenderer {
         boolean speciesKnown = speciesId != null && knowledge.isSpeciesKnown(speciesId);
         boolean freqKnown = speciesId != null && knowledge.isFrequencyKnown(speciesId);
         if (speciesKnown) {
-            String combined = computeCombinedWave(data);
+            String combined = getSpeciesWave(data);
             g.drawString(font, capitalize(speciesId) + ": " + combined, contentX, y, SPECIES_COLOR, false);
         } else if (freqKnown) {
-            String combined = computeCombinedWave(data);
+            String combined = getSpeciesWave(data);
             g.drawString(font, "???: " + combined, contentX, y, UNKNOWN_COLOR, false);
         } else {
             g.drawString(font, "???: ???", contentX, y, UNKNOWN_COLOR, false);
@@ -115,7 +124,11 @@ public class ResonationNoteRenderer {
 
         // Compatible breeding partners (other parent species)
         List<CompatParent> compatibles = findCompatibleParents(speciesId);
-        if (!compatibles.isEmpty()) {
+        List<CompatParent> normal = compatibles.stream().filter(cp -> !cp.harmonized).toList();
+        List<CompatParent> harmonized = compatibles.stream().filter(cp -> cp.harmonized).toList();
+
+        // Normal compatible species
+        if (!normal.isEmpty()) {
             y += 1;
             g.fill(contentX, y, contentX + contentW, y + 1, 0x40000000);
             y += 4;
@@ -123,28 +136,51 @@ public class ResonationNoteRenderer {
             g.drawString(font, "Compatible:", contentX, y, HEADER_COLOR, false);
             y += lineH;
 
-            for (CompatParent cp : compatibles) {
-                boolean parentSpeciesKnown = knowledge.isSpeciesKnown(cp.id);
-                boolean parentFreqKnown = knowledge.isFrequencyKnown(cp.id);
-                if (parentSpeciesKnown) {
-                    g.drawString(font, capitalize(cp.id) + ": " + cp.freq + "Hz",
-                            contentX, y, COMPAT_COLOR, false);
-                } else if (parentFreqKnown) {
-                    g.drawString(font, "???: " + cp.freq + "Hz",
-                            contentX, y, UNKNOWN_COLOR, false);
-                } else {
-                    g.drawString(font, "???: ???", contentX, y, UNKNOWN_COLOR, false);
-                }
-                y += lineH;
+            for (CompatParent cp : normal) {
+                y = renderCompatEntry(g, font, knowledge, cp, contentX, y, lineH, COMPAT_COLOR);
+            }
+        }
+
+        // Harmonized compatible species (purple)
+        if (!harmonized.isEmpty()) {
+            y += 1;
+            g.fill(contentX, y, contentX + contentW, y + 1, 0x40000000);
+            y += 4;
+
+            g.drawString(font, "Harmonized:", contentX, y, HARMONIZED_COLOR, false);
+            y += lineH;
+
+            for (CompatParent cp : harmonized) {
+                y = renderCompatEntry(g, font, knowledge, cp, contentX, y, lineH, HARMONIZED_COLOR);
             }
         }
     }
 
-    private record CompatParent(String id, int freq) {}
+    /**
+     * Rend une entree de parent compatible et retourne le y suivant.
+     */
+    private static int renderCompatEntry(GuiGraphics g, Font font, CodexPlayerData knowledge,
+                                          CompatParent cp, int x, int y, int lineH, int color) {
+        boolean parentSpeciesKnown = knowledge.isSpeciesKnown(cp.id);
+        boolean parentFreqKnown = knowledge.isFrequencyKnown(cp.id);
+        String wave = formatWave(cp.freq, cp.amp, cp.phase, cp.harm);
+
+        if (parentSpeciesKnown) {
+            g.drawString(font, capitalize(cp.id) + ": " + wave, x, y, color, false);
+        } else if (parentFreqKnown) {
+            g.drawString(font, "???: " + wave, x, y, UNKNOWN_COLOR, false);
+        } else {
+            g.drawString(font, "???: ???", x, y, UNKNOWN_COLOR, false);
+        }
+        return y + lineH;
+    }
+
+    private record CompatParent(String id, int freq, int amp, int phase, int harm, boolean harmonized) {}
 
     /**
      * Pour chaque espece enfant ayant speciesId comme parent,
      * retourne l'AUTRE parent (celui avec lequel on doit croiser l'abeille).
+     * Le flag harmonized est true si l'enfant qui lie les deux parents est harmonized.
      */
     private static List<CompatParent> findCompatibleParents(String speciesId) {
         if (speciesId == null) return List.of();
@@ -157,7 +193,14 @@ public class ResonationNoteRenderer {
                     if (!parentId.equals(speciesId) && seen.add(parentId)) {
                         BeeSpeciesManager.BeeSpeciesData parentData = BeeSpeciesManager.getSpecies(parentId);
                         if (parentData != null) {
-                            result.add(new CompatParent(parentId, computeSpeciesFrequency(parentData)));
+                            result.add(new CompatParent(
+                                    parentId,
+                                    parentData.waveformFreq,
+                                    parentData.waveformAmp,
+                                    parentData.waveformPhase,
+                                    parentData.waveformHarm,
+                                    sp.harmonized
+                            ));
                         }
                     }
                 }
@@ -166,24 +209,16 @@ public class ResonationNoteRenderer {
         return result;
     }
 
-    private static int computeSpeciesFrequency(BeeSpeciesManager.BeeSpeciesData data) {
-        if (data == null) return 0;
-        int[] levels = getStatLevels(data);
-        float totalWeight = 0;
-        float weightedFreq = 0;
-        for (int i = 0; i < STAT_NAMES.length; i++) {
-            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
-            if (wf == null) continue;
-            float weight = levels[i];
-            totalWeight += weight;
-            weightedFreq += wf.frequency * weight;
-        }
-        return totalWeight > 0 ? Math.round(weightedFreq / totalWeight) : 0;
+    /**
+     * Retourne la courbe combinee de l'espece depuis ses donnees pre-calculees.
+     */
+    private static String getSpeciesWave(BeeSpeciesManager.BeeSpeciesData data) {
+        if (data == null) return "---";
+        return formatWave(data.waveformFreq, data.waveformAmp, data.waveformPhase, data.waveformHarm);
     }
 
     private static String buildTraitLine(String statName, String label, int level,
                                           BeeSpeciesManager.BeeSpeciesData data) {
-        // Activity uses special display
         String prefix;
         if ("activity".equals(statName)) {
             prefix = label + " (" + getActivityName(data) + ")";
@@ -193,45 +228,13 @@ public class ResonationNoteRenderer {
 
         ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(statName, level);
         if (wf == null) {
-            // Activity level 0 (Day) has no waveform
             return prefix + ": ---";
         }
         return prefix + ": " + formatWave(wf.frequency, wf.amplitude, wf.phase, wf.harmonics);
     }
 
-    private static String computeCombinedWave(BeeSpeciesManager.BeeSpeciesData data) {
-        if (data == null) return "---";
-
-        int[] levels = getStatLevels(data);
-        float totalWeight = 0;
-        float weightedFreq = 0;
-        float weightedAmp = 0;
-        float weightedPhase = 0;
-        float weightedHarm = 0;
-
-        for (int i = 0; i < STAT_NAMES.length; i++) {
-            ResonatorConfigManager.StatWaveform wf =
-                    ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
-            if (wf == null) continue;
-            float weight = levels[i];
-            totalWeight += weight;
-            weightedFreq += wf.frequency * weight;
-            weightedAmp += wf.amplitude * weight;
-            weightedPhase += wf.phase * weight;
-            weightedHarm += wf.harmonics * weight;
-        }
-
-        if (totalWeight <= 0) return "---";
-
-        int freq = Math.round(weightedFreq / totalWeight);
-        int amp = Math.round(weightedAmp / totalWeight);
-        int phase = Math.round(weightedPhase / totalWeight) % 360;
-        int harm = Math.round(weightedHarm / totalWeight);
-        return formatWave(freq, amp, phase, harm);
-    }
-
     private static int[] getStatLevels(BeeSpeciesManager.BeeSpeciesData data) {
-        if (data == null) return new int[]{1, 1, 1, 1, 0};
+        if (data == null) return new int[]{1, 1, 1, 1, 1};
         return new int[]{
                 data.dropLevel,
                 data.flyingSpeedLevel,
@@ -242,11 +245,11 @@ public class ResonationNoteRenderer {
     }
 
     private static int getActivityLevel(BeeSpeciesManager.BeeSpeciesData data) {
-        if (data == null) return 0;
+        if (data == null) return 1;
         return switch (data.dayNight) {
-            case "night" -> 1;
-            case "both" -> 2;
-            default -> 0;
+            case "night" -> 2;
+            case "both" -> 3;
+            default -> 1;
         };
     }
 

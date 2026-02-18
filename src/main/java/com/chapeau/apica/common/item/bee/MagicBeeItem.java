@@ -221,7 +221,7 @@ public class MagicBeeItem extends Item {
                     case "both" -> ChatFormatting.LIGHT_PURPLE;
                     default -> ChatFormatting.DARK_GREEN;
                 };
-                int activityLevel = BeeInjectionHelper.getActivityLevel(speciesData.dayNight);
+                int activityLevel = BeeInjectionHelper.getActivityLevel(speciesData.dayNight) + 1;
                 if (isTraitKnownClient("activity:" + activityLevel)) {
                     tooltip.add(Component.translatable("tooltip.apica.activity")
                             .withStyle(ChatFormatting.GRAY)

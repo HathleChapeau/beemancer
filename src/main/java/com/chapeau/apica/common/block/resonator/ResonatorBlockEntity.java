@@ -179,7 +179,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
             int toleranceTotal = data.toleranceLevel + BeeInjectionHelper.getBonusLevel(storedBee, EssenceItem.EssenceType.TOLERANCE);
             codex.learnTrait("tolerance:" + toleranceTotal);
 
-            int activityBase = BeeInjectionHelper.getActivityLevel(data.dayNight);
+            int activityBase = BeeInjectionHelper.getActivityLevel(data.dayNight) + 1;
             int activityBonus = BeeInjectionHelper.getBonusLevel(storedBee, EssenceItem.EssenceType.DIURNAL);
             codex.learnTrait("activity:" + (activityBase + activityBonus));
         }

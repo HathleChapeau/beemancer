@@ -25,7 +25,14 @@
       },
       "pollen": null,
       "texture": "Meadow_Bee",
-      "color": "#F7C325"
+      "color": "#F7C325",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "forest": {
       "tier": "I",
@@ -51,7 +58,14 @@
       },
       "pollen": null,
       "texture": "Forest_Bee",
-      "color": "#4A7C4E"
+      "color": "#4A7C4E",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "rocky": {
       "tier": "I",
@@ -77,7 +91,14 @@
       },
       "pollen": null,
       "texture": "Rocky_Bee",
-      "color": "#7A7A7A"
+      "color": "#7A7A7A",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "river": {
       "tier": "I",
@@ -103,7 +124,14 @@
       },
       "pollen": null,
       "texture": "River_Bee",
-      "color": "#4A90B8"
+      "color": "#4A90B8",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "dune": {
       "tier": "I",
@@ -129,7 +157,14 @@
       },
       "pollen": null,
       "texture": "Dune_Bee",
-      "color": "#DBD3A0"
+      "color": "#DBD3A0",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "nether": {
       "tier": "I",
@@ -155,7 +190,14 @@
       },
       "pollen": null,
       "texture": "Neither_Bee",
-      "color": "#8B0000"
+      "color": "#8B0000",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "end": {
       "tier": "I",
@@ -181,7 +223,14 @@
       },
       "pollen": null,
       "texture": "End_Bee",
-      "color": "#E0D68A"
+      "color": "#E0D68A",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "monsty": {
       "tier": "II",
@@ -210,7 +259,14 @@
       },
       "pollen": null,
       "texture": "Monsty_Bee",
-      "color": "#7BC67B"
+      "color": "#7BC67B",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "docile": {
       "tier": "II",
@@ -239,7 +295,14 @@
       },
       "pollen": null,
       "texture": "Docile_Bee",
-      "color": "#FFE4B5"
+      "color": "#FFE4B5",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "loam": {
       "tier": "II",
@@ -268,7 +331,14 @@
       },
       "pollen": null,
       "texture": "Loam_Bee",
-      "color": "#8B5A2B"
+      "color": "#8B5A2B",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "sediment": {
       "tier": "II",
@@ -297,7 +367,14 @@
       },
       "pollen": null,
       "texture": "Sediment_Bee",
-      "color": "#8E8E8E"
+      "color": "#8E8E8E",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "spark": {
       "tier": "II",
@@ -326,7 +403,14 @@
       },
       "pollen": null,
       "texture": "Spark_Bee",
-      "color": "#3D3D3D"
+      "color": "#3D3D3D",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "cultural": {
       "tier": "II",
@@ -355,7 +439,14 @@
       },
       "pollen": null,
       "texture": "Cultural_Bee",
-      "color": "#C4A35A"
+      "color": "#C4A35A",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "carbon": {
       "tier": "III",
@@ -384,7 +475,14 @@
       },
       "pollen": null,
       "texture": "Carbon_Bee",
-      "color": "#2F2F2F"
+      "color": "#2F2F2F",
+      "waveform": {
+        "frequency": 21,
+        "amplitude": 69,
+        "phase": 158,
+        "harmonics": 27
+      },
+      "harmonized": false
     },
     "cupric": {
       "tier": "III",
@@ -413,7 +511,14 @@
       },
       "pollen": null,
       "texture": "Cupric_Bee",
-      "color": "#4A9B8C"
+      "color": "#4A9B8C",
+      "waveform": {
+        "frequency": 18,
+        "amplitude": 63,
+        "phase": 208,
+        "harmonics": 22
+      },
+      "harmonized": false
     },
     "festering": {
       "tier": "III",
@@ -442,7 +547,14 @@
       },
       "pollen": null,
       "texture": "Festering_Bee",
-      "color": "#B87333"
+      "color": "#B87333",
+      "waveform": {
+        "frequency": 21,
+        "amplitude": 69,
+        "phase": 158,
+        "harmonics": 27
+      },
+      "harmonized": false
     },
     "skeletal": {
       "tier": "III",
@@ -471,7 +583,14 @@
       },
       "pollen": null,
       "texture": "Skeletal_Bee",
-      "color": "#E3DAC9"
+      "color": "#E3DAC9",
+      "waveform": {
+        "frequency": 18,
+        "amplitude": 63,
+        "phase": 208,
+        "harmonics": 22
+      },
+      "harmonized": false
     },
     "silken": {
       "tier": "III",
@@ -500,7 +619,14 @@
       },
       "pollen": null,
       "texture": "Silken_Bee",
-      "color": "#FFFAF0"
+      "color": "#FFFAF0",
+      "waveform": {
+        "frequency": 21,
+        "amplitude": 69,
+        "phase": 158,
+        "harmonics": 27
+      },
+      "harmonized": false
     },
     "arachnid": {
       "tier": "III",
@@ -529,7 +655,14 @@
       },
       "pollen": null,
       "texture": "Arachnid_Bee",
-      "color": "#2D2D2D"
+      "color": "#2D2D2D",
+      "waveform": {
+        "frequency": 21,
+        "amplitude": 69,
+        "phase": 158,
+        "harmonics": 27
+      },
+      "harmonized": false
     },
     "tanner": {
       "tier": "III",
@@ -558,7 +691,14 @@
       },
       "pollen": null,
       "texture": "Tanner_Bee",
-      "color": "#8B4513"
+      "color": "#8B4513",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "plume": {
       "tier": "III",
@@ -587,7 +727,14 @@
       },
       "pollen": null,
       "texture": "Plume_Bee",
-      "color": "#4B4B4F"
+      "color": "#4B4B4F",
+      "waveform": {
+        "frequency": 19,
+        "amplitude": 54,
+        "phase": 159,
+        "harmonics": 22
+      },
+      "harmonized": false
     },
     "quercus": {
       "tier": "III",
@@ -616,7 +763,14 @@
       },
       "pollen": null,
       "texture": "Quercus_Bee",
-      "color": "#B8945F"
+      "color": "#B8945F",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 62,
+        "phase": 114,
+        "harmonics": 20
+      },
+      "harmonized": false
     },
     "boreal": {
       "tier": "III",
@@ -645,7 +799,14 @@
       },
       "pollen": null,
       "texture": "Boreal_Bee",
-      "color": "#D3D3D3"
+      "color": "#D3D3D3",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "tropical": {
       "tier": "III",
@@ -674,7 +835,14 @@
       },
       "pollen": null,
       "texture": "Tropical_Bee",
-      "color": "#32CD32"
+      "color": "#32CD32",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "paperbark": {
       "tier": "III",
@@ -703,7 +871,14 @@
       },
       "pollen": null,
       "texture": "Paperbark_Bee",
-      "color": "#D2B48C"
+      "color": "#D2B48C",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 62,
+        "phase": 114,
+        "harmonics": 20
+      },
+      "harmonized": false
     },
     "reed": {
       "tier": "III",
@@ -732,7 +907,14 @@
       },
       "pollen": null,
       "texture": "Reed_Bee",
-      "color": "#9ACD32"
+      "color": "#9ACD32",
+      "waveform": {
+        "frequency": 19,
+        "amplitude": 66,
+        "phase": 72,
+        "harmonics": 24
+      },
+      "harmonized": false
     },
     "karot": {
       "tier": "III",
@@ -761,7 +943,14 @@
       },
       "pollen": null,
       "texture": "Karot_Bee",
-      "color": "#D6D0AD"
+      "color": "#D6D0AD",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 62,
+        "phase": 114,
+        "harmonics": 20
+      },
+      "harmonized": false
     },
     "tuber": {
       "tier": "III",
@@ -790,7 +979,14 @@
       },
       "pollen": null,
       "texture": "Tuber_Bee",
-      "color": "#C4A35A"
+      "color": "#C4A35A",
+      "waveform": {
+        "frequency": 19,
+        "amplitude": 66,
+        "phase": 72,
+        "harmonics": 24
+      },
+      "harmonized": false
     },
     "juicy": {
       "tier": "III",
@@ -819,7 +1015,14 @@
       },
       "pollen": null,
       "texture": "Juicy_Bee",
-      "color": "#FF8C00"
+      "color": "#FF8C00",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "gourd": {
       "tier": "III",
@@ -848,7 +1051,14 @@
       },
       "pollen": null,
       "texture": "Gourd_Bee",
-      "color": "#C4A35A"
+      "color": "#C4A35A",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 62,
+        "phase": 114,
+        "harmonics": 20
+      },
+      "harmonized": false
     },
     "agrarian": {
       "tier": "III",
@@ -877,7 +1087,14 @@
       },
       "pollen": null,
       "texture": "Agrarian_Bee",
-      "color": "#AEDD00"
+      "color": "#AEDD00",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "prince": {
       "tier": "IV",
@@ -903,7 +1120,14 @@
       },
       "pollen": null,
       "texture": "Prince_Bee",
-      "color": "#E67519"
+      "color": "#E67519",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 62,
+        "phase": 114,
+        "harmonics": 20
+      },
+      "harmonized": false
     },
     "flower": {
       "tier": "IV",
@@ -932,7 +1156,14 @@
       },
       "pollen": "flower_pollen",
       "texture": "Flower_Bee",
-      "color": "#DEB887"
+      "color": "#DEB887",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": true
     },
     "mushroom": {
       "tier": "IV",
@@ -961,7 +1192,14 @@
       },
       "pollen": "mushroom_spore",
       "texture": "Mushroom_Bee",
-      "color": "#BC4A42"
+      "color": "#BC4A42",
+      "waveform": {
+        "frequency": 21,
+        "amplitude": 69,
+        "phase": 158,
+        "harmonics": 27
+      },
+      "harmonized": false
     },
     "tree": {
       "tier": "IV",
@@ -990,7 +1228,14 @@
       },
       "pollen": "tree_pollen",
       "texture": "Tree_Bee",
-      "color": "#228B22"
+      "color": "#228B22",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 62,
+        "phase": 114,
+        "harmonics": 20
+      },
+      "harmonized": false
     },
     "crystal": {
       "tier": "IV",
@@ -1019,7 +1264,14 @@
       },
       "pollen": "crystal_pollen",
       "texture": "Crystal_Bee",
-      "color": "#9966CC"
+      "color": "#9966CC",
+      "waveform": {
+        "frequency": 23,
+        "amplitude": 71,
+        "phase": 116,
+        "harmonics": 29
+      },
+      "harmonized": false
     },
     "argil": {
       "tier": "IV",
@@ -1048,7 +1300,14 @@
       },
       "pollen": null,
       "texture": "Argil_Bee",
-      "color": "#D2B48C"
+      "color": "#D2B48C",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "umbra": {
       "tier": "IV",
@@ -1077,7 +1336,14 @@
       },
       "pollen": null,
       "texture": "Umbra_Bee",
-      "color": "#4A3B5C"
+      "color": "#4A3B5C",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 62,
+        "phase": 114,
+        "harmonics": 20
+      },
+      "harmonized": false
     },
     "savanna": {
       "tier": "IV",
@@ -1106,7 +1372,14 @@
       },
       "pollen": null,
       "texture": "Savanna_Bee",
-      "color": "#DAA520"
+      "color": "#DAA520",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 62,
+        "phase": 114,
+        "harmonics": 20
+      },
+      "harmonized": false
     },
     "frost": {
       "tier": "IV",
@@ -1135,7 +1408,14 @@
       },
       "pollen": null,
       "texture": "Frost_Bee",
-      "color": "#A5F3FC"
+      "color": "#A5F3FC",
+      "waveform": {
+        "frequency": 19,
+        "amplitude": 66,
+        "phase": 72,
+        "harmonics": 24
+      },
+      "harmonized": false
     },
     "volatile": {
       "tier": "IV",
@@ -1164,7 +1444,14 @@
       },
       "pollen": null,
       "texture": "Volatile_Bee",
-      "color": "#FF6347"
+      "color": "#FF6347",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "ashen": {
       "tier": "IV",
@@ -1193,7 +1480,14 @@
       },
       "pollen": null,
       "texture": "Ashen_Bee",
-      "color": "#A9A9A9"
+      "color": "#A9A9A9",
+      "waveform": {
+        "frequency": 21,
+        "amplitude": 69,
+        "phase": 158,
+        "harmonics": 27
+      },
+      "harmonized": false
     },
     "igneous": {
       "tier": "IV",
@@ -1222,7 +1516,14 @@
       },
       "pollen": null,
       "texture": "Igneous_Bee",
-      "color": "#B22222"
+      "color": "#B22222",
+      "waveform": {
+        "frequency": 21,
+        "amplitude": 69,
+        "phase": 158,
+        "harmonics": 27
+      },
+      "harmonized": false
     },
     "rose_stone": {
       "tier": "IV",
@@ -1251,7 +1552,14 @@
       },
       "pollen": null,
       "texture": "Rose_Stone_Bee",
-      "color": "#C4A4A4"
+      "color": "#C4A4A4",
+      "waveform": {
+        "frequency": 21,
+        "amplitude": 69,
+        "phase": 158,
+        "harmonics": 27
+      },
+      "harmonized": false
     },
     "infernalist": {
       "tier": "V",
@@ -1277,7 +1585,14 @@
       },
       "pollen": null,
       "texture": "Infernalist_Bee",
-      "color": "#6B2D5C"
+      "color": "#6B2D5C",
+      "waveform": {
+        "frequency": 31,
+        "amplitude": 52,
+        "phase": 104,
+        "harmonics": 36
+      },
+      "harmonized": false
     },
     "swift": {
       "tier": "V",
@@ -1306,7 +1621,14 @@
       },
       "pollen": null,
       "texture": "Swift_Bee",
-      "color": "#DFDEDE"
+      "color": "#DFDEDE",
+      "waveform": {
+        "frequency": 25,
+        "amplitude": 49,
+        "phase": 159,
+        "harmonics": 30
+      },
+      "harmonized": false
     },
     "royal": {
       "tier": "V",
@@ -1335,7 +1657,14 @@
       },
       "pollen": null,
       "texture": "Royal_Bee",
-      "color": "#9B6B53"
+      "color": "#9B6B53",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "ferrous": {
       "tier": "V",
@@ -1364,7 +1693,14 @@
       },
       "pollen": null,
       "texture": "Ferrous_Bee",
-      "color": "#A8A8A8"
+      "color": "#A8A8A8",
+      "waveform": {
+        "frequency": 23,
+        "amplitude": 60,
+        "phase": 191,
+        "harmonics": 28
+      },
+      "harmonized": false
     },
     "flux": {
       "tier": "V",
@@ -1393,7 +1729,14 @@
       },
       "pollen": null,
       "texture": "Flux_Bee",
-      "color": "#AA0000"
+      "color": "#AA0000",
+      "waveform": {
+        "frequency": 23,
+        "amplitude": 60,
+        "phase": 191,
+        "harmonics": 28
+      },
+      "harmonized": false
     },
     "lazuli": {
       "tier": "V",
@@ -1422,7 +1765,14 @@
       },
       "pollen": null,
       "texture": "Lazuli_Bee",
-      "color": "#1F4DB4"
+      "color": "#1F4DB4",
+      "waveform": {
+        "frequency": 21,
+        "amplitude": 69,
+        "phase": 158,
+        "harmonics": 27
+      },
+      "harmonized": false
     },
     "quartzose": {
       "tier": "V",
@@ -1451,7 +1801,14 @@
       },
       "pollen": null,
       "texture": "Quartzose_Bee",
-      "color": "#EEEDE9"
+      "color": "#EEEDE9",
+      "waveform": {
+        "frequency": 36,
+        "amplitude": 51,
+        "phase": 122,
+        "harmonics": 41
+      },
+      "harmonized": false
     },
     "luminous": {
       "tier": "V",
@@ -1480,7 +1837,14 @@
       },
       "pollen": null,
       "texture": "Luminous_Bee",
-      "color": "#AA0000"
+      "color": "#AA0000",
+      "waveform": {
+        "frequency": 30,
+        "amplitude": 49,
+        "phase": 113,
+        "harmonics": 34
+      },
+      "harmonized": false
     },
     "grim": {
       "tier": "V",
@@ -1509,7 +1873,14 @@
       },
       "pollen": null,
       "texture": "Grim_Bee",
-      "color": "#19398A"
+      "color": "#19398A",
+      "waveform": {
+        "frequency": 21,
+        "amplitude": 54,
+        "phase": 239,
+        "harmonics": 24
+      },
+      "harmonized": false
     },
     "columnar": {
       "tier": "V",
@@ -1538,7 +1909,14 @@
       },
       "pollen": null,
       "texture": "Columnar_Bee",
-      "color": "#EEEDE9"
+      "color": "#EEEDE9",
+      "waveform": {
+        "frequency": 23,
+        "amplitude": 60,
+        "phase": 191,
+        "harmonics": 28
+      },
+      "harmonized": false
     },
     "viscous": {
       "tier": "V",
@@ -1567,7 +1945,14 @@
       },
       "pollen": null,
       "texture": "Viscous_Bee",
-      "color": "#FFBC5E"
+      "color": "#FFBC5E",
+      "waveform": {
+        "frequency": 29,
+        "amplitude": 66,
+        "phase": 154,
+        "harmonics": 36
+      },
+      "harmonized": false
     },
     "inky": {
       "tier": "V",
@@ -1596,7 +1981,14 @@
       },
       "pollen": null,
       "texture": "Inky_Bee",
-      "color": "#2D2429"
+      "color": "#2D2429",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 46,
+        "phase": 208,
+        "harmonics": 16
+      },
+      "harmonized": false
     },
     "fleece": {
       "tier": "V",
@@ -1625,7 +2017,14 @@
       },
       "pollen": null,
       "texture": "Fleece_Bee",
-      "color": "#7FBF00"
+      "color": "#7FBF00",
+      "waveform": {
+        "frequency": 19,
+        "amplitude": 54,
+        "phase": 159,
+        "harmonics": 22
+      },
+      "harmonized": false
     },
     "adobe": {
       "tier": "V",
@@ -1654,7 +2053,14 @@
       },
       "pollen": null,
       "texture": "Adobe_Bee",
-      "color": "#CD853F"
+      "color": "#CD853F",
+      "waveform": {
+        "frequency": 19,
+        "amplitude": 54,
+        "phase": 159,
+        "harmonics": 22
+      },
+      "harmonized": false
     },
     "geode": {
       "tier": "V",
@@ -1683,7 +2089,14 @@
       },
       "pollen": null,
       "texture": "Geode_Bee",
-      "color": "#9966CC"
+      "color": "#9966CC",
+      "waveform": {
+        "frequency": 23,
+        "amplitude": 60,
+        "phase": 191,
+        "harmonics": 28
+      },
+      "harmonized": false
     },
     "marsh": {
       "tier": "V",
@@ -1712,7 +2125,14 @@
       },
       "pollen": null,
       "texture": "Marsh_Bee",
-      "color": "#556B2F"
+      "color": "#556B2F",
+      "waveform": {
+        "frequency": 23,
+        "amplitude": 60,
+        "phase": 191,
+        "harmonics": 28
+      },
+      "harmonized": false
     },
     "majestic": {
       "tier": "VI",
@@ -1741,7 +2161,14 @@
       },
       "pollen": null,
       "texture": "Majestic_Bee",
-      "color": "#6E3735"
+      "color": "#6E3735",
+      "waveform": {
+        "frequency": 24,
+        "amplitude": 66,
+        "phase": 117,
+        "harmonics": 25
+      },
+      "harmonized": false
     },
     "steady": {
       "tier": "VI",
@@ -1770,7 +2197,14 @@
       },
       "pollen": null,
       "texture": "Steady_Bee",
-      "color": "#A0826D"
+      "color": "#A0826D",
+      "waveform": {
+        "frequency": 37,
+        "amplitude": 72,
+        "phase": 233,
+        "harmonics": 44
+      },
+      "harmonized": false
     },
     "wind": {
       "tier": "VI",
@@ -1799,7 +2233,14 @@
       },
       "pollen": "pollen_of_wind",
       "texture": "Wind_Bee",
-      "color": "#87CEEB"
+      "color": "#87CEEB",
+      "waveform": {
+        "frequency": 28,
+        "amplitude": 52,
+        "phase": 166,
+        "harmonics": 33
+      },
+      "harmonized": false
     },
     "thunder": {
       "tier": "VI",
@@ -1828,7 +2269,14 @@
       },
       "pollen": "pollen_of_thunder",
       "texture": "Thunder_Bee",
-      "color": "#FFD700"
+      "color": "#FFD700",
+      "waveform": {
+        "frequency": 20,
+        "amplitude": 51,
+        "phase": 172,
+        "harmonics": 24
+      },
+      "harmonized": false
     },
     "water": {
       "tier": "VI",
@@ -1857,7 +2305,14 @@
       },
       "pollen": "pollen_of_water",
       "texture": "Water_Bee",
-      "color": "#1E90FF"
+      "color": "#1E90FF",
+      "waveform": {
+        "frequency": 11,
+        "amplitude": 55,
+        "phase": 165,
+        "harmonics": 12
+      },
+      "harmonized": false
     },
     "fire": {
       "tier": "VI",
@@ -1886,7 +2341,14 @@
       },
       "pollen": "pollen_of_fire",
       "texture": "Fire_Bee",
-      "color": "#FF6600"
+      "color": "#FF6600",
+      "waveform": {
+        "frequency": 20,
+        "amplitude": 51,
+        "phase": 172,
+        "harmonics": 24
+      },
+      "harmonized": false
     },
     "auric": {
       "tier": "VI",
@@ -1915,7 +2377,14 @@
       },
       "pollen": null,
       "texture": "Auric_Bee",
-      "color": "#FFD700"
+      "color": "#FFD700",
+      "waveform": {
+        "frequency": 22,
+        "amplitude": 51,
+        "phase": 242,
+        "harmonics": 26
+      },
+      "harmonized": false
     },
     "magmatic": {
       "tier": "VI",
@@ -1944,7 +2413,14 @@
       },
       "pollen": null,
       "texture": "Magmatic_Bee",
-      "color": "#FF6600"
+      "color": "#FF6600",
+      "waveform": {
+        "frequency": 30,
+        "amplitude": 56,
+        "phase": 74,
+        "harmonics": 34
+      },
+      "harmonized": false
     },
     "spirit": {
       "tier": "VI",
@@ -1973,7 +2449,14 @@
       },
       "pollen": null,
       "texture": "Spirit_Bee",
-      "color": "#E0FFFF"
+      "color": "#E0FFFF",
+      "waveform": {
+        "frequency": 31,
+        "amplitude": 48,
+        "phase": 132,
+        "harmonics": 35
+      },
+      "harmonized": false
     },
     "crimson": {
       "tier": "VI",
@@ -2002,7 +2485,14 @@
       },
       "pollen": null,
       "texture": "Crimson_Bee",
-      "color": "#8B0000"
+      "color": "#8B0000",
+      "waveform": {
+        "frequency": 31,
+        "amplitude": 48,
+        "phase": 132,
+        "harmonics": 35
+      },
+      "harmonized": false
     },
     "mycelial": {
       "tier": "VI",
@@ -2031,7 +2521,14 @@
       },
       "pollen": null,
       "texture": "Mycelial_Bee",
-      "color": "#6B6067"
+      "color": "#6B6067",
+      "waveform": {
+        "frequency": 20,
+        "amplitude": 51,
+        "phase": 172,
+        "harmonics": 24
+      },
+      "harmonized": false
     },
     "humus": {
       "tier": "VI",
@@ -2060,7 +2557,14 @@
       },
       "pollen": null,
       "texture": "Humus_Bee",
-      "color": "#3D2E1F"
+      "color": "#3D2E1F",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 46,
+        "phase": 208,
+        "harmonics": 16
+      },
+      "harmonized": false
     },
     "floral": {
       "tier": "VI",
@@ -2089,7 +2593,14 @@
       },
       "pollen": null,
       "texture": "Floral_Bee",
-      "color": "#FF69B4"
+      "color": "#FF69B4",
+      "waveform": {
+        "frequency": 28,
+        "amplitude": 52,
+        "phase": 166,
+        "harmonics": 33
+      },
+      "harmonized": false
     },
     "treasure": {
       "tier": "VII",
@@ -2118,7 +2629,14 @@
       },
       "pollen": null,
       "texture": "Treasure_Bee",
-      "color": "#FFD700"
+      "color": "#FFD700",
+      "waveform": {
+        "frequency": 23,
+        "amplitude": 57,
+        "phase": 253,
+        "harmonics": 28
+      },
+      "harmonized": false
     },
     "siphoning": {
       "tier": "VII",
@@ -2147,7 +2665,14 @@
       },
       "pollen": null,
       "texture": "Siphoning_Bee",
-      "color": "#8B0000"
+      "color": "#8B0000",
+      "waveform": {
+        "frequency": 36,
+        "amplitude": 64,
+        "phase": 181,
+        "harmonics": 44
+      },
+      "harmonized": false
     },
     "zephyr": {
       "tier": "VII",
@@ -2176,7 +2701,14 @@
       },
       "pollen": null,
       "texture": "Zephyr_Bee",
-      "color": "#ADD8E6"
+      "color": "#ADD8E6",
+      "waveform": {
+        "frequency": 41,
+        "amplitude": 78,
+        "phase": 154,
+        "harmonics": 48
+      },
+      "harmonized": false
     },
     "prismatic": {
       "tier": "VII",
@@ -2205,7 +2737,14 @@
       },
       "pollen": null,
       "texture": "Prismatic_Bee",
-      "color": "#00CED1"
+      "color": "#00CED1",
+      "waveform": {
+        "frequency": 33,
+        "amplitude": 60,
+        "phase": 164,
+        "harmonics": 40
+      },
+      "harmonized": false
     },
     "crystalline": {
       "tier": "VII",
@@ -2234,7 +2773,14 @@
       },
       "pollen": null,
       "texture": "Crystalline_Bee",
-      "color": "#63A8A0"
+      "color": "#63A8A0",
+      "waveform": {
+        "frequency": 27,
+        "amplitude": 71,
+        "phase": 155,
+        "harmonics": 31
+      },
+      "harmonized": false
     },
     "insomnia": {
       "tier": "VII",
@@ -2263,7 +2809,14 @@
       },
       "pollen": null,
       "texture": "Insomnia_Bee",
-      "color": "#4E6FA5"
+      "color": "#4E6FA5",
+      "waveform": {
+        "frequency": 20,
+        "amplitude": 51,
+        "phase": 172,
+        "harmonics": 24
+      },
+      "harmonized": false
     },
     "blazing": {
       "tier": "VII",
@@ -2292,7 +2845,14 @@
       },
       "pollen": null,
       "texture": "Blazing_Bee",
-      "color": "#F6C700"
+      "color": "#F6C700",
+      "waveform": {
+        "frequency": 31,
+        "amplitude": 56,
+        "phase": 138,
+        "harmonics": 37
+      },
+      "harmonized": false
     },
     "diamantine": {
       "tier": "VIII",
@@ -2321,7 +2881,14 @@
       },
       "pollen": null,
       "texture": "Diamantine_Bee",
-      "color": "#4AEDD9"
+      "color": "#4AEDD9",
+      "waveform": {
+        "frequency": 24,
+        "amplitude": 57,
+        "phase": 200,
+        "harmonics": 29
+      },
+      "harmonized": false
     },
     "venerable": {
       "tier": "VIII",
@@ -2350,7 +2917,14 @@
       },
       "pollen": null,
       "texture": "Venerable_Bee",
-      "color": "#17DD62"
+      "color": "#17DD62",
+      "waveform": {
+        "frequency": 29,
+        "amplitude": 70,
+        "phase": 137,
+        "harmonics": 34
+      },
+      "harmonized": false
     },
     "volcanic": {
       "tier": "VIII",
@@ -2379,7 +2953,14 @@
       },
       "pollen": null,
       "texture": "Volcanic_Bee",
-      "color": "#B22222"
+      "color": "#B22222",
+      "waveform": {
+        "frequency": 37,
+        "amplitude": 60,
+        "phase": 160,
+        "harmonics": 44
+      },
+      "harmonized": false
     },
     "xenolith": {
       "tier": "VIII",
@@ -2408,7 +2989,14 @@
       },
       "pollen": null,
       "texture": "Xenolith_Bee",
-      "color": "#100C14"
+      "color": "#100C14",
+      "waveform": {
+        "frequency": 34,
+        "amplitude": 60,
+        "phase": 85,
+        "harmonics": 37
+      },
+      "harmonized": false
     },
     "traveler": {
       "tier": "VIII",
@@ -2437,7 +3025,14 @@
       },
       "pollen": null,
       "texture": "Traveler_Bee",
-      "color": "#DBDE9F"
+      "color": "#DBDE9F",
+      "waveform": {
+        "frequency": 38,
+        "amplitude": 56,
+        "phase": 88,
+        "harmonics": 44
+      },
+      "harmonized": false
     },
     "sorrow": {
       "tier": "VIII",
@@ -2466,7 +3061,14 @@
       },
       "pollen": null,
       "texture": "Sorrow_Bee",
-      "color": "#0C7575"
+      "color": "#0C7575",
+      "waveform": {
+        "frequency": 34,
+        "amplitude": 61,
+        "phase": 81,
+        "harmonics": 39
+      },
+      "harmonized": false
     },
     "absorbent": {
       "tier": "VIII",
@@ -2495,7 +3097,14 @@
       },
       "pollen": null,
       "texture": "Absorbent_Bee",
-      "color": "#F0F0F0"
+      "color": "#F0F0F0",
+      "waveform": {
+        "frequency": 33,
+        "amplitude": 60,
+        "phase": 164,
+        "harmonics": 40
+      },
+      "harmonized": false
     },
     "light": {
       "tier": "VIII",
@@ -2524,7 +3133,14 @@
       },
       "pollen": "pollen_of_light",
       "texture": "Light_Bee",
-      "color": "#FFFF99"
+      "color": "#FFFF99",
+      "waveform": {
+        "frequency": 34,
+        "amplitude": 65,
+        "phase": 171,
+        "harmonics": 41
+      },
+      "harmonized": false
     },
     "dark": {
       "tier": "VIII",
@@ -2553,7 +3169,14 @@
       },
       "pollen": "pollen_of_darkness",
       "texture": "Dark_Bee",
-      "color": "#1A0A2E"
+      "color": "#1A0A2E",
+      "waveform": {
+        "frequency": 33,
+        "amplitude": 60,
+        "phase": 164,
+        "harmonics": 40
+      },
+      "harmonized": false
     },
     "imperial": {
       "tier": "VIII",
@@ -2582,7 +3205,14 @@
       },
       "pollen": null,
       "texture": "Imperial_Bee",
-      "color": "#6A0DAD"
+      "color": "#6A0DAD",
+      "waveform": {
+        "frequency": 36,
+        "amplitude": 65,
+        "phase": 85,
+        "harmonics": 46
+      },
+      "harmonized": false
     },
     "demonic": {
       "tier": "IX",
@@ -2611,7 +3241,14 @@
       },
       "pollen": null,
       "texture": "Demonic_Bee",
-      "color": "#660000"
+      "color": "#660000",
+      "waveform": {
+        "frequency": 34,
+        "amplitude": 56,
+        "phase": 182,
+        "harmonics": 42
+      },
+      "harmonized": false
     },
     "paladin": {
       "tier": "IX",
@@ -2640,7 +3277,14 @@
       },
       "pollen": null,
       "texture": "Paladin_Bee",
-      "color": "#F5F5F5"
+      "color": "#F5F5F5",
+      "waveform": {
+        "frequency": 16,
+        "amplitude": 62,
+        "phase": 114,
+        "harmonics": 20
+      },
+      "harmonized": false
     },
     "chorus": {
       "tier": "IX",
@@ -2669,7 +3313,14 @@
       },
       "pollen": null,
       "texture": "Chorus_Bee",
-      "color": "#8F6BAE"
+      "color": "#8F6BAE",
+      "waveform": {
+        "frequency": 31,
+        "amplitude": 51,
+        "phase": 117,
+        "harmonics": 35
+      },
+      "harmonized": false
     },
     "ancient": {
       "tier": "IX",
@@ -2698,7 +3349,14 @@
       },
       "pollen": null,
       "texture": "Ancient_Bee",
-      "color": "#6B5C4A"
+      "color": "#6B5C4A",
+      "waveform": {
+        "frequency": 40,
+        "amplitude": 61,
+        "phase": 141,
+        "harmonics": 47
+      },
+      "harmonized": false
     },
     "void": {
       "tier": "IX",
@@ -2727,7 +3385,14 @@
       },
       "pollen": "void_pollen",
       "texture": "Void_Bee",
-      "color": "#443A3B"
+      "color": "#443A3B",
+      "waveform": {
+        "frequency": 38,
+        "amplitude": 53,
+        "phase": 110,
+        "harmonics": 44
+      },
+      "harmonized": false
     },
     "draconic": {
       "tier": "X",
@@ -2756,7 +3421,14 @@
       },
       "pollen": null,
       "texture": "Draconic_Bee",
-      "color": "#20002F"
+      "color": "#20002F",
+      "waveform": {
+        "frequency": 33,
+        "amplitude": 58,
+        "phase": 166,
+        "harmonics": 40
+      },
+      "harmonized": false
     },
     "stellar": {
       "tier": "X",
@@ -2785,7 +3457,14 @@
       },
       "pollen": null,
       "texture": "Stellar_Bee",
-      "color": "#9932CC"
+      "color": "#9932CC",
+      "waveform": {
+        "frequency": 47,
+        "amplitude": 68,
+        "phase": 179,
+        "harmonics": 56
+      },
+      "harmonized": false
     }
   }
 }

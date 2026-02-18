@@ -150,51 +150,20 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     }
 
     /**
-     * Calcule les target values en combinant les waveforms de chaque stat de l'abeille,
-     * ponderees par le niveau de la stat.
+     * Lit les target values directement depuis la waveform de l'espece.
      */
     private void generateTargetsFromBee(ItemStack bee) {
-        ResonatorConfigManager.ensureClientLoaded();
         BeeSpeciesManager.ensureClientLoaded();
 
-        // Lire l'espece depuis le CustomData de l'abeille
         String speciesId = getSpeciesFromBee(bee);
         BeeSpeciesManager.BeeSpeciesData speciesData = speciesId != null
                 ? BeeSpeciesManager.getSpecies(speciesId) : null;
 
-        // Niveaux de base des 5 stats
-        int dropLvl = speciesData != null ? speciesData.dropLevel : 1;
-        int speedLvl = speciesData != null ? speciesData.flyingSpeedLevel : 1;
-        int forageLvl = speciesData != null ? speciesData.foragingDurationLevel : 1;
-        int toleranceLvl = speciesData != null ? speciesData.toleranceLevel : 1;
-        int activityLvl = getActivityLevel(speciesData);
-
-        // Combinaison des waveforms par stat (chaque stat a sa courbe selon son niveau)
-        String[] statNames = {"drop", "speed", "foraging", "tolerance", "activity"};
-        int[] levels = {dropLvl, speedLvl, forageLvl, toleranceLvl, activityLvl};
-
-        float totalWeight = 0;
-        float weightedFreq = 0;
-        float weightedAmp = 0;
-        float weightedPhase = 0;
-        float weightedHarm = 0;
-
-        for (int i = 0; i < statNames.length; i++) {
-            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(statNames[i], levels[i]);
-            if (wf == null) continue;
-            float weight = levels[i];
-            totalWeight += weight;
-            weightedFreq += wf.frequency * weight;
-            weightedAmp += wf.amplitude * weight;
-            weightedPhase += wf.phase * weight;
-            weightedHarm += wf.harmonics * weight;
-        }
-
-        if (totalWeight > 0) {
-            targetFreq = clamp(Math.round(weightedFreq / totalWeight), FREQ_MIN, FREQ_MAX);
-            targetAmp = clamp(Math.round(weightedAmp / totalWeight), 0, 100);
-            targetPhase = clamp(Math.round(weightedPhase / totalWeight) % 360, 0, 360);
-            targetHarm = clamp(Math.round(weightedHarm / totalWeight), 0, 100);
+        if (speciesData != null) {
+            targetFreq = clamp(speciesData.waveformFreq, FREQ_MIN, FREQ_MAX);
+            targetAmp = clamp(speciesData.waveformAmp, 0, 100);
+            targetPhase = clamp(speciesData.waveformPhase % 360, 0, 360);
+            targetHarm = clamp(speciesData.waveformHarm, 0, 100);
         } else {
             targetFreq = 20;
             targetAmp = 50;
@@ -208,11 +177,11 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     }
 
     private static int getActivityLevel(BeeSpeciesManager.BeeSpeciesData data) {
-        if (data == null) return 0;
+        if (data == null) return 1;
         return switch (data.dayNight) {
-            case "night" -> 1;
-            case "both" -> 2;
-            default -> 0;
+            case "night" -> 2;
+            case "both" -> 3;
+            default -> 1;
         };
     }
 
@@ -389,12 +358,16 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         ResonatorConfigManager.ensureClientLoaded();
         BeeSpeciesManager.ensureClientLoaded();
 
-        // Bee species + its combined frequency (3 states)
-        int beeFreq = computeSpeciesFrequency(data);
+        // Bee species + its combined waveform (3 states)
+        String beeWave = data != null ? formatWave(data.waveformFreq, data.waveformAmp, data.waveformPhase, data.waveformHarm) : "---";
         if (knowledge.isSpeciesKnown(speciesId)) {
-            g.drawString(font, capitalize(speciesId) + ": " + beeFreq + "Hz", px + 4, lineY, 0xFF88BBFF, false);
+            g.drawString(font, capitalize(speciesId) + ":", px + 4, lineY, 0xFF88BBFF, false);
+            lineY += lineH;
+            g.drawString(font, beeWave, px + 4, lineY, 0xFF88BBFF, false);
         } else if (knowledge.isFrequencyKnown(speciesId)) {
-            g.drawString(font, "???: " + beeFreq + "Hz", px + 4, lineY, 0xFF88BBFF, false);
+            g.drawString(font, "???:", px + 4, lineY, 0xFF88BBFF, false);
+            lineY += lineH;
+            g.drawString(font, beeWave, px + 4, lineY, 0xFF88BBFF, false);
         } else {
             g.drawString(font, "???: ???", px + 4, lineY, 0xFF666666, false);
         }
@@ -440,6 +413,9 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     private record FreqEntry(String text, int color) {}
 
+    private static final int HARMONIZED_COLOR = 0xFF8B5CF6;
+    private static final int COMPAT_COLOR = 0xFFDDAA88;
+
     private List<FreqEntry> buildFreqEntries(CodexPlayerData knowledge, int[] levels,
                                               List<CompatSpecies> compatibles) {
         List<FreqEntry> entries = new ArrayList<>();
@@ -450,8 +426,8 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             if (knowledge.isTraitKnown(traitKey)) {
                 ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
                 if (wf != null) {
-                    entries.add(new FreqEntry(STAT_SHORT_LABELS[i] + " " + levels[i] + ": " + wf.frequency + "Hz",
-                            STAT_COLORS[i]));
+                    entries.add(new FreqEntry(STAT_SHORT_LABELS[i] + " " + levels[i] + ": "
+                            + formatWave(wf.frequency, wf.amplitude, wf.phase, wf.harmonics), STAT_COLORS[i]));
                 } else {
                     entries.add(new FreqEntry(STAT_SHORT_LABELS[i] + " " + levels[i] + ": ---", STAT_COLORS[i]));
                 }
@@ -460,45 +436,62 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             }
         }
 
-        // Blank separator between traits and species
-        if (!compatibles.isEmpty()) {
+        // Normal compatible species (non-harmonized links)
+        List<CompatSpecies> normal = compatibles.stream().filter(cs -> !cs.harmonized).toList();
+        if (!normal.isEmpty()) {
             entries.add(new FreqEntry("", 0));
+            for (CompatSpecies cs : normal) {
+                entries.add(buildCompatEntry(knowledge, cs, COMPAT_COLOR));
+            }
         }
 
-        // Compatible species (other parents)
-        for (CompatSpecies cs : compatibles) {
-            if (knowledge.isSpeciesKnown(cs.id)) {
-                entries.add(new FreqEntry(capitalize(cs.id) + ": " + cs.freq + "Hz", 0xFFDDAA88));
-            } else if (knowledge.isFrequencyKnown(cs.id)) {
-                entries.add(new FreqEntry("???: " + cs.freq + "Hz", 0xFFDDAA88));
-            } else {
-                entries.add(new FreqEntry("???: ???", 0xFF666666));
+        // Harmonized compatible species
+        List<CompatSpecies> harmonized = compatibles.stream().filter(cs -> cs.harmonized).toList();
+        if (!harmonized.isEmpty()) {
+            entries.add(new FreqEntry("", 0));
+            entries.add(new FreqEntry("Harmonized:", HARMONIZED_COLOR));
+            for (CompatSpecies cs : harmonized) {
+                entries.add(buildCompatEntry(knowledge, cs, HARMONIZED_COLOR));
             }
         }
 
         return entries;
     }
 
+    private FreqEntry buildCompatEntry(CodexPlayerData knowledge, CompatSpecies cs, int color) {
+        String wave = formatWave(cs.freq, cs.amp, cs.phase, cs.harm);
+        if (knowledge.isSpeciesKnown(cs.id)) {
+            return new FreqEntry(capitalize(cs.id) + ":", color);
+        } else if (knowledge.isFrequencyKnown(cs.id)) {
+            return new FreqEntry("???: " + wave, color);
+        } else {
+            return new FreqEntry("???: ???", 0xFF666666);
+        }
+    }
+
     private static final String[] STAT_SHORT_LABELS = {"Drp", "Spd", "Frg", "Tol", "Act"};
 
-    private record CompatSpecies(String id, int freq) {}
+    private record CompatSpecies(String id, int freq, int amp, int phase, int harm, boolean harmonized) {}
 
     /**
      * Pour chaque espece enfant ayant speciesId comme parent,
-     * retourne l'AUTRE parent (celui avec lequel on doit croiser l'abeille actuelle).
+     * retourne l'AUTRE parent avec sa courbe et si l'enfant est harmonized.
      */
     private static List<CompatSpecies> findCompatibleSpecies(String speciesId) {
         if (speciesId == null) return List.of();
         BeeSpeciesManager.ensureClientLoaded();
         List<CompatSpecies> result = new ArrayList<>();
         java.util.Set<String> seen = new java.util.HashSet<>();
-        for (BeeSpeciesManager.BeeSpeciesData sp : BeeSpeciesManager.getAllSpecies()) {
-            if (sp.parents != null && sp.parents.contains(speciesId)) {
-                for (String parentId : sp.parents) {
+        for (BeeSpeciesManager.BeeSpeciesData child : BeeSpeciesManager.getAllSpecies()) {
+            if (child.parents != null && child.parents.contains(speciesId)) {
+                for (String parentId : child.parents) {
                     if (!parentId.equals(speciesId) && seen.add(parentId)) {
                         BeeSpeciesManager.BeeSpeciesData parentData = BeeSpeciesManager.getSpecies(parentId);
                         if (parentData != null) {
-                            result.add(new CompatSpecies(parentId, computeSpeciesFrequency(parentData)));
+                            result.add(new CompatSpecies(parentId,
+                                    parentData.waveformFreq, parentData.waveformAmp,
+                                    parentData.waveformPhase, parentData.waveformHarm,
+                                    child.harmonized));
                         }
                     }
                 }
@@ -507,19 +500,9 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         return result;
     }
 
-    private static int computeSpeciesFrequency(BeeSpeciesManager.BeeSpeciesData data) {
-        if (data == null) return 0;
-        int[] levels = getStatLevels(data);
-        float totalWeight = 0;
-        float weightedFreq = 0;
-        for (int i = 0; i < STAT_NAMES.length; i++) {
-            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
-            if (wf == null) continue;
-            float weight = levels[i];
-            totalWeight += weight;
-            weightedFreq += wf.frequency * weight;
-        }
-        return totalWeight > 0 ? Math.round(weightedFreq / totalWeight) : 0;
+    private static String formatWave(int freq, int amp, int phase, int harm) {
+        return freq + "Hz " + String.format("%.1f", amp / 100.0f) + "A "
+                + phase + "\u00B0 " + String.format("%.1f", harm / 100.0f) + "H";
     }
 
     private static CodexPlayerData getPlayerKnowledge() {
@@ -614,7 +597,8 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             if (cs.freq < FREQ_MIN || cs.freq > FREQ_MAX) continue;
             float tickRatio = (cs.freq - FREQ_MIN) / (float) (FREQ_MAX - FREQ_MIN);
             int tickX = sx + 1 + (int) ((SLIDER_W - 2) * tickRatio);
-            g.fill(tickX, sy - 3, tickX + 1, sy + SLIDER_H + 3, 0xFFDDAA88);
+            int tickColor = cs.harmonized ? HARMONIZED_COLOR : COMPAT_COLOR;
+            g.fill(tickX, sy - 3, tickX + 1, sy + SLIDER_H + 3, tickColor);
         }
     }
 

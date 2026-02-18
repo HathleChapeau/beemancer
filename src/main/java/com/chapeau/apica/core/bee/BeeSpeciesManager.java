@@ -236,6 +236,18 @@ public class BeeSpeciesManager {
             }
         }
 
+        // Waveform combinee
+        if (json.has("waveform")) {
+            JsonObject wf = json.getAsJsonObject("waveform");
+            data.waveformFreq = wf.has("frequency") ? wf.get("frequency").getAsInt() : 20;
+            data.waveformAmp = wf.has("amplitude") ? wf.get("amplitude").getAsInt() : 50;
+            data.waveformPhase = wf.has("phase") ? wf.get("phase").getAsInt() : 0;
+            data.waveformHarm = wf.has("harmonics") ? wf.get("harmonics").getAsInt() : 0;
+        }
+
+        // Harmonized
+        data.harmonized = json.has("harmonized") && json.get("harmonized").getAsBoolean();
+
         return data;
     }
 
@@ -417,6 +429,15 @@ public class BeeSpeciesManager {
 
         // Couleur de l'espece (hex RGB, ex: "#F7C325")
         public int color = 0xFFFFFF;
+
+        // Waveform combinee de l'espece
+        public int waveformFreq = 20;
+        public int waveformAmp = 50;
+        public int waveformPhase = 0;
+        public int waveformHarm = 0;
+
+        // Harmonized : les 2 parents doivent etre en resonance pour obtenir cette espece
+        public boolean harmonized = false;
 
         public BeeSpeciesData(String id) {
             this.id = id;

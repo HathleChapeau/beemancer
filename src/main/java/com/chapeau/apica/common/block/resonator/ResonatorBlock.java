@@ -191,7 +191,7 @@ public class ResonatorBlock extends BaseEntityBlock {
         int tolerance = data.toleranceLevel + BeeInjectionHelper.getBonusLevel(bee, EssenceItem.EssenceType.TOLERANCE);
         if (!codex.isTraitKnown("tolerance:" + tolerance)) return true;
 
-        int activity = BeeInjectionHelper.getActivityLevel(data.dayNight)
+        int activity = BeeInjectionHelper.getActivityLevel(data.dayNight) + 1
                 + BeeInjectionHelper.getBonusLevel(bee, EssenceItem.EssenceType.DIURNAL);
         if (!codex.isTraitKnown("activity:" + activity)) return true;
 

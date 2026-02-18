@@ -170,7 +170,7 @@ public class ApicaCommands {
                         data.learnTrait("foraging:" + lvl);
                         data.learnTrait("tolerance:" + lvl);
                     }
-                    for (int lvl = 0; lvl <= 2; lvl++) {
+                    for (int lvl = 1; lvl <= 3; lvl++) {
                         data.learnTrait("activity:" + lvl);
                     }
                 }
