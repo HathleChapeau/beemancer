@@ -24,12 +24,15 @@
 package com.chapeau.apica.client.gui.screen;
 
 import com.chapeau.apica.client.gui.GuiRenderHelper;
+import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.menu.ResonatorMenu;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.config.ResonatorConfigManager;
 import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.chapeau.apica.core.network.packets.ResonatorFinishPacket;
 import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
+import com.chapeau.apica.core.registry.ApicaAttachments;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.BlockPos;
@@ -38,6 +41,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
@@ -228,8 +233,8 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        // Debug panel (left of main GUI)
-        renderDebugPanel(g, x - PANEL_GAP - PANEL_W, y);
+        // Info panel (left of main GUI)
+        renderInfoPanel(g, x - PANEL_GAP - PANEL_W, y);
 
         // Background
         GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, GUI_W, GUI_H);
@@ -348,7 +353,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                 btnY + (ANALYSIS_BTN_H - font.lineHeight) / 2 + 1, textColor, false);
     }
 
-    private void renderDebugPanel(GuiGraphics g, int px, int py) {
+    private void renderInfoPanel(GuiGraphics g, int px, int py) {
         int panelH = GUI_H;
 
         // Panel background
@@ -358,55 +363,112 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         g.fill(px, py, px + 1, py + panelH, 0xFF444444);
         g.fill(px + PANEL_W - 1, py, px + PANEL_W, py + panelH, 0xFF444444);
 
-        // Title
-        g.drawString(font, "TARGET", px + 4, py + 4, 0xFFFF8844, false);
+        ItemStack bee = menu.getStoredBee();
+        String speciesId = getSpeciesFromBee(bee);
+        BeeSpeciesManager.BeeSpeciesData data = speciesId != null
+                ? BeeSpeciesManager.getSpecies(speciesId) : null;
 
-        // Target values
-        int lineY = py + 18;
-        int lineH = 14;
+        int lineY = py + 4;
+        int lineH = font.lineHeight + 2;
 
-        g.drawString(font, "Freq:", px + 4, lineY, 0xFF888888, false);
-        g.drawString(font, targetFreq + " Hz", px + 4, lineY + 9, 0xFFAABBDD, false);
-        lineY += lineH + 8;
+        // Bee slot visual
+        GuiRenderHelper.renderSlot(g, px + PANEL_W / 2 - 8, lineY);
+        if (!bee.isEmpty()) {
+            g.renderItem(bee, px + PANEL_W / 2 - 7, lineY + 1);
+        }
+        lineY += 22;
 
-        g.drawString(font, "Amp:", px + 4, lineY, 0xFF888888, false);
-        g.drawString(font, String.format("%.1f", targetAmp / 100.0f), px + 4, lineY + 9, 0xFFAABBDD, false);
-        lineY += lineH + 8;
+        if (bee.isEmpty()) return;
 
-        g.drawString(font, "Phase:", px + 4, lineY, 0xFF888888, false);
-        g.drawString(font, targetPhase + "\u00B0", px + 4, lineY + 9, 0xFFAABBDD, false);
-        lineY += lineH + 8;
+        CodexPlayerData knowledge = getPlayerKnowledge();
+        int[] levels = getStatLevels(data);
+        List<CompatSpecies> compatibles = findCompatibleSpecies(speciesId);
 
-        g.drawString(font, "Harm:", px + 4, lineY, 0xFF888888, false);
-        g.drawString(font, String.format("%.1f", targetHarm / 100.0f), px + 4, lineY + 9, 0xFFAABBDD, false);
-        lineY += lineH + 14;
+        // Known Frequencies
+        g.drawString(font, "Known:", px + 4, lineY, 0xFF88FF88, false);
+        lineY += lineH;
+
+        for (int i = 0; i < STAT_NAMES.length; i++) {
+            String traitKey = STAT_NAMES[i] + ":" + levels[i];
+            if (!knowledge.isTraitKnown(traitKey)) continue;
+            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
+            if (wf == null) continue;
+            String label = STAT_SHORT_LABELS[i] + " " + levels[i] + ": " + wf.frequency + "Hz";
+            g.drawString(font, label, px + 4, lineY, STAT_COLORS[i], false);
+            lineY += lineH;
+        }
+
+        for (CompatSpecies cs : compatibles) {
+            if (!knowledge.isSpeciesKnown(cs.id)) continue;
+            String label = capitalize(cs.id) + ": " + cs.freq + "Hz";
+            g.drawString(font, label, px + 4, lineY, 0xFFDDAA88, false);
+            lineY += lineH;
+        }
 
         // Separator
-        g.fill(px + 4, lineY - 4, px + PANEL_W - 4, lineY - 3, 0xFF444444);
+        lineY += 2;
+        g.fill(px + 4, lineY, px + PANEL_W - 4, lineY + 1, 0xFF444444);
+        lineY += 4;
 
-        // Similarity percentage
-        float similarity = WaveformRenderer.computeSimilarity(
-                localFreq, localAmp / 100.0f, localPhase, localHarm / 100.0f,
-                targetFreq, targetAmp / 100.0f, targetPhase, targetHarm / 100.0f);
-        similarity = Math.max(0, Math.min(100, similarity));
+        // Unknown Frequencies
+        g.drawString(font, "Unknown:", px + 4, lineY, 0xFFFF8888, false);
+        lineY += lineH;
 
-        int simColor = getSimilarityColor(similarity);
+        for (int i = 0; i < STAT_NAMES.length; i++) {
+            String traitKey = STAT_NAMES[i] + ":" + levels[i];
+            if (knowledge.isTraitKnown(traitKey)) continue;
+            g.drawString(font, "???: ???", px + 4, lineY, 0xFF666666, false);
+            lineY += lineH;
+        }
 
-        g.drawString(font, "Match:", px + 4, lineY, 0xFF888888, false);
-        String pctText = String.format("%.0f%%", similarity);
-        g.drawString(font, pctText, px + 4, lineY + 12, simColor, false);
+        for (CompatSpecies cs : compatibles) {
+            if (knowledge.isSpeciesKnown(cs.id)) continue;
+            g.drawString(font, "???: ???", px + 4, lineY, 0xFF666666, false);
+            lineY += lineH;
+        }
     }
 
-    private static int getSimilarityColor(float pct) {
-        if (pct < 50) {
-            int r = 255;
-            int gr = (int) (pct / 50.0f * 255);
-            return 0xFF000000 | (r << 16) | (gr << 8);
-        } else {
-            int r = (int) ((1.0f - (pct - 50) / 50.0f) * 255);
-            int gr = 255;
-            return 0xFF000000 | (r << 16) | (gr << 8);
+    private static final String[] STAT_SHORT_LABELS = {"Drp", "Spd", "Frg", "Tol", "Act"};
+
+    private record CompatSpecies(String id, int freq) {}
+
+    private static List<CompatSpecies> findCompatibleSpecies(String speciesId) {
+        if (speciesId == null) return List.of();
+        BeeSpeciesManager.ensureClientLoaded();
+        List<CompatSpecies> result = new ArrayList<>();
+        for (BeeSpeciesManager.BeeSpeciesData sp : BeeSpeciesManager.getAllSpecies()) {
+            if (sp.parents != null && sp.parents.contains(speciesId)) {
+                result.add(new CompatSpecies(sp.id, computeSpeciesFrequency(sp)));
+            }
         }
+        return result;
+    }
+
+    private static int computeSpeciesFrequency(BeeSpeciesManager.BeeSpeciesData data) {
+        if (data == null) return 0;
+        int[] levels = getStatLevels(data);
+        float totalWeight = 0;
+        float weightedFreq = 0;
+        for (int i = 0; i < STAT_NAMES.length; i++) {
+            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
+            if (wf == null) continue;
+            float weight = levels[i];
+            totalWeight += weight;
+            weightedFreq += wf.frequency * weight;
+        }
+        return totalWeight > 0 ? Math.round(weightedFreq / totalWeight) : 0;
+    }
+
+    private static CodexPlayerData getPlayerKnowledge() {
+        if (Minecraft.getInstance().player != null) {
+            return Minecraft.getInstance().player.getData(ApicaAttachments.CODEX_DATA);
+        }
+        return new CodexPlayerData();
+    }
+
+    private static String capitalize(String s) {
+        if (s == null || s.isEmpty()) return s;
+        return Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
     private void renderFreqSlider(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
@@ -429,6 +491,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         // Tirets des traits de l'abeille (au-dessus du fill pour qu'ils soient visibles)
         if (menu.hasBee()) {
             renderStatTicks(g, sx, sy);
+            renderSpeciesTicks(g, sx, sy);
         }
 
         int handleX = sx + 1 + fillW;
@@ -469,6 +532,26 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             float tickRatio = (wf.frequency - FREQ_MIN) / (float) (FREQ_MAX - FREQ_MIN);
             int tickX = sx + 1 + (int) ((SLIDER_W - 2) * tickRatio);
             g.fill(tickX, sy - 2, tickX + 1, sy + SLIDER_H + 2, STAT_COLORS[i]);
+        }
+    }
+
+    /**
+     * Dessine un tiret blanc sur la barre Hz pour chaque espece compatible connue.
+     */
+    private void renderSpeciesTicks(GuiGraphics g, int sx, int sy) {
+        ItemStack bee = menu.getStoredBee();
+        String speciesId = getSpeciesFromBee(bee);
+        if (speciesId == null) return;
+
+        CodexPlayerData knowledge = getPlayerKnowledge();
+        List<CompatSpecies> compatibles = findCompatibleSpecies(speciesId);
+
+        for (CompatSpecies cs : compatibles) {
+            if (!knowledge.isSpeciesKnown(cs.id)) continue;
+            if (cs.freq < FREQ_MIN || cs.freq > FREQ_MAX) continue;
+            float tickRatio = (cs.freq - FREQ_MIN) / (float) (FREQ_MAX - FREQ_MIN);
+            int tickX = sx + 1 + (int) ((SLIDER_W - 2) * tickRatio);
+            g.fill(tickX, sy - 3, tickX + 1, sy + SLIDER_H + 3, 0xFFDDAA88);
         }
     }
 
