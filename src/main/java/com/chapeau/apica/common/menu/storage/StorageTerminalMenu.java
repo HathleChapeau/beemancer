@@ -90,11 +90,7 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public static final int PLAYER_END = 66;
     public static final int TOTAL_SLOTS = 66;
 
-    // Pagination (ceil(handler_slots / visible_per_page))
-    public static final int DEPOSIT_PAGES =
-        (StorageTerminalBlockEntity.DEPOSIT_SLOTS + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE;
-    public static final int PICKUP_PAGES =
-        (StorageTerminalBlockEntity.PICKUP_SLOTS + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE;
+    // Pagination (dynamic based on content)
     public static final int BUTTON_DEPOSIT_NEXT = 100;
     public static final int BUTTON_DEPOSIT_PREV = 101;
     public static final int BUTTON_PICKUP_NEXT = 102;
@@ -121,13 +117,13 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public static final int DATA_HIVE_MULTIPLIER = 17;
     public static final int DATA_SIZE = 18;
 
-    // Slot positions — Deposit (inside transfer_bg at 7,7: slots at 3,3 offset)
+    // Slot positions — Deposit (inside transfer_bg at 7,7: slot bg at 11,11, item at +1)
     // Menu pos = renderSlot pos + 1 (18x18 slot bg, 16x16 item centered)
-    private static final int DEPOSIT_X = 11;
-    private static final int DEPOSIT_Y = 11;
-    // Slot positions — Pickup (inside transfer_bg at 7,71: slots at 3,3 offset)
-    private static final int PICKUP_X = 11;
-    private static final int PICKUP_Y = 75;
+    private static final int DEPOSIT_X = 12;
+    private static final int DEPOSIT_Y = 12;
+    // Slot positions — Pickup (inside transfer_bg at 7,71: slot bg at 11,75, item at +1)
+    private static final int PICKUP_X = 12;
+    private static final int PICKUP_Y = 76;
     // Slot positions — Craft grid (inside player_inventory_bg at 2,140: slots at 14,7)
     public static final int CRAFT_X = 17;
     public static final int CRAFT_Y = 148;
@@ -647,8 +643,40 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public int getDepositPage() { return this.data.get(DATA_DEPOSIT_PAGE); }
     public int getPickupPage() { return this.data.get(DATA_PICKUP_PAGE); }
 
+    /**
+     * Nombre de pages dynamique pour le depot: basé sur le contenu + 1 page vide.
+     */
+    public int getDepositPages() {
+        int lastNonEmpty = findLastNonEmpty(depositPaginatedSlots.isEmpty() ? null
+            : depositPaginatedSlots.get(0).handler);
+        int needed = (lastNonEmpty + VISIBLE_PER_PAGE) / VISIBLE_PER_PAGE + 1;
+        int maxPages = (depositPaginatedSlots.isEmpty() ? 1
+            : (depositPaginatedSlots.get(0).handler.getSlots() + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
+        return Math.min(needed, maxPages);
+    }
+
+    /**
+     * Nombre de pages dynamique pour le pickup: basé sur le contenu + 1 page vide.
+     */
+    public int getPickupPages() {
+        int lastNonEmpty = findLastNonEmpty(pickupPaginatedSlots.isEmpty() ? null
+            : pickupPaginatedSlots.get(0).handler);
+        int needed = (lastNonEmpty + VISIBLE_PER_PAGE) / VISIBLE_PER_PAGE + 1;
+        int maxPages = (pickupPaginatedSlots.isEmpty() ? 1
+            : (pickupPaginatedSlots.get(0).handler.getSlots() + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
+        return Math.min(needed, maxPages);
+    }
+
+    private int findLastNonEmpty(ItemStackHandler handler) {
+        if (handler == null) return -1;
+        for (int i = handler.getSlots() - 1; i >= 0; i--) {
+            if (!handler.getStackInSlot(i).isEmpty()) return i;
+        }
+        return -1;
+    }
+
     public void setDepositPage(int page) {
-        page = Math.max(0, Math.min(page, DEPOSIT_PAGES - 1));
+        page = Math.max(0, Math.min(page, getDepositPages() - 1));
         this.depositPage = page;
         int offset = page * VISIBLE_PER_PAGE;
         for (PaginatedTabSlot slot : depositPaginatedSlots) {
@@ -657,7 +685,7 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     }
 
     public void setPickupPage(int page) {
-        page = Math.max(0, Math.min(page, PICKUP_PAGES - 1));
+        page = Math.max(0, Math.min(page, getPickupPages() - 1));
         this.pickupPage = page;
         int offset = page * VISIBLE_PER_PAGE;
         for (PaginatedTabSlot slot : pickupPaginatedSlots) {

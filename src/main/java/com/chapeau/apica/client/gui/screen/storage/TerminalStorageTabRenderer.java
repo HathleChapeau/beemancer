@@ -35,11 +35,11 @@ public class TerminalStorageTabRenderer {
     static final int GRID_COLS = 9;
     static final int GRID_ROWS = 5;
     static final int GRID_X = 78;
-    static final int GRID_Y = 32;
+    static final int GRID_Y = 28;
     static final int SLOT_SIZE = 18;
 
     static final int SCROLLBAR_X = 243;
-    static final int SCROLLBAR_Y = 32;
+    static final int SCROLLBAR_Y = 28;
     static final int SCROLLBAR_HEIGHT = 90;
 
     public void render(GuiGraphics g, Font font, StorageTerminalMenu menu,

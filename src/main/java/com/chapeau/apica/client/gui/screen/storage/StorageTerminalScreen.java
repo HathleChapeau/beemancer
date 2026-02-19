@@ -108,8 +108,8 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     private static final int INV_BG_X = 74;
     private static final int INV_BG_Y = 25;
 
-    // === Search bar (above inventory_bg) ===
-    private static final int SEARCH_X = 78;
+    // === Search bar (above inventory_bg, aligned with INV_BG_X) ===
+    private static final int SEARCH_X = 74;
     private static final int SEARCH_Y = 10;
     private static final int SEARCH_WIDTH = 180;
 
@@ -200,23 +200,26 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int x = this.leftPos;
         int y = this.topPos;
 
-        // 1. Storage background (top)
+        // 1. Tabs (behind everything, left side of storage_bg)
+        renderTabs(g, x, y);
+
+        // 2. Storage background (top)
         g.blit(STORAGE_BG, x, y, 0, 0, STORAGE_BG_W, STORAGE_BG_H, STORAGE_BG_W, STORAGE_BG_H);
 
-        // 2. Player inventory background (bottom)
+        // 3. Player inventory background (bottom)
         g.blit(PLAYER_INV_BG, x + PLAYER_INV_BG_X, y + PLAYER_INV_BG_Y,
             0, 0, PLAYER_INV_BG_W, PLAYER_INV_BG_H, PLAYER_INV_BG_W, PLAYER_INV_BG_H);
 
-        // 2b. Programmatic slot overlays for pixel-perfect alignment
+        // 2b. Vanilla slot overlays for pixel-perfect alignment
         // (avoids UV drift from non-power-of-2 texture width 266)
         int pSlotX = x + StorageTerminalMenu.PLAYER_INV_X - 1;
         int pSlotY = y + StorageTerminalMenu.PLAYER_INV_Y - 1;
-        GuiRenderHelper.renderSlotGrid(g, pSlotX, pSlotY, 9, 3);
-        GuiRenderHelper.renderSlotGrid(g, pSlotX, y + StorageTerminalMenu.HOTBAR_Y - 1, 9, 1);
+        renderVanillaSlotGrid(g, pSlotX, pSlotY, 9, 3);
+        renderVanillaSlotGrid(g, pSlotX, y + StorageTerminalMenu.HOTBAR_Y - 1, 9, 1);
         int cSlotX = x + StorageTerminalMenu.CRAFT_X - 1;
         int cSlotY = y + StorageTerminalMenu.CRAFT_Y - 1;
-        GuiRenderHelper.renderSlotGrid(g, cSlotX, cSlotY, 3, 3);
-        GuiRenderHelper.renderSlot(g, x + StorageTerminalMenu.RESULT_X - 1,
+        renderVanillaSlotGrid(g, cSlotX, cSlotY, 3, 3);
+        drawSlotBackground(g, x + StorageTerminalMenu.RESULT_X - 1,
             y + StorageTerminalMenu.RESULT_Y - 1);
 
         // 3. Deposit panel (transfer_bg)
@@ -232,17 +235,14 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         g.blit(IMPORT_ICON, x + DEPOSIT_ICON_X, y + DEPOSIT_ICON_Y,
             0, 0, ICON_W, ICON_H, ICON_W, ICON_H);
         renderPageArrows(g, x, y + DEPOSIT_ICON_Y,
-            menu.getDepositPage(), StorageTerminalMenu.DEPOSIT_PAGES, true);
+            menu.getDepositPage(), menu.getDepositPages(), true);
 
         // 6. Pickup slot backgrounds (2x3) + icon + page arrows
         GuiRenderHelper.renderSlotGrid(g, x + PICKUP_SLOT_X, y + PICKUP_SLOT_Y, 3, 2);
         g.blit(EXPORT_ICON, x + PICKUP_ICON_X, y + PICKUP_ICON_Y,
             0, 0, ICON_W, ICON_H, ICON_W, ICON_H);
         renderPageArrows(g, x, y + PICKUP_ICON_Y,
-            menu.getPickupPage(), StorageTerminalMenu.PICKUP_PAGES, false);
-
-        // 7. Tabs (right side of storage_bg)
-        renderTabs(g, x, y);
+            menu.getPickupPage(), menu.getPickupPages(), false);
 
         // 8. Tab content (right panel)
         switch (activeTab) {
@@ -420,6 +420,14 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         g.drawString(font, valText, barX + barW - valWidth - 1, y, 0xFFFFFF, false);
     }
 
+    private void renderVanillaSlotGrid(GuiGraphics g, int x, int y, int cols, int rows) {
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                drawSlotBackground(g, x + col * 18, y + row * 18);
+            }
+        }
+    }
+
     private void drawSlotBackground(GuiGraphics g, int x, int y) {
         g.fill(x, y, x + 18, y + 1, 0xFF373737);
         g.fill(x, y + 1, x + 1, y + 17, 0xFF373737);
@@ -524,9 +532,9 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
     private boolean handlePageArrowClick(double mouseX, double mouseY, int x, int y) {
         // Deposit arrows
-        if (StorageTerminalMenu.DEPOSIT_PAGES > 1) {
+        if (menu.getDepositPages() > 1) {
             int buttonId = getPageArrowButtonId(mouseX, mouseY, x, y + DEPOSIT_ICON_Y,
-                menu.getDepositPage(), StorageTerminalMenu.DEPOSIT_PAGES,
+                menu.getDepositPage(), menu.getDepositPages(),
                 StorageTerminalMenu.BUTTON_DEPOSIT_PREV, StorageTerminalMenu.BUTTON_DEPOSIT_NEXT,
                 DEPOSIT_ICON_X);
             if (buttonId >= 0) {
@@ -536,9 +544,9 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         }
 
         // Pickup arrows
-        if (StorageTerminalMenu.PICKUP_PAGES > 1) {
+        if (menu.getPickupPages() > 1) {
             int buttonId = getPageArrowButtonId(mouseX, mouseY, x, y + PICKUP_ICON_Y,
-                menu.getPickupPage(), StorageTerminalMenu.PICKUP_PAGES,
+                menu.getPickupPage(), menu.getPickupPages(),
                 StorageTerminalMenu.BUTTON_PICKUP_PREV, StorageTerminalMenu.BUTTON_PICKUP_NEXT,
                 PICKUP_ICON_X);
             if (buttonId >= 0) {

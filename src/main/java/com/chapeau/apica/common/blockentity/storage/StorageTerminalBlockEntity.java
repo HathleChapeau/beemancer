@@ -82,6 +82,7 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
     private boolean isExtracting = false;
     private boolean isSaving = false;
     private boolean isLoading = false;
+    private boolean isCompacting = false;
     // Flags lus par le controller dans processTerminals()
     boolean needsDepositScan = false;
     boolean needsProcessPending = false;
@@ -117,9 +118,10 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
         @Override
         protected void onContentsChanged(int slot) {
-            if (isLoading) return;
+            if (isLoading || isCompacting) return;
             setChanged();
             if (getStackInSlot(slot).isEmpty()) {
+                compactPickupSlots();
                 needsProcessPending = true;
             }
         }
@@ -454,6 +456,31 @@ public class StorageTerminalBlockEntity extends BlockEntity implements MenuProvi
 
     public ItemStackHandler getPickupSlots() {
         return pickupSlots;
+    }
+
+    /**
+     * Compacte les pickup slots en decalant les items pour remplir les trous.
+     */
+    /**
+     * Compacte les pickup slots en decalant les items pour remplir les trous.
+     */
+    private void compactPickupSlots() {
+        isCompacting = true;
+        try {
+            int writeIndex = 0;
+            for (int readIndex = 0; readIndex < PICKUP_SLOTS; readIndex++) {
+                ItemStack stack = pickupSlots.getStackInSlot(readIndex);
+                if (!stack.isEmpty()) {
+                    if (writeIndex != readIndex) {
+                        pickupSlots.setStackInSlot(writeIndex, stack);
+                        pickupSlots.setStackInSlot(readIndex, ItemStack.EMPTY);
+                    }
+                    writeIndex++;
+                }
+            }
+        } finally {
+            isCompacting = false;
+        }
     }
 
     @Override
