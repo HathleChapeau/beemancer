@@ -72,6 +72,7 @@ public class ApicaFurnaceBlockEntity extends BlockEntity implements MenuProvider
     private final int inputSlotCount;
     private final int outputSlotCount;
     private final String translationKey;
+    private final Fluid acceptedFluid;
 
     private final ItemStackHandler inputSlots;
     private final ItemStackHandler outputSlots;
@@ -96,6 +97,7 @@ public class ApicaFurnaceBlockEntity extends BlockEntity implements MenuProvider
         this.inputSlotCount = inputCount;
         this.outputSlotCount = outputCount;
         this.translationKey = translationKey;
+        this.acceptedFluid = acceptedFluid;
 
         this.inputSlots = new ItemStackHandler(inputCount) {
             @Override
@@ -110,7 +112,7 @@ public class ApicaFurnaceBlockEntity extends BlockEntity implements MenuProvider
         this.fuelTank = new FluidTank(TANK_CAPACITY) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
-                return stack.getFluid() == acceptedFluid;
+                return stack.getFluid().isSame(acceptedFluid);
             }
             @Override
             protected void onContentsChanged() { setChanged(); }
@@ -240,6 +242,7 @@ public class ApicaFurnaceBlockEntity extends BlockEntity implements MenuProvider
     public int getInputSlotCount() { return inputSlotCount; }
     public int getOutputSlotCount() { return outputSlotCount; }
     public boolean isDualSlot() { return inputSlotCount > 1; }
+    public Fluid getAcceptedFluid() { return acceptedFluid; }
 
     @Override
     public Component getDisplayName() {
