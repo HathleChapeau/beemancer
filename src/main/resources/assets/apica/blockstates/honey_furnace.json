@@ -1,6 +1,12 @@
 {
   "variants": {
-    "working=false": { "model": "apica:block/alchemy/honey_furnace" },
-    "working=true": { "model": "apica:block/alchemy/honey_furnace" }
+    "facing=north,working=false": { "model": "apica:block/alchemy/honey_furnace" },
+    "facing=south,working=false": { "model": "apica:block/alchemy/honey_furnace", "y": 180 },
+    "facing=west,working=false":  { "model": "apica:block/alchemy/honey_furnace", "y": 270 },
+    "facing=east,working=false":  { "model": "apica:block/alchemy/honey_furnace", "y": 90 },
+    "facing=north,working=true":  { "model": "apica:block/alchemy/honey_furnace_working" },
+    "facing=south,working=true":  { "model": "apica:block/alchemy/honey_furnace_working", "y": 180 },
+    "facing=west,working=true":   { "model": "apica:block/alchemy/honey_furnace_working", "y": 270 },
+    "facing=east,working=true":   { "model": "apica:block/alchemy/honey_furnace_working", "y": 90 }
   }
 }

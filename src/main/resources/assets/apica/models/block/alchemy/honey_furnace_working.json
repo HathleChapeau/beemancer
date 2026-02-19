@@ -2,7 +2,7 @@
   "parent": "minecraft:block/orientable",
   "textures": {
     "top": "apica:block/furnace/honey_furnace_end",
-    "front": "apica:block/furnace/honey_furnace_front",
+    "front": "apica:block/furnace/honey_furnace_front_working",
     "side": "apica:block/furnace/honey_furnace_side"
   }
 }

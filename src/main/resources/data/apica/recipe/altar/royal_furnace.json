@@ -1,0 +1,15 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:honey_furnace" },
+  "pedestal_items": [
+    { "item": "apica:royal_gold" },
+    { "item": "apica:royal_gold" },
+    { "item": "apica:royal_gold" },
+    { "item": "apica:royal_gold" }
+  ],
+  "pollen": {
+    "apica:pollen_of_wind": 4,
+    "apica:pollen_of_fire": 4
+  },
+  "result": { "id": "apica:royal_furnace" }
+}

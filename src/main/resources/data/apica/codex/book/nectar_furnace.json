@@ -6,6 +6,13 @@
     {
       "type": "text",
       "key": "codex.apica.alchemy.nectar_furnace.lore"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "altar_craft",
+      "result": "apica:nectar_furnace"
     }
   ],
   "sticky_notes": []

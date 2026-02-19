@@ -1,0 +1,17 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:royal_furnace" },
+  "pedestal_items": [
+    { "item": "apica:nectar_diamond" },
+    { "item": "apica:nectar_diamond" },
+    { "item": "apica:nectar_diamond" },
+    { "item": "apica:nectar_diamond" }
+  ],
+  "pollen": {
+    "apica:pollen_of_light": 4,
+    "apica:pollen_of_darkness": 4,
+    "apica:pollen_of_fire": 8,
+    "apica:pollen_of_wind": 8
+  },
+  "result": { "id": "apica:nectar_furnace" }
+}
