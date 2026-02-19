@@ -471,9 +471,11 @@ public class CodexScreen extends Screen {
         }
 
         if (button == 0) {
-            boolean handled = currentRenderer.handleClick(mouseX, mouseY, this::handleNodeClick);
-            if (handled) {
-                return true;
+            if (isInContentArea(mouseX, mouseY)) {
+                boolean handled = currentRenderer.handleClick(mouseX, mouseY, this::handleNodeClick);
+                if (handled) {
+                    return true;
+                }
             }
 
             if (isInContentArea(mouseX, mouseY)) {

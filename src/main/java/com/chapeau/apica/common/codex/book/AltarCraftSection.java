@@ -126,11 +126,13 @@ public class AltarCraftSection extends CodexBookSection {
                 int px = pollenStartX + i * 28;
                 int potX = px - 1;
                 int potY = pollenY - 2;
+                com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+                com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
                 graphics.blit(POLLEN_POT_SLOT, potX, potY, 0, 0,
                         POLLEN_POT_SLOT_W, POLLEN_POT_SLOT_H, POLLEN_POT_SLOT_W, POLLEN_POT_SLOT_H);
-                renderScaledItem(graphics, entry.stack, px, pollenY, 0.8f);
+                renderScaledItem(graphics, entry.stack, px, pollenY + 2, 0.8f);
                 String countStr = "x" + entry.count;
-                graphics.drawString(font, countStr, px + 14, pollenY + 4, 0xFF8B6914, false);
+                graphics.drawString(font, countStr, px + 14, pollenY + 6, 0xFF8B6914, false);
             }
         }
     }
