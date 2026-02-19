@@ -172,6 +172,14 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> CENTRIFUGE_HEART = ITEMS.register("centrifuge_heart",
             () -> new BlockItem(ApicaBlocks.CENTRIFUGE_HEART.get(), new Item.Properties()));
 
+    // --- APICA FURNACES ---
+    public static final DeferredItem<BlockItem> HONEY_FURNACE = ITEMS.register("honey_furnace",
+            () -> new BlockItem(ApicaBlocks.HONEY_FURNACE.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> ROYAL_FURNACE = ITEMS.register("royal_furnace",
+            () -> new BlockItem(ApicaBlocks.ROYAL_FURNACE.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> NECTAR_FURNACE = ITEMS.register("nectar_furnace",
+            () -> new BlockItem(ApicaBlocks.NECTAR_FURNACE.get(), new Item.Properties()));
+
     // --- BEE STATUE ---
     public static final DeferredItem<BlockItem> BEE_STATUE = ITEMS.register("bee_statue",
             () -> new BlockItem(ApicaBlocks.BEE_STATUE.get(), new Item.Properties()));

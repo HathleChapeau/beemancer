@@ -52,6 +52,11 @@
 --- ESSENCE INJECTOR ---
 | injector               | InjectorBlock             | Oui          | Essence Injector  |
 
+--- APICA FURNACES ---
+| honey_furnace          | ApicaFurnaceBlock (tier 1) | Oui          | Apica Furnaces |
+| royal_furnace          | ApicaFurnaceBlock (tier 2) | Oui          | Apica Furnaces |
+| nectar_furnace         | ApicaFurnaceBlock (tier 3) | Oui          | Apica Furnaces |
+
 --- STORAGE ---
 | controlled_hive        | ControlledHiveBlock       | Non          | Storage Network |
 | storage_hive           | StorageHiveBlock          | Oui          | Storage Hive    |

@@ -1,0 +1,12 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.alchemy.royal_furnace.lore"
+    }
+  ],
+  "sticky_notes": []
+}

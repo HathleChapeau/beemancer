@@ -13,6 +13,9 @@
     {"id": "tank", "position": {"x": -2, "y": -3}, "icon": "apica:textures/block/tank.png", "category": "NORMAL", "parent": "portable_tank", "hidden_until_parent_unlocked": true},
     {"id": "infuser_t1", "position": {"x": 2, "y": -1}, "icon": "apica:textures/block/infuser.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
     {"id": "alembic", "position": {"x": 0, "y": 2}, "icon": "apica:textures/block/alembic.png", "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": true},
-    {"id": "incubator", "position": {"x": 0, "y": -3}, "icon": "apica:textures/block/incubator.png", "category": "NORMAL", "parent": "infuser_t1", "hidden_until_parent_unlocked": false}
+    {"id": "incubator", "position": {"x": 0, "y": -3}, "icon": "apica:textures/block/incubator.png", "category": "NORMAL", "parent": "infuser_t1", "hidden_until_parent_unlocked": false},
+    {"id": "honey_furnace", "position": {"x": 4, "y": -1}, "icon": "apica:textures/block/alchemy/honey_furnace.png", "category": "NORMAL", "parent": "infuser_t1", "hidden_until_parent_unlocked": false},
+    {"id": "royal_furnace", "position": {"x": 6, "y": -1}, "icon": "apica:textures/block/alchemy/royal_furnace.png", "category": "NORMAL", "parent": "honey_furnace", "hidden_until_parent_unlocked": true},
+    {"id": "nectar_furnace", "position": {"x": 8, "y": -1}, "icon": "apica:textures/block/alchemy/nectar_furnace.png", "category": "GOAL", "parent": "royal_furnace", "hidden_until_parent_unlocked": true}
   ]
 }

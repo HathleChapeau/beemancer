@@ -19,6 +19,7 @@ import com.chapeau.apica.common.block.alchemy.InfuserHeartBlock;
 import com.chapeau.apica.common.block.alchemy.ItemPipeBlock;
 import com.chapeau.apica.common.block.alchemy.ManualCentrifugeBlock;
 import com.chapeau.apica.common.block.alchemy.MultiblockTankBlock;
+import com.chapeau.apica.common.block.alchemy.ApicaFurnaceBlock;
 import com.chapeau.apica.common.block.alchemy.PoweredCentrifugeBlock;
 import com.chapeau.apica.common.block.altar.AltarHeartBlock;
 import com.chapeau.apica.common.block.altar.HoneyCrystalBlock;
@@ -384,6 +385,25 @@ public class ApicaBlocks {
                     .lightLevel(state -> 4)
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
+
+    // --- APICA FURNACES ---
+    public static final DeferredBlock<ApicaFurnaceBlock> HONEY_FURNACE = BLOCKS.register("honey_furnace",
+            () -> new ApicaFurnaceBlock(BlockBehaviour.Properties.of()
+                    .strength(3.5f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<ApicaFurnaceBlock> ROYAL_FURNACE = BLOCKS.register("royal_furnace",
+            () -> new ApicaFurnaceBlock(BlockBehaviour.Properties.of()
+                    .strength(3.5f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops(), 2));
+
+    public static final DeferredBlock<ApicaFurnaceBlock> NECTAR_FURNACE = BLOCKS.register("nectar_furnace",
+            () -> new ApicaFurnaceBlock(BlockBehaviour.Properties.of()
+                    .strength(3.5f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops(), 3));
 
     // --- BEE STATUE ---
     public static final DeferredBlock<BeeStatueBlock> BEE_STATUE = BLOCKS.register("bee_statue",

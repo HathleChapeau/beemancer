@@ -313,6 +313,23 @@ public class Apica {
                 ApicaBlockEntities.CENTRIFUGE_HEART.get(),
                 (be, side) -> null
         );
+
+        // Apica Furnaces: fuel tank accessible de tous les cotes
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ApicaBlockEntities.HONEY_FURNACE.get(),
+                (be, side) -> be.getFuelTank()
+        );
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ApicaBlockEntities.ROYAL_FURNACE.get(),
+                (be, side) -> be.getFuelTank()
+        );
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ApicaBlockEntities.NECTAR_FURNACE.get(),
+                (be, side) -> be.getFuelTank()
+        );
     }
 
     private void registerItemCapabilities(RegisterCapabilitiesEvent event) {
@@ -350,6 +367,23 @@ public class Apica {
                 Capabilities.ItemHandler.BLOCK,
                 ApicaBlockEntities.CENTRIFUGE_HEART.get(),
                 (be, side) -> null
+        );
+
+        // Apica Furnaces: input accessible de tous les cotes sauf bas, output par le bas
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.HONEY_FURNACE.get(),
+                (be, side) -> side == Direction.DOWN ? be.getOutputSlots() : be.getInputSlots()
+        );
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.ROYAL_FURNACE.get(),
+                (be, side) -> side == Direction.DOWN ? be.getOutputSlots() : be.getInputSlots()
+        );
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.NECTAR_FURNACE.get(),
+                (be, side) -> side == Direction.DOWN ? be.getOutputSlots() : be.getInputSlots()
         );
 
         // Infuser Heart: pas de capability directe quand forme (pipes passent par les reservoirs)

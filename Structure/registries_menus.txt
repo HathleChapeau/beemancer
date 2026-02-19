@@ -26,4 +26,7 @@
 --- RESONATOR ---
 | resonator          | ResonatorMenu        | Resonator        |
 
+--- APICA FURNACES ---
+| apica_furnace      | ApicaFurnaceMenu     | Apica Furnaces (shared) |
+
 ################################################################################

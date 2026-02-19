@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-18                     #
-#  (Resonator V2 + Hoverbike Mixins + Codex + Cleanup - 2026-02-18)            #
+#                         Dernière mise à jour: 2026-02-19                     #
+#  (Apica Furnaces + Resonator V2 + Hoverbike Mixins + Codex - 2026-02-19)     #
 ################################################################################
 
 ================================================================================
@@ -676,6 +676,20 @@ LISTE DES FEATURES:
   Assets modifies: 97 fichiers codex/book/*_bee.json (+sticky note resonation)
   Dependances: ResonatorConfigManager, BeeSpeciesManager, CodexPlayerData
   Registres modifies: aucun
+
+→ Apica Furnaces (Honey, Royal, Nectar)
+  Description: 3 fours alchimiques utilisant les fluides du mod comme carburant. Honey Furnace (2x, 1 slot),
+    Royal Furnace (3x, 2 slots paralleles), Nectar Furnace (6x, 2 slots paralleles). Tank 8000 mB,
+    consommation 31 mB par item (drain au demarrage), recettes vanilla smelting.
+  Scripts crees: ApicaFurnaceBlock.java (bloc generique par tier), ApicaFurnaceBlockEntity.java (FluidTank +
+    slots + smelting recipes + parallel processing), ApicaFurnaceMenu.java (menu partage single/dual slot),
+    ApicaFurnaceScreen.java (GUI conditionnelle single/dual avec fuel bar)
+  Scripts modifies: ApicaBlocks.java (+3), ApicaItems.java (+3), ApicaBlockEntities.java (+3),
+    ApicaMenus.java (+APICA_FURNACE), ClientSetup.java (+screen), Apica.java (+capabilities fluid+item),
+    ApicaCreativeTabs.java (+3 furnaces alchemy)
+  Assets: 3 blockstates, 3 block models (cube_all), 3 item models, 3 loot tables, lang en_us+fr_fr
+  Dependances: GuiRenderHelper, ApicaMenu, AbstractApicaScreen, ApicaFluids, ContainerData
+  Registres modifies: ApicaBlocks (+3), ApicaItems (+3), ApicaBlockEntities (+3), ApicaMenus (+1)
 
 ================================================================================
 6. FEATURES EN COURS

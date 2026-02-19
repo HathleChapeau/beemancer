@@ -443,6 +443,47 @@ Toutes les méthodes ont une surcharge acceptant un `ResourceLocation` au lieu d
 
 ---
 
+## Système IO Multibloc — MultiblockCapabilityProvider
+
+### Architecture
+Le système IO permet aux multiblocs d'exposer des capabilities (fluid/item) sur leurs blocs structurels, avec contrôle directionnel par face.
+
+### Classes clés
+| Fichier | Rôle |
+|---------|------|
+| `core/multiblock/IOMode.java` | Enum: `NONE`, `INPUT`, `OUTPUT`, `BOTH` |
+| `core/multiblock/BlockIORule.java` | Config par face (6 directions → IOMode). Factories: `allFaces()`, `sides()`, `builder()` |
+| `core/multiblock/MultiblockIOConfig.java` | Config complète: map position relative → BlockIORule (fluid + item séparés) |
+| `core/multiblock/MultiblockCapabilityProvider.java` | Interface que le contrôleur implémente: `getFluidHandlerForBlock(pos, face)`, `getItemHandlerForBlock(pos, face)` |
+| `core/util/SplitFluidHandler.java` | Wrapper unidirectionnel: `inputOnly(tank)` bloque drain, `outputOnly(tank)` bloque fill |
+| `core/util/SplitItemHandler.java` | Wrapper unidirectionnel: `inputOnly(handler)` bloque extract, `outputOnly(handler)` bloque insert |
+
+### Déclaration (exemple Centrifuge)
+```java
+private static final MultiblockIOConfig IO_CONFIG = MultiblockIOConfig.builder()
+    // Réservoirs haut (Y+1): INPUT fluide+items sur les côtés
+    .position(0, 1, -1, BlockIORule.sides(IOMode.INPUT), BlockIORule.sides(IOMode.INPUT))
+    // Réservoirs bas (Y-1): OUTPUT fluide+items sur les côtés
+    .position(0, -1, -1, BlockIORule.sides(IOMode.OUTPUT), BlockIORule.sides(IOMode.OUTPUT))
+    .build();
+```
+
+### Flux de délégation
+1. Pipe query capability sur un `HoneyReservoirBlockEntity`
+2. `Apica.java` lambda → `reservoir.findCapabilityProvider()` → retourne le contrôleur (Heart)
+3. Contrôleur: `IO_CONFIG.getFluidMode(controllerPos, queriedPos, face)` → `IOMode`
+4. Switch sur IOMode: `INPUT` → `SplitFluidHandler.inputOnly(fuelTank)`, `OUTPUT` → `outputOnly(outputTank)`
+
+### Formation
+1. `linkReservoirControllers(true)` — lie les réservoirs au contrôleur via `setControllerPosQuiet()`
+2. Mise à jour blockstates
+3. `invalidateAllCapabilities()` — force NeoForge à re-query toutes les capabilities du multibloc
+
+### Règle
+Pour tout nouveau multibloc avec IO: implémenter `MultiblockCapabilityProvider`, déclarer un `IO_CONFIG` statique, et utiliser les `SplitHandler` factories.
+
+---
+
 ## Notes Importantes
 
 1. **Structure.txt est la source de vérité** — Toujours le consulter avant d'implémenter, toujours le mettre à jour après.

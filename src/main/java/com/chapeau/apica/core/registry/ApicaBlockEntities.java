@@ -24,6 +24,7 @@ import com.chapeau.apica.common.blockentity.alchemy.InfuserHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ManualCentrifugeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.MultiblockTankBlockEntity;
+import com.chapeau.apica.common.blockentity.alchemy.ApicaFurnaceBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.PoweredCentrifugeBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyPedestalBlockEntity;
@@ -307,6 +308,28 @@ public class ApicaBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             CentrifugeHeartBlockEntity::new,
                             ApicaBlocks.CENTRIFUGE_HEART.get()
+                    ).build(null));
+
+    // --- APICA FURNACES ---
+    public static final Supplier<BlockEntityType<ApicaFurnaceBlockEntity>> HONEY_FURNACE =
+            BLOCK_ENTITIES.register("honey_furnace",
+                    () -> BlockEntityType.Builder.of(
+                            ApicaFurnaceBlockEntity::new,
+                            ApicaBlocks.HONEY_FURNACE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<ApicaFurnaceBlockEntity>> ROYAL_FURNACE =
+            BLOCK_ENTITIES.register("royal_furnace",
+                    () -> BlockEntityType.Builder.of(
+                            ApicaFurnaceBlockEntity::createRoyal,
+                            ApicaBlocks.ROYAL_FURNACE.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<ApicaFurnaceBlockEntity>> NECTAR_FURNACE =
+            BLOCK_ENTITIES.register("nectar_furnace",
+                    () -> BlockEntityType.Builder.of(
+                            ApicaFurnaceBlockEntity::createNectar,
+                            ApicaBlocks.NECTAR_FURNACE.get()
                     ).build(null));
 
     // --- BEE NEST ---

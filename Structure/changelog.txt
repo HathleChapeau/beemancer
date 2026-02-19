@@ -3,6 +3,24 @@
 ################################################################################
 
 ================================================================================
+2026-02-19 - Apica Furnaces (Honey, Royal, Nectar)
+================================================================================
+
+- ApicaFurnaceBlock.java: Bloc generique par tier (1=honey, 2=royal, 3=nectar)
+- ApicaFurnaceBlockEntity.java: FluidTank 8000mB, smelting vanilla, parallel slots
+- ApicaFurnaceMenu.java: Menu partage single/dual slot
+- ApicaFurnaceScreen.java: GUI conditionnelle avec fuel bar
+- ApicaBlocks.java: +HONEY_FURNACE, +ROYAL_FURNACE, +NECTAR_FURNACE
+- ApicaItems.java: +HONEY_FURNACE, +ROYAL_FURNACE, +NECTAR_FURNACE
+- ApicaBlockEntities.java: +HONEY_FURNACE, +ROYAL_FURNACE, +NECTAR_FURNACE
+- ApicaMenus.java: +APICA_FURNACE (shared menu type)
+- ClientSetup.java: +ApicaFurnaceScreen registration
+- Apica.java: +fluid capabilities (all sides), +item capabilities (sides=input, bottom=output)
+- ApicaCreativeTabs.java: +3 furnaces in alchemy machines
+- Assets: 3 blockstates, 3 block models, 3 item models, 3 loot tables
+- Lang: en_us + fr_fr (block + container keys)
+
+================================================================================
 2026-02-19 - Creative Breeding Crystal + Creative Tab Audit
 ================================================================================
 

@@ -25,6 +25,7 @@ import com.chapeau.apica.client.gui.screen.alchemy.InfuserScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.ManualCentrifugeScreen;
 import com.chapeau.apica.client.gui.screen.ResonatorScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.MultiblockTankScreen;
+import com.chapeau.apica.client.gui.screen.alchemy.ApicaFurnaceScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.PoweredCentrifugeScreen;
 import com.chapeau.apica.client.gui.screen.storage.NetworkInterfaceScreen;
 import com.chapeau.apica.client.gui.screen.storage.StorageTerminalScreen;
@@ -148,6 +149,9 @@ public class ClientSetup {
         event.register(ApicaMenus.ALEMBIC.get(), AlembicScreen::new);
         event.register(ApicaMenus.INFUSER.get(), InfuserScreen::new);
         event.register(ApicaMenus.MULTIBLOCK_TANK.get(), MultiblockTankScreen::new);
+
+        // Apica Furnaces
+        event.register(ApicaMenus.APICA_FURNACE.get(), ApicaFurnaceScreen::new);
 
         // Resonator
         event.register(ApicaMenus.RESONATOR.get(), ResonatorScreen::new);

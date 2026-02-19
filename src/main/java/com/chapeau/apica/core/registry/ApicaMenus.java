@@ -18,6 +18,7 @@ import com.chapeau.apica.common.menu.alchemy.HoneyTankMenu;
 import com.chapeau.apica.common.menu.alchemy.InfuserMenu;
 import com.chapeau.apica.common.menu.alchemy.ManualCentrifugeMenu;
 import com.chapeau.apica.common.menu.alchemy.MultiblockTankMenu;
+import com.chapeau.apica.common.menu.alchemy.ApicaFurnaceMenu;
 import com.chapeau.apica.common.menu.alchemy.PoweredCentrifugeMenu;
 import com.chapeau.apica.common.menu.storage.NetworkInterfaceMenu;
 import com.chapeau.apica.common.menu.storage.StorageTerminalMenu;
@@ -86,6 +87,11 @@ public class ApicaMenus {
     public static final Supplier<MenuType<MultiblockTankMenu>> MULTIBLOCK_TANK =
             MENUS.register("multiblock_tank",
                     () -> IMenuTypeExtension.create(MultiblockTankMenu::new));
+
+    // --- APICA FURNACES ---
+    public static final Supplier<MenuType<ApicaFurnaceMenu>> APICA_FURNACE =
+            MENUS.register("apica_furnace",
+                    () -> IMenuTypeExtension.create(ApicaFurnaceMenu::new));
 
     // --- RESONATOR ---
     public static final Supplier<MenuType<ResonatorMenu>> RESONATOR =

@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "working=false": { "model": "apica:block/alchemy/royal_furnace" },
+    "working=true": { "model": "apica:block/alchemy/royal_furnace" }
+  }
+}

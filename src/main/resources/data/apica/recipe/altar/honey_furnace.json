@@ -1,0 +1,15 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "minecraft:furnace" },
+  "pedestal_items": [
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" }
+  ],
+  "pollen": {
+    "apica:crystal_pollen": 4,
+    "apica:tree_pollen": 4
+  },
+  "result": { "id": "apica:honey_furnace" }
+}

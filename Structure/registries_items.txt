@@ -92,6 +92,11 @@
 --- ESSENCE INJECTOR ---
 | injector                 | BlockItem        | Essence Injector  |
 
+--- APICA FURNACES ---
+| honey_furnace            | BlockItem        | Apica Furnaces    |
+| royal_furnace            | BlockItem        | Apica Furnaces    |
+| nectar_furnace           | BlockItem        | Apica Furnaces    |
+
 --- BEE ITEMS ---
 | magic_bee                | MagicBeeItem     | Gene System     |
 | bee_larva                | BeeLarvaItem     | Breeding        |
