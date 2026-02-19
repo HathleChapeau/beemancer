@@ -115,7 +115,9 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public static final int DATA_HONEY_STORED = 15;
     public static final int DATA_HONEY_CAPACITY = 16;
     public static final int DATA_HIVE_MULTIPLIER = 17;
-    public static final int DATA_SIZE = 18;
+    public static final int DATA_DEPOSIT_PAGES = 18;
+    public static final int DATA_PICKUP_PAGES = 19;
+    public static final int DATA_SIZE = 20;
 
     // Slot positions — Deposit (inside transfer_bg at 7,7: slot bg at 11,11, item at +1)
     // Menu pos = renderSlot pos + 1 (18x18 slot bg, 16x16 item centered)
@@ -362,6 +364,8 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
                         if (controller == null) yield 100;
                         yield Math.round(controller.getHiveMultiplier() * 100.0f);
                     }
+                    case DATA_DEPOSIT_PAGES -> computePages(terminal.getDepositSlots());
+                    case DATA_PICKUP_PAGES -> computePages(terminal.getPickupSlots());
                     default -> 0;
                 };
             }
@@ -449,8 +453,8 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         // From player inventory
         else {
             if (activeTab == StorageTab.STORAGE) {
-                // Essayer les deposit slots
-                if (!this.moveItemStackTo(slotStack, DEPOSIT_START, DEPOSIT_END, false)) {
+                // Essayer d'inserer dans le handler deposit complet (toutes pages)
+                if (!insertIntoDepositHandler(slotStack)) {
                     // Sinon déplacer entre inv et hotbar
                     if (slotIndex < PLAYER_START + 27) {
                         if (!this.moveItemStackTo(slotStack, PLAYER_START + 27, PLAYER_END, false)) {
@@ -501,6 +505,21 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         }
 
         return result;
+    }
+
+    /**
+     * Insere un stack dans le handler deposit complet (toutes pages, pas seulement la page visible).
+     * Retourne true si au moins un item a ete insere.
+     */
+    private boolean insertIntoDepositHandler(ItemStack stack) {
+        if (depositPaginatedSlots.isEmpty() || stack.isEmpty()) return false;
+        ItemStackHandler handler = depositPaginatedSlots.get(0).handler;
+        int initialCount = stack.getCount();
+        for (int i = 0; i < handler.getSlots() && !stack.isEmpty(); i++) {
+            ItemStack remainder = handler.insertItem(i, stack, false);
+            stack.setCount(remainder.getCount());
+        }
+        return stack.getCount() < initialCount;
     }
 
     @Override
@@ -644,37 +663,34 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public int getPickupPage() { return this.data.get(DATA_PICKUP_PAGE); }
 
     /**
-     * Nombre de pages dynamique pour le depot: basé sur le contenu + 1 page vide.
+     * Nombre de pages dynamique pour le depot (synced via ContainerData).
      */
     public int getDepositPages() {
-        int lastNonEmpty = findLastNonEmpty(depositPaginatedSlots.isEmpty() ? null
-            : depositPaginatedSlots.get(0).handler);
-        int itemCount = lastNonEmpty + 1;
-        int needed = Math.max(1, (itemCount + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
-        int maxPages = (depositPaginatedSlots.isEmpty() ? 1
-            : (depositPaginatedSlots.get(0).handler.getSlots() + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
-        return Math.min(needed, maxPages);
+        return Math.max(1, this.data.get(DATA_DEPOSIT_PAGES));
     }
 
     /**
-     * Nombre de pages dynamique pour le pickup: basé sur le contenu.
+     * Nombre de pages dynamique pour le pickup (synced via ContainerData).
      */
     public int getPickupPages() {
-        int lastNonEmpty = findLastNonEmpty(pickupPaginatedSlots.isEmpty() ? null
-            : pickupPaginatedSlots.get(0).handler);
-        int itemCount = lastNonEmpty + 1;
-        int needed = Math.max(1, (itemCount + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
-        int maxPages = (pickupPaginatedSlots.isEmpty() ? 1
-            : (pickupPaginatedSlots.get(0).handler.getSlots() + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
-        return Math.min(needed, maxPages);
+        return Math.max(1, this.data.get(DATA_PICKUP_PAGES));
     }
 
-    private int findLastNonEmpty(ItemStackHandler handler) {
-        if (handler == null) return -1;
+    /**
+     * Calcule le nombre de pages necessaires pour un handler (server-side).
+     */
+    private static int computePages(ItemStackHandler handler) {
+        int lastNonEmpty = -1;
         for (int i = handler.getSlots() - 1; i >= 0; i--) {
-            if (!handler.getStackInSlot(i).isEmpty()) return i;
+            if (!handler.getStackInSlot(i).isEmpty()) {
+                lastNonEmpty = i;
+                break;
+            }
         }
-        return -1;
+        int itemCount = lastNonEmpty + 1;
+        int needed = Math.max(1, (itemCount + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
+        int maxPages = (handler.getSlots() + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE;
+        return Math.min(needed, maxPages);
     }
 
     public void setDepositPage(int page) {
