@@ -96,14 +96,14 @@ public class GuiRenderHelper {
      * Fond de slot via texture (18x18 drawn from 19x19 source).
      */
     public static void renderSlot(GuiGraphics g, int x, int y) {
-        g.blit(SLOT_TEXTURE, x, y, 0, 0, 18, 18, 19, 19);
+        g.blit(SLOT_TEXTURE, x, y, 0, 0, 18, 18, 18, 18);
     }
 
     /**
      * Grille de slots 2x2 via texture (36x36).
      */
     public static void renderSlots2x2(GuiGraphics g, int x, int y) {
-        g.blit(SLOTS_2X2_TEXTURE, x, y, 0, 0, 36, 36, 37, 37);
+        g.blit(SLOTS_2X2_TEXTURE, x, y, 0, 0, 36, 36, 36, 36);
     }
 
     /**
