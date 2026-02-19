@@ -80,22 +80,22 @@ public class ApicaFurnaceMenu extends ApicaMenu {
 
         addDataSlots(data);
 
+        // Panel offset = 33 (reduced_bg centree dans 176px)
+        // Slot positions = panelOffset + renderSlotX + 1 (slot bg = 18x18, item = 16x16 centre)
         if (dualSlot) {
-            // 2 inputs (left) + 2 outputs (right)
-            addSlot(new ApicaSlot(inputHandler, 0, 40, 36));
-            addSlot(new ApicaSlot(inputHandler, 1, 40, 54));
-            addSlot(ApicaSlot.output(outputHandler, 0, 116, 36));
-            addSlot(ApicaSlot.output(outputHandler, 1, 116, 54));
+            addSlot(new ApicaSlot(inputHandler, 0, 72, 31));
+            addSlot(new ApicaSlot(inputHandler, 1, 72, 51));
+            addSlot(ApicaSlot.output(outputHandler, 0, 114, 31));
+            addSlot(ApicaSlot.output(outputHandler, 1, 114, 51));
             this.containerSlotCount = 4;
         } else {
-            // 1 input (left) + 1 output (right)
-            addSlot(new ApicaSlot(inputHandler, 0, 40, 45));
-            addSlot(ApicaSlot.output(outputHandler, 0, 116, 45));
+            addSlot(new ApicaSlot(inputHandler, 0, 72, 41));
+            addSlot(ApicaSlot.output(outputHandler, 0, 114, 41));
             this.containerSlotCount = 2;
         }
 
-        addPlayerInventory(playerInv, 15, 107);
-        addPlayerHotbar(playerInv, 15, 165);
+        addPlayerInventory(playerInv, 7, 107);
+        addPlayerHotbar(playerInv, 7, 165);
     }
 
     public int getProgress0() { return data.get(0); }

@@ -23,28 +23,36 @@ package com.chapeau.apica.client.gui.screen.alchemy;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.client.gui.screen.AbstractApicaScreen;
+import com.chapeau.apica.common.blockentity.alchemy.ApicaFurnaceBlockEntity;
 import com.chapeau.apica.common.menu.alchemy.ApicaFurnaceMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.List;
 
 public class ApicaFurnaceScreen extends AbstractApicaScreen<ApicaFurnaceMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Apica.MOD_ID, "textures/gui/bg.png");
+        Apica.MOD_ID, "textures/gui/reduced_bg.png");
 
-    private static final int FUEL_BAR_X = 15;
-    private static final int FUEL_BAR_Y = 27;
+    private static final int PANEL_W = 110;
+    private static final int PANEL_OFFSET = (176 - PANEL_W) / 2;
+
+    private static final int FUEL_BAR_X = 14;
+    private static final int FUEL_BAR_Y = 22;
 
     public ApicaFurnaceScreen(ApicaFurnaceMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 99);
+        super(menu, playerInventory, title, 176, 99, 0);
     }
 
     @Override protected ResourceLocation getTexture() { return TEXTURE; }
+    @Override protected int getPanelXOffset() { return PANEL_OFFSET; }
+    @Override protected int getPanelWidth() { return PANEL_W; }
+
     @Override protected String getTitleKey() {
-        return menu.getBlockEntity() instanceof com.chapeau.apica.common.blockentity.alchemy.ApicaFurnaceBlockEntity
+        return menu.getBlockEntity() instanceof ApicaFurnaceBlockEntity
             ? "container.apica." + getBlockId()
             : "container.apica.honey_furnace";
     }
@@ -63,48 +71,52 @@ public class ApicaFurnaceScreen extends AbstractApicaScreen<ApicaFurnaceMenu> {
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
+        int px = x + PANEL_OFFSET;
+
         if (menu.isDualSlot()) {
-            // 2 input slots + 2 output slots
-            GuiRenderHelper.renderSlot(g, x + 39, y + 35);
-            GuiRenderHelper.renderSlot(g, x + 39, y + 53);
-            GuiRenderHelper.renderSlot(g, x + 115, y + 35);
-            GuiRenderHelper.renderSlot(g, x + 115, y + 53);
+            GuiRenderHelper.renderSlot(g, px + 38, y + 30);
+            GuiRenderHelper.renderSlot(g, px + 38, y + 50);
+            GuiRenderHelper.renderSlot(g, px + 80, y + 30);
+            GuiRenderHelper.renderSlot(g, px + 80, y + 50);
 
-            // 2 progress bars
-            GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 39, menu.getProgressRatio0());
-            GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 57, menu.getProgressRatio1());
+            GuiRenderHelper.renderTextureProgressBar(g, px + 57, y + 34, menu.getProgressRatio0());
+            GuiRenderHelper.renderTextureProgressBar(g, px + 57, y + 54, menu.getProgressRatio1());
         } else {
-            // 1 input + 1 output
-            GuiRenderHelper.renderSlot(g, x + 39, y + 44);
-            GuiRenderHelper.renderSlot(g, x + 115, y + 44);
+            GuiRenderHelper.renderSlot(g, px + 38, y + 40);
+            GuiRenderHelper.renderSlot(g, px + 80, y + 40);
 
-            // 1 progress bar
-            GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 48, menu.getProgressRatio0());
+            GuiRenderHelper.renderTextureProgressBar(g, px + 57, y + 44, menu.getProgressRatio0());
         }
 
-        // Fuel bar (left)
         int fuelCap = menu.getFuelCapacity();
         float fuelRatio = fuelCap > 0 ? (float) menu.getFuelAmount() / fuelCap : 0;
-        GuiRenderHelper.renderLeftHoneyBar(g, x + FUEL_BAR_X, y + FUEL_BAR_Y, fuelRatio);
+        GuiRenderHelper.renderLeftHoneyBar(g, px + FUEL_BAR_X, y + FUEL_BAR_Y, fuelRatio);
     }
 
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        if (GuiRenderHelper.isHoneyBarHovered(FUEL_BAR_X, FUEL_BAR_Y, x, y, mouseX, mouseY)) {
-            String name = GuiRenderHelper.getFluidName(menu.getFuelTank().getFluid());
-            if (name.isEmpty() && menu.getFuelAmount() > 0) {
-                name = "Fuel";
-            }
+        int px = x + PANEL_OFFSET;
+        if (GuiRenderHelper.isHoneyBarHovered(FUEL_BAR_X, FUEL_BAR_Y, px, y, mouseX, mouseY)) {
+            String name = getAcceptedFluidName();
             int amount = menu.getFuelAmount();
             int cap = menu.getFuelCapacity();
-            String line1 = name.isEmpty()
-                    ? amount + " / " + cap + " mB"
-                    : name + ": " + amount + " / " + cap + " mB";
+            String line1 = name + ": " + amount + " / " + cap + " mB";
             g.renderComponentTooltip(font, List.of(
                 Component.literal(line1),
                 Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
                     .withStyle(s -> s.withColor(0xAAAAAA))
             ), mouseX, mouseY);
         }
+    }
+
+    private String getAcceptedFluidName() {
+        FluidStack tankFluid = menu.getFuelTank().getFluid();
+        if (!tankFluid.isEmpty()) {
+            return GuiRenderHelper.getFluidName(tankFluid);
+        }
+        if (menu.getBlockEntity() instanceof ApicaFurnaceBlockEntity furnace) {
+            return GuiRenderHelper.getFluidName(new FluidStack(furnace.getAcceptedFluid(), 1));
+        }
+        return "Empty";
     }
 }
