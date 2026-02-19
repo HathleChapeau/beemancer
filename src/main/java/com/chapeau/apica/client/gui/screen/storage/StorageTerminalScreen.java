@@ -62,16 +62,16 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     private static final ResourceLocation EXPORT_ICON = ResourceLocation.fromNamespaceAndPath(
         Apica.MOD_ID, "textures/gui/storage/export_icon.png");
 
-    // Vanilla advancement tab sprites
+    // Vanilla advancement tab sprites (left-side tabs, protrude to the left)
     private static final ResourceLocation[] TAB_SPRITES = {
-        ResourceLocation.withDefaultNamespace("advancements/tab_right_top"),
-        ResourceLocation.withDefaultNamespace("advancements/tab_right_middle"),
-        ResourceLocation.withDefaultNamespace("advancements/tab_right_bottom")
+        ResourceLocation.withDefaultNamespace("advancements/tab_left_top"),
+        ResourceLocation.withDefaultNamespace("advancements/tab_left_middle"),
+        ResourceLocation.withDefaultNamespace("advancements/tab_left_bottom")
     };
     private static final ResourceLocation[] TAB_SPRITES_SELECTED = {
-        ResourceLocation.withDefaultNamespace("advancements/tab_right_top_selected"),
-        ResourceLocation.withDefaultNamespace("advancements/tab_right_middle_selected"),
-        ResourceLocation.withDefaultNamespace("advancements/tab_right_bottom_selected")
+        ResourceLocation.withDefaultNamespace("advancements/tab_left_top_selected"),
+        ResourceLocation.withDefaultNamespace("advancements/tab_left_middle_selected"),
+        ResourceLocation.withDefaultNamespace("advancements/tab_left_bottom_selected")
     };
 
     // === Dimensions ===
@@ -91,16 +91,16 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     // === Deposit panel (transfer_bg at 7,7 inside storage_bg) ===
     private static final int DEPOSIT_BG_X = 7;
     private static final int DEPOSIT_BG_Y = 7;
-    private static final int DEPOSIT_SLOT_X = 10;
-    private static final int DEPOSIT_SLOT_Y = 10;
+    private static final int DEPOSIT_SLOT_X = 11;
+    private static final int DEPOSIT_SLOT_Y = 11;
     private static final int DEPOSIT_ICON_X = 10;
     private static final int DEPOSIT_ICON_Y = 48;
 
     // === Pickup panel (transfer_bg at 7,71 inside storage_bg) ===
     private static final int PICKUP_BG_X = 7;
     private static final int PICKUP_BG_Y = 71;
-    private static final int PICKUP_SLOT_X = 10;
-    private static final int PICKUP_SLOT_Y = 74;
+    private static final int PICKUP_SLOT_X = 11;
+    private static final int PICKUP_SLOT_Y = 75;
     private static final int PICKUP_ICON_X = 10;
     private static final int PICKUP_ICON_Y = 112;
 
@@ -113,11 +113,11 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     private static final int SEARCH_Y = 10;
     private static final int SEARCH_WIDTH = 180;
 
-    // === Tabs (right side of storage_bg) ===
-    private static final int TAB_X = 270;
+    // === Tabs (left side of storage_bg, protruding left, 6px overlap to match border) ===
     private static final int TAB_W = 32;
     private static final int TAB_H = 28;
-    private static final int TAB_START_Y = 4;
+    private static final int TAB_X = -TAB_W + 6;
+    private static final int TAB_START_Y = 3;
 
     // === Page arrows ===
     private static final int PAGE_ARROW_W = 12;
@@ -207,6 +207,18 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         g.blit(PLAYER_INV_BG, x + PLAYER_INV_BG_X, y + PLAYER_INV_BG_Y,
             0, 0, PLAYER_INV_BG_W, PLAYER_INV_BG_H, PLAYER_INV_BG_W, PLAYER_INV_BG_H);
 
+        // 2b. Programmatic slot overlays for pixel-perfect alignment
+        // (avoids UV drift from non-power-of-2 texture width 266)
+        int pSlotX = x + StorageTerminalMenu.PLAYER_INV_X - 1;
+        int pSlotY = y + StorageTerminalMenu.PLAYER_INV_Y - 1;
+        GuiRenderHelper.renderSlotGrid(g, pSlotX, pSlotY, 9, 3);
+        GuiRenderHelper.renderSlotGrid(g, pSlotX, y + StorageTerminalMenu.HOTBAR_Y - 1, 9, 1);
+        int cSlotX = x + StorageTerminalMenu.CRAFT_X - 1;
+        int cSlotY = y + StorageTerminalMenu.CRAFT_Y - 1;
+        GuiRenderHelper.renderSlotGrid(g, cSlotX, cSlotY, 3, 3);
+        GuiRenderHelper.renderSlot(g, x + StorageTerminalMenu.RESULT_X - 1,
+            y + StorageTerminalMenu.RESULT_Y - 1);
+
         // 3. Deposit panel (transfer_bg)
         g.blit(TRANSFER_BG, x + DEPOSIT_BG_X, y + DEPOSIT_BG_Y,
             0, 0, TRANSFER_BG_W, TRANSFER_BG_H, TRANSFER_BG_W, TRANSFER_BG_H);
@@ -258,7 +270,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             boolean selected = activeTab.ordinal() == i;
             ResourceLocation sprite = selected ? TAB_SPRITES_SELECTED[i] : TAB_SPRITES[i];
             g.blitSprite(sprite, x + TAB_X, tabY, TAB_W, TAB_H);
-            g.renderItem(icons[i], x + TAB_X + 10, tabY + 6);
+            g.renderItem(icons[i], x + TAB_X + 6, tabY + 6);
         }
     }
 
