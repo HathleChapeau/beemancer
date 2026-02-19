@@ -80,17 +80,16 @@ public class ApicaFurnaceMenu extends ApicaMenu {
 
         addDataSlots(data);
 
-        // Panel offset = 33 (reduced_bg centree dans 176px)
-        // Slot positions = panelOffset + renderSlotX + 1 (slot bg = 18x18, item = 16x16 centre)
+        // Slot positions = renderSlotX + 1, renderSlotY + 1 (slot bg = 18x18, item = 16x16 centre)
         if (dualSlot) {
-            addSlot(new ApicaSlot(inputHandler, 0, 72, 31));
-            addSlot(new ApicaSlot(inputHandler, 1, 72, 51));
-            addSlot(ApicaSlot.output(outputHandler, 0, 114, 31));
-            addSlot(ApicaSlot.output(outputHandler, 1, 114, 51));
+            addSlot(new ApicaSlot(inputHandler, 0, 40, 36));
+            addSlot(new ApicaSlot(inputHandler, 1, 40, 56));
+            addSlot(ApicaSlot.output(outputHandler, 0, 116, 36));
+            addSlot(ApicaSlot.output(outputHandler, 1, 116, 56));
             this.containerSlotCount = 4;
         } else {
-            addSlot(new ApicaSlot(inputHandler, 0, 72, 41));
-            addSlot(ApicaSlot.output(outputHandler, 0, 114, 41));
+            addSlot(new ApicaSlot(inputHandler, 0, 40, 45));
+            addSlot(ApicaSlot.output(outputHandler, 0, 116, 45));
             this.containerSlotCount = 2;
         }
 
