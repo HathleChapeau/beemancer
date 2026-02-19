@@ -876,7 +876,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         for (HoverbikePart part : HoverbikePart.values()) {
             ItemStack stack = getPartStack(part);
             if (!stack.isEmpty()) {
-                this.spawnAtLocation(level, stack.copy());
+                this.spawnAtLocation(stack.copy(), 0.0f);
             }
         }
     }
