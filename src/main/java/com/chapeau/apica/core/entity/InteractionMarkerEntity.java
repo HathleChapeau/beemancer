@@ -1,20 +1,20 @@
 /**
  * ============================================================
  * [InteractionMarkerEntity.java]
- * Description: Entité invisible réutilisable servant de point d'interaction cliquable
+ * Description: Entite invisible reutilisable servant de point d'interaction cliquable
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance              | Raison                | Utilisation                    |
+ * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | InteractionMarkerTypes  | Registre de types    | Validation et handler          |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - InteractionMarkerManager.java: Spawn/despawn
- * - AssemblyTableBlockEntity.java: Via le manager
- * - Tout système nécessitant un point d'interaction en monde
+ * - AssemblyTableBlockEntity.java: Via le manager (ancrage bloc)
+ * - HoverbikeEntity.java: Via le manager (ancrage entite)
  *
  * ============================================================
  */
@@ -27,6 +27,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -35,9 +36,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 /**
- * Entité invisible, sans IA, sans gravité, sans persistance.
- * Sert de point d'interaction cliquable dans le monde, ancré à un bloc.
- * Le comportement est entièrement délégué au MarkerType enregistré dans InteractionMarkerTypes.
+ * Entite invisible, sans IA, sans gravite, sans persistance.
+ * Sert de point d'interaction cliquable dans le monde.
+ * Peut etre ancree a un bloc (BlockPos) ou a une entite (entity ID).
+ * Le comportement est entierement delegue au MarkerType enregistre dans InteractionMarkerTypes.
  */
 public class InteractionMarkerEntity extends Mob {
 
@@ -45,8 +47,14 @@ public class InteractionMarkerEntity extends Mob {
             SynchedEntityData.defineId(InteractionMarkerEntity.class, EntityDataSerializers.BLOCK_POS);
     private static final EntityDataAccessor<String> DATA_MARKER_TYPE =
             SynchedEntityData.defineId(InteractionMarkerEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> DATA_ANCHOR_ENTITY_ID =
+            SynchedEntityData.defineId(InteractionMarkerEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_PART_ORDINAL =
+            SynchedEntityData.defineId(InteractionMarkerEntity.class, EntityDataSerializers.INT);
 
-    /** Intervalle de vérification de validité (en ticks). */
+    /** -1 = ancrage bloc, sinon = entity ID */
+    private static final int NO_ENTITY_ANCHOR = -1;
+
     private static final int VALIDITY_CHECK_INTERVAL = 20;
     private int validityCheckTimer = 0;
 
@@ -67,6 +75,8 @@ public class InteractionMarkerEntity extends Mob {
         super.defineSynchedData(builder);
         builder.define(DATA_ANCHOR_POS, BlockPos.ZERO);
         builder.define(DATA_MARKER_TYPE, "");
+        builder.define(DATA_ANCHOR_ENTITY_ID, NO_ENTITY_ANCHOR);
+        builder.define(DATA_PART_ORDINAL, -1);
     }
 
     // --- Getters / Setters ---
@@ -85,6 +95,26 @@ public class InteractionMarkerEntity extends Mob {
 
     public void setMarkerType(String type) {
         this.entityData.set(DATA_MARKER_TYPE, type);
+    }
+
+    public int getAnchorEntityId() {
+        return this.entityData.get(DATA_ANCHOR_ENTITY_ID);
+    }
+
+    public void setAnchorEntityId(int entityId) {
+        this.entityData.set(DATA_ANCHOR_ENTITY_ID, entityId);
+    }
+
+    public boolean isEntityAnchored() {
+        return getAnchorEntityId() != NO_ENTITY_ANCHOR;
+    }
+
+    public int getPartOrdinal() {
+        return this.entityData.get(DATA_PART_ORDINAL);
+    }
+
+    public void setPartOrdinal(int ordinal) {
+        this.entityData.set(DATA_PART_ORDINAL, ordinal);
     }
 
     // --- Comportement ---
@@ -115,7 +145,7 @@ public class InteractionMarkerEntity extends Mob {
     }
 
     @Override
-    public boolean skipAttackInteraction(net.minecraft.world.entity.Entity attacker) {
+    public boolean skipAttackInteraction(Entity attacker) {
         return true;
     }
 
@@ -136,6 +166,11 @@ public class InteractionMarkerEntity extends Mob {
     private boolean isStillValid() {
         InteractionMarkerTypes.MarkerType type = InteractionMarkerTypes.get(getMarkerType());
         if (type == null) return false;
+
+        if (isEntityAnchored()) {
+            Entity anchor = this.level().getEntity(getAnchorEntityId());
+            return anchor != null && anchor.isAlive();
+        }
         return type.validityCheck().test(this.level(), getAnchorPos());
     }
 
@@ -157,6 +192,8 @@ public class InteractionMarkerEntity extends Mob {
         tag.putInt("AnchorY", getAnchorPos().getY());
         tag.putInt("AnchorZ", getAnchorPos().getZ());
         tag.putString("MarkerType", getMarkerType());
+        tag.putInt("AnchorEntityId", getAnchorEntityId());
+        tag.putInt("PartOrdinal", getPartOrdinal());
     }
 
     @Override
@@ -167,6 +204,12 @@ public class InteractionMarkerEntity extends Mob {
         }
         if (tag.contains("MarkerType")) {
             setMarkerType(tag.getString("MarkerType"));
+        }
+        if (tag.contains("AnchorEntityId")) {
+            setAnchorEntityId(tag.getInt("AnchorEntityId"));
+        }
+        if (tag.contains("PartOrdinal")) {
+            setPartOrdinal(tag.getInt("PartOrdinal"));
         }
     }
 }

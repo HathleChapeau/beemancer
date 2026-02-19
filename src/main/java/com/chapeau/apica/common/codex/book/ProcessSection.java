@@ -69,7 +69,10 @@ public class ProcessSection extends CodexBookSection {
                        int pageWidth, String nodeTitle, long relativeDay) {
         resolveItems();
 
-        int totalWidth = SLOT_SIZE + SPACING + ARROW_WIDTH + SPACING + SLOT_SIZE;
+        float arrowScale = 2.0f;
+        int arrowRenderedW = Math.round(font.width("\u2192") * arrowScale);
+        int gap = 4;
+        int totalWidth = SLOT_SIZE + gap + arrowRenderedW + gap + SLOT_SIZE;
         int startX = x + (pageWidth - totalWidth) / 2;
 
         // Input slot + item
@@ -81,9 +84,8 @@ public class ProcessSection extends CodexBookSection {
         }
 
         // Arrow
-        int arrowX = startX + SLOT_SIZE + SPACING;
+        int arrowX = startX + SLOT_SIZE + gap;
         int arrowY = y + SLOT_SIZE / 2 - 8;
-        float arrowScale = 2.0f;
         graphics.pose().pushPose();
         graphics.pose().translate(arrowX, arrowY, 0);
         graphics.pose().scale(arrowScale, arrowScale, 1.0f);
@@ -91,7 +93,7 @@ public class ProcessSection extends CodexBookSection {
         graphics.pose().popPose();
 
         // Output slot + item
-        int outputX = arrowX + ARROW_WIDTH + SPACING;
+        int outputX = arrowX + arrowRenderedW + gap;
         graphics.blit(CRAFT_SLOT, outputX, y, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
         if (!outputStack.isEmpty()) {
             int itemX = outputX + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;

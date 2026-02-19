@@ -25,7 +25,7 @@ package com.chapeau.apica.client.renderer.entity;
 import com.chapeau.apica.client.animation.AnimationController;
 import com.chapeau.apica.client.animation.MoveAnimation;
 import com.chapeau.apica.client.animation.TimingType;
-import com.chapeau.apica.client.gui.hud.HoverbikeEditModeHandler;
+
 import com.chapeau.apica.client.model.HoverbikeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
@@ -55,8 +55,6 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
 
     private static final float EDIT_ANIM_DURATION = 15f;
     private static final String ANIM_PREFIX = "edit_";
-    private static final int FULLBRIGHT = 15728880;
-    private static final int GLOW_COLOR = 0x44FFFFFF;
 
     /** Tous les modeles bakes, par partie → liste des variantes. */
     private final Map<HoverbikePart, List<HoverbikePartModel>> partVariants = new EnumMap<>(HoverbikePart.class);
@@ -92,8 +90,6 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
         boolean isEdit = entity.isEditMode();
         handleEditModeTransition(isEdit);
 
-        HoverbikePart hoveredPart = HoverbikeEditModeHandler.getHoveredPart();
-
         for (HoverbikePart partType : HoverbikePart.values()) {
             List<HoverbikePartModel> models = partVariants.get(partType);
             if (models == null || models.isEmpty()) continue;
@@ -115,13 +111,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
             part.renderToBuffer(poseStack, vertexConsumer, packedLight,
                     OverlayTexture.NO_OVERLAY);
 
-            // Glow overlay sur la partie survolee
-            if (isEdit && partType == hoveredPart) {
-                VertexConsumer glowConsumer = bufferSource.getBuffer(
-                        RenderType.entityTranslucent(part.getTextureLocation()));
-                part.renderToBuffer(poseStack, glowConsumer, FULLBRIGHT,
-                        OverlayTexture.NO_OVERLAY, GLOW_COLOR);
-            }
+            // Glow overlay retiree — interaction via InteractionMarkerEntity avec wireframe
 
             poseStack.popPose();
         }

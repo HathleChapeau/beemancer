@@ -27,6 +27,8 @@ import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPage;
 import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.entity.mount.HoverbikeConfigManager;
+import com.chapeau.apica.common.quest.Quest;
+import com.chapeau.apica.common.quest.QuestManager;
 import com.chapeau.apica.common.quest.QuestPlayerData;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.network.packets.CodexSyncPacket;
@@ -241,8 +243,23 @@ public class ApicaCommands {
             player.setData(ApicaAttachments.CODEX_DATA, data);
             PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
 
+            // Complete all quests (for codex book quest-gated sections)
+            QuestPlayerData questData = player.getData(ApicaAttachments.QUEST_DATA);
+            int questCount = 0;
+            for (Quest quest : QuestManager.getAllQuests()) {
+                if (!questData.isCompleted(quest.getId())) {
+                    questData.complete(quest.getId());
+                    questCount++;
+                }
+            }
+            if (questCount > 0) {
+                player.setData(ApicaAttachments.QUEST_DATA, questData);
+                PacketDistributor.sendToPlayer(player, new QuestSyncPacket(questData));
+            }
+
             final int finalCount = count;
-            source.sendSuccess(() -> Component.literal("Unlocked " + finalCount + " codex entries + all species & traits!"), true);
+            final int finalQuestCount = questCount;
+            source.sendSuccess(() -> Component.literal("Unlocked " + finalCount + " codex entries + all species & traits + " + finalQuestCount + " quests!"), true);
             return Command.SINGLE_SUCCESS;
         }
 

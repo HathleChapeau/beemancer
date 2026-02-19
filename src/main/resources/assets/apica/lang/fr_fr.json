@@ -562,5 +562,6 @@
   "gui.apica.network.honey_depleted": "Réseau de stockage : miel épuisé !",
   "gui.apica.network.honey_restored": "Réseau de stockage : approvisionnement en miel rétabli",
   "gui.apica.network.queue_full": "File d'attente pleine — réessayez plus tard",
-  "gui.apica.network.storage_full": "Réseau de stockage plein — items lâchés au sol"
+  "gui.apica.network.storage_full": "Réseau de stockage plein — items lâchés au sol",
+  "gui.apica.hoverbike.remove": "Retirer"
 }

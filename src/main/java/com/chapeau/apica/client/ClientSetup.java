@@ -123,6 +123,7 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.register(HoverbikeEditModeEffect.class);
         NeoForge.EVENT_BUS.register(com.chapeau.apica.client.gui.hud.HoverbikeEditModeHandler.class);
         NeoForge.EVENT_BUS.register(com.chapeau.apica.client.gui.hud.HoverbikeEditStatsHud.class);
+        NeoForge.EVENT_BUS.register(com.chapeau.apica.client.gui.hud.HoverbikeInfoHud.class);
 
         // Overlay quand on ouvre un GUI adjacent depuis le bouton Debug de l'interface
         NeoForge.EVENT_BUS.register(com.chapeau.apica.client.gui.screen.storage.AdjacentGuiOverlayRenderer.class);
@@ -171,7 +172,7 @@ public class ClientSetup {
 
         // Interaction marker - invisible entity, no rendering
         event.registerEntityRenderer(ApicaEntities.INTERACTION_MARKER.get(),
-            net.minecraft.client.renderer.entity.NoopRenderer::new);
+            com.chapeau.apica.client.renderer.entity.InteractionMarkerRenderer::new);
 
         // Block Entity Renderers
         event.registerBlockEntityRenderer(ApicaBlockEntities.STORAGE_CONTROLLER.get(),

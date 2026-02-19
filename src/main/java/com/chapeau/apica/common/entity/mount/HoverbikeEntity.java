@@ -58,6 +58,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.Nullable;
 
+import com.chapeau.apica.core.entity.InteractionMarkerManager;
+import net.minecraft.server.level.ServerLevel;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -99,6 +102,12 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.ITEM_STACK);
     private static final EntityDataAccessor<ItemStack> DATA_RADIATEUR_STACK =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.ITEM_STACK);
+
+    // --- Ownership (synched pour affichage client et restriction d'acces) ---
+    private static final EntityDataAccessor<Optional<UUID>> DATA_OWNER_UUID =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+    private static final EntityDataAccessor<String> DATA_OWNER_NAME =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.STRING);
 
     // --- Settings ---
     private HoverbikeSettings settings;
@@ -156,6 +165,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         builder.define(DATA_COEUR_STACK, ItemStack.EMPTY);
         builder.define(DATA_PROPULSEUR_STACK, ItemStack.EMPTY);
         builder.define(DATA_RADIATEUR_STACK, ItemStack.EMPTY);
+        builder.define(DATA_OWNER_UUID, Optional.empty());
+        builder.define(DATA_OWNER_NAME, "");
     }
 
     // --- Attributes ---
@@ -187,6 +198,18 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (!this.level().isClientSide()) {
+            // Auto-set owner si pas encore defini
+            if (getOwnerUUID().isEmpty()) {
+                setOwner(player);
+            }
+
+            // Seul le owner peut interagir
+            if (!isOwner(player)) {
+                return InteractionResult.PASS;
+            }
+        }
+
         // Shift+click : toggle edit mode
         if (player.isSecondaryUseActive()) {
             if (!this.level().isClientSide()) {
@@ -214,9 +237,11 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private void enterEditMode(UUID playerUUID) {
         this.entityData.set(DATA_EDIT_MODE, true);
         this.entityData.set(DATA_EDITING_PLAYER, Optional.of(playerUUID));
+        spawnPartMarkers();
     }
 
     private void exitEditMode() {
+        despawnPartMarkers();
         this.entityData.set(DATA_EDIT_MODE, false);
         this.entityData.set(DATA_EDITING_PLAYER, Optional.empty());
     }
@@ -227,6 +252,68 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     public Optional<UUID> getEditingPlayerUUID() {
         return this.entityData.get(DATA_EDITING_PLAYER);
+    }
+
+    // --- Ownership ---
+
+    public void setOwner(Player player) {
+        this.entityData.set(DATA_OWNER_UUID, Optional.of(player.getUUID()));
+        this.entityData.set(DATA_OWNER_NAME, player.getGameProfile().getName());
+    }
+
+    public Optional<UUID> getOwnerUUID() {
+        return this.entityData.get(DATA_OWNER_UUID);
+    }
+
+    public String getOwnerName() {
+        return this.entityData.get(DATA_OWNER_NAME);
+    }
+
+    public boolean isOwner(Player player) {
+        Optional<UUID> owner = getOwnerUUID();
+        return owner.isEmpty() || owner.get().equals(player.getUUID());
+    }
+
+    // --- Part Interaction Markers ---
+
+    private static final String MARKER_PREFIX = "hoverbike_part_";
+
+    /** Offsets en espace modele pour chaque part en edit mode. */
+    private static final Vec3[] PART_EDIT_OFFSETS = {
+            new Vec3(0, 1, 1),   // CHASSIS
+            new Vec3(0, 1, -1),  // COEUR
+            new Vec3(0, 0, 1),   // PROPULSEUR
+            new Vec3(0, 0, -1)   // RADIATEUR
+    };
+
+    private void spawnPartMarkers() {
+        if (!(level() instanceof ServerLevel serverLevel)) return;
+        float yawRad = (float) Math.toRadians(180.0 - this.yBodyRot);
+        float sinYaw = Mth.sin(yawRad);
+        float cosYaw = Mth.cos(yawRad);
+
+        for (HoverbikePart part : HoverbikePart.values()) {
+            Vec3 modelOffset = PART_EDIT_OFFSETS[part.ordinal()];
+            // Model → world: negate X and Y (MobRenderer flip), keep Z, then rotate by yaw
+            double wx = -modelOffset.x;
+            double wy = -modelOffset.y;
+            double wz = modelOffset.z;
+            double rotX = wx * cosYaw - wz * sinYaw;
+            double rotZ = wx * sinYaw + wz * cosYaw;
+
+            String markerType = MARKER_PREFIX + part.name().toLowerCase();
+            InteractionMarkerManager.spawnForEntity(
+                    serverLevel, this, markerType, part.ordinal(),
+                    new Vec3(rotX, wy, rotZ));
+        }
+    }
+
+    private void despawnPartMarkers() {
+        if (!(level() instanceof ServerLevel serverLevel)) return;
+        for (HoverbikePart part : HoverbikePart.values()) {
+            String markerType = MARKER_PREFIX + part.name().toLowerCase();
+            InteractionMarkerManager.despawnForEntity(serverLevel, this.getId(), markerType);
+        }
     }
 
     @Nullable
@@ -727,6 +814,12 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         savePartStack(tag, "CoeurStack", DATA_COEUR_STACK);
         savePartStack(tag, "PropulseurStack", DATA_PROPULSEUR_STACK);
         savePartStack(tag, "RadiateurStack", DATA_RADIATEUR_STACK);
+        // Ownership
+        Optional<UUID> ownerUuid = getOwnerUUID();
+        if (ownerUuid.isPresent()) {
+            tag.putUUID("OwnerUUID", ownerUuid.get());
+            tag.putString("OwnerName", getOwnerName());
+        }
     }
 
     @Override
@@ -742,6 +835,11 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         loadPartStack(tag, "PropulseurStack", DATA_PROPULSEUR_STACK);
         loadPartStack(tag, "RadiateurStack", DATA_RADIATEUR_STACK);
         recomputeSettings();
+        // Ownership
+        if (tag.hasUUID("OwnerUUID")) {
+            this.entityData.set(DATA_OWNER_UUID, Optional.of(tag.getUUID("OwnerUUID")));
+            this.entityData.set(DATA_OWNER_NAME, tag.getString("OwnerName"));
+        }
     }
 
     private void savePartStack(CompoundTag tag, String key, EntityDataAccessor<ItemStack> accessor) {

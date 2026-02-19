@@ -21,14 +21,18 @@
 package com.chapeau.apica.core.entity;
 
 import com.chapeau.apica.common.blockentity.mount.AssemblyTableBlockEntity;
+import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
+import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import com.chapeau.apica.common.entity.mount.HoverbikeStatRoller;
 import com.chapeau.apica.common.item.mount.CreativeFocusItem;
 import com.chapeau.apica.common.item.mount.HoverbikePartItem;
 import com.chapeau.apica.core.util.ParticleHelper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -103,20 +107,74 @@ public final class InteractionMarkerTypes {
      */
     public static void init() {
         register("assembly_focus", new MarkerType(
-                // Validity: la table existe et contient une pièce
+                // Validity: la table existe et contient une piece
                 (level, pos) -> level.getBlockEntity(pos) instanceof AssemblyTableBlockEntity table
                         && !table.isEmpty(),
                 // Handler: ajouter une stat avec le Creative Focus
                 InteractionMarkerTypes::handleAssemblyFocus,
-                // Spawn offset: au-dessus de la pièce qui tourne
+                // Spawn offset: au-dessus de la piece qui tourne
                 new Vec3(0.5, 1.3, 0.5),
                 0.5F, 0.5F
         ));
+
+        // 4 types pour les pieces du hoverbike en edit mode
+        for (HoverbikePart part : HoverbikePart.values()) {
+            String typeId = "hoverbike_part_" + part.name().toLowerCase();
+            register(typeId, new MarkerType(
+                    // Validity: l'entite ancre existe (verifie par isEntityAnchored dans tick)
+                    (level, pos) -> true,
+                    // Handler: ouvre le menu de la piece
+                    (marker, player, hand) -> handleHoverbikePart(marker, player, hand, part),
+                    // Spawn offset: calcule dynamiquement par HoverbikeEntity
+                    Vec3.ZERO,
+                    0.5F, 0.5F
+            ));
+        }
+    }
+
+    /**
+     * Handler d'interaction pour les marqueurs "hoverbike_part_*".
+     * Si le joueur tient une piece compatible: swap. Sinon: ouvre le menu.
+     */
+    private static InteractionResult handleHoverbikePart(
+            InteractionMarkerEntity marker, Player player, InteractionHand hand, HoverbikePart part) {
+        Entity anchorEntity = marker.level().getEntity(marker.getAnchorEntityId());
+        if (!(anchorEntity instanceof HoverbikeEntity hoverbike)) return InteractionResult.FAIL;
+        if (!hoverbike.isEditMode()) return InteractionResult.FAIL;
+        if (!hoverbike.isOwner(player)) return InteractionResult.PASS;
+
+        if (player.level().isClientSide()) {
+            openPartScreen(part, hoverbike);
+            return InteractionResult.SUCCESS;
+        }
+
+        // Server-side: check if player holds a compatible piece for quick swap
+        ItemStack held = player.getItemInHand(hand);
+        if (!held.isEmpty() && held.getItem() instanceof HoverbikePartItem heldPart
+                && heldPart.getCategory() == part) {
+            ItemStack currentOnBike = hoverbike.getPartStack(part).copy();
+            hoverbike.setPartStack(part, held.copy());
+            player.setItemInHand(hand, currentOnBike);
+            return InteractionResult.SUCCESS;
+        }
+
+        return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * Ouvre le HoverbikePartScreen cote client.
+     * Methode separee pour eviter les references client dans le code commun.
+     */
+    private static void openPartScreen(HoverbikePart part, HoverbikeEntity hoverbike) {
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
+            Minecraft.getInstance().setScreen(
+                    new com.chapeau.apica.client.gui.screen.HoverbikePartScreen(part, hoverbike));
+        }
     }
 
     /**
      * Handler d'interaction pour le marqueur "assembly_focus".
-     * Vérifie que le joueur tient un Creative Focus, puis roll une stat sur la pièce.
+     * Verifie que le joueur tient un Creative Focus, puis roll une stat sur la piece.
      */
     private static InteractionResult handleAssemblyFocus(
             InteractionMarkerEntity entity, Player player, InteractionHand hand) {
