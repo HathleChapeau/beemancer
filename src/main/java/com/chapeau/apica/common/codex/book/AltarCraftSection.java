@@ -109,8 +109,13 @@ public class AltarCraftSection extends CodexBookSection {
         }
 
         int arrowX = crossCenterX + CROSS_SPACING + SLOT_SIZE + 4;
-        int arrowY = crossCenterY + SLOT_SIZE / 2 - 4;
-        graphics.drawString(font, "\u2192", arrowX, arrowY, 0xFF8B6914, false);
+        int arrowY = crossCenterY + SLOT_SIZE / 2 - 6;
+        float arrowScale = 1.5f;
+        graphics.pose().pushPose();
+        graphics.pose().translate(arrowX, arrowY, 0);
+        graphics.pose().scale(arrowScale, arrowScale, 1.0f);
+        graphics.drawString(font, "\u2192", 0, 0, 0xFF8B6914, false);
+        graphics.pose().popPose();
 
         int resultX = arrowX + ARROW_WIDTH;
         int resultY = crossCenterY;
@@ -130,9 +135,9 @@ public class AltarCraftSection extends CodexBookSection {
                 com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
                 graphics.blit(POLLEN_POT_SLOT, potX, potY, 0, 0,
                         POLLEN_POT_SLOT_W, POLLEN_POT_SLOT_H, POLLEN_POT_SLOT_W, POLLEN_POT_SLOT_H);
-                renderScaledItem(graphics, entry.stack, px, pollenY + 2, 0.8f);
+                renderScaledItem(graphics, entry.stack, px, pollenY + 1, 0.8f);
                 String countStr = "x" + entry.count;
-                graphics.drawString(font, countStr, px + 14, pollenY + 6, 0xFF8B6914, false);
+                graphics.drawString(font, countStr, px + 14, pollenY + 5, 0xFF8B6914, false);
             }
         }
     }
