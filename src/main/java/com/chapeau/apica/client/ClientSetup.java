@@ -165,6 +165,10 @@ public class ClientSetup {
         event.registerEntityRenderer(ApicaEntities.FLYWHEEL_TEST_BEE.get(),
             net.minecraft.client.renderer.entity.NoopRenderer::new);
 
+        // Interaction marker - invisible entity, no rendering
+        event.registerEntityRenderer(ApicaEntities.INTERACTION_MARKER.get(),
+            net.minecraft.client.renderer.entity.NoopRenderer::new);
+
         // Block Entity Renderers
         event.registerBlockEntityRenderer(ApicaBlockEntities.STORAGE_CONTROLLER.get(),
             StorageControllerRenderer::new);

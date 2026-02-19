@@ -135,4 +135,49 @@ public class HoverbikeDefaultConfigs {
         }
         return r;
     }
+
+    /**
+     * Base stats par variant pour chaque catégorie de pièce.
+     * Chaque variant peut avoir des types et valeurs de stats totalement différents.
+     */
+    static JsonObject defaultPartBaseStats() {
+        JsonObject root = new JsonObject();
+        root.add("chassis", variantArray(
+                variant(0, "Hover_Max_Speed", 0.15, "Run_Max_Speed", 0.60),
+                variant(1, "Brake_Deceleration", 0.05, "Deceleration", 0.03),
+                variant(2, "Hover_Max_Speed", 0.10, "Run_Max_Speed", 0.80)
+        ));
+        root.add("coeur", variantArray(
+                variant(0, "Hover_Acceleration", 0.004, "Run_Acceleration", 0.005),
+                variant(1, "Hover_Acceleration", 0.006, "Gravity", -0.01),
+                variant(2, "Run_Acceleration", 0.008, "Hover_Acceleration", 0.003)
+        ));
+        root.add("propulseur", variantArray(
+                variant(0, "Lift_Speed", 0.08, "Gauge_Fill_Rate", 0.05),
+                variant(1, "Lift_Speed", 0.12, "Gauge_Drain_Rate", -0.01),
+                variant(2, "Gauge_Fill_Rate", 0.08, "Lift_Speed", 0.06)
+        ));
+        root.add("radiateur", variantArray(
+                variant(0, "Hover_Friction", -0.002, "Brake_Deceleration", 0.01),
+                variant(1, "Hover_Friction", -0.003, "Deceleration", 0.005),
+                variant(2, "Brake_Deceleration", 0.015, "Hover_Friction", -0.001)
+        ));
+        return root;
+    }
+
+    private static JsonArray variantArray(JsonObject... variants) {
+        JsonArray a = new JsonArray();
+        for (JsonObject v : variants) a.add(v);
+        return a;
+    }
+
+    private static JsonObject variant(int index, String stat1, double val1, String stat2, double val2) {
+        JsonObject o = new JsonObject();
+        o.addProperty("variant", index);
+        o.addProperty("base_stat_1", stat1);
+        o.addProperty("base_stat_1_value", val1);
+        o.addProperty("base_stat_2", stat2);
+        o.addProperty("base_stat_2_value", val2);
+        return o;
+    }
 }

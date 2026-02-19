@@ -1,10 +1,10 @@
 {
   "nodes": [
-    {"id": "hive", "position": {"x": 0, "y": 0}, "icon": "apica:textures/block/machines/magic_hive.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false, "visibility": "VISIBLE"},
-    {"id": "incubator", "position": {"x": 0, "y": -1}, "icon": "apica:textures/block/machines/incubator.png", "category": "NORMAL", "parent": "hive", "hidden_until_parent_unlocked": false, "visibility": "VISIBLE"},
-    {"id": "pollen_pot", "position": {"x": -1, "y": 0}, "icon": "apica:textures/block/machines/pollen_jar_top.png", "category": "NORMAL", "parent": "hive", "hidden_until_parent_unlocked": false, "visibility": "VISIBLE"},
-    {"id": "resonator", "position": {"x": 1, "y": 0}, "icon": "apica:textures/gui/codex/icon_unknown.png", "category": "NORMAL", "parent": "hive", "hidden_until_parent_unlocked": false, "visibility": "VISIBLE"},
-    {"id": "essence_injector", "position": {"x": 0, "y": 1}, "icon": "apica:textures/gui/codex/icon_unknown.png", "category": "NORMAL", "parent": "hive", "hidden_until_parent_unlocked": false, "visibility": "VISIBLE"},
+    {"id": "hive", "position": {"x": 0, "y": 1}, "icon": "apica:textures/block/machines/magic_hive.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false, "visibility": "VISIBLE"},
+    {"id": "incubator", "position": {"x": 0, "y": 0}, "icon": "apica:textures/block/machines/incubator.png", "category": "NORMAL", "parent": "hive", "hidden_until_parent_unlocked": false, "visibility": "VISIBLE"},
+    {"id": "pollen_pot", "position": {"x": -1, "y": 1}, "icon": "apica:textures/block/machines/pollen_jar_top.png", "category": "NORMAL", "parent": "hive", "hidden_until_parent_unlocked": false, "visibility": "VISIBLE"},
+    {"id": "resonator", "position": {"x": 1, "y": 1}, "icon": "apica:textures/gui/codex/icon_unknown.png", "category": "NORMAL", "parent": "hive", "hidden_until_parent_unlocked": false, "visibility": "VISIBLE"},
+    {"id": "essence_injector", "position": {"x": 0, "y": 2}, "icon": "apica:textures/gui/codex/icon_unknown.png", "category": "NORMAL", "parent": "hive", "hidden_until_parent_unlocked": false, "visibility": "VISIBLE"},
 
     {"id": "meadow_bee", "position": {"x": 3, "y": 0}, "icon": "apica:textures/entity/bee/meadow_bee.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false, "visibility": "VISIBLE", "quest_id": "obtain_meadow_bee", "breeding_parent1": null, "breeding_parent2": null},
     {"id": "forest_bee", "position": {"x": -3, "y": 0}, "icon": "apica:textures/entity/bee/forest_bee.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false, "visibility": "VISIBLE", "quest_id": "obtain_forest_bee", "breeding_parent1": null, "breeding_parent2": null},

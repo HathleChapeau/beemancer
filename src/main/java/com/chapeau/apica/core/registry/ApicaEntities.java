@@ -10,6 +10,7 @@ import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.common.entity.delivery.DeliveryBeeEntity;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
+import com.chapeau.apica.core.entity.InteractionMarkerEntity;
 import com.chapeau.apica.content.flywheeltest.FlywheelTestBeeEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -43,6 +44,16 @@ public class ApicaEntities {
                     .sized(1.2F, 1.0F)
                     .clientTrackingRange(10)
                     .build("hoverbike"));
+
+    // --- INTERACTION MARKERS ---
+    public static final Supplier<EntityType<InteractionMarkerEntity>> INTERACTION_MARKER =
+            ENTITIES.register("interaction_marker",
+                    () -> EntityType.Builder.of(InteractionMarkerEntity::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .noSave()
+                            .fireImmune()
+                            .clientTrackingRange(8)
+                            .build("interaction_marker"));
 
     // --- FLYWHEEL TEST ---
     public static final Supplier<EntityType<FlywheelTestBeeEntity>> FLYWHEEL_TEST_BEE =

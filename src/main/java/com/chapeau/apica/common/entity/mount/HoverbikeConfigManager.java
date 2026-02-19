@@ -65,6 +65,13 @@ public class HoverbikeConfigManager {
     private static Map<String, List<String>> partCategories = new LinkedHashMap<>();
 
     /**
+     * Base stats par variant : clé = "category:variantIndex", valeur = [stat1Key, val1, stat2Key, val2].
+     * Accessible server-side et client-side via getPartBaseStats().
+     */
+    private static Map<String, double[]> partBaseStats = new LinkedHashMap<>();
+    private static Map<String, String[]> partBaseStatKeys = new LinkedHashMap<>();
+
+    /**
      * Initialise le dossier config et charge tous les fichiers.
      * Genere les fichiers par defaut avec contenu V1 s'ils n'existent pas.
      */
@@ -85,6 +92,7 @@ public class HoverbikeConfigManager {
         writeIfMissing("tags.json", GSON.toJson(HoverbikeDefaultConfigs.defaultTags()));
         writeIfMissing("statistics.json", GSON.toJson(HoverbikeDefaultConfigs.defaultStatistics()));
         writeIfMissing("part_categories.json", GSON.toJson(HoverbikeDefaultConfigs.defaultPartCategories()));
+        writeIfMissing("part_base_stats.json", GSON.toJson(HoverbikeDefaultConfigs.defaultPartBaseStats()));
     }
 
     private static void writeIfMissing(String filename, String content) {
@@ -103,6 +111,7 @@ public class HoverbikeConfigManager {
         loadTags();
         loadStatistics();
         loadPartCategories();
+        loadPartBaseStats();
     }
 
     private static void loadBaseStats() {
@@ -213,6 +222,34 @@ public class HoverbikeConfigManager {
         }
     }
 
+    private static void loadPartBaseStats() {
+        try {
+            String content = Files.readString(configDir.resolve("part_base_stats.json"));
+            JsonObject root = JsonParser.parseString(content).getAsJsonObject();
+            partBaseStats = new LinkedHashMap<>();
+            partBaseStatKeys = new LinkedHashMap<>();
+            for (String category : root.keySet()) {
+                JsonArray variants = root.getAsJsonArray(category);
+                for (JsonElement el : variants) {
+                    JsonObject obj = el.getAsJsonObject();
+                    int variantIndex = obj.get("variant").getAsInt();
+                    String key = category + ":" + variantIndex;
+                    String stat1Key = obj.has("base_stat_1") ? obj.get("base_stat_1").getAsString() : "";
+                    double stat1Val = obj.has("base_stat_1_value") ? obj.get("base_stat_1_value").getAsDouble() : 0;
+                    String stat2Key = obj.has("base_stat_2") ? obj.get("base_stat_2").getAsString() : "";
+                    double stat2Val = obj.has("base_stat_2_value") ? obj.get("base_stat_2_value").getAsDouble() : 0;
+                    partBaseStatKeys.put(key, new String[]{stat1Key, stat2Key});
+                    partBaseStats.put(key, new double[]{stat1Val, stat2Val});
+                }
+            }
+            LOGGER.info("Loaded {} hoverbike part base stat entries", partBaseStats.size());
+        } catch (Exception e) {
+            LOGGER.error("Failed to load part_base_stats.json", e);
+            partBaseStats = new LinkedHashMap<>();
+            partBaseStatKeys = new LinkedHashMap<>();
+        }
+    }
+
     // --- Getters ---
 
     public static HoverbikeSettings getBaseStats() {
@@ -277,5 +314,25 @@ public class HoverbikeConfigManager {
     /** Retourne les noms de stats associes a une categorie, ou liste vide. */
     public static List<String> getCategoryStats(String category) {
         return partCategories.getOrDefault(category, List.of());
+    }
+
+    /**
+     * Retourne les clés de base stats pour un variant donné.
+     * @param category nom de la catégorie en minuscules (ex: "chassis")
+     * @param variantIndex index du variant (0, 1, 2...)
+     * @return tableau [stat1Key, stat2Key] ou null si non trouvé
+     */
+    public static String[] getPartBaseStatKeys(String category, int variantIndex) {
+        return partBaseStatKeys.get(category + ":" + variantIndex);
+    }
+
+    /**
+     * Retourne les valeurs de base stats pour un variant donné.
+     * @param category nom de la catégorie en minuscules (ex: "chassis")
+     * @param variantIndex index du variant (0, 1, 2...)
+     * @return tableau [stat1Value, stat2Value] ou null si non trouvé
+     */
+    public static double[] getPartBaseStatValues(String category, int variantIndex) {
+        return partBaseStats.get(category + ":" + variantIndex);
     }
 }

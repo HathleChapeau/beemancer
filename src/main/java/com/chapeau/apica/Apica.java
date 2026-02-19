@@ -29,6 +29,8 @@ import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.common.entity.delivery.DeliveryBeeEntity;
 import com.chapeau.apica.common.entity.mount.HoverbikeConfigManager;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
+import com.chapeau.apica.core.entity.InteractionMarkerEntity;
+import com.chapeau.apica.core.entity.InteractionMarkerTypes;
 import com.chapeau.apica.content.gene.GeneInit;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.bee.BiomeTemperatureManager;
@@ -156,6 +158,9 @@ public class Apica {
             // Gene system
             GeneInit.registerAllGenes();
             LOGGER.info("Gene system initialized with {} genes", GeneRegistry.getAllGenes().size());
+
+            // Interaction marker types
+            InteractionMarkerTypes.init();
         });
     }
 
@@ -163,6 +168,7 @@ public class Apica {
         event.put(ApicaEntities.MAGIC_BEE.get(), MagicBeeEntity.createAttributes().build());
         event.put(ApicaEntities.DELIVERY_BEE.get(), DeliveryBeeEntity.createAttributes().build());
         event.put(ApicaEntities.HOVERBIKE.get(), HoverbikeEntity.createAttributes().build());
+        event.put(ApicaEntities.INTERACTION_MARKER.get(), InteractionMarkerEntity.createAttributes().build());
     }
 
     private void onRegisterCapabilities(final RegisterCapabilitiesEvent event) {

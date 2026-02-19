@@ -42,6 +42,10 @@ public class AltarCraftSection extends CodexBookSection {
 
     private static final ResourceLocation CRAFT_SLOT = ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "textures/gui/codex/codex_book/craft_slot.png");
+    private static final ResourceLocation POLLEN_POT_SLOT = ResourceLocation.fromNamespaceAndPath(
+            Apica.MOD_ID, "textures/gui/codex/codex_book/pollen_pot_slot.png");
+    private static final int POLLEN_POT_SLOT_W = 16;
+    private static final int POLLEN_POT_SLOT_H = 18;
     private static final int SLOT_SIZE = 20;
     private static final int ITEM_SIZE = 16;
     private static final float ITEM_SCALE = 1.10f;
@@ -120,6 +124,10 @@ public class AltarCraftSection extends CodexBookSection {
             for (int i = 0; i < pollenEntries.size(); i++) {
                 PollenEntry entry = pollenEntries.get(i);
                 int px = pollenStartX + i * 28;
+                int potX = px - 1;
+                int potY = pollenY - 2;
+                graphics.blit(POLLEN_POT_SLOT, potX, potY, 0, 0,
+                        POLLEN_POT_SLOT_W, POLLEN_POT_SLOT_H, POLLEN_POT_SLOT_W, POLLEN_POT_SLOT_H);
                 renderScaledItem(graphics, entry.stack, px, pollenY, 0.8f);
                 String countStr = "x" + entry.count;
                 graphics.drawString(font, countStr, px + 14, pollenY + 4, 0xFF8B6914, false);
