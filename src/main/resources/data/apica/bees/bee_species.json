@@ -1127,7 +1127,7 @@
         "phase": 114,
         "harmonics": 20
       },
-      "harmonized": false
+      "harmonized": true
     },
     "flower": {
       "tier": "IV",
