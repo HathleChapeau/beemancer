@@ -280,7 +280,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
      */
     private void renderPageArrows(GuiGraphics g, int x, int arrowY,
                                    int currentPage, int totalPages, boolean isDeposit) {
-        if (totalPages <= 1) return;
+        // Toujours afficher les boutons de page (meme 1/1)
 
         int baseX = isDeposit ? x + DEPOSIT_ICON_X : x + PICKUP_ICON_X;
         int arrowBaseX = baseX + ICON_W + 4;

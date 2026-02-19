@@ -649,19 +649,21 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public int getDepositPages() {
         int lastNonEmpty = findLastNonEmpty(depositPaginatedSlots.isEmpty() ? null
             : depositPaginatedSlots.get(0).handler);
-        int needed = (lastNonEmpty + VISIBLE_PER_PAGE) / VISIBLE_PER_PAGE + 1;
+        int itemCount = lastNonEmpty + 1;
+        int needed = Math.max(1, (itemCount + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
         int maxPages = (depositPaginatedSlots.isEmpty() ? 1
             : (depositPaginatedSlots.get(0).handler.getSlots() + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
         return Math.min(needed, maxPages);
     }
 
     /**
-     * Nombre de pages dynamique pour le pickup: basé sur le contenu + 1 page vide.
+     * Nombre de pages dynamique pour le pickup: basé sur le contenu.
      */
     public int getPickupPages() {
         int lastNonEmpty = findLastNonEmpty(pickupPaginatedSlots.isEmpty() ? null
             : pickupPaginatedSlots.get(0).handler);
-        int needed = (lastNonEmpty + VISIBLE_PER_PAGE) / VISIBLE_PER_PAGE + 1;
+        int itemCount = lastNonEmpty + 1;
+        int needed = Math.max(1, (itemCount + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
         int maxPages = (pickupPaginatedSlots.isEmpty() ? 1
             : (pickupPaginatedSlots.get(0).handler.getSlots() + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE);
         return Math.min(needed, maxPages);
