@@ -63,34 +63,38 @@ import java.util.Optional;
  * Menu du Storage Terminal avec système d'onglets.
  *
  * Slots Layout:
- * - 0-8:   Deposit slots (3x3, onglet Storage)
- * - 9-17:  Pickup slots (3x3, output-only, onglet Storage)
- * - 18-26: Crafting grid (3x3, onglet Storage)
- * - 27:    Crafting result (output-only, onglet Storage)
- * - 28-31: Essence slots (4, filtrés ESSENCES, onglet Controller)
- * - 32-67: Player inventory + hotbar (36, tous onglets)
+ * - 0-5:   Deposit slots (2x3, onglet Storage, paginated)
+ * - 6-11:  Pickup slots (2x3, output-only, onglet Storage, paginated)
+ * - 12-20: Crafting grid (3x3, onglet Storage)
+ * - 21:    Crafting result (output-only, onglet Storage)
+ * - 22-25: Base essence slots (4, filtrés ESSENCES, onglet Controller)
+ * - 26-29: Bonus essence slots (4, dynamic lock, onglet Controller)
+ * - 30-65: Player inventory + hotbar (36, tous onglets)
  */
 public class StorageTerminalMenu extends AbstractContainerMenu {
 
     // Slot ranges (menu slot indices, not container indices)
+    public static final int VISIBLE_PER_PAGE = 6;
     public static final int DEPOSIT_START = 0;
-    public static final int DEPOSIT_END = 9;
-    public static final int PICKUP_START = 9;
-    public static final int PICKUP_END = 18;
-    public static final int CRAFT_START = 18;
-    public static final int CRAFT_END = 27;
-    public static final int RESULT_INDEX = 27;
-    public static final int ESSENCE_START = 28;
-    public static final int ESSENCE_BASE_END = 32;
-    public static final int ESSENCE_BONUS_START = 32;
-    public static final int ESSENCE_END = 36;
-    public static final int PLAYER_START = 36;
-    public static final int PLAYER_END = 72;
-    public static final int TOTAL_SLOTS = 72;
+    public static final int DEPOSIT_END = 6;
+    public static final int PICKUP_START = 6;
+    public static final int PICKUP_END = 12;
+    public static final int CRAFT_START = 12;
+    public static final int CRAFT_END = 21;
+    public static final int RESULT_INDEX = 21;
+    public static final int ESSENCE_START = 22;
+    public static final int ESSENCE_BASE_END = 26;
+    public static final int ESSENCE_BONUS_START = 26;
+    public static final int ESSENCE_END = 30;
+    public static final int PLAYER_START = 30;
+    public static final int PLAYER_END = 66;
+    public static final int TOTAL_SLOTS = 66;
 
-    // Pagination
-    public static final int DEPOSIT_PAGES = StorageTerminalBlockEntity.PAGES;
-    public static final int PICKUP_PAGES = StorageTerminalBlockEntity.PAGES;
+    // Pagination (ceil(handler_slots / visible_per_page))
+    public static final int DEPOSIT_PAGES =
+        (StorageTerminalBlockEntity.DEPOSIT_SLOTS + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE;
+    public static final int PICKUP_PAGES =
+        (StorageTerminalBlockEntity.PICKUP_SLOTS + VISIBLE_PER_PAGE - 1) / VISIBLE_PER_PAGE;
     public static final int BUTTON_DEPOSIT_NEXT = 100;
     public static final int BUTTON_DEPOSIT_PREV = 101;
     public static final int BUTTON_PICKUP_NEXT = 102;
@@ -117,23 +121,27 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public static final int DATA_HIVE_MULTIPLIER = 17;
     public static final int DATA_SIZE = 18;
 
-    // Slot positions — Left panel (deposit/craft/pickup stacked vertically)
-    private static final int DEPOSIT_X = 23;
-    private static final int DEPOSIT_Y = 14;
-    private static final int CRAFT_X = 23;
-    private static final int CRAFT_Y = 82;
-    private static final int RESULT_X = 41;
-    private static final int RESULT_Y = 138;
-    private static final int PICKUP_X = 23;
-    private static final int PICKUP_Y = 170;
-    // Controller tab essences (right panel)
+    // Slot positions — Deposit (inside transfer_bg at 7,7: slots at 3,3 offset)
+    // Menu pos = renderSlot pos + 1 (18x18 slot bg, 16x16 item centered)
+    private static final int DEPOSIT_X = 11;
+    private static final int DEPOSIT_Y = 11;
+    // Slot positions — Pickup (inside transfer_bg at 7,71: slots at 3,3 offset)
+    private static final int PICKUP_X = 11;
+    private static final int PICKUP_Y = 75;
+    // Slot positions — Craft grid (inside player_inventory_bg at 2,140: slots at 14,7)
+    private static final int CRAFT_X = 17;
+    private static final int CRAFT_Y = 148;
+    // Slot positions — Craft result (inside player_inventory_bg: slot at 32,65)
+    private static final int RESULT_X = 35;
+    private static final int RESULT_Y = 206;
+    // Controller tab essences (right panel, unchanged)
     private static final int ESSENCE_X = 155;
     private static final int ESSENCE_Y = 80;
     private static final int ESSENCE_BONUS_Y = 100;
-    // Player inventory (right panel)
-    private static final int PLAYER_INV_X = 89;
-    private static final int PLAYER_INV_Y = 134;
-    private static final int HOTBAR_Y = 194;
+    // Player inventory (inside player_inventory_bg: slots at 96,7)
+    private static final int PLAYER_INV_X = 99;
+    private static final int PLAYER_INV_Y = 148;
+    private static final int HOTBAR_Y = 206;
 
     private final BlockPos blockPos;
     @Nullable
@@ -209,8 +217,8 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
             pickupHandler = new ItemStackHandler(StorageTerminalBlockEntity.PICKUP_SLOTS);
         }
 
-        // === Deposit slots (0-8, paginated) ===
-        for (int row = 0; row < 3; row++) {
+        // === Deposit slots (0-5, paginated, 2 rows x 3 cols) ===
+        for (int row = 0; row < 2; row++) {
             for (int col = 0; col < 3; col++) {
                 int slotInPage = col + row * 3;
                 PaginatedTabSlot slot = new PaginatedTabSlot(depositHandler, slotInPage,
@@ -220,8 +228,8 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
             }
         }
 
-        // === Pickup slots (9-17, output-only, paginated) ===
-        for (int row = 0; row < 3; row++) {
+        // === Pickup slots (6-11, output-only, paginated, 2 rows x 3 cols) ===
+        for (int row = 0; row < 2; row++) {
             for (int col = 0; col < 3; col++) {
                 int slotInPage = col + row * 3;
                 PaginatedTabSlot slot = new PaginatedTabSlot(pickupHandler, slotInPage,
@@ -642,7 +650,7 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public void setDepositPage(int page) {
         page = Math.max(0, Math.min(page, DEPOSIT_PAGES - 1));
         this.depositPage = page;
-        int offset = page * StorageTerminalBlockEntity.PAGE_SIZE;
+        int offset = page * VISIBLE_PER_PAGE;
         for (PaginatedTabSlot slot : depositPaginatedSlots) {
             slot.setPageOffset(offset);
         }
@@ -651,7 +659,7 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
     public void setPickupPage(int page) {
         page = Math.max(0, Math.min(page, PICKUP_PAGES - 1));
         this.pickupPage = page;
-        int offset = page * StorageTerminalBlockEntity.PAGE_SIZE;
+        int offset = page * VISIBLE_PER_PAGE;
         for (PaginatedTabSlot slot : pickupPaginatedSlots) {
             slot.setPageOffset(offset);
         }

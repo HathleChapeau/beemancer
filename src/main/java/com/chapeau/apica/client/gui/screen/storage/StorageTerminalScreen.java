@@ -1,96 +1,136 @@
 /**
  * ============================================================
  * [StorageTerminalScreen.java]
- * Description: Screen du Storage Terminal avec rendu programmatique et 3 onglets
+ * Description: Screen du Storage Terminal avec rendu texture et 3 onglets
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
  * | Dependance                    | Raison                | Utilisation           |
  * |-------------------------------|----------------------|-----------------------|
- * | GuiRenderHelper               | Rendu programmatique | Fond, slots, onglets  |
+ * | GuiRenderHelper               | Rendu programmatique | Slots, barres         |
  * | StorageTerminalMenu           | Menu associe         | Donnees a afficher    |
  * | TerminalRequestPopup          | Popup demande item   | Composition           |
  * | TerminalTasksTabRenderer      | Onglet Tasks         | Composition           |
  * | TerminalStorageTabRenderer    | Onglet Storage       | Composition           |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - ClientSetup.java (enregistrement du screen)
  *
  * ============================================================
  */
 package com.chapeau.apica.client.gui.screen.storage;
 
+import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.common.menu.storage.StorageTerminalMenu;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import net.minecraft.client.Minecraft;
 
 /**
- * Screen du Storage Terminal avec layout panneau gauche + droite.
+ * Screen du Storage Terminal avec layout texture.
  *
- * Gauche: onglets verticaux + deposit/craft/result/pickup
- * Droite: search + grille virtuelle 9x5 + inventaire joueur
+ * Haut: storage_bg contenant deposit/pickup (transfer_bg) + inventory (inventory_bg) + tabs
+ * Bas: player_inventory_bg contenant craft 3x3 + result + player inventory
  */
 public class StorageTerminalScreen extends AbstractContainerScreen<StorageTerminalMenu> {
 
-    // Dimensions
-    private static final int GUI_WIDTH = 258;
+    // === Textures ===
+    private static final ResourceLocation STORAGE_BG = ResourceLocation.fromNamespaceAndPath(
+        Apica.MOD_ID, "textures/gui/storage/storage_bg.png");
+    private static final ResourceLocation PLAYER_INV_BG = ResourceLocation.fromNamespaceAndPath(
+        Apica.MOD_ID, "textures/gui/storage/player_inventory_bg.png");
+    private static final ResourceLocation TRANSFER_BG = ResourceLocation.fromNamespaceAndPath(
+        Apica.MOD_ID, "textures/gui/storage/transfer_bg.png");
+    private static final ResourceLocation INVENTORY_BG = ResourceLocation.fromNamespaceAndPath(
+        Apica.MOD_ID, "textures/gui/storage/inventory_bg.png");
+    private static final ResourceLocation IMPORT_ICON = ResourceLocation.fromNamespaceAndPath(
+        Apica.MOD_ID, "textures/gui/storage/import_icon.png");
+    private static final ResourceLocation EXPORT_ICON = ResourceLocation.fromNamespaceAndPath(
+        Apica.MOD_ID, "textures/gui/storage/export_icon.png");
+
+    // Vanilla advancement tab sprites
+    private static final ResourceLocation[] TAB_SPRITES = {
+        ResourceLocation.withDefaultNamespace("advancements/tab_right_top"),
+        ResourceLocation.withDefaultNamespace("advancements/tab_right_middle"),
+        ResourceLocation.withDefaultNamespace("advancements/tab_right_bottom")
+    };
+    private static final ResourceLocation[] TAB_SPRITES_SELECTED = {
+        ResourceLocation.withDefaultNamespace("advancements/tab_right_top_selected"),
+        ResourceLocation.withDefaultNamespace("advancements/tab_right_middle_selected"),
+        ResourceLocation.withDefaultNamespace("advancements/tab_right_bottom_selected")
+    };
+
+    // === Dimensions ===
+    private static final int GUI_WIDTH = 270;
     private static final int GUI_HEIGHT = 230;
+    private static final int STORAGE_BG_W = 270;
+    private static final int STORAGE_BG_H = 135;
+    private static final int PLAYER_INV_BG_W = 266;
+    private static final int PLAYER_INV_BG_H = 90;
+    private static final int PLAYER_INV_BG_X = 2;
+    private static final int PLAYER_INV_BG_Y = 140;
+    private static final int TRANSFER_BG_W = 63;
+    private static final int TRANSFER_BG_H = 57;
+    private static final int INVENTORY_BG_W = 189;
+    private static final int INVENTORY_BG_H = 103;
 
-    // Vertical tabs (far left)
-    private static final int VTAB_X = 2;
-    private static final int VTAB_Y = 4;
-    private static final int VTAB_W = 18;
-    private static final int VTAB_H = 20;
-    private static final int VTAB_GAP = 2;
+    // === Deposit panel (transfer_bg at 7,7 inside storage_bg) ===
+    private static final int DEPOSIT_BG_X = 7;
+    private static final int DEPOSIT_BG_Y = 7;
+    private static final int DEPOSIT_SLOT_X = 10;
+    private static final int DEPOSIT_SLOT_Y = 10;
+    private static final int DEPOSIT_ICON_X = 10;
+    private static final int DEPOSIT_ICON_Y = 48;
 
-    // Left panel — deposit/craft/result/pickup
-    private static final int DEPOSIT_LABEL_X = 22;
-    private static final int DEPOSIT_LABEL_Y = 4;
-    private static final int DEPOSIT_RENDER_X = 23;
-    private static final int DEPOSIT_RENDER_Y = 14;
+    // === Pickup panel (transfer_bg at 7,71 inside storage_bg) ===
+    private static final int PICKUP_BG_X = 7;
+    private static final int PICKUP_BG_Y = 71;
+    private static final int PICKUP_SLOT_X = 10;
+    private static final int PICKUP_SLOT_Y = 74;
+    private static final int PICKUP_ICON_X = 10;
+    private static final int PICKUP_ICON_Y = 112;
 
-    private static final int CRAFT_LABEL_X = 22;
-    private static final int CRAFT_LABEL_Y = 72;
-    private static final int CRAFT_RENDER_X = 23;
-    private static final int CRAFT_RENDER_Y = 82;
+    // === Inventory panel (inventory_bg at 74,25 inside storage_bg) ===
+    private static final int INV_BG_X = 74;
+    private static final int INV_BG_Y = 25;
 
-    private static final int RESULT_RENDER_X = 40;
-    private static final int RESULT_RENDER_Y = 138;
+    // === Search bar (above inventory_bg) ===
+    private static final int SEARCH_X = 78;
+    private static final int SEARCH_Y = 10;
+    private static final int SEARCH_WIDTH = 180;
 
-    private static final int PICKUP_LABEL_X = 22;
-    private static final int PICKUP_LABEL_Y = 160;
-    private static final int PICKUP_RENDER_X = 23;
-    private static final int PICKUP_RENDER_Y = 170;
+    // === Tabs (right side of storage_bg) ===
+    private static final int TAB_X = 270;
+    private static final int TAB_W = 32;
+    private static final int TAB_H = 28;
+    private static final int TAB_START_Y = 4;
 
-    // Page arrows
+    // === Page arrows ===
     private static final int PAGE_ARROW_W = 12;
     private static final int PAGE_ARROW_H = 10;
-    private static final int DEPOSIT_PAGE_Y = 69;
-    private static final int PICKUP_PAGE_Y = 225;
+    private static final int ICON_W = 9;
+    private static final int ICON_H = 10;
 
-    // Right panel — search
-    private static final int SEARCH_X = 82;
-    private static final int SEARCH_Y = 6;
-    private static final int SEARCH_WIDTH = 154;
+    // Tab icon items
+    private static final ItemStack ICON_STORAGE = new ItemStack(Items.CHEST);
+    private static final ItemStack ICON_TASKS = new ItemStack(Items.WRITABLE_BOOK);
+    private static final ItemStack ICON_CONTROLLER = new ItemStack(Items.COMPARATOR);
 
-    // Right panel — player inventory
-    private static final int PLAYER_INV_RENDER_X = 89;
-    private static final int PLAYER_INV_Y = 134;
-    private static final int HOTBAR_RENDER_Y = 194;
-
-    // State
+    // === State ===
     private StorageTab activeTab = StorageTab.STORAGE;
     private EditBox searchBox;
     private String searchText = "";
@@ -160,154 +200,119 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int x = this.leftPos;
         int y = this.topPos;
 
-        // Main background
-        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, GUI_WIDTH, GUI_HEIGHT);
+        // 1. Storage background (top)
+        g.blit(STORAGE_BG, x, y, 0, 0, STORAGE_BG_W, STORAGE_BG_H, STORAGE_BG_W, STORAGE_BG_H);
 
-        // Vertical tabs
-        renderVerticalTabs(g, x, y, mouseX, mouseY);
+        // 2. Player inventory background (bottom)
+        g.blit(PLAYER_INV_BG, x + PLAYER_INV_BG_X, y + PLAYER_INV_BG_Y,
+            0, 0, PLAYER_INV_BG_W, PLAYER_INV_BG_H, PLAYER_INV_BG_W, PLAYER_INV_BG_H);
 
-        // Left panel: deposit/craft/result/pickup slot backgrounds + labels
-        renderLeftPanel(g, x, y);
+        // 3. Deposit panel (transfer_bg)
+        g.blit(TRANSFER_BG, x + DEPOSIT_BG_X, y + DEPOSIT_BG_Y,
+            0, 0, TRANSFER_BG_W, TRANSFER_BG_H, TRANSFER_BG_W, TRANSFER_BG_H);
 
-        // Tab content (right panel area)
+        // 4. Pickup panel (transfer_bg)
+        g.blit(TRANSFER_BG, x + PICKUP_BG_X, y + PICKUP_BG_Y,
+            0, 0, TRANSFER_BG_W, TRANSFER_BG_H, TRANSFER_BG_W, TRANSFER_BG_H);
+
+        // 5. Deposit slot backgrounds (2x3) + icon + page arrows
+        GuiRenderHelper.renderSlotGrid(g, x + DEPOSIT_SLOT_X, y + DEPOSIT_SLOT_Y, 3, 2);
+        g.blit(IMPORT_ICON, x + DEPOSIT_ICON_X, y + DEPOSIT_ICON_Y,
+            0, 0, ICON_W, ICON_H, ICON_W, ICON_H);
+        renderPageArrows(g, x, y + DEPOSIT_ICON_Y,
+            menu.getDepositPage(), StorageTerminalMenu.DEPOSIT_PAGES, true);
+
+        // 6. Pickup slot backgrounds (2x3) + icon + page arrows
+        GuiRenderHelper.renderSlotGrid(g, x + PICKUP_SLOT_X, y + PICKUP_SLOT_Y, 3, 2);
+        g.blit(EXPORT_ICON, x + PICKUP_ICON_X, y + PICKUP_ICON_Y,
+            0, 0, ICON_W, ICON_H, ICON_W, ICON_H);
+        renderPageArrows(g, x, y + PICKUP_ICON_Y,
+            menu.getPickupPage(), StorageTerminalMenu.PICKUP_PAGES, false);
+
+        // 7. Tabs (right side of storage_bg)
+        renderTabs(g, x, y);
+
+        // 8. Tab content (right panel)
         switch (activeTab) {
-            case STORAGE -> storageTabRenderer.render(g, this.font, this.menu,
+            case STORAGE -> {
+                g.blit(INVENTORY_BG, x + INV_BG_X, y + INV_BG_Y,
+                    0, 0, INVENTORY_BG_W, INVENTORY_BG_H, INVENTORY_BG_W, INVENTORY_BG_H);
+                storageTabRenderer.render(g, this.font, this.menu,
                     displayedItems, scrollOffset, x, y, mouseX, mouseY);
+            }
             case TASKS -> tasksTabRenderer.render(g, this.font, this.menu, x, y, mouseX, mouseY);
             case CONTROLLER -> renderControllerTab(g, x, y, mouseX, mouseY);
         }
 
-        // Player inventory (right panel, all tabs)
-        renderPlayerInv(g, x, y);
-
-        // Request popup (on top)
+        // 9. Request popup (on top)
         if (requestPopup.isVisible()) {
             requestPopup.render(g, this.font, this.width, this.height, mouseX, mouseY);
         }
     }
 
-    private void renderVerticalTabs(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        String[] labels = {"S", "T", "C"};
+    private void renderTabs(GuiGraphics g, int x, int y) {
+        ItemStack[] icons = { ICON_STORAGE, ICON_TASKS, ICON_CONTROLLER };
+
         for (int i = 0; i < 3; i++) {
-            int tabY = y + VTAB_Y + i * (VTAB_H + VTAB_GAP);
-            GuiRenderHelper.renderVerticalTab(g, this.font,
-                x + VTAB_X, tabY, VTAB_W, VTAB_H,
-                activeTab.ordinal() == i, labels[i]);
-        }
-    }
-
-    private void renderLeftPanel(GuiGraphics g, int x, int y) {
-        // Deposit
-        g.drawString(font, Component.translatable("gui.apica.terminal.deposit"),
-            x + DEPOSIT_LABEL_X, y + DEPOSIT_LABEL_Y, 0x404040, false);
-        GuiRenderHelper.renderSlotGrid(g, x + DEPOSIT_RENDER_X, y + DEPOSIT_RENDER_Y, 3, 3);
-
-        // Deposit page arrows (only if more than 1 page)
-        if (StorageTerminalMenu.DEPOSIT_PAGES > 1) {
-            renderPageArrows(g, x, y + DEPOSIT_PAGE_Y,
-                menu.getDepositPage(), StorageTerminalMenu.DEPOSIT_PAGES);
-        }
-
-        // Craft
-        g.drawString(font, Component.translatable("gui.apica.terminal.craft"),
-            x + CRAFT_LABEL_X, y + CRAFT_LABEL_Y, 0x404040, false);
-        GuiRenderHelper.renderSlotGrid(g, x + CRAFT_RENDER_X, y + CRAFT_RENDER_Y, 3, 3);
-
-        // Result slot (below craft, offset right)
-        GuiRenderHelper.renderSlot(g, x + RESULT_RENDER_X, y + RESULT_RENDER_Y);
-
-        // Pickup
-        g.drawString(font, Component.translatable("gui.apica.terminal.pickup"),
-            x + PICKUP_LABEL_X, y + PICKUP_LABEL_Y, 0x404040, false);
-        GuiRenderHelper.renderSlotGrid(g, x + PICKUP_RENDER_X, y + PICKUP_RENDER_Y, 3, 3);
-
-        // Pickup page arrows (only if more than 1 page)
-        if (StorageTerminalMenu.PICKUP_PAGES > 1) {
-            renderPageArrows(g, x, y + PICKUP_PAGE_Y,
-                menu.getPickupPage(), StorageTerminalMenu.PICKUP_PAGES);
+            int tabY = y + TAB_START_Y + i * TAB_H;
+            boolean selected = activeTab.ordinal() == i;
+            ResourceLocation sprite = selected ? TAB_SPRITES_SELECTED[i] : TAB_SPRITES[i];
+            g.blitSprite(sprite, x + TAB_X, tabY, TAB_W, TAB_H);
+            g.renderItem(icons[i], x + TAB_X + 10, tabY + 6);
         }
     }
 
     /**
-     * Renders page navigation arrows: [<] 1/3 [>]
-     * Centered under the 3x3 slot grid (grid is at x+23, width 54).
+     * Renders page navigation: [icon] [<] 1/3 [>]
+     * Positioned to the right of the import/export icon.
      */
-    private void renderPageArrows(GuiGraphics g, int x, int y, int currentPage, int totalPages) {
-        int gridCenterX = x + DEPOSIT_RENDER_X + 27; // center of 54px grid
-        String pageText = (currentPage + 1) + "/" + totalPages;
-        int textW = font.width(pageText);
+    private void renderPageArrows(GuiGraphics g, int x, int arrowY,
+                                   int currentPage, int totalPages, boolean isDeposit) {
+        if (totalPages <= 1) return;
 
-        // Draw page text centered
-        int textX = gridCenterX - textW / 2;
-        g.drawString(font, pageText, textX, y + 1, 0x404040, false);
+        int baseX = isDeposit ? x + DEPOSIT_ICON_X : x + PICKUP_ICON_X;
+        int arrowBaseX = baseX + ICON_W + 4;
 
         // Left arrow
-        int leftArrowX = textX - PAGE_ARROW_W - 2;
         boolean leftEnabled = currentPage > 0;
-        drawSmallArrow(g, leftArrowX, y, PAGE_ARROW_W, PAGE_ARROW_H, "<", leftEnabled);
+        drawSmallArrow(g, arrowBaseX, arrowY, PAGE_ARROW_W, PAGE_ARROW_H, "<", leftEnabled);
+
+        // Page text
+        String pageText = (currentPage + 1) + "/" + totalPages;
+        int textX = arrowBaseX + PAGE_ARROW_W + 2;
+        g.drawString(font, pageText, textX, arrowY + 1, 0x404040, false);
 
         // Right arrow
-        int rightArrowX = textX + textW + 2;
+        int rightX = textX + font.width(pageText) + 2;
         boolean rightEnabled = currentPage < totalPages - 1;
-        drawSmallArrow(g, rightArrowX, y, PAGE_ARROW_W, PAGE_ARROW_H, ">", rightEnabled);
+        drawSmallArrow(g, rightX, arrowY, PAGE_ARROW_W, PAGE_ARROW_H, ">", rightEnabled);
     }
 
-    /**
-     * Draws a small button with a label (< or >). Grayed out if disabled.
-     */
     private void drawSmallArrow(GuiGraphics g, int x, int y, int w, int h, String label, boolean enabled) {
         int bg = enabled ? 0xFFC6C6C6 : 0xFF8B8B8B;
         g.fill(x, y, x + w, y + h, bg);
-        // 3D borders
         g.fill(x, y, x + w, y + 1, enabled ? 0xFFFFFFFF : 0xFFAAAAAA);
         g.fill(x, y, x + 1, y + h, enabled ? 0xFFFFFFFF : 0xFFAAAAAA);
         g.fill(x, y + h - 1, x + w, y + h, enabled ? 0xFF555555 : 0xFF666666);
         g.fill(x + w - 1, y, x + w, y + h, enabled ? 0xFF555555 : 0xFF666666);
-        // Label centered
         int textColor = enabled ? 0x404040 : 0x606060;
         int textW = font.width(label);
         g.drawString(font, label, x + (w - textW) / 2, y + (h - 8) / 2, textColor, false);
     }
 
-    private void renderPlayerInv(GuiGraphics g, int x, int y) {
-        // Separator line
-        g.fill(x + 82, y + 120, x + GUI_WIDTH - 7, y + 121, 0xFF8B8B8B);
-
-        // Inventory label
-        g.drawString(font, Component.translatable("container.inventory"),
-            x + PLAYER_INV_RENDER_X, y + 123, 0x404040, false);
-
-        // Inventory slot backgrounds
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                GuiRenderHelper.renderSlot(g,
-                    x + PLAYER_INV_RENDER_X + col * 18,
-                    y + PLAYER_INV_Y + row * 18);
-            }
-        }
-        // Hotbar
-        for (int col = 0; col < 9; col++) {
-            GuiRenderHelper.renderSlot(g,
-                x + PLAYER_INV_RENDER_X + col * 18,
-                y + HOTBAR_RENDER_Y);
-        }
-    }
-
-
     // === Controller Tab ===
 
     private void renderControllerTab(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        int statX = x + 82;
-        int statY = y + 10;
+        int statX = x + INV_BG_X;
+        int statY = y + INV_BG_Y;
         int lineHeight = 12;
-        int rightEdge = x + GUI_WIDTH - 8;
+        int rightEdge = x + STORAGE_BG_W - 8;
         int barWidth = rightEdge - statX - 2;
 
         g.drawString(font, Component.translatable("container.apica.storage_controller"),
             statX, statY, 0x404040, false);
         statY += lineHeight + 2;
 
-        // Honey gauge [CZ]: amber > 20%, red < 20%
         int honeyStored = menu.getHoneyStored();
         int honeyCapacity = menu.getHoneyCapacity();
         float honeyRatio = honeyCapacity > 0 ? (float) honeyStored / honeyCapacity : 0;
@@ -320,7 +325,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         g.drawString(font, honeyText, rightEdge - honeyTextW, statY, 0x404040, false);
         statY += lineHeight + 2;
 
-        // Essence stat bars [DJ]
         drawStatBar(g, statX, statY, barWidth,
             "gui.apica.storage_controller.flight_speed",
             menu.getFlightSpeed(), 300, 0xFF55BBEE);
@@ -334,14 +338,12 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             menu.getQuantity(), 96, 0xFFDDAA33);
         statY += lineHeight;
 
-        // Honey Reserve (TOLERANCE bonus) — bar
         int reserveBonus = menu.getHoneyReserveBonus();
         drawStatBar(g, statX, statY, barWidth,
             "gui.apica.storage_controller.honey_reserve",
             reserveBonus, 16000, 0xFFCC4444);
         statY += lineHeight + 2;
 
-        // Numeric stats
         drawStat(g, rightEdge, statX, statY, "gui.apica.storage_controller.honey_consumption",
             menu.getHoneyConsumption() + " mB/s");
         statY += lineHeight;
@@ -352,7 +354,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             effText);
         statY += lineHeight;
 
-        // Hive multiplier [DM]
         float multiplier = menu.getHiveMultiplier() / 100.0f;
         drawStat(g, rightEdge, statX, statY, "gui.apica.storage_controller.hive_multiplier",
             "x" + String.format("%.2f", multiplier));
@@ -365,22 +366,19 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             String.valueOf(menu.getMaxBees()));
         statY += lineHeight + 2;
 
-        // Essence slots label + background (4 base + 4 bonus)
         g.drawString(font, Component.translatable("gui.apica.terminal.essences"),
             statX, statY - 2, 0x404040, false);
 
         int essenceRenderX = x + 155;
         int essenceRenderY = y + 80;
 
-        // 4 base essence slots (always active)
         for (int i = 0; i < 4; i++) {
             GuiRenderHelper.renderSlot(g, essenceRenderX + i * 20, essenceRenderY);
         }
 
-        // 4 bonus essence slots (locked/unlocked per hive count)
         int bonusRenderY = y + 100;
         for (int i = 0; i < 4; i++) {
-            int slotIndex = 32 + i; // ESSENCE_BONUS_START + i
+            int slotIndex = StorageTerminalMenu.ESSENCE_BONUS_START + i;
             if (menu.isBonusSlotUnlocked(slotIndex)) {
                 drawSlotBackground(g, essenceRenderX + i * 20 - 1, bonusRenderY - 1);
             } else {
@@ -389,10 +387,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         }
     }
 
-    /**
-     * Dessine un label + barre de progression coloree.
-     * La barre a un fond sombre et se remplit proportionnellement.
-     */
     private void drawStatBar(GuiGraphics g, int x, int y, int totalWidth,
                               String labelKey, int value, int maxValue, int barColor) {
         Component label = Component.translatable(labelKey);
@@ -403,23 +397,17 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int barH = 7;
         int barY = y + 1;
 
-        // Background
         g.fill(barX, barY, barX + barW, barY + barH, 0xFF333333);
-        // Fill
         float ratio = maxValue > 0 ? Math.min(1.0f, (float) value / maxValue) : 0;
         int fillW = Math.round(barW * ratio);
         if (fillW > 0) {
             g.fill(barX, barY, barX + fillW, barY + barH, barColor);
         }
-        // Value text (right-aligned, over bar)
         String valText = String.valueOf(value);
         int valWidth = font.width(valText);
         g.drawString(font, valText, barX + barW - valWidth - 1, y, 0xFFFFFF, false);
     }
 
-    /**
-     * Dessine un fond de slot 18x18 identique au style vanilla.
-     */
     private void drawSlotBackground(GuiGraphics g, int x, int y) {
         g.fill(x, y, x + 18, y + 1, 0xFF373737);
         g.fill(x, y + 1, x + 1, y + 17, 0xFF373737);
@@ -428,9 +416,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF8B8B8B);
     }
 
-    /**
-     * Dessine un fond de slot 18x18 verrouillé (grisé, pas assez de hives).
-     */
     private void drawLockedSlotBackground(GuiGraphics g, int x, int y) {
         g.fill(x, y, x + 18, y + 1, 0xFF2A2A2A);
         g.fill(x, y + 1, x + 1, y + 17, 0xFF2A2A2A);
@@ -447,7 +432,6 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         g.drawString(font, value, rightEdge - valueWidth, y, 0x206040, false);
     }
 
-
     // === Main Render ===
 
     @Override
@@ -463,9 +447,8 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
     @Override
     protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
-        // No default labels — we render them manually in renderBg
+        // No default labels — we render manually
     }
-
 
     // === Input Handling ===
 
@@ -478,17 +461,17 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         int x = this.leftPos;
         int y = this.topPos;
 
-        // Vertical tab clicks
+        // Tab clicks (right side)
         for (int i = 0; i < 3; i++) {
-            int tabY = y + VTAB_Y + i * (VTAB_H + VTAB_GAP);
-            if (mouseX >= x + VTAB_X && mouseX < x + VTAB_X + VTAB_W &&
-                mouseY >= tabY && mouseY < tabY + VTAB_H) {
+            int tabY = y + TAB_START_Y + i * TAB_H;
+            if (mouseX >= x + TAB_X && mouseX < x + TAB_X + TAB_W &&
+                mouseY >= tabY && mouseY < tabY + TAB_H) {
                 switchTab(StorageTab.values()[i]);
                 return true;
             }
         }
 
-        // Page arrow clicks (left panel, visible on all tabs that show deposit/pickup)
+        // Page arrow clicks
         if (handlePageArrowClick(mouseX, mouseY, x, y)) {
             return true;
         }
@@ -527,16 +510,13 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         }
     }
 
-    /**
-     * Checks if a page arrow was clicked and sends the button action to server.
-     * Returns true if a click was consumed.
-     */
     private boolean handlePageArrowClick(double mouseX, double mouseY, int x, int y) {
         // Deposit arrows
         if (StorageTerminalMenu.DEPOSIT_PAGES > 1) {
-            int buttonId = getPageArrowButtonId(mouseX, mouseY, x, y + DEPOSIT_PAGE_Y,
+            int buttonId = getPageArrowButtonId(mouseX, mouseY, x, y + DEPOSIT_ICON_Y,
                 menu.getDepositPage(), StorageTerminalMenu.DEPOSIT_PAGES,
-                StorageTerminalMenu.BUTTON_DEPOSIT_PREV, StorageTerminalMenu.BUTTON_DEPOSIT_NEXT);
+                StorageTerminalMenu.BUTTON_DEPOSIT_PREV, StorageTerminalMenu.BUTTON_DEPOSIT_NEXT,
+                DEPOSIT_ICON_X);
             if (buttonId >= 0) {
                 Minecraft.getInstance().gameMode.handleInventoryButtonClick(menu.containerId, buttonId);
                 return true;
@@ -545,9 +525,10 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
 
         // Pickup arrows
         if (StorageTerminalMenu.PICKUP_PAGES > 1) {
-            int buttonId = getPageArrowButtonId(mouseX, mouseY, x, y + PICKUP_PAGE_Y,
+            int buttonId = getPageArrowButtonId(mouseX, mouseY, x, y + PICKUP_ICON_Y,
                 menu.getPickupPage(), StorageTerminalMenu.PICKUP_PAGES,
-                StorageTerminalMenu.BUTTON_PICKUP_PREV, StorageTerminalMenu.BUTTON_PICKUP_NEXT);
+                StorageTerminalMenu.BUTTON_PICKUP_PREV, StorageTerminalMenu.BUTTON_PICKUP_NEXT,
+                PICKUP_ICON_X);
             if (buttonId >= 0) {
                 Minecraft.getInstance().gameMode.handleInventoryButtonClick(menu.containerId, buttonId);
                 return true;
@@ -556,28 +537,21 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         return false;
     }
 
-    /**
-     * Determines which page arrow button (prev/next) was clicked, if any.
-     * Returns the button ID, or -1 if no arrow was clicked.
-     */
     private int getPageArrowButtonId(double mouseX, double mouseY, int x, int arrowY,
                                       int currentPage, int totalPages,
-                                      int prevButtonId, int nextButtonId) {
-        int gridCenterX = x + DEPOSIT_RENDER_X + 27;
-        String pageText = (currentPage + 1) + "/" + totalPages;
-        int textW = font.width(pageText);
-        int textX = gridCenterX - textW / 2;
+                                      int prevButtonId, int nextButtonId, int iconX) {
+        int baseX = x + iconX + ICON_W + 4;
 
-        // Left arrow bounds
-        int leftX = textX - PAGE_ARROW_W - 2;
+        // Left arrow
         if (currentPage > 0 &&
-            mouseX >= leftX && mouseX < leftX + PAGE_ARROW_W &&
+            mouseX >= baseX && mouseX < baseX + PAGE_ARROW_W &&
             mouseY >= arrowY && mouseY < arrowY + PAGE_ARROW_H) {
             return prevButtonId;
         }
 
-        // Right arrow bounds
-        int rightX = textX + textW + 2;
+        // Right arrow
+        String pageText = (currentPage + 1) + "/" + totalPages;
+        int rightX = baseX + PAGE_ARROW_W + 2 + font.width(pageText) + 2;
         if (currentPage < totalPages - 1 &&
             mouseX >= rightX && mouseX < rightX + PAGE_ARROW_W &&
             mouseY >= arrowY && mouseY < arrowY + PAGE_ARROW_H) {
@@ -652,5 +626,4 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         }
         return super.charTyped(codePoint, modifiers);
     }
-
 }
