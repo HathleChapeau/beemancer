@@ -284,7 +284,15 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     /**
      * Calcule la position monde d'un marqueur de piece en edit mode.
      * Convertit l'offset modele en espace monde via rotation yaw du hoverbike.
+     *
+     * Le MobRenderer applique scale(-1,-1,1) puis translate(0,-1.501,0).
+     * En espace monde: model origin = entity.y + 1.501.
+     * L'offset modele (ox, oy, oz) se convertit en monde:
+     *   wx = -ox, wy = -oy, wz = oz (scale flip), puis rotation yaw sur wx/wz.
+     * Position finale = entity.pos + (rotX, MODEL_ORIGIN_Y + wy, rotZ).
      */
+    private static final double MODEL_ORIGIN_Y = 1.501;
+
     public Vec3 computePartWorldPos(int partOrdinal) {
         if (partOrdinal < 0 || partOrdinal >= PART_EDIT_OFFSETS.length) return position();
         Vec3 modelOffset = PART_EDIT_OFFSETS[partOrdinal];
@@ -296,7 +304,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         double wz = modelOffset.z;
         double rotX = wx * cosYaw - wz * sinYaw;
         double rotZ = wx * sinYaw + wz * cosYaw;
-        return position().add(rotX, wy, rotZ);
+        return position().add(rotX, MODEL_ORIGIN_Y + wy, rotZ);
     }
 
     private void spawnPartMarkers() {
@@ -857,6 +865,19 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             ItemStack stack = ItemStack.parse(this.registryAccess(), tag.getCompound(key))
                     .orElse(ItemStack.EMPTY);
             this.entityData.set(accessor, stack);
+        }
+    }
+
+    // --- Death drops ---
+
+    @Override
+    protected void dropCustomDeathLoot(ServerLevel level, net.minecraft.world.damagesource.DamageSource source, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, source, recentlyHit);
+        for (HoverbikePart part : HoverbikePart.values()) {
+            ItemStack stack = getPartStack(part);
+            if (!stack.isEmpty()) {
+                this.spawnAtLocation(level, stack.copy());
+            }
         }
     }
 
