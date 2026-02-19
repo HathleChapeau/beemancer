@@ -482,7 +482,7 @@
         "phase": 158,
         "harmonics": 27
       },
-      "harmonized": false
+      "harmonized": true
     },
     "cupric": {
       "tier": "III",
@@ -662,7 +662,7 @@
         "phase": 158,
         "harmonics": 27
       },
-      "harmonized": false
+      "harmonized": true
     },
     "tanner": {
       "tier": "III",
@@ -770,7 +770,7 @@
         "phase": 114,
         "harmonics": 20
       },
-      "harmonized": false
+      "harmonized": true
     },
     "boreal": {
       "tier": "III",
@@ -914,7 +914,7 @@
         "phase": 72,
         "harmonics": 24
       },
-      "harmonized": false
+      "harmonized": true
     },
     "karot": {
       "tier": "III",
@@ -986,7 +986,7 @@
         "phase": 72,
         "harmonics": 24
       },
-      "harmonized": false
+      "harmonized": true
     },
     "juicy": {
       "tier": "III",
@@ -1094,7 +1094,7 @@
         "phase": 165,
         "harmonics": 12
       },
-      "harmonized": false
+      "harmonized": true
     },
     "prince": {
       "tier": "IV",
@@ -1163,7 +1163,7 @@
         "phase": 165,
         "harmonics": 12
       },
-      "harmonized": true
+      "harmonized": false
     },
     "mushroom": {
       "tier": "IV",
@@ -1628,7 +1628,7 @@
         "phase": 159,
         "harmonics": 30
       },
-      "harmonized": false
+      "harmonized": true
     },
     "royal": {
       "tier": "V",
@@ -1700,7 +1700,7 @@
         "phase": 191,
         "harmonics": 28
       },
-      "harmonized": false
+      "harmonized": true
     },
     "flux": {
       "tier": "V",
@@ -1844,7 +1844,7 @@
         "phase": 113,
         "harmonics": 34
       },
-      "harmonized": false
+      "harmonized": true
     },
     "grim": {
       "tier": "V",
@@ -1988,7 +1988,7 @@
         "phase": 208,
         "harmonics": 16
       },
-      "harmonized": false
+      "harmonized": true
     },
     "fleece": {
       "tier": "V",
@@ -2384,7 +2384,7 @@
         "phase": 242,
         "harmonics": 26
       },
-      "harmonized": false
+      "harmonized": true
     },
     "magmatic": {
       "tier": "VI",
@@ -2528,7 +2528,7 @@
         "phase": 172,
         "harmonics": 24
       },
-      "harmonized": false
+      "harmonized": true
     },
     "humus": {
       "tier": "VI",
@@ -2744,7 +2744,7 @@
         "phase": 164,
         "harmonics": 40
       },
-      "harmonized": false
+      "harmonized": true
     },
     "crystalline": {
       "tier": "VII",
@@ -2816,7 +2816,7 @@
         "phase": 172,
         "harmonics": 24
       },
-      "harmonized": false
+      "harmonized": true
     },
     "blazing": {
       "tier": "VII",
@@ -3068,7 +3068,7 @@
         "phase": 81,
         "harmonics": 39
       },
-      "harmonized": false
+      "harmonized": true
     },
     "absorbent": {
       "tier": "VIII",
@@ -3248,7 +3248,7 @@
         "phase": 182,
         "harmonics": 42
       },
-      "harmonized": false
+      "harmonized": true
     },
     "paladin": {
       "tier": "IX",
@@ -3284,7 +3284,7 @@
         "phase": 114,
         "harmonics": 20
       },
-      "harmonized": false
+      "harmonized": true
     },
     "chorus": {
       "tier": "IX",
@@ -3464,7 +3464,7 @@
         "phase": 179,
         "harmonics": 56
       },
-      "harmonized": false
+      "harmonized": true
     }
   }
 }
