@@ -516,7 +516,8 @@ public class StorageTerminalMenu extends AbstractContainerMenu {
         ItemStackHandler handler = depositPaginatedSlots.get(0).handler;
         int initialCount = stack.getCount();
         for (int i = 0; i < handler.getSlots() && !stack.isEmpty(); i++) {
-            ItemStack remainder = handler.insertItem(i, stack, false);
+            ItemStack toInsert = stack.copy();
+            ItemStack remainder = handler.insertItem(i, toInsert, false);
             stack.setCount(remainder.getCount());
         }
         return stack.getCount() < initialCount;

@@ -270,7 +270,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
             boolean selected = activeTab.ordinal() == i;
             ResourceLocation sprite = selected ? TAB_SPRITES_SELECTED[i] : TAB_SPRITES[i];
             g.blitSprite(sprite, x + TAB_X, tabY, TAB_W, TAB_H);
-            g.renderItem(icons[i], x + TAB_X + 8, tabY + 6);
+            g.renderItem(icons[i], x + TAB_X + 10, tabY + 6);
         }
     }
 
