@@ -82,8 +82,13 @@ public class ProcessSection extends CodexBookSection {
 
         // Arrow
         int arrowX = startX + SLOT_SIZE + SPACING;
-        int arrowY = y + (SLOT_SIZE - ARROW_HEIGHT) / 2;
-        graphics.blit(ARROW, arrowX, arrowY, 0, 0, ARROW_WIDTH, ARROW_HEIGHT, ARROW_WIDTH, ARROW_HEIGHT);
+        int arrowY = y + SLOT_SIZE / 2 - 8;
+        float arrowScale = 2.0f;
+        graphics.pose().pushPose();
+        graphics.pose().translate(arrowX, arrowY, 0);
+        graphics.pose().scale(arrowScale, arrowScale, 1.0f);
+        graphics.drawString(font, "\u2192", 0, 0, 0xFF8B6914, false);
+        graphics.pose().popPose();
 
         // Output slot + item
         int outputX = arrowX + ARROW_WIDTH + SPACING;

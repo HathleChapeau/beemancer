@@ -1,19 +1,22 @@
 /**
  * ============================================================
  * [HoverbikePartScreen.java]
- * Description: Ecran de selection de modele pour une partie du Hoverbike
+ * Description: Ecran de visualisation d'une partie du Hoverbike avec stats et swap inventaire
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | HoverbikePart       | Enum partie          | Identification partie          |
- * | HoverbikePartModel  | Modele 3D            | Rendu preview                  |
- * | HoverbikePartVariants| Registre variantes  | Liste dynamique des modeles    |
- * | HoverbikeEntity     | Entite source        | Lecture/ecriture variante      |
- * | HoverbikeVariantPacket| Packet reseau      | Envoi selection au serveur     |
- * | GuiRenderHelper     | Rendu vanilla        | Fond container, slots, boutons |
+ * | Dependance              | Raison                | Utilisation                    |
+ * |-------------------------|----------------------|--------------------------------|
+ * | HoverbikePart           | Enum partie          | Identification partie          |
+ * | HoverbikePartModel      | Modele 3D            | Rendu preview                  |
+ * | HoverbikePartVariants   | Registre variantes   | Liste dynamique des modeles    |
+ * | HoverbikeEntity         | Entite source        | Lecture piece equipee          |
+ * | HoverbikePartData       | Stats de la piece    | Base stats + modifiers         |
+ * | HoverbikePartItem       | Item de piece        | Detection pieces inventaire    |
+ * | HoverbikePartSwapPacket | Packet swap          | Echange piece                  |
+ * | HoverbikePartRemovePacket| Packet remove       | Retrait piece                  |
+ * | GuiRenderHelper         | Rendu vanilla        | Fond container, slots, boutons |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -28,7 +31,11 @@ import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
-import com.chapeau.apica.core.network.packets.HoverbikeVariantPacket;
+import com.chapeau.apica.common.item.mount.AppliedModifier;
+import com.chapeau.apica.common.item.mount.HoverbikePartData;
+import com.chapeau.apica.common.item.mount.HoverbikePartItem;
+import com.chapeau.apica.core.network.packets.HoverbikePartRemovePacket;
+import com.chapeau.apica.core.network.packets.HoverbikePartSwapPacket;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -44,19 +51,21 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Ecran de visualisation/selection d'un modele de partie du hoverbike.
- * Le nom de la variante est affiche sous la zone de preview.
- * Les fleches gauche/droite changent la variante et envoient un packet au serveur.
+ * Ecran de visualisation d'une partie equipee du hoverbike.
+ * Affiche la preview 3D, les stats (base + modifiers + MK), un bouton Remove,
+ * et des fleches de swap si le joueur a des pieces compatibles en inventaire.
  */
 public class HoverbikePartScreen extends Screen {
 
     private static final int PANEL_WIDTH = 200;
-    private static final int PANEL_HEIGHT = 190;
+    private static final int PANEL_HEIGHT = 270;
     private static final int INSET_SIZE = 100;
     private static final int TITLE_Y_OFFSET = 7;
     private static final int BUTTON_HEIGHT = 20;
@@ -66,6 +75,11 @@ public class HoverbikePartScreen extends Screen {
     private static final int INSET_BORDER_DARK = 0xFF373737;
     private static final int INSET_BORDER_LIGHT = 0xFFFFFFFF;
     private static final int VARIANT_NAME_COLOR = 0xFF333333;
+    private static final int BASE_STAT_COLOR = 0xFFFFFFFF;
+    private static final int PREFIX_COLOR = 0xFFFFAA00;
+    private static final int SUFFIX_COLOR = 0xFF55FFFF;
+    private static final int MK_COLOR = 0xFFFFFF55;
+    private static final int LABEL_COLOR = 0xFFAAAAAA;
 
     private final HoverbikePart partType;
     private final HoverbikeEntity hoverbike;
@@ -81,6 +95,9 @@ public class HoverbikePartScreen extends Screen {
     private int panelX, panelY;
     private int insetX, insetY;
 
+    private List<Integer> compatibleSlots = new ArrayList<>();
+    private int currentSwapIndex = 0;
+
     public HoverbikePartScreen(HoverbikePart partType, HoverbikeEntity hoverbike) {
         super(Component.literal(formatPartName(partType)));
         this.partType = partType;
@@ -95,49 +112,71 @@ public class HoverbikePartScreen extends Screen {
         currentVariantIndex = hoverbike.getPartVariant(partType);
         if (variants.isEmpty()) return;
 
-        // Clamp l'index
         currentVariantIndex = Math.floorMod(currentVariantIndex, variants.size());
-
         bakeCurrentModel();
 
-        // Layout
         panelX = (width - PANEL_WIDTH) / 2;
         panelY = (height - PANEL_HEIGHT) / 2;
         insetX = panelX + (PANEL_WIDTH - INSET_SIZE) / 2;
         insetY = panelY + 22;
 
-        // Fleche gauche
-        addRenderableWidget(Button.builder(Component.literal("<"), btn -> {
-            cycleVariant(-1);
-        }).bounds(panelX + 8, insetY + INSET_SIZE / 2 - BUTTON_HEIGHT / 2, 20, BUTTON_HEIGHT).build());
+        scanCompatiblePieces();
 
-        // Fleche droite
-        addRenderableWidget(Button.builder(Component.literal(">"), btn -> {
-            cycleVariant(1);
-        }).bounds(panelX + PANEL_WIDTH - 28, insetY + INSET_SIZE / 2 - BUTTON_HEIGHT / 2, 20, BUTTON_HEIGHT).build());
+        if (!compatibleSlots.isEmpty()) {
+            addRenderableWidget(Button.builder(Component.literal("<"), btn -> {
+                cycleSwap(-1);
+            }).bounds(panelX + 8, insetY + INSET_SIZE / 2 - BUTTON_HEIGHT / 2, 20, BUTTON_HEIGHT).build());
 
-        // Bouton retour
+            addRenderableWidget(Button.builder(Component.literal(">"), btn -> {
+                cycleSwap(1);
+            }).bounds(panelX + PANEL_WIDTH - 28, insetY + INSET_SIZE / 2 - BUTTON_HEIGHT / 2, 20, BUTTON_HEIGHT).build());
+        }
+
+        addRenderableWidget(Button.builder(Component.translatable("gui.apica.hoverbike.remove"), btn -> {
+            PacketDistributor.sendToServer(new HoverbikePartRemovePacket(
+                    hoverbike.getId(), partType.ordinal()));
+            onClose();
+        }).bounds(width / 2 - 40, panelY + PANEL_HEIGHT - 52, 80, BUTTON_HEIGHT).build());
+
         addRenderableWidget(Button.builder(Component.translatable("gui.back"), btn -> {
             onClose();
-        }).bounds(width / 2 - 40, panelY + PANEL_HEIGHT - 30, 80, BUTTON_HEIGHT).build());
+        }).bounds(width / 2 - 40, panelY + PANEL_HEIGHT - 28, 80, BUTTON_HEIGHT).build());
     }
 
     /**
-     * Change la variante de modele et envoie le packet au serveur.
+     * Scanne l'inventaire du joueur pour trouver les pieces compatibles (meme categorie).
      */
-    private void cycleVariant(int direction) {
-        if (variants.isEmpty()) return;
-        currentVariantIndex = Math.floorMod(currentVariantIndex + direction, variants.size());
-        bakeCurrentModel();
+    private void scanCompatiblePieces() {
+        compatibleSlots.clear();
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
 
-        // Envoyer au serveur
-        PacketDistributor.sendToServer(new HoverbikeVariantPacket(
-                hoverbike.getId(), partType.ordinal(), currentVariantIndex));
+        List<ItemStack> items = mc.player.getInventory().items;
+        for (int i = 0; i < items.size(); i++) {
+            ItemStack stack = items.get(i);
+            if (stack.isEmpty()) continue;
+            if (!(stack.getItem() instanceof HoverbikePartItem partItem)) continue;
+            if (partItem.getCategory() == partType) {
+                compatibleSlots.add(i);
+            }
+        }
+        currentSwapIndex = 0;
     }
 
     /**
-     * Bake le modele de la variante courante pour le preview.
+     * Cycle dans les pieces compatibles et envoie un swap au serveur.
      */
+    private void cycleSwap(int direction) {
+        if (compatibleSlots.isEmpty()) return;
+        currentSwapIndex = Math.floorMod(currentSwapIndex + direction, compatibleSlots.size());
+        int slot = compatibleSlots.get(currentSwapIndex);
+
+        PacketDistributor.sendToServer(new HoverbikePartSwapPacket(
+                hoverbike.getId(), partType.ordinal(), slot));
+
+        onClose();
+    }
+
     private void bakeCurrentModel() {
         if (variants.isEmpty()) return;
         HoverbikePartVariants.VariantEntry entry = variants.get(currentVariantIndex);
@@ -148,30 +187,103 @@ public class HoverbikePartScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Widgets (boutons) rendus en premier par super
         super.render(graphics, mouseX, mouseY, partialTick);
 
-        // Panneau container vanilla
         GuiRenderHelper.renderContainerBackgroundNoTitle(graphics, panelX, panelY, PANEL_WIDTH, PANEL_HEIGHT);
 
-        // Titre centre
         graphics.drawCenteredString(font, title, width / 2, panelY + TITLE_Y_OFFSET, TITLE_COLOR);
-
-        // Separateur sous le titre
         graphics.fill(panelX + 7, panelY + 18, panelX + PANEL_WIDTH - 7, panelY + 19, 0xFF8B8B8B);
 
-        // Zone inset pour le modele
         renderInset(graphics, insetX, insetY, INSET_SIZE, INSET_SIZE);
-
-        // Rendu du modele 3D
         renderPartModel(graphics, partialTick);
 
-        // Nom de la variante sous l'inset
+        int textY = insetY + INSET_SIZE + 4;
+
         if (!variants.isEmpty()) {
-            String variantName = variants.get(currentVariantIndex).name();
-            String displayText = variantName + " (" + (currentVariantIndex + 1) + "/" + variants.size() + ")";
-            graphics.drawCenteredString(font, displayText, width / 2, insetY + INSET_SIZE + 4, VARIANT_NAME_COLOR);
+            HoverbikePartVariants.VariantEntry entry = variants.get(currentVariantIndex);
+            ItemStack equippedStack = hoverbike.getPartStack(partType);
+            int mk = HoverbikePartData.getMK(equippedStack);
+
+            String variantName = entry.name();
+            String mkStr = mk > 0 ? " MK " + toRoman(mk) : "";
+            graphics.drawCenteredString(font, variantName + mkStr, width / 2, textY, mk > 0 ? MK_COLOR : VARIANT_NAME_COLOR);
+            textY += 12;
+
+            textY = renderStats(graphics, entry, equippedStack, textY);
         }
+    }
+
+    /**
+     * Affiche les stats (base + modifiers) sous le nom de la variante.
+     */
+    private int renderStats(GuiGraphics graphics, HoverbikePartVariants.VariantEntry entry,
+                             ItemStack equippedStack, int startY) {
+        int y = startY;
+        int leftX = panelX + 10;
+
+        graphics.drawString(font, "--- Base Stats ---", leftX, y, LABEL_COLOR, false);
+        y += 10;
+
+        if (entry.stat1Name() != null && !entry.stat1Name().isEmpty()) {
+            graphics.drawString(font, "  " + entry.stat1Name() + ": +" + formatStat(entry.stat1Value()), leftX, y, BASE_STAT_COLOR, false);
+            y += 10;
+        }
+        if (entry.stat2Name() != null && !entry.stat2Name().isEmpty()) {
+            graphics.drawString(font, "  " + entry.stat2Name() + ": +" + formatStat(entry.stat2Value()), leftX, y, BASE_STAT_COLOR, false);
+            y += 10;
+        }
+
+        List<AppliedModifier> prefixes = HoverbikePartData.getPrefixes(equippedStack);
+        List<AppliedModifier> suffixes = HoverbikePartData.getSuffixes(equippedStack);
+
+        if (!prefixes.isEmpty()) {
+            graphics.drawString(font, "--- Prefix ---", leftX, y, LABEL_COLOR, false);
+            y += 10;
+            for (AppliedModifier mod : prefixes) {
+                String line = "  [" + mod.modifierName() + "] T" + mod.tier() + " " +
+                        mod.statType().getJsonKey() + " " + formatModValue(mod);
+                graphics.drawString(font, line, leftX, y, PREFIX_COLOR, false);
+                y += 10;
+            }
+        }
+
+        if (!suffixes.isEmpty()) {
+            graphics.drawString(font, "--- Suffix ---", leftX, y, LABEL_COLOR, false);
+            y += 10;
+            for (AppliedModifier mod : suffixes) {
+                String line = "  [" + mod.modifierName() + "] T" + mod.tier() + " " +
+                        mod.statType().getJsonKey() + " " + formatModValue(mod);
+                graphics.drawString(font, line, leftX, y, SUFFIX_COLOR, false);
+                y += 10;
+            }
+        }
+
+        return y;
+    }
+
+    private static String formatStat(double value) {
+        if (value == (int) value) return String.valueOf((int) value);
+        return String.format("%.3f", value);
+    }
+
+    private static String formatModValue(AppliedModifier mod) {
+        String sign = mod.value() >= 0 ? "+" : "";
+        if ("%".equals(mod.valueType())) {
+            return sign + String.format("%.1f", mod.value()) + "%";
+        }
+        return sign + formatStat(mod.value());
+    }
+
+    private static String toRoman(int num) {
+        return switch (num) {
+            case 1 -> "I";
+            case 2 -> "II";
+            case 3 -> "III";
+            case 4 -> "IV";
+            case 5 -> "V";
+            case 6 -> "VI";
+            default -> String.valueOf(num);
+        };
     }
 
     private void renderInset(GuiGraphics g, int x, int y, int w, int h) {

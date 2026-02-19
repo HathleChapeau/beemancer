@@ -15,6 +15,8 @@ import com.chapeau.apica.core.network.packets.StorageItemsSyncPacket;
 import com.chapeau.apica.core.network.packets.StorageRequestPacket;
 import com.chapeau.apica.core.network.packets.InterfaceActionPacket;
 import com.chapeau.apica.core.network.packets.HoverbikeVariantPacket;
+import com.chapeau.apica.core.network.packets.HoverbikePartSwapPacket;
+import com.chapeau.apica.core.network.packets.HoverbikePartRemovePacket;
 import com.chapeau.apica.core.network.packets.StorageTaskCancelPacket;
 import com.chapeau.apica.core.network.packets.ResonatorFinishPacket;
 import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
@@ -66,6 +68,18 @@ public class ApicaNetwork {
                 HoverbikeVariantPacket.TYPE,
                 HoverbikeVariantPacket.STREAM_CODEC,
                 HoverbikeVariantPacket::handle
+        );
+
+        registrar.playToServer(
+                HoverbikePartSwapPacket.TYPE,
+                HoverbikePartSwapPacket.STREAM_CODEC,
+                HoverbikePartSwapPacket::handle
+        );
+
+        registrar.playToServer(
+                HoverbikePartRemovePacket.TYPE,
+                HoverbikePartRemovePacket.STREAM_CODEC,
+                HoverbikePartRemovePacket::handle
         );
 
         registrar.playToServer(
