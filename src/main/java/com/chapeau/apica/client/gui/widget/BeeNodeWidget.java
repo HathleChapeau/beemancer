@@ -26,6 +26,7 @@ import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.quest.NodeState;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.registry.ApicaAttachments;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -48,8 +49,23 @@ import java.util.List;
 import java.util.Map;
 
 public class BeeNodeWidget extends AbstractWidget {
-    public static final int NODE_SIZE = 20;
+    public static final int NODE_SIZE = 24;
+    private static final int FRAME_SIZE = 26;
     private static final int BEE_RENDER_SIZE = 16;
+
+    // Vanilla advancement frame textures
+    private static final ResourceLocation TASK_FRAME_OBTAINED = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/task_frame_obtained.png");
+    private static final ResourceLocation TASK_FRAME_UNOBTAINED = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/task_frame_unobtained.png");
+    private static final ResourceLocation GOAL_FRAME_OBTAINED = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/goal_frame_obtained.png");
+    private static final ResourceLocation GOAL_FRAME_UNOBTAINED = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/goal_frame_unobtained.png");
+    private static final ResourceLocation CHALLENGE_FRAME_OBTAINED = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/challenge_frame_obtained.png");
+    private static final ResourceLocation CHALLENGE_FRAME_UNOBTAINED = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/challenge_frame_unobtained.png");
 
     // Vanilla bee texture fallback
     private static final ResourceLocation VANILLA_BEE_TEXTURE =
@@ -63,6 +79,7 @@ public class BeeNodeWidget extends AbstractWidget {
     private final Component displayTitle;
     private final Component displayDescription;
     private final NodeState nodeState;
+    private final boolean harmonized;
     private boolean unlocked;
     private boolean canUnlock;
     private boolean hovered;
@@ -87,6 +104,11 @@ public class BeeNodeWidget extends AbstractWidget {
         } else {
             this.speciesId = nodeId;
         }
+
+        // Vérifier si l'espèce est harmonisée via les données de species
+        BeeSpeciesManager.ensureClientLoaded();
+        BeeSpeciesManager.BeeSpeciesData speciesData = BeeSpeciesManager.getSpecies(this.speciesId);
+        this.harmonized = speciesData != null && speciesData.harmonized;
 
         // Calculer le texte à afficher (??? si SECRET et LOCKED, ou si espece inconnue)
         Component baseTitle = CodexManager.getDisplayTitle(node, this.nodeState);
@@ -212,21 +234,35 @@ public class BeeNodeWidget extends AbstractWidget {
     }
 
     private void renderFrame(GuiGraphics graphics) {
-        // Simple colored background frame
-        int bgColor = unlocked ? 0xFF333333 : 0xFF222222;
-        int borderColor;
+        int x = getX();
+        int y = getY();
 
-        switch (node.getCategory().name()) {
-            case "ROOT" -> borderColor = unlocked ? 0xFFFFAA00 : 0xFF886600; // Golden for base bees
-            case "GOAL" -> borderColor = unlocked ? 0xFF00FF00 : 0xFF006600; // Green for goals
-            case "CHALLENGE" -> borderColor = unlocked ? 0xFFFF00FF : 0xFF660066; // Purple for challenges
-            default -> borderColor = unlocked ? 0xFFAAAAAA : 0xFF555555; // Gray for normal
+        // Choisir le type de frame : challenge > harmonized (goal) > task
+        boolean challenge = node.isChallenge();
+
+        ResourceLocation frame;
+        float r, g, b;
+
+        if (unlocked) {
+            frame = challenge ? CHALLENGE_FRAME_OBTAINED
+                    : harmonized ? GOAL_FRAME_OBTAINED
+                    : TASK_FRAME_OBTAINED;
+            r = 0.95f; g = 0.77f; b = 0.06f;   // Or (#F1C40F)
+        } else if (canUnlock) {
+            frame = challenge ? CHALLENGE_FRAME_UNOBTAINED
+                    : harmonized ? GOAL_FRAME_UNOBTAINED
+                    : TASK_FRAME_UNOBTAINED;
+            r = 1.0f; g = 1.0f; b = 1.0f;       // Blanc
+        } else {
+            frame = challenge ? CHALLENGE_FRAME_UNOBTAINED
+                    : harmonized ? GOAL_FRAME_UNOBTAINED
+                    : TASK_FRAME_UNOBTAINED;
+            r = 0.27f; g = 0.27f; b = 0.27f;   // Sombre (#444444)
         }
 
-        // Draw border
-        graphics.fill(getX() - 1, getY() - 1, getX() + NODE_SIZE + 1, getY() + NODE_SIZE + 1, borderColor);
-        // Draw background
-        graphics.fill(getX(), getY(), getX() + NODE_SIZE, getY() + NODE_SIZE, bgColor);
+        RenderSystem.setShaderColor(r, g, b, 1.0f);
+        graphics.blit(frame, x - 1, y - 1, 0, 0, FRAME_SIZE, FRAME_SIZE, FRAME_SIZE, FRAME_SIZE);
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
     private void renderBee3D(GuiGraphics graphics, float partialTick) {

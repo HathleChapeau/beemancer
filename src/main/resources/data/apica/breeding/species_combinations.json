@@ -927,13 +927,13 @@
       ]
     },
     {
-      "_comment": "Tier IX - Ancient: Treasure + Infernalist",
-      "parent1": "treasure",
-      "parent2": "infernalist",
+      "_comment": "Tier IX - Ancient: Sorrow + Treasure",
+      "parent1": "sorrow",
+      "parent2": "treasure",
       "results": [
         { "species": "ancient", "chance": 10 },
+        { "species": "sorrow", "chance": 25 },
         { "species": "treasure", "chance": 25 },
-        { "species": "infernalist", "chance": 25 },
         { "species": "nothing", "chance": 40 }
       ]
     },

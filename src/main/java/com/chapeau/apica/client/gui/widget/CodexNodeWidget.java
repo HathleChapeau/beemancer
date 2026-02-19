@@ -44,11 +44,15 @@ public class CodexNodeWidget extends AbstractWidget {
     public static final int NODE_SIZE = 24;
     private static final int FRAME_SIZE = 26;
 
-    // Vanilla advancement task frame textures
-    private static final ResourceLocation FRAME_OBTAINED = ResourceLocation.withDefaultNamespace(
+    // Vanilla advancement frame textures
+    private static final ResourceLocation TASK_FRAME_OBTAINED = ResourceLocation.withDefaultNamespace(
             "textures/gui/sprites/advancements/task_frame_obtained.png");
-    private static final ResourceLocation FRAME_UNOBTAINED = ResourceLocation.withDefaultNamespace(
+    private static final ResourceLocation TASK_FRAME_UNOBTAINED = ResourceLocation.withDefaultNamespace(
             "textures/gui/sprites/advancements/task_frame_unobtained.png");
+    private static final ResourceLocation CHALLENGE_FRAME_OBTAINED = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/challenge_frame_obtained.png");
+    private static final ResourceLocation CHALLENGE_FRAME_UNOBTAINED = ResourceLocation.withDefaultNamespace(
+            "textures/gui/sprites/advancements/challenge_frame_unobtained.png");
 
     private static final Map<String, String> NODE_TO_ITEM = new HashMap<>();
     private static final Map<String, ResourceLocation> NODE_TO_TEXTURE = new HashMap<>();
@@ -249,21 +253,24 @@ public class CodexNodeWidget extends AbstractWidget {
         int x = getX();
         int y = getY();
 
+        // Choisir le type de frame selon les tags du node
+        boolean challenge = node.isChallenge();
+
         // Choisir la texture et la teinte selon l'etat
         ResourceLocation frame;
         float r, g, b;
 
         if (isHeader) {
-            frame = FRAME_OBTAINED;
+            frame = challenge ? CHALLENGE_FRAME_OBTAINED : TASK_FRAME_OBTAINED;
             r = 0.2f; g = 0.58f; b = 0.86f;   // Bleu (#3498DB)
         } else if (unlocked) {
-            frame = FRAME_OBTAINED;
+            frame = challenge ? CHALLENGE_FRAME_OBTAINED : TASK_FRAME_OBTAINED;
             r = 0.95f; g = 0.77f; b = 0.06f;   // Or (#F1C40F)
         } else if (canUnlock) {
-            frame = FRAME_UNOBTAINED;
+            frame = challenge ? CHALLENGE_FRAME_UNOBTAINED : TASK_FRAME_UNOBTAINED;
             r = 1.0f; g = 1.0f; b = 1.0f;       // Blanc
         } else {
-            frame = FRAME_UNOBTAINED;
+            frame = challenge ? CHALLENGE_FRAME_UNOBTAINED : TASK_FRAME_UNOBTAINED;
             r = 0.27f; g = 0.27f; b = 0.27f;   // Sombre (#444444)
         }
 

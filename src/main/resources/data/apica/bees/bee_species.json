@@ -3325,8 +3325,8 @@
     "ancient": {
       "tier": "IX",
       "parents": [
-        "treasure",
-        "infernalist"
+        "sorrow",
+        "treasure"
       ],
       "environment": 2,
       "flower_type": "crystal",

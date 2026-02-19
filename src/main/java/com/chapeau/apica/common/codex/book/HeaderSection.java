@@ -102,7 +102,7 @@ public class HeaderSection extends CodexBookSection {
         if (nodeId.endsWith("_bee")) {
             return nodeId.substring(0, nodeId.length() - 4);
         }
-        return nodeId;
+        return null;
     }
 
     private String resolveParentDisplay(String parentNodeId) {
