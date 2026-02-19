@@ -98,6 +98,8 @@ public class HeaderSection extends CodexBookSection {
     @Nullable
     private String extractSpeciesId() {
         if (node == null) return null;
+        // Seuls les nodes de la page BEES représentent de vraies espèces
+        if (node.getPage() != com.chapeau.apica.common.codex.CodexPage.BEES) return null;
         String nodeId = node.getId();
         if (nodeId.endsWith("_bee")) {
             return nodeId.substring(0, nodeId.length() - 4);
