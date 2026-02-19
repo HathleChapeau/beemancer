@@ -174,7 +174,8 @@ public class HoverbikePartScreen extends Screen {
         PacketDistributor.sendToServer(new HoverbikePartSwapPacket(
                 hoverbike.getId(), partType.ordinal(), slot));
 
-        onClose();
+        // Rescan apres swap (le slot inventaire a change)
+        scanCompatiblePieces();
     }
 
     private void bakeCurrentModel() {
@@ -240,7 +241,7 @@ public class HoverbikePartScreen extends Screen {
             graphics.drawString(font, "--- Prefix ---", leftX, y, LABEL_COLOR, false);
             y += 10;
             for (AppliedModifier mod : prefixes) {
-                String line = "  [" + mod.modifierName() + "] T" + mod.tier() + " " +
+                String line = "  T" + mod.tier() + " " +
                         mod.statType().getJsonKey() + " " + formatModValue(mod);
                 graphics.drawString(font, line, leftX, y, PREFIX_COLOR, false);
                 y += 10;
@@ -251,7 +252,7 @@ public class HoverbikePartScreen extends Screen {
             graphics.drawString(font, "--- Suffix ---", leftX, y, LABEL_COLOR, false);
             y += 10;
             for (AppliedModifier mod : suffixes) {
-                String line = "  [" + mod.modifierName() + "] T" + mod.tier() + " " +
+                String line = "  T" + mod.tier() + " " +
                         mod.statType().getJsonKey() + " " + formatModValue(mod);
                 graphics.drawString(font, line, leftX, y, SUFFIX_COLOR, false);
                 y += 10;

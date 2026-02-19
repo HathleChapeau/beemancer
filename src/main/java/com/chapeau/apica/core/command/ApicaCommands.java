@@ -68,17 +68,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 public class ApicaCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        // /apica reload
         dispatcher.register(
-            Commands.literal("apica")
+            Commands.literal("bee")
                 .then(Commands.literal("reload")
                     .requires(source -> source.hasPermission(2))
                     .executes(context -> reloadConfigs(context.getSource()))
                 )
-        );
-
-        dispatcher.register(
-            Commands.literal("bee")
                 .then(Commands.literal("codex")
                     .then(Commands.literal("reset")
                         .requires(source -> source.hasPermission(2))
@@ -155,7 +150,7 @@ public class ApicaCommands {
     private static int reloadConfigs(CommandSourceStack source) {
         HoverbikeConfigManager.init();
         source.sendSuccess(() -> Component.literal("Apica configs reloaded (hoverbike base stats, modifiers, part base stats)."), true);
-        Apica.LOGGER.info("Apica configs reloaded via /apica reload");
+        Apica.LOGGER.info("Apica configs reloaded via /bee reload");
         return Command.SINGLE_SUCCESS;
     }
 

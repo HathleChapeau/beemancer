@@ -143,21 +143,22 @@ public final class InteractionMarkerTypes {
         if (!hoverbike.isEditMode()) return InteractionResult.FAIL;
         if (!hoverbike.isOwner(player)) return InteractionResult.PASS;
 
-        if (player.level().isClientSide()) {
-            openPartScreen(part, hoverbike);
-            return InteractionResult.SUCCESS;
-        }
-
-        // Server-side: check if player holds a compatible piece for quick swap
+        // Quick swap si le joueur tient une piece compatible (pas d'ouverture de menu)
         ItemStack held = player.getItemInHand(hand);
         if (!held.isEmpty() && held.getItem() instanceof HoverbikePartItem heldPart
                 && heldPart.getCategory() == part) {
-            ItemStack currentOnBike = hoverbike.getPartStack(part).copy();
-            hoverbike.setPartStack(part, held.copy());
-            player.setItemInHand(hand, currentOnBike);
+            if (!player.level().isClientSide()) {
+                ItemStack currentOnBike = hoverbike.getPartStack(part).copy();
+                hoverbike.setPartStack(part, held.copy());
+                player.setItemInHand(hand, currentOnBike);
+            }
             return InteractionResult.SUCCESS;
         }
 
+        // Pas de piece compatible en main: ouvrir le menu (client-side)
+        if (player.level().isClientSide()) {
+            openPartScreen(part, hoverbike);
+        }
         return InteractionResult.SUCCESS;
     }
 

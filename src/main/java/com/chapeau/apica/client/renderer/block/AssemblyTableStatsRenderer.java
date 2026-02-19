@@ -58,7 +58,8 @@ public class AssemblyTableStatsRenderer {
     private static final float TEXT_SCALE = 0.018f;
     private static final int TEXT_BG_COLOR = 0x80000000;
     private static final double MAX_RENDER_DISTANCE_SQ = 16.0 * 16.0;
-    private static final double PANEL_Y_OFFSET = 2.2;
+    private static final double PANEL_Y_OFFSET = 1.0;
+    private static final double PANEL_ORBIT_RADIUS = 1.0;
 
     // Couleurs
     private static final int COLOR_TITLE = 0xFFFF55;
@@ -116,7 +117,16 @@ public class AssemblyTableStatsRenderer {
                                           Font font, Vec3 cameraPos, Vec3 tableCenter,
                                           ItemStack stored, HoverbikePartItem partItem) {
 
-        Vec3 renderPos = tableCenter.add(0, PANEL_Y_OFFSET, 0);
+        // Panneau orbite autour de la table pour toujours faire face au joueur
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+        Vec3 playerPos = mc.player.position();
+        double dx = playerPos.x - tableCenter.x;
+        double dz = playerPos.z - tableCenter.z;
+        double angle = Math.atan2(dz, dx);
+        double offsetX = Math.cos(angle) * PANEL_ORBIT_RADIUS;
+        double offsetZ = Math.sin(angle) * PANEL_ORBIT_RADIUS;
+        Vec3 renderPos = tableCenter.add(offsetX, PANEL_Y_OFFSET, offsetZ);
 
         // Construire les lignes du panneau
         StringBuilder sb = new StringBuilder();
@@ -142,7 +152,7 @@ public class AssemblyTableStatsRenderer {
         if (!prefixes.isEmpty()) {
             sb.append("\n--- Prefix ---");
             for (AppliedModifier mod : prefixes) {
-                sb.append("\n  [").append(mod.modifierName()).append("] T").append(mod.tier())
+                sb.append("\n  T").append(mod.tier())
                         .append(" ").append(mod.statType().getJsonKey()).append(" ")
                         .append(formatModValue(mod));
             }
@@ -153,7 +163,7 @@ public class AssemblyTableStatsRenderer {
         if (!suffixes.isEmpty()) {
             sb.append("\n--- Suffix ---");
             for (AppliedModifier mod : suffixes) {
-                sb.append("\n  [").append(mod.modifierName()).append("] T").append(mod.tier())
+                sb.append("\n  T").append(mod.tier())
                         .append(" ").append(mod.statType().getJsonKey()).append(" ")
                         .append(formatModValue(mod));
             }

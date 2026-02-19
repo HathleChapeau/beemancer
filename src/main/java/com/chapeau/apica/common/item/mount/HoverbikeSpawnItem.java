@@ -54,6 +54,9 @@ public class HoverbikeSpawnItem extends Item {
         if (hoverbike != null) {
             hoverbike.setPos(spawnPos);
             hoverbike.setYRot(context.getPlayer() != null ? context.getPlayer().getYRot() : 0);
+            if (context.getPlayer() != null) {
+                hoverbike.setOwner(context.getPlayer());
+            }
             serverLevel.addFreshEntity(hoverbike);
 
             // Consommer l'item

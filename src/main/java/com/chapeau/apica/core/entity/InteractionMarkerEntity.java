@@ -20,6 +20,7 @@
  */
 package com.chapeau.apica.core.entity;
 
+import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -34,6 +35,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Entite invisible, sans IA, sans gravite, sans persistance.
@@ -153,6 +155,11 @@ public class InteractionMarkerEntity extends Mob {
     public void tick() {
         super.tick();
         if (!this.level().isClientSide()) {
+            // Repositionnement continu pour les marqueurs ancres a une entite
+            if (isEntityAnchored()) {
+                updateEntityAnchorPosition();
+            }
+
             validityCheckTimer++;
             if (validityCheckTimer >= VALIDITY_CHECK_INTERVAL) {
                 validityCheckTimer = 0;
@@ -160,6 +167,18 @@ public class InteractionMarkerEntity extends Mob {
                     this.discard();
                 }
             }
+        }
+    }
+
+    /**
+     * Repositionne le marqueur a la position de la piece sur le hoverbike.
+     * Recalcule chaque tick pour suivre le mouvement et la rotation du hoverbike.
+     */
+    private void updateEntityAnchorPosition() {
+        Entity anchor = this.level().getEntity(getAnchorEntityId());
+        if (anchor instanceof HoverbikeEntity hoverbike) {
+            Vec3 targetPos = hoverbike.computePartWorldPos(getPartOrdinal());
+            this.setPos(targetPos);
         }
     }
 

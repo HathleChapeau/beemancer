@@ -47,8 +47,8 @@ public class AssemblyTableOrbitRenderer {
 
     private static final Map<BlockPos, OrbitState> STATES = new HashMap<>();
 
-    private static final float CUBE_SIZE = 0.125f;
-    private static final float MOVE_DURATION = 60.0f;
+    private static final float CUBE_SIZE = 0.03125f;
+    private static final float MOVE_DURATION = 40.0f;
     private static final float PRE_BEAM_DURATION = 10.0f;
     private static final float BEAM_DURATION = 20.0f;
     private static final float POST_BEAM_DURATION = 10.0f;

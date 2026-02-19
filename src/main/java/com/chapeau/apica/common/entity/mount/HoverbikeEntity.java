@@ -199,13 +199,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!this.level().isClientSide()) {
-            // Auto-set owner si pas encore defini
-            if (getOwnerUUID().isEmpty()) {
-                setOwner(player);
-            }
-
             // Seul le owner peut interagir
-            if (!isOwner(player)) {
+            if (getOwnerUUID().isPresent() && !isOwner(player)) {
                 return InteractionResult.PASS;
             }
         }
@@ -279,32 +274,40 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private static final String MARKER_PREFIX = "hoverbike_part_";
 
     /** Offsets en espace modele pour chaque part en edit mode. */
-    private static final Vec3[] PART_EDIT_OFFSETS = {
+    public static final Vec3[] PART_EDIT_OFFSETS = {
             new Vec3(0, 1, 1),   // CHASSIS
             new Vec3(0, 1, -1),  // COEUR
             new Vec3(0, 0, 1),   // PROPULSEUR
             new Vec3(0, 0, -1)   // RADIATEUR
     };
 
-    private void spawnPartMarkers() {
-        if (!(level() instanceof ServerLevel serverLevel)) return;
+    /**
+     * Calcule la position monde d'un marqueur de piece en edit mode.
+     * Convertit l'offset modele en espace monde via rotation yaw du hoverbike.
+     */
+    public Vec3 computePartWorldPos(int partOrdinal) {
+        if (partOrdinal < 0 || partOrdinal >= PART_EDIT_OFFSETS.length) return position();
+        Vec3 modelOffset = PART_EDIT_OFFSETS[partOrdinal];
         float yawRad = (float) Math.toRadians(180.0 - this.yBodyRot);
         float sinYaw = Mth.sin(yawRad);
         float cosYaw = Mth.cos(yawRad);
+        double wx = -modelOffset.x;
+        double wy = -modelOffset.y;
+        double wz = modelOffset.z;
+        double rotX = wx * cosYaw - wz * sinYaw;
+        double rotZ = wx * sinYaw + wz * cosYaw;
+        return position().add(rotX, wy, rotZ);
+    }
+
+    private void spawnPartMarkers() {
+        if (!(level() instanceof ServerLevel serverLevel)) return;
 
         for (HoverbikePart part : HoverbikePart.values()) {
-            Vec3 modelOffset = PART_EDIT_OFFSETS[part.ordinal()];
-            // Model → world: negate X and Y (MobRenderer flip), keep Z, then rotate by yaw
-            double wx = -modelOffset.x;
-            double wy = -modelOffset.y;
-            double wz = modelOffset.z;
-            double rotX = wx * cosYaw - wz * sinYaw;
-            double rotZ = wx * sinYaw + wz * cosYaw;
-
             String markerType = MARKER_PREFIX + part.name().toLowerCase();
+            Vec3 worldPos = computePartWorldPos(part.ordinal());
+            Vec3 offset = worldPos.subtract(position());
             InteractionMarkerManager.spawnForEntity(
-                    serverLevel, this, markerType, part.ordinal(),
-                    new Vec3(rotX, wy, rotZ));
+                    serverLevel, this, markerType, part.ordinal(), offset);
         }
     }
 
