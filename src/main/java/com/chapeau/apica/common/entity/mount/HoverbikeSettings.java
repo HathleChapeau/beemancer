@@ -132,6 +132,58 @@ public record HoverbikeSettings(
         );
     }
 
+    /**
+     * Cree un HoverbikeSettings depuis une Map de stats.
+     * Les stats absentes de la map utilisent les valeurs par defaut.
+     * Utilise par HoverbikeSettingsComputer pour construire les settings finaux.
+     */
+    public static HoverbikeSettings fromMap(java.util.Map<HoverbikeStatType, Double> stats) {
+        HoverbikeSettings defaults = createDefaults();
+        return new HoverbikeSettings(
+                stats.getOrDefault(HoverbikeStatType.HOVER_MAX_SPEED, defaults.maxHoverSpeed()),
+                stats.getOrDefault(HoverbikeStatType.RUN_MAX_SPEED, defaults.maxRunSpeed()),
+                stats.getOrDefault(HoverbikeStatType.RUN_THRESHOLD_SPEED, defaults.runThresholdSpeed()),
+                stats.getOrDefault(HoverbikeStatType.HOVER_ACCELERATION, defaults.hoverAcceleration()),
+                stats.getOrDefault(HoverbikeStatType.RUN_ACCELERATION, defaults.runAcceleration()),
+                stats.getOrDefault(HoverbikeStatType.DECELERATION, defaults.deceleration()),
+                stats.getOrDefault(HoverbikeStatType.BRAKE_DECELERATION, defaults.brakeDeceleration()),
+                stats.getOrDefault(HoverbikeStatType.HOVER_FRICTION, defaults.hoverFriction()),
+                stats.getOrDefault(HoverbikeStatType.GRAVITY, defaults.gravity()),
+                stats.getOrDefault(HoverbikeStatType.TERMINAL_VELOCITY, defaults.terminalVelocity()),
+                stats.getOrDefault(HoverbikeStatType.ROTATION_SPEED_MAX, defaults.rotationSpeedMax()),
+                stats.getOrDefault(HoverbikeStatType.ROTATION_SPEED_MIN, defaults.rotationSpeedMin()),
+                stats.getOrDefault(HoverbikeStatType.GAUGE_FILL_RATE, defaults.gaugeFillRate()),
+                stats.getOrDefault(HoverbikeStatType.GAUGE_DRAIN_RATE, defaults.gaugeDrainRate()),
+                stats.getOrDefault(HoverbikeStatType.LIFT_SPEED, defaults.liftSpeed()),
+                stats.getOrDefault(HoverbikeStatType.COLLISION_PUSH_FORCE, defaults.collisionPushForce())
+        );
+    }
+
+    /**
+     * Retourne la valeur d'une stat par son type enum.
+     * Utilise par HoverbikeSettingsComputer pour iterer sur les stats.
+     */
+    public double getStat(HoverbikeStatType type) {
+        return switch (type) {
+            case HOVER_MAX_SPEED -> maxHoverSpeed;
+            case RUN_MAX_SPEED -> maxRunSpeed;
+            case RUN_THRESHOLD_SPEED -> runThresholdSpeed;
+            case HOVER_ACCELERATION -> hoverAcceleration;
+            case RUN_ACCELERATION -> runAcceleration;
+            case DECELERATION -> deceleration;
+            case BRAKE_DECELERATION -> brakeDeceleration;
+            case HOVER_FRICTION -> hoverFriction;
+            case GRAVITY -> gravity;
+            case TERMINAL_VELOCITY -> terminalVelocity;
+            case ROTATION_SPEED_MAX -> rotationSpeedMax;
+            case ROTATION_SPEED_MIN -> rotationSpeedMin;
+            case GAUGE_FILL_RATE -> gaugeFillRate;
+            case GAUGE_DRAIN_RATE -> gaugeDrainRate;
+            case LIFT_SPEED -> liftSpeed;
+            case COLLISION_PUSH_FORCE -> collisionPushForce;
+        };
+    }
+
     private static double getOr(JsonObject json, HoverbikeStatType stat, double defaultValue) {
         String key = stat.getJsonKey();
         return json.has(key) ? json.get(key).getAsDouble() : defaultValue;

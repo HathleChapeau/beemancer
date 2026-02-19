@@ -74,6 +74,7 @@ public class AssemblyTableRenderer implements BlockEntityRenderer<AssemblyTableB
 
         ItemStack storedItem = blockEntity.getStoredItem();
         if (storedItem.isEmpty() || !(storedItem.getItem() instanceof HoverbikePartItem partItem)) {
+            AssemblyTableOrbitRenderer.removeState(blockEntity.getBlockPos());
             return;
         }
 
@@ -108,6 +109,9 @@ public class AssemblyTableRenderer implements BlockEntityRenderer<AssemblyTableB
         model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY);
 
         poseStack.popPose();
+
+        // Cubes orbitants avec beam
+        AssemblyTableOrbitRenderer.render(blockEntity.getBlockPos(), partialTick, poseStack, buffer, packedLight);
     }
 
     @Override

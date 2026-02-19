@@ -132,9 +132,12 @@ public class AssemblyTableBlock extends Block implements EntityBlock {
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof AssemblyTableBlockEntity table && !table.isEmpty()) {
-                Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                        table.getStoredItem());
+            if (be instanceof AssemblyTableBlockEntity table) {
+                if (!table.isEmpty()) {
+                    Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                            table.getStoredItem());
+                }
+                table.despawnMarkerOnBreak();
             }
         }
         super.onRemove(state, level, pos, newState, movedByPiston);

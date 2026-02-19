@@ -14,6 +14,7 @@ import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.item.essence.EssenceItem;
 import com.chapeau.apica.common.item.essence.SpeciesEssenceItem;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
+import com.chapeau.apica.common.item.mount.CreativeFocusItem;
 import com.chapeau.apica.common.item.mount.HoverbikePartItem;
 import com.chapeau.apica.common.item.mount.HoverbikeSpawnItem;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
@@ -667,6 +668,10 @@ public class ApicaItems {
             () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.RADIATEUR, 1));
     public static final DeferredItem<HoverbikePartItem> RADIATEUR_WIDE_PANELS = ITEMS.register("radiateur_wide_panels",
             () -> new HoverbikePartItem(new Item.Properties(), HoverbikePart.RADIATEUR, 2));
+
+    // --- CREATIVE FOCUS (debug tool for hoverbike stats) ---
+    public static final DeferredItem<CreativeFocusItem> CREATIVE_FOCUS = ITEMS.register("creative_focus",
+            () -> new CreativeFocusItem(new Item.Properties().stacksTo(1)));
 
     // --- CODEX PLACEHOLDER ---
     public static final DeferredItem<BlockItem> AIR_PLACEHOLDER = ITEMS.register("air_placeholder",

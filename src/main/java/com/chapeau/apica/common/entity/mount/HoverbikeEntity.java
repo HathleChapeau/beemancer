@@ -43,6 +43,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideable;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -89,8 +90,18 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private static final EntityDataAccessor<Integer> DATA_RADIATEUR_VARIANT =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.INT);
 
+    // --- Part Stacks (synched pour calcul de stats et persistence) ---
+    private static final EntityDataAccessor<ItemStack> DATA_CHASSIS_STACK =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<ItemStack> DATA_COEUR_STACK =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<ItemStack> DATA_PROPULSEUR_STACK =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<ItemStack> DATA_RADIATEUR_STACK =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.ITEM_STACK);
+
     // --- Settings ---
-    private final HoverbikeSettings settings;
+    private HoverbikeSettings settings;
 
     // --- Etat interne ---
     private HoverbikeMode mode = HoverbikeMode.HOVER;
@@ -141,6 +152,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         builder.define(DATA_COEUR_VARIANT, 0);
         builder.define(DATA_PROPULSEUR_VARIANT, 0);
         builder.define(DATA_RADIATEUR_VARIANT, 0);
+        builder.define(DATA_CHASSIS_STACK, ItemStack.EMPTY);
+        builder.define(DATA_COEUR_STACK, ItemStack.EMPTY);
+        builder.define(DATA_PROPULSEUR_STACK, ItemStack.EMPTY);
+        builder.define(DATA_RADIATEUR_STACK, ItemStack.EMPTY);
     }
 
     // --- Attributes ---
@@ -707,6 +722,11 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         tag.putInt("CoeurVariant", this.entityData.get(DATA_COEUR_VARIANT));
         tag.putInt("PropulseurVariant", this.entityData.get(DATA_PROPULSEUR_VARIANT));
         tag.putInt("RadiateurVariant", this.entityData.get(DATA_RADIATEUR_VARIANT));
+        // Part stacks (pour persistence des modifiers per-stack)
+        savePartStack(tag, "ChassisStack", DATA_CHASSIS_STACK);
+        savePartStack(tag, "CoeurStack", DATA_COEUR_STACK);
+        savePartStack(tag, "PropulseurStack", DATA_PROPULSEUR_STACK);
+        savePartStack(tag, "RadiateurStack", DATA_RADIATEUR_STACK);
     }
 
     @Override
@@ -716,6 +736,27 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         if (tag.contains("CoeurVariant")) this.entityData.set(DATA_COEUR_VARIANT, tag.getInt("CoeurVariant"));
         if (tag.contains("PropulseurVariant")) this.entityData.set(DATA_PROPULSEUR_VARIANT, tag.getInt("PropulseurVariant"));
         if (tag.contains("RadiateurVariant")) this.entityData.set(DATA_RADIATEUR_VARIANT, tag.getInt("RadiateurVariant"));
+        // Part stacks
+        loadPartStack(tag, "ChassisStack", DATA_CHASSIS_STACK);
+        loadPartStack(tag, "CoeurStack", DATA_COEUR_STACK);
+        loadPartStack(tag, "PropulseurStack", DATA_PROPULSEUR_STACK);
+        loadPartStack(tag, "RadiateurStack", DATA_RADIATEUR_STACK);
+        recomputeSettings();
+    }
+
+    private void savePartStack(CompoundTag tag, String key, EntityDataAccessor<ItemStack> accessor) {
+        ItemStack stack = this.entityData.get(accessor);
+        if (!stack.isEmpty()) {
+            tag.put(key, stack.save(this.registryAccess(), new CompoundTag()));
+        }
+    }
+
+    private void loadPartStack(CompoundTag tag, String key, EntityDataAccessor<ItemStack> accessor) {
+        if (tag.contains(key)) {
+            ItemStack stack = ItemStack.parse(this.registryAccess(), tag.getCompound(key))
+                    .orElse(ItemStack.EMPTY);
+            this.entityData.set(accessor, stack);
+        }
     }
 
     /** Retourne l'index de variante pour une partie donnee. */
@@ -735,6 +776,66 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             case COEUR -> this.entityData.set(DATA_COEUR_VARIANT, variant);
             case PROPULSEUR -> this.entityData.set(DATA_PROPULSEUR_VARIANT, variant);
             case RADIATEUR -> this.entityData.set(DATA_RADIATEUR_VARIANT, variant);
+        }
+    }
+
+    // --- Part Stacks (pour calcul de stats) ---
+
+    /** Retourne le ItemStack de la piece equipee pour une categorie. */
+    public ItemStack getPartStack(HoverbikePart part) {
+        return switch (part) {
+            case CHASSIS -> this.entityData.get(DATA_CHASSIS_STACK);
+            case COEUR -> this.entityData.get(DATA_COEUR_STACK);
+            case PROPULSEUR -> this.entityData.get(DATA_PROPULSEUR_STACK);
+            case RADIATEUR -> this.entityData.get(DATA_RADIATEUR_STACK);
+        };
+    }
+
+    /**
+     * Definit le ItemStack d'une piece et met a jour le variant visuel en meme temps.
+     * Recalcule automatiquement les settings.
+     */
+    public void setPartStack(HoverbikePart part, ItemStack stack) {
+        switch (part) {
+            case CHASSIS -> this.entityData.set(DATA_CHASSIS_STACK, stack.copy());
+            case COEUR -> this.entityData.set(DATA_COEUR_STACK, stack.copy());
+            case PROPULSEUR -> this.entityData.set(DATA_PROPULSEUR_STACK, stack.copy());
+            case RADIATEUR -> this.entityData.set(DATA_RADIATEUR_STACK, stack.copy());
+        }
+        // Mettre a jour le variant visuel depuis le stack
+        if (!stack.isEmpty() && stack.getItem() instanceof com.chapeau.apica.common.item.mount.HoverbikePartItem partItem) {
+            setPartVariant(part, partItem.getVariantIndex());
+        }
+        recomputeSettings();
+    }
+
+    /** Retourne les 4 part stacks dans l'ordre CHASSIS, COEUR, PROPULSEUR, RADIATEUR. */
+    public ItemStack[] getAllPartStacks() {
+        return new ItemStack[]{
+                getPartStack(HoverbikePart.CHASSIS),
+                getPartStack(HoverbikePart.COEUR),
+                getPartStack(HoverbikePart.PROPULSEUR),
+                getPartStack(HoverbikePart.RADIATEUR)
+        };
+    }
+
+    /**
+     * Recalcule les HoverbikeSettings en fonction des pieces actuellement equipees.
+     * Appele quand un part stack change (server-side et client-side via onSyncedDataUpdated).
+     */
+    public void recomputeSettings() {
+        this.settings = HoverbikeSettingsComputer.compute(getAllPartStacks());
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+        // Recalculer les settings cote client quand un part stack est synchronise
+        if (this.level().isClientSide()) {
+            if (accessor.equals(DATA_CHASSIS_STACK) || accessor.equals(DATA_COEUR_STACK)
+                    || accessor.equals(DATA_PROPULSEUR_STACK) || accessor.equals(DATA_RADIATEUR_STACK)) {
+                recomputeSettings();
+            }
         }
     }
 

@@ -26,6 +26,7 @@ import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPage;
 import com.chapeau.apica.common.codex.CodexPlayerData;
+import com.chapeau.apica.common.entity.mount.HoverbikeConfigManager;
 import com.chapeau.apica.common.quest.QuestPlayerData;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.network.packets.CodexSyncPacket;
@@ -65,6 +66,15 @@ import java.nio.file.attribute.BasicFileAttributes;
 public class ApicaCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        // /apica reload
+        dispatcher.register(
+            Commands.literal("apica")
+                .then(Commands.literal("reload")
+                    .requires(source -> source.hasPermission(2))
+                    .executes(context -> reloadConfigs(context.getSource()))
+                )
+        );
+
         dispatcher.register(
             Commands.literal("bee")
                 .then(Commands.literal("codex")
@@ -134,6 +144,17 @@ public class ApicaCommands {
                     )
                 )
         );
+    }
+
+    // ============================================================
+    // RELOAD COMMAND
+    // ============================================================
+
+    private static int reloadConfigs(CommandSourceStack source) {
+        HoverbikeConfigManager.init();
+        source.sendSuccess(() -> Component.literal("Apica configs reloaded (hoverbike base stats, modifiers, part base stats)."), true);
+        Apica.LOGGER.info("Apica configs reloaded via /apica reload");
+        return Command.SINGLE_SUCCESS;
     }
 
     // ============================================================

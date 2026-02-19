@@ -31,6 +31,7 @@ import com.chapeau.apica.client.gui.screen.storage.NetworkInterfaceScreen;
 import com.chapeau.apica.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableRenderer;
+import com.chapeau.apica.client.renderer.block.AssemblyTableStatsRenderer;
 import com.chapeau.apica.client.renderer.block.AltarHeartRenderer;
 import com.chapeau.apica.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyPedestalRenderer;
@@ -110,6 +111,9 @@ public class ClientSetup {
 
         // Debug renderers (quand displayDebug = true)
         NeoForge.EVENT_BUS.register(CustomDebugDisplayRenderer.class);
+
+        // Assembly Table stats billboard
+        NeoForge.EVENT_BUS.register(AssemblyTableStatsRenderer.class);
 
         // Hoverbike system
         NeoForge.EVENT_BUS.register(HoverbikeDebugRenderer.class);

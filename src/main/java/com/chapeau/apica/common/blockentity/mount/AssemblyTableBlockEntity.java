@@ -14,11 +14,13 @@
  * UTILISE PAR:
  * - AssemblyTableBlock.java: Clic droit pour placer/retirer piece
  * - AssemblyTableRenderer.java: Rendu de la piece sur le bloc
+ * - InteractionMarkerTypes.java: Handler assembly_focus verifie storedItem
  *
  * ============================================================
  */
 package com.chapeau.apica.common.blockentity.mount;
 
+import com.chapeau.apica.core.entity.InteractionMarkerManager;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -26,6 +28,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -64,6 +67,7 @@ public class AssemblyTableBlockEntity extends BlockEntity {
         storedItem = stack.copyWithCount(1);
         setChanged();
         syncToClient();
+        spawnMarker();
         return true;
     }
 
@@ -79,12 +83,52 @@ public class AssemblyTableBlockEntity extends BlockEntity {
         storedItem = ItemStack.EMPTY;
         setChanged();
         syncToClient();
+        despawnMarker();
         return removed;
     }
 
-    private void syncToClient() {
+    public void syncToClient() {
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    // =========================================================================
+    // INTERACTION MARKER (Creative Focus)
+    // =========================================================================
+
+    private static final String MARKER_TYPE = "assembly_focus";
+
+    /** Spawn le marqueur d'interaction au-dessus de la table (server-side). */
+    private void spawnMarker() {
+        if (level instanceof ServerLevel serverLevel) {
+            InteractionMarkerManager.spawn(serverLevel, worldPosition, MARKER_TYPE);
+        }
+    }
+
+    /** Despawn le marqueur d'interaction (server-side). */
+    private void despawnMarker() {
+        if (level instanceof ServerLevel serverLevel) {
+            InteractionMarkerManager.despawn(serverLevel, worldPosition, MARKER_TYPE);
+        }
+    }
+
+    /**
+     * Despawn le marqueur depuis l'exterieur (appele par AssemblyTableBlock.onRemove).
+     */
+    public void despawnMarkerOnBreak() {
+        despawnMarker();
+    }
+
+    /**
+     * Au chargement du monde, respawn le marqueur si un item est present.
+     * Les marqueurs sont noSave() donc ne persistent pas — on les recree.
+     */
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level instanceof ServerLevel && !storedItem.isEmpty()) {
+            spawnMarker();
         }
     }
 
