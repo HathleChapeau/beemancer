@@ -55,7 +55,9 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class StorageBarrelBlock extends BaseEntityBlock {
 
@@ -72,6 +74,9 @@ public class StorageBarrelBlock extends BaseEntityBlock {
         SHAPES.put(Direction.UP,    Shapes.join(full, Block.box(0.5, 15, 0.5, 15.5, 16, 15.5), BooleanOp.ONLY_FIRST));
         SHAPES.put(Direction.DOWN,  Shapes.join(full, Block.box(0.5, 0, 0.5, 15.5, 1, 15.5), BooleanOp.ONLY_FIRST));
     }
+
+    private static final int EXTRACT_COOLDOWN_TICKS = 20;
+    private static final Map<UUID, Long> lastExtractTime = new HashMap<>();
 
     private final int tier;
 
@@ -222,6 +227,14 @@ public class StorageBarrelBlock extends BaseEntityBlock {
 
         if (!level.isClientSide()) {
             Player player = event.getEntity();
+            UUID playerId = player.getUUID();
+            long gameTime = level.getGameTime();
+
+            // Cooldown: 1 extraction per second (20 ticks)
+            Long lastTime = lastExtractTime.get(playerId);
+            if (lastTime != null && gameTime - lastTime < EXTRACT_COOLDOWN_TICKS) return;
+            lastExtractTime.put(playerId, gameTime);
+
             // Shift+left = 1 stack, left = 1 item
             ItemStack extracted = barrel.extractItem(!player.isShiftKeyDown());
             if (!extracted.isEmpty()) {

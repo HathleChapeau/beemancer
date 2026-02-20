@@ -84,8 +84,8 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
         // Now we're facing SOUTH (+Z direction)
         // The front face is at z=+0.5, inner wall of indent at z=0.4375
 
-        // Render stored item inside the indent
-        if (!storedItem.isEmpty() && storedCount > 0) {
+        // Render stored item inside the indent (only if there are items)
+        if (!storedItem.isEmpty() && storedCount > 0 && level != null) {
             poseStack.pushPose();
             poseStack.translate(0, 0.03, 0.47);
             poseStack.scale(0.5f, 0.5f, 0.001f);
