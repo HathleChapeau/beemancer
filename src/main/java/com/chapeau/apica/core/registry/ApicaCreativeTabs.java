@@ -175,6 +175,17 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.STORAGE_HIVE.get());
         output.accept(ApicaItems.STORAGE_HIVE_TIER2.get());
         output.accept(ApicaItems.STORAGE_HIVE_TIER3.get());
+
+        // Storage Barrels
+        output.accept(ApicaItems.STORAGE_BARREL_MK1.get());
+        output.accept(ApicaItems.STORAGE_BARREL_MK2.get());
+        output.accept(ApicaItems.STORAGE_BARREL_MK3.get());
+        output.accept(ApicaItems.STORAGE_BARREL_MK4.get());
+        output.accept(ApicaItems.VOID_UPGRADE.get());
+
+        // Trash Cans
+        output.accept(ApicaItems.TRASH_CAN.get());
+        output.accept(ApicaItems.LIQUID_TRASH_CAN.get());
     }
 
     private static void addHoneyAltarBlocks(CreativeModeTab.Output output) {

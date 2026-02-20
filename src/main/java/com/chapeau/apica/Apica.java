@@ -336,6 +336,13 @@ public class Apica {
                 ApicaBlockEntities.NECTAR_FURNACE.get(),
                 (be, side) -> be.getFuelTank()
         );
+
+        // Liquid Trash Can: accepte tout fluide, void immediat
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ApicaBlockEntities.LIQUID_TRASH_CAN.get(),
+                (be, side) -> be.getFluidHandler()
+        );
     }
 
     private void registerItemCapabilities(RegisterCapabilitiesEvent event) {
@@ -392,12 +399,19 @@ public class Apica {
                 (be, side) -> side == Direction.DOWN ? be.getOutputSlots() : be.getInputSlots()
         );
 
-        // Infuser Heart: pas de capability directe quand forme (pipes passent par les reservoirs)
-        // event.registerBlockEntity(
-        //         Capabilities.ItemHandler.BLOCK,
-        //         ApicaBlockEntities.INFUSER_HEART.get(),
-        //         (be, side) -> null
-        // );
+        // Storage Barrel: expose automation handler
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.STORAGE_BARREL.get(),
+                (be, side) -> be.getAutomationHandler()
+        );
+
+        // Trash Can: accepte tout, void immediat
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.TRASH_CAN.get(),
+                (be, side) -> be.getAutomationHandler()
+        );
     }
 
     // =========================================================================

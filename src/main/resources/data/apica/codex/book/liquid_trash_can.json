@@ -1,0 +1,12 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.logistics.liquid_trash_can.lore"
+    }
+  ],
+  "sticky_notes": []
+}

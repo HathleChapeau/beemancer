@@ -160,6 +160,10 @@ public class ClientSetup {
 
         // Resonator
         event.register(ApicaMenus.RESONATOR.get(), ResonatorScreen::new);
+
+        // Trash Cans
+        event.register(ApicaMenus.TRASH_CAN.get(), com.chapeau.apica.client.gui.screen.TrashCanScreen::new);
+        event.register(ApicaMenus.LIQUID_TRASH_CAN.get(), com.chapeau.apica.client.gui.screen.LiquidTrashCanScreen::new);
     }
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
@@ -230,6 +234,9 @@ public class ClientSetup {
         // ResonatorRenderer - abeille flottante au-dessus du resonateur
         event.registerBlockEntityRenderer(ApicaBlockEntities.RESONATOR.get(),
             ResonatorRenderer::new);
+        // StorageBarrelRenderer - item + quantite sur la face avant
+        event.registerBlockEntityRenderer(ApicaBlockEntities.STORAGE_BARREL.get(),
+            com.chapeau.apica.client.renderer.block.StorageBarrelRenderer::new);
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {

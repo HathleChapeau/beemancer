@@ -1,0 +1,12 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.logistics.storage_barrel.lore"
+    }
+  ],
+  "sticky_notes": []
+}

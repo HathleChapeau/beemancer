@@ -17,6 +17,7 @@ import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import com.chapeau.apica.common.item.mount.CreativeFocusItem;
 import com.chapeau.apica.common.item.mount.HoverbikePartItem;
 import com.chapeau.apica.common.item.mount.HoverbikeSpawnItem;
+import com.chapeau.apica.common.item.VoidUpgradeItem;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
 import com.chapeau.apica.common.item.tool.ScoopItem;
 import net.minecraft.world.item.BlockItem;
@@ -46,6 +47,26 @@ public class ApicaItems {
 
     public static final DeferredItem<BlockItem> EXPORT_INTERFACE = ITEMS.register("export_interface",
             () -> new BlockItem(ApicaBlocks.EXPORT_INTERFACE.get(), new Item.Properties()));
+
+    // --- Storage Barrels ---
+    public static final DeferredItem<BlockItem> STORAGE_BARREL_MK1 = ITEMS.register("storage_barrel_mk1",
+            () -> new BlockItem(ApicaBlocks.STORAGE_BARREL_MK1.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> STORAGE_BARREL_MK2 = ITEMS.register("storage_barrel_mk2",
+            () -> new BlockItem(ApicaBlocks.STORAGE_BARREL_MK2.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> STORAGE_BARREL_MK3 = ITEMS.register("storage_barrel_mk3",
+            () -> new BlockItem(ApicaBlocks.STORAGE_BARREL_MK3.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> STORAGE_BARREL_MK4 = ITEMS.register("storage_barrel_mk4",
+            () -> new BlockItem(ApicaBlocks.STORAGE_BARREL_MK4.get(), new Item.Properties()));
+
+    // --- Trash Cans ---
+    public static final DeferredItem<BlockItem> TRASH_CAN = ITEMS.register("trash_can",
+            () -> new BlockItem(ApicaBlocks.TRASH_CAN.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> LIQUID_TRASH_CAN = ITEMS.register("liquid_trash_can",
+            () -> new BlockItem(ApicaBlocks.LIQUID_TRASH_CAN.get(), new Item.Properties()));
+
+    // --- Void Upgrade ---
+    public static final DeferredItem<VoidUpgradeItem> VOID_UPGRADE = ITEMS.register("void_upgrade",
+            () -> new VoidUpgradeItem(new Item.Properties().stacksTo(1)));
 
     public static final DeferredItem<BlockItem> CONTROLLED_HIVE = ITEMS.register("controlled_hive",
             () -> new BlockItem(ApicaBlocks.CONTROLLED_HIVE.get(), new Item.Properties()));

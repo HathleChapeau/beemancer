@@ -35,7 +35,10 @@ import com.chapeau.apica.common.blockentity.mount.AssemblyTableBlockEntity;
 import com.chapeau.apica.common.blockentity.extractor.ExtractorHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.storage.ExportInterfaceBlockEntity;
 import com.chapeau.apica.common.blockentity.storage.ImportInterfaceBlockEntity;
+import com.chapeau.apica.common.blockentity.storage.LiquidTrashCanBlockEntity;
+import com.chapeau.apica.common.blockentity.storage.StorageBarrelBlockEntity;
 import com.chapeau.apica.common.blockentity.storage.StorageControllerBlockEntity;
+import com.chapeau.apica.common.blockentity.storage.TrashCanBlockEntity;
 import com.chapeau.apica.common.blockentity.storage.StorageHiveBlockEntity;
 import com.chapeau.apica.common.blockentity.storage.StorageRelayBlockEntity;
 import com.chapeau.apica.common.blockentity.storage.StorageTerminalBlockEntity;
@@ -92,6 +95,32 @@ public class ApicaBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             ExportInterfaceBlockEntity::new,
                             ApicaBlocks.EXPORT_INTERFACE.get()
+                    ).build(null));
+
+    // --- STORAGE BARRELS ---
+    public static final Supplier<BlockEntityType<StorageBarrelBlockEntity>> STORAGE_BARREL =
+            BLOCK_ENTITIES.register("storage_barrel",
+                    () -> BlockEntityType.Builder.of(
+                            StorageBarrelBlockEntity::new,
+                            ApicaBlocks.STORAGE_BARREL_MK1.get(),
+                            ApicaBlocks.STORAGE_BARREL_MK2.get(),
+                            ApicaBlocks.STORAGE_BARREL_MK3.get(),
+                            ApicaBlocks.STORAGE_BARREL_MK4.get()
+                    ).build(null));
+
+    // --- TRASH CANS ---
+    public static final Supplier<BlockEntityType<TrashCanBlockEntity>> TRASH_CAN =
+            BLOCK_ENTITIES.register("trash_can",
+                    () -> BlockEntityType.Builder.of(
+                            TrashCanBlockEntity::new,
+                            ApicaBlocks.TRASH_CAN.get()
+                    ).build(null));
+
+    public static final Supplier<BlockEntityType<LiquidTrashCanBlockEntity>> LIQUID_TRASH_CAN =
+            BLOCK_ENTITIES.register("liquid_trash_can",
+                    () -> BlockEntityType.Builder.of(
+                            LiquidTrashCanBlockEntity::new,
+                            ApicaBlocks.LIQUID_TRASH_CAN.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<MagicHiveBlockEntity>> MAGIC_HIVE =

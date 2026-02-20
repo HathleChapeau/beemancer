@@ -330,7 +330,7 @@
   "codex.apica.logistics.pipe_t3.lore.p1": "Standard pipes show strain under sustained royal jelly transport. The energy in royal-grade fluids erodes standard linings over time. Royal materials solve this.",
   "codex.apica.logistics.pipe_t3.lore.p2": "\u00a76\u00a7lRoyal Pipes\u00a7r. Internal channels lined with crystallized royal jelly. Throughput increases dramatically and the material resists degradation. Essential for any operation handling royal-grade fluids.",
   "codex.apica.logistics.pipe_t4.lore.p1": "The final refinement. Nectar-infused channel walls that resonate with the fluid rather than resist it. Transport becomes nearly frictionless.",
-  "codex.apica.logistics.pipe_t4.lore.p2": "\u00a76\u00a7lNectar Pipes\u00a7r. The throughput ceiling I assumed was physical turns out to have been a material limitation. These channels handle volumes I could not have imagined at the start of this work. The infrastructure is complete.",
+  "codex.apica.logistics.pipe_t4.lore.p2": "\u00a76\u00a7lNectar Pipes\u00a7r. The throughput ceiling I assumed was physical turns out to have been a material limitation. These channels handle volumes I could not have imagined at the start of this work.",
   "gene.category.apica.species": "Species",
   "gene.category.apica.environment": "Environment",
   "gene.category.apica.flower": "Flower",
@@ -985,5 +985,35 @@
 
   "codex.apica.artifacts.pollen_pot.title": "Pollen Pot",
   "codex.apica.artifacts.pollen_pot.desc": "TBD.",
-  "codex.apica.artifacts.pollen_pot.lore.p1": "TBD"
+  "codex.apica.artifacts.pollen_pot.lore.p1": "TBD",
+
+  "block.apica.storage_barrel_mk1": "Storage Barrel MK1",
+  "block.apica.storage_barrel_mk2": "Storage Barrel MK2",
+  "block.apica.storage_barrel_mk3": "Storage Barrel MK3",
+  "block.apica.storage_barrel_mk4": "Storage Barrel MK4",
+  "block.apica.trash_can": "Item Trash Can",
+  "block.apica.liquid_trash_can": "Liquid Trash Can",
+  "item.apica.void_upgrade": "Void Upgrade",
+
+  "container.apica.trash_can": "Item Trash Can",
+  "container.apica.liquid_trash_can": "Liquid Trash Can",
+
+  "codex.apica.logistics.storage_barrel.title": "Storage Barrel",
+  "codex.apica.logistics.storage_barrel.desc": "TBD.",
+  "codex.apica.logistics.storage_barrel.lore": "TBD",
+  "codex.apica.logistics.storage_barrel_mk2.title": "Storage Barrel MK2",
+  "codex.apica.logistics.storage_barrel_mk2.desc": "TBD.",
+  "codex.apica.logistics.storage_barrel_mk2.lore": "TBD",
+  "codex.apica.logistics.storage_barrel_mk3.title": "Storage Barrel MK3",
+  "codex.apica.logistics.storage_barrel_mk3.desc": "TBD.",
+  "codex.apica.logistics.storage_barrel_mk3.lore": "TBD",
+  "codex.apica.logistics.storage_barrel_mk4.title": "Storage Barrel MK4",
+  "codex.apica.logistics.storage_barrel_mk4.desc": "TBD.",
+  "codex.apica.logistics.storage_barrel_mk4.lore": "TBD",
+  "codex.apica.logistics.trash_can.title": "Item Trash Can",
+  "codex.apica.logistics.trash_can.desc": "TBD.",
+  "codex.apica.logistics.trash_can.lore": "TBD",
+  "codex.apica.logistics.liquid_trash_can.title": "Liquid Trash Can",
+  "codex.apica.logistics.liquid_trash_can.desc": "TBD.",
+  "codex.apica.logistics.liquid_trash_can.lore": "TBD"
 }

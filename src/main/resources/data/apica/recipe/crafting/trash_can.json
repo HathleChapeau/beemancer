@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": { "item": "apica:honeyed_stone" },
+    "C": { "item": "apica:honey_crystal" }
+  },
+  "pattern": [ "SSS", "SCS", "SSS" ],
+  "result": { "id": "apica:trash_can", "count": 1 }
+}

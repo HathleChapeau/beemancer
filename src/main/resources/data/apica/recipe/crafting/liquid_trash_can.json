@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": { "item": "apica:honeyed_planks" },
+    "C": { "item": "apica:honey_crystal" }
+  },
+  "pattern": [ "PPP", "PCP", "PPP" ],
+  "result": { "id": "apica:liquid_trash_can", "count": 1 }
+}

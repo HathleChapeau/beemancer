@@ -48,7 +48,10 @@ import com.chapeau.apica.common.block.pollenpot.PollenPotBlock;
 import com.chapeau.apica.common.block.storage.ControlledHiveBlock;
 import com.chapeau.apica.common.block.storage.ExportInterfaceBlock;
 import com.chapeau.apica.common.block.storage.ImportInterfaceBlock;
+import com.chapeau.apica.common.block.storage.LiquidTrashCanBlock;
+import com.chapeau.apica.common.block.storage.StorageBarrelBlock;
 import com.chapeau.apica.common.block.storage.StorageControllerBlock;
+import com.chapeau.apica.common.block.storage.TrashCanBlock;
 import com.chapeau.apica.common.block.resonator.ResonatorBlock;
 import com.chapeau.apica.common.block.storage.StorageHiveBlock;
 import com.chapeau.apica.common.block.storage.StorageRelayBlock;
@@ -110,6 +113,38 @@ public class ApicaBlocks {
                     .strength(2.5f)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()));
+
+    // --- STORAGE BARRELS ---
+    public static final DeferredBlock<StorageBarrelBlock> STORAGE_BARREL_MK1 = BLOCKS.register("storage_barrel_mk1",
+            () -> new StorageBarrelBlock(BlockBehaviour.Properties.of()
+                    .strength(2.5f)
+                    .sound(SoundType.WOOD)));
+
+    public static final DeferredBlock<StorageBarrelBlock> STORAGE_BARREL_MK2 = BLOCKS.register("storage_barrel_mk2",
+            () -> new StorageBarrelBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.WOOD), 2));
+
+    public static final DeferredBlock<StorageBarrelBlock> STORAGE_BARREL_MK3 = BLOCKS.register("storage_barrel_mk3",
+            () -> new StorageBarrelBlock(BlockBehaviour.Properties.of()
+                    .strength(3.5f)
+                    .sound(SoundType.WOOD), 3));
+
+    public static final DeferredBlock<StorageBarrelBlock> STORAGE_BARREL_MK4 = BLOCKS.register("storage_barrel_mk4",
+            () -> new StorageBarrelBlock(BlockBehaviour.Properties.of()
+                    .strength(4.0f)
+                    .sound(SoundType.WOOD), 4));
+
+    // --- TRASH CANS ---
+    public static final DeferredBlock<TrashCanBlock> TRASH_CAN = BLOCKS.register("trash_can",
+            () -> new TrashCanBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.METAL)));
+
+    public static final DeferredBlock<LiquidTrashCanBlock> LIQUID_TRASH_CAN = BLOCKS.register("liquid_trash_can",
+            () -> new LiquidTrashCanBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.METAL)));
 
     public static final DeferredBlock<ControlledHiveBlock> CONTROLLED_HIVE = BLOCKS.register("controlled_hive",
             () -> new ControlledHiveBlock(BlockBehaviour.Properties.of()

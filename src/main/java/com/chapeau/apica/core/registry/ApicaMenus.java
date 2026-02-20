@@ -9,6 +9,8 @@ package com.chapeau.apica.core.registry;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.menu.IncubatorMenu;
 import com.chapeau.apica.common.menu.InjectorMenu;
+import com.chapeau.apica.common.menu.LiquidTrashCanMenu;
+import com.chapeau.apica.common.menu.TrashCanMenu;
 import com.chapeau.apica.common.menu.MagicHiveMenu;
 import com.chapeau.apica.common.menu.ResonatorMenu;
 import com.chapeau.apica.common.menu.alchemy.AlembicMenu;
@@ -97,6 +99,15 @@ public class ApicaMenus {
     public static final Supplier<MenuType<ResonatorMenu>> RESONATOR =
             MENUS.register("resonator",
                     () -> IMenuTypeExtension.create(ResonatorMenu::new));
+
+    // --- TRASH CANS ---
+    public static final Supplier<MenuType<TrashCanMenu>> TRASH_CAN =
+            MENUS.register("trash_can",
+                    () -> IMenuTypeExtension.create(TrashCanMenu::new));
+
+    public static final Supplier<MenuType<LiquidTrashCanMenu>> LIQUID_TRASH_CAN =
+            MENUS.register("liquid_trash_can",
+                    () -> IMenuTypeExtension.create(LiquidTrashCanMenu::new));
 
     public static void register(IEventBus eventBus) {
         MENUS.register(eventBus);
