@@ -100,7 +100,7 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
             poseStack.scale(0.015f, -0.015f, -0.015f);
             float textWidth = font.width(countText);
             font.drawInBatch(countText, -textWidth / 2f, 0, 0xFFFFFFFF,
-                    false, poseStack.last().pose(), buffer, Font.DisplayMode.SEE_THROUGH,
+                    false, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL,
                     0x40000000, LightTexture.FULL_BRIGHT);
             poseStack.popPose();
         }
@@ -112,7 +112,7 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
             poseStack.scale(0.15f, 0.15f, 0.001f);
 
             font.drawInBatch("\u00a74V", -font.width("V") / 2f, -4, 0xFFFF4444,
-                    false, poseStack.last().pose(), buffer, Font.DisplayMode.SEE_THROUGH,
+                    false, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL,
                     0, LightTexture.FULL_BRIGHT);
             poseStack.popPose();
         }
