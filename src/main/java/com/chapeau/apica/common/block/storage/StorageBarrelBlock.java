@@ -75,7 +75,7 @@ public class StorageBarrelBlock extends BaseEntityBlock {
         SHAPES.put(Direction.DOWN,  Shapes.join(full, Block.box(0.5, 0, 0.5, 15.5, 1, 15.5), BooleanOp.ONLY_FIRST));
     }
 
-    private static final int EXTRACT_COOLDOWN_TICKS = 20;
+    private static final int EXTRACT_COOLDOWN_TICKS = 4;
     private static final Map<UUID, Long> lastExtractTime = new HashMap<>();
 
     private final int tier;
