@@ -97,7 +97,7 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
             String countText = formatCount(storedCount);
             poseStack.pushPose();
             poseStack.translate(0, -0.25, 0.49);
-            poseStack.scale(0.015f, 0.015f, 0.015f);
+            poseStack.scale(0.015f, -0.015f, -0.015f);
             float textWidth = font.width(countText);
             font.drawInBatch(countText, -textWidth / 2f, 0, 0xFFFFFFFF,
                     false, poseStack.last().pose(), buffer, Font.DisplayMode.SEE_THROUGH,
