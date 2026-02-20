@@ -579,7 +579,7 @@ public class ApicaBlocks {
                     .lightLevel(state -> 13)
                     .noOcclusion()
                     .requiresCorrectToolForDrops(),
-                    Block.box(3, 0, 3, 13, 12, 13)));
+                    Block.box(3, 1, 3, 13, 13, 13)));
 
     public static final DeferredBlock<HoneyCrystalBlock> NECTAR_CRYSTAL = BLOCKS.register("nectar_crystal",
             () -> new HoneyCrystalBlock(BlockBehaviour.Properties.of()

@@ -691,6 +691,55 @@ LISTE DES FEATURES:
   Dependances: GuiRenderHelper, ApicaMenu, AbstractApicaScreen, ApicaFluids, ContainerData
   Registres modifies: ApicaBlocks (+3), ApicaItems (+3), ApicaBlockEntities (+3), ApicaMenus (+1)
 
+→ Storage Barrels (MK1-MK4) + Void Upgrade
+  Description: Barrels de stockage style Sophisticated Storage. 1 seul type d'item, capacite par tier
+    (MK1=54, MK2=108, MK3=216, MK4=432 stacks). FACING 6 directions. Pas de GUI, interactions clic
+    (clic droit=inserer, clic droit main vide=extraire). Void Upgrade applique par clic droit, surplus
+    detruit quand barrel plein. Item affiche sur face avant avec quantite via BlockEntityRenderer.
+  Scripts crees: StorageBarrelBlock.java, StorageBarrelBlockEntity.java, VoidUpgradeItem.java,
+    StorageBarrelRenderer.java
+  Scripts modifies: ApicaBlocks.java (+4), ApicaItems.java (+5), ApicaBlockEntities.java (+STORAGE_BARREL),
+    ApicaCreativeTabs.java (+barrels+void_upgrade), Apica.java (+item capability barrel),
+    ClientSetup.java (+StorageBarrelRenderer)
+  Assets: 4 blockstates (6-dir facing), 4 block models, 5 item models, 4 loot tables,
+    4 codex book stubs, codex logistics.json (+4 nodes), lang en_us
+  Dependances: IItemHandler, BlockEntityRenderer
+  Registres modifies: ApicaBlocks (+4), ApicaItems (+5), ApicaBlockEntities (+1)
+
+→ Item Trash Can
+  Description: Trash can pour items avec GUI 1 slot. Le dernier item reste dans le slot. Mettre un nouvel
+    item detruit l'ancien et place le nouveau. Automation IItemHandler accepte tout, void immediat.
+  Scripts crees: TrashCanBlock.java, TrashCanBlockEntity.java, TrashCanMenu.java, TrashCanScreen.java
+  Scripts modifies: ApicaBlocks.java (+1), ApicaItems.java (+1), ApicaBlockEntities.java (+TRASH_CAN),
+    ApicaMenus.java (+TRASH_CAN), ApicaCreativeTabs.java (+trash_can), Apica.java (+item capability),
+    ClientSetup.java (+TrashCanScreen)
+  Assets: 1 blockstate, 1 block model, 1 item model, 1 loot table, 1 codex book stub,
+    1 recipe (8 honeyed_stone + 1 honey_crystal), lang en_us
+  Dependances: ApicaMenu, AbstractApicaScreen, ApicaSlot
+  Registres modifies: ApicaBlocks (+1), ApicaItems (+1), ApicaBlockEntities (+1), ApicaMenus (+1)
+
+→ Liquid Trash Can
+  Description: Trash can pour fluides avec GUI 1 slot bucket. Vide le bucket, garde le sceau vide.
+    Automation IFluidHandler accepte tout fluide, void immediat.
+  Scripts crees: LiquidTrashCanBlock.java, LiquidTrashCanBlockEntity.java, LiquidTrashCanMenu.java,
+    LiquidTrashCanScreen.java
+  Scripts modifies: ApicaBlocks.java (+1), ApicaItems.java (+1), ApicaBlockEntities.java (+LIQUID_TRASH_CAN),
+    ApicaMenus.java (+LIQUID_TRASH_CAN), ApicaCreativeTabs.java (+liquid_trash_can),
+    Apica.java (+fluid capability), ClientSetup.java (+LiquidTrashCanScreen)
+  Assets: 1 blockstate, 1 block model, 1 item model, 1 loot table, 1 codex book stub,
+    1 recipe (8 honeyed_planks + 1 honey_crystal), lang en_us
+  Dependances: ApicaMenu, AbstractApicaScreen, ApicaSlot, IFluidHandler
+  Registres modifies: ApicaBlocks (+1), ApicaItems (+1), ApicaBlockEntities (+1), ApicaMenus (+1)
+
+→ Tank Bucket Interaction
+  Description: Interaction clic droit bucket sur HoneyTankBlock et MultiblockTankBlock.
+    Bucket plein = vide dans le tank (si meme fluide ou tank vide, minimum 1 bucket d'espace).
+    Bucket vide = remplit le bucket et retire 1 bucket du tank (minimum 1 bucket disponible).
+    Utilise FluidUtil.interactWithFluidHandler de NeoForge.
+  Scripts modifies: HoneyTankBlock.java (+useItemOn), MultiblockTankBlock.java (+useItemOn)
+  Dependances: FluidUtil, IFluidHandler
+  Registres modifies: aucun
+
 ================================================================================
 6. FEATURES EN COURS
 ================================================================================

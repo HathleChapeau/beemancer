@@ -39,7 +39,7 @@ public class HoneyCrystalBlock extends Block {
     }
 
     public HoneyCrystalBlock(Properties properties) {
-        this(properties, Block.box(4, 0, 4, 12, 8, 12));
+        this(properties, Block.box(4, 2, 4, 12, 10, 12));
     }
 
     @Override

@@ -34,6 +34,7 @@ import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -45,12 +46,30 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 public class StorageBarrelBlock extends BaseEntityBlock {
 
     public static final MapCodec<StorageBarrelBlock> CODEC = simpleCodec(StorageBarrelBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
+
+    private static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Direction.class);
+    static {
+        VoxelShape full = Shapes.block();
+        SHAPES.put(Direction.NORTH, Shapes.join(full, Block.box(0.5, 0.5, 0, 15.5, 15.5, 1), BooleanOp.ONLY_FIRST));
+        SHAPES.put(Direction.SOUTH, Shapes.join(full, Block.box(0.5, 0.5, 15, 15.5, 15.5, 16), BooleanOp.ONLY_FIRST));
+        SHAPES.put(Direction.EAST,  Shapes.join(full, Block.box(15, 0.5, 0.5, 16, 15.5, 15.5), BooleanOp.ONLY_FIRST));
+        SHAPES.put(Direction.WEST,  Shapes.join(full, Block.box(0, 0.5, 0.5, 1, 15.5, 15.5), BooleanOp.ONLY_FIRST));
+        SHAPES.put(Direction.UP,    Shapes.join(full, Block.box(0.5, 15, 0.5, 15.5, 16, 15.5), BooleanOp.ONLY_FIRST));
+        SHAPES.put(Direction.DOWN,  Shapes.join(full, Block.box(0.5, 0, 0.5, 15.5, 1, 15.5), BooleanOp.ONLY_FIRST));
+    }
 
     private final int tier;
 
@@ -82,6 +101,11 @@ public class StorageBarrelBlock extends BaseEntityBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPES.getOrDefault(state.getValue(FACING), Shapes.block());
     }
 
     @Nullable

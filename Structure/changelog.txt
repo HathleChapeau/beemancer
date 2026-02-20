@@ -3,6 +3,64 @@
 ################################################################################
 
 ================================================================================
+2026-02-20 - Storage Barrels (MK1-MK4) + Void Upgrade + Trash Cans + Bucket Interaction
+================================================================================
+
+STORAGE BARRELS:
+- StorageBarrelBlock.java: Block FACING 6 directions, clic insert/extract, void upgrade apply/remove
+- StorageBarrelBlockEntity.java: 1 item type, capacite par tier (54/108/216/432 stacks), IItemHandler automation, void flag
+- VoidUpgradeItem.java: Item simple (stacksTo 1)
+- StorageBarrelRenderer.java: Rendu item + quantite + icone void sur face avant
+- ApicaBlocks.java: +STORAGE_BARREL_MK1..MK4
+- ApicaItems.java: +STORAGE_BARREL_MK1..MK4, +VOID_UPGRADE
+- ApicaBlockEntities.java: +STORAGE_BARREL (4 blocks partages)
+- ApicaCreativeTabs.java: +barrels + void_upgrade dans storage
+- Apica.java: +item capability (automation handler)
+- ClientSetup.java: +StorageBarrelRenderer
+- Assets: 4 blockstates, 4 block models, 5 item models, 4 loot tables, 4 codex book stubs
+- Codex: logistics.json +4 nodes (storage_barrel, mk2, mk3, mk4)
+
+ITEM TRASH CAN:
+- TrashCanBlock.java: Block ouvre menu
+- TrashCanBlockEntity.java: 1 slot lastItem, IItemHandler void
+- TrashCanMenu.java: Menu 1 slot
+- TrashCanScreen.java: Screen simple
+- Recipe: 8 honeyed_stone + 1 honey_crystal
+- ApicaBlocks.java: +TRASH_CAN
+- ApicaItems.java: +TRASH_CAN
+- ApicaBlockEntities.java: +TRASH_CAN
+- ApicaMenus.java: +TRASH_CAN
+- Apica.java: +item capability
+- ClientSetup.java: +TrashCanScreen
+- Assets: 1 blockstate, 1 block model, 1 item model, 1 loot table, 1 codex book stub
+
+LIQUID TRASH CAN:
+- LiquidTrashCanBlock.java: Block ouvre menu
+- LiquidTrashCanBlockEntity.java: IFluidHandler void, bucket slot
+- LiquidTrashCanMenu.java: Menu 1 slot bucket
+- LiquidTrashCanScreen.java: Screen simple
+- Recipe: 8 honeyed_planks + 1 honey_crystal
+- ApicaBlocks.java: +LIQUID_TRASH_CAN
+- ApicaItems.java: +LIQUID_TRASH_CAN
+- ApicaBlockEntities.java: +LIQUID_TRASH_CAN
+- ApicaMenus.java: +LIQUID_TRASH_CAN
+- Apica.java: +fluid capability
+- ClientSetup.java: +LiquidTrashCanScreen
+- Assets: 1 blockstate, 1 block model, 1 item model, 1 loot table, 1 codex book stub
+
+TANK BUCKET INTERACTION:
+- HoneyTankBlock.java: +useItemOn (FluidUtil.interactWithFluidHandler)
+- MultiblockTankBlock.java: +useItemOn (FluidUtil.interactWithFluidHandler via master)
+
+CODEX:
+- logistics.json: +6 nodes (4 barrels + 2 trash cans)
+- 6 codex book stubs avec "TBD" lore
+
+LANG:
+- en_us.json: +27 cles (blocks, items, containers, codex titles/lores)
+- Fix nectar pipe lore p2 (suppression "The infrastructure is complete.")
+
+================================================================================
 2026-02-19 - Apica Furnaces (Honey, Royal, Nectar)
 ================================================================================
 

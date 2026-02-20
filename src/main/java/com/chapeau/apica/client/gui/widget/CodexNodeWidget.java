@@ -88,6 +88,12 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("pipe_t4", "apica:liquid_pipe");
         NODE_TO_ITEM.put("resonator", "apica:resonator");
         NODE_TO_ITEM.put("essence_injector", "apica:injector");
+        NODE_TO_ITEM.put("storage_barrel", "apica:storage_barrel_mk1");
+        NODE_TO_ITEM.put("storage_barrel_mk2", "apica:storage_barrel_mk2");
+        NODE_TO_ITEM.put("storage_barrel_mk3", "apica:storage_barrel_mk3");
+        NODE_TO_ITEM.put("storage_barrel_mk4", "apica:storage_barrel_mk4");
+        NODE_TO_ITEM.put("trash_can", "apica:trash_can");
+        NODE_TO_ITEM.put("liquid_trash_can", "apica:liquid_trash_can");
 
         // Textures pour les nodes sans item correspondant
         NODE_TO_TEXTURE.put("apica", ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/gui/codex/icon_unknown.png"));

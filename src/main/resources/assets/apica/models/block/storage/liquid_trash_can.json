@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "apica:block/storage/trash_can_base",
   "textures": {
-    "all": "apica:block/building/iron_foundation"
+    "all": "apica:block/plank_2"
   }
 }

@@ -1,0 +1,57 @@
+{
+  "textures": {
+    "side": "apica:block/building/iron_foundation",
+    "front": "apica:block/building/iron_foundation",
+    "particle": "#side"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 1],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": { "texture": "#front" },
+        "south": { "texture": "#side" },
+        "east":  { "texture": "#side" },
+        "west":  { "texture": "#side" },
+        "up":    { "texture": "#side" },
+        "down":  { "texture": "#side" }
+      }
+    },
+    {
+      "from": [0, 15.5, 0],
+      "to": [16, 16, 1],
+      "faces": {
+        "north": { "texture": "#side" },
+        "up":    { "texture": "#side" },
+        "down":  { "texture": "#side" }
+      }
+    },
+    {
+      "from": [0, 0, 0],
+      "to": [16, 0.5, 1],
+      "faces": {
+        "north": { "texture": "#side" },
+        "up":    { "texture": "#side" },
+        "down":  { "texture": "#side" }
+      }
+    },
+    {
+      "from": [0, 0.5, 0],
+      "to": [0.5, 15.5, 1],
+      "faces": {
+        "north": { "texture": "#side" },
+        "west":  { "texture": "#side" },
+        "east":  { "texture": "#side" }
+      }
+    },
+    {
+      "from": [15.5, 0.5, 0],
+      "to": [16, 15.5, 1],
+      "faces": {
+        "north": { "texture": "#side" },
+        "east":  { "texture": "#side" },
+        "west":  { "texture": "#side" }
+      }
+    }
+  ]
+}

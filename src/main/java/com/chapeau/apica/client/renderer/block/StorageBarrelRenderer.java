@@ -75,20 +75,21 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
         // Now we're facing SOUTH (+Z direction)
         // The front face is at z=+0.5
 
-        // Render stored item on front face
+        // Render stored item inside the indent (1px deep = 1/16 block)
+        // Inner wall at z=0.4375, frame edge at z=0.5
         if (!storedItem.isEmpty() && storedCount > 0) {
             poseStack.pushPose();
-            poseStack.translate(0, 0, 0.501); // Slightly in front of face
+            poseStack.translate(0, 0.03, 0.47); // Centered in indent
             poseStack.scale(0.5f, 0.5f, 0.001f); // Flat on the face
             itemRenderer.renderStatic(storedItem, ItemDisplayContext.GUI,
                     packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, barrel.getLevel(), 0);
             poseStack.popPose();
 
-            // Render count text
+            // Render count text below item
             String countText = formatCount(storedCount);
             poseStack.pushPose();
-            poseStack.translate(0, -0.3, 0.501);
-            poseStack.scale(-0.015f, -0.015f, 0.015f); // Flip for correct text orientation
+            poseStack.translate(0, -0.25, 0.47);
+            poseStack.scale(-0.015f, -0.015f, 0.015f);
             float textWidth = font.width(countText);
             font.drawInBatch(countText, -textWidth / 2f, 0, 0xFFFFFF,
                     true, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL,
@@ -96,10 +97,10 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
             poseStack.popPose();
         }
 
-        // Render void upgrade icon (bottom-right of front face)
+        // Render void upgrade icon (bottom-right inside indent)
         if (hasVoid) {
             poseStack.pushPose();
-            poseStack.translate(0.28, -0.28, 0.502);
+            poseStack.translate(0.28, -0.28, 0.48);
             poseStack.scale(0.15f, 0.15f, 0.001f);
 
             // Render a small "V" text as icon placeholder

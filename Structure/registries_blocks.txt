@@ -99,4 +99,14 @@
 --- BEE NESTS ---
 | bee_nest               | BeeNestBlock              | Oui          | Worldgen        |
 
+--- STORAGE BARRELS ---
+| storage_barrel_mk1     | StorageBarrelBlock (tier 1) | Oui          | Storage Barrels |
+| storage_barrel_mk2     | StorageBarrelBlock (tier 2) | Oui          | Storage Barrels |
+| storage_barrel_mk3     | StorageBarrelBlock (tier 3) | Oui          | Storage Barrels |
+| storage_barrel_mk4     | StorageBarrelBlock (tier 4) | Oui          | Storage Barrels |
+
+--- TRASH CANS ---
+| trash_can              | TrashCanBlock             | Oui          | Trash Can       |
+| liquid_trash_can       | LiquidTrashCanBlock       | Oui          | Liquid Trash Can|
+
 ################################################################################

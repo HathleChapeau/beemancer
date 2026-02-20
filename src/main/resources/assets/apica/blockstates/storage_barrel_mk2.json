@@ -1,10 +1,10 @@
 {
   "variants": {
-    "facing=down":  { "model": "apica:block/storage/storage_barrel_mk2" },
-    "facing=up":    { "model": "apica:block/storage/storage_barrel_mk2", "x": 180 },
-    "facing=north": { "model": "apica:block/storage/storage_barrel_mk2", "x": 270 },
-    "facing=south": { "model": "apica:block/storage/storage_barrel_mk2", "x": 270, "y": 180 },
-    "facing=east":  { "model": "apica:block/storage/storage_barrel_mk2", "x": 270, "y": 90 },
-    "facing=west":  { "model": "apica:block/storage/storage_barrel_mk2", "x": 270, "y": 270 }
+    "facing=north": { "model": "apica:block/storage/storage_barrel_mk2" },
+    "facing=south": { "model": "apica:block/storage/storage_barrel_mk2", "y": 180 },
+    "facing=east":  { "model": "apica:block/storage/storage_barrel_mk2", "y": 90 },
+    "facing=west":  { "model": "apica:block/storage/storage_barrel_mk2", "y": 270 },
+    "facing=up":    { "model": "apica:block/storage/storage_barrel_mk2", "x": 270 },
+    "facing=down":  { "model": "apica:block/storage/storage_barrel_mk2", "x": 90 }
   }
 }

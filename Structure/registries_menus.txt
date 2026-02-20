@@ -29,4 +29,8 @@
 --- APICA FURNACES ---
 | apica_furnace      | ApicaFurnaceMenu     | Apica Furnaces (shared) |
 
+--- TRASH CANS ---
+| trash_can          | TrashCanMenu         | Trash Can        |
+| liquid_trash_can   | LiquidTrashCanMenu   | Liquid Trash Can |
+
 ################################################################################

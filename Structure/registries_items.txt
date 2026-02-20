@@ -97,6 +97,17 @@
 | royal_furnace            | BlockItem        | Apica Furnaces    |
 | nectar_furnace           | BlockItem        | Apica Furnaces    |
 
+--- STORAGE BARRELS ---
+| storage_barrel_mk1     | BlockItem        | Storage Barrels   |
+| storage_barrel_mk2     | BlockItem        | Storage Barrels   |
+| storage_barrel_mk3     | BlockItem        | Storage Barrels   |
+| storage_barrel_mk4     | BlockItem        | Storage Barrels   |
+| void_upgrade           | VoidUpgradeItem  | Storage Barrels   |
+
+--- TRASH CANS ---
+| trash_can              | BlockItem        | Trash Can         |
+| liquid_trash_can       | BlockItem        | Liquid Trash Can  |
+
 --- BEE ITEMS ---
 | magic_bee                | MagicBeeItem     | Gene System     |
 | bee_larva                | BeeLarvaItem     | Breeding        |

@@ -1,6 +1,7 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "apica:block/storage/storage_barrel_base",
   "textures": {
-    "all": "apica:block/building/iron_foundation"
+    "side": "apica:block/honeyed_iron_block",
+    "front": "apica:block/honeyed_iron_block"
   }
 }
