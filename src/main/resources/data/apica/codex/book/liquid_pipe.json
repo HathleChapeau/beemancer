@@ -5,14 +5,15 @@
     },
     {
       "type": "text",
-      "key": "codex.apica.alchemy.liquid_pipe.lore.p1"
-    },
-    {
-      "type": "page_break"
+      "key": "codex.apica.logistics.liquid_pipe.lore.p1"
     },
     {
       "type": "text",
-      "key": "codex.apica.alchemy.liquid_pipe.lore.p2"
+      "key": "codex.apica.logistics.liquid_pipe.lore.p2"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.logistics.liquid_pipe.lore.p3"
     },
     {
       "type": "craft",
