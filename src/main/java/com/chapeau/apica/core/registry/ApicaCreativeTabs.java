@@ -182,6 +182,9 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.STORAGE_BARREL_MK3.get());
         output.accept(ApicaItems.STORAGE_BARREL_MK4.get());
         output.accept(ApicaItems.VOID_UPGRADE.get());
+        output.accept(ApicaItems.BARREL_MK2_UPGRADE.get());
+        output.accept(ApicaItems.BARREL_MK3_UPGRADE.get());
+        output.accept(ApicaItems.BARREL_MK4_UPGRADE.get());
 
         // Wooden Frame
         output.accept(ApicaItems.WOODEN_FRAME.get());

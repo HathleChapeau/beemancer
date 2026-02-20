@@ -996,6 +996,9 @@
   "block.apica.trash_can": "Item Trash Can",
   "block.apica.liquid_trash_can": "Liquid Trash Can",
   "item.apica.void_upgrade": "Void Upgrade",
+  "item.apica.barrel_mk2_upgrade": "Barrel MK2 Upgrade",
+  "item.apica.barrel_mk3_upgrade": "Barrel MK3 Upgrade",
+  "item.apica.barrel_mk4_upgrade": "Barrel MK4 Upgrade",
   "item.apica.wooden_frame": "Wooden Frame",
 
   "container.apica.trash_can": "Item Trash Can",

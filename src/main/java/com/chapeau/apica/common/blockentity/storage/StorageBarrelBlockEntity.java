@@ -248,6 +248,37 @@ public class StorageBarrelBlockEntity extends BlockEntity {
         return automationHandler;
     }
 
+    // --- Upgrade support ---
+
+    /**
+     * Vide le barrel sans drop (retourne les donnees pour transfert).
+     * Utilise lors de l'upgrade de tier.
+     */
+    public BarrelData clearForUpgrade() {
+        BarrelData data = new BarrelData(storedItem.copy(), storedCount, voidUpgrade);
+        this.storedItem = ItemStack.EMPTY;
+        this.storedCount = 0;
+        this.voidUpgrade = false;
+        setChanged();
+        return data;
+    }
+
+    /**
+     * Restaure les donnees d'un ancien barrel apres upgrade.
+     */
+    public void restoreFromUpgrade(BarrelData data) {
+        this.storedItem = data.item().copy();
+        this.storedCount = data.count();
+        this.voidUpgrade = data.hasVoid();
+        setChanged();
+        syncToClient();
+    }
+
+    /**
+     * Donnees de barrel pour transfert lors d'un upgrade.
+     */
+    public record BarrelData(ItemStack item, int count, boolean hasVoid) {}
+
     // --- Drop contents ---
 
     public void dropContents(Level level, BlockPos pos) {

@@ -17,6 +17,7 @@ import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import com.chapeau.apica.common.item.mount.CreativeFocusItem;
 import com.chapeau.apica.common.item.mount.HoverbikePartItem;
 import com.chapeau.apica.common.item.mount.HoverbikeSpawnItem;
+import com.chapeau.apica.common.item.BarrelUpgradeItem;
 import com.chapeau.apica.common.item.VoidUpgradeItem;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
 import com.chapeau.apica.common.item.tool.ScoopItem;
@@ -63,6 +64,14 @@ public class ApicaItems {
             () -> new BlockItem(ApicaBlocks.TRASH_CAN.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> LIQUID_TRASH_CAN = ITEMS.register("liquid_trash_can",
             () -> new BlockItem(ApicaBlocks.LIQUID_TRASH_CAN.get(), new Item.Properties()));
+
+    // --- Barrel Upgrades ---
+    public static final DeferredItem<BarrelUpgradeItem> BARREL_MK2_UPGRADE = ITEMS.register("barrel_mk2_upgrade",
+            () -> new BarrelUpgradeItem(new Item.Properties(), 2));
+    public static final DeferredItem<BarrelUpgradeItem> BARREL_MK3_UPGRADE = ITEMS.register("barrel_mk3_upgrade",
+            () -> new BarrelUpgradeItem(new Item.Properties(), 3));
+    public static final DeferredItem<BarrelUpgradeItem> BARREL_MK4_UPGRADE = ITEMS.register("barrel_mk4_upgrade",
+            () -> new BarrelUpgradeItem(new Item.Properties(), 4));
 
     // --- Void Upgrade ---
     public static final DeferredItem<VoidUpgradeItem> VOID_UPGRADE = ITEMS.register("void_upgrade",

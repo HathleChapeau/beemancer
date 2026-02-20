@@ -13,9 +13,11 @@
     {
       "type": "craft",
       "result": "apica:storage_barrel_mk1"
+    },
+    {
+      "type": "craft",
+      "result": "apica:wooden_frame"
     }
   ],
-  "sticky_notes": [
-    {"craft": "apica:wooden_frame"}
-  ]
+  "sticky_notes": []
 }

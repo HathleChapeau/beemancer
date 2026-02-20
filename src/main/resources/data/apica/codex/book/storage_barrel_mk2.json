@@ -12,11 +12,11 @@
     },
     {
       "type": "craft",
-      "result": "apica:storage_barrel_mk1"
+      "result": "apica:storage_barrel_mk2"
     },
     {
       "type": "craft",
-      "result": "apica:storage_barrel_mk2"
+      "result": "apica:barrel_mk2_upgrade"
     }
   ],
   "sticky_notes": []
