@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * [HoneyPipeBlockEntity.java]
+ * [LiquidPipeBlockEntity.java]
  * Description: BlockEntity pour les pipes de transport de fluide
  * ============================================================
  *
@@ -14,7 +14,7 @@
  */
 package com.chapeau.apica.common.blockentity.alchemy;
 
-import com.chapeau.apica.common.block.alchemy.HoneyPipeBlock;
+import com.chapeau.apica.common.block.alchemy.LiquidPipeBlock;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
 import net.minecraft.core.BlockPos;
@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-public class HoneyPipeBlockEntity extends BlockEntity {
+public class LiquidPipeBlockEntity extends BlockEntity {
     // --- TIER CONFIG ---
     public static final int TIER1_BUFFER = 1000;
     public static final int TIER2_BUFFER = 2000;
@@ -64,11 +64,11 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     // Couleur de teinte du core (-1 = pas de teinte)
     private int tintColor = -1;
 
-    public HoneyPipeBlockEntity(BlockPos pos, BlockState state) {
-        this(ApicaBlockEntities.HONEY_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
+    public LiquidPipeBlockEntity(BlockPos pos, BlockState state) {
+        this(ApicaBlockEntities.LIQUID_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
     }
 
-    public HoneyPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
+    public LiquidPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
                                  int bufferCapacity, int transferRate) {
         super(type, pos, state);
         this.transferRate = transferRate;
@@ -88,22 +88,22 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     }
 
     // Factory methods for tiered versions
-    public static HoneyPipeBlockEntity createTier2(BlockPos pos, BlockState state) {
-        return new HoneyPipeBlockEntity(ApicaBlockEntities.HONEY_PIPE_TIER2.get(), pos, state,
+    public static LiquidPipeBlockEntity createTier2(BlockPos pos, BlockState state) {
+        return new LiquidPipeBlockEntity(ApicaBlockEntities.LIQUID_PIPE_TIER2.get(), pos, state,
             TIER2_BUFFER, TIER2_TRANSFER);
     }
 
-    public static HoneyPipeBlockEntity createTier3(BlockPos pos, BlockState state) {
-        return new HoneyPipeBlockEntity(ApicaBlockEntities.HONEY_PIPE_TIER3.get(), pos, state,
+    public static LiquidPipeBlockEntity createTier3(BlockPos pos, BlockState state) {
+        return new LiquidPipeBlockEntity(ApicaBlockEntities.LIQUID_PIPE_TIER3.get(), pos, state,
             TIER3_BUFFER, TIER3_TRANSFER);
     }
 
-    public static HoneyPipeBlockEntity createTier4(BlockPos pos, BlockState state) {
-        return new HoneyPipeBlockEntity(ApicaBlockEntities.HONEY_PIPE_TIER4.get(), pos, state,
+    public static LiquidPipeBlockEntity createTier4(BlockPos pos, BlockState state) {
+        return new LiquidPipeBlockEntity(ApicaBlockEntities.LIQUID_PIPE_TIER4.get(), pos, state,
             TIER4_BUFFER, TIER4_TRANSFER);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, HoneyPipeBlockEntity be) {
+    public static void serverTick(Level level, BlockPos pos, BlockState state, LiquidPipeBlockEntity be) {
         // Extraction depuis les blocs marques pour extraction (chaque tick)
         be.processExtractions(level, pos, state);
 
@@ -121,13 +121,13 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         }
 
         for (Direction dir : Direction.values()) {
-            if (!HoneyPipeBlock.isConnected(state, dir)) continue;
-            if (!HoneyPipeBlock.isExtracting(state, dir)) continue;
+            if (!LiquidPipeBlock.isConnected(state, dir)) continue;
+            if (!LiquidPipeBlock.isExtracting(state, dir)) continue;
 
             BlockPos neighborPos = pos.relative(dir);
 
             // Don't extract from other pipes
-            if (level.getBlockEntity(neighborPos) instanceof HoneyPipeBlockEntity) continue;
+            if (level.getBlockEntity(neighborPos) instanceof LiquidPipeBlockEntity) continue;
 
             var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
             if (cap != null) {
@@ -165,13 +165,13 @@ public class HoneyPipeBlockEntity extends BlockEntity {
         int myAmount = buffer.getFluidAmount();
 
         for (Direction dir : Direction.values()) {
-            if (!HoneyPipeBlock.isConnected(state, dir)) continue;
-            if (HoneyPipeBlock.isExtracting(state, dir)) continue;
+            if (!LiquidPipeBlock.isConnected(state, dir)) continue;
+            if (LiquidPipeBlock.isExtracting(state, dir)) continue;
 
             BlockPos neighborPos = pos.relative(dir);
             BlockEntity neighborBe = level.getBlockEntity(neighborPos);
 
-            if (neighborBe instanceof HoneyPipeBlockEntity neighborPipe) {
+            if (neighborBe instanceof LiquidPipeBlockEntity neighborPipe) {
                 FluidStack theirFluid = neighborPipe.buffer.getFluid();
                 // Verifier compatibilite de fluide
                 if (!theirFluid.isEmpty() && !myFluid.getFluid().isSame(theirFluid.getFluid())) {
@@ -302,11 +302,11 @@ public class HoneyPipeBlockEntity extends BlockEntity {
     }
 
     private static class PipeTarget {
-        final HoneyPipeBlockEntity pipe;
+        final LiquidPipeBlockEntity pipe;
         final int amount;
         int transfer;
 
-        PipeTarget(HoneyPipeBlockEntity pipe, int amount) {
+        PipeTarget(LiquidPipeBlockEntity pipe, int amount) {
             this.pipe = pipe;
             this.amount = amount;
             this.transfer = 0;

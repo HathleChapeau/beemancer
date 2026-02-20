@@ -60,7 +60,7 @@ import com.chapeau.apica.client.visual.FlywheelTestBeeVisualizer;
 import com.chapeau.apica.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
-import com.chapeau.apica.common.blockentity.alchemy.HoneyPipeBlockEntity;
+import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaBlocks;
@@ -322,23 +322,23 @@ public class ClientSetup {
             ApicaBlocks.ITEM_PIPE_TIER4.get()
         );
 
-        // Honey Pipes - teinte du core
+        // Liquid Pipes - teinte du core
         // Sans teinte = blanc (texture de base visible), avec teinte = couleur du colorant sur pipe_core_white
         event.register((state, level, pos, tintIndex) -> {
             if (tintIndex != 0 || level == null || pos == null) {
                 return 0xFFFFFFFF;
             }
-            if (level.getBlockEntity(pos) instanceof HoneyPipeBlockEntity pipe) {
+            if (level.getBlockEntity(pos) instanceof LiquidPipeBlockEntity pipe) {
                 if (pipe.hasTint()) {
                     return pipe.getTintColor() | 0xFF000000;
                 }
             }
             return 0xFFFFFFFF; // Blanc — pas de teinte appliquée
         },
-            ApicaBlocks.HONEY_PIPE.get(),
-            ApicaBlocks.HONEY_PIPE_TIER2.get(),
-            ApicaBlocks.HONEY_PIPE_TIER3.get(),
-            ApicaBlocks.HONEY_PIPE_TIER4.get()
+            ApicaBlocks.LIQUID_PIPE.get(),
+            ApicaBlocks.LIQUID_PIPE_TIER2.get(),
+            ApicaBlocks.LIQUID_PIPE_TIER3.get(),
+            ApicaBlocks.LIQUID_PIPE_TIER4.get()
         );
 
         // Creative Tank - teinte rose creative

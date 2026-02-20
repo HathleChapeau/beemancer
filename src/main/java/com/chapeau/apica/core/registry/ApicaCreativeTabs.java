@@ -146,11 +146,11 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.HONEY_TANK.get());
         output.accept(ApicaItems.MULTIBLOCK_TANK.get());
 
-        // Honey Pipes
-        output.accept(ApicaItems.HONEY_PIPE.get());
-        output.accept(ApicaItems.HONEY_PIPE_TIER2.get());
-        output.accept(ApicaItems.HONEY_PIPE_TIER3.get());
-        output.accept(ApicaItems.HONEY_PIPE_TIER4.get());
+        // Liquid Pipes
+        output.accept(ApicaItems.LIQUID_PIPE.get());
+        output.accept(ApicaItems.LIQUID_PIPE_TIER2.get());
+        output.accept(ApicaItems.LIQUID_PIPE_TIER3.get());
+        output.accept(ApicaItems.LIQUID_PIPE_TIER4.get());
 
         // Item Pipes
         output.accept(ApicaItems.ITEM_PIPE.get());

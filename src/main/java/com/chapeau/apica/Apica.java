@@ -249,7 +249,7 @@ public class Apica {
 
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
-                ApicaBlockEntities.HONEY_PIPE.get(),
+                ApicaBlockEntities.LIQUID_PIPE.get(),
                 (be, side) -> be.getBuffer()
         );
 

@@ -93,17 +93,17 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> CREATIVE_TANK = ITEMS.register("creative_tank",
             () -> new BlockItem(ApicaBlocks.CREATIVE_TANK.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> HONEY_PIPE = ITEMS.register("honey_pipe",
-            () -> new BlockItem(ApicaBlocks.HONEY_PIPE.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> LIQUID_PIPE = ITEMS.register("liquid_pipe",
+            () -> new BlockItem(ApicaBlocks.LIQUID_PIPE.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> HONEY_PIPE_TIER2 = ITEMS.register("honey_pipe_tier2",
-            () -> new BlockItem(ApicaBlocks.HONEY_PIPE_TIER2.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> LIQUID_PIPE_TIER2 = ITEMS.register("liquid_pipe_tier2",
+            () -> new BlockItem(ApicaBlocks.LIQUID_PIPE_TIER2.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> HONEY_PIPE_TIER3 = ITEMS.register("honey_pipe_tier3",
-            () -> new BlockItem(ApicaBlocks.HONEY_PIPE_TIER3.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> LIQUID_PIPE_TIER3 = ITEMS.register("liquid_pipe_tier3",
+            () -> new BlockItem(ApicaBlocks.LIQUID_PIPE_TIER3.get(), new Item.Properties()));
 
-    public static final DeferredItem<BlockItem> HONEY_PIPE_TIER4 = ITEMS.register("honey_pipe_tier4",
-            () -> new BlockItem(ApicaBlocks.HONEY_PIPE_TIER4.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> LIQUID_PIPE_TIER4 = ITEMS.register("liquid_pipe_tier4",
+            () -> new BlockItem(ApicaBlocks.LIQUID_PIPE_TIER4.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> ITEM_PIPE = ITEMS.register("item_pipe",
             () -> new BlockItem(ApicaBlocks.ITEM_PIPE.get(), new Item.Properties()));

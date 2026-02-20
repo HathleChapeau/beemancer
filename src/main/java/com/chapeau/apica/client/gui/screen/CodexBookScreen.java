@@ -32,6 +32,7 @@ import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.codex.book.CodexBookContent;
 import com.chapeau.apica.common.codex.book.CodexBookManager;
 import com.chapeau.apica.common.codex.book.CodexBookSection;
+import com.chapeau.apica.common.codex.book.AltarCraftSection;
 import com.chapeau.apica.common.codex.book.CraftSection;
 import com.chapeau.apica.common.codex.book.HeaderSection;
 import com.chapeau.apica.common.codex.book.StickyNote;
@@ -114,7 +115,7 @@ public class CodexBookScreen extends Screen {
 
     private List<StickyNote> stickyNotes = List.of();
     private List<ItemStack> noteIconStacks = List.of();
-    private List<CraftSection> noteCraftSections = List.of();
+    private List<CodexBookSection> noteCraftSections = List.of();
     private int openedNoteIndex = -1;
 
     public CodexBookScreen(CodexNode node, CodexPage returnPage) {
@@ -250,13 +251,17 @@ public class CodexBookScreen extends Screen {
 
     private void resolveNoteData() {
         List<ItemStack> icons = new ArrayList<>();
-        List<CraftSection> crafts = new ArrayList<>();
+        List<CodexBookSection> crafts = new ArrayList<>();
         for (StickyNote note : stickyNotes) {
             if (note.craftItem() != null && !note.craftItem().isEmpty()) {
                 ResourceLocation loc = ResourceLocation.parse(note.craftItem());
                 var item = BuiltInRegistries.ITEM.get(loc);
                 icons.add(item != null ? new ItemStack(item) : ItemStack.EMPTY);
-                crafts.add(new CraftSection(note.craftItem(), 0));
+                if ("altar".equals(note.type())) {
+                    crafts.add(new AltarCraftSection(note.craftItem()));
+                } else {
+                    crafts.add(new CraftSection(note.craftItem(), 0));
+                }
             } else {
                 icons.add(ItemStack.EMPTY);
                 crafts.add(null);
@@ -368,8 +373,8 @@ public class CodexBookScreen extends Screen {
             ResonationNoteRenderer.render(graphics, font, note.species(),
                     contentX, contentY, contentW);
         } else if (noteIndex < noteCraftSections.size() && noteCraftSections.get(noteIndex) != null) {
-            CraftSection craft = noteCraftSections.get(noteIndex);
-            craft.render(graphics, font, contentX, contentY, contentW, "", -1);
+            CodexBookSection section = noteCraftSections.get(noteIndex);
+            section.render(graphics, font, contentX, contentY, contentW, "", -1);
         }
 
         graphics.pose().popPose();

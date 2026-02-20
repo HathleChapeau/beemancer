@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * [HoneyPipeBlock.java]
+ * [LiquidPipeBlock.java]
  * Description: Pipe pour transporter les fluides Apica
  * ============================================================
  *
@@ -9,7 +9,7 @@
  * | Dépendance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | AbstractPipeBlock   | Base pipe            | Connexion, shapes, interaction |
- * | HoneyPipeBlockEntity| BlockEntity fluide   | Gestion buffer fluide          |
+ * | LiquidPipeBlockEntity| BlockEntity fluide   | Gestion buffer fluide          |
  * | ApicaBlockEntities| Registre           | Types tiered                   |
  * ------------------------------------------------------------
  *
@@ -21,7 +21,7 @@
  */
 package com.chapeau.apica.common.block.alchemy;
 
-import com.chapeau.apica.common.blockentity.alchemy.HoneyPipeBlockEntity;
+import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -46,14 +46,14 @@ import javax.annotation.Nullable;
  * Pipe de fluide. Se connecte aux FluidHandler.
  * Supporte le shift+clic pour vider le buffer interne.
  */
-public class HoneyPipeBlock extends AbstractPipeBlock {
-    public static final MapCodec<HoneyPipeBlock> CODEC = simpleCodec(HoneyPipeBlock::new);
+public class LiquidPipeBlock extends AbstractPipeBlock {
+    public static final MapCodec<LiquidPipeBlock> CODEC = simpleCodec(LiquidPipeBlock::new);
 
-    public HoneyPipeBlock(Properties properties) {
+    public LiquidPipeBlock(Properties properties) {
         this(properties, 1);
     }
 
-    public HoneyPipeBlock(Properties properties, int tier) {
+    public LiquidPipeBlock(Properties properties, int tier) {
         super(properties, tier);
     }
 
@@ -64,22 +64,22 @@ public class HoneyPipeBlock extends AbstractPipeBlock {
 
     @Override
     protected boolean isPipeEntity(BlockEntity be) {
-        return be instanceof HoneyPipeBlockEntity;
+        return be instanceof LiquidPipeBlockEntity;
     }
 
     @Override
     protected boolean isPipeDisconnected(BlockEntity be, Direction dir) {
-        return ((HoneyPipeBlockEntity) be).isDisconnected(dir);
+        return ((LiquidPipeBlockEntity) be).isDisconnected(dir);
     }
 
     @Override
     protected void setPipeDisconnected(BlockEntity be, Direction dir, boolean disconnected) {
-        ((HoneyPipeBlockEntity) be).setDisconnected(dir, disconnected);
+        ((LiquidPipeBlockEntity) be).setDisconnected(dir, disconnected);
     }
 
     @Override
     protected boolean isSamePipeType(BlockState neighborState) {
-        return neighborState.getBlock() instanceof HoneyPipeBlock;
+        return neighborState.getBlock() instanceof LiquidPipeBlock;
     }
 
     @Override
@@ -89,17 +89,17 @@ public class HoneyPipeBlock extends AbstractPipeBlock {
 
     @Override
     protected boolean isTintablePipe(BlockEntity be) {
-        return be instanceof HoneyPipeBlockEntity;
+        return be instanceof LiquidPipeBlockEntity;
     }
 
     @Override
     protected boolean hasTint(BlockEntity be) {
-        return be instanceof HoneyPipeBlockEntity pipe && pipe.hasTint();
+        return be instanceof LiquidPipeBlockEntity pipe && pipe.hasTint();
     }
 
     @Override
     protected void applyTint(BlockEntity be, int color) {
-        ((HoneyPipeBlockEntity) be).setTintColor(color);
+        ((LiquidPipeBlockEntity) be).setTintColor(color);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class HoneyPipeBlock extends AbstractPipeBlock {
         // Shift+clic droit = vider le pipe
         if (player.isShiftKeyDown()) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof HoneyPipeBlockEntity pipe) {
+            if (be instanceof LiquidPipeBlockEntity pipe) {
                 int drained = pipe.getBuffer().drain(Integer.MAX_VALUE,
                     net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE).getAmount();
                 if (drained > 0) {
@@ -130,10 +130,10 @@ public class HoneyPipeBlock extends AbstractPipeBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return switch (tier) {
-            case 2 -> HoneyPipeBlockEntity.createTier2(pos, state);
-            case 3 -> HoneyPipeBlockEntity.createTier3(pos, state);
-            case 4 -> HoneyPipeBlockEntity.createTier4(pos, state);
-            default -> new HoneyPipeBlockEntity(pos, state);
+            case 2 -> LiquidPipeBlockEntity.createTier2(pos, state);
+            case 3 -> LiquidPipeBlockEntity.createTier3(pos, state);
+            case 4 -> LiquidPipeBlockEntity.createTier4(pos, state);
+            default -> new LiquidPipeBlockEntity(pos, state);
         };
     }
 
@@ -142,12 +142,12 @@ public class HoneyPipeBlock extends AbstractPipeBlock {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
         BlockEntityType<?> expectedType = switch (tier) {
-            case 2 -> ApicaBlockEntities.HONEY_PIPE_TIER2.get();
-            case 3 -> ApicaBlockEntities.HONEY_PIPE_TIER3.get();
-            case 4 -> ApicaBlockEntities.HONEY_PIPE_TIER4.get();
-            default -> ApicaBlockEntities.HONEY_PIPE.get();
+            case 2 -> ApicaBlockEntities.LIQUID_PIPE_TIER2.get();
+            case 3 -> ApicaBlockEntities.LIQUID_PIPE_TIER3.get();
+            case 4 -> ApicaBlockEntities.LIQUID_PIPE_TIER4.get();
+            default -> ApicaBlockEntities.LIQUID_PIPE.get();
         };
-        return createTickerHelper(type, (BlockEntityType<HoneyPipeBlockEntity>) expectedType,
-            HoneyPipeBlockEntity::serverTick);
+        return createTickerHelper(type, (BlockEntityType<LiquidPipeBlockEntity>) expectedType,
+            LiquidPipeBlockEntity::serverTick);
     }
 }

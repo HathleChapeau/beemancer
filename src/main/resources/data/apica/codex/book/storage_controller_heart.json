@@ -21,7 +21,7 @@
     }
   ],
   "sticky_notes": [
-    {"craft": "apica:storage_controller"},
+    {"craft": "apica:storage_controller", "type": "altar"},
     {"craft": "apica:storage_terminal"},
     {"craft": "apica:iron_foundation"},
     {"craft": "apica:honey_reservoir"},

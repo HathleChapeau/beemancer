@@ -7,5 +7,5 @@
     "G": { "item": "apica:royal_gold" }
   },
   "pattern": [ " G ", "WRW", " G " ],
-  "result": { "id": "apica:honey_pipe_tier3", "count": 12 }
+  "result": { "id": "apica:liquid_pipe_tier3", "count": 12 }
 }

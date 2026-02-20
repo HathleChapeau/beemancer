@@ -67,7 +67,7 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("altar", "apica:altar_heart");
         NODE_TO_ITEM.put("extractor", "apica:extractor");
         NODE_TO_ITEM.put("anti_breeding_crystal", "apica:anti_breeding_crystal");
-        NODE_TO_ITEM.put("honey_pipe", "apica:honey_pipe");
+        NODE_TO_ITEM.put("liquid_pipe", "apica:liquid_pipe");
         NODE_TO_ITEM.put("item_pipe", "apica:item_pipe");
         NODE_TO_ITEM.put("centrifuge_t1", "apica:powered_centrifuge");
         NODE_TO_ITEM.put("centrifuge_t2", "apica:powered_centrifuge_tier2");
@@ -83,9 +83,9 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("interface", "apica:storage_terminal");
         NODE_TO_ITEM.put("import", "apica:import_interface");
         NODE_TO_ITEM.put("export", "apica:export_interface");
-        NODE_TO_ITEM.put("pipe_t2", "apica:honey_pipe");
-        NODE_TO_ITEM.put("pipe_t3", "apica:honey_pipe");
-        NODE_TO_ITEM.put("pipe_t4", "apica:honey_pipe");
+        NODE_TO_ITEM.put("pipe_t2", "apica:liquid_pipe");
+        NODE_TO_ITEM.put("pipe_t3", "apica:liquid_pipe");
+        NODE_TO_ITEM.put("pipe_t4", "apica:liquid_pipe");
         NODE_TO_ITEM.put("resonator", "apica:resonator");
         NODE_TO_ITEM.put("essence_injector", "apica:injector");
 

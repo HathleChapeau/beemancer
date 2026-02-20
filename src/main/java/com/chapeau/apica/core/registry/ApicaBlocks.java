@@ -12,7 +12,7 @@ import com.chapeau.apica.common.block.alchemy.CentrifugeHeartBlock;
 import com.chapeau.apica.common.block.alchemy.CrankBlock;
 import com.chapeau.apica.common.block.alchemy.CreativeTankBlock;
 import com.chapeau.apica.common.block.alchemy.CrystallizerBlock;
-import com.chapeau.apica.common.block.alchemy.HoneyPipeBlock;
+import com.chapeau.apica.common.block.alchemy.LiquidPipeBlock;
 import com.chapeau.apica.common.block.alchemy.HoneyTankBlock;
 import com.chapeau.apica.common.block.alchemy.InfuserBlock;
 import com.chapeau.apica.common.block.alchemy.InfuserHeartBlock;
@@ -198,26 +198,26 @@ public class ApicaBlocks {
                     .sound(SoundType.GLASS)
                     .noOcclusion()));
 
-    public static final DeferredBlock<HoneyPipeBlock> HONEY_PIPE = BLOCKS.register("honey_pipe",
-            () -> new HoneyPipeBlock(BlockBehaviour.Properties.of()
+    public static final DeferredBlock<LiquidPipeBlock> LIQUID_PIPE = BLOCKS.register("liquid_pipe",
+            () -> new LiquidPipeBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f)
                     .sound(SoundType.COPPER)
                     .noOcclusion()));
 
-    public static final DeferredBlock<HoneyPipeBlock> HONEY_PIPE_TIER2 = BLOCKS.register("honey_pipe_tier2",
-            () -> new HoneyPipeBlock(BlockBehaviour.Properties.of()
+    public static final DeferredBlock<LiquidPipeBlock> LIQUID_PIPE_TIER2 = BLOCKS.register("liquid_pipe_tier2",
+            () -> new LiquidPipeBlock(BlockBehaviour.Properties.of()
                     .strength(1.8f)
                     .sound(SoundType.COPPER)
                     .noOcclusion(), 2));
 
-    public static final DeferredBlock<HoneyPipeBlock> HONEY_PIPE_TIER3 = BLOCKS.register("honey_pipe_tier3",
-            () -> new HoneyPipeBlock(BlockBehaviour.Properties.of()
+    public static final DeferredBlock<LiquidPipeBlock> LIQUID_PIPE_TIER3 = BLOCKS.register("liquid_pipe_tier3",
+            () -> new LiquidPipeBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.COPPER)
                     .noOcclusion(), 3));
 
-    public static final DeferredBlock<HoneyPipeBlock> HONEY_PIPE_TIER4 = BLOCKS.register("honey_pipe_tier4",
-            () -> new HoneyPipeBlock(BlockBehaviour.Properties.of()
+    public static final DeferredBlock<LiquidPipeBlock> LIQUID_PIPE_TIER4 = BLOCKS.register("liquid_pipe_tier4",
+            () -> new LiquidPipeBlock(BlockBehaviour.Properties.of()
                     .strength(2.5f)
                     .sound(SoundType.COPPER)
                     .noOcclusion(), 4));

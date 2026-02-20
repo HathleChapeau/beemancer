@@ -17,7 +17,7 @@ import com.chapeau.apica.common.blockentity.alchemy.CentrifugeHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.CrankBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.CreativeTankBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.CrystallizerBlockEntity;
-import com.chapeau.apica.common.blockentity.alchemy.HoneyPipeBlockEntity;
+import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.HoneyTankBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.InfuserBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.InfuserHeartBlockEntity;
@@ -158,32 +158,32 @@ public class ApicaBlockEntities {
                             ApicaBlocks.CREATIVE_TANK.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE =
-            BLOCK_ENTITIES.register("honey_pipe",
+    public static final Supplier<BlockEntityType<LiquidPipeBlockEntity>> LIQUID_PIPE =
+            BLOCK_ENTITIES.register("liquid_pipe",
                     () -> BlockEntityType.Builder.of(
-                            HoneyPipeBlockEntity::new,
-                            ApicaBlocks.HONEY_PIPE.get()
+                            LiquidPipeBlockEntity::new,
+                            ApicaBlocks.LIQUID_PIPE.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE_TIER2 =
-            BLOCK_ENTITIES.register("honey_pipe_tier2",
+    public static final Supplier<BlockEntityType<LiquidPipeBlockEntity>> LIQUID_PIPE_TIER2 =
+            BLOCK_ENTITIES.register("liquid_pipe_tier2",
                     () -> BlockEntityType.Builder.of(
-                            HoneyPipeBlockEntity::createTier2,
-                            ApicaBlocks.HONEY_PIPE_TIER2.get()
+                            LiquidPipeBlockEntity::createTier2,
+                            ApicaBlocks.LIQUID_PIPE_TIER2.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE_TIER3 =
-            BLOCK_ENTITIES.register("honey_pipe_tier3",
+    public static final Supplier<BlockEntityType<LiquidPipeBlockEntity>> LIQUID_PIPE_TIER3 =
+            BLOCK_ENTITIES.register("liquid_pipe_tier3",
                     () -> BlockEntityType.Builder.of(
-                            HoneyPipeBlockEntity::createTier3,
-                            ApicaBlocks.HONEY_PIPE_TIER3.get()
+                            LiquidPipeBlockEntity::createTier3,
+                            ApicaBlocks.LIQUID_PIPE_TIER3.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<HoneyPipeBlockEntity>> HONEY_PIPE_TIER4 =
-            BLOCK_ENTITIES.register("honey_pipe_tier4",
+    public static final Supplier<BlockEntityType<LiquidPipeBlockEntity>> LIQUID_PIPE_TIER4 =
+            BLOCK_ENTITIES.register("liquid_pipe_tier4",
                     () -> BlockEntityType.Builder.of(
-                            HoneyPipeBlockEntity::createTier4,
-                            ApicaBlocks.HONEY_PIPE_TIER4.get()
+                            LiquidPipeBlockEntity::createTier4,
+                            ApicaBlocks.LIQUID_PIPE_TIER4.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE =

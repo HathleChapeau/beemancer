@@ -1,10 +1,10 @@
 {
   "nodes": [
     {"id": "manual_centrifuge", "position": {"x": 0, "y": 0}, "icon": "apica:textures/block/manual_centrifuge.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false},
-    {"id": "honey_pipe", "position": {"x": 2, "y": 2}, "icon": "apica:textures/block/honey_pipe.png", "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false},
-    {"id": "pipe_t2", "position": {"x": 4, "y": 2}, "icon": "apica:textures/block/honey_pipe.png", "category": "NORMAL", "parent": "honey_pipe", "hidden_until_parent_unlocked": true},
-    {"id": "pipe_t3", "position": {"x": 6, "y": 2}, "icon": "apica:textures/block/honey_pipe.png", "category": "NORMAL", "parent": "pipe_t2", "hidden_until_parent_unlocked": true},
-    {"id": "pipe_t4", "position": {"x": 8, "y": 2}, "icon": "apica:textures/block/honey_pipe.png", "category": "GOAL", "parent": "pipe_t3", "hidden_until_parent_unlocked": true},
+    {"id": "liquid_pipe", "position": {"x": 2, "y": 2}, "icon": "apica:textures/block/liquid_pipe.png", "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false},
+    {"id": "pipe_t2", "position": {"x": 4, "y": 2}, "icon": "apica:textures/block/liquid_pipe.png", "category": "NORMAL", "parent": "liquid_pipe", "hidden_until_parent_unlocked": true},
+    {"id": "pipe_t3", "position": {"x": 6, "y": 2}, "icon": "apica:textures/block/liquid_pipe.png", "category": "NORMAL", "parent": "pipe_t2", "hidden_until_parent_unlocked": true},
+    {"id": "pipe_t4", "position": {"x": 8, "y": 2}, "icon": "apica:textures/block/liquid_pipe.png", "category": "GOAL", "parent": "pipe_t3", "hidden_until_parent_unlocked": true},
     {"id": "crystallyzer", "position": {"x": 2, "y": 0}, "icon": "apica:textures/block/crystallizer.png", "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false},
     {"id": "centrifuge_t1", "position": {"x": -2, "y": 0}, "icon": "apica:textures/block/centrifuge.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
     {"id": "centrifuge_t2", "position": {"x": -3, "y": 2}, "icon": "apica:textures/block/centrifuge.png", "category": "NORMAL", "parent": "centrifuge_t1", "hidden_until_parent_unlocked": true},

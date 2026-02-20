@@ -1,5 +1,5 @@
 {
-  "parent": "apica:block/pipes/honey_pipe_core_t3",
+  "parent": "apica:block/pipes/liquid_pipe_core",
   "textures": {
     "core": "apica:block/pipes/pipe_core_white"
   }

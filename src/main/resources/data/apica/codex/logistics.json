@@ -1,7 +1,7 @@
 {
   "nodes": [
     {"id": "crystallyzer", "position": {"x": 0, "y": 0}, "icon": "apica:textures/block/crystallizer.png", "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false},
-    {"id": "honey_pipe", "position": {"x": 1, "y": 2}, "icon": "apica:textures/block/honey_pipe.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "liquid_pipe", "position": {"x": 1, "y": 2}, "icon": "apica:textures/block/liquid_pipe.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
     {"id": "item_pipe", "position": {"x": -1, "y": 2}, "icon": "apica:textures/block/item_pipe.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
     {"id": "storage_controller_heart", "position": {"x": 2, "y": -1}, "icon": "apica:textures/block/storage_controller.png", "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
     {"id": "relay", "position": {"x": 2, "y": -3}, "icon": "apica:textures/block/storage_relay.png", "category": "NORMAL", "parent": "storage_controller_heart", "hidden_until_parent_unlocked": false},

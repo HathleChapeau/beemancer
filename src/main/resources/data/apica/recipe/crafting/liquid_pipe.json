@@ -6,5 +6,5 @@
     "G": { "item": "minecraft:glass" }
   },
   "pattern": [ "WGW" ],
-  "result": { "id": "apica:honey_pipe", "count": 4 }
+  "result": { "id": "apica:liquid_pipe", "count": 4 }
 }
