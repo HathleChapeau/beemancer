@@ -44,6 +44,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -63,6 +64,7 @@ public class StorageBarrelBlock extends BaseEntityBlock {
 
     public static final MapCodec<StorageBarrelBlock> CODEC = simpleCodec(StorageBarrelBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
+    public static final BooleanProperty HAS_VOID = BooleanProperty.create("has_void");
 
     private static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Direction.class);
     static {
@@ -88,7 +90,8 @@ public class StorageBarrelBlock extends BaseEntityBlock {
         super(properties);
         this.tier = tier;
         this.registerDefaultState(this.stateDefinition.any()
-                .setValue(FACING, Direction.NORTH));
+                .setValue(FACING, Direction.NORTH)
+                .setValue(HAS_VOID, false));
     }
 
     public int getTier() {
@@ -102,7 +105,7 @@ public class StorageBarrelBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, HAS_VOID);
     }
 
     @Override
@@ -119,7 +122,7 @@ public class StorageBarrelBlock extends BaseEntityBlock {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState()
-                .setValue(FACING, context.getClickedFace());
+                .setValue(FACING, context.getNearestLookingDirection().getOpposite());
     }
 
     @Nullable
@@ -128,31 +131,37 @@ public class StorageBarrelBlock extends BaseEntityBlock {
         return new StorageBarrelBlockEntity(pos, state);
     }
 
-    // --- Right-click with item: insert on front face only ---
+    // --- Right-click with item ---
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
                                                BlockPos pos, Player player, InteractionHand hand,
                                                BlockHitResult hit) {
         Direction facing = state.getValue(FACING);
-        if (hit.getDirection() != facing) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        boolean isFrontFace = hit.getDirection() == facing;
 
-        if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
-
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof StorageBarrelBlockEntity barrel)) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        }
-
-        // Apply void upgrade
-        if (stack.is(ApicaItems.VOID_UPGRADE.get())) {
-            if (!barrel.hasVoidUpgrade()) {
+        // Void upgrade: any face EXCEPT front
+        if (!isFrontFace && stack.is(ApicaItems.VOID_UPGRADE.get())) {
+            if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof StorageBarrelBlockEntity barrel && !barrel.hasVoidUpgrade()) {
                 barrel.setVoidUpgrade(true);
                 if (!player.isCreative()) stack.shrink(1);
                 level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.5f, 1.2f);
                 return ItemInteractionResult.SUCCESS;
             }
             return ItemInteractionResult.CONSUME;
+        }
+
+        // Non-front face: pass to item useOn (barrel upgrades, etc.)
+        if (!isFrontFace) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+
+        // Front face: insert items
+        if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
+
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof StorageBarrelBlockEntity barrel)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
         if (player.isShiftKeyDown()) {

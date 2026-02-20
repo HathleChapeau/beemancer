@@ -72,6 +72,10 @@ public class StorageBarrelBlockEntity extends BlockEntity {
 
     public void setVoidUpgrade(boolean value) {
         this.voidUpgrade = value;
+        if (level != null && !level.isClientSide()) {
+            level.setBlock(worldPosition, getBlockState().setValue(
+                    StorageBarrelBlock.HAS_VOID, value), 3);
+        }
         setChanged();
         syncToClient();
     }
@@ -270,6 +274,10 @@ public class StorageBarrelBlockEntity extends BlockEntity {
         this.storedItem = data.item().copy();
         this.storedCount = data.count();
         this.voidUpgrade = data.hasVoid();
+        if (level != null && voidUpgrade) {
+            level.setBlock(worldPosition, getBlockState().setValue(
+                    StorageBarrelBlock.HAS_VOID, true), 3);
+        }
         setChanged();
         syncToClient();
     }

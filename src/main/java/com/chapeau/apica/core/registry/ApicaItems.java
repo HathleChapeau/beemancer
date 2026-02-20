@@ -67,15 +67,15 @@ public class ApicaItems {
 
     // --- Barrel Upgrades ---
     public static final DeferredItem<BarrelUpgradeItem> BARREL_MK2_UPGRADE = ITEMS.register("barrel_mk2_upgrade",
-            () -> new BarrelUpgradeItem(new Item.Properties(), 2));
+            () -> new BarrelUpgradeItem(new Item.Properties().stacksTo(16), 2));
     public static final DeferredItem<BarrelUpgradeItem> BARREL_MK3_UPGRADE = ITEMS.register("barrel_mk3_upgrade",
-            () -> new BarrelUpgradeItem(new Item.Properties(), 3));
+            () -> new BarrelUpgradeItem(new Item.Properties().stacksTo(16), 3));
     public static final DeferredItem<BarrelUpgradeItem> BARREL_MK4_UPGRADE = ITEMS.register("barrel_mk4_upgrade",
-            () -> new BarrelUpgradeItem(new Item.Properties(), 4));
+            () -> new BarrelUpgradeItem(new Item.Properties().stacksTo(16), 4));
 
     // --- Void Upgrade ---
     public static final DeferredItem<VoidUpgradeItem> VOID_UPGRADE = ITEMS.register("void_upgrade",
-            () -> new VoidUpgradeItem(new Item.Properties().stacksTo(1)));
+            () -> new VoidUpgradeItem(new Item.Properties().stacksTo(16)));
 
     public static final DeferredItem<BlockItem> CONTROLLED_HIVE = ITEMS.register("controlled_hive",
             () -> new BlockItem(ApicaBlocks.CONTROLLED_HIVE.get(), new Item.Properties()));

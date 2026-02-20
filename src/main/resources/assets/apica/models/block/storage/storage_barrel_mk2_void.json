@@ -1,0 +1,7 @@
+{
+  "parent": "apica:block/storage/storage_barrel_base_void",
+  "textures": {
+    "side": "apica:block/honeyed_iron_block",
+    "front": "apica:block/honeyed_iron_block"
+  }
+}

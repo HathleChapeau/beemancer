@@ -8,7 +8,7 @@
  * ------------------------------------------------------------
  * | Dependance                    | Raison                | Utilisation                    |
  * |-------------------------------|----------------------|--------------------------------|
- * | StorageBarrelBlockEntity      | Donnees du barrel    | Item stocke, quantite, void    |
+ * | StorageBarrelBlockEntity      | Donnees du barrel    | Item stocke, quantite          |
  * | StorageBarrelBlock            | FACING property      | Orientation de la face avant   |
  * ------------------------------------------------------------
  *
@@ -19,7 +19,6 @@
  */
 package com.chapeau.apica.client.renderer.block;
 
-import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.block.storage.StorageBarrelBlock;
 import com.chapeau.apica.common.blockentity.storage.StorageBarrelBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -35,16 +34,12 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelBlockEntity> {
-
-    private static final ResourceLocation VOID_ICON = ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "textures/gui/void_upgrade_icon.png");
 
     private final ItemRenderer itemRenderer;
     private final Font font;
@@ -62,9 +57,8 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
 
         ItemStack storedItem = barrel.getStoredItem();
         int storedCount = barrel.getStoredCount();
-        boolean hasVoid = barrel.hasVoidUpgrade();
 
-        if (storedItem.isEmpty() && !hasVoid) return;
+        if (storedItem.isEmpty() || storedCount <= 0) return;
 
         BlockState state = barrel.getBlockState();
         Direction facing = state.getValue(StorageBarrelBlock.FACING);
@@ -84,38 +78,24 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
         // Now we're facing SOUTH (+Z direction)
         // The front face is at z=+0.5, inner wall of indent at z=0.4375
 
-        // Render stored item inside the indent (only if there are items)
-        if (!storedItem.isEmpty() && storedCount > 0 && level != null) {
-            poseStack.pushPose();
-            poseStack.translate(0, 0.03, 0.47);
-            poseStack.scale(0.5f, 0.5f, 0.001f);
-            itemRenderer.renderStatic(storedItem, ItemDisplayContext.GUI,
-                    frontLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, level, 0);
-            poseStack.popPose();
+        // Render stored item inside the indent
+        poseStack.pushPose();
+        poseStack.translate(0, 0.03, 0.47);
+        poseStack.scale(0.5f, 0.5f, 0.001f);
+        itemRenderer.renderStatic(storedItem, ItemDisplayContext.GUI,
+                frontLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, level, 0);
+        poseStack.popPose();
 
-            // Render count text below item
-            String countText = formatCount(storedCount);
-            poseStack.pushPose();
-            poseStack.translate(0, -0.25, 0.49);
-            poseStack.scale(0.015f, -0.015f, -0.015f);
-            float textWidth = font.width(countText);
-            font.drawInBatch(countText, -textWidth / 2f, 0, 0xFFFFFFFF,
-                    false, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL,
-                    0x40000000, LightTexture.FULL_BRIGHT);
-            poseStack.popPose();
-        }
-
-        // Render void upgrade icon (bottom-right inside indent)
-        if (hasVoid) {
-            poseStack.pushPose();
-            poseStack.translate(0.28, -0.28, 0.49);
-            poseStack.scale(0.15f, 0.15f, 0.001f);
-
-            font.drawInBatch("\u00a74V", -font.width("V") / 2f, -4, 0xFFFF4444,
-                    false, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL,
-                    0, LightTexture.FULL_BRIGHT);
-            poseStack.popPose();
-        }
+        // Render count text below item
+        String countText = formatCount(storedCount);
+        poseStack.pushPose();
+        poseStack.translate(0, -0.25, 0.49);
+        poseStack.scale(0.015f, -0.015f, -0.015f);
+        float textWidth = font.width(countText);
+        font.drawInBatch(countText, -textWidth / 2f, 0, 0xFFFFFFFF,
+                false, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL,
+                0x40000000, LightTexture.FULL_BRIGHT);
+        poseStack.popPose();
 
         poseStack.popPose();
     }
