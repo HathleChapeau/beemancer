@@ -1020,5 +1020,14 @@
   "codex.apica.logistics.trash_can.lore": "Centrifuge byproducts keep piling up. No use for most of them and they clog the output. Built an Item Trash Can. Drop anything in and it is \u00a76\u00a7ldestroyed\u00a7r. The last item stays visible as a reminder of what went in. Hooks into \u00a76\u00a7lpipes\u00a7r and hoppers for continuous disposal.",
   "codex.apica.logistics.liquid_trash_can.title": "Liquid Trash Can",
   "codex.apica.logistics.liquid_trash_can.desc": "Destroys unwanted fluids.",
-  "codex.apica.logistics.liquid_trash_can.lore": "Same problem with fluids. Excess honey and water overflow the tanks when I am not watching. The Liquid Trash Can \u00a76\u00a7lvoids any fluid\u00a7r fed into it. A bucket placed inside is emptied and returned. Connects to liquid \u00a76\u00a7lpipes\u00a7r for automated drainage."
+  "codex.apica.logistics.liquid_trash_can.lore": "Same problem with fluids. Excess honey and water overflow the tanks when I am not watching. The Liquid Trash Can \u00a76\u00a7lvoids any fluid\u00a7r fed into it. A bucket placed inside is emptied and returned. Connects to liquid \u00a76\u00a7lpipes\u00a7r for automated drainage.",
+  "codex.apica.logistics.storage_hive.title": "Storage Hive",
+  "codex.apica.logistics.storage_hive.desc": "TBD.",
+  "codex.apica.logistics.storage_hive.lore": "TBD",
+  "codex.apica.logistics.storage_hive_mk2.title": "Storage Hive MK2",
+  "codex.apica.logistics.storage_hive_mk2.desc": "TBD.",
+  "codex.apica.logistics.storage_hive_mk2.lore": "TBD",
+  "codex.apica.logistics.storage_hive_mk3.title": "Storage Hive MK3",
+  "codex.apica.logistics.storage_hive_mk3.desc": "TBD.",
+  "codex.apica.logistics.storage_hive_mk3.lore": "TBD"
 }

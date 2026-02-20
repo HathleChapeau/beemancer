@@ -95,6 +95,9 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("void_upgrade", "apica:void_upgrade");
         NODE_TO_ITEM.put("trash_can", "apica:trash_can");
         NODE_TO_ITEM.put("liquid_trash_can", "apica:liquid_trash_can");
+        NODE_TO_ITEM.put("storage_hive", "apica:storage_hive");
+        NODE_TO_ITEM.put("storage_hive_mk2", "apica:storage_hive_tier2");
+        NODE_TO_ITEM.put("storage_hive_mk3", "apica:storage_hive_tier3");
 
         // Textures pour les nodes sans item correspondant
         NODE_TO_TEXTURE.put("apica", ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/gui/codex/icon_unknown.png"));

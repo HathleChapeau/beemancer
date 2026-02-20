@@ -1,0 +1,19 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.logistics.storage_hive_mk3.lore"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "altar_craft",
+      "result": "apica:storage_hive_tier3"
+    }
+  ],
+  "sticky_notes": []
+}
