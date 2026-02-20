@@ -26,15 +26,19 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelBlockEntity> {
@@ -53,7 +57,8 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
     @Override
     public void render(StorageBarrelBlockEntity barrel, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        if (barrel.getLevel() == null) return;
+        Level level = barrel.getLevel();
+        if (level == null) return;
 
         ItemStack storedItem = barrel.getStoredItem();
         int storedCount = barrel.getStoredCount();
@@ -64,6 +69,10 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
         BlockState state = barrel.getBlockState();
         Direction facing = state.getValue(StorageBarrelBlock.FACING);
 
+        // Sampler la lumiere du bloc devant la face (pas a l'interieur du barrel)
+        BlockPos frontPos = barrel.getBlockPos().relative(facing);
+        int frontLight = LevelRenderer.getLightColor(level, frontPos);
+
         poseStack.pushPose();
 
         // Move to center of block
@@ -73,40 +82,38 @@ public class StorageBarrelRenderer implements BlockEntityRenderer<StorageBarrelB
         applyFacingRotation(poseStack, facing);
 
         // Now we're facing SOUTH (+Z direction)
-        // The front face is at z=+0.5
+        // The front face is at z=+0.5, inner wall of indent at z=0.4375
 
-        // Render stored item inside the indent (1px deep = 1/16 block)
-        // Inner wall at z=0.4375, frame edge at z=0.5
+        // Render stored item inside the indent
         if (!storedItem.isEmpty() && storedCount > 0) {
             poseStack.pushPose();
-            poseStack.translate(0, 0.03, 0.47); // Centered in indent
-            poseStack.scale(0.5f, 0.5f, 0.001f); // Flat on the face
+            poseStack.translate(0, 0.03, 0.47);
+            poseStack.scale(0.5f, 0.5f, 0.001f);
             itemRenderer.renderStatic(storedItem, ItemDisplayContext.GUI,
-                    packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, barrel.getLevel(), 0);
+                    frontLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, level, 0);
             poseStack.popPose();
 
             // Render count text below item
             String countText = formatCount(storedCount);
             poseStack.pushPose();
-            poseStack.translate(0, -0.25, 0.47);
+            poseStack.translate(0, -0.25, 0.48);
             poseStack.scale(-0.015f, -0.015f, 0.015f);
             float textWidth = font.width(countText);
-            font.drawInBatch(countText, -textWidth / 2f, 0, 0xFFFFFF,
+            font.drawInBatch(countText, -textWidth / 2f, 0, 0xFFFFFFFF,
                     true, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL,
-                    0x40000000, packedLight);
+                    0, frontLight);
             poseStack.popPose();
         }
 
         // Render void upgrade icon (bottom-right inside indent)
         if (hasVoid) {
             poseStack.pushPose();
-            poseStack.translate(0.28, -0.28, 0.48);
+            poseStack.translate(0.28, -0.28, 0.49);
             poseStack.scale(0.15f, 0.15f, 0.001f);
 
-            // Render a small "V" text as icon placeholder
-            font.drawInBatch("\u00a74V", -font.width("V") / 2f, -4, 0xFF4444,
+            font.drawInBatch("\u00a74V", -font.width("V") / 2f, -4, 0xFFFF4444,
                     true, poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL,
-                    0x40000000, packedLight);
+                    0, frontLight);
             poseStack.popPose();
         }
 

@@ -19,6 +19,7 @@ package com.chapeau.apica;
 
 import com.chapeau.apica.client.ClientSetup;
 import com.chapeau.apica.common.block.pollenpot.PollenPotEvents;
+import com.chapeau.apica.common.block.storage.StorageBarrelBlock;
 import com.chapeau.apica.common.block.storage.StorageEvents;
 import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.book.CodexBookManager;
@@ -188,6 +189,7 @@ public class Apica {
         NeoForge.EVENT_BUS.register(StorageEvents.class);
         NeoForge.EVENT_BUS.register(MultiblockEvents.class);
         NeoForge.EVENT_BUS.register(PollenPotEvents.class);
+        NeoForge.EVENT_BUS.addListener(StorageBarrelBlock::onLeftClickBlock);
     }
 
     private void onServerStarting(final ServerStartingEvent event) {

@@ -15,13 +15,13 @@
  *
  * UTILISE PAR:
  * - ApicaBlocks.java (enregistrement)
+ * - Apica.java (event LeftClickBlock)
  *
  * ============================================================
  */
 package com.chapeau.apica.common.block.storage;
 
 import com.chapeau.apica.common.blockentity.storage.StorageBarrelBlockEntity;
-import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaItems;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -31,6 +31,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -50,6 +51,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -112,7 +114,7 @@ public class StorageBarrelBlock extends BaseEntityBlock {
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState()
-                .setValue(FACING, context.getNearestLookingDirection().getOpposite());
+                .setValue(FACING, context.getClickedFace());
     }
 
     @Nullable
@@ -121,10 +123,15 @@ public class StorageBarrelBlock extends BaseEntityBlock {
         return new StorageBarrelBlockEntity(pos, state);
     }
 
+    // --- Right-click with item: insert on front face only ---
+
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
                                                BlockPos pos, Player player, InteractionHand hand,
                                                BlockHitResult hit) {
+        Direction facing = state.getValue(FACING);
+        if (hit.getDirection() != facing) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+
         if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
 
         BlockEntity be = level.getBlockEntity(pos);
@@ -143,28 +150,38 @@ public class StorageBarrelBlock extends BaseEntityBlock {
             return ItemInteractionResult.CONSUME;
         }
 
-        // Insert item
-        int inserted = barrel.insertItem(stack, player.isShiftKeyDown());
-        if (inserted > 0) {
-            if (!player.isCreative()) stack.shrink(inserted);
-            level.playSound(null, pos, SoundEvents.BUNDLE_INSERT, SoundSource.BLOCKS, 0.8f, 1.0f);
-            return ItemInteractionResult.SUCCESS;
+        if (player.isShiftKeyDown()) {
+            // Shift+right-click: insert all matching items from inventory
+            int totalInserted = insertAllMatching(barrel, player, stack);
+            if (totalInserted > 0) {
+                level.playSound(null, pos, SoundEvents.BUNDLE_INSERT, SoundSource.BLOCKS, 0.8f, 1.0f);
+            }
+        } else {
+            // Right-click: insert 1 stack
+            int inserted = barrel.insertItem(stack, true);
+            if (inserted > 0) {
+                if (!player.isCreative()) stack.shrink(inserted);
+                level.playSound(null, pos, SoundEvents.BUNDLE_INSERT, SoundSource.BLOCKS, 0.8f, 1.0f);
+            }
         }
 
-        return ItemInteractionResult.CONSUME;
+        return ItemInteractionResult.SUCCESS;
     }
+
+    // --- Right-click empty hand: void icon removal on front face ---
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                 Player player, BlockHitResult hit) {
+        Direction facing = state.getValue(FACING);
+        if (hit.getDirection() != facing) return InteractionResult.PASS;
+
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof StorageBarrelBlockEntity barrel)) return InteractionResult.PASS;
 
-        Direction facing = state.getValue(FACING);
-
-        // Check if clicking the void icon area on the front face
+        // Check if clicking the void icon area
         if (barrel.hasVoidUpgrade() && isClickOnVoidIcon(hit, facing, pos)) {
             barrel.setVoidUpgrade(false);
             ItemStack voidItem = new ItemStack(ApicaItems.VOID_UPGRADE.get());
@@ -175,17 +192,69 @@ public class StorageBarrelBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        // Extract item
-        ItemStack extracted = barrel.extractItem(player.isShiftKeyDown());
-        if (!extracted.isEmpty()) {
-            if (!player.getInventory().add(extracted)) {
-                player.drop(extracted, false);
+        return InteractionResult.PASS;
+    }
+
+    // --- Left-click on front face: extract items ---
+
+    /**
+     * Event handler pour le clic gauche sur le barrel.
+     * Clic gauche sur la face avant avec items = extraire.
+     * Clic gauche sur autre face ou barrel vide = casser normalement.
+     */
+    public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        Level level = event.getLevel();
+        BlockPos pos = event.getPos();
+        BlockState state = level.getBlockState(pos);
+
+        if (!(state.getBlock() instanceof StorageBarrelBlock)) return;
+
+        Direction facing = state.getValue(FACING);
+        if (event.getFace() != facing) return;
+
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof StorageBarrelBlockEntity barrel)) return;
+
+        if (barrel.getStoredCount() <= 0) return;
+
+        // Cancel block breaking
+        event.setCanceled(true);
+
+        if (!level.isClientSide()) {
+            Player player = event.getEntity();
+            // Shift+left = 1 stack, left = 1 item
+            ItemStack extracted = barrel.extractItem(!player.isShiftKeyDown());
+            if (!extracted.isEmpty()) {
+                if (!player.getInventory().add(extracted)) {
+                    player.drop(extracted, false);
+                }
+                level.playSound(null, pos, SoundEvents.BUNDLE_REMOVE_ONE, SoundSource.BLOCKS, 0.8f, 1.0f);
             }
-            level.playSound(null, pos, SoundEvents.BUNDLE_REMOVE_ONE, SoundSource.BLOCKS, 0.8f, 1.0f);
-            return InteractionResult.SUCCESS;
+        }
+    }
+
+    // --- Helpers ---
+
+    /**
+     * Insere tous les items du meme type depuis l'inventaire du joueur.
+     */
+    private int insertAllMatching(StorageBarrelBlockEntity barrel, Player player, ItemStack reference) {
+        Inventory inv = player.getInventory();
+        int totalInserted = 0;
+
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack slot = inv.getItem(i);
+            if (slot.isEmpty()) continue;
+            if (!ItemStack.isSameItemSameComponents(reference, slot)) continue;
+
+            int inserted = barrel.insertItem(slot, true);
+            if (inserted > 0) {
+                if (!player.isCreative()) slot.shrink(inserted);
+                totalInserted += inserted;
+            }
         }
 
-        return InteractionResult.CONSUME;
+        return totalInserted;
     }
 
     /**
@@ -208,7 +277,6 @@ public class StorageBarrelBlock extends BaseEntityBlock {
             default    -> { return false; }
         }
 
-        // Void icon zone: bottom-right, 4/16 x 4/16
         return u >= 0.75 && u <= 1.0 && v >= 0.75 && v <= 1.0;
     }
 

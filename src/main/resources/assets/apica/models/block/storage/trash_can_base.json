@@ -5,8 +5,8 @@
   },
   "elements": [
     {
-      "from": [3, 0, 3],
-      "to": [13, 12, 13],
+      "from": [3.5, 0, 3.5],
+      "to": [12.5, 11, 12.5],
       "faces": {
         "north": { "texture": "#all" },
         "south": { "texture": "#all" },
@@ -17,8 +17,8 @@
       }
     },
     {
-      "from": [2.5, 12, 2.5],
-      "to": [13.5, 14, 13.5],
+      "from": [2.5, 11, 2.5],
+      "to": [13.5, 13, 13.5],
       "faces": {
         "north": { "texture": "#all" },
         "south": { "texture": "#all" },

@@ -44,8 +44,8 @@ public class TrashCanBlock extends BaseEntityBlock {
     public static final MapCodec<TrashCanBlock> CODEC = simpleCodec(TrashCanBlock::new);
 
     protected static final VoxelShape SHAPE = Shapes.or(
-            Block.box(3, 0, 3, 13, 12, 13),
-            Block.box(2.5, 12, 2.5, 13.5, 14, 13.5)
+            Block.box(3.5, 0, 3.5, 12.5, 11, 12.5),
+            Block.box(2.5, 11, 2.5, 13.5, 13, 13.5)
     );
 
     public TrashCanBlock(Properties properties) {
