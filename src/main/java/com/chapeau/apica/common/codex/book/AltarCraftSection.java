@@ -143,6 +143,8 @@ public class AltarCraftSection extends CodexBookSection {
     }
 
     private void renderSlotWithItem(GuiGraphics graphics, ItemStack stack, int x, int y) {
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
         graphics.blit(CRAFT_SLOT, x, y, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
         if (!stack.isEmpty()) {
             int itemOffset = (SLOT_SIZE - Math.round(ITEM_SIZE * ITEM_SCALE)) / 2;
