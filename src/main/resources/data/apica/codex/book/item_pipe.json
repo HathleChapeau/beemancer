@@ -12,6 +12,9 @@
       "key": "codex.apica.logistics.item_pipe.lore.p2"
     },
     {
+      "type": "page_break"
+    },
+    {
       "type": "text",
       "key": "codex.apica.logistics.item_pipe.lore.p3"
     },

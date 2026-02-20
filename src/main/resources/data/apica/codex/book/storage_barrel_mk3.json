@@ -8,6 +8,9 @@
       "key": "codex.apica.logistics.storage_barrel_mk3.lore"
     },
     {
+      "type": "page_break"
+    },
+    {
       "type": "craft",
       "result": "apica:storage_barrel_mk3"
     }

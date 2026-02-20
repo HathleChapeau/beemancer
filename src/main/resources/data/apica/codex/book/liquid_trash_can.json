@@ -8,6 +8,9 @@
       "key": "codex.apica.logistics.liquid_trash_can.lore"
     },
     {
+      "type": "page_break"
+    },
+    {
       "type": "craft",
       "result": "apica:liquid_trash_can"
     }
