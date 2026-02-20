@@ -92,6 +92,7 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("storage_barrel_mk2", "apica:storage_barrel_mk2");
         NODE_TO_ITEM.put("storage_barrel_mk3", "apica:storage_barrel_mk3");
         NODE_TO_ITEM.put("storage_barrel_mk4", "apica:storage_barrel_mk4");
+        NODE_TO_ITEM.put("void_upgrade", "apica:void_upgrade");
         NODE_TO_ITEM.put("trash_can", "apica:trash_can");
         NODE_TO_ITEM.put("liquid_trash_can", "apica:liquid_trash_can");
 

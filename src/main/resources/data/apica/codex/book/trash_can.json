@@ -6,6 +6,10 @@
     {
       "type": "text",
       "key": "codex.apica.logistics.trash_can.lore"
+    },
+    {
+      "type": "craft",
+      "result": "apica:trash_can"
     }
   ],
   "sticky_notes": []

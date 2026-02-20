@@ -5,11 +5,11 @@
     },
     {
       "type": "text",
-      "key": "codex.apica.logistics.storage_barrel_mk4.lore"
+      "key": "codex.apica.logistics.void_upgrade.lore"
     },
     {
       "type": "craft",
-      "result": "apica:storage_barrel_mk4"
+      "result": "apica:void_upgrade"
     }
   ],
   "sticky_notes": []

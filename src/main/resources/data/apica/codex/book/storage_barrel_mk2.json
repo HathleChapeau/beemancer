@@ -6,6 +6,10 @@
     {
       "type": "text",
       "key": "codex.apica.logistics.storage_barrel_mk2.lore"
+    },
+    {
+      "type": "craft",
+      "result": "apica:storage_barrel_mk2"
     }
   ],
   "sticky_notes": []
