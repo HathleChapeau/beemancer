@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": { "item": "apica:wooden_frame" },
+    "I": { "item": "apica:honeyed_iron" },
+    "B": { "item": "apica:storage_barrel_mk1" }
+  },
+  "pattern": [ "FIF", "IBI", "FIF" ],
+  "result": { "id": "apica:storage_barrel_mk2", "count": 1 }
+}

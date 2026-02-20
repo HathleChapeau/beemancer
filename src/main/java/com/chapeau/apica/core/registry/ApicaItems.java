@@ -270,6 +270,10 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> NECTAR_DIAMOND_BLOCK = ITEMS.register("nectar_diamond_block",
             () -> new BlockItem(ApicaBlocks.NECTAR_DIAMOND_BLOCK.get(), new Item.Properties()));
 
+    // --- WOODEN FRAME ---
+    public static final DeferredItem<Item> WOODEN_FRAME = ITEMS.register("wooden_frame",
+            () -> new Item(new Item.Properties()));
+
     // --- CRAFTING MATERIALS ---
     public static final DeferredItem<Item> HONEYED_IRON = ITEMS.register("honeyed_iron",
             () -> new Item(new Item.Properties()));

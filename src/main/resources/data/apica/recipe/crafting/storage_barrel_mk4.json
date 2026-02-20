@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": { "item": "apica:wooden_frame" },
+    "D": { "item": "apica:nectar_diamond" },
+    "B": { "item": "apica:storage_barrel_mk3" }
+  },
+  "pattern": [ "FDF", "DBD", "FDF" ],
+  "result": { "id": "apica:storage_barrel_mk4", "count": 1 }
+}

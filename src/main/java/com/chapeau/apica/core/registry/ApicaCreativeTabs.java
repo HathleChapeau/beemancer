@@ -183,6 +183,9 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.STORAGE_BARREL_MK4.get());
         output.accept(ApicaItems.VOID_UPGRADE.get());
 
+        // Wooden Frame
+        output.accept(ApicaItems.WOODEN_FRAME.get());
+
         // Trash Cans
         output.accept(ApicaItems.TRASH_CAN.get());
         output.accept(ApicaItems.LIQUID_TRASH_CAN.get());

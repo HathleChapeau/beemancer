@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": { "item": "apica:wooden_frame" },
+    "G": { "item": "apica:royal_gold" },
+    "B": { "item": "apica:storage_barrel_mk2" }
+  },
+  "pattern": [ "FGF", "GBG", "FGF" ],
+  "result": { "id": "apica:storage_barrel_mk3", "count": 1 }
+}
