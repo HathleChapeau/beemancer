@@ -1036,7 +1036,7 @@
   "codex.apica.logistics.liquid_trash_can.lore": "Excess honey and water overflow the tanks when I am not watching. The Liquid Trash Can \u00a76\u00a7lvoids any fluid\u00a7r fed into it. A bucket placed inside is emptied and returned. Connects to liquid \u00a76\u00a7lpipes\u00a7r for automated drainage.",
   "codex.apica.logistics.storage_hive.title": "Storage Hive",
   "codex.apica.logistics.storage_hive.desc": "Increases concurrent bee workers.",
-  "codex.apica.logistics.storage_hive.lore": "The controller can only dispatch so many bees at once. Needed a way to scale the workforce. The Storage Hive slots into the \u00a76\u00a7lcorner positions\u00a7r of the controller structure. Each one houses additional delivery bees, increasing the number of \u00a76\u00a7lsimultaneous tasks\u00a7r the network can process.",
+  "codex.apica.logistics.storage_hive.lore": "The controller's throughput is limited by how many bees it can dispatch at once. The Storage Hive fits into the \u00a76\u00a7lcorner slots\u00a7r of the structure and houses extra delivery bees, raising the number of \u00a76\u00a7lsimultaneous tasks\u00a7r the network handles.",
   "codex.apica.logistics.storage_hive_mk2.title": "Storage Hive MK2",
   "codex.apica.logistics.storage_hive_mk2.desc": "Further concurrent task scaling.",
   "codex.apica.logistics.storage_hive_mk2.lore": "The basic hive's bee capacity was a start, but not enough for a busy network. Reinforced internals allow the Storage Hive MK2 to house more bees per unit. Same \u00a76\u00a7lcorner placement\u00a7r, more workers.",
