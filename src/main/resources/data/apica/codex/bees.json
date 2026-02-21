@@ -56,6 +56,17 @@
       "visibility": "VISIBLE"
     },
     {
+      "id": "essence_extractor",
+      "position": {
+        "x": 1,
+        "y": 2
+      },
+      "category": "NORMAL",
+      "parent": "essence_injector",
+      "hidden_until_parent_unlocked": true,
+      "visibility": "VISIBLE"
+    },
+    {
       "id": "meadow_bee",
       "position": {
         "x": 3,
