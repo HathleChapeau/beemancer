@@ -324,9 +324,9 @@ public class ClientSetup {
             return 0xFFFFFFFF; // Blanc — pas de teinte appliquée
         },
             ApicaBlocks.ITEM_PIPE.get(),
-            ApicaBlocks.ITEM_PIPE_TIER2.get(),
-            ApicaBlocks.ITEM_PIPE_TIER3.get(),
-            ApicaBlocks.ITEM_PIPE_TIER4.get()
+            ApicaBlocks.ITEM_PIPE_MK2.get(),
+            ApicaBlocks.ITEM_PIPE_MK3.get(),
+            ApicaBlocks.ITEM_PIPE_MK4.get()
         );
 
         // Liquid Pipes - teinte du core
@@ -343,9 +343,9 @@ public class ClientSetup {
             return 0xFFFFFFFF; // Blanc — pas de teinte appliquée
         },
             ApicaBlocks.LIQUID_PIPE.get(),
-            ApicaBlocks.LIQUID_PIPE_TIER2.get(),
-            ApicaBlocks.LIQUID_PIPE_TIER3.get(),
-            ApicaBlocks.LIQUID_PIPE_TIER4.get()
+            ApicaBlocks.LIQUID_PIPE_MK2.get(),
+            ApicaBlocks.LIQUID_PIPE_MK3.get(),
+            ApicaBlocks.LIQUID_PIPE_MK4.get()
         );
 
         // Creative Tank - teinte rose creative

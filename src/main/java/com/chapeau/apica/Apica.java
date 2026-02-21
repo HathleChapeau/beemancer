@@ -355,17 +355,17 @@ public class Apica {
         );
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
-                ApicaBlockEntities.ITEM_PIPE_TIER2.get(),
+                ApicaBlockEntities.ITEM_PIPE_MK2.get(),
                 (be, side) -> be.getBuffer()
         );
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
-                ApicaBlockEntities.ITEM_PIPE_TIER3.get(),
+                ApicaBlockEntities.ITEM_PIPE_MK3.get(),
                 (be, side) -> be.getBuffer()
         );
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
-                ApicaBlockEntities.ITEM_PIPE_TIER4.get(),
+                ApicaBlockEntities.ITEM_PIPE_MK4.get(),
                 (be, side) -> be.getBuffer()
         );
 

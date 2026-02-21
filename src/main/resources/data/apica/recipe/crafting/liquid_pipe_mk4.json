@@ -7,5 +7,5 @@
     "D": { "item": "apica:nectar_diamond" }
   },
   "pattern": [ " D ", "WNW", " D " ],
-  "result": { "id": "apica:liquid_pipe_tier4", "count": 16 }
+  "result": { "id": "apica:liquid_pipe_mk4", "count": 16 }
 }

@@ -194,25 +194,25 @@ public class ApicaBlockEntities {
                             ApicaBlocks.LIQUID_PIPE.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<LiquidPipeBlockEntity>> LIQUID_PIPE_TIER2 =
-            BLOCK_ENTITIES.register("liquid_pipe_tier2",
+    public static final Supplier<BlockEntityType<LiquidPipeBlockEntity>> LIQUID_PIPE_MK2 =
+            BLOCK_ENTITIES.register("liquid_pipe_mk2",
                     () -> BlockEntityType.Builder.of(
-                            LiquidPipeBlockEntity::createTier2,
-                            ApicaBlocks.LIQUID_PIPE_TIER2.get()
+                            LiquidPipeBlockEntity::createMk2,
+                            ApicaBlocks.LIQUID_PIPE_MK2.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<LiquidPipeBlockEntity>> LIQUID_PIPE_TIER3 =
-            BLOCK_ENTITIES.register("liquid_pipe_tier3",
+    public static final Supplier<BlockEntityType<LiquidPipeBlockEntity>> LIQUID_PIPE_MK3 =
+            BLOCK_ENTITIES.register("liquid_pipe_mk3",
                     () -> BlockEntityType.Builder.of(
-                            LiquidPipeBlockEntity::createTier3,
-                            ApicaBlocks.LIQUID_PIPE_TIER3.get()
+                            LiquidPipeBlockEntity::createMk3,
+                            ApicaBlocks.LIQUID_PIPE_MK3.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<LiquidPipeBlockEntity>> LIQUID_PIPE_TIER4 =
-            BLOCK_ENTITIES.register("liquid_pipe_tier4",
+    public static final Supplier<BlockEntityType<LiquidPipeBlockEntity>> LIQUID_PIPE_MK4 =
+            BLOCK_ENTITIES.register("liquid_pipe_mk4",
                     () -> BlockEntityType.Builder.of(
-                            LiquidPipeBlockEntity::createTier4,
-                            ApicaBlocks.LIQUID_PIPE_TIER4.get()
+                            LiquidPipeBlockEntity::createMk4,
+                            ApicaBlocks.LIQUID_PIPE_MK4.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE =
@@ -222,25 +222,25 @@ public class ApicaBlockEntities {
                             ApicaBlocks.ITEM_PIPE.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE_TIER2 =
-            BLOCK_ENTITIES.register("item_pipe_tier2",
+    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE_MK2 =
+            BLOCK_ENTITIES.register("item_pipe_mk2",
                     () -> BlockEntityType.Builder.of(
-                            ItemPipeBlockEntity::createTier2,
-                            ApicaBlocks.ITEM_PIPE_TIER2.get()
+                            ItemPipeBlockEntity::createMk2,
+                            ApicaBlocks.ITEM_PIPE_MK2.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE_TIER3 =
-            BLOCK_ENTITIES.register("item_pipe_tier3",
+    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE_MK3 =
+            BLOCK_ENTITIES.register("item_pipe_mk3",
                     () -> BlockEntityType.Builder.of(
-                            ItemPipeBlockEntity::createTier3,
-                            ApicaBlocks.ITEM_PIPE_TIER3.get()
+                            ItemPipeBlockEntity::createMk3,
+                            ApicaBlocks.ITEM_PIPE_MK3.get()
                     ).build(null));
 
-    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE_TIER4 =
-            BLOCK_ENTITIES.register("item_pipe_tier4",
+    public static final Supplier<BlockEntityType<ItemPipeBlockEntity>> ITEM_PIPE_MK4 =
+            BLOCK_ENTITIES.register("item_pipe_mk4",
                     () -> BlockEntityType.Builder.of(
-                            ItemPipeBlockEntity::createTier4,
-                            ApicaBlocks.ITEM_PIPE_TIER4.get()
+                            ItemPipeBlockEntity::createMk4,
+                            ApicaBlocks.ITEM_PIPE_MK4.get()
                     ).build(null));
 
     public static final Supplier<BlockEntityType<CrystallizerBlockEntity>> CRYSTALLIZER = 

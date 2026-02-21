@@ -2,10 +2,10 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "W": { "item": "apica:honeyed_log" },
+    "S": { "item": "apica:honeyed_stone" },
     "R": { "item": "apica:royal_crystal" },
     "G": { "item": "apica:royal_gold" }
   },
-  "pattern": [ " G ", "WRW", " G " ],
-  "result": { "id": "apica:liquid_pipe_tier3", "count": 12 }
+  "pattern": [ " G ", "SRS", " G " ],
+  "result": { "id": "apica:item_pipe_mk3", "count": 12 }
 }

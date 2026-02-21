@@ -3,7 +3,6 @@
     {
       "id": "apica",
       "position": {"x": 0, "y": 0},
-      "icon": "apica:textures/gui/codex/icon_unknown.png",
       "category": "ROOT",
       "parent": null,
       "hidden_until_parent_unlocked": false,
@@ -12,7 +11,6 @@
     {
       "id": "1st_bee",
       "position": {"x": 0, "y": -2},
-      "icon": "apica:textures/item/scoop.png",
       "category": "NORMAL",
       "parent": "apica",
       "hidden_until_parent_unlocked": false,
@@ -21,7 +19,6 @@
     {
       "id": "hive",
       "position": {"x": 2, "y": -1},
-      "icon": "apica:textures/block/machines/magic_hive.png",
       "category": "NORMAL",
       "parent": "1st_bee",
       "hidden_until_parent_unlocked": false,
@@ -31,7 +28,6 @@
     {
       "id": "manual_centrifuge",
       "position": {"x": 2, "y": 1},
-      "icon": "apica:textures/block/manual_centrifuge.png",
       "category": "NORMAL",
       "parent": "hive",
       "hidden_until_parent_unlocked": false,
@@ -41,7 +37,6 @@
     {
       "id": "crystallyzer",
       "position": {"x": 0, "y": 2},
-      "icon": "apica:textures/block/crystallizer.png",
       "category": "NORMAL",
       "parent": "manual_centrifuge",
       "hidden_until_parent_unlocked": false,
@@ -51,7 +46,6 @@
     {
       "id": "altar",
       "position": {"x": -2, "y": 1},
-      "icon": "apica:textures/block/altar/altar_heart_center.png",
       "category": "NORMAL",
       "parent": "crystallyzer",
       "hidden_until_parent_unlocked": false,
@@ -61,7 +55,6 @@
     {
       "id": "hive_multibloc",
       "position": {"x": -2, "y": -1},
-      "icon": "apica:textures/block/machines/hive_multiblock.png",
       "category": "NORMAL",
       "parent": "altar",
       "hidden_until_parent_unlocked": false,

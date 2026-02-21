@@ -16,11 +16,11 @@
     },
     {
       "type": "craft",
-      "result": "apica:liquid_pipe_tier2"
+      "result": "apica:liquid_pipe_mk2"
     },
     {
       "type": "craft",
-      "result": "apica:item_pipe_tier2"
+      "result": "apica:item_pipe_mk2"
     }
   ],
   "sticky_notes": []

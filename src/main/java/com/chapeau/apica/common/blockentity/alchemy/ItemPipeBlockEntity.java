@@ -71,15 +71,15 @@ import java.util.List;
  * hop par hop à travers le réseau via des routes BFS pré-calculées.
  */
 public class ItemPipeBlockEntity extends BlockEntity {
-    // --- TIER CONFIG ---
-    public static final int TIER1_BUFFER = 4;
-    public static final int TIER1_TRANSFER = 4;
-    public static final int TIER2_BUFFER = 8;
-    public static final int TIER2_TRANSFER = 8;
-    public static final int TIER3_BUFFER = 16;
-    public static final int TIER3_TRANSFER = 16;
-    public static final int TIER4_BUFFER = 32;
-    public static final int TIER4_TRANSFER = 32;
+    // --- MK CONFIG ---
+    public static final int MK1_BUFFER = 4;
+    public static final int MK1_TRANSFER = 4;
+    public static final int MK2_BUFFER = 8;
+    public static final int MK2_TRANSFER = 8;
+    public static final int MK3_BUFFER = 16;
+    public static final int MK3_TRANSFER = 16;
+    public static final int MK4_BUFFER = 32;
+    public static final int MK4_TRANSFER = 32;
 
     private final int transferAmount;
     private final ItemStackHandler buffer;
@@ -96,7 +96,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
     private int tintColor = -1;
 
     public ItemPipeBlockEntity(BlockPos pos, BlockState state) {
-        this(ApicaBlockEntities.ITEM_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
+        this(ApicaBlockEntities.ITEM_PIPE.get(), pos, state, MK1_BUFFER, MK1_TRANSFER);
     }
 
     public ItemPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
@@ -124,21 +124,21 @@ public class ItemPipeBlockEntity extends BlockEntity {
         }, new Vec3(0, 1, 0));
     }
 
-    // --- Factory methods for tiered versions ---
+    // --- Factory methods for MK versions ---
 
-    public static ItemPipeBlockEntity createTier2(BlockPos pos, BlockState state) {
-        return new ItemPipeBlockEntity(ApicaBlockEntities.ITEM_PIPE_TIER2.get(), pos, state,
-            TIER2_BUFFER, TIER2_TRANSFER);
+    public static ItemPipeBlockEntity createMk2(BlockPos pos, BlockState state) {
+        return new ItemPipeBlockEntity(ApicaBlockEntities.ITEM_PIPE_MK2.get(), pos, state,
+            MK2_BUFFER, MK2_TRANSFER);
     }
 
-    public static ItemPipeBlockEntity createTier3(BlockPos pos, BlockState state) {
-        return new ItemPipeBlockEntity(ApicaBlockEntities.ITEM_PIPE_TIER3.get(), pos, state,
-            TIER3_BUFFER, TIER3_TRANSFER);
+    public static ItemPipeBlockEntity createMk3(BlockPos pos, BlockState state) {
+        return new ItemPipeBlockEntity(ApicaBlockEntities.ITEM_PIPE_MK3.get(), pos, state,
+            MK3_BUFFER, MK3_TRANSFER);
     }
 
-    public static ItemPipeBlockEntity createTier4(BlockPos pos, BlockState state) {
-        return new ItemPipeBlockEntity(ApicaBlockEntities.ITEM_PIPE_TIER4.get(), pos, state,
-            TIER4_BUFFER, TIER4_TRANSFER);
+    public static ItemPipeBlockEntity createMk4(BlockPos pos, BlockState state) {
+        return new ItemPipeBlockEntity(ApicaBlockEntities.ITEM_PIPE_MK4.get(), pos, state,
+            MK4_BUFFER, MK4_TRANSFER);
     }
 
     // --- Server tick ---

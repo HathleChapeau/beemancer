@@ -239,19 +239,19 @@ public class ApicaBlocks {
                     .sound(SoundType.COPPER)
                     .noOcclusion()));
 
-    public static final DeferredBlock<LiquidPipeBlock> LIQUID_PIPE_TIER2 = BLOCKS.register("liquid_pipe_tier2",
+    public static final DeferredBlock<LiquidPipeBlock> LIQUID_PIPE_MK2 = BLOCKS.register("liquid_pipe_mk2",
             () -> new LiquidPipeBlock(BlockBehaviour.Properties.of()
                     .strength(1.8f)
                     .sound(SoundType.COPPER)
                     .noOcclusion(), 2));
 
-    public static final DeferredBlock<LiquidPipeBlock> LIQUID_PIPE_TIER3 = BLOCKS.register("liquid_pipe_tier3",
+    public static final DeferredBlock<LiquidPipeBlock> LIQUID_PIPE_MK3 = BLOCKS.register("liquid_pipe_mk3",
             () -> new LiquidPipeBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.COPPER)
                     .noOcclusion(), 3));
 
-    public static final DeferredBlock<LiquidPipeBlock> LIQUID_PIPE_TIER4 = BLOCKS.register("liquid_pipe_tier4",
+    public static final DeferredBlock<LiquidPipeBlock> LIQUID_PIPE_MK4 = BLOCKS.register("liquid_pipe_mk4",
             () -> new LiquidPipeBlock(BlockBehaviour.Properties.of()
                     .strength(2.5f)
                     .sound(SoundType.COPPER)
@@ -263,19 +263,19 @@ public class ApicaBlocks {
                     .sound(SoundType.COPPER)
                     .noOcclusion()));
 
-    public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE_TIER2 = BLOCKS.register("item_pipe_tier2",
+    public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE_MK2 = BLOCKS.register("item_pipe_mk2",
             () -> new ItemPipeBlock(BlockBehaviour.Properties.of()
                     .strength(1.8f)
                     .sound(SoundType.COPPER)
                     .noOcclusion(), 2));
 
-    public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE_TIER3 = BLOCKS.register("item_pipe_tier3",
+    public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE_MK3 = BLOCKS.register("item_pipe_mk3",
             () -> new ItemPipeBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.COPPER)
                     .noOcclusion(), 3));
 
-    public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE_TIER4 = BLOCKS.register("item_pipe_tier4",
+    public static final DeferredBlock<ItemPipeBlock> ITEM_PIPE_MK4 = BLOCKS.register("item_pipe_mk4",
             () -> new ItemPipeBlock(BlockBehaviour.Properties.of()
                     .strength(2.5f)
                     .sound(SoundType.COPPER)

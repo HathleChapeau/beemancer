@@ -40,16 +40,16 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class LiquidPipeBlockEntity extends BlockEntity {
-    // --- TIER CONFIG ---
-    public static final int TIER1_BUFFER = 1000;
-    public static final int TIER2_BUFFER = 2000;
-    public static final int TIER3_BUFFER = 4000;
-    public static final int TIER4_BUFFER = 8000;
+    // --- MK CONFIG ---
+    public static final int MK1_BUFFER = 1000;
+    public static final int MK2_BUFFER = 2000;
+    public static final int MK3_BUFFER = 4000;
+    public static final int MK4_BUFFER = 8000;
 
-    public static final int TIER1_TRANSFER = 250;
-    public static final int TIER2_TRANSFER = 500;
-    public static final int TIER3_TRANSFER = 1000;
-    public static final int TIER4_TRANSFER = 2000;
+    public static final int MK1_TRANSFER = 250;
+    public static final int MK2_TRANSFER = 500;
+    public static final int MK3_TRANSFER = 1000;
+    public static final int MK4_TRANSFER = 2000;
 
     private static final int SHARE_INTERVAL = 10; // 0.5 secondes
 
@@ -65,7 +65,7 @@ public class LiquidPipeBlockEntity extends BlockEntity {
     private int tintColor = -1;
 
     public LiquidPipeBlockEntity(BlockPos pos, BlockState state) {
-        this(ApicaBlockEntities.LIQUID_PIPE.get(), pos, state, TIER1_BUFFER, TIER1_TRANSFER);
+        this(ApicaBlockEntities.LIQUID_PIPE.get(), pos, state, MK1_BUFFER, MK1_TRANSFER);
     }
 
     public LiquidPipeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state,
@@ -87,20 +87,20 @@ public class LiquidPipeBlockEntity extends BlockEntity {
         };
     }
 
-    // Factory methods for tiered versions
-    public static LiquidPipeBlockEntity createTier2(BlockPos pos, BlockState state) {
-        return new LiquidPipeBlockEntity(ApicaBlockEntities.LIQUID_PIPE_TIER2.get(), pos, state,
-            TIER2_BUFFER, TIER2_TRANSFER);
+    // Factory methods for MK versions
+    public static LiquidPipeBlockEntity createMk2(BlockPos pos, BlockState state) {
+        return new LiquidPipeBlockEntity(ApicaBlockEntities.LIQUID_PIPE_MK2.get(), pos, state,
+            MK2_BUFFER, MK2_TRANSFER);
     }
 
-    public static LiquidPipeBlockEntity createTier3(BlockPos pos, BlockState state) {
-        return new LiquidPipeBlockEntity(ApicaBlockEntities.LIQUID_PIPE_TIER3.get(), pos, state,
-            TIER3_BUFFER, TIER3_TRANSFER);
+    public static LiquidPipeBlockEntity createMk3(BlockPos pos, BlockState state) {
+        return new LiquidPipeBlockEntity(ApicaBlockEntities.LIQUID_PIPE_MK3.get(), pos, state,
+            MK3_BUFFER, MK3_TRANSFER);
     }
 
-    public static LiquidPipeBlockEntity createTier4(BlockPos pos, BlockState state) {
-        return new LiquidPipeBlockEntity(ApicaBlockEntities.LIQUID_PIPE_TIER4.get(), pos, state,
-            TIER4_BUFFER, TIER4_TRANSFER);
+    public static LiquidPipeBlockEntity createMk4(BlockPos pos, BlockState state) {
+        return new LiquidPipeBlockEntity(ApicaBlockEntities.LIQUID_PIPE_MK4.get(), pos, state,
+            MK4_BUFFER, MK4_TRANSFER);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, LiquidPipeBlockEntity be) {

@@ -130,9 +130,9 @@ public class LiquidPipeBlock extends AbstractPipeBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return switch (tier) {
-            case 2 -> LiquidPipeBlockEntity.createTier2(pos, state);
-            case 3 -> LiquidPipeBlockEntity.createTier3(pos, state);
-            case 4 -> LiquidPipeBlockEntity.createTier4(pos, state);
+            case 2 -> LiquidPipeBlockEntity.createMk2(pos, state);
+            case 3 -> LiquidPipeBlockEntity.createMk3(pos, state);
+            case 4 -> LiquidPipeBlockEntity.createMk4(pos, state);
             default -> new LiquidPipeBlockEntity(pos, state);
         };
     }
@@ -142,9 +142,9 @@ public class LiquidPipeBlock extends AbstractPipeBlock {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) return null;
         BlockEntityType<?> expectedType = switch (tier) {
-            case 2 -> ApicaBlockEntities.LIQUID_PIPE_TIER2.get();
-            case 3 -> ApicaBlockEntities.LIQUID_PIPE_TIER3.get();
-            case 4 -> ApicaBlockEntities.LIQUID_PIPE_TIER4.get();
+            case 2 -> ApicaBlockEntities.LIQUID_PIPE_MK2.get();
+            case 3 -> ApicaBlockEntities.LIQUID_PIPE_MK3.get();
+            case 4 -> ApicaBlockEntities.LIQUID_PIPE_MK4.get();
             default -> ApicaBlockEntities.LIQUID_PIPE.get();
         };
         return createTickerHelper(type, (BlockEntityType<LiquidPipeBlockEntity>) expectedType,

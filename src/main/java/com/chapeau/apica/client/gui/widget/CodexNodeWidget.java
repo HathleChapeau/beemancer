@@ -83,9 +83,9 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("interface", "apica:storage_terminal");
         NODE_TO_ITEM.put("import", "apica:import_interface");
         NODE_TO_ITEM.put("export", "apica:export_interface");
-        NODE_TO_ITEM.put("pipe_t2", "apica:liquid_pipe");
-        NODE_TO_ITEM.put("pipe_t3", "apica:liquid_pipe");
-        NODE_TO_ITEM.put("pipe_t4", "apica:liquid_pipe");
+        NODE_TO_ITEM.put("pipe_t2", "apica:liquid_pipe_mk2");
+        NODE_TO_ITEM.put("pipe_t3", "apica:liquid_pipe_mk3");
+        NODE_TO_ITEM.put("pipe_t4", "apica:liquid_pipe_mk4");
         NODE_TO_ITEM.put("resonator", "apica:resonator");
         NODE_TO_ITEM.put("essence_injector", "apica:injector");
         NODE_TO_ITEM.put("storage_barrel", "apica:storage_barrel_mk1");

@@ -148,15 +148,15 @@ public class ApicaCreativeTabs {
 
         // Liquid Pipes
         output.accept(ApicaItems.LIQUID_PIPE.get());
-        output.accept(ApicaItems.LIQUID_PIPE_TIER2.get());
-        output.accept(ApicaItems.LIQUID_PIPE_TIER3.get());
-        output.accept(ApicaItems.LIQUID_PIPE_TIER4.get());
+        output.accept(ApicaItems.LIQUID_PIPE_MK2.get());
+        output.accept(ApicaItems.LIQUID_PIPE_MK3.get());
+        output.accept(ApicaItems.LIQUID_PIPE_MK4.get());
 
         // Item Pipes
         output.accept(ApicaItems.ITEM_PIPE.get());
-        output.accept(ApicaItems.ITEM_PIPE_TIER2.get());
-        output.accept(ApicaItems.ITEM_PIPE_TIER3.get());
-        output.accept(ApicaItems.ITEM_PIPE_TIER4.get());
+        output.accept(ApicaItems.ITEM_PIPE_MK2.get());
+        output.accept(ApicaItems.ITEM_PIPE_MK3.get());
+        output.accept(ApicaItems.ITEM_PIPE_MK4.get());
     }
 
     private static void addFluidBuckets(CreativeModeTab.Output output) {
