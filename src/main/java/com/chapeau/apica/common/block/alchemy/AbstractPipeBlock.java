@@ -200,6 +200,7 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, 1.2f);
             player.displayClientMessage(Component.literal(clickedDir.getName() + ": Connected"), true);
+            onConnectionToggled(level, pos);
             return InteractionResult.SUCCESS;
         }
 
@@ -214,6 +215,8 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
                 level.setBlock(neighborPos, getConnectionState(level, neighborPos, neighborState), 3);
                 level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, 1.2f);
                 player.displayClientMessage(Component.literal(clickedDir.getName() + ": Connected"), true);
+                onConnectionToggled(level, pos);
+                onConnectionToggled(level, neighborPos);
                 return InteractionResult.SUCCESS;
             }
             return InteractionResult.PASS;
@@ -232,6 +235,7 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
             level.setBlock(pos, newState, 3);
             level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, 0.6f);
             player.displayClientMessage(Component.literal(clickedDir.getName() + ": Disconnected"), true);
+            onConnectionToggled(level, pos);
         } else {
             BooleanProperty extractProp = getExtractProperty(clickedDir);
             boolean newValue = !state.getValue(extractProp);
@@ -240,6 +244,7 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
             player.displayClientMessage(
                 Component.literal(clickedDir.getName() + ": " + (newValue ? "Extraction" : "Insertion")),
                 true);
+            onConnectionToggled(level, pos);
         }
 
         return InteractionResult.SUCCESS;
@@ -377,5 +382,14 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
     protected InteractionResult handleSpecialInteraction(BlockState state, Level level, BlockPos pos,
                                                           Player player, BlockHitResult hit) {
         return null;
+    }
+
+    /**
+     * Hook appelé après chaque modification de connexion (disconnect/reconnect/extract toggle).
+     * Les sous-classes peuvent override pour notifier le réseau de pipes.
+     * Appelé côté serveur uniquement.
+     */
+    protected void onConnectionToggled(Level level, BlockPos pos) {
+        // Par défaut, rien. Override dans ItemPipeBlock pour notifier le PipeNetworkManager.
     }
 }

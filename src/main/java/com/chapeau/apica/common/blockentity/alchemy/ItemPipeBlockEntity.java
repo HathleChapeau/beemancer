@@ -1,32 +1,54 @@
 /**
  * ============================================================
  * [ItemPipeBlockEntity.java]
- * Description: BlockEntity pour les pipes de transport d'items
+ * Description: BlockEntity pour les pipes de transport d'items avec routage réseau
  * ============================================================
  *
  * FONCTIONNEMENT:
- * - Mode extraction (par direction): tire les items du bloc connecte
- * - Mode normal: pousse les items vers les pipes connectees
- * - Round-robin entre les pipes disponibles
- * - Evite les va-et-vient en trackant l'origine des items
- * - Drop les items si cul-de-sac (seule sortie = pipe source)
+ * - Mode extraction (par direction): tire les items du bloc connecté
+ * - Pre-validation: vérifie qu'une destination existe AVANT d'extraire
+ * - Items en transit: suivent une route pré-calculée (BFS) hop par hop
+ * - Anti-loss: les items ne sont JAMAIS droppés — backpressure si pas de destination
+ * - Round-robin global: distribution équitable entre toutes les destinations du réseau
+ * ============================================================
+ *
+ * DÉPENDANCES:
+ * ------------------------------------------------------------
+ * | Dépendance              | Raison                | Utilisation                    |
+ * |-------------------------|----------------------|--------------------------------|
+ * | ItemPipeNetworkManager  | Réseau de pipes      | Routage, pre-validation        |
+ * | PipeNetwork             | Réseau connexe       | findDestination                |
+ * | PipeTransitItem         | Item en transit      | Stockage route + avancement    |
+ * | AbstractPipeBlock       | Blockstate connexions| Détection extract/connect      |
+ * | DebugWandItem           | Debug display        | Affichage buffer au-dessus     |
+ * ------------------------------------------------------------
+ *
+ * UTILISÉ PAR:
+ * - ItemPipeBlock.java (création, ticker)
+ * - Apica.java (capability registration)
+ *
  * ============================================================
  */
 package com.chapeau.apica.common.blockentity.alchemy;
 
+import com.chapeau.apica.common.block.alchemy.AbstractPipeBlock;
 import com.chapeau.apica.common.block.alchemy.ItemPipeBlock;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
+import com.chapeau.apica.core.network.pipe.ItemPipeNetworkManager;
+import com.chapeau.apica.core.network.pipe.PipeNetwork;
+import com.chapeau.apica.core.network.pipe.PipeTransitItem;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -40,19 +62,22 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 
+/**
+ * BlockEntity des item pipes avec routage réseau intelligent.
+ * Les items extraits sont pré-validés (destination existante) puis transitent
+ * hop par hop à travers le réseau via des routes BFS pré-calculées.
+ */
 public class ItemPipeBlockEntity extends BlockEntity {
     // --- TIER CONFIG ---
     public static final int TIER1_BUFFER = 4;
     public static final int TIER1_TRANSFER = 4;
-
     public static final int TIER2_BUFFER = 8;
     public static final int TIER2_TRANSFER = 8;
-
     public static final int TIER3_BUFFER = 16;
     public static final int TIER3_TRANSFER = 16;
-
     public static final int TIER4_BUFFER = 32;
     public static final int TIER4_TRANSFER = 32;
 
@@ -60,16 +85,14 @@ public class ItemPipeBlockEntity extends BlockEntity {
     private final ItemStackHandler buffer;
 
     private int transferCooldown = 0;
-    private int roundRobinIndex = 0;
 
-    // Position de la pipe d'ou viennent les items actuels (pour eviter les va-et-vient)
-    @Nullable
-    private BlockPos sourcePos = null;
+    /** Items en transit avec route pré-calculée. */
+    private final List<PipeTransitItem> transitItems = new ArrayList<>();
 
-    // Directions manuellement deconnectees par le joueur
+    /** Directions manuellement déconnectées par le joueur. */
     private final EnumSet<Direction> disconnectedDirections = EnumSet.noneOf(Direction.class);
 
-    // Couleur de teinte du core (-1 = pas de teinte)
+    /** Couleur de teinte du core (-1 = pas de teinte). */
     private int tintColor = -1;
 
     public ItemPipeBlockEntity(BlockPos pos, BlockState state) {
@@ -87,26 +110,22 @@ public class ItemPipeBlockEntity extends BlockEntity {
             }
         };
 
-        for (int i = 0; i < buffer.getSlots(); i++) {
-            ItemStack stack = buffer.getStackInSlot(i);
-            if (stack.isEmpty() || stack.getCount() < stack.getMaxStackSize()) {
-
-            }
-        }
-
-
         DebugWandItem.addDisplay(this, () -> {
             StringBuilder str = new StringBuilder();
             for (int i = 0; i < buffer.getSlots(); i++) {
                 ItemStack stack = buffer.getStackInSlot(i);
-                if(!stack.isEmpty())
+                if (!stack.isEmpty())
                     str.append(stack.getHoverName().getString()).append(": ").append(stack.getCount()).append("\n");
             }
+            if (!transitItems.isEmpty()) {
+                str.append("Transit: ").append(transitItems.size()).append(" items\n");
+            }
             return "Item: " + str;
-        }, new Vec3(0,1,0));
+        }, new Vec3(0, 1, 0));
     }
 
-    // Factory methods for tiered versions
+    // --- Factory methods for tiered versions ---
+
     public static ItemPipeBlockEntity createTier2(BlockPos pos, BlockState state) {
         return new ItemPipeBlockEntity(ApicaBlockEntities.ITEM_PIPE_TIER2.get(), pos, state,
             TIER2_BUFFER, TIER2_TRANSFER);
@@ -122,215 +141,183 @@ public class ItemPipeBlockEntity extends BlockEntity {
             TIER4_BUFFER, TIER4_TRANSFER);
     }
 
+    // --- Server tick ---
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, ItemPipeBlockEntity be) {
         if (be.transferCooldown > 0) {
             be.transferCooldown--;
             return;
         }
 
-        // Reset source tracking si buffer est vide
-        if (be.isBufferEmpty()) {
-            be.sourcePos = null;
-        }
+        // 1. Avancer les items en transit d'un hop
+        be.advanceTransitItems(level, pos, state);
 
-        // Push d'abord les items existants (du cycle precedent)
-        be.pushToNeighbors(level, pos, state);
-
-        // Puis extraire de nouveaux items (resteront dans le buffer jusqu'au prochain cycle)
+        // 2. Extraire de nouveaux items (avec pre-validation)
         be.processExtractions(level, pos, state);
 
-        be.transferCooldown = 8; // Slower than fluid pipes
+        be.transferCooldown = 8;
     }
+
+    // --- Extraction avec pre-validation ---
 
     private void processExtractions(Level level, BlockPos pos, BlockState state) {
-        if (isBufferFull()) {
-            return;
-        }
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        if (isBufferFull()) return;
 
         for (Direction dir : Direction.values()) {
-            if (!ItemPipeBlock.isConnected(state, dir)) continue;
-            if (!ItemPipeBlock.isExtracting(state, dir)) continue;
+            if (!AbstractPipeBlock.isConnected(state, dir)) continue;
+            if (!AbstractPipeBlock.isExtracting(state, dir)) continue;
 
             BlockPos neighborPos = pos.relative(dir);
 
-            // Don't extract from other item pipes
+            // Ne pas extraire depuis d'autres item pipes
             if (level.getBlockEntity(neighborPos) instanceof ItemPipeBlockEntity) continue;
 
-            var cap = level.getCapability(Capabilities.ItemHandler.BLOCK, neighborPos, dir.getOpposite());
-            if (cap != null) {
-                extractFromHandler(cap);
-                // Mark source as non-pipe (null = from machine)
-                sourcePos = null;
-            }
+            IItemHandler cap = level.getCapability(Capabilities.ItemHandler.BLOCK, neighborPos, dir.getOpposite());
+            if (cap == null) continue;
+
+            extractWithPreValidation(cap, serverLevel, pos);
         }
     }
 
-    private void extractFromHandler(IItemHandler handler) {
+    /**
+     * Extrait un item du handler source seulement si une destination valide existe dans le réseau.
+     * L'item est immédiatement placé en transit avec une route pré-calculée.
+     */
+    private void extractWithPreValidation(IItemHandler handler, ServerLevel level, BlockPos myPos) {
+        PipeNetwork network = ItemPipeNetworkManager.get(level).getNetworkAt(myPos);
+        if (network == null) return;
+
         for (int i = 0; i < handler.getSlots() && !isBufferFull(); i++) {
-            ItemStack extracted = handler.extractItem(i, transferAmount, true);
-            if (!extracted.isEmpty()) {
-                ItemStack remaining = insertIntoBuffer(extracted, true);
-                int toExtract = extracted.getCount() - remaining.getCount();
-                if (toExtract > 0) {
-                    ItemStack actualExtracted = handler.extractItem(i, toExtract, false);
-                    insertIntoBuffer(actualExtracted, false);
-                    break; // Un seul slot extrait par tick pour performance
-                }
-            }
+            ItemStack simulated = handler.extractItem(i, transferAmount, true);
+            if (simulated.isEmpty()) continue;
+
+            // Pre-validation : chercher une destination dans le réseau
+            PipeNetwork.RouteResult result = network.findDestination(myPos, simulated, level);
+            if (result == null) continue;
+
+            // Destination trouvée : extraire pour de vrai
+            ItemStack extracted = handler.extractItem(i, transferAmount, false);
+            if (extracted.isEmpty()) continue;
+
+            // Créer l'item en transit avec la route
+            PipeTransitItem transit = new PipeTransitItem(
+                extracted, result.route(), 0, result.endpoint().machinePos()
+            );
+            transitItems.add(transit);
+            setChanged();
+            break; // Un seul slot extrait par tick
         }
     }
 
-    private void pushToNeighbors(Level level, BlockPos pos, BlockState state) {
-        if (isBufferEmpty()) {
-            return;
-        }
+    // --- Avancement des items en transit ---
 
-        // Construire la liste des destinations disponibles
-        List<PipeDestination> availableDestinations = new ArrayList<>();
-        // Compter les connexions non-source (structurelles, indépendamment de l'état plein/vide)
-        int nonSourceConnections = 0;
-        boolean hasSourceConnection = false;
+    private void advanceTransitItems(Level level, BlockPos pos, BlockState state) {
+        if (transitItems.isEmpty()) return;
+        if (!(level instanceof ServerLevel serverLevel)) return;
 
-        for (Direction dir : Direction.values()) {
-            if (!ItemPipeBlock.isConnected(state, dir)) continue;
-            if (ItemPipeBlock.isExtracting(state, dir)) continue;
+        Iterator<PipeTransitItem> it = transitItems.iterator();
+        while (it.hasNext()) {
+            PipeTransitItem transit = it.next();
 
-            BlockPos neighborPos = pos.relative(dir);
-
-            // Skip si c'est la source (evite va-et-vient)
-            if (neighborPos.equals(sourcePos)) {
-                hasSourceConnection = true;
+            if (transit.isAtEndOfRoute()) {
+                // On est à la dernière pipe : tenter l'insertion dans la machine destination
+                if (tryDeliverToDestination(transit, serverLevel)) {
+                    it.remove();
+                } else {
+                    // Destination pleine : tenter re-route
+                    tryReroute(transit, pos, serverLevel);
+                }
                 continue;
             }
 
-            // Check si c'est une pipe
-            BlockEntity neighborBe = level.getBlockEntity(neighborPos);
-            if (neighborBe instanceof ItemPipeBlockEntity neighborPipe) {
-                nonSourceConnections++;
-                // Skip si la pipe voisine est pleine (temporaire)
-                if (neighborPipe.isBufferFull()) continue;
+            BlockPos nextHop = transit.nextHop();
+            if (nextHop == null) continue;
 
-                availableDestinations.add(new PipeDestination(dir, neighborPos, true));
+            // Vérifier que le prochain hop est une pipe valide
+            BlockEntity nextBe = level.getBlockEntity(nextHop);
+            if (nextBe instanceof ItemPipeBlockEntity nextPipe) {
+                if (!nextPipe.isBufferFull()) {
+                    // Transférer l'item au prochain pipe
+                    transit.advance();
+                    nextPipe.transitItems.add(transit);
+                    nextPipe.setChanged();
+                    it.remove();
+                }
+                // Si le prochain pipe est plein : backpressure (attendre)
             } else {
-                // C'est un bloc normal avec capacite d'items
-                var cap = level.getCapability(Capabilities.ItemHandler.BLOCK, neighborPos, dir.getOpposite());
-                if (cap != null) {
-                    nonSourceConnections++;
-                    // Verifier si on peut inserer quelque chose
-                    if (canInsertAnyIntoHandler(cap)) {
-                        availableDestinations.add(new PipeDestination(dir, neighborPos, false));
-                    }
-                }
-            }
-        }
-
-        if (availableDestinations.isEmpty()) {
-            // Drop uniquement si dead-end structurel: aucune connexion non-source existante
-            if (nonSourceConnections == 0 && hasSourceConnection) {
-                dropAllBufferItems(level, pos);
-            }
-            // Sinon, les voisins sont temporairement pleins: attendre
-            return;
-        }
-
-        // Round-robin: choisir la prochaine destination
-        roundRobinIndex = roundRobinIndex % availableDestinations.size();
-        PipeDestination dest = availableDestinations.get(roundRobinIndex);
-        roundRobinIndex = (roundRobinIndex + 1) % availableDestinations.size();
-
-        // Transferer vers la destination choisie
-        if (dest.isPipe) {
-            BlockEntity neighborBe = level.getBlockEntity(dest.pos);
-            if (neighborBe instanceof ItemPipeBlockEntity neighborPipe) {
-                transferToPipe(neighborPipe, pos);
-            }
-        } else {
-            var cap = level.getCapability(Capabilities.ItemHandler.BLOCK, dest.pos, dest.direction.getOpposite());
-            if (cap != null) {
-                pushToHandler(cap);
+                // Le prochain hop n'est plus une pipe valide : tenter re-route
+                tryReroute(transit, pos, serverLevel);
             }
         }
     }
 
-    private void dropAllBufferItems(Level level, BlockPos pos) {
-        for (int i = 0; i < buffer.getSlots(); i++) {
-            ItemStack stack = buffer.getStackInSlot(i);
-            if (!stack.isEmpty()) {
-                dropItem(level, pos, stack);
-                buffer.setStackInSlot(i, ItemStack.EMPTY);
-            }
+    /**
+     * Tente d'insérer l'item en transit dans la machine destination.
+     */
+    private boolean tryDeliverToDestination(PipeTransitItem transit, ServerLevel level) {
+        BlockPos destPos = transit.getDestinationPos();
+        if (!level.hasChunkAt(destPos)) return false;
+
+        // Trouver la face par laquelle on insère
+        BlockPos myPos = transit.currentPos();
+        Direction insertDir = getDirectionBetween(myPos, destPos);
+        if (insertDir == null) return false;
+
+        IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, destPos, insertDir.getOpposite());
+        if (handler == null) return false;
+
+        ItemStack toInsert = transit.getStack().copy();
+        ItemStack remaining = toInsert;
+        for (int i = 0; i < handler.getSlots() && !remaining.isEmpty(); i++) {
+            remaining = handler.insertItem(i, remaining, false);
         }
-        sourcePos = null;
-    }
 
-    private void dropItem(Level level, BlockPos pos, ItemStack stack) {
-        if (!stack.isEmpty() && !level.isClientSide()) {
-            double x = pos.getX() + 0.5;
-            double y = pos.getY() + 0.5;
-            double z = pos.getZ() + 0.5;
-
-            ItemEntity entity = new ItemEntity(level, x, y, z, stack);
-            entity.setDefaultPickUpDelay();
-            level.addFreshEntity(entity);
+        if (remaining.isEmpty()) {
+            return true; // Tout inséré
         }
-    }
 
-    private void transferToPipe(ItemPipeBlockEntity neighborPipe, BlockPos myPos) {
-        for (int bufferSlot = 0; bufferSlot < buffer.getSlots(); bufferSlot++) {
-            ItemStack stack = buffer.getStackInSlot(bufferSlot);
-            if (stack.isEmpty()) continue;
-
-            ItemStack toInsert = stack.copyWithCount(Math.min(stack.getCount(), transferAmount));
-            ItemStack remaining = neighborPipe.insertIntoBuffer(toInsert, false);
-
-            int inserted = toInsert.getCount() - remaining.getCount();
-            if (inserted > 0) {
-                buffer.extractItem(bufferSlot, inserted, false);
-                // Marquer notre position comme source pour la pipe voisine
-                neighborPipe.sourcePos = myPos;
-                break; // Un seul transfert par tick
-            }
-        }
-    }
-
-    private void pushToHandler(IItemHandler handler) {
-        for (int bufferSlot = 0; bufferSlot < buffer.getSlots(); bufferSlot++) {
-            ItemStack stack = buffer.getStackInSlot(bufferSlot);
-            if (stack.isEmpty()) continue;
-
-            ItemStack toInsert = stack.copyWithCount(Math.min(stack.getCount(), transferAmount));
-            ItemStack remaining = insertIntoHandler(handler, toInsert);
-
-            int inserted = toInsert.getCount() - remaining.getCount();
-            if (inserted > 0) {
-                buffer.extractItem(bufferSlot, inserted, false);
-                break; // Un seul transfert par tick
-            }
-        }
-    }
-
-    private boolean canInsertAnyIntoHandler(IItemHandler handler) {
-        for (int bufferSlot = 0; bufferSlot < buffer.getSlots(); bufferSlot++) {
-            ItemStack stack = buffer.getStackInSlot(bufferSlot);
-            if (!stack.isEmpty()) {
-                ItemStack testStack = stack.copyWithCount(1);
-                for (int i = 0; i < handler.getSlots(); i++) {
-                    ItemStack remaining = handler.insertItem(i, testStack, true);
-                    if (remaining.isEmpty()) return true;
-                }
-                // Continuer: d'autres slots du buffer pourraient être insérables
-            }
+        // Insertion partielle : mettre le reste dans le buffer
+        if (remaining.getCount() < toInsert.getCount()) {
+            transit.getStack().setCount(remaining.getCount());
         }
         return false;
     }
 
-    private ItemStack insertIntoHandler(IItemHandler handler, ItemStack stack) {
-        ItemStack remaining = stack.copy();
-        for (int i = 0; i < handler.getSlots() && !remaining.isEmpty(); i++) {
-            remaining = handler.insertItem(i, remaining, false);
+    /**
+     * Tente de re-router un item en transit dont la route est invalide.
+     * Si aucune nouvelle route, l'item reste dans le buffer de ce pipe.
+     */
+    private void tryReroute(PipeTransitItem transit, BlockPos myPos, ServerLevel level) {
+        PipeNetwork network = ItemPipeNetworkManager.get(level).getNetworkAt(myPos);
+        if (network == null) return;
+
+        PipeNetwork.RouteResult newRoute = network.findDestination(myPos, transit.getStack(), level);
+        if (newRoute != null) {
+            // Remplacer par un nouveau transit item avec la nouvelle route
+            int idx = transitItems.indexOf(transit);
+            if (idx >= 0) {
+                transitItems.set(idx, new PipeTransitItem(
+                    transit.getStack(), newRoute.route(), 0, newRoute.endpoint().machinePos()
+                ));
+            }
         }
-        return remaining;
+        // Si pas de nouvelle route : l'item reste dans transitItems et on re-essaiera au prochain tick
     }
+
+    /**
+     * Retourne la direction entre deux positions adjacentes.
+     */
+    @Nullable
+    private static Direction getDirectionBetween(BlockPos from, BlockPos to) {
+        BlockPos diff = to.subtract(from);
+        for (Direction dir : Direction.values()) {
+            if (dir.getNormal().equals(diff)) return dir;
+        }
+        return null;
+    }
+
+    // --- Buffer helpers ---
 
     public ItemStack insertIntoBuffer(ItemStack stack, boolean simulate) {
         ItemStack remaining = stack.copy();
@@ -347,21 +334,14 @@ public class ItemPipeBlockEntity extends BlockEntity {
                 return false;
             }
         }
-        return true;
-    }
-
-    private boolean isBufferEmpty() {
-        for (int i = 0; i < buffer.getSlots(); i++) {
-            if (!buffer.getStackInSlot(i).isEmpty()) {
-                return false;
-            }
-        }
-        return true;
+        return transitItems.size() >= buffer.getSlots();
     }
 
     public ItemStackHandler getBuffer() {
         return buffer;
     }
+
+    // --- Disconnect / Tint ---
 
     public boolean isDisconnected(Direction dir) {
         return disconnectedDirections.contains(dir);
@@ -376,9 +356,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
         setChanged();
     }
 
-    public int getTintColor() {
-        return tintColor;
-    }
+    public int getTintColor() { return tintColor; }
 
     public void setTintColor(int color) {
         this.tintColor = color;
@@ -388,8 +366,19 @@ public class ItemPipeBlockEntity extends BlockEntity {
         }
     }
 
-    public boolean hasTint() {
-        return tintColor != -1;
+    public boolean hasTint() { return tintColor != -1; }
+
+    // --- Network registration on load ---
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level instanceof ServerLevel serverLevel) {
+            ItemPipeNetworkManager manager = ItemPipeNetworkManager.get(serverLevel);
+            if (manager.getNetworkAt(worldPosition) == null) {
+                manager.onPipeAdded(worldPosition, serverLevel);
+            }
+        }
     }
 
     // --- Sync client ---
@@ -411,10 +400,16 @@ public class ItemPipeBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Buffer", buffer.serializeNBT(registries));
-        tag.putInt("RoundRobin", roundRobinIndex);
-        if (sourcePos != null) {
-            tag.put("SourcePos", NbtUtils.writeBlockPos(sourcePos));
+
+        // Sauvegarder les items en transit
+        if (!transitItems.isEmpty()) {
+            ListTag transitTag = new ListTag();
+            for (PipeTransitItem transit : transitItems) {
+                transitTag.add(transit.save(registries));
+            }
+            tag.put("TransitItems", transitTag);
         }
+
         int disconnectedBits = 0;
         for (Direction dir : disconnectedDirections) {
             disconnectedBits |= (1 << dir.ordinal());
@@ -433,7 +428,16 @@ public class ItemPipeBlockEntity extends BlockEntity {
         if (tag.contains("Buffer")) {
             buffer.deserializeNBT(registries, tag.getCompound("Buffer"));
         }
-        roundRobinIndex = tag.getInt("RoundRobin");
+
+        // Charger les items en transit
+        transitItems.clear();
+        if (tag.contains("TransitItems")) {
+            ListTag transitTag = tag.getList("TransitItems", Tag.TAG_COMPOUND);
+            for (int i = 0; i < transitTag.size(); i++) {
+                transitItems.add(PipeTransitItem.load(transitTag.getCompound(i), registries));
+            }
+        }
+
         disconnectedDirections.clear();
         if (tag.contains("DisconnectedDirs")) {
             int bits = tag.getInt("DisconnectedDirs");
@@ -442,9 +446,6 @@ public class ItemPipeBlockEntity extends BlockEntity {
                     disconnectedDirections.add(dir);
                 }
             }
-        }
-        if (tag.contains("SourcePos")) {
-            sourcePos = NbtUtils.readBlockPos(tag, "SourcePos").orElse(null);
         }
         tintColor = tag.contains("TintColor") ? tag.getInt("TintColor") : -1;
     }
@@ -458,7 +459,6 @@ public class ItemPipeBlockEntity extends BlockEntity {
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries) {
         super.onDataPacket(net, pkt, registries);
-        // Force re-render côté client pour mettre à jour le BlockColor
         if (level != null && level.isClientSide()) {
             level.invalidateCapabilities(worldPosition);
             requestModelDataUpdate();
@@ -472,6 +472,4 @@ public class ItemPipeBlockEntity extends BlockEntity {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
-
-    private record PipeDestination(Direction direction, BlockPos pos, boolean isPipe) {}
 }

@@ -10,7 +10,8 @@
  * |---------------------|----------------------|--------------------------------|
  * | AbstractPipeBlock   | Base pipe            | Connexion, shapes, interaction |
  * | ItemPipeBlockEntity | BlockEntity item     | Gestion buffer items           |
- * | ApicaBlockEntities| Registre           | Types tiered                   |
+ * | ApicaBlockEntities  | Registre             | Types tiered                   |
+ * | ItemPipeNetworkManager | Réseau pipes      | Notifier ajout/retrait/toggle  |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -22,10 +23,12 @@
 package com.chapeau.apica.common.block.alchemy;
 
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
+import com.chapeau.apica.core.network.pipe.ItemPipeNetworkManager;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -38,6 +41,7 @@ import javax.annotation.Nullable;
 
 /**
  * Pipe d'items. Se connecte aux ItemHandler.
+ * Notifie le ItemPipeNetworkManager lors des changements topologiques.
  */
 public class ItemPipeBlock extends AbstractPipeBlock {
     public static final MapCodec<ItemPipeBlock> CODEC = simpleCodec(ItemPipeBlock::new);
@@ -93,6 +97,34 @@ public class ItemPipeBlock extends AbstractPipeBlock {
     @Override
     protected void applyTint(BlockEntity be, int color) {
         ((ItemPipeBlockEntity) be).setTintColor(color);
+    }
+
+    // --- Network hooks ---
+
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
+            ItemPipeNetworkManager.get(serverLevel).onPipeAdded(pos, serverLevel);
+        }
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
+            // Notifier avant que le BlockEntity soit retiré
+            if (!state.is(newState.getBlock())) {
+                ItemPipeNetworkManager.get(serverLevel).onPipeRemoved(pos, serverLevel);
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
+    }
+
+    @Override
+    protected void onConnectionToggled(Level level, BlockPos pos) {
+        if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
+            ItemPipeNetworkManager.get(serverLevel).onConnectionChanged(pos, serverLevel);
+        }
     }
 
     // --- BlockEntity ---
