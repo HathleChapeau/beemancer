@@ -3,6 +3,36 @@
 ################################################################################
 
 ================================================================================
+2026-02-21 - Item Pipe Network Refonte (PipeNetwork + Pathfinding BFS)
+================================================================================
+
+REFONTE COMPLETE du transport d'items par pipes:
+- PipeEndpoint.java: Record point connexion pipe↔machine (EXTRACT/INSERT)
+- PipeGraph.java: Graphe adjacence + BFS path + composantes connexes + buildFromWorld
+- PipeRouteCache.java: Cache routes BFS, invalidation topologique
+- PipeTransitItem.java: Item en transit avec route pré-calculée + NBT
+- PipeNetwork.java: Réseau connexe (graphe + endpoints + round-robin global + findDestination)
+- ItemPipeNetworkManager.java: SavedData singleton, merge/split réseaux, lifecycle
+
+Modifications:
+- ItemPipeBlockEntity.java: Refonte complète — transit items, pre-validation, anti-loss
+  Supprimé: pushToNeighbors, dropAllBufferItems, dropItem, sourcePos, roundRobinIndex
+  Ajouté: List<PipeTransitItem>, advanceTransitItems, extractWithPreValidation, tryReroute
+- ItemPipeBlock.java: +onPlace (onPipeAdded), +onRemove (onPipeRemoved), +onConnectionToggled
+- AbstractPipeBlock.java: +onConnectionToggled() hook, appels dans useWithoutItem après chaque toggle
+- Apica.java: Fix bug — ajout capabilities ItemHandler pour ITEM_PIPE_TIER2/3/4 (manquaient)
+
+Architecture:
+- Graphe réseau avec pathfinding BFS au lieu de push aveugle
+- Pre-validation: items ne sont extraits que si une destination existe
+- Anti-loss: plus AUCUN drop d'items (backpressure + re-route)
+- Round-robin global entre toutes les destinations du réseau
+- Merge automatique quand deux réseaux se connectent
+- Split automatique (BFS composantes connexes) quand un pipe est cassé
+- Cache routes invalidé uniquement au changement topologique
+- SavedData persiste réseaux par dimension (UUID + positions + round-robin)
+
+================================================================================
 2026-02-20 - Storage Barrels (MK1-MK4) + Void Upgrade + Trash Cans + Bucket Interaction
 ================================================================================
 

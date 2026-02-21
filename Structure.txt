@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-20                     #
-#  (Storage Barrels + Trash Cans + Bucket Interaction - 2026-02-20)             #
+#                         Dernière mise à jour: 2026-02-21                     #
+#  (Item Pipe Network Refonte - 2026-02-21)                                     #
 ################################################################################
 
 ================================================================================
@@ -162,6 +162,13 @@ Philosophie:
 │ mixin/EntityCollisionMixin               │ Force step-up hoverbike (onGround)  │
 │ mixin/LivingEntitySuffocationMixin       │ Anti-suffocation joueur sur hoverbike│
 │ mixin/PlayerDimensionsMixin              │ Force STANDING dimensions sur hoverbike│
+│ core/network/pipe/                         │                                        │
+│   PipeEndpoint                          │ Record point connexion pipe↔machine    │
+│   PipeGraph                             │ Graphe adjacence + BFS + composantes   │
+│   PipeRouteCache                        │ Cache routes BFS avec invalidation     │
+│   PipeTransitItem                       │ Item en transit avec route pré-calc    │
+│   PipeNetwork                           │ Réseau connexe pipes (graphe+routing)  │
+│   ItemPipeNetworkManager                │ SavedData singleton gestion réseaux    │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -739,6 +746,19 @@ LISTE DES FEATURES:
   Scripts modifies: HoneyTankBlock.java (+useItemOn), MultiblockTankBlock.java (+useItemOn)
   Dependances: FluidUtil, IFluidHandler
   Registres modifies: aucun
+
+→ Item Pipe Network Refonte (PipeNetwork + Pathfinding)
+  Fichier: Structure/feature_pipe_network.txt
+  Description: Refonte complète du transport d'items par pipes. Remplacement du push aveugle
+    vers les voisins par un vrai graphe de réseau avec pathfinding BFS, routes pré-calculées,
+    pre-validation des destinations, round-robin global, anti-loss (plus de drop d'items),
+    merge/split automatique de réseaux, cache de routes, SavedData persistant.
+  Scripts créés: PipeEndpoint.java, PipeGraph.java, PipeRouteCache.java, PipeTransitItem.java,
+    PipeNetwork.java, ItemPipeNetworkManager.java
+  Scripts modifiés: ItemPipeBlockEntity.java (refonte complète), ItemPipeBlock.java (+onPlace/onRemove/onConnectionToggled),
+    AbstractPipeBlock.java (+onConnectionToggled hook), Apica.java (+capabilities tiers 2-4)
+  Dépendances: SavedData, IItemHandler, Capabilities.ItemHandler.BLOCK
+  Registres modifiés: aucun (fix bug capabilities ITEM_PIPE_TIER2/3/4 dans Apica.java)
 
 ================================================================================
 6. FEATURES EN COURS

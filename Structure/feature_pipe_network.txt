@@ -1,0 +1,91 @@
+################################################################################
+#                    FEATURE: Item Pipe Network Refonte                        #
+################################################################################
+
+================================================================================
+DESCRIPTION
+================================================================================
+
+Refonte complète du système de transport d'items par pipes.
+Remplacement du modèle "push aveugle vers les voisins" par un vrai graphe
+de réseau avec pathfinding BFS intelligent.
+
+AVANT:
+- Chaque pipe pousse ses items vers ses voisins directs en round-robin local
+- Drop d'items en cul-de-sac
+- Pas de vision globale du réseau
+- Va-et-vient possibles (mitigé par sourcePos tracking)
+
+APRES:
+- Graphe de réseau connaît toutes les destinations accessibles
+- Routes BFS pré-calculées et cachées
+- Pre-validation: vérification destination AVANT extraction
+- Round-robin global entre TOUTES les destinations du réseau
+- Anti-loss: les items ne sont JAMAIS droppés (backpressure)
+- Merge/split automatique quand pipes ajoutées/cassées
+- SavedData persistant par dimension
+
+================================================================================
+ARCHITECTURE
+================================================================================
+
+core/network/pipe/
+├── PipeEndpoint.java          — Record: point connexion pipe↔machine (EXTRACT/INSERT)
+├── PipeGraph.java             — Graphe adjacence + BFS + composantes connexes + buildFromWorld
+├── PipeRouteCache.java        — Cache routes BFS avec invalidation topologique
+├── PipeTransitItem.java       — Item en transit: stack + route + index + NBT
+├── PipeNetwork.java           — Réseau connexe: graphe + endpoints + round-robin + findDestination
+└── ItemPipeNetworkManager.java — SavedData singleton: gestion réseaux, merge/split, lifecycle
+
+================================================================================
+FLUX DE TRANSPORT
+================================================================================
+
+1. Pipe extractrice tire un item de la machine source
+2. Demande au PipeNetwork: "quelle destination pour cet item?"
+3. PipeNetwork cherche en round-robin global parmi TOUS les endpoints INSERT
+4. Pour chaque candidat: simulation d'insertion + calcul route BFS
+5. Si destination trouvée: item entre en transit avec route complète
+6. L'item avance d'1 hop par cycle (8 ticks) le long de sa route
+7. À destination: insertion dans la machine. Si échec → re-route ou backpressure
+8. Si AUCUNE destination: l'item reste dans la source (jamais de drop)
+
+================================================================================
+CYCLE DE VIE RÉSEAU
+================================================================================
+
+- Pipe placée → onPipeAdded → 0 voisins=création, 1=ajout, N réseaux=merge
+- Pipe cassée → onPipeRemoved → retrait + BFS split si composantes déconnectées
+- Connexion toggle → onConnectionChanged → retrait + re-ajout (recalcul complet)
+- Chunk load → onLoad dans BlockEntity → re-enregistrement si manquant
+- World save → SavedData persiste UUID + positions + round-robin index
+
+================================================================================
+FICHIERS
+================================================================================
+
+CRÉÉS:
+- core/network/pipe/PipeEndpoint.java (~45 lignes)
+- core/network/pipe/PipeGraph.java (~160 lignes)
+- core/network/pipe/PipeRouteCache.java (~70 lignes)
+- core/network/pipe/PipeTransitItem.java (~130 lignes)
+- core/network/pipe/PipeNetwork.java (~190 lignes)
+- core/network/pipe/ItemPipeNetworkManager.java (~250 lignes)
+
+MODIFIÉS:
+- ItemPipeBlockEntity.java — Refonte complète (transit items, pre-validation, anti-loss)
+- ItemPipeBlock.java — Ajout onPlace/onRemove/onConnectionToggled hooks
+- AbstractPipeBlock.java — Ajout onConnectionToggled() hook + appels dans useWithoutItem
+- Apica.java — Fix bug capabilities ItemHandler tiers 2-4 manquantes
+
+================================================================================
+POINTS DE DESIGN
+================================================================================
+
+- Round-robin global stocké dans PipeNetwork (pas dans chaque pipe)
+- Cache BFS invalidé uniquement au changement topologique
+- Tier-agnostique: le réseau mélange tous les tiers librement
+- Chunk safety: routes ne traversent que chunks chargés
+- Items en transit sérialisés en NBT (survivent aux saves/loads)
+- Merge: le plus grand réseau absorbe les plus petits
+- Split: BFS par composante connexe, plus grande garde l'UUID original

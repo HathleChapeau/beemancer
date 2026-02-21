@@ -46,6 +46,48 @@ core/util/
   - Client-side: addParticle, addAlwaysVisible
 
 ================================================================================
+core/network/pipe/
+================================================================================
+
+- PipeEndpoint.java: Record point connexion pipe↔machine
+  - pipePos, face, machinePos, EndpointType (EXTRACT/INSERT)
+  - Utilisé par: PipeNetwork, ItemPipeBlockEntity
+
+- PipeGraph.java: Structure graphe non-orienté pour réseau de pipes
+  - addNode/removeNode, addEdge/removeEdge, getNeighbors
+  - bfsPath(from, to) → List<BlockPos> (chemin le plus court)
+  - findConnectedComponents() → List<Set<BlockPos>> (détection splits)
+  - floodFill(start) → Set<BlockPos> (composante connexe)
+  - buildFromWorld(positions, level) → reconstruction depuis le monde
+  - Utilisé par: PipeNetwork, ItemPipeNetworkManager
+
+- PipeRouteCache.java: Cache routes BFS avec invalidation
+  - getCachedRoute/putRoute, invalidateAll, invalidateRoutesThrough
+  - Utilisé par: PipeNetwork
+
+- PipeTransitItem.java: Item en transit dans le réseau
+  - stack, route (List<BlockPos>), currentRouteIndex, destinationPos
+  - nextHop(), isAtEndOfRoute(), advance()
+  - save/load NBT
+  - Utilisé par: ItemPipeBlockEntity
+
+- PipeNetwork.java: Réseau connexe de pipes d'items
+  - Contient: PipeGraph, PipeRouteCache, List<PipeEndpoint>, round-robin index
+  - addPipe/removePipe, connectPipeToNeighbors, refreshEndpoint, rebuildAllEndpoints
+  - findDestination(sourcePipePos, stack, level) → RouteResult (endpoint + route)
+  - save/load NBT (UUID, positions, round-robin)
+  - Utilisé par: ItemPipeNetworkManager, ItemPipeBlockEntity
+
+- ItemPipeNetworkManager.java: SavedData singleton par ServerLevel
+  - get(ServerLevel) → singleton
+  - onPipeAdded/onPipeRemoved/onConnectionChanged → lifecycle réseau
+  - getNetworkAt(pos) → PipeNetwork
+  - Merge: absorbe petits réseaux dans le plus grand
+  - Split: BFS composantes connexes, plus grande garde l'UUID
+  - rebuildAllFromWorld(level) → reconstruction post-load
+  - Utilisé par: ItemPipeBlock, ItemPipeBlockEntity
+
+================================================================================
 common/block/storage/
 ================================================================================
 
