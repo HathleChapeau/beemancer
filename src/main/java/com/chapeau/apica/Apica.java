@@ -351,22 +351,22 @@ public class Apica {
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ApicaBlockEntities.ITEM_PIPE.get(),
-                (be, side) -> be.getBuffer()
+                (be, side) -> be.getFilteredBuffer()
         );
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ApicaBlockEntities.ITEM_PIPE_MK2.get(),
-                (be, side) -> be.getBuffer()
+                (be, side) -> be.getFilteredBuffer()
         );
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ApicaBlockEntities.ITEM_PIPE_MK3.get(),
-                (be, side) -> be.getBuffer()
+                (be, side) -> be.getFilteredBuffer()
         );
         event.registerBlockEntity(
                 Capabilities.ItemHandler.BLOCK,
                 ApicaBlockEntities.ITEM_PIPE_MK4.get(),
-                (be, side) -> be.getBuffer()
+                (be, side) -> be.getFilteredBuffer()
         );
 
         // Crystallizer: extraction seulement du crystal produit (toutes directions)

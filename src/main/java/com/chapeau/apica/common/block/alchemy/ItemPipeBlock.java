@@ -160,6 +160,15 @@ public class ItemPipeBlock extends AbstractPipeBlock {
     // --- Network hooks ---
 
     @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos,
+                                    Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
+        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
+        if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
+            ItemPipeNetworkManager.get(serverLevel).onConnectionChanged(pos, serverLevel);
+        }
+    }
+
+    @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {

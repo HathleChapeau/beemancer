@@ -346,6 +346,45 @@ public class ItemPipeBlockEntity extends BlockEntity {
         return buffer;
     }
 
+    /**
+     * Retourne un IItemHandler wrappant le buffer avec verification du filtre.
+     * Les items rejetés par le filtre ne peuvent pas être insérés via cette vue.
+     * Utilisé par le système de capabilities pour que les blocs adjacents
+     * (hoppers, autres pipes) respectent le filtre du pipe.
+     */
+    public IItemHandler getFilteredBuffer() {
+        if (filterData == null) return buffer;
+        final ItemFilterData filter = filterData;
+        final ItemStackHandler inner = buffer;
+        return new IItemHandler() {
+            @Override
+            public int getSlots() { return inner.getSlots(); }
+
+            @Override
+            public ItemStack getStackInSlot(int slot) { return inner.getStackInSlot(slot); }
+
+            @Override
+            public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+                if (!stack.isEmpty() && !filter.matches(stack)) return stack;
+                return inner.insertItem(slot, stack, simulate);
+            }
+
+            @Override
+            public ItemStack extractItem(int slot, int amount, boolean simulate) {
+                return inner.extractItem(slot, amount, simulate);
+            }
+
+            @Override
+            public int getSlotLimit(int slot) { return inner.getSlotLimit(slot); }
+
+            @Override
+            public boolean isItemValid(int slot, ItemStack stack) {
+                if (!stack.isEmpty() && !filter.matches(stack)) return false;
+                return inner.isItemValid(slot, stack);
+            }
+        };
+    }
+
     // --- Disconnect / Tint ---
 
     public boolean isDisconnected(Direction dir) {
