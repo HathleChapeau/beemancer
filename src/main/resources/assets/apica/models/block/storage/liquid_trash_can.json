@@ -1,6 +1,7 @@
 {
   "parent": "apica:block/storage/trash_can_base",
   "textures": {
-    "all": "apica:block/plank_2"
+    "all": "apica:block/storage/liquid_trashcan_top",
+    "side": "apica:block/storage/liquid_trashcan_side"
   }
 }

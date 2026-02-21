@@ -2,7 +2,7 @@
   "textures": {
     "side": "apica:block/building/iron_foundation",
     "front": "apica:block/building/iron_foundation",
-    "indent": "minecraft:block/obsidian",
+    "indent": "apica:block/storage/barrel_void",
     "particle": "#side"
   },
   "elements": [
@@ -10,7 +10,7 @@
       "from": [0, 0, 1],
       "to": [16, 16, 16],
       "faces": {
-        "north": { "texture": "#front" },
+        "north": { "texture": "#indent" },
         "south": { "texture": "#side" },
         "east":  { "texture": "#side" },
         "west":  { "texture": "#side" },
@@ -37,8 +37,8 @@
       }
     },
     {
-      "from": [0, 0.5, 0],
-      "to": [0.5, 15.5, 1],
+      "from": [0, 0, 0],
+      "to": [0.5, 16, 1],
       "faces": {
         "north": { "texture": "#side" },
         "west":  { "texture": "#side" },
@@ -46,8 +46,8 @@
       }
     },
     {
-      "from": [15.5, 0.5, 0],
-      "to": [16, 15.5, 1],
+      "from": [15.5, 0, 0],
+      "to": [16, 16, 1],
       "faces": {
         "north": { "texture": "#side" },
         "east":  { "texture": "#side" },

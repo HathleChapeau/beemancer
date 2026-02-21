@@ -1,6 +1,7 @@
 {
   "parent": "apica:block/storage/trash_can_base",
   "textures": {
-    "all": "apica:block/altar/honeyed_stone"
+    "all": "apica:block/storage/item_trashcan_top",
+    "side": "apica:block/storage/item_trashcan_side"
   }
 }
