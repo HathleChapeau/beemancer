@@ -22,13 +22,16 @@ package com.chapeau.apica.core.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.Container;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -50,21 +53,30 @@ public final class StorageHelper {
 
     /**
      * Verifie si une position expose un IItemHandler via la capability NeoForge.
-     * Detecte automatiquement tous les conteneurs moddés et vanilla.
+     * Fallback: verifie si le BlockEntity implemente Container (barrels, etc.).
      */
     public static boolean hasItemHandlerCapability(Level level, BlockPos pos, @Nullable Direction direction) {
         if (level == null || !level.hasChunkAt(pos)) return false;
         IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, null, null, direction);
-        return handler != null;
+        if (handler != null) return true;
+        BlockEntity be = level.getBlockEntity(pos);
+        return be instanceof Container;
     }
 
     /**
      * Recupere le IItemHandler a une position, ou null si absent.
+     * Fallback: wrappe le Container vanilla (barrels, etc.) dans un InvWrapper.
      */
     @Nullable
     public static IItemHandler getItemHandler(Level level, BlockPos pos, @Nullable Direction direction) {
         if (level == null || !level.hasChunkAt(pos)) return null;
-        return level.getCapability(Capabilities.ItemHandler.BLOCK, pos, null, null, direction);
+        IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, null, null, direction);
+        if (handler != null) return handler;
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof Container container) {
+            return new InvWrapper(container);
+        }
+        return null;
     }
 
     /**
