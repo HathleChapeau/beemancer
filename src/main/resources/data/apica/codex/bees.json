@@ -4,7 +4,7 @@
       "id": "hive",
       "position": {
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "category": "ROOT",
       "parent": null,
@@ -25,7 +25,7 @@
     {
       "id": "pollen_pot",
       "position": {
-        "x": -1,
+        "x": -2,
         "y": 0
       },
       "category": "NORMAL",
@@ -36,11 +36,11 @@
     {
       "id": "resonator",
       "position": {
-        "x": 1,
+        "x": 2,
         "y": 0
       },
       "category": "NORMAL",
-      "parent": "hive",
+      "parent": "magic_hive",
       "hidden_until_parent_unlocked": false,
       "visibility": "VISIBLE"
     },
@@ -48,7 +48,7 @@
       "id": "essence_injector",
       "position": {
         "x": -1,
-        "y": 1
+        "y": 2
       },
       "category": "NORMAL",
       "parent": "hive",
@@ -58,7 +58,7 @@
     {
       "id": "essence_extractor",
       "position": {
-        "x": 0,
+        "x": 3,
         "y": 1
       },
       "category": "NORMAL",
