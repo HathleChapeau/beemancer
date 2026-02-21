@@ -413,6 +413,16 @@ public class ItemPipeBlockEntity extends BlockEntity {
         }
     }
 
+    /**
+     * Force la synchronisation des donnees du block entity vers le client.
+     * Utilise par le packet handler du filtre apres modification des ghost slots/mode/priority.
+     */
+    public void syncToClient() {
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
     // --- Sync client ---
 
     @Override

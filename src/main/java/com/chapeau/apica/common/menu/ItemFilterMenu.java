@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
  */
 public class ItemFilterMenu extends ApicaMenu {
 
-    private static final int PLAYER_INV_Y = 88;
+    private static final int PLAYER_INV_Y = 108;
 
     @Nullable
     private final ItemPipeBlockEntity blockEntity;

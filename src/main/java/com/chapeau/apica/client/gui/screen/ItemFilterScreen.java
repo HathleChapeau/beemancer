@@ -39,7 +39,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
 
     private static final int GUI_WIDTH = 176;
-    private static final int PLAYER_INV_Y = 80;
+    private static final int PLAYER_INV_Y = 100;
     private static final int GUI_HEIGHT = PLAYER_INV_Y + 90;
 
     private static final int GHOST_SLOT_Y = 30;

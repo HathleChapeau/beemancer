@@ -81,16 +81,19 @@ public record ItemFilterActionPacket(int containerId, int action, int value, Ite
                 case ACTION_TOGGLE_MODE -> {
                     filter.toggleMode();
                     be.setChanged();
+                    be.syncToClient();
                 }
                 case ACTION_CHANGE_PRIORITY -> {
                     filter.setPriority(filter.getPriority() + packet.value());
                     be.setChanged();
+                    be.syncToClient();
                 }
                 case ACTION_SET_GHOST_SLOT -> {
                     int slot = packet.value();
                     if (slot >= 0 && slot < ItemFilterData.SLOT_COUNT) {
                         filter.setGhostSlot(slot, packet.itemData());
                         be.setChanged();
+                        be.syncToClient();
                     }
                 }
             }
