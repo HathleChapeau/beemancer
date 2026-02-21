@@ -645,7 +645,7 @@
   "codex.apica.bees.resonator.lore": "I know almost nothing about these bees. Species look similar at a glance, and whatever energy they carry is invisible to the naked eye. Needed an instrument. The Resonator emits controlled \u00a76\u00a7lwave pulses\u00a7r and measures how the bee responds. Each species resonates at distinct frequencies. By tuning the four parameters and completing the analysis, the device maps out the bee's \u00a76\u00a7ltraits\u00a7r and \u00a76\u00a7lspecies data\u00a7r. The results are recorded in this codex automatically.",
   "codex.apica.bees.essence_injector.title": "Essence Injector",
   "codex.apica.bees.essence_injector.desc": "Applies extracted essences to modify bee traits.",
-  "codex.apica.bees.essence_injector.lore": "The essences extracted from bees retain the properties of their source traits. Hypothesized that reintroducing an essence into a different specimen might alter its characteristics. The Essence Injector does exactly that. Place a \u00a76\u00a7lbee\u00a7r and an \u00a76\u00a7lessence\u00a7r inside. The device infuses the essence into the bee over time, permanently modifying the corresponding trait. Higher-grade essences produce stronger effects. Species essences can even alter the bee's fundamental nature.",
+  "codex.apica.bees.essence_injector.lore": "Essences retain the properties of their source traits. Place a \u00a76\u00a7lbee\u00a7r and an \u00a76\u00a7lessence\u00a7r inside. The device infuses the essence over time, permanently modifying the corresponding trait. Higher-grade essences produce stronger effects.",
   "codex.apica.bees.essence_extractor.title": "Essence Extractor",
   "codex.apica.bees.essence_extractor.desc": "Multiblock structure that distills bee essences.",
   "codex.apica.bees.essence_extractor.lore.p1": "If bees carry measurable traits, those traits must have a physical substrate. Something extractable. Built a structure around that hypothesis: an Essence Extractor. A bee placed on the \u00a76\u00a7lcentral pedestal\u00a7r is bathed in honey fed from the upper \u00a76\u00a7lreservoirs\u00a7r. Over time, the honey dissolves trace compounds from the bee and deposits them as crystallized \u00a76\u00a7lessences\u00a7r on the surrounding pedestals.",
@@ -1035,12 +1035,12 @@
   "codex.apica.logistics.liquid_trash_can.desc": "Destroys unwanted fluids.",
   "codex.apica.logistics.liquid_trash_can.lore": "Excess honey and water overflow the tanks when I am not watching. The Liquid Trash Can \u00a76\u00a7lvoids any fluid\u00a7r fed into it. A bucket placed inside is emptied and returned. Connects to liquid \u00a76\u00a7lpipes\u00a7r for automated drainage.",
   "codex.apica.logistics.storage_hive.title": "Storage Hive",
-  "codex.apica.logistics.storage_hive.desc": "Bee-powered item storage.",
-  "codex.apica.logistics.storage_hive.lore": "Barrels work for bulk, but most items do not stack neatly into a single type. Needed something more flexible. Observed that bees naturally sort and compartmentalize within their own nests. Built a Storage Hive that mimics this principle. Each cell holds a different item type, organized by the hive's internal logic. Fits into the \u00a76\u00a7lstorage network\u00a7r like any other container.",
+  "codex.apica.logistics.storage_hive.desc": "Increases concurrent bee workers.",
+  "codex.apica.logistics.storage_hive.lore": "The controller can only dispatch so many bees at once. Needed a way to scale the workforce. The Storage Hive slots into the \u00a76\u00a7lcorner positions\u00a7r of the controller structure. Each one houses additional delivery bees, increasing the number of \u00a76\u00a7lsimultaneous tasks\u00a7r the network can process.",
   "codex.apica.logistics.storage_hive_mk2.title": "Storage Hive MK2",
-  "codex.apica.logistics.storage_hive_mk2.desc": "Expanded multi-item storage.",
-  "codex.apica.logistics.storage_hive_mk2.lore": "The first hive filled up within days. The internal wax structure can only support so many cells before it becomes unstable. Reinforced the frame with honeyed iron and restructured the comb lattice. The Storage Hive MK2 holds considerably more item types without collapsing.",
+  "codex.apica.logistics.storage_hive_mk2.desc": "Further concurrent task scaling.",
+  "codex.apica.logistics.storage_hive_mk2.lore": "The basic hive's bee capacity was a start, but not enough for a busy network. Reinforced internals allow the Storage Hive MK2 to house more bees per unit. Same \u00a76\u00a7lcorner placement\u00a7r, more workers.",
   "codex.apica.logistics.storage_hive_mk3.title": "Storage Hive MK3",
-  "codex.apica.logistics.storage_hive_mk3.desc": "High-density multi-item storage.",
-  "codex.apica.logistics.storage_hive_mk3.lore": "Pushed the design further. Royal gold framing allows for denser cell packing. The comb walls thin out but hold firm. The Storage Hive MK3 can catalog a staggering number of distinct items. At this point, the storage network handles more variety than I can keep track of manually."
+  "codex.apica.logistics.storage_hive_mk3.desc": "Maximum concurrent task scaling.",
+  "codex.apica.logistics.storage_hive_mk3.lore": "Final iteration. Royal gold framing lets the hive sustain a much larger colony. The Storage Hive MK3 pushes the controller's throughput to its practical limit. Bottlenecks shift elsewhere."
 }
