@@ -1035,12 +1035,12 @@
   "codex.apica.logistics.liquid_trash_can.lore": "Excess honey and water overflow the tanks when I am not watching. The Liquid Trash Can \u00a76\u00a7lvoids any fluid\u00a7r fed into it. A bucket placed inside is emptied and returned. Connects to liquid \u00a76\u00a7lpipes\u00a7r for automated drainage.",
   "codex.apica.logistics.storage_hive.title": "Storage Hive",
   "codex.apica.logistics.storage_hive.desc": "Increases concurrent bee workers.",
-  "codex.apica.logistics.storage_hive.lore": "The network kept stalling. Too many requests, not enough bees to carry them out. Tried adding a small hive to the \u00a76\u00a7lcorner\u00a7r of the controller structure. The bees inside immediately joined the workforce. More \u00a76\u00a7lsimultaneous tasks\u00a7r, fewer delays. Odd-looking thing, though.",
+  "codex.apica.logistics.storage_hive.lore": "The network kept stalling. Not enough bees for the workload. Needed a way to house more of them near the controller. Took a few tries. The result fits into the \u00a76\u00a7lcorner\u00a7r of the structure and the bees accepted it, so it works. The design came out... strange. Some kind of compromise between what I wanted and what the bees would tolerate. More \u00a76\u00a7lsimultaneous tasks\u00a7r, though. That is what matters.",
   "codex.apica.logistics.storage_hive_mk2.title": "Storage Hive MK2",
   "codex.apica.logistics.storage_hive_mk2.desc": "Further concurrent task scaling.",
   "codex.apica.logistics.storage_hive_mk2.lore": "One hive per corner was not enough anymore. Reinforced the internals to fit a larger colony. The Storage Hive MK2 supports noticeably more bees. The network keeps up again, for now.",
   "codex.apica.logistics.storage_hive_mk3.title": "Storage Hive MK3",
   "codex.apica.logistics.storage_hive_mk3.desc": "Maximum concurrent task scaling.",
   "codex.apica.logistics.storage_hive_mk3.lore": "Pushed it as far as the design allows. Royal gold framing sustains a much denser colony. The Storage Hive MK3 handles everything I can throw at the network. If throughput becomes an issue again, the problem is elsewhere.",
-  "codex.apica.logistics.storage_hive_mk3.lore.p2": "...Did it just look at me?"
+  "codex.apica.logistics.storage_hive_mk3.lore.p2": "Did it just look at me?"
 }
