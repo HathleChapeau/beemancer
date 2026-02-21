@@ -649,7 +649,6 @@
   "codex.apica.bees.essence_extractor.title": "Essence Extractor",
   "codex.apica.bees.essence_extractor.desc": "Multiblock structure that distills bee essences.",
   "codex.apica.bees.essence_extractor.lore.p1": "Tried something. Placed a bee on the \u00a76\u00a7lcentral pedestal\u00a7r and let honey drip from the \u00a76\u00a7lreservoirs\u00a7r above. Left it running overnight. By morning, small crystallized deposits had formed on the surrounding pedestals. \u00a76\u00a7lEssences\u00a7r. They carry traces of the bee's own traits.",
-  "codex.apica.bees.essence_extractor.lore.p2": "Repeated the experiment with different species. The essence type varies with the bee. Stronger specimens seem to produce rarer drops, though the process is slow and unpredictable. The bee appears unaffected. Need more data.",
   "codex.apica.bees.meadow_bee.title": "Meadow Bee",
   "codex.apica.bees.meadow_bee.lore": "First contact. I found them buzzing over wildflowers in an open field. Their honey glows faintly when held to the light. There is something more to these creatures than meets the eye.",
   "codex.apica.bees.meadow_bee.desc": "A peaceful bee found in flower-filled meadows, producing sweet honeycomb.",
@@ -1036,11 +1035,12 @@
   "codex.apica.logistics.liquid_trash_can.lore": "Excess honey and water overflow the tanks when I am not watching. The Liquid Trash Can \u00a76\u00a7lvoids any fluid\u00a7r fed into it. A bucket placed inside is emptied and returned. Connects to liquid \u00a76\u00a7lpipes\u00a7r for automated drainage.",
   "codex.apica.logistics.storage_hive.title": "Storage Hive",
   "codex.apica.logistics.storage_hive.desc": "Increases concurrent bee workers.",
-  "codex.apica.logistics.storage_hive.lore": "The network kept stalling. Too many requests, not enough bees to carry them out. Tried adding a small hive to the \u00a76\u00a7lcorner\u00a7r of the controller structure. The bees inside immediately joined the workforce. More \u00a76\u00a7lsimultaneous tasks\u00a7r, fewer delays. Simple fix.",
+  "codex.apica.logistics.storage_hive.lore": "The network kept stalling. Too many requests, not enough bees to carry them out. Tried adding a small hive to the \u00a76\u00a7lcorner\u00a7r of the controller structure. The bees inside immediately joined the workforce. More \u00a76\u00a7lsimultaneous tasks\u00a7r, fewer delays. Odd-looking thing, though.",
   "codex.apica.logistics.storage_hive_mk2.title": "Storage Hive MK2",
   "codex.apica.logistics.storage_hive_mk2.desc": "Further concurrent task scaling.",
   "codex.apica.logistics.storage_hive_mk2.lore": "One hive per corner was not enough anymore. Reinforced the internals to fit a larger colony. The Storage Hive MK2 supports noticeably more bees. The network keeps up again, for now.",
   "codex.apica.logistics.storage_hive_mk3.title": "Storage Hive MK3",
   "codex.apica.logistics.storage_hive_mk3.desc": "Maximum concurrent task scaling.",
-  "codex.apica.logistics.storage_hive_mk3.lore": "Pushed it as far as the design allows. Royal gold framing sustains a much denser colony. The Storage Hive MK3 handles everything I can throw at the network. If throughput becomes an issue again, the problem is elsewhere."
+  "codex.apica.logistics.storage_hive_mk3.lore": "Pushed it as far as the design allows. Royal gold framing sustains a much denser colony. The Storage Hive MK3 handles everything I can throw at the network. If throughput becomes an issue again, the problem is elsewhere.",
+  "codex.apica.logistics.storage_hive_mk3.lore.p2": "...Did it just look at me?"
 }

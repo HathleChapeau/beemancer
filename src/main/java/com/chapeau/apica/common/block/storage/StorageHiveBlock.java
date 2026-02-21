@@ -26,6 +26,7 @@ package com.chapeau.apica.common.block.storage;
 import com.chapeau.apica.common.blockentity.storage.HiveManager;
 import com.chapeau.apica.common.blockentity.storage.StorageControllerBlockEntity;
 import com.chapeau.apica.common.blockentity.storage.StorageHiveBlockEntity;
+import com.chapeau.apica.common.quest.QuestEvents;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
@@ -127,6 +128,10 @@ public class StorageHiveBlock extends Block implements EntityBlock {
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level.isClientSide()) return;
+
+        if (tier == 3 && placer instanceof net.minecraft.world.entity.player.Player player) {
+            QuestEvents.onBlockPlace(player, "storage_hive_mk3");
+        }
 
         int[][] offsets = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
         for (int[] off : offsets) {

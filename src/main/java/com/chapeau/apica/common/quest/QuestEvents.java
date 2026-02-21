@@ -152,6 +152,28 @@ public class QuestEvents {
     }
 
     /**
+     * Appele quand un joueur pose un bloc.
+     * Complete directement la quete correspondante par ID.
+     *
+     * @param player Le joueur qui pose le bloc
+     * @param blockType Identifiant du bloc (ex: "storage_hive_mk3")
+     */
+    public static void onBlockPlace(Player player, String blockType) {
+        if (player.level().isClientSide() || blockType == null || blockType.isEmpty()) {
+            return;
+        }
+
+        String questId = "place_" + blockType;
+        if (!QuestManager.isQuestCompleted(player, questId)) {
+            if (QuestManager.completeQuest(player, questId)) {
+                syncQuestData(player);
+                Apica.LOGGER.info("Player {} completed PLACE quest: {}",
+                        player.getName().getString(), questId);
+            }
+        }
+    }
+
+    /**
      * Synchronise les données de quêtes au client après une completion.
      */
     private static void syncQuestData(Player player) {

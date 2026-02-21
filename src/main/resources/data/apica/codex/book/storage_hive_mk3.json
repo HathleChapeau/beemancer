@@ -8,6 +8,15 @@
       "key": "codex.apica.logistics.storage_hive_mk3.lore"
     },
     {
+      "type": "handraw_line",
+      "quest": "place_storage_hive_mk3"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.logistics.storage_hive_mk3.lore.p2",
+      "quest": "place_storage_hive_mk3"
+    },
+    {
       "type": "page_break"
     },
     {
