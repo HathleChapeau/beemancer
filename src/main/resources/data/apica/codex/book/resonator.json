@@ -5,7 +5,11 @@
     },
     {
       "type": "text",
-      "key": "codex.apica.bees.resonator.lore"
+      "key": "codex.apica.bees.resonator.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.bees.resonator.lore.p2"
     },
     {
       "type": "page_break"
