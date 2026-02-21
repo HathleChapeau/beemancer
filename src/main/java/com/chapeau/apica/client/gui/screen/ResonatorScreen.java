@@ -40,16 +40,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger("Apica Resonator");
 
     // Layout
     private static final int GUI_W = 200;
@@ -106,9 +101,6 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private int targetPhase;
     private int targetHarm;
     private boolean targetsGenerated = false;
-
-    // Log throttle for undiscovered trait hint
-    private int lastLoggedFreq = -1;
 
     public ResonatorScreen(ResonatorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -202,45 +194,6 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             localPhase = menu.getPhase();
             localHarm = menu.getHarmonics();
         }
-        logClosestUndiscoveredTrait();
-    }
-
-    private void logClosestUndiscoveredTrait() {
-        if (localFreq == lastLoggedFreq) return;
-        if (!menu.hasBee()) return;
-
-        ItemStack bee = menu.getStoredBee();
-        String speciesId = getSpeciesFromBee(bee);
-        BeeSpeciesManager.BeeSpeciesData data = speciesId != null
-                ? BeeSpeciesManager.getSpecies(speciesId) : null;
-        if (data == null) return;
-
-        ResonatorConfigManager.ensureClientLoaded();
-        CodexPlayerData knowledge = getPlayerKnowledge();
-        int[] levels = getStatLevels(data);
-
-        String closestName = null;
-        int closestHz = 0;
-        int closestGap = Integer.MAX_VALUE;
-
-        for (int i = 0; i < STAT_NAMES.length; i++) {
-            String traitKey = STAT_NAMES[i] + ":" + levels[i];
-            if (knowledge.isTraitKnown(traitKey)) continue;
-            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
-            if (wf == null) continue;
-            int gap = Math.abs(wf.frequency - localFreq);
-            if (gap < closestGap) {
-                closestGap = gap;
-                closestHz = wf.frequency;
-                closestName = capitalize(STAT_NAMES[i]) + " Lv" + levels[i];
-            }
-        }
-
-        lastLoggedFreq = localFreq;
-        if (closestName != null) {
-            LOGGER.info("[Apica Resonator] Closest undiscovered: {} at {}Hz | Cursor: {}Hz | Gap: {}Hz",
-                    closestName, closestHz, localFreq, closestGap);
-        }
     }
 
     @Override
@@ -280,17 +233,6 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
         // Frequency slider
         renderFreqSlider(g, x, y, mouseX, mouseY);
-
-        // 3 spinning cursors (decorative, between slider and knobs)
-        long time = System.currentTimeMillis();
-        int cursorY = y + 100;
-        int cursorBaseX = x + GUI_W / 2;
-        float[] speeds = {1.0f, 1.7f, 2.3f};
-        for (int i = 0; i < 3; i++) {
-            int cx = cursorBaseX + (i - 1) * 50;
-            float angle = (time * speeds[i] * 0.1f) % 360f;
-            renderSpinningCursor(g, cx, cursorY, 8, angle);
-        }
 
         // 3 Knobs
         int knobBaseX = x + GUI_W / 2;
@@ -698,18 +640,6 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
         int valW = font.width(valueText);
         g.drawString(font, valueText, cx - valW / 2, cy - radius - 12, 0xFFAABBDD, false);
-    }
-
-    private void renderSpinningCursor(GuiGraphics g, int cx, int cy, int radius, float angleDeg) {
-        fillCircle(g, cx, cy, radius, 0xFF222222);
-        fillCircle(g, cx, cy, radius - 2, 0xFF333333);
-
-        double angleRad = Math.toRadians(angleDeg - 90);
-        int px = cx + (int) (Math.cos(angleRad) * (radius - 2));
-        int py = cy + (int) (Math.sin(angleRad) * (radius - 2));
-        renderLine(g, cx, cy, px, py, 0xFF5588DD);
-
-        fillCircle(g, cx, cy, 2, 0xFF5588DD);
     }
 
     private void fillCircle(GuiGraphics g, int cx, int cy, int radius, int color) {
