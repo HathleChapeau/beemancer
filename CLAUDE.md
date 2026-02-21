@@ -443,6 +443,23 @@ Toutes les méthodes ont une surcharge acceptant un `ResourceLocation` au lieu d
 
 ---
 
+## Icônes des Nodes Codex — RÈGLE ABSOLUE (TAILLE 250)
+
+**LES ICÔNES DES NODES DU CODEX NE SE CONFIGURENT PAS EN AJOUTANT UN CHEMIN PNG DANS LES DONNÉES JSON DU NODE.**
+
+**Les icônes sont résolues dans `CodexNodeWidget.java` via deux maps statiques :**
+- **`NODE_TO_ITEM`** : associe un ID de node à un ID d'item du registre (l'item est rendu comme icône)
+- **`NODE_TO_TEXTURE`** : associe un ID de node à une `ResourceLocation` de texture (fallback si pas d'item)
+
+**Pour changer l'icône d'un node :**
+1. Ajouter/modifier une entrée dans `NODE_TO_ITEM.put("node_id", "apica:item_id")` dans `CodexNodeWidget.java`
+2. OU ajouter/modifier une entrée dans `NODE_TO_TEXTURE.put("node_id", ResourceLocation...)`
+3. **JAMAIS** ajouter un champ `"icon"` dans le JSON du node — ce champ est ignoré par le widget
+
+**Fichier** : `client/gui/widget/CodexNodeWidget.java` — bloc statique en haut de la classe.
+
+---
+
 ## Système IO Multibloc — MultiblockCapabilityProvider
 
 ### Architecture
