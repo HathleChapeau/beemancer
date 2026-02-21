@@ -1,7 +1,7 @@
 {
   "parent": "apica:block/storage/storage_barrel_base_void",
   "textures": {
-    "side": "apica:block/royal_gold_block",
-    "front": "apica:block/royal_gold_block"
+    "side": "apica:block/storage/barrel_mk3",
+    "front": "apica:block/storage/barrel_mk3"
   }
 }

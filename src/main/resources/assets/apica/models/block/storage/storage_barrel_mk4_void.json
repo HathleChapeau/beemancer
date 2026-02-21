@@ -1,7 +1,7 @@
 {
   "parent": "apica:block/storage/storage_barrel_base_void",
   "textures": {
-    "side": "apica:block/nectar_diamond_block",
-    "front": "apica:block/nectar_diamond_block"
+    "side": "apica:block/storage/barrel_mk4",
+    "front": "apica:block/storage/barrel_mk4"
   }
 }
