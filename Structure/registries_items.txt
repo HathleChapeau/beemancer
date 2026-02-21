@@ -108,6 +108,9 @@
 | trash_can              | BlockItem        | Trash Can         |
 | liquid_trash_can       | BlockItem        | Liquid Trash Can  |
 
+--- ITEM FILTER ---
+| item_filter            | ItemFilterItem   | Item Filter       |
+
 --- BEE ITEMS ---
 | magic_bee                | MagicBeeItem     | Gene System     |
 | bee_larva                | BeeLarvaItem     | Breeding        |

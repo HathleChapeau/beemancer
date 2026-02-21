@@ -18,6 +18,7 @@ import com.chapeau.apica.core.network.packets.HoverbikeVariantPacket;
 import com.chapeau.apica.core.network.packets.HoverbikePartSwapPacket;
 import com.chapeau.apica.core.network.packets.HoverbikePartRemovePacket;
 import com.chapeau.apica.core.network.packets.StorageTaskCancelPacket;
+import com.chapeau.apica.core.network.packets.ItemFilterActionPacket;
 import com.chapeau.apica.core.network.packets.ResonatorFinishPacket;
 import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
 import com.chapeau.apica.core.network.packets.StorageTasksSyncPacket;
@@ -92,6 +93,12 @@ public class ApicaNetwork {
                 ResonatorFinishPacket.TYPE,
                 ResonatorFinishPacket.STREAM_CODEC,
                 ResonatorFinishPacket::handle
+        );
+
+        registrar.playToServer(
+                ItemFilterActionPacket.TYPE,
+                ItemFilterActionPacket.STREAM_CODEC,
+                ItemFilterActionPacket::handle
         );
 
         // Server to Client packets

@@ -20,6 +20,9 @@
  */
 package com.chapeau.apica.common.block.alchemy;
 
+import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
+import com.chapeau.apica.common.data.ItemFilterData;
+import com.chapeau.apica.common.item.ItemFilterItem;
 import com.chapeau.apica.core.registry.ApicaTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -80,6 +83,9 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
     // Tint state — contrôle la texture du core (base vs white tintable)
     public static final BooleanProperty TINTED = BooleanProperty.create("tinted");
 
+    // Filter state — indique si un filtre est installe au centre du pipe
+    public static final BooleanProperty FILTERED = BooleanProperty.create("filtered");
+
     // Pre-computed VoxelShapes for all 64 direction combinations (6 bits)
     private static final VoxelShape CORE = Block.box(4, 4, 4, 12, 12, 12);
     private static final VoxelShape[] DIR_SHAPES = {
@@ -118,7 +124,8 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
             .setValue(EXTRACT_NORTH, false).setValue(EXTRACT_SOUTH, false)
             .setValue(EXTRACT_EAST, false).setValue(EXTRACT_WEST, false)
             .setValue(EXTRACT_UP, false).setValue(EXTRACT_DOWN, false)
-            .setValue(TINTED, false));
+            .setValue(TINTED, false)
+            .setValue(FILTERED, false));
     }
 
     public int getTier() { return tier; }
@@ -128,6 +135,7 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN);
         builder.add(EXTRACT_NORTH, EXTRACT_SOUTH, EXTRACT_EAST, EXTRACT_WEST, EXTRACT_UP, EXTRACT_DOWN);
         builder.add(TINTED);
+        builder.add(FILTERED);
     }
 
     @Override
@@ -150,6 +158,34 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                               Player player, InteractionHand hand, BlockHitResult hit) {
+        // Filter placement: right-click with ItemFilterItem on core zone of an item pipe
+        if (stack.getItem() instanceof ItemFilterItem) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof ItemPipeBlockEntity pipe) {
+                // Verifier que le clic est dans la zone centrale (core)
+                Direction clickedDir = getClickedDirection(pos, hit);
+                if (clickedDir != null) {
+                    // Clic sur une face = pas dans le core
+                    return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                }
+                if (pipe.hasFilter()) {
+                    if (!level.isClientSide()) {
+                        player.displayClientMessage(Component.literal("Filter already installed"), true);
+                    }
+                    return ItemInteractionResult.FAIL;
+                }
+                if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
+                pipe.setFilter(new ItemFilterData());
+                level.setBlock(pos, state.setValue(FILTERED, true), 3);
+                level.playSound(null, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 1.0f, 1.0f);
+                if (!player.getAbilities().instabuild) {
+                    stack.shrink(1);
+                }
+                player.displayClientMessage(Component.literal("Filter installed"), true);
+                return ItemInteractionResult.SUCCESS;
+            }
+        }
+
         if (stack.getItem() instanceof DyeItem dyeItem) {
             if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
             BlockEntity be = level.getBlockEntity(pos);
@@ -273,6 +309,9 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
                 newState = newState.setValue(getExtractProperty(dir), false);
             }
         }
+        // Preserver FILTERED et TINTED depuis l'etat courant
+        newState = newState.setValue(FILTERED, currentState.getValue(FILTERED));
+        newState = newState.setValue(TINTED, currentState.getValue(TINTED));
         return newState;
     }
 

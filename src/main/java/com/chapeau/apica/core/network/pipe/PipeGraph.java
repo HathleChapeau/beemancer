@@ -122,6 +122,43 @@ public class PipeGraph {
         return null;
     }
 
+    /**
+     * BFS filtre : meme algo que bfsPath mais skip les nodes ou canTraverse retourne false.
+     * Les positions source et destination sont toujours traversables.
+     * Ne pas utiliser le route cache (le resultat depend de l'item).
+     */
+    @Nullable
+    public List<BlockPos> bfsPathFiltered(BlockPos from, BlockPos to,
+                                           java.util.function.Predicate<BlockPos> canTraverse) {
+        if (from.equals(to)) return List.of(from);
+        if (!adjacency.containsKey(from) || !adjacency.containsKey(to)) return null;
+
+        Set<BlockPos> visited = new HashSet<>();
+        Map<BlockPos, BlockPos> parentMap = new HashMap<>();
+        Queue<BlockPos> queue = new LinkedList<>();
+
+        visited.add(from);
+        queue.add(from);
+
+        while (!queue.isEmpty()) {
+            BlockPos current = queue.poll();
+            for (BlockPos neighbor : getNeighbors(current)) {
+                if (visited.add(neighbor)) {
+                    // Skip nodes that the item cannot traverse (except destination)
+                    if (!neighbor.equals(to) && !canTraverse.test(neighbor)) {
+                        continue;
+                    }
+                    parentMap.put(neighbor, current);
+                    if (neighbor.equals(to)) {
+                        return reconstructPath(parentMap, from, to);
+                    }
+                    queue.add(neighbor);
+                }
+            }
+        }
+        return null;
+    }
+
     private List<BlockPos> reconstructPath(Map<BlockPos, BlockPos> parentMap, BlockPos from, BlockPos to) {
         List<BlockPos> path = new ArrayList<>();
         BlockPos current = to;

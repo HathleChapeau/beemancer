@@ -157,6 +157,9 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.ITEM_PIPE_MK2.get());
         output.accept(ApicaItems.ITEM_PIPE_MK3.get());
         output.accept(ApicaItems.ITEM_PIPE_MK4.get());
+
+        // Item Filter
+        output.accept(ApicaItems.ITEM_FILTER.get());
     }
 
     private static void addFluidBuckets(CreativeModeTab.Output output) {

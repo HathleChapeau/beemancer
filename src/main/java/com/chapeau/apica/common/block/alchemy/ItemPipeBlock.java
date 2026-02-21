@@ -23,18 +23,30 @@
 package com.chapeau.apica.common.block.alchemy;
 
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
+import com.chapeau.apica.common.menu.ItemFilterMenu;
 import com.chapeau.apica.core.network.pipe.ItemPipeNetworkManager;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
+import com.chapeau.apica.core.registry.ApicaItems;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
 
 import javax.annotation.Nullable;
@@ -99,6 +111,48 @@ public class ItemPipeBlock extends AbstractPipeBlock {
         ((ItemPipeBlockEntity) be).setTintColor(color);
     }
 
+    // --- Filter interactions ---
+
+    @Override
+    @Nullable
+    protected InteractionResult handleSpecialInteraction(BlockState state, Level level, BlockPos pos,
+                                                          Player player, BlockHitResult hit) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof ItemPipeBlockEntity pipe)) return null;
+        if (!pipe.hasFilter()) return null;
+
+        // Verifier que le clic est dans la zone centrale (core = pas de direction dominante)
+        Direction clickedDir = getClickedDirection(pos, hit);
+        if (clickedDir != null) return null; // Clic sur une face, pas le core
+
+        if (player.isShiftKeyDown()) {
+            // Shift+click: retirer le filtre
+            pipe.removeFilter();
+            level.setBlock(pos, state.setValue(FILTERED, false), 3);
+            level.playSound(null, pos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 1.0f, 1.0f);
+            if (!player.getAbilities().instabuild) {
+                ItemStack filterItem = new ItemStack(ApicaItems.ITEM_FILTER.get());
+                if (!player.getInventory().add(filterItem)) {
+                    Block.popResource(level, pos, filterItem);
+                }
+            }
+            player.displayClientMessage(Component.literal("Filter removed"), true);
+            return InteractionResult.SUCCESS;
+        } else {
+            // Click normal: ouvrir le menu du filtre
+            if (player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.openMenu(
+                    new SimpleMenuProvider(
+                        (containerId, playerInv, p) -> new ItemFilterMenu(containerId, playerInv, be),
+                        Component.translatable("container.apica.item_filter")
+                    ),
+                    buf -> buf.writeBlockPos(pos)
+                );
+            }
+            return InteractionResult.SUCCESS;
+        }
+    }
+
     // --- Network hooks ---
 
     @Override
@@ -112,8 +166,12 @@ public class ItemPipeBlock extends AbstractPipeBlock {
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
-            // Notifier avant que le BlockEntity soit retiré
             if (!state.is(newState.getBlock())) {
+                // Drop le filtre si installe
+                if (level.getBlockEntity(pos) instanceof ItemPipeBlockEntity pipe && pipe.hasFilter()) {
+                    Block.popResource(level, pos, new ItemStack(ApicaItems.ITEM_FILTER.get()));
+                }
+                // Notifier avant que le BlockEntity soit retiré
                 ItemPipeNetworkManager.get(serverLevel).onPipeRemoved(pos, serverLevel);
             }
         }

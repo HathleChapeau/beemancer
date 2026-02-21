@@ -33,6 +33,7 @@ package com.chapeau.apica.common.blockentity.alchemy;
 
 import com.chapeau.apica.common.block.alchemy.AbstractPipeBlock;
 import com.chapeau.apica.common.block.alchemy.ItemPipeBlock;
+import com.chapeau.apica.common.data.ItemFilterData;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.core.network.pipe.ItemPipeNetworkManager;
 import com.chapeau.apica.core.network.pipe.PipeNetwork;
@@ -94,6 +95,10 @@ public class ItemPipeBlockEntity extends BlockEntity {
 
     /** Couleur de teinte du core (-1 = pas de teinte). */
     private int tintColor = -1;
+
+    /** Donnees du filtre (null = pas de filtre installe). */
+    @Nullable
+    private ItemFilterData filterData = null;
 
     public ItemPipeBlockEntity(BlockPos pos, BlockState state) {
         this(ApicaBlockEntities.ITEM_PIPE.get(), pos, state, MK1_BUFFER, MK1_TRANSFER);
@@ -368,6 +373,33 @@ public class ItemPipeBlockEntity extends BlockEntity {
 
     public boolean hasTint() { return tintColor != -1; }
 
+    // --- Filter ---
+
+    public boolean hasFilter() {
+        return filterData != null;
+    }
+
+    @Nullable
+    public ItemFilterData getFilter() {
+        return filterData;
+    }
+
+    public void setFilter(ItemFilterData data) {
+        this.filterData = data;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public void removeFilter() {
+        this.filterData = null;
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
     // --- Network registration on load ---
 
     @Override
@@ -420,6 +452,9 @@ public class ItemPipeBlockEntity extends BlockEntity {
         if (tintColor != -1) {
             tag.putInt("TintColor", tintColor);
         }
+        if (filterData != null) {
+            tag.put("FilterData", filterData.save(registries));
+        }
     }
 
     @Override
@@ -448,6 +483,12 @@ public class ItemPipeBlockEntity extends BlockEntity {
             }
         }
         tintColor = tag.contains("TintColor") ? tag.getInt("TintColor") : -1;
+
+        if (tag.contains("FilterData")) {
+            filterData = ItemFilterData.fromTag(tag.getCompound("FilterData"), registries);
+        } else {
+            filterData = null;
+        }
     }
 
     @Override

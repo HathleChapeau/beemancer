@@ -33,4 +33,7 @@
 | trash_can          | TrashCanMenu         | Trash Can        |
 | liquid_trash_can   | LiquidTrashCanMenu   | Liquid Trash Can |
 
+--- ITEM FILTER ---
+| item_filter        | ItemFilterMenu       | Item Filter      |
+
 ################################################################################

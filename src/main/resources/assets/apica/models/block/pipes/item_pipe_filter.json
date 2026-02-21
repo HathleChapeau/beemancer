@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "filter": "apica:block/storage/item_filter"
+  },
+  "elements": [
+    {
+      "from": [3.5, 3.5, 3.5],
+      "to": [12.5, 12.5, 12.5],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 16], "texture": "#filter"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#filter"},
+        "east":  {"uv": [0, 0, 16, 16], "texture": "#filter"},
+        "west":  {"uv": [0, 0, 16, 16], "texture": "#filter"},
+        "up":    {"uv": [0, 0, 16, 16], "texture": "#filter"},
+        "down":  {"uv": [0, 0, 16, 16], "texture": "#filter"}
+      }
+    }
+  ]
+}

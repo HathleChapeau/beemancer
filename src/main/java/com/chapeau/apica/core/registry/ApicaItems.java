@@ -19,6 +19,7 @@ import com.chapeau.apica.common.item.mount.HoverbikePartItem;
 import com.chapeau.apica.common.item.mount.HoverbikeSpawnItem;
 import com.chapeau.apica.common.item.BarrelUpgradeItem;
 import com.chapeau.apica.common.item.VoidUpgradeItem;
+import com.chapeau.apica.common.item.ItemFilterItem;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
 import com.chapeau.apica.common.item.tool.ScoopItem;
 import net.minecraft.world.item.BlockItem;
@@ -146,6 +147,10 @@ public class ApicaItems {
 
     public static final DeferredItem<BlockItem> ITEM_PIPE_MK4 = ITEMS.register("item_pipe_mk4",
             () -> new BlockItem(ApicaBlocks.ITEM_PIPE_MK4.get(), new Item.Properties()));
+
+    // --- ITEM FILTER ---
+    public static final DeferredItem<ItemFilterItem> ITEM_FILTER = ITEMS.register("item_filter",
+            () -> new ItemFilterItem(new Item.Properties().stacksTo(16)));
 
     public static final DeferredItem<BlockItem> CRYSTALLIZER = ITEMS.register("crystallizer",
             () -> new BlockItem(ApicaBlocks.CRYSTALLIZER.get(), new Item.Properties()));

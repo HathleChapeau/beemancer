@@ -164,6 +164,9 @@ public class ClientSetup {
         // Trash Cans
         event.register(ApicaMenus.TRASH_CAN.get(), com.chapeau.apica.client.gui.screen.TrashCanScreen::new);
         event.register(ApicaMenus.LIQUID_TRASH_CAN.get(), com.chapeau.apica.client.gui.screen.LiquidTrashCanScreen::new);
+
+        // Item Filter
+        event.register(ApicaMenus.ITEM_FILTER.get(), com.chapeau.apica.client.gui.screen.ItemFilterScreen::new);
     }
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {

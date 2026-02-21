@@ -26,6 +26,8 @@ package com.chapeau.apica.core.network.pipe;
 
 import com.chapeau.apica.common.block.alchemy.AbstractPipeBlock;
 import com.chapeau.apica.common.block.alchemy.ItemPipeBlock;
+import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
+import com.chapeau.apica.common.data.ItemFilterData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -41,6 +43,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -140,9 +143,9 @@ public class PipeNetwork {
     }
 
     /**
-     * Trouve la prochaine destination valide en round-robin global.
-     * Pre-valide que la machine accepte l'item (simulation d'insertion).
-     * Retourne l'endpoint + la route, ou null si aucune destination valide.
+     * Trouve la prochaine destination valide avec support des filtres.
+     * Les pipes avec filtre qui refuse l'item sont non-traversables.
+     * Parmi les routes valides, prefere celles passant par des pipes de priority plus haute.
      */
     @Nullable
     public RouteResult findDestination(BlockPos sourcePipePos, ItemStack stack, ServerLevel level) {
@@ -152,36 +155,68 @@ public class PipeNetwork {
 
         if (insertEndpoints.isEmpty()) return null;
 
-        int startIndex = roundRobinIndex % insertEndpoints.size();
-
-        for (int i = 0; i < insertEndpoints.size(); i++) {
-            int idx = (startIndex + i) % insertEndpoints.size();
-            PipeEndpoint candidate = insertEndpoints.get(idx);
-
-            // Pre-validation : la machine accepte-t-elle cet item ?
+        // Collecter toutes les routes valides avec leur priority
+        List<ScoredRoute> validRoutes = new ArrayList<>();
+        for (PipeEndpoint candidate : insertEndpoints) {
             if (!level.hasChunkAt(candidate.machinePos())) continue;
             IItemHandler handler = level.getCapability(
                 Capabilities.ItemHandler.BLOCK, candidate.machinePos(), candidate.face().getOpposite());
             if (handler == null) continue;
-
             if (!canInsertAny(handler, stack)) continue;
 
-            // Calcul de la route
-            List<BlockPos> route = routeCache.getCachedRoute(sourcePipePos, candidate.pipePos());
-            if (route == null) {
-                route = graph.bfsPath(sourcePipePos, candidate.pipePos());
-                if (route != null) {
-                    routeCache.putRoute(sourcePipePos, candidate.pipePos(), route);
-                }
-            }
+            // BFS item-aware : skip pipes dont le filtre refuse l'item
+            List<BlockPos> route = graph.bfsPathFiltered(sourcePipePos, candidate.pipePos(),
+                pos -> canItemTraverse(pos, stack, level));
             if (route == null) continue;
 
-            // Destination trouvée — avancer le round-robin
-            roundRobinIndex = (idx + 1) % insertEndpoints.size();
-            return new RouteResult(candidate, route);
+            int maxPriority = getMaxPriorityOnRoute(route, level);
+            validRoutes.add(new ScoredRoute(candidate, route, maxPriority));
         }
 
-        return null;
+        if (validRoutes.isEmpty()) return null;
+
+        // Trier par priority desc
+        validRoutes.sort(Comparator.comparingInt(ScoredRoute::priority).reversed());
+        int topPriority = validRoutes.get(0).priority();
+        List<ScoredRoute> topRoutes = validRoutes.stream()
+            .filter(r -> r.priority() == topPriority).toList();
+
+        // Round-robin dans le groupe le plus prioritaire
+        int idx = roundRobinIndex % topRoutes.size();
+        roundRobinIndex = (idx + 1) % topRoutes.size();
+        ScoredRoute chosen = topRoutes.get(idx);
+        return new RouteResult(chosen.endpoint(), chosen.route());
+    }
+
+    /**
+     * Verifie si un item peut traverser un pipe (en tenant compte du filtre).
+     */
+    private boolean canItemTraverse(BlockPos pos, ItemStack stack, ServerLevel level) {
+        if (!level.hasChunkAt(pos)) return true;
+        if (level.getBlockEntity(pos) instanceof ItemPipeBlockEntity pipe) {
+            ItemFilterData filter = pipe.getFilter();
+            if (filter != null) {
+                return filter.matches(stack);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Retourne la priority maximale sur une route (0 si aucun filtre).
+     */
+    private int getMaxPriorityOnRoute(List<BlockPos> route, ServerLevel level) {
+        int maxPriority = 0;
+        for (BlockPos pos : route) {
+            if (!level.hasChunkAt(pos)) continue;
+            if (level.getBlockEntity(pos) instanceof ItemPipeBlockEntity pipe) {
+                ItemFilterData filter = pipe.getFilter();
+                if (filter != null && filter.getPriority() > maxPriority) {
+                    maxPriority = filter.getPriority();
+                }
+            }
+        }
+        return maxPriority;
     }
 
     private boolean canInsertAny(IItemHandler handler, ItemStack stack) {
@@ -200,6 +235,11 @@ public class PipeNetwork {
      * Résultat d'un routage : endpoint destination + route à suivre.
      */
     public record RouteResult(PipeEndpoint endpoint, List<BlockPos> route) {}
+
+    /**
+     * Route avec score de priority pour le tri.
+     */
+    private record ScoredRoute(PipeEndpoint endpoint, List<BlockPos> route, int priority) {}
 
     // --- Sérialisation NBT ---
 

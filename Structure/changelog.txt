@@ -3,6 +3,34 @@
 ################################################################################
 
 ================================================================================
+2026-02-21 - Item Filter pour Item Pipes
+================================================================================
+
+Ajout d'un systeme de filtrage pour les item pipes:
+- Item Filter: item placable au centre d'un pipe (1 filtre max par pipe)
+- 9 ghost slots pour configurer les items filtres
+- Mode Accept (whitelist) / Deny (blacklist) avec toggle
+- Systeme de priority (int, defaut 0) pour influencer le routage
+- Routing item-aware: BFS filtre dans PipeGraph, priority scoring dans PipeNetwork
+- GUI compacte (176x80) avec boutons +/- priority, toggle mode, ghost slots
+- Blockstate FILTERED property sur tous les tiers de pipe (MK1-MK4)
+- Modele 3D overlay cube 9x9 centre sur le core du pipe
+- Packet C2S ItemFilterActionPacket (toggle mode, change priority, set ghost slot)
+- Codex: node item_filter sous item_pipe dans logistics tree
+- Recette: 4 honeyed_iron + 4 glass_pane + 1 honey_crystal = 2 item_filter
+
+Scripts crees: ItemFilterData.java, ItemFilterItem.java, ItemFilterMenu.java,
+  ItemFilterScreen.java, ItemFilterActionPacket.java
+Scripts modifies: ItemPipeBlockEntity.java (+filter storage/NBT), AbstractPipeBlock.java
+  (+FILTERED property, filter placement), ItemPipeBlock.java (+filter interactions/GUI/drop),
+  PipeGraph.java (+bfsPathFiltered), PipeNetwork.java (+item-aware routing with priority),
+  ApicaItems.java (+ITEM_FILTER), ApicaMenus.java (+ITEM_FILTER), ApicaCreativeTabs.java,
+  ApicaNetwork.java (+packet), ClientSetup.java (+screen), CodexNodeWidget.java (+mapping)
+Assets: 4 blockstates modifies, 1 block model, 1 item model, 2 textures placeholder,
+  1 recipe, 1 codex book entry, logistics.json (+node), lang en_us (+8 cles)
+Registres: ApicaItems (+1), ApicaMenus (+1), ApicaNetwork (+1 packet)
+
+================================================================================
 2026-02-21 - Honeyed Stone Brick (Blocs Decoratifs)
 ================================================================================
 

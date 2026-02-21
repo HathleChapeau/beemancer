@@ -13,6 +13,7 @@
     { "when": { "east": true, "extract_east": true }, "apply": { "model": "apica:block/pipes/item_pipe_side_extract_t2", "y": 90 } },
     { "when": { "west": true, "extract_west": true }, "apply": { "model": "apica:block/pipes/item_pipe_side_extract_t2", "y": 270 } },
     { "when": { "up": true, "extract_up": true }, "apply": { "model": "apica:block/pipes/item_pipe_side_extract_t2", "x": 270 } },
-    { "when": { "down": true, "extract_down": true }, "apply": { "model": "apica:block/pipes/item_pipe_side_extract_t2", "x": 90 } }
+    { "when": { "down": true, "extract_down": true }, "apply": { "model": "apica:block/pipes/item_pipe_side_extract_t2", "x": 90 } },
+    { "when": { "filtered": true }, "apply": { "model": "apica:block/pipes/item_pipe_filter" } }
   ]
 }

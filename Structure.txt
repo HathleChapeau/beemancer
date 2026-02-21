@@ -169,6 +169,8 @@ Philosophie:
 │   PipeTransitItem                       │ Item en transit avec route pré-calc    │
 │   PipeNetwork                           │ Réseau connexe pipes (graphe+routing)  │
 │   ItemPipeNetworkManager                │ SavedData singleton gestion réseaux    │
+│ common/data/ItemFilterData.java         │ Donnees filtre: ghost slots, mode, priority │
+│ common/item/ItemFilterItem.java         │ Item filtre pour pipes                 │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -773,6 +775,17 @@ LISTE DES FEATURES:
     +5 cles fr_fr (Brique de Pierre Miellee, Escalier, Dalle, Mur, Panneau)
   Dependances: MultiblockProperty (pour HoneyedStoneBrickWallBlock)
   Registres modifies: ApicaBlocks (+5), ApicaItems (+5)
+
+→ Item Filter pour Item Pipes
+  Description: Systeme de filtrage pour item pipes: item placable au centre, 9 ghost slots, mode Accept/Deny,
+    priority system, routing BFS item-aware, GUI compacte, overlay 3D, codex entry
+  Scripts crees: ItemFilterData.java, ItemFilterItem.java, ItemFilterMenu.java, ItemFilterScreen.java,
+    ItemFilterActionPacket.java
+  Scripts modifies: ItemPipeBlockEntity.java, AbstractPipeBlock.java, ItemPipeBlock.java, PipeGraph.java,
+    PipeNetwork.java, ApicaItems.java, ApicaMenus.java, ApicaCreativeTabs.java, ApicaNetwork.java,
+    ClientSetup.java, CodexNodeWidget.java, 4 blockstates, logistics.json, en_us.json
+  Dependances: PipeNetwork, PipeGraph, ItemPipeBlockEntity, GuiRenderHelper, ApicaMenu
+  Registres modifies: ApicaItems (+1), ApicaMenus (+1), ApicaNetwork (+1 packet)
 
 ================================================================================
 6. FEATURES EN COURS

@@ -19,6 +19,7 @@
     {"id": "storage_barrel_mk4", "position": {"x": -3, "y": 4}, "category": "GOAL", "parent": "storage_barrel_mk3", "hidden_until_parent_unlocked": true},
     {"id": "void_upgrade", "position": {"x": -5, "y": 2}, "category": "NORMAL", "parent": "storage_barrel", "hidden_until_parent_unlocked": true},
     {"id": "trash_can", "position": {"x": 0, "y": -2}, "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
-    {"id": "liquid_trash_can", "position": {"x": -1, "y": -2}, "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false}
+    {"id": "liquid_trash_can", "position": {"x": -1, "y": -2}, "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "item_filter", "position": {"x": -2, "y": 3}, "category": "NORMAL", "parent": "item_pipe", "hidden_until_parent_unlocked": true}
   ]
 }
