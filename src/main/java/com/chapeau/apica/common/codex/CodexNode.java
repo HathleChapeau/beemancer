@@ -192,8 +192,9 @@ public class CodexNode {
         int x = pos.get("x").getAsInt();
         int y = pos.get("y").getAsInt();
 
-        String iconPath = json.get("icon").getAsString();
-        ResourceLocation icon = ResourceLocation.parse(iconPath);
+        ResourceLocation icon = json.has("icon") && !json.get("icon").isJsonNull()
+            ? ResourceLocation.parse(json.get("icon").getAsString())
+            : ResourceLocation.fromNamespaceAndPath("apica", "empty");
 
         String categoryStr = json.has("category") ? json.get("category").getAsString() : "NORMAL";
         CodexNodeCategory category = CodexNodeCategory.fromId(categoryStr);
