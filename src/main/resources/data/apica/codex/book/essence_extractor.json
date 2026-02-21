@@ -1,0 +1,28 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.bees.essence_extractor.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.bees.essence_extractor.lore.p2"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "multiblock",
+      "pattern": "essence_extractor",
+      "controller": "apica:extractor_heart"
+    }
+  ],
+  "sticky_notes": [
+    {"craft": "apica:extractor_heart", "type": "altar"},
+    {"craft": "apica:honeyed_stone"},
+    {"craft": "apica:honey_pedestal"}
+  ]
+}
