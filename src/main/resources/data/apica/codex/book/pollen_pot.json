@@ -6,6 +6,13 @@
     {
       "type": "text",
       "key": "codex.apica.artifacts.pollen_pot.lore.p1"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "craft",
+      "result": "apica:pollen_pot"
     }
   ],
   "sticky_notes": []
