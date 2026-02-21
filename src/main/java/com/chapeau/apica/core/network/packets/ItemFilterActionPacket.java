@@ -25,7 +25,7 @@ import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
 import com.chapeau.apica.common.data.ItemFilterData;
 import com.chapeau.apica.common.menu.ItemFilterMenu;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -52,7 +52,7 @@ public record ItemFilterActionPacket(int containerId, int action, int value, Ite
     public static final Type<ItemFilterActionPacket> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "item_filter_action"));
 
-    public static final StreamCodec<FriendlyByteBuf, ItemFilterActionPacket> STREAM_CODEC =
+    public static final StreamCodec<RegistryFriendlyByteBuf, ItemFilterActionPacket> STREAM_CODEC =
             StreamCodec.composite(
                 ByteBufCodecs.INT, ItemFilterActionPacket::containerId,
                 ByteBufCodecs.INT, ItemFilterActionPacket::action,
