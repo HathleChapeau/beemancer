@@ -124,7 +124,8 @@ public class PipeGraph {
 
     /**
      * BFS filtre : meme algo que bfsPath mais skip les nodes ou canTraverse retourne false.
-     * Les positions source et destination sont toujours traversables.
+     * La position source (from) n'est PAS testee ici — l'appelant doit la verifier separement.
+     * Toutes les autres nodes, y compris la destination, sont testees par canTraverse.
      * Ne pas utiliser le route cache (le resultat depend de l'item).
      */
     @Nullable
@@ -144,8 +145,7 @@ public class PipeGraph {
             BlockPos current = queue.poll();
             for (BlockPos neighbor : getNeighbors(current)) {
                 if (visited.add(neighbor)) {
-                    // Skip nodes that the item cannot traverse (except destination)
-                    if (!neighbor.equals(to) && !canTraverse.test(neighbor)) {
+                    if (!canTraverse.test(neighbor)) {
                         continue;
                     }
                     parentMap.put(neighbor, current);
