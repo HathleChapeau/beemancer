@@ -1,10 +1,10 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "I": { "item": "apica:honeyed_iron" },
-    "G": { "item": "minecraft:glass_pane" },
-    "H": { "item": "apica:honey_crystal" }
+    "F": { "item": "apica:wooden_frame" },
+    "S": { "item": "minecraft:stick" },
+    "P": { "item": "minecraft:paper" }
   },
-  "pattern": [ "IGI", "GHG", "IGI" ],
+  "pattern": [ "FSF", "SPS", "FSF" ],
   "result": { "id": "apica:item_filter", "count": 2 }
 }
