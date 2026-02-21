@@ -40,7 +40,7 @@
         "y": 0
       },
       "category": "NORMAL",
-      "parent": "magic_hive",
+      "parent": "hive",
       "hidden_until_parent_unlocked": false,
       "visibility": "VISIBLE"
     },
@@ -58,11 +58,11 @@
     {
       "id": "essence_extractor",
       "position": {
-        "x": 3,
-        "y": 1
+        "x": 2,
+        "y": 6
       },
       "category": "NORMAL",
-      "parent": "essence_injector",
+      "parent": "hive",
       "hidden_until_parent_unlocked": true,
       "visibility": "VISIBLE"
     },
