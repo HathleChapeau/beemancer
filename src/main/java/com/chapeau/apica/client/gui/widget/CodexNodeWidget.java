@@ -99,6 +99,9 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("storage_hive_mk2", "apica:storage_hive_tier2");
         NODE_TO_ITEM.put("storage_hive_mk3", "apica:storage_hive_tier3");
         NODE_TO_ITEM.put("item_filter", "apica:item_filter");
+        NODE_TO_ITEM.put("honey_furnace", "apica:honey_furnace");
+        NODE_TO_ITEM.put("royal_furnace", "apica:royal_furnace");
+        NODE_TO_ITEM.put("nectar_furnace", "apica:nectar_furnace");
 
         // Textures pour les nodes sans item correspondant
         NODE_TO_ITEM.put("apica", "apica:codex");
