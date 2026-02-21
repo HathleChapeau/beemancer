@@ -1,6 +1,6 @@
 {
   "parent": "apica:block/storage/trash_can_base",
   "textures": {
-    "all": "apica:block/stone"
+    "all": "apica:block/altar/honeyed_stone"
   }
 }

@@ -1,4 +1,5 @@
 {
+  "parent": "minecraft:block/block",
   "textures": {
     "all": "apica:block/stone",
     "particle": "#all"
