@@ -174,7 +174,7 @@ public class StorageBarrelBlockEntity extends BlockEntity {
         @Override
         public ItemStack getStackInSlot(int slot) {
             if (storedItem.isEmpty()) return ItemStack.EMPTY;
-            return storedItem.copyWithCount(Math.min(storedCount, storedItem.getMaxStackSize()));
+            return storedItem.copyWithCount(storedCount);
         }
 
         @Nonnull
