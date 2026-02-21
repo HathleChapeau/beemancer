@@ -8,7 +8,7 @@
  * ------------------------------------------------------------
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
- * | ApicaMenu               | Base menu            | Boilerplate                    |
+ * | ApicaMenu               | Base menu            | Player inventory + hotbar      |
  * | ItemPipeBlockEntity     | BE cible             | Acces aux donnees du filtre    |
  * | ItemFilterData          | Donnees filtre       | Ghost slots, mode, priority    |
  * ------------------------------------------------------------
@@ -28,21 +28,21 @@ import com.chapeau.apica.core.registry.ApicaMenus;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nullable;
 
 /**
- * Menu compact du filtre d'item pipe.
- * Pas d'inventaire joueur (GUI petite), seulement les controles du filtre.
+ * Menu du filtre d'item pipe.
+ * Inventaire joueur present pour permettre le pick-up d'items en ghost slots.
  * Les ghost slots sont geres cote client via ItemFilterActionPacket.
  */
-public class ItemFilterMenu extends AbstractContainerMenu {
+public class ItemFilterMenu extends ApicaMenu {
+
+    private static final int PLAYER_INV_Y = 88;
 
     @Nullable
     private final ItemPipeBlockEntity blockEntity;
@@ -91,6 +91,10 @@ public class ItemFilterMenu extends AbstractContainerMenu {
         }
 
         addDataSlots(filterState);
+
+        // Player inventory + hotbar
+        addPlayerInventory(playerInventory, 8, PLAYER_INV_Y);
+        addPlayerHotbar(playerInventory, 8, PLAYER_INV_Y + 58);
     }
 
     @Nullable
@@ -116,7 +120,7 @@ public class ItemFilterMenu extends AbstractContainerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        return ItemStack.EMPTY;
+        return doQuickMove(index, 0, -1, -1, null);
     }
 
     @Override

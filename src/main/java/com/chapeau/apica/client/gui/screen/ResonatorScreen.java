@@ -10,7 +10,7 @@
  * |-------------------------|----------------------|--------------------------------|
  * | ResonatorMenu           | Menu associe         | Lecture ContainerData + bee     |
  * | WaveformRenderer        | Rendu onde           | Affichage waveform             |
- * | GuiRenderHelper         | Rendu GUI            | Background, bordures, slot     |
+ * | (rendu inline)          | Rendu GUI            | Background, bordures, slot     |
  * | ResonatorUpdatePacket   | Sync C2S             | Envoi parametres au serveur    |
  * | ResonatorConfigManager  | Config waveforms     | Target values depuis stats bee |
  * | BeeSpeciesManager       | Stats espece         | Lecture niveaux stats          |
@@ -23,7 +23,6 @@
  */
 package com.chapeau.apica.client.gui.screen;
 
-import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.menu.ResonatorMenu;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
@@ -210,15 +209,19 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         // Info panel (left of main GUI)
         renderInfoPanel(g, x - PANEL_GAP - PANEL_W, y);
 
-        // Background
-        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, GUI_W, GUI_H);
+        // Background — dark semi-transparent panel
+        g.fill(x, y, x + GUI_W, y + GUI_H, 0xCC1A1A2E);
+        g.fill(x, y, x + GUI_W, y + 1, 0xFF555555);
+        g.fill(x, y + GUI_H - 1, x + GUI_W, y + GUI_H, 0xFF555555);
+        g.fill(x, y, x + 1, y + GUI_H, 0xFF555555);
+        g.fill(x + GUI_W - 1, y, x + GUI_W, y + GUI_H, 0xFF555555);
 
-        // Title
-        g.drawString(font, Component.translatable("block.apica.resonator"),
-                x + 8, y + 6, 0x404040, false);
+        // Title (above panel)
+        g.drawCenteredString(font, Component.translatable("block.apica.resonator"),
+                x + GUI_W / 2, y - 10, 0xDDDDDD);
 
-        // Bee slot (right side)
-        GuiRenderHelper.renderSlot(g, x + BEE_SLOT_X, y + BEE_SLOT_Y);
+        // Bee slot (right side) — vanilla style
+        renderVanillaSlot(g, x + BEE_SLOT_X, y + BEE_SLOT_Y);
 
         // Waveform display
         float freqF = localFreq;
@@ -249,16 +252,20 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         int x = (width - ANALYSIS_W) / 2;
         int y = (height - ANALYSIS_H) / 2;
 
-        // Background panel
-        GuiRenderHelper.renderContainerBackgroundNoTitle(g, x, y, ANALYSIS_W, ANALYSIS_H);
+        // Background panel — dark semi-transparent
+        g.fill(x, y, x + ANALYSIS_W, y + ANALYSIS_H, 0xCC1A1A2E);
+        g.fill(x, y, x + ANALYSIS_W, y + 1, 0xFF555555);
+        g.fill(x, y + ANALYSIS_H - 1, x + ANALYSIS_W, y + ANALYSIS_H, 0xFF555555);
+        g.fill(x, y, x + 1, y + ANALYSIS_H, 0xFF555555);
+        g.fill(x + ANALYSIS_W - 1, y, x + ANALYSIS_W, y + ANALYSIS_H, 0xFF555555);
 
-        // Title
-        g.drawString(font, "Analysis", x + 8, y + 6, 0x404040, false);
+        // Title (above panel)
+        g.drawCenteredString(font, "Analysis", x + ANALYSIS_W / 2, y - 10, 0xDDDDDD);
 
-        // Bee slot (centered top)
+        // Bee slot (centered top) — vanilla style
         int slotX = x + ANALYSIS_W / 2 - 8;
         int slotY = y + 22;
-        GuiRenderHelper.renderSlot(g, slotX, slotY);
+        renderVanillaSlot(g, slotX, slotY);
 
         // Render the bee item in the slot
         ItemStack bee = menu.getStoredBee();
@@ -330,12 +337,12 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private void renderInfoPanel(GuiGraphics g, int px, int py) {
         int panelH = GUI_H;
 
-        // Panel background
-        g.fill(px, py, px + PANEL_W, py + panelH, 0xCC222222);
-        g.fill(px, py, px + PANEL_W, py + 1, 0xFF444444);
-        g.fill(px, py + panelH - 1, px + PANEL_W, py + panelH, 0xFF444444);
-        g.fill(px, py, px + 1, py + panelH, 0xFF444444);
-        g.fill(px + PANEL_W - 1, py, px + PANEL_W, py + panelH, 0xFF444444);
+        // Panel background — dark semi-transparent (same as main panel)
+        g.fill(px, py, px + PANEL_W, py + panelH, 0xCC1A1A2E);
+        g.fill(px, py, px + PANEL_W, py + 1, 0xFF555555);
+        g.fill(px, py + panelH - 1, px + PANEL_W, py + panelH, 0xFF555555);
+        g.fill(px, py, px + 1, py + panelH, 0xFF555555);
+        g.fill(px + PANEL_W - 1, py, px + PANEL_W, py + panelH, 0xFF555555);
 
         ItemStack bee = menu.getStoredBee();
         String speciesId = getSpeciesFromBee(bee);
@@ -345,8 +352,8 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         int lineY = py + 4;
         int lineH = font.lineHeight + 2;
 
-        // Bee slot visual
-        GuiRenderHelper.renderSlot(g, px + PANEL_W / 2 - 8, lineY);
+        // Bee slot visual — vanilla style
+        renderVanillaSlot(g, px + PANEL_W / 2 - 8, lineY);
         if (!bee.isEmpty()) {
             g.renderItem(bee, px + PANEL_W / 2 - 7, lineY + 1);
         }
@@ -368,7 +375,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             g.drawString(font, "???: ???", px + 4, lineY, 0xFF666666, false);
         }
         lineY += lineH + 2;
-        g.fill(px + 4, lineY, px + PANEL_W - 4, lineY + 1, 0xFF444444);
+        g.fill(px + 4, lineY, px + PANEL_W - 4, lineY + 1, 0xFF555555);
         lineY += 4;
 
         // Build entry lists
@@ -851,6 +858,15 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         if (pos != null) {
             PacketDistributor.sendToServer(new ResonatorUpdatePacket(pos, paramIndex, value));
         }
+    }
+
+    /**
+     * Rend un slot 18x18 avec le style vanilla Minecraft (bords 3D biseautes).
+     */
+    private static void renderVanillaSlot(GuiGraphics g, int x, int y) {
+        g.fill(x, y, x + 18, y + 18, 0xFF8B8B8B);
+        g.fill(x + 1, y + 1, x + 18, y + 18, 0xFFFFFFFF);
+        g.fill(x + 1, y + 1, x + 17, y + 17, 0xFFC6C6C6);
     }
 
     private static int clamp(int value, int min, int max) {

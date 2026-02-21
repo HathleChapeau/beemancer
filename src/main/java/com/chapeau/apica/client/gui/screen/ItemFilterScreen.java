@@ -10,7 +10,7 @@
  * |-------------------------|----------------------|--------------------------------|
  * | ItemFilterMenu          | Donnees container    | Mode, priority, ghost items    |
  * | ItemFilterActionPacket  | Packet C2S           | Actions du joueur              |
- * | GuiRenderHelper         | Rendu programmatique | Slots, background              |
+ * | PlayerInventoryWidget   | Rendu inventaire     | Fond inventaire joueur         |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -20,35 +20,33 @@
  */
 package com.chapeau.apica.client.gui.screen;
 
-import com.chapeau.apica.Apica;
-import com.chapeau.apica.client.gui.GuiRenderHelper;
-import com.chapeau.apica.common.data.ItemFilterData;
+import com.chapeau.apica.client.gui.widget.PlayerInventoryWidget;
 import com.chapeau.apica.common.menu.ItemFilterMenu;
 import com.chapeau.apica.core.network.packets.ItemFilterActionPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Ecran compact du filtre d'item pipe.
- * Affiche 9 ghost slots, un toggle Accept/Deny, et des boutons +/- pour la priority.
+ * Ecran du filtre d'item pipe.
+ * Affiche 9 ghost slots, un toggle Accept/Deny, des boutons +/- pour la priority,
+ * et l'inventaire joueur en bas.
  */
 public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
-    private static final ResourceLocation BG_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-        Apica.MOD_ID, "textures/gui/bg.png");
 
     private static final int GUI_WIDTH = 176;
-    private static final int GUI_HEIGHT = 80;
+    private static final int PLAYER_INV_Y = 80;
+    private static final int GUI_HEIGHT = PLAYER_INV_Y + 90;
 
     private static final int GHOST_SLOT_Y = 30;
     private static final int GHOST_SLOT_SIZE = 18;
     private static final int GHOST_SLOT_COUNT = 9;
 
+    private final PlayerInventoryWidget playerInventoryWidget;
     private Button modeButton;
 
     public ItemFilterScreen(ItemFilterMenu menu, Inventory playerInventory, Component title) {
@@ -57,6 +55,7 @@ public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
         this.imageHeight = GUI_HEIGHT;
         this.inventoryLabelY = -999;
         this.titleLabelY = -999;
+        this.playerInventoryWidget = new PlayerInventoryWidget(PLAYER_INV_Y, 0);
     }
 
     @Override
@@ -103,13 +102,13 @@ public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        // Background panel
-        g.fill(x, y, x + imageWidth, y + imageHeight, 0xCC1A1A2E);
+        // Background panel (filter area only, above player inventory)
+        g.fill(x, y, x + imageWidth, y + PLAYER_INV_Y, 0xCC1A1A2E);
         // Border
         g.fill(x, y, x + imageWidth, y + 1, 0xFF555555);
-        g.fill(x, y + imageHeight - 1, x + imageWidth, y + imageHeight, 0xFF555555);
-        g.fill(x, y, x + 1, y + imageHeight, 0xFF555555);
-        g.fill(x + imageWidth - 1, y, x + imageWidth, y + imageHeight, 0xFF555555);
+        g.fill(x, y + PLAYER_INV_Y - 1, x + imageWidth, y + PLAYER_INV_Y, 0xFF555555);
+        g.fill(x, y, x + 1, y + PLAYER_INV_Y, 0xFF555555);
+        g.fill(x + imageWidth - 1, y, x + imageWidth, y + PLAYER_INV_Y, 0xFF555555);
 
         // Title
         g.drawCenteredString(font, Component.translatable("container.apica.item_filter"),
@@ -120,12 +119,16 @@ public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
             + ": " + menu.getPriority();
         g.drawCenteredString(font, priorityText, x + imageWidth / 2, y + 9, 0xFFFFFF);
 
-        // Ghost slots
+        // Ghost slots (vanilla slot background)
         int slotsStartX = x + (imageWidth - GHOST_SLOT_COUNT * GHOST_SLOT_SIZE) / 2;
         for (int i = 0; i < GHOST_SLOT_COUNT; i++) {
             int slotX = slotsStartX + i * GHOST_SLOT_SIZE;
             int slotY = y + GHOST_SLOT_Y;
-            GuiRenderHelper.renderSlot(g, slotX, slotY);
+
+            // Vanilla-style slot background (dark inset border)
+            g.fill(slotX, slotY, slotX + 18, slotY + 18, 0xFF8B8B8B);
+            g.fill(slotX + 1, slotY + 1, slotX + 18, slotY + 18, 0xFFFFFFFF);
+            g.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFFC6C6C6);
 
             // Render ghost item
             ItemStack ghostItem = menu.getGhostItem(i);
@@ -138,6 +141,9 @@ public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
         boolean isAccept = menu.getMode() == 0;
         int barColor = isAccept ? 0xFF44AA44 : 0xFFAA4444;
         g.fill(x + 50, y + 54, x + 126, y + 55, barColor);
+
+        // Player inventory widget
+        playerInventoryWidget.render(g, x, y);
     }
 
     @Override
