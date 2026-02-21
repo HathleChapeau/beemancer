@@ -133,6 +133,16 @@ public class ApicaCommands {
                     .then(Commands.literal("delete")
                         .requires(source -> source.hasPermission(4))
                         .then(Commands.argument("dimension", StringArgumentType.string())
+                            .suggests((context, builder) -> {
+                                MinecraftServer server = context.getSource().getServer();
+                                for (ServerLevel level : server.getAllLevels()) {
+                                    String dimName = level.dimension().location().toString();
+                                    if (dimName.startsWith(builder.getRemainingLowerCase())) {
+                                        builder.suggest(dimName);
+                                    }
+                                }
+                                return builder.buildFuture();
+                            })
                             .executes(context -> deleteDimension(
                                 context.getSource(),
                                 StringArgumentType.getString(context, "dimension")
