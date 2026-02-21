@@ -47,6 +47,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -132,7 +133,7 @@ public class ApicaCommands {
                 .then(Commands.literal("dimension")
                     .then(Commands.literal("delete")
                         .requires(source -> source.hasPermission(4))
-                        .then(Commands.argument("dimension", StringArgumentType.string())
+                        .then(Commands.argument("dimension", ResourceLocationArgument.id())
                             .suggests((context, builder) -> {
                                 MinecraftServer server = context.getSource().getServer();
                                 for (ServerLevel level : server.getAllLevels()) {
@@ -145,7 +146,7 @@ public class ApicaCommands {
                             })
                             .executes(context -> deleteDimension(
                                 context.getSource(),
-                                StringArgumentType.getString(context, "dimension")
+                                ResourceLocationArgument.getId(context, "dimension").toString()
                             ))
                         )
                     )
