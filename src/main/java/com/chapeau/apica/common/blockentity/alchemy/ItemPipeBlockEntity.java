@@ -428,6 +428,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
         setChanged();
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            level.invalidateCapabilities(worldPosition);
         }
     }
 
@@ -436,6 +437,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
         setChanged();
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            level.invalidateCapabilities(worldPosition);
         }
     }
 

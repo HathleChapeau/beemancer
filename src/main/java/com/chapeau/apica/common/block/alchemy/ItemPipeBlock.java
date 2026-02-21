@@ -46,6 +46,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -160,12 +162,21 @@ public class ItemPipeBlock extends AbstractPipeBlock {
     // --- Network hooks ---
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos,
-                                    Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
-        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
-        if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
-            ItemPipeNetworkManager.get(serverLevel).onConnectionChanged(pos, serverLevel);
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
+                                   LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        BlockState newState = super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+        // Si les connexions du pipe changent, planifier un tick pour mettre a jour le reseau.
+        // On ne peut pas notifier ici car le blockstate n'est pas encore commite dans le monde.
+        // Le tick se declenche apres que le nouveau state soit applique.
+        if (!newState.equals(state) && level instanceof ServerLevel serverLevel) {
+            serverLevel.scheduleTick(pos, this, 1);
         }
+        return newState;
+    }
+
+    @Override
+    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        ItemPipeNetworkManager.get(level).onConnectionChanged(pos, level);
     }
 
     @Override
