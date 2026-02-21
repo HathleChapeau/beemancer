@@ -47,6 +47,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 
 import javax.annotation.Nullable;
@@ -121,9 +122,12 @@ public class ItemPipeBlock extends AbstractPipeBlock {
         if (!(be instanceof ItemPipeBlockEntity pipe)) return null;
         if (!pipe.hasFilter()) return null;
 
-        // Verifier que le clic est dans la zone centrale (core = pas de direction dominante)
-        Direction clickedDir = getClickedDirection(pos, hit);
-        if (clickedDir != null) return null; // Clic sur une face, pas le core
+        // Verifier que le clic est dans la zone centrale du core (pixels 4-12 = 0.25-0.75)
+        Vec3 localHit = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+        boolean isOnCore = localHit.x >= 0.24 && localHit.x <= 0.76
+            && localHit.y >= 0.24 && localHit.y <= 0.76
+            && localHit.z >= 0.24 && localHit.z <= 0.76;
+        if (!isOnCore) return null; // Clic sur un bras, pas le core
 
         if (player.isShiftKeyDown()) {
             // Shift+click: retirer le filtre

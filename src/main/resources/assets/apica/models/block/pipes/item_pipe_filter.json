@@ -1,12 +1,13 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "cutout",
   "textures": {
     "filter": "apica:block/storage/item_filter"
   },
   "elements": [
     {
-      "from": [3.5, 3.5, 3.5],
-      "to": [12.5, 12.5, 12.5],
+      "from": [2.5, 2.5, 2.5],
+      "to": [13.5, 13.5, 13.5],
       "faces": {
         "north": {"uv": [0, 0, 16, 16], "texture": "#filter"},
         "south": {"uv": [0, 0, 16, 16], "texture": "#filter"},

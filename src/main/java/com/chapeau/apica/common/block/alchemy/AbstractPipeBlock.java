@@ -162,10 +162,13 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
         if (stack.getItem() instanceof ItemFilterItem) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof ItemPipeBlockEntity pipe) {
-                // Verifier que le clic est dans la zone centrale (core)
-                Direction clickedDir = getClickedDirection(pos, hit);
-                if (clickedDir != null) {
-                    // Clic sur une face = pas dans le core
+                // Verifier que le clic est dans la zone centrale du core (pixels 4-12 = 0.25-0.75)
+                Vec3 localHit = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+                boolean isOnCore = localHit.x >= 0.24 && localHit.x <= 0.76
+                    && localHit.y >= 0.24 && localHit.y <= 0.76
+                    && localHit.z >= 0.24 && localHit.z <= 0.76;
+                if (!isOnCore) {
+                    // Clic sur un bras, pas dans le core
                     return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
                 }
                 if (pipe.hasFilter()) {
