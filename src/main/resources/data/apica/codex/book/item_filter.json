@@ -19,5 +19,7 @@
       "result": "apica:item_filter"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:wooden_frame"}
+  ]
 }
