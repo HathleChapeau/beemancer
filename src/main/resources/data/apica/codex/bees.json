@@ -58,8 +58,8 @@
     {
       "id": "essence_extractor",
       "position": {
-        "x": 2,
-        "y": 6
+        "x": 1,
+        "y": 2
       },
       "category": "NORMAL",
       "parent": "hive",
