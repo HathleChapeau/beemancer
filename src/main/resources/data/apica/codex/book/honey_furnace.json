@@ -5,8 +5,11 @@
     },
     {
       "type": "text",
-      "key": "codex.apica.alchemy.honey_furnace.lore"
-
+      "key": "codex.apica.alchemy.honey_furnace.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.alchemy.honey_furnace.lore.p2"
     },
     {
       "type": "page_break"

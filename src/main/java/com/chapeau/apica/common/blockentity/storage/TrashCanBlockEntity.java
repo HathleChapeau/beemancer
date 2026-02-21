@@ -78,7 +78,7 @@ public class TrashCanBlockEntity extends BlockEntity implements MenuProvider {
             if (stack.isEmpty()) return ItemStack.EMPTY;
             if (!simulate) {
                 // Garder le dernier item comme reference visuelle
-                itemHandler.setStackInSlot(0, stack.copyWithCount(1));
+                itemHandler.setStackInSlot(0, stack.copy());
                 setChanged();
             }
             return ItemStack.EMPTY; // Tout accepte (void)

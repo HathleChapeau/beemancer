@@ -5,7 +5,11 @@
     },
     {
       "type": "text",
-      "key": "codex.apica.logistics.storage_barrel.lore"
+      "key": "codex.apica.logistics.storage_barrel.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.logistics.storage_barrel.lore.p2"
     },
     {
       "type": "page_break"

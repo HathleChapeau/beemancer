@@ -8,6 +8,10 @@
       "key": "codex.apica.artifacts.pollen_pot.lore.p1"
     },
     {
+      "type": "text",
+      "key": "codex.apica.artifacts.pollen_pot.lore.p2"
+    },
+    {
       "type": "page_break"
     },
     {

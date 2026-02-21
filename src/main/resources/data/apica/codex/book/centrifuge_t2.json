@@ -8,11 +8,11 @@
       "key": "codex.apica.alchemy.centrifuge_t2.lore.p1"
     },
     {
-      "type": "page_break"
-    },
-    {
       "type": "text",
       "key": "codex.apica.alchemy.centrifuge_t2.lore.p2"
+    },
+    {
+      "type": "page_break"
     },
     {
       "type": "craft",

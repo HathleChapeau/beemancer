@@ -5,7 +5,11 @@
     },
     {
       "type": "text",
-      "key": "codex.apica.bees.essence_injector.lore"
+      "key": "codex.apica.bees.essence_injector.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.bees.essence_injector.lore.p2"
     },
     {
       "type": "page_break"

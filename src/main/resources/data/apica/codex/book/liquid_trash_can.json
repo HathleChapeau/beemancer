@@ -5,7 +5,11 @@
     },
     {
       "type": "text",
-      "key": "codex.apica.logistics.liquid_trash_can.lore"
+      "key": "codex.apica.logistics.liquid_trash_can.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.logistics.liquid_trash_can.lore.p2"
     },
     {
       "type": "page_break"

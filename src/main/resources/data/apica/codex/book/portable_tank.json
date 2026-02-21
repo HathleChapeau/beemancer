@@ -8,13 +8,6 @@
       "key": "codex.apica.alchemy.portable_tank.lore.p1"
     },
     {
-      "type": "page_break"
-    },
-    {
-      "type": "text",
-      "key": "codex.apica.alchemy.portable_tank.lore.p2"
-    },
-    {
       "type": "craft",
       "result": "apica:honey_tank"
     }
