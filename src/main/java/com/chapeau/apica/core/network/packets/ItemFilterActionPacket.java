@@ -41,13 +41,23 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * - 0: TOGGLE_MODE — bascule Accept/Deny
  * - 1: CHANGE_PRIORITY — value = delta (+1 ou -1)
  * - 2: SET_GHOST_SLOT — value = slot index (0-8), itemData = l'item a placer/retirer
+ * - 3: TOGGLE_INPUT_MODE — bascule Slot/Text
+ * - 4: SET_TEXT_FILTER — textValue = le texte du filtre
  */
-public record ItemFilterActionPacket(int containerId, int action, int value, ItemStack itemData)
+public record ItemFilterActionPacket(int containerId, int action, int value,
+                                      ItemStack itemData, String textValue)
         implements CustomPacketPayload {
 
     public static final int ACTION_TOGGLE_MODE = 0;
     public static final int ACTION_CHANGE_PRIORITY = 1;
     public static final int ACTION_SET_GHOST_SLOT = 2;
+    public static final int ACTION_TOGGLE_INPUT_MODE = 3;
+    public static final int ACTION_SET_TEXT_FILTER = 4;
+
+    /** Convenience constructor for actions that don't use textValue. */
+    public ItemFilterActionPacket(int containerId, int action, int value, ItemStack itemData) {
+        this(containerId, action, value, itemData, "");
+    }
 
     public static final Type<ItemFilterActionPacket> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "item_filter_action"));
@@ -58,6 +68,7 @@ public record ItemFilterActionPacket(int containerId, int action, int value, Ite
                 ByteBufCodecs.INT, ItemFilterActionPacket::action,
                 ByteBufCodecs.INT, ItemFilterActionPacket::value,
                 ItemStack.OPTIONAL_STREAM_CODEC, ItemFilterActionPacket::itemData,
+                ByteBufCodecs.STRING_UTF8, ItemFilterActionPacket::textValue,
                 ItemFilterActionPacket::new
             );
 
@@ -95,6 +106,16 @@ public record ItemFilterActionPacket(int containerId, int action, int value, Ite
                         be.setChanged();
                         be.syncToClient();
                     }
+                }
+                case ACTION_TOGGLE_INPUT_MODE -> {
+                    filter.toggleInputMode();
+                    be.setChanged();
+                    be.syncToClient();
+                }
+                case ACTION_SET_TEXT_FILTER -> {
+                    filter.setTextFilter(packet.textValue());
+                    be.setChanged();
+                    be.syncToClient();
                 }
             }
         });

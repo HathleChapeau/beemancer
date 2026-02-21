@@ -18,9 +18,9 @@
  */
 package com.chapeau.apica.common.blockentity.storage;
 
+import com.chapeau.apica.core.util.TextFilterMatcher;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
@@ -172,31 +172,7 @@ public class InterfaceFilter {
 
     private boolean matchesText(ItemStack stack, boolean checkEmpty) {
         if (textFilter.isEmpty()) return checkEmpty;
-
-        if (textFilter.startsWith("#")) {
-            String tagName = textFilter.substring(1);
-            return matchesTag(stack, tagName);
-        } else if (textFilter.startsWith("@")) {
-            String namespace = textFilter.substring(1);
-            String itemNs = stack.getItem().builtInRegistryHolder()
-                .key().location().getNamespace();
-            return itemNs.equals(namespace);
-        } else {
-            String displayName = stack.getHoverName().getString().toLowerCase();
-            return displayName.contains(textFilter.toLowerCase());
-        }
-    }
-
-    private boolean matchesTag(ItemStack stack, String tagName) {
-        var tags = stack.getTags().toList();
-        for (var tag : tags) {
-            String fullPath = tag.location().toString();
-            String path = tag.location().getPath();
-            if (path.equals(tagName) || fullPath.equals(tagName)) {
-                return true;
-            }
-        }
-        return false;
+        return TextFilterMatcher.matches(stack, textFilter);
     }
 
     // === NBT ===

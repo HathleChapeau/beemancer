@@ -67,6 +67,7 @@ public class ItemFilterMenu extends ApicaMenu {
                     return switch (index) {
                         case 0 -> filter.getMode().ordinal();
                         case 1 -> filter.getPriority();
+                        case 2 -> filter.getInputMode().ordinal();
                         default -> 0;
                     };
                 }
@@ -78,16 +79,19 @@ public class ItemFilterMenu extends ApicaMenu {
                             ? ItemFilterData.FilterMode.ACCEPT
                             : ItemFilterData.FilterMode.DENY);
                         case 1 -> filter.setPriority(value);
+                        case 2 -> filter.setInputMode(value == 0
+                            ? ItemFilterData.InputMode.SLOT
+                            : ItemFilterData.InputMode.TEXT);
                     }
                 }
 
                 @Override
                 public int getCount() {
-                    return 2;
+                    return 3;
                 }
             };
         } else {
-            this.filterState = new SimpleContainerData(2);
+            this.filterState = new SimpleContainerData(3);
         }
 
         addDataSlots(filterState);
@@ -108,6 +112,18 @@ public class ItemFilterMenu extends ApicaMenu {
 
     public int getPriority() {
         return filterState.get(1);
+    }
+
+    public int getInputMode() {
+        return filterState.get(2);
+    }
+
+    /**
+     * Retourne le texte du filtre (lecture directe depuis le BE).
+     */
+    public String getTextFilter() {
+        if (blockEntity == null || blockEntity.getFilter() == null) return "";
+        return blockEntity.getFilter().getTextFilter();
     }
 
     /**

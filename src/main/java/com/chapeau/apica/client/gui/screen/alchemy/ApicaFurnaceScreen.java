@@ -67,18 +67,18 @@ public class ApicaFurnaceScreen extends AbstractApicaScreen<ApicaFurnaceMenu> {
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
         if (menu.isDualSlot()) {
-            GuiRenderHelper.renderSlot(g, x + 39, y + 35);
-            GuiRenderHelper.renderSlot(g, x + 39, y + 55);
-            GuiRenderHelper.renderSlot(g, x + 115, y + 35);
-            GuiRenderHelper.renderSlot(g, x + 115, y + 55);
+            GuiRenderHelper.renderSlot(g, x + 47, y + 35);
+            GuiRenderHelper.renderSlot(g, x + 47, y + 55);
+            GuiRenderHelper.renderSlot(g, x + 123, y + 35);
+            GuiRenderHelper.renderSlot(g, x + 123, y + 55);
 
-            GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 39, menu.getProgressRatio0());
-            GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 59, menu.getProgressRatio1());
+            GuiRenderHelper.renderTextureProgressBar(g, x + 69, y + 39, menu.getProgressRatio0());
+            GuiRenderHelper.renderTextureProgressBar(g, x + 69, y + 59, menu.getProgressRatio1());
         } else {
-            GuiRenderHelper.renderSlot(g, x + 39, y + 44);
-            GuiRenderHelper.renderSlot(g, x + 115, y + 44);
+            GuiRenderHelper.renderSlot(g, x + 47, y + 44);
+            GuiRenderHelper.renderSlot(g, x + 123, y + 44);
 
-            GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 48, menu.getProgressRatio0());
+            GuiRenderHelper.renderTextureProgressBar(g, x + 69, y + 48, menu.getProgressRatio0());
         }
 
         int fuelCap = menu.getFuelCapacity();

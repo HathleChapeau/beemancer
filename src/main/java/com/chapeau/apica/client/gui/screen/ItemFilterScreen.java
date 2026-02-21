@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ItemFilterScreen.java]
- * Description: GUI du filtre d'item pipe — ghost slots, mode, priority
+ * Description: GUI du filtre d'item pipe — ghost slots ou texte, mode, priority
  * ============================================================
  *
  * DEPENDANCES:
@@ -25,6 +25,7 @@ import com.chapeau.apica.common.menu.ItemFilterMenu;
 import com.chapeau.apica.core.network.packets.ItemFilterActionPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -33,7 +34,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Ecran du filtre d'item pipe.
- * Affiche 9 ghost slots, un toggle Accept/Deny, des boutons +/- pour la priority,
+ * Supporte deux modes d'input : ghost slots (SLOT) ou champ texte (TEXT).
+ * Affiche un toggle Accept Only/Deny Only, des boutons +/- pour la priority,
  * et l'inventaire joueur en bas.
  */
 public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
@@ -48,6 +50,11 @@ public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
 
     private final PlayerInventoryWidget playerInventoryWidget;
     private Button modeButton;
+    private Button inputModeButton;
+    private EditBox textFilterBox;
+
+    /** Tracks the last known inputMode to detect server-side changes. */
+    private int lastInputMode = -1;
 
     public ItemFilterScreen(ItemFilterMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -64,22 +71,53 @@ public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        // Priority buttons
+        // Priority: label is drawn in renderBg, buttons positioned after it
+        int priorityLabelW = font.width(
+            Component.translatable("gui.apica.item_filter.priority").getString() + ":");
+        int prioStartX = x + 8;
+        int btnMinusX = prioStartX + priorityLabelW + 4;
+
         addRenderableWidget(Button.builder(Component.literal("-"), btn -> {
             PacketDistributor.sendToServer(new ItemFilterActionPacket(
                 menu.containerId, ItemFilterActionPacket.ACTION_CHANGE_PRIORITY, -1, ItemStack.EMPTY));
-        }).bounds(x + 50, y + 6, 20, 16).build());
+        }).bounds(btnMinusX, y + 6, 16, 16).build());
 
         addRenderableWidget(Button.builder(Component.literal("+"), btn -> {
             PacketDistributor.sendToServer(new ItemFilterActionPacket(
                 menu.containerId, ItemFilterActionPacket.ACTION_CHANGE_PRIORITY, 1, ItemStack.EMPTY));
-        }).bounds(x + 106, y + 6, 20, 16).build());
+        }).bounds(btnMinusX + 40, y + 6, 16, 16).build());
 
-        // Mode toggle button
+        // Input mode toggle (Slots / Text)
+        inputModeButton = addRenderableWidget(Button.builder(getInputModeText(), btn -> {
+            PacketDistributor.sendToServer(new ItemFilterActionPacket(
+                menu.containerId, ItemFilterActionPacket.ACTION_TOGGLE_INPUT_MODE, 0, ItemStack.EMPTY));
+        }).bounds(x + 126, y + 6, 42, 16).build());
+
+        // Text filter EditBox (same area as ghost slots)
+        int slotsStartX = x + (imageWidth - GHOST_SLOT_COUNT * GHOST_SLOT_SIZE) / 2;
+        textFilterBox = new EditBox(font, slotsStartX, y + GHOST_SLOT_Y + 1,
+            GHOST_SLOT_COUNT * GHOST_SLOT_SIZE, 16, Component.empty());
+        textFilterBox.setMaxLength(64);
+        textFilterBox.setBordered(true);
+        textFilterBox.setTextColor(0xFFFFFF);
+        textFilterBox.setValue(menu.getTextFilter());
+        textFilterBox.setResponder(this::onTextFilterChanged);
+        addRenderableWidget(textFilterBox);
+
+        // Mode toggle button (Accept Only / Deny Only)
         modeButton = addRenderableWidget(Button.builder(getModeText(), btn -> {
             PacketDistributor.sendToServer(new ItemFilterActionPacket(
                 menu.containerId, ItemFilterActionPacket.ACTION_TOGGLE_MODE, 0, ItemStack.EMPTY));
         }).bounds(x + 50, y + 56, 76, 16).build());
+
+        // Set initial visibility
+        updateInputModeVisibility();
+    }
+
+    private void onTextFilterChanged(String text) {
+        PacketDistributor.sendToServer(new ItemFilterActionPacket(
+            menu.containerId, ItemFilterActionPacket.ACTION_SET_TEXT_FILTER, 0,
+            ItemStack.EMPTY, text));
     }
 
     private Component getModeText() {
@@ -89,11 +127,40 @@ public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
             : "gui.apica.item_filter.deny");
     }
 
+    private Component getInputModeText() {
+        boolean isSlot = menu.getInputMode() == 0;
+        return Component.translatable(isSlot
+            ? "gui.apica.item_filter.mode_slots"
+            : "gui.apica.item_filter.mode_text");
+    }
+
+    private boolean isTextMode() {
+        return menu.getInputMode() == 1;
+    }
+
+    private void updateInputModeVisibility() {
+        boolean textMode = isTextMode();
+        if (textFilterBox != null) {
+            textFilterBox.setVisible(textMode);
+            textFilterBox.setFocused(textMode);
+        }
+    }
+
     @Override
     protected void containerTick() {
         super.containerTick();
         if (modeButton != null) {
             modeButton.setMessage(getModeText());
+        }
+        if (inputModeButton != null) {
+            inputModeButton.setMessage(getInputModeText());
+        }
+
+        // Detect inputMode change from server and update visibility
+        int currentInputMode = menu.getInputMode();
+        if (currentInputMode != lastInputMode) {
+            lastInputMode = currentInputMode;
+            updateInputModeVisibility();
         }
     }
 
@@ -114,26 +181,35 @@ public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
         g.drawCenteredString(font, Component.translatable("container.apica.item_filter"),
             x + imageWidth / 2, y + -10, 0xDDDDDD);
 
-        // Priority label
-        String priorityText = Component.translatable("gui.apica.item_filter.priority").getString()
-            + ": " + menu.getPriority();
-        g.drawCenteredString(font, priorityText, x + imageWidth / 2, y + 9, 0xFFFFFF);
+        // Priority label + value (layout: "Priority:" [-] value [+])
+        String prioLabel = Component.translatable("gui.apica.item_filter.priority").getString() + ":";
+        int prioLabelW = font.width(prioLabel);
+        int prioStartX = x + 8;
+        g.drawString(font, prioLabel, prioStartX, y + 10, 0xFFFFFF, false);
 
-        // Ghost slots (vanilla slot background)
-        int slotsStartX = x + (imageWidth - GHOST_SLOT_COUNT * GHOST_SLOT_SIZE) / 2;
-        for (int i = 0; i < GHOST_SLOT_COUNT; i++) {
-            int slotX = slotsStartX + i * GHOST_SLOT_SIZE;
-            int slotY = y + GHOST_SLOT_Y;
+        // Priority value centered between the two buttons
+        int btnMinusX = prioStartX + prioLabelW + 4;
+        String prioValue = String.valueOf(menu.getPriority());
+        int valueW = font.width(prioValue);
+        g.drawString(font, prioValue, btnMinusX + 16 + (24 - valueW) / 2, y + 10, 0xFFFFFF, false);
 
-            // Vanilla-style slot background (dark inset border)
-            g.fill(slotX, slotY, slotX + 18, slotY + 18, 0xFF8B8B8B);
-            g.fill(slotX + 1, slotY + 1, slotX + 18, slotY + 18, 0xFFFFFFFF);
-            g.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFFC6C6C6);
+        // Ghost slots — only in SLOT mode
+        if (!isTextMode()) {
+            int slotsStartX = x + (imageWidth - GHOST_SLOT_COUNT * GHOST_SLOT_SIZE) / 2;
+            for (int i = 0; i < GHOST_SLOT_COUNT; i++) {
+                int slotX = slotsStartX + i * GHOST_SLOT_SIZE;
+                int slotY = y + GHOST_SLOT_Y;
 
-            // Render ghost item
-            ItemStack ghostItem = menu.getGhostItem(i);
-            if (!ghostItem.isEmpty()) {
-                g.renderItem(ghostItem, slotX + 1, slotY + 1);
+                // Vanilla-style slot background (dark inset border)
+                g.fill(slotX, slotY, slotX + 18, slotY + 18, 0xFF8B8B8B);
+                g.fill(slotX + 1, slotY + 1, slotX + 18, slotY + 18, 0xFFFFFFFF);
+                g.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFFC6C6C6);
+
+                // Render ghost item
+                ItemStack ghostItem = menu.getGhostItem(i);
+                if (!ghostItem.isEmpty()) {
+                    g.renderItem(ghostItem, slotX + 1, slotY + 1);
+                }
             }
         }
 
@@ -151,18 +227,20 @@ public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
         super.render(g, mouseX, mouseY, partialTick);
         renderTooltip(g, mouseX, mouseY);
 
-        // Ghost slot tooltips
-        int x = (width - imageWidth) / 2;
-        int y = (height - imageHeight) / 2;
-        int slotsStartX = x + (imageWidth - GHOST_SLOT_COUNT * GHOST_SLOT_SIZE) / 2;
-        for (int i = 0; i < GHOST_SLOT_COUNT; i++) {
-            int slotX = slotsStartX + i * GHOST_SLOT_SIZE;
-            int slotY = y + GHOST_SLOT_Y;
-            if (mouseX >= slotX && mouseX < slotX + GHOST_SLOT_SIZE
-                && mouseY >= slotY && mouseY < slotY + GHOST_SLOT_SIZE) {
-                ItemStack ghostItem = menu.getGhostItem(i);
-                if (!ghostItem.isEmpty()) {
-                    g.renderTooltip(font, ghostItem, mouseX, mouseY);
+        // Ghost slot tooltips (only in SLOT mode)
+        if (!isTextMode()) {
+            int x = (width - imageWidth) / 2;
+            int y = (height - imageHeight) / 2;
+            int slotsStartX = x + (imageWidth - GHOST_SLOT_COUNT * GHOST_SLOT_SIZE) / 2;
+            for (int i = 0; i < GHOST_SLOT_COUNT; i++) {
+                int slotX = slotsStartX + i * GHOST_SLOT_SIZE;
+                int slotY = y + GHOST_SLOT_Y;
+                if (mouseX >= slotX && mouseX < slotX + GHOST_SLOT_SIZE
+                    && mouseY >= slotY && mouseY < slotY + GHOST_SLOT_SIZE) {
+                    ItemStack ghostItem = menu.getGhostItem(i);
+                    if (!ghostItem.isEmpty()) {
+                        g.renderTooltip(font, ghostItem, mouseX, mouseY);
+                    }
                 }
             }
         }
@@ -170,34 +248,34 @@ public class ItemFilterScreen extends AbstractContainerScreen<ItemFilterMenu> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Check ghost slot clicks
-        int x = (width - imageWidth) / 2;
-        int y = (height - imageHeight) / 2;
-        int slotsStartX = x + (imageWidth - GHOST_SLOT_COUNT * GHOST_SLOT_SIZE) / 2;
+        // Ghost slot clicks only in SLOT mode
+        if (!isTextMode()) {
+            int x = (width - imageWidth) / 2;
+            int y = (height - imageHeight) / 2;
+            int slotsStartX = x + (imageWidth - GHOST_SLOT_COUNT * GHOST_SLOT_SIZE) / 2;
 
-        for (int i = 0; i < GHOST_SLOT_COUNT; i++) {
-            int slotX = slotsStartX + i * GHOST_SLOT_SIZE;
-            int slotY = y + GHOST_SLOT_Y;
-            if (mouseX >= slotX && mouseX < slotX + GHOST_SLOT_SIZE
-                && mouseY >= slotY && mouseY < slotY + GHOST_SLOT_SIZE) {
+            for (int i = 0; i < GHOST_SLOT_COUNT; i++) {
+                int slotX = slotsStartX + i * GHOST_SLOT_SIZE;
+                int slotY = y + GHOST_SLOT_Y;
+                if (mouseX >= slotX && mouseX < slotX + GHOST_SLOT_SIZE
+                    && mouseY >= slotY && mouseY < slotY + GHOST_SLOT_SIZE) {
 
-                ItemStack carried = menu.getCarried();
-                ItemStack ghostItem = menu.getGhostItem(i);
+                    ItemStack carried = menu.getCarried();
+                    ItemStack ghostItem = menu.getGhostItem(i);
 
-                ItemStack toSet;
-                if (!carried.isEmpty()) {
-                    // Place a copy of the carried item as ghost
-                    toSet = carried.copyWithCount(1);
-                } else if (!ghostItem.isEmpty()) {
-                    // Clear the ghost slot
-                    toSet = ItemStack.EMPTY;
-                } else {
-                    return super.mouseClicked(mouseX, mouseY, button);
+                    ItemStack toSet;
+                    if (!carried.isEmpty()) {
+                        toSet = carried.copyWithCount(1);
+                    } else if (!ghostItem.isEmpty()) {
+                        toSet = ItemStack.EMPTY;
+                    } else {
+                        return super.mouseClicked(mouseX, mouseY, button);
+                    }
+
+                    PacketDistributor.sendToServer(new ItemFilterActionPacket(
+                        menu.containerId, ItemFilterActionPacket.ACTION_SET_GHOST_SLOT, i, toSet));
+                    return true;
                 }
-
-                PacketDistributor.sendToServer(new ItemFilterActionPacket(
-                    menu.containerId, ItemFilterActionPacket.ACTION_SET_GHOST_SLOT, i, toSet));
-                return true;
             }
         }
 

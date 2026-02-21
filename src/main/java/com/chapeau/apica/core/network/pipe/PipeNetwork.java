@@ -164,6 +164,9 @@ public class PipeNetwork {
             if (handler == null) continue;
             if (!canInsertAny(handler, stack)) continue;
 
+            // Verifier que l'item peut traverser le pipe source lui-meme
+            if (!canItemTraverse(sourcePipePos, stack, level)) continue;
+
             // BFS item-aware : skip pipes dont le filtre refuse l'item
             List<BlockPos> route = graph.bfsPathFiltered(sourcePipePos, candidate.pipePos(),
                 pos -> canItemTraverse(pos, stack, level));

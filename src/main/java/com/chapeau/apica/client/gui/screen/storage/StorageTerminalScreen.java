@@ -25,6 +25,7 @@ package com.chapeau.apica.client.gui.screen.storage;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.common.menu.storage.StorageTerminalMenu;
+import com.chapeau.apica.core.util.TextFilterMatcher;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -38,7 +39,6 @@ import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Screen du Storage Terminal avec layout texture.
@@ -170,7 +170,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
     }
 
     private void onSearchTextChanged(String text) {
-        this.searchText = text.toLowerCase(Locale.ROOT);
+        this.searchText = text;
         this.scrollOffset = 0;
         refreshDisplayedItems();
     }
@@ -180,8 +180,7 @@ public class StorageTerminalScreen extends AbstractContainerScreen<StorageTermin
         displayedItems.clear();
 
         for (ItemStack stack : allItems) {
-            if (searchText.isEmpty() ||
-                stack.getHoverName().getString().toLowerCase(Locale.ROOT).contains(searchText)) {
+            if (searchText.isEmpty() || TextFilterMatcher.matches(stack, searchText)) {
                 displayedItems.add(stack);
             }
         }
