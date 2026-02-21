@@ -28,9 +28,13 @@ import com.chapeau.apica.common.block.altar.HoneyPedestalBlock;
 import com.chapeau.apica.common.block.altar.HoneyReservoirBlock;
 import com.chapeau.apica.common.block.altar.HoneyedSlabBlock;
 import com.chapeau.apica.common.block.altar.HoneyedStoneBlock;
+import com.chapeau.apica.common.block.altar.HoneyedStoneBrickBlock;
+import com.chapeau.apica.common.block.altar.HoneyedStoneBrickSlabBlock;
+import com.chapeau.apica.common.block.altar.HoneyedStoneBrickStairBlock;
 import com.chapeau.apica.common.block.altar.HoneyedStoneStairBlock;
 import com.chapeau.apica.content.flywheeltest.BeeSpawnerBlock;
 import com.chapeau.apica.common.block.building.HoneyedGlassBlock;
+import com.chapeau.apica.common.block.building.HoneyedStoneBrickWallBlock;
 import com.chapeau.apica.common.block.building.HoneyedStoneWallBlock;
 import com.chapeau.apica.common.block.building.IronFoundationBlock;
 import com.chapeau.apica.common.block.building.RoyalGoldBlock;
@@ -352,6 +356,27 @@ public class ApicaBlocks {
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops()));
 
+    // --- HONEYED STONE BRICK ---
+    public static final DeferredBlock<HoneyedStoneBrickBlock> HONEYED_STONE_BRICK = BLOCKS.register("honeyed_stone_brick",
+            () -> new HoneyedStoneBrickBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<HoneyedStoneBrickStairBlock> HONEYED_STONE_BRICK_STAIR = BLOCKS.register("honeyed_stone_brick_stair",
+            () -> new HoneyedStoneBrickStairBlock(
+                    HONEYED_STONE_BRICK.get().defaultBlockState(),
+                    BlockBehaviour.Properties.of()
+                            .strength(1.5f)
+                            .sound(SoundType.STONE)
+                            .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<HoneyedStoneBrickSlabBlock> HONEYED_STONE_BRICK_SLAB = BLOCKS.register("honeyed_stone_brick_slab",
+            () -> new HoneyedStoneBrickSlabBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
     public static final DeferredBlock<HoneyReservoirBlock> HONEY_RESERVOIR = BLOCKS.register("honey_reservoir",
             () -> new HoneyReservoirBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
@@ -501,6 +526,15 @@ public class ApicaBlocks {
     public static final DeferredBlock<HoneyedStoneWallBlock> HONEYED_STONE_WALL = BLOCKS.register("honeyed_stone_wall",
             () -> new HoneyedStoneWallBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    // --- BUILDING BLOCKS: HONEYED STONE BRICK ---
+    public static final DeferredBlock<HoneyedStoneBrickWallBlock> HONEYED_STONE_BRICK_WALL = BLOCKS.register("honeyed_stone_brick_wall",
+            () -> new HoneyedStoneBrickWallBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<IronBarsBlock> HONEYED_STONE_BRICK_PANE = BLOCKS.register("honeyed_stone_brick_pane",
+            () -> new IronBarsBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f).sound(SoundType.STONE).noOcclusion()));
 
     // --- BUILDING BLOCKS: HONEYED GLASS ---
     public static final DeferredBlock<HoneyedGlassBlock> HONEYED_GLASS = BLOCKS.register("honeyed_glass",

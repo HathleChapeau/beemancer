@@ -198,6 +198,9 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.HONEYED_STONE.get());
         output.accept(ApicaItems.HONEYED_STONE_STAIR.get());
         output.accept(ApicaItems.HONEYED_SLAB.get());
+        output.accept(ApicaItems.HONEYED_STONE_BRICK.get());
+        output.accept(ApicaItems.HONEYED_STONE_BRICK_STAIR.get());
+        output.accept(ApicaItems.HONEYED_STONE_BRICK_SLAB.get());
         output.accept(ApicaItems.HONEY_RESERVOIR.get());
         output.accept(ApicaItems.HONEY_PEDESTAL.get());
         output.accept(ApicaItems.HONEY_CRYSTAL_CONDUIT.get());
@@ -245,6 +248,8 @@ public class ApicaCreativeTabs {
 
         // Honeyed Stone
         output.accept(ApicaItems.HONEYED_STONE_WALL.get());
+        output.accept(ApicaItems.HONEYED_STONE_BRICK_WALL.get());
+        output.accept(ApicaItems.HONEYED_STONE_BRICK_PANE.get());
 
         // Iron Foundation
         output.accept(ApicaItems.IRON_FOUNDATION.get());

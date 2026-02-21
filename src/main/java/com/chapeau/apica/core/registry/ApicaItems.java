@@ -178,6 +178,14 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> HONEYED_SLAB = ITEMS.register("honeyed_slab",
             () -> new BlockItem(ApicaBlocks.HONEYED_SLAB.get(), new Item.Properties()));
 
+    // --- HONEYED STONE BRICK ---
+    public static final DeferredItem<BlockItem> HONEYED_STONE_BRICK = ITEMS.register("honeyed_stone_brick",
+            () -> new BlockItem(ApicaBlocks.HONEYED_STONE_BRICK.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> HONEYED_STONE_BRICK_STAIR = ITEMS.register("honeyed_stone_brick_stair",
+            () -> new BlockItem(ApicaBlocks.HONEYED_STONE_BRICK_STAIR.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> HONEYED_STONE_BRICK_SLAB = ITEMS.register("honeyed_stone_brick_slab",
+            () -> new BlockItem(ApicaBlocks.HONEYED_STONE_BRICK_SLAB.get(), new Item.Properties()));
+
     public static final DeferredItem<BlockItem> HONEY_RESERVOIR = ITEMS.register("honey_reservoir",
             () -> new BlockItem(ApicaBlocks.HONEY_RESERVOIR.get(), new Item.Properties()));
 
@@ -246,6 +254,12 @@ public class ApicaItems {
     // --- BUILDING BLOCKS: HONEYED STONE ---
     public static final DeferredItem<BlockItem> HONEYED_STONE_WALL = ITEMS.register("honeyed_stone_wall",
             () -> new BlockItem(ApicaBlocks.HONEYED_STONE_WALL.get(), new Item.Properties()));
+
+    // --- BUILDING BLOCKS: HONEYED STONE BRICK ---
+    public static final DeferredItem<BlockItem> HONEYED_STONE_BRICK_WALL = ITEMS.register("honeyed_stone_brick_wall",
+            () -> new BlockItem(ApicaBlocks.HONEYED_STONE_BRICK_WALL.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> HONEYED_STONE_BRICK_PANE = ITEMS.register("honeyed_stone_brick_pane",
+            () -> new BlockItem(ApicaBlocks.HONEYED_STONE_BRICK_PANE.get(), new Item.Properties()));
 
     // --- IRON FOUNDATION ---
     public static final DeferredItem<BlockItem> IRON_FOUNDATION = ITEMS.register("iron_foundation",

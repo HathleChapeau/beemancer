@@ -3,6 +3,21 @@
 ################################################################################
 
 ================================================================================
+2026-02-21 - Honeyed Stone Brick (Blocs Decoratifs)
+================================================================================
+
+Ajout d'une serie de 5 blocs decoratifs en brique de pierre miellee:
+- honeyed_stone_brick (bloc, stair, slab, wall, pane)
+- Swap textures altar/honeyed_stone ↔ honeyed/honeyed_stone
+- Nouvelle texture honeyed/honeyed_stone_brick.png
+- 4 classes Java: HoneyedStoneBrickBlock, Stair, Slab, Wall (+MULTIBLOCK property)
+- Pane utilise IronBarsBlock directement
+- 5 blockstates, 15 block models, 5 item models
+- 5 recipes crafting (bloc 2x2, stair, slab, wall, pane)
+- Lang en_us + fr_fr (+5 cles chacun)
+- Registres: ApicaBlocks (+5), ApicaItems (+5), ApicaCreativeTabs (+5)
+
+================================================================================
 2026-02-21 - Item Pipe Network Refonte (PipeNetwork + Pathfinding BFS)
 ================================================================================
 

@@ -760,6 +760,20 @@ LISTE DES FEATURES:
   Dépendances: SavedData, IItemHandler, Capabilities.ItemHandler.BLOCK
   Registres modifiés: aucun (fix bug capabilities ITEM_PIPE_TIER2/3/4 dans Apica.java)
 
+→ Honeyed Stone Brick (Blocs Decoratifs)
+  Description: Serie de 5 blocs decoratifs en brique de pierre miellee (bloc, escalier, dalle, mur, panneau).
+    Swap textures: altar/honeyed_stone.png devient honeyed/honeyed_stone_brick.png, honeyed/honeyed_stone.png
+    remplace altar/honeyed_stone.png. Craft 4x honeyed_stone → 4x honeyed_stone_brick.
+  Scripts crees: HoneyedStoneBrickBlock.java, HoneyedStoneBrickStairBlock.java,
+    HoneyedStoneBrickSlabBlock.java, HoneyedStoneBrickWallBlock.java
+  Scripts modifies: ApicaBlocks.java (+5), ApicaItems.java (+5), ApicaCreativeTabs.java (+5)
+  Assets: 5 blockstates, 15 block models, 5 item models, 5 recipes crafting,
+    1 texture (honeyed/honeyed_stone_brick.png), 1 texture swap (altar/honeyed_stone.png)
+  Lang: +5 cles en_us (Honeyed Stone Brick, Stairs, Slab, Wall, Pane),
+    +5 cles fr_fr (Brique de Pierre Miellee, Escalier, Dalle, Mur, Panneau)
+  Dependances: MultiblockProperty (pour HoneyedStoneBrickWallBlock)
+  Registres modifies: ApicaBlocks (+5), ApicaItems (+5)
+
 ================================================================================
 6. FEATURES EN COURS
 ================================================================================

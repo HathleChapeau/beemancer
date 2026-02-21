@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "type=bottom": { "model": "apica:block/altar/honeyed_stone_brick_slab" },
+    "type=top": { "model": "apica:block/altar/honeyed_stone_brick_slab_top" },
+    "type=double": { "model": "apica:block/altar/honeyed_stone_brick" }
+  }
+}

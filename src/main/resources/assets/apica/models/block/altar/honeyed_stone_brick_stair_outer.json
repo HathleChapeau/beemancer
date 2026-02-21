@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "apica:block/honeyed/honeyed_stone_brick",
+    "top": "apica:block/honeyed/honeyed_stone_brick",
+    "side": "apica:block/honeyed/honeyed_stone_brick"
+  }
+}

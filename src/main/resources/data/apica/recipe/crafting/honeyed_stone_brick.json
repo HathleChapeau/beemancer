@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": { "#": { "item": "apica:honeyed_stone" } },
+  "pattern": [ "##", "##" ],
+  "result": { "id": "apica:honeyed_stone_brick", "count": 4 }
+}
