@@ -73,55 +73,56 @@ public final class HoverbikePartVariants {
             String stat2Name, double stat2Value
     ) {}
 
-    /** Factories Java enregistrees par cle de modele. */
-    private static final Map<String, ModelFactory> MODEL_FACTORIES = new HashMap<>();
+    /** Factories Java enregistrees par cle de modele (lazy-loaded). */
+    private static volatile Map<String, ModelFactory> MODEL_FACTORIES;
 
     /** Variantes chargees depuis JSON, par partie. */
     private static Map<HoverbikePart, List<VariantEntry>> loadedVariants = null;
 
-    static {
-        // --- Chassis ---
-        registerModel("chassis", ChassisPartModel.LAYER_LOCATION,
-                ChassisPartModel::createLayerDefinition, ChassisPartModel::new);
-        registerModel("chassis_b", ChassisPartModelB.LAYER_LOCATION,
-                ChassisPartModelB::createLayerDefinition, ChassisPartModelB::new);
-        registerModel("chassis_c", ChassisPartModelC.LAYER_LOCATION,
-                ChassisPartModelC::createLayerDefinition, ChassisPartModelC::new);
+    private static Map<String, ModelFactory> getModelFactories() {
+        if (MODEL_FACTORIES == null) {
+            Map<String, ModelFactory> map = new HashMap<>();
 
-        // --- Coeur ---
-        registerModel("coeur", CoeurPartModel.LAYER_LOCATION,
-                CoeurPartModel::createLayerDefinition, CoeurPartModel::new);
-        registerModel("coeur_b", CoeurPartModelB.LAYER_LOCATION,
-                CoeurPartModelB::createLayerDefinition, CoeurPartModelB::new);
-        registerModel("coeur_c", CoeurPartModelC.LAYER_LOCATION,
-                CoeurPartModelC::createLayerDefinition, CoeurPartModelC::new);
+            // --- Chassis ---
+            map.put("chassis", new ModelFactory(ChassisPartModel.LAYER_LOCATION,
+                    ChassisPartModel::createLayerDefinition, ChassisPartModel::new));
+            map.put("chassis_b", new ModelFactory(ChassisPartModelB.LAYER_LOCATION,
+                    ChassisPartModelB::createLayerDefinition, ChassisPartModelB::new));
+            map.put("chassis_c", new ModelFactory(ChassisPartModelC.LAYER_LOCATION,
+                    ChassisPartModelC::createLayerDefinition, ChassisPartModelC::new));
 
-        // --- Propulseur ---
-        registerModel("propulseur", PropulseurPartModel.LAYER_LOCATION,
-                PropulseurPartModel::createLayerDefinition, PropulseurPartModel::new);
-        registerModel("propulseur_b", PropulseurPartModelB.LAYER_LOCATION,
-                PropulseurPartModelB::createLayerDefinition, PropulseurPartModelB::new);
-        registerModel("propulseur_c", PropulseurPartModelC.LAYER_LOCATION,
-                PropulseurPartModelC::createLayerDefinition, PropulseurPartModelC::new);
+            // --- Coeur ---
+            map.put("coeur", new ModelFactory(CoeurPartModel.LAYER_LOCATION,
+                    CoeurPartModel::createLayerDefinition, CoeurPartModel::new));
+            map.put("coeur_b", new ModelFactory(CoeurPartModelB.LAYER_LOCATION,
+                    CoeurPartModelB::createLayerDefinition, CoeurPartModelB::new));
+            map.put("coeur_c", new ModelFactory(CoeurPartModelC.LAYER_LOCATION,
+                    CoeurPartModelC::createLayerDefinition, CoeurPartModelC::new));
 
-        // --- Radiateur ---
-        registerModel("radiateur", RadiateurPartModel.LAYER_LOCATION,
-                RadiateurPartModel::createLayerDefinition, RadiateurPartModel::new);
-        registerModel("radiateur_b", RadiateurPartModelB.LAYER_LOCATION,
-                RadiateurPartModelB::createLayerDefinition, RadiateurPartModelB::new);
-        registerModel("radiateur_c", RadiateurPartModelC.LAYER_LOCATION,
-                RadiateurPartModelC::createLayerDefinition, RadiateurPartModelC::new);
-    }
+            // --- Propulseur ---
+            map.put("propulseur", new ModelFactory(PropulseurPartModel.LAYER_LOCATION,
+                    PropulseurPartModel::createLayerDefinition, PropulseurPartModel::new));
+            map.put("propulseur_b", new ModelFactory(PropulseurPartModelB.LAYER_LOCATION,
+                    PropulseurPartModelB::createLayerDefinition, PropulseurPartModelB::new));
+            map.put("propulseur_c", new ModelFactory(PropulseurPartModelC.LAYER_LOCATION,
+                    PropulseurPartModelC::createLayerDefinition, PropulseurPartModelC::new));
 
-    private static void registerModel(String key, ModelLayerLocation layerLoc,
-                                       Supplier<LayerDefinition> layerDef,
-                                       Function<ModelPart, HoverbikePartModel> constructor) {
-        MODEL_FACTORIES.put(key, new ModelFactory(layerLoc, layerDef, constructor));
+            // --- Radiateur ---
+            map.put("radiateur", new ModelFactory(RadiateurPartModel.LAYER_LOCATION,
+                    RadiateurPartModel::createLayerDefinition, RadiateurPartModel::new));
+            map.put("radiateur_b", new ModelFactory(RadiateurPartModelB.LAYER_LOCATION,
+                    RadiateurPartModelB::createLayerDefinition, RadiateurPartModelB::new));
+            map.put("radiateur_c", new ModelFactory(RadiateurPartModelC.LAYER_LOCATION,
+                    RadiateurPartModelC::createLayerDefinition, RadiateurPartModelC::new));
+
+            MODEL_FACTORIES = map;
+        }
+        return MODEL_FACTORIES;
     }
 
     /** Retourne toutes les factories enregistrees (pour ClientSetup layer registration). */
     public static Map<String, ModelFactory> getAllModelFactories() {
-        return MODEL_FACTORIES;
+        return getModelFactories();
     }
 
     /** Charge les variantes depuis les JSONs par categorie si pas encore fait. */
@@ -170,7 +171,7 @@ public final class HoverbikePartVariants {
             String stat2Name = obj.has("stat_2") ? obj.get("stat_2").getAsString() : "";
             double stat2Value = obj.has("stat_2_value") ? obj.get("stat_2_value").getAsDouble() : 0.0;
 
-            ModelFactory factory = MODEL_FACTORIES.get(modelKey);
+            ModelFactory factory = getModelFactories().get(modelKey);
             if (factory == null) {
                 LOGGER.warn("Unknown model key '{}' for part '{}', skipping", modelKey, name);
                 continue;
