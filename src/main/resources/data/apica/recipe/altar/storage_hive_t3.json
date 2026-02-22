@@ -1,6 +1,6 @@
 {
   "type": "apica:altar",
-  "center_item": { "item": "apica:storage_hive_t2" },
+  "center_item": { "item": "apica:storage_hive_tier2" },
   "pedestal_items": [
     { "item": "apica:nectar_diamond" },
     { "item": "apica:nectar_diamond" },
@@ -15,5 +15,5 @@
     "apica:pollen_of_fire": 11,
     "apica:pollen_of_wind": 9
   },
-  "result": { "id": "apica:storage_hive_t3" }
+  "result": { "id": "apica:storage_hive_tier3" }
 }

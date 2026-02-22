@@ -15,5 +15,7 @@
       "result": "apica:storage_hive_tier2"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:storage_hive_tier2", "type": "altar"}
+  ]
 }
