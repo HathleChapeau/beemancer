@@ -89,14 +89,26 @@ public class Apica {
     // =========================================================================
 
     public Apica(IEventBus modEventBus, ModContainer modContainer) {
+        long totalStart = System.currentTimeMillis();
         LOGGER.info("Initializing Apica...");
 
+        long t = System.currentTimeMillis();
         registerAllRegistries(modEventBus);
-        registerModEventListeners(modEventBus);
-        registerForgeEventListeners();
-        registerClientSetup(modEventBus);
+        LOGGER.info("[TIMING] registerAllRegistries: {}ms", System.currentTimeMillis() - t);
 
-        LOGGER.info("Apica initialized!");
+        t = System.currentTimeMillis();
+        registerModEventListeners(modEventBus);
+        LOGGER.info("[TIMING] registerModEventListeners: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
+        registerForgeEventListeners();
+        LOGGER.info("[TIMING] registerForgeEventListeners: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
+        registerClientSetup(modEventBus);
+        LOGGER.info("[TIMING] registerClientSetup: {}ms", System.currentTimeMillis() - t);
+
+        LOGGER.info("[TIMING] Apica constructor total: {}ms", System.currentTimeMillis() - totalStart);
     }
 
     // =========================================================================
@@ -112,33 +124,63 @@ public class Apica {
     // =========================================================================
 
     private void registerAllRegistries(IEventBus modEventBus) {
-        // Core registries
+        long t;
+
+        t = System.currentTimeMillis();
         ApicaBlocks.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaBlocks.register: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         ApicaItems.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaItems.register: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         ApicaBlockEntities.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaBlockEntities.register: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         ApicaEntities.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaEntities.register: {}ms", System.currentTimeMillis() - t);
 
-        // UI and creative tabs
+        t = System.currentTimeMillis();
         ApicaMenus.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaMenus.register: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         ApicaCreativeTabs.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaCreativeTabs.register: {}ms", System.currentTimeMillis() - t);
 
-        // Attachments and sounds
+        t = System.currentTimeMillis();
         ApicaAttachments.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaAttachments.register: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         ApicaSounds.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaSounds.register: {}ms", System.currentTimeMillis() - t);
 
-        // Fluids and recipes
+        t = System.currentTimeMillis();
         ApicaFluids.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaFluids.register: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         ApicaRecipeTypes.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaRecipeTypes.register: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         ApicaRecipeSerializers.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaRecipeSerializers.register: {}ms", System.currentTimeMillis() - t);
 
-        // Worldgen features
+        t = System.currentTimeMillis();
         ApicaFeatures.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaFeatures.register: {}ms", System.currentTimeMillis() - t);
 
-        // Particles
+        t = System.currentTimeMillis();
         ApicaParticles.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaParticles.register: {}ms", System.currentTimeMillis() - t);
 
-        // Network
+        t = System.currentTimeMillis();
         ApicaNetwork.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaNetwork.register: {}ms", System.currentTimeMillis() - t);
     }
 
     // =========================================================================
@@ -153,25 +195,39 @@ public class Apica {
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            // Gene system
-            GeneInit.registerAllGenes();
-            LOGGER.info("Gene system initialized with {} genes", GeneRegistry.getAllGenes().size());
+            long setupStart = System.currentTimeMillis();
+            long t;
 
-            // Interaction marker types
+            t = System.currentTimeMillis();
+            GeneInit.registerAllGenes();
+            LOGGER.info("[TIMING] GeneInit.registerAllGenes: {}ms ({} genes)",
+                System.currentTimeMillis() - t, GeneRegistry.getAllGenes().size());
+
+            t = System.currentTimeMillis();
             InteractionMarkerTypes.init();
+            LOGGER.info("[TIMING] InteractionMarkerTypes.init: {}ms", System.currentTimeMillis() - t);
+
+            LOGGER.info("[TIMING] onCommonSetup total: {}ms", System.currentTimeMillis() - setupStart);
         });
     }
 
     private void onEntityAttributeCreation(final EntityAttributeCreationEvent event) {
+        long t = System.currentTimeMillis();
         event.put(ApicaEntities.MAGIC_BEE.get(), MagicBeeEntity.createAttributes().build());
         event.put(ApicaEntities.DELIVERY_BEE.get(), DeliveryBeeEntity.createAttributes().build());
         event.put(ApicaEntities.HOVERBIKE.get(), HoverbikeEntity.createAttributes().build());
         event.put(ApicaEntities.INTERACTION_MARKER.get(), InteractionMarkerEntity.createAttributes().build());
+        LOGGER.info("[TIMING] onEntityAttributeCreation: {}ms", System.currentTimeMillis() - t);
     }
 
     private void onRegisterCapabilities(final RegisterCapabilitiesEvent event) {
+        long t = System.currentTimeMillis();
         registerFluidCapabilities(event);
+        LOGGER.info("[TIMING] registerFluidCapabilities: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         registerItemCapabilities(event);
+        LOGGER.info("[TIMING] registerItemCapabilities: {}ms", System.currentTimeMillis() - t);
     }
 
     // =========================================================================
@@ -190,9 +246,10 @@ public class Apica {
     }
 
     private void onServerStarting(final ServerStartingEvent event) {
+        long t = System.currentTimeMillis();
         LOGGER.info("Loading Apica data configurations...");
         loadDataConfigurations(event);
-        LOGGER.info("Apica data configurations loaded!");
+        LOGGER.info("[TIMING] loadDataConfigurations total: {}ms", System.currentTimeMillis() - t);
     }
 
     private void onServerStopping(final ServerStoppingEvent event) {
@@ -438,19 +495,47 @@ public class Apica {
 
     private void loadDataConfigurations(ServerStartingEvent event) {
         var server = event.getServer();
+        long t;
 
-        // Hoverbike config (fichiers JSON dans config/apica/hoverbike/) - déplacé ici depuis le constructeur
+        t = System.currentTimeMillis();
         HoverbikeConfigManager.init();
+        LOGGER.info("[TIMING]   HoverbikeConfigManager.init: {}ms", System.currentTimeMillis() - t);
 
+        t = System.currentTimeMillis();
         BeeSpeciesManager.load(server);
+        LOGGER.info("[TIMING]   BeeSpeciesManager.load: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         BiomeTemperatureManager.load(server);
+        LOGGER.info("[TIMING]   BiomeTemperatureManager.load: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         BreedingManager.loadCombinations(server);
+        LOGGER.info("[TIMING]   BreedingManager.loadCombinations: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         BeeBehaviorManager.load(server);
+        LOGGER.info("[TIMING]   BeeBehaviorManager.load: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         CodexManager.load(server);
+        LOGGER.info("[TIMING]   CodexManager.load: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         CodexBookManager.load(server);
+        LOGGER.info("[TIMING]   CodexBookManager.load: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         QuestManager.load(server);
+        LOGGER.info("[TIMING]   QuestManager.load: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         com.chapeau.apica.core.config.InjectionConfigManager.load(server);
+        LOGGER.info("[TIMING]   InjectionConfigManager.load: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
         com.chapeau.apica.core.config.ResonatorConfigManager.load(server);
+        LOGGER.info("[TIMING]   ResonatorConfigManager.load: {}ms", System.currentTimeMillis() - t);
     }
 
     // =========================================================================
