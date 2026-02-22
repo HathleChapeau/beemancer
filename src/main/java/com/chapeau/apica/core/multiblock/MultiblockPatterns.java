@@ -225,7 +225,16 @@ public class MultiblockPatterns {
             //.add(-1, -2, 1, air())   // Coin SO
             //.add(1, -2, 1, air())    // Coin SE
 
-            // Étage 2 (Y-1): Vide (pas d'element pour eviter un floor group inutile dans le codex)
+            // Étage 2 (Y-1): Vide
+            .add(0, -1, 0, air())
+            //.add(0, -1, -1, air())
+            //.add(0, -1, 1, air())
+            //.add(1, -1, 0, air())
+            //.add(-1, -1, 0, air())
+            //.add(-1, -1, -1, air())
+            //.add(1, -1, -1, air())
+            //.add(-1, -1, 1, air())
+            //.add(1, -1, 1, air())
 
             // Étage 3 (Y+0): Contrôleur au centre (ne pas vérifier), reste vide
             /*.add(0, 0, -1, air())
