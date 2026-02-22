@@ -42,7 +42,7 @@ public class QuestPlayerData {
             instance.group(
                     Codec.STRING.listOf()
                             .xmap(HashSet::new, list -> list.stream().toList())
-                            .fieldOf("completed_quests")
+                            .optionalFieldOf("completed_quests", new HashSet<>())
                             .forGetter(data -> new HashSet<>(data.completedQuests))
             ).apply(instance, QuestPlayerData::new)
     );

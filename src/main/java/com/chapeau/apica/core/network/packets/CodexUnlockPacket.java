@@ -64,6 +64,7 @@ public record CodexUnlockPacket(String nodeFullId) implements CustomPacketPayloa
                 if (data.unlock(node)) {
                     long currentDay = player.serverLevel().getDayTime() / 24000L;
                     data.recordUnlockDay(packet.nodeFullId, currentDay);
+                    player.setData(ApicaAttachments.CODEX_DATA, data);
 
                     Apica.LOGGER.debug("Player {} unlocked codex node: {} on day {}",
                         player.getName().getString(), packet.nodeFullId, currentDay);

@@ -38,6 +38,7 @@ import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.quest.QuestManager;
 import com.chapeau.apica.common.quest.QuestPlayerData;
+import com.chapeau.apica.core.network.packets.CheckObtainQuestsPacket;
 import com.chapeau.apica.core.network.packets.CodexFirstOpenPacket;
 import com.chapeau.apica.core.network.packets.CodexUnlockPacket;
 import com.chapeau.apica.core.registry.ApicaAttachments;
@@ -152,7 +153,10 @@ public class CodexScreen extends Screen {
 
         // Vérifier les quêtes OBTAIN (items dans l'inventaire)
         if (Minecraft.getInstance().player != null) {
+            // Check client-side pour feedback immédiat
             QuestManager.checkObtainQuests(Minecraft.getInstance().player);
+            // Check server-side pour persistence (le serveur sync ensuite)
+            PacketDistributor.sendToServer(new CheckObtainQuestsPacket());
 
             // Enregistrer la première ouverture du Codex (envoie le jour MC au serveur)
             CodexPlayerData data = getPlayerData();

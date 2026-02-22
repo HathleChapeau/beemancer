@@ -60,6 +60,8 @@ public record CodexFirstOpenPacket() implements CustomPacketPayload {
                 long currentDay = player.serverLevel().getDayTime() / 24000L;
 
                 if (data.recordFirstOpen(currentDay)) {
+                    player.setData(ApicaAttachments.CODEX_DATA, data);
+
                     Apica.LOGGER.debug("Player {} first codex open on MC day {}",
                         player.getName().getString(), currentDay);
 

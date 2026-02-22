@@ -7,6 +7,7 @@
 package com.chapeau.apica.core.network;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.core.network.packets.CheckObtainQuestsPacket;
 import com.chapeau.apica.core.network.packets.CodexFirstOpenPacket;
 import com.chapeau.apica.core.network.packets.CodexSyncPacket;
 import com.chapeau.apica.core.network.packets.CodexUnlockPacket;
@@ -45,6 +46,12 @@ public class ApicaNetwork {
                 CodexFirstOpenPacket.TYPE,
                 CodexFirstOpenPacket.STREAM_CODEC,
                 CodexFirstOpenPacket::handle
+        );
+
+        registrar.playToServer(
+                CheckObtainQuestsPacket.TYPE,
+                CheckObtainQuestsPacket.STREAM_CODEC,
+                CheckObtainQuestsPacket::handle
         );
 
         registrar.playToServer(

@@ -38,10 +38,10 @@ import java.util.Set;
 public class CodexPlayerData {
     public static final Codec<CodexPlayerData> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-            Codec.STRING.listOf().fieldOf("unlocked_nodes").forGetter(data -> List.copyOf(data.unlockedNodes)),
-            Codec.STRING.listOf().fieldOf("discovered_nodes").forGetter(data -> List.copyOf(data.discoveredNodes)),
-            Codec.LONG.fieldOf("first_open_day").forGetter(data -> data.firstOpenDay),
-            Codec.unboundedMap(Codec.STRING, Codec.LONG).fieldOf("unlock_days").forGetter(data -> data.unlockDays),
+            Codec.STRING.listOf().optionalFieldOf("unlocked_nodes", List.of()).forGetter(data -> List.copyOf(data.unlockedNodes)),
+            Codec.STRING.listOf().optionalFieldOf("discovered_nodes", List.of()).forGetter(data -> List.copyOf(data.discoveredNodes)),
+            Codec.LONG.optionalFieldOf("first_open_day", -1L).forGetter(data -> data.firstOpenDay),
+            Codec.unboundedMap(Codec.STRING, Codec.LONG).optionalFieldOf("unlock_days", Map.of()).forGetter(data -> data.unlockDays),
             Codec.STRING.listOf().optionalFieldOf("known_species", List.of()).forGetter(data -> List.copyOf(data.knownSpecies)),
             Codec.STRING.listOf().optionalFieldOf("known_traits", List.of()).forGetter(data -> List.copyOf(data.knownTraits)),
             Codec.STRING.listOf().optionalFieldOf("known_frequencies", List.of()).forGetter(data -> List.copyOf(data.knownFrequencies))

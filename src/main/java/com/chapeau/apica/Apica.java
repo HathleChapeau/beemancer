@@ -205,6 +205,10 @@ public class Apica {
 
     private void onPlayerLoggedIn(final PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            // Vérifier les quêtes OBTAIN côté serveur avant de sync
+            // (le joueur peut avoir des items dans l'inventaire depuis la dernière session)
+            QuestManager.checkObtainQuests(player);
+
             syncCodexDataToPlayer(player);
             syncQuestDataToPlayer(player);
         }
@@ -455,13 +459,23 @@ public class Apica {
 
     private void syncCodexDataToPlayer(ServerPlayer player) {
         CodexPlayerData data = player.getData(ApicaAttachments.CODEX_DATA);
+
+        int unlockedCount = data.getUnlockedNodes().size();
+        int discoveredCount = data.getDiscoveredNodes().size();
+        if (unlockedCount == 0 && discoveredCount == 0 && data.getFirstOpenDay() != -1) {
+            LOGGER.warn("Codex data for player {} appears empty (0 unlocked, 0 discovered) despite having a firstOpenDay ({}). Possible data loss.",
+                player.getName().getString(), data.getFirstOpenDay());
+        }
+
         PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
-        LOGGER.debug("Synced codex data to player {}", player.getName().getString());
+        LOGGER.info("Synced codex data to player {}: {} unlocked, {} discovered nodes",
+            player.getName().getString(), unlockedCount, discoveredCount);
     }
 
     private void syncQuestDataToPlayer(ServerPlayer player) {
         QuestPlayerData data = player.getData(ApicaAttachments.QUEST_DATA);
         PacketDistributor.sendToPlayer(player, new QuestSyncPacket(data));
-        LOGGER.debug("Synced quest data to player {}", player.getName().getString());
+        LOGGER.info("Synced quest data to player {}: {} completed quests",
+            player.getName().getString(), data.getCompletedQuests().size());
     }
 }
