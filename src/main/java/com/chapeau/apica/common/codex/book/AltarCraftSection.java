@@ -52,8 +52,9 @@ public class AltarCraftSection extends CodexBookSection {
 
     private static final int CROSS_SPACING = 24;
     private static final int ARROW_WIDTH = 20;
+    private static final int POLLEN_SPACING = 36;
     private static final int POLLEN_ROW_HEIGHT = 20;
-    private static final int SECTION_HEIGHT = CROSS_SPACING * 2 + SLOT_SIZE + POLLEN_ROW_HEIGHT + 8;
+    private static final int SECTION_HEIGHT = CROSS_SPACING * 2 + SLOT_SIZE + POLLEN_ROW_HEIGHT + 12;
 
     private final String resultItem;
     private boolean resolved = false;
@@ -91,21 +92,12 @@ public class AltarCraftSection extends CodexBookSection {
 
         renderSlotWithItem(graphics, centerStack, crossCenterX, crossCenterY);
 
-        if (pedestalStacks.size() > 0) {
-            renderSlotWithItem(graphics, pedestalStacks.get(0),
-                    crossCenterX, crossCenterY - CROSS_SPACING);
-        }
-        if (pedestalStacks.size() > 1) {
-            renderSlotWithItem(graphics, pedestalStacks.get(1),
-                    crossCenterX + CROSS_SPACING, crossCenterY);
-        }
-        if (pedestalStacks.size() > 2) {
-            renderSlotWithItem(graphics, pedestalStacks.get(2),
-                    crossCenterX, crossCenterY + CROSS_SPACING);
-        }
-        if (pedestalStacks.size() > 3) {
-            renderSlotWithItem(graphics, pedestalStacks.get(3),
-                    crossCenterX - CROSS_SPACING, crossCenterY);
+        int pedestalCount = Math.min(pedestalStacks.size(), 8);
+        for (int i = 0; i < pedestalCount; i++) {
+            double angle = -Math.PI / 2.0 + 2.0 * Math.PI * i / pedestalCount;
+            int px = crossCenterX + (int) Math.round(CROSS_SPACING * Math.cos(angle));
+            int py = crossCenterY + (int) Math.round(CROSS_SPACING * Math.sin(angle));
+            renderSlotWithItem(graphics, pedestalStacks.get(i), px, py);
         }
 
         int arrowX = crossCenterX + CROSS_SPACING + SLOT_SIZE + 4;
@@ -122,13 +114,13 @@ public class AltarCraftSection extends CodexBookSection {
         renderSlotWithItem(graphics, resultStack, resultX, resultY);
 
         if (!pollenEntries.isEmpty()) {
-            int pollenY = crossCenterY + CROSS_SPACING + SLOT_SIZE + 4;
-            int totalPollenWidth = pollenEntries.size() * 28 - 8;
+            int pollenY = crossCenterY + CROSS_SPACING + SLOT_SIZE + 8;
+            int totalPollenWidth = pollenEntries.size() * POLLEN_SPACING - (POLLEN_SPACING - POLLEN_POT_SLOT_W);
             int pollenStartX = x + (pageWidth - totalPollenWidth) / 2;
 
             for (int i = 0; i < pollenEntries.size(); i++) {
                 PollenEntry entry = pollenEntries.get(i);
-                int px = pollenStartX + i * 28;
+                int px = pollenStartX + i * POLLEN_SPACING;
                 int potX = px - 1;
                 int potY = pollenY - 2;
                 com.mojang.blaze3d.systems.RenderSystem.enableBlend();
