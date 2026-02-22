@@ -25,7 +25,7 @@
   ],
   "sticky_notes": [
     {"craft": "apica:extractor_heart", "type": "altar"},
-    {"type": "process", "craft": "apica:honeyed_stone", "input": "minecraft:stone", "output": "apica:infuser"},
+    {"craft": "apica:iron_foundation"},
     {"craft": "apica:honey_pedestal"}
   ]
 }
