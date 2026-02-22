@@ -48,7 +48,13 @@ class AggregationCache {
     private final Map<ItemStackKey, Set<BlockPos>> chestContentIndex = new HashMap<>();
     private final Map<BlockPos, Long> chestFingerprints = new HashMap<>();
     private final Map<BlockPos, Map<ItemStackKey, Integer>> cachedChestCounts = new HashMap<>();
-    private List<ItemStack> aggregatedItems = new ArrayList<>();
+    private final List<ItemStack> aggregatedItems = new ArrayList<>();
+
+    // Reusable temporary collections to avoid GC pressure during scanAndRebuild
+    private final Map<ItemStackKey, Integer> tempItemCounts = new HashMap<>();
+    private final Map<ItemStackKey, Set<BlockPos>> tempContentIndex = new HashMap<>();
+    private final Set<BlockPos> tempActiveChests = new LinkedHashSet<>();
+    private final Set<IItemHandler> tempSeenHandlers = Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
     List<ItemStack> getAggregatedItems() {
         return Collections.unmodifiableList(aggregatedItems);
@@ -63,21 +69,22 @@ class AggregationCache {
      * Utilise les fingerprints pour sauter les coffres dont le contenu n'a pas change.
      */
     void scanAndRebuild(Set<BlockPos> validChests, Level level) {
-        Map<ItemStackKey, Integer> itemCounts = new HashMap<>();
-        Map<ItemStackKey, Set<BlockPos>> newContentIndex = new HashMap<>();
-        Set<BlockPos> activeChests = new LinkedHashSet<>();
-
-        // [FIX] Deduplication double chests: les deux moities retournent le meme IItemHandler (54 slots)
-        // Sans dedup, les items sont comptes 2x dans l'agregation → affichage incorrect
-        java.util.Set<IItemHandler> seenHandlers = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        // Reuse temporary collections instead of allocating new ones each scan
+        tempItemCounts.clear();
+        tempContentIndex.values().forEach(Set::clear);
+        tempContentIndex.clear();
+        tempActiveChests.clear();
+        tempSeenHandlers.clear();
 
         for (BlockPos chestPos : validChests) {
             if (!level.hasChunkAt(chestPos)) continue;
-            activeChests.add(chestPos);
+            tempActiveChests.add(chestPos);
 
             IItemHandler handler = StorageHelper.getItemHandler(level, chestPos, null);
             if (handler == null) continue;
-            if (!seenHandlers.add(handler)) continue; // Double chest: meme handler deja scanne
+            // [FIX] Deduplication double chests: les deux moities retournent le meme IItemHandler (54 slots)
+            // Sans dedup, les items sont comptes 2x dans l'agregation → affichage incorrect
+            if (!tempSeenHandlers.add(handler)) continue;
 
             long fingerprint = computeFingerprint(handler);
             Long cached = chestFingerprints.get(chestPos);
@@ -99,18 +106,18 @@ class AggregationCache {
             }
 
             for (Map.Entry<ItemStackKey, Integer> chestEntry : chestCounts.entrySet()) {
-                itemCounts.merge(chestEntry.getKey(), chestEntry.getValue(), Integer::sum);
-                newContentIndex.computeIfAbsent(chestEntry.getKey(), k -> new HashSet<>()).add(chestPos);
+                tempItemCounts.merge(chestEntry.getKey(), chestEntry.getValue(), Integer::sum);
+                tempContentIndex.computeIfAbsent(chestEntry.getKey(), k -> new HashSet<>()).add(chestPos);
             }
         }
 
-        chestFingerprints.keySet().retainAll(activeChests);
-        cachedChestCounts.keySet().retainAll(activeChests);
+        chestFingerprints.keySet().retainAll(tempActiveChests);
+        cachedChestCounts.keySet().retainAll(tempActiveChests);
 
         incrementalCache.clear();
-        incrementalCache.putAll(itemCounts);
+        incrementalCache.putAll(tempItemCounts);
         chestContentIndex.clear();
-        chestContentIndex.putAll(newContentIndex);
+        chestContentIndex.putAll(tempContentIndex);
 
         rebuildAggregatedList();
     }
@@ -119,7 +126,7 @@ class AggregationCache {
      * Reconstruit aggregatedItems depuis le cache incrementiel. O(n_types).
      */
     void rebuildAggregatedList() {
-        aggregatedItems = new ArrayList<>();
+        aggregatedItems.clear();
         for (Map.Entry<ItemStackKey, Integer> entry : incrementalCache.entrySet()) {
             if (entry.getValue() > 0) {
                 ItemStack stack = entry.getKey().toStack();

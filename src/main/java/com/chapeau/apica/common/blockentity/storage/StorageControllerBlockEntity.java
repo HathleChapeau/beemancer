@@ -288,12 +288,14 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
     private void validateNetworkBlocksAmortized() {
         if (level == null || level.isClientSide()) return;
 
-        List<Map.Entry<BlockPos, StorageNetworkRegistry.NetworkEntry>> entries =
-                new ArrayList<>(networkRegistry.getAll().entrySet());
-        if (entries.isEmpty()) {
+        Map<BlockPos, StorageNetworkRegistry.NetworkEntry> allEntries = networkRegistry.getAll();
+        if (allEntries.isEmpty()) {
             validationIndex = 0;
             return;
         }
+
+        List<Map.Entry<BlockPos, StorageNetworkRegistry.NetworkEntry>> entries =
+                new ArrayList<>(allEntries.entrySet());
 
         int batchSize = Math.max(1, (int) Math.ceil(entries.size() / (double) VALIDATION_SPREAD_TICKS));
         int start = Math.min(validationIndex, entries.size());

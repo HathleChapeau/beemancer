@@ -66,15 +66,20 @@ public class StorageBarrelBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty HAS_VOID = BooleanProperty.create("has_void");
 
-    private static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Direction.class);
-    static {
-        VoxelShape full = Shapes.block();
-        SHAPES.put(Direction.NORTH, Shapes.join(full, Block.box(0.5, 0.5, 0, 15.5, 15.5, 1), BooleanOp.ONLY_FIRST));
-        SHAPES.put(Direction.SOUTH, Shapes.join(full, Block.box(0.5, 0.5, 15, 15.5, 15.5, 16), BooleanOp.ONLY_FIRST));
-        SHAPES.put(Direction.EAST,  Shapes.join(full, Block.box(15, 0.5, 0.5, 16, 15.5, 15.5), BooleanOp.ONLY_FIRST));
-        SHAPES.put(Direction.WEST,  Shapes.join(full, Block.box(0, 0.5, 0.5, 1, 15.5, 15.5), BooleanOp.ONLY_FIRST));
-        SHAPES.put(Direction.UP,    Shapes.join(full, Block.box(0.5, 15, 0.5, 15.5, 16, 15.5), BooleanOp.ONLY_FIRST));
-        SHAPES.put(Direction.DOWN,  Shapes.join(full, Block.box(0.5, 0, 0.5, 15.5, 1, 15.5), BooleanOp.ONLY_FIRST));
+    private static volatile Map<Direction, VoxelShape> SHAPES;
+    private static Map<Direction, VoxelShape> getShapes() {
+        if (SHAPES == null) {
+            VoxelShape full = Shapes.block();
+            Map<Direction, VoxelShape> map = new EnumMap<>(Direction.class);
+            map.put(Direction.NORTH, Shapes.join(full, Block.box(0.5, 0.5, 0, 15.5, 15.5, 1), BooleanOp.ONLY_FIRST));
+            map.put(Direction.SOUTH, Shapes.join(full, Block.box(0.5, 0.5, 15, 15.5, 15.5, 16), BooleanOp.ONLY_FIRST));
+            map.put(Direction.EAST,  Shapes.join(full, Block.box(15, 0.5, 0.5, 16, 15.5, 15.5), BooleanOp.ONLY_FIRST));
+            map.put(Direction.WEST,  Shapes.join(full, Block.box(0, 0.5, 0.5, 1, 15.5, 15.5), BooleanOp.ONLY_FIRST));
+            map.put(Direction.UP,    Shapes.join(full, Block.box(0.5, 15, 0.5, 15.5, 16, 15.5), BooleanOp.ONLY_FIRST));
+            map.put(Direction.DOWN,  Shapes.join(full, Block.box(0.5, 0, 0.5, 15.5, 1, 15.5), BooleanOp.ONLY_FIRST));
+            SHAPES = map;
+        }
+        return SHAPES;
     }
 
     private static final int EXTRACT_COOLDOWN_TICKS = 4;
@@ -115,7 +120,7 @@ public class StorageBarrelBlock extends BaseEntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPES.getOrDefault(state.getValue(FACING), Shapes.block());
+        return getShapes().getOrDefault(state.getValue(FACING), Shapes.block());
     }
 
     @Nullable
