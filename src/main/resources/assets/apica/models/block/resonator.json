@@ -2,7 +2,7 @@
   "parent": "minecraft:block/block",
   "render_type": "cutout",
   "textures": {
-    "iron": "apica:block/iron",
+    "iron": "apica:block/machines/resonator",
     "plate": "apica:block/iron",
     "side": "apica:block/machines/resonator_bar"
   },
@@ -50,9 +50,7 @@
         "north": {"texture": "#side"},
         "east": {"texture": "#side"},
         "west": {"texture": "#side"},
-        "south": {"texture": "#side"},
-        "up": {"texture": "#side"},
-        "down": {"texture": "#side"}
+        "south": {"texture": "#side"}
       }
     },
     {
@@ -62,9 +60,7 @@
         "north": {"texture": "#side"},
         "east": {"texture": "#side"},
         "west": {"texture": "#side"},
-        "south": {"texture": "#side"},
-        "up": {"texture": "#side"},
-        "down": {"texture": "#side"}
+        "south": {"texture": "#side"}
       }
     }
   ]
