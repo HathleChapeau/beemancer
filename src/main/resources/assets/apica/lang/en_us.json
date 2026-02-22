@@ -970,8 +970,6 @@
   "item.apica.radiateur_panels": "Cooling Panels",
   "item.apica.radiateur_fin_array": "Fin Array Radiator",
   "item.apica.radiateur_wide_panels": "Wide Panels Radiator",
-  "block.apica.bee_spawner": "Flywheel Test Bee Spawner",
-  "entity.apica.flywheel_test_bee": "Test Bee",
   "gui.apica.interface.active": "Active",
   "gui.apica.interface.inactive": "Inactive",
   "gui.apica.network.honey_depleted": "Storage network: honey depleted!",

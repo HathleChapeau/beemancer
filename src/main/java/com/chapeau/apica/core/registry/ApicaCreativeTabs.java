@@ -229,7 +229,6 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.CREATIVE_TANK.get());
         output.accept(ApicaItems.CREATIVE_BREEDING_CRYSTAL.get());
         output.accept(ApicaItems.CREATIVE_FOCUS.get());
-        output.accept(ApicaItems.BEE_SPAWNER.get());
     }
 
     private static void addBuildingBlocks(CreativeModeTab.Output output) {

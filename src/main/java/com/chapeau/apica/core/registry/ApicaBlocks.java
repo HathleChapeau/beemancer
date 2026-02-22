@@ -32,7 +32,6 @@ import com.chapeau.apica.common.block.altar.HoneyedStoneBrickBlock;
 import com.chapeau.apica.common.block.altar.HoneyedStoneBrickSlabBlock;
 import com.chapeau.apica.common.block.altar.HoneyedStoneBrickStairBlock;
 import com.chapeau.apica.common.block.altar.HoneyedStoneStairBlock;
-import com.chapeau.apica.content.flywheeltest.BeeSpawnerBlock;
 import com.chapeau.apica.common.block.building.HoneyedGlassBlock;
 import com.chapeau.apica.common.block.building.HoneyedStoneBrickWallBlock;
 import com.chapeau.apica.common.block.building.HoneyedStoneWallBlock;
@@ -636,12 +635,6 @@ public class ApicaBlocks {
                     .strength(2.0f)
                     .sound(SoundType.METAL)
                     .noOcclusion()));
-
-    // --- FLYWHEEL TEST ---
-    public static final DeferredBlock<BeeSpawnerBlock> BEE_SPAWNER = BLOCKS.register("bee_spawner",
-            () -> new BeeSpawnerBlock(BlockBehaviour.Properties.of()
-                    .strength(2.0f)
-                    .sound(SoundType.METAL)));
 
     // --- BEE NEST ---
     public static final DeferredBlock<BeeNestBlock> BEE_NEST = BLOCKS.register("bee_nest",

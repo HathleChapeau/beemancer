@@ -678,10 +678,6 @@ public class ApicaItems {
     public static final DeferredItem<ScoopItem> SCOOP = ITEMS.register("scoop",
             () -> new ScoopItem(new Item.Properties()));
 
-    // --- FLYWHEEL TEST ---
-    public static final DeferredItem<BlockItem> BEE_SPAWNER = ITEMS.register("bee_spawner",
-            () -> new BlockItem(ApicaBlocks.BEE_SPAWNER.get(), new Item.Properties()));
-
     // --- MOUNT ITEMS ---
     public static final DeferredItem<HoverbikeSpawnItem> HOVERBIKE_SPAWN = ITEMS.register("hoverbike_spawn",
             () -> new HoverbikeSpawnItem(new Item.Properties()));

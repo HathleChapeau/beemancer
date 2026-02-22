@@ -564,8 +564,6 @@
   "item.apica.radiateur_panels": "Panneaux de Refroidissement",
   "item.apica.radiateur_fin_array": "Radiateur a Ailettes",
   "item.apica.radiateur_wide_panels": "Radiateur Grands Panneaux",
-  "block.apica.bee_spawner": "Spawner Test Flywheel",
-  "entity.apica.flywheel_test_bee": "Abeille Test",
   "gui.apica.interface.active": "Actif",
   "gui.apica.interface.inactive": "Inactif",
   "gui.apica.network.honey_depleted": "Réseau de stockage : miel épuisé !",

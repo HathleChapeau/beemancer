@@ -56,7 +56,6 @@ import com.chapeau.apica.client.renderer.block.TranslucentOutlineRenderer;
 import com.chapeau.apica.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.apica.client.renderer.debug.CustomDebugDisplayRenderer;
 import com.chapeau.apica.client.renderer.debug.HoverbikeDebugRenderer;
-import com.chapeau.apica.client.visual.FlywheelTestBeeVisualizer;
 import com.chapeau.apica.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
@@ -73,7 +72,6 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import com.chapeau.apica.client.animation.AnimationTimer;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
@@ -99,7 +97,6 @@ public class ClientSetup {
         modEventBus.addListener(ClientSetup::registerItemColors);
         modEventBus.addListener(ClientSetup::registerAdditionalModels);
         modEventBus.addListener(ClientSetup::registerParticleProviders);
-        modEventBus.addListener(ClientSetup::onClientSetup);
 
         // AnimationTimer: compteur client-side pour animations sans stutter (pattern Create)
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> AnimationTimer.tick());
@@ -173,10 +170,6 @@ public class ClientSetup {
         event.registerEntityRenderer(ApicaEntities.MAGIC_BEE.get(), MagicBeeRenderer::new);
         event.registerEntityRenderer(ApicaEntities.DELIVERY_BEE.get(), DeliveryBeeRenderer::new);
         event.registerEntityRenderer(ApicaEntities.HOVERBIKE.get(), HoverbikeRenderer::new);
-        // Flywheel test bee - noop renderer (Flywheel handles rendering)
-        event.registerEntityRenderer(ApicaEntities.FLYWHEEL_TEST_BEE.get(),
-            net.minecraft.client.renderer.entity.NoopRenderer::new);
-
         // Interaction marker - invisible entity, no rendering
         event.registerEntityRenderer(ApicaEntities.INTERACTION_MARKER.get(),
             com.chapeau.apica.client.renderer.entity.InteractionMarkerRenderer::new);
@@ -418,11 +411,4 @@ public class ClientSetup {
         event.register(MultiblockTankRenderer.SINGLE_MODEL_LOC);  // Non formé (bloc simple)
     }
 
-    // =========================================================================
-    // FLYWHEEL VISUALIZER REGISTRATION
-    // =========================================================================
-
-    private static void onClientSetup(final FMLClientSetupEvent event) {
-        event.enqueueWork(FlywheelTestBeeVisualizer::register);
-    }
 }

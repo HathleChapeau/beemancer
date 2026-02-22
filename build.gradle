@@ -52,7 +52,7 @@ neoForge {
 
 repositories {
 	mavenCentral()
-	maven { url = "https://maven.createmod.net" } // Ponder, Flywheel
+	maven { url = "https://maven.createmod.net" } // Registrate
 	maven { url = "https://maven.ithundxr.dev/snapshots" } // Registrate
 	maven { url = "https://maven.blamejared.com" } // JEI, Vazkii's Mods
 	maven { url = "https://harleyoconnor.com/maven" } // Dynamic Trees
@@ -63,7 +63,6 @@ repositories {
 	maven { url = "https://maven.ftb.dev/releases" } // FTB Mods
 	maven { url = "https://maven.architectury.dev" } // Arch API
 	maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven" }
-	// NeoForge config api port, needed by ponder
 	maven {
 		url = "https://jm.gserv.me/repository/maven-public" // JourneyMap
 		content {
@@ -85,17 +84,6 @@ repositories {
 
 dependencies {
 	jarJar(implementation("com.tterrag.registrate:Registrate:$registrate_version"))
-
-	compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-$minecraft_version:$flywheel_version")
-	runtimeOnly(jarJar("dev.engine-room.flywheel:flywheel-neoforge-$minecraft_version:$flywheel_version") {
-		version {
-			strictly "[1.0,2.0)"
-			prefer flywheel_version
-		}
-	})
-	runtimeOnly("dev.engine-room.vanillin:vanillin-neoforge-$minecraft_version:$vanillin_version")
-
-	jarJar(implementation("net.createmod.ponder:ponder-neoforge:$ponder_version+mc$minecraft_version"))
 
 	compileOnly("mezz.jei:jei-$minecraft_version-common-api:$jei_version")
 	compileOnly("mezz.jei:jei-$minecraft_version-neoforge-api:$jei_version")
