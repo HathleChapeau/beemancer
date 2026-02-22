@@ -17,8 +17,7 @@
     {
       "type": "multiblock",
       "pattern": "tank_multiblock",
-      "controller": "apica:tank_placeholder",
-      "padding_y": 20
+      "controller": "apica:tank_placeholder"
     }
   ],
   "sticky_notes": [

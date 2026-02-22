@@ -117,7 +117,7 @@ public class MultiblockSection extends CodexBookSection {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         int groundX = x + pageWidth / 2 - GROUND_TEX_W / 2;
-        int groundY = currentY - GROUND_TEX_H + GROUND_PADDING_Y + groundOffsetY;
+        int groundY = currentY - GROUND_TEX_H + GROUND_PADDING_Y + groundOffsetY - globalMinPy;
         graphics.blit(GROUND_TEXTURE, groundX, groundY, GROUND_TEX_W, GROUND_TEX_H,
                 0, 0, GROUND_TEX_W, GROUND_TEX_H, GROUND_TEX_W, GROUND_TEX_H);
 
