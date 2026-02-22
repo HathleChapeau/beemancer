@@ -3,10 +3,10 @@
   "category": "misc",
   "key": {
     "R": { "item": "apica:royal_gold" },
-    "I": { "item": "apica:honeyed_iron" },
     "D": { "item": "minecraft:dropper" },
-    "B": { "item": "apica:blank_rune" }
+    "B": { "item": "apica:blank_rune" },
+    "P": { "item": "apica:honeyed_planks" }
   },
-  "pattern": [ "IRI", "DBD", "IRI" ],
+  "pattern": [ " D ", "RBR", "PRP" ],
   "result": { "id": "apica:export_interface", "count": 1 }
 }

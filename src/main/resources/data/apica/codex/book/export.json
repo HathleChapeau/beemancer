@@ -17,6 +17,10 @@
     {
       "type": "craft",
       "result": "apica:export_interface"
+    },
+    {
+      "type": "craft",
+      "result": "apica:blank_rune"
     }
   ],
   "sticky_notes": []

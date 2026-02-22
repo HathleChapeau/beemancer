@@ -3,10 +3,10 @@
   "category": "misc",
   "key": {
     "R": { "item": "apica:royal_gold" },
-    "I": { "item": "apica:honeyed_iron" },
     "H": { "item": "minecraft:hopper" },
-    "B": { "item": "apica:blank_rune" }
+    "B": { "item": "apica:blank_rune" },
+    "P": { "item": "apica:honeyed_planks" }
   },
-  "pattern": [ "IRI", "HBH", "IRI" ],
+  "pattern": [ " H ", "RBR", "PRP" ],
   "result": { "id": "apica:import_interface", "count": 1 }
 }

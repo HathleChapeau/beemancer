@@ -3,9 +3,10 @@
   "category": "misc",
   "key": {
     "R": { "item": "apica:royal_gold" },
-    "I": { "item": "apica:honeyed_iron" },
-    "B": { "item": "apica:blank_rune" }
+    "C": { "item": "apica:honey_crystal" },
+    "B": { "item": "apica:blank_rune" },
+    "P": { "item": "apica:honeyed_planks" }
   },
-  "pattern": [ "IRI", "RBR", "IRI" ],
+  "pattern": [ " C ", "RBR", "PRP" ],
   "result": { "id": "apica:storage_relay", "count": 1 }
 }
