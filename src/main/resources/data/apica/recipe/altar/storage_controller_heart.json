@@ -9,7 +9,8 @@
     { "item": "apica:iron_foundation" },
     { "item": "apica:iron_foundation" },
     { "item": "apica:iron_foundation" },
-    { "item": "apica:iron_foundation" }
+    { "item": "apica:iron_foundation" },
+    { "item": "apica:blank_rune" }
   ],
   "pollen": {
     "apica:crystal_pollen": 12,

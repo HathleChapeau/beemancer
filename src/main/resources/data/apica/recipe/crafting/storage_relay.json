@@ -4,8 +4,8 @@
   "key": {
     "R": { "item": "apica:royal_gold" },
     "I": { "item": "apica:honeyed_iron" },
-    "C": { "item": "apica:honey_crystal" }
+    "B": { "item": "apica:blank_rune" }
   },
-  "pattern": [ "IRI", "RCR", "IRI" ],
+  "pattern": [ "IRI", "RBR", "IRI" ],
   "result": { "id": "apica:storage_relay", "count": 1 }
 }

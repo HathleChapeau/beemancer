@@ -5,8 +5,8 @@
     "W": { "item": "apica:honeyed_log" },
     "A": { "item": "apica:honeyed_iron" },
     "G": { "item": "apica:honeyed_glass" },
-    "C": { "item": "apica:honey_crystal" }
+    "B": { "item": "apica:blank_rune" }
   },
-  "pattern": [ "AWA", "GCG", "AWA" ],
+  "pattern": [ "AWA", "GBG", "AWA" ],
   "result": { "id": "apica:multiblock_tank", "count": 2 }
 }

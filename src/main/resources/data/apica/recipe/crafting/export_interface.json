@@ -4,8 +4,9 @@
   "key": {
     "R": { "item": "apica:royal_gold" },
     "I": { "item": "apica:honeyed_iron" },
-    "D": { "item": "minecraft:dropper" }
+    "D": { "item": "minecraft:dropper" },
+    "B": { "item": "apica:blank_rune" }
   },
-  "pattern": [ "IRI", "RDR", "IRI" ],
+  "pattern": [ "IRI", "DBD", "IRI" ],
   "result": { "id": "apica:export_interface", "count": 1 }
 }

@@ -4,8 +4,9 @@
   "key": {
     "R": { "item": "apica:royal_gold" },
     "I": { "item": "apica:honeyed_iron" },
-    "H": { "item": "minecraft:hopper" }
+    "H": { "item": "minecraft:hopper" },
+    "B": { "item": "apica:blank_rune" }
   },
-  "pattern": [ "IRI", "RHR", "IRI" ],
+  "pattern": [ "IRI", "HBH", "IRI" ],
   "result": { "id": "apica:import_interface", "count": 1 }
 }

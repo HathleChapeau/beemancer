@@ -277,6 +277,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.NECTAR_DIAMOND.get());
         output.accept(ApicaItems.NECTAR_DIAMOND_BLOCK.get());
         output.accept(ApicaItems.NECTAR_CRYSTAL.get());
+        output.accept(ApicaItems.BLANK_RUNE.get());
     }
 
     private static void addEssences(CreativeModeTab.Output output) {

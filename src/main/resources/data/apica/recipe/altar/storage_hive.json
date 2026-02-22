@@ -7,7 +7,8 @@
     { "item": "apica:honeyed_iron" },
     { "item": "apica:honeyed_iron" },
     { "item": "apica:iron_foundation" },
-    { "item": "apica:iron_foundation" }
+    { "item": "minecraft:glowstone" },
+    { "item": "apica:blank_rune" }
   ],
   "pollen": {
     "apica:flower_pollen": 7,

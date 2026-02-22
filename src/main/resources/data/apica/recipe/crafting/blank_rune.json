@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": { "item": "minecraft:stick" },
+    "H": { "item": "apica:honeyed_stone" }
+  },
+  "pattern": [ "SHS", "H H", "SHS" ],
+  "result": { "id": "apica:blank_rune", "count": 1 }
+}

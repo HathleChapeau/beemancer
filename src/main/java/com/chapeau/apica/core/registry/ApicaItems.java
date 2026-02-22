@@ -313,6 +313,8 @@ public class ApicaItems {
             () -> new Item(new Item.Properties()));
     public static final DeferredItem<BlockItem> NECTAR_CRYSTAL = ITEMS.register("nectar_crystal",
             () -> new BlockItem(ApicaBlocks.NECTAR_CRYSTAL.get(), new Item.Properties()));
+    public static final DeferredItem<Item> BLANK_RUNE = ITEMS.register("blank_rune",
+            () -> new Item(new Item.Properties()));
 
     // --- ESSENCES ---
     // Production Essences (améliore le niveau de production des abeilles)
