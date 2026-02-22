@@ -96,9 +96,6 @@ public class Apica {
         registerForgeEventListeners();
         registerClientSetup(modEventBus);
 
-        // Hoverbike config (fichiers JSON dans config/apica/hoverbike/)
-        HoverbikeConfigManager.init();
-
         LOGGER.info("Apica initialized!");
     }
 
@@ -441,6 +438,9 @@ public class Apica {
 
     private void loadDataConfigurations(ServerStartingEvent event) {
         var server = event.getServer();
+
+        // Hoverbike config (fichiers JSON dans config/apica/hoverbike/) - déplacé ici depuis le constructeur
+        HoverbikeConfigManager.init();
 
         BeeSpeciesManager.load(server);
         BiomeTemperatureManager.load(server);
