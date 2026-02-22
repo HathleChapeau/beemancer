@@ -31,6 +31,7 @@ import com.chapeau.apica.core.gene.GeneRegistry;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -210,9 +211,12 @@ public class BeeNestBlockEntity extends BlockEntity {
         MagicBeeEntity bee = ApicaEntities.MAGIC_BEE.get().create(level);
         if (bee == null) return;
 
-        BlockPos spawnPos = worldPosition.above();
-        bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
-                level.getRandom().nextFloat() * 360, 0);
+        // Spawn devant la face avant du nid (direction facing)
+        Direction facing = getBlockState().getValue(BeeNestBlock.FACING);
+        BlockPos frontPos = worldPosition.relative(facing);
+        BlockPos spawnPos = !level.getBlockState(frontPos).isSolid() ? frontPos : worldPosition.above();
+        bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY() + 0.3, spawnPos.getZ() + 0.5,
+                facing.toYRot(), 0);
 
         BeeGeneData geneData = new BeeGeneData();
         Gene speciesGene = GeneRegistry.getGene(GeneCategory.SPECIES, species);
@@ -225,6 +229,11 @@ public class BeeNestBlockEntity extends BlockEntity {
         }
 
         bee.setHomeNestPos(worldPosition);
+
+        // Impulsion initiale vers l'avant pour eloigner l'abeille du nid
+        double pushX = facing.getStepX() * 0.15;
+        double pushZ = facing.getStepZ() * 0.15;
+        bee.setDeltaMovement(pushX, 0.05, pushZ);
 
         serverLevel.addFreshEntity(bee);
         activeBeeUUIDs.add(bee.getUUID());

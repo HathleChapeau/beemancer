@@ -87,31 +87,35 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
     public static final BooleanProperty FILTERED = BooleanProperty.create("filtered");
 
     // Pre-computed VoxelShapes for all 64 direction combinations (6 bits)
-    private static final VoxelShape CORE = Block.box(4, 4, 4, 12, 12, 12);
-    private static final VoxelShape[] DIR_SHAPES = {
-        Block.box(5, 5, 0, 11, 11, 4),   // NORTH (bit 0)
-        Block.box(5, 5, 12, 11, 11, 16),  // SOUTH (bit 1)
-        Block.box(12, 5, 5, 16, 11, 11),  // EAST (bit 2)
-        Block.box(0, 5, 5, 4, 11, 11),    // WEST (bit 3)
-        Block.box(5, 12, 5, 11, 16, 11),  // UP (bit 4)
-        Block.box(5, 0, 5, 11, 4, 11)     // DOWN (bit 5)
-    };
-    private static final VoxelShape[] SHAPE_CACHE = buildShapeCache();
+    // Lazy-initialized to avoid ~192 Shapes.or() calls at class-load time
+    private static volatile VoxelShape[] SHAPE_CACHE;
 
     private static final double CLICK_THRESHOLD = 0.1;
 
-    private static VoxelShape[] buildShapeCache() {
-        VoxelShape[] cache = new VoxelShape[64];
-        for (int i = 0; i < 64; i++) {
-            VoxelShape shape = CORE;
-            for (int bit = 0; bit < 6; bit++) {
-                if ((i & (1 << bit)) != 0) {
-                    shape = Shapes.or(shape, DIR_SHAPES[bit]);
+    private static VoxelShape[] getShapeCache() {
+        if (SHAPE_CACHE == null) {
+            VoxelShape core = Block.box(4, 4, 4, 12, 12, 12);
+            VoxelShape[] dirShapes = {
+                Block.box(5, 5, 0, 11, 11, 4),   // NORTH (bit 0)
+                Block.box(5, 5, 12, 11, 11, 16),  // SOUTH (bit 1)
+                Block.box(12, 5, 5, 16, 11, 11),  // EAST (bit 2)
+                Block.box(0, 5, 5, 4, 11, 11),    // WEST (bit 3)
+                Block.box(5, 12, 5, 11, 16, 11),  // UP (bit 4)
+                Block.box(5, 0, 5, 11, 4, 11)     // DOWN (bit 5)
+            };
+            VoxelShape[] cache = new VoxelShape[64];
+            for (int i = 0; i < 64; i++) {
+                VoxelShape shape = core;
+                for (int bit = 0; bit < 6; bit++) {
+                    if ((i & (1 << bit)) != 0) {
+                        shape = Shapes.or(shape, dirShapes[bit]);
+                    }
                 }
+                cache[i] = shape;
             }
-            cache[i] = shape;
+            SHAPE_CACHE = cache;
         }
-        return cache;
+        return SHAPE_CACHE;
     }
 
     protected AbstractPipeBlock(Properties properties, int tier) {
@@ -147,7 +151,7 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
         if (state.getValue(WEST))  index |= 8;
         if (state.getValue(UP))    index |= 16;
         if (state.getValue(DOWN))  index |= 32;
-        return SHAPE_CACHE[index];
+        return getShapeCache()[index];
     }
 
     @Override

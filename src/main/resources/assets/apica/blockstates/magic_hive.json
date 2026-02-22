@@ -2,7 +2,7 @@
   "variants": {
     "facing=north": { "model": "apica:block/machines/magic_hive" },
     "facing=east": { "model": "apica:block/machines/magic_hive", "y": 90 },
-    "facing=south": { "model": "apica:block/machines/magic_hive", "y": 90 },
+    "facing=south": { "model": "apica:block/machines/magic_hive", "y": 180 },
     "facing=west": { "model": "apica:block/machines/magic_hive", "y": 270 }
   }
 }
