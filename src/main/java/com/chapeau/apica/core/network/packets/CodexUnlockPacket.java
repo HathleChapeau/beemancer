@@ -55,7 +55,7 @@ public record CodexUnlockPacket(String nodeFullId) implements CustomPacketPayloa
             if (context.player() instanceof ServerPlayer player) {
                 CodexNode node = CodexManager.getNode(packet.nodeFullId);
                 if (node == null) {
-                    Apica.LOGGER.warn("Player {} tried to unlock unknown node: {}", 
+                    Apica.LOGGER.warn("Player {} tried to unlock unknown node: {}",
                         player.getName().getString(), packet.nodeFullId);
                     return;
                 }
@@ -68,10 +68,13 @@ public record CodexUnlockPacket(String nodeFullId) implements CustomPacketPayloa
 
                     Apica.LOGGER.debug("Player {} unlocked codex node: {} on day {}",
                         player.getName().getString(), packet.nodeFullId, currentDay);
-
-                    // Sync back to client
-                    PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
+                } else if (data.isUnlocked(packet.nodeFullId)) {
+                    Apica.LOGGER.debug("Player {} requested unlock for already-unlocked node: {} — resyncing",
+                        player.getName().getString(), packet.nodeFullId);
                 }
+
+                // Always sync back — corrects any client-server desync
+                PacketDistributor.sendToPlayer(player, new CodexSyncPacket(data));
             }
         });
     }

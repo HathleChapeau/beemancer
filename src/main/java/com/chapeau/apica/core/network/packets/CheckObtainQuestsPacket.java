@@ -10,7 +10,6 @@
  * |---------------------|----------------------|--------------------------------|
  * | QuestManager        | Vérification OBTAIN  | Check inventaire serveur       |
  * | QuestSyncPacket     | Sync résultat        | Renvoi des quêtes complétées   |
- * | CodexSyncPacket     | Sync codex           | Renvoi des nodes découverts    |
  * | ApicaAttachments    | Accès aux données    | Récupération attachment        |
  * ------------------------------------------------------------
  *

@@ -22,7 +22,9 @@ package com.chapeau.apica.common.block.hive;
 
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -31,6 +33,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,15 +46,24 @@ import org.jetbrains.annotations.Nullable;
 public class BeeNestBlock extends Block implements EntityBlock {
 
     public static final EnumProperty<NestSpecies> SPECIES = EnumProperty.create("species", NestSpecies.class);
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public BeeNestBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(SPECIES, NestSpecies.MEADOW));
+        registerDefaultState(stateDefinition.any()
+                .setValue(SPECIES, NestSpecies.MEADOW)
+                .setValue(FACING, Direction.SOUTH));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(SPECIES);
+        builder.add(SPECIES, FACING);
+    }
+
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @Nullable

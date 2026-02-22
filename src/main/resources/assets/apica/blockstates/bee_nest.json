@@ -1,11 +1,38 @@
 {
   "variants": {
-    "species=meadow": { "model": "apica:block/bee_nest_meadow" },
-    "species=forest": { "model": "apica:block/bee_nest_forest" },
-    "species=rocky": { "model": "apica:block/bee_nest_rocky" },
-    "species=river": { "model": "apica:block/bee_nest_river" },
-    "species=dune": { "model": "apica:block/bee_nest_dune" },
-    "species=nether": { "model": "apica:block/bee_nest_nether" },
-    "species=end": { "model": "apica:block/bee_nest_end" }
+    "facing=north,species=meadow": { "model": "apica:block/bee_nest_meadow" },
+    "facing=south,species=meadow": { "model": "apica:block/bee_nest_meadow", "y": 180 },
+    "facing=west,species=meadow": { "model": "apica:block/bee_nest_meadow", "y": 270 },
+    "facing=east,species=meadow": { "model": "apica:block/bee_nest_meadow", "y": 90 },
+
+    "facing=north,species=forest": { "model": "apica:block/bee_nest_forest" },
+    "facing=south,species=forest": { "model": "apica:block/bee_nest_forest", "y": 180 },
+    "facing=west,species=forest": { "model": "apica:block/bee_nest_forest", "y": 270 },
+    "facing=east,species=forest": { "model": "apica:block/bee_nest_forest", "y": 90 },
+
+    "facing=north,species=rocky": { "model": "apica:block/bee_nest_rocky" },
+    "facing=south,species=rocky": { "model": "apica:block/bee_nest_rocky", "y": 180 },
+    "facing=west,species=rocky": { "model": "apica:block/bee_nest_rocky", "y": 270 },
+    "facing=east,species=rocky": { "model": "apica:block/bee_nest_rocky", "y": 90 },
+
+    "facing=north,species=river": { "model": "apica:block/bee_nest_river" },
+    "facing=south,species=river": { "model": "apica:block/bee_nest_river", "y": 180 },
+    "facing=west,species=river": { "model": "apica:block/bee_nest_river", "y": 270 },
+    "facing=east,species=river": { "model": "apica:block/bee_nest_river", "y": 90 },
+
+    "facing=north,species=dune": { "model": "apica:block/bee_nest_dune" },
+    "facing=south,species=dune": { "model": "apica:block/bee_nest_dune", "y": 180 },
+    "facing=west,species=dune": { "model": "apica:block/bee_nest_dune", "y": 270 },
+    "facing=east,species=dune": { "model": "apica:block/bee_nest_dune", "y": 90 },
+
+    "facing=north,species=nether": { "model": "apica:block/bee_nest_nether" },
+    "facing=south,species=nether": { "model": "apica:block/bee_nest_nether", "y": 180 },
+    "facing=west,species=nether": { "model": "apica:block/bee_nest_nether", "y": 270 },
+    "facing=east,species=nether": { "model": "apica:block/bee_nest_nether", "y": 90 },
+
+    "facing=north,species=end": { "model": "apica:block/bee_nest_end" },
+    "facing=south,species=end": { "model": "apica:block/bee_nest_end", "y": 180 },
+    "facing=west,species=end": { "model": "apica:block/bee_nest_end", "y": 270 },
+    "facing=east,species=end": { "model": "apica:block/bee_nest_end", "y": 90 }
   }
 }

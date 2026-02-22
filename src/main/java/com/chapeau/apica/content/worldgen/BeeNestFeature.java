@@ -27,6 +27,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -48,29 +49,34 @@ public class BeeNestFeature extends Feature<BeeNestFeatureConfig> {
         BeeNestFeatureConfig config = context.config();
         WorldGenLevel level = context.level();
         BlockPos origin = context.origin();
+        RandomSource random = context.random();
         BlockState nestState = ApicaBlocks.BEE_NEST.get().defaultBlockState()
                 .setValue(BeeNestBlock.SPECIES, BeeNestBlock.NestSpecies.fromSpeciesId(config.speciesId()));
 
         return switch (config.placementType()) {
-            case SURFACE -> placeSurface(level, origin, nestState);
-            case TREE -> placeTree(level, origin, nestState, context.random());
-            case UNDERGROUND -> placeUnderground(level, origin, nestState);
-            case NETHER_SURFACE -> placeNetherSurface(level, origin, nestState);
-            case END_SURFACE -> placeEndSurface(level, origin, nestState);
+            case SURFACE -> placeSurface(level, origin, nestState, random);
+            case TREE -> placeTree(level, origin, nestState, random);
+            case UNDERGROUND -> placeUnderground(level, origin, nestState, random);
+            case NETHER_SURFACE -> placeNetherSurface(level, origin, nestState, random);
+            case END_SURFACE -> placeEndSurface(level, origin, nestState, random);
         };
     }
 
-    private boolean placeSurface(WorldGenLevel level, BlockPos origin, BlockState nestState) {
+    private static Direction randomHorizontal(RandomSource random) {
+        return Direction.Plane.HORIZONTAL.getRandomDirection(random);
+    }
+
+    private boolean placeSurface(WorldGenLevel level, BlockPos origin, BlockState nestState, RandomSource random) {
         BlockState below = level.getBlockState(origin.below());
         if (!below.isFaceSturdy(level, origin.below(), Direction.UP)) return false;
         if (!level.getBlockState(origin).isAir()) return false;
         if (!level.getBlockState(origin.above()).isAir()) return false;
-        level.setBlock(origin, nestState, 2);
+        level.setBlock(origin, nestState.setValue(BeeNestBlock.FACING, randomHorizontal(random)), 2);
         return true;
     }
 
     private boolean placeTree(WorldGenLevel level, BlockPos origin, BlockState nestState,
-                              net.minecraft.util.RandomSource random) {
+                              RandomSource random) {
         for (int dy = 1; dy <= 6; dy++) {
             for (int dx = -3; dx <= 3; dx++) {
                 for (int dz = -3; dz <= 3; dz++) {
@@ -83,7 +89,8 @@ public class BeeNestFeature extends Feature<BeeNestFeatureConfig> {
                         Direction dir = Direction.from2DDataValue((start.get2DDataValue() + i) % 4);
                         BlockPos nestPos = logPos.relative(dir);
                         if (level.getBlockState(nestPos).isAir()) {
-                            level.setBlock(nestPos, nestState, 2);
+                            // Front face toward open air (away from the log)
+                            level.setBlock(nestPos, nestState.setValue(BeeNestBlock.FACING, dir), 2);
                             return true;
                         }
                     }
@@ -93,7 +100,7 @@ public class BeeNestFeature extends Feature<BeeNestFeatureConfig> {
         return false;
     }
 
-    private boolean placeUnderground(WorldGenLevel level, BlockPos origin, BlockState nestState) {
+    private boolean placeUnderground(WorldGenLevel level, BlockPos origin, BlockState nestState, RandomSource random) {
         int stoneCount = 0;
         for (Direction dir : Direction.values()) {
             BlockState neighbor = level.getBlockState(origin.relative(dir));
@@ -103,26 +110,26 @@ public class BeeNestFeature extends Feature<BeeNestFeatureConfig> {
         }
         if (stoneCount < 5) return false;
         if (!level.getBlockState(origin).is(BlockTags.BASE_STONE_OVERWORLD)) return false;
-        level.setBlock(origin, nestState, 2);
+        level.setBlock(origin, nestState.setValue(BeeNestBlock.FACING, randomHorizontal(random)), 2);
         return true;
     }
 
-    private boolean placeNetherSurface(WorldGenLevel level, BlockPos origin, BlockState nestState) {
+    private boolean placeNetherSurface(WorldGenLevel level, BlockPos origin, BlockState nestState, RandomSource random) {
         BlockState below = level.getBlockState(origin.below());
         boolean validGround = below.is(BlockTags.BASE_STONE_NETHER)
                 || below.is(Blocks.SOUL_SAND) || below.is(Blocks.SOUL_SOIL)
                 || below.is(BlockTags.NYLIUM);
         if (!validGround) return false;
         if (!level.getBlockState(origin).isAir()) return false;
-        level.setBlock(origin, nestState, 2);
+        level.setBlock(origin, nestState.setValue(BeeNestBlock.FACING, randomHorizontal(random)), 2);
         return true;
     }
 
-    private boolean placeEndSurface(WorldGenLevel level, BlockPos origin, BlockState nestState) {
+    private boolean placeEndSurface(WorldGenLevel level, BlockPos origin, BlockState nestState, RandomSource random) {
         BlockState below = level.getBlockState(origin.below());
         if (!below.is(Blocks.END_STONE)) return false;
         if (!level.getBlockState(origin).isAir()) return false;
-        level.setBlock(origin, nestState, 2);
+        level.setBlock(origin, nestState.setValue(BeeNestBlock.FACING, randomHorizontal(random)), 2);
         return true;
     }
 }
