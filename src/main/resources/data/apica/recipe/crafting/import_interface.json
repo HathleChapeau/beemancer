@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": { "item": "apica:royal_gold" },
+    "I": { "item": "apica:honeyed_iron" },
+    "H": { "item": "minecraft:hopper" }
+  },
+  "pattern": [ "IRI", "RHR", "IRI" ],
+  "result": { "id": "apica:import_interface", "count": 1 }
+}

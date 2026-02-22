@@ -19,5 +19,10 @@
       "result": "apica:infuser"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"type": "process", "input": "minecraft:stone", "output": "apica:infuser"},
+    {"type": "process", "input": "minecraft:oak_log", "output": "apica:infuser"},
+    {"type": "process", "input": "minecraft:glass", "output": "apica:infuser"},
+    {"type": "process", "input": "minecraft:iron_ingot", "output": "apica:infuser"}
+  ]
 }

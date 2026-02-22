@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": { "item": "apica:royal_gold" },
+    "I": { "item": "apica:honeyed_iron" },
+    "D": { "item": "minecraft:dropper" }
+  },
+  "pattern": [ "IRI", "RDR", "IRI" ],
+  "result": { "id": "apica:export_interface", "count": 1 }
+}

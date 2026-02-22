@@ -1,0 +1,17 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:honey_crystal" },
+  "pedestal_items": [
+    { "item": "apica:nectar_diamond" },
+    { "item": "apica:nectar_diamond" },
+    { "item": "apica:nectar_diamond" },
+    { "item": "apica:nectar_diamond" }
+  ],
+  "pollen": {
+    "apica:pollen_of_light": 4,
+    "apica:pollen_of_darkness": 4,
+    "apica:pollen_of_wind": 4,
+    "apica:pollen_of_thunder": 4
+  },
+  "result": { "id": "apica:centrifuge_heart" }
+}

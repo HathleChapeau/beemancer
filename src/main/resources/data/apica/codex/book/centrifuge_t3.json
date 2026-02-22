@@ -21,7 +21,7 @@
     }
   ],
   "sticky_notes": [
-    {"craft": "apica:centrifuge_heart"},
+    {"craft": "apica:centrifuge_heart", "type": "altar"},
     {"craft": "apica:iron_foundation"},
     {"craft": "apica:honey_reservoir"}
   ]

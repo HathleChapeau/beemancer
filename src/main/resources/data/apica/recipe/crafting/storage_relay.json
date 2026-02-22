@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": { "item": "apica:royal_gold" },
+    "I": { "item": "apica:honeyed_iron" },
+    "C": { "item": "apica:honey_crystal" }
+  },
+  "pattern": [ "IRI", "RCR", "IRI" ],
+  "result": { "id": "apica:storage_relay", "count": 1 }
+}

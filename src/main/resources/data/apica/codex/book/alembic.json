@@ -23,7 +23,7 @@
     }
   ],
   "sticky_notes": [
-    {"craft": "apica:alembic_heart"},
+    {"craft": "apica:alembic_heart", "type": "altar"},
     {"craft": "apica:honey_reservoir"},
     {"craft": "apica:royal_gold_block"}
   ]

@@ -1,0 +1,15 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:honey_crystal" },
+  "pedestal_items": [
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:honeyed_iron" }
+  ],
+  "pollen": {
+    "apica:flower_pollen": 4,
+    "apica:tree_pollen": 4
+  },
+  "result": { "id": "apica:storage_hive" }
+}
