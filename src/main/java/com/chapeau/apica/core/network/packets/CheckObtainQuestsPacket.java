@@ -23,7 +23,6 @@
 package com.chapeau.apica.core.network.packets;
 
 import com.chapeau.apica.Apica;
-import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.quest.QuestManager;
 import com.chapeau.apica.common.quest.QuestPlayerData;
 import com.chapeau.apica.core.registry.ApicaAttachments;
@@ -68,12 +67,10 @@ public record CheckObtainQuestsPacket() implements CustomPacketPayload {
                     Apica.LOGGER.debug("Server-side OBTAIN check for {}: {} quests completed",
                         player.getName().getString(), newCompletions.size());
 
-                    // Sync quest data and codex data back to client
+                    // Sync quest data back to client (quests only — codex state is computed
+                    // transiently from quests + unlocked nodes, no need to re-sync codex here)
                     QuestPlayerData questData = player.getData(ApicaAttachments.QUEST_DATA);
                     PacketDistributor.sendToPlayer(player, new QuestSyncPacket(questData));
-
-                    CodexPlayerData codexData = player.getData(ApicaAttachments.CODEX_DATA);
-                    PacketDistributor.sendToPlayer(player, new CodexSyncPacket(codexData));
                 }
             }
         });
