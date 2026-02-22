@@ -8,54 +8,54 @@
   "elements": [
     {
       "name": "Frame Top Bar",
-      "from": [2, 12, 0],
-      "to": [14, 14, 3],
+      "from": [2, 12, 7],
+      "to": [14, 14, 10],
       "faces": {
-        "north": {"texture": "#frame", "uv": [2, 2, 14, 4]},
-        "east": {"texture": "#frame", "uv": [0, 2, 3, 4]},
-        "south": {"texture": "#frame", "uv": [2, 2, 14, 4]},
-        "west": {"texture": "#frame", "uv": [13, 2, 16, 4]},
-        "up": {"texture": "#frame", "uv": [2, 0, 14, 3]},
-        "down": {"texture": "#frame", "uv": [2, 0, 14, 3]}
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
       }
     },
     {
       "name": "Frame Bottom Bar",
-      "from": [2, 2, 0],
-      "to": [14, 4, 3],
+      "from": [2, 2, 7],
+      "to": [14, 4, 10],
       "faces": {
-        "north": {"texture": "#frame", "uv": [2, 12, 14, 14]},
-        "east": {"texture": "#frame", "uv": [0, 12, 3, 14]},
-        "south": {"texture": "#frame", "uv": [2, 12, 14, 14]},
-        "west": {"texture": "#frame", "uv": [13, 12, 16, 14]},
-        "up": {"texture": "#frame", "uv": [2, 13, 14, 16]},
-        "down": {"texture": "#frame", "uv": [2, 13, 14, 16]}
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
       }
     },
     {
       "name": "Frame Left Bar",
-      "from": [2, 4, 0],
-      "to": [4, 12, 3],
+      "from": [2, 4, 7],
+      "to": [4, 12, 10],
       "faces": {
-        "north": {"texture": "#frame", "uv": [2, 4, 4, 12]},
-        "east": {"texture": "#frame", "uv": [0, 4, 3, 12]},
-        "south": {"texture": "#frame", "uv": [12, 4, 14, 12]},
-        "west": {"texture": "#frame", "uv": [13, 4, 16, 12]},
-        "up": {"texture": "#frame", "uv": [2, 0, 4, 3]},
-        "down": {"texture": "#frame", "uv": [2, 13, 4, 16]}
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
       }
     },
     {
       "name": "Frame Right Bar",
-      "from": [12, 4, 0],
-      "to": [14, 12, 3],
+      "from": [12, 4, 7],
+      "to": [14, 12, 10],
       "faces": {
-        "north": {"texture": "#frame", "uv": [12, 4, 14, 12]},
-        "east": {"texture": "#frame", "uv": [0, 4, 3, 12]},
-        "south": {"texture": "#frame", "uv": [2, 4, 4, 12]},
-        "west": {"texture": "#frame", "uv": [13, 4, 16, 12]},
-        "up": {"texture": "#frame", "uv": [12, 0, 14, 3]},
-        "down": {"texture": "#frame", "uv": [12, 13, 14, 16]}
+        "north": {"texture": "#frame"},
+        "east": {"texture": "#frame"},
+        "south": {"texture": "#frame"},
+        "west": {"texture": "#frame"},
+        "up": {"texture": "#frame"},
+        "down": {"texture": "#frame"}
       }
     }
   ]
