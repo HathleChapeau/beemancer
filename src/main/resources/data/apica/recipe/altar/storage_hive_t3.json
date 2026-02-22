@@ -1,6 +1,6 @@
 {
   "type": "apica:altar",
-  "center_item": { "item": "apica:honey_crystal" },
+  "center_item": { "item": "apica:storage_hive_t2" },
   "pedestal_items": [
     { "item": "apica:nectar_diamond" },
     { "item": "apica:nectar_diamond" },
@@ -10,10 +10,10 @@
     { "item": "apica:royal_gold" }
   ],
   "pollen": {
-    "apica:pollen_of_light": 9,
-    "apica:pollen_of_darkness": 11,
-    "apica:pollen_of_wind": 13,
-    "apica:pollen_of_thunder": 7
+    "apica:pollen_of_light": 7,
+    "apica:pollen_of_darkness": 5,
+    "apica:pollen_of_fire": 11,
+    "apica:pollen_of_wind": 9
   },
-  "result": { "id": "apica:centrifuge_heart" }
+  "result": { "id": "apica:storage_hive_t3" }
 }

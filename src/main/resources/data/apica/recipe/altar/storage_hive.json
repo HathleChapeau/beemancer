@@ -5,11 +5,13 @@
     { "item": "apica:honeyed_iron" },
     { "item": "apica:honeyed_iron" },
     { "item": "apica:honeyed_iron" },
-    { "item": "apica:honeyed_iron" }
+    { "item": "apica:honeyed_iron" },
+    { "item": "apica:iron_foundation" },
+    { "item": "apica:iron_foundation" }
   ],
   "pollen": {
-    "apica:flower_pollen": 4,
-    "apica:tree_pollen": 4
+    "apica:flower_pollen": 7,
+    "apica:tree_pollen": 5
   },
   "result": { "id": "apica:storage_hive" }
 }

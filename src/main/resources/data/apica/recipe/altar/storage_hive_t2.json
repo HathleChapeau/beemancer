@@ -1,6 +1,6 @@
 {
   "type": "apica:altar",
-  "center_item": { "item": "apica:honey_crystal" },
+  "center_item": { "item": "apica:storage_hive" },
   "pedestal_items": [
     { "item": "apica:royal_gold" },
     { "item": "apica:royal_gold" },
@@ -10,10 +10,8 @@
     { "item": "apica:royal_crystal" }
   ],
   "pollen": {
-    "apica:pollen_of_light": 9,
-    "apica:pollen_of_darkness": 7,
-    "apica:pollen_of_fire": 13,
-    "apica:pollen_of_water": 11
+    "apica:pollen_of_wind": 5,
+    "apica:pollen_of_fire": 9
   },
-  "result": { "id": "apica:alembic_heart" }
+  "result": { "id": "apica:storage_hive_t2" }
 }
