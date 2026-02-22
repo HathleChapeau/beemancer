@@ -213,6 +213,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         if (data == null) return;
 
         ResonatorConfigManager.ensureClientLoaded();
+        BeeSpeciesManager.ensureClientLoaded();
         CodexPlayerData knowledge = getPlayerKnowledge();
         int[] levels = getStatLevels(data);
 
@@ -220,6 +221,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         int closestHz = 0;
         int closestGap = Integer.MAX_VALUE;
 
+        // Stat traits (drop, speed, foraging, tolerance, activity)
         for (int i = 0; i < STAT_NAMES.length; i++) {
             String traitKey = STAT_NAMES[i] + ":" + levels[i];
             if (knowledge.isTraitKnown(traitKey)) continue;
@@ -230,6 +232,28 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                 closestGap = gap;
                 closestHz = wf.frequency;
                 closestName = capitalize(STAT_NAMES[i]) + " Lv" + levels[i];
+            }
+        }
+
+        // Bee's own species frequency (if not yet discovered)
+        if (!knowledge.isFrequencyKnown(speciesId) && !knowledge.isSpeciesKnown(speciesId)) {
+            int gap = Math.abs(data.waveformFreq - localFreq);
+            if (gap < closestGap) {
+                closestGap = gap;
+                closestHz = data.waveformFreq;
+                closestName = "Species " + capitalize(speciesId);
+            }
+        }
+
+        // Compatible species (if frequency not yet discovered)
+        List<CompatSpecies> compatibles = findCompatibleSpecies(speciesId);
+        for (CompatSpecies cs : compatibles) {
+            if (knowledge.isSpeciesKnown(cs.id) || knowledge.isFrequencyKnown(cs.id)) continue;
+            int gap = Math.abs(cs.freq - localFreq);
+            if (gap < closestGap) {
+                closestGap = gap;
+                closestHz = cs.freq;
+                closestName = "Compat " + capitalize(cs.id);
             }
         }
 
