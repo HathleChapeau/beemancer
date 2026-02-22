@@ -1,6 +1,8 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/orientable",
   "textures": {
-    "all": "apica:block/alchemy/royal_furnace"
+    "top": "apica:block/furnace/royal_furnace_end",
+    "front": "apica:block/furnace/royal_furnace_front",
+    "side": "apica:block/furnace/royal_furnace_side"
   }
 }

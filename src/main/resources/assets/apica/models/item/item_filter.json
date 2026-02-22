@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:item/generated",
+  "render_type": "cutout",
   "textures": {
     "layer0": "apica:item/item_filter"
   }

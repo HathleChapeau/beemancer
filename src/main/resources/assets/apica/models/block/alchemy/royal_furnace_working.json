@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "apica:block/furnace/royal_furnace_end",
+    "front": "apica:block/furnace/royal_furnace_front_working",
+    "side": "apica:block/furnace/royal_furnace_side"
+  }
+}

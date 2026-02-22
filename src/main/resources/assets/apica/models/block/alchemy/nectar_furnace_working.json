@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "apica:block/furnace/nectar_furnace_end",
+    "front": "apica:block/furnace/nectar_furnace_front_working",
+    "side": "apica:block/furnace/nectar_furnace_side"
+  }
+}
