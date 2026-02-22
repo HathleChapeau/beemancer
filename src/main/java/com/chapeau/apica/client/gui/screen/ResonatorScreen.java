@@ -302,7 +302,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         renderFreqSlider(g, x, y, mouseX, mouseY);
 
         // 3 spinning cursors (decorative, between slider and knobs)
-        long time = System.currentTimeMillis();
+        long time = System.currentTimeMillis() % 360000L;
         int cursorY = y + 105;
         int cursorBaseX = x + GUI_W / 2;
         float[] speeds = {1.0f, 1.7f, 2.3f};
