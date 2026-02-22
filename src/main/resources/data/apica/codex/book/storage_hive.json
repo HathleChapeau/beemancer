@@ -15,7 +15,5 @@
       "result": "apica:storage_hive"
     }
   ],
-  "sticky_notes": [
-    {"craft": "apica:storage_hive", "type": "altar"}
-  ]
+  "sticky_notes": []
 }

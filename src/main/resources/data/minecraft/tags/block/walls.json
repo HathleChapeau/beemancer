@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "apica:honeyed_stone_wall",
+    "apica:honeyed_stone_brick_wall",
     "apica:iron_foundation_wall"
   ]
 }

@@ -308,7 +308,7 @@
   "codex.apica.logistics.item_pipe.title": "Item Pipe",
   "codex.apica.logistics.item_pipe.desc": "Solid material transport.",
   "codex.apica.logistics.item_filter.title": "Item Filter",
-  "codex.apica.logistics.item_filter.description": "A filter that controls which items can pass through a pipe.",
+  "codex.apica.logistics.item_filter.desc": "A filter that controls which items can pass through a pipe.",
   "codex.apica.logistics.item_filter.lore.p1": "The endless chaos of items flowing through our pipe networks has led me to devise a solution to filter items passing by.",
   "codex.apica.logistics.item_filter.lore.p2": "\u00a76\u00a7lTwo modes\u00a7r are available: \u00a76\u00a7lAccept\u00a7r, only allowing listed items through, and \u00a76\u00a7lDeny\u00a7r, blocking them. A priority system has also been added. Use \u00a76\u00a7lShift + Right Click\u00a7r \u00a76\u00a7lto remove\u00a7r a filter from its pipe.",
   "codex.apica.logistics.storage_controller_heart.title": "Storage Controller",
