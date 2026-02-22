@@ -1,6 +1,71 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
+  "render_type": "cutout",
   "textures": {
-    "all": "minecraft:block/iron_block"
-  }
+    "iron": "apica:block/iron",
+    "plate": "apica:block/iron",
+    "side": "apica:block/machines/resonator_bar"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 3, 16],
+      "faces": {
+        "north": {"texture": "#iron"},
+        "east": {"texture": "#iron"},
+        "west": {"texture": "#iron"},
+        "south": {"texture": "#iron"},
+        "up": {"texture": "#iron"},
+        "down": {"texture": "#iron"}
+      }
+    },
+    {
+      "from": [0, 13, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": {"texture": "#iron"},
+        "east": {"texture": "#iron"},
+        "west": {"texture": "#iron"},
+        "south": {"texture": "#iron"},
+        "up": {"texture": "#iron"},
+        "down": {"texture": "#iron"}
+      }
+    },
+    {
+      "from": [3, 3, 3],
+      "to": [13, 4, 13],
+      "faces": {
+        "north": {"texture": "#plate"},
+        "east": {"texture": "#plate"},
+        "west": {"texture": "#plate"},
+        "south": {"texture": "#plate"},
+        "up": {"texture": "#plate"},
+        "down": {"texture": "#plate"}
+      }
+    },
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": {"texture": "#side"},
+        "east": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "up": {"texture": "#side"},
+        "down": {"texture": "#side"}
+      }
+    },
+    {
+      "from": [0, 16, 0],
+      "to": [16, 0, 16],
+      "faces": {
+        "north": {"texture": "#side"},
+        "east": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "up": {"texture": "#side"},
+        "down": {"texture": "#side"}
+      }
+    }
+  ]
 }

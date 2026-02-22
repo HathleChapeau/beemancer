@@ -220,21 +220,21 @@ public class MultiblockPatterns {
             .add(0, -2, 1, block(ApicaBlocks.HONEY_PEDESTAL))   // Sud
             .add(1, -2, 0, block(ApicaBlocks.HONEY_PEDESTAL))   // Est
             .add(-1, -2, 0, block(ApicaBlocks.HONEY_PEDESTAL))  // Ouest
-            .add(-1, -2, -1, air())  // Coin NO
-            .add(1, -2, -1, air())   // Coin NE
-            .add(-1, -2, 1, air())   // Coin SO
-            .add(1, -2, 1, air())    // Coin SE
+            //.add(-1, -2, -1, air())  // Coin NO
+            //.add(1, -2, -1, air())   // Coin NE
+            //.add(-1, -2, 1, air())   // Coin SO
+            //.add(1, -2, 1, air())    // Coin SE
 
             // Étage 2 (Y-1): Vide
             .add(0, -1, 0, air())
-            .add(0, -1, -1, air())
-            .add(0, -1, 1, air())
-            .add(1, -1, 0, air())
-            .add(-1, -1, 0, air())
-            .add(-1, -1, -1, air())
-            .add(1, -1, -1, air())
-            .add(-1, -1, 1, air())
-            .add(1, -1, 1, air())
+            //.add(0, -1, -1, air())
+            //.add(0, -1, 1, air())
+            //.add(1, -1, 0, air())
+            //.add(-1, -1, 0, air())
+            //.add(-1, -1, -1, air())
+            //.add(1, -1, -1, air())
+            //.add(-1, -1, 1, air())
+            //.add(1, -1, 1, air())
 
             // Étage 3 (Y+0): Contrôleur au centre (ne pas vérifier), reste vide
             /*.add(0, 0, -1, air())
@@ -252,10 +252,10 @@ public class MultiblockPatterns {
             .add(0, 1, 1, block(ApicaBlocks.HONEY_RESERVOIR))      // Sud
             .add(1, 1, 0, block(ApicaBlocks.HONEY_RESERVOIR))      // Est
             .add(-1, 1, 0, block(ApicaBlocks.HONEY_RESERVOIR))     // Ouest
-            .add(-1, 1, -1, air())      // Coin NO
-            .add(1, 1, -1, air())       // Coin NE
-            .add(-1, 1, 1, air())       // Coin SO
-            .add(1, 1, 1, air())        // Coin SE
+            .add(-1, 1, -1, block(ApicaBlocks.IRON_FOUNDATION))      // Coin NO
+            .add(1, 1, -1, block(ApicaBlocks.IRON_FOUNDATION))       // Coin NE
+            .add(-1, 1, 1, block(ApicaBlocks.IRON_FOUNDATION))       // Coin SO
+            .add(1, 1, 1, block(ApicaBlocks.IRON_FOUNDATION))        // Coin SE
 
             .build()
     );
