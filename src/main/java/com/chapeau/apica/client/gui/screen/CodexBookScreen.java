@@ -35,6 +35,7 @@ import com.chapeau.apica.common.codex.book.CodexBookSection;
 import com.chapeau.apica.common.codex.book.AltarCraftSection;
 import com.chapeau.apica.common.codex.book.CraftSection;
 import com.chapeau.apica.common.codex.book.HeaderSection;
+import com.chapeau.apica.common.codex.book.ProcessSection;
 import com.chapeau.apica.common.codex.book.StickyNote;
 import com.chapeau.apica.client.gui.screen.codex.ResonationNoteRenderer;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
@@ -253,7 +254,17 @@ public class CodexBookScreen extends Screen {
         List<ItemStack> icons = new ArrayList<>();
         List<CodexBookSection> crafts = new ArrayList<>();
         for (StickyNote note : stickyNotes) {
-            if (note.craftItem() != null && !note.craftItem().isEmpty()) {
+            if (note.isProcess()) {
+                // Process note: icon from craft item, content from input -> output
+                if (note.craftItem() != null && !note.craftItem().isEmpty()) {
+                    ResourceLocation loc = ResourceLocation.parse(note.craftItem());
+                    var item = BuiltInRegistries.ITEM.get(loc);
+                    icons.add(item != null ? new ItemStack(item) : ItemStack.EMPTY);
+                } else {
+                    icons.add(ItemStack.EMPTY);
+                }
+                crafts.add(new ProcessSection(note.input(), note.output()));
+            } else if (note.craftItem() != null && !note.craftItem().isEmpty()) {
                 ResourceLocation loc = ResourceLocation.parse(note.craftItem());
                 var item = BuiltInRegistries.ITEM.get(loc);
                 icons.add(item != null ? new ItemStack(item) : ItemStack.EMPTY);
