@@ -102,6 +102,9 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private int targetHarm;
     private boolean targetsGenerated = false;
 
+    // Log throttle for undiscovered trait hint
+    private int lastLoggedFreq = -1;
+
     public ResonatorScreen(ResonatorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         if (menu.isAnalysisMode()) {
@@ -194,6 +197,46 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             localPhase = menu.getPhase();
             localHarm = menu.getHarmonics();
         }
+        logClosestUndiscoveredTrait();
+    }
+
+    private void logClosestUndiscoveredTrait() {
+        if (localFreq == lastLoggedFreq) return;
+        lastLoggedFreq = localFreq;
+
+        if (!menu.hasBee()) return;
+
+        ItemStack bee = menu.getStoredBee();
+        String speciesId = getSpeciesFromBee(bee);
+        BeeSpeciesManager.BeeSpeciesData data = speciesId != null
+                ? BeeSpeciesManager.getSpecies(speciesId) : null;
+        if (data == null) return;
+
+        ResonatorConfigManager.ensureClientLoaded();
+        CodexPlayerData knowledge = getPlayerKnowledge();
+        int[] levels = getStatLevels(data);
+
+        String closestName = null;
+        int closestHz = 0;
+        int closestGap = Integer.MAX_VALUE;
+
+        for (int i = 0; i < STAT_NAMES.length; i++) {
+            String traitKey = STAT_NAMES[i] + ":" + levels[i];
+            if (knowledge.isTraitKnown(traitKey)) continue;
+            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
+            if (wf == null) continue;
+            int gap = Math.abs(wf.frequency - localFreq);
+            if (gap < closestGap) {
+                closestGap = gap;
+                closestHz = wf.frequency;
+                closestName = capitalize(STAT_NAMES[i]) + " Lv" + levels[i];
+            }
+        }
+
+        if (closestName != null) {
+            System.out.println("[Apica Resonator] Closest undiscovered: " + closestName
+                    + " at " + closestHz + "Hz | Cursor: " + localFreq + "Hz | Gap: " + closestGap + "Hz");
+        }
     }
 
     @Override
@@ -233,6 +276,17 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
         // Frequency slider
         renderFreqSlider(g, x, y, mouseX, mouseY);
+
+        // 3 spinning cursors (decorative, between slider and knobs)
+        long time = System.currentTimeMillis();
+        int cursorY = y + 105;
+        int cursorBaseX = x + GUI_W / 2;
+        float[] speeds = {1.0f, 1.7f, 2.3f};
+        for (int i = 0; i < 3; i++) {
+            int cx = cursorBaseX + (i - 1) * 50;
+            float angle = (time * speeds[i] * 0.1f) % 360f;
+            renderSpinningCursor(g, cx, cursorY, 10, angle);
+        }
 
         // 3 Knobs
         int knobBaseX = x + GUI_W / 2;
@@ -640,6 +694,21 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
         int valW = font.width(valueText);
         g.drawString(font, valueText, cx - valW / 2, cy - radius - 12, 0xFFAABBDD, false);
+    }
+
+    private void renderSpinningCursor(GuiGraphics g, int cx, int cy, int radius, float angleDeg) {
+        fillCircle(g, cx, cy, radius, 0xFF222222);
+        fillCircle(g, cx, cy, radius - 2, 0xFF444444);
+        fillCircle(g, cx, cy, radius - 3, 0xFF333333);
+
+        renderArc(g, cx, cy, radius - 1, 0f, 360f, 0xFF5588DD);
+
+        double angleRad = Math.toRadians(angleDeg - 90);
+        int px = cx + (int) (Math.cos(angleRad) * (radius - 4));
+        int py = cy + (int) (Math.sin(angleRad) * (radius - 4));
+        renderLine(g, cx, cy, px, py, 0xFFFFFFFF);
+
+        fillCircle(g, cx, cy, 2, 0xFF666666);
     }
 
     private void fillCircle(GuiGraphics g, int cx, int cy, int radius, int color) {
