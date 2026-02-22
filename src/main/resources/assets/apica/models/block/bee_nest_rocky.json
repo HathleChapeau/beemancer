@@ -1,8 +1,9 @@
 {
-  "parent": "minecraft:block/cube_bottom_top",
+  "parent": "minecraft:block/orientable",
   "textures": {
     "top": "apica:block/nest/bee_nest_rocky_top",
-    "bottom": "apica:block/nest/bee_nest_rocky_top",
+    "bottom": "apica:block/nest/bee_nest_rocky_bottom",
+    "front": "apica:block/nest/bee_nest_rocky_front",
     "side": "apica:block/nest/bee_nest_rocky_side"
   }
 }
