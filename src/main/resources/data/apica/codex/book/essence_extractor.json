@@ -20,7 +20,8 @@
     {
       "type": "multiblock",
       "pattern": "essence_extractor",
-      "controller": "apica:extractor_heart"
+      "controller": "apica:extractor_heart",
+      "padding_y": 38
     }
   ],
   "sticky_notes": [
