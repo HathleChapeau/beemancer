@@ -29,6 +29,7 @@ import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.config.ResonatorConfigManager;
 import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.chapeau.apica.core.network.packets.ResonatorFinishPacket;
+import com.chapeau.apica.core.network.packets.ResonatorTraitMatchPacket;
 import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import net.minecraft.client.Minecraft;
@@ -103,11 +104,14 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private boolean targetsGenerated = false;
 
     // Log throttle for undiscovered trait hint
-    private static final int DETECTION_RANGE = 20;
+    private static final int DETECTION_RANGE = 10;
     private int lastLoggedFreq = -1;
     private int lastLoggedAmp = -1;
     private int lastLoggedPhase = -1;
     private int lastLoggedHarm = -1;
+
+    // Trait match detection (prevents spam, one-shot per screen open)
+    private boolean traitMatchSent = false;
 
     public ResonatorScreen(ResonatorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -202,6 +206,83 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             localHarm = menu.getHarmonics();
         }
         logClosestUndiscoveredTrait();
+        if (!traitMatchSent) {
+            checkTraitMatch();
+        }
+    }
+
+    /**
+     * Verifie si les 4 parametres locaux correspondent a un trait non decouvert.
+     * Seuils: freq <=20% norm, amp <=5 raw, phase <=5% norm, harm <=5 raw.
+     * Si match, envoie ResonatorTraitMatchPacket et set traitMatchSent=true.
+     */
+    private void checkTraitMatch() {
+        if (!menu.hasBee()) return;
+
+        ItemStack bee = menu.getStoredBee();
+        String speciesId = getSpeciesFromBee(bee);
+        BeeSpeciesManager.BeeSpeciesData data = speciesId != null
+                ? BeeSpeciesManager.getSpecies(speciesId) : null;
+        if (data == null) return;
+
+        ResonatorConfigManager.ensureClientLoaded();
+        BeeSpeciesManager.ensureClientLoaded();
+        CodexPlayerData knowledge = getPlayerKnowledge();
+        int[] levels = getStatLevels(data);
+
+        // Check stat traits (drop, speed, foraging, tolerance, activity)
+        for (int i = 0; i < STAT_NAMES.length; i++) {
+            String traitKey = STAT_NAMES[i] + ":" + levels[i];
+            if (knowledge.isTraitKnown(traitKey)) continue;
+            ResonatorConfigManager.StatWaveform wf = ResonatorConfigManager.getStatWaveform(STAT_NAMES[i], levels[i]);
+            if (wf == null) continue;
+            if (isWaveformMatch(wf.frequency, wf.amplitude, wf.phase, wf.harmonics)) {
+                sendTraitMatch(traitKey);
+                return;
+            }
+        }
+
+        // Check bee's own species frequency (if not yet discovered)
+        if (!knowledge.isFrequencyKnown(speciesId) && !knowledge.isSpeciesKnown(speciesId)) {
+            if (isWaveformMatch(data.waveformFreq, data.waveformAmp, data.waveformPhase, data.waveformHarm)) {
+                sendTraitMatch("species:" + speciesId);
+                return;
+            }
+        }
+
+        // Check compatible species (if frequency not yet discovered)
+        List<CompatSpecies> compatibles = findCompatibleSpecies(speciesId);
+        for (CompatSpecies cs : compatibles) {
+            if (knowledge.isSpeciesKnown(cs.id) || knowledge.isFrequencyKnown(cs.id)) continue;
+            if (isWaveformMatch(cs.freq, cs.amp, cs.phase, cs.harm)) {
+                sendTraitMatch("compat:" + cs.id);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Verifie si les parametres locaux matchent une waveform cible.
+     * Freq: |diff| <= 20 (normalise sur FREQ_MIN-FREQ_MAX range en %)
+     * Amp: |diff| <= 5 (raw 0-100)
+     * Phase: |diff| <= 5 (normalise sur 360 en %)
+     * Harm: |diff| <= 5 (raw 0-100)
+     */
+    private boolean isWaveformMatch(int tFreq, int tAmp, int tPhase, int tHarm) {
+        float freqDiff = Math.abs((localFreq - tFreq) / (float) (FREQ_MAX - FREQ_MIN) * 100f);
+        float ampDiff = Math.abs(localAmp - tAmp);
+        float phaseDiff = Math.abs((localPhase - tPhase) / 360f * 100f);
+        float harmDiff = Math.abs(localHarm - tHarm);
+        return freqDiff <= 20f && ampDiff <= 5f && phaseDiff <= 5f && harmDiff <= 5f;
+    }
+
+    private void sendTraitMatch(String traitKey) {
+        BlockPos pos = menu.getBlockPos();
+        if (pos == null) return;
+        traitMatchSent = true;
+        System.out.println("[Apica Resonator] MATCH! Trait: " + traitKey
+                + " | Params: " + localFreq + "Hz " + localAmp + "A " + localPhase + "\u00B0 " + localHarm + "H");
+        PacketDistributor.sendToServer(new ResonatorTraitMatchPacket(pos, traitKey));
     }
 
     private void logClosestUndiscoveredTrait() {
@@ -279,20 +360,24 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
         if (closestName == null) return;
 
-        // Proximity: 0 at edge of DETECTION_RANGE, ±1 at exact match, sign = side
+        // Proximity: ±100% at edges of detection zone, 0% exactly on trait, sign = side
+        // Ex: trait=80Hz, range=10 → 70Hz=-100%, 75Hz=-50%, 80Hz=0%, 85Hz=+50%, 90Hz=+100%
+        // Outside zone (gap > range): not logged
         float proximity;
-        if (closestGap >= DETECTION_RANGE) {
-            proximity = 0f;
+        if (closestGap > DETECTION_RANGE) {
+            proximity = Float.NaN;
         } else {
-            float magnitude = 1f - (float) closestGap / DETECTION_RANGE;
+            float magnitude = (float) closestGap / DETECTION_RANGE * 100f;
             int sign = localFreq >= closestHz ? 1 : -1;
-            if (closestGap == 0) sign = 1;
+            if (closestGap == 0) sign = 0;
             proximity = magnitude * sign;
         }
 
+        if (Float.isNaN(proximity)) return;
+
         System.out.println("[Apica Resonator] Closest undiscovered: " + closestName
                 + " at " + closestHz + "Hz | Cursor: " + localFreq + "Hz | Gap: " + closestGap + "Hz"
-                + " | Proximity: " + String.format("%+.0f%%", proximity * 100));
+                + " | Proximity: " + String.format("%+.0f%%", proximity));
 
         // Per-parameter difference: current potard value vs trait target value + % diff
         float freqDiff = (localFreq - closestHz) / (float) (FREQ_MAX - FREQ_MIN) * 100f;

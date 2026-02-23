@@ -21,6 +21,7 @@ import com.chapeau.apica.core.network.packets.HoverbikePartRemovePacket;
 import com.chapeau.apica.core.network.packets.StorageTaskCancelPacket;
 import com.chapeau.apica.core.network.packets.ItemFilterActionPacket;
 import com.chapeau.apica.core.network.packets.ResonatorFinishPacket;
+import com.chapeau.apica.core.network.packets.ResonatorTraitMatchPacket;
 import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
 import com.chapeau.apica.core.network.packets.StorageTasksSyncPacket;
 import net.neoforged.bus.api.IEventBus;
@@ -100,6 +101,12 @@ public class ApicaNetwork {
                 ResonatorFinishPacket.TYPE,
                 ResonatorFinishPacket.STREAM_CODEC,
                 ResonatorFinishPacket::handle
+        );
+
+        registrar.playToServer(
+                ResonatorTraitMatchPacket.TYPE,
+                ResonatorTraitMatchPacket.STREAM_CODEC,
+                ResonatorTraitMatchPacket::handle
         );
 
         registrar.playToServer(

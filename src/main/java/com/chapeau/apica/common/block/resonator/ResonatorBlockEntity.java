@@ -77,6 +77,9 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
     private int analysisDuration = 0;
     @Nullable
     private UUID analyzingPlayerUUID = null;
+    /** Trait key being analyzed (null = full species analysis, non-null = single trait analysis). */
+    @Nullable
+    private String analyzingTraitKey = null;
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -151,6 +154,55 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     /**
+     * Demarre l'analyse d'un trait specifique (match waveform).
+     * Duree fixe 10 secondes (200 ticks).
+     */
+    public void startTraitAnalysis(UUID playerUUID, String traitKey) {
+        this.analysisDuration = 200;
+        this.analysisProgress = 0;
+        this.analysisInProgress = true;
+        this.analyzingPlayerUUID = playerUUID;
+        this.analyzingTraitKey = traitKey;
+        setChanged();
+    }
+
+    @Nullable
+    public String getAnalyzingTraitKey() {
+        return analyzingTraitKey;
+    }
+
+    /**
+     * Complete l'analyse d'un trait: apprend seulement le trait specifique.
+     * - "species:xxx" → learnFrequency(xxx)
+     * - "compat:xxx" → learnFrequency(xxx)
+     * - sinon (stat trait) → learnTrait(traitKey)
+     */
+    public void completeTraitAnalysis(ServerPlayer player) {
+        if (!analysisInProgress || analysisProgress < analysisDuration) return;
+        if (analyzingTraitKey == null) {
+            cancelAnalysis();
+            return;
+        }
+
+        CodexPlayerData codex = player.getData(ApicaAttachments.CODEX_DATA);
+
+        if (analyzingTraitKey.startsWith("species:")) {
+            String speciesId = analyzingTraitKey.substring("species:".length());
+            codex.learnFrequency(speciesId);
+        } else if (analyzingTraitKey.startsWith("compat:")) {
+            String compatId = analyzingTraitKey.substring("compat:".length());
+            codex.learnFrequency(compatId);
+        } else {
+            codex.learnTrait(analyzingTraitKey);
+        }
+
+        player.setData(ApicaAttachments.CODEX_DATA, codex);
+        PacketDistributor.sendToPlayer(player, new CodexSyncPacket(codex));
+
+        cancelAnalysis();
+    }
+
+    /**
      * Complete l'analyse: debloque l'espece et les niveaux exacts des 5 traits.
      */
     public void completeAnalysis(ServerPlayer player) {
@@ -195,6 +247,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         analysisProgress = 0;
         analysisDuration = 0;
         analyzingPlayerUUID = null;
+        analyzingTraitKey = null;
         setChanged();
     }
 
@@ -278,6 +331,9 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
             if (analyzingPlayerUUID != null) {
                 tag.putUUID("AnalyzingPlayer", analyzingPlayerUUID);
             }
+            if (analyzingTraitKey != null) {
+                tag.putString("AnalyzingTraitKey", analyzingTraitKey);
+            }
         }
     }
 
@@ -299,6 +355,11 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         analysisDuration = tag.getInt("AnalysisDuration");
         if (tag.hasUUID("AnalyzingPlayer")) {
             analyzingPlayerUUID = tag.getUUID("AnalyzingPlayer");
+        }
+        if (tag.contains("AnalyzingTraitKey")) {
+            analyzingTraitKey = tag.getString("AnalyzingTraitKey");
+        } else {
+            analyzingTraitKey = null;
         }
     }
 
