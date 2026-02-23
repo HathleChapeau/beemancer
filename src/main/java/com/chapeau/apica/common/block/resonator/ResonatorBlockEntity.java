@@ -157,6 +157,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         this.analysisInProgress = true;
         this.analyzingPlayerUUID = playerUUID;
         setChanged();
+        syncToClient();
     }
 
     /**
@@ -170,6 +171,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         this.analyzingPlayerUUID = playerUUID;
         this.analyzingTraitKey = traitKey;
         setChanged();
+        syncToClient();
     }
 
     @Nullable
@@ -255,6 +257,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         analyzingPlayerUUID = null;
         analyzingTraitKey = null;
         setChanged();
+        syncToClient();
     }
 
     private static int parseTierNumber(String tier) {
@@ -387,6 +390,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         if (!storedBee.isEmpty()) {
             tag.put("StoredBee", storedBee.save(registries, new CompoundTag()));
         }
+        tag.putBoolean("AnalysisInProgress", analysisInProgress);
         return tag;
     }
 

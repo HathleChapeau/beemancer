@@ -20,29 +20,54 @@
  */
 package com.chapeau.apica.common.block.injector;
 
+import com.chapeau.apica.client.particle.ParticleEmitter;
 import com.chapeau.apica.common.blockentity.injector.InjectorBlockEntity;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
+import com.chapeau.apica.core.registry.ApicaParticles;
+import com.chapeau.apica.core.util.BeeInjectionHelper;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 public class InjectorBlock extends BaseEntityBlock {
 
     public static final MapCodec<InjectorBlock> CODEC = simpleCodec(InjectorBlock::new);
 
+    private static final VoxelShape SHAPE = Shapes.or(
+        Block.box(0, 0, 0, 3, 6, 16),      // Mur ouest
+        Block.box(0, 0, 0, 16, 6, 3),      // Mur nord
+        Block.box(13, 0, 0, 16, 6, 16),    // Mur est
+        Block.box(0, 0, 13, 16, 6, 16),    // Mur sud
+        Block.box(3, 5, 3, 13, 6, 13),     // Plaque centrale
+        Block.box(5, 6, 0, 11, 14, 4),     // Projecteur nord
+        Block.box(5, 6, 12, 11, 14, 16)    // Projecteur sud
+    );
+
     public InjectorBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
 
     @Override
@@ -78,6 +103,45 @@ public class InjectorBlock extends BaseEntityBlock {
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof InjectorBlockEntity injector)) return;
+
+        ItemStack bee = injector.getItemHandler().getStackInSlot(InjectorBlockEntity.BEE_SLOT);
+        ItemStack essence = injector.getItemHandler().getStackInSlot(InjectorBlockEntity.ESSENCE_SLOT);
+        if (bee.isEmpty() || essence.isEmpty()) return;
+        if (BeeInjectionHelper.isSatiated(bee)) return;
+
+        double cx = pos.getX() + 0.5;
+        double cy = pos.getY() + 11.0 / 16.0;
+        double cz = pos.getZ() + 0.5;
+
+        // Particules miel depuis le projecteur nord vers le centre
+        new ParticleEmitter(ApicaParticles.HONEY_PIXEL.get())
+            .at(cx, cy, pos.getZ() + 3.5 / 16.0)
+            .speed(0, 0, 0.025)
+            .spread(0.1, 0.1, 0)
+            .speedVariance(0.005, 0.005, 0.005)
+            .count(1)
+            .lifetime(12)
+            .scale(0.04f)
+            .fadeOut()
+            .spawn(level);
+
+        // Particules miel depuis le projecteur sud vers le centre
+        new ParticleEmitter(ApicaParticles.HONEY_PIXEL.get())
+            .at(cx, cy, pos.getZ() + 12.5 / 16.0)
+            .speed(0, 0, -0.025)
+            .spread(0.1, 0.1, 0)
+            .speedVariance(0.005, 0.005, 0.005)
+            .count(1)
+            .lifetime(12)
+            .scale(0.04f)
+            .fadeOut()
+            .spawn(level);
     }
 
     @Override

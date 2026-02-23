@@ -38,6 +38,7 @@ import com.chapeau.apica.client.renderer.block.HoneyPedestalRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.apica.client.renderer.block.CentrifugeHeartRenderer;
 import com.chapeau.apica.client.renderer.block.CrankRenderer;
+import com.chapeau.apica.client.renderer.block.InjectorRenderer;
 import com.chapeau.apica.client.renderer.block.InfuserHeartRenderer;
 import com.chapeau.apica.client.renderer.block.CrystallizerRenderer;
 import com.chapeau.apica.client.renderer.block.InfuserRenderer;
@@ -230,6 +231,9 @@ public class ClientSetup {
         // ResonatorRenderer - abeille flottante au-dessus du resonateur
         event.registerBlockEntityRenderer(ApicaBlockEntities.RESONATOR.get(),
             ResonatorRenderer::new);
+        // InjectorRenderer - abeille flottante + essence a plat sur l'injecteur
+        event.registerBlockEntityRenderer(ApicaBlockEntities.INJECTOR.get(),
+            InjectorRenderer::new);
         // StorageBarrelRenderer - item + quantite sur la face avant
         event.registerBlockEntityRenderer(ApicaBlockEntities.STORAGE_BARREL.get(),
             com.chapeau.apica.client.renderer.block.StorageBarrelRenderer::new);
