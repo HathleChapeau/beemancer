@@ -189,41 +189,41 @@ public class InjectorBlock extends BaseEntityBlock {
         Direction facing = state.getValue(FACING);
         boolean zAxis = (facing == Direction.NORTH || facing == Direction.SOUTH);
 
-        // Projecteur 1 (near side) vers le centre
+        // Projecteur 1 (near side): runes vers le centre
         double x1 = zAxis ? cx : (cx - 0.5 + 3.5 / 16.0);
         double z1 = zAxis ? (pos.getZ() + 3.5 / 16.0) : cz;
         double sx1 = zAxis ? 0 : 0.025;
         double sz1 = zAxis ? 0.025 : 0;
-        double spreadX1 = zAxis ? 0.1 : 0;
-        double spreadZ1 = zAxis ? 0 : 0.1;
 
-        new ParticleEmitter(ApicaParticles.HONEY_PIXEL.get())
+        new ParticleEmitter(ApicaParticles.RUNE.get())
             .at(x1, cy, z1)
             .speed(sx1, 0, sz1)
-            .spread(spreadX1, 0.1, spreadZ1)
+            .spread(0.1, 0.05, 0.1)
             .speedVariance(0.005, 0.005, 0.005)
-            .color(1.0f, 0.85f, 0.2f)
+            .gravity(0f)
             .scale(0.03f)
             .count(1)
             .lifetime(12)
+            .fadeOut()
             .fullBright()
             .spawn(level);
 
-        // Projecteur 2 (far side) vers le centre
+        // Projecteur 2 (far side): runes vers le centre
         double x2 = zAxis ? cx : (cx - 0.5 + 12.5 / 16.0);
         double z2 = zAxis ? (pos.getZ() + 12.5 / 16.0) : cz;
         double sx2 = zAxis ? 0 : -0.025;
         double sz2 = zAxis ? -0.025 : 0;
 
-        new ParticleEmitter(ApicaParticles.HONEY_PIXEL.get())
+        new ParticleEmitter(ApicaParticles.RUNE.get())
             .at(x2, cy, z2)
             .speed(sx2, 0, sz2)
-            .spread(spreadX1, 0.1, spreadZ1)
+            .spread(0.1, 0.05, 0.1)
             .speedVariance(0.005, 0.005, 0.005)
-            .color(1.0f, 0.85f, 0.2f)
+            .gravity(0f)
             .scale(0.03f)
             .count(1)
             .lifetime(12)
+            .fadeOut()
             .fullBright()
             .spawn(level);
     }
