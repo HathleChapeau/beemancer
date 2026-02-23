@@ -56,7 +56,7 @@ public class ResonatorRenderer implements BlockEntityRenderer<ResonatorBlockEnti
         float bob = (float) Math.sin(time * 0.1) * 0.04f;
 
         poseStack.pushPose();
-        poseStack.translate(0.8f, 2.4f + bob, 0.8f);
+        poseStack.translate(0.8f, 1.4f + bob, 0.8f);
         poseStack.scale(0.5f, 0.5f, 0.5f);
         poseStack.translate(-0.5, -0.5, -0.5);
         poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
