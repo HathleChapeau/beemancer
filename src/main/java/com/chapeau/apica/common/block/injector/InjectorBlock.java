@@ -63,7 +63,8 @@ public class InjectorBlock extends BaseEntityBlock {
         Block.box(0, 0, 0, 16, 6, 3),      // Mur nord
         Block.box(13, 0, 0, 16, 6, 16),    // Mur est
         Block.box(0, 0, 13, 16, 6, 16),    // Mur sud
-        Block.box(3, 5, 3, 13, 6, 13)      // Plaque centrale
+        Block.box(3, 5, 3, 13, 6, 13) ,     // Plaque centrale
+        Block.box(0, 0, 0, 16, 1, 16)      // Plaque centrale
     );
 
     // NORTH/SOUTH: projecteurs sur axe Z
