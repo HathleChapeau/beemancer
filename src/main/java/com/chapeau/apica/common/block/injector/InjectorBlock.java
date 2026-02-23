@@ -23,7 +23,6 @@ package com.chapeau.apica.common.block.injector;
 import com.chapeau.apica.client.particle.ParticleEmitter;
 import com.chapeau.apica.common.blockentity.injector.InjectorBlockEntity;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
-import com.chapeau.apica.core.registry.ApicaParticles;
 import com.chapeau.apica.core.util.BeeInjectionHelper;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -34,8 +33,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import org.joml.Vector3f;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -117,32 +118,29 @@ public class InjectorBlock extends BaseEntityBlock {
         if (bee.isEmpty() || essence.isEmpty()) return;
         if (BeeInjectionHelper.isSatiated(bee)) return;
 
+        DustParticleOptions pollen = new DustParticleOptions(new Vector3f(1.0f, 0.85f, 0.2f), 0.6f);
+
         double cx = pos.getX() + 0.5;
         double cy = pos.getY() + 11.0 / 16.0;
-        double cz = pos.getZ() + 0.5;
 
-        // Particules miel depuis le projecteur nord vers le centre
-        new ParticleEmitter(ApicaParticles.HONEY_PIXEL.get())
+        // Particules pollen depuis le projecteur nord vers le centre
+        new ParticleEmitter(pollen)
             .at(cx, cy, pos.getZ() + 3.5 / 16.0)
             .speed(0, 0, 0.025)
             .spread(0.1, 0.1, 0)
             .speedVariance(0.005, 0.005, 0.005)
             .count(1)
             .lifetime(12)
-            .scale(0.04f)
-            .fadeOut()
             .spawn(level);
 
-        // Particules miel depuis le projecteur sud vers le centre
-        new ParticleEmitter(ApicaParticles.HONEY_PIXEL.get())
+        // Particules pollen depuis le projecteur sud vers le centre
+        new ParticleEmitter(pollen)
             .at(cx, cy, pos.getZ() + 12.5 / 16.0)
             .speed(0, 0, -0.025)
             .spread(0.1, 0.1, 0)
             .speedVariance(0.005, 0.005, 0.005)
             .count(1)
             .lifetime(12)
-            .scale(0.04f)
-            .fadeOut()
             .spawn(level);
     }
 

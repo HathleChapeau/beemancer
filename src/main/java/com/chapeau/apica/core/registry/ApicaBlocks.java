@@ -418,6 +418,7 @@ public class ApicaBlocks {
             () -> new com.chapeau.apica.common.block.injector.InjectorBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.WOOD)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
     // --- ALCHEMY HEARTS ---
@@ -627,7 +628,8 @@ public class ApicaBlocks {
     public static final DeferredBlock<ResonatorBlock> RESONATOR = BLOCKS.register("resonator",
             () -> new ResonatorBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
-                    .sound(SoundType.METAL)));
+                    .sound(SoundType.METAL)
+                    .noOcclusion()));
 
     // --- ASSEMBLY TABLE ---
     public static final DeferredBlock<AssemblyTableBlock> ASSEMBLY_TABLE = BLOCKS.register("assembly_table",
