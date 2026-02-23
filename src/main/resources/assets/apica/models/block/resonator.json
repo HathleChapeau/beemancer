@@ -2,7 +2,7 @@
   "parent": "minecraft:block/block",
   "render_type": "cutout",
   "textures": {
-    "iron": "apica:block/machines/resonator",
+    "iron": "apica:block/iron",
     "plate": "apica:block/machines/resonator_center_top",
     "crystal": "apica:block/machines/resonator_essence",
     "side": "apica:block/machines/resonator_bar"
@@ -24,17 +24,17 @@
       "from": [3, 6, 3],
       "to": [13, 7, 13],
       "faces": {
-        "north": {"texture": "#plate"},
-        "east": {"texture": "#plate"},
-        "west": {"texture": "#plate"},
-        "south": {"texture": "#plate"},
+        "north": {"texture": "#plate", "uv": [0, 3, 16, 4]},
+        "east": {"texture": "#plate", "uv": [0, 3, 16, 4]},
+        "west": {"texture": "#plate", "uv": [0, 3, 16, 4]},
+        "south": {"texture": "#plate", "uv": [0, 3, 16, 4]},
         "up": {"texture": "#plate"},
         "down": {"texture": "#plate"}
       }
     },
     {
-      "from": [8, 0, 0],
-      "to": [8, 16, 16],
+      "from": [8, 1, 0],
+      "to": [8, 17, 16],
       "rotation": {"angle": 45, "axis": "y", "origin": [8, 5, 8], "rescale": true},
       "faces": {
         "east": {"uv": [0, 0, 16, 16], "texture": "#crystal"},
@@ -42,8 +42,8 @@
       }
     },
     {
-      "from": [0, 0, 8],
-      "to": [16, 16, 8],
+      "from": [0, 1, 8],
+      "to": [16, 17, 8],
       "rotation": {"angle": 45, "axis": "y", "origin": [8, 5, 8], "rescale": true},
       "faces": {
         "north": {"uv": [0, 0, 16, 16], "texture": "#crystal"},
