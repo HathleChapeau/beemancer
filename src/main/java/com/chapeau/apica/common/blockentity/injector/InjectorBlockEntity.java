@@ -31,7 +31,9 @@ import com.chapeau.apica.core.config.EssenceValue;
 import com.chapeau.apica.core.config.InjectionConfigManager;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaItems;
+import com.chapeau.apica.core.registry.ApicaParticles;
 import com.chapeau.apica.core.util.BeeInjectionHelper;
+import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -46,9 +48,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -149,6 +153,12 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         } else {
             be.processEssence(beeStack, (EssenceItem) essenceStack.getItem());
         }
+
+        // Explosion de runes quand l'abeille devient attuned
+        if (BeeInjectionHelper.isSatiated(beeStack) && level instanceof ServerLevel serverLevel) {
+            ParticleHelper.burst(serverLevel, Vec3.atCenterOf(pos), ApicaParticles.RUNE.get(), 30);
+        }
+
         be.processTimer = 0;
         be.itemHandler.extractItem(ESSENCE_SLOT, 1, false);
         be.setChanged();

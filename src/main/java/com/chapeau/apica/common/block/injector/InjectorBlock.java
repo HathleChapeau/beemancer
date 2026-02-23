@@ -57,8 +57,10 @@ public class InjectorBlock extends BaseEntityBlock {
         Block.box(13, 0, 0, 16, 6, 16),    // Mur est
         Block.box(0, 0, 13, 16, 6, 16),    // Mur sud
         Block.box(3, 5, 3, 13, 6, 13),     // Plaque centrale
-        Block.box(5, 6, 0, 11, 14, 4),     // Projecteur nord
-        Block.box(5, 6, 12, 11, 14, 16)    // Projecteur sud
+        Block.box(5, 6, 0, 11, 14, 3),     // Pilier nord
+        Block.box(6, 9, 3, 10, 13, 4),     // Face projecteur nord
+        Block.box(5, 6, 13, 11, 14, 16),   // Pilier sud
+        Block.box(6, 9, 12, 10, 13, 13)    // Face projecteur sud
     );
 
     public InjectorBlock(Properties properties) {

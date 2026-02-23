@@ -10,6 +10,7 @@
  * |-----------------------------|----------------------|-----------------------|
  * | InjectorBlockEntity         | Donnees a rendre     | getItemHandler()      |
  * | AnimationTimer              | Temps smooth         | Bobbing + rotation    |
+ * | LevelRenderer               | Lumiere correcte     | getLightColor()       |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -24,6 +25,7 @@ import com.chapeau.apica.common.blockentity.injector.InjectorBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -50,12 +52,15 @@ public class InjectorRenderer implements BlockEntityRenderer<InjectorBlockEntity
         ItemStack beeStack = blockEntity.getItemHandler().getStackInSlot(InjectorBlockEntity.BEE_SLOT);
         ItemStack essenceStack = blockEntity.getItemHandler().getStackInSlot(InjectorBlockEntity.ESSENCE_SLOT);
 
+        // Lumiere echantillonnee au-dessus du bloc pour eviter l'assombrissement
+        int light = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().above());
+
         if (!essenceStack.isEmpty()) {
-            renderEssence(essenceStack, blockEntity, poseStack, buffer, packedLight, packedOverlay);
+            renderEssence(essenceStack, blockEntity, poseStack, buffer, light, packedOverlay);
         }
 
         if (!beeStack.isEmpty()) {
-            renderBee(beeStack, blockEntity, partialTick, poseStack, buffer, packedLight, packedOverlay);
+            renderBee(beeStack, blockEntity, partialTick, poseStack, buffer, light, packedOverlay);
         }
     }
 

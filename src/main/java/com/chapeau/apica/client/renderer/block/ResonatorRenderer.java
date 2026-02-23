@@ -25,6 +25,7 @@ import com.chapeau.apica.common.block.resonator.ResonatorBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -55,13 +56,16 @@ public class ResonatorRenderer implements BlockEntityRenderer<ResonatorBlockEnti
         float time = AnimationTimer.getRenderTime(partialTick);
         float bob = (float) Math.sin(time * 0.1) * 0.04f;
 
+        // Lumiere echantillonnee au-dessus du bloc pour eviter l'assombrissement
+        int light = LevelRenderer.getLightColor(blockEntity.getLevel(), blockEntity.getBlockPos().above());
+
         poseStack.pushPose();
         poseStack.translate(0.8f, 1.4f + bob, 0.8f);
         poseStack.scale(0.5f, 0.5f, 0.5f);
         poseStack.translate(-0.5, -0.5, -0.5);
         poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
 
-        itemRenderer.renderStatic(storedBee, ItemDisplayContext.FIXED, packedLight, packedOverlay,
+        itemRenderer.renderStatic(storedBee, ItemDisplayContext.FIXED, light, packedOverlay,
                 poseStack, buffer, blockEntity.getLevel(), 0);
         poseStack.popPose();
     }
