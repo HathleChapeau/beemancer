@@ -156,7 +156,7 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
 
         // Explosion spherique de runes quand l'abeille devient attuned
         if (BeeInjectionHelper.isSatiated(beeStack) && level instanceof ServerLevel serverLevel) {
-            ParticleHelper.spawnSphere(serverLevel, ApicaParticles.RUNE.get(), Vec3.atCenterOf(pos), 0.3, 50);
+            ParticleHelper.spawnRingBurst(serverLevel, ApicaParticles.RUNE.get(), Vec3.atCenterOf(pos), 30, 0.15);
         }
 
         be.processTimer = 0;

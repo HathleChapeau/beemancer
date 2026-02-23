@@ -49,7 +49,7 @@ public class RuneParticle extends TextureSheetParticle implements ConfigurablePa
         this.xd = xSpeed;
         this.yd = ySpeed;
         this.zd = zSpeed;
-        this.gravity = -0.03f;
+        this.gravity = 0.0f;
     }
 
     // =========================================================================

@@ -196,6 +196,26 @@ public class ParticleHelper {
         }
     }
 
+    /**
+     * Spawne un anneau horizontal de particules avec vitesse radiale vers l'exterieur.
+     * Chaque particule part du centre et se deplace vers l'exterieur du cercle.
+     *
+     * @param level    ServerLevel
+     * @param particle Type de particule
+     * @param center   Centre de l'anneau
+     * @param count    Nombre de particules
+     * @param speed    Vitesse radiale vers l'exterieur
+     */
+    public static void spawnRingBurst(ServerLevel level, ParticleOptions particle, Vec3 center, int count, double speed) {
+        double angleStep = (2 * Math.PI) / count;
+        for (int i = 0; i < count; i++) {
+            double angle = i * angleStep;
+            double dx = Math.cos(angle);
+            double dz = Math.sin(angle);
+            level.sendParticles(particle, center.x, center.y, center.z, 0, dx, 0, dz, speed);
+        }
+    }
+
     // ==================== Surcharges ResourceLocation ====================
 
     public static void spawnParticles(ServerLevel level, ResourceLocation particleId, Vec3 pos, int count, double spread, double speed) {
