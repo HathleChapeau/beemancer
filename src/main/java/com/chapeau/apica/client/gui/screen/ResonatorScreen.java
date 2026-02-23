@@ -103,7 +103,11 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private boolean targetsGenerated = false;
 
     // Log throttle for undiscovered trait hint
+    private static final int DETECTION_RANGE = 20;
     private int lastLoggedFreq = -1;
+    private int lastLoggedAmp = -1;
+    private int lastLoggedPhase = -1;
+    private int lastLoggedHarm = -1;
 
     public ResonatorScreen(ResonatorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -201,8 +205,12 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     }
 
     private void logClosestUndiscoveredTrait() {
-        if (localFreq == lastLoggedFreq) return;
+        if (localFreq == lastLoggedFreq && localAmp == lastLoggedAmp
+                && localPhase == lastLoggedPhase && localHarm == lastLoggedHarm) return;
         lastLoggedFreq = localFreq;
+        lastLoggedAmp = localAmp;
+        lastLoggedPhase = localPhase;
+        lastLoggedHarm = localHarm;
 
         if (!menu.hasBee()) return;
 
@@ -220,6 +228,9 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
         String closestName = null;
         int closestHz = 0;
         int closestGap = Integer.MAX_VALUE;
+        int closestAmp = 0;
+        int closestPhase = 0;
+        int closestHarm = 0;
 
         // Stat traits (drop, speed, foraging, tolerance, activity)
         for (int i = 0; i < STAT_NAMES.length; i++) {
@@ -232,6 +243,9 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                 closestGap = gap;
                 closestHz = wf.frequency;
                 closestName = capitalize(STAT_NAMES[i]) + " Lv" + levels[i];
+                closestAmp = wf.amplitude;
+                closestPhase = wf.phase;
+                closestHarm = wf.harmonics;
             }
         }
 
@@ -242,6 +256,9 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                 closestGap = gap;
                 closestHz = data.waveformFreq;
                 closestName = "Species " + capitalize(speciesId);
+                closestAmp = data.waveformAmp;
+                closestPhase = data.waveformPhase;
+                closestHarm = data.waveformHarm;
             }
         }
 
@@ -254,13 +271,43 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                 closestGap = gap;
                 closestHz = cs.freq;
                 closestName = "Compat " + capitalize(cs.id);
+                closestAmp = cs.amp;
+                closestPhase = cs.phase;
+                closestHarm = cs.harm;
             }
         }
 
-        if (closestName != null) {
-            System.out.println("[Apica Resonator] Closest undiscovered: " + closestName
-                    + " at " + closestHz + "Hz | Cursor: " + localFreq + "Hz | Gap: " + closestGap + "Hz");
+        if (closestName == null) return;
+
+        // Proximity: 0 at edge of DETECTION_RANGE, ±1 at exact match, sign = side
+        float proximity;
+        if (closestGap >= DETECTION_RANGE) {
+            proximity = 0f;
+        } else {
+            float magnitude = 1f - (float) closestGap / DETECTION_RANGE;
+            int sign = localFreq >= closestHz ? 1 : -1;
+            if (closestGap == 0) sign = 1;
+            proximity = magnitude * sign;
         }
+
+        System.out.println("[Apica Resonator] Closest undiscovered: " + closestName
+                + " at " + closestHz + "Hz | Cursor: " + localFreq + "Hz | Gap: " + closestGap + "Hz"
+                + " | Proximity: " + String.format("%+.0f%%", proximity * 100));
+
+        // Per-parameter difference: current potard value vs trait target value + % diff
+        float freqDiff = (localFreq - closestHz) / (float) (FREQ_MAX - FREQ_MIN) * 100f;
+        float ampDiff = (localAmp - closestAmp);
+        float phaseDiff = (localPhase - closestPhase) / 360f * 100f;
+        float harmDiff = (localHarm - closestHarm);
+
+        System.out.println("[Apica Resonator]   FREQ: " + localFreq + " vs " + closestHz
+                + " (" + String.format("%+.1f%%", freqDiff) + ")"
+                + " | AMP: " + localAmp + " vs " + closestAmp
+                + " (" + String.format("%+.1f%%", ampDiff) + ")"
+                + " | PHASE: " + localPhase + "\u00B0 vs " + closestPhase + "\u00B0"
+                + " (" + String.format("%+.1f%%", phaseDiff) + ")"
+                + " | HARM: " + localHarm + " vs " + closestHarm
+                + " (" + String.format("%+.1f%%", harmDiff) + ")");
     }
 
     @Override
