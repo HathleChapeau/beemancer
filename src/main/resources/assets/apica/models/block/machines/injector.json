@@ -3,13 +3,13 @@
   "render_type": "cutout",
   "textures": {
     "iron": "apica:block/iron",
-    "plate": "apica:block/iron",
+    "plate": "apica:block/machines/injector_center_top",
     "side": "apica:block/machines/resonator_bar"
   },
   "elements": [
     {
       "from": [0, 0, 0],
-      "to": [16, 2, 16],
+      "to": [16, 6, 16],
       "faces": {
         "north": {"texture": "#iron"},
         "east": {"texture": "#iron"},
@@ -20,101 +20,15 @@
       }
     },
     {
-      "from": [0, 14, 0],
-      "to": [16, 16, 16],
+      "from": [3, 6, 3],
+      "to": [13, 7, 13],
       "faces": {
-        "north": {"texture": "#iron"},
-        "east": {"texture": "#iron"},
-        "west": {"texture": "#iron"},
-        "south": {"texture": "#iron"},
-        "up": {"texture": "#iron"},
-        "down": {"texture": "#iron"}
-      }
-    },
-    {
-      "from": [3, 2, 3],
-      "to": [13, 5, 13],
-      "faces": {
-        "north": {"texture": "#iron"},
-        "east": {"texture": "#iron"},
-        "west": {"texture": "#iron"},
-        "south": {"texture": "#iron"},
-        "up": {"texture": "#iron"},
-        "down": {"texture": "#iron"}
-      }
-    },
-    {
-      "from": [3, 2, 3],
-      "to": [13, 5, 13],
-      "rotation": {"angle": 45, "axis": "y", "origin": [8, 5, 8], "rescale": false},
-      "faces": {
-        "north": {"texture": "#iron"},
-        "east": {"texture": "#iron"},
-        "west": {"texture": "#iron"},
-        "south": {"texture": "#iron"},
-        "up": {"texture": "#iron"},
-        "down": {"texture": "#iron"}
-      }
-    },
-    {
-      "from": [3, 11, 3],
-      "to": [13, 14, 13],
-      "faces": {
-        "north": {"texture": "#iron"},
-        "east": {"texture": "#iron"},
-        "west": {"texture": "#iron"},
-        "south": {"texture": "#iron"},
-        "up": {"texture": "#iron"},
-        "down": {"texture": "#iron"}
-      }
-    },
-    {
-      "from": [3, 11, 3],
-      "to": [13, 14, 13],
-      "rotation": {"angle": 45, "axis": "y", "origin": [8, 5, 8], "rescale": false},
-      "faces": {
-        "north": {"texture": "#iron"},
-        "east": {"texture": "#iron"},
-        "west": {"texture": "#iron"},
-        "south": {"texture": "#iron"},
-        "up": {"texture": "#iron"},
-        "down": {"texture": "#iron"}
-      }
-    },
-    {
-      "from": [4, 5, 4],
-      "to": [12, 11, 12],
-      "faces": {
-        "north": {"texture": "#iron"},
-        "east": {"texture": "#iron"},
-        "west": {"texture": "#iron"},
-        "south": {"texture": "#iron"},
-        "up": {"texture": "#iron"},
-        "down": {"texture": "#iron"}
-      }
-    },
-    {
-      "from": [0, 0, 0],
-      "to": [16, 16, 16],
-      "faces": {
-        "north": {"texture": "#side"},
-        "east": {"texture": "#side"},
-        "west": {"texture": "#side"},
-        "south": {"texture": "#side"},
-        "up": {"texture": "#side"},
-        "down": {"texture": "#side"}
-      }
-    },
-    {
-      "from": [0, 16, 0],
-      "to": [16, 0, 16],
-      "faces": {
-        "north": {"texture": "#side"},
-        "east": {"texture": "#side"},
-        "west": {"texture": "#side"},
-        "south": {"texture": "#side"},
-        "up": {"texture": "#side"},
-        "down": {"texture": "#side"}
+        "north": {"texture": "#plate"},
+        "east": {"texture": "#plate"},
+        "west": {"texture": "#plate"},
+        "south": {"texture": "#plate"},
+        "up": {"texture": "#plate"},
+        "down": {"texture": "#plate"}
       }
     }
   ]

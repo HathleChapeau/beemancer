@@ -3,13 +3,14 @@
   "render_type": "cutout",
   "textures": {
     "iron": "apica:block/machines/resonator",
-    "plate": "apica:block/iron",
+    "plate": "apica:block/machines/resonator_center_top",
+    "crystal": "apica:block/machines/resonator_essence",
     "side": "apica:block/machines/resonator_bar"
   },
   "elements": [
     {
       "from": [0, 0, 0],
-      "to": [16, 3, 16],
+      "to": [16, 6, 16],
       "faces": {
         "north": {"texture": "#iron"},
         "east": {"texture": "#iron"},
@@ -20,20 +21,8 @@
       }
     },
     {
-      "from": [0, 13, 0],
-      "to": [16, 16, 16],
-      "faces": {
-        "north": {"texture": "#iron"},
-        "east": {"texture": "#iron"},
-        "west": {"texture": "#iron"},
-        "south": {"texture": "#iron"},
-        "up": {"texture": "#iron"},
-        "down": {"texture": "#iron"}
-      }
-    },
-    {
-      "from": [3, 3, 3],
-      "to": [13, 4, 13],
+      "from": [3, 6, 3],
+      "to": [13, 7, 13],
       "faces": {
         "north": {"texture": "#plate"},
         "east": {"texture": "#plate"},
@@ -44,23 +33,21 @@
       }
     },
     {
-      "from": [0, 0, 0],
-      "to": [16, 16, 16],
+      "from": [8, 0, 0],
+      "to": [8, 16, 16],
+      "rotation": {"angle": 45, "axis": "y", "origin": [8, 5, 8], "rescale": true},
       "faces": {
-        "north": {"texture": "#side"},
-        "east": {"texture": "#side"},
-        "west": {"texture": "#side"},
-        "south": {"texture": "#side"}
+        "east": {"uv": [0, 0, 16, 16], "texture": "#crystal"},
+        "west": {"uv": [0, 0, 16, 16], "texture": "#crystal"}
       }
     },
     {
-      "from": [0, 16, 0],
-      "to": [16, 0, 16],
+      "from": [0, 0, 8],
+      "to": [16, 16, 8],
+      "rotation": {"angle": 45, "axis": "y", "origin": [8, 5, 8], "rescale": true},
       "faces": {
-        "north": {"texture": "#side"},
-        "east": {"texture": "#side"},
-        "west": {"texture": "#side"},
-        "south": {"texture": "#side"}
+        "north": {"uv": [0, 0, 16, 16], "texture": "#crystal"},
+        "south": {"uv": [0, 0, 16, 16], "texture": "#crystal"}
       }
     }
   ]
