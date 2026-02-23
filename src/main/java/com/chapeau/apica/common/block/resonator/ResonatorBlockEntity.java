@@ -58,6 +58,12 @@ import java.util.UUID;
 
 public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
 
+    // === BALANCING ===
+    /** Duration of trait analysis in ticks (200 = 10 seconds). */
+    private static final int TRAIT_ANALYSIS_DURATION = 200;
+    /** Multiplier per tier for species analysis (ticks per tier = SPECIES_ANALYSIS_PER_TIER * 20). */
+    private static final int SPECIES_ANALYSIS_SECONDS_PER_TIER = 10;
+
     /** Frequency in Hz (1-80), stored as raw int. */
     private int frequency = 20;
     /** Amplitude 0-100 (displayed as 0.0-1.0). */
@@ -146,7 +152,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         BeeSpeciesManager.BeeSpeciesData data = speciesId != null
                 ? BeeSpeciesManager.getSpecies(speciesId) : null;
         int tierNum = data != null ? parseTierNumber(data.tier) : 1;
-        this.analysisDuration = tierNum * 10 * 20;
+        this.analysisDuration = tierNum * SPECIES_ANALYSIS_SECONDS_PER_TIER * 20;
         this.analysisProgress = 0;
         this.analysisInProgress = true;
         this.analyzingPlayerUUID = playerUUID;
@@ -158,7 +164,7 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
      * Duree fixe 10 secondes (200 ticks).
      */
     public void startTraitAnalysis(UUID playerUUID, String traitKey) {
-        this.analysisDuration = 200;
+        this.analysisDuration = TRAIT_ANALYSIS_DURATION;
         this.analysisProgress = 0;
         this.analysisInProgress = true;
         this.analyzingPlayerUUID = playerUUID;

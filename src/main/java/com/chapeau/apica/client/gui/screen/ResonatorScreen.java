@@ -103,8 +103,19 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     private int targetHarm;
     private boolean targetsGenerated = false;
 
-    // Log throttle for undiscovered trait hint
+    // === BALANCING: Detection & Match thresholds ===
+    /** Freq detection zone in Hz (log only shows traits within ±DETECTION_RANGE Hz). */
     private static final int DETECTION_RANGE = 10;
+    /** Match threshold for frequency (% of DETECTION_RANGE). 5 = ±0.5 Hz. */
+    private static final float MATCH_FREQ_THRESHOLD = 5f;
+    /** Match threshold for amplitude (raw units 0-100). 5 = ±5 units. */
+    private static final float MATCH_AMP_THRESHOLD = 5f;
+    /** Match threshold for phase (% of 360°). 5 = ±18°. */
+    private static final float MATCH_PHASE_THRESHOLD = 5f;
+    /** Match threshold for harmonics (raw units 0-100). 5 = ±5 units. */
+    private static final float MATCH_HARM_THRESHOLD = 5f;
+
+    // Log throttle for undiscovered trait hint
     private int lastLoggedFreq = -1;
     private int lastLoggedAmp = -1;
     private int lastLoggedPhase = -1;
@@ -270,17 +281,19 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     /**
      * Verifie si les parametres locaux matchent une waveform cible.
-     * Freq: |diff| <= 20 (normalise sur FREQ_MIN-FREQ_MAX range en %)
-     * Amp: |diff| <= 5 (raw 0-100)
-     * Phase: |diff| <= 5 (normalise sur 360 en %)
-     * Harm: |diff| <= 5 (raw 0-100)
+     * Tous les parametres: |diff| <= 5%
+     * Freq: normalise sur DETECTION_RANGE (±10Hz = ±100%)
+     * Amp: raw 0-100 (5 unites = 5%)
+     * Phase: normalise sur 360 (5% = 18 degres)
+     * Harm: raw 0-100 (5 unites = 5%)
      */
     private boolean isWaveformMatch(int tFreq, int tAmp, int tPhase, int tHarm) {
-        float freqDiff = Math.abs((localFreq - tFreq) / (float) (FREQ_MAX - FREQ_MIN) * 100f);
+        float freqDiff = Math.abs((localFreq - tFreq) / (float) DETECTION_RANGE * 100f);
         float ampDiff = Math.abs(localAmp - tAmp);
         float phaseDiff = Math.abs((localPhase - tPhase) / 360f * 100f);
         float harmDiff = Math.abs(localHarm - tHarm);
-        return freqDiff <= 20f && ampDiff <= 5f && phaseDiff <= 5f && harmDiff <= 5f;
+        return freqDiff <= MATCH_FREQ_THRESHOLD && ampDiff <= MATCH_AMP_THRESHOLD
+                && phaseDiff <= MATCH_PHASE_THRESHOLD && harmDiff <= MATCH_HARM_THRESHOLD;
     }
 
     private void sendTraitMatch(String traitKey) {
@@ -387,7 +400,8 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
                 + " | Proximity: " + String.format("%+.0f%%", proximity));
 
         // Per-parameter difference: current potard value vs trait target value + % diff
-        float freqDiff = (localFreq - closestHz) / (float) (FREQ_MAX - FREQ_MIN) * 100f;
+        // Freq: normalized on DETECTION_RANGE (±10Hz = ±100%)
+        float freqDiff = (localFreq - closestHz) / (float) DETECTION_RANGE * 100f;
         float ampDiff = (localAmp - closestAmp);
         float phaseDiff = (localPhase - closestPhase) / 360f * 100f;
         float harmDiff = (localHarm - closestHarm);
