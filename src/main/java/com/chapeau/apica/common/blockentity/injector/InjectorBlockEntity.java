@@ -154,9 +154,9 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
             be.processEssence(beeStack, (EssenceItem) essenceStack.getItem());
         }
 
-        // Explosion de runes quand l'abeille devient attuned
+        // Explosion spherique de runes quand l'abeille devient attuned
         if (BeeInjectionHelper.isSatiated(beeStack) && level instanceof ServerLevel serverLevel) {
-            ParticleHelper.burst(serverLevel, Vec3.atCenterOf(pos), ApicaParticles.RUNE.get(), 30);
+            ParticleHelper.spawnSphere(serverLevel, ApicaParticles.RUNE.get(), Vec3.atCenterOf(pos), 0.3, 50);
         }
 
         be.processTimer = 0;

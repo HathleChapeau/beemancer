@@ -36,6 +36,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 public class RuneParticle extends TextureSheetParticle implements ConfigurableParticle {
 
     private boolean fadeOut = true;
+    private boolean fullBright = false;
 
     protected RuneParticle(ClientLevel level, double x, double y, double z,
                             double xSpeed, double ySpeed, double zSpeed,
@@ -85,6 +86,17 @@ public class RuneParticle extends TextureSheetParticle implements ConfigurablePa
         this.gCol = g;
         this.bCol = b;
         return this;
+    }
+
+    @Override
+    public RuneParticle setParticleFullBright(boolean fullBright) {
+        this.fullBright = fullBright;
+        return this;
+    }
+
+    @Override
+    public int getLightColor(float partialTick) {
+        return fullBright ? 15728880 : super.getLightColor(partialTick);
     }
 
     // =========================================================================

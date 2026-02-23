@@ -35,6 +35,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 public class HoneyPixelParticle extends TextureSheetParticle implements ConfigurableParticle {
 
     private boolean fadeOut = false;
+    private boolean fullBright = false;
 
     protected HoneyPixelParticle(ClientLevel level, double x, double y, double z,
                                   double xSpeed, double ySpeed, double zSpeed,
@@ -88,6 +89,17 @@ public class HoneyPixelParticle extends TextureSheetParticle implements Configur
         this.gCol = g;
         this.bCol = b;
         return this;
+    }
+
+    @Override
+    public HoneyPixelParticle setParticleFullBright(boolean fullBright) {
+        this.fullBright = fullBright;
+        return this;
+    }
+
+    @Override
+    public int getLightColor(float partialTick) {
+        return fullBright ? 15728880 : super.getLightColor(partialTick);
     }
 
     // =========================================================================

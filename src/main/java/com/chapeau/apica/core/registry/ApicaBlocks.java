@@ -295,6 +295,7 @@ public class ApicaBlocks {
             () -> new InfuserBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.WOOD)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops()
                     .lightLevel(state -> state.getValue(InfuserBlock.WORKING) ? 10 : 0)));
 

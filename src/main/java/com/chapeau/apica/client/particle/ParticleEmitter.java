@@ -70,6 +70,7 @@ public class ParticleEmitter {
     private float alphaOverride = Float.NaN;
     private boolean fadeOut = false;
     private float[] colorOverride = null;
+    private boolean fullBright = false;
 
     public ParticleEmitter(ParticleOptions type) {
         this.type = type;
@@ -138,6 +139,11 @@ public class ParticleEmitter {
         return this;
     }
 
+    public ParticleEmitter fullBright() {
+        this.fullBright = true;
+        return this;
+    }
+
     /**
      * Spawne les particules cote client et applique les overrides de configuration.
      * Les overrides (lifetime, gravity, scale, color, fadeOut) ne s'appliquent
@@ -169,6 +175,7 @@ public class ParticleEmitter {
                 if (!Float.isNaN(alphaOverride)) cp.setParticleAlpha(alphaOverride);
                 if (fadeOut) cp.setParticleFadeOut(true);
                 if (colorOverride != null) cp.setParticleColor(colorOverride[0], colorOverride[1], colorOverride[2]);
+                if (fullBright) cp.setParticleFullBright(true);
             }
         }
     }

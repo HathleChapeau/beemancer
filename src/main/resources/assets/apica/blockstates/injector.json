@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=north": {
       "model": "apica:block/machines/injector"
+    },
+    "facing=east": {
+      "model": "apica:block/machines/injector",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "apica:block/machines/injector",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "apica:block/machines/injector",
+      "y": 270
     }
   }
 }

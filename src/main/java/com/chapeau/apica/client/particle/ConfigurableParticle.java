@@ -36,4 +36,6 @@ public interface ConfigurableParticle {
     ConfigurableParticle setParticleFadeOut(boolean fadeOut);
 
     ConfigurableParticle setParticleColor(float r, float g, float b);
+
+    ConfigurableParticle setParticleFullBright(boolean fullBright);
 }

@@ -233,6 +233,7 @@ public class ResonatorBlock extends BaseEntityBlock {
             .gravity(-0.002f)
             .scale(0.06f)
             .fadeOut()
+            .fullBright()
             .spawn(level);
     }
 
