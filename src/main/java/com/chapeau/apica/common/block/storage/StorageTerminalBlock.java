@@ -66,11 +66,11 @@ public class StorageTerminalBlock extends BaseEntityBlock {
     public static final EnumProperty<MultiblockProperty> MULTIBLOCK = MultiblockProperty.create("storage");
     public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 3);
 
-    // VoxelShapes pour chaque rotation (plaque 12×12×3)
-    private static final VoxelShape SHAPE_ROT0 = Block.box(2, 2, 13, 14, 14, 16);
-    private static final VoxelShape SHAPE_ROT1 = Block.box(0, 2, 2, 3, 14, 14);
-    private static final VoxelShape SHAPE_ROT2 = Block.box(2, 2, 0, 14, 14, 3);
-    private static final VoxelShape SHAPE_ROT3 = Block.box(13, 2, 2, 16, 14, 14);
+    // VoxelShapes pour chaque rotation (cadre 12x12x3, modele Z=7-10)
+    private static final VoxelShape SHAPE_ROT0 = Block.box(2, 2, 7, 14, 14, 10);   // face sud
+    private static final VoxelShape SHAPE_ROT1 = Block.box(6, 2, 2, 9, 14, 14);    // face ouest
+    private static final VoxelShape SHAPE_ROT2 = Block.box(2, 2, 6, 14, 14, 9);    // face nord
+    private static final VoxelShape SHAPE_ROT3 = Block.box(7, 2, 2, 10, 14, 14);   // face est
 
     public StorageTerminalBlock(Properties properties) {
         super(properties);
