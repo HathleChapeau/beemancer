@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-21                     #
-#  (Item Pipe Network Refonte - 2026-02-21)                                     #
+#                         Dernière mise à jour: 2026-02-23                     #
+#  (Resonator Trait Match Analysis - 2026-02-23)                                #
 ################################################################################
 
 ================================================================================
@@ -786,6 +786,19 @@ LISTE DES FEATURES:
     ClientSetup.java, CodexNodeWidget.java, 4 blockstates, logistics.json, en_us.json
   Dependances: PipeNetwork, PipeGraph, ItemPipeBlockEntity, GuiRenderHelper, ApicaMenu
   Registres modifies: ApicaItems (+1), ApicaMenus (+1), ApicaNetwork (+1 packet)
+
+→ Resonator Trait Match Analysis
+  Description: Le joueur peut tuner les 4 parametres du resonateur pour matcher la waveform d'un trait
+    non decouvert. Quand les 4 parametres sont dans les seuils (freq <=20%, amp <=5, phase <=5%, harm <=5),
+    une analyse de 10 secondes demarre automatiquement. A la fin, seul le trait matche est appris:
+    stat trait → learnTrait(), species/compat waveform → learnFrequency() (espece reste "???").
+  Scripts crees: ResonatorTraitMatchPacket.java (packet C2S envoi match detecte)
+  Scripts modifies: ResonatorBlockEntity.java (+analyzingTraitKey, +startTraitAnalysis, +completeTraitAnalysis, NBT),
+    ResonatorFinishPacket.java (routing trait vs species analysis),
+    ResonatorScreen.java (+traitMatchSent, +checkTraitMatch, +isWaveformMatch, +sendTraitMatch),
+    ApicaNetwork.java (+ResonatorTraitMatchPacket registration)
+  Dependances: CodexPlayerData, BeeSpeciesManager, ResonatorConfigManager, ApicaAttachments
+  Registres modifies: ApicaNetwork (+1 packet)
 
 ================================================================================
 6. FEATURES EN COURS

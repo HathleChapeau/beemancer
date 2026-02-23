@@ -112,6 +112,8 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
 
     // Trait match detection (prevents spam, one-shot per screen open)
     private boolean traitMatchSent = false;
+    // Only check for trait match after player has interacted with controls
+    private boolean hasInteracted = false;
 
     public ResonatorScreen(ResonatorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -130,10 +132,15 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     protected void init() {
         super.init();
         if (!menu.isAnalysisMode()) {
-            localFreq = menu.getFrequency();
-            localAmp = menu.getAmplitude();
-            localPhase = menu.getPhase();
-            localHarm = menu.getHarmonics();
+            localFreq = FREQ_MIN;
+            localAmp = 0;
+            localPhase = 0;
+            localHarm = 0;
+            sendUpdate(0, localFreq);
+            sendUpdate(1, localAmp);
+            sendUpdate(2, localPhase);
+            sendUpdate(3, localHarm);
+            hasInteracted = false;
 
             if (!targetsGenerated) {
                 generateTargets();
@@ -206,7 +213,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
             localHarm = menu.getHarmonics();
         }
         logClosestUndiscoveredTrait();
-        if (!traitMatchSent) {
+        if (hasInteracted && !traitMatchSent) {
             checkTraitMatch();
         }
     }
@@ -1079,6 +1086,7 @@ public class ResonatorScreen extends AbstractContainerScreen<ResonatorMenu> {
     }
 
     private void sendUpdate(int paramIndex, int value) {
+        hasInteracted = true;
         BlockPos pos = menu.getBlockPos();
         if (pos != null) {
             PacketDistributor.sendToServer(new ResonatorUpdatePacket(pos, paramIndex, value));

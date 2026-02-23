@@ -3,6 +3,26 @@
 ################################################################################
 
 ================================================================================
+2026-02-23 - Resonator Trait Match Analysis
+================================================================================
+
+Ajout de la detection et analyse de traits individuels par match de waveform:
+- Client detecte quand les 4 parametres (freq, amp, phase, harm) matchent un trait non decouvert
+- Seuils: freq <=20% normalise, amp <=5 raw, phase <=5% normalise, harm <=5 raw
+- Envoie ResonatorTraitMatchPacket au serveur, demarre analyse 10s (200 ticks)
+- Re-ouvre le menu en mode analyse (meme popup que l'analyse espece)
+- Finish → apprend le trait specifique:
+  - Stat trait (drop:2, speed:3...) → codex.learnTrait()
+  - Species waveform (species:meadow) → codex.learnFrequency() (espece reste "???")
+  - Compat species (compat:forest) → codex.learnFrequency() (espece reste "???")
+- analyzingTraitKey persiste en NBT (survit au reload)
+- ResonatorFinishPacket route vers completeTraitAnalysis ou completeAnalysis selon le mode
+
+Scripts crees: ResonatorTraitMatchPacket.java
+Scripts modifies: ResonatorBlockEntity.java, ResonatorFinishPacket.java,
+  ResonatorScreen.java, ApicaNetwork.java
+
+================================================================================
 2026-02-21 - Item Filter pour Item Pipes
 ================================================================================
 
