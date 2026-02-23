@@ -49,7 +49,7 @@ public class MultiblockSection extends CodexBookSection {
     private static final float ITEM_SCALE = 1.28f;
     private static final int SPACING_X = 11;
     private static final int SPACING_Z = 8;
-    private static final int PADDING_TOP = -35;
+    private static final int PADDING_TOP = -45;
     private static final int PADDING_BOTTOM = 4;
     private static final int ITEM_SIZE = 16;
     private static final int GROUP_SPACING = -20;
@@ -59,7 +59,7 @@ public class MultiblockSection extends CodexBookSection {
             Apica.MOD_ID, "textures/gui/codex/codex_book/down_multibloc.png");
     private static final int GROUND_TEX_W = 101;
     private static final int GROUND_TEX_H = 55;
-    private static final int GROUND_PADDING_Y = 59;
+    private static final int GROUND_PADDING_Y = 42;
 
     private final String patternId;
     private final String controllerId;
