@@ -69,15 +69,28 @@ public class HoneyPedestalBlock extends Block implements EntityBlock {
         MultiblockProperty.create("altar", "extractor");
     public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 5);
 
-    // Forme non-formee: petit piedestal (modele honey_pedestal.json)
+    // none: petit piedestal (honey_pedestal.json)
     private static final VoxelShape SHAPE_NONE = Shapes.or(
         Block.box(4, 0, 4, 12, 2, 12),     // Base
         Block.box(5, 2, 5, 11, 8, 11),     // Colonne
         Block.box(3, 8, 3, 13, 10, 13)     // Plateau haut
     );
 
-    // Forme altar/extractor: bloc plein (partie du multibloc)
-    private static final VoxelShape SHAPE_FORMED = Shapes.block();
+    // altar: rendu par AltarHeartRenderer (altar_formed_pedestal.json)
+    // Corps [2,0,2]-[14,16,14], caps [1,0,1]-[15,4,15] et [1,12,1]-[15,16,15]
+    private static final VoxelShape SHAPE_ALTAR = Shapes.or(
+        Block.box(2, 0, 2, 14, 16, 14),    // Corps principal
+        Block.box(1, 0, 1, 15, 4, 15),     // Cap bas
+        Block.box(1, 12, 1, 15, 16, 15)    // Cap haut
+    );
+
+    // extractor rot=0: bloc plein (honey_pedestal_extractor.json, 2 cubes [0,0,0]-[16,16,16])
+    // extractor rot=1: bloc plein (honey_pedestal_extractor_center.json, body+caps)
+    private static final VoxelShape SHAPE_EXTRACTOR_FULL = Shapes.block();
+
+    // extractor rot=2-5: base + cristal (honey_pedestal_extractor_side.json)
+    // Base [0,0,0]-[16,8,16], Crystal [0,8,0]-[16,13,16]
+    private static final VoxelShape SHAPE_EXTRACTOR_SIDE = Block.box(0, 0, 0, 16, 13, 16);
 
     public HoneyPedestalBlock(Properties properties) {
         super(properties);
@@ -93,7 +106,11 @@ public class HoneyPedestalBlock extends Block implements EntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return state.getValue(MULTIBLOCK) == MultiblockProperty.NONE ? SHAPE_NONE : SHAPE_FORMED;
+        MultiblockProperty mb = state.getValue(MULTIBLOCK);
+        if (mb == MultiblockProperty.NONE) return SHAPE_NONE;
+        if (mb == MultiblockProperty.ALTAR) return SHAPE_ALTAR;
+        int rot = state.getValue(FORMED_ROTATION);
+        return (rot <= 1) ? SHAPE_EXTRACTOR_FULL : SHAPE_EXTRACTOR_SIDE;
     }
 
     @Override
