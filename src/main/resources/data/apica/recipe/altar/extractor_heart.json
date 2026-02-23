@@ -1,0 +1,18 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "apica:honey_crystal" },
+  "pedestal_items": [
+    { "item": "apica:royal_gold" },
+    { "item": "apica:royal_gold" },
+    { "item": "apica:blank_rune" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:glowstone_dust" },
+    { "item": "minecraft:glowstone_dust" }
+  ],
+  "pollen": {
+    "apica:pollen_of_darkness": 8,
+    "apica:pollen_of_water": 10
+  },
+  "result": { "id": "apica:extractor_heart" }
+}
