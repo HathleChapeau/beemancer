@@ -69,12 +69,15 @@ public class HoneyPedestalBlock extends Block implements EntityBlock {
         MultiblockProperty.create("altar", "extractor");
     public static final IntegerProperty FORMED_ROTATION = IntegerProperty.create("formed_rotation", 0, 5);
 
-    // Forme: 3 blocs de base du modele (colonne + caps)
-    private static final VoxelShape SHAPE = Shapes.or(
-        Block.box(2, 0, 2, 14, 14, 14),    // Base column
-        Block.box(1, 13, 1, 15, 14, 15),   // Top cap
-        Block.box(1, 0, 1, 15, 1, 15)      // Bottom plate
+    // Forme non-formee: petit piedestal (modele honey_pedestal.json)
+    private static final VoxelShape SHAPE_NONE = Shapes.or(
+        Block.box(4, 0, 4, 12, 2, 12),     // Base
+        Block.box(5, 2, 5, 11, 8, 11),     // Colonne
+        Block.box(3, 8, 3, 13, 10, 13)     // Plateau haut
     );
+
+    // Forme altar/extractor: bloc plein (partie du multibloc)
+    private static final VoxelShape SHAPE_FORMED = Shapes.block();
 
     public HoneyPedestalBlock(Properties properties) {
         super(properties);
@@ -90,7 +93,7 @@ public class HoneyPedestalBlock extends Block implements EntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return state.getValue(MULTIBLOCK) == MultiblockProperty.NONE ? SHAPE_NONE : SHAPE_FORMED;
     }
 
     @Override

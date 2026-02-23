@@ -57,56 +57,29 @@ public class InjectorBlock extends BaseEntityBlock {
     public static final MapCodec<InjectorBlock> CODEC = simpleCodec(InjectorBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    // NORTH (base): projecteurs sur axe Z
-    private static final VoxelShape SHAPE_NORTH = Shapes.or(
+    // Base commune: 4 murs + plaque (symetrique, identique dans toutes les orientations)
+    private static final VoxelShape BASE = Shapes.or(
         Block.box(0, 0, 0, 3, 6, 16),      // Mur ouest
         Block.box(0, 0, 0, 16, 6, 3),      // Mur nord
         Block.box(13, 0, 0, 16, 6, 16),    // Mur est
         Block.box(0, 0, 13, 16, 6, 16),    // Mur sud
-        Block.box(3, 5, 3, 13, 6, 13),     // Plaque centrale
+        Block.box(3, 5, 3, 13, 6, 13)      // Plaque centrale
+    );
+
+    // NORTH/SOUTH: projecteurs sur axe Z
+    private static final VoxelShape SHAPE_Z = Shapes.or(BASE,
         Block.box(5, 6, 0, 11, 14, 3),     // Pilier nord
         Block.box(6, 9, 3, 10, 13, 4),     // Face projecteur nord
         Block.box(5, 6, 13, 11, 14, 16),   // Pilier sud
         Block.box(6, 9, 12, 10, 13, 13)    // Face projecteur sud
     );
 
-    // EAST (90 CW): projecteurs sur axe X
-    private static final VoxelShape SHAPE_EAST = Shapes.or(
-        Block.box(0, 0, 0, 16, 6, 3),      // Mur ouest (was Z)
-        Block.box(13, 0, 0, 16, 6, 16),    // Mur nord (was X)
-        Block.box(0, 0, 13, 16, 6, 16),    // Mur est (was Z)
-        Block.box(0, 0, 0, 3, 6, 16),      // Mur sud (was X)
-        Block.box(3, 5, 3, 13, 6, 13),     // Plaque centrale
+    // EAST/WEST: projecteurs sur axe X
+    private static final VoxelShape SHAPE_X = Shapes.or(BASE,
         Block.box(13, 6, 5, 16, 14, 11),   // Pilier est
         Block.box(12, 9, 6, 13, 13, 10),   // Face projecteur est
         Block.box(0, 6, 5, 3, 14, 11),     // Pilier ouest
         Block.box(3, 9, 6, 4, 13, 10)      // Face projecteur ouest
-    );
-
-    // SOUTH (180): projecteurs sur axe Z inverse
-    private static final VoxelShape SHAPE_SOUTH = Shapes.or(
-        Block.box(13, 0, 0, 16, 6, 16),    // Mur ouest (was est)
-        Block.box(0, 0, 13, 16, 6, 16),    // Mur nord (was sud)
-        Block.box(0, 0, 0, 3, 6, 16),      // Mur est (was ouest)
-        Block.box(0, 0, 0, 16, 6, 3),      // Mur sud (was nord)
-        Block.box(3, 5, 3, 13, 6, 13),     // Plaque centrale
-        Block.box(5, 6, 13, 11, 14, 16),   // Pilier sud (was nord)
-        Block.box(6, 9, 12, 10, 13, 13),   // Face projecteur sud
-        Block.box(5, 6, 0, 11, 14, 3),     // Pilier nord (was sud)
-        Block.box(6, 9, 3, 10, 13, 4)      // Face projecteur nord
-    );
-
-    // WEST (270 CW): projecteurs sur axe X inverse
-    private static final VoxelShape SHAPE_WEST = Shapes.or(
-        Block.box(0, 0, 13, 16, 6, 16),    // Mur ouest (was Z)
-        Block.box(0, 0, 0, 3, 6, 16),      // Mur nord (was X)
-        Block.box(0, 0, 0, 16, 6, 3),      // Mur est (was Z)
-        Block.box(13, 0, 0, 16, 6, 16),    // Mur sud (was X)
-        Block.box(3, 5, 3, 13, 6, 13),     // Plaque centrale
-        Block.box(0, 6, 5, 3, 14, 11),     // Pilier ouest
-        Block.box(3, 9, 6, 4, 13, 10),     // Face projecteur ouest
-        Block.box(13, 6, 5, 16, 14, 11),   // Pilier est
-        Block.box(12, 9, 6, 13, 13, 10)    // Face projecteur est
     );
 
     public InjectorBlock(Properties properties) {
@@ -129,12 +102,8 @@ public class InjectorBlock extends BaseEntityBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return switch (state.getValue(FACING)) {
-            case EAST -> SHAPE_EAST;
-            case SOUTH -> SHAPE_SOUTH;
-            case WEST -> SHAPE_WEST;
-            default -> SHAPE_NORTH;
-        };
+        Direction facing = state.getValue(FACING);
+        return (facing == Direction.EAST || facing == Direction.WEST) ? SHAPE_X : SHAPE_Z;
     }
 
     @Override
