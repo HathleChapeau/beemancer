@@ -1,0 +1,12 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.builder_wand.lore.p1"
+    }
+  ],
+  "sticky_notes": []
+}

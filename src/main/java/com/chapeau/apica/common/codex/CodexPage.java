@@ -29,7 +29,8 @@ public enum CodexPage {
     BEES("bees", 0xFFAA00, true),
     ALCHEMY("alchemy", 0x9932CC, false),
     ARTIFACTS("artifacts", 0xE74C3C, false),
-    LOGISTICS("logistics", 0x4169E1, false);
+    LOGISTICS("logistics", 0x4169E1, false),
+    MECHANICS("mechanics", 0x8B8B00, false);
 
     private final String id;
     private final int color;

@@ -141,6 +141,7 @@ public class CodexScreen extends Screen {
         pageRenderers.put(CodexPage.ALCHEMY, new StandardPageRenderer());
         pageRenderers.put(CodexPage.ARTIFACTS, new StandardPageRenderer());
         pageRenderers.put(CodexPage.LOGISTICS, new StandardPageRenderer());
+        pageRenderers.put(CodexPage.MECHANICS, new StandardPageRenderer());
     }
 
     @Override
@@ -220,6 +221,7 @@ public class CodexScreen extends Screen {
             case ALCHEMY -> new ItemStack(ApicaItems.CRYSTALLIZER.get());
             case ARTIFACTS -> new ItemStack(ApicaItems.NECTAR_DIAMOND.get());
             case LOGISTICS -> new ItemStack(ApicaItems.STORAGE_RELAY.get());
+            case MECHANICS -> new ItemStack(Items.IRON_INGOT);
         };
     }
 

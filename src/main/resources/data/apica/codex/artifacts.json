@@ -3,6 +3,7 @@
     {"id": "altar", "position": {"x": 0, "y": 0}, "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false, "is_default": true},
     {"id": "extractor", "position": {"x": 2, "y": -2}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
     {"id": "anti_breeding_crystal", "position": {"x": -1, "y": -3}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
-    {"id": "pollen_pot", "position": {"x": -2, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false}
+    {"id": "pollen_pot", "position": {"x": -2, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "builder_wand", "position": {"x": 2, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false}
   ]
 }

@@ -1,0 +1,5 @@
+{
+  "nodes": [
+    {"id": "assembly_table", "position": {"x": 0, "y": 0}, "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false, "is_default": true}
+  ]
+}

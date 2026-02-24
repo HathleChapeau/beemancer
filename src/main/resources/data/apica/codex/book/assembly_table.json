@@ -1,0 +1,12 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.mechanics.assembly_table.lore.p1"
+    }
+  ],
+  "sticky_notes": []
+}
