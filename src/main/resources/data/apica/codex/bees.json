@@ -14,7 +14,7 @@
     {
       "id": "incubator",
       "position": {
-        "x": 2,
+        "x": 1,
         "y": 0
       },
       "category": "NORMAL",
@@ -25,7 +25,7 @@
     {
       "id": "pollen_pot",
       "position": {
-        "x": -2,
+        "x": -1,
         "y": 0
       },
       "category": "NORMAL",
@@ -1354,13 +1354,13 @@
     {
       "id": "demonic_bee",
       "position": {
-        "x": -14,
+        "x": 3,
         "y": 9
       },
       "category": "CHALLENGE",
-      "parent": "dark_bee",
+      "parent": "infernalist_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "HIDDEN",
+      "visibility": "VISIBLE",
       "quest_id": "demonic_bee_incubator",
       "breeding_parent1": "dark_bee",
       "breeding_parent2": "infernalist_bee"
@@ -1396,17 +1396,16 @@
     {
       "id": "ancient_bee",
       "position": {
-        "x": 16,
-        "y": 8
+        "x": 8,
+        "y": 15
       },
       "category": "CHALLENGE",
-      "parent": "treasure_bee",
+      "parent": "sorrow_bee",
       "hidden_until_parent_unlocked": true,
       "visibility": "VISIBLE",
       "quest_id": "ancient_bee_incubator",
       "breeding_parent1": "treasure_bee",
-      "breeding_parent2": "infernalist_bee",
-      "connection_mode": "HORIZONTAL"
+      "breeding_parent2": "infernalist_bee"
     },
     {
       "id": "void_bee",
