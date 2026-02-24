@@ -12,7 +12,7 @@
     {"id": "portable_tank", "position": {"x": -2, "y": -2}, "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false, "quest_id": "get_infuser"},
     {"id": "tank", "position": {"x": -2, "y": -3}, "category": "NORMAL", "parent": "portable_tank", "hidden_until_parent_unlocked": true, "quest_id": "royal_upgrade"},
     {"id": "infuser_t1", "position": {"x": 2, "y": -1}, "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false, "quest_id": "obtain_honey_crystal"},
-    {"id": "alembic", "position": {"x": 0, "y": 2}, "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": true, "quest_id": "obtain_elemental_pollen"},
+    {"id": "alembic", "position": {"x": 0, "y": 2}, "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": true, "quest_id": "obtain_light_dark_pollen"},
     {"id": "incubator", "position": {"x": 0, "y": -3}, "category": "NORMAL", "parent": "infuser_t1", "hidden_until_parent_unlocked": false, "quest_id": "get_infuser"},
     {"id": "honey_furnace", "position": {"x": 4, "y": -1}, "category": "NORMAL", "parent": "infuser_t1", "hidden_until_parent_unlocked": false},
     {"id": "royal_furnace", "position": {"x": 5, "y": -1}, "category": "NORMAL", "parent": "honey_furnace", "hidden_until_parent_unlocked": true, "quest_id": "royal_upgrade"},

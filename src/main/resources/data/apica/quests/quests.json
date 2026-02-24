@@ -189,7 +189,7 @@
     {"id": "obtain_item_pipe", "node": "logistics:item_filter", "type": "OBTAIN", "item": "apica:item_pipe"},
     {"id": "obtain_storage_barrel", "node": "logistics:void_upgrade", "type": "OBTAIN", "item": "apica:storage_barrel"},
     {"id": "obtain_bee_larva", "node": "bees:incubator", "type": "OBTAIN", "item": "apica:bee_larva"},
-    {"id": "obtain_elemental_pollen", "node": "alchemy:alembic", "type": "OBTAIN", "tag": "apica:elemental_pollen"},
+    {"id": "obtain_light_dark_pollen", "node": "alchemy:alembic", "type": "OBTAIN", "tag": "apica:light_dark_pollen"},
     {"id": "form_altar", "node": "bees:essence_injector", "type": "OPEN_MENU", "machine": "altar"},
     {"id": "obtain_basic_pollen", "node": "logistics:storage_hive", "type": "OBTAIN", "tag": "apica:basic_pollen"}
   ]
