@@ -381,7 +381,7 @@ public class ApicaItems {
             () -> new BeeLarvaItem(new Item.Properties()));
 
     // --- TOOLS ---
-    public static final DeferredItem<BuildingWandItem> BUILDING_WAND = ITEMS.register("building_wand",
+    public static final DeferredItem<BuildingWandItem> BUILDING_STAFF = ITEMS.register("building_staff",
             () -> new BuildingWandItem(new Item.Properties()));
 
     public static final DeferredItem<DebugWandItem> DEBUG_WAND = ITEMS.register("debug_wand",

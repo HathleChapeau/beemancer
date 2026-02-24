@@ -106,6 +106,7 @@ public class CodexNodeWidget extends AbstractWidget {
         // Textures pour les nodes sans item correspondant
         NODE_TO_ITEM.put("apica", "apica:codex");
         NODE_TO_ITEM.put("essence_extractor", "apica:extractor_heart");
+        NODE_TO_ITEM.put("building_staff", "apica:building_staff");
     }
 
     private final CodexNode node;

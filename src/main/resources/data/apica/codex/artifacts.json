@@ -4,6 +4,7 @@
     {"id": "extractor", "position": {"x": 2, "y": -2}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
     {"id": "anti_breeding_crystal", "position": {"x": -1, "y": -3}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
     {"id": "pollen_pot", "position": {"x": -2, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
-    {"id": "builder_wand", "position": {"x": 2, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false}
+    {"id": "building_staff", "position": {"x": 2, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "charging_station", "position": {"x": 3, "y": 2}, "category": "NORMAL", "parent": "building_staff", "hidden_until_parent_unlocked": false}
   ]
 }

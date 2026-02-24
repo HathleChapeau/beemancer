@@ -225,7 +225,7 @@ public class ApicaCreativeTabs {
 
     private static void addDebugTools(CreativeModeTab.Output output) {
         output.accept(ApicaItems.DEBUG_WAND.get());
-        output.accept(ApicaItems.BUILDING_WAND.get());
+        output.accept(ApicaItems.BUILDING_STAFF.get());
         output.accept(ApicaItems.CREATIVE_TANK.get());
         output.accept(ApicaItems.CREATIVE_BREEDING_CRYSTAL.get());
         output.accept(ApicaItems.CREATIVE_FOCUS.get());
