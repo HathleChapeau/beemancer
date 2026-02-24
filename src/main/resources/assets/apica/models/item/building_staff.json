@@ -1,5 +1,6 @@
 {
   "gui_light": "front",
+  "render_type": "translucent",
   "textures": {
     "0": "apica:item/artifacts/building_staff",
     "1": "apica:item/artifacts/building_staff_outline",
