@@ -148,17 +148,22 @@ public class Quest {
      * Si targetSpecies est défini, vérifie aussi que l'item porte le bon tag d'espèce.
      */
     public boolean checkObtainQuest(Player player) {
-        if (type != QuestType.OBTAIN || targetItem == null) {
-            return false;
-        }
+        if (type != QuestType.OBTAIN) return false;
+        if (targetItem == null && targetTag == null) return false;
 
         int count = 0;
         for (ItemStack stack : player.getInventory().items) {
             if (!stack.isEmpty()) {
-                ResourceLocation itemId = stack.getItemHolder().unwrapKey()
-                        .map(key -> key.location())
-                        .orElse(null);
-                if (targetItem.equals(itemId)) {
+                boolean itemMatch = false;
+                if (targetItem != null) {
+                    ResourceLocation itemId = stack.getItemHolder().unwrapKey()
+                            .map(key -> key.location())
+                            .orElse(null);
+                    itemMatch = targetItem.equals(itemId);
+                } else {
+                    itemMatch = matchesTag(stack);
+                }
+                if (itemMatch) {
                     if (targetSpecies != null) {
                         String species = MagicBeeItem.getSpeciesId(stack);
                         if (!targetSpecies.equals(species)) {

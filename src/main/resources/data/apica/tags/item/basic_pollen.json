@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "apica:flower_pollen",
+    "apica:mushroom_spore",
+    "apica:tree_pollen",
+    "apica:crystal_pollen"
+  ]
+}

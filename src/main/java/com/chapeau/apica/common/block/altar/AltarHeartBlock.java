@@ -21,6 +21,7 @@
 package com.chapeau.apica.common.block.altar;
 
 import com.chapeau.apica.common.blockentity.altar.AltarHeartBlockEntity;
+import com.chapeau.apica.common.quest.QuestEvents;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -116,6 +117,7 @@ public class AltarHeartBlock extends Block implements EntityBlock {
             // Tenter la formation
             boolean success = heartBE.tryFormAltar();
             if (success) {
+                QuestEvents.onMenuOpen(player, "altar");
                 player.displayClientMessage(
                     Component.translatable("message.apica.honey_altar.formed"),
                     true

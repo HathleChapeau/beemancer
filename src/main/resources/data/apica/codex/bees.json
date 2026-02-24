@@ -21,7 +21,8 @@
       "category": "NORMAL",
       "parent": "hive",
       "hidden_until_parent_unlocked": false,
-      "visibility": "VISIBLE"
+      "visibility": "VISIBLE",
+      "quest_id": "obtain_bee_larva"
     },
     {
       "id": "pollen_pot",
@@ -56,7 +57,8 @@
       "category": "NORMAL",
       "parent": "hive",
       "hidden_until_parent_unlocked": false,
-      "visibility": "VISIBLE"
+      "visibility": "VISIBLE",
+      "quest_id": "form_altar"
     },
     {
       "id": "essence_extractor",
@@ -68,7 +70,7 @@
       "parent": "hive",
       "hidden_until_parent_unlocked": true,
       "visibility": "VISIBLE",
-      "quest_id": "royal_upgrade"
+      "quest_id": "form_altar"
     },
     {
       "id": "meadow_bee",
