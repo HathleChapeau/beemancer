@@ -20,8 +20,10 @@
  */
 package com.chapeau.apica.common.codex.book;
 
+import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPlayerData;
+import com.chapeau.apica.common.quest.QuestPlayerData;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -110,10 +112,26 @@ public class HeaderSection extends CodexBookSection {
         String parentSpecies = parentNodeId.endsWith("_bee")
                 ? parentNodeId.substring(0, parentNodeId.length() - 4)
                 : parentNodeId;
-        if (isSpeciesKnownClient(parentSpecies)) {
+        if (isParentKnown(parentNodeId, parentSpecies)) {
             return formatSpeciesName(parentNodeId);
         }
         return "???";
+    }
+
+    /**
+     * Vérifie si un parent breeding est connu : espèce apprise via injecteur
+     * OU quête du node parent complétée.
+     */
+    private boolean isParentKnown(String parentNodeId, String speciesId) {
+        if (isSpeciesKnownClient(speciesId)) return true;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return false;
+        CodexNode parentNode = CodexManager.getNode("bees:" + parentNodeId);
+        if (parentNode != null && parentNode.hasQuest()) {
+            QuestPlayerData questData = mc.player.getData(ApicaAttachments.QUEST_DATA);
+            return questData.isCompleted(parentNode.getQuestId());
+        }
+        return false;
     }
 
     private static boolean isSpeciesKnownClient(String speciesId) {

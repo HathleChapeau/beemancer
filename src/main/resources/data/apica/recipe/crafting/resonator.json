@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": { "item": "apica:honey_crystal" },
+    "R": { "item": "apica:blank_rune" },
+    "F": { "item": "apica:iron_foundation" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "pattern": [ "   ", "ICI", "FRF" ],
+  "result": { "id": "apica:resonator", "count": 1 }
+}

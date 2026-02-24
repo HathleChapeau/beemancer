@@ -4,7 +4,7 @@
       "id": "hive",
       "position": {
         "x": 0,
-        "y": 1
+        "y": 0
       },
       "category": "ROOT",
       "parent": null,
@@ -14,8 +14,8 @@
     {
       "id": "incubator",
       "position": {
-        "x": 0,
-        "y": -1
+        "x": 2,
+        "y": 0
       },
       "category": "NORMAL",
       "parent": "hive",
@@ -36,8 +36,8 @@
     {
       "id": "resonator",
       "position": {
-        "x": 2,
-        "y": 0
+        "x": -1,
+        "y": 2
       },
       "category": "NORMAL",
       "parent": "hive",
@@ -47,7 +47,7 @@
     {
       "id": "essence_injector",
       "position": {
-        "x": -1,
+        "x": 0,
         "y": 2
       },
       "category": "NORMAL",
@@ -187,7 +187,7 @@
       "category": "NORMAL",
       "parent": "forest_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "docile_bee_incubator",
       "breeding_parent1": "forest_bee",
       "breeding_parent2": "meadow_bee"
@@ -215,7 +215,7 @@
       "category": "NORMAL",
       "parent": "meadow_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "monsty_bee_incubator",
       "breeding_parent1": "rocky_bee",
       "breeding_parent2": "meadow_bee"
@@ -229,7 +229,7 @@
       "category": "NORMAL",
       "parent": "rocky_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "sediment_bee_incubator",
       "breeding_parent1": "rocky_bee",
       "breeding_parent2": "river_bee"
@@ -251,13 +251,13 @@
     {
       "id": "karot_bee",
       "position": {
-        "x": -2,
+        "x": -1,
         "y": -6
       },
       "category": "NORMAL",
       "parent": "cultural_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "karot_bee_incubator",
       "breeding_parent1": "cultural_bee",
       "breeding_parent2": "meadow_bee"
@@ -265,7 +265,7 @@
     {
       "id": "tuber_bee",
       "position": {
-        "x": -1,
+        "x": -2,
         "y": -6
       },
       "category": "NORMAL",
@@ -341,7 +341,7 @@
       "category": "NORMAL",
       "parent": "docile_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "plume_bee_incubator",
       "breeding_parent1": "docile_bee",
       "breeding_parent2": "forest_bee"
@@ -534,7 +534,7 @@
     {
       "id": "mushroom_bee",
       "position": {
-        "x": -1,
+        "x": -2,
         "y": -8
       },
       "category": "NORMAL",
@@ -585,7 +585,7 @@
       "category": "NORMAL",
       "parent": "reed_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "argil_bee_incubator",
       "breeding_parent1": "reed_bee",
       "breeding_parent2": "loam_bee",
@@ -656,7 +656,7 @@
       "category": "NORMAL",
       "parent": "carbon_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "ashen_bee_incubator",
       "breeding_parent1": "carbon_bee",
       "breeding_parent2": "rocky_bee",
@@ -815,7 +815,7 @@
       "category": "NORMAL",
       "parent": "ashen_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "grim_bee_incubator",
       "breeding_parent1": "ashen_bee",
       "breeding_parent2": "carbon_bee",
@@ -1047,7 +1047,7 @@
       "category": "NORMAL",
       "parent": "infernalist_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "spirit_bee_incubator",
       "breeding_parent1": "infernalist_bee",
       "breeding_parent2": "skeletal_bee"
@@ -1118,7 +1118,7 @@
       "category": "GOAL",
       "parent": "auric_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "treasure_bee_incubator",
       "breeding_parent1": "auric_bee",
       "breeding_parent2": "boreal_bee"
@@ -1146,7 +1146,7 @@
       "category": "NORMAL",
       "parent": "wind_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "zephyr_bee_incubator",
       "breeding_parent1": "wind_bee",
       "breeding_parent2": "swift_bee"
@@ -1272,7 +1272,7 @@
       "category": "NORMAL",
       "parent": "insomnia_bee",
       "hidden_until_parent_unlocked": true,
-      "visibility": "SECRET",
+      "visibility": "VISIBLE",
       "quest_id": "traveler_bee_incubator",
       "breeding_parent1": "insomnia_bee",
       "breeding_parent2": null

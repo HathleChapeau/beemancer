@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": { "item": "apica:honey_crystal" },
+    "R": { "item": "apica:blank_rune" },
+    "F": { "item": "apica:iron_foundation" }
+  },
+  "pattern": [ "C C", "R R", "FRF" ],
+  "result": { "id": "apica:injector", "count": 1 }
+}

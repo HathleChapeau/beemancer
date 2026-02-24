@@ -24,6 +24,7 @@ import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.quest.NodeState;
+import com.chapeau.apica.common.quest.QuestPlayerData;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -120,6 +121,21 @@ public class BeeNodeWidget extends AbstractWidget {
         if (Minecraft.getInstance().player != null) {
             CodexPlayerData data = Minecraft.getInstance().player.getData(ApicaAttachments.CODEX_DATA);
             return data.isSpeciesKnown(speciesId);
+        }
+        return false;
+    }
+
+    /**
+     * Vérifie si un parent breeding est connu : espèce apprise via injecteur
+     * OU quête du node parent complétée (le joueur a déjà obtenu cette abeille).
+     */
+    private static boolean isParentKnown(String parentNodeId, String speciesId) {
+        if (isSpeciesKnownByPlayer(speciesId)) return true;
+        if (Minecraft.getInstance().player == null) return false;
+        CodexNode parentNode = CodexManager.getNode("bees:" + parentNodeId);
+        if (parentNode != null && parentNode.hasQuest()) {
+            QuestPlayerData questData = Minecraft.getInstance().player.getData(ApicaAttachments.QUEST_DATA);
+            return questData.isCompleted(parentNode.getQuestId());
         }
         return false;
     }
@@ -355,10 +371,10 @@ public class BeeNodeWidget extends AbstractWidget {
         String parent1Species = parent1.endsWith("_bee") ? parent1.substring(0, parent1.length() - 4) : parent1;
         String parent2Species = parent2.endsWith("_bee") ? parent2.substring(0, parent2.length() - 4) : parent2;
 
-        String parent1Display = isSpeciesKnownByPlayer(parent1Species)
+        String parent1Display = isParentKnown(parent1, parent1Species)
             ? formatBeeName(parent1)
             : "???";
-        String parent2Display = isSpeciesKnownByPlayer(parent2Species)
+        String parent2Display = isParentKnown(parent2, parent2Species)
             ? formatBeeName(parent2)
             : "???";
 
