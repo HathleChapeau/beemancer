@@ -164,12 +164,16 @@ public class QuestManager {
         QuestPlayerData data = player.getData(ApicaAttachments.QUEST_DATA);
 
         for (Quest quest : QUESTS_BY_ID.values()) {
-            if (quest.getType() == QuestType.OBTAIN && !data.isCompleted(quest.getId())) {
-                if (quest.checkObtainQuest(player)) {
-                    data.complete(quest.getId());
-                    newCompletions.add(quest.getId());
-                    Apica.LOGGER.debug("OBTAIN quest auto-completed: {}", quest.getId());
-                }
+            if (data.isCompleted(quest.getId())) continue;
+
+            if (quest.getType() == QuestType.OBTAIN && quest.checkObtainQuest(player)) {
+                data.complete(quest.getId());
+                newCompletions.add(quest.getId());
+                Apica.LOGGER.debug("OBTAIN quest auto-completed: {}", quest.getId());
+            } else if (quest.getType() == QuestType.BEE_INCUBATOR && quest.checkBeeInInventory(player)) {
+                data.complete(quest.getId());
+                newCompletions.add(quest.getId());
+                Apica.LOGGER.debug("BEE_INCUBATOR quest auto-completed (inventory): {}", quest.getId());
             }
         }
 

@@ -175,6 +175,25 @@ public class Quest {
         return false;
     }
 
+    /**
+     * Vérifie si le joueur possède une magic bee de la bonne espèce dans son inventaire.
+     * Utilisé pour compléter les quêtes BEE_INCUBATOR aussi par possession.
+     */
+    public boolean checkBeeInInventory(Player player) {
+        if (type != QuestType.BEE_INCUBATOR || targetSpecies == null) {
+            return false;
+        }
+        for (ItemStack stack : player.getInventory().items) {
+            if (!stack.isEmpty() && stack.getItem() instanceof MagicBeeItem) {
+                String species = MagicBeeItem.getSpeciesId(stack);
+                if (targetSpecies.equals(species)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     // ============================================================
     // PARSING JSON
     // ============================================================
