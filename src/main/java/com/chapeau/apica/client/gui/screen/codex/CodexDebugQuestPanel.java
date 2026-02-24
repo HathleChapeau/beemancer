@@ -51,7 +51,7 @@ public class CodexDebugQuestPanel {
     private static final int SEPARATOR_COLOR = 0xFF333333;
     private static final int ARROW_ACTIVE_COLOR = 0xFFFFFFFF;
     private static final int ARROW_INACTIVE_COLOR = 0xFF555555;
-    private static final int COLLAPSE_OFFSET = 100;
+    private static final int COLLAPSE_OFFSET = 200;
 
     private int basePanelX;
     private int panelX;
@@ -69,7 +69,7 @@ public class CodexDebugQuestPanel {
      */
     public void rebuild(List<CodexNode> nodes, Set<String> completedQuests,
                         int frameRightX, int frameY, int frameHeight) {
-        this.basePanelX = frameRightX + 30;
+        this.basePanelX = frameRightX;
         this.panelX = collapsed ? basePanelX - COLLAPSE_OFFSET : basePanelX;
         this.panelY = frameY;
         this.panelHeight = frameHeight;
