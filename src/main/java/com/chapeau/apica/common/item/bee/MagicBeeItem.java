@@ -180,7 +180,6 @@ public class MagicBeeItem extends Item {
         BeeGeneData geneData = getGeneData(stack);
         Gene speciesGene = geneData.getGene(GeneCategory.SPECIES);
         String speciesId = speciesGene != null ? speciesGene.getId() : null;
-        boolean speciesKnown = isSpeciesKnownClient(speciesId);
 
         if (net.minecraft.client.gui.screens.Screen.hasShiftDown()) {
             BeeSpeciesManager.BeeSpeciesData speciesData = null;
@@ -188,15 +187,10 @@ public class MagicBeeItem extends Item {
                 speciesData = BeeSpeciesManager.getSpecies(ddGene.getId());
             }
 
-            // Espece (??? si inconnue, violet si rassasiee, or sinon)
+            // Espece (violet si rassasiee, or sinon — toujours le vrai nom)
             boolean satiated = BeeInjectionHelper.isSatiated(stack);
             if (speciesGene != null) {
-                if (!speciesKnown) {
-                    tooltip.add(Component.translatable("tooltip.apica.species")
-                            .withStyle(ChatFormatting.GRAY)
-                            .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                            .append(Component.literal("???").withStyle(ChatFormatting.DARK_GRAY)));
-                } else if (satiated) {
+                if (satiated) {
                     Component name = BeeInjectionHelper.isHarmonized(stack)
                             ? speciesGene.getDisplayName().copy().append("?")
                             : speciesGene.getDisplayName().copy();
@@ -212,7 +206,7 @@ public class MagicBeeItem extends Item {
                 }
             }
 
-            if (speciesData != null && speciesKnown) {
+            if (speciesData != null) {
                 // Activite (Diurne/Nocturne/Insomniac) - couleurs essences
                 String activityKey = switch (speciesData.dayNight) {
                     case "night" -> "tooltip.apica.activity.nocturnal";
@@ -282,12 +276,10 @@ public class MagicBeeItem extends Item {
             }
 
         } else {
-            // Affichage simple: nom de l'espece (??? si inconnue)
+            // Affichage simple: toujours le vrai nom
             boolean satiated = BeeInjectionHelper.isSatiated(stack);
             if (speciesGene != null) {
-                if (!speciesKnown) {
-                    tooltip.add(Component.literal("???").withStyle(ChatFormatting.DARK_GRAY));
-                } else if (satiated) {
+                if (satiated) {
                     Component name = BeeInjectionHelper.isHarmonized(stack)
                             ? speciesGene.getDisplayName().copy().append("?")
                             : speciesGene.getDisplayName().copy();

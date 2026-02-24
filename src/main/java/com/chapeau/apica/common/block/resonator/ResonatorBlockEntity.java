@@ -223,7 +223,6 @@ public class ResonatorBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         CodexPlayerData codex = player.getData(ApicaAttachments.CODEX_DATA);
-        codex.learnSpecies(speciesId);
 
         BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(speciesId);
         if (data != null) {

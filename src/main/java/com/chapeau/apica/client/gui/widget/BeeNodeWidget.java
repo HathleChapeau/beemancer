@@ -110,13 +110,9 @@ public class BeeNodeWidget extends AbstractWidget {
         BeeSpeciesManager.BeeSpeciesData speciesData = BeeSpeciesManager.getSpecies(this.speciesId);
         this.harmonized = speciesData != null && speciesData.harmonized;
 
-        // Calculer le texte à afficher (??? si SECRET et LOCKED, ou si espece inconnue)
+        // Titre toujours le vrai nom (la decouverte du nom se fait via l'injecteur, pas le codex)
         Component baseTitle = CodexManager.getDisplayTitle(node, this.nodeState);
-        if (!isSpeciesKnownByPlayer(this.speciesId) && this.nodeState != NodeState.LOCKED) {
-            this.displayTitle = Component.literal("???");
-        } else {
-            this.displayTitle = baseTitle;
-        }
+        this.displayTitle = baseTitle;
         this.displayDescription = CodexManager.getDisplayDescription(node, this.nodeState);
     }
 

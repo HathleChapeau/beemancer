@@ -19,6 +19,10 @@
       "key": "codex.apica.logistics.liquid_pipe.lore.p3"
     },
     {
+      "type": "text",
+      "key": "codex.apica.logistics.liquid_pipe.lore.p4"
+    },
+    {
       "type": "craft",
       "result": "apica:liquid_pipe"
     }

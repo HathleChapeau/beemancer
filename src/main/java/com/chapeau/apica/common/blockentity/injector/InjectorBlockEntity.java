@@ -12,6 +12,8 @@
  * | InjectionConfigManager  | Configuration        | Valeurs essences, timing       |
  * | BeeSpeciesManager       | Stats espece         | Niveaux de base                |
  * | EssenceItem             | Type/niveau essence  | Identification de l'essence    |
+ * | CodexPlayerData         | Knowledge joueur     | Deblocage nom d'espece         |
+ * | CodexSyncPacket         | Sync codex           | Envoi data au client           |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -22,6 +24,7 @@
  */
 package com.chapeau.apica.common.blockentity.injector;
 
+import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.item.bee.MagicBeeItem;
 import com.chapeau.apica.common.item.essence.EssenceItem;
 import com.chapeau.apica.common.item.essence.SpeciesEssenceItem;
@@ -29,6 +32,8 @@ import com.chapeau.apica.common.menu.InjectorMenu;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.config.EssenceValue;
 import com.chapeau.apica.core.config.InjectionConfigManager;
+import com.chapeau.apica.core.network.packets.CodexSyncPacket;
+import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaItems;
 import com.chapeau.apica.core.registry.ApicaParticles;
@@ -41,6 +46,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -54,6 +60,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
@@ -84,6 +91,10 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
             return false;
         }
     };
+
+    /** UUID du dernier joueur ayant ouvert le menu (pour learnSpecies apres processing). */
+    @Nullable
+    private java.util.UUID lastPlayerUUID = null;
 
     private int processTimer = 0;
 
@@ -153,6 +164,9 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         } else {
             be.processEssence(beeStack, (EssenceItem) essenceStack.getItem());
         }
+
+        // Decouvrir le nom de l'espece pour le joueur qui a utilise l'injecteur
+        be.learnSpeciesForPlayer(beeStack, level);
 
         // Explosion spherique de runes quand l'abeille devient attuned
         if (BeeInjectionHelper.isSatiated(beeStack) && level instanceof ServerLevel serverLevel) {
@@ -234,6 +248,26 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
+    /**
+     * Apprend le nom de l'espece de l'abeille au joueur qui a lance le processing.
+     * Cherche le ServerPlayer via le UUID stocke.
+     */
+    private void learnSpeciesForPlayer(ItemStack beeStack, Level level) {
+        if (lastPlayerUUID == null || !(level instanceof ServerLevel serverLevel)) return;
+        String speciesId = MagicBeeItem.getSpeciesId(beeStack);
+        if (speciesId == null) return;
+
+        ServerPlayer player = serverLevel.getServer().getPlayerList().getPlayer(lastPlayerUUID);
+        if (player == null) return;
+
+        CodexPlayerData codex = player.getData(ApicaAttachments.CODEX_DATA);
+        if (codex.isSpeciesKnown(speciesId)) return;
+
+        codex.learnSpecies(speciesId);
+        player.setData(ApicaAttachments.CODEX_DATA, codex);
+        PacketDistributor.sendToPlayer(player, new CodexSyncPacket(codex));
+    }
+
     private void resetTimer() {
         if (processTimer > 0) {
             processTimer = 0;
@@ -281,6 +315,9 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         super.saveAdditional(tag, registries);
         tag.put("Inventory", itemHandler.serializeNBT(registries));
         tag.putInt("ProcessTimer", processTimer);
+        if (lastPlayerUUID != null) {
+            tag.putUUID("LastPlayer", lastPlayerUUID);
+        }
     }
 
     @Override
@@ -288,6 +325,9 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
         super.loadAdditional(tag, registries);
         itemHandler.deserializeNBT(registries, tag.getCompound("Inventory"));
         processTimer = tag.getInt("ProcessTimer");
+        if (tag.hasUUID("LastPlayer")) {
+            lastPlayerUUID = tag.getUUID("LastPlayer");
+        }
     }
 
     // ========== MENU ==========
@@ -300,6 +340,7 @@ public class InjectorBlockEntity extends BlockEntity implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
+        this.lastPlayerUUID = player.getUUID();
         return new InjectorMenu(containerId, playerInventory, this, containerData);
     }
 

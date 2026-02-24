@@ -63,10 +63,8 @@ public class HeaderSection extends CodexBookSection {
     @Override
     public void render(GuiGraphics graphics, Font font, int x, int y,
                        int pageWidth, String nodeTitle, long relativeDay) {
-        // Verifier si l'espece du node est connue
-        String speciesId = extractSpeciesId();
-        boolean speciesKnown = speciesId == null || isSpeciesKnownClient(speciesId);
-        String title = speciesKnown ? nodeTitle : "???";
+        // Titre toujours le vrai nom (la decouverte du nom se fait via l'injecteur)
+        String title = nodeTitle;
 
         String displayText;
         if (relativeDay > 0) {
