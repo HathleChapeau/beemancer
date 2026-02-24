@@ -1,16 +1,16 @@
 {
-  "feature": "apica:bee_nest_river",
+  "feature": "apica:bee_nest_nether_tree",
   "placement": [
     {
       "type": "minecraft:rarity_filter",
-      "chance": 48
+      "chance": 30
     },
     {
       "type": "minecraft:in_square"
     },
     {
       "type": "minecraft:heightmap",
-      "heightmap": "OCEAN_FLOOR_WG"
+      "heightmap": "WORLD_SURFACE_WG"
     },
     {
       "type": "minecraft:biome"

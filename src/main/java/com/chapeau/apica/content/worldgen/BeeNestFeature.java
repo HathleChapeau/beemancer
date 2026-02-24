@@ -59,6 +59,7 @@ public class BeeNestFeature extends Feature<BeeNestFeatureConfig> {
             case UNDERGROUND -> placeUnderground(level, origin, nestState, random);
             case NETHER_SURFACE -> placeNetherSurface(level, origin, nestState, random);
             case END_SURFACE -> placeEndSurface(level, origin, nestState, random);
+            case WATER_SURFACE -> placeWaterSurface(level, origin, nestState, random);
         };
     }
 
@@ -123,6 +124,27 @@ public class BeeNestFeature extends Feature<BeeNestFeatureConfig> {
         if (!level.getBlockState(origin).isAir()) return false;
         level.setBlock(origin, nestState.setValue(BeeNestBlock.FACING, randomHorizontal(random)), 2);
         return true;
+    }
+
+    private boolean placeWaterSurface(WorldGenLevel level, BlockPos origin, BlockState nestState, RandomSource random) {
+        BlockPos.MutableBlockPos pos = origin.mutable();
+        for (int dy = 0; dy < 8; dy++) {
+            pos.setY(origin.getY() + dy);
+            if (!level.getBlockState(pos).is(Blocks.WATER)) continue;
+            if (!level.getBlockState(pos.above()).isAir()) continue;
+            if (!level.getBlockState(pos.below()).is(Blocks.WATER)) continue;
+            boolean sidesValid = true;
+            for (Direction dir : Direction.Plane.HORIZONTAL) {
+                if (!level.getBlockState(pos.relative(dir)).is(Blocks.WATER)) {
+                    sidesValid = false;
+                    break;
+                }
+            }
+            if (!sidesValid) continue;
+            level.setBlock(pos, nestState.setValue(BeeNestBlock.FACING, randomHorizontal(random)), 2);
+            return true;
+        }
+        return false;
     }
 
     private boolean placeEndSurface(WorldGenLevel level, BlockPos origin, BlockState nestState, RandomSource random) {

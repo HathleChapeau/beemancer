@@ -2,6 +2,6 @@
   "type": "apica:bee_nest",
   "config": {
     "species_id": "river",
-    "placement_type": "surface"
+    "placement_type": "water_surface"
   }
 }

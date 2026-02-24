@@ -43,7 +43,8 @@ public record BeeNestFeatureConfig(String speciesId, PlacementType placementType
         TREE("tree"),
         UNDERGROUND("underground"),
         NETHER_SURFACE("nether_surface"),
-        END_SURFACE("end_surface");
+        END_SURFACE("end_surface"),
+        WATER_SURFACE("water_surface");
 
         public static final Codec<PlacementType> CODEC = StringRepresentable.fromEnum(PlacementType::values);
 
