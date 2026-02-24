@@ -707,7 +707,7 @@
     {
       "id": "quartzose_bee",
       "position": {
-        "x": 0,
+        "x": 1,
         "y": 9
       },
       "category": "NORMAL",
@@ -1055,7 +1055,7 @@
     {
       "id": "crimson_bee",
       "position": {
-        "x": 0,
+        "x": 1,
         "y": 11
       },
       "category": "NORMAL",
