@@ -51,12 +51,15 @@ public class CodexDebugQuestPanel {
     private static final int SEPARATOR_COLOR = 0xFF333333;
     private static final int ARROW_ACTIVE_COLOR = 0xFFFFFFFF;
     private static final int ARROW_INACTIVE_COLOR = 0xFF555555;
+    private static final int COLLAPSE_OFFSET = 100;
 
+    private int basePanelX;
     private int panelX;
     private int panelY;
     private int panelHeight;
     private int scrollOffset = 0;
     private int maxVisible = 0;
+    private boolean collapsed = false;
 
     private final List<QuestEntry> entries = new ArrayList<>();
 
@@ -66,7 +69,8 @@ public class CodexDebugQuestPanel {
      */
     public void rebuild(List<CodexNode> nodes, Set<String> completedQuests,
                         int frameRightX, int frameY, int frameHeight) {
-        this.panelX = frameRightX + 30;
+        this.basePanelX = frameRightX + 30;
+        this.panelX = collapsed ? basePanelX - COLLAPSE_OFFSET : basePanelX;
         this.panelY = frameY;
         this.panelHeight = frameHeight;
         this.scrollOffset = 0;
@@ -211,6 +215,9 @@ public class CodexDebugQuestPanel {
             return true;
         }
 
+        // Clic ailleurs dans le panneau: toggle collapsed
+        collapsed = !collapsed;
+        panelX = collapsed ? basePanelX - COLLAPSE_OFFSET : basePanelX;
         return true;
     }
 
