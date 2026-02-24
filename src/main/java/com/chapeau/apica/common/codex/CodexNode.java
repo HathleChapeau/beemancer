@@ -55,6 +55,7 @@ public class CodexNode {
     @Nullable
     private final String connectionMode;
     private final boolean isChallenge;
+    private final boolean isDefault;
 
     public CodexNode(String id, CodexPage page, int x, int y,
                      ResourceLocation icon, CodexNodeCategory category,
@@ -62,7 +63,7 @@ public class CodexNode {
                      JsonObject unlockCondition, JsonObject rewards,
                      @Nullable String breedingParent1, @Nullable String breedingParent2,
                      NodeVisibility visibility, @Nullable String questId,
-                     @Nullable String connectionMode, boolean isChallenge) {
+                     @Nullable String connectionMode, boolean isChallenge, boolean isDefault) {
         this.id = id;
         this.page = page;
         this.x = x;
@@ -80,6 +81,7 @@ public class CodexNode {
         this.questId = questId;
         this.connectionMode = connectionMode;
         this.isChallenge = isChallenge;
+        this.isDefault = isDefault;
     }
 
     public String getId() {
@@ -185,6 +187,10 @@ public class CodexNode {
         return isChallenge;
     }
 
+    public boolean isDefault() {
+        return isDefault;
+    }
+
     public static CodexNode fromJson(JsonObject json, CodexPage page) {
         String id = json.get("id").getAsString();
 
@@ -234,8 +240,9 @@ public class CodexNode {
             : null;
 
         boolean isChallenge = json.has("is_challenge") && json.get("is_challenge").getAsBoolean();
+        boolean isDefault = json.has("is_default") && json.get("is_default").getAsBoolean();
 
         return new CodexNode(id, page, x, y, icon, category, parentId, hidden, unlockCondition, rewards,
-                breedingParent1, breedingParent2, visibility, questId, connectionMode, isChallenge);
+                breedingParent1, breedingParent2, visibility, questId, connectionMode, isChallenge, isDefault);
     }
 }

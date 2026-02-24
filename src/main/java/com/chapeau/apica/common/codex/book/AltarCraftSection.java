@@ -209,6 +209,9 @@ public class AltarCraftSection extends CodexBookSection {
         if (displayName.endsWith(" Pollen")) {
             return displayName.substring(0, displayName.length() - " Pollen".length());
         }
+        if (displayName.endsWith(" Spore")) {
+            return displayName.substring(0, displayName.length() - " Spore".length());
+        }
         return displayName;
     }
 

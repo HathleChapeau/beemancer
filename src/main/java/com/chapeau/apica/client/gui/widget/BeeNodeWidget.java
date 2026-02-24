@@ -255,7 +255,12 @@ public class BeeNodeWidget extends AbstractWidget {
         ResourceLocation frame;
         float r, g, b;
 
-        if (unlocked) {
+        if (unlocked && node.isDefault()) {
+            frame = challenge ? CHALLENGE_FRAME_OBTAINED
+                    : harmonized ? GOAL_FRAME_OBTAINED
+                    : TASK_FRAME_OBTAINED;
+            r = 0.45f; g = 0.50f; b = 0.55f;   // Bleu/gris terne (default)
+        } else if (unlocked) {
             frame = challenge ? CHALLENGE_FRAME_OBTAINED
                     : harmonized ? GOAL_FRAME_OBTAINED
                     : TASK_FRAME_OBTAINED;

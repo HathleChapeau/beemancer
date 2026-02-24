@@ -6,7 +6,8 @@
       "category": "ROOT",
       "parent": null,
       "hidden_until_parent_unlocked": false,
-      "visibility": "VISIBLE"
+      "visibility": "VISIBLE",
+      "is_default": true
     },
     {
       "id": "1st_bee",

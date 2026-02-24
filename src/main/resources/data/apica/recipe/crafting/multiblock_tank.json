@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "W": { "item": "apica:honeyed_log" },
+    "W": { "item": "apica:royal_crystal" },
     "A": { "item": "apica:honeyed_iron" },
     "G": { "item": "apica:honeyed_glass" },
     "B": { "item": "apica:blank_rune" }
