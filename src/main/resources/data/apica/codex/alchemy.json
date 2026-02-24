@@ -2,20 +2,20 @@
   "nodes": [
     {"id": "manual_centrifuge", "position": {"x": 0, "y": 0}, "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false},
     {"id": "liquid_pipe", "position": {"x": 2, "y": 2}, "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false},
-    {"id": "pipe_t2", "position": {"x": 3, "y": 2}, "category": "NORMAL", "parent": "liquid_pipe", "hidden_until_parent_unlocked": true},
-    {"id": "pipe_t3", "position": {"x": 4, "y": 2}, "category": "NORMAL", "parent": "pipe_t2", "hidden_until_parent_unlocked": true},
-    {"id": "pipe_t4", "position": {"x": 5, "y": 2}, "category": "GOAL", "parent": "pipe_t3", "hidden_until_parent_unlocked": true},
+    {"id": "pipe_t2", "position": {"x": 3, "y": 2}, "category": "NORMAL", "parent": "liquid_pipe", "hidden_until_parent_unlocked": true, "quest_id": "get_infuser"},
+    {"id": "pipe_t3", "position": {"x": 4, "y": 2}, "category": "NORMAL", "parent": "pipe_t2", "hidden_until_parent_unlocked": true, "quest_id": "royal_upgrade"},
+    {"id": "pipe_t4", "position": {"x": 5, "y": 2}, "category": "GOAL", "parent": "pipe_t3", "hidden_until_parent_unlocked": true, "quest_id": "nectar_upgrade"},
     {"id": "crystallyzer", "position": {"x": 2, "y": 0}, "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false},
-    {"id": "centrifuge_t1", "position": {"x": -2, "y": 0}, "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
-    {"id": "centrifuge_t2", "position": {"x": -3, "y": 2}, "category": "NORMAL", "parent": "centrifuge_t1", "hidden_until_parent_unlocked": true},
-    {"id": "centrifuge_t3", "position": {"x": -3, "y": 4}, "category": "GOAL", "parent": "centrifuge_t2", "hidden_until_parent_unlocked": true},
+    {"id": "centrifuge_t1", "position": {"x": -2, "y": 0}, "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false, "quest_id": "get_infuser"},
+    {"id": "centrifuge_t2", "position": {"x": -3, "y": 2}, "category": "NORMAL", "parent": "centrifuge_t1", "hidden_until_parent_unlocked": true, "quest_id": "royal_upgrade"},
+    {"id": "centrifuge_t3", "position": {"x": -3, "y": 4}, "category": "GOAL", "parent": "centrifuge_t2", "hidden_until_parent_unlocked": true, "quest_id": "nectar_upgrade"},
     {"id": "portable_tank", "position": {"x": -2, "y": -2}, "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": false},
-    {"id": "tank", "position": {"x": -2, "y": -3}, "category": "NORMAL", "parent": "portable_tank", "hidden_until_parent_unlocked": true},
-    {"id": "infuser_t1", "position": {"x": 2, "y": -1}, "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false},
+    {"id": "tank", "position": {"x": -2, "y": -3}, "category": "NORMAL", "parent": "portable_tank", "hidden_until_parent_unlocked": true, "quest_id": "get_infuser"},
+    {"id": "infuser_t1", "position": {"x": 2, "y": -1}, "category": "NORMAL", "parent": "crystallyzer", "hidden_until_parent_unlocked": false, "quest_id": "obtain_honey_crystal"},
     {"id": "alembic", "position": {"x": 0, "y": 2}, "category": "NORMAL", "parent": "manual_centrifuge", "hidden_until_parent_unlocked": true},
-    {"id": "incubator", "position": {"x": 0, "y": -3}, "category": "NORMAL", "parent": "infuser_t1", "hidden_until_parent_unlocked": false},
+    {"id": "incubator", "position": {"x": 0, "y": -3}, "category": "NORMAL", "parent": "infuser_t1", "hidden_until_parent_unlocked": false, "quest_id": "get_infuser"},
     {"id": "honey_furnace", "position": {"x": 4, "y": -1}, "category": "NORMAL", "parent": "infuser_t1", "hidden_until_parent_unlocked": false},
-    {"id": "royal_furnace", "position": {"x": 5, "y": -1}, "category": "NORMAL", "parent": "honey_furnace", "hidden_until_parent_unlocked": true},
-    {"id": "nectar_furnace", "position": {"x": 6, "y": -1}, "category": "GOAL", "parent": "royal_furnace", "hidden_until_parent_unlocked": true}
+    {"id": "royal_furnace", "position": {"x": 5, "y": -1}, "category": "NORMAL", "parent": "honey_furnace", "hidden_until_parent_unlocked": true, "quest_id": "royal_upgrade"},
+    {"id": "nectar_furnace", "position": {"x": 6, "y": -1}, "category": "GOAL", "parent": "royal_furnace", "hidden_until_parent_unlocked": true, "quest_id": "nectar_upgrade"}
   ]
 }

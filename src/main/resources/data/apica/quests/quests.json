@@ -25,11 +25,11 @@
       "item": "apica:honey_crystal"
     },
     {
-      "id": "centrifuge_royal_comb",
+      "id": "royal_upgrade",
       "node": "apica:hive_multibloc",
-      "type": "MACHINE_OUTPUT",
+      "type": "MACHINE_INSERT",
       "machine": "centrifuge",
-      "item": "apica:royal_comb"
+      "tag": "apica:royal_comb"
     },
 
     {
@@ -182,6 +182,8 @@
     {"id": "stellar_bee_incubator", "node": "bees:stellar_bee", "type": "BEE_INCUBATOR", "species": "stellar"},
 
     {"id": "centrifuge_insert_comb", "node": "apica:manual_centrifuge", "type": "MACHINE_INSERT", "machine": "centrifuge", "tag": "apica:combs"},
-    {"id": "open_apiary_menu", "node": "apica:hive_multibloc", "type": "OPEN_MENU", "machine": "hive_multiblock"}
+    {"id": "open_apiary_menu", "node": "apica:hive_multibloc", "type": "OPEN_MENU", "machine": "hive_multiblock"},
+    {"id": "get_infuser", "node": "alchemy:incubator", "type": "OPEN_MENU", "machine": "infuser"},
+    {"id": "nectar_upgrade", "node": "alchemy:centrifuge_t3", "type": "OPEN_MENU", "machine": "alembic"}
   ]
 }

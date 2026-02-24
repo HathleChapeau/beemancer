@@ -1,0 +1,12 @@
+{
+  "type": "apica:centrifuging",
+  "ingredient": {
+    "item": "apica:big_royal_comb"
+  },
+  "results": [],
+  "fluid_result": {
+    "fluid": "apica:royal_jelly",
+    "amount": 500
+  },
+  "processing_time": 80
+}

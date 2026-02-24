@@ -2157,7 +2157,7 @@
       },
       "day_night": "day",
       "loot": {
-        "item": "minecraft:honeycomb"
+        "item": "apica:royal_comb"
       },
       "pollen": null,
       "texture": "Majestic_Bee",
@@ -3201,7 +3201,7 @@
       },
       "day_night": "day",
       "loot": {
-        "item": "minecraft:honeycomb"
+        "item": "apica:big_royal_comb"
       },
       "pollen": null,
       "texture": "Imperial_Bee",

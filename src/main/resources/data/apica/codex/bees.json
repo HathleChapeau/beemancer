@@ -31,7 +31,8 @@
       "category": "NORMAL",
       "parent": "hive",
       "hidden_until_parent_unlocked": false,
-      "visibility": "VISIBLE"
+      "visibility": "VISIBLE",
+      "quest_id": "get_infuser"
     },
     {
       "id": "resonator",
@@ -42,7 +43,8 @@
       "category": "NORMAL",
       "parent": "hive",
       "hidden_until_parent_unlocked": false,
-      "visibility": "VISIBLE"
+      "visibility": "VISIBLE",
+      "quest_id": "obtain_honey_crystal"
     },
     {
       "id": "essence_injector",
@@ -64,7 +66,8 @@
       "category": "NORMAL",
       "parent": "hive",
       "hidden_until_parent_unlocked": true,
-      "visibility": "VISIBLE"
+      "visibility": "VISIBLE",
+      "quest_id": "royal_upgrade"
     },
     {
       "id": "meadow_bee",

@@ -59,7 +59,7 @@
       "parent": "altar",
       "hidden_until_parent_unlocked": false,
       "visibility": "SECRET",
-      "quest_id": "centrifuge_royal_comb"
+      "quest_id": "royal_upgrade"
     }
   ]
 }

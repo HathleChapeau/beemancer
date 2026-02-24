@@ -54,7 +54,8 @@ public class AltarCraftSection extends CodexBookSection {
     private static final int ARROW_WIDTH = 20;
     private static final int POLLEN_SPACING = 36;
     private static final int POLLEN_ROW_HEIGHT = 20;
-    private static final int SECTION_HEIGHT = CROSS_SPACING * 2 + SLOT_SIZE + POLLEN_ROW_HEIGHT + 12;
+    private static final int POLLEN_NAME_OFFSET = 10;
+    private static final int SECTION_HEIGHT = CROSS_SPACING * 2 + SLOT_SIZE + POLLEN_ROW_HEIGHT + POLLEN_NAME_OFFSET + 12;
 
     private final String resultItem;
     private boolean resolved = false;
@@ -63,7 +64,7 @@ public class AltarCraftSection extends CodexBookSection {
     private final List<ItemStack> pedestalStacks = new ArrayList<>();
     private final List<PollenEntry> pollenEntries = new ArrayList<>();
 
-    private record PollenEntry(ItemStack stack, int count) {}
+    private record PollenEntry(ItemStack stack, int count, String shortName) {}
 
     public AltarCraftSection(String resultItem) {
         this.resultItem = resultItem;
@@ -130,6 +131,9 @@ public class AltarCraftSection extends CodexBookSection {
                 renderScaledItem(graphics, entry.stack, px, pollenY + 1, 0.8f);
                 String countStr = "x" + entry.count;
                 graphics.drawString(font, countStr, px + 14, pollenY + 5, 0xFF8B6914, false);
+                int nameWidth = font.width(entry.shortName);
+                int nameX = px + POLLEN_POT_SLOT_W / 2 - nameWidth / 2;
+                graphics.drawString(font, entry.shortName, nameX, pollenY + POLLEN_POT_SLOT_H + 2, 0xFF8B6914, false);
             }
         }
     }
@@ -185,13 +189,27 @@ public class AltarCraftSection extends CodexBookSection {
                 for (Map.Entry<ResourceLocation, Integer> entry : recipe.pollen().entrySet()) {
                     var pollenItem = BuiltInRegistries.ITEM.get(entry.getKey());
                     if (pollenItem != null) {
-                        pollenEntries.add(new PollenEntry(
-                                new ItemStack(pollenItem), entry.getValue()));
+                        ItemStack pollenStack = new ItemStack(pollenItem);
+                        String shortName = extractPollenShortName(pollenStack.getHoverName().getString());
+                        pollenEntries.add(new PollenEntry(pollenStack, entry.getValue(), shortName));
                     }
                 }
                 return;
             }
         }
+    }
+
+    /**
+     * Extrait le nom court du pollen: "Pollen of Water" → "Water", "Flower Pollen" → "Flower".
+     */
+    private static String extractPollenShortName(String displayName) {
+        if (displayName.startsWith("Pollen of ")) {
+            return displayName.substring("Pollen of ".length());
+        }
+        if (displayName.endsWith(" Pollen")) {
+            return displayName.substring(0, displayName.length() - " Pollen".length());
+        }
+        return displayName;
     }
 
     public static AltarCraftSection fromJson(JsonObject json) {

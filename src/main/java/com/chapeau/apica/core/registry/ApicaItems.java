@@ -411,6 +411,8 @@ public class ApicaItems {
     // --- COMBS (legacy) ---
     public static final DeferredItem<Item> ROYAL_COMB = ITEMS.register("royal_comb",
             () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> BIG_ROYAL_COMB = ITEMS.register("big_royal_comb",
+            () -> new Item(new Item.Properties()));
 
     // --- NEW COMBS (from bee species) ---
     public static final DeferredItem<Item> MEADOW_COMB = ITEMS.register("meadow_comb",

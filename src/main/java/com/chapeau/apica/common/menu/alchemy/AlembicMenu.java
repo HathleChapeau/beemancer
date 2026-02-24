@@ -23,6 +23,7 @@ package com.chapeau.apica.common.menu.alchemy;
 
 import com.chapeau.apica.common.blockentity.alchemy.AlembicHeartBlockEntity;
 import com.chapeau.apica.common.menu.ApicaMenu;
+import com.chapeau.apica.common.quest.QuestEvents;
 import com.chapeau.apica.core.registry.ApicaBlocks;
 import com.chapeau.apica.core.registry.ApicaMenus;
 import net.minecraft.network.FriendlyByteBuf;
@@ -52,6 +53,8 @@ public class AlembicMenu extends ApicaMenu {
         this.data = data;
 
         addDataSlots(data);
+
+        QuestEvents.onMenuOpen(playerInv.player, "alembic");
 
         // Player inventory (centered in 190px container)
         addPlayerInventory(playerInv, 15, 107);
