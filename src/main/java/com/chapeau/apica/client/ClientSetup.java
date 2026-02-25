@@ -320,7 +320,7 @@ public class ClientSetup {
             }
         }, ApicaItems.BUILDING_STAFF.get());
 
-        // Leaf Blower - render 3D model + charging animation overlay
+        // Leaf Blower - render 3D model + charging animation overlay + no equip bob
         event.registerItem(new IClientItemExtensions() {
             private LeafBlowerItemRenderer renderer;
 
@@ -330,6 +330,31 @@ public class ClientSetup {
                     renderer = new LeafBlowerItemRenderer();
                 }
                 return renderer;
+            }
+
+            @Override
+            public boolean applyForgeHandTransform(
+                    com.mojang.blaze3d.vertex.PoseStack poseStack,
+                    net.minecraft.client.player.LocalPlayer player,
+                    net.minecraft.world.entity.HumanoidArm arm,
+                    net.minecraft.world.item.ItemStack itemInHand,
+                    float partialTick, float equipProcess, float swingProcess) {
+                int side = arm == net.minecraft.world.entity.HumanoidArm.RIGHT ? 1 : -1;
+                if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0) {
+                    poseStack.translate((float) side * 0.56F, -0.52F, -0.72F);
+                } else {
+                    float sqrtSwing = net.minecraft.util.Mth.sqrt(swingProcess);
+                    float f5 = -0.4F * net.minecraft.util.Mth.sin(sqrtSwing * (float) Math.PI);
+                    float f6 = 0.2F * net.minecraft.util.Mth.sin(sqrtSwing * (float) (Math.PI * 2));
+                    float f10 = -0.2F * net.minecraft.util.Mth.sin(swingProcess * (float) Math.PI);
+                    poseStack.translate((float) side * f5, f6, f10);
+                    poseStack.translate((float) side * 0.56F, -0.52F, -0.72F);
+                    float f = net.minecraft.util.Mth.sin(swingProcess * swingProcess * (float) Math.PI);
+                    float f1 = net.minecraft.util.Mth.sin(sqrtSwing * (float) Math.PI);
+                    poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees((float) side * f1 * 70.0F));
+                    poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees((float) side * f * -20.0F));
+                }
+                return true;
             }
         }, ApicaItems.LEAF_BLOWER.get());
 

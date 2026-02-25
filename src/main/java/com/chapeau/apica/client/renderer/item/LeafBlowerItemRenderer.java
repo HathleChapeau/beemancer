@@ -96,8 +96,9 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float BAR_PIXEL_V = 1f / 12f;
 
     private static final int TOTAL_FRAMES = 13;
-    private static final int CHARGE_TIER2_TICKS = 20;
-    private static final int CHARGE_TIER3_TICKS = 40;
+    private static final int CHARGE_TIER1_TICKS = 20;
+    private static final int CHARGE_TIER2_TICKS = 40;
+    private static final int CHARGE_TIER3_TICKS = 60;
 
     // Animation state (client-side)
     private int currentFrame = 0;
@@ -273,7 +274,8 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         int useTicks = mc.player.getTicksUsingItem();
         if (useTicks >= CHARGE_TIER3_TICKS) return 3;
         if (useTicks >= CHARGE_TIER2_TICKS) return 2;
-        return 1;
+        if (useTicks >= CHARGE_TIER1_TICKS) return 1;
+        return 0;
     }
 
     // =========================================================================
