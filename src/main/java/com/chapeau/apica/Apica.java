@@ -59,11 +59,14 @@ import com.chapeau.apica.core.registry.ApicaMenus;
 import com.chapeau.apica.core.registry.ApicaSounds;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -83,6 +86,9 @@ public class Apica {
 
     public static final String MOD_ID = "apica";
     public static final Logger LOGGER = LogUtils.getLogger();
+
+    // Timing des RegisterEvents (bloc instanciation réelle, pas juste abonnement bus)
+    private final java.util.Map<ResourceKey<?>, Long> registerEventTimings = new java.util.HashMap<>();
 
     // =========================================================================
     // CONSTRUCTOR
@@ -191,6 +197,20 @@ public class Apica {
         modEventBus.addListener(this::onCommonSetup);
         modEventBus.addListener(this::onEntityAttributeCreation);
         modEventBus.addListener(this::onRegisterCapabilities);
+
+        // Timing des RegisterEvents : mesure l'instanciation réelle des registres (blocs, items, BE, etc.)
+        // Note: inclut toutes les mods, pas seulement Apica
+        modEventBus.addListener(EventPriority.HIGHEST, false, RegisterEvent.class, event ->
+            registerEventTimings.put(event.getRegistryKey(), System.currentTimeMillis())
+        );
+        modEventBus.addListener(EventPriority.LOWEST, false, RegisterEvent.class, event -> {
+            Long start = registerEventTimings.remove(event.getRegistryKey());
+            if (start != null) {
+                long ms = System.currentTimeMillis() - start;
+                LOGGER.info("[TIMING] RegisterEvent '{}': {}ms (all mods combined)",
+                    event.getRegistryKey().location(), ms);
+            }
+        });
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent event) {
@@ -221,13 +241,18 @@ public class Apica {
     }
 
     private void onRegisterCapabilities(final RegisterCapabilitiesEvent event) {
-        long t = System.currentTimeMillis();
+        long capStart = System.currentTimeMillis();
+        long t;
+
+        t = System.currentTimeMillis();
         registerFluidCapabilities(event);
-        LOGGER.info("[TIMING] registerFluidCapabilities: {}ms", System.currentTimeMillis() - t);
+        LOGGER.info("[TIMING]   registerFluidCapabilities: {}ms", System.currentTimeMillis() - t);
 
         t = System.currentTimeMillis();
         registerItemCapabilities(event);
-        LOGGER.info("[TIMING] registerItemCapabilities: {}ms", System.currentTimeMillis() - t);
+        LOGGER.info("[TIMING]   registerItemCapabilities: {}ms", System.currentTimeMillis() - t);
+
+        LOGGER.info("[TIMING] onRegisterCapabilities total: {}ms", System.currentTimeMillis() - capStart);
     }
 
     // =========================================================================

@@ -91,14 +91,14 @@ import java.util.function.Supplier;
 public class ClientSetup {
 
     public static void register(IEventBus modEventBus) {
-        modEventBus.addListener(ClientSetup::registerScreens);
-        modEventBus.addListener(ClientSetup::registerEntityRenderers);
-        modEventBus.addListener(ClientSetup::registerLayerDefinitions);
-        modEventBus.addListener(ClientSetup::registerClientExtensions);
-        modEventBus.addListener(ClientSetup::registerBlockColors);
-        modEventBus.addListener(ClientSetup::registerItemColors);
-        modEventBus.addListener(ClientSetup::registerAdditionalModels);
-        modEventBus.addListener(ClientSetup::registerParticleProviders);
+        modEventBus.addListener((RegisterMenuScreensEvent e)         -> timed("registerScreens",          () -> registerScreens(e)));
+        modEventBus.addListener((EntityRenderersEvent.RegisterRenderers e) -> timed("registerEntityRenderers", () -> registerEntityRenderers(e)));
+        modEventBus.addListener((EntityRenderersEvent.RegisterLayerDefinitions e) -> timed("registerLayerDefinitions", () -> registerLayerDefinitions(e)));
+        modEventBus.addListener((RegisterClientExtensionsEvent e)    -> timed("registerClientExtensions", () -> registerClientExtensions(e)));
+        modEventBus.addListener((RegisterColorHandlersEvent.Block e)  -> timed("registerBlockColors",     () -> registerBlockColors(e)));
+        modEventBus.addListener((RegisterColorHandlersEvent.Item e)   -> timed("registerItemColors",      () -> registerItemColors(e)));
+        modEventBus.addListener((ModelEvent.RegisterAdditional e)     -> timed("registerAdditionalModels",() -> registerAdditionalModels(e)));
+        modEventBus.addListener((RegisterParticleProvidersEvent e)    -> timed("registerParticleProviders",() -> registerParticleProviders(e)));
 
         // AnimationTimer: compteur client-side pour animations sans stutter (pattern Create)
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> AnimationTimer.tick());
@@ -134,6 +134,12 @@ public class ClientSetup {
         // Debug Opti
         NeoForge.EVENT_BUS.register(RenderCostVisualizer.class);
         NeoForge.EVENT_BUS.register(LogicCostVisualizer.class);
+    }
+
+    private static void timed(String label, Runnable action) {
+        long t = System.currentTimeMillis();
+        action.run();
+        Apica.LOGGER.info("[TIMING] ClientSetup.{}: {}ms", label, System.currentTimeMillis() - t);
     }
 
     private static void registerScreens(final RegisterMenuScreensEvent event) {
