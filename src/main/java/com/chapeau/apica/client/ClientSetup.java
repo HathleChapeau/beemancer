@@ -320,7 +320,7 @@ public class ClientSetup {
             }
         }, ApicaItems.BUILDING_STAFF.get());
 
-        // Leaf Blower - render 3D model + charging animation overlay
+        // Leaf Blower - render 3D model + charging animation overlay + no equip bob
         event.registerItem(new IClientItemExtensions() {
             private LeafBlowerItemRenderer renderer;
 
@@ -330,6 +330,16 @@ public class ClientSetup {
                     renderer = new LeafBlowerItemRenderer();
                 }
                 return renderer;
+            }
+
+            @Override
+            public boolean applyForgeHandTransform(
+                    com.mojang.blaze3d.vertex.PoseStack poseStack,
+                    net.minecraft.client.player.LocalPlayer player,
+                    net.minecraft.world.entity.HumanoidArm arm,
+                    net.minecraft.world.item.ItemStack itemInHand,
+                    float partialTick, float equipProcess, float swingProcess) {
+                return true;
             }
         }, ApicaItems.LEAF_BLOWER.get());
 
