@@ -130,7 +130,6 @@ public class LeafBlowerProjectileEntity extends ThrowableProjectile {
 
         Vec3 center = position();
         ParticleHelper.sphere(serverLevel, center, radius, ParticleTypes.CLOUD, radius * 8);
-        ParticleHelper.spawnRingBurst(serverLevel, ParticleTypes.CHERRY_LEAVES, center, 24, 0.3);
 
         currentPulse++;
         if (currentPulse >= maxPulses) {
@@ -171,13 +170,18 @@ public class LeafBlowerProjectileEntity extends ThrowableProjectile {
         }
     }
 
-    /** A log is "isolated" if all 6 neighbors are only air or leaves — no other logs or solid blocks. */
+    /** A log is "isolated" if all 26 neighbors (faces + edges + corners) are only air or leaves. */
     private boolean isIsolatedLog(ServerLevel serverLevel, BlockPos pos) {
-        for (Direction dir : Direction.values()) {
-            BlockState neighbor = serverLevel.getBlockState(pos.relative(dir));
-            if (neighbor.isAir()) continue;
-            if (neighbor.is(BlockTags.LEAVES)) continue;
-            return false;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (dx == 0 && dy == 0 && dz == 0) continue;
+                    BlockState neighbor = serverLevel.getBlockState(pos.offset(dx, dy, dz));
+                    if (neighbor.isAir()) continue;
+                    if (neighbor.is(BlockTags.LEAVES)) continue;
+                    return false;
+                }
+            }
         }
         return true;
     }
