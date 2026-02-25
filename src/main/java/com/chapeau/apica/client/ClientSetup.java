@@ -40,6 +40,7 @@ import com.chapeau.apica.client.renderer.block.CentrifugeHeartRenderer;
 import com.chapeau.apica.client.renderer.block.CrankRenderer;
 import com.chapeau.apica.client.renderer.block.InjectorRenderer;
 import com.chapeau.apica.client.renderer.block.InfuserHeartRenderer;
+import com.chapeau.apica.client.renderer.block.PipeExtractRenderer;
 import com.chapeau.apica.client.renderer.block.CrystallizerRenderer;
 import com.chapeau.apica.client.renderer.block.InfuserRenderer;
 import com.chapeau.apica.client.renderer.block.ResonatorRenderer;
@@ -244,6 +245,24 @@ public class ClientSetup {
         // StorageBarrelRenderer - item + quantite sur la face avant
         event.registerBlockEntityRenderer(ApicaBlockEntities.STORAGE_BARREL.get(),
             com.chapeau.apica.client.renderer.block.StorageBarrelRenderer::new);
+
+        // PipeExtractRenderer - indicateur d'extraction sur les pipes (item et liquide)
+        event.registerBlockEntityRenderer(ApicaBlockEntities.ITEM_PIPE.get(),
+            ctx -> new PipeExtractRenderer<>(ctx, PipeExtractRenderer.ITEM_EXTRACT_MODEL_LOC));
+        event.registerBlockEntityRenderer(ApicaBlockEntities.ITEM_PIPE_MK2.get(),
+            ctx -> new PipeExtractRenderer<>(ctx, PipeExtractRenderer.ITEM_EXTRACT_MODEL_LOC));
+        event.registerBlockEntityRenderer(ApicaBlockEntities.ITEM_PIPE_MK3.get(),
+            ctx -> new PipeExtractRenderer<>(ctx, PipeExtractRenderer.ITEM_EXTRACT_MODEL_LOC));
+        event.registerBlockEntityRenderer(ApicaBlockEntities.ITEM_PIPE_MK4.get(),
+            ctx -> new PipeExtractRenderer<>(ctx, PipeExtractRenderer.ITEM_EXTRACT_MODEL_LOC));
+        event.registerBlockEntityRenderer(ApicaBlockEntities.LIQUID_PIPE.get(),
+            ctx -> new PipeExtractRenderer<>(ctx, PipeExtractRenderer.LIQUID_EXTRACT_MODEL_LOC));
+        event.registerBlockEntityRenderer(ApicaBlockEntities.LIQUID_PIPE_MK2.get(),
+            ctx -> new PipeExtractRenderer<>(ctx, PipeExtractRenderer.LIQUID_EXTRACT_MODEL_LOC));
+        event.registerBlockEntityRenderer(ApicaBlockEntities.LIQUID_PIPE_MK3.get(),
+            ctx -> new PipeExtractRenderer<>(ctx, PipeExtractRenderer.LIQUID_EXTRACT_MODEL_LOC));
+        event.registerBlockEntityRenderer(ApicaBlockEntities.LIQUID_PIPE_MK4.get(),
+            ctx -> new PipeExtractRenderer<>(ctx, PipeExtractRenderer.LIQUID_EXTRACT_MODEL_LOC));
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
@@ -436,6 +455,10 @@ public class ClientSetup {
         // Modèles multiblock tank
         event.register(MultiblockTankRenderer.FORMED_MODEL_LOC);  // Formé (scalé)
         event.register(MultiblockTankRenderer.SINGLE_MODEL_LOC);  // Non formé (bloc simple)
+
+        // Modèles extract pour les pipes (rendu BER de l'indicateur d'extraction)
+        event.register(PipeExtractRenderer.ITEM_EXTRACT_MODEL_LOC);
+        event.register(PipeExtractRenderer.LIQUID_EXTRACT_MODEL_LOC);
     }
 
 }
