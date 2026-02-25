@@ -176,7 +176,7 @@ public class BuildingWandPreviewRenderer {
     /**
      * Compte le nombre de blocs dans l'inventaire du joueur.
      */
-    private static int countBlocksInInventory(Player player, Block block) {
+    public static int countBlocksInInventory(Player player, Block block) {
         int count = 0;
         var blockItem = block.asItem();
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {

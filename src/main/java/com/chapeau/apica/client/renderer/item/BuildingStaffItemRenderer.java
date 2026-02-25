@@ -33,6 +33,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -45,6 +46,10 @@ import net.minecraft.world.phys.HitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
+
+import java.util.List;
+
+import static com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer.countBlocksInInventory;
 
 /**
  * BEWLR pour le Building Staff.
@@ -133,6 +138,10 @@ public class BuildingStaffItemRenderer extends BlockEntityWithoutLevelRenderer {
         Block sourceBlock = sourceState.getBlock();
         ItemStack blockStack = new ItemStack(sourceBlock);
         if (blockStack.isEmpty()) return;
+
+        // Calculer le count d'inventaire pour la clé de cache
+        int inventoryCount = mc.player.isCreative() ? -1 : countBlocksInInventory(mc.player, sourceBlock);
+        if(inventoryCount <= 0) return;
 
         // Rendre le mini-bloc au centre du cristal
         poseStack.pushPose();
