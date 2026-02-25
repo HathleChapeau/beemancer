@@ -346,6 +346,9 @@ public class LiquidPipeBlockEntity extends BlockEntity {
             extractingDirections.remove(dir);
         }
         setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
 
     public int getTintColor() {
