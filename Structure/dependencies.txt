@@ -257,6 +257,12 @@ client/renderer/util/
   - drawCubeOutline(VertexConsumer, Matrix4f, AABB, float...) — contour de cube
   - Utilisé par: BeeDebugRenderer, StorageControllerRenderer
 
+- AnimatedQuadRenderer.java: Rendu boite 3D texturee avec UV parametrables (animations frame-by-frame)
+  - renderBox(VertexConsumer, Pose, minXYZ, maxXYZ, u0, v0, u1, v1, light) — 6 faces avec UV absolues
+  - Permet de selectionner une frame dans un atlas en ajustant les UV V (espace 0-1)
+  - Pattern inspire de FluidCubeRenderer mais avec UV absolues pour textures standalone
+  - Utilise par: LeafBlowerItemRenderer.java (overlay charging + barres indicatrices)
+
 ================================================================================
 common/block/alchemy/
 ================================================================================

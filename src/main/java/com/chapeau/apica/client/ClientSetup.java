@@ -65,6 +65,7 @@ import com.chapeau.apica.client.renderer.entity.MagicBeeRenderer;
 import com.chapeau.apica.client.renderer.layer.BeeElytraLayer;
 import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer;
+import com.chapeau.apica.client.renderer.item.LeafBlowerItemRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
@@ -319,6 +320,19 @@ public class ClientSetup {
             }
         }, ApicaItems.BUILDING_STAFF.get());
 
+        // Leaf Blower - render 3D model + charging animation overlay
+        event.registerItem(new IClientItemExtensions() {
+            private LeafBlowerItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new LeafBlowerItemRenderer();
+                }
+                return renderer;
+            }
+        }, ApicaItems.LEAF_BLOWER.get());
+
         // --- Fluid Extensions ---
         registerFluidExtension(event, ApicaFluids.HONEY_FLUID_TYPE,
             //"block/fluid/honey_still", "block/fluid/honey_flow", 0xFFFFFFFF);
@@ -480,6 +494,9 @@ public class ClientSetup {
 
         // Building Staff 3D model (rendu par BEWLR)
         event.register(BuildingStaffItemRenderer.STAFF_MODEL_LOC);
+
+        // Leaf Blower 3D body model (rendu par BEWLR)
+        event.register(LeafBlowerItemRenderer.BODY_MODEL_LOC);
 
         // Modèles multiblock tank
         event.register(MultiblockTankRenderer.FORMED_MODEL_LOC);  // Formé (scalé)

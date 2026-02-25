@@ -76,6 +76,8 @@ Philosophie:
 │ client/renderer/debug/HiveDebugRenderer│ Cooldowns au-dessus des ruches      │
 │ client/renderer/util/FluidCubeRenderer │ Rendu fluide avec sélection faces  │
 │ client/renderer/util/DebugRenderHelper │ Lignes et cubes debug partagés     │
+│ client/renderer/util/AnimatedQuadRenderer│ Rendu boite 3D texturee UV dynamiques│
+│ client/renderer/item/LeafBlowerItemRenderer│ BEWLR Leaf Blower (3D + charge anim)│
 │ client/renderer/util/RenderHelper      │ Push/pop, facing rotation partagés │
 │ client/renderer/util/FloatingItemHelper│ Rendu item flottant anime          │
 │ client/renderer/util/RotatingModelHelper│ Rendu modele rotatif partagé      │
@@ -805,13 +807,26 @@ LISTE DES FEATURES:
     puis s'arrete au premier bloc touche et pulse pour detruire la vegetation (feuilles, fleurs, herbe,
     lianes) dans des rayons croissants. Charge 3 niveaux: lv1=1 pulse r3, lv2=2 pulses r3→r5, lv3=3 pulses r3→r5→r7.
     Auto-discard si vol > 3 secondes sans toucher de bloc.
+    Rendu 3D via BEWLR: modele body bake (8 elements statiques), overlay interieur anime frame-by-frame
+    (13 frames, atlas 13x78px, forward pendant charge, reverse au relachement), 3 barres indicatrices
+    de charge (atlas 3x24px, apparition progressive lv1/lv2/lv3). UseAnim.NONE pour eviter le pivot
+    automatique de l'arc vanilla.
   Scripts crees: LeafBlowerItem.java, LeafBlowerProjectileEntity.java,
-    LeafBlowerProjectileModel.java, LeafBlowerProjectileRenderer.java
+    LeafBlowerProjectileModel.java, LeafBlowerProjectileRenderer.java,
+    LeafBlowerItemRenderer.java (client/renderer/item/), AnimatedQuadRenderer.java (client/renderer/util/)
   Scripts modifies: ApicaItems.java (+LEAF_BLOWER), ApicaEntities.java (+LEAF_BLOWER_ORB),
-    ApicaCreativeTabs.java (+leaf_blower dans addCodexAndTools), ClientSetup.java (+renderer +layer)
-  Dependances: ParticleHelper (sphere, spawnRingBurst)
+    ApicaCreativeTabs.java (+leaf_blower dans addCodexAndTools), ClientSetup.java (+renderer +layer
+    +registerClientExtensions BEWLR Leaf Blower, +registerAdditionalModels leaf_blower_body),
+    LeafBlowerItem.java (UseAnim.BOW → UseAnim.NONE)
+  Dependances: ParticleHelper (sphere, spawnRingBurst), AnimatedQuadRenderer (overlay + barres),
+    AnimationTimer (tick tracking client-side), BakedModel (putBulkData body)
   Registres modifies: ApicaItems (+1 item), ApicaEntities (+1 entity)
-  Assets: models/item/leaf_blower.json, textures/item/leaf_blower.png (placeholder),
+  Assets: models/item/leaf_blower.json (builtin/entity + display transforms),
+    models/item/leaf_blower_body.json (elements 1-6, 10, 11 statiques),
+    textures/item/leaf_blower_body.png (body 16x16),
+    textures/item/leaf_blower_charging1.png (atlas 13 frames overlay 13x78),
+    textures/item/leaf_blower_charging2.png (atlas barres charge 3x24),
+    textures/item/leaf_blower.png (placeholder),
     textures/entity/leaf_blower_orb.png (placeholder)
 
 → Api Block

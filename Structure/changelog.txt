@@ -3,6 +3,22 @@
 ################################################################################
 
 ================================================================================
+2026-02-25 - Leaf Blower 3D BEWLR
+================================================================================
+
+Rendu 3D du Leaf Blower via BEWLR (BlockEntityWithoutLevelRenderer):
+- LeafBlowerItemRenderer: BEWLR 3 couches (body bake + overlay anime + barres charge)
+  - Couche 1: body statique via putBulkData sur BakedModel (elements 1-6, 10, 11)
+  - Couche 2: overlay interieur anime 13 frames (forward pendant charge, reverse au relachement)
+  - Couche 3: barres indicatrices (1/2/3 barres selon charge level, atlas 3x24)
+  - Frame tracking via AnimationTimer (client-side tick counter sans stutter)
+- AnimatedQuadRenderer: utilitaire universel rendu boite 6 faces avec UV parametrables
+- ClientSetup.java: +registerClientExtensions (BEWLR leaf_blower), +registerAdditionalModels (leaf_blower_body)
+- LeafBlowerItem.java: UseAnim.BOW → UseAnim.NONE
+- Assets: leaf_blower.json → builtin/entity + display transforms, leaf_blower_body.json (modele statique),
+  leaf_blower_body.png (16x16), leaf_blower_charging1.png (atlas 13x78), leaf_blower_charging2.png (atlas 3x24)
+
+================================================================================
 2026-02-25 - Api Block
 ================================================================================
 
