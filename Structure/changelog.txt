@@ -3,6 +3,37 @@
 ################################################################################
 
 ================================================================================
+2026-02-25 - Api Block
+================================================================================
+
+Nouveau bloc creature vivante "Api" (honeycomb anime):
+- ApiBlockEntity: level, cooldown 20min, croissance 3 phases (delai 5min → interp 10min → final)
+  - Collision adjacente: casse blocs mous (hardness < 3.0), explose contre blocs durs
+  - Auto-destruction: drop honeycomb + particules sphere HONEY
+- ApiBlock: BaseEntityBlock + MapCodec, interactions honey_bottle/combs tag, VoxelShape dynamique
+- ApiRenderer: BER avec modele additional, scale dynamique via poseStack
+- Registres: ApicaBlocks +api, ApicaBlockEntities +api, ApicaItems +api BlockItem
+- Assets: blockstate, model bloc 10x10x10 centre, model item, recipe altar, loot_table vide
+- Codex: artifacts tab node "api" avec 3 pages lore + altar_craft, node "accessories" TBD
+- Lang: block.apica.api, lore p1/p2/p3, accessories TBD
+
+================================================================================
+2026-02-25 - Leaf Blower Item
+================================================================================
+
+Nouvel item chargeable "Leaf Blower" qui tire un projectile orbe:
+- LeafBlowerItem: charge 3 niveaux (0-19t=lv1, 20-39t=lv2, 40+t=lv3), UseAnim.BOW
+- LeafBlowerProjectileEntity: phase FLYING puis PULSING au contact d'un bloc
+  - Pulse rayon 3→5→7 selon charge level, détruit feuilles/fleurs/herbe/lianes
+  - Auto-discard si vol > 3 secondes sans toucher de bloc
+  - Particules CLOUD + CHERRY_LEAVES via ParticleHelper
+- LeafBlowerProjectileModel: cube 6x6 avec rotation animée
+- LeafBlowerProjectileRenderer: scale selon charge level, effet pulsation
+- Registres: ApicaItems +leaf_blower, ApicaEntities +leaf_blower_orb
+- Assets: models/item/leaf_blower.json, textures placeholder (item + entity)
+- Lang: item.apica.leaf_blower, entity.apica.leaf_blower_orb
+
+================================================================================
 2026-02-23 - Resonator Trait Match Analysis
 ================================================================================
 

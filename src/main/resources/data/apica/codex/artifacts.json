@@ -22,6 +22,7 @@
     {"id": "honey_bread", "position": {"x": 0, "y": -2}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
     {"id": "bee_elytra", "position": {"x": -4, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
     {"id": "mining_laser", "position": {"x": 0, "y": 4}, "category": "NORMAL", "parent": "hand_accessory", "hidden_until_parent_unlocked": false},
-    {"id": "accessories", "position": {"x": -3, "y": 2}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false}
+    {"id": "accessories", "position": {"x": -3, "y": 2}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "leaf_blower", "position": {"x": -3, "y": -3}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false}
   ]
 }

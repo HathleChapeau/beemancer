@@ -109,6 +109,7 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("building_staff", "apica:building_staff");
         NODE_TO_ITEM.put("honey_lamp", "apica:honey_lamp");
         NODE_TO_ITEM.put("api", "apica:api");
+        NODE_TO_ITEM.put("leaf_blower", "apica:leaf_blower");
     }
 
     private final CodexNode node;

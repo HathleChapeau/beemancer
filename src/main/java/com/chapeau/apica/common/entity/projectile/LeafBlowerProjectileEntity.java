@@ -28,6 +28,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EntityType;
@@ -65,7 +66,6 @@ public class LeafBlowerProjectileEntity extends ThrowableProjectile {
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
         builder.define(DATA_CHARGE_LEVEL, 1);
         builder.define(DATA_PULSING, false);
     }
@@ -96,8 +96,8 @@ public class LeafBlowerProjectileEntity extends ThrowableProjectile {
         if (level().isClientSide()) return;
 
         if (!isPulsing()) {
-            // Discard if flying too long (5 seconds max)
-            if (tickCount > 100) {
+            // Discard if flying too long (3 seconds max, but not if already pulsing)
+            if (tickCount > 60) {
                 discard();
             }
             return;
@@ -136,21 +136,48 @@ public class LeafBlowerProjectileEntity extends ThrowableProjectile {
         BlockPos center = blockPosition();
         int rSq = radius * radius;
 
+        // First pass: destroy foliage (no drops)
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dy = -radius; dy <= radius; dy++) {
                 for (int dz = -radius; dz <= radius; dz++) {
                     if (dx * dx + dy * dy + dz * dz > rSq) continue;
                     BlockPos pos = center.offset(dx, dy, dz);
                     BlockState state = serverLevel.getBlockState(pos);
-                    if (isTargetBlock(state)) {
-                        serverLevel.destroyBlock(pos, true);
+                    if (isFoliageBlock(state)) {
+                        serverLevel.destroyBlock(pos, false);
+                    }
+                }
+            }
+        }
+
+        // Second pass: destroy isolated logs (only touching air/leaves/logs)
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (dx * dx + dy * dy + dz * dz > rSq) continue;
+                    BlockPos pos = center.offset(dx, dy, dz);
+                    BlockState state = serverLevel.getBlockState(pos);
+                    if (state.is(BlockTags.LOGS) && isIsolatedLog(serverLevel, pos)) {
+                        serverLevel.destroyBlock(pos, false);
                     }
                 }
             }
         }
     }
 
-    private boolean isTargetBlock(BlockState state) {
+    /** A log is "isolated" if all 6 neighbors are air, leaves, or other logs. */
+    private boolean isIsolatedLog(ServerLevel serverLevel, BlockPos pos) {
+        for (Direction dir : Direction.values()) {
+            BlockState neighbor = serverLevel.getBlockState(pos.relative(dir));
+            if (neighbor.isAir()) continue;
+            if (neighbor.is(BlockTags.LEAVES)) continue;
+            if (neighbor.is(BlockTags.LOGS)) continue;
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isFoliageBlock(BlockState state) {
         if (state.isAir()) return false;
         if (state.is(BlockTags.LEAVES)) return true;
         if (state.is(BlockTags.FLOWERS)) return true;

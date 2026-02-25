@@ -219,7 +219,7 @@ public class ApiBlockEntity extends BlockEntity {
         // Particules d'explosion
         if (level instanceof ServerLevel serverLevel) {
             Vec3 center = Vec3.atCenterOf(pos);
-            ParticleHelper.sphere(serverLevel, center, ParticleHelper.EffectType.HONEY, 40, 0.8);
+            ParticleHelper.sphere(serverLevel, center, 0.8, ParticleHelper.EffectType.HONEY, 40);
         }
 
         // Casser le bloc

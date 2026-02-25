@@ -64,7 +64,7 @@ public class LeafBlowerItem extends Item {
         orb.setDeltaMovement(look.scale(1.5));
         level.addFreshEntity(orb);
 
-        level.playSound(null, player.blockPosition(), SoundEvents.BREEZE_WIND_CHARGE_BURST,
+        level.playSound(null, player.blockPosition(), SoundEvents.BREEZE_WIND_CHARGE_BURST.value(),
                 SoundSource.PLAYERS, 1.0f, 0.8f + chargeLevel * 0.2f);
     }
 

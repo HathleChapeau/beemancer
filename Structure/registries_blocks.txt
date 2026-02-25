@@ -108,5 +108,7 @@
 --- TRASH CANS ---
 | trash_can              | TrashCanBlock             | Oui          | Trash Can       |
 | liquid_trash_can       | LiquidTrashCanBlock       | Oui          | Liquid Trash Can|
+--- API ---
+| api                    | ApiBlock                  | Oui          | Api Block       |
 
 ################################################################################

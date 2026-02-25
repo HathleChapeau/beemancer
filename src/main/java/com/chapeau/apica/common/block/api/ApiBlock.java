@@ -28,7 +28,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -123,19 +124,19 @@ public class ApiBlock extends BaseEntityBlock {
     // ==================== Interactions ====================
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
-                                          BlockPos pos, Player player, net.minecraft.world.InteractionHand hand,
-                                          BlockHitResult hitResult) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
+                                              BlockPos pos, Player player, InteractionHand hand,
+                                              BlockHitResult hitResult) {
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof ApiBlockEntity apiBE)) {
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
         long gameTime = level.getGameTime();
 
         // Cooldown check
         if (apiBE.isOnCooldown(gameTime)) {
-            return InteractionResult.CONSUME;
+            return ItemInteractionResult.CONSUME;
         }
 
         // Honey Bottle → feed (+1 level)
@@ -160,7 +161,7 @@ public class ApiBlock extends BaseEntityBlock {
 
                 level.playSound(null, pos, SoundEvents.GENERIC_EAT, SoundSource.BLOCKS, 1.0f, 1.0f);
             }
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return ItemInteractionResult.SUCCESS;
         }
 
         // Comb → shrink (-1 level)
@@ -181,9 +182,9 @@ public class ApiBlock extends BaseEntityBlock {
 
                 level.playSound(null, pos, SoundEvents.GENERIC_EAT, SoundSource.BLOCKS, 1.0f, 0.7f);
             }
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return ItemInteractionResult.SUCCESS;
         }
 
-        return InteractionResult.PASS;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 }

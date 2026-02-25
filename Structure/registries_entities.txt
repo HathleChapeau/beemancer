@@ -8,5 +8,6 @@
 | rideable_bee | RideableBeeEntity  | Rideable Bee   |
 | delivery_bee | DeliveryBeeEntity  | Storage Network|
 | hoverbike    | HoverbikeEntity    | Hoverbike      |
+| leaf_blower_orb | LeafBlowerProjectileEntity | Leaf Blower |
 
 ################################################################################

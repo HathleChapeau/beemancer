@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-23                     #
-#  (Resonator Trait Match Analysis - 2026-02-23)                                #
+#                         Dernière mise à jour: 2026-02-25                     #
+#  (Api Block - 2026-02-25)                                                     #
 ################################################################################
 
 ================================================================================
@@ -799,6 +799,40 @@ LISTE DES FEATURES:
     ApicaNetwork.java (+ResonatorTraitMatchPacket registration)
   Dependances: CodexPlayerData, BeeSpeciesManager, ResonatorConfigManager, ApicaAttachments
   Registres modifies: ApicaNetwork (+1 packet)
+
+→ Leaf Blower
+  Description: Item chargeable (style arc) qui tire un projectile orbe. L'orbe vole en ligne droite
+    puis s'arrete au premier bloc touche et pulse pour detruire la vegetation (feuilles, fleurs, herbe,
+    lianes) dans des rayons croissants. Charge 3 niveaux: lv1=1 pulse r3, lv2=2 pulses r3→r5, lv3=3 pulses r3→r5→r7.
+    Auto-discard si vol > 3 secondes sans toucher de bloc.
+  Scripts crees: LeafBlowerItem.java, LeafBlowerProjectileEntity.java,
+    LeafBlowerProjectileModel.java, LeafBlowerProjectileRenderer.java
+  Scripts modifies: ApicaItems.java (+LEAF_BLOWER), ApicaEntities.java (+LEAF_BLOWER_ORB),
+    ApicaCreativeTabs.java (+leaf_blower dans addCodexAndTools), ClientSetup.java (+renderer +layer)
+  Dependances: ParticleHelper (sphere, spawnRingBurst)
+  Registres modifies: ApicaItems (+1 item), ApicaEntities (+1 entity)
+  Assets: models/item/leaf_blower.json, textures/item/leaf_blower.png (placeholder),
+    textures/entity/leaf_blower_orb.png (placeholder)
+
+→ Api Block
+  Description: Creature-bloc vivante (honeycomb anime). Grandit quand nourri au honey bottle (+1 level),
+    retrecit avec un comb (-1 level). Base 10x10x10 pixels, scale = 1 + 0.15 * level. Animation de
+    croissance en 3 phases: delai 5min → interpolation 10min → taille finale + collision check.
+    Si depasse du bloc: casse les blocs mous adjacents (hardness < 3.0), explose contre les blocs durs
+    (drop honeycomb + particules sphere HONEY). Cooldown 20min entre nourritures. VoxelShape dynamique.
+    Rendu invisible (BER avec modele additional scale dynamiquement).
+  Scripts crees: ApiBlockEntity.java (common/block/api/), ApiBlock.java (common/block/api/),
+    ApiRenderer.java (client/renderer/block/)
+  Scripts modifies: ApicaBlocks.java (+API), ApicaBlockEntities.java (+API),
+    ApicaItems.java (+API BlockItem), ApicaCreativeTabs.java (+API dans addBeeStatue),
+    ClientSetup.java (+ApiRenderer + additional model), CodexNodeWidget.java (+api icon mapping),
+    en_us.json (+block.apica.api, lore p1/p2/p3), codex/artifacts.json (+accessories node)
+  Dependances: ParticleHelper (burst, sphere)
+  Registres modifies: ApicaBlocks (+1 bloc), ApicaBlockEntities (+1 BE), ApicaItems (+1 item)
+  Assets: blockstates/api.json, models/block/machines/api.json (cube 10x10x10 centre),
+    models/item/api.json, recipe/altar/api.json, loot_table/blocks/api.json (vide),
+    codex/book/api.json (3 pages lore + altar_craft), codex/book/accessories.json (TBD)
+  Codex: artifacts tab — node "api" (lore progressif: decouverte → nourrissage → explosion)
 
 ================================================================================
 6. FEATURES EN COURS
