@@ -90,11 +90,10 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float[] BAR_U0 = { 0f, 1f / 3f, 2f / 3f };
     private static final float[] BAR_U1 = { 1f / 3f, 2f / 3f, 1f };
 
-    // UV V ranges dans l'atlas 3x12: bleu (inactif) rows 0-2, jaune (actif) rows 6-8
-    private static final float BAR_V_INACTIVE_0 = 0f;
-    private static final float BAR_V_INACTIVE_1 = 0.25f;
-    private static final float BAR_V_ACTIVE_0 = 0.5f;
-    private static final float BAR_V_ACTIVE_1 = 0.75f;
+    // Atlas 3x12: 4 etats de 3 rows chacun (0.25 en V par etat)
+    // Etat 0: rows 0-2, Etat 1: rows 3-5, Etat 2: rows 6-8, Etat 3: rows 9-11
+    private static final float BAR_STATE_V_SIZE = 0.25f;
+    private static final float BAR_PIXEL_V = 1f / 12f;
 
     private static final int TOTAL_FRAMES = 13;
     private static final int CHARGE_TIER2_TICKS = 20;
@@ -210,8 +209,8 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     /**
      * Rend les 3 barres indicatrices de charge.
-     * Toutes les barres sont toujours rendues: bleu (inactif) ou jaune (actif).
-     * Activation de l'avant vers l'arriere: ring 1 (z=3-4) en premier, ring 3 (z=7-8) en dernier.
+     * 4 etats dans l'atlas (0=rien, 1=charge1, 2=charge2, 3=charge3).
+     * Les 3 anneaux affichent le meme etat simultanément.
      */
     private void renderChargeBars(PoseStack poseStack, MultiBufferSource buffer,
                                    int packedLight, int chargeLevel) {
@@ -219,9 +218,9 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
 
-        boolean active = chargeLevel > 0;
-        float bv0 = active ? BAR_V_ACTIVE_0 : BAR_V_INACTIVE_0;
-        float bv1 = active ? BAR_V_ACTIVE_1 : BAR_V_INACTIVE_1;
+        int state = Math.min(chargeLevel, 3);
+        float bv0 = state * BAR_STATE_V_SIZE;
+        float bv1 = bv0 + BAR_STATE_V_SIZE;
 
         for (int i = 0; i < 3; i++) {
             renderBarBox(vc, pose,
@@ -244,12 +243,12 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         // East (X+)
         quad(vc, pose, x1, y0, z0, x1, y1, z1, u0, v1, u0, v0, u1, v0, u1, v1, 1, 0, 0, light, overlay);
         // Up (Y+) — premier pixel de la colonne de cet anneau
-        float pxV = v0 + 1f / 12f;
+        float pxV = v0 + BAR_PIXEL_V;
         quad4(vc, pose, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0,
-            u0, v0, u0, v0, u1, pxV, u1, pxV, 0, 1, 0, light, overlay);
+            u0, v0, u0, pxV, u1, pxV, u1, v0, 0, 1, 0, light, overlay);
         // Down (Y-) — premier pixel de la colonne de cet anneau
         quad4(vc, pose, x0, y0, z1, x0, y0, z0, x1, y0, z0, x1, y0, z1,
-            u0, v0, u0, v0, u1, pxV, u1, pxV, 0, -1, 0, light, overlay);
+            u0, pxV, u0, v0, u1, v0, u1, pxV, 0, -1, 0, light, overlay);
     }
 
     private int getChargeLevel() {
