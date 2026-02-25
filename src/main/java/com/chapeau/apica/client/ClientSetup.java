@@ -259,6 +259,9 @@ public class ClientSetup {
         // StorageBarrelRenderer - item + quantite sur la face avant
         event.registerBlockEntityRenderer(ApicaBlockEntities.STORAGE_BARREL.get(),
             com.chapeau.apica.client.renderer.block.StorageBarrelRenderer::new);
+        // HoneyLampRenderer - halo translucide cross planes
+        event.registerBlockEntityRenderer(ApicaBlockEntities.HONEY_LAMP.get(),
+            com.chapeau.apica.client.renderer.block.HoneyLampRenderer::new);
 
         // PipeExtractRenderer - indicateur d'extraction sur les pipes (item et liquide)
         event.registerBlockEntityRenderer(ApicaBlockEntities.ITEM_PIPE.get(),
