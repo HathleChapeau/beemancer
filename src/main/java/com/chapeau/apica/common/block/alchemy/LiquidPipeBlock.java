@@ -88,6 +88,18 @@ public class LiquidPipeBlock extends AbstractPipeBlock {
     }
 
     @Override
+    protected boolean isPipeExtracting(BlockEntity be, Direction dir) {
+        return be instanceof LiquidPipeBlockEntity pipe && pipe.isExtracting(dir);
+    }
+
+    @Override
+    protected void setPipeExtracting(BlockEntity be, Direction dir, boolean extracting) {
+        if (be instanceof LiquidPipeBlockEntity pipe) {
+            pipe.setExtracting(dir, extracting);
+        }
+    }
+
+    @Override
     protected boolean isTintablePipe(BlockEntity be) {
         return be instanceof LiquidPipeBlockEntity;
     }

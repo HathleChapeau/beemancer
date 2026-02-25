@@ -72,19 +72,15 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
     public static final BooleanProperty UP = BooleanProperty.create("up");
     public static final BooleanProperty DOWN = BooleanProperty.create("down");
 
-    // Extraction properties (partagées)
-    public static final BooleanProperty EXTRACT_NORTH = BooleanProperty.create("extract_north");
-    public static final BooleanProperty EXTRACT_SOUTH = BooleanProperty.create("extract_south");
-    public static final BooleanProperty EXTRACT_EAST = BooleanProperty.create("extract_east");
-    public static final BooleanProperty EXTRACT_WEST = BooleanProperty.create("extract_west");
-    public static final BooleanProperty EXTRACT_UP = BooleanProperty.create("extract_up");
-    public static final BooleanProperty EXTRACT_DOWN = BooleanProperty.create("extract_down");
-
     // Tint state — contrôle la texture du core (base vs white tintable)
     public static final BooleanProperty TINTED = BooleanProperty.create("tinted");
 
-    // Filter state — indique si un filtre est installe au centre du pipe
+    // Filter state — indique si un filtre est installe au centre du pipe (item_pipe seulement)
     public static final BooleanProperty FILTERED = BooleanProperty.create("filtered");
+
+    // NOTE PERFORMANCE: Les propriétés EXTRACT_* ont été déplacées dans le BlockEntity
+    // (extractingDirections: EnumSet<Direction>) pour éviter 2^14 = 16 384 états BlockState
+    // qui causaient ~6s de loading par pipe. Désormais: 2^8 = 256 états par pipe.
 
     // Pre-computed VoxelShapes for all 64 direction combinations (6 bits)
     // Lazy-initialized to avoid ~192 Shapes.or() calls at class-load time
@@ -125,9 +121,6 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
             .setValue(NORTH, false).setValue(SOUTH, false)
             .setValue(EAST, false).setValue(WEST, false)
             .setValue(UP, false).setValue(DOWN, false)
-            .setValue(EXTRACT_NORTH, false).setValue(EXTRACT_SOUTH, false)
-            .setValue(EXTRACT_EAST, false).setValue(EXTRACT_WEST, false)
-            .setValue(EXTRACT_UP, false).setValue(EXTRACT_DOWN, false)
             .setValue(TINTED, false)
             .setValue(FILTERED, false));
     }
@@ -137,7 +130,6 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(NORTH, SOUTH, EAST, WEST, UP, DOWN);
-        builder.add(EXTRACT_NORTH, EXTRACT_SOUTH, EXTRACT_EAST, EXTRACT_WEST, EXTRACT_UP, EXTRACT_DOWN);
         builder.add(TINTED);
         builder.add(FILTERED);
     }
@@ -271,18 +263,16 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
         if (neighborIsPipe) {
             if (isPipeEntity(be)) {
                 setPipeDisconnected(be, clickedDir, true);
+                setPipeExtracting(be, clickedDir, false);
             }
-            BlockState newState = state
-                .setValue(getConnectionProperty(clickedDir), false)
-                .setValue(getExtractProperty(clickedDir), false);
-            level.setBlock(pos, newState, 3);
+            level.setBlock(pos, state.setValue(getConnectionProperty(clickedDir), false), 3);
             level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, 0.6f);
             player.displayClientMessage(Component.literal(clickedDir.getName() + ": Disconnected"), true);
             onConnectionToggled(level, pos);
         } else {
-            BooleanProperty extractProp = getExtractProperty(clickedDir);
-            boolean newValue = !state.getValue(extractProp);
-            level.setBlock(pos, state.setValue(extractProp, newValue), 3);
+            // Toggle extraction mode — stocké dans le BlockEntity
+            boolean newValue = !isPipeExtracting(be, clickedDir);
+            setPipeExtracting(be, clickedDir, newValue);
             level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.5f, newValue ? 1.2f : 0.8f);
             player.displayClientMessage(
                 Component.literal(clickedDir.getName() + ": " + (newValue ? "Extraction" : "Insertion")),
@@ -309,11 +299,13 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
 
     protected BlockState getConnectionState(LevelAccessor level, BlockPos pos, BlockState currentState) {
         BlockState newState = currentState;
+        BlockEntity be = level.getBlockEntity(pos);
         for (Direction dir : Direction.values()) {
             boolean connected = canConnect(level, pos, dir);
             newState = newState.setValue(getConnectionProperty(dir), connected);
-            if (!connected) {
-                newState = newState.setValue(getExtractProperty(dir), false);
+            // Si déconnecté, effacer le mode extraction stocké dans le BlockEntity
+            if (!connected && be != null) {
+                setPipeExtracting(be, dir, false);
             }
         }
         // Preserver FILTERED et TINTED depuis l'etat courant
@@ -364,6 +356,14 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
         return best;
     }
 
+    // --- Abstract methods pour extraction (stockée dans BlockEntity) ---
+
+    /** Retourne true si ce pipe extrait dans la direction donnée. */
+    protected abstract boolean isPipeExtracting(BlockEntity be, Direction dir);
+
+    /** Définit le mode extraction pour la direction donnée. */
+    protected abstract void setPipeExtracting(BlockEntity be, Direction dir, boolean extracting);
+
     public static BooleanProperty getConnectionProperty(Direction dir) {
         return switch (dir) {
             case NORTH -> NORTH;
@@ -375,23 +375,8 @@ public abstract class AbstractPipeBlock extends BaseEntityBlock {
         };
     }
 
-    public static BooleanProperty getExtractProperty(Direction dir) {
-        return switch (dir) {
-            case NORTH -> EXTRACT_NORTH;
-            case SOUTH -> EXTRACT_SOUTH;
-            case EAST -> EXTRACT_EAST;
-            case WEST -> EXTRACT_WEST;
-            case UP -> EXTRACT_UP;
-            case DOWN -> EXTRACT_DOWN;
-        };
-    }
-
     public static boolean isConnected(BlockState state, Direction dir) {
         return state.getValue(getConnectionProperty(dir));
-    }
-
-    public static boolean isExtracting(BlockState state, Direction dir) {
-        return state.getValue(getExtractProperty(dir));
     }
 
     // --- Abstract methods for subclass-specific behavior ---

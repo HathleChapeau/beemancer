@@ -93,6 +93,9 @@ public class ItemPipeBlockEntity extends BlockEntity {
     /** Directions manuellement déconnectées par le joueur. */
     private final EnumSet<Direction> disconnectedDirections = EnumSet.noneOf(Direction.class);
 
+    /** Directions en mode extraction (remplacent les propriétés BlockState EXTRACT_*). */
+    private final EnumSet<Direction> extractingDirections = EnumSet.noneOf(Direction.class);
+
     /** Couleur de teinte du core (-1 = pas de teinte). */
     private int tintColor = -1;
 
@@ -171,7 +174,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
 
         for (Direction dir : Direction.values()) {
             if (!AbstractPipeBlock.isConnected(state, dir)) continue;
-            if (!AbstractPipeBlock.isExtracting(state, dir)) continue;
+            if (!isExtracting(dir)) continue;
 
             BlockPos neighborPos = pos.relative(dir);
 
@@ -400,6 +403,19 @@ public class ItemPipeBlockEntity extends BlockEntity {
         setChanged();
     }
 
+    public boolean isExtracting(Direction dir) {
+        return extractingDirections.contains(dir);
+    }
+
+    public void setExtracting(Direction dir, boolean extracting) {
+        if (extracting) {
+            extractingDirections.add(dir);
+        } else {
+            extractingDirections.remove(dir);
+        }
+        setChanged();
+    }
+
     public int getTintColor() { return tintColor; }
 
     public void setTintColor(int color) {
@@ -500,6 +516,13 @@ public class ItemPipeBlockEntity extends BlockEntity {
         if (disconnectedBits != 0) {
             tag.putInt("DisconnectedDirs", disconnectedBits);
         }
+        int extractingBits = 0;
+        for (Direction dir : extractingDirections) {
+            extractingBits |= (1 << dir.ordinal());
+        }
+        if (extractingBits != 0) {
+            tag.putInt("ExtractingDirs", extractingBits);
+        }
         if (tintColor != -1) {
             tag.putInt("TintColor", tintColor);
         }
@@ -530,6 +553,15 @@ public class ItemPipeBlockEntity extends BlockEntity {
             for (Direction dir : Direction.values()) {
                 if ((bits & (1 << dir.ordinal())) != 0) {
                     disconnectedDirections.add(dir);
+                }
+            }
+        }
+        extractingDirections.clear();
+        if (tag.contains("ExtractingDirs")) {
+            int bits = tag.getInt("ExtractingDirs");
+            for (Direction dir : Direction.values()) {
+                if ((bits & (1 << dir.ordinal())) != 0) {
+                    extractingDirections.add(dir);
                 }
             }
         }
