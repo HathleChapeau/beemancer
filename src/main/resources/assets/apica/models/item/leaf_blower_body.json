@@ -1,7 +1,7 @@
 {
   "textures": {
-    "0": "apica:item/leaf_blower_body",
-    "particle": "apica:item/leaf_blower_body"
+    "0": "apica:item/artifacts/leaf_blower_body",
+    "particle": "apica:item/artifacts/leaf_blower_body"
   },
   "elements": [
     {
@@ -101,7 +101,7 @@
       "from": [6.75, 13.75, 1.5],
       "to": [9.75, 13.75, 15.5],
       "faces": {
-        "up": {"uv": [0, 12, 14, 9], "rotation": 90, "texture": "#0"},
+        "up": {"uv": [0, 16, 14, 13], "rotation": 90, "texture": "#0"},
         "down": {"uv": [0, 13, 14, 16], "rotation": 270, "texture": "#0"}
       }
     }

@@ -50,7 +50,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
  *
  * L'animation de charge joue forward pendant le chargement (+1 frame/tick)
  * et reverse au relachement (-1 frame/tick).
- * Les barres s'activent de l'arriere vers l'avant (bar 2 → 1 → 0).
+ * Les barres s'activent de l'avant vers l'arriere (ring 1 → 2 → 3).
  */
 @OnlyIn(Dist.CLIENT)
 public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
@@ -62,11 +62,11 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     /** Texture de l'overlay interieur (13 frames scrolling, atlas 13x78) */
     private static final ResourceLocation CHARGING1_TEXTURE =
-        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/leaf_blower_charging1.png");
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/leaf_blower_charging1.png");
 
     /** Texture des barres indicatrices (atlas 3x12: bleu en haut, jaune en bas) */
     private static final ResourceLocation CHARGING2_TEXTURE =
-        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/leaf_blower_charging2.png");
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/leaf_blower_charging2.png");
 
     // --- Overlay box (element 0 du Blockbench) en unites bloc (px / 16) ---
     private static final float OVL_MIN_X = 9.75f / 16f;
@@ -81,14 +81,14 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float BAR_MIN_Y = 11f / 16f;
     private static final float BAR_MAX_X = 15f / 16f;
     private static final float BAR_MAX_Y = 17f / 16f;
-    // Bar 0: z=7-8 (le plus proche du body, s'active en premier)
-    // Bar 1: z=5-6
-    // Bar 2: z=3-4 (le plus eloigne, s'active en dernier)
-    private static final float[] BAR_Z_MIN = { 7f / 16f, 5f / 16f, 3f / 16f };
-    private static final float[] BAR_Z_MAX = { 8f / 16f, 6f / 16f, 4f / 16f };
-    // UV U ranges per bar (columns dans l'atlas 3px wide, inversees pour correspondre a l'ordre)
-    private static final float[] BAR_U0 = { 2f / 3f, 1f / 3f, 0f / 3f };
-    private static final float[] BAR_U1 = { 3f / 3f, 2f / 3f, 1f / 3f };
+    // Bar 0: z=3-4 (front, ring 1, 1er pixel column, s'active a charge>=1)
+    // Bar 1: z=5-6 (milieu, ring 2, 2e pixel column, s'active a charge>=2)
+    // Bar 2: z=7-8 (proche handle, ring 3, 3e pixel column, s'active a charge>=3)
+    private static final float[] BAR_Z_MIN = { 3f / 16f, 5f / 16f, 7f / 16f };
+    private static final float[] BAR_Z_MAX = { 4f / 16f, 6f / 16f, 8f / 16f };
+    // UV U ranges per bar (1 pixel column par ring dans l'atlas 3px wide)
+    private static final float[] BAR_U0 = { 0f, 1f / 3f, 2f / 3f };
+    private static final float[] BAR_U1 = { 1f / 3f, 2f / 3f, 1f };
 
     // UV V ranges dans l'atlas 3x12: bleu (inactif) en haut, jaune (actif) en bas
     private static final float BAR_V_INACTIVE_0 = 0f;
@@ -116,9 +116,7 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         renderBodyModel(poseStack, buffer, packedLight, packedOverlay, stack);
         updateAnimation();
 
-        if (currentFrame > 0) {
-            renderChargingOverlay(poseStack, buffer, packedLight);
-        }
+        renderChargingOverlay(poseStack, buffer, packedLight);
 
         renderChargeBars(poseStack, buffer, packedLight, getChargeLevel());
     }
@@ -193,27 +191,27 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         quad(vc, pose, OVL_MAX_X, OVL_MIN_Y, OVL_MIN_Z, OVL_MAX_X, OVL_MAX_Y, OVL_MAX_Z,
             u1, v0, u1, v1, u0, v1, u0, v0, 1, 0, 0, packedLight, overlay);
 
-        // Up (Y+) — rotation 90
+        // Up (Y+) — rotation 90, V inverse pour matcher la direction de charge
         quad4(vc, pose,
             OVL_MIN_X, OVL_MAX_Y, OVL_MIN_Z,
             OVL_MIN_X, OVL_MAX_Y, OVL_MAX_Z,
             OVL_MAX_X, OVL_MAX_Y, OVL_MAX_Z,
             OVL_MAX_X, OVL_MAX_Y, OVL_MIN_Z,
-            u0, v1, u1, v1, u1, v0, u0, v0, 0, 1, 0, packedLight, overlay);
+            u0, v0, u1, v0, u1, v1, u0, v1, 0, 1, 0, packedLight, overlay);
 
-        // Down (Y-) — rotation 270
+        // Down (Y-) — rotation 270, V inverse pour matcher la direction de charge
         quad4(vc, pose,
             OVL_MIN_X, OVL_MIN_Y, OVL_MAX_Z,
             OVL_MIN_X, OVL_MIN_Y, OVL_MIN_Z,
             OVL_MAX_X, OVL_MIN_Y, OVL_MIN_Z,
             OVL_MAX_X, OVL_MIN_Y, OVL_MAX_Z,
-            u1, v0, u0, v0, u0, v1, u1, v1, 0, -1, 0, packedLight, overlay);
+            u1, v1, u0, v1, u0, v0, u1, v0, 0, -1, 0, packedLight, overlay);
     }
 
     /**
      * Rend les 3 barres indicatrices de charge.
      * Toutes les barres sont toujours rendues: bleu (inactif) ou jaune (actif).
-     * Activation de l'arriere vers l'avant: bar 0 (z=7-8) en premier, bar 2 (z=3-4) en dernier.
+     * Activation de l'avant vers l'arriere: ring 1 (z=3-4) en premier, ring 3 (z=7-8) en dernier.
      */
     private void renderChargeBars(PoseStack poseStack, MultiBufferSource buffer,
                                    int packedLight, int chargeLevel) {
