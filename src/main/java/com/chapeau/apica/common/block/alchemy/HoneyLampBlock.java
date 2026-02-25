@@ -8,7 +8,7 @@
  * ------------------------------------------------------------
  * | Dépendance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
- * | HoneyLampBlockEntity    | BlockEntity associé  | Gestion du tank et des helpers |
+ * | HoneyLampBlockEntity    | BlockEntity associé  | Gestion du tank fluide         |
  * | ApicaBlockEntities      | Registre BE          | Ticker                         |
  * ------------------------------------------------------------
  *
@@ -24,8 +24,12 @@ import com.chapeau.apica.common.blockentity.alchemy.HoneyLampBlockEntity;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -43,7 +47,9 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 import javax.annotation.Nullable;
 
@@ -75,6 +81,18 @@ public class HoneyLampBlock extends BaseEntityBlock {
         builder.add(LAMP_STATE);
     }
 
+    /**
+     * Light level par état: OFF=0, HONEY=10, ROYAL_JELLY=13, NECTAR=15.
+     */
+    public static int getLightLevel(BlockState state) {
+        return switch (state.getValue(LAMP_STATE)) {
+            case OFF -> 0;
+            case HONEY -> 10;
+            case ROYAL_JELLY -> 13;
+            case NECTAR -> 15;
+        };
+    }
+
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
@@ -94,23 +112,24 @@ public class HoneyLampBlock extends BaseEntityBlock {
         if (!level.isClientSide()) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof HoneyLampBlockEntity lamp) {
+                // Shift+right-click main vide = vider la lampe
+                if (player.isShiftKeyDown() && stack.isEmpty()) {
+                    FluidStack drained = lamp.getFluidTank().drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
+                    if (!drained.isEmpty()) {
+                        level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.5f, 1.0f);
+                        player.displayClientMessage(Component.literal("Drained " + drained.getAmount() + " mB"), true);
+                    } else {
+                        player.displayClientMessage(Component.literal("Lamp is empty"), true);
+                    }
+                    return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                }
+
                 if (FluidUtil.interactWithFluidHandler(player, hand, lamp.getFluidTank())) {
                     return ItemInteractionResult.sidedSuccess(level.isClientSide());
                 }
             }
         }
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-    }
-
-    @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (!state.is(newState.getBlock())) {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof HoneyLampBlockEntity lamp) {
-                lamp.removeAllHelpers();
-            }
-        }
-        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     /**

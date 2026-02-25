@@ -134,7 +134,10 @@ public class LiquidPipeBlockEntity extends BlockEntity {
 
             var cap = level.getCapability(Capabilities.FluidHandler.BLOCK, neighborPos, dir.getOpposite());
             if (cap != null) {
-                int maxExtract = buffer.getCapacity() - buffer.getFluidAmount();
+                int space = buffer.getCapacity() - buffer.getFluidAmount();
+                int maxExtract = Math.min(space, transferRate);
+                if (maxExtract <= 0) return;
+
                 FluidStack toDrain = cap.drain(maxExtract, IFluidHandler.FluidAction.SIMULATE);
                 if (!toDrain.isEmpty() && buffer.isFluidValid(toDrain)) {
                     int canFill = buffer.fill(toDrain, IFluidHandler.FluidAction.SIMULATE);

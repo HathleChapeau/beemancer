@@ -323,7 +323,7 @@ public class ApicaBlocks {
                     .strength(1.5f)
                     .sound(SoundType.GLASS)
                     .noOcclusion()
-                    .lightLevel(state -> state.getValue(HoneyLampBlock.LAMP_STATE) == HoneyLampBlock.LampState.OFF ? 0 : 15)));
+                    .lightLevel(HoneyLampBlock::getLightLevel)));
 
     public static final DeferredBlock<MultiblockTankBlock> MULTIBLOCK_TANK = registerTimed("multiblock_tank",
             () -> new MultiblockTankBlock(BlockBehaviour.Properties.of()

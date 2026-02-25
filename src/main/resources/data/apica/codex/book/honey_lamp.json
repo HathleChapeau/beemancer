@@ -1,0 +1,21 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.honey_lamp.lore.p1"
+    },
+    {
+      "type": "handraw_line"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.honey_lamp.lore.p2"
+    }
+  ],
+  "sticky_notes": [
+    {"craft": "apica:honey_lamp"}
+  ]
+}
