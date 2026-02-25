@@ -33,9 +33,10 @@ import net.minecraft.world.phys.Vec3;
 
 public class LeafBlowerItem extends Item {
 
-    /** Tick thresholds for charge levels: 0-19 = level 1, 20-39 = level 2, 40+ = level 3 */
-    private static final int CHARGE_TIER2 = 20;
-    private static final int CHARGE_TIER3 = 40;
+    /** Tick thresholds: 0-19 = level 0 (no fire), 20-39 = level 1, 40-59 = level 2, 60+ = level 3 */
+    private static final int CHARGE_TIER1 = 20;
+    private static final int CHARGE_TIER2 = 40;
+    private static final int CHARGE_TIER3 = 60;
 
     public LeafBlowerItem(Properties properties) {
         super(properties);
@@ -54,6 +55,7 @@ public class LeafBlowerItem extends Item {
 
         int useDuration = getUseDuration(stack, entity) - timeLeft;
         int chargeLevel = getChargeLevel(useDuration);
+        if (chargeLevel <= 0) return;
 
         Vec3 look = player.getLookAngle();
         Vec3 spawnPos = player.getEyePosition().add(look);
@@ -71,7 +73,8 @@ public class LeafBlowerItem extends Item {
     private int getChargeLevel(int useTicks) {
         if (useTicks >= CHARGE_TIER3) return 3;
         if (useTicks >= CHARGE_TIER2) return 2;
-        return 1;
+        if (useTicks >= CHARGE_TIER1) return 1;
+        return 0;
     }
 
     @Override
