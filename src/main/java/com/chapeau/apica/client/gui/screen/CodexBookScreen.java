@@ -263,7 +263,7 @@ public class CodexBookScreen extends Screen {
                 } else {
                     icons.add(ItemStack.EMPTY);
                 }
-                crafts.add(new ProcessSection(note.input(), note.output()));
+                crafts.add(new ProcessSection(note.input(), note.output(), note.craftItem()));
             } else if (note.craftItem() != null && !note.craftItem().isEmpty()) {
                 ResourceLocation loc = ResourceLocation.parse(note.craftItem());
                 var item = BuiltInRegistries.ITEM.get(loc);
