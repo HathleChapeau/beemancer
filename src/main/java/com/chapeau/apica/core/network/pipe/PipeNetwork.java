@@ -122,7 +122,9 @@ public class PipeNetwork {
             IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, neighborPos, dir.getOpposite());
             if (handler == null) continue;
 
-            if (AbstractPipeBlock.isExtracting(state, dir)) {
+            boolean extracting = level.getBlockEntity(pipePos) instanceof
+                com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity pipe && pipe.isExtracting(dir);
+            if (extracting) {
                 endpoints.add(new PipeEndpoint(pipePos, dir, neighborPos, PipeEndpoint.EndpointType.EXTRACT));
             } else {
                 endpoints.add(new PipeEndpoint(pipePos, dir, neighborPos, PipeEndpoint.EndpointType.INSERT));
