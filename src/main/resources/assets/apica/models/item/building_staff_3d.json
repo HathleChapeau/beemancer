@@ -9,7 +9,7 @@
   "elements": [
     {
       "name": "crystal_outline",
-      "from": [6.25, 22.7, 6.25],
+      "from": [6.25, 23.0, 6.25],
       "to": [9.75, 18.8, 9.75],
       "faces": {
         "north": {"uv": [0, 0, 4, 4], "texture": "#1"},
