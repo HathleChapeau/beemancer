@@ -96,9 +96,9 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float BAR_PIXEL_V = 1f / 12f;
 
     private static final int TOTAL_FRAMES = 13;
-    private static final int CHARGE_TIER1_TICKS = 20;
-    private static final int CHARGE_TIER2_TICKS = 40;
-    private static final int CHARGE_TIER3_TICKS = 60;
+    private static final int CHARGE_TIER1_TICKS = 15;
+    private static final int CHARGE_TIER2_TICKS = 30;
+    private static final int CHARGE_TIER3_TICKS = 45;
 
     // Animation state (client-side)
     private int currentFrame = 0;
