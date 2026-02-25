@@ -81,11 +81,11 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float BAR_MIN_Y = 11f / 16f;
     private static final float BAR_MAX_X = 15f / 16f;
     private static final float BAR_MAX_Y = 17f / 16f;
-    // Bar 0: z=3-4 (front, ring 1, 1er pixel column, s'active a charge>=1)
-    // Bar 1: z=5-6 (milieu, ring 2, 2e pixel column, s'active a charge>=2)
-    // Bar 2: z=7-8 (proche handle, ring 3, 3e pixel column, s'active a charge>=3)
-    private static final float[] BAR_Z_MIN = { 3f / 16f, 5f / 16f, 7f / 16f };
-    private static final float[] BAR_Z_MAX = { 4f / 16f, 6f / 16f, 8f / 16f };
+    // Bar 0: z=2-3 (front, ring 1, 1er pixel column)
+    // Bar 1: z=4-5 (milieu, ring 2, 2e pixel column)
+    // Bar 2: z=6-7 (proche handle, ring 3, 3e pixel column)
+    private static final float[] BAR_Z_MIN = { 2f / 16f, 4f / 16f, 6f / 16f };
+    private static final float[] BAR_Z_MAX = { 3f / 16f, 5f / 16f, 7f / 16f };
     // UV U ranges per bar (1 pixel column par ring dans l'atlas 3px wide)
     private static final float[] BAR_U0 = { 0f, 1f / 3f, 2f / 3f };
     private static final float[] BAR_U1 = { 1f / 3f, 2f / 3f, 1f };
@@ -113,11 +113,20 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
                              PoseStack poseStack, MultiBufferSource buffer,
                              int packedLight, int packedOverlay) {
         renderBodyModel(poseStack, buffer, packedLight, packedOverlay, stack);
-        updateAnimation();
+
+        boolean inHand = displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
+            || displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+            || displayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND
+            || displayContext == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
+
+        if (inHand) {
+            updateAnimation();
+        } else {
+            currentFrame = 0;
+        }
 
         renderChargingOverlay(poseStack, buffer, packedLight);
-
-        renderChargeBars(poseStack, buffer, packedLight, getChargeLevel());
+        renderChargeBars(poseStack, buffer, packedLight, inHand ? getChargeLevel() : 0);
     }
 
     private void renderBodyModel(PoseStack poseStack, MultiBufferSource buffer,
