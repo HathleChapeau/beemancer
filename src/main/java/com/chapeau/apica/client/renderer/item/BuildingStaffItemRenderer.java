@@ -141,7 +141,7 @@ public class BuildingStaffItemRenderer extends BlockEntityWithoutLevelRenderer {
 
         // Calculer le count d'inventaire pour la clé de cache
         int inventoryCount = mc.player.isCreative() ? 99999 : countBlocksInInventory(mc.player, sourceBlock);
-        if(inventoryCount <= 0 ) return;
+        if ( inventoryCount <= 0 ) return;
 
         // Rendre le mini-bloc au centre du cristal
         poseStack.pushPose();
