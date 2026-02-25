@@ -6,7 +6,16 @@
     {
       "type": "text",
       "key": "codex.apica.artifacts.building_staff.lore.p1"
+    },
+    {
+      "type": "handraw_line"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.building_staff.lore.p2"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:building_staff", "type": "altar"}
+  ]
 }
