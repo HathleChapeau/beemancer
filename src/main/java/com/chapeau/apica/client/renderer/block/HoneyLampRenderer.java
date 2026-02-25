@@ -34,7 +34,7 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * Rend un halo translucide autour de la Honey Lamp quand elle est alimentee.
- * Le halo consiste en 2 cross planes diagonales (comme le modele vanilla cross).
+ * Le halo consiste en 2 cross planes diagonales avec epaisseur 0.02.
  * La texture change selon le fluide: honey, royal_jelly ou nectar.
  * Pas de halo quand la lampe est eteinte (OFF).
  */
@@ -47,15 +47,17 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
     private static final ResourceLocation HALO_NECTAR =
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/block/alchemy/artifacts/honey_lamp_halo_nectar.png");
 
-    // Cross geometry: 2 diagonal planes centered on the glass body
-    // Glass body: [5,2,5] to [11,12,11], halo extends to full block
+    // Cross geometry centered on the glass body [5,2,5]-[11,12,11]
     private static final float CX = 0.5f;
     private static final float CZ = 0.5f;
     private static final float R = 0.5f;
     private static final float Y_MIN = 0f;
     private static final float Y_MAX = 14f / 16f;
-    // Petit decalage en Z pour eviter le z-fighting entre les 2 cross planes
-    private static final float Z_OFFSET = 0.005f;
+
+    // Epaisseur des cross planes (0.02 blocs)
+    // Pour un plan a 45°, l'offset par axe = halfThick / sqrt(2)
+    private static final float HALF_THICK = 0.01f;
+    private static final float N_OFF = HALF_THICK * 0.7071f;
 
     private static final int FULLBRIGHT = 0xF000F0;
 
@@ -80,31 +82,40 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
 
-        // Plane 1: SW-NE diagonal, decale en +Z pour eviter z-fighting
-        float x0 = CX - R, z0 = CZ - R + Z_OFFSET;
-        float x1 = CX + R, z1 = CZ + R + Z_OFFSET;
-        crossPlane(vc, pose, x0, z0, x1, z1, overlay);
+        // Plane 1: SW-NE diagonal — normale vers (-1,0,1)/sqrt2
+        // Face exterieure decalee de -N_OFF en X, +N_OFF en Z
+        // Face interieure decalee de +N_OFF en X, -N_OFF en Z
+        thickCrossPlane(vc, pose,
+            CX - R, CZ - R, CX + R, CZ + R,
+            -N_OFF, N_OFF, overlay);
 
-        // Plane 2: NW-SE diagonal, decale en -Z
-        float x2 = CX + R, z2 = CZ - R - Z_OFFSET;
-        float x3 = CX - R, z3 = CZ + R - Z_OFFSET;
-        crossPlane(vc, pose, x2, z2, x3, z3, overlay);
+        // Plane 2: NW-SE diagonal — normale vers (1,0,1)/sqrt2
+        // Face exterieure decalee de +N_OFF en X, +N_OFF en Z
+        // Face interieure decalee de -N_OFF en X, -N_OFF en Z
+        thickCrossPlane(vc, pose,
+            CX + R, CZ - R, CX - R, CZ + R,
+            N_OFF, N_OFF, overlay);
     }
 
-    /** Rend un plan double-face (front + back) entre deux coins au sol. */
-    private static void crossPlane(VertexConsumer vc, PoseStack.Pose pose,
-                                    float x0, float z0, float x1, float z1, int overlay) {
-        // Front face
-        vertex(vc, pose, x0, Y_MIN, z0, 0, 1, overlay);
-        vertex(vc, pose, x1, Y_MIN, z1, 1, 1, overlay);
-        vertex(vc, pose, x1, Y_MAX, z1, 1, 0, overlay);
-        vertex(vc, pose, x0, Y_MAX, z0, 0, 0, overlay);
+    /**
+     * Rend un cross plane avec epaisseur: 2 faces paralleles decalees le long de la normale.
+     * @param nx offset X de la normale
+     * @param nz offset Z de la normale
+     */
+    private static void thickCrossPlane(VertexConsumer vc, PoseStack.Pose pose,
+                                         float x0, float z0, float x1, float z1,
+                                         float nx, float nz, int overlay) {
+        // Face exterieure (front)
+        vertex(vc, pose, x0 + nx, Y_MIN, z0 + nz, 0, 1, overlay);
+        vertex(vc, pose, x1 + nx, Y_MIN, z1 + nz, 1, 1, overlay);
+        vertex(vc, pose, x1 + nx, Y_MAX, z1 + nz, 1, 0, overlay);
+        vertex(vc, pose, x0 + nx, Y_MAX, z0 + nz, 0, 0, overlay);
 
-        // Back face
-        vertex(vc, pose, x1, Y_MIN, z1, 0, 1, overlay);
-        vertex(vc, pose, x0, Y_MIN, z0, 1, 1, overlay);
-        vertex(vc, pose, x0, Y_MAX, z0, 1, 0, overlay);
-        vertex(vc, pose, x1, Y_MAX, z1, 0, 0, overlay);
+        // Face interieure (back, winding inverse)
+        vertex(vc, pose, x1 - nx, Y_MIN, z1 - nz, 0, 1, overlay);
+        vertex(vc, pose, x0 - nx, Y_MIN, z0 - nz, 1, 1, overlay);
+        vertex(vc, pose, x0 - nx, Y_MAX, z0 - nz, 1, 0, overlay);
+        vertex(vc, pose, x1 - nx, Y_MAX, z1 - nz, 0, 0, overlay);
     }
 
     private static void vertex(VertexConsumer vc, PoseStack.Pose pose,
