@@ -86,13 +86,13 @@ public class PipeExtractRenderer<T extends BlockEntity> implements BlockEntityRe
         poseStack.pushPose();
         poseStack.translate(0.5, 0.5, 0.5);
 
-        // Rotations correspondant aux valeurs du blockstate JSON original
+        // Rotations inversées par rapport au blockstate JSON (convention PoseStack)
         switch (dir) {
-            case SOUTH -> poseStack.mulPose(Axis.YP.rotationDegrees(180));
-            case EAST  -> poseStack.mulPose(Axis.YP.rotationDegrees(90));
-            case WEST  -> poseStack.mulPose(Axis.YP.rotationDegrees(270));
-            case UP    -> poseStack.mulPose(Axis.XP.rotationDegrees(270));
-            case DOWN  -> poseStack.mulPose(Axis.XP.rotationDegrees(90));
+            case SOUTH -> poseStack.mulPose(Axis.YP.rotationDegrees(-180));
+            case EAST  -> poseStack.mulPose(Axis.YP.rotationDegrees(-90));
+            case WEST  -> poseStack.mulPose(Axis.YP.rotationDegrees(-270));
+            case UP    -> poseStack.mulPose(Axis.XP.rotationDegrees(-270));
+            case DOWN  -> poseStack.mulPose(Axis.XP.rotationDegrees(-90));
             default    -> {} // NORTH: orientation par défaut
         }
 
