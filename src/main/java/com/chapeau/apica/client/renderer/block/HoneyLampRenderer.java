@@ -41,11 +41,11 @@ import net.minecraft.resources.ResourceLocation;
 public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEntity> {
 
     private static final ResourceLocation HALO_HONEY =
-        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/block/alchemy/honey_lamp_halo_honey.png");
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/block/alchemy/artifacts/honey_lamp_halo_honey.png");
     private static final ResourceLocation HALO_ROYAL_JELLY =
-        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/block/alchemy/honey_lamp_halo_royal_jelly.png");
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/block/alchemy/artifacts/honey_lamp_halo_royal_jelly.png");
     private static final ResourceLocation HALO_NECTAR =
-        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/block/alchemy/honey_lamp_halo_nectar.png");
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/block/alchemy/artifacts/honey_lamp_halo_nectar.png");
 
     // Cross geometry: 2 diagonal planes centered on the glass body
     // Glass body: [5,2,5] to [11,12,11], halo extends to full block
@@ -54,6 +54,8 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
     private static final float R = 0.5f;
     private static final float Y_MIN = 0f;
     private static final float Y_MAX = 14f / 16f;
+    // Petit decalage en Z pour eviter le z-fighting entre les 2 cross planes
+    private static final float Z_OFFSET = 0.005f;
 
     private static final int FULLBRIGHT = 0xF000F0;
 
@@ -78,14 +80,14 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
 
-        // Plane 1: SW-NE diagonal
-        float x0 = CX - R, z0 = CZ - R;
-        float x1 = CX + R, z1 = CZ + R;
+        // Plane 1: SW-NE diagonal, decale en +Z pour eviter z-fighting
+        float x0 = CX - R, z0 = CZ - R + Z_OFFSET;
+        float x1 = CX + R, z1 = CZ + R + Z_OFFSET;
         crossPlane(vc, pose, x0, z0, x1, z1, overlay);
 
-        // Plane 2: NW-SE diagonal
-        float x2 = CX + R, z2 = CZ - R;
-        float x3 = CX - R, z3 = CZ + R;
+        // Plane 2: NW-SE diagonal, decale en -Z
+        float x2 = CX + R, z2 = CZ - R - Z_OFFSET;
+        float x3 = CX - R, z3 = CZ + R - Z_OFFSET;
         crossPlane(vc, pose, x2, z2, x3, z3, overlay);
     }
 
