@@ -83,6 +83,8 @@ public class LeafBlowerProjectileEntity extends ThrowableProjectile {
         super.onHitBlock(result);
         if (!level().isClientSide()) {
             setDeltaMovement(Vec3.ZERO);
+            setNoGravity(true);
+            noPhysics = true;
             entityData.set(DATA_PULSING, true);
             pulseTimer = 0;
             currentPulse = 0;
@@ -91,22 +93,26 @@ public class LeafBlowerProjectileEntity extends ThrowableProjectile {
 
     @Override
     public void tick() {
-        super.tick();
+        if (isPulsing()) {
+            // Skip ThrowableProjectile.tick() to avoid gravity/movement while anchored
+            baseTick();
 
-        if (level().isClientSide()) return;
+            if (level().isClientSide()) return;
 
-        if (!isPulsing()) {
-            // Discard if flying too long (3 seconds max, but not if already pulsing)
-            if (tickCount > 60) {
-                discard();
+            pulseTimer++;
+            if (pulseTimer >= PULSE_INTERVAL) {
+                pulseTimer = 0;
+                doPulse();
             }
             return;
         }
 
-        pulseTimer++;
-        if (pulseTimer >= PULSE_INTERVAL) {
-            pulseTimer = 0;
-            doPulse();
+        super.tick();
+
+        if (level().isClientSide()) return;
+
+        if (tickCount > 60) {
+            discard();
         }
     }
 
