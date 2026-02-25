@@ -81,11 +81,11 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float BAR_MIN_Y = 11f / 16f;
     private static final float BAR_MAX_X = 15f / 16f;
     private static final float BAR_MAX_Y = 17f / 16f;
-    // Bar 0: z=2-3 (front, ring 1, 1er pixel column)
-    // Bar 1: z=4-5 (milieu, ring 2, 2e pixel column)
-    // Bar 2: z=6-7 (proche handle, ring 3, 3e pixel column)
-    private static final float[] BAR_Z_MIN = { 2f / 16f, 4f / 16f, 6f / 16f };
-    private static final float[] BAR_Z_MAX = { 3f / 16f, 5f / 16f, 7f / 16f };
+    // Bar 0: z=4-5 (front, ring 1, 1er pixel column)
+    // Bar 1: z=6-7 (milieu, ring 2, 2e pixel column)
+    // Bar 2: z=8-9 (proche handle, ring 3, 3e pixel column)
+    private static final float[] BAR_Z_MIN = { 4f / 16f, 6f / 16f, 8f / 16f };
+    private static final float[] BAR_Z_MAX = { 5f / 16f, 7f / 16f, 9f / 16f };
     // UV U ranges per bar (1 pixel column par ring dans l'atlas 3px wide)
     private static final float[] BAR_U0 = { 0f, 1f / 3f, 2f / 3f };
     private static final float[] BAR_U1 = { 1f / 3f, 2f / 3f, 1f };
@@ -121,12 +121,12 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
 
         if (inHand) {
             updateAnimation();
+            renderChargingOverlay(poseStack, buffer, packedLight);
+            renderChargeBars(poseStack, buffer, packedLight, getChargeLevel());
         } else {
-            currentFrame = 0;
+            renderChargingOverlay(poseStack, buffer, packedLight, 0);
+            renderChargeBars(poseStack, buffer, packedLight, 0);
         }
-
-        renderChargingOverlay(poseStack, buffer, packedLight);
-        renderChargeBars(poseStack, buffer, packedLight, inHand ? getChargeLevel() : 0);
     }
 
     private void renderBodyModel(PoseStack poseStack, MultiBufferSource buffer,
@@ -175,12 +175,16 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
      * Down: rotation 270.
      */
     private void renderChargingOverlay(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+        renderChargingOverlay(poseStack, buffer, packedLight, currentFrame);
+    }
+
+    private void renderChargingOverlay(PoseStack poseStack, MultiBufferSource buffer, int packedLight, int frame) {
         VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(CHARGING1_TEXTURE));
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
 
         float u0 = 0f, u1 = 1f;
-        float v0 = (float) currentFrame / TOTAL_FRAMES;
+        float v0 = (float) frame / TOTAL_FRAMES;
         float v1 = v0 + 1f / TOTAL_FRAMES;
 
         // North (Z-) — pas de rotation UV
