@@ -12,6 +12,7 @@ import com.chapeau.apica.common.block.alchemy.CentrifugeHeartBlock;
 import com.chapeau.apica.common.block.alchemy.CrankBlock;
 import com.chapeau.apica.common.block.alchemy.CreativeTankBlock;
 import com.chapeau.apica.common.block.alchemy.CrystallizerBlock;
+import com.chapeau.apica.common.block.alchemy.HoneyLampBlock;
 import com.chapeau.apica.common.block.alchemy.LiquidPipeBlock;
 import com.chapeau.apica.common.block.alchemy.HoneyTankBlock;
 import com.chapeau.apica.common.block.alchemy.InfuserBlock;
@@ -316,6 +317,13 @@ public class ApicaBlocks {
     //                 .sound(SoundType.WOOD)
     //                 .requiresCorrectToolForDrops()
     //                 .lightLevel(state -> state.getValue(InfuserBlock.WORKING) ? 10 : 0), 2));
+
+    public static final DeferredBlock<HoneyLampBlock> HONEY_LAMP = registerTimed("honey_lamp",
+            () -> new HoneyLampBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.GLASS)
+                    .noOcclusion()
+                    .lightLevel(state -> state.getValue(HoneyLampBlock.LAMP_STATE) == HoneyLampBlock.LampState.OFF ? 0 : 15)));
 
     public static final DeferredBlock<MultiblockTankBlock> MULTIBLOCK_TANK = registerTimed("multiblock_tank",
             () -> new MultiblockTankBlock(BlockBehaviour.Properties.of()

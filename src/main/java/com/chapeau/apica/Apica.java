@@ -428,6 +428,13 @@ public class Apica {
                 ApicaBlockEntities.LIQUID_TRASH_CAN.get(),
                 (be, side) -> be.getFluidHandler()
         );
+
+        // Honey Lamp: accepte honey, royal jelly, nectar
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ApicaBlockEntities.HONEY_LAMP.get(),
+                (be, side) -> be.getFluidTank()
+        );
     }
 
     private void registerItemCapabilities(RegisterCapabilitiesEvent event) {

@@ -1,0 +1,132 @@
+/**
+ * ============================================================
+ * [HoneyLampBlock.java]
+ * Description: Lampe décorative alimentée par fluides Apica
+ * ============================================================
+ *
+ * DÉPENDANCES:
+ * ------------------------------------------------------------
+ * | Dépendance              | Raison                | Utilisation                    |
+ * |-------------------------|----------------------|--------------------------------|
+ * | HoneyLampBlockEntity    | BlockEntity associé  | Gestion du tank et des helpers |
+ * | ApicaBlockEntities      | Registre BE          | Ticker                         |
+ * ------------------------------------------------------------
+ *
+ * UTILISÉ PAR:
+ * - ApicaBlocks (registre)
+ * - ApicaItems (block item)
+ *
+ * ============================================================
+ */
+package com.chapeau.apica.common.block.alchemy;
+
+import com.chapeau.apica.common.blockentity.alchemy.HoneyLampBlockEntity;
+import com.chapeau.apica.core.registry.ApicaBlockEntities;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.fluids.FluidUtil;
+
+import javax.annotation.Nullable;
+
+public class HoneyLampBlock extends BaseEntityBlock {
+    public static final MapCodec<HoneyLampBlock> CODEC = simpleCodec(HoneyLampBlock::new);
+
+    public static final EnumProperty<LampState> LAMP_STATE = EnumProperty.create("lamp_state", LampState.class);
+
+    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 14, 13);
+
+    public HoneyLampBlock(Properties properties) {
+        super(properties);
+        this.registerDefaultState(this.stateDefinition.any().setValue(LAMP_STATE, LampState.OFF));
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(LAMP_STATE);
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new HoneyLampBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide()) return null;
+        return createTickerHelper(type, ApicaBlockEntities.HONEY_LAMP.get(),
+                HoneyLampBlockEntity::serverTick);
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (!level.isClientSide()) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof HoneyLampBlockEntity lamp) {
+                if (FluidUtil.interactWithFluidHandler(player, hand, lamp.getFluidTank())) {
+                    return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                }
+            }
+        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof HoneyLampBlockEntity lamp) {
+                lamp.removeAllHelpers();
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
+    }
+
+    /**
+     * Etats visuels de la lampe correspondant au fluide contenu.
+     */
+    public enum LampState implements StringRepresentable {
+        OFF("off"),
+        HONEY("honey"),
+        ROYAL_JELLY("royal_jelly"),
+        NECTAR("nectar");
+
+        private final String name;
+
+        LampState(String name) { this.name = name; }
+
+        @Override
+        public String getSerializedName() { return this.name; }
+    }
+}

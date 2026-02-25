@@ -17,6 +17,7 @@ import com.chapeau.apica.common.blockentity.alchemy.CentrifugeHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.CrankBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.CreativeTankBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.CrystallizerBlockEntity;
+import com.chapeau.apica.common.blockentity.alchemy.HoneyLampBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.HoneyTankBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.InfuserBlockEntity;
@@ -263,6 +264,13 @@ public class ApicaBlockEntities {
     //                         InfuserBlockEntity::createTier2,
     //                         ApicaBlocks.INFUSER_TIER2.get()
     //                 ).build(null));
+
+    public static final Supplier<BlockEntityType<HoneyLampBlockEntity>> HONEY_LAMP =
+            BLOCK_ENTITIES.register("honey_lamp",
+                    () -> BlockEntityType.Builder.of(
+                            HoneyLampBlockEntity::new,
+                            ApicaBlocks.HONEY_LAMP.get()
+                    ).build(null));
 
     public static final Supplier<BlockEntityType<MultiblockTankBlockEntity>> MULTIBLOCK_TANK =
             BLOCK_ENTITIES.register("multiblock_tank",

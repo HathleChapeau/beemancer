@@ -121,6 +121,9 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> HONEY_TANK = ITEMS.register("honey_tank",
             () -> new BlockItem(ApicaBlocks.HONEY_TANK.get(), new Item.Properties()));
 
+    public static final DeferredItem<BlockItem> HONEY_LAMP = ITEMS.register("honey_lamp",
+            () -> new BlockItem(ApicaBlocks.HONEY_LAMP.get(), new Item.Properties()));
+
     public static final DeferredItem<BlockItem> CREATIVE_TANK = ITEMS.register("creative_tank",
             () -> new BlockItem(ApicaBlocks.CREATIVE_TANK.get(), new Item.Properties()));
 

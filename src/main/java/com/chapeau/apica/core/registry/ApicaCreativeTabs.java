@@ -139,6 +139,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.HONEY_FURNACE.get());
         output.accept(ApicaItems.ROYAL_FURNACE.get());
         output.accept(ApicaItems.NECTAR_FURNACE.get());
+        output.accept(ApicaItems.HONEY_LAMP.get());
     }
 
     private static void addPipesAndTanks(CreativeModeTab.Output output) {
