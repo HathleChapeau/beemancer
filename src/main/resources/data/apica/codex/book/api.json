@@ -1,0 +1,37 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.api.lore.p1"
+    },
+    {
+      "type": "handraw_line",
+      "quest": "api_fed"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.api.lore.p2",
+      "quest": "api_fed"
+    },
+    {
+      "type": "handraw_line",
+      "quest": "api_exploded"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.api.lore.p3",
+      "quest": "api_exploded"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "altar_craft",
+      "result": "apica:api"
+    }
+  ],
+  "sticky_notes": []
+}

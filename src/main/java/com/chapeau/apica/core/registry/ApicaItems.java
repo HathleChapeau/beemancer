@@ -20,13 +20,19 @@ import com.chapeau.apica.common.item.mount.HoverbikeSpawnItem;
 import com.chapeau.apica.common.item.BarrelUpgradeItem;
 import com.chapeau.apica.common.item.VoidUpgradeItem;
 import com.chapeau.apica.common.item.ItemFilterItem;
+import com.chapeau.apica.common.item.BeeElytraItem;
+import com.chapeau.apica.common.item.NectarBreadItem;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
+import com.chapeau.apica.common.item.tool.LeafBlowerItem;
+import net.minecraft.world.food.FoodProperties;
 import com.chapeau.apica.common.item.tool.ScoopItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.DoubleHighBlockItem;
+import net.minecraft.world.item.ElytraItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Rarity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -231,6 +237,10 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> BEE_STATUE = ITEMS.register("bee_statue",
             () -> new BlockItem(ApicaBlocks.BEE_STATUE.get(), new Item.Properties()));
 
+    // --- API ---
+    public static final DeferredItem<BlockItem> API = ITEMS.register("api",
+            () -> new BlockItem(ApicaBlocks.API.get(), new Item.Properties()));
+
     // --- BUILDING BLOCKS: HONEYED LOGS ---
     public static final DeferredItem<BlockItem> HONEYED_LOG = ITEMS.register("honeyed_log",
             () -> new BlockItem(ApicaBlocks.HONEYED_LOG.get(), new Item.Properties()));
@@ -389,6 +399,24 @@ public class ApicaItems {
 
     public static final DeferredItem<DebugWandItem> DEBUG_WAND = ITEMS.register("debug_wand",
             () -> new DebugWandItem(new Item.Properties()));
+
+    public static final DeferredItem<LeafBlowerItem> LEAF_BLOWER = ITEMS.register("leaf_blower",
+            () -> new LeafBlowerItem(new Item.Properties().stacksTo(1)));
+
+    // --- EQUIPMENT ---
+    public static final DeferredItem<BeeElytraItem> BEE_ELYTRA = ITEMS.register("bee_elytra",
+            () -> new BeeElytraItem(new Item.Properties().durability(432).rarity(Rarity.UNCOMMON)));
+
+    // --- FOOD ---
+    public static final DeferredItem<Item> HONEY_BREAD = ITEMS.register("honey_bread",
+            () -> new Item(new Item.Properties().food(new FoodProperties.Builder()
+                    .nutrition(7).saturationModifier(0.6f).build())));
+    public static final DeferredItem<Item> ROYAL_BREAD = ITEMS.register("royal_bread",
+            () -> new Item(new Item.Properties().food(new FoodProperties.Builder()
+                    .nutrition(10).saturationModifier(0.7f).build())));
+    public static final DeferredItem<NectarBreadItem> NECTAR_BREAD = ITEMS.register("nectar_bread",
+            () -> new NectarBreadItem(new Item.Properties().food(new FoodProperties.Builder()
+                    .nutrition(15).saturationModifier(0.8f).build()).rarity(Rarity.RARE)));
 
     // --- RESONATOR ---
     public static final DeferredItem<BlockItem> RESONATOR = ITEMS.register("resonator",

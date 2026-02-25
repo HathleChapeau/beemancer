@@ -31,6 +31,7 @@ import com.chapeau.apica.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.apica.common.block.resonator.ResonatorBlockEntity;
+import com.chapeau.apica.common.block.api.ApiBlockEntity;
 import com.chapeau.apica.common.block.statue.BeeStatueBlockEntity;
 import com.chapeau.apica.common.blockentity.mount.AssemblyTableBlockEntity;
 import com.chapeau.apica.common.blockentity.extractor.ExtractorHeartBlockEntity;
@@ -399,6 +400,14 @@ public class ApicaBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             BeeStatueBlockEntity::new,
                             ApicaBlocks.BEE_STATUE.get()
+                    ).build(null));
+
+    // --- API ---
+    public static final Supplier<BlockEntityType<ApiBlockEntity>> API =
+            BLOCK_ENTITIES.register("api",
+                    () -> BlockEntityType.Builder.of(
+                            ApiBlockEntity::new,
+                            ApicaBlocks.API.get()
                     ).build(null));
 
     public static void register(IEventBus eventBus) {

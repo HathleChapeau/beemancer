@@ -109,6 +109,8 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.CODEX.get());
         output.accept(ApicaItems.SCOOP.get());
         output.accept(ApicaItems.RESONATOR.get());
+        output.accept(ApicaItems.BEE_ELYTRA.get());
+        output.accept(ApicaItems.LEAF_BLOWER.get());
     }
 
     private static void addBees(CreativeModeTab.Output output) {
@@ -222,6 +224,7 @@ public class ApicaCreativeTabs {
 
     private static void addBeeStatue(CreativeModeTab.Output output) {
         output.accept(ApicaItems.BEE_STATUE.get());
+        output.accept(ApicaItems.API.get());
     }
 
     private static void addDebugTools(CreativeModeTab.Output output) {
@@ -279,6 +282,9 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.NECTAR_DIAMOND_BLOCK.get());
         output.accept(ApicaItems.NECTAR_CRYSTAL.get());
         output.accept(ApicaItems.BLANK_RUNE.get());
+        output.accept(ApicaItems.HONEY_BREAD.get());
+        output.accept(ApicaItems.ROYAL_BREAD.get());
+        output.accept(ApicaItems.NECTAR_BREAD.get());
     }
 
     private static void addEssences(CreativeModeTab.Output output) {

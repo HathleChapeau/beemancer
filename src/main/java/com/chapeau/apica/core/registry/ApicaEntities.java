@@ -10,6 +10,7 @@ import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.common.entity.delivery.DeliveryBeeEntity;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
+import com.chapeau.apica.common.entity.projectile.LeafBlowerProjectileEntity;
 import com.chapeau.apica.core.entity.InteractionMarkerEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
@@ -43,6 +44,15 @@ public class ApicaEntities {
                     .sized(1.2F, 1.0F)
                     .clientTrackingRange(10)
                     .build("hoverbike"));
+
+    // --- PROJECTILES ---
+    public static final Supplier<EntityType<LeafBlowerProjectileEntity>> LEAF_BLOWER_ORB =
+            ENTITIES.register("leaf_blower_orb",
+                    () -> EntityType.Builder.<LeafBlowerProjectileEntity>of(LeafBlowerProjectileEntity::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .clientTrackingRange(8)
+                            .updateInterval(10)
+                            .build("leaf_blower_orb"));
 
     // --- INTERACTION MARKERS ---
     public static final Supplier<EntityType<InteractionMarkerEntity>> INTERACTION_MARKER =

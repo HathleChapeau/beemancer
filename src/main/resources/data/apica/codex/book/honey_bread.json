@@ -1,0 +1,53 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.honey_bread.lore.p1"
+    },
+    {
+      "type": "handraw_line",
+      "quest": "royal_upgrade"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.honey_bread.lore.p2",
+      "quest": "royal_upgrade"
+    },
+    {
+      "type": "handraw_line",
+      "quest": "nectar_upgrade"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.honey_bread.lore.p3",
+      "quest": "nectar_upgrade"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "process",
+      "input": "minecraft:bread",
+      "output": "apica:infuser",
+      "top_slot": "apica:honey_bucket"
+    },
+    {
+      "type": "process",
+      "input": "minecraft:bread",
+      "output": "apica:infuser",
+      "top_slot": "apica:royal_jelly_bucket",
+      "quest": "royal_upgrade"
+    },
+    {
+      "type": "process",
+      "input": "minecraft:bread",
+      "output": "apica:infuser",
+      "top_slot": "apica:nectar_bucket",
+      "quest": "nectar_upgrade"
+    }
+  ],
+  "sticky_notes": []
+}

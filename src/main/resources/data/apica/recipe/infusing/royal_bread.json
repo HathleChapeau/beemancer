@@ -1,0 +1,7 @@
+{
+  "type": "apica:infusing",
+  "ingredient": { "item": "minecraft:bread" },
+  "fluid_ingredient": { "fluid": "apica:royal_jelly", "amount": 100 },
+  "result": { "id": "apica:royal_bread" },
+  "processing_time": 200
+}

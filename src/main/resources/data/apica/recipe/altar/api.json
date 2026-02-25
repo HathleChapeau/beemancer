@@ -1,0 +1,15 @@
+{
+  "type": "apica:altar",
+  "center_item": { "item": "minecraft:honeycomb" },
+  "pedestal_items": [
+    { "item": "apica:honey_crystal" },
+    { "item": "apica:honey_crystal" },
+    { "item": "minecraft:honey_bottle" },
+    { "item": "minecraft:honey_bottle" }
+  ],
+  "pollen": {
+    "apica:mushroom_spore": 24,
+    "apica:flower_pollen": 18
+  },
+  "result": { "id": "apica:api" }
+}

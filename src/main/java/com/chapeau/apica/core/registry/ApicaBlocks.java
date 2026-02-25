@@ -45,6 +45,7 @@ import com.chapeau.apica.common.block.crystal.CreativeBreedingCrystalBlock;
 import com.chapeau.apica.common.block.extractor.ExtractorHeartBlock;
 import com.chapeau.apica.core.multiblock.MultiblockProperty;
 import com.chapeau.apica.common.block.hive.HiveMultiblockBlock;
+import com.chapeau.apica.common.block.api.ApiBlock;
 import com.chapeau.apica.common.block.statue.BeeStatueBlock;
 import com.chapeau.apica.common.block.hive.MagicHiveBlock;
 import com.chapeau.apica.common.block.incubator.IncubatorBlock;
@@ -489,6 +490,13 @@ public class ApicaBlocks {
             () -> new BeeStatueBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.STONE)
+                    .noOcclusion()));
+
+    // --- API ---
+    public static final DeferredBlock<ApiBlock> API = registerTimed("api",
+            () -> new ApiBlock(BlockBehaviour.Properties.of()
+                    .strength(1.0f)
+                    .sound(SoundType.HONEY_BLOCK)
                     .noOcclusion()));
 
     // --- BUILDING BLOCKS: HONEYED LOGS ---

@@ -1,0 +1,22 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "all": "apica:block/machines/api",
+    "particle": "apica:block/machines/api"
+  },
+  "elements": [
+    {
+      "name": "Body",
+      "from": [3, 0, 3],
+      "to": [13, 10, 13],
+      "faces": {
+        "north": {"texture": "#all", "uv": [3, 6, 13, 16]},
+        "east":  {"texture": "#all", "uv": [3, 6, 13, 16]},
+        "south": {"texture": "#all", "uv": [3, 6, 13, 16]},
+        "west":  {"texture": "#all", "uv": [3, 6, 13, 16]},
+        "up":    {"texture": "#all", "uv": [3, 3, 13, 13]},
+        "down":  {"texture": "#all", "uv": [3, 3, 13, 13], "cullface": "down"}
+      }
+    }
+  ]
+}

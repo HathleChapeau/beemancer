@@ -32,6 +32,7 @@ import com.chapeau.apica.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableStatsRenderer;
+import com.chapeau.apica.client.renderer.block.ApiRenderer;
 import com.chapeau.apica.client.renderer.block.AltarHeartRenderer;
 import com.chapeau.apica.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyPedestalRenderer;
@@ -58,7 +59,10 @@ import com.chapeau.apica.client.renderer.block.TranslucentOutlineRenderer;
 import com.chapeau.apica.client.renderer.debug.BeeDebugRenderer;
 import com.chapeau.apica.client.renderer.debug.CustomDebugDisplayRenderer;
 import com.chapeau.apica.client.renderer.debug.HoverbikeDebugRenderer;
+import com.chapeau.apica.client.model.entity.LeafBlowerProjectileModel;
+import com.chapeau.apica.client.renderer.entity.LeafBlowerProjectileRenderer;
 import com.chapeau.apica.client.renderer.entity.MagicBeeRenderer;
+import com.chapeau.apica.client.renderer.layer.BeeElytraLayer;
 import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
@@ -70,7 +74,9 @@ import com.chapeau.apica.core.registry.ApicaEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
 import com.chapeau.apica.core.registry.ApicaItems;
 import com.chapeau.apica.core.registry.ApicaMenus;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import com.chapeau.apica.client.animation.AnimationTimer;
@@ -100,6 +106,7 @@ public class ClientSetup {
         modEventBus.addListener((RegisterColorHandlersEvent.Item e)   -> timed("registerItemColors",      () -> registerItemColors(e)));
         modEventBus.addListener((ModelEvent.RegisterAdditional e)     -> timed("registerAdditionalModels",() -> registerAdditionalModels(e)));
         modEventBus.addListener((RegisterParticleProvidersEvent e)    -> timed("registerParticleProviders",() -> registerParticleProviders(e)));
+        modEventBus.addListener((EntityRenderersEvent.AddLayers e)   -> timed("addRenderLayers",         () -> addRenderLayers(e)));
 
         // AnimationTimer: compteur client-side pour animations sans stutter (pattern Create)
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> AnimationTimer.tick());
@@ -179,6 +186,9 @@ public class ClientSetup {
         event.registerEntityRenderer(ApicaEntities.MAGIC_BEE.get(), MagicBeeRenderer::new);
         event.registerEntityRenderer(ApicaEntities.DELIVERY_BEE.get(), DeliveryBeeRenderer::new);
         event.registerEntityRenderer(ApicaEntities.HOVERBIKE.get(), HoverbikeRenderer::new);
+        // Leaf Blower orb projectile
+        event.registerEntityRenderer(ApicaEntities.LEAF_BLOWER_ORB.get(), LeafBlowerProjectileRenderer::new);
+
         // Interaction marker - invisible entity, no rendering
         event.registerEntityRenderer(ApicaEntities.INTERACTION_MARKER.get(),
             com.chapeau.apica.client.renderer.entity.InteractionMarkerRenderer::new);
@@ -195,6 +205,9 @@ public class ClientSetup {
             StorageHiveRenderer::new);
         event.registerBlockEntityRenderer(ApicaBlockEntities.BEE_STATUE.get(),
             BeeStatueRenderer::new);
+        // ApiRenderer - bloc vivant qui scale dynamiquement
+        event.registerBlockEntityRenderer(ApicaBlockEntities.API.get(),
+            ApiRenderer::new);
         // HoneyReservoirRenderer - rendu dynamique du fluide avec scale
         event.registerBlockEntityRenderer(ApicaBlockEntities.HONEY_RESERVOIR.get(),
             HoneyReservoirRenderer::new);
@@ -269,6 +282,9 @@ public class ClientSetup {
         // Hoverbike — modele de base
         event.registerLayerDefinition(HoverbikeRenderer.LAYER_LOCATION, HoverbikeModel::createBodyLayer);
 
+        // Leaf Blower orb model
+        event.registerLayerDefinition(LeafBlowerProjectileModel.LAYER_LOCATION, LeafBlowerProjectileModel::createBodyLayer);
+
         // Hoverbike — parties modulaires (toutes variantes, enregistrees dynamiquement)
         for (HoverbikePartVariants.ModelFactory factory : HoverbikePartVariants.getAllModelFactories().values()) {
             event.registerLayerDefinition(factory.layerLocation(), factory.layerDefinition());
@@ -333,6 +349,19 @@ public class ClientSetup {
             @Override
             public int getTintColor() { return tintColor; }
         }, fluidType.get());
+    }
+
+    // =========================================================================
+    // RENDER LAYERS
+    // =========================================================================
+
+    private static void addRenderLayers(final EntityRenderersEvent.AddLayers event) {
+        for (net.minecraft.client.resources.PlayerSkin.Model skin : event.getSkins()) {
+            PlayerRenderer renderer = event.getSkin(skin);
+            if (renderer != null) {
+                renderer.addLayer(new BeeElytraLayer<>(renderer, event.getEntityModels()));
+            }
+        }
     }
 
     // =========================================================================
@@ -459,6 +488,9 @@ public class ClientSetup {
         // Modèles extract pour les pipes (rendu BER de l'indicateur d'extraction)
         event.register(PipeExtractRenderer.ITEM_EXTRACT_MODEL_LOC);
         event.register(PipeExtractRenderer.LIQUID_EXTRACT_MODEL_LOC);
+
+        // Modèle Api (bloc vivant scalé dynamiquement)
+        event.register(ApiRenderer.API_MODEL_LOC);
     }
 
 }

@@ -32,26 +32,25 @@ public class ProcessSection extends CodexBookSection {
 
     private static final ResourceLocation CRAFT_SLOT = ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "textures/gui/codex/codex_book/craft_slot.png");
-    private static final ResourceLocation ARROW = ResourceLocation.withDefaultNamespace(
-            "textures/gui/sprites/container/furnace/burn_progress.png");
 
     private static final int SLOT_SIZE = 20;
-    private static final int ARROW_WIDTH = 24;
-    private static final int ARROW_HEIGHT = 17;
-    private static final int SPACING = 8;
     private static final int PADDING_BOTTOM = 6;
+    private static final int TOP_SLOT_GAP = 2;
     private static final float ITEM_SCALE = 1.1f;
     private static final int ITEM_RENDER_SIZE = 16;
 
     private final String inputItem;
     private final String outputItem;
+    private final String topSlotItem;
     private ItemStack inputStack = ItemStack.EMPTY;
     private ItemStack outputStack = ItemStack.EMPTY;
+    private ItemStack topSlotStack = ItemStack.EMPTY;
     private boolean resolved = false;
 
-    public ProcessSection(String inputItem, String outputItem) {
+    public ProcessSection(String inputItem, String outputItem, String topSlotItem) {
         this.inputItem = inputItem;
         this.outputItem = outputItem;
+        this.topSlotItem = topSlotItem;
     }
 
     @Override
@@ -61,7 +60,11 @@ public class ProcessSection extends CodexBookSection {
 
     @Override
     public int getHeight(Font font, int pageWidth) {
-        return SLOT_SIZE + PADDING_BOTTOM;
+        int height = SLOT_SIZE + PADDING_BOTTOM;
+        if (!topSlotItem.isEmpty()) {
+            height += SLOT_SIZE + TOP_SLOT_GAP;
+        }
+        return height;
     }
 
     @Override
@@ -75,17 +78,30 @@ public class ProcessSection extends CodexBookSection {
         int totalWidth = SLOT_SIZE + gap + arrowRenderedW + gap + SLOT_SIZE;
         int startX = x + (pageWidth - totalWidth) / 2;
 
+        int topSlotOffset = 0;
+        if (!topSlotStack.isEmpty()) {
+            topSlotOffset = SLOT_SIZE + TOP_SLOT_GAP;
+            int arrowCenterX = startX + SLOT_SIZE + gap + arrowRenderedW / 2;
+            int topSlotX = arrowCenterX - SLOT_SIZE / 2;
+            graphics.blit(CRAFT_SLOT, topSlotX, y, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
+            int itemX = topSlotX + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
+            int itemY = y + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
+            renderScaledItem(graphics, topSlotStack, itemX, itemY, ITEM_SCALE);
+        }
+
+        int rowY = y + topSlotOffset;
+
         // Input slot + item
-        graphics.blit(CRAFT_SLOT, startX, y, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
+        graphics.blit(CRAFT_SLOT, startX, rowY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
         if (!inputStack.isEmpty()) {
             int itemX = startX + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
-            int itemY = y + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
+            int itemY = rowY + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
             renderScaledItem(graphics, inputStack, itemX, itemY, ITEM_SCALE);
         }
 
         // Arrow
         int arrowX = startX + SLOT_SIZE + gap;
-        int arrowY = y + SLOT_SIZE / 2 - 8;
+        int arrowY = rowY + SLOT_SIZE / 2 - 8;
         graphics.pose().pushPose();
         graphics.pose().translate(arrowX, arrowY, 0);
         graphics.pose().scale(arrowScale, arrowScale, 1.0f);
@@ -94,10 +110,10 @@ public class ProcessSection extends CodexBookSection {
 
         // Output slot + item
         int outputX = arrowX + arrowRenderedW + gap;
-        graphics.blit(CRAFT_SLOT, outputX, y, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
+        graphics.blit(CRAFT_SLOT, outputX, rowY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
         if (!outputStack.isEmpty()) {
             int itemX = outputX + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
-            int itemY = y + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
+            int itemY = rowY + (SLOT_SIZE - Math.round(ITEM_RENDER_SIZE * ITEM_SCALE)) / 2;
             renderScaledItem(graphics, outputStack, itemX, itemY, ITEM_SCALE);
         }
     }
@@ -117,6 +133,14 @@ public class ProcessSection extends CodexBookSection {
         if (output != null) {
             outputStack = new ItemStack(output);
         }
+
+        if (!topSlotItem.isEmpty()) {
+            ResourceLocation topId = ResourceLocation.parse(topSlotItem);
+            var topItem = BuiltInRegistries.ITEM.get(topId);
+            if (topItem != null) {
+                topSlotStack = new ItemStack(topItem);
+            }
+        }
     }
 
     private void renderScaledItem(GuiGraphics graphics, ItemStack stack, int x, int y, float scale) {
@@ -134,6 +158,7 @@ public class ProcessSection extends CodexBookSection {
     public static ProcessSection fromJson(JsonObject json) {
         String input = json.has("input") ? json.get("input").getAsString() : "";
         String output = json.has("output") ? json.get("output").getAsString() : "";
-        return new ProcessSection(input, output);
+        String topSlot = json.has("top_slot") ? json.get("top_slot").getAsString() : "";
+        return new ProcessSection(input, output, topSlot);
     }
 }

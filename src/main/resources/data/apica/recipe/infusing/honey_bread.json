@@ -1,0 +1,7 @@
+{
+  "type": "apica:infusing",
+  "ingredient": { "item": "minecraft:bread" },
+  "fluid_ingredient": { "fluid": "apica:honey", "amount": 100 },
+  "result": { "id": "apica:honey_bread" },
+  "processing_time": 200
+}

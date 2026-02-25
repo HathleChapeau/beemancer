@@ -6,6 +6,22 @@
     {"id": "pollen_pot", "position": {"x": -2, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
     {"id": "building_staff", "position": {"x": 2, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
     {"id": "charging_station", "position": {"x": 3, "y": 2}, "category": "NORMAL", "parent": "building_staff", "hidden_until_parent_unlocked": false},
-    {"id": "honey_lamp", "position": {"x": -3, "y": -1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false}
+    {"id": "honey_lamp", "position": {"x": -3, "y": -1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "hand_accessory", "position": {"x": 0, "y": 2}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "chopper_axe", "position": {"x": -1, "y": 3}, "category": "NORMAL", "parent": "hand_accessory", "hidden_until_parent_unlocked": false},
+    {"id": "bras_gun", "position": {"x": 1, "y": 3}, "category": "NORMAL", "parent": "hand_accessory", "hidden_until_parent_unlocked": false},
+    {"id": "dubstep_gun", "position": {"x": 2, "y": 4}, "category": "NORMAL", "parent": "hand_accessory", "hidden_until_parent_unlocked": false},
+    {"id": "grass_remover", "position": {"x": -2, "y": 3}, "category": "NORMAL", "parent": "hand_accessory", "hidden_until_parent_unlocked": false},
+    {"id": "api", "position": {"x": 1, "y": -1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "sniper", "position": {"x": 4, "y": -1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "repair_tool", "position": {"x": -1, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "uncrafting_table", "position": {"x": -2, "y": -2}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "magnet", "position": {"x": 3, "y": -1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "dubstep_radio", "position": {"x": -4, "y": -2}, "category": "NORMAL", "parent": "honey_lamp", "hidden_until_parent_unlocked": false},
+    {"id": "launchpad", "position": {"x": 4, "y": 3}, "category": "NORMAL", "parent": "charging_station", "hidden_until_parent_unlocked": false},
+    {"id": "honey_bread", "position": {"x": 0, "y": -2}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "bee_elytra", "position": {"x": -4, "y": 1}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false},
+    {"id": "mining_laser", "position": {"x": 0, "y": 4}, "category": "NORMAL", "parent": "hand_accessory", "hidden_until_parent_unlocked": false},
+    {"id": "accessories", "position": {"x": -3, "y": 2}, "category": "NORMAL", "parent": "altar", "hidden_until_parent_unlocked": false}
   ]
 }

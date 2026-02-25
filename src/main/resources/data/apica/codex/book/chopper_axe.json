@@ -1,0 +1,12 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.chopper_axe.lore.p1"
+    }
+  ],
+  "sticky_notes": []
+}
