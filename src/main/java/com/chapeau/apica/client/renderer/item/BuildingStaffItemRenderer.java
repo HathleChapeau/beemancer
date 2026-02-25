@@ -59,12 +59,12 @@ public class BuildingStaffItemRenderer extends BlockEntityWithoutLevelRenderer {
             Apica.MOD_ID, "item/building_staff_3d"));
 
     // Centre du cristal en model units (pixels / 16)
-    private static final float CRYSTAL_CENTER_X = 8f / 16f;
-    private static final float CRYSTAL_CENTER_Y = 20.75f / 16f;
-    private static final float CRYSTAL_CENTER_Z = 8f / 16f;
+    private static final float CRYSTAL_CENTER_X = (8f / 16f) + 0.14f;
+    private static final float CRYSTAL_CENTER_Y = (20.75f / 16f) + 0.17f;;
+    private static final float CRYSTAL_CENTER_Z = (8f / 16f) + 0.14f;;
 
     // Echelle du mini-bloc dans le cristal (cristal ~3.5px, bloc = 16px, 3.5/16 * 0.8 marge)
-    private static final float BLOCK_SCALE = 0.175f;
+    private static final float BLOCK_SCALE = 0.275f;
 
     public BuildingStaffItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
