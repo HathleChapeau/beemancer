@@ -219,11 +219,11 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
 
-        for (int i = 0; i < 3; i++) {
-            boolean active = i < chargeLevel;
-            float bv0 = active ? BAR_V_ACTIVE_0 : BAR_V_INACTIVE_0;
-            float bv1 = active ? BAR_V_ACTIVE_1 : BAR_V_INACTIVE_1;
+        boolean active = chargeLevel > 0;
+        float bv0 = active ? BAR_V_ACTIVE_0 : BAR_V_INACTIVE_0;
+        float bv1 = active ? BAR_V_ACTIVE_1 : BAR_V_INACTIVE_1;
 
+        for (int i = 0; i < 3; i++) {
             renderBarBox(vc, pose,
                 BAR_MIN_X, BAR_MIN_Y, BAR_Z_MIN[i],
                 BAR_MAX_X, BAR_MAX_Y, BAR_Z_MAX[i],
@@ -231,7 +231,7 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         }
     }
 
-    /** Rend une barre (boite simple, meme UV sur toutes les faces). */
+    /** Rend une barre: sides avec UV column, up/down avec 1er pixel haut-gauche. */
     private void renderBarBox(VertexConsumer vc, PoseStack.Pose pose,
                                float x0, float y0, float z0, float x1, float y1, float z1,
                                float u0, float v0, float u1, float v1, int light, int overlay) {
@@ -243,12 +243,13 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         quad(vc, pose, x0, y0, z1, x0, y1, z0, u0, v1, u0, v0, u1, v0, u1, v1, -1, 0, 0, light, overlay);
         // East (X+)
         quad(vc, pose, x1, y0, z0, x1, y1, z1, u0, v1, u0, v0, u1, v0, u1, v1, 1, 0, 0, light, overlay);
-        // Up (Y+) — UV rotated 90: gradient (V) along X, column (U) along Z
+        // Up (Y+) — premier pixel de la colonne de cet anneau
+        float pxV = v0 + 1f / 12f;
         quad4(vc, pose, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0,
-            v0, u0, v0, u1, v1, u1, v1, u0, 0, 1, 0, light, overlay);
-        // Down (Y-) — UV rotated 90: gradient (V) along X, column (U) along Z
+            u0, v0, u0, v0, u1, pxV, u1, pxV, 0, 1, 0, light, overlay);
+        // Down (Y-) — premier pixel de la colonne de cet anneau
         quad4(vc, pose, x0, y0, z1, x0, y0, z0, x1, y0, z0, x1, y0, z1,
-            v0, u1, v0, u0, v1, u0, v1, u1, 0, -1, 0, light, overlay);
+            u0, v0, u0, v0, u1, pxV, u1, pxV, 0, -1, 0, light, overlay);
     }
 
     private int getChargeLevel() {
