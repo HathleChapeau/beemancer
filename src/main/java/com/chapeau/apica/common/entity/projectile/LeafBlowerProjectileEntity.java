@@ -171,13 +171,12 @@ public class LeafBlowerProjectileEntity extends ThrowableProjectile {
         }
     }
 
-    /** A log is "isolated" if all 6 neighbors are air, leaves, or other logs. */
+    /** A log is "isolated" if all 6 neighbors are only air or leaves — no other logs or solid blocks. */
     private boolean isIsolatedLog(ServerLevel serverLevel, BlockPos pos) {
         for (Direction dir : Direction.values()) {
             BlockState neighbor = serverLevel.getBlockState(pos.relative(dir));
             if (neighbor.isAir()) continue;
             if (neighbor.is(BlockTags.LEAVES)) continue;
-            if (neighbor.is(BlockTags.LOGS)) continue;
             return false;
         }
         return true;
