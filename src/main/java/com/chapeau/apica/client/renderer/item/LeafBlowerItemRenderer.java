@@ -242,8 +242,8 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         quad(vc, pose, x0, y0, z1, x0, y1, z0, u0, v1, u0, v0, u1, v0, u1, v1, -1, 0, 0, light, overlay);
         // East (X+)
         quad(vc, pose, x1, y0, z0, x1, y1, z1, u0, v1, u0, v0, u1, v0, u1, v1, 1, 0, 0, light, overlay);
-        // Up (Y+) — premier pixel de la colonne de cet anneau
-        float pxV = v0 + BAR_PIXEL_V;
+        // Up (Y+) — demi-pixel de la colonne de cet anneau
+        float pxV = v0 + BAR_PIXEL_V * 0.5f;
         quad4(vc, pose, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0,
             u0, v0, u0, pxV, u1, pxV, u1, v0, 0, 1, 0, light, overlay);
         // Down (Y-) — premier pixel de la colonne de cet anneau
