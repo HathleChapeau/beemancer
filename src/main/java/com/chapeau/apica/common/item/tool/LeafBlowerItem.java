@@ -86,6 +86,6 @@ public class LeafBlowerItem extends Item {
 
     @Override
     public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
-        return slotChanged || oldStack.getItem() != newStack.getItem();
+        return slotChanged;
     }
 }
