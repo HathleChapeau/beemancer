@@ -8,9 +8,13 @@
  * ------------------------------------------------------------
  * | Dépendance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
- * | HoneyLampBlockEntity    | BlockEntity associé  | Gestion du tank fluide         |
+ * | HoneyLampBlockEntity    | BlockEntity associé  | Luminosité dynamique + tank    |
  * | ApicaBlockEntities      | Registre BE          | Ticker                         |
  * ------------------------------------------------------------
+ *
+ * PATTERN: Create FluidTankBlock
+ * - getLightEmission() override lisant be.luminosity
+ * - Pas de lightLevel() dans les properties
  *
  * UTILISÉ PAR:
  * - ApicaBlocks (registre)
@@ -29,7 +33,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -82,15 +85,15 @@ public class HoneyLampBlock extends BaseEntityBlock {
     }
 
     /**
-     * Light level par état: OFF=0, HONEY=10, ROYAL_JELLY=13, NECTAR=15.
+     * Pattern Create FluidTankBlock: luminosité lue depuis le BlockEntity.
      */
-    public static int getLightLevel(BlockState state) {
-        return switch (state.getValue(LAMP_STATE)) {
-            case OFF -> 0;
-            case HONEY -> 16;
-            case ROYAL_JELLY -> 18;
-            case NECTAR -> 20;
-        };
+    @Override
+    public int getLightEmission(BlockState state, BlockGetter world, BlockPos pos) {
+        BlockEntity be = world.getBlockEntity(pos);
+        if (be instanceof HoneyLampBlockEntity lamp) {
+            return lamp.luminosity;
+        }
+        return 0;
     }
 
     @Nullable
@@ -112,7 +115,6 @@ public class HoneyLampBlock extends BaseEntityBlock {
         if (!level.isClientSide()) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof HoneyLampBlockEntity lamp) {
-                // Shift+right-click main vide = vider la lampe
                 if (player.isShiftKeyDown() && stack.isEmpty()) {
                     FluidStack drained = lamp.getFluidTank().drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
                     if (!drained.isEmpty()) {
@@ -130,6 +132,17 @@ public class HoneyLampBlock extends BaseEntityBlock {
             }
         }
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof HoneyLampBlockEntity lamp) {
+                lamp.removeAllHelpers();
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     /**
