@@ -40,16 +40,12 @@ public class CreativeTankBlockEntity extends HoneyTankBlockEntity {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, CreativeTankBlockEntity be) {
-        // Process bucket slot - peut changer le fluide infini
         be.processCreativeBucket();
 
         // Si on a un fluide infini, remplir au max
         if (!be.infiniteFluid.isEmpty()) {
             be.fluidTank.setFluid(new FluidStack(be.infiniteFluid.getFluid(), be.getCapacity()));
         }
-
-        // Appeler le tick parent pour le transfert vers le bas
-        HoneyTankBlockEntity.serverTick(level, pos, state, be);
     }
 
     private void processCreativeBucket() {

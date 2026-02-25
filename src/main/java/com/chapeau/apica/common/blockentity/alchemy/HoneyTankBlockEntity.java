@@ -10,7 +10,6 @@ import com.chapeau.apica.common.menu.alchemy.HoneyTankMenu;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -95,34 +94,7 @@ public class HoneyTankBlockEntity extends BlockEntity implements MenuProvider {
     public int getCapacity() { return fluidTank.getCapacity(); }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HoneyTankBlockEntity be) {
-        // Process bucket slot
         be.processBucketSlot();
-
-        // Transfer to block below (pattern atomique)
-        if (be.fluidTank.getFluidAmount() > 0) {
-            BlockEntity below = level.getBlockEntity(pos.below());
-            if (below != null) {
-                var cap = level.getCapability(
-                    net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK,
-                    pos.below(), Direction.UP);
-                if (cap != null && !be.fluidTank.isEmpty()) {
-                    // Calculer le transfert max possible
-                    int toTransferAmount = Math.min(100, be.fluidTank.getFluidAmount());
-                    FluidStack toTransfer = new FluidStack(be.fluidTank.getFluid().getFluid(), toTransferAmount);
-
-                    // Simuler d'abord pour connaitre la quantite acceptee
-                    int canFill = cap.fill(toTransfer, IFluidHandler.FluidAction.SIMULATE);
-                    if (canFill > 0) {
-                        // Transferer exactement ce qui sera accepte
-                        FluidStack actualTransfer = new FluidStack(be.fluidTank.getFluid().getFluid(), canFill);
-                        int filled = cap.fill(actualTransfer, IFluidHandler.FluidAction.EXECUTE);
-                        if (filled > 0) {
-                            be.fluidTank.drain(filled, IFluidHandler.FluidAction.EXECUTE);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     protected void processBucketSlot() {
