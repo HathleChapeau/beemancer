@@ -68,24 +68,24 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final ResourceLocation CHARGING2_TEXTURE =
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/leaf_blower_charging2.png");
 
-    // --- Overlay box (element 0 du Blockbench) en unites bloc (px / 16) ---
-    private static final float OVL_MIN_X = 9.75f / 16f;
-    private static final float OVL_MIN_Y = 11.75f / 16f;
-    private static final float OVL_MIN_Z = 1.5f / 16f;
-    private static final float OVL_MAX_X = 14.25f / 16f;
-    private static final float OVL_MAX_Y = 16.25f / 16f;
-    private static final float OVL_MAX_Z = 14.5f / 16f;
+    // --- Overlay box (element 0 du Blockbench, decale de -3,-7,-3) en unites bloc ---
+    private static final float OVL_MIN_X = 6.75f / 16f;
+    private static final float OVL_MIN_Y = 4.75f / 16f;
+    private static final float OVL_MIN_Z = -1.5f / 16f;
+    private static final float OVL_MAX_X = 11.25f / 16f;
+    private static final float OVL_MAX_Y = 9.25f / 16f;
+    private static final float OVL_MAX_Z = 11.5f / 16f;
 
-    // --- Bar boxes (elements 7-9) en unites bloc ---
-    private static final float BAR_MIN_X = 9f / 16f;
-    private static final float BAR_MIN_Y = 11f / 16f;
-    private static final float BAR_MAX_X = 15f / 16f;
-    private static final float BAR_MAX_Y = 17f / 16f;
-    // Bar 0: z=3-4 (front, ring 1, 1er pixel column)
-    // Bar 1: z=5-6 (milieu, ring 2, 2e pixel column)
-    // Bar 2: z=7-8 (proche handle, ring 3, 3e pixel column)
-    private static final float[] BAR_Z_MIN = { 3f / 16f, 5f / 16f, 7f / 16f };
-    private static final float[] BAR_Z_MAX = { 4f / 16f, 6f / 16f, 8f / 16f };
+    // --- Bar boxes (elements 7-9, decales de -3,-7,-3) en unites bloc ---
+    private static final float BAR_MIN_X = 6f / 16f;
+    private static final float BAR_MIN_Y = 4f / 16f;
+    private static final float BAR_MAX_X = 12f / 16f;
+    private static final float BAR_MAX_Y = 10f / 16f;
+    // Bar 0: z=0-1 (front, ring 1, 1er pixel column)
+    // Bar 1: z=2-3 (milieu, ring 2, 2e pixel column)
+    // Bar 2: z=4-5 (proche handle, ring 3, 3e pixel column)
+    private static final float[] BAR_Z_MIN = { 0f / 16f, 2f / 16f, 4f / 16f };
+    private static final float[] BAR_Z_MAX = { 1f / 16f, 3f / 16f, 5f / 16f };
     // UV U ranges per bar (1 pixel column par ring dans l'atlas 3px wide)
     private static final float[] BAR_U0 = { 0f, 1f / 3f, 2f / 3f };
     private static final float[] BAR_U1 = { 1f / 3f, 2f / 3f, 1f };
