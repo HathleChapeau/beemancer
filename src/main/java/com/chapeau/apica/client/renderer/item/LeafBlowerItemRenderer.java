@@ -22,6 +22,7 @@ package com.chapeau.apica.client.renderer.item;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.chapeau.apica.common.item.tool.LeafBlowerItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -96,9 +97,6 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float BAR_PIXEL_V = 1f / 12f;
 
     private static final int TOTAL_FRAMES = 13;
-    private static final int CHARGE_TIER1_TICKS = 15;
-    private static final int CHARGE_TIER2_TICKS = 30;
-    private static final int CHARGE_TIER3_TICKS = 45;
 
     // Animation state (client-side)
     private int currentFrame = 0;
@@ -159,7 +157,7 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
 
         Minecraft mc = Minecraft.getInstance();
         boolean isCharging = mc.player != null && mc.player.isUsingItem()
-            && mc.player.getUseItem().getItem() instanceof com.chapeau.apica.common.item.tool.LeafBlowerItem;
+            && mc.player.getUseItem().getItem() instanceof LeafBlowerItem;
 
         if (isCharging) {
             if (currentFrame < TOTAL_FRAMES - 1) currentFrame++;
@@ -268,13 +266,13 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private int getChargeLevel() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || !mc.player.isUsingItem()) return 0;
-        if (!(mc.player.getUseItem().getItem() instanceof com.chapeau.apica.common.item.tool.LeafBlowerItem)) {
+        if (!(mc.player.getUseItem().getItem() instanceof LeafBlowerItem)) {
             return 0;
         }
         int useTicks = mc.player.getTicksUsingItem();
-        if (useTicks >= CHARGE_TIER3_TICKS) return 3;
-        if (useTicks >= CHARGE_TIER2_TICKS) return 2;
-        if (useTicks >= CHARGE_TIER1_TICKS) return 1;
+        if (useTicks >= LeafBlowerItem.CHARGE_TIER3) return 3;
+        if (useTicks >= LeafBlowerItem.CHARGE_TIER2) return 2;
+        if (useTicks >= LeafBlowerItem.CHARGE_TIER1) return 1;
         return 0;
     }
 
