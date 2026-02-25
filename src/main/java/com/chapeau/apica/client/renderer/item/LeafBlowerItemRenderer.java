@@ -90,11 +90,11 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float[] BAR_U0 = { 0f, 1f / 3f, 2f / 3f };
     private static final float[] BAR_U1 = { 1f / 3f, 2f / 3f, 1f };
 
-    // UV V ranges dans l'atlas 3x12: bleu (inactif) en haut, jaune (actif) en bas
+    // UV V ranges dans l'atlas 3x12: bleu (inactif) rows 0-2, jaune (actif) rows 6-8
     private static final float BAR_V_INACTIVE_0 = 0f;
-    private static final float BAR_V_INACTIVE_1 = 0.5f;
+    private static final float BAR_V_INACTIVE_1 = 0.25f;
     private static final float BAR_V_ACTIVE_0 = 0.5f;
-    private static final float BAR_V_ACTIVE_1 = 1.0f;
+    private static final float BAR_V_ACTIVE_1 = 0.75f;
 
     private static final int TOTAL_FRAMES = 13;
     private static final int CHARGE_TIER2_TICKS = 20;
@@ -197,15 +197,15 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
             OVL_MIN_X, OVL_MAX_Y, OVL_MAX_Z,
             OVL_MAX_X, OVL_MAX_Y, OVL_MAX_Z,
             OVL_MAX_X, OVL_MAX_Y, OVL_MIN_Z,
-            u0, v0, u1, v0, u1, v1, u0, v1, 0, 1, 0, packedLight, overlay);
+            u1, v1, u0, v1, u0, v0, u1, v0, 0, 1, 0, packedLight, overlay);
 
-        // Down (Y-) — rotation 270, V inverse pour matcher la direction de charge
+        // Down (Y-) — rotation 180
         quad4(vc, pose,
             OVL_MIN_X, OVL_MIN_Y, OVL_MAX_Z,
             OVL_MIN_X, OVL_MIN_Y, OVL_MIN_Z,
             OVL_MAX_X, OVL_MIN_Y, OVL_MIN_Z,
             OVL_MAX_X, OVL_MIN_Y, OVL_MAX_Z,
-            u1, v1, u0, v1, u0, v0, u1, v0, 0, -1, 0, packedLight, overlay);
+            u0, v0, u1, v0, u1, v1, u0, v1, 0, -1, 0, packedLight, overlay);
     }
 
     /**
@@ -243,12 +243,12 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
         quad(vc, pose, x0, y0, z1, x0, y1, z0, u0, v1, u0, v0, u1, v0, u1, v1, -1, 0, 0, light, overlay);
         // East (X+)
         quad(vc, pose, x1, y0, z0, x1, y1, z1, u0, v1, u0, v0, u1, v0, u1, v1, 1, 0, 0, light, overlay);
-        // Up (Y+)
+        // Up (Y+) — UV rotated 90: gradient (V) along X, column (U) along Z
         quad4(vc, pose, x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0,
-            u0, v0, u0, v1, u1, v1, u1, v0, 0, 1, 0, light, overlay);
-        // Down (Y-)
+            v0, u0, v0, u1, v1, u1, v1, u0, 0, 1, 0, light, overlay);
+        // Down (Y-) — UV rotated 90: gradient (V) along X, column (U) along Z
         quad4(vc, pose, x0, y0, z1, x0, y0, z0, x1, y0, z0, x1, y0, z1,
-            u0, v0, u0, v1, u1, v1, u1, v0, 0, -1, 0, light, overlay);
+            v0, u1, v0, u0, v1, u0, v1, u1, 0, -1, 0, light, overlay);
     }
 
     private int getChargeLevel() {
