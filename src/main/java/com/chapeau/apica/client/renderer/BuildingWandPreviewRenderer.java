@@ -136,6 +136,7 @@ public class BuildingWandPreviewRenderer {
     private static void renderBlockOutline(PoseStack poseStack, VertexConsumer buffer,
                                             BlockPos pos, float r, float g, float b, float a) {
         double offset = 0.002;
+        double offsetD = offset * 2;
 
         double x = pos.getX() + offset;
         double y = pos.getY() + offset;
@@ -144,7 +145,7 @@ public class BuildingWandPreviewRenderer {
         LevelRenderer.renderLineBox(
             poseStack, buffer,
             x, y, z,
-            x + 1 - offset, y + 1 - offset, z + 1 - offset,
+            x + 1 - offsetD, y + 1 - offsetD, z + 1 - offsetD,
             r, g, b, a
         );
     }
