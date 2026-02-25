@@ -87,9 +87,9 @@ public class HoneyLampBlock extends BaseEntityBlock {
     public static int getLightLevel(BlockState state) {
         return switch (state.getValue(LAMP_STATE)) {
             case OFF -> 0;
-            case HONEY -> 10;
-            case ROYAL_JELLY -> 13;
-            case NECTAR -> 15;
+            case HONEY -> 16;
+            case ROYAL_JELLY -> 18;
+            case NECTAR -> 20;
         };
     }
 

@@ -1,3 +1,4 @@
 {
-  "parent": "apica:block/storage/storage_relay"
+  "parent": "apica:block/storage/storage_relay",
+  "gui_light": "front"
 }
