@@ -91,7 +91,7 @@ public class HoneyLampBlock extends BaseEntityBlock {
     public int getLightEmission(BlockState state, BlockGetter world, BlockPos pos) {
         BlockEntity be = world.getBlockEntity(pos);
         if (be instanceof HoneyLampBlockEntity lamp) {
-            return lamp.luminosity;
+            return lamp.getLuminosity();
         }
         return 0;
     }

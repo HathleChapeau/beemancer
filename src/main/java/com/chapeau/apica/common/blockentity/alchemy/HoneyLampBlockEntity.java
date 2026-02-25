@@ -76,6 +76,8 @@ public class HoneyLampBlockEntity extends BlockEntity {
     /** Luminosité dynamique lue par HoneyLampBlock.getLightEmission() — pattern Create */
     protected int luminosity;
 
+    public int getLuminosity() { return luminosity; }
+
     public HoneyLampBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.HONEY_LAMP.get(), pos, state);
         this.fluidTank = new FluidTank(CAPACITY) {
@@ -277,8 +279,8 @@ public class HoneyLampBlockEntity extends BlockEntity {
             }
         }
 
-        // Pattern Create: forcer le light engine à recalculer si luminosity a changé
-        if (luminosity != prevLum && level != null) {
+        // Pattern Create: forcer le light engine client à recalculer si luminosity a changé
+        if (luminosity != prevLum && level != null && level.isClientSide()) {
             level.getChunkSource()
                     .getLightEngine()
                     .checkBlock(worldPosition);
