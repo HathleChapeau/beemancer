@@ -32,6 +32,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
@@ -47,7 +48,10 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
  * Renderer world-space pour le rayon du Mining Laser.
  * Dessine 2 quads billboard croisés (formant un X vu de face) de l'origine
  * à la destination, avec un core lumineux fin et un glow large semi-transparent.
- * Gère la distinction first-person / third-person pour l'origine du rayon.
+ *
+ * Origine du rayon :
+ * - First-person : caméra + offset latéral (gauche/droite selon la main qui tient l'arme)
+ * - Third-person : pointe du canon (position joueur + offset pour simuler le bout de l'arme)
  */
 @OnlyIn(Dist.CLIENT)
 public class MiningLaserBeamRenderer {
@@ -77,7 +81,8 @@ public class MiningLaserBeamRenderer {
         Vec3 camPos = camera.getPosition();
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(true);
 
-        Vec3 origin = computeBeamOrigin(player, camera, partialTick);
+        InteractionHand laserHand = getLaserHand(player);
+        Vec3 origin = computeBeamOrigin(player, camera, partialTick, laserHand);
         Vec3 destination = computeBeamDestination(player, partialTick);
 
         PoseStack poseStack = event.getPoseStack();
@@ -103,34 +108,57 @@ public class MiningLaserBeamRenderer {
 
     /**
      * Vérifie si le joueur local tire activement le laser (jauge pleine).
+     * Fonctionne à tous les niveaux de charge (y compris 0).
      */
     private static boolean isLaserFiring(Player player) {
         if (!player.isUsingItem()) return false;
         if (!(player.getUseItem().getItem() instanceof MiningLaserItem)) return false;
-        int chargeLevel = MiningLaserItem.getChargeLevel(player.getUseItem());
-        if (chargeLevel <= 0) return false;
         return player.getTicksUsingItem() >= MiningLaserItem.CHARGE_TICKS;
     }
 
     /**
-     * Calcule l'origine du rayon selon le mode caméra.
+     * Détermine dans quelle main le joueur tient le laser.
      */
-    private static Vec3 computeBeamOrigin(Player player, Camera camera, float partialTick) {
+    private static InteractionHand getLaserHand(Player player) {
+        if (player.getMainHandItem().getItem() instanceof MiningLaserItem) {
+            return InteractionHand.MAIN_HAND;
+        }
+        return InteractionHand.OFF_HAND;
+    }
+
+    /**
+     * Calcule l'origine du rayon selon le mode caméra et la main.
+     *
+     * First-person : caméra + offset latéral selon la main (gauche/droite)
+     * Third-person : position du joueur + offset pour simuler la pointe du canon
+     */
+    private static Vec3 computeBeamOrigin(Player player, Camera camera, float partialTick,
+                                           InteractionHand laserHand) {
         Minecraft mc = Minecraft.getInstance();
+        Vec3 look = player.getViewVector(partialTick);
+        Vec3 up = new Vec3(0, 1, 0);
+        Vec3 right = look.cross(up).normalize();
+
+        // Déterminer le côté (gauche/droite) selon la main et le réglage mainHand
+        boolean isMainRight = mc.options.mainHand().get() == HumanoidArm.RIGHT;
+        boolean isRightSide = (laserHand == InteractionHand.MAIN_HAND) == isMainRight;
+        float sideSign = isRightSide ? 1.0f : -1.0f;
 
         if (mc.options.getCameraType() == CameraType.FIRST_PERSON) {
             Vec3 camBase = camera.getPosition();
-            Vec3 look = player.getViewVector(partialTick);
-            Vec3 right = look.cross(new Vec3(0, 1, 0)).normalize();
-
-            boolean isRightHand = mc.options.mainHand().get() == HumanoidArm.RIGHT;
-            float sideOffset = isRightHand ? 0.3f : -0.3f;
-            return camBase.add(right.scale(sideOffset)).add(0, -0.15, 0).add(look.scale(0.5));
+            float sideOffset = sideSign * 0.35f;
+            return camBase
+                    .add(right.scale(sideOffset))
+                    .add(0, -0.15, 0)
+                    .add(look.scale(0.6));
         }
 
-        Vec3 eyePos = player.getEyePosition(partialTick);
-        Vec3 look = player.getViewVector(partialTick);
-        return eyePos.add(look.scale(0.5));
+        // Third-person : pointe du canon relative au joueur
+        Vec3 bodyPos = player.getPosition(partialTick).add(0, 1.2, 0);
+        float sideOffset = sideSign * 0.4f;
+        return bodyPos
+                .add(right.scale(sideOffset))
+                .add(look.scale(1.2));
     }
 
     /**
@@ -155,14 +183,13 @@ public class MiningLaserBeamRenderer {
 
     /**
      * Dessine 2 quads croisés (X shape) entre origin et destination.
-     * Les quads sont orientés perpendiculairement au rayon et à la caméra.
      */
     private static void renderBeamQuads(PoseStack poseStack, MultiBufferSource buffer,
                                          Vec3 origin, Vec3 destination, Vec3 camPos,
                                          float halfWidth, float r, float g, float b, float a) {
         VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(BEAM_TEXTURE));
         int overlay = OverlayTexture.NO_OVERLAY;
-        int light = 15728880; // Full bright
+        int light = 15728880;
         PoseStack.Pose pose = poseStack.last();
 
         Vec3 beamDir = destination.subtract(origin);
@@ -199,7 +226,6 @@ public class MiningLaserBeamRenderer {
         Vec3 p2 = destination.subtract(perpOffset);
         Vec3 p3 = destination.add(perpOffset);
 
-        // Normale : perpOffset normalisé
         Vec3 norm = perpOffset.normalize();
 
         vc.addVertex(pose, (float) p0.x, (float) p0.y, (float) p0.z)

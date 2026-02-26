@@ -38,14 +38,15 @@ import net.minecraft.world.level.Level;
 /**
  * Mining Laser — arme chargeable inspirée du Leaf Blower.
  *
- * Mécanique de charge en 2 étapes :
- * 1. Double right-click : cycle le niveau de charge (0→1→2→3→4→0), chaque niveau allume un anneau
+ * Mécanique :
+ * 1. Double right-click : cycle le niveau de charge (0→1→2→3→0), affecte le rayon AoE
  * 2. Hold right-click : charge la jauge (animation overlay comme leaf blower)
  * 3. Jauge pleine : le laser tire en continu (1 tir / 5 ticks) tant que le joueur hold
+ * 4. L'arme fonctionne à tous les niveaux, y compris 0 (tir sans AoE)
  */
 public class MiningLaserItem extends Item {
 
-    /** Nombre de ticks pour atteindre la pleine charge (identique aux tiers leaf blower) */
+    /** Nombre de ticks pour atteindre la pleine charge */
     public static final int CHARGE_TICKS = 40;
 
     /** Intervalle entre chaque tir en mode continu (en ticks) */
@@ -54,8 +55,8 @@ public class MiningLaserItem extends Item {
     /** Portée maximale du laser en blocs */
     public static final int MAX_RANGE = 32;
 
-    /** Nombre max de niveaux de charge (4 anneaux) */
-    public static final int MAX_CHARGE_LEVEL = 4;
+    /** Nombre max de niveaux de charge (3 barres) */
+    public static final int MAX_CHARGE_LEVEL = 3;
 
     /** Fenêtre de double-click en ticks */
     private static final int DOUBLE_CLICK_WINDOW = 10;
@@ -85,22 +86,13 @@ public class MiningLaserItem extends Item {
                         SoundSource.PLAYERS, 0.8f, pitch);
             }
 
-            if (next > 0) {
-                player.startUsingItem(hand);
-                return InteractionResultHolder.consume(stack);
-            }
-            return InteractionResultHolder.success(stack);
-        }
-
-        setLastClickTick(stack, gameTime);
-
-        int chargeLevel = getChargeLevel(stack);
-        if (chargeLevel > 0) {
             player.startUsingItem(hand);
             return InteractionResultHolder.consume(stack);
         }
 
-        return InteractionResultHolder.pass(stack);
+        setLastClickTick(stack, gameTime);
+        player.startUsingItem(hand);
+        return InteractionResultHolder.consume(stack);
     }
 
     @Override
@@ -135,14 +127,15 @@ public class MiningLaserItem extends Item {
 
     /**
      * Server-side : tir continu une fois la jauge pleine.
+     * Fonctionne à tous les niveaux de charge (0 inclus).
+     * Le chargeLevel détermine le rayon AoE (0=single, 1=r1, 2=r2, 3=r3).
      */
     private void onServerUseTick(ServerLevel level, Player player, ItemStack stack,
                                   int useTicks, int chargeLevel) {
         if (useTicks < CHARGE_TICKS) return;
-        if (chargeLevel <= 0) return;
 
         if ((useTicks - CHARGE_TICKS) % FIRE_INTERVAL == 0) {
-            MiningLaserBlockBreaker.tryBreakBlock(level, player, MAX_RANGE);
+            MiningLaserBlockBreaker.tryBreakBlock(level, player, MAX_RANGE, chargeLevel);
 
             float pitch = 0.8f + level.random.nextFloat() * 0.4f;
             level.playSound(null, player.blockPosition(), SoundEvents.BREEZE_WIND_CHARGE_BURST.value(),

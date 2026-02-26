@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [MiningLaserItemRenderer.java]
- * Description: BEWLR pour le Mining Laser — rendu 3D avec charge bars, rings et halo
+ * Description: BEWLR pour le Mining Laser — rendu 3D avec charge bars et halo sprite
  * ============================================================
  *
  * DÉPENDANCES:
@@ -11,7 +11,6 @@
  * | AnimationTimer          | Temps client         | Tracking frame animation       |
  * | BakedModel              | Modèle 3D body       | Rendu statique via putBulkData |
  * | MiningLaserItem         | Détection item       | Lecture chargeLevel            |
- * | MiningLaserRingOverlay  | Géométrie ring       | Rendu des anneaux rotatifs     |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -45,12 +44,11 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
- * BEWLR pour le Mining Laser. Rendu hybride en 5 couches :
+ * BEWLR pour le Mining Laser. Rendu hybride en 4 couches :
  * 1. Body statique (baked model via putBulkData)
  * 2. Charging overlay (quads manuels avec UV dynamique, 13 frames scrolling)
- * 3. Charge bars (4 barres : off/on selon chargeLevel stocké dans CustomData)
- * 4. Ring particles géométriques (rotation continue autour des anneaux actifs)
- * 5. Halo sprite (quad billboard au bout du canon, rotation continue)
+ * 3. Charge bars (3 barres : off/on selon chargeLevel stocké dans CustomData)
+ * 4. Halo sprite (quad billboard au bout du canon, rotation continue, toujours visible en main)
  */
 @OnlyIn(Dist.CLIENT)
 public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
@@ -64,15 +62,11 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final ResourceLocation CHARGING1_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/mining_laser_charging1.png");
 
-    /** Texture des barres indicatrices (atlas 4 colonnes × 5 états) */
+    /** Texture des barres indicatrices (atlas 3 colonnes × 2 états) */
     private static final ResourceLocation CHARGING2_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/mining_laser_charging2.png");
 
-    /** Texture ring pour les anneaux géométriques */
-    private static final ResourceLocation RING_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/ring.png");
-
-    /** Texture halo pour le sprite au bout du canon */
+    /** Texture halo pour le sprite au bout du canon (tourne en continu) */
     private static final ResourceLocation HALO_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/halo.png");
 
@@ -84,27 +78,26 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float OVL_MAX_Y = 9.25f / 16f;
     private static final float OVL_MAX_Z = 11.5f / 16f;
 
-    // --- 4 Bar boxes (positions Z pour les 4 anneaux) ---
+    // --- 3 Bar boxes (identique leaf blower) ---
     private static final float BAR_MIN_X = 6f / 16f;
     private static final float BAR_MIN_Y = 4f / 16f;
     private static final float BAR_MAX_X = 12f / 16f;
     private static final float BAR_MAX_Y = 10f / 16f;
-    private static final float[] BAR_Z_MIN = {-0.5f / 16f, 1f / 16f, 2.5f / 16f, 4f / 16f};
-    private static final float[] BAR_Z_MAX = {0.5f / 16f, 2f / 16f, 3.5f / 16f, 5f / 16f};
-    // Centre Y/X pour les ring overlays (milieu du body)
-    private static final float RING_CENTER_X = (BAR_MIN_X + BAR_MAX_X) / 2f;
-    private static final float RING_CENTER_Y = (BAR_MIN_Y + BAR_MAX_Y) / 2f;
+    private static final float[] BAR_Z_MIN = {0f / 16f, 2f / 16f, 4f / 16f};
+    private static final float[] BAR_Z_MAX = {1f / 16f, 3f / 16f, 5f / 16f};
+    private static final float[] BAR_U0 = {0f, 1f / 3f, 2f / 3f};
+    private static final float[] BAR_U1 = {1f / 3f, 2f / 3f, 1f};
 
-    // UV per bar (4 colonnes dans l'atlas)
-    private static final float[] BAR_U0 = {0f, 0.25f, 0.5f, 0.75f};
-    private static final float[] BAR_U1 = {0.25f, 0.5f, 0.75f, 1f};
-
-    // Atlas 4 colonnes × 5 états : chaque état = 1/5 de la hauteur V
-    // État 0 = off, états 1-4 = chaque niveau de charge
-    private static final float BAR_STATE_V_SIZE = 0.2f;
-    private static final float BAR_PIXEL_V = 1f / 15f;
+    // Atlas 3x12: 4 états de 3 rows (identique leaf blower)
+    private static final float BAR_STATE_V_SIZE = 0.25f;
+    private static final float BAR_PIXEL_V = 1f / 12f;
 
     private static final int TOTAL_FRAMES = 13;
+
+    // Halo position (devant le canon, centre du body en XY)
+    private static final float HALO_X = (BAR_MIN_X + BAR_MAX_X) / 2f;
+    private static final float HALO_Y = (BAR_MIN_Y + BAR_MAX_Y) / 2f;
+    private static final float HALO_Z = -2f / 16f;
 
     // Animation state
     private int currentFrame = 0;
@@ -132,8 +125,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             chargeLevel = getItemChargeLevel();
             renderChargingOverlay(poseStack, buffer, packedLight);
             renderChargeBars(poseStack, buffer, packedLight, chargeLevel);
-            renderRingEffects(poseStack, buffer, packedLight, chargeLevel);
-            renderHaloEffect(poseStack, buffer, packedLight, chargeLevel);
+            renderHaloSprite(poseStack, buffer);
         } else {
             chargeLevel = MiningLaserItem.getChargeLevel(stack);
             renderChargingOverlay(poseStack, buffer, packedLight, 0);
@@ -229,7 +221,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     }
 
     // =========================================================================
-    // Charge bars (4 anneaux)
+    // Charge bars (3 barres, identique leaf blower)
     // =========================================================================
 
     private void renderChargeBars(PoseStack poseStack, MultiBufferSource buffer,
@@ -238,12 +230,11 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
 
-        for (int i = 0; i < 4; i++) {
-            // Chaque anneau s'allume si chargeLevel > i
-            int state = (chargeLevel > i) ? 1 : 0;
-            float bv0 = state * BAR_STATE_V_SIZE;
-            float bv1 = bv0 + BAR_STATE_V_SIZE;
+        int state = Math.min(chargeLevel, 3);
+        float bv0 = state * BAR_STATE_V_SIZE;
+        float bv1 = bv0 + BAR_STATE_V_SIZE;
 
+        for (int i = 0; i < 3; i++) {
             renderBarBox(vc, pose,
                     BAR_MIN_X, BAR_MIN_Y, BAR_Z_MIN[i],
                     BAR_MAX_X, BAR_MAX_Y, BAR_Z_MAX[i],
@@ -272,66 +263,31 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     }
 
     // =========================================================================
-    // Ring effects (géométrie anneau autour des anneaux actifs)
+    // Halo sprite (toujours visible en main, tourne sur lui-même au bout du canon)
     // =========================================================================
 
-    private void renderRingEffects(PoseStack poseStack, MultiBufferSource buffer,
-                                    int packedLight, int chargeLevel) {
-        if (chargeLevel <= 0) return;
-
-        float time = AnimationTimer.getRenderTime(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
-
-        for (int i = 0; i < Math.min(chargeLevel, 4); i++) {
-            float centerZ = (BAR_Z_MIN[i] + BAR_Z_MAX[i]) / 2f;
-            float rotation = time * (0.8f + i * 0.2f);
-            MiningLaserRingOverlay.renderRing(poseStack, buffer, 15728880,
-                    RING_CENTER_X, RING_CENTER_Y, centerZ,
-                    rotation, RING_TEXTURE);
-        }
-    }
-
-    // =========================================================================
-    // Halo effect (quad billboard au bout du canon)
-    // =========================================================================
-
-    private void renderHaloEffect(PoseStack poseStack, MultiBufferSource buffer,
-                                   int packedLight, int chargeLevel) {
-        if (chargeLevel <= 0) return;
-
-        Minecraft mc = Minecraft.getInstance();
-        boolean isFullyCharged = mc.player != null && mc.player.isUsingItem()
-                && mc.player.getUseItem().getItem() instanceof MiningLaserItem
-                && mc.player.getTicksUsingItem() >= MiningLaserItem.CHARGE_TICKS;
-
-        if (!isFullyCharged) return;
-
-        float time = AnimationTimer.getRenderTime(mc.getTimer().getGameTimeDeltaPartialTick(true));
-        float rotation = time * 2.0f;
+    private void renderHaloSprite(PoseStack poseStack, MultiBufferSource buffer) {
+        float time = AnimationTimer.getRenderTime(
+                Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+        float rotation = time * 1.5f;
         float size = 0.15f + 0.02f * (float) Math.sin(time * 0.5);
 
         VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(HALO_TEXTURE));
-        PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
 
-        // Position au bout du nozzle (z ~= -2/16 = avant du canon)
-        float hx = RING_CENTER_X;
-        float hy = RING_CENTER_Y;
-        float hz = -2f / 16f;
-
         poseStack.pushPose();
-        poseStack.translate(hx, hy, hz);
+        poseStack.translate(HALO_X, HALO_Y, HALO_Z);
         poseStack.mulPose(com.mojang.math.Axis.ZP.rotation(rotation));
 
-        // Quad billboard
-        PoseStack.Pose haloPose = poseStack.last();
-        vc.addVertex(haloPose, -size, -size, 0).setColor(1f, 1f, 0.8f, 0.7f)
-                .setUv(0, 1).setOverlay(overlay).setLight(15728880).setNormal(haloPose, 0, 0, 1);
-        vc.addVertex(haloPose, -size, size, 0).setColor(1f, 1f, 0.8f, 0.7f)
-                .setUv(0, 0).setOverlay(overlay).setLight(15728880).setNormal(haloPose, 0, 0, 1);
-        vc.addVertex(haloPose, size, size, 0).setColor(1f, 1f, 0.8f, 0.7f)
-                .setUv(1, 0).setOverlay(overlay).setLight(15728880).setNormal(haloPose, 0, 0, 1);
-        vc.addVertex(haloPose, size, -size, 0).setColor(1f, 1f, 0.8f, 0.7f)
-                .setUv(1, 1).setOverlay(overlay).setLight(15728880).setNormal(haloPose, 0, 0, 1);
+        PoseStack.Pose pose = poseStack.last();
+        vc.addVertex(pose, -size, -size, 0).setColor(1f, 1f, 0.8f, 0.7f)
+                .setUv(0, 1).setOverlay(overlay).setLight(15728880).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, -size, size, 0).setColor(1f, 1f, 0.8f, 0.7f)
+                .setUv(0, 0).setOverlay(overlay).setLight(15728880).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, size, size, 0).setColor(1f, 1f, 0.8f, 0.7f)
+                .setUv(1, 0).setOverlay(overlay).setLight(15728880).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, size, -size, 0).setColor(1f, 1f, 0.8f, 0.7f)
+                .setUv(1, 1).setOverlay(overlay).setLight(15728880).setNormal(pose, 0, 0, 1);
 
         poseStack.popPose();
     }
