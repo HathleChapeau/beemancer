@@ -50,7 +50,8 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
     // Cross geometry centered on the glass body [5,2,5]-[11,12,11]
     private static final float CX = 0.5f;
     private static final float CZ = 0.5f;
-    private static final float R = 0.5f;
+    // R calcule pour que la largeur diagonale (2R*sqrt2) = hauteur (Y_MAX-Y_MIN) → pixels carres
+    private static final float R = (Y_MAX - Y_MIN) / (2f * 1.4142f);
     private static final float Y_MIN = 0f;
     private static final float Y_MAX = 14f / 16f;
 
