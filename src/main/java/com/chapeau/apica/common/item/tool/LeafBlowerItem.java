@@ -49,6 +49,28 @@ public class LeafBlowerItem extends Item {
     }
 
     @Override
+    public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int remainingTicks) {
+        if (!(entity instanceof Player player)) return;
+
+        int useTicks = getUseDuration(stack, entity) - remainingTicks;
+        int currentLevel = getChargeLevel(useTicks);
+        int prevLevel = getChargeLevel(useTicks - 1);
+
+        // Son continu de charge (toutes les 4 ticks)
+        if (useTicks % 4 == 0) {
+            float pitch = 0.5f + currentLevel * 0.2f;
+            level.playSound(player, player.blockPosition(), SoundEvents.BREEZE_CHARGE.value(),
+                    SoundSource.PLAYERS, 0.3f, pitch);
+        }
+
+        // Son de gain de niveau de charge
+        if (currentLevel > prevLevel && currentLevel > 0) {
+            level.playSound(player, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP,
+                    SoundSource.PLAYERS, 0.5f, 0.7f + currentLevel * 0.3f);
+        }
+    }
+
+    @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
         if (level.isClientSide()) return;
         if (!(entity instanceof Player player)) return;
