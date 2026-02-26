@@ -103,7 +103,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     // Halo position (devant le canon, centre du body en XY)
     private static final float HALO_X = (BAR_MIN_X + BAR_MAX_X) / 2f;
     private static final float HALO_Y = (BAR_MIN_Y + BAR_MAX_Y) / 2f;
-    private static final float HALO_Z = -2f / 16f;
+    private static final float HALO_Z = -5f / 16f;
 
     // Animation state
     private int currentFrame = 0;
@@ -299,7 +299,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
         float time = AnimationTimer.getRenderTime(
                 Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
         float rotation = time * 1.5f;
-        float size = 0.15f + 0.02f * (float) Math.sin(time * 0.5);
+        float size = 0.30f + 0.04f * (float) Math.sin(time * 0.5);
 
         VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(HALO_TEXTURE));
         int overlay = OverlayTexture.NO_OVERLAY;
