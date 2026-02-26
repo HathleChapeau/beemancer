@@ -59,7 +59,7 @@ public class LeafBlowerItem extends Item {
         // Son continu de charge (toutes les 4 ticks)
         if (useTicks % 4 == 0) {
             float pitch = 0.5f + currentLevel * 0.2f;
-            level.playSound(player, player.blockPosition(), SoundEvents.BREEZE_CHARGE.value(),
+            level.playSound(player, player.blockPosition(), SoundEvents.BREEZE_CHARGE,
                     SoundSource.PLAYERS, 0.3f, pitch);
         }
 
