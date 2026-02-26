@@ -34,9 +34,9 @@ import net.minecraft.world.phys.Vec3;
 public class LeafBlowerItem extends Item {
 
     /** Tick thresholds: 0-14 = level 0 (no fire), 15-29 = level 1, 30-44 = level 2, 45+ = level 3 */
-    public static final int CHARGE_TIER1 = 15;
-    public static final int CHARGE_TIER2 = 30;
-    public static final int CHARGE_TIER3 = 45;
+    public static final int CHARGE_TIER1 = 10;
+    public static final int CHARGE_TIER2 = 25;
+    public static final int CHARGE_TIER3 = 40;
 
     public LeafBlowerItem(Properties properties) {
         super(properties);

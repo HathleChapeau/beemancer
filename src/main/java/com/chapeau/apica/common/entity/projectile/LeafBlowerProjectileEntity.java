@@ -50,7 +50,7 @@ public class LeafBlowerProjectileEntity extends ThrowableProjectile {
     private static final int[] PULSE_RADII = {3, 5, 7};
 
     /** Ticks between each pulse */
-    private static final int PULSE_INTERVAL = 20;
+    private static final int PULSE_INTERVAL = 10;
 
     private int pulseTimer = 0;
     private int currentPulse = 0;
