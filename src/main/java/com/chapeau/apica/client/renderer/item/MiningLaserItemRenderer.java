@@ -11,6 +11,7 @@
  * | AnimationTimer          | Temps client         | Tracking frame animation       |
  * | BakedModel              | Modèle 3D body       | Rendu statique via putBulkData |
  * | MiningLaserItem         | Détection item       | Lecture chargeLevel            |
+ * | MiningLaserRingOverlay  | Géométrie ring       | Anneaux autour des barres      |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -44,11 +45,12 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
- * BEWLR pour le Mining Laser. Rendu hybride en 4 couches :
+ * BEWLR pour le Mining Laser. Rendu hybride en 5 couches :
  * 1. Body statique (baked model via putBulkData)
  * 2. Charging overlay (quads manuels avec UV dynamique, 13 frames scrolling)
  * 3. Charge bars (3 barres : off/on selon chargeLevel stocké dans CustomData)
- * 4. Halo sprite (quad billboard au bout du canon, rotation continue, toujours visible en main)
+ * 4. Ring effects (anneaux géométriques rotatifs autour des barres actives)
+ * 5. Halo sprite (quad billboard au bout du canon, rotation continue, toujours visible en main)
  */
 @OnlyIn(Dist.CLIENT)
 public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
@@ -69,6 +71,10 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     /** Texture halo pour le sprite au bout du canon (tourne en continu) */
     private static final ResourceLocation HALO_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/halo.png");
+
+    /** Texture ring pour les anneaux géométriques autour des barres actives */
+    private static final ResourceLocation RING_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/ring.png");
 
     // --- Overlay box (identique leaf blower) ---
     private static final float OVL_MIN_X = 6.75f / 16f;
@@ -125,6 +131,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             chargeLevel = getItemChargeLevel();
             renderChargingOverlay(poseStack, buffer, packedLight);
             renderChargeBars(poseStack, buffer, packedLight, chargeLevel);
+            renderRingEffects(poseStack, buffer, packedLight, chargeLevel);
             renderHaloSprite(poseStack, buffer);
         } else {
             chargeLevel = MiningLaserItem.getChargeLevel(stack);
@@ -260,6 +267,28 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
         // Down (Y-)
         quad4(vc, pose, x0, y0, z1, x0, y0, z0, x1, y0, z0, x1, y0, z1,
                 u0, pxV, u0, v0, u1, v0, u1, pxV, 0, -1, 0, light, overlay);
+    }
+
+    // =========================================================================
+    // Ring effects (anneaux géométriques autour des barres actives)
+    // =========================================================================
+
+    private void renderRingEffects(PoseStack poseStack, MultiBufferSource buffer,
+                                    int packedLight, int chargeLevel) {
+        if (chargeLevel <= 0) return;
+
+        float time = AnimationTimer.getRenderTime(
+                Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
+
+        float centerX = (BAR_MIN_X + BAR_MAX_X) / 2f;
+        float centerY = (BAR_MIN_Y + BAR_MAX_Y) / 2f;
+
+        for (int i = 0; i < Math.min(chargeLevel, 3); i++) {
+            float centerZ = (BAR_Z_MIN[i] + BAR_Z_MAX[i]) / 2f;
+            float rotation = time * (1.2f + i * 0.3f);
+            MiningLaserRingOverlay.renderRing(poseStack, buffer, packedLight,
+                    centerX, centerY, centerZ, rotation, RING_TEXTURE);
+        }
     }
 
     // =========================================================================
