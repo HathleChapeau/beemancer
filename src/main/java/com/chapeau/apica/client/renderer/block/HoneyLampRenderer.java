@@ -53,7 +53,7 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
     private static final float Y_MIN = 0f;
     private static final float Y_MAX = 14f / 16f;
     // R calcule pour que la largeur diagonale (2R*sqrt2) = hauteur (Y_MAX-Y_MIN) → pixels carres
-    private static final float R = (Y_MAX - Y_MIN) / (2f * 1.4142f);
+    private static final float R = (Y_MAX - Y_MIN) / (2f * 1.4142f) * 1.5f;
 
     private static final int FULLBRIGHT = 0xF000F0;
 
