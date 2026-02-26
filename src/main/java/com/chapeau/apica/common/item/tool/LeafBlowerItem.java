@@ -67,7 +67,7 @@ public class LeafBlowerItem extends Item {
         // Son de gain de niveau de charge
         if (currentLevel > prevLevel && currentLevel > 0) {
             level.playLocalSound(player.blockPosition(), SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(),
-                    SoundSource.PLAYERS, 0.5f, 0.2f + currentLevel * 0.2f, false);
+                    SoundSource.PLAYERS, 1f, 0.7f + currentLevel * 0.15f, false);
         }
     }
 
