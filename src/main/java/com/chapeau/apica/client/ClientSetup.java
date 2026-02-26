@@ -30,6 +30,7 @@ import com.chapeau.apica.client.gui.screen.alchemy.PoweredCentrifugeScreen;
 import com.chapeau.apica.client.gui.screen.storage.NetworkInterfaceScreen;
 import com.chapeau.apica.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer;
+import com.chapeau.apica.client.renderer.MiningLaserBeamRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableStatsRenderer;
 import com.chapeau.apica.client.renderer.block.ApiRenderer;
@@ -48,6 +49,8 @@ import com.chapeau.apica.client.renderer.block.ResonatorRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyTankRenderer;
 import com.chapeau.apica.client.renderer.block.IncubatorRenderer;
 import com.chapeau.apica.client.particle.HoneyPixelParticle;
+import com.chapeau.apica.client.particle.LaserHaloParticle;
+import com.chapeau.apica.client.particle.LaserRingParticle;
 import com.chapeau.apica.client.particle.RuneParticle;
 import com.chapeau.apica.core.registry.ApicaParticles;
 import com.chapeau.apica.client.renderer.block.MultiblockTankRenderer;
@@ -66,6 +69,7 @@ import com.chapeau.apica.client.renderer.layer.BeeElytraLayer;
 import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer;
 import com.chapeau.apica.client.renderer.item.LeafBlowerItemRenderer;
+import com.chapeau.apica.client.renderer.item.MiningLaserItemRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
@@ -113,6 +117,7 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> AnimationTimer.tick());
 
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
+        NeoForge.EVENT_BUS.register(MiningLaserBeamRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
         NeoForge.EVENT_BUS.register(DebugKeyHandler.class);
         NeoForge.EVENT_BUS.register(BeeDebugRenderer.class);
@@ -361,6 +366,44 @@ public class ClientSetup {
             }
         }, ApicaItems.LEAF_BLOWER.get());
 
+        // Mining Laser - render 3D model + charging animation overlay + rings + beam + no equip bob
+        event.registerItem(new IClientItemExtensions() {
+            private MiningLaserItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new MiningLaserItemRenderer();
+                }
+                return renderer;
+            }
+
+            @Override
+            public boolean applyForgeHandTransform(
+                    com.mojang.blaze3d.vertex.PoseStack poseStack,
+                    net.minecraft.client.player.LocalPlayer player,
+                    net.minecraft.world.entity.HumanoidArm arm,
+                    net.minecraft.world.item.ItemStack itemInHand,
+                    float partialTick, float equipProcess, float swingProcess) {
+                int side = arm == net.minecraft.world.entity.HumanoidArm.RIGHT ? 1 : -1;
+                if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0) {
+                    poseStack.translate((float) side * 0.56F, -0.52F, -0.72F);
+                } else {
+                    float sqrtSwing = net.minecraft.util.Mth.sqrt(swingProcess);
+                    float f5 = -0.4F * net.minecraft.util.Mth.sin(sqrtSwing * (float) Math.PI);
+                    float f6 = 0.2F * net.minecraft.util.Mth.sin(sqrtSwing * (float) (Math.PI * 2));
+                    float f10 = -0.2F * net.minecraft.util.Mth.sin(swingProcess * (float) Math.PI);
+                    poseStack.translate((float) side * f5, f6, f10);
+                    poseStack.translate((float) side * 0.56F, -0.52F, -0.72F);
+                    float f = net.minecraft.util.Mth.sin(swingProcess * swingProcess * (float) Math.PI);
+                    float f1 = net.minecraft.util.Mth.sin(sqrtSwing * (float) Math.PI);
+                    poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees((float) side * f1 * 70.0F));
+                    poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees((float) side * f * -20.0F));
+                }
+                return true;
+            }
+        }, ApicaItems.MINING_LASER.get());
+
         // --- Fluid Extensions ---
         registerFluidExtension(event, ApicaFluids.HONEY_FLUID_TYPE,
             //"block/fluid/honey_still", "block/fluid/honey_flow", 0xFFFFFFFF);
@@ -413,6 +456,8 @@ public class ClientSetup {
     private static void registerParticleProviders(final RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ApicaParticles.HONEY_PIXEL.get(), HoneyPixelParticle.Provider::new);
         event.registerSpriteSet(ApicaParticles.RUNE.get(), RuneParticle.Provider::new);
+        event.registerSpriteSet(ApicaParticles.LASER_RING.get(), LaserRingParticle.Provider::new);
+        event.registerSpriteSet(ApicaParticles.LASER_HALO.get(), LaserHaloParticle.Provider::new);
     }
 
     // =========================================================================
@@ -525,6 +570,9 @@ public class ClientSetup {
 
         // Leaf Blower 3D body model (rendu par BEWLR)
         event.register(LeafBlowerItemRenderer.BODY_MODEL_LOC);
+
+        // Mining Laser 3D body model (rendu par BEWLR)
+        event.register(MiningLaserItemRenderer.BODY_MODEL_LOC);
 
         // Modèles multiblock tank
         event.register(MultiblockTankRenderer.FORMED_MODEL_LOC);  // Formé (scalé)

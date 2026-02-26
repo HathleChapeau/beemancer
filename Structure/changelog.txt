@@ -3,6 +3,21 @@
 ################################################################################
 
 ================================================================================
+2026-02-26 - Mining Laser
+================================================================================
+
+Nouvel item Mining Laser — arme chargeable qui tire un rayon laser continu:
+- MiningLaserItem: double right-click cycle chargeLevel (0→4), hold charge jauge, tir continu 1/5 ticks
+- MiningLaserBlockBreaker: raycast + destroy bloc (hardness 0-50, portée 32 blocs)
+- MiningLaserItemRenderer: BEWLR 5 couches (body + overlay + 4 barres + rings géométriques + halo)
+- MiningLaserRingOverlay: géométrie anneau 12 quads rotatifs dans l'espace item
+- MiningLaserBeamRenderer: rayon world-space (2 quads billboard croisés, core + glow, RenderLevelStageEvent)
+- LaserRingParticle + LaserHaloParticle: particules world-space (rotation continue, full bright, fade out)
+- Registres: ApicaItems (+mining_laser), ApicaParticles (+laser_ring, +laser_halo)
+- ClientSetup: +BEWLR, +additional model, +particle providers, +beam renderer event bus
+- Assets: models/item/mining_laser*.json, textures mining_laser_*.png, particles laser_*.json
+
+================================================================================
 2026-02-25 - Leaf Blower 3D BEWLR
 ================================================================================
 

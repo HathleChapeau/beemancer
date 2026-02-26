@@ -24,6 +24,7 @@ import com.chapeau.apica.common.item.BeeElytraItem;
 import com.chapeau.apica.common.item.NectarBreadItem;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
 import com.chapeau.apica.common.item.tool.LeafBlowerItem;
+import com.chapeau.apica.common.item.tool.MiningLaserItem;
 import net.minecraft.world.food.FoodProperties;
 import com.chapeau.apica.common.item.tool.ScoopItem;
 import net.minecraft.world.item.BlockItem;
@@ -402,6 +403,9 @@ public class ApicaItems {
 
     public static final DeferredItem<LeafBlowerItem> LEAF_BLOWER = ITEMS.register("leaf_blower",
             () -> new LeafBlowerItem(new Item.Properties().stacksTo(1)));
+
+    public static final DeferredItem<MiningLaserItem> MINING_LASER = ITEMS.register("mining_laser",
+            () -> new MiningLaserItem(new Item.Properties().stacksTo(1)));
 
     // --- EQUIPMENT ---
     public static final DeferredItem<BeeElytraItem> BEE_ELYTRA = ITEMS.register("bee_elytra",

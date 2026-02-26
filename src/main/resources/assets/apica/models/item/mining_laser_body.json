@@ -1,0 +1,109 @@
+{
+  "textures": {
+    "0": "apica:item/artifacts/mining_laser_body",
+    "particle": "apica:item/artifacts/mining_laser_body"
+  },
+  "elements": [
+    {
+      "name": "body_main",
+      "from": [6.5, 4.5, -2],
+      "to": [11.5, 9.5, 10],
+      "faces": {
+        "north": {"uv": [0, 0, 5, 5], "texture": "#0"},
+        "east": {"uv": [4, 0, 16, 5], "rotation": 180, "texture": "#0"},
+        "south": {"uv": [0, 0, 5, 5], "texture": "#0"},
+        "west": {"uv": [4, 0, 16, 5], "texture": "#0"},
+        "up": {"uv": [16, 5, 4, 0], "rotation": 270, "texture": "#0"},
+        "down": {"uv": [16, 0, 4, 5], "rotation": 90, "texture": "#0"}
+      }
+    },
+    {
+      "name": "nozzle",
+      "from": [6, 4, 10],
+      "to": [12, 10, 16],
+      "faces": {
+        "north": {"uv": [0, 5, 6, 11], "texture": "#0"},
+        "east": {"uv": [6, 5, 12, 11], "rotation": 180, "texture": "#0"},
+        "south": {"uv": [0, 5, 6, 11], "texture": "#0"},
+        "west": {"uv": [6, 5, 12, 11], "texture": "#0"},
+        "up": {"uv": [0, 5, 6, 11], "texture": "#0"},
+        "down": {"uv": [0, 5, 6, 11], "texture": "#0"}
+      }
+    },
+    {
+      "name": "handle_back",
+      "from": [8, 7, 17],
+      "to": [10, 11, 18],
+      "faces": {
+        "north": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "east": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "south": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "west": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "up": {"uv": [6, 10, 5, 6], "texture": "#0"},
+        "down": {"uv": [6, 6, 5, 10], "texture": "#0"}
+      }
+    },
+    {
+      "name": "handle_front",
+      "from": [8, 7, 12],
+      "to": [10, 11, 13],
+      "faces": {
+        "north": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "east": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "south": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "west": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "up": {"uv": [6, 11, 5, 5], "texture": "#0"},
+        "down": {"uv": [6, 5, 5, 11], "texture": "#0"}
+      }
+    },
+    {
+      "name": "handle_top",
+      "from": [8, 11, 12],
+      "to": [10, 12, 18],
+      "faces": {
+        "north": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "east": {"uv": [5, 6, 6, 10], "rotation": 90, "texture": "#0"},
+        "south": {"uv": [5, 6, 6, 7], "texture": "#0"},
+        "west": {"uv": [5, 6, 6, 10], "rotation": 270, "texture": "#0"},
+        "up": {"uv": [6, 10, 5, 6], "rotation": 180, "texture": "#0"},
+        "down": {"uv": [6, 6, 5, 10], "texture": "#0"}
+      }
+    },
+    {
+      "name": "handle_bottom",
+      "from": [8, 6, 12],
+      "to": [10, 7, 18],
+      "faces": {
+        "north": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "east": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "south": {"uv": [5, 9, 6, 10], "texture": "#0"},
+        "west": {"uv": [5, 6, 6, 10], "texture": "#0"},
+        "up": {"uv": [6, 10, 5, 6], "texture": "#0"},
+        "down": {"uv": [6, 6, 5, 10], "texture": "#0"}
+      }
+    },
+    {
+      "name": "fin_angled",
+      "from": [11.25, 10, -1.5],
+      "to": [11.25, 13, 12.5],
+      "rotation": {"angle": -45, "axis": "z", "origin": [10.75, 9.5, 11]},
+      "faces": {
+        "north": {"uv": [0, 5, 0, 8], "texture": "#0"},
+        "east": {"uv": [0, 16, 14, 13], "rotation": 180, "texture": "#0"},
+        "south": {"uv": [0, 6, 0, 10], "texture": "#0"},
+        "west": {"uv": [0, 13, 14, 16], "texture": "#0"},
+        "up": {"uv": [32, 16, 32, 30], "texture": "#0"},
+        "down": {"uv": [32, 3, 32, 17], "texture": "#0"}
+      }
+    },
+    {
+      "name": "fin_flat_prerotated",
+      "from": [3.75, 6.75, -1.5],
+      "to": [6.75, 6.75, 12.5],
+      "faces": {
+        "up": {"uv": [0, 16, 14, 13], "rotation": 90, "texture": "#0"},
+        "down": {"uv": [0, 13, 14, 16], "rotation": 270, "texture": "#0"}
+      }
+    }
+  ]
+}

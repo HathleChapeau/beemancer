@@ -41,6 +41,13 @@ public class ApicaParticles {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> RUNE =
         PARTICLES.register("rune", () -> new SimpleParticleType(false));
 
+    // --- Laser particles (Mining Laser effects) ---
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> LASER_RING =
+        PARTICLES.register("laser_ring", () -> new SimpleParticleType(false));
+
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> LASER_HALO =
+        PARTICLES.register("laser_halo", () -> new SimpleParticleType(false));
+
     public static void register(IEventBus bus) {
         PARTICLES.register(bus);
     }

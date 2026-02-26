@@ -121,6 +121,7 @@
 | debug_wand               | DebugWandItem    | Debug Tools     |
 | scoop                    | ScoopItem        | Bee Capture     |
 | leaf_blower              | LeafBlowerItem   | Leaf Blower     |
+| mining_laser             | MiningLaserItem  | Mining Laser    |
 
 --- BEE NESTS ---
 | bee_nest                 | BlockItem        | Worldgen        |

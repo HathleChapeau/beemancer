@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-25                     #
-#  (Api Block - 2026-02-25)                                                     #
+#                         Dernière mise à jour: 2026-02-26                     #
+#  (Mining Laser - 2026-02-26)                                                  #
 ################################################################################
 
 ================================================================================
@@ -78,6 +78,9 @@ Philosophie:
 │ client/renderer/util/DebugRenderHelper │ Lignes et cubes debug partagés     │
 │ client/renderer/util/AnimatedQuadRenderer│ Rendu boite 3D texturee UV dynamiques│
 │ client/renderer/item/LeafBlowerItemRenderer│ BEWLR Leaf Blower (3D + charge anim)│
+│ client/renderer/item/MiningLaserItemRenderer│ BEWLR Mining Laser (3D+rings+halo)│
+│ client/renderer/item/MiningLaserRingOverlay│ Géométrie anneau pour BEWLR laser  │
+│ client/renderer/MiningLaserBeamRenderer│ Rayon laser world-space (billboard) │
 │ client/renderer/util/RenderHelper      │ Push/pop, facing rotation partagés │
 │ client/renderer/util/FloatingItemHelper│ Rendu item flottant anime          │
 │ client/renderer/util/RotatingModelHelper│ Rendu modele rotatif partagé      │
@@ -828,6 +831,34 @@ LISTE DES FEATURES:
     textures/item/leaf_blower_charging2.png (atlas barres charge 3x24),
     textures/item/leaf_blower.png (placeholder),
     textures/entity/leaf_blower_orb.png (placeholder)
+
+→ Mining Laser
+  Description: Arme chargeable qui tire un rayon laser continu détruisant des blocs. Mécanique en 2 étapes:
+    1. Double right-click cycle le niveau de charge (0→1→2→3→4→0), chaque niveau allume un anneau
+    2. Hold right-click charge la jauge (animation overlay identique leaf blower)
+    3. Jauge pleine: le laser tire en continu (1 tir/5 ticks) tant que le joueur hold
+    Raycast depuis eye position, détruit le 1er bloc solide (hardness 0-50, exclut bedrock).
+    Portée max 32 blocs. Rendu 3D via BEWLR: body baked model, overlay 13 frames, 4 barres indicatrices,
+    anneaux géométriques rotatifs (12 quads en anneau par ring actif), halo sprite au bout du canon.
+    Rayon laser rendu en world-space via RenderLevelStageEvent (2 quads billboard croisés, core + glow).
+    Distinction first-person / third-person pour l'origine du rayon.
+  Scripts créés: MiningLaserItem.java (common/item/tool/), MiningLaserBlockBreaker.java (common/item/tool/),
+    MiningLaserItemRenderer.java (client/renderer/item/), MiningLaserRingOverlay.java (client/renderer/item/),
+    MiningLaserBeamRenderer.java (client/renderer/), LaserRingParticle.java (client/particle/),
+    LaserHaloParticle.java (client/particle/)
+  Scripts modifiés: ApicaItems.java (+MINING_LASER), ApicaParticles.java (+LASER_RING, +LASER_HALO),
+    ClientSetup.java (+BEWLR, +registerAdditionalModels mining_laser_body, +registerParticleProviders,
+    +MiningLaserBeamRenderer event bus), en_us.json (+item.apica.mining_laser)
+  Dépendances: ParticleHelper (burst, impact), AnimationTimer (ring rotation, beam pulse),
+    BakedModel (putBulkData body), ConfigurableParticle (particles)
+  Registres modifiés: ApicaItems (+1 item), ApicaParticles (+2 particle types)
+  Assets: models/item/mining_laser.json (builtin/entity + display transforms),
+    models/item/mining_laser_body.json (8 éléments body statiques),
+    textures/item/artifacts/mining_laser_body.png (placeholder),
+    textures/item/artifacts/mining_laser_charging1.png (placeholder),
+    textures/item/artifacts/mining_laser_charging2.png (placeholder),
+    textures/item/artifacts/mining_laser_beam.png (gradient blanc→transparent 16x16),
+    particles/laser_ring.json, particles/laser_halo.json
 
 → Api Block
   Description: Creature-bloc vivante (honeycomb anime). Grandit quand nourri au honey bottle (+1 level),
