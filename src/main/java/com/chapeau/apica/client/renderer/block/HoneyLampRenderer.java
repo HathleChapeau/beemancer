@@ -54,11 +54,6 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
     private static final float Y_MIN = 0f;
     private static final float Y_MAX = 14f / 16f;
 
-    // Epaisseur des cross planes (0.02 blocs)
-    // Pour un plan a 45°, l'offset par axe = halfThick / sqrt(2)
-    private static final float HALF_THICK = 0.01f;
-    private static final float N_OFF = HALF_THICK * 0.7071f;
-
     private static final int FULLBRIGHT = 0xF000F0;
 
     public HoneyLampRenderer(BlockEntityRendererProvider.Context context) {
@@ -82,40 +77,22 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
 
-        // Plane 1: SW-NE diagonal — normale vers (-1,0,1)/sqrt2
-        // Face exterieure decalee de -N_OFF en X, +N_OFF en Z
-        // Face interieure decalee de +N_OFF en X, -N_OFF en Z
-        thickCrossPlane(vc, pose,
-            CX - R, CZ - R, CX + R, CZ + R,
-            -N_OFF, N_OFF, overlay);
+        // Plane 1: SW-NE diagonal
+        crossPlane(vc, pose, CX - R, CZ - R, CX + R, CZ + R, overlay);
 
-        // Plane 2: NW-SE diagonal — normale vers (1,0,1)/sqrt2
-        // Face exterieure decalee de +N_OFF en X, +N_OFF en Z
-        // Face interieure decalee de -N_OFF en X, -N_OFF en Z
-        thickCrossPlane(vc, pose,
-            CX + R, CZ - R, CX - R, CZ + R,
-            N_OFF, N_OFF, overlay);
+        // Plane 2: NW-SE diagonal
+        crossPlane(vc, pose, CX + R, CZ - R, CX - R, CZ + R, overlay);
     }
 
     /**
-     * Rend un cross plane avec epaisseur: 2 faces paralleles decalees le long de la normale.
-     * @param nx offset X de la normale
-     * @param nz offset Z de la normale
+     * Rend un cross plane single-face (entityTranslucent a NO_CULL, visible des 2 cotes).
      */
-    private static void thickCrossPlane(VertexConsumer vc, PoseStack.Pose pose,
-                                         float x0, float z0, float x1, float z1,
-                                         float nx, float nz, int overlay) {
-        // Face exterieure (front)
-        vertex(vc, pose, x0 + nx, Y_MIN, z0 + nz, 0, 1, overlay);
-        vertex(vc, pose, x1 + nx, Y_MIN, z1 + nz, 1, 1, overlay);
-        vertex(vc, pose, x1 + nx, Y_MAX, z1 + nz, 1, 0, overlay);
-        vertex(vc, pose, x0 + nx, Y_MAX, z0 + nz, 0, 0, overlay);
-
-        // Face interieure (back, winding inverse)
-        vertex(vc, pose, x1 - nx, Y_MIN, z1 - nz, 0, 1, overlay);
-        vertex(vc, pose, x0 - nx, Y_MIN, z0 - nz, 1, 1, overlay);
-        vertex(vc, pose, x0 - nx, Y_MAX, z0 - nz, 1, 0, overlay);
-        vertex(vc, pose, x1 - nx, Y_MAX, z1 - nz, 0, 0, overlay);
+    private static void crossPlane(VertexConsumer vc, PoseStack.Pose pose,
+                                    float x0, float z0, float x1, float z1, int overlay) {
+        vertex(vc, pose, x0, Y_MIN, z0, 0, 1, overlay);
+        vertex(vc, pose, x1, Y_MIN, z1, 1, 1, overlay);
+        vertex(vc, pose, x1, Y_MAX, z1, 1, 0, overlay);
+        vertex(vc, pose, x0, Y_MAX, z0, 0, 0, overlay);
     }
 
     private static void vertex(VertexConsumer vc, PoseStack.Pose pose,
