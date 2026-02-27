@@ -42,6 +42,7 @@ import com.chapeau.apica.common.block.hive.BeeNestBlock;
 import com.chapeau.apica.common.block.mount.AssemblyTableBlock;
 import com.chapeau.apica.common.block.crystal.AntiBreedingCrystalBlock;
 import com.chapeau.apica.common.block.crystal.CreativeBreedingCrystalBlock;
+import com.chapeau.apica.common.block.crystal.CreativeToleranceCrystalBlock;
 import com.chapeau.apica.common.block.extractor.ExtractorHeartBlock;
 import com.chapeau.apica.core.multiblock.MultiblockProperty;
 import com.chapeau.apica.common.block.hive.HiveMultiblockBlock;
@@ -207,6 +208,14 @@ public class ApicaBlocks {
     // --- CREATIVE BREEDING CRYSTAL (debug) ---
     public static final DeferredBlock<Block> CREATIVE_BREEDING_CRYSTAL = registerTimed("creative_breeding_crystal",
             () -> new CreativeBreedingCrystalBlock(BlockBehaviour.Properties.of()
+                    .strength(1.5f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 10)
+                    .noOcclusion()));
+
+    // --- CREATIVE TOLERANCE CRYSTAL (debug) ---
+    public static final DeferredBlock<Block> CREATIVE_TOLERANCE_CRYSTAL = registerTimed("creative_tolerance_crystal",
+            () -> new CreativeToleranceCrystalBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f)
                     .sound(SoundType.AMETHYST)
                     .lightLevel(state -> 10)

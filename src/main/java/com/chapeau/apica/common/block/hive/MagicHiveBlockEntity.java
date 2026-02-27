@@ -95,6 +95,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     // Breeding
     private boolean antibreedingMode = false;
+    private boolean creativeToleranceMode = false;
     private int breedingCooldown = 0;
 
     // UUID sync verification timer (transient, not saved)
@@ -378,6 +379,20 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
     public boolean canBeeForage(int slot) {
         if (slot < 0 || slot >= BEE_SLOTS) return false;
         if (items.get(slot).isEmpty()) return false;
+
+        // Creative Tolerance Crystal : bypass fleurs, température, antibreeding
+        // Seul le cycle jour/nuit reste actif
+        if (creativeToleranceMode) {
+            BeeGeneData geneData = MagicBeeItem.getGeneData(items.get(slot));
+            Gene envGene = geneData.getGene(GeneCategory.ENVIRONMENT);
+            boolean canWorkAtNight = false;
+            if (envGene instanceof EnvironmentGene env) {
+                canWorkAtNight = env.canWorkAtNight();
+            }
+            if (!isDaytime && !canWorkAtNight) return false;
+            return true;
+        }
+
         if (!hasFlowers) return false;
         if (antibreedingMode) return false;
 
@@ -452,6 +467,7 @@ public class MagicHiveBlockEntity extends BlockEntity implements MenuProvider, n
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MagicHiveBlockEntity hive) {
         hive.antibreedingMode = level.getBlockState(pos.above()).is(ApicaBlocks.BREEDING_CRYSTAL.get());
+        hive.creativeToleranceMode = level.getBlockState(pos.above()).is(ApicaBlocks.CREATIVE_TOLERANCE_CRYSTAL.get());
 
         hive.updateHiveConditions(level, pos);
 

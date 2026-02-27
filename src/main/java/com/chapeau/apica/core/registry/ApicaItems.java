@@ -112,6 +112,10 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> CREATIVE_BREEDING_CRYSTAL = ITEMS.register("creative_breeding_crystal",
             () -> new BlockItem(ApicaBlocks.CREATIVE_BREEDING_CRYSTAL.get(), new Item.Properties()));
 
+    // --- CREATIVE TOLERANCE CRYSTAL (debug) ---
+    public static final DeferredItem<BlockItem> CREATIVE_TOLERANCE_CRYSTAL = ITEMS.register("creative_tolerance_crystal",
+            () -> new BlockItem(ApicaBlocks.CREATIVE_TOLERANCE_CRYSTAL.get(), new Item.Properties()));
+
     // --- ALCHEMY MACHINES ---
     public static final DeferredItem<BlockItem> MANUAL_CENTRIFUGE = ITEMS.register("manual_centrifuge",
             () -> new BlockItem(ApicaBlocks.MANUAL_CENTRIFUGE.get(), new Item.Properties()));
@@ -328,6 +332,14 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> NECTAR_CRYSTAL = ITEMS.register("nectar_crystal",
             () -> new BlockItem(ApicaBlocks.NECTAR_CRYSTAL.get(), new Item.Properties()));
     public static final DeferredItem<Item> BLANK_RUNE = ITEMS.register("blank_rune",
+            () -> new Item(new Item.Properties()));
+
+    // --- ARTIFACT CORES ---
+    public static final DeferredItem<Item> HONEY_ARTIFACT_CORE = ITEMS.register("honey_artifact_core",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> ROYAL_ARTIFACT_CORE = ITEMS.register("royal_artifact_core",
+            () -> new Item(new Item.Properties()));
+    public static final DeferredItem<Item> NECTAR_ARTIFACT_CORE = ITEMS.register("nectar_artifact_core",
             () -> new Item(new Item.Properties()));
 
     // --- ESSENCES ---

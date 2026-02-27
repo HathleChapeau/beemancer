@@ -111,6 +111,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.RESONATOR.get());
         output.accept(ApicaItems.BEE_ELYTRA.get());
         output.accept(ApicaItems.LEAF_BLOWER.get());
+        output.accept(ApicaItems.MINING_LASER.get());
     }
 
     private static void addBees(CreativeModeTab.Output output) {
@@ -232,6 +233,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.BUILDING_STAFF.get());
         output.accept(ApicaItems.CREATIVE_TANK.get());
         output.accept(ApicaItems.CREATIVE_BREEDING_CRYSTAL.get());
+        output.accept(ApicaItems.CREATIVE_TOLERANCE_CRYSTAL.get());
         output.accept(ApicaItems.CREATIVE_FOCUS.get());
     }
 
@@ -282,6 +284,9 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.NECTAR_DIAMOND_BLOCK.get());
         output.accept(ApicaItems.NECTAR_CRYSTAL.get());
         output.accept(ApicaItems.BLANK_RUNE.get());
+        output.accept(ApicaItems.HONEY_ARTIFACT_CORE.get());
+        output.accept(ApicaItems.ROYAL_ARTIFACT_CORE.get());
+        output.accept(ApicaItems.NECTAR_ARTIFACT_CORE.get());
         output.accept(ApicaItems.HONEY_BREAD.get());
         output.accept(ApicaItems.ROYAL_BREAD.get());
         output.accept(ApicaItems.NECTAR_BREAD.get());
