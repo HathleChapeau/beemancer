@@ -1,15 +1,16 @@
 /**
  * ============================================================
  * [ChopperCubeItem.java]
- * Description: Cube qui detecte et surligne les buches connectees au-dessus du curseur
+ * Description: Cube qui detecte, surligne et abat les buches connectees
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dependance          | Raison                | Utilisation                    |
- * |---------------------|----------------------|--------------------------------|
- * | BlockTags           | Detection buches     | Verification tag logs          |
- * | ChopperCubePreviewRenderer | Rendu glow  | Consommation des positions     |
+ * | Dependance                | Raison                | Utilisation                    |
+ * |---------------------------|----------------------|--------------------------------|
+ * | BlockTags                 | Detection buches     | Verification tag logs          |
+ * | ChopperCubeChoppingState  | Destruction queue    | Gestion server-side            |
+ * | ChopperCubeLockHelper     | Preview client       | Verrouillage glow              |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -21,17 +22,22 @@
 package com.chapeau.apica.common.item.tool;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,11 +45,12 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * Chopper Cube — outil de detection d'arbres.
+ * Chopper Cube — outil d'abattage d'arbres.
  *
  * Quand le joueur regarde une buche en tenant cet item,
  * toutes les buches connectees du meme type au-dessus (y >= cible) sont surlignees.
- * Clic droit verrouille le glow tant que l'item est en main.
+ * Clic droit sur une buche: demarre la destruction du haut vers le bas,
+ * avec 2 abeilles orbitantes autour de chaque bloc. Le loot va dans l'inventaire.
  */
 public class ChopperCubeItem extends Item {
 
@@ -55,26 +62,64 @@ public class ChopperCubeItem extends Item {
     }
 
     @Override
+    public InteractionResult useOn(UseOnContext context) {
+        Level level = context.getLevel();
+        Player player = context.getPlayer();
+        if (player == null) return InteractionResult.PASS;
+
+        BlockPos clickedPos = context.getClickedPos();
+        BlockState clickedState = level.getBlockState(clickedPos);
+
+        if (!clickedState.is(BlockTags.LOGS)) {
+            return InteractionResult.PASS;
+        }
+
+        if (!level.isClientSide()) {
+            // Annuler une session en cours si elle existe
+            if (ChopperCubeChoppingState.isActive(player.getUUID())) {
+                ChopperCubeChoppingState.clear(player.getUUID());
+                return InteractionResult.SUCCESS;
+            }
+
+            // Scanner et demarrer la destruction (tri Y decroissant = haut vers bas)
+            List<BlockPos> logs = findConnectedLogs(level, clickedPos);
+            logs.sort(Comparator.<BlockPos>comparingInt(BlockPos::getY).reversed());
+            ChopperCubeChoppingState.start(player.getUUID(), logs);
+        } else {
+            // Lock le preview client-side
+            List<BlockPos> logs = findConnectedLogs(level, clickedPos);
+            ChopperCubeLockHelper.lockWith(logs);
+        }
+
+        return InteractionResult.sidedSuccess(level.isClientSide());
+    }
+
+    @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        if (level.isClientSide()) {
-            if (ChopperCubeLockHelper.isLocked()) {
-                ChopperCubeLockHelper.reset();
-            } else {
-                // Scanner les buches depuis le curseur et verrouiller
-                net.minecraft.world.phys.HitResult hitResult = net.minecraft.client.Minecraft.getInstance().hitResult;
-                if (hitResult != null && hitResult.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK) {
-                    BlockPos targetPos = ((net.minecraft.world.phys.BlockHitResult) hitResult).getBlockPos();
-                    List<BlockPos> positions = findConnectedLogs(level, targetPos);
-                    if (!positions.isEmpty()) {
-                        ChopperCubeLockHelper.lockWith(positions);
-                    }
-                }
-            }
+        // Clic dans le vide: annuler la session en cours
+        if (!level.isClientSide()) {
+            ChopperCubeChoppingState.clear(player.getUUID());
+        } else {
+            ChopperCubeLockHelper.reset();
         }
 
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
+        if (level.isClientSide() || !(entity instanceof Player player)) return;
+
+        // Verifier que le joueur tient l'item (main ou offhand)
+        boolean holding = selected || player.getOffhandItem() == stack;
+        if (!holding) {
+            ChopperCubeChoppingState.clear(player.getUUID());
+            return;
+        }
+
+        ChopperCubeChoppingState.tick(player, (ServerLevel) level);
     }
 
     /**

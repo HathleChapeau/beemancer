@@ -134,7 +134,10 @@ public class ChopperCubePreviewRenderer {
         var bufferSource = mc.renderBuffers().bufferSource();
         VertexConsumer buffer = bufferSource.getBuffer(RenderType.lines());
 
+        Level level = mc.player.level();
         for (BlockPos pos : positions) {
+            // Ignorer les blocs deja detruits
+            if (level.getBlockState(pos).isAir()) continue;
             renderBlockOutline(poseStack, buffer, pos);
         }
 

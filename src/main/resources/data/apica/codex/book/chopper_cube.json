@@ -1,0 +1,14 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.chopper_cube.lore.p1"
+    }
+  ],
+  "sticky_notes": [
+    {"craft": "apica:chopper_cube", "type": "altar"}
+  ]
+}
