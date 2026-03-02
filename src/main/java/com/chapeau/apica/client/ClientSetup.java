@@ -73,6 +73,7 @@ import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer;
 import com.chapeau.apica.client.renderer.item.LeafBlowerItemRenderer;
 import com.chapeau.apica.client.renderer.item.MiningLaserItemRenderer;
+import com.chapeau.apica.client.renderer.item.ChopperCubeItemRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
@@ -414,6 +415,19 @@ public class ClientSetup {
             }
         }, ApicaItems.MINING_LASER.get());
 
+        // Chopper Cube - render 3D model with animated slabs + orbiting bees in first person
+        event.registerItem(new IClientItemExtensions() {
+            private ChopperCubeItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new ChopperCubeItemRenderer();
+                }
+                return renderer;
+            }
+        }, ApicaItems.CHOPPER_CUBE.get());
+
         // --- Fluid Extensions ---
         registerFluidExtension(event, ApicaFluids.HONEY_FLUID_TYPE,
             //"block/fluid/honey_still", "block/fluid/honey_flow", 0xFFFFFFFF);
@@ -583,6 +597,11 @@ public class ClientSetup {
 
         // Mining Laser 3D body model (rendu par BEWLR)
         event.register(MiningLaserItemRenderer.BODY_MODEL_LOC);
+
+        // Chopper Cube 3D part models (rendu par BEWLR)
+        event.register(ChopperCubeItemRenderer.BOTTOM_MODEL_LOC);
+        event.register(ChopperCubeItemRenderer.CENTER_MODEL_LOC);
+        event.register(ChopperCubeItemRenderer.TOP_MODEL_LOC);
 
         // Modèles multiblock tank
         event.register(MultiblockTankRenderer.FORMED_MODEL_LOC);  // Formé (scalé)

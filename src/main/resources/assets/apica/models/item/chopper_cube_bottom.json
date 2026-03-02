@@ -1,0 +1,23 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "ring": "apica:block/honeyed_iron_block",
+    "particle": "apica:block/honeyed_iron_block"
+  },
+  "elements": [
+    {
+      "name": "bottom_slab",
+      "from": [3, 4, 3],
+      "to": [13, 7, 13],
+      "faces": {
+        "up":    {"texture": "#ring"},
+        "down":  {"texture": "#ring"},
+        "north": {"texture": "#ring"},
+        "south": {"texture": "#ring"},
+        "east":  {"texture": "#ring"},
+        "west":  {"texture": "#ring"}
+      }
+    }
+  ]
+}
