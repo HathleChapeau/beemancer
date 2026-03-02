@@ -3,7 +3,7 @@
     {"id": "infuser", "position": {"x": 0, "y": 0}, "category": "ROOT", "parent": null, "hidden_until_parent_unlocked": false, "is_default": true},
 
     {"id": "anti_breeding_crystal", "position": {"x": 0, "y": -2}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
-    {"id": "honey_lamp", "position": {"x": -2, "y": -1}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
+    {"id": "honey_lamp", "position": {"x": -2, "y": 0}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
     {"id": "honey_bread", "position": {"x": -1, "y": -1}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
     {"id": "api", "position": {"x": 1, "y": -1}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
     {"id": "accessories", "position": {"x": 2, "y": 0}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
@@ -18,14 +18,14 @@
     {"id": "launchpad", "position": {"x": 1, "y": 3}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "charging_station", "position": {"x": 3, "y": 3}, "category": "NORMAL", "parent": "repair_tool", "hidden_until_parent_unlocked": false},
 
-    {"id": "royal_artifact_core", "position": {"x": 0, "y": 4}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "chopper_axe", "position": {"x": -2, "y": 4}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "building_staff", "position": {"x": -1, "y": 4}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "mining_laser", "position": {"x": 1, "y": 4}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "royal_artifact_core", "position": {"x": 0, "y": 5}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "chopper_axe", "position": {"x": -2, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "building_staff", "position": {"x": -1, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "mining_laser", "position": {"x": 1, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
 
-    {"id": "nectar_artifact_core", "position": {"x": 0, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "bee_elytra", "position": {"x": -1, "y": 5}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "sniper", "position": {"x": 1, "y": 5}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "uncrafting_table", "position": {"x": 2, "y": 5}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false}
+    {"id": "nectar_artifact_core", "position": {"x": 0, "y": 7}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "bee_elytra", "position": {"x": -1, "y": 7}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "sniper", "position": {"x": 1, "y": 7}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "uncrafting_table", "position": {"x": 2, "y": 7}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false}
   ]
 }
