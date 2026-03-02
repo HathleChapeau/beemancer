@@ -30,6 +30,7 @@ import com.chapeau.apica.client.gui.screen.alchemy.PoweredCentrifugeScreen;
 import com.chapeau.apica.client.gui.screen.storage.NetworkInterfaceScreen;
 import com.chapeau.apica.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer;
+import com.chapeau.apica.client.renderer.ChopperCubePreviewRenderer;
 import com.chapeau.apica.client.renderer.MiningLaserBeamRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableStatsRenderer;
@@ -117,6 +118,7 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> AnimationTimer.tick());
 
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
+        NeoForge.EVENT_BUS.register(ChopperCubePreviewRenderer.class);
         NeoForge.EVENT_BUS.register(MiningLaserBeamRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
         NeoForge.EVENT_BUS.register(DebugKeyHandler.class);
