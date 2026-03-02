@@ -417,7 +417,7 @@ public class ApicaItems {
             () -> new LeafBlowerItem(new Item.Properties().stacksTo(1)));
 
     public static final DeferredItem<MiningLaserItem> MINING_LASER = ITEMS.register("mining_laser",
-            () -> new MiningLaserItem(new Item.Properties().stacksTo(1).enchantable(10)));
+            () -> new MiningLaserItem(new Item.Properties().stacksTo(1)));
 
     // --- EQUIPMENT ---
     public static final DeferredItem<BeeElytraItem> BEE_ELYTRA = ITEMS.register("bee_elytra",
