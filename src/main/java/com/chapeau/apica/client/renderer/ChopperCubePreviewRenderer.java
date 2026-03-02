@@ -129,8 +129,11 @@ public class ChopperCubePreviewRenderer {
         renderOutlines(event, mc, remaining);
 
         if (chopping) {
+            // Meme ordre que la destruction serveur: Y desc, X asc, Z asc
             BlockPos target = remaining.stream()
-                    .max(Comparator.comparingInt(BlockPos::getY))
+                    .min(Comparator.<BlockPos>comparingInt(BlockPos::getY).reversed()
+                            .thenComparingInt(BlockPos::getX)
+                            .thenComparingInt(BlockPos::getZ))
                     .orElse(null);
             if (target != null) {
                 renderOrbitingBees(event, mc, target);
