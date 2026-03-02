@@ -13,9 +13,14 @@
     {
       "type": "text",
       "key": "codex.apica.artifacts.chopper_cube.lore.p2"
+    },
+    {
+      "type": "page_break"
+    },
+    {
+      "type": "craft",
+      "result": "apica:chopper_cube"
     }
   ],
-  "sticky_notes": [
-    {"craft": "apica:chopper_cube", "type": "altar"}
-  ]
+  "sticky_notes": []
 }

@@ -5,6 +5,8 @@
     {"id": "anti_breeding_crystal", "position": {"x": 0, "y": -2}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
     {"id": "honey_lamp", "position": {"x": -2, "y": 0}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
     {"id": "honey_bread", "position": {"x": -1, "y": -1}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
+    {"id": "royal_bread", "position": {"x": -2, "y": -2}, "category": "NORMAL", "parent": "honey_bread", "hidden_until_parent_unlocked": false, "quest": "royal_upgrade"},
+    {"id": "nectar_bread", "position": {"x": -3, "y": -3}, "category": "NORMAL", "parent": "royal_bread", "hidden_until_parent_unlocked": false, "quest": "nectar_upgrade"},
     {"id": "api", "position": {"x": 1, "y": -1}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
     {"id": "accessories", "position": {"x": 2, "y": 0}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
     {"id": "bee_backpack", "position": {"x": 4, "y": 0}, "category": "NORMAL", "parent": "accessories", "hidden_until_parent_unlocked": false},

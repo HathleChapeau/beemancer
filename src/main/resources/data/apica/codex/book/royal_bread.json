@@ -7,11 +7,11 @@
       "type": "process",
       "input": "minecraft:bread",
       "output": "apica:infuser",
-      "top_slot": "apica:honey_bucket"
+      "top_slot": "apica:royal_jelly_bucket"
     },
     {
       "type": "text",
-      "key": "codex.apica.artifacts.honey_bread.lore.p1"
+      "key": "codex.apica.artifacts.royal_bread.lore.p1"
     }
   ],
   "sticky_notes": []
