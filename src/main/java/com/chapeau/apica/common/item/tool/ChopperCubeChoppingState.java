@@ -8,7 +8,6 @@
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | ParticleHelper      | Effets visuels       | Particules burst destruction   |
  * | Block               | Loot drops           | getDrops() avec outil          |
  * ------------------------------------------------------------
  *
@@ -19,9 +18,7 @@
  */
 package com.chapeau.apica.common.item.tool;
 
-import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
@@ -29,7 +26,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +40,7 @@ import java.util.UUID;
 public final class ChopperCubeChoppingState {
 
     /** Ticks entre chaque destruction de bloc */
-    private static final int TICKS_PER_BLOCK = 6;
+    private static final int TICKS_PER_BLOCK = 3;
 
     private static final Map<UUID, State> activeStates = new HashMap<>();
 
@@ -125,9 +121,6 @@ public final class ChopperCubeChoppingState {
         }
 
         level.destroyBlock(pos, false, player);
-
-        // Burst de particules a la destruction
-        ParticleHelper.burst(level, Vec3.atCenterOf(pos), ParticleTypes.WAX_ON, 6);
     }
 
     /** Verifie si le joueur a une session active. */

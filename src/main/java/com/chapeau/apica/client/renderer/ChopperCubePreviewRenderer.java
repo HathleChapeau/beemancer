@@ -53,7 +53,7 @@ import java.util.List;
 /**
  * Dessine des contours ambre pulsants autour des buches detectees par le Chopper Cube.
  * En mode destruction, 2 mini-abeilles orbitent autour du bloc en cours.
- * Mode live : suit le curseur. Mode locked : positions figees par clic droit.
+ * Les positions des abeilles sont lerpees vers les points d'orbite pour un mouvement fluide.
  */
 @OnlyIn(Dist.CLIENT)
 public class ChopperCubePreviewRenderer {
@@ -66,6 +66,8 @@ public class ChopperCubePreviewRenderer {
     // Abeilles orbitantes
     private static final float BEE_SCALE = 0.3f;
     private static final double ORBIT_RADIUS = 0.8;
+    private static final double LERP_FACTOR = 0.75;
+    private static final int FULL_BRIGHT = 0xF000F0;
     private static final ResourceLocation BEE_TEXTURE =
             ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
 
@@ -75,6 +77,10 @@ public class ChopperCubePreviewRenderer {
 
     // BeeModel lazy-init
     private static BeeModel<?> beeModel;
+
+    // Positions lerpees des abeilles
+    private static Vec3 bee1Pos = null;
+    private static Vec3 bee2Pos = null;
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
@@ -91,6 +97,8 @@ public class ChopperCubePreviewRenderer {
             ChopperCubeLockHelper.reset();
             cachedTargetPos = null;
             cachedPositions = List.of();
+            bee1Pos = null;
+            bee2Pos = null;
             return;
         }
 
@@ -113,13 +121,14 @@ public class ChopperCubePreviewRenderer {
 
         if (remaining.isEmpty()) {
             if (chopping) ChopperCubeLockHelper.reset();
+            bee1Pos = null;
+            bee2Pos = null;
             return;
         }
 
         renderOutlines(event, mc, remaining);
 
         if (chopping) {
-            // Bloc courant = le plus haut non-air (destruction top -> bottom)
             BlockPos target = remaining.stream()
                     .max(Comparator.comparingInt(BlockPos::getY))
                     .orElse(null);
@@ -157,13 +166,15 @@ public class ChopperCubePreviewRenderer {
     }
 
     /**
-     * Dessine des contours ambre avec alpha pulsante autour des buches.
+     * Dessine des contours ambre epais avec alpha pulsante autour des buches.
+     * Deux couches d'outline superposees pour l'epaisseur.
      */
     private static void renderOutlines(RenderLevelStageEvent event, Minecraft mc,
                                         List<BlockPos> positions) {
         PoseStack poseStack = event.getPoseStack();
         Vec3 camPos = event.getCamera().getPosition();
-        float time = AnimationTimer.getRenderTime(event.getPartialTick().getGameTimeDeltaPartialTick(true));
+        float time = AnimationTimer.getRenderTime(
+                event.getPartialTick().getGameTimeDeltaPartialTick(true));
 
         poseStack.pushPose();
         poseStack.translate(-camPos.x, -camPos.y, -camPos.z);
@@ -181,37 +192,48 @@ public class ChopperCubePreviewRenderer {
     }
 
     /**
-     * Dessine un contour ambre autour d'un bloc.
+     * Dessine un contour ambre epais autour d'un bloc (2 couches superposees).
      */
     private static void renderBlockOutline(PoseStack poseStack, VertexConsumer buffer,
                                             BlockPos pos, float alpha) {
-        double offset = 0.002;
-        double offsetD = offset * 2;
+        double x = pos.getX();
+        double y = pos.getY();
+        double z = pos.getZ();
 
-        double x = pos.getX() + offset;
-        double y = pos.getY() + offset;
-        double z = pos.getZ() + offset;
-
+        // Couche interieure
+        double in = 0.002;
         LevelRenderer.renderLineBox(
             poseStack, buffer,
-            x, y, z,
-            x + 1 - offsetD, y + 1 - offsetD, z + 1 - offsetD,
+            x + in, y + in, z + in,
+            x + 1 - in, y + 1 - in, z + 1 - in,
             R, G, B, alpha
+        );
+
+        // Couche exterieure (elargie, plus transparente = effet glow)
+        double out = 0.015;
+        LevelRenderer.renderLineBox(
+            poseStack, buffer,
+            x - out, y - out, z - out,
+            x + 1 + out, y + 1 + out, z + 1 + out,
+            R, G, B, alpha * 0.4f
         );
     }
 
     /**
-     * Rend 2 petites abeilles orbitant autour du bloc en cours de destruction.
-     * Utilise le BeeModel vanilla, meme pattern que BeeStatueRenderer.
+     * Rend 2 petites abeilles dont les positions sont lerpees vers des points d'orbite.
+     * Les points d'orbite tournent autour du bloc, les abeilles suivent avec un lerp a 0.75.
+     * La rotation est directement basee sur l'angle d'orbite (pas lerpee).
      */
     private static void renderOrbitingBees(RenderLevelStageEvent event, Minecraft mc,
                                             BlockPos targetPos) {
-        Level level = mc.player.level();
         PoseStack poseStack = event.getPoseStack();
         Vec3 camPos = event.getCamera().getPosition();
         Vec3 center = Vec3.atCenterOf(targetPos);
-        float time = AnimationTimer.getRenderTime(event.getPartialTick().getGameTimeDeltaPartialTick(true));
-        int light = LevelRenderer.getLightColor(level, targetPos);
+        float time = AnimationTimer.getRenderTime(
+                event.getPartialTick().getGameTimeDeltaPartialTick(true));
+
+        // 0.5 blocs au-dessus du centre du bloc cible
+        double beeY = center.y + 0.5;
 
         BeeModel<?> model = getOrCreateBeeModel();
         var bufferSource = mc.renderBuffers().bufferSource();
@@ -220,13 +242,30 @@ public class ChopperCubePreviewRenderer {
 
         for (int i = 0; i < 2; i++) {
             double angle = time * 0.15 + i * Math.PI;
-            double bx = center.x + Math.cos(angle) * ORBIT_RADIUS;
-            double bz = center.z + Math.sin(angle) * ORBIT_RADIUS;
+
+            // Point cible sur l'orbite
+            Vec3 target = new Vec3(
+                center.x + Math.cos(angle) * ORBIT_RADIUS,
+                beeY,
+                center.z + Math.sin(angle) * ORBIT_RADIUS
+            );
+
+            // Lerp position vers le point cible
+            Vec3 beePos;
+            if (i == 0) {
+                if (bee1Pos == null) bee1Pos = target;
+                bee1Pos = lerpVec3(bee1Pos, target, LERP_FACTOR);
+                beePos = bee1Pos;
+            } else {
+                if (bee2Pos == null) bee2Pos = target;
+                bee2Pos = lerpVec3(bee2Pos, target, LERP_FACTOR);
+                beePos = bee2Pos;
+            }
 
             poseStack.pushPose();
-            poseStack.translate(bx - camPos.x, center.y - camPos.y + 0.1, bz - camPos.z);
+            poseStack.translate(beePos.x - camPos.x, beePos.y - camPos.y, beePos.z - camPos.z);
 
-            // Rotation pour suivre la direction d'orbite
+            // Rotation basee directement sur l'angle d'orbite (pas lerpee)
             float yRot = (float) Math.toDegrees(angle) + 90;
             poseStack.mulPose(Axis.YP.rotationDegrees(-yRot));
 
@@ -235,12 +274,23 @@ public class ChopperCubePreviewRenderer {
 
             poseStack.scale(BEE_SCALE, BEE_SCALE, BEE_SCALE);
 
-            model.renderToBuffer(poseStack, vc, light, OverlayTexture.NO_OVERLAY);
+            model.renderToBuffer(poseStack, vc, FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
 
             poseStack.popPose();
         }
 
         bufferSource.endBatch(beeRenderType);
+    }
+
+    /**
+     * Interpole lineairement entre deux Vec3.
+     */
+    private static Vec3 lerpVec3(Vec3 from, Vec3 to, double factor) {
+        return new Vec3(
+            from.x + (to.x - from.x) * factor,
+            from.y + (to.y - from.y) * factor,
+            from.z + (to.z - from.z) * factor
+        );
     }
 
     /**
