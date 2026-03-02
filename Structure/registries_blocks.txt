@@ -57,6 +57,9 @@
 | royal_furnace          | ApicaFurnaceBlock (tier 2) | Oui          | Apica Furnaces |
 | nectar_furnace         | ApicaFurnaceBlock (tier 3) | Oui          | Apica Furnaces |
 
+--- UNCRAFTING TABLE ---
+| uncrafting_table       | UncraftingTableBlock    | Oui          | Uncrafting Table|
+
 --- STORAGE ---
 | controlled_hive        | ControlledHiveBlock       | Non          | Storage Network |
 | storage_hive           | StorageHiveBlock          | Oui          | Storage Hive    |

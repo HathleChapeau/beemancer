@@ -27,6 +27,7 @@ import com.chapeau.apica.common.blockentity.alchemy.ManualCentrifugeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.MultiblockTankBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ApicaFurnaceBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.PoweredCentrifugeBlockEntity;
+import com.chapeau.apica.common.blockentity.alchemy.UncraftingTableBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
@@ -368,6 +369,14 @@ public class ApicaBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             ApicaFurnaceBlockEntity::createNectar,
                             ApicaBlocks.NECTAR_FURNACE.get()
+                    ).build(null));
+
+    // --- UNCRAFTING TABLE ---
+    public static final Supplier<BlockEntityType<UncraftingTableBlockEntity>> UNCRAFTING_TABLE =
+            BLOCK_ENTITIES.register("uncrafting_table",
+                    () -> BlockEntityType.Builder.of(
+                            UncraftingTableBlockEntity::new,
+                            ApicaBlocks.UNCRAFTING_TABLE.get()
                     ).build(null));
 
     // --- BEE NEST ---

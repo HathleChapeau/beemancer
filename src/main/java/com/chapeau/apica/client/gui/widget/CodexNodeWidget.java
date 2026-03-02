@@ -118,6 +118,7 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("honey_artifact_core", "apica:honey_artifact_core");
         NODE_TO_ITEM.put("royal_artifact_core", "apica:royal_artifact_core");
         NODE_TO_ITEM.put("nectar_artifact_core", "apica:nectar_artifact_core");
+        NODE_TO_ITEM.put("uncrafting_table", "apica:uncrafting_table");
     }
 
     private final CodexNode node;

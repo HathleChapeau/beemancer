@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "apica:block/uncrafting_table/uncrafting_table_top",
+    "front": "apica:block/uncrafting_table/uncrafting_table_front",
+    "side": "apica:block/uncrafting_table/uncrafting_table_side"
+  }
+}

@@ -3,6 +3,23 @@
 ################################################################################
 
 ================================================================================
+2026-03-02 - Uncrafting Table
+================================================================================
+
+Nouveau bloc Uncrafting Table — decompose un item crafte en ses ingredients:
+- UncraftingTableBlock: bloc alchemy avec facing, ouvre menu, blockstate working
+- UncraftingTableBlockEntity: FluidTank nectar 4000mB, slot input + 9 slots output grille 3x3,
+  lookup recette crafting vanilla, consommation graduelle ~500 mB sur 2 minutes, pause si tank vide
+- UncraftingTableMenu: menu avec slot input + 9 output + player inventory
+- UncraftingTableScreen: GUI avec fluid gauge nectar, progress bar, grille 3x3 sortie
+- UncraftingTableRenderer: item flottant au-dessus du bloc (FloatingItemHelper)
+- Registres: ApicaBlocks, ApicaBlockEntities, ApicaMenus, ApicaItems, ApicaCreativeTabs
+- Capabilities: FluidHandler dans Apica.java
+- Client: Screen + Renderer dans ClientSetup.java
+- Codex: Node dans artifacts.json, book page, lang entries, CodexNodeWidget mapping
+- Assets: 1 blockstate, 2 block models (normal + working), 1 item model, 4 textures
+
+================================================================================
 2026-02-26 - Mining Laser
 ================================================================================
 

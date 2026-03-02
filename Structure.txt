@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-02-26                     #
-#  (Mining Laser - 2026-02-26)                                                  #
+#                         Dernière mise à jour: 2026-03-02                     #
+#  (Uncrafting Table - 2026-03-02)                                              #
 ################################################################################
 
 ================================================================================
@@ -880,6 +880,21 @@ LISTE DES FEATURES:
     models/item/api.json, recipe/altar/api.json, loot_table/blocks/api.json (vide),
     codex/book/api.json (3 pages lore + altar_craft), codex/book/accessories.json (TBD)
   Codex: artifacts tab — node "api" (lore progressif: decouverte → nourrissage → explosion)
+
+-> Uncrafting Table
+  Description: Bloc qui decompose un item crafte en ses ingredients en consommant du nectar (~500 mB sur 2 minutes).
+    Le joueur place un item crafte dans le slot d'entree, le bloc consomme du nectar graduellement,
+    puis produit les ingredients de la recette dans une grille 3x3 de sortie. Le craft pause si le tank est vide.
+  Scripts crees: UncraftingTableBlock.java, UncraftingTableBlockEntity.java, UncraftingTableMenu.java,
+    UncraftingTableScreen.java, UncraftingTableRenderer.java
+  Scripts modifies: ApicaBlocks, ApicaBlockEntities, ApicaMenus, ApicaItems, ApicaCreativeTabs,
+    Apica.java, ClientSetup.java, CodexNodeWidget.java
+  Dependances: ApicaFluids (NECTAR_SOURCE), FloatingItemHelper, AbstractApicaScreen, ApicaMenu, ApicaSlot, GuiRenderHelper
+  Registres modifies: ApicaBlocks (+1), ApicaItems (+1), ApicaBlockEntities (+1), ApicaMenus (+1)
+  Assets: blockstates/uncrafting_table.json, models/block/alchemy/uncrafting_table.json (+working),
+    models/item/uncrafting_table.json, 4 textures
+  Codex: artifacts tab — node "uncrafting_table" avec book page et lore
+  Reference: ApicaFurnace pattern
 
 ================================================================================
 6. FEATURES EN COURS

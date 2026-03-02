@@ -27,6 +27,7 @@ import com.chapeau.apica.client.gui.screen.ResonatorScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.MultiblockTankScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.ApicaFurnaceScreen;
 import com.chapeau.apica.client.gui.screen.alchemy.PoweredCentrifugeScreen;
+import com.chapeau.apica.client.gui.screen.alchemy.UncraftingTableScreen;
 import com.chapeau.apica.client.gui.screen.storage.NetworkInterfaceScreen;
 import com.chapeau.apica.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer;
@@ -47,6 +48,7 @@ import com.chapeau.apica.client.renderer.block.PipeExtractRenderer;
 import com.chapeau.apica.client.renderer.block.CrystallizerRenderer;
 import com.chapeau.apica.client.renderer.block.InfuserRenderer;
 import com.chapeau.apica.client.renderer.block.ResonatorRenderer;
+import com.chapeau.apica.client.renderer.block.UncraftingTableRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyTankRenderer;
 import com.chapeau.apica.client.renderer.block.IncubatorRenderer;
 import com.chapeau.apica.client.particle.HoneyPixelParticle;
@@ -179,6 +181,9 @@ public class ClientSetup {
         // Apica Furnaces
         event.register(ApicaMenus.APICA_FURNACE.get(), ApicaFurnaceScreen::new);
 
+        // Uncrafting Table
+        event.register(ApicaMenus.UNCRAFTING_TABLE.get(), UncraftingTableScreen::new);
+
         // Resonator
         event.register(ApicaMenus.RESONATOR.get(), ResonatorScreen::new);
 
@@ -260,6 +265,9 @@ public class ClientSetup {
         // ResonatorRenderer - abeille flottante au-dessus du resonateur
         event.registerBlockEntityRenderer(ApicaBlockEntities.RESONATOR.get(),
             ResonatorRenderer::new);
+        // UncraftingTableRenderer - item flottant au-dessus de la table
+        event.registerBlockEntityRenderer(ApicaBlockEntities.UNCRAFTING_TABLE.get(),
+            UncraftingTableRenderer::new);
         // InjectorRenderer - abeille flottante + essence a plat sur l'injecteur
         event.registerBlockEntityRenderer(ApicaBlockEntities.INJECTOR.get(),
             InjectorRenderer::new);

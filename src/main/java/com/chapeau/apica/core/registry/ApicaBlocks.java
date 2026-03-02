@@ -22,6 +22,7 @@ import com.chapeau.apica.common.block.alchemy.ManualCentrifugeBlock;
 import com.chapeau.apica.common.block.alchemy.MultiblockTankBlock;
 import com.chapeau.apica.common.block.alchemy.ApicaFurnaceBlock;
 import com.chapeau.apica.common.block.alchemy.PoweredCentrifugeBlock;
+import com.chapeau.apica.common.block.alchemy.UncraftingTableBlock;
 import com.chapeau.apica.common.block.altar.AltarHeartBlock;
 import com.chapeau.apica.common.block.altar.HoneyCrystalBlock;
 import com.chapeau.apica.common.block.altar.HoneyCrystalConduitBlock;
@@ -493,6 +494,14 @@ public class ApicaBlocks {
                     .strength(3.5f)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops(), 3));
+
+    // --- UNCRAFTING TABLE ---
+    public static final DeferredBlock<UncraftingTableBlock> UNCRAFTING_TABLE = registerTimed("uncrafting_table",
+            () -> new UncraftingTableBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
 
     // --- BEE STATUE ---
     public static final DeferredBlock<BeeStatueBlock> BEE_STATUE = registerTimed("bee_statue",

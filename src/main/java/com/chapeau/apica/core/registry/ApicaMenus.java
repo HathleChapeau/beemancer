@@ -23,6 +23,7 @@ import com.chapeau.apica.common.menu.alchemy.ManualCentrifugeMenu;
 import com.chapeau.apica.common.menu.alchemy.MultiblockTankMenu;
 import com.chapeau.apica.common.menu.alchemy.ApicaFurnaceMenu;
 import com.chapeau.apica.common.menu.alchemy.PoweredCentrifugeMenu;
+import com.chapeau.apica.common.menu.alchemy.UncraftingTableMenu;
 import com.chapeau.apica.common.menu.storage.NetworkInterfaceMenu;
 import com.chapeau.apica.common.menu.storage.StorageTerminalMenu;
 import net.minecraft.core.registries.Registries;
@@ -95,6 +96,11 @@ public class ApicaMenus {
     public static final Supplier<MenuType<ApicaFurnaceMenu>> APICA_FURNACE =
             MENUS.register("apica_furnace",
                     () -> IMenuTypeExtension.create(ApicaFurnaceMenu::new));
+
+    // --- UNCRAFTING TABLE ---
+    public static final Supplier<MenuType<UncraftingTableMenu>> UNCRAFTING_TABLE =
+            MENUS.register("uncrafting_table",
+                    () -> IMenuTypeExtension.create(UncraftingTableMenu::new));
 
     // --- RESONATOR ---
     public static final Supplier<MenuType<ResonatorMenu>> RESONATOR =

@@ -112,6 +112,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.BEE_ELYTRA.get());
         output.accept(ApicaItems.LEAF_BLOWER.get());
         output.accept(ApicaItems.MINING_LASER.get());
+        output.accept(ApicaItems.CHOPPER_CUBE.get());
     }
 
     private static void addBees(CreativeModeTab.Output output) {
@@ -143,6 +144,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.ROYAL_FURNACE.get());
         output.accept(ApicaItems.NECTAR_FURNACE.get());
         output.accept(ApicaItems.HONEY_LAMP.get());
+        output.accept(ApicaItems.UNCRAFTING_TABLE.get());
     }
 
     private static void addPipesAndTanks(CreativeModeTab.Output output) {
@@ -358,6 +360,7 @@ public class ApicaCreativeTabs {
 
     private static void addLegacyCombs(CreativeModeTab.Output output) {
         output.accept(ApicaItems.ROYAL_COMB.get());
+        output.accept(ApicaItems.BIG_ROYAL_COMB.get());
     }
 
     private static void addAllCombs(CreativeModeTab.Output output) {

@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,working=false": { "model": "apica:block/alchemy/uncrafting_table" },
+    "facing=south,working=false": { "model": "apica:block/alchemy/uncrafting_table", "y": 180 },
+    "facing=west,working=false":  { "model": "apica:block/alchemy/uncrafting_table", "y": 270 },
+    "facing=east,working=false":  { "model": "apica:block/alchemy/uncrafting_table", "y": 90 },
+    "facing=north,working=true":  { "model": "apica:block/alchemy/uncrafting_table_working" },
+    "facing=south,working=true":  { "model": "apica:block/alchemy/uncrafting_table_working", "y": 180 },
+    "facing=west,working=true":   { "model": "apica:block/alchemy/uncrafting_table_working", "y": 270 },
+    "facing=east,working=true":   { "model": "apica:block/alchemy/uncrafting_table_working", "y": 90 }
+  }
+}

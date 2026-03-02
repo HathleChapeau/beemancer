@@ -239,6 +239,10 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> NECTAR_FURNACE = ITEMS.register("nectar_furnace",
             () -> new BlockItem(ApicaBlocks.NECTAR_FURNACE.get(), new Item.Properties()));
 
+    // --- UNCRAFTING TABLE ---
+    public static final DeferredItem<BlockItem> UNCRAFTING_TABLE = ITEMS.register("uncrafting_table",
+            () -> new BlockItem(ApicaBlocks.UNCRAFTING_TABLE.get(), new Item.Properties()));
+
     // --- BEE STATUE ---
     public static final DeferredItem<BlockItem> BEE_STATUE = ITEMS.register("bee_statue",
             () -> new BlockItem(ApicaBlocks.BEE_STATUE.get(), new Item.Properties()));

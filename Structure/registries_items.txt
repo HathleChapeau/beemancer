@@ -97,6 +97,9 @@
 | royal_furnace            | BlockItem        | Apica Furnaces    |
 | nectar_furnace           | BlockItem        | Apica Furnaces    |
 
+--- UNCRAFTING TABLE ---
+| uncrafting_table         | BlockItem        | Uncrafting Table   |
+
 --- STORAGE BARRELS ---
 | storage_barrel_mk1     | BlockItem        | Storage Barrels   |
 | storage_barrel_mk2     | BlockItem        | Storage Barrels   |
