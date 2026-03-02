@@ -66,9 +66,9 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
         super(menu, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;
-        this.inventoryLabelX = 28;
+        this.inventoryLabelX = 8;
         this.inventoryLabelY = 73;
-        this.titleLabelX = 28;
+        this.titleLabelX = 8;
         this.titleLabelY = 6;
     }
 
