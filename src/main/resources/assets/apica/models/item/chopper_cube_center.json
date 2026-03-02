@@ -1,8 +1,7 @@
 {
   "parent": "minecraft:block/block",
-  "ambientocclusion": false,
   "textures": {
-    "cube": "apica:block/royal_gold_block",
+    "cube": "apica:item/artifacts/chopper_center",
     "particle": "apica:block/royal_gold_block"
   },
   "elements": [

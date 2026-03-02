@@ -1,8 +1,10 @@
 {
   "parent": "minecraft:block/block",
-  "ambientocclusion": false,
+  "render_type": "cutout",
   "textures": {
-    "ring": "apica:block/honeyed_iron_block",
+    "ring": "apica:item/artifacts/chopper_top",
+    "top": "apica:block/iron10x10",
+    "cube": "apica:item/artifacts/chopper_center",
     "particle": "apica:block/honeyed_iron_block"
   },
   "elements": [
@@ -11,8 +13,7 @@
       "from": [3, 9, 3],
       "to": [13, 12, 13],
       "faces": {
-        "up":    {"texture": "#ring"},
-        "down":  {"texture": "#ring"},
+        "up":    {"texture": "#top"},
         "north": {"texture": "#ring"},
         "south": {"texture": "#ring"},
         "east":  {"texture": "#ring"},
