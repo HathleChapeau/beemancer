@@ -97,7 +97,7 @@ public class UncraftingTableRenderer implements BlockEntityRenderer<UncraftingTa
         if (!inputItem.isEmpty()) {
             FloatingItemHelper.renderFloatingItem(itemRenderer, inputItem, level,
                     partialTick, poseStack, buffer, packedLight, packedOverlay,
-                    INPUT_X, INPUT_Y, INPUT_Z, 0.1f, 0.01f, 1.0f);
+                    INPUT_X, INPUT_Y, INPUT_Z, 0.2f, 0.01f, 1.0f);
 
             // Laser beam pendant le processing
             if (isWorking) {

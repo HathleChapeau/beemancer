@@ -182,7 +182,7 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
             return;
         }
 
-        if (!ItemStack.isSameItem(input, lastInput)) {
+        if (!ItemStack.isSameItem(input, lastInput) || input.getCount() != lastInput.getCount()) {
             lastInput = input.copy();
             ghostItems = findIngredients(input);
         }
@@ -231,7 +231,7 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
         for (RecipeHolder<CraftingRecipe> holder : level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
             CraftingRecipe recipe = holder.value();
             ItemStack result = recipe.getResultItem(level.registryAccess());
-            if (ItemStack.isSameItem(result, target)) {
+            if (ItemStack.isSameItem(result, target) && target.getCount() >= result.getCount()) {
                 NonNullList<Ingredient> ingredients = recipe.getIngredients();
                 NonNullList<ItemStack> resolved = NonNullList.withSize(9, ItemStack.EMPTY);
                 for (int i = 0; i < ingredients.size() && i < 9; i++) {

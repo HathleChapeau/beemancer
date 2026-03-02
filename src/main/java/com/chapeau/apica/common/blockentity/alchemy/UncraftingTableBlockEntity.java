@@ -72,6 +72,7 @@ public class UncraftingTableBlockEntity extends BlockEntity implements MenuProvi
 
     private int progress;
     private NonNullList<ItemStack> cachedIngredients;
+    private int cachedResultCount;
 
     protected final ContainerData dataAccess;
 
@@ -179,13 +180,14 @@ public class UncraftingTableBlockEntity extends BlockEntity implements MenuProvi
             outputSlots.setStackInSlot(i, cachedIngredients.get(i).copy());
         }
 
-        inputSlot.extractItem(0, 1, false);
+        inputSlot.extractItem(0, cachedResultCount, false);
         resetProgress();
     }
 
     private void resetProgress() {
         progress = 0;
         cachedIngredients = null;
+        cachedResultCount = 0;
     }
 
     private boolean outputsEmpty() {
@@ -202,7 +204,7 @@ public class UncraftingTableBlockEntity extends BlockEntity implements MenuProvi
         for (RecipeHolder<CraftingRecipe> holder : level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
             CraftingRecipe recipe = holder.value();
             ItemStack result = recipe.getResultItem(level.registryAccess());
-            if (ItemStack.isSameItem(result, target)) {
+            if (ItemStack.isSameItem(result, target) && target.getCount() >= result.getCount()) {
                 NonNullList<Ingredient> ingredients = recipe.getIngredients();
                 NonNullList<ItemStack> resolved = NonNullList.withSize(9, ItemStack.EMPTY);
                 for (int i = 0; i < ingredients.size() && i < 9; i++) {
@@ -212,6 +214,7 @@ public class UncraftingTableBlockEntity extends BlockEntity implements MenuProvi
                         resolved.set(i, items[0].copy());
                     }
                 }
+                cachedResultCount = result.getCount();
                 return resolved;
             }
         }

@@ -45,8 +45,8 @@
     },
     {
       "name": "frame_north",
-      "from": [6, 15, 6],
-      "to": [10, 16, 7],
+      "from": [5, 15, 5],
+      "to": [11, 16, 6],
       "faces": {
         "up":    {"texture": "#side"},
         "down":  {"texture": "#side"},
@@ -58,8 +58,8 @@
     },
     {
       "name": "frame_south",
-      "from": [6, 15, 9],
-      "to": [10, 16, 10],
+      "from": [5, 15, 10],
+      "to": [11, 16, 11],
       "faces": {
         "up":    {"texture": "#side"},
         "down":  {"texture": "#side"},
@@ -71,8 +71,8 @@
     },
     {
       "name": "frame_west",
-      "from": [6, 15, 6],
-      "to": [7, 16, 10],
+      "from": [5, 15, 5],
+      "to": [6, 16, 11],
       "faces": {
         "up":    {"texture": "#side"},
         "down":  {"texture": "#side"},
@@ -84,8 +84,8 @@
     },
     {
       "name": "frame_east",
-      "from": [9, 15, 6],
-      "to": [10, 16, 10],
+      "from": [10, 15, 5],
+      "to": [11, 16, 11],
       "faces": {
         "up":    {"texture": "#side"},
         "down":  {"texture": "#side"},
