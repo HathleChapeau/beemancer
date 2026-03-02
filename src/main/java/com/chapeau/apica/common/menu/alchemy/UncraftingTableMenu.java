@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [UncraftingTableMenu.java]
- * Description: Menu pour l'Uncrafting Table
+ * Description: Menu pour l'Uncrafting Table — layout vanilla 176x166
  * ============================================================
  *
  * DEPENDANCES:
@@ -15,8 +15,8 @@
  * ------------------------------------------------------------
  *
  * SLOTS:
- * - 0: input (item à décomposer)
- * - 1-9: output (grille 3x3 des ingrédients)
+ * - 0: input (item a decomposer)
+ * - 1-9: output (grille 3x3 des ingredients)
  * - 10-36: player inventory
  * - 37-45: hotbar
  *
@@ -52,13 +52,13 @@ public class UncraftingTableMenu extends ApicaMenu {
 
     private static final int CONTAINER_SLOT_COUNT = 10;
 
-    // Client constructor
+    /** Client constructor. */
     public UncraftingTableMenu(int containerId, Inventory playerInv, FriendlyByteBuf buf) {
         this(containerId, playerInv, playerInv.player.level().getBlockEntity(buf.readBlockPos()),
                 new SimpleContainerData(4));
     }
 
-    // Server constructor
+    /** Server constructor. */
     public UncraftingTableMenu(int containerId, Inventory playerInv, BlockEntity be, ContainerData data) {
         super(ApicaMenus.UNCRAFTING_TABLE.get(), containerId);
         this.blockEntity = be;
@@ -72,19 +72,20 @@ public class UncraftingTableMenu extends ApicaMenu {
 
         addDataSlots(data);
 
-        // Input slot (left side)
-        addSlot(new ApicaSlot(inputHandler, 0, 30, 45));
+        // Slot 0: input (gauche)
+        addSlot(new ApicaSlot(inputHandler, 0, 48, 35));
 
-        // Output slots (3x3 grid, right side)
+        // Slots 1-9: output grille 3x3 (droite)
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
                 addSlot(ApicaSlot.output(outputHandler, row * 3 + col,
-                        108 + col * 18, 27 + row * 18));
+                        106 + col * 18, 17 + row * 18));
             }
         }
 
-        addPlayerInventory(playerInv, 15, 107);
-        addPlayerHotbar(playerInv, 15, 165);
+        // Slots 10-45: player inventory + hotbar (positions vanilla standard)
+        addPlayerInventory(playerInv, 8, 84);
+        addPlayerHotbar(playerInv, 8, 142);
     }
 
     public int getProgress() { return data.get(0); }

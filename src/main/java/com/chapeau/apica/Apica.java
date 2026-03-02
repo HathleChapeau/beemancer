@@ -422,11 +422,11 @@ public class Apica {
                 (be, side) -> be.getFuelTank()
         );
 
-        // Uncrafting Table: nectar tank accessible de tous les cotes
+        // Uncrafting Table: nectar uniquement par le dessous
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 ApicaBlockEntities.UNCRAFTING_TABLE.get(),
-                (be, side) -> be.getNectarTank()
+                (be, side) -> side == Direction.DOWN ? be.getNectarTank() : null
         );
 
         // Liquid Trash Can: accepte tout fluide, void immediat

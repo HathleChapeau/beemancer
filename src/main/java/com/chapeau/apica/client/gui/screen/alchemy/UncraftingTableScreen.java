@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [UncraftingTableScreen.java]
- * Description: GUI pour l'Uncrafting Table
+ * Description: GUI vanilla-style pour l'Uncrafting Table avec preview ghost items
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,8 +9,7 @@
  * | Dependance                  | Raison                | Utilisation                    |
  * |-----------------------------|----------------------|--------------------------------|
  * | UncraftingTableMenu         | Donnees container    | Slots, progress, fluid         |
- * | GuiRenderHelper             | Rendu programmatique | Slots, barres, tooltips        |
- * | AbstractApicaScreen         | Base screen          | Boilerplate GUI                |
+ * | GuiRenderHelper             | Rendu barres         | Nectar bar, tooltips           |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -20,65 +19,213 @@
  */
 package com.chapeau.apica.client.gui.screen.alchemy;
 
-import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.gui.GuiRenderHelper;
-import com.chapeau.apica.client.gui.screen.AbstractApicaScreen;
 import com.chapeau.apica.common.menu.alchemy.UncraftingTableMenu;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.List;
 
-public class UncraftingTableScreen extends AbstractApicaScreen<UncraftingTableMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "textures/gui/bg.png");
+public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTableMenu> {
 
-    private static final int FUEL_BAR_X = 15;
-    private static final int FUEL_BAR_Y = 27;
+    /** Texture du four vanilla pour extraire la fleche de progression. */
+    private static final ResourceLocation FURNACE_TEXTURE =
+            ResourceLocation.withDefaultNamespace("textures/gui/container/furnace.png");
+
+    /** Positions nectar bar relative au container. */
+    private static final int NECTAR_BAR_X = 10;
+    private static final int NECTAR_BAR_Y = 18;
+
+    /** Cache du reverse-recipe lookup cote client (pour ghost items). */
+    private ItemStack lastInput = ItemStack.EMPTY;
+    private NonNullList<ItemStack> ghostItems;
 
     public UncraftingTableScreen(UncraftingTableMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 99);
+        super(menu, playerInventory, title);
+        this.imageWidth = 176;
+        this.imageHeight = 166;
+        this.inventoryLabelX = 8;
+        this.inventoryLabelY = 73;
+        this.titleLabelX = 28;
+        this.titleLabelY = 6;
     }
 
     @Override
-    protected ResourceLocation getTexture() { return TEXTURE; }
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
+        int x = leftPos;
+        int y = topPos;
 
-    @Override
-    protected String getTitleKey() { return "container.apica.uncrafting_table"; }
+        // Fond de container vanilla (gris + bordures 3D + titre + separateur)
+        GuiRenderHelper.renderContainerBackground(g, font, x, y, 176, 166,
+                "container.apica.uncrafting_table", 73);
 
-    @Override
-    protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        // Input slot
-        GuiRenderHelper.renderSlot(g, x + 29, y + 44);
+        // Slot input
+        drawSlot(g, x + 47, y + 34);
 
-        // Output slots (3x3 grid)
-        GuiRenderHelper.renderSlotGrid(g, x + 107, y + 26, 3, 3);
+        // Slots output 3x3
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                drawSlot(g, x + 105 + col * 18, y + 16 + row * 18);
+            }
+        }
 
-        // Progress bar between input and output
-        GuiRenderHelper.renderTextureProgressBar(g, x + 53, y + 48, menu.getProgressRatio());
+        // Slots inventaire joueur (3 lignes de 9)
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                drawSlot(g, x + 7 + col * 18, y + 83 + row * 18);
+            }
+        }
 
-        // Nectar bar
-        int fuelCap = menu.getFluidCapacity();
-        float fuelRatio = fuelCap > 0 ? (float) menu.getFluidAmount() / fuelCap : 0;
-        GuiRenderHelper.renderLeftHoneyBar(g, x + FUEL_BAR_X, y + FUEL_BAR_Y, fuelRatio);
+        // Slots hotbar
+        for (int col = 0; col < 9; col++) {
+            drawSlot(g, x + 7 + col * 18, y + 141);
+        }
+
+        // Barre de nectar
+        int cap = menu.getFluidCapacity();
+        float ratio = cap > 0 ? (float) menu.getFluidAmount() / cap : 0;
+        GuiRenderHelper.renderLeftHoneyBar(g, x + NECTAR_BAR_X, y + NECTAR_BAR_Y, ratio);
+
+        // Fleche de progression vanilla (extraite de la texture du four)
+        renderVanillaArrow(g, x + 73, y + 35);
     }
 
     @Override
-    protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        if (GuiRenderHelper.isHoneyBarHovered(FUEL_BAR_X, FUEL_BAR_Y, x, y, mouseX, mouseY)) {
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        super.render(g, mouseX, mouseY, partialTick);
+
+        // Ghost items (preview oscillant pendant le process)
+        updateGhostItems();
+        renderGhostItems(g);
+
+        renderTooltip(g, mouseX, mouseY);
+
+        // Tooltip nectar bar
+        int x = leftPos;
+        int y = topPos;
+        if (GuiRenderHelper.isHoneyBarHovered(NECTAR_BAR_X, NECTAR_BAR_Y, x, y, mouseX, mouseY)) {
             int amount = menu.getFluidAmount();
             int cap = menu.getFluidCapacity();
             FluidStack tankFluid = menu.getNectarTank().getFluid();
             String name = tankFluid.isEmpty() ? "Nectar" : GuiRenderHelper.getFluidName(tankFluid);
-            String line1 = name + ": " + amount + " / " + cap + " mB";
             g.renderComponentTooltip(font, List.of(
-                    Component.literal(line1),
+                    Component.literal(name + ": " + amount + " / " + cap + " mB"),
                     Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
                             .withStyle(s -> s.withColor(0xAAAAAA))
             ), mouseX, mouseY);
         }
+    }
+
+    /**
+     * Dessine un slot vanilla: bordure sombre en haut-gauche, claire en bas-droite, fond gris.
+     */
+    private static void drawSlot(GuiGraphics g, int x, int y) {
+        g.fill(x, y, x + 18, y + 1, 0xFF373737);
+        g.fill(x, y, x + 1, y + 18, 0xFF373737);
+        g.fill(x + 1, y + 17, x + 18, y + 18, 0xFFFFFFFF);
+        g.fill(x + 17, y + 1, x + 18, y + 18, 0xFFFFFFFF);
+        g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF8B8B8B);
+    }
+
+    /**
+     * Fleche de four vanilla: fond vide puis remplissage proportionnel au progres.
+     * UV extraits de minecraft:textures/gui/container/furnace.png.
+     */
+    private void renderVanillaArrow(GuiGraphics g, int x, int y) {
+        // Fleche vide (arriere-plan) — UV (79, 35) dans la texture du four, taille 24x17
+        g.blit(FURNACE_TEXTURE, x, y, 79, 35, 24, 17);
+
+        // Remplissage proportionnel — UV (176, 14) dans la texture du four
+        int progressWidth = (int) (menu.getProgressRatio() * 24);
+        if (progressWidth > 0) {
+            g.blit(FURNACE_TEXTURE, x, y, 176, 14, progressWidth + 1, 16);
+        }
+    }
+
+    /**
+     * Met a jour le cache des ghost items en faisant un reverse recipe lookup cote client.
+     * Ne recalcule que si l'input change.
+     */
+    private void updateGhostItems() {
+        ItemStack input = menu.getSlot(0).getItem();
+
+        if (input.isEmpty()) {
+            ghostItems = null;
+            lastInput = ItemStack.EMPTY;
+            return;
+        }
+
+        if (!ItemStack.isSameItem(input, lastInput)) {
+            lastInput = input.copy();
+            ghostItems = findIngredients(input);
+        }
+    }
+
+    /**
+     * Rend les ghost items avec opacite oscillante dans les output slots.
+     * Visible uniquement pendant le process (progress > 0, outputs vides).
+     */
+    private void renderGhostItems(GuiGraphics g) {
+        if (ghostItems == null || menu.getProgress() <= 0) return;
+        if (!outputSlotsEmpty()) return;
+
+        float pulse = 0.3f + 0.35f * (float) Math.sin(System.currentTimeMillis() * 0.004);
+
+        for (int i = 0; i < 9; i++) {
+            ItemStack ghost = ghostItems.get(i);
+            if (ghost.isEmpty()) continue;
+
+            int gx = leftPos + 106 + (i % 3) * 18;
+            int gy = topPos + 17 + (i / 3) * 18;
+
+            // Render l'item puis overlay semi-transparent pour simuler l'opacite
+            g.renderItem(ghost, gx, gy);
+            int overlayAlpha = (int) ((1.0f - pulse) * 255) & 0xFF;
+            g.fill(gx, gy, gx + 16, gy + 16, (overlayAlpha << 24) | 0x8B8B8B);
+        }
+    }
+
+    private boolean outputSlotsEmpty() {
+        for (int i = 1; i <= 9; i++) {
+            if (!menu.getSlot(i).getItem().isEmpty()) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Reverse recipe lookup: trouve les ingredients d'un item via le RecipeManager.
+     */
+    private NonNullList<ItemStack> findIngredients(ItemStack target) {
+        Level level = Minecraft.getInstance().level;
+        if (level == null) return null;
+
+        for (RecipeHolder<CraftingRecipe> holder : level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
+            CraftingRecipe recipe = holder.value();
+            ItemStack result = recipe.getResultItem(level.registryAccess());
+            if (ItemStack.isSameItem(result, target)) {
+                NonNullList<Ingredient> ingredients = recipe.getIngredients();
+                NonNullList<ItemStack> resolved = NonNullList.withSize(9, ItemStack.EMPTY);
+                for (int i = 0; i < ingredients.size() && i < 9; i++) {
+                    ItemStack[] items = ingredients.get(i).getItems();
+                    if (items.length > 0) {
+                        resolved.set(i, items[0].copy());
+                    }
+                }
+                return resolved;
+            }
+        }
+        return null;
     }
 }
