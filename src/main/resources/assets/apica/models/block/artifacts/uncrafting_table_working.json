@@ -1,6 +1,0 @@
-{
-  "parent": "apica:block/artifacts/uncrafting_table",
-  "textures": {
-    "cross": "apica:block/uncrafting_table/uncrafting_table_front_working"
-  }
-}

@@ -46,9 +46,13 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "textures/gui/uncrafting_table.png");
 
-    /** Texture du four vanilla pour extraire la fleche de progression. */
+    /** Texture du four vanilla pour la fleche vide (background). */
     private static final ResourceLocation FURNACE_TEXTURE =
             ResourceLocation.withDefaultNamespace("textures/gui/container/furnace.png");
+
+    /** Sprite vanilla pour le remplissage de la fleche de progression (1.21+). */
+    private static final ResourceLocation BURN_PROGRESS_SPRITE =
+            ResourceLocation.withDefaultNamespace("container/furnace/burn_progress");
 
     /** Positions nectar bar relative au container. */
     private static final int NECTAR_BAR_X = 10;
@@ -73,8 +77,30 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
         int x = leftPos;
         int y = topPos;
 
-        // Fond via texture PNG
-        g.blit(GUI_TEXTURE, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
+        // Fond via texture PNG (taille reelle 176x166)
+        g.blit(GUI_TEXTURE, x, y, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
+
+        // Slot input
+        drawSlot(g, x + 47, y + 34);
+
+        // Slots output 3x3
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                drawSlot(g, x + 105 + col * 18, y + 16 + row * 18);
+            }
+        }
+
+        // Slots inventaire joueur (3x9)
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                drawSlot(g, x + 7 + col * 18, y + 83 + row * 18);
+            }
+        }
+
+        // Slots hotbar
+        for (int col = 0; col < 9; col++) {
+            drawSlot(g, x + 7 + col * 18, y + 141);
+        }
 
         // Barre de nectar
         int cap = menu.getFluidCapacity();
@@ -83,6 +109,17 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
 
         // Fleche de progression vanilla (extraite de la texture du four)
         renderVanillaArrow(g, x + 73, y + 35);
+    }
+
+    /**
+     * Dessine un slot vanilla: bordure sombre en haut-gauche, claire en bas-droite, fond gris.
+     */
+    private static void drawSlot(GuiGraphics g, int x, int y) {
+        g.fill(x, y, x + 18, y + 1, 0xFF373737);
+        g.fill(x, y, x + 1, y + 18, 0xFF373737);
+        g.fill(x + 1, y + 17, x + 18, y + 18, 0xFFFFFFFF);
+        g.fill(x + 17, y + 1, x + 18, y + 18, 0xFFFFFFFF);
+        g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF8B8B8B);
     }
 
     @Override
@@ -122,13 +159,13 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
      * UV extraits de minecraft:textures/gui/container/furnace.png.
      */
     private void renderVanillaArrow(GuiGraphics g, int x, int y) {
-        // Fleche vide (arriere-plan) — UV (79, 35) dans la texture du four, taille 24x17
+        // Fleche vide (arriere-plan) — UV (79, 35) dans la texture du four
         g.blit(FURNACE_TEXTURE, x, y, 79, 35, 24, 17);
 
-        // Remplissage proportionnel — UV (176, 14) dans la texture du four
+        // Remplissage proportionnel via sprite vanilla (1.21+)
         int progressWidth = (int) (menu.getProgressRatio() * 24);
         if (progressWidth > 0) {
-            g.blit(FURNACE_TEXTURE, x, y, 176, 14, progressWidth + 1, 16);
+            g.blitSprite(BURN_PROGRESS_SPRITE, 24, 16, 0, 0, x, y, progressWidth + 1, 16);
         }
     }
 
@@ -159,7 +196,7 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
         if (ghostItems == null || menu.getProgress() <= 0) return;
         if (!outputSlotsEmpty()) return;
 
-        float alpha = 0.3f + 0.35f * (float) Math.sin(System.currentTimeMillis() * 0.004);
+        float alpha = 0.5f + 0.15f * (float) Math.sin(System.currentTimeMillis() * 0.0015);
 
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
