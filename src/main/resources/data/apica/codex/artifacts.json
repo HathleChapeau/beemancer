@@ -19,13 +19,13 @@
     {"id": "charging_station", "position": {"x": 3, "y": 3}, "category": "NORMAL", "parent": "repair_tool", "hidden_until_parent_unlocked": false},
 
     {"id": "royal_artifact_core", "position": {"x": 0, "y": 5}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "chopper_axe", "position": {"x": -2, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "building_staff", "position": {"x": -1, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "mining_laser", "position": {"x": 1, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "building_staff", "position": {"x": -2, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "mining_laser", "position": {"x": 2, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "chopper_axe", "position": {"x": -1, "y": 6}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
 
-    {"id": "nectar_artifact_core", "position": {"x": 0, "y": 7}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "bee_elytra", "position": {"x": -1, "y": 7}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "sniper", "position": {"x": 1, "y": 7}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "uncrafting_table", "position": {"x": 2, "y": 7}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false}
+    {"id": "nectar_artifact_core", "position": {"x": 0, "y": 8}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "bee_elytra", "position": {"x": -2, "y": 8}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "sniper", "position": {"x": 2, "y": 8}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "uncrafting_table", "position": {"x": -1, "y": 9}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false}
   ]
 }
