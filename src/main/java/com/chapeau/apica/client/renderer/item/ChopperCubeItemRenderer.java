@@ -70,6 +70,9 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final ResourceLocation BEE_TEXTURE =
         ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
 
+    /** Delay avant le debut de l'animation (1 seconde). */
+    private static final int ANIM_DELAY_TICKS = 20;
+
     /** Duree de la phase d'ouverture en ticks. */
     private static final int OPENING_TICKS = 15;
 
@@ -85,8 +88,8 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
     /** Echelle des abeilles. */
     private static final float BEE_SCALE = 0.2f;
 
-    /** Centre Y du modele (entre 5 et 11, centre = 8/16 = 0.5). */
-    private static final float CENTER_Y = 8f / 16f;
+    /** Centre Y pour l'orbite des abeilles (compense le flip 180 du BeeModel). */
+    private static final float CENTER_Y = 10f / 16f;
 
     /** Centre XZ du modele (8/16 = 0.5). */
     private static final float CENTER_XZ = 8f / 16f;
@@ -149,10 +152,29 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
     private void renderAnimated(ItemStack stack, PoseStack poseStack, MultiBufferSource buffer,
                                  int packedLight, int packedOverlay) {
         int currentTick = AnimationTimer.getTicks();
-        int elapsed = currentTick - animStartTick;
-        if (elapsed < 0) elapsed = 0;
+        int rawElapsed = currentTick - animStartTick;
+        if (rawElapsed < 0) rawElapsed = 0;
 
         float time = (float) currentTick;
+
+        // Delay de 1 seconde avant le debut de l'animation
+        int elapsed = rawElapsed - ANIM_DELAY_TICKS;
+
+        if (elapsed < 0) {
+            // Pendant le delay: rendu statique avec slabs jointes au centre
+            poseStack.pushPose();
+            poseStack.translate(0, MAX_SEPARATION, 0);
+            renderBakedModel(BOTTOM_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
+            poseStack.popPose();
+
+            poseStack.pushPose();
+            poseStack.translate(0, -MAX_SEPARATION, 0);
+            renderBakedModel(TOP_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
+            poseStack.popPose();
+
+            renderBakedModel(CENTER_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
+            return;
+        }
 
         // Phase d'ouverture: ease out (1 - (1-t)^2)
         // Les slabs commencent jointes au centre (offset = MAX) puis s'ecartent (offset = 0)
@@ -182,7 +204,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
         // Centre cube: bobbing subtil (actif des l'ouverture complete)
         poseStack.pushPose();
         if (elapsed >= OPENING_TICKS) {
-            float bob = (float) Math.sin(time * 0.08) * BOB_AMPLITUDE;
+            float bob = (float) Math.sin(time * 0.053) * BOB_AMPLITUDE;
             poseStack.translate(0, bob, 0);
         }
         renderBakedModel(CENTER_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
@@ -205,11 +227,14 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
         RenderType beeRenderType = RenderType.entityCutout(BEE_TEXTURE);
         VertexConsumer vc = buffer.getBuffer(beeRenderType);
 
+        // Le rayon grandit de 0 au rayon final pendant le fade-in (alpha 0→1)
+        float radius = BEE_ORBIT_RADIUS * alpha;
+
         for (int i = 0; i < 2; i++) {
             double angle = time * 0.15 + i * Math.PI;
 
-            float beeX = CENTER_XZ + (float) Math.cos(angle) * BEE_ORBIT_RADIUS;
-            float beeZ = CENTER_XZ + (float) Math.sin(angle) * BEE_ORBIT_RADIUS;
+            float beeX = CENTER_XZ + (float) Math.cos(angle) * radius;
+            float beeZ = CENTER_XZ + (float) Math.sin(angle) * radius;
             float beeY = CENTER_Y;
 
             poseStack.pushPose();
