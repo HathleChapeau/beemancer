@@ -20,8 +20,10 @@
  */
 package com.chapeau.apica.common.item.tool;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -33,6 +35,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 
 /**
@@ -195,13 +199,15 @@ public class MiningLaserItem extends Item {
     }
 
     @Override
-    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
-        return true;
+    public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
+        ResourceKey<Enchantment> key = enchantment.unwrapKey().orElse(null);
+        if (key == null) return false;
+        return key.equals(Enchantments.FORTUNE) || key.equals(Enchantments.SILK_TOUCH);
     }
 
     @Override
     public int getEnchantmentValue() {
-        return 0;
+        return 1;
     }
 
     @Override
