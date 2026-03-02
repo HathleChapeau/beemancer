@@ -23,8 +23,8 @@
     },
     {
       "name": "cross_plane_1",
-      "from": [0.8, 0, 8],
-      "to": [15.2, 16, 8],
+      "from": [0.02, 0, 8],
+      "to": [15.98, 16, 8],
       "rotation": {"origin": [8, 8, 8], "axis": "y", "angle": 45, "rescale": true},
       "shade": false,
       "faces": {
@@ -34,8 +34,8 @@
     },
     {
       "name": "cross_plane_2",
-      "from": [8, 0, 0.8],
-      "to": [8, 16, 15.2],
+      "from": [8, 0, 0.02],
+      "to": [8, 16, 15.98],
       "rotation": {"origin": [8, 8, 8], "axis": "y", "angle": 45, "rescale": true},
       "shade": false,
       "faces": {

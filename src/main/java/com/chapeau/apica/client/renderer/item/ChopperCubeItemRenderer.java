@@ -241,7 +241,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
             poseStack.translate(beeX, beeY, beeZ);
 
             // Rotation face tangentielle + 90deg supplementaires
-            float yRot = (float) Math.toDegrees(angle) + 180;
+            float yRot = (float) Math.toDegrees(angle) + 0;
             poseStack.mulPose(Axis.YP.rotationDegrees(-yRot));
 
             // Flip pour convention entity models

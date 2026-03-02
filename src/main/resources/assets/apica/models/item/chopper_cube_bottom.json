@@ -19,6 +19,18 @@
         "east":  {"texture": "#ring", "uv": [0, 11.2, 16, 16]},
         "west":  {"texture": "#ring", "uv": [0, 11.2, 16, 16]}
       }
+    },
+    {
+      "name": "bottom_slab",
+      "from": [3, 5, 3],
+      "to": [13, 2, 13],
+      "faces": {
+        "up":  {"texture": "#top"},
+        "north": {"texture": "#ring", "uv": [0, 16, 16, 11.2]},
+        "south": {"texture": "#ring", "uv": [0, 16, 16, 11.2]},
+        "east":  {"texture": "#ring", "uv": [0, 16, 16, 11.2]},
+        "west":  {"texture": "#ring", "uv": [0, 16, 16, 11.2]}
+      }
     }
   ]
 }
