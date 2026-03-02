@@ -21,6 +21,7 @@ package com.chapeau.apica.client.gui.screen.alchemy;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.gui.GuiRenderHelper;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.chapeau.apica.common.menu.alchemy.UncraftingTableMenu;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -158,7 +159,10 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
         if (ghostItems == null || menu.getProgress() <= 0) return;
         if (!outputSlotsEmpty()) return;
 
-        float pulse = 0.3f + 0.35f * (float) Math.sin(System.currentTimeMillis() * 0.004);
+        float alpha = 0.3f + 0.35f * (float) Math.sin(System.currentTimeMillis() * 0.004);
+
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
 
         for (int i = 0; i < 9; i++) {
             ItemStack ghost = ghostItems.get(i);
@@ -166,12 +170,11 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
 
             int gx = leftPos + 106 + (i % 3) * 18;
             int gy = topPos + 17 + (i / 3) * 18;
-
-            // Render l'item puis overlay semi-transparent pour simuler l'opacite
             g.renderItem(ghost, gx, gy);
-            int overlayAlpha = (int) ((1.0f - pulse) * 255) & 0xFF;
-            g.fill(gx, gy, gx + 16, gy + 16, (overlayAlpha << 24) | 0x8B8B8B);
         }
+
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem.disableBlend();
     }
 
     private boolean outputSlotsEmpty() {
