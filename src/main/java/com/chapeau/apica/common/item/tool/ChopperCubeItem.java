@@ -80,9 +80,11 @@ public class ChopperCubeItem extends Item {
                 return InteractionResult.SUCCESS;
             }
 
-            // Scanner et demarrer la destruction (tri Y decroissant = haut vers bas)
+            // Scanner et demarrer la destruction (haut→bas, puis gauche→droite)
             List<BlockPos> logs = findConnectedLogs(level, clickedPos);
-            logs.sort(Comparator.<BlockPos>comparingInt(BlockPos::getY).reversed());
+            logs.sort(Comparator.<BlockPos>comparingInt(BlockPos::getY).reversed()
+                    .thenComparingInt(BlockPos::getX)
+                    .thenComparingInt(BlockPos::getZ));
             ChopperCubeChoppingState.start(player.getUUID(), logs);
         } else {
             // Lock le preview client-side
