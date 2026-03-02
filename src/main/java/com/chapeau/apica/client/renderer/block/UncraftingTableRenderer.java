@@ -63,11 +63,15 @@ public class UncraftingTableRenderer implements BlockEntityRenderer<UncraftingTa
     private static final double INPUT_Y = 0.97;
     private static final double INPUT_Z = 0.5;
 
+    private static final double GRID_X = 3.5f / 16f;
+    private static final double GRID_Y = 1f - GRID_X;
+    private static final double GRID_HEIGHT = 0.51f;
+
     /** Positions 3x3 sur la slab (Y juste au-dessus de la surface y=0.5). */
     private static final double[][] GRID = {
-            {0.25, 0.55, 0.25}, {0.50, 0.55, 0.25}, {0.75, 0.55, 0.25},
-            {0.25, 0.55, 0.50}, {0.50, 0.55, 0.50}, {0.75, 0.55, 0.50},
-            {0.25, 0.55, 0.75}, {0.50, 0.55, 0.75}, {0.75, 0.55, 0.75}
+            {GRID_X, GRID_HEIGHT, GRID_X}, {0.50, GRID_HEIGHT, GRID_X}, {GRID_Y, GRID_HEIGHT, GRID_X},
+            {GRID_X, GRID_HEIGHT, 0.50}, {0.50, GRID_HEIGHT, 0.50}, {GRID_Y, GRID_HEIGHT, 0.50},
+            {GRID_X, GRID_HEIGHT, GRID_Y}, {0.50, GRID_HEIGHT, GRID_Y}, {GRID_Y, GRID_HEIGHT, GRID_Y}
     };
 
     /** Duree d'un cycle laser par slot (20 ticks = 1 seconde). */
