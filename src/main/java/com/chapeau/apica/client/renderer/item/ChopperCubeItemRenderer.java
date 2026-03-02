@@ -70,8 +70,8 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final ResourceLocation BEE_TEXTURE =
         ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
 
-    /** Delay avant le debut de l'animation (1 seconde). */
-    private static final int ANIM_DELAY_TICKS = 20;
+    /** Delay avant le debut de l'animation. */
+    private static final int ANIM_DELAY_TICKS = 10;
 
     /** Duree de la phase d'ouverture en ticks. */
     private static final int OPENING_TICKS = 15;
@@ -89,7 +89,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float BEE_SCALE = 0.2f;
 
     /** Centre Y pour l'orbite des abeilles (compense le flip 180 du BeeModel). */
-    private static final float CENTER_Y = 10f / 16f;
+    private static final float CENTER_Y = 12f / 16f;
 
     /** Centre XZ du modele (8/16 = 0.5). */
     private static final float CENTER_XZ = 8f / 16f;
@@ -240,8 +240,8 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
             poseStack.pushPose();
             poseStack.translate(beeX, beeY, beeZ);
 
-            // Rotation face tangentielle
-            float yRot = (float) Math.toDegrees(angle) + 90;
+            // Rotation face tangentielle + 90deg supplementaires
+            float yRot = (float) Math.toDegrees(angle) + 180;
             poseStack.mulPose(Axis.YP.rotationDegrees(-yRot));
 
             // Flip pour convention entity models
