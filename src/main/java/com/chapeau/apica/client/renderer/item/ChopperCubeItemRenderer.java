@@ -150,6 +150,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
         float time = (float) currentTick;
 
         // Phase d'ouverture: ease out (1 - (1-t)^2)
+        // Les slabs commencent jointes au centre (offset = MAX) puis s'ecartent (offset = 0)
         float openProgress;
         if (elapsed >= OPENING_TICKS) {
             openProgress = 1.0f;
@@ -158,17 +159,18 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
             openProgress = 1.0f - (1.0f - t) * (1.0f - t);
         }
 
-        float separation = MAX_SEPARATION * openProgress;
+        // offset diminue de MAX_SEPARATION (jointes au centre) a 0 (position du modele)
+        float offset = MAX_SEPARATION * (1.0f - openProgress);
 
-        // Bottom slab: decale vers le bas
+        // Bottom slab: decale vers le haut (vers le centre) au debut
         poseStack.pushPose();
-        poseStack.translate(0, -separation, 0);
+        poseStack.translate(0, offset, 0);
         renderBakedModel(BOTTOM_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
         poseStack.popPose();
 
-        // Top slab: decale vers le haut
+        // Top slab: decale vers le bas (vers le centre) au debut
         poseStack.pushPose();
-        poseStack.translate(0, separation, 0);
+        poseStack.translate(0, -offset, 0);
         renderBakedModel(TOP_MODEL_LOC, stack, poseStack, buffer, packedLight, packedOverlay);
         poseStack.popPose();
 

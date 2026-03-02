@@ -10,14 +10,14 @@
   "elements": [
     {
       "name": "top_slab",
-      "from": [3, 9, 3],
-      "to": [13, 12, 13],
+      "from": [3, 11, 3],
+      "to": [13, 14, 13],
       "faces": {
         "up":    {"texture": "#top"},
-        "north": {"texture": "#ring"},
-        "south": {"texture": "#ring"},
-        "east":  {"texture": "#ring"},
-        "west":  {"texture": "#ring"}
+        "north": {"texture": "#ring", "uv": [0, 0, 16, 4.8]},
+        "south": {"texture": "#ring", "uv": [0, 0, 16, 4.8]},
+        "east":  {"texture": "#ring", "uv": [0, 0, 16, 4.8]},
+        "west":  {"texture": "#ring", "uv": [0, 0, 16, 4.8]}
       }
     }
   ]
