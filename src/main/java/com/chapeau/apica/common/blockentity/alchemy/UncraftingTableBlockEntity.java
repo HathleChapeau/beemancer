@@ -37,6 +37,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -82,6 +83,7 @@ public class UncraftingTableBlockEntity extends BlockEntity implements MenuProvi
         this.inputSlot = new ItemStackHandler(1) {
             @Override
             protected void onContentsChanged(int slot) {
+                resetProgress();
                 setChanged();
                 syncToClient();
             }
