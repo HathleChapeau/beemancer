@@ -26,6 +26,6 @@
     {"id": "nectar_artifact_core", "position": {"x": 0, "y": 6}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "bee_elytra", "position": {"x": -2, "y": 6}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "railgun", "position": {"x": 1, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "uncrafting_table", "position": {"x": -1, "y": 7}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false}
+    {"id": "uncrafting_table", "position": {"x": 1, "y": 7}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false}
   ]
 }
