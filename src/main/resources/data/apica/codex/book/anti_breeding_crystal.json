@@ -8,5 +8,7 @@
       "key": "codex.apica.artifacts.anti_breeding_crystal.lore.p1"
     }
   ],
-  "sticky_notes": []
+  "sticky_notes": [
+    {"craft": "apica:antibreeding_crystal", "type": "altar"}
+  ]
 }
