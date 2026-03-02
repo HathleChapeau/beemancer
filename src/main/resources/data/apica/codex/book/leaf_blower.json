@@ -8,18 +8,12 @@
       "key": "codex.apica.artifacts.leaf_blower.lore.p1"
     },
     {
-      "type": "handraw_line"
-    },
-    {
-      "type": "text",
-      "key": "codex.apica.artifacts.leaf_blower.lore.p2"
-    },
-    {
-      "type": "handraw_line"
-    },
-    {
       "type": "text",
       "key": "codex.apica.artifacts.leaf_blower.lore.p3"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.leaf_blower.lore.p4"
     },
     {
       "type": "page_break"

@@ -40,7 +40,7 @@ import java.util.UUID;
 public final class ChopperCubeChoppingState {
 
     /** Ticks entre chaque destruction de bloc */
-    private static final int TICKS_PER_BLOCK = 3;
+    private static final int TICKS_PER_BLOCK = 12;
 
     private static final Map<UUID, State> activeStates = new HashMap<>();
 
