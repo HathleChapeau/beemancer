@@ -23,11 +23,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 /**
  * Gère le raycast et la destruction de blocs pour le Mining Laser.
@@ -82,8 +87,8 @@ public final class MiningLaserBlockBreaker {
             return hitPos;
         }
 
-        // Détruire le bloc central
-        level.destroyBlock(hitPos, true, player);
+        // Détruire le bloc central avec prise en compte des enchantements (Fortune, Silk Touch)
+        breakBlockWithTool(level, player, hitPos);
 
         // Détruire les blocs voisins en sphère si chargeLevel > 0
         if (chargeLevel > 0) {
@@ -119,10 +124,29 @@ public final class MiningLaserBlockBreaker {
                     float h = state.getDestroySpeed(level, pos);
                     if (h < 0 || h > MAX_HARDNESS) continue;
 
-                    level.destroyBlock(pos, true, player);
+                    breakBlockWithTool(level, player, pos);
                 }
             }
         }
+    }
+
+    /**
+     * Détruit un bloc en utilisant Block.getDrops() avec le tool du joueur,
+     * ce qui permet aux enchantements (Fortune, Silk Touch) d'être pris en compte
+     * via le système de loot tables vanilla.
+     */
+    private static void breakBlockWithTool(ServerLevel level, Player player, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (state.isAir()) return;
+
+        BlockEntity blockEntity = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
+        ItemStack tool = player.getMainHandItem();
+
+        List<ItemStack> drops = Block.getDrops(state, level, pos, blockEntity, player, tool);
+        drops.forEach(drop -> Block.popResource(level, pos, drop));
+        state.spawnAfterBreak(level, pos, tool, true);
+
+        level.destroyBlock(pos, false, player);
     }
 
     /**
