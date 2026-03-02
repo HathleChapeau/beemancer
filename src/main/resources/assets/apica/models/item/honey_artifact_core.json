@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "apica:item/honey_artifact_core"
+    "layer0": "apica:item/artifacts/honey_artifact_core"
   }
 }

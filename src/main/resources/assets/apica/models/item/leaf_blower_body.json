@@ -1,6 +1,7 @@
 {
   "textures": {
     "0": "apica:item/artifacts/leaf_blower_body",
+    "1": "apica:item/artifacts/leaf_blower_body_2",
     "particle": "apica:item/artifacts/leaf_blower_body"
   },
   "elements": [
@@ -31,6 +32,32 @@
       }
     },
     {
+      "name": "nozzle down",
+      "from": [7, 3, 9],
+      "to": [11, 5, 18],
+      "faces": {
+        "north": {"uv": [0, 5, 6, 11], "texture": "#1"},
+        "east": {"uv": [6, 5, 12, 11], "rotation": 180, "texture": "#1"},
+        "south": {"uv": [0, 5, 6, 11], "texture": "#1"},
+        "west": {"uv": [6, 5, 12, 11], "texture": "#1"},
+        "up": {"uv": [0, 5, 6, 11], "texture": "#1"},
+        "down": {"uv": [0, 5, 6, 11], "texture": "#1"}
+      }
+    },
+    {
+      "name": "nozzle back",
+      "from": [6.5, 4.5, 16],
+      "to": [11.5, 9.5, 19],
+      "faces": {
+        "north": {"uv": [5, 0, 5, 5], "texture": "#1"},
+        "east": {"uv": [2, 0, 3, 5], "texture": "#1"},
+        "south": {"uv": [5, 0, 5, 5], "texture": "#1"},
+        "west": {"uv": [2, 0, 3, 5], "texture": "#1"},
+        "up": {"uv": [10, 5, -5, -3], "texture": "#1"},
+        "down": {"uv": [10, 5, -5, -3], "texture": "#1"}
+      }
+    },
+    {
       "name": "handle_back",
       "from": [8, 7, 17],
       "to": [10, 11, 18],
@@ -45,8 +72,8 @@
     },
     {
       "name": "handle_front",
-      "from": [8, 7, 12],
-      "to": [10, 11, 13],
+      "from": [8, 7, 8],
+      "to": [10, 11, 9],
       "faces": {
         "north": {"uv": [5, 6, 6, 10], "texture": "#0"},
         "east": {"uv": [5, 6, 6, 10], "texture": "#0"},
@@ -58,7 +85,7 @@
     },
     {
       "name": "handle_top",
-      "from": [8, 11, 12],
+      "from": [8, 11, 8],
       "to": [10, 12, 18],
       "faces": {
         "north": {"uv": [5, 6, 6, 10], "texture": "#0"},
@@ -71,8 +98,8 @@
     },
     {
       "name": "handle_bottom",
-      "from": [8, 6, 12],
-      "to": [10, 7, 18],
+      "from": [7, 9, 7.5],
+      "to": [11, 10, 9.5],
       "faces": {
         "north": {"uv": [5, 6, 6, 10], "texture": "#0"},
         "east": {"uv": [5, 6, 6, 10], "texture": "#0"},
