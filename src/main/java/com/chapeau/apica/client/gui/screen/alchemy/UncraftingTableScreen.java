@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [UncraftingTableScreen.java]
- * Description: GUI vanilla-style pour l'Uncrafting Table avec preview ghost items
+ * Description: GUI pour l'Uncrafting Table avec texture background et preview ghost items
  * ============================================================
  *
  * DEPENDANCES:
@@ -19,6 +19,7 @@
  */
 package com.chapeau.apica.client.gui.screen.alchemy;
 
+import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.common.menu.alchemy.UncraftingTableMenu;
 import net.minecraft.client.Minecraft;
@@ -40,6 +41,10 @@ import java.util.List;
 
 public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTableMenu> {
 
+    /** Texture de fond du GUI (176x166). */
+    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            Apica.MOD_ID, "textures/gui/uncrafting_table.png");
+
     /** Texture du four vanilla pour extraire la fleche de progression. */
     private static final ResourceLocation FURNACE_TEXTURE =
             ResourceLocation.withDefaultNamespace("textures/gui/container/furnace.png");
@@ -56,7 +61,7 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
         super(menu, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = 166;
-        this.inventoryLabelX = 8;
+        this.inventoryLabelX = 28;
         this.inventoryLabelY = 73;
         this.titleLabelX = 28;
         this.titleLabelY = 6;
@@ -67,31 +72,8 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
         int x = leftPos;
         int y = topPos;
 
-        // Fond de container vanilla (gris + bordures 3D + titre + separateur)
-        GuiRenderHelper.renderContainerBackground(g, font, x, y, 176, 166,
-                "container.apica.uncrafting_table", 73);
-
-        // Slot input
-        drawSlot(g, x + 47, y + 34);
-
-        // Slots output 3x3
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                drawSlot(g, x + 105 + col * 18, y + 16 + row * 18);
-            }
-        }
-
-        // Slots inventaire joueur (3 lignes de 9)
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                drawSlot(g, x + 7 + col * 18, y + 83 + row * 18);
-            }
-        }
-
-        // Slots hotbar
-        for (int col = 0; col < 9; col++) {
-            drawSlot(g, x + 7 + col * 18, y + 141);
-        }
+        // Fond via texture PNG
+        g.blit(GUI_TEXTURE, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
 
         // Barre de nectar
         int cap = menu.getFluidCapacity();
@@ -100,6 +82,12 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
 
         // Fleche de progression vanilla (extraite de la texture du four)
         renderVanillaArrow(g, x + 73, y + 35);
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
+        // Labels rendus une seule fois via la methode par defaut de AbstractContainerScreen
+        super.renderLabels(g, mouseX, mouseY);
     }
 
     @Override
@@ -126,17 +114,6 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
                             .withStyle(s -> s.withColor(0xAAAAAA))
             ), mouseX, mouseY);
         }
-    }
-
-    /**
-     * Dessine un slot vanilla: bordure sombre en haut-gauche, claire en bas-droite, fond gris.
-     */
-    private static void drawSlot(GuiGraphics g, int x, int y) {
-        g.fill(x, y, x + 18, y + 1, 0xFF373737);
-        g.fill(x, y, x + 1, y + 18, 0xFF373737);
-        g.fill(x + 1, y + 17, x + 18, y + 18, 0xFFFFFFFF);
-        g.fill(x + 17, y + 1, x + 18, y + 18, 0xFFFFFFFF);
-        g.fill(x + 1, y + 1, x + 17, y + 17, 0xFF8B8B8B);
     }
 
     /**

@@ -38,6 +38,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -60,7 +63,7 @@ import javax.annotation.Nullable;
 
 public class UncraftingTableBlockEntity extends BlockEntity implements MenuProvider {
     public static final int TANK_CAPACITY = 4000;
-    public static final int MAX_PROGRESS = 2400;
+    public static final int MAX_PROGRESS = 200;
     public static final int NECTAR_COST = 500;
 
     private final ItemStackHandler inputSlot;
@@ -77,12 +80,18 @@ public class UncraftingTableBlockEntity extends BlockEntity implements MenuProvi
 
         this.inputSlot = new ItemStackHandler(1) {
             @Override
-            protected void onContentsChanged(int slot) { setChanged(); }
+            protected void onContentsChanged(int slot) {
+                setChanged();
+                syncToClient();
+            }
         };
 
         this.outputSlots = new ItemStackHandler(9) {
             @Override
-            protected void onContentsChanged(int slot) { setChanged(); }
+            protected void onContentsChanged(int slot) {
+                setChanged();
+                syncToClient();
+            }
         };
 
         this.nectarTank = new FluidTank(TANK_CAPACITY) {
@@ -223,6 +232,34 @@ public class UncraftingTableBlockEntity extends BlockEntity implements MenuProvi
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInv, Player player) {
         return new UncraftingTableMenu(containerId, playerInv, this, dataAccess);
     }
+
+    // ==================== Sync ====================
+
+    private void syncToClient() {
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        loadAdditional(tag, registries);
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    // ==================== NBT ====================
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
