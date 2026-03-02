@@ -64,7 +64,7 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("hive_multibloc", "apica:hive_multiblock");
         NODE_TO_ITEM.put("manual_centrifuge", "apica:manual_centrifuge");
         NODE_TO_ITEM.put("crystallyzer", "apica:crystallizer");
-        NODE_TO_ITEM.put("altar", "apica:altar_heart");
+        NODE_TO_ITEM.put("infuser", "apica:infuser");
         NODE_TO_ITEM.put("extractor", "apica:extractor");
         NODE_TO_ITEM.put("anti_breeding_crystal", "apica:anti_breeding_crystal");
         NODE_TO_ITEM.put("liquid_pipe", "apica:liquid_pipe");
