@@ -64,9 +64,9 @@ public class ChopperCubePreviewRenderer {
     private static final float B = 0.15f;
 
     // Abeilles orbitantes
-    private static final float BEE_SCALE = 0.3f;
-    private static final double ORBIT_RADIUS = 0.8;
-    private static final double LERP_FACTOR = 0.75;
+    private static final float BEE_SCALE = 0.45f;
+    private static final double ORBIT_RADIUS = 1.3;
+    private static final double LERP_FACTOR = 0.03;
     private static final int FULL_BRIGHT = 0xF000F0;
     private static final ResourceLocation BEE_TEXTURE =
             ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
@@ -241,7 +241,7 @@ public class ChopperCubePreviewRenderer {
         VertexConsumer vc = bufferSource.getBuffer(beeRenderType);
 
         for (int i = 0; i < 2; i++) {
-            double angle = time * 0.15 + i * Math.PI;
+            double angle = time * 0.25 + i * Math.PI;
 
             // Point cible sur l'orbite
             Vec3 target = new Vec3(
