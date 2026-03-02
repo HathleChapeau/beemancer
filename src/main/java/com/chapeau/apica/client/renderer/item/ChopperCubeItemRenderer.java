@@ -99,8 +99,8 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
     /** Animation state: tick de debut de l'animation (-1 = pas en cours). */
     private int animStartTick = -1;
 
-    /** Dernier contexte de rendu (pour detecter la transition vers FP). */
-    private boolean wasFirstPerson = false;
+    /** Dernier tick ou on a rendu en first person (pour detecter la fin du FP). */
+    private int lastFpRenderTick = -1;
 
     public ChopperCubeItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
@@ -115,15 +115,20 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer {
         boolean isFirstPerson = displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
                              || displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
 
+        int currentTick = AnimationTimer.getTicks();
+
+        // Reset animation si on n'a pas rendu en FP depuis plus de 2 ticks
+        if (lastFpRenderTick >= 0 && currentTick - lastFpRenderTick > 2) {
+            animStartTick = -1;
+        }
+
         if (isFirstPerson) {
-            if (!wasFirstPerson) {
-                animStartTick = AnimationTimer.getTicks();
+            if (animStartTick < 0) {
+                animStartTick = currentTick;
             }
-            wasFirstPerson = true;
+            lastFpRenderTick = currentTick;
             renderAnimated(stack, poseStack, buffer, packedLight, packedOverlay);
         } else {
-            wasFirstPerson = false;
-            animStartTick = -1;
             renderStatic(stack, poseStack, buffer, packedLight, packedOverlay);
         }
     }
