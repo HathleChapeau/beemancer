@@ -75,9 +75,8 @@ public class ChopperCubeItem extends Item {
         }
 
         if (!level.isClientSide()) {
-            // Annuler une session en cours si elle existe
+            // Ignorer si deja en cours de destruction
             if (ChopperCubeChoppingState.isActive(player.getUUID())) {
-                ChopperCubeChoppingState.clear(player.getUUID());
                 return InteractionResult.SUCCESS;
             }
 
@@ -98,14 +97,12 @@ public class ChopperCubeItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Clic dans le vide: annuler la session en cours
-        if (!level.isClientSide()) {
-            ChopperCubeChoppingState.clear(player.getUUID());
-        } else {
-            ChopperCubeLockHelper.reset();
+        // Ignorer si deja en cours de destruction
+        if (!level.isClientSide() && ChopperCubeChoppingState.isActive(player.getUUID())) {
+            return InteractionResultHolder.success(stack);
         }
 
-        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        return InteractionResultHolder.pass(stack);
     }
 
     @Override

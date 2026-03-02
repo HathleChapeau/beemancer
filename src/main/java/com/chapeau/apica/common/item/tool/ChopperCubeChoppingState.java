@@ -8,7 +8,7 @@
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | ParticleHelper      | Effets visuels       | Particules orbite + burst      |
+ * | ParticleHelper      | Effets visuels       | Particules burst destruction   |
  * | Block               | Loot drops           | getDrops() avec outil          |
  * ------------------------------------------------------------
  *
@@ -21,7 +21,6 @@ package com.chapeau.apica.common.item.tool;
 
 import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -31,7 +30,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,13 +45,6 @@ public final class ChopperCubeChoppingState {
 
     /** Ticks entre chaque destruction de bloc */
     private static final int TICKS_PER_BLOCK = 6;
-
-    /** Particule doree pour les abeilles orbitantes */
-    private static final DustParticleOptions BEE_PARTICLE =
-            new DustParticleOptions(new Vector3f(0.95f, 0.77f, 0.06f), 1.2f);
-
-    /** Rayon d'orbite des abeilles autour du bloc */
-    private static final double ORBIT_RADIUS = 0.7;
 
     private static final Map<UUID, State> activeStates = new HashMap<>();
 
@@ -101,9 +92,6 @@ public final class ChopperCubeChoppingState {
             return;
         }
 
-        // Animer les 2 abeilles orbitantes pendant la phase de travail
-        spawnBeeOrbitParticles(level, currentPos);
-
         state.tickCounter++;
 
         if (state.tickCounter >= TICKS_PER_BLOCK) {
@@ -140,29 +128,6 @@ public final class ChopperCubeChoppingState {
 
         // Burst de particules a la destruction
         ParticleHelper.burst(level, Vec3.atCenterOf(pos), ParticleTypes.WAX_ON, 6);
-    }
-
-    /**
-     * Spawn 2 particules dorees en orbite autour du bloc courant,
-     * simulant 2 abeilles qui travaillent.
-     */
-    private static void spawnBeeOrbitParticles(ServerLevel level, BlockPos pos) {
-        double time = level.getGameTime() * 0.4;
-        Vec3 center = Vec3.atCenterOf(pos);
-
-        // Abeille 1
-        double angle1 = time;
-        double x1 = center.x + Math.cos(angle1) * ORBIT_RADIUS;
-        double z1 = center.z + Math.sin(angle1) * ORBIT_RADIUS;
-        ParticleHelper.spawnParticles(level, BEE_PARTICLE,
-                new Vec3(x1, center.y, z1), 1, 0.02, 0.005);
-
-        // Abeille 2 (opposee)
-        double angle2 = angle1 + Math.PI;
-        double x2 = center.x + Math.cos(angle2) * ORBIT_RADIUS;
-        double z2 = center.z + Math.sin(angle2) * ORBIT_RADIUS;
-        ParticleHelper.spawnParticles(level, BEE_PARTICLE,
-                new Vec3(x2, center.y, z2), 1, 0.02, 0.005);
     }
 
     /** Verifie si le joueur a une session active. */
