@@ -1,8 +1,102 @@
 {
-  "parent": "minecraft:block/orientable",
+  "ambientocclusion": false,
   "textures": {
     "top": "apica:block/uncrafting_table/uncrafting_table_top",
+    "side": "apica:block/uncrafting_table/uncrafting_table_side",
     "front": "apica:block/uncrafting_table/uncrafting_table_front",
-    "side": "apica:block/uncrafting_table/uncrafting_table_side"
-  }
+    "particle": "apica:block/uncrafting_table/uncrafting_table_side"
+  },
+  "elements": [
+    {
+      "name": "slab_base",
+      "from": [0, 0, 0],
+      "to": [16, 8, 16],
+      "faces": {
+        "up":    {"texture": "#top"},
+        "down":  {"texture": "#side"},
+        "north": {"texture": "#front"},
+        "south": {"texture": "#side"},
+        "east":  {"texture": "#side"},
+        "west":  {"texture": "#side"}
+      }
+    },
+    {
+      "name": "cross_x",
+      "from": [0, 8, 7],
+      "to": [16, 9, 9],
+      "faces": {
+        "up":    {"texture": "#front"},
+        "down":  {"texture": "#front"},
+        "north": {"texture": "#front"},
+        "south": {"texture": "#front"},
+        "east":  {"texture": "#front"},
+        "west":  {"texture": "#front"}
+      }
+    },
+    {
+      "name": "cross_z",
+      "from": [7, 8, 0],
+      "to": [9, 9, 16],
+      "faces": {
+        "up":    {"texture": "#front"},
+        "down":  {"texture": "#front"},
+        "north": {"texture": "#front"},
+        "south": {"texture": "#front"},
+        "east":  {"texture": "#front"},
+        "west":  {"texture": "#front"}
+      }
+    },
+    {
+      "name": "frame_north",
+      "from": [0, 15, 0],
+      "to": [16, 31, 4],
+      "faces": {
+        "up":    {"texture": "#top"},
+        "down":  {"texture": "#top"},
+        "north": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "east":  {"texture": "#side"},
+        "west":  {"texture": "#side"}
+      }
+    },
+    {
+      "name": "frame_south",
+      "from": [0, 15, 12],
+      "to": [16, 31, 16],
+      "faces": {
+        "up":    {"texture": "#top"},
+        "down":  {"texture": "#top"},
+        "north": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "east":  {"texture": "#side"},
+        "west":  {"texture": "#side"}
+      }
+    },
+    {
+      "name": "frame_west",
+      "from": [0, 15, 4],
+      "to": [4, 31, 12],
+      "faces": {
+        "up":    {"texture": "#top"},
+        "down":  {"texture": "#top"},
+        "north": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "east":  {"texture": "#side"},
+        "west":  {"texture": "#side"}
+      }
+    },
+    {
+      "name": "frame_east",
+      "from": [12, 15, 4],
+      "to": [16, 31, 12],
+      "faces": {
+        "up":    {"texture": "#top"},
+        "down":  {"texture": "#top"},
+        "north": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "east":  {"texture": "#side"},
+        "west":  {"texture": "#side"}
+      }
+    }
+  ]
 }

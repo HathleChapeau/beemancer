@@ -52,6 +52,6 @@ public class UncraftingTableRenderer implements BlockEntityRenderer<UncraftingTa
 
         FloatingItemHelper.renderFloatingItem(itemRenderer, displayItem, blockEntity.getLevel(),
                 partialTick, poseStack, buffer, packedLight, packedOverlay,
-                0.5, 0.85, 0.5, 0.35f, 0.03f, 1.0f);
+                0.5, 1.44, 0.5, 0.35f, 0.03f, 1.0f);
     }
 }
