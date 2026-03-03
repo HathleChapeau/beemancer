@@ -58,6 +58,7 @@ public class LaunchpadBlockEntity extends BlockEntity {
     private static final double HONEY_POWER = 1.5;
     private static final double ROYAL_JELLY_POWER = 3.0;
     private static final double NECTAR_POWER = 4.5;
+    private static final double MAX_ANGLE_MULTIPLIER = 3.0;
 
     private final FluidTank fluidTank;
     private int cooldown;
@@ -111,10 +112,9 @@ public class LaunchpadBlockEntity extends BlockEntity {
         double angleRad = Math.toRadians(angleIndex * 10.0);
         Direction facing = state.getValue(LaunchpadBlock.FACING);
 
-        // Minecraft drag: horizontal *= 0.91/tick, vertical *= 0.98/tick
-        // To get proportional distance, boost horizontal to compensate the stronger drag
-        double horizontalDragCompensation = 0.98 / 0.91;
-        double horizontalSpeed = power * Math.sin(angleRad) * horizontalDragCompensation;
+        double angleDelta = angleIndex / 9.0;
+        double multiplier = 1.0 + (MAX_ANGLE_MULTIPLIER - 1.0) * angleDelta;
+        double horizontalSpeed = power * Math.sin(angleRad) * multiplier;
         double verticalSpeed = power * Math.cos(angleRad);
 
         double motionX = facing.getStepX() * horizontalSpeed;
