@@ -24,9 +24,9 @@
  *
  * ============================================================
  */
-package com.chapeau.apica.common.blockentity.alchemy;
+package com.chapeau.apica.common.blockentity.artifacts;
 
-import com.chapeau.apica.common.block.alchemy.LaunchpadBlock;
+import com.chapeau.apica.common.block.artifacts.LaunchpadBlock;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
 import net.minecraft.core.BlockPos;

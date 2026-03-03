@@ -20,9 +20,9 @@
 package com.chapeau.apica.client.renderer.block;
 
 import com.chapeau.apica.Apica;
-import com.chapeau.apica.common.block.alchemy.HoneyLampBlock;
-import com.chapeau.apica.common.block.alchemy.HoneyLampBlock.LampState;
-import com.chapeau.apica.common.blockentity.alchemy.HoneyLampBlockEntity;
+import com.chapeau.apica.common.block.artifacts.HoneyLampBlock;
+import com.chapeau.apica.common.block.artifacts.HoneyLampBlock.LampState;
+import com.chapeau.apica.common.blockentity.artifacts.HoneyLampBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -40,7 +40,7 @@ import net.minecraft.resources.ResourceLocation;
 public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEntity> {
 
     private static final ResourceLocation HALO_TEXTURE =
-        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/block/alchemy/artifacts/honey_lamp_halo_honey.png");
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/block/artifacts/honey_lamp_halo_honey.png");
 
     // Teintes par etat (RGB)
     private static final float[] HONEY_TINT =       { 1.0f, 0.7f, 0.1f };

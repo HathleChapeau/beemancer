@@ -20,8 +20,8 @@
 package com.chapeau.apica.client.renderer.block;
 
 import com.chapeau.apica.Apica;
-import com.chapeau.apica.common.block.alchemy.LaunchpadBlock;
-import com.chapeau.apica.common.blockentity.alchemy.LaunchpadBlockEntity;
+import com.chapeau.apica.common.block.artifacts.LaunchpadBlock;
+import com.chapeau.apica.common.blockentity.artifacts.LaunchpadBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;

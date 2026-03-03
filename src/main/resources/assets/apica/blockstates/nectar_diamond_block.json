@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": { "model": "apica:block/nectar_diamond_block" }
+    "": { "model": "apica:block/building/nectar_diamond_block" }
   }
 }

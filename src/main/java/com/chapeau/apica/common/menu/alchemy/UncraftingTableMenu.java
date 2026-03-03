@@ -29,7 +29,7 @@
 package com.chapeau.apica.common.menu.alchemy;
 
 import com.chapeau.apica.client.gui.widget.ApicaSlot;
-import com.chapeau.apica.common.blockentity.alchemy.UncraftingTableBlockEntity;
+import com.chapeau.apica.common.blockentity.artifacts.UncraftingTableBlockEntity;
 import com.chapeau.apica.common.menu.ApicaMenu;
 import com.chapeau.apica.core.registry.ApicaBlocks;
 import com.chapeau.apica.core.registry.ApicaMenus;

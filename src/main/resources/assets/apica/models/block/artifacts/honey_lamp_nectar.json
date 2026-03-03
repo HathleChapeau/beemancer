@@ -1,5 +1,5 @@
 {
-  "parent": "apica:block/alchemy/honey_lamp_off",
+  "parent": "apica:block/artifacts/honey_lamp_off",
   "textures": {
     "glass": "minecraft:block/purple_stained_glass"
   }

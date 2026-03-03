@@ -435,7 +435,7 @@ public class Apica {
                 ApicaBlockEntities.LAUNCHPAD.get(),
                 (be, side) -> {
                     Direction facing = be.getBlockState().getValue(
-                            com.chapeau.apica.common.block.alchemy.LaunchpadBlock.FACING);
+                            com.chapeau.apica.common.block.artifacts.LaunchpadBlock.FACING);
                     return side == facing.getOpposite() ? be.getFluidTank() : null;
                 }
         );

@@ -22,9 +22,9 @@
  *
  * ============================================================
  */
-package com.chapeau.apica.common.block.alchemy;
+package com.chapeau.apica.common.block.artifacts;
 
-import com.chapeau.apica.common.blockentity.alchemy.HoneyLampBlockEntity;
+import com.chapeau.apica.common.blockentity.artifacts.HoneyLampBlockEntity;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;

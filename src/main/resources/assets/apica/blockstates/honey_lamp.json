@@ -1,8 +1,8 @@
 {
   "variants": {
-    "lamp_state=off": { "model": "apica:block/alchemy/honey_lamp_off" },
-    "lamp_state=honey": { "model": "apica:block/alchemy/honey_lamp_honey" },
-    "lamp_state=royal_jelly": { "model": "apica:block/alchemy/honey_lamp_royal_jelly" },
-    "lamp_state=nectar": { "model": "apica:block/alchemy/honey_lamp_nectar" }
+    "lamp_state=off": { "model": "apica:block/artifacts/honey_lamp_off" },
+    "lamp_state=honey": { "model": "apica:block/artifacts/honey_lamp_honey" },
+    "lamp_state=royal_jelly": { "model": "apica:block/artifacts/honey_lamp_royal_jelly" },
+    "lamp_state=nectar": { "model": "apica:block/artifacts/honey_lamp_nectar" }
   }
 }

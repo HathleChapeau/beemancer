@@ -23,8 +23,8 @@ package com.chapeau.apica.client.renderer.block;
 
 import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.client.renderer.util.FloatingItemHelper;
-import com.chapeau.apica.common.block.alchemy.UncraftingTableBlock;
-import com.chapeau.apica.common.blockentity.alchemy.UncraftingTableBlockEntity;
+import com.chapeau.apica.common.block.artifacts.UncraftingTableBlock;
+import com.chapeau.apica.common.blockentity.artifacts.UncraftingTableBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;

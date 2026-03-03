@@ -27,9 +27,9 @@
  *
  * ============================================================
  */
-package com.chapeau.apica.common.blockentity.alchemy;
+package com.chapeau.apica.common.blockentity.artifacts;
 
-import com.chapeau.apica.common.block.alchemy.UncraftingTableBlock;
+import com.chapeau.apica.common.block.artifacts.UncraftingTableBlock;
 import com.chapeau.apica.common.menu.alchemy.UncraftingTableMenu;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
