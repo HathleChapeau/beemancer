@@ -47,7 +47,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 /**
  * BEWLR pour le Mining Laser. Rendu hybride en 5 couches :
  * 1. Body statique (baked model via putBulkData)
- * 2. Charging overlay (quads manuels avec UV dynamique, 13 frames scrolling)
+ * 2. Beam core animé (14 frames, 2px/frame, texture 16x28 : côtés col 0-12, bouts col 14-15)
  * 3. Charge bars (3 barres : off/on selon chargeLevel stocké dans CustomData)
  * 4. Ring effects (anneaux géométriques rotatifs autour des barres actives)
  * 5. Halo sprite (quad billboard au bout du canon, rotation continue, toujours visible en main)
@@ -60,9 +60,9 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
                     Apica.MOD_ID, "item/mining_laser_body"));
 
-    /** Texture de l'overlay intérieur (13 frames scrolling) */
-    private static final ResourceLocation CHARGING1_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/mining_laser_charging1.png");
+    /** Texture du beam core (animation de chargement 14 frames, 16x28, 2px/frame) */
+    private static final ResourceLocation BEAM_CORE_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/mining_laser_beam_core.png");
 
     /** Texture des barres indicatrices (atlas 3 colonnes × 2 états) */
     private static final ResourceLocation CHARGING2_TEXTURE =
@@ -98,7 +98,16 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float BAR_STATE_V_SIZE = 0.25f;
     private static final float BAR_PIXEL_V = 1f / 12f;
 
-    private static final int TOTAL_FRAMES = 13;
+    private static final int TOTAL_FRAMES = 14;
+
+    // Beam core texture layout: 16 wide × 28 tall, 2px par frame
+    // Colonnes 0-12: côtés (east/west/up/down), colonnes 14-15: bouts (north/south)
+    private static final float TEX_HEIGHT = 28.0f;
+    private static final float FRAME_HEIGHT = 2.0f;
+    private static final float SIDE_U0 = 0.0f;
+    private static final float SIDE_U1 = 13.0f / 16.0f;
+    private static final float END_U0 = 14.0f / 16.0f;
+    private static final float END_U1 = 1.0f;
 
     // Halo position (devant le canon, pointe du barrel)
     private static final float HALO_X = 7f / 16f;
@@ -167,7 +176,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     }
 
     // =========================================================================
-    // Charging overlay (13 frames scroll)
+    // Beam core overlay (14 frames, 2px/frame, côtés + bouts séparés)
     // =========================================================================
 
     private void updateAnimation() {
@@ -190,41 +199,52 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
         renderChargingOverlay(poseStack, buffer, packedLight, currentFrame);
     }
 
+    /**
+     * Rendu du beam core animé. Texture 16x28 :
+     * - Colonnes 0-12 (SIDE) : faces latérales (east/west/up/down), le long du barrel
+     * - Colonnes 14-15 (END) : faces bout du canon (north/south)
+     * - 14 frames de 2 rows chacune, chargement progressif gauche→droite
+     */
     private void renderChargingOverlay(PoseStack poseStack, MultiBufferSource buffer, int packedLight, int frame) {
-        VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(CHARGING1_TEXTURE));
+        VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(BEAM_CORE_TEXTURE));
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
 
-        float u0 = 0f, u1 = 1f;
-        float v0 = (float) frame / TOTAL_FRAMES;
-        float v1 = v0 + 1f / TOTAL_FRAMES;
+        float v0 = (frame * FRAME_HEIGHT) / TEX_HEIGHT;
+        float v1 = v0 + FRAME_HEIGHT / TEX_HEIGHT;
 
-        // North (Z-)
+        // --- Faces bout (north/south) : colonnes 14-15 ---
+
+        // North (Z-) — bout avant du canon
         quad(vc, pose, OVL_MIN_X, OVL_MIN_Y, OVL_MIN_Z, OVL_MAX_X, OVL_MAX_Y, OVL_MIN_Z,
-                u0, v1, u0, v0, u1, v0, u1, v1, 0, 0, -1, packedLight, overlay);
-        // South (Z+)
+                END_U0, v1, END_U0, v0, END_U1, v0, END_U1, v1, 0, 0, -1, packedLight, overlay);
+        // South (Z+) — bout arrière du canon
         quad(vc, pose, OVL_MAX_X, OVL_MIN_Y, OVL_MAX_Z, OVL_MIN_X, OVL_MAX_Y, OVL_MAX_Z,
-                u0, v1, u0, v0, u1, v0, u1, v1, 0, 0, 1, packedLight, overlay);
-        // West (X-)
+                END_U0, v1, END_U0, v0, END_U1, v0, END_U1, v1, 0, 0, 1, packedLight, overlay);
+
+        // --- Faces latérales (east/west/up/down) : colonnes 0-12 ---
+        // U : pixel 0 = arrière (Z+), pixel 12 = avant (Z-)
+
+        // West (X-) — back(MAX_Z) vers front(MIN_Z)
         quad(vc, pose, OVL_MIN_X, OVL_MIN_Y, OVL_MAX_Z, OVL_MIN_X, OVL_MAX_Y, OVL_MIN_Z,
-                u0, v1, u0, v0, u1, v0, u1, v1, -1, 0, 0, packedLight, overlay);
-        // East (X+) — rotation 180
+                SIDE_U0, v1, SIDE_U0, v0, SIDE_U1, v0, SIDE_U1, v1, -1, 0, 0, packedLight, overlay);
+        // East (X+) — front(MIN_Z) vers back(MAX_Z), rotation 180
         quad(vc, pose, OVL_MAX_X, OVL_MIN_Y, OVL_MIN_Z, OVL_MAX_X, OVL_MAX_Y, OVL_MAX_Z,
-                u1, v0, u1, v1, u0, v1, u0, v0, 1, 0, 0, packedLight, overlay);
-        // Up (Y+) — rotation 90
+                SIDE_U1, v0, SIDE_U1, v1, SIDE_U0, v1, SIDE_U0, v0, 1, 0, 0, packedLight, overlay);
+        // Up (Y+)
         quad4(vc, pose,
                 OVL_MIN_X, OVL_MAX_Y, OVL_MIN_Z,
                 OVL_MIN_X, OVL_MAX_Y, OVL_MAX_Z,
                 OVL_MAX_X, OVL_MAX_Y, OVL_MAX_Z,
                 OVL_MAX_X, OVL_MAX_Y, OVL_MIN_Z,
-                u1, v1, u0, v1, u0, v0, u1, v0, 0, 1, 0, packedLight, overlay);
-        // Down (Y-) — rotation 180
+                SIDE_U1, v1, SIDE_U0, v1, SIDE_U0, v0, SIDE_U1, v0, 0, 1, 0, packedLight, overlay);
+        // Down (Y-)
         quad4(vc, pose,
                 OVL_MIN_X, OVL_MIN_Y, OVL_MAX_Z,
                 OVL_MIN_X, OVL_MIN_Y, OVL_MIN_Z,
                 OVL_MAX_X, OVL_MIN_Y, OVL_MIN_Z,
                 OVL_MAX_X, OVL_MIN_Y, OVL_MAX_Z,
-                u0, v0, u1, v0, u1, v1, u0, v1, 0, -1, 0, packedLight, overlay);
+                SIDE_U0, v0, SIDE_U1, v0, SIDE_U1, v1, SIDE_U0, v1, 0, -1, 0, packedLight, overlay);
     }
 
     // =========================================================================

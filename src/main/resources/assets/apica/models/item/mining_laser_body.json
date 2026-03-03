@@ -1,7 +1,6 @@
 {
   "textures": {
     "0": "apica:item/artifacts/laser",
-    "1": "apica:item/artifacts/mining_laser_beam_core",
     "ring": "apica:item/artifacts/leaf_blower_body",
     "particle": "apica:item/artifacts/laser"
   },
@@ -17,19 +16,6 @@
         "west": {"uv": [0, 0, 13, 3], "texture": "#0"},
         "up": {"uv": [13, 3, 0, 0], "rotation": 270, "texture": "#0"},
         "down": {"uv": [13, 0, 0, 3], "rotation": 90, "texture": "#0"}
-      }
-    },
-    {
-      "name": "beam_core",
-      "from": [6.25, -0.75, -12.4],
-      "to": [7.75, 0.75, 0.5],
-      "faces": {
-        "north": {"uv": [0, 2, 2, 4], "texture": "#1"},
-        "east": {"uv": [0, 0, 13, 2], "texture": "#1"},
-        "south": {"uv": [0, 2, 2, 4], "texture": "#1"},
-        "west": {"uv": [0, 0, 13, 2], "texture": "#1"},
-        "up": {"uv": [0, 0, 13, 2], "texture": "#1"},
-        "down": {"uv": [0, 0, 13, 2], "texture": "#1"}
       }
     },
     {

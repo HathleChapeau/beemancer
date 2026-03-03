@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ChopperCubePreviewRenderer.java]
- * Description: Renderer pour le glow ambre et les abeilles orbitantes du Chopper Cube
+ * Description: Renderer pour le glow ambre, abeilles orbitantes et particules rune du Chopper Cube
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,9 +9,12 @@
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
  * | ChopperCubeItem         | Scan buches          | findConnectedLogs()            |
- * | ChopperCubeLockHelper   | Etat lock            | Positions verrouillees         |
+ * | ChopperCubeLockHelper   | Etat lock            | Positions verrouillees + timing|
+ * | ChopperCubeChoppingState| Warmup constant      | Delay avant particules         |
  * | AnimationTimer          | Temps fluide         | Pulsation + orbite             |
  * | BeeModel                | Modele abeille       | Rendu mini-abeilles            |
+ * | ParticleEmitter         | Spawn particules     | Runes client-side configurables|
+ * | ApicaParticles          | Registre particules  | RUNE particle type             |
  * | RenderLevelStageEvent   | Hook rendu           | Dessin outlines + abeilles     |
  * ------------------------------------------------------------
  *
@@ -23,8 +26,11 @@
 package com.chapeau.apica.client.renderer;
 
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.chapeau.apica.client.particle.ParticleEmitter;
+import com.chapeau.apica.common.item.tool.ChopperCubeChoppingState;
 import com.chapeau.apica.common.item.tool.ChopperCubeItem;
 import com.chapeau.apica.common.item.tool.ChopperCubeLockHelper;
+import com.chapeau.apica.core.registry.ApicaParticles;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -53,6 +59,7 @@ import java.util.List;
 /**
  * Dessine des contours ambre pulsants autour des buches detectees par le Chopper Cube.
  * En mode destruction, 2 mini-abeilles orbitent autour du bloc en cours.
+ * Emet des particules rune au niveau du cube dans la main pendant la destruction active.
  * Les positions des abeilles sont lerpees vers les points d'orbite pour un mouvement fluide.
  */
 @OnlyIn(Dist.CLIENT)
@@ -72,6 +79,19 @@ public class ChopperCubePreviewRenderer {
     private static final ResourceLocation BEE_TEXTURE =
             ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
 
+    // Particules rune: intervalle de spawn (en game ticks)
+    private static final int RUNE_PARTICLE_INTERVAL = 3;
+
+    // Particules rune: scale reduit
+    private static final float RUNE_SCALE = 0.02f;
+
+    // Offset de la main: hauteur relative aux pieds du joueur
+    private static final double HAND_HEIGHT = 0.8;
+    // Offset de la main: distance en avant du joueur
+    private static final double HAND_FORWARD = 0.3;
+    // Offset de la main: distance laterale
+    private static final double HAND_SIDE = 0.35;
+
     // Cache live (evite recalcul chaque frame)
     private static BlockPos cachedTargetPos = null;
     private static List<BlockPos> cachedPositions = List.of();
@@ -82,6 +102,9 @@ public class ChopperCubePreviewRenderer {
     // Positions lerpees des abeilles
     private static Vec3 bee1Pos = null;
     private static Vec3 bee2Pos = null;
+
+    // Dernier tick ou on a emis des particules (throttle)
+    private static long lastParticleTick = -1;
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
@@ -139,7 +162,69 @@ public class ChopperCubePreviewRenderer {
             if (target != null) {
                 renderOrbitingBees(event, mc, target);
             }
+
+            // Particules rune apres le warmup (quand les abeilles sont en haut)
+            trySpawnRuneParticles(player, level);
         }
+    }
+
+    /**
+     * Emet des particules rune au niveau de la main tenant le cube.
+     * Ne spawne qu'apres le warmup (20 ticks) et avec throttle (toutes les 3 ticks).
+     */
+    private static void trySpawnRuneParticles(Player player, Level level) {
+        long lockTime = ChopperCubeLockHelper.getLockGameTime();
+        if (lockTime < 0) return;
+
+        long currentTime = level.getGameTime();
+        long elapsed = currentTime - lockTime;
+
+        // Attendre la fin du warmup avant d'emettre
+        if (elapsed < ChopperCubeChoppingState.WARMUP_TICKS) return;
+
+        // Throttle: toutes les N ticks
+        if (currentTime == lastParticleTick) return;
+        if (currentTime % RUNE_PARTICLE_INTERVAL != 0) return;
+        lastParticleTick = currentTime;
+
+        // Calculer la position de la main tenant le cube
+        Vec3 handPos = computeHandPosition(player);
+
+        new ParticleEmitter(ApicaParticles.RUNE.get())
+                .at(handPos.x, handPos.y, handPos.z)
+                .count(1)
+                .spread(0.05, 0.05, 0.05)
+                .speed(0, 0.015, 0)
+                .scale(RUNE_SCALE)
+                .fadeOut()
+                .fullBright()
+                .spawn(level);
+    }
+
+    /**
+     * Calcule la position world de la main tenant le Chopper Cube.
+     * Prend en compte le yaw du joueur et la main (principale ou secondaire).
+     */
+    private static Vec3 computeHandPosition(Player player) {
+        float radYaw = (float) Math.toRadians(player.getYRot());
+
+        // Vecteur avant (plan XZ, ignorant le pitch)
+        double fwdX = -Math.sin(radYaw);
+        double fwdZ = Math.cos(radYaw);
+
+        // Vecteur droit (perpendiculaire au forward dans le plan XZ)
+        double rightX = -Math.cos(radYaw);
+        double rightZ = -Math.sin(radYaw);
+
+        // Determiner si le cube est en main principale (droite) ou secondaire (gauche)
+        boolean isMainHand = player.getMainHandItem().getItem() instanceof ChopperCubeItem;
+        double sideSign = isMainHand ? 1.0 : -1.0;
+
+        return new Vec3(
+                player.getX() + fwdX * HAND_FORWARD + rightX * sideSign * HAND_SIDE,
+                player.getY() + HAND_HEIGHT,
+                player.getZ() + fwdZ * HAND_FORWARD + rightZ * sideSign * HAND_SIDE
+        );
     }
 
     /**

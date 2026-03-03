@@ -89,7 +89,7 @@ public class ChopperCubeItem extends Item {
         } else {
             // Lock le preview client-side
             List<BlockPos> logs = findConnectedLogs(level, clickedPos);
-            ChopperCubeLockHelper.lockWith(logs);
+            ChopperCubeLockHelper.lockWith(logs, level.getGameTime());
         }
 
         return InteractionResult.CONSUME;

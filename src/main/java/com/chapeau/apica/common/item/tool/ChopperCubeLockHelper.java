@@ -13,7 +13,8 @@
  *
  * UTILISE PAR:
  * - ChopperCubeItem.java (toggle lock)
- * - ChopperCubePreviewRenderer.java (lecture etat lock)
+ * - ChopperCubePreviewRenderer.java (lecture etat lock + timing particules)
+ * - ChopperCubeItemRenderer.java (detection phase chopping)
  *
  * ============================================================
  */
@@ -26,11 +27,15 @@ import java.util.List;
 /**
  * Stocke l'etat de verrouillage du glow du Chopper Cube cote client.
  * Separe de l'item pour eviter les problemes de state server/client.
+ * Conserve le gameTime du lock pour synchroniser les animations et particules.
  */
 public final class ChopperCubeLockHelper {
 
     private static boolean locked = false;
     private static List<BlockPos> lockedPositions = List.of();
+
+    /** gameTime (level.getGameTime()) au moment du lock, pour timer les phases. */
+    private static long lockGameTime = -1;
 
     /**
      * Toggle le verrouillage. Si on lock, les positions actuelles du renderer
@@ -40,19 +45,22 @@ public final class ChopperCubeLockHelper {
         locked = !locked;
         if (!locked) {
             lockedPositions = List.of();
+            lockGameTime = -1;
         }
     }
 
     /** Verrouille avec les positions donnees. */
-    public static void lockWith(List<BlockPos> positions) {
+    public static void lockWith(List<BlockPos> positions, long gameTime) {
         locked = true;
         lockedPositions = List.copyOf(positions);
+        lockGameTime = gameTime;
     }
 
     /** Reset complet (quand l'item n'est plus en main). */
     public static void reset() {
         locked = false;
         lockedPositions = List.of();
+        lockGameTime = -1;
     }
 
     public static boolean isLocked() {
@@ -61,6 +69,11 @@ public final class ChopperCubeLockHelper {
 
     public static List<BlockPos> getLockedPositions() {
         return lockedPositions;
+    }
+
+    /** Retourne le gameTime auquel le lock a commence, ou -1 si pas locke. */
+    public static long getLockGameTime() {
+        return lockGameTime;
     }
 
     private ChopperCubeLockHelper() {
