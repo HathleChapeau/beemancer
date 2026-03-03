@@ -123,7 +123,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     private static final int FULL_BRIGHT = 0xF000F0;
 
     /** Duree de la montee/descente des abeilles en ticks. */
-    private static final int RISE_DURATION = 20;
+    private static final int RISE_DURATION = 10;
     private static final int DESCEND_DURATION = 20;
 
     /** Noms des animations enregistrees dans le controller. */
@@ -422,13 +422,12 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
         float eased = riseProgress * riseProgress;
         float yOffset = eased * BEE_RISE_HEIGHT;
 
-        // Angle: rotation live quand idle, gelee quand en envol/descente
-        // Lerp entre l'angle live et l'angle gele selon riseProgress
-        float liveAngleBase = time * BEE_ORBIT_SPEED;
-        float frozenAngleBase = frozenTime * BEE_ORBIT_SPEED;
+        // Angle: rotation live en idle, gelee pendant montee/active/descente
+        boolean angleFrozen = choppingPhase != ChoppingPhase.IDLE;
+        float angleBase = angleFrozen ? frozenTime * BEE_ORBIT_SPEED : time * BEE_ORBIT_SPEED;
 
         for (int i = 0; i < 2; i++) {
-            double angle = Mth.lerp(riseProgress, liveAngleBase, frozenAngleBase) + i * Math.PI;
+            double angle = angleBase + i * Math.PI;
 
             float beeX = CENTER_XZ + (float) Math.cos(angle) * radius;
             float beeZ = CENTER_XZ + (float) Math.sin(angle) * radius;
