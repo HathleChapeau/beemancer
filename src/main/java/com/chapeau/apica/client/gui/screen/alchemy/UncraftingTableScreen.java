@@ -189,18 +189,15 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
     }
 
     /**
-     * Rend les ghost items avec opacite oscillante dans les output slots.
-     * Visible uniquement pendant le process (progress > 0, outputs vides).
+     * Rend les ghost items dans les output slots avec un overlay de slot par dessus.
+     * L'overlay pulse entre 0.1 et 0.2 d'opacite pendant le processing.
+     * Opacite 0 quand pas d'item en input ou craft fini.
      */
     private void renderGhostItems(GuiGraphics g) {
         if (ghostItems == null || menu.getProgress() <= 0) return;
         if (!outputSlotsEmpty()) return;
 
-        float alpha = 0.5f + 0.15f * (float) Math.sin(System.currentTimeMillis() * 0.0015);
-
-        RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-
+        // Rendu des ghost items a opacite pleine
         for (int i = 0; i < 9; i++) {
             ItemStack ghost = ghostItems.get(i);
             if (ghost.isEmpty()) continue;
@@ -210,8 +207,23 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
             g.renderItem(ghost, gx, gy);
         }
 
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
+        // Overlay slot bg par dessus avec opacite oscillante (0.1 - 0.2)
+        float t = 0.5f + 0.5f * (float) Math.sin(System.currentTimeMillis() * 0.0015);
+        float alpha = 0.1f + 0.1f * t;
+        int color = ((int) (alpha * 255) << 24) | 0x8B8B8B;
+
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 300);
+
+        for (int i = 0; i < 9; i++) {
+            if (ghostItems.get(i).isEmpty()) continue;
+
+            int gx = leftPos + 106 + (i % 3) * 18;
+            int gy = topPos + 17 + (i / 3) * 18;
+            g.fill(gx + 1, gy + 1, gx + 17, gy + 17, color);
+        }
+
+        g.pose().popPose();
     }
 
     private boolean outputSlotsEmpty() {
