@@ -56,7 +56,7 @@ import javax.annotation.Nullable;
 public class LaunchpadBlock extends BaseEntityBlock {
     public static final MapCodec<LaunchpadBlock> CODEC = simpleCodec(LaunchpadBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
-    public static final IntegerProperty ANGLE = IntegerProperty.create("angle", 0, 6);
+    public static final IntegerProperty ANGLE = IntegerProperty.create("angle", 0, 9);
 
     private static final VoxelShape SHAPE_NORTH = Shapes.or(
             Block.box(1, 0, 1, 15, 8, 15),
@@ -148,7 +148,7 @@ public class LaunchpadBlock extends BaseEntityBlock {
                                                 Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
             int currentAngle = state.getValue(ANGLE);
-            int newAngle = (currentAngle + 1) % 7;
+            int newAngle = (currentAngle + 1) % 10;
             level.setBlock(pos, state.setValue(ANGLE, newAngle), 3);
             player.displayClientMessage(
                     Component.translatable("message.apica.launchpad.angle", newAngle * 10),
