@@ -56,9 +56,9 @@ public class RepairToolStationBlockEntity extends BlockEntity {
     public static final int FLUID_COST = 50;
     private static final int REPAIR_INTERVAL = 20;
 
-    private static final int HONEY_RATE = 1;
-    private static final int ROYAL_JELLY_RATE = 5;
-    private static final int NECTAR_RATE = 15;
+    private static final int HONEY_RATE = 2;
+    private static final int ROYAL_JELLY_RATE = 10;
+    private static final int NECTAR_RATE = 30;
 
     private final FluidTank fluidTank;
     private final ItemStackHandler itemHandler;
