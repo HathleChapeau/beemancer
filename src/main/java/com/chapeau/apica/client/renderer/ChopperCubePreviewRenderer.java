@@ -65,8 +65,9 @@ public class ChopperCubePreviewRenderer {
 
     // Abeilles orbitantes
     private static final float BEE_SCALE = 0.45f;
-    private static final double ORBIT_RADIUS = 1.3;
-    private static final double LERP_FACTOR = 0.03;
+    private static final double ORBIT_RADIUS = 1.65;
+    private static final double ORBIT_SPEED = 0.40;
+    private static final double LERP_FACTOR = 0.05;
     private static final int FULL_BRIGHT = 0xF000F0;
     private static final ResourceLocation BEE_TEXTURE =
             ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
@@ -244,7 +245,7 @@ public class ChopperCubePreviewRenderer {
         VertexConsumer vc = bufferSource.getBuffer(beeRenderType);
 
         for (int i = 0; i < 2; i++) {
-            double angle = time * 0.25 + i * Math.PI;
+            double angle = time * ORBIT_SPEED + i * Math.PI;
 
             // Point cible sur l'orbite
             Vec3 target = new Vec3(
@@ -269,7 +270,7 @@ public class ChopperCubePreviewRenderer {
             poseStack.translate(beePos.x - camPos.x, beePos.y - camPos.y, beePos.z - camPos.z);
 
             // Rotation basee directement sur l'angle d'orbite (pas lerpee)
-            float yRot = (float) Math.toDegrees(angle) + 90;
+            float yRot = (float) Math.toDegrees(angle) + 270;
             poseStack.mulPose(Axis.YP.rotationDegrees(-yRot));
 
             // Retourner le modele (convention Minecraft entity models)

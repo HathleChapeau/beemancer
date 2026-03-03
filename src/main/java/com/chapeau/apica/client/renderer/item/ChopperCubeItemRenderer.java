@@ -98,8 +98,10 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     /** Rayon d'orbite des abeilles (en unites bloc item). */
     private static final float BEE_ORBIT_RADIUS = 0.35f;
 
+    private static final float BEE_ORBIT_SPEED = 0.15f;
+
     /** Echelle des abeilles. */
-    private static final float BEE_SCALE = 0.2f;
+    private static final float BEE_SCALE = 0.20f;
 
     /** Centre Y pour l'orbite des abeilles (compense le flip 180 du BeeModel). */
     private static final float CENTER_Y = 12f / 16f;
@@ -294,7 +296,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
         float radius = BEE_ORBIT_RADIUS * alpha;
 
         for (int i = 0; i < 2; i++) {
-            double angle = time * 0.15 + i * Math.PI;
+            double angle = time * BEE_ORBIT_SPEED + i * Math.PI;
 
             float beeX = CENTER_XZ + (float) Math.cos(angle) * radius;
             float beeZ = CENTER_XZ + (float) Math.sin(angle) * radius;
