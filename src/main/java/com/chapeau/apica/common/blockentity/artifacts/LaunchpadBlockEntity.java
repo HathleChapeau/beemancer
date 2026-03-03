@@ -27,6 +27,7 @@
 package com.chapeau.apica.common.blockentity.artifacts;
 
 import com.chapeau.apica.common.block.artifacts.LaunchpadBlock;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.core.network.packets.LaunchVelocityPacket;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
@@ -116,7 +117,8 @@ public class LaunchpadBlockEntity extends BlockEntity {
         Direction facing = state.getValue(LaunchpadBlock.FACING);
 
         double angleDelta = angleIndex / 9.0;
-        double multiplier = 1.0 + (MAX_ANGLE_MULTIPLIER - 1.0) * angleDelta;
+        //double multiplier = 1.0 + (MAX_ANGLE_MULTIPLIER - 1.0) * angleDelta;
+        double multiplier = 1.0 + (MAX_ANGLE_MULTIPLIER + DebugWandItem.value1) * angleDelta;
         double horizontalSpeed = power * Math.sin(angleRad) * multiplier;
         double verticalSpeed = power * Math.cos(angleRad);
 
