@@ -64,7 +64,7 @@ import javax.annotation.Nullable;
 
 public class UncraftingTableBlockEntity extends BlockEntity implements MenuProvider {
     public static final int TANK_CAPACITY = 4000;
-    public static final int MAX_PROGRESS = 200;
+    public static final int MAX_PROGRESS = 2400;
     public static final int NECTAR_COST = 500;
 
     private final ItemStackHandler inputSlot;
