@@ -56,8 +56,8 @@ public class LaunchpadBlockEntity extends BlockEntity {
     public static final int COOLDOWN_TICKS = 20;
 
     private static final double HONEY_POWER = 1.5;
-    private static final double ROYAL_JELLY_POWER = 2.25;
-    private static final double NECTAR_POWER = 3.0;
+    private static final double ROYAL_JELLY_POWER = 3.0;
+    private static final double NECTAR_POWER = 4.5;
 
     private final FluidTank fluidTank;
     private int cooldown;
