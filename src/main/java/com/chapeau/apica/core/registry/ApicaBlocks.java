@@ -61,6 +61,7 @@ import com.chapeau.apica.common.block.storage.LiquidTrashCanBlock;
 import com.chapeau.apica.common.block.storage.StorageBarrelBlock;
 import com.chapeau.apica.common.block.storage.StorageControllerBlock;
 import com.chapeau.apica.common.block.storage.TrashCanBlock;
+import com.chapeau.apica.common.block.portal.ApicaPortalBlock;
 import com.chapeau.apica.common.block.resonator.ResonatorBlock;
 import com.chapeau.apica.common.block.storage.StorageHiveBlock;
 import com.chapeau.apica.common.block.storage.StorageRelayBlock;
@@ -699,6 +700,14 @@ public class ApicaBlocks {
             () -> new AssemblyTableBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.METAL)
+                    .noOcclusion()));
+
+    // --- DIMENSION PORTAL ---
+    public static final DeferredBlock<ApicaPortalBlock> APICA_PORTAL = registerTimed("apica_portal",
+            () -> new ApicaPortalBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.AMETHYST)
+                    .lightLevel(state -> 11)
                     .noOcclusion()));
 
     // --- BEE NEST ---

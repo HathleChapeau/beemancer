@@ -737,6 +737,10 @@ public class ApicaItems {
     public static final DeferredItem<Item> NETHER_STAR_FRAGMENT = ITEMS.register("nether_star_fragment",
             () -> new Item(new Item.Properties()));
 
+    // --- DIMENSION PORTAL ---
+    public static final DeferredItem<BlockItem> APICA_PORTAL = ITEMS.register("apica_portal",
+            () -> new BlockItem(ApicaBlocks.APICA_PORTAL.get(), new Item.Properties()));
+
     // --- BEE NEST ---
     public static final DeferredItem<BlockItem> BEE_NEST = ITEMS.register("bee_nest",
             () -> new BlockItem(ApicaBlocks.BEE_NEST.get(), new Item.Properties()));

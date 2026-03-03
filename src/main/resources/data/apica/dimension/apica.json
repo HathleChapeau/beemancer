@@ -1,0 +1,10 @@
+{
+    "type": "apica:apica",
+    "generator": {
+        "type": "apica:apica",
+        "biome_source": {
+            "type": "minecraft:fixed",
+            "biome": "minecraft:plains"
+        }
+    }
+}

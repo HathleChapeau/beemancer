@@ -1,0 +1,134 @@
+================================================================================
+FEATURE: Dimension Apica
+================================================================================
+
+Description: Dimension custom "Apica" avec terrain plat, couches probabilistes,
+             et plateformes de concrete générées procéduralement sur une grille.
+             L'architecture est conçue pour évoluer vers une ville procédurale
+             infinie (rues, bâtiments, règles de placement).
+
+Statut: Phase 1 complète (terrain + plateformes + portail)
+
+--------------------------------------------------------------------------------
+ARCHITECTURE
+--------------------------------------------------------------------------------
+
+Approche: Custom ChunkGenerator
+Référence: Lost Cities (grid déterministe), Twilight Forest (portal pattern)
+
+Le ChunkGenerator génère directement le terrain ET les structures dans
+fillFromNoise(), sans passer par le système vanilla de structures/features.
+
+Avantages:
+- Contrôle total sur chaque bloc (couches probabilistes, structures)
+- Extensible vers la ville procédurale (Phase 2+)
+- Déterministe (même seed = même résultat)
+- Gestion cross-chunk native (structures qui traversent les chunks)
+
+--------------------------------------------------------------------------------
+TERRAIN
+--------------------------------------------------------------------------------
+
+Couches de bas en haut:
+| Y  | Contenu                          |
+|----|----------------------------------|
+| 0  | Bedrock (100%)                   |
+| 1  | 50% bedrock / 50% stone          |
+| 2  | 25% bedrock / 75% stone          |
+| 3-45  | Stone (100%)                  |
+| 46 | 25% dirt / 75% stone             |
+| 47 | 50% dirt / 50% stone             |
+| 48-49 | Dirt (100%)                   |
+| 50 | Grass Block (100%)               |
+
+Les couches probabilistes utilisent un hash déterministe par position
+(positionHash) qui retourne un float [0, 1) basé sur (x, y, z).
+
+--------------------------------------------------------------------------------
+STRUCTURES (PLATEFORMES DE CONCRETE)
+--------------------------------------------------------------------------------
+
+Grille d'espacement: 32 blocs
+Types de plateformes:
+- Type A: 5x1x5 blocs
+- Type B: 6x1x6 blocs
+- Type C: 4x1x7 blocs
+
+Couleurs (4 par type):
+- White Concrete
+- Orange Concrete
+- Magenta Concrete
+- Light Blue Concrete
+
+Placement: Y=51 (1 bloc au-dessus du grass)
+Décalage aléatoire: 0-11 blocs dans la cellule de grille (évite les motifs)
+Non-chevauchement: garanti par le grid spacing (32) >> taille max (7)
+
+--------------------------------------------------------------------------------
+PORTAIL
+--------------------------------------------------------------------------------
+
+Bloc: ApicaPortalBlock (implements Portal interface)
+Mécanisme: marcher sur le bloc → délai 60 ticks → téléportation
+Bidirectionnel: Overworld ↔ Apica
+Destination Apica: (0.5, 52.0, 0.5)
+Destination Overworld: spawn du monde
+
+--------------------------------------------------------------------------------
+SCRIPTS CRÉÉS
+--------------------------------------------------------------------------------
+
+| Fichier                                          | Rôle                    |
+|--------------------------------------------------|-------------------------|
+| content/dimension/ApicaDimension.java            | ResourceKeys + helpers  |
+| content/dimension/ApicaChunkGenerator.java       | Génération terrain+struct|
+| core/registry/ApicaChunkGenerators.java          | Registre codec generator|
+| common/block/portal/ApicaPortalBlock.java        | Bloc portail dimension  |
+
+--------------------------------------------------------------------------------
+FICHIERS JSON DATA
+--------------------------------------------------------------------------------
+
+| Fichier                                          | Rôle                    |
+|--------------------------------------------------|-------------------------|
+| data/apica/dimension/apica.json                  | Définition dimension    |
+| data/apica/dimension_type/apica.json             | Type de dimension       |
+
+--------------------------------------------------------------------------------
+FICHIERS JSON ASSETS
+--------------------------------------------------------------------------------
+
+| Fichier                                          | Rôle                    |
+|--------------------------------------------------|-------------------------|
+| assets/apica/blockstates/apica_portal.json       | Blockstate portail      |
+| assets/apica/models/block/apica_portal.json      | Modèle bloc portail     |
+| assets/apica/models/item/apica_portal.json       | Modèle item portail     |
+| assets/apica/textures/block/apica_portal.png     | Texture placeholder     |
+
+--------------------------------------------------------------------------------
+REGISTRES MODIFIÉS
+--------------------------------------------------------------------------------
+
+- ApicaBlocks: +APICA_PORTAL
+- ApicaItems: +APICA_PORTAL (BlockItem)
+- ApicaChunkGenerators: +APICA (nouveau registre)
+- ApicaCreativeTabs: +APICA_PORTAL dans DEBUG_TAB
+- Apica.java: +ApicaChunkGenerators.register() dans registerAllRegistries()
+
+--------------------------------------------------------------------------------
+EXTENSIBILITÉ (PHASE 2+)
+--------------------------------------------------------------------------------
+
+Phase 2: Ville basique
+- Extraire la logique de placement dans un CityPlanner séparé
+- Grille rues/bâtiments (pattern Lost Cities: BuildingInfo)
+- Templates de bâtiments simples (murs, planchers, fenêtres)
+
+Phase 3: Ville avancée
+- Districts avec styles différents
+- Avenues principales, places
+- Templates JSON éditables sans recompiler
+- Palette system (caractère → bloc)
+- Intérieurs de bâtiments
+
+Le ApicaChunkGenerator sera le point d'évolution principal.

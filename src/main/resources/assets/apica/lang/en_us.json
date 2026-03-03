@@ -1000,6 +1000,7 @@
   "gui.apica.network.storage_full": "Storage network full — items dropped",
   "gui.apica.hoverbike.remove": "Remove",
   "block.apica.bee_nest": "Bee Nest",
+  "block.apica.apica_portal": "Apica Portal",
   "item.apica.scoop": "Scoop",
   "codex.apica.apica.apica.title": "Apica",
   "codex.apica.apica.apica.desc": "First observations on the bees of this world.",

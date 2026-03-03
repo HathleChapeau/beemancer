@@ -56,6 +56,7 @@ import com.chapeau.apica.core.registry.ApicaFeatures;
 import com.chapeau.apica.core.registry.ApicaFluids;
 import com.chapeau.apica.core.registry.ApicaItems;
 import com.chapeau.apica.core.registry.ApicaMenus;
+import com.chapeau.apica.core.registry.ApicaChunkGenerators;
 import com.chapeau.apica.core.registry.ApicaSounds;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.Direction;
@@ -183,6 +184,10 @@ public class Apica {
         t = System.currentTimeMillis();
         ApicaParticles.register(modEventBus);
         LOGGER.info("[TIMING]   ApicaParticles.register: {}ms", System.currentTimeMillis() - t);
+
+        t = System.currentTimeMillis();
+        ApicaChunkGenerators.register(modEventBus);
+        LOGGER.info("[TIMING]   ApicaChunkGenerators.register: {}ms", System.currentTimeMillis() - t);
 
         t = System.currentTimeMillis();
         ApicaNetwork.register(modEventBus);

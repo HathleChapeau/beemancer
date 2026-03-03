@@ -3,6 +3,24 @@
 ################################################################################
 
 ================================================================================
+2026-03-03 - Apica Dimension (Phase 1)
+================================================================================
+
+Nouvelle dimension custom "Apica" avec Custom ChunkGenerator:
+- ApicaDimension.java: ResourceKey<Level> et ResourceKey<DimensionType>
+- ApicaChunkGenerator.java: generateur custom avec terrain plat a couches
+  probabilistes (bedrock gradient Y=0-2, stone, dirt/stone mix Y=46-47,
+  dirt Y=48-49, grass Y=50) + plateformes de concrete sur grille 32 blocs
+  (3 tailles x 4 couleurs, cross-chunk, hash deterministe)
+- ApicaChunkGenerators.java: registre DeferredRegister pour MapCodec
+- ApicaPortalBlock.java: bloc portail implements Portal, teleporte
+  Overworld <-> Apica avec delai 60 ticks
+- Dimension JSON: data/apica/dimension/apica.json + dimension_type/apica.json
+- Assets: blockstate, model, texture placeholder pour le portail
+- Registres: ApicaBlocks +1, ApicaItems +1, ApicaChunkGenerators (nouveau)
+- Architecture preparee pour Phase 2: ville procedurale (CityPlanner, templates)
+
+================================================================================
 2026-03-03 - Launchpad
 ================================================================================
 

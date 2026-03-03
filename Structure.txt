@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-03-03                     #
-#  (Launchpad - 2026-03-03)                                                     #
+#  (Apica Dimension Phase 1 - 2026-03-03)                                        #
 ################################################################################
 
 ================================================================================
@@ -911,6 +911,21 @@ LISTE DES FEATURES:
   Modele: base plate 14x4x14 + back panel 10x10x2 + top plate 14x4x14 (pivote) + 1px dot + 2x4x2 antenna
   Aussi ajoute: 1px dot + 2x4x2 antenna au modele uncrafting_table.json
   Reference: UncraftingTableBlock/HoneyTankBlock patterns
+
+-> Apica Dimension (Phase 1)
+  Fichier: Structure/feature_apica_dimension.txt
+  Description: Dimension custom avec terrain plat a couches probabilistes,
+    plateformes de concrete sur grille 32 blocs, et bloc portail.
+    Architecture Custom ChunkGenerator concue pour evoluer vers ville procedurale.
+  Scripts crees: ApicaDimension.java, ApicaChunkGenerator.java,
+    ApicaChunkGenerators.java, ApicaPortalBlock.java
+  Scripts modifies: Apica.java, ApicaBlocks.java, ApicaItems.java, ApicaCreativeTabs.java
+  Dependances: ChunkGenerator, Portal, BiomeSource
+  Registres modifies: ApicaBlocks (+1), ApicaItems (+1), ApicaChunkGenerators (nouveau)
+  Assets: blockstates/apica_portal.json, models/block/apica_portal.json,
+    models/item/apica_portal.json, textures/block/apica_portal.png
+  Data: dimension/apica.json, dimension_type/apica.json
+  Reference: Lost Cities (grid deterministique), Twilight Forest (portal pattern)
 
 ================================================================================
 6. FEATURES EN COURS
