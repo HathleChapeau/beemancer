@@ -29,6 +29,7 @@ import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.block.Blocks;
@@ -240,8 +241,14 @@ public class ApicaChunkGenerator extends ChunkGenerator {
     }
 
     @Override
+    public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk,
+                                      StructureManager structureManager) {
+        // Pas de features de biome (herbe, fleurs, lacs de lave, etc.)
+    }
+
+    @Override
     public void spawnOriginalMobs(WorldGenRegion region) {
-        // Pas de mobs natifs pour l'instant
+        // Pas de mobs natifs
     }
 
     @Override
