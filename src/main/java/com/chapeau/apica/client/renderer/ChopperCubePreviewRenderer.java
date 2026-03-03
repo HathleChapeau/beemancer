@@ -90,7 +90,7 @@ public class ChopperCubePreviewRenderer {
     // Offset de la main: distance en avant du joueur
     private static final double HAND_FORWARD = 0.3;
     // Offset de la main: distance laterale
-    private static final double HAND_SIDE = 0.35;
+    private static final double HAND_SIDE = 0.55;
 
     // Cache live (evite recalcul chaque frame)
     private static BlockPos cachedTargetPos = null;
@@ -153,17 +153,22 @@ public class ChopperCubePreviewRenderer {
         renderOutlines(event, mc, remaining);
 
         if (chopping) {
-            // Meme ordre que la destruction serveur: Y desc, X asc, Z asc
-            BlockPos target = remaining.stream()
-                    .min(Comparator.<BlockPos>comparingInt(BlockPos::getY).reversed()
-                            .thenComparingInt(BlockPos::getX)
-                            .thenComparingInt(BlockPos::getZ))
-                    .orElse(null);
-            if (target != null) {
-                renderOrbitingBees(event, mc, target);
+            long lockTime = ChopperCubeLockHelper.getLockGameTime();
+            long elapsed = (lockTime >= 0) ? level.getGameTime() - lockTime : 0;
+
+            // Abeilles de coupe: seulement apres l'envol des abeilles FP (warmup termine)
+            if (elapsed >= ChopperCubeChoppingState.WARMUP_TICKS) {
+                BlockPos target = remaining.stream()
+                        .min(Comparator.<BlockPos>comparingInt(BlockPos::getY).reversed()
+                                .thenComparingInt(BlockPos::getX)
+                                .thenComparingInt(BlockPos::getZ))
+                        .orElse(null);
+                if (target != null) {
+                    renderOrbitingBees(event, mc, target);
+                }
             }
 
-            // Particules rune apres le warmup (quand les abeilles sont en haut)
+            // Particules rune apres le warmup (quand les abeilles FP sont en haut)
             trySpawnRuneParticles(player, level);
         }
     }

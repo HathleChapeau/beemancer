@@ -105,8 +105,8 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     /** Vitesse de rotation orbitale normale. */
     private static final float BEE_ORBIT_SPEED = 0.15f;
 
-    /** Multiplicateur de vitesse orbitale max pendant la montee. */
-    private static final float BEE_ORBIT_SPEED_MAX_MULT = 3.0f;
+    /** Multiplicateur du rayon d'orbite pendant l'envol. */
+    private static final float BEE_ORBIT_RADIUS_RISE_MULT = 1.8f;
 
     /** Echelle des abeilles. */
     private static final float BEE_SCALE = 0.20f;
@@ -167,6 +167,9 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     /** Dernier etat "locked" connu pour detecter les transitions. */
     private boolean wasLocked = false;
 
+    /** Temps fige au debut de l'envol pour geler l'angle d'orbite. */
+    private float frozenTime = 0f;
+
     public ChopperCubeItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
@@ -220,6 +223,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
         choppingPhase = ChoppingPhase.IDLE;
         phaseTimer = 0;
         wasLocked = false;
+        frozenTime = 0f;
         animController.stopAnimation(ANIM_BOTTOM_OPEN);
         animController.stopAnimation(ANIM_TOP_OPEN);
         animController.stopAnimation(ANIM_CENTER_BOB);
@@ -240,6 +244,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
                 if (isLocked && !wasLocked) {
                     choppingPhase = ChoppingPhase.RISING;
                     phaseTimer = 0;
+                    frozenTime = (float) currentTick;
                 }
                 break;
             case RISING:
@@ -398,7 +403,8 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     /**
      * Rend 2 petites abeilles orbitant autour du centre du cube (procedural).
      * riseProgress (0→1) controle la montee: 0=position idle, 1=hors ecran.
-     * Pendant la montee, la vitesse d'orbite augmente et le Y monte.
+     * Pendant l'envol: rotation gelee, rayon augmente, Y monte.
+     * Pendant la descente: inverse exact.
      */
     private void renderOrbitingBees(PoseStack poseStack, MultiBufferSource buffer,
                                      float time, float alpha, float riseProgress) {
@@ -406,18 +412,23 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
         RenderType beeRenderType = RenderType.entityCutout(BEE_TEXTURE);
         VertexConsumer vc = buffer.getBuffer(beeRenderType);
 
-        float radius = BEE_ORBIT_RADIUS * alpha;
+        float baseRadius = BEE_ORBIT_RADIUS * alpha;
 
-        // Vitesse d'orbite: lerp entre normale et rapide selon riseProgress
-        float speedMult = Mth.lerp(riseProgress, 1.0f, BEE_ORBIT_SPEED_MAX_MULT);
-        float currentSpeed = BEE_ORBIT_SPEED * speedMult;
+        // Rayon: augmente pendant l'envol (lerp vers RISE_MULT)
+        float radiusMult = Mth.lerp(riseProgress, 1.0f, BEE_ORBIT_RADIUS_RISE_MULT);
+        float radius = baseRadius * radiusMult;
 
         // Y offset: lerp entre 0 et BEE_RISE_HEIGHT selon riseProgress (ease-in)
         float eased = riseProgress * riseProgress;
         float yOffset = eased * BEE_RISE_HEIGHT;
 
+        // Angle: rotation live quand idle, gelee quand en envol/descente
+        // Lerp entre l'angle live et l'angle gele selon riseProgress
+        float liveAngleBase = time * BEE_ORBIT_SPEED;
+        float frozenAngleBase = frozenTime * BEE_ORBIT_SPEED;
+
         for (int i = 0; i < 2; i++) {
-            double angle = time * currentSpeed + i * Math.PI;
+            double angle = Mth.lerp(riseProgress, liveAngleBase, frozenAngleBase) + i * Math.PI;
 
             float beeX = CENTER_XZ + (float) Math.cos(angle) * radius;
             float beeZ = CENTER_XZ + (float) Math.sin(angle) * radius;
