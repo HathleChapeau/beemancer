@@ -87,7 +87,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     private static final float OPENING_TICKS = 15f;
 
     /** Separation maximale des slabs (3 pixels = 3/16 bloc). */
-    private static final float MAX_SEPARATION = 3f / 16f;
+    private static final float MAX_SEPARATION = 2f / 16f;
 
     /** Amplitude du bobbing du centre (0.5 pixels). */
     private static final float BOB_AMPLITUDE = 0.5f / 16f;

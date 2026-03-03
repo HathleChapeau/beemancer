@@ -2,6 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "cube": "apica:item/artifacts/chopper_center",
+    "side": "apica:item/artifacts/chopper_center_side",
     "particle": "apica:block/royal_gold_block"
   },
   "elements": [
@@ -12,10 +13,10 @@
       "faces": {
         "up":    {"texture": "#cube", "uv": [0,0,16,16]},
         "down":  {"texture": "#cube", "uv": [0,0,16,16]},
-        "north": {"texture": "#cube", "uv": [0,0,16,16]},
-        "south": {"texture": "#cube", "uv": [0,0,16,16]},
-        "east":  {"texture": "#cube", "uv": [0,0,16,16]},
-        "west":  {"texture": "#cube", "uv": [0,0,16,16]}
+        "north": {"texture": "#side", "uv": [0,0,16,16]},
+        "south": {"texture": "#side", "uv": [0,0,16,16]},
+        "east":  {"texture": "#side", "uv": [0,0,16,16]},
+        "west":  {"texture": "#side", "uv": [0,0,16,16]}
       }
     }
   ]

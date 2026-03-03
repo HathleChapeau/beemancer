@@ -208,8 +208,8 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
         }
 
         // Overlay slot bg par dessus avec opacite oscillante (0.1 - 0.2)
-        float t = 0.5f + 0.5f * (float) Math.sin(System.currentTimeMillis() * 0.0015);
-        float alpha = 0.1f + 0.1f * t;
+        float t = 0.5f + 0.5f * (float) Math.sin(System.currentTimeMillis() * 0.0020);
+        float alpha = 0.2f + 0.25f * t;
         int color = ((int) (alpha * 255) << 24) | 0x8B8B8B;
 
         g.pose().pushPose();
