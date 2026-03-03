@@ -114,4 +114,7 @@
 --- API ---
 | api                    | ApiBlock                  | Oui          | Api Block       |
 
+--- DIMENSION ---
+| apica_portal           | ApicaPortalBlock          | Non          | Apica Dimension |
+
 ################################################################################

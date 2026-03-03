@@ -191,4 +191,7 @@
 --- API ---
 | api                      | BlockItem            | Api Block     |
 
+--- DIMENSION ---
+| apica_portal             | BlockItem            | Apica Dimension |
+
 ################################################################################
