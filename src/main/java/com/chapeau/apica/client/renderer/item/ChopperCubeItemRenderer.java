@@ -13,6 +13,7 @@
  * | AnimationTimer          | Temps client         | Tracking animation ticks       |
  * | BakedModel              | Modeles 3D           | Rendu statique via putBulkData |
  * | BeeModel                | Modele abeille       | Rendu mini-abeilles orbitantes |
+ * | ChopperCubeLockHelper   | Etat chopping        | Detection phase active         |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -29,6 +30,7 @@ import com.chapeau.apica.client.animation.IAnimatable;
 import com.chapeau.apica.client.animation.MoveAnimation;
 import com.chapeau.apica.client.animation.TimingEffect;
 import com.chapeau.apica.client.animation.TimingType;
+import com.chapeau.apica.common.item.tool.ChopperCubeLockHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -45,6 +47,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -55,6 +58,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 /**
  * BEWLR pour le Chopper Cube.
  * En first person: slabs s'ecartent, 2 abeilles orbitent, cube central bobbing.
+ * Lors du chopping: abeilles accelerent et montent hors ecran, puis redescendent a la fin.
  * Tous les autres contextes: rendu statique des 3 parties.
  *
  * Utilise le systeme d'animation Apica (AnimationController + MoveAnimation)
@@ -80,25 +84,29 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     private static final ResourceLocation BEE_TEXTURE =
         ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
 
-    /** Delay avant le debut de l'animation. */
+    /** Delay avant le debut de l'animation d'ouverture des slabs. */
     private static final int ANIM_DELAY_TICKS = 10;
 
     /** Duree de la phase d'ouverture en ticks. */
     private static final float OPENING_TICKS = 15f;
 
-    /** Separation maximale des slabs (3 pixels = 3/16 bloc). */
+    /** Separation maximale des slabs (2 pixels). */
     private static final float MAX_SEPARATION = 2f / 16f;
 
     /** Amplitude du bobbing du centre (0.5 pixels). */
     private static final float BOB_AMPLITUDE = 0.5f / 16f;
 
-    /** Duree d'un demi-cycle de bobbing (equivalent a sin(t*0.053) period/2 ≈ 60 ticks). */
+    /** Duree d'un demi-cycle de bobbing. */
     private static final float BOB_DURATION = 60f;
 
     /** Rayon d'orbite des abeilles (en unites bloc item). */
     private static final float BEE_ORBIT_RADIUS = 0.35f;
 
+    /** Vitesse de rotation orbitale normale. */
     private static final float BEE_ORBIT_SPEED = 0.15f;
+
+    /** Multiplicateur de vitesse orbitale max pendant la montee. */
+    private static final float BEE_ORBIT_SPEED_MAX_MULT = 3.0f;
 
     /** Echelle des abeilles. */
     private static final float BEE_SCALE = 0.20f;
@@ -106,15 +114,30 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     /** Centre Y pour l'orbite des abeilles (compense le flip 180 du BeeModel). */
     private static final float CENTER_Y = 12f / 16f;
 
+    /** Offset Y max des abeilles quand elles sortent par le haut de l'ecran. */
+    private static final float BEE_RISE_HEIGHT = 2.0f;
+
     /** Centre XZ du modele (8/16 = 0.5). */
     private static final float CENTER_XZ = 8f / 16f;
 
     private static final int FULL_BRIGHT = 0xF000F0;
 
+    /** Duree de la montee/descente des abeilles en ticks. */
+    private static final int RISE_DURATION = 20;
+    private static final int DESCEND_DURATION = 20;
+
     /** Noms des animations enregistrees dans le controller. */
     private static final String ANIM_BOTTOM_OPEN = "bottom_open";
     private static final String ANIM_TOP_OPEN = "top_open";
     private static final String ANIM_CENTER_BOB = "center_bob";
+
+    /** Phases du chopping dans le BEWLR. */
+    private enum ChoppingPhase {
+        IDLE,
+        RISING,
+        ACTIVE,
+        DESCENDING
+    }
 
     /** Controller d'animation Apica. */
     private final AnimationController animController = new AnimationController();
@@ -122,15 +145,27 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     /** BeeModel lazy-init. */
     private BeeModel<?> beeModel;
 
-    /** Animation state: tick de debut de l'animation (-1 = pas en cours). */
+    /** Animation state: tick de debut de l'animation idle (-1 = pas en cours). */
     private int animStartTick = -1;
 
     /** Dernier tick ou on a rendu en first person (pour detecter la fin du FP). */
     private int lastFpRenderTick = -1;
 
-    /** Flags pour eviter de relancer les animations chaque frame. */
+    /** Flags pour eviter de relancer les animations idle chaque frame. */
     private boolean openingStarted = false;
     private boolean bobbingStarted = false;
+
+    /** Phase actuelle du chopping. */
+    private ChoppingPhase choppingPhase = ChoppingPhase.IDLE;
+
+    /** Timer de la phase courante (en ticks). */
+    private int phaseTimer = 0;
+
+    /** Dernier tick traite pour le phase timer (evite double-increment par frame). */
+    private int lastPhaseUpdateTick = -1;
+
+    /** Dernier etat "locked" connu pour detecter les transitions. */
+    private boolean wasLocked = false;
 
     public ChopperCubeItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
@@ -182,9 +217,76 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
         animStartTick = -1;
         openingStarted = false;
         bobbingStarted = false;
+        choppingPhase = ChoppingPhase.IDLE;
+        phaseTimer = 0;
+        wasLocked = false;
         animController.stopAnimation(ANIM_BOTTOM_OPEN);
         animController.stopAnimation(ANIM_TOP_OPEN);
         animController.stopAnimation(ANIM_CENTER_BOB);
+    }
+
+    /**
+     * Met a jour la phase de chopping en fonction de ChopperCubeLockHelper.
+     * Detecte les transitions locked/unlocked pour piloter les animations de montee/descente.
+     */
+    private void updateChoppingPhase(int currentTick) {
+        if (currentTick == lastPhaseUpdateTick) return;
+        lastPhaseUpdateTick = currentTick;
+
+        boolean isLocked = ChopperCubeLockHelper.isLocked();
+
+        switch (choppingPhase) {
+            case IDLE:
+                if (isLocked && !wasLocked) {
+                    choppingPhase = ChoppingPhase.RISING;
+                    phaseTimer = 0;
+                }
+                break;
+            case RISING:
+                phaseTimer++;
+                if (!isLocked) {
+                    choppingPhase = ChoppingPhase.DESCENDING;
+                    phaseTimer = 0;
+                } else if (phaseTimer >= RISE_DURATION) {
+                    choppingPhase = ChoppingPhase.ACTIVE;
+                    phaseTimer = 0;
+                }
+                break;
+            case ACTIVE:
+                if (!isLocked) {
+                    choppingPhase = ChoppingPhase.DESCENDING;
+                    phaseTimer = 0;
+                }
+                break;
+            case DESCENDING:
+                phaseTimer++;
+                if (phaseTimer >= DESCEND_DURATION) {
+                    choppingPhase = ChoppingPhase.IDLE;
+                    phaseTimer = 0;
+                }
+                break;
+        }
+
+        wasLocked = isLocked;
+    }
+
+    /**
+     * Calcule le progress normalise (0→1) de la montee/descente des abeilles.
+     * 0 = position idle normale, 1 = completement hors ecran.
+     */
+    private float getBeeRiseProgress() {
+        switch (choppingPhase) {
+            case IDLE:
+                return 0f;
+            case RISING:
+                return Mth.clamp((float) phaseTimer / RISE_DURATION, 0f, 1f);
+            case ACTIVE:
+                return 1f;
+            case DESCENDING:
+                return Mth.clamp(1f - (float) phaseTimer / DESCEND_DURATION, 0f, 1f);
+            default:
+                return 0f;
+        }
     }
 
     @Override
@@ -209,6 +311,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
                 animStartTick = currentTick;
             }
             lastFpRenderTick = currentTick;
+            updateChoppingPhase(currentTick);
             renderAnimated(stack, poseStack, buffer, packedLight, packedOverlay);
         } else {
             renderStatic(stack, poseStack, buffer, packedLight, packedOverlay);
@@ -227,6 +330,8 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
 
     /**
      * Rendu anime en first person via AnimationController.
+     * Gere a la fois l'animation idle (ouverture + bobbing + orbite)
+     * et l'animation de chopping (montee/descente des abeilles).
      */
     private void renderAnimated(ItemStack stack, PoseStack poseStack, MultiBufferSource buffer,
                                  int packedLight, int packedOverlay) {
@@ -280,32 +385,48 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
         if (elapsed >= (int) OPENING_TICKS) {
             int beeElapsed = elapsed - (int) OPENING_TICKS;
             float beeAlpha = Math.min(1.0f, beeElapsed / 10.0f);
-            renderOrbitingBees(poseStack, buffer, time, beeAlpha);
+
+            float riseProgress = getBeeRiseProgress();
+
+            // Ne pas rendre les abeilles si completement hors ecran (ACTIVE)
+            if (riseProgress < 0.99f) {
+                renderOrbitingBees(poseStack, buffer, time, beeAlpha, riseProgress);
+            }
         }
     }
 
     /**
      * Rend 2 petites abeilles orbitant autour du centre du cube (procedural).
+     * riseProgress (0→1) controle la montee: 0=position idle, 1=hors ecran.
+     * Pendant la montee, la vitesse d'orbite augmente et le Y monte.
      */
     private void renderOrbitingBees(PoseStack poseStack, MultiBufferSource buffer,
-                                     float time, float alpha) {
+                                     float time, float alpha, float riseProgress) {
         BeeModel<?> model = getOrCreateBeeModel();
         RenderType beeRenderType = RenderType.entityCutout(BEE_TEXTURE);
         VertexConsumer vc = buffer.getBuffer(beeRenderType);
 
         float radius = BEE_ORBIT_RADIUS * alpha;
 
+        // Vitesse d'orbite: lerp entre normale et rapide selon riseProgress
+        float speedMult = Mth.lerp(riseProgress, 1.0f, BEE_ORBIT_SPEED_MAX_MULT);
+        float currentSpeed = BEE_ORBIT_SPEED * speedMult;
+
+        // Y offset: lerp entre 0 et BEE_RISE_HEIGHT selon riseProgress (ease-in)
+        float eased = riseProgress * riseProgress;
+        float yOffset = eased * BEE_RISE_HEIGHT;
+
         for (int i = 0; i < 2; i++) {
-            double angle = time * BEE_ORBIT_SPEED + i * Math.PI;
+            double angle = time * currentSpeed + i * Math.PI;
 
             float beeX = CENTER_XZ + (float) Math.cos(angle) * radius;
             float beeZ = CENTER_XZ + (float) Math.sin(angle) * radius;
-            float beeY = CENTER_Y;
+            float beeY = CENTER_Y + yOffset;
 
             poseStack.pushPose();
             poseStack.translate(beeX, beeY, beeZ);
 
-            float yRot = (float) Math.toDegrees(angle) + 0;
+            float yRot = (float) Math.toDegrees(angle);
             poseStack.mulPose(Axis.YP.rotationDegrees(-yRot));
             poseStack.mulPose(Axis.XP.rotationDegrees(180));
 

@@ -76,34 +76,34 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final ResourceLocation RING_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/ring.png");
 
-    // --- Overlay box (identique leaf blower) ---
-    private static final float OVL_MIN_X = 6.75f / 16f;
-    private static final float OVL_MIN_Y = 4.75f / 16f;
-    private static final float OVL_MIN_Z = -1.5f / 16f;
-    private static final float OVL_MAX_X = 11.25f / 16f;
-    private static final float OVL_MAX_Y = 9.25f / 16f;
-    private static final float OVL_MAX_Z = 11.5f / 16f;
+    // --- Overlay box (beam barrel charge inner) ---
+    private static final float OVL_MIN_X = 6.25f / 16f;
+    private static final float OVL_MIN_Y = -0.75f / 16f;
+    private static final float OVL_MIN_Z = -12.4f / 16f;
+    private static final float OVL_MAX_X = 7.75f / 16f;
+    private static final float OVL_MAX_Y = 0.75f / 16f;
+    private static final float OVL_MAX_Z = 0.5f / 16f;
 
-    // --- 3 Bar boxes (identique leaf blower) ---
-    private static final float BAR_MIN_X = 6f / 16f;
-    private static final float BAR_MIN_Y = 4f / 16f;
-    private static final float BAR_MAX_X = 12f / 16f;
-    private static final float BAR_MAX_Y = 10f / 16f;
-    private static final float[] BAR_Z_MIN = {0f / 16f, 2f / 16f, 4f / 16f};
-    private static final float[] BAR_Z_MAX = {1f / 16f, 3f / 16f, 5f / 16f};
+    // --- 3 Bar boxes (charge indicators on barrel) ---
+    private static final float BAR_MIN_X = 5.5f / 16f;
+    private static final float BAR_MIN_Y = -1.5f / 16f;
+    private static final float BAR_MAX_X = 8.5f / 16f;
+    private static final float BAR_MAX_Y = 1.5f / 16f;
+    private static final float[] BAR_Z_MIN = {-10f / 16f, -8f / 16f, -6f / 16f};
+    private static final float[] BAR_Z_MAX = {-9f / 16f, -7f / 16f, -5f / 16f};
     private static final float[] BAR_U0 = {0f, 1f / 3f, 2f / 3f};
     private static final float[] BAR_U1 = {1f / 3f, 2f / 3f, 1f};
 
-    // Atlas 3x12: 4 états de 3 rows (identique leaf blower)
+    // Atlas 3x12: 4 états de 3 rows
     private static final float BAR_STATE_V_SIZE = 0.25f;
     private static final float BAR_PIXEL_V = 1f / 12f;
 
     private static final int TOTAL_FRAMES = 13;
 
-    // Halo position (devant le canon, centre du body en XY)
-    private static final float HALO_X = (BAR_MIN_X + BAR_MAX_X) / 2f;
-    private static final float HALO_Y = (BAR_MIN_Y + BAR_MAX_Y) / 2f;
-    private static final float HALO_Z = -5f / 16f;
+    // Halo position (devant le canon, pointe du barrel)
+    private static final float HALO_X = 7f / 16f;
+    private static final float HALO_Y = 0f / 16f;
+    private static final float HALO_Z = -13f / 16f;
 
     // Animation state
     private int currentFrame = 0;
@@ -280,8 +280,8 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
         float time = AnimationTimer.getRenderTime(
                 Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true));
 
-        float centerX = (BAR_MIN_X + BAR_MAX_X) / 2f;
-        float centerY = (BAR_MIN_Y + BAR_MAX_Y) / 2f;
+        float centerX = 7f / 16f;
+        float centerY = 0f / 16f;
 
         for (int i = 0; i < Math.min(chargeLevel, 3); i++) {
             float centerZ = (BAR_Z_MIN[i] + BAR_Z_MAX[i]) / 2f;

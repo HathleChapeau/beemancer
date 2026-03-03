@@ -77,7 +77,7 @@ public class ChopperCubeItem extends Item {
         if (!level.isClientSide()) {
             // Ignorer si deja en cours de destruction
             if (ChopperCubeChoppingState.isActive(player.getUUID())) {
-                return InteractionResult.SUCCESS;
+                return InteractionResult.CONSUME;
             }
 
             // Scanner et demarrer la destruction (haut→bas, puis gauche→droite)
@@ -92,7 +92,7 @@ public class ChopperCubeItem extends Item {
             ChopperCubeLockHelper.lockWith(logs);
         }
 
-        return InteractionResult.sidedSuccess(level.isClientSide());
+        return InteractionResult.CONSUME;
     }
 
     @Override
@@ -119,6 +119,11 @@ public class ChopperCubeItem extends Item {
         }
 
         ChopperCubeChoppingState.tick(player, (ServerLevel) level);
+    }
+
+    @Override
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+        return slotChanged;
     }
 
     /**
