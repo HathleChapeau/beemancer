@@ -239,7 +239,6 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.CREATIVE_BREEDING_CRYSTAL.get());
         output.accept(ApicaItems.CREATIVE_TOLERANCE_CRYSTAL.get());
         output.accept(ApicaItems.CREATIVE_FOCUS.get());
-        output.accept(ApicaItems.APICA_PORTAL.get());
     }
 
     private static void addBuildingBlocks(CreativeModeTab.Output output) {

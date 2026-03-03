@@ -25,7 +25,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
 
+@EventBusSubscriber(modid = Apica.MOD_ID)
 public class ApicaDimension {
 
     public static final ResourceKey<Level> LEVEL_KEY = ResourceKey.create(
@@ -40,5 +44,12 @@ public class ApicaDimension {
 
     public static boolean isApicaDimension(Level level) {
         return LEVEL_KEY.equals(level.dimension());
+    }
+
+    @SubscribeEvent
+    public static void onMobSpawn(FinalizeSpawnEvent event) {
+        if (event.getLevel().getLevel().dimension().equals(LEVEL_KEY)) {
+            event.setSpawnCancelled(true);
+        }
     }
 }
