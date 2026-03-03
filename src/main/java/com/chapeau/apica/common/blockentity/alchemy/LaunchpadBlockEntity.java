@@ -111,12 +111,14 @@ public class LaunchpadBlockEntity extends BlockEntity {
         double angleRad = Math.toRadians(angleIndex * 10.0);
         Direction facing = state.getValue(LaunchpadBlock.FACING);
 
-        double horizontalSpeed = power * (angleIndex / 6.0);
+        double adjustedPower = power * (1.0 + angleIndex * 0.1);
+        double horizontalSpeed = adjustedPower * Math.sin(angleRad);
+        double verticalSpeed = adjustedPower * Math.cos(angleRad);
 
         double motionX = facing.getStepX() * horizontalSpeed;
         double motionZ = facing.getStepZ() * horizontalSpeed;
 
-        entity.setDeltaMovement(motionX, power, motionZ);
+        entity.setDeltaMovement(motionX, verticalSpeed, motionZ);
         entity.fallDistance = 0;
         entity.hurtMarked = true;
 
