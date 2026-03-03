@@ -94,6 +94,32 @@
         "east":  {"texture": "#side"},
         "west":  {"texture": "#side"}
       }
+    },
+    {
+      "name": "indicator_dot",
+      "from": [15, 15, 15],
+      "to": [16, 16, 16],
+      "faces": {
+        "up":    {"texture": "#side"},
+        "down":  {"texture": "#side"},
+        "north": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "east":  {"texture": "#side"},
+        "west":  {"texture": "#side"}
+      }
+    },
+    {
+      "name": "antenna",
+      "from": [14.5, 16, 14.5],
+      "to": [16.5, 20, 16.5],
+      "faces": {
+        "up":    {"texture": "#side"},
+        "down":  {"texture": "#side"},
+        "north": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "east":  {"texture": "#side"},
+        "west":  {"texture": "#side"}
+      }
     }
   ]
 }

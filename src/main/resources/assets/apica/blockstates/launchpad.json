@@ -1,0 +1,38 @@
+{
+  "variants": {
+    "angle=0,facing=north": { "model": "apica:block/artifacts/launchpad_flat" },
+    "angle=0,facing=south": { "model": "apica:block/artifacts/launchpad_flat", "y": 180 },
+    "angle=0,facing=east":  { "model": "apica:block/artifacts/launchpad_flat", "y": 90 },
+    "angle=0,facing=west":  { "model": "apica:block/artifacts/launchpad_flat", "y": 270 },
+
+    "angle=1,facing=north": { "model": "apica:block/artifacts/launchpad_flat" },
+    "angle=1,facing=south": { "model": "apica:block/artifacts/launchpad_flat", "y": 180 },
+    "angle=1,facing=east":  { "model": "apica:block/artifacts/launchpad_flat", "y": 90 },
+    "angle=1,facing=west":  { "model": "apica:block/artifacts/launchpad_flat", "y": 270 },
+
+    "angle=2,facing=north": { "model": "apica:block/artifacts/launchpad_low" },
+    "angle=2,facing=south": { "model": "apica:block/artifacts/launchpad_low", "y": 180 },
+    "angle=2,facing=east":  { "model": "apica:block/artifacts/launchpad_low", "y": 90 },
+    "angle=2,facing=west":  { "model": "apica:block/artifacts/launchpad_low", "y": 270 },
+
+    "angle=3,facing=north": { "model": "apica:block/artifacts/launchpad_low" },
+    "angle=3,facing=south": { "model": "apica:block/artifacts/launchpad_low", "y": 180 },
+    "angle=3,facing=east":  { "model": "apica:block/artifacts/launchpad_low", "y": 90 },
+    "angle=3,facing=west":  { "model": "apica:block/artifacts/launchpad_low", "y": 270 },
+
+    "angle=4,facing=north": { "model": "apica:block/artifacts/launchpad_high" },
+    "angle=4,facing=south": { "model": "apica:block/artifacts/launchpad_high", "y": 180 },
+    "angle=4,facing=east":  { "model": "apica:block/artifacts/launchpad_high", "y": 90 },
+    "angle=4,facing=west":  { "model": "apica:block/artifacts/launchpad_high", "y": 270 },
+
+    "angle=5,facing=north": { "model": "apica:block/artifacts/launchpad_high" },
+    "angle=5,facing=south": { "model": "apica:block/artifacts/launchpad_high", "y": 180 },
+    "angle=5,facing=east":  { "model": "apica:block/artifacts/launchpad_high", "y": 90 },
+    "angle=5,facing=west":  { "model": "apica:block/artifacts/launchpad_high", "y": 270 },
+
+    "angle=6,facing=north": { "model": "apica:block/artifacts/launchpad_high" },
+    "angle=6,facing=south": { "model": "apica:block/artifacts/launchpad_high", "y": 180 },
+    "angle=6,facing=east":  { "model": "apica:block/artifacts/launchpad_high", "y": 90 },
+    "angle=6,facing=west":  { "model": "apica:block/artifacts/launchpad_high", "y": 270 }
+  }
+}

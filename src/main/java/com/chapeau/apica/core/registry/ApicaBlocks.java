@@ -22,6 +22,7 @@ import com.chapeau.apica.common.block.alchemy.ManualCentrifugeBlock;
 import com.chapeau.apica.common.block.alchemy.MultiblockTankBlock;
 import com.chapeau.apica.common.block.alchemy.ApicaFurnaceBlock;
 import com.chapeau.apica.common.block.alchemy.PoweredCentrifugeBlock;
+import com.chapeau.apica.common.block.alchemy.LaunchpadBlock;
 import com.chapeau.apica.common.block.alchemy.UncraftingTableBlock;
 import com.chapeau.apica.common.block.altar.AltarHeartBlock;
 import com.chapeau.apica.common.block.altar.HoneyCrystalBlock;
@@ -498,6 +499,14 @@ public class ApicaBlocks {
     // --- UNCRAFTING TABLE ---
     public static final DeferredBlock<UncraftingTableBlock> UNCRAFTING_TABLE = registerTimed("uncrafting_table",
             () -> new UncraftingTableBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
+    // --- LAUNCHPAD ---
+    public static final DeferredBlock<LaunchpadBlock> LAUNCHPAD = registerTimed("launchpad",
+            () -> new LaunchpadBlock(BlockBehaviour.Properties.of()
                     .strength(3.0f)
                     .sound(SoundType.METAL)
                     .noOcclusion()

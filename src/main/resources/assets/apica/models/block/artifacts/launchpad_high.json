@@ -1,0 +1,79 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "cutout",
+  "textures": {
+    "base": "minecraft:block/iron_block",
+    "plate": "minecraft:block/gold_block",
+    "back": "minecraft:block/iron_block",
+    "antenna": "minecraft:block/gold_block",
+    "particle": "minecraft:block/iron_block"
+  },
+  "elements": [
+    {
+      "name": "base_plate",
+      "from": [1, 0, 1],
+      "to": [15, 4, 15],
+      "faces": {
+        "up":    {"texture": "#base"},
+        "down":  {"texture": "#base"},
+        "north": {"texture": "#base"},
+        "south": {"texture": "#base"},
+        "east":  {"texture": "#base"},
+        "west":  {"texture": "#base"}
+      }
+    },
+    {
+      "name": "back_panel",
+      "from": [3, 0, 14],
+      "to": [13, 10, 16],
+      "faces": {
+        "up":    {"texture": "#back"},
+        "down":  {"texture": "#back"},
+        "north": {"texture": "#back"},
+        "south": {"texture": "#back"},
+        "east":  {"texture": "#back"},
+        "west":  {"texture": "#back"}
+      }
+    },
+    {
+      "name": "top_plate",
+      "from": [1, 4, 1],
+      "to": [15, 8, 15],
+      "rotation": {"origin": [8, 6, 14], "axis": "x", "angle": -45, "rescale": true},
+      "faces": {
+        "up":    {"texture": "#plate"},
+        "down":  {"texture": "#plate"},
+        "north": {"texture": "#plate"},
+        "south": {"texture": "#plate"},
+        "east":  {"texture": "#plate"},
+        "west":  {"texture": "#plate"}
+      }
+    },
+    {
+      "name": "indicator_dot",
+      "from": [15, 15, 15],
+      "to": [16, 16, 16],
+      "faces": {
+        "up":    {"texture": "#antenna"},
+        "down":  {"texture": "#antenna"},
+        "north": {"texture": "#antenna"},
+        "south": {"texture": "#antenna"},
+        "east":  {"texture": "#antenna"},
+        "west":  {"texture": "#antenna"}
+      }
+    },
+    {
+      "name": "antenna",
+      "from": [14.5, 16, 14.5],
+      "to": [16.5, 20, 16.5],
+      "faces": {
+        "up":    {"texture": "#antenna"},
+        "down":  {"texture": "#antenna"},
+        "north": {"texture": "#antenna"},
+        "south": {"texture": "#antenna"},
+        "east":  {"texture": "#antenna"},
+        "west":  {"texture": "#antenna"}
+      }
+    }
+  ]
+}

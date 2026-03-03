@@ -429,6 +429,13 @@ public class Apica {
                 (be, side) -> side == Direction.DOWN ? be.getNectarTank() : null
         );
 
+        // Launchpad: accepte honey, royal jelly, nectar de tous les cotes
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ApicaBlockEntities.LAUNCHPAD.get(),
+                (be, side) -> be.getFluidTank()
+        );
+
         // Liquid Trash Can: accepte tout fluide, void immediat
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,

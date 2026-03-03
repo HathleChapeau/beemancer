@@ -27,6 +27,7 @@ import com.chapeau.apica.common.blockentity.alchemy.ManualCentrifugeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.MultiblockTankBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ApicaFurnaceBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.PoweredCentrifugeBlockEntity;
+import com.chapeau.apica.common.blockentity.alchemy.LaunchpadBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.UncraftingTableBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyPedestalBlockEntity;
@@ -377,6 +378,14 @@ public class ApicaBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             UncraftingTableBlockEntity::new,
                             ApicaBlocks.UNCRAFTING_TABLE.get()
+                    ).build(null));
+
+    // --- LAUNCHPAD ---
+    public static final Supplier<BlockEntityType<LaunchpadBlockEntity>> LAUNCHPAD =
+            BLOCK_ENTITIES.register("launchpad",
+                    () -> BlockEntityType.Builder.of(
+                            LaunchpadBlockEntity::new,
+                            ApicaBlocks.LAUNCHPAD.get()
                     ).build(null));
 
     // --- BEE NEST ---
