@@ -27,6 +27,7 @@
 package com.chapeau.apica.common.blockentity.artifacts;
 
 import com.chapeau.apica.common.block.artifacts.LaunchpadBlock;
+import com.chapeau.apica.core.network.packets.LaunchVelocityPacket;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
 import net.minecraft.core.BlockPos;
@@ -36,6 +37,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -46,6 +48,7 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -120,9 +123,18 @@ public class LaunchpadBlockEntity extends BlockEntity {
         double motionX = facing.getStepX() * horizontalSpeed;
         double motionZ = facing.getStepZ() * horizontalSpeed;
 
-        entity.setDeltaMovement(motionX, verticalSpeed, motionZ);
         entity.fallDistance = 0;
-        entity.hurtMarked = true;
+
+        if (entity instanceof ServerPlayer player) {
+            // Players: use custom packet to bypass vanilla ±3.9/tick velocity clamp
+            PacketDistributor.sendToPlayer(player,
+                    new LaunchVelocityPacket(player.getId(), motionX, verticalSpeed, motionZ));
+            player.connection.aboveGroundTickCount = 0;
+        } else {
+            // Non-players: vanilla setDeltaMovement is fine (cap rarely matters for mobs)
+            entity.setDeltaMovement(motionX, verticalSpeed, motionZ);
+            entity.hurtMarked = true;
+        }
 
         fluidTank.drain(FLUID_COST, IFluidHandler.FluidAction.EXECUTE);
         cooldown = COOLDOWN_TICKS;

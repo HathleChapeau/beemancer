@@ -20,6 +20,7 @@ import com.chapeau.apica.core.network.packets.HoverbikePartSwapPacket;
 import com.chapeau.apica.core.network.packets.HoverbikePartRemovePacket;
 import com.chapeau.apica.core.network.packets.StorageTaskCancelPacket;
 import com.chapeau.apica.core.network.packets.ItemFilterActionPacket;
+import com.chapeau.apica.core.network.packets.LaunchVelocityPacket;
 import com.chapeau.apica.core.network.packets.ResonatorFinishPacket;
 import com.chapeau.apica.core.network.packets.ResonatorTraitMatchPacket;
 import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
@@ -138,6 +139,12 @@ public class ApicaNetwork {
                 QuestSyncPacket.TYPE,
                 QuestSyncPacket.STREAM_CODEC,
                 QuestSyncPacket::handle
+        );
+
+        registrar.playToClient(
+                LaunchVelocityPacket.TYPE,
+                LaunchVelocityPacket.STREAM_CODEC,
+                LaunchVelocityPacket::handle
         );
 
     }
