@@ -440,6 +440,13 @@ public class Apica {
                 }
         );
 
+        // Repair Tool Station: fluide par le dessous uniquement
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ApicaBlockEntities.REPAIR_TOOL_STATION.get(),
+                (be, side) -> side == Direction.DOWN ? be.getFluidTank() : null
+        );
+
         // Liquid Trash Can: accepte tout fluide, void immediat
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
@@ -536,6 +543,13 @@ public class Apica {
                 Capabilities.ItemHandler.BLOCK,
                 ApicaBlockEntities.TRASH_CAN.get(),
                 (be, side) -> be.getAutomationHandler()
+        );
+
+        // Repair Tool Station: item accessible de tous les cotes
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                ApicaBlockEntities.REPAIR_TOOL_STATION.get(),
+                (be, side) -> be.getItemHandler()
         );
     }
 

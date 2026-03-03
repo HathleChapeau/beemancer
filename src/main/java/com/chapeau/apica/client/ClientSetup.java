@@ -39,6 +39,7 @@ import com.chapeau.apica.client.renderer.block.ApiRenderer;
 import com.chapeau.apica.client.renderer.block.AltarHeartRenderer;
 import com.chapeau.apica.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyPedestalRenderer;
+import com.chapeau.apica.client.renderer.block.RepairToolStationRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.apica.client.renderer.block.CentrifugeHeartRenderer;
 import com.chapeau.apica.client.renderer.block.CrankRenderer;
@@ -283,6 +284,10 @@ public class ClientSetup {
         // LaunchpadRenderer - plaque inclinable animee
         event.registerBlockEntityRenderer(ApicaBlockEntities.LAUNCHPAD.get(),
             LaunchpadRenderer::new);
+
+        // RepairToolStationRenderer - item pose sur la station de reparation
+        event.registerBlockEntityRenderer(ApicaBlockEntities.REPAIR_TOOL_STATION.get(),
+            RepairToolStationRenderer::new);
 
         // PipeExtractRenderer - indicateur d'extraction sur les pipes (item et liquide)
         event.registerBlockEntityRenderer(ApicaBlockEntities.ITEM_PIPE.get(),

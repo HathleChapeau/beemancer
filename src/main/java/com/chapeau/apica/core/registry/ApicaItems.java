@@ -247,6 +247,10 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> LAUNCHPAD = ITEMS.register("launchpad",
             () -> new BlockItem(ApicaBlocks.LAUNCHPAD.get(), new Item.Properties()));
 
+    // --- REPAIR TOOL STATION ---
+    public static final DeferredItem<BlockItem> REPAIR_TOOL_STATION = ITEMS.register("repair_tool_station",
+            () -> new BlockItem(ApicaBlocks.REPAIR_TOOL_STATION.get(), new Item.Properties()));
+
     // --- BEE STATUE ---
     public static final DeferredItem<BlockItem> BEE_STATUE = ITEMS.register("bee_statue",
             () -> new BlockItem(ApicaBlocks.BEE_STATUE.get(), new Item.Properties()));

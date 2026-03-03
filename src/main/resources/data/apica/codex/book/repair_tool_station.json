@@ -1,0 +1,16 @@
+{
+  "sections": [
+    {
+      "type": "header"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.repair_tool_station.lore.p1"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.repair_tool_station.lore.p2"
+    }
+  ],
+  "sticky_notes": []
+}

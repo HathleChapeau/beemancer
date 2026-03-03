@@ -1,0 +1,23 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "top": "apica:block/honeyed_iron_block",
+    "side": "apica:block/honeyed_iron_block",
+    "particle": "apica:block/honeyed_iron_block"
+  },
+  "elements": [
+    {
+      "name": "slab_base",
+      "from": [0, 0, 0],
+      "to": [16, 6, 16],
+      "faces": {
+        "up":    {"texture": "#top"},
+        "down":  {"texture": "#top"},
+        "north": {"texture": "#side", "uv": [0, 10, 16, 16]},
+        "south": {"texture": "#side", "uv": [0, 10, 16, 16]},
+        "east":  {"texture": "#side", "uv": [0, 10, 16, 16]},
+        "west":  {"texture": "#side", "uv": [0, 10, 16, 16]}
+      }
+    }
+  ]
+}
