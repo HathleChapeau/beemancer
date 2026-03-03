@@ -1,0 +1,23 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "cutout",
+  "textures": {
+    "plate": "minecraft:block/gold_block",
+    "particle": "minecraft:block/gold_block"
+  },
+  "elements": [
+    {
+      "name": "top_plate",
+      "from": [1, 4, 1],
+      "to": [15, 8, 15],
+      "faces": {
+        "up":    {"texture": "#plate"},
+        "down":  {"texture": "#plate"},
+        "north": {"texture": "#plate"},
+        "south": {"texture": "#plate"},
+        "east":  {"texture": "#plate"},
+        "west":  {"texture": "#plate"}
+      }
+    }
+  ]
+}

@@ -3,7 +3,6 @@
   "render_type": "cutout",
   "textures": {
     "base": "minecraft:block/iron_block",
-    "plate": "minecraft:block/gold_block",
     "back": "minecraft:block/iron_block",
     "antenna": "minecraft:block/gold_block",
     "particle": "minecraft:block/iron_block"
@@ -33,19 +32,6 @@
         "south": {"texture": "#back"},
         "east":  {"texture": "#back"},
         "west":  {"texture": "#back"}
-      }
-    },
-    {
-      "name": "top_plate",
-      "from": [1, 4, 1],
-      "to": [15, 8, 15],
-      "faces": {
-        "up":    {"texture": "#plate"},
-        "down":  {"texture": "#plate"},
-        "north": {"texture": "#plate"},
-        "south": {"texture": "#plate"},
-        "east":  {"texture": "#plate"},
-        "west":  {"texture": "#plate"}
       }
     },
     {

@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-03-02                     #
-#  (Uncrafting Table - 2026-03-02)                                              #
+#                         Dernière mise à jour: 2026-03-03                     #
+#  (Launchpad - 2026-03-03)                                                     #
 ################################################################################
 
 ================================================================================
@@ -895,6 +895,22 @@ LISTE DES FEATURES:
     models/item/uncrafting_table.json, 4 textures
   Codex: artifacts tab — node "uncrafting_table" avec book page et lore
   Reference: ApicaFurnace pattern
+
+-> Launchpad
+  Description: Bloc qui projette les entites dans une direction configurable (0-60 deg par pas de 10).
+    Consomme du miel/royal jelly/nectar (250 mB par lancement). Puissance augmente selon le fluide:
+    honey=1.5, royal_jelly=2.25, nectar=3.0. Click droit cycle l'angle. Bucket interaction supportee.
+  Scripts crees: LaunchpadBlock.java, LaunchpadBlockEntity.java
+  Scripts modifies: ApicaBlocks, ApicaBlockEntities, ApicaItems, ApicaCreativeTabs,
+    Apica.java, CodexNodeWidget.java
+  Dependances: ApicaFluids (HONEY, ROYAL_JELLY, NECTAR), ParticleHelper
+  Registres modifies: ApicaBlocks (+1), ApicaItems (+1), ApicaBlockEntities (+1)
+  Assets: blockstates/launchpad.json (28 variants), models/block/artifacts/launchpad_flat.json,
+    launchpad_low.json, launchpad_high.json, models/item/launchpad.json
+  Codex: artifacts tab — node "launchpad" avec book page et lore
+  Modele: base plate 14x4x14 + back panel 10x10x2 + top plate 14x4x14 (pivote) + 1px dot + 2x4x2 antenna
+  Aussi ajoute: 1px dot + 2x4x2 antenna au modele uncrafting_table.json
+  Reference: UncraftingTableBlock/HoneyTankBlock patterns
 
 ================================================================================
 6. FEATURES EN COURS

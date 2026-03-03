@@ -42,6 +42,7 @@ import com.chapeau.apica.client.renderer.block.HoneyPedestalRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.apica.client.renderer.block.CentrifugeHeartRenderer;
 import com.chapeau.apica.client.renderer.block.CrankRenderer;
+import com.chapeau.apica.client.renderer.block.LaunchpadRenderer;
 import com.chapeau.apica.client.renderer.block.InjectorRenderer;
 import com.chapeau.apica.client.renderer.block.InfuserHeartRenderer;
 import com.chapeau.apica.client.renderer.block.PipeExtractRenderer;
@@ -278,6 +279,10 @@ public class ClientSetup {
         // HoneyLampRenderer - halo translucide cross planes
         event.registerBlockEntityRenderer(ApicaBlockEntities.HONEY_LAMP.get(),
             com.chapeau.apica.client.renderer.block.HoneyLampRenderer::new);
+
+        // LaunchpadRenderer - plaque inclinable animee
+        event.registerBlockEntityRenderer(ApicaBlockEntities.LAUNCHPAD.get(),
+            LaunchpadRenderer::new);
 
         // PipeExtractRenderer - indicateur d'extraction sur les pipes (item et liquide)
         event.registerBlockEntityRenderer(ApicaBlockEntities.ITEM_PIPE.get(),
@@ -613,6 +618,9 @@ public class ClientSetup {
 
         // Modèle Api (bloc vivant scalé dynamiquement)
         event.register(ApiRenderer.API_MODEL_LOC);
+
+        // Modèle plaque du Launchpad (rendu BER avec rotation dynamique)
+        event.register(LaunchpadRenderer.PLATE_MODEL_LOC);
     }
 
 }

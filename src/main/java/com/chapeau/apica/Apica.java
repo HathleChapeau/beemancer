@@ -429,11 +429,15 @@ public class Apica {
                 (be, side) -> side == Direction.DOWN ? be.getNectarTank() : null
         );
 
-        // Launchpad: accepte honey, royal jelly, nectar de tous les cotes
+        // Launchpad: accepte honey, royal jelly, nectar uniquement par l'arriere (oppose au facing)
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 ApicaBlockEntities.LAUNCHPAD.get(),
-                (be, side) -> be.getFluidTank()
+                (be, side) -> {
+                    Direction facing = be.getBlockState().getValue(
+                            com.chapeau.apica.common.block.alchemy.LaunchpadBlock.FACING);
+                    return side == facing.getOpposite() ? be.getFluidTank() : null;
+                }
         );
 
         // Liquid Trash Can: accepte tout fluide, void immediat

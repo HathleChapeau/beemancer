@@ -17,7 +17,6 @@
  * | LaunchpadBlock          | Bloc parent          | FACING, ANGLE properties       |
  * | ApicaFluids             | Fluides du mod       | Validation honey/rj/nectar     |
  * | ApicaBlockEntities      | Registre BE          | Type factory                   |
- * | ParticleHelper          | Particules           | Effet visuel au lancement      |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -30,7 +29,6 @@ package com.chapeau.apica.common.blockentity.alchemy;
 import com.chapeau.apica.common.block.alchemy.LaunchpadBlock;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
-import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -38,7 +36,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -46,7 +43,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
@@ -120,13 +116,8 @@ public class LaunchpadBlockEntity extends BlockEntity {
 
         double motionX = facing.getStepX() * horizontalSpeed;
         double motionZ = facing.getStepZ() * horizontalSpeed;
-        double motionY = verticalSpeed;
 
-        if (angleIndex == 0) {
-            motionY = 0.3;
-        }
-
-        entity.setDeltaMovement(motionX, motionY, motionZ);
+        entity.setDeltaMovement(motionX, verticalSpeed, motionZ);
         entity.fallDistance = 0;
         entity.hurtMarked = true;
 
@@ -134,11 +125,6 @@ public class LaunchpadBlockEntity extends BlockEntity {
         cooldown = COOLDOWN_TICKS;
 
         level.playSound(null, pos, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 1.0f, 1.2f);
-
-        if (level instanceof ServerLevel serverLevel) {
-            Vec3 center = new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-            ParticleHelper.burst(serverLevel, center, ParticleHelper.EffectType.HONEY, 10);
-        }
 
         setChanged();
     }

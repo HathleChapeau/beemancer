@@ -3,6 +3,21 @@
 ################################################################################
 
 ================================================================================
+2026-03-03 - Launchpad
+================================================================================
+
+Nouveau bloc Launchpad — projette les entites dans une direction configurable:
+- LaunchpadBlock: bloc alchemy avec facing + angle (0-6, 0-60 deg), click droit cycle angle
+- LaunchpadBlockEntity: FluidTank 4000mB (honey/royal_jelly/nectar), detection entites 12x1x12,
+  lancement avec puissance variable (honey=1.5, royal_jelly=2.25, nectar=3.0), cooldown 20 ticks
+- Registres: ApicaBlocks, ApicaBlockEntities, ApicaItems, ApicaCreativeTabs
+- Capabilities: FluidHandler dans Apica.java (tous cotes)
+- Codex: CodexNodeWidget mapping, lang entries, book page avec lore
+- Assets: 1 blockstate (28 variants), 3 block models (flat/low/high), 1 item model
+- Modele: base plate 14x4x14 + back panel 10x10x2 + top plate pivotante + 1px dot + 2x4x2 antenna
+- Ajout 1px dot + 2x4x2 antenna au modele uncrafting_table.json
+
+================================================================================
 2026-03-02 - Uncrafting Table
 ================================================================================
 
