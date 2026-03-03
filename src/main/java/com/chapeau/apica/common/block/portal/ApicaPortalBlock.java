@@ -2,7 +2,7 @@
  * ============================================================
  * [ApicaPortalBlock.java]
  * Description: Bloc portail vers la dimension Apica —
- *              téléporte le joueur en marchant dessus
+ *              téléporte le joueur au clic droit
  * ============================================================
  *
  * DÉPENDANCES:
@@ -10,7 +10,6 @@
  * | Dépendance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | ApicaDimension      | ResourceKey<Level>   | Déterminer la destination      |
- * | Portal              | Interface vanilla    | Mécanique de téléportation     |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -25,71 +24,67 @@ import com.chapeau.apica.content.dimension.ApicaDimension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
 
-public class ApicaPortalBlock extends Block implements Portal {
+public class ApicaPortalBlock extends Block {
 
     public ApicaPortalBlock(Properties properties) {
         super(properties);
     }
 
     // =========================================================================
-    // PORTAL INTERFACE
+    // TELEPORTATION AU CLIC DROIT
     // =========================================================================
 
     @Override
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-        if (!level.isClientSide() && entity.canUsePortal(false)) {
-            entity.setAsInsidePortal(this, pos);
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                               Player player, BlockHitResult hitResult) {
+        if (level.isClientSide()) {
+            return InteractionResult.SUCCESS;
         }
-    }
 
-    @Override
-    public int getPortalTransitionTime(ServerLevel level, Entity entity) {
-        return 60;
-    }
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResult.PASS;
+        }
 
-    @Nullable
-    @Override
-    public DimensionTransition getPortalDestination(ServerLevel level, Entity entity, BlockPos pos) {
+        ServerLevel serverLevel = (ServerLevel) level;
+
         ResourceKey<Level> targetKey = ApicaDimension.isApicaDimension(level)
                 ? Level.OVERWORLD
                 : ApicaDimension.LEVEL_KEY;
 
-        ServerLevel targetLevel = level.getServer().getLevel(targetKey);
+        ServerLevel targetLevel = serverLevel.getServer().getLevel(targetKey);
         if (targetLevel == null) {
-            return null;
+            return InteractionResult.FAIL;
         }
 
         Vec3 targetPos;
         if (targetKey == ApicaDimension.LEVEL_KEY) {
-            // Vers Apica : spawn au centre, juste au-dessus du terrain
             targetPos = new Vec3(0.5, 52.0, 0.5);
         } else {
-            // Retour overworld : spawn du monde
             BlockPos spawnPos = targetLevel.getSharedSpawnPos();
             targetPos = new Vec3(spawnPos.getX() + 0.5, spawnPos.getY() + 1.0, spawnPos.getZ() + 0.5);
         }
 
-        return new DimensionTransition(
+        DimensionTransition transition = new DimensionTransition(
                 targetLevel,
                 targetPos,
                 Vec3.ZERO,
-                entity.getYRot(),
-                entity.getXRot(),
+                player.getYRot(),
+                player.getXRot(),
                 DimensionTransition.PLAY_PORTAL_SOUND.then(DimensionTransition.PLACE_PORTAL_TICKET)
         );
-    }
 
-    @Override
-    public Transition getLocalTransition() {
-        return Transition.NONE;
+        serverPlayer.changeDimension(transition);
+
+        return InteractionResult.SUCCESS;
     }
 }
