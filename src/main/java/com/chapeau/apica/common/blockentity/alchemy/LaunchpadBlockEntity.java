@@ -111,8 +111,8 @@ public class LaunchpadBlockEntity extends BlockEntity {
         double angleRad = Math.toRadians(angleIndex * 10.0);
         Direction facing = state.getValue(LaunchpadBlock.FACING);
 
-        double horizontalSpeed = power * Math.cos(angleRad);
-        double verticalSpeed = power * Math.sin(angleRad);
+        double horizontalSpeed = power * Math.sin(angleRad);
+        double verticalSpeed = power * Math.cos(angleRad);
 
         double motionX = facing.getStepX() * horizontalSpeed;
         double motionZ = facing.getStepZ() * horizontalSpeed;

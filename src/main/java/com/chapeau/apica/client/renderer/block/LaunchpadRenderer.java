@@ -76,8 +76,8 @@ public class LaunchpadRenderer implements BlockEntityRenderer<LaunchpadBlockEnti
         // Facing rotation (rotate entire plate to match block orientation)
         float facingYRot = switch (facing) {
             case SOUTH -> 180f;
-            case WEST -> 270f;
-            case EAST -> 90f;
+            case WEST -> 90f;
+            case EAST -> -90f;
             default -> 0f;
         };
         poseStack.translate(0.5, 0.0, 0.5);
