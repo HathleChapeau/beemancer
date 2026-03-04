@@ -73,7 +73,7 @@ public class CompanionBeeEntity extends Bee {
     /** Distance pour considerer le retour au joueur. */
     private static final double RETURN_ARRIVAL_DISTANCE = 1.5;
     /** Vitesse de croisiere (blocs/tick). */
-    private static final double FLY_SPEED = 0.3;
+    private static final double FLY_SPEED = 0.24;
     /** Facteur de lerp pour le lissage du mouvement. */
     private static final double SMOOTHING = 0.25;
     /** Rayon de deceleration (en blocs). */
