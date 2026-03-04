@@ -65,6 +65,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
     private static final int TAB_W = 28;
     private static final int TAB_H = 32;
     private static final int TAB_PROTRUDE = 28;
+    private static final int TAB_GAP = 3;
 
     private static ItemStack playerIcon;
     private static ItemStack getPlayerIcon() {
@@ -117,7 +118,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
             // Player tab (unselected — we're on BackpackScreen)
             graphics.blitSprite(TAB_UNSELECTED_LEFT, tabX, tabY, TAB_W, TAB_H);
             graphics.renderItem(getPlayerIcon(), tabX + 6, tabY + 9);
-            tabX += TAB_W;
+            tabX += TAB_W + TAB_GAP;
 
             // Accessory tabs
             for (int slot : tabSlots) {
@@ -125,7 +126,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
                 ResourceLocation sprite = selected ? TAB_SELECTED_MIDDLE : TAB_UNSELECTED_MIDDLE;
                 graphics.blitSprite(sprite, tabX, tabY, TAB_W, TAB_H);
                 graphics.renderItem(AccessoryClientCache.getSlot(slot), tabX + 6, tabY + 9);
-                tabX += TAB_W;
+                tabX += TAB_W + TAB_GAP;
             }
         }
 
@@ -152,7 +153,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
                         return true;
                     }
                 }
-                tabX += TAB_W;
+                tabX += TAB_W + TAB_GAP;
 
                 // Accessory tabs (asynchrone — le serveur ouvre le nouveau screen)
                 int currentSlot = menu.getAccessorySlot();
@@ -168,7 +169,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
                             return true;
                         }
                     }
-                    tabX += TAB_W;
+                    tabX += TAB_W + TAB_GAP;
                 }
             }
         }

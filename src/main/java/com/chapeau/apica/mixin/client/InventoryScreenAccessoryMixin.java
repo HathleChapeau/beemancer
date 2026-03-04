@@ -68,6 +68,7 @@ public abstract class InventoryScreenAccessoryMixin {
     @Unique private static final int TAB_W = 28;
     @Unique private static final int TAB_H = 32;
     @Unique private static final int TAB_PROTRUDE = 28;
+    @Unique private static final int TAB_GAP = 3;
 
     // Lazy icon stacks
     @Unique private static ItemStack apica$playerIcon;
@@ -116,13 +117,13 @@ public abstract class InventoryScreenAccessoryMixin {
             // Player tab (selected — we're on InventoryScreen)
             graphics.blitSprite(TAB_SELECTED_LEFT, tabX, tabY, TAB_W, TAB_H);
             graphics.renderItem(apica$getPlayerIcon(), tabX + 6, tabY + 9);
-            tabX += TAB_W;
+            tabX += TAB_W + TAB_GAP;
 
             // Accessory tabs (unselected)
             for (int slot : tabSlots) {
                 graphics.blitSprite(TAB_UNSELECTED_MIDDLE, tabX, tabY, TAB_W, TAB_H);
                 graphics.renderItem(AccessoryClientCache.getSlot(slot), tabX + 6, tabY + 9);
-                tabX += TAB_W;
+                tabX += TAB_W + TAB_GAP;
             }
         }
 
@@ -148,7 +149,7 @@ public abstract class InventoryScreenAccessoryMixin {
         List<Integer> tabSlots = AccessoryClientCache.getTabSlots();
         if (!tabSlots.isEmpty()) {
             int tabY = topPos - TAB_PROTRUDE;
-            int tabX = leftPos + TAB_W;
+            int tabX = leftPos + TAB_W + TAB_GAP;
             for (int slot : tabSlots) {
                 if (mouseX >= tabX && mouseX < tabX + TAB_W
                         && mouseY >= tabY && mouseY < tabY + TAB_H) {
@@ -159,7 +160,7 @@ public abstract class InventoryScreenAccessoryMixin {
                     cir.setReturnValue(true);
                     return;
                 }
-                tabX += TAB_W;
+                tabX += TAB_W + TAB_GAP;
             }
         }
 

@@ -29,6 +29,7 @@ import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
 import com.chapeau.apica.common.entity.companion.CompanionBeeEntity;
 import com.chapeau.apica.common.entity.delivery.DeliveryBeeEntity;
+import com.chapeau.apica.common.item.BackpackItem;
 import com.chapeau.apica.common.item.accessory.BeeMagnetItem;
 import com.chapeau.apica.common.entity.mount.HoverbikeConfigManager;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
@@ -323,6 +324,7 @@ public class Apica {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
         BeeMagnetItem.despawnAllCompanionBees(player);
+        BackpackItem.despawnAllBackpackBees(player);
 
         boolean keepInventory = player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY);
         if (keepInventory) return;
@@ -343,15 +345,18 @@ public class Apica {
     }
 
     /**
-     * Spawne les abeilles compagnon pour chaque slot accessoire contenant un BeeMagnet.
+     * Spawne les abeilles compagnon pour chaque slot accessoire contenant un BeeMagnet ou Backpack.
      * Appele au login, respawn, et changement de dimension.
      */
     private void spawnCompanionBeesForPlayer(ServerPlayer player) {
         AccessoryPlayerData data = player.getData(ApicaAttachments.ACCESSORY_DATA);
         for (int i = 0; i < AccessoryPlayerData.SLOT_COUNT; i++) {
             ItemStack stack = data.getAccessory(i);
-            if (!stack.isEmpty() && stack.getItem() instanceof BeeMagnetItem) {
+            if (stack.isEmpty()) continue;
+            if (stack.getItem() instanceof BeeMagnetItem) {
                 BeeMagnetItem.spawnCompanionBee(player, i);
+            } else if (stack.getItem() instanceof BackpackItem) {
+                BackpackItem.spawnCompanionBee(player, i);
             }
         }
     }

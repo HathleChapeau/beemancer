@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [BackpackItem.java]
- * Description: Item sac a dos avec inventaire interne de 27 slots
+ * Description: Item sac a dos avec inventaire interne de 27 slots, spawne une abeille compagnon avec coffre
  * ============================================================
  *
  * DEPENDANCES:
@@ -13,6 +13,8 @@
  * | DataComponents      | Stockage items       | CONTAINER pour contenu         |
  * | BackpackTooltip     | Tooltip visuel       | Preview grille items           |
  * | MobEffects          | Effets               | Slowness en inventaire         |
+ * | CompanionBeeEntity  | Abeille compagnon    | Spawn/despawn visuel           |
+ * | ApicaEntities       | Registre entites     | Type entite compagnon          |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -20,15 +22,22 @@
  * - BackpackMenu.java (type check)
  * - BackpackOpenPacket.java (validation)
  * - AccessoryEquipPacket.java (equip en slot accessoire)
+ * - Apica.java (lifecycle login/respawn)
  *
  * ============================================================
  */
 package com.chapeau.apica.common.item;
 
+import com.chapeau.apica.common.data.AccessoryPlayerData;
+import com.chapeau.apica.common.entity.companion.CompanionBeeEntity;
 import com.chapeau.apica.common.item.accessory.IAccessory;
 import com.chapeau.apica.core.network.packets.BackpackOpenPacket;
+import com.chapeau.apica.core.registry.ApicaAttachments;
+import com.chapeau.apica.core.registry.ApicaEntities;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -38,6 +47,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
@@ -47,7 +57,8 @@ import java.util.Optional;
 /**
  * Item backpack portable. S'equipe en slot accessoire et s'ouvre via l'onglet Backpack.
  * L'inventaire (27 slots) est stocke dans DataComponents.CONTAINER sur l'ItemStack.
- * Applique Slowness si porte en inventaire regulier. Icone slowness via IItemDecorator (ClientSetup).
+ * Quand equipe, spawne une abeille compagnon portant un coffre.
+ * Applique Slowness si porte en inventaire regulier.
  */
 public class BackpackItem extends Item implements IAccessory {
 
@@ -87,14 +98,22 @@ public class BackpackItem extends Item implements IAccessory {
         player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, amplifier, true, false));
     }
 
+    // =========================================================================
+    // ACCESSORY LIFECYCLE
+    // =========================================================================
+
     @Override
     public void onEquip(Player player, ItemStack stack) {
-        // Rien de special a l'equip pour l'instant
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+        int slot = findAccessorySlot(serverPlayer, stack);
+        spawnCompanionBee(serverPlayer, slot);
     }
 
     @Override
     public void onUnequip(Player player, ItemStack stack) {
-        // Rien de special au desequip pour l'instant
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+        int slot = findAccessorySlot(serverPlayer, stack);
+        despawnCompanionBee(serverPlayer, slot);
     }
 
     @Override
@@ -105,6 +124,92 @@ public class BackpackItem extends Item implements IAccessory {
     @Override
     public void onInventoryTabClicked(int accessorySlot) {
         PacketDistributor.sendToServer(new BackpackOpenPacket(accessorySlot));
+    }
+
+    // =========================================================================
+    // BEE LIFECYCLE
+    // =========================================================================
+
+    /**
+     * Spawne une abeille compagnon BACKPACK pour le joueur au slot donne.
+     * Utilisable depuis onEquip et depuis le login/respawn dans Apica.java.
+     */
+    public static void spawnCompanionBee(ServerPlayer player, int slot) {
+        if (!(player.level() instanceof ServerLevel serverLevel)) return;
+
+        despawnCompanionBee(player, slot);
+
+        CompanionBeeEntity bee = ApicaEntities.COMPANION_BEE.get().create(serverLevel);
+        if (bee == null) return;
+
+        double angle = Math.toRadians(player.yBodyRot);
+        double offsetX = (slot == 0) ? -0.6 : 0.6;
+        double x = player.getX() + offsetX * Math.cos(angle);
+        double y = player.getY() + 1.8;
+        double z = player.getZ() + offsetX * Math.sin(angle);
+
+        bee.moveTo(x, y, z, player.getYRot(), 0);
+        bee.setOwnerUuid(player.getUUID());
+        bee.setAccessorySlot(slot);
+        bee.setCompanionType(CompanionBeeEntity.CompanionType.BACKPACK);
+        serverLevel.addFreshEntity(bee);
+    }
+
+    /**
+     * Despawn l'abeille compagnon backpack du joueur au slot donne.
+     */
+    public static void despawnCompanionBee(ServerPlayer player, int slot) {
+        if (!(player.level() instanceof ServerLevel serverLevel)) return;
+
+        AABB searchArea = player.getBoundingBox().inflate(64);
+        List<CompanionBeeEntity> bees = serverLevel.getEntitiesOfClass(
+            CompanionBeeEntity.class, searchArea);
+
+        for (CompanionBeeEntity bee : bees) {
+            Player owner = bee.getOwnerPlayer();
+            if (owner != null && owner.getUUID().equals(player.getUUID())
+                && bee.getAccessorySlot() == slot
+                && bee.getCompanionType() == CompanionBeeEntity.CompanionType.BACKPACK) {
+                bee.discard();
+            }
+        }
+    }
+
+    /**
+     * Despawn TOUTES les abeilles compagnon backpack d'un joueur.
+     */
+    public static void despawnAllBackpackBees(ServerPlayer player) {
+        if (!(player.level() instanceof ServerLevel serverLevel)) return;
+
+        AABB searchArea = player.getBoundingBox().inflate(64);
+        List<CompanionBeeEntity> bees = serverLevel.getEntitiesOfClass(
+            CompanionBeeEntity.class, searchArea);
+
+        for (CompanionBeeEntity bee : bees) {
+            Player owner = bee.getOwnerPlayer();
+            if (owner != null && owner.getUUID().equals(player.getUUID())
+                && bee.getCompanionType() == CompanionBeeEntity.CompanionType.BACKPACK) {
+                bee.discard();
+            }
+        }
+    }
+
+    // =========================================================================
+    // UTILITY
+    // =========================================================================
+
+    /**
+     * Trouve dans quel slot accessoire cet item se trouve.
+     * Retourne 0 par defaut si non trouve.
+     */
+    private int findAccessorySlot(ServerPlayer player, ItemStack stack) {
+        AccessoryPlayerData data = player.getData(ApicaAttachments.ACCESSORY_DATA);
+        for (int i = 0; i < AccessoryPlayerData.SLOT_COUNT; i++) {
+            if (data.getAccessory(i) == stack) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     /** Retourne la liste des items non-vides dans le backpack. */

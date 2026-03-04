@@ -67,13 +67,13 @@ public class CompanionBeeEntity extends Bee {
     /** Frequence de scan des items (en ticks). */
     private static final int SCAN_INTERVAL = 5;
     /** Duree de l'animation de ramassage (en ticks). */
-    private static final int PICKUP_DURATION = 10;
+    private static final int PICKUP_DURATION = 7;
     /** Distance pour considerer l'arrivee a un item. */
     private static final double ITEM_ARRIVAL_DISTANCE = 0.8;
     /** Distance pour considerer le retour au joueur. */
     private static final double RETURN_ARRIVAL_DISTANCE = 1.5;
     /** Vitesse de croisiere (blocs/tick). */
-    private static final double FLY_SPEED = 0.2;
+    private static final double FLY_SPEED = 0.3;
     /** Facteur de lerp pour le lissage du mouvement. */
     private static final double SMOOTHING = 0.25;
     /** Rayon de deceleration (en blocs). */
@@ -98,6 +98,14 @@ public class CompanionBeeEntity extends Bee {
         SynchedEntityData.defineId(CompanionBeeEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Integer> DATA_ACCESSORY_SLOT =
         SynchedEntityData.defineId(CompanionBeeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> DATA_COMPANION_TYPE =
+        SynchedEntityData.defineId(CompanionBeeEntity.class, EntityDataSerializers.STRING);
+
+    /** Type de compagnon: MAGNET ramasse les items, BACKPACK transporte un coffre. */
+    public enum CompanionType {
+        MAGNET,
+        BACKPACK
+    }
 
     /** Etat actuel de l'abeille. */
     public enum State {
@@ -135,6 +143,7 @@ public class CompanionBeeEntity extends Bee {
         builder.define(DATA_CARRIED_ITEM, ItemStack.EMPTY);
         builder.define(DATA_OWNER_UUID, Optional.empty());
         builder.define(DATA_ACCESSORY_SLOT, 0);
+        builder.define(DATA_COMPANION_TYPE, CompanionType.MAGNET.name());
     }
 
     @Override
@@ -170,6 +179,19 @@ public class CompanionBeeEntity extends Bee {
             return;
         }
 
+        // Robustesse: si trop loin (chunk unload, teleport, etc.), abort et teleport
+        if (distanceTo(owner) > TELEPORT_DISTANCE) {
+            abortAndTeleport(owner);
+            return;
+        }
+
+        // Les abeilles BACKPACK ne font que hover, pas de ramassage d'items
+        if (getCompanionType() == CompanionType.BACKPACK) {
+            Vec3 target = computeShoulderPosition(owner);
+            flyTowards(target);
+            return;
+        }
+
         State state = getCompanionState();
         switch (state) {
             case IDLE -> tickIdle(owner);
@@ -179,6 +201,16 @@ public class CompanionBeeEntity extends Bee {
         }
     }
 
+    /** Annule toute tache en cours, drop l'item porte, teleporte pres du joueur. */
+    private void abortAndTeleport(Player owner) {
+        deliverOrDrop(owner);
+        releaseTarget();
+        Vec3 shoulder = computeShoulderPosition(owner);
+        teleportTo(shoulder.x, shoulder.y, shoulder.z);
+        setDeltaMovement(Vec3.ZERO);
+        setCompanionState(State.IDLE);
+    }
+
     // =========================================================================
     // STATE: IDLE
     // =========================================================================
@@ -186,10 +218,6 @@ public class CompanionBeeEntity extends Bee {
     private void tickIdle(Player owner) {
         Vec3 target = computeShoulderPosition(owner);
         flyTowards(target);
-
-        if (distanceTo(owner) > TELEPORT_DISTANCE) {
-            teleportTo(target.x, target.y, target.z);
-        }
 
         if (tickCount % SCAN_INTERVAL == 0) {
             scanForItems(owner);
@@ -226,6 +254,12 @@ public class CompanionBeeEntity extends Bee {
             return false;
         }
 
+        // Ne pas partir si l'inventaire du joueur ne peut pas accepter cet item
+        if (owner.getInventory().getFreeSlot() == -1
+            && owner.getInventory().getSlotWithRemainingSpace(item.getItem()) == -1) {
+            return false;
+        }
+
         return true;
     }
 
@@ -250,10 +284,6 @@ public class CompanionBeeEntity extends Bee {
             setCompanionState(State.PICKING_UP);
         }
 
-        if (distanceTo(owner) > TELEPORT_DISTANCE * 2) {
-            releaseTarget();
-            setCompanionState(State.IDLE);
-        }
     }
 
     // =========================================================================
@@ -273,17 +303,10 @@ public class CompanionBeeEntity extends Bee {
 
         pickupTimer++;
         if (pickupTimer >= PICKUP_DURATION) {
-            item.setNoPickUpDelay();
-            item.playerTouch(owner);
-
-            if (item.isAlive() && !item.getItem().isEmpty()) {
-                releaseTarget();
-                setCompanionState(State.RETURNING);
-            } else {
-                setCarriedItem(item.getItem().copy());
-                releaseTarget();
-                setCompanionState(State.RETURNING);
-            }
+            setCarriedItem(item.getItem().copy());
+            item.discard();
+            releaseTarget();
+            setCompanionState(State.RETURNING);
         }
     }
 
@@ -297,15 +320,23 @@ public class CompanionBeeEntity extends Bee {
 
         double dist = position().distanceTo(target);
         if (dist < RETURN_ARRIVAL_DISTANCE) {
-            setCarriedItem(ItemStack.EMPTY);
+            deliverOrDrop(owner);
             setCompanionState(State.IDLE);
         }
+    }
 
-        if (distanceTo(owner) > TELEPORT_DISTANCE) {
-            setCarriedItem(ItemStack.EMPTY);
-            teleportTo(target.x, target.y, target.z);
-            setCompanionState(State.IDLE);
+    /** Donne l'item porte au joueur, ou le drop au sol si inventaire plein. */
+    private void deliverOrDrop(Player owner) {
+        ItemStack carried = getCarriedItem();
+        if (carried.isEmpty()) return;
+
+        if (!owner.getInventory().add(carried.copy())) {
+            ItemEntity drop = new ItemEntity(
+                level(), owner.getX(), owner.getY() + 0.5, owner.getZ(), carried.copy());
+            drop.setPickUpDelay(10);
+            level().addFreshEntity(drop);
         }
+        setCarriedItem(ItemStack.EMPTY);
     }
 
     // =========================================================================
@@ -335,6 +366,14 @@ public class CompanionBeeEntity extends Bee {
             Mth.lerp(SMOOTHING, current.z, desired.z)
         );
         setDeltaMovement(smoothed);
+
+        // Rotation Y vers la direction de deplacement
+        if (smoothed.horizontalDistanceSqr() > 0.0001) {
+            float targetYaw = (float) (Math.atan2(smoothed.z, smoothed.x) * (180.0 / Math.PI)) - 90.0F;
+            this.setYRot(Mth.rotLerp(0.25F, this.getYRot(), targetYaw));
+            this.yBodyRot = this.getYRot();
+            this.yHeadRot = this.getYRot();
+        }
     }
 
     @Override
@@ -415,6 +454,18 @@ public class CompanionBeeEntity extends Bee {
 
     public void setAccessorySlot(int slot) {
         entityData.set(DATA_ACCESSORY_SLOT, slot);
+    }
+
+    public CompanionType getCompanionType() {
+        try {
+            return CompanionType.valueOf(entityData.get(DATA_COMPANION_TYPE));
+        } catch (IllegalArgumentException e) {
+            return CompanionType.MAGNET;
+        }
+    }
+
+    public void setCompanionType(CompanionType type) {
+        entityData.set(DATA_COMPANION_TYPE, type.name());
     }
 
     // =========================================================================
