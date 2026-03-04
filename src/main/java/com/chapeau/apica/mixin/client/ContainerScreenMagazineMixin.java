@@ -85,8 +85,8 @@ public abstract class ContainerScreenMagazineMixin {
                 hoveringHolder = true;
                 int slotScreenX = leftPos + hoveredSlot.x;
                 int slotScreenY = topPos + hoveredSlot.y;
-                apica$magSlotScreenX = slotScreenX;
-                apica$magSlotScreenY = slotScreenY - SLOT_Y_OFFSET;
+                apica$magSlotScreenX = slotScreenX - 1;
+                apica$magSlotScreenY = slotScreenY - SLOT_Y_OFFSET + 2;
                 apica$magSlotVisible = true;
                 apica$magSlotIndex = hoveredSlot.index;
             }
