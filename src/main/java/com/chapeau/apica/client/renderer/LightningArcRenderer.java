@@ -21,11 +21,13 @@ package com.chapeau.apica.client.renderer;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -57,7 +59,7 @@ public class LightningArcRenderer {
     private static final Map<ResourceLocation, RenderType> TYPE_CACHE = new HashMap<>();
 
     // =========================================================================
-    // Custom RenderType (emissif, sans depth test)
+    // Custom RenderType (emissif, polygon offset pour traverser la géométrie proche)
     // =========================================================================
 
     /**
@@ -70,12 +72,19 @@ public class LightningArcRenderer {
                     256, false, false, () -> {}, () -> {});
         }
 
+        /** Polygon offset fort pour rendre les arcs visibles à travers la géométrie proche */
+        private static final RenderStateShard.LayeringStateShard LIGHTNING_POLYGON_OFFSET =
+                new RenderStateShard.LayeringStateShard("lightning_polygon_offset",
+                        () -> { RenderSystem.polygonOffset(-1.0F, -256.0F); RenderSystem.enablePolygonOffset(); },
+                        () -> { RenderSystem.polygonOffset(0.0F, 0.0F); RenderSystem.disablePolygonOffset(); }
+                ) {};
+
         static RenderType create(ResourceLocation texture) {
             CompositeState state = CompositeState.builder()
                     .setShaderState(RENDERTYPE_EYES_SHADER)
                     .setTextureState(new TextureStateShard(texture, false, false))
                     .setTransparencyState(ADDITIVE_TRANSPARENCY)
-                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setLayeringState(LIGHTNING_POLYGON_OFFSET)
                     .setWriteMaskState(COLOR_WRITE)
                     .setCullState(NO_CULL)
                     .createCompositeState(false);

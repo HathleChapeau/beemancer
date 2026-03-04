@@ -367,6 +367,12 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             return;
         }
 
+        // Flush tous les buffers pour que le body model et overlays soient rendus
+        // avec leurs depth values AVANT les arcs (polygon offset les pousse en avant)
+        if (buffer instanceof MultiBufferSource.BufferSource bufferSource) {
+            bufferSource.endBatch();
+        }
+
         int color = getMagazineColor(MagazineData.getFluidId(stack));
         float r = ((color >> 16) & 0xFF) / 255f;
         float g = ((color >> 8) & 0xFF) / 255f;
