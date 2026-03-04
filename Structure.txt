@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-03-04                     #
-#  (Magazine System - 2026-03-04)                                                #
+#  (Bee Magnet Accessory - 2026-03-04)                                            #
 ################################################################################
 
 ================================================================================
@@ -198,6 +198,12 @@ Philosophie:
 │ core/network/packets/MagazineEquipPacket.java│ Packet C2S equip/unequip magazine│
 │ mixin/client/ContainerScreenMagazineMixin.java│ Bonus slot magazine inventaire  │
 │ client/gui/hud/MagazineGaugeHud.java   │ HUD jauge fluide magazine             │
+│ common/item/accessory/IAccessory.java │ Interface equipable slot accessoire   │
+│ common/item/accessory/BeeMagnetItem.java│ Accessoire magnet avec abeille       │
+│ common/item/BackpackItem.java         │ Accessoire sac a dos 27 slots         │
+│ common/data/AccessoryPlayerData.java  │ Stockage 2 slots accessoire joueur    │
+│ common/entity/companion/CompanionBeeEntity.java│ Abeille compagnon magnet     │
+│ client/renderer/entity/CompanionBeeRenderer.java│ Renderer abeille scale 0.4F│
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -988,6 +994,41 @@ LISTE DES FEATURES:
   Registres modifies: ApicaItems (+1 item), ApicaNetwork (+1 packet)
   Assets: textures/item/magazine.png, textures/gui/magazine_slot.png, models/item/magazine.json
   Reference: HoverbikePartData (CUSTOM_DATA pattern), HoverbikeGaugeHud (HUD pattern)
+
+-> Accessory System
+  Description: Systeme d'equipement d'accessoires sur le joueur. 2 slots accessoire stockes
+    dans AccessoryPlayerData (Data Attachment). Interface IAccessory avec callbacks onEquip/onUnequip
+    cote serveur. UI via InventoryScreenAccessoryMixin (2 slots + onglets au-dessus de l'inventaire).
+    Sync client via AccessorySyncPacket. Drop au sol a la mort (sauf keepInventory).
+  Scripts crees: IAccessory.java, AccessoryPlayerData.java, AccessoryClientCache.java,
+    AccessoryEquipPacket.java, AccessorySyncPacket.java, BackpackOpenPacket.java,
+    BackpackItem.java, BackpackMenu.java, BackpackScreen.java,
+    InventoryScreenAccessoryMixin.java
+  Scripts modifies: Apica.java (+sync login/respawn/death), ApicaItems.java (+BACKPACK),
+    ApicaAttachments.java (+ACCESSORY_DATA), ApicaNetwork.java (+3 packets),
+    ApicaMenus.java (+BACKPACK_MENU)
+  Dependances: ApicaAttachments, ApicaNetwork
+  Registres modifies: ApicaItems (+1 item), ApicaAttachments (+1 attachment),
+    ApicaMenus (+1 menu), ApicaNetwork (+3 packets)
+  Reference: Curios API (slot concept), Vanilla inventory screen
+
+-> Bee Magnet (Accessory)
+  Description: Accessoire magnet qui spawne une entite abeille compagnon (CompanionBeeEntity)
+    quand equipe. L'abeille hover pres de l'epaule du joueur (cote depend du slot 0=gauche, 1=droite).
+    Quand un item est droppe au sol dans un rayon de 8 blocs, l'abeille vole le chercher et le
+    ramene dans l'inventaire du joueur. Machine a etats: IDLE → FLYING_TO_ITEM → PICKING_UP → RETURNING.
+    Si 2 magnets equipes, 2 abeilles avec coordination (pas de double ciblage via CLAIMED_ITEM_IDS).
+    Entite invulnerable, sans collision, non-persistante (respawnee au login/respawn/dimension change).
+    Texture vanilla bee, scale 0.4F, mouvement fluide (setDeltaMovement + lerp + friction).
+    Filtre magnet: respecte pickupDelay, PreventRemoteMovement, cooldown 60 ticks items jetes par owner.
+  Scripts crees: CompanionBeeEntity.java, BeeMagnetItem.java, CompanionBeeRenderer.java
+  Scripts modifies: ApicaEntities.java (+COMPANION_BEE), ApicaItems.java (+BEE_MAGNET),
+    ClientSetup.java (+CompanionBeeRenderer), Apica.java (+createAttributes, +lifecycle spawn/despawn,
+    +onPlayerChangedDimension)
+  Dependances: IAccessory, AccessoryPlayerData, ApicaAttachments, DeliveryBeeEntity (pattern)
+  Registres modifies: ApicaEntities (+1 entity), ApicaItems (+1 item)
+  Assets: (utilise textures vanilla bee)
+  Reference: DeliveryBeeEntity (extends Bee pattern), Botania Ring of Magnetization (magnet logic)
 
 ================================================================================
 6. FEATURES EN COURS

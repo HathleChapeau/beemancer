@@ -71,6 +71,7 @@ import com.chapeau.apica.client.renderer.debug.HoverbikeDebugRenderer;
 import com.chapeau.apica.client.model.entity.LeafBlowerProjectileModel;
 import com.chapeau.apica.client.renderer.entity.LeafBlowerProjectileRenderer;
 import com.chapeau.apica.client.renderer.entity.MagicBeeRenderer;
+import com.chapeau.apica.client.renderer.entity.CompanionBeeRenderer;
 import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer;
 import com.chapeau.apica.client.renderer.item.LeafBlowerItemRenderer;
@@ -212,6 +213,7 @@ public class ClientSetup {
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ApicaEntities.MAGIC_BEE.get(), MagicBeeRenderer::new);
         event.registerEntityRenderer(ApicaEntities.DELIVERY_BEE.get(), DeliveryBeeRenderer::new);
+        event.registerEntityRenderer(ApicaEntities.COMPANION_BEE.get(), CompanionBeeRenderer::new);
         event.registerEntityRenderer(ApicaEntities.HOVERBIKE.get(), HoverbikeRenderer::new);
         // Leaf Blower orb projectile
         event.registerEntityRenderer(ApicaEntities.LEAF_BLOWER_ORB.get(), LeafBlowerProjectileRenderer::new);

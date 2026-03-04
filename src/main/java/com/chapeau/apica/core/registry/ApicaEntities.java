@@ -8,6 +8,7 @@ package com.chapeau.apica.core.registry;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
+import com.chapeau.apica.common.entity.companion.CompanionBeeEntity;
 import com.chapeau.apica.common.entity.delivery.DeliveryBeeEntity;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
 import com.chapeau.apica.common.entity.projectile.LeafBlowerProjectileEntity;
@@ -30,6 +31,14 @@ public class ApicaEntities {
                     .sized(0.7F, 0.6F)
                     .clientTrackingRange(8)
                     .build("magic_bee"));
+
+    // --- COMPANION ---
+    public static final Supplier<EntityType<CompanionBeeEntity>> COMPANION_BEE = ENTITIES.register("companion_bee",
+            () -> EntityType.Builder.of(CompanionBeeEntity::new, MobCategory.CREATURE)
+                    .sized(0.35F, 0.3F)
+                    .clientTrackingRange(8)
+                    .noSave()
+                    .build("companion_bee"));
 
     // --- DELIVERY ---
     public static final Supplier<EntityType<DeliveryBeeEntity>> DELIVERY_BEE = ENTITIES.register("delivery_bee",

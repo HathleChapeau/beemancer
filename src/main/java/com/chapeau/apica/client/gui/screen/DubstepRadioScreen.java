@@ -317,6 +317,7 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
                                 double dragX, double dragY) {
         if (editingTrack == -1) {
             if (mainTransport.mouseDragged(mouseX, mouseY)) return true;
+            if (instrumentColumn.mouseDragged(mouseX, mouseY, localData)) return true;
         } else {
             if (editorTransport.mouseDragged(mouseX, mouseY)) return true;
         }
@@ -327,6 +328,7 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         mainTransport.mouseReleased();
         editorTransport.mouseReleased();
+        instrumentColumn.mouseReleased();
         return super.mouseReleased(mouseX, mouseY, button);
     }
 

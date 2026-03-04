@@ -3,6 +3,21 @@
 ################################################################################
 
 ================================================================================
+2026-03-04 - Bee Magnet Accessory
+================================================================================
+
+Accessoire magnet qui spawne une abeille compagnon (3 fichiers crees, 4 modifies):
+- CompanionBeeEntity: entite abeille invulnerable, hover pres de l'epaule du joueur,
+  machine a etats (IDLE/FLYING_TO_ITEM/PICKING_UP/RETURNING), scan items rayon 8 blocs,
+  coordination multi-abeille via CLAIMED_ITEM_IDS, filtre PreventRemoteMovement
+- BeeMagnetItem: item IAccessory, spawn/despawn abeille via onEquip/onUnequip
+- CompanionBeeRenderer: extends BeeRenderer, scale 0.4F, layer item porte
+- ApicaEntities: +COMPANION_BEE (noSave, sized 0.35x0.3)
+- ApicaItems: +BEE_MAGNET (stacksTo 1)
+- ClientSetup: +CompanionBeeRenderer registration
+- Apica.java: +createAttributes, +lifecycle (login/respawn/death/dimension change)
+
+================================================================================
 2026-03-04 - Magazine System
 ================================================================================
 

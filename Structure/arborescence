@@ -272,6 +272,9 @@ src/main/java/com/chapeau/apica/
 │   │   │       ├── MoveToTargetGoal.java
 │   │   │       └── ReturnToHiveWhenLowHealthGoal.java
 │   │   │
+│   │   ├── companion/
+│   │   │   └── CompanionBeeEntity.java
+│   │   │
 │   │   ├── delivery/
 │   │   │   ├── DeliveryBeeEntity.java
 │   │   │   └── DeliveryPhaseGoal.java
@@ -295,6 +298,9 @@ src/main/java/com/chapeau/apica/
 │   │   └── HoneyFluid.java
 │   │
 │   ├── item/
+│   │   ├── accessory/
+│   │   │   ├── IAccessory.java
+│   │   │   └── BeeMagnetItem.java
 │   │   ├── bee/
 │   │   │   ├── BeeLarvaItem.java
 │   │   │   └── MagicBeeItem.java
@@ -501,6 +507,7 @@ src/main/java/com/chapeau/apica/
     │   │   └── CustomDebugDisplayRenderer.java
     │   │
     │   ├── entity/
+    │   │   ├── CompanionBeeRenderer.java
     │   │   ├── DeliveryBeeRenderer.java
     │   │   ├── HoverbikePartLayer.java
     │   │   ├── HoverbikeRenderer.java

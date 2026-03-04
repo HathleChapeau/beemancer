@@ -27,7 +27,9 @@ import com.chapeau.apica.common.quest.QuestManager;
 import com.chapeau.apica.core.command.ApicaCommands;
 import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.entity.bee.MagicBeeEntity;
+import com.chapeau.apica.common.entity.companion.CompanionBeeEntity;
 import com.chapeau.apica.common.entity.delivery.DeliveryBeeEntity;
+import com.chapeau.apica.common.item.accessory.BeeMagnetItem;
 import com.chapeau.apica.common.entity.mount.HoverbikeConfigManager;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
 import com.chapeau.apica.core.entity.InteractionMarkerEntity;
@@ -246,6 +248,7 @@ public class Apica {
         event.put(ApicaEntities.MAGIC_BEE.get(), MagicBeeEntity.createAttributes().build());
         event.put(ApicaEntities.DELIVERY_BEE.get(), DeliveryBeeEntity.createAttributes().build());
         event.put(ApicaEntities.HOVERBIKE.get(), HoverbikeEntity.createAttributes().build());
+        event.put(ApicaEntities.COMPANION_BEE.get(), CompanionBeeEntity.createAttributes().build());
         event.put(ApicaEntities.INTERACTION_MARKER.get(), InteractionMarkerEntity.createAttributes().build());
         LOGGER.info("[TIMING] onEntityAttributeCreation: {}ms", System.currentTimeMillis() - t);
     }
@@ -275,6 +278,7 @@ public class Apica {
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(this::onPlayerRespawn);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOW, false, LivingDeathEvent.class, this::onPlayerDeath);
+        NeoForge.EVENT_BUS.addListener(this::onPlayerChangedDimension);
         NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
         NeoForge.EVENT_BUS.register(StorageEvents.class);
         NeoForge.EVENT_BUS.register(MultiblockEvents.class);
@@ -303,18 +307,22 @@ public class Apica {
             syncCodexDataToPlayer(player);
             syncQuestDataToPlayer(player);
             syncAccessoryDataToPlayer(player);
+            spawnCompanionBeesForPlayer(player);
         }
     }
 
     private void onPlayerRespawn(final PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             syncAccessoryDataToPlayer(player);
+            spawnCompanionBeesForPlayer(player);
         }
     }
 
     private void onPlayerDeath(final LivingDeathEvent event) {
         if (event.isCanceled()) return;
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
+
+        BeeMagnetItem.despawnAllCompanionBees(player);
 
         boolean keepInventory = player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY);
         if (keepInventory) return;
@@ -324,6 +332,26 @@ public class Apica {
             ItemStack stack = data.removeAccessory(i);
             if (!stack.isEmpty()) {
                 player.drop(stack, true, false);
+            }
+        }
+    }
+
+    private void onPlayerChangedDimension(final PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            spawnCompanionBeesForPlayer(player);
+        }
+    }
+
+    /**
+     * Spawne les abeilles compagnon pour chaque slot accessoire contenant un BeeMagnet.
+     * Appele au login, respawn, et changement de dimension.
+     */
+    private void spawnCompanionBeesForPlayer(ServerPlayer player) {
+        AccessoryPlayerData data = player.getData(ApicaAttachments.ACCESSORY_DATA);
+        for (int i = 0; i < AccessoryPlayerData.SLOT_COUNT; i++) {
+            ItemStack stack = data.getAccessory(i);
+            if (!stack.isEmpty() && stack.getItem() instanceof BeeMagnetItem) {
+                BeeMagnetItem.spawnCompanionBee(player, i);
             }
         }
     }

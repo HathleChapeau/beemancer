@@ -129,6 +129,10 @@
 --- MAGAZINE ---
 | magazine                 | MagazineItem     | Magazine System |
 
+--- ACCESSORIES ---
+| backpack                 | BackpackItem     | Accessory System|
+| bee_magnet               | BeeMagnetItem    | Bee Magnet      |
+
 --- BEE NESTS ---
 | bee_nest                 | BlockItem        | Worldgen        |
 

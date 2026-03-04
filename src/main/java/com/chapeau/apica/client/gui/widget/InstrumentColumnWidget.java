@@ -50,10 +50,16 @@ public class InstrumentColumnWidget {
     private static final int COL_EDIT = 0xFF3388CC;
     private static final int COL_ADD = 0xFF00CC66;
     private static final int COL_DROPDOWN_BG = 0xEE222244;
+    private static final int COL_SCROLLBAR_BG = 0xFF333355;
+    private static final int COL_SCROLLBAR_THUMB = 0xFF8888CC;
+    private static final int DROPDOWN_VISIBLE = 8;
+    private static final int DROPDOWN_ITEM_H = 12;
+    private static final int SCROLLBAR_W = 4;
 
     private final int x, y, width, height;
     private boolean dropdownOpen = false;
     private int dropdownScroll = 0;
+    private boolean draggingScrollbar = false;
 
     public interface Listener {
         void onAddTrack(DubstepInstrument instrument);
@@ -145,24 +151,40 @@ public class InstrumentColumnWidget {
         int ddY = y + trackCount * ROW_H + ROW_H;
         int ddW = 100;
         DubstepInstrument[] instruments = DubstepInstrument.values();
-        int visible = Math.min(instruments.length - dropdownScroll, 8);
-        int ddH = visible * 12 + 4;
+        int totalCount = instruments.length;
+        int visible = Math.min(totalCount - dropdownScroll, DROPDOWN_VISIBLE);
+        int ddH = visible * DROPDOWN_ITEM_H + 4;
+        boolean needsScroll = totalCount > DROPDOWN_VISIBLE;
 
         gfx.fill(ddX - 1, ddY - 1, ddX + ddW + 1, ddY + ddH + 1, COL_BORDER);
         gfx.fill(ddX, ddY, ddX + ddW, ddY + ddH, COL_DROPDOWN_BG);
 
         for (int i = 0; i < visible; i++) {
             int idx = i + dropdownScroll;
-            if (idx >= instruments.length) break;
+            if (idx >= totalCount) break;
             DubstepInstrument inst = instruments[idx];
-            int iy = ddY + 2 + i * 12;
+            int iy = ddY + 2 + i * DROPDOWN_ITEM_H;
 
             if (idx == 3 && i > 0) {
                 gfx.fill(ddX + 2, iy - 1, ddX + ddW - 2, iy, COL_BORDER);
             }
 
+            int textRight = needsScroll ? ddX + ddW - SCROLLBAR_W - 2 : ddX + ddW;
             String label = (inst.isPercussive() ? "*" : " ") + inst.getDisplayName();
             gfx.drawString(font, label, ddX + 4, iy + 1, COL_TEXT, false);
+        }
+
+        // Scrollbar
+        if (needsScroll) {
+            int sbX = ddX + ddW - SCROLLBAR_W;
+            int sbY = ddY + 2;
+            int sbH = ddH - 4;
+            gfx.fill(sbX, sbY, sbX + SCROLLBAR_W, sbY + sbH, COL_SCROLLBAR_BG);
+
+            int maxScroll = totalCount - DROPDOWN_VISIBLE;
+            int thumbH = Math.max(8, sbH * DROPDOWN_VISIBLE / totalCount);
+            int thumbY = sbY + (sbH - thumbH) * dropdownScroll / maxScroll;
+            gfx.fill(sbX, thumbY, sbX + SCROLLBAR_W, thumbY + thumbH, COL_SCROLLBAR_THUMB);
         }
     }
 
@@ -174,11 +196,24 @@ public class InstrumentColumnWidget {
             int ddY = y + trackCount * ROW_H + ROW_H;
             int ddW = 100;
             DubstepInstrument[] instruments = DubstepInstrument.values();
-            int visible = Math.min(instruments.length - dropdownScroll, 8);
+            int totalCount = instruments.length;
+            int visible = Math.min(totalCount - dropdownScroll, DROPDOWN_VISIBLE);
+            int ddH = visible * DROPDOWN_ITEM_H + 4;
+            boolean needsScroll = totalCount > DROPDOWN_VISIBLE;
 
-            if (mx >= ddX && mx < ddX + ddW && my >= ddY && my < ddY + visible * 12 + 4) {
-                int idx = (int) ((my - ddY - 2) / 12) + dropdownScroll;
-                if (idx >= 0 && idx < instruments.length) {
+            // Scrollbar drag start
+            if (needsScroll) {
+                int sbX = ddX + ddW - SCROLLBAR_W;
+                if (mx >= sbX && mx < sbX + SCROLLBAR_W && my >= ddY && my < ddY + ddH) {
+                    draggingScrollbar = true;
+                    updateScrollFromMouse(my, ddY, ddH, totalCount);
+                    return true;
+                }
+            }
+
+            if (mx >= ddX && mx < ddX + ddW && my >= ddY && my < ddY + ddH) {
+                int idx = (int) ((my - ddY - 2) / DROPDOWN_ITEM_H) + dropdownScroll;
+                if (idx >= 0 && idx < totalCount) {
                     listener.onAddTrack(instruments[idx]);
                     dropdownOpen = false;
                     return true;
@@ -242,11 +277,40 @@ public class InstrumentColumnWidget {
         return false;
     }
 
+    public boolean mouseDragged(double mx, double my, SequenceData data) {
+        if (!draggingScrollbar || !dropdownOpen) return false;
+        int trackCount = data.getTrackCount();
+        int ddY = y + trackCount * ROW_H + ROW_H;
+        DubstepInstrument[] instruments = DubstepInstrument.values();
+        int totalCount = instruments.length;
+        int visible = Math.min(totalCount - dropdownScroll, DROPDOWN_VISIBLE);
+        int ddH = visible * DROPDOWN_ITEM_H + 4;
+        updateScrollFromMouse(my, ddY, ddH, totalCount);
+        return true;
+    }
+
+    public boolean mouseReleased() {
+        if (draggingScrollbar) {
+            draggingScrollbar = false;
+            return true;
+        }
+        return false;
+    }
+
     public boolean mouseScrolled(double mx, double my, double delta) {
         if (!dropdownOpen) return false;
         DubstepInstrument[] instruments = DubstepInstrument.values();
-        dropdownScroll = Math.max(0, Math.min(instruments.length - 8,
+        dropdownScroll = Math.max(0, Math.min(instruments.length - DROPDOWN_VISIBLE,
                 dropdownScroll - (int) delta));
         return true;
+    }
+
+    private void updateScrollFromMouse(double mouseY, int ddY, int ddH, int totalCount) {
+        int sbY = ddY + 2;
+        int sbH = ddH - 4;
+        int maxScroll = totalCount - DROPDOWN_VISIBLE;
+        double ratio = (mouseY - sbY) / sbH;
+        dropdownScroll = (int) Math.round(ratio * maxScroll);
+        dropdownScroll = Math.max(0, Math.min(maxScroll, dropdownScroll));
     }
 }
