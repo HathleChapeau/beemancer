@@ -99,7 +99,7 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final int TOTAL_FRAMES = 13;
 
     // Animation state (client-side)
-    private int currentFrame = 0;
+    private float currentFrame = 0;
     private int lastTick = -1;
 
     public LeafBlowerItemRenderer() {
@@ -160,9 +160,10 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
             && mc.player.getUseItem().getItem() instanceof LeafBlowerItem;
 
         if (isCharging) {
-            if (currentFrame < TOTAL_FRAMES - 1) currentFrame++;
+            float speedMult = LeafBlowerItem.getChargeSpeedMultiplier(mc.player.getUseItem());
+            currentFrame = Math.min(currentFrame + speedMult, TOTAL_FRAMES - 1);
         } else {
-            if (currentFrame > 0) currentFrame--;
+            if (currentFrame > 0) currentFrame = Math.max(0, currentFrame - 1);
         }
     }
 
@@ -174,7 +175,7 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
      * Down: rotation 270.
      */
     private void renderChargingOverlay(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        renderChargingOverlay(poseStack, buffer, packedLight, currentFrame);
+        renderChargingOverlay(poseStack, buffer, packedLight, (int) currentFrame);
     }
 
     private void renderChargingOverlay(PoseStack poseStack, MultiBufferSource buffer, int packedLight, int frame) {
@@ -266,13 +267,14 @@ public class LeafBlowerItemRenderer extends BlockEntityWithoutLevelRenderer {
     private int getChargeLevel() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || !mc.player.isUsingItem()) return 0;
-        if (!(mc.player.getUseItem().getItem() instanceof LeafBlowerItem)) {
+        ItemStack useItem = mc.player.getUseItem();
+        if (!(useItem.getItem() instanceof LeafBlowerItem)) {
             return 0;
         }
-        int useTicks = mc.player.getTicksUsingItem();
-        if (useTicks >= LeafBlowerItem.CHARGE_TIER3) return 3;
-        if (useTicks >= LeafBlowerItem.CHARGE_TIER2) return 2;
-        if (useTicks >= LeafBlowerItem.CHARGE_TIER1) return 1;
+        float effective = mc.player.getTicksUsingItem() * LeafBlowerItem.getChargeSpeedMultiplier(useItem);
+        if (effective >= LeafBlowerItem.CHARGE_TIER3) return 3;
+        if (effective >= LeafBlowerItem.CHARGE_TIER2) return 2;
+        if (effective >= LeafBlowerItem.CHARGE_TIER1) return 1;
         return 0;
     }
 

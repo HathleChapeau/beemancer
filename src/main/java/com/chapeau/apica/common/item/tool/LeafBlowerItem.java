@@ -161,7 +161,7 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
      * Multiplicateur de vitesse de charge selon le fluide.
      * Honey=1x, Royal Jelly=1.4x, Nectar=2x (seuils divises par ce facteur).
      */
-    private float getChargeSpeedMultiplier(ItemStack stack) {
+    public static float getChargeSpeedMultiplier(ItemStack stack) {
         String fluidId = MagazineData.getFluidId(stack);
         if (fluidId.contains("nectar")) return 2f;
         if (fluidId.contains("royal_jelly")) return 1.4f;
