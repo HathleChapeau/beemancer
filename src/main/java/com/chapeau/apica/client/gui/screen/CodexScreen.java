@@ -219,7 +219,7 @@ public class CodexScreen extends Screen {
             case APICA -> new ItemStack(ApicaItems.CODEX.get());
             case BEES -> new ItemStack(Items.HONEYCOMB);
             case ALCHEMY -> new ItemStack(ApicaItems.CRYSTALLIZER.get());
-            case ARTIFACTS -> new ItemStack(ApicaItems.NECTAR_DIAMOND.get());
+            case ARTIFACTS -> new ItemStack(ApicaItems.HONEY_ARTIFACT_CORE.get());
             case LOGISTICS -> new ItemStack(ApicaItems.STORAGE_RELAY.get());
             case MECHANICS -> new ItemStack(Items.IRON_INGOT);
         };

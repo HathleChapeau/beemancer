@@ -23,6 +23,7 @@ package com.chapeau.apica.client.renderer.item;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.chapeau.apica.client.renderer.LightningArcRenderer;
 import com.chapeau.apica.common.item.tool.MiningLaserItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -40,6 +41,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -114,9 +116,21 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float HALO_Y = 0f / 16f;
     private static final float HALO_Z = -13f / 16f;
 
+    // --- Lightning arcs (entre ring_front et ring_back) ---
+    private static final Vec3 ARC_START = new Vec3(7.0 / 16.0, 0, 6.0 / 16.0);
+    private static final Vec3 ARC_END = new Vec3(7.0 / 16.0, 0, 11.0 / 16.0);
+    private static final float ARC_AMPLITUDE = 2.0f / 16.0f;
+    private static final int ARC_NODES = 2;
+    private static final int ARC_REFRESH_TICKS = 10;
+    private static final float ARC_HALF_WIDTH = 0.02f;
+
     // Animation state
     private int currentFrame = 0;
     private int lastTick = -1;
+
+    // Lightning state
+    private final LightningArcRenderer.LightningArc[] lightningArcs = new LightningArcRenderer.LightningArc[2];
+    private int lastArcTick = -1;
 
     public MiningLaserItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
@@ -142,6 +156,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             renderChargeBars(poseStack, buffer, packedLight, chargeLevel);
             renderRingEffects(poseStack, buffer, packedLight, chargeLevel);
             renderHaloSprite(poseStack, buffer);
+            renderLightningArcs(poseStack, buffer);
         } else {
             chargeLevel = MiningLaserItem.getChargeLevel(stack);
             renderChargingOverlay(poseStack, buffer, packedLight, 0);
@@ -339,6 +354,31 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .setUv(1, 1).setOverlay(overlay).setLight(15728880).setNormal(pose, 0, 0, 1);
 
         poseStack.popPose();
+    }
+
+    // =========================================================================
+    // Lightning arcs (2 arcs permanents entre ring_front et ring_back)
+    // =========================================================================
+
+    private void renderLightningArcs(PoseStack poseStack, MultiBufferSource buffer) {
+        int currentTick = AnimationTimer.getTicks();
+
+        if (lastArcTick < 0 || (currentTick - lastArcTick) >= ARC_REFRESH_TICKS) {
+            RandomSource random = RandomSource.create(currentTick * 31L);
+            for (int i = 0; i < 2; i++) {
+                lightningArcs[i] = LightningArcRenderer.generateArc(
+                        ARC_START, ARC_END, ARC_NODES, ARC_AMPLITUDE,
+                        ARC_REFRESH_TICKS, false, false, random);
+            }
+            lastArcTick = currentTick;
+        }
+
+        for (LightningArcRenderer.LightningArc arc : lightningArcs) {
+            if (arc != null) {
+                LightningArcRenderer.renderArc(poseStack, buffer, arc,
+                        ARC_HALF_WIDTH, 0.7f, 0.9f, 1.0f, 0.9f);
+            }
+        }
     }
 
     // =========================================================================

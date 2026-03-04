@@ -104,7 +104,7 @@ public class InjectorBlock extends BaseEntityBlock {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         Direction facing = state.getValue(FACING);
-        return (facing == Direction.EAST || facing == Direction.WEST) ? SHAPE_X : SHAPE_Z;
+        return (facing == Direction.NORTH || facing == Direction.SOUTH) ? SHAPE_X : SHAPE_Z;
     }
 
     @Override
