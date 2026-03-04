@@ -41,10 +41,8 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Item backpack portable. S'equipe en slot accessoire et s'ouvre via l'onglet Backpack.
@@ -72,15 +70,15 @@ public class BackpackItem extends Item implements IAccessory {
         if (level.isClientSide() || !(entity instanceof Player player)) return;
         if (level.getGameTime() % 20 != 0) return;
 
-        int uniqueCount = countUniqueItems(stack);
-        if (uniqueCount == 0) return;
+        int filledSlots = countFilledSlots(stack);
+        if (filledSlots == 0) return;
 
         int amplifier;
-        if (uniqueCount <= 6) {
+        if (filledSlots <= 6) {
             amplifier = 0;
-        } else if (uniqueCount <= 12) {
+        } else if (filledSlots <= 12) {
             amplifier = 1;
-        } else if (uniqueCount <= 18) {
+        } else if (filledSlots <= 18) {
             amplifier = 2;
         } else {
             amplifier = 3;
@@ -122,16 +120,16 @@ public class BackpackItem extends Item implements IAccessory {
         return result;
     }
 
-    /** Compte le nombre de types d'items differents dans le backpack. */
-    private static int countUniqueItems(ItemStack stack) {
+    /** Compte le nombre de slots occupes dans le backpack. */
+    private static int countFilledSlots(ItemStack stack) {
         ItemContainerContents contents = stack.get(DataComponents.CONTAINER);
         if (contents == null) return 0;
         NonNullList<ItemStack> items = NonNullList.withSize(CONTAINER_SLOTS, ItemStack.EMPTY);
         contents.copyInto(items);
-        Set<Item> unique = new HashSet<>();
+        int count = 0;
         for (ItemStack item : items) {
-            if (!item.isEmpty()) unique.add(item.getItem());
+            if (!item.isEmpty()) count++;
         }
-        return unique.size();
+        return count;
     }
 }

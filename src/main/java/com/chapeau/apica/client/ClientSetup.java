@@ -664,8 +664,12 @@ public class ClientSetup {
     }
 
     private static void registerItemDecorations(final net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent event) {
-        ResourceLocation slownessSprite = ResourceLocation.withDefaultNamespace("mob_effect/slowness");
+        ResourceLocation slownessTex = ResourceLocation.withDefaultNamespace("textures/mob_effect/slowness.png");
         event.register(ApicaItems.BACKPACK.get(), (graphics, font, stack, xOffset, yOffset) -> {
+            // Ne pas afficher l'icone si le backpack est dans un slot accessoire
+            for (int i = 0; i < 2; i++) {
+                if (stack == com.chapeau.apica.client.gui.AccessoryClientCache.getSlot(i)) return false;
+            }
             net.minecraft.world.item.component.ItemContainerContents contents =
                     stack.get(net.minecraft.core.component.DataComponents.CONTAINER);
             if (contents == null) return false;
@@ -682,7 +686,7 @@ public class ClientSetup {
             pose.pushPose();
             pose.translate(xOffset + 8, yOffset, 200);
             pose.scale(0.5f, 0.5f, 1.0f);
-            graphics.blitSprite(slownessSprite, 0, 0, 16, 16);
+            graphics.blit(slownessTex, 0, 0, 0, 0, 18, 18, 18, 18);
             pose.popPose();
             return false;
         });
