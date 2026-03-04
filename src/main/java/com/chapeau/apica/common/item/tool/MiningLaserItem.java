@@ -61,7 +61,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
 
     private static final int HONEY_COLOR = 0xE8A317;
     private static final int ROYAL_JELLY_COLOR = 0xFFF8DC;
-    private static final int NECTAR_COLOR = 0xFFD700;
+    private static final int NECTAR_COLOR = 0x9B30FF;
     private static final int DEFAULT_COLOR = 0x888888;
 
     /** Nombre de ticks pour atteindre la pleine charge */

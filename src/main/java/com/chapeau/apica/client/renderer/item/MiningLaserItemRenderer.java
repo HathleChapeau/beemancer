@@ -24,6 +24,7 @@ package com.chapeau.apica.client.renderer.item;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.client.renderer.LightningArcRenderer;
+import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.tool.MiningLaserItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -156,7 +157,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             renderChargeBars(poseStack, buffer, packedLight, chargeLevel);
             renderRingEffects(poseStack, buffer, packedLight, chargeLevel);
             renderHaloSprite(poseStack, buffer);
-            renderLightningArcs(poseStack, buffer);
+            renderLightningArcs(poseStack, buffer, stack);
         } else {
             chargeLevel = MiningLaserItem.getChargeLevel(stack);
             renderChargingOverlay(poseStack, buffer, packedLight, 0);
@@ -360,9 +361,18 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     // Lightning arcs (2 arcs permanents entre ring_front et ring_back)
     // =========================================================================
 
-    private void renderLightningArcs(PoseStack poseStack, MultiBufferSource buffer) {
-        int currentTick = AnimationTimer.getTicks();
+    private void renderLightningArcs(PoseStack poseStack, MultiBufferSource buffer, ItemStack stack) {
+        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
+            lastArcTick = -1;
+            return;
+        }
 
+        int color = getMagazineColor(MagazineData.getFluidId(stack));
+        float r = ((color >> 16) & 0xFF) / 255f;
+        float g = ((color >> 8) & 0xFF) / 255f;
+        float b = (color & 0xFF) / 255f;
+
+        int currentTick = AnimationTimer.getTicks();
         if (lastArcTick < 0 || (currentTick - lastArcTick) >= ARC_REFRESH_TICKS) {
             RandomSource random = RandomSource.create(currentTick * 31L);
             for (int i = 0; i < 2; i++) {
@@ -376,9 +386,16 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
         for (LightningArcRenderer.LightningArc arc : lightningArcs) {
             if (arc != null) {
                 LightningArcRenderer.renderArc(poseStack, buffer, arc,
-                        ARC_HALF_WIDTH, 0.7f, 0.9f, 1.0f, 0.9f);
+                        ARC_HALF_WIDTH, r, g, b, 0.9f);
             }
         }
+    }
+
+    private static int getMagazineColor(String fluidId) {
+        if (fluidId.contains("honey")) return 0xE8A317;
+        if (fluidId.contains("royal_jelly")) return 0xFFF8DC;
+        if (fluidId.contains("nectar")) return 0x9B30FF;
+        return 0x888888;
     }
 
     // =========================================================================
