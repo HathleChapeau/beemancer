@@ -1,13 +1,14 @@
 /**
  * ============================================================
  * [TransportBarWidget.java]
- * Description: Barre de transport du DAW — Play/Stop, BPM, Volume master, bouton Back optionnel
+ * Description: Barre de transport du DAW — Play/Stop, Mode, BPM, Volume master, bouton Back optionnel
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
+ * | PlayMode            | Mode de lecture      | Affichage/toggle du mode       |
  * | DubstepRadioScreen  | Ecran parent         | Callbacks pour actions         |
  * | GuiGraphics         | Rendu vectoriel      | fill(), drawString()           |
  * ------------------------------------------------------------
@@ -19,12 +20,13 @@
  */
 package com.chapeau.apica.client.gui.widget;
 
+import com.chapeau.apica.client.audio.PlayMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
 /**
- * Barre de transport : [Back] (optionnel) | Play/Stop | BPM +/- | Volume slider.
+ * Barre de transport : [Back] (optionnel) | Play/Stop | [Mode] | BPM +/- | Volume slider.
  * Coordonnees absolues (leftPos + offsets passes au constructeur).
  */
 public class TransportBarWidget {
@@ -43,6 +45,7 @@ public class TransportBarWidget {
     private static final int COL_SLIDER_BG = 0xFF333333;
     private static final int COL_SLIDER_FILL = 0xFF00CC88;
     private static final int COL_BACK = 0xFF4466AA;
+    private static final int COL_MODE = 0xFF335577;
 
     private final int x, y, width;
     private final Listener listener;
@@ -51,6 +54,7 @@ public class TransportBarWidget {
     private int bpm = 120;
     private boolean playing = false;
     private int volumePct = 80;
+    private PlayMode playMode = PlayMode.LOOP;
     private boolean draggingVolume = false;
 
     /** Callback pour les actions transport. */
@@ -59,6 +63,7 @@ public class TransportBarWidget {
         void onStop();
         void onBpmChange(int delta);
         void onVolumeChange(int pct);
+        void onModeChange(PlayMode newMode);
     }
 
     public TransportBarWidget(int x, int y, int width, Listener listener, Runnable backAction) {
@@ -69,10 +74,11 @@ public class TransportBarWidget {
         this.backAction = backAction;
     }
 
-    public void update(int bpm, boolean playing, int volumePct) {
+    public void update(int bpm, boolean playing, int volumePct, PlayMode playMode) {
         this.bpm = bpm;
         this.playing = playing;
         this.volumePct = volumePct;
+        this.playMode = playMode;
     }
 
     public void render(GuiGraphics gfx) {
@@ -103,7 +109,14 @@ public class TransportBarWidget {
             gfx.fill(cx + 6, btnY + 5, cx + 7, btnY + BTN_SIZE - 5, 0xFF00FF88);
             gfx.fill(cx + 7, btnY + 6, cx + 8, btnY + BTN_SIZE - 6, 0xFF00FF88);
         }
-        cx += BTN_SIZE + 6;
+        cx += BTN_SIZE + 4;
+
+        // Mode button
+        String modeLabel = playMode.getLabel();
+        int modeW = font.width(modeLabel) + 6;
+        gfx.fill(cx, btnY, cx + modeW, btnY + BTN_SIZE, COL_MODE);
+        gfx.drawString(font, modeLabel, cx + 3, btnY + 3, COL_TEXT, false);
+        cx += modeW + 4;
 
         // BPM: < value >
         gfx.fill(cx, btnY, cx + 8, btnY + BTN_SIZE, COL_BORDER);
@@ -154,7 +167,16 @@ public class TransportBarWidget {
             else listener.onPlay();
             return true;
         }
-        cx += BTN_SIZE + 6;
+        cx += BTN_SIZE + 4;
+
+        // Mode button
+        String modeLabel = playMode.getLabel();
+        int modeW = font.width(modeLabel) + 6;
+        if (mx >= cx && mx < cx + modeW && my >= btnY && my < btnY + BTN_SIZE) {
+            listener.onModeChange(playMode.next());
+            return true;
+        }
+        cx += modeW + 4;
 
         // BPM decrease
         if (mx >= cx && mx < cx + 8) {
@@ -193,7 +215,8 @@ public class TransportBarWidget {
         if (backAction != null) {
             cx += font.width("< Back") + 6 + 4;
         }
-        cx += BTN_SIZE + 6; // play/stop
+        cx += BTN_SIZE + 4; // play/stop
+        cx += font.width(playMode.getLabel()) + 6 + 4; // mode
         cx += 10; // bpm <
         cx += font.width(bpm + " BPM") + 2; // bpm text
         cx += 8 + 14; // bpm >
