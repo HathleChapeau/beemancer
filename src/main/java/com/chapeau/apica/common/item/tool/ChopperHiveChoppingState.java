@@ -9,6 +9,8 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | Block               | Loot drops           | getDrops() avec outil          |
+ * | MagazineData        | Consommation fluide  | consumeFluid() par buche       |
+ * | ChopperHiveItem     | Vitesse fluide       | getTicksPerBlockForFluid()     |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -18,6 +20,7 @@
  */
 package com.chapeau.apica.common.item.tool;
 
+import com.chapeau.apica.common.item.magazine.MagazineData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -36,12 +39,13 @@ import java.util.UUID;
  * Gere la file de destruction de blocs pour le Chopper Hive.
  * Chaque joueur peut avoir une session active.
  * Phase warmup (1 seconde) avant la destruction, puis blocs detruits du haut vers le bas.
- * Les particules rune sont gerees cote client (ChopperHivePreviewRenderer).
+ * Consomme 5 mB de fluide par buche. Vitesse selon fluide (honey=12, royal_jelly=8, nectar=6).
+ * Session s'arrete si fluide epuise.
  */
 public final class ChopperHiveChoppingState {
 
-    /** Ticks entre chaque destruction de bloc */
-    private static final int TICKS_PER_BLOCK = 12;
+    /** Cout fixe en mB par buche detruite. */
+    private static final int COST_PER_LOG = 5;
 
     /** Ticks de warmup avant le debut de la destruction (1 seconde) */
     public static final int WARMUP_TICKS = 20;
@@ -73,13 +77,14 @@ public final class ChopperHiveChoppingState {
 
     /**
      * Tick la session du joueur. Appele chaque tick depuis inventoryTick().
-     * Phase warmup (20 ticks) puis destruction.
+     * Phase warmup (20 ticks) puis destruction avec consommation fluide.
+     * Vitesse de destruction determinee par le fluide du magazine equipe.
      */
-    public static void tick(Player player, ServerLevel level) {
+    public static void tick(Player player, ServerLevel level, ItemStack chopperStack) {
         State state = activeStates.get(player.getUUID());
         if (state == null) return;
 
-        // Phase warmup: attendre avant de commencer la destruction
+        // Phase warmup
         if (state.warmupTicker < WARMUP_TICKS) {
             state.warmupTicker++;
             return;
@@ -100,10 +105,17 @@ public final class ChopperHiveChoppingState {
             return;
         }
 
+        // Vitesse selon le fluide equipe
+        int ticksPerBlock = ChopperHiveItem.getTicksPerBlockForFluid(chopperStack);
         state.tickCounter++;
 
-        if (state.tickCounter >= TICKS_PER_BLOCK) {
-            // Detruire le bloc et collecter le loot
+        if (state.tickCounter >= ticksPerBlock) {
+            // Consommer le fluide avant destruction
+            if (!MagazineData.consumeFluid(chopperStack, COST_PER_LOG)) {
+                activeStates.remove(player.getUUID());
+                return;
+            }
+
             destroyAndCollect(level, player, currentPos, blockState);
 
             state.tickCounter = 0;

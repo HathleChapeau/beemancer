@@ -16,6 +16,9 @@
  * UTILISE PAR:
  * - IMagazineHolder.java (verification)
  * - LeafBlowerItem.java (consommation fluide)
+ * - MiningLaserItem.java (consommation fluide)
+ * - BuildingWandItem.java (consommation fluide)
+ * - ChopperHiveItem.java (consommation fluide)
  * - MagazineEquipPacket.java (equip/unequip)
  * - MagazineGaugeHud.java (lecture niveau)
  * - ContainerScreenMagazineMixin.java (affichage)
@@ -120,6 +123,29 @@ public final class MagazineData {
         writeTag.putInt(AMOUNT_KEY, current - cost);
         saveDataTag(holder, writeTag);
         return true;
+    }
+
+    // =========================================================================
+    // Fluid cost helpers
+    // =========================================================================
+
+    /**
+     * Retourne le multiplicateur de cout base sur le fluide du magazine attache.
+     * Honey = 1x, Royal Jelly = 0.5x, Nectar = 1/6x.
+     */
+    public static float getFluidCostMultiplier(ItemStack holder) {
+        String fluidId = getFluidId(holder);
+        if (fluidId.contains("nectar")) return 1f / 6f;
+        if (fluidId.contains("royal_jelly")) return 0.5f;
+        return 1f;
+    }
+
+    /**
+     * Calcule le cout effectif apres application du multiplicateur fluide.
+     * Retourne au minimum 1 mB.
+     */
+    public static int computeEffectiveCost(ItemStack holder, int baseCost) {
+        return Math.max(1, Math.round(baseCost * getFluidCostMultiplier(holder)));
     }
 
     // =========================================================================

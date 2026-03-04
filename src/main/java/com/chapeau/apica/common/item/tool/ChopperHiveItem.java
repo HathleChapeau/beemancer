@@ -11,6 +11,8 @@
  * | BlockTags                 | Detection buches     | Verification tag logs          |
  * | ChopperHiveChoppingState  | Destruction queue    | Gestion server-side            |
  * | ChopperHiveLockHelper     | Preview client       | Verrouillage glow              |
+ * | IMagazineHolder           | Interface magazine   | Requiert magazine              |
+ * | MagazineData              | Data magazine        | Consommation fluide            |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -21,6 +23,9 @@
  */
 package com.chapeau.apica.common.item.tool;
 
+import com.chapeau.apica.common.item.magazine.IMagazineHolder;
+import com.chapeau.apica.common.item.magazine.MagazineData;
+import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -46,13 +51,16 @@ import java.util.Set;
 
 /**
  * Chopper Hive — outil d'abattage d'arbres.
- *
- * Quand le joueur regarde une buche en tenant cet item,
- * toutes les buches connectees du meme type au-dessus (y >= cible) sont surlignees.
- * Clic droit sur une buche: demarre la destruction du haut vers le bas,
- * avec 2 abeilles orbitantes autour de chaque bloc. Le loot va dans l'inventaire.
+ * Necessite un magazine pour fonctionner. 5 mB par buche detruite.
+ * Vitesse selon fluide: Honey=12 ticks/buche, Royal Jelly=8, Nectar=6.
+ * Session s'arrete si fluide epuise.
  */
-public class ChopperHiveItem extends Item {
+public class ChopperHiveItem extends Item implements IMagazineHolder {
+
+    private static final int HONEY_COLOR = 0xE8A317;
+    private static final int ROYAL_JELLY_COLOR = 0xFFF8DC;
+    private static final int NECTAR_COLOR = 0xFFD700;
+    private static final int DEFAULT_COLOR = 0x888888;
 
     /** Nombre max de blocs scannes pour eviter les lags */
     public static final int MAX_SCAN = 256;
@@ -62,10 +70,50 @@ public class ChopperHiveItem extends Item {
     }
 
     @Override
+    public Set<String> getAcceptedFluids() {
+        return Set.of("apica:honey", "apica:royal_jelly", "apica:nectar");
+    }
+
+    @Override
+    public boolean isBarVisible(ItemStack stack) {
+        return MagazineData.hasMagazine(stack);
+    }
+
+    @Override
+    public int getBarWidth(ItemStack stack) {
+        int amount = MagazineData.getFluidAmount(stack);
+        return Math.round((float) amount / MagazineFluidData.MAX_CAPACITY * 13f);
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack) {
+        String fluidId = MagazineData.getFluidId(stack);
+        if (fluidId.contains("honey")) return HONEY_COLOR;
+        if (fluidId.contains("royal_jelly")) return ROYAL_JELLY_COLOR;
+        if (fluidId.contains("nectar")) return NECTAR_COLOR;
+        return DEFAULT_COLOR;
+    }
+
+    /** Retourne la vitesse de destruction en ticks par buche selon le fluide equipe. */
+    public static int getTicksPerBlockForFluid(ItemStack stack) {
+        String fluidId = MagazineData.getFluidId(stack);
+        if (fluidId.contains("nectar")) return 6;
+        if (fluidId.contains("royal_jelly")) return 8;
+        return 12;
+    }
+
+    @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
+
+        ItemStack stack = context.getItemInHand();
+
+        // Sans magazine = rien
+        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
+            return InteractionResult.PASS;
+        }
 
         BlockPos clickedPos = context.getClickedPos();
         BlockState clickedState = level.getBlockState(clickedPos);
@@ -75,19 +123,16 @@ public class ChopperHiveItem extends Item {
         }
 
         if (!level.isClientSide()) {
-            // Ignorer si deja en cours de destruction
             if (ChopperHiveChoppingState.isActive(player.getUUID())) {
                 return InteractionResult.CONSUME;
             }
 
-            // Scanner et demarrer la destruction (haut→bas, puis gauche→droite)
             List<BlockPos> logs = findConnectedLogs(level, clickedPos);
             logs.sort(Comparator.<BlockPos>comparingInt(BlockPos::getY).reversed()
                     .thenComparingInt(BlockPos::getX)
                     .thenComparingInt(BlockPos::getZ));
             ChopperHiveChoppingState.start(player.getUUID(), logs);
         } else {
-            // Lock le preview client-side
             List<BlockPos> logs = findConnectedLogs(level, clickedPos);
             ChopperHiveLockHelper.lockWith(logs, level.getGameTime());
         }
@@ -99,7 +144,6 @@ public class ChopperHiveItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Ignorer si deja en cours de destruction
         if (!level.isClientSide() && ChopperHiveChoppingState.isActive(player.getUUID())) {
             return InteractionResultHolder.success(stack);
         }
@@ -111,14 +155,13 @@ public class ChopperHiveItem extends Item {
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
         if (level.isClientSide() || !(entity instanceof Player player)) return;
 
-        // Verifier que le joueur tient l'item (main ou offhand)
         boolean holding = selected || player.getOffhandItem() == stack;
         if (!holding) {
             ChopperHiveChoppingState.clear(player.getUUID());
             return;
         }
 
-        ChopperHiveChoppingState.tick(player, (ServerLevel) level);
+        ChopperHiveChoppingState.tick(player, (ServerLevel) level, stack);
     }
 
     @Override
@@ -129,10 +172,6 @@ public class ChopperHiveItem extends Item {
     /**
      * Trouve toutes les buches connectees (26-way) du meme type,
      * a partir d'une position de depart, en ne descendant jamais en dessous du startY.
-     *
-     * @param level    Le Level (client ou server)
-     * @param startPos La position de la buche ciblee
-     * @return Liste des positions de buches connectees (inclut startPos)
      */
     public static List<BlockPos> findConnectedLogs(Level level, BlockPos startPos) {
         List<BlockPos> result = new ArrayList<>();
@@ -154,7 +193,6 @@ public class ChopperHiveItem extends Item {
             BlockPos current = queue.poll();
             result.add(current);
 
-            // Scanner les 26 voisins (3x3x3 - centre)
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dy = -1; dy <= 1; dy++) {
                     for (int dz = -1; dz <= 1; dz++) {

@@ -13,6 +13,9 @@
  *
  * UTILISE PAR:
  * - LeafBlowerItem.java (implementation)
+ * - MiningLaserItem.java (implementation)
+ * - BuildingWandItem.java (implementation)
+ * - ChopperHiveItem.java (implementation)
  * - ContainerScreenMagazineMixin.java (detection items)
  * - MagazineGaugeHud.java (detection items)
  * - MagazineEquipPacket.java (validation)

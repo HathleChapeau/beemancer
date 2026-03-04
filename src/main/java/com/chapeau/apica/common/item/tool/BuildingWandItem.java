@@ -1,25 +1,30 @@
 /**
  * ============================================================
  * [BuildingWandItem.java]
- * Description: Baguette de construction avec prévisualisation et placement
+ * Description: Baguette de construction avec previsualisation et placement
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation           |
+ * | Dependance          | Raison                | Utilisation           |
  * |---------------------|----------------------|-----------------------|
- * | Level               | Accès monde          | Raycast, placement    |
+ * | Level               | Acces monde          | Raycast, placement    |
  * | Player              | Inventaire           | Compte items          |
+ * | IMagazineHolder     | Interface magazine   | Requiert magazine     |
+ * | MagazineData        | Data magazine        | Consommation fluide   |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - ApicaItems.java (enregistrement)
- * - BuildingWandRenderer.java (prévisualisation)
+ * - BuildingWandRenderer.java (previsualisation)
  *
  * ============================================================
  */
 package com.chapeau.apica.common.item.tool;
 
+import com.chapeau.apica.common.item.magazine.IMagazineHolder;
+import com.chapeau.apica.common.item.magazine.MagazineData;
+import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -44,19 +49,56 @@ import java.util.Set;
 
 /**
  * Baguette de construction magique.
- *
- * Fonctionnalités:
- * - Prévisualisation des blocs à placer (contour blanc)
- * - Extension 2D sur la face pointée (flood fill avec diagonales)
- * - Limite: min(15, items dans inventaire) - illimité en créatif
- * - Clic droit: place les blocs prévisualisés
+ * Necessite un magazine pour fonctionner. 1 mB par bloc place.
+ * Max blocs selon fluide: Honey=10, Royal Jelly=15, Nectar=20.
+ * Consomme aussi les blocs de l'inventaire (double cout).
  */
-public class BuildingWandItem extends Item {
+public class BuildingWandItem extends Item implements IMagazineHolder {
 
-    public static final int MAX_BLOCKS = 15;
+    private static final int HONEY_COLOR = 0xE8A317;
+    private static final int ROYAL_JELLY_COLOR = 0xFFF8DC;
+    private static final int NECTAR_COLOR = 0xFFD700;
+    private static final int DEFAULT_COLOR = 0x888888;
+
+    /** Cout fixe en mB par bloc place (pas de multiplicateur). */
+    private static final int COST_PER_BLOCK = 1;
 
     public BuildingWandItem(Properties properties) {
         super(properties.stacksTo(1));
+    }
+
+    @Override
+    public Set<String> getAcceptedFluids() {
+        return Set.of("apica:honey", "apica:royal_jelly", "apica:nectar");
+    }
+
+    @Override
+    public boolean isBarVisible(ItemStack stack) {
+        return MagazineData.hasMagazine(stack);
+    }
+
+    @Override
+    public int getBarWidth(ItemStack stack) {
+        int amount = MagazineData.getFluidAmount(stack);
+        return Math.round((float) amount / MagazineFluidData.MAX_CAPACITY * 13f);
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack) {
+        String fluidId = MagazineData.getFluidId(stack);
+        if (fluidId.contains("honey")) return HONEY_COLOR;
+        if (fluidId.contains("royal_jelly")) return ROYAL_JELLY_COLOR;
+        if (fluidId.contains("nectar")) return NECTAR_COLOR;
+        return DEFAULT_COLOR;
+    }
+
+    /** Retourne le max de blocs selon le type de fluide equipe. */
+    public static int getMaxBlocksForFluid(ItemStack stack) {
+        String fluidId = MagazineData.getFluidId(stack);
+        if (fluidId.contains("nectar")) return 20;
+        if (fluidId.contains("royal_jelly")) return 15;
+        if (fluidId.contains("honey")) return 10;
+        return 10;
     }
 
     @Override
@@ -65,43 +107,49 @@ public class BuildingWandItem extends Item {
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.PASS;
 
+        ItemStack wandStack = context.getItemInHand();
+
+        // Sans magazine = rien
+        if (!MagazineData.hasMagazine(wandStack) || MagazineData.getFluidAmount(wandStack) <= 0) {
+            return InteractionResult.PASS;
+        }
+
         BlockPos clickedPos = context.getClickedPos();
         Direction face = context.getClickedFace();
         BlockState sourceState = level.getBlockState(clickedPos);
 
         if (sourceState.isAir()) return InteractionResult.PASS;
 
-        // Calculer les positions de prévisualisation
+        // Calculer les positions de previsualisation
         List<BlockPos> previewPositions = calculatePreviewPositions(
-            level, player, clickedPos, face, sourceState
+            level, player, wandStack, clickedPos, face, sourceState
         );
 
         if (previewPositions.isEmpty()) return InteractionResult.PASS;
 
-        // Côté serveur: placer les blocs
+        // Cote serveur: placer les blocs
         if (!level.isClientSide()) {
             int placed = 0;
             Block sourceBlock = sourceState.getBlock();
 
             for (BlockPos pos : previewPositions) {
-                // Vérifier que l'espace est libre
                 if (!level.getBlockState(pos).canBeReplaced()) continue;
 
-                // Récupérer l'état du bloc directement derrière (pour copier son orientation)
+                // Verifier fluide suffisant
+                if (!MagazineData.consumeFluid(wandStack, COST_PER_BLOCK)) break;
+
                 BlockPos behindPos = pos.relative(face.getOpposite());
                 BlockState behindState = level.getBlockState(behindPos);
 
-                // Placer le bloc avec la même orientation que le bloc derrière
                 level.setBlock(pos, behindState, 3);
                 placed++;
 
-                // Consommer l'item (sauf créatif)
+                // Consommer le bloc de l'inventaire (sauf creatif)
                 if (!player.isCreative()) {
                     consumeItem(player, sourceBlock);
                 }
             }
 
-            // Son de placement
             if (placed > 0) {
                 SoundType sound = sourceState.getSoundType();
                 level.playSound(null, clickedPos, sound.getPlaceSound(),
@@ -113,34 +161,35 @@ public class BuildingWandItem extends Item {
     }
 
     /**
-     * Calcule les positions de prévisualisation.
+     * Calcule les positions de previsualisation.
+     * Limite: min(maxBlocsParFluide, items inventaire, fluide/coutParBloc).
      */
     public static List<BlockPos> calculatePreviewPositions(Level level, Player player,
+                                                            ItemStack wandStack,
                                                             BlockPos sourcePos, Direction face,
                                                             BlockState sourceState) {
         List<BlockPos> result = new ArrayList<>();
         Block sourceBlock = sourceState.getBlock();
 
-        // Position de départ: 1 bloc devant la face pointée
         BlockPos startPos = sourcePos.relative(face);
 
-        // Vérifier que le bloc de départ est libre
         if (!level.getBlockState(startPos).canBeReplaced()) {
             return result;
         }
 
-        // Calculer la limite (inventaire ou créatif)
-        int limit = MAX_BLOCKS;
+        // Limite triple: fluide, items, max par fluide
+        int maxByFluid = getMaxBlocksForFluid(wandStack);
+        int maxByAmount = MagazineData.getFluidAmount(wandStack) / COST_PER_BLOCK;
+        int limit = maxByFluid;
         if (!player.isCreative()) {
             limit = Math.min(limit, countItemsInInventory(player, sourceBlock));
         }
+        limit = Math.min(limit, maxByAmount);
 
         if (limit <= 0) return result;
 
-        // Directions pour le flood fill 2D (perpendiculaires à la face)
         Direction[] spreadDirs = getSpreadDirections(face);
 
-        // Flood fill avec BFS
         Set<BlockPos> visited = new HashSet<>();
         Queue<BlockPos> queue = new LinkedList<>();
         queue.add(startPos);
@@ -149,28 +198,23 @@ public class BuildingWandItem extends Item {
         while (!queue.isEmpty() && result.size() < limit) {
             BlockPos current = queue.poll();
 
-            // Vérifier que cette position est valide pour placement
             if (!level.getBlockState(current).canBeReplaced()) {
                 continue;
             }
 
-            // Vérifier que le bloc derrière (source) est du bon type
             BlockPos behindPos = current.relative(face.getOpposite());
             BlockState behindState = level.getBlockState(behindPos);
             if (!behindState.is(sourceBlock)) {
                 continue;
             }
 
-            // Ajouter à la prévisualisation
             result.add(current);
 
-            // Explorer les voisins (4 directions + 4 diagonales sur le plan 2D)
             for (BlockPos neighbor : getNeighbors2D(current, spreadDirs)) {
                 if (visited.contains(neighbor)) continue;
                 visited.add(neighbor);
 
-                // Vérifier la distance max
-                if (getDistance2D(startPos, neighbor, spreadDirs) <= MAX_BLOCKS) {
+                if (getDistance2D(startPos, neighbor, spreadDirs) <= maxByFluid) {
                     queue.add(neighbor);
                 }
             }
@@ -179,9 +223,17 @@ public class BuildingWandItem extends Item {
         return result;
     }
 
-    /**
-     * Retourne les directions de propagation perpendiculaires à la face.
-     */
+    /** Surcharge pour retrocompatibilite avec le preview renderer. */
+    public static List<BlockPos> calculatePreviewPositions(Level level, Player player,
+                                                            BlockPos sourcePos, Direction face,
+                                                            BlockState sourceState) {
+        ItemStack wandStack = player.getMainHandItem();
+        if (!(wandStack.getItem() instanceof BuildingWandItem)) {
+            wandStack = player.getOffhandItem();
+        }
+        return calculatePreviewPositions(level, player, wandStack, sourcePos, face, sourceState);
+    }
+
     private static Direction[] getSpreadDirections(Direction face) {
         return switch (face.getAxis()) {
             case X -> new Direction[]{Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH};
@@ -190,18 +242,13 @@ public class BuildingWandItem extends Item {
         };
     }
 
-    /**
-     * Retourne les 8 voisins sur le plan 2D (4 cardinaux + 4 diagonaux).
-     */
     private static List<BlockPos> getNeighbors2D(BlockPos pos, Direction[] spreadDirs) {
         List<BlockPos> neighbors = new ArrayList<>();
 
-        // 4 directions cardinales
         for (Direction dir : spreadDirs) {
             neighbors.add(pos.relative(dir));
         }
 
-        // 4 diagonales (combinaisons de 2 directions)
         if (spreadDirs.length >= 4) {
             neighbors.add(pos.relative(spreadDirs[0]).relative(spreadDirs[2]));
             neighbors.add(pos.relative(spreadDirs[0]).relative(spreadDirs[3]));
@@ -212,9 +259,6 @@ public class BuildingWandItem extends Item {
         return neighbors;
     }
 
-    /**
-     * Calcule la distance 2D (Chebyshev) sur le plan.
-     */
     private static int getDistance2D(BlockPos start, BlockPos pos, Direction[] spreadDirs) {
         int dx = 0, dy = 0;
 
@@ -236,9 +280,6 @@ public class BuildingWandItem extends Item {
         return Math.max(dx, dy);
     }
 
-    /**
-     * Compte le nombre d'items du bloc dans l'inventaire du joueur.
-     */
     private static int countItemsInInventory(Player player, Block block) {
         int count = 0;
         Item blockItem = block.asItem();
@@ -253,9 +294,6 @@ public class BuildingWandItem extends Item {
         return count;
     }
 
-    /**
-     * Consomme un item du bloc dans l'inventaire.
-     */
     private static void consumeItem(Player player, Block block) {
         Item blockItem = block.asItem();
 

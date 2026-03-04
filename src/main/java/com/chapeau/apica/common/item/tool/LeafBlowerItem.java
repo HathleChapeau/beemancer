@@ -40,9 +40,9 @@ import java.util.Set;
 
 /**
  * Leaf Blower — outil chargeable qui tire un orbe detruisant la vegetation.
- * Necessite un magazine de honey pour fonctionner. Sans magazine = pas de charge.
- * Cout croissant: tier1=25mB, tier2=75mB, tier3=150mB.
- * Si fluide insuffisant pour un tier, bloque au tier inferieur.
+ * Necessite un magazine pour fonctionner. Sans magazine = pas de charge.
+ * Accepte honey, royal_jelly, nectar. Cout et vitesse de charge varient par fluide.
+ * Cout base: tier1=25mB, tier2=75mB, tier3=150mB (modifie par multiplicateur fluide).
  */
 public class LeafBlowerItem extends Item implements IMagazineHolder {
 
@@ -51,12 +51,12 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
     private static final int NECTAR_COLOR = 0xFFD700;
     private static final int DEFAULT_COLOR = 0x888888;
 
-    /** Tick thresholds: 0-9 = level 0, 10-24 = level 1, 25-39 = level 2, 40+ = level 3 */
+    /** Tick thresholds base (honey): 0-9 = level 0, 10-24 = level 1, 25-39 = level 2, 40+ = level 3 */
     public static final int CHARGE_TIER1 = 10;
     public static final int CHARGE_TIER2 = 25;
     public static final int CHARGE_TIER3 = 40;
 
-    /** Cout en mB par tier de charge. */
+    /** Cout base en mB par tier de charge (avant multiplicateur fluide). */
     private static final int COST_TIER1 = 25;
     private static final int COST_TIER2 = 75;
     private static final int COST_TIER3 = 150;
@@ -67,7 +67,7 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
 
     @Override
     public Set<String> getAcceptedFluids() {
-        return Set.of("apica:honey");
+        return Set.of("apica:honey", "apica:royal_jelly", "apica:nectar");
     }
 
     @Override
@@ -94,8 +94,9 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Sans magazine honey avec au moins le cout du tier 1, pas de charge
-        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) < COST_TIER1) {
+        // Sans magazine avec au moins le cout effectif du tier 1, pas de charge
+        int minCost = MagazineData.computeEffectiveCost(stack, COST_TIER1);
+        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) < minCost) {
             return InteractionResultHolder.pass(stack);
         }
 
@@ -109,9 +110,10 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
         if (!(entity instanceof Player player)) return;
 
         int useTicks = getUseDuration(stack, entity) - remainingTicks;
+        float speedMult = getChargeSpeedMultiplier(stack);
         int maxTier = getMaxAffordableTier(stack);
-        int currentLevel = getChargeLevelCapped(useTicks, maxTier);
-        int prevLevel = getChargeLevelCapped(useTicks - 1, maxTier);
+        int currentLevel = getChargeLevelCapped(useTicks, speedMult, maxTier);
+        int prevLevel = getChargeLevelCapped(useTicks - 1, speedMult, maxTier);
 
         // Son continu de charge (toutes les 4 ticks)
         if (useTicks % 4 == 0) {
@@ -133,12 +135,13 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
         if (!(entity instanceof Player player)) return;
 
         int useDuration = getUseDuration(stack, entity) - timeLeft;
+        float speedMult = getChargeSpeedMultiplier(stack);
         int maxTier = getMaxAffordableTier(stack);
-        int chargeLevel = getChargeLevelCapped(useDuration, maxTier);
+        int chargeLevel = getChargeLevelCapped(useDuration, speedMult, maxTier);
         if (chargeLevel <= 0) return;
 
-        // Consommer le fluide selon le tier
-        int cost = getCostForTier(chargeLevel);
+        // Consommer le fluide selon le tier (cout effectif)
+        int cost = MagazineData.computeEffectiveCost(stack, getCostForTier(chargeLevel));
         MagazineData.consumeFluid(stack, cost);
 
         Vec3 look = player.getLookAngle();
@@ -154,29 +157,42 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
                 SoundSource.PLAYERS, 1.0f, 0.8f + chargeLevel * 0.2f);
     }
 
-    /** Determine le tier max payable avec le fluide restant. */
+    /**
+     * Multiplicateur de vitesse de charge selon le fluide.
+     * Honey=1x, Royal Jelly=1.4x, Nectar=2x (seuils divises par ce facteur).
+     */
+    private float getChargeSpeedMultiplier(ItemStack stack) {
+        String fluidId = MagazineData.getFluidId(stack);
+        if (fluidId.contains("nectar")) return 2f;
+        if (fluidId.contains("royal_jelly")) return 1.4f;
+        return 1f;
+    }
+
+    /** Determine le tier max payable avec le fluide restant (cout effectif). */
     private int getMaxAffordableTier(ItemStack stack) {
         int amount = MagazineData.getFluidAmount(stack);
-        if (amount >= COST_TIER3) return 3;
-        if (amount >= COST_TIER2) return 2;
-        if (amount >= COST_TIER1) return 1;
+        if (amount >= MagazineData.computeEffectiveCost(stack, COST_TIER3)) return 3;
+        if (amount >= MagazineData.computeEffectiveCost(stack, COST_TIER2)) return 2;
+        if (amount >= MagazineData.computeEffectiveCost(stack, COST_TIER1)) return 1;
         return 0;
     }
 
-    /** Calcule le niveau de charge avec cap au tier max. */
-    private int getChargeLevelCapped(int useTicks, int maxTier) {
-        int raw = getChargeLevel(useTicks);
+    /** Calcule le niveau de charge avec cap au tier max et vitesse de charge fluide. */
+    private int getChargeLevelCapped(int useTicks, float speedMult, int maxTier) {
+        int raw = getChargeLevel(useTicks, speedMult);
         return Math.min(raw, maxTier);
     }
 
-    private int getChargeLevel(int useTicks) {
-        if (useTicks >= CHARGE_TIER3) return 3;
-        if (useTicks >= CHARGE_TIER2) return 2;
-        if (useTicks >= CHARGE_TIER1) return 1;
+    /** Calcule le charge level brut en appliquant le multiplicateur de vitesse. */
+    private int getChargeLevel(int useTicks, float speedMult) {
+        float effective = useTicks * speedMult;
+        if (effective >= CHARGE_TIER3) return 3;
+        if (effective >= CHARGE_TIER2) return 2;
+        if (effective >= CHARGE_TIER1) return 1;
         return 0;
     }
 
-    /** Retourne le cout en mB pour un tier donne. */
+    /** Retourne le cout base en mB pour un tier donne (avant multiplicateur fluide). */
     private static int getCostForTier(int tier) {
         return switch (tier) {
             case 1 -> COST_TIER1;
