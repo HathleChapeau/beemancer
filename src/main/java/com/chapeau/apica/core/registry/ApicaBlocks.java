@@ -23,7 +23,6 @@ import com.chapeau.apica.common.block.alchemy.MultiblockTankBlock;
 import com.chapeau.apica.common.block.alchemy.ApicaFurnaceBlock;
 import com.chapeau.apica.common.block.alchemy.PoweredCentrifugeBlock;
 import com.chapeau.apica.common.block.artifacts.LaunchpadBlock;
-import com.chapeau.apica.common.block.artifacts.RepairToolStationBlock;
 import com.chapeau.apica.common.block.artifacts.UncraftingTableBlock;
 import com.chapeau.apica.common.block.altar.AltarHeartBlock;
 import com.chapeau.apica.common.block.altar.HoneyCrystalBlock;
@@ -515,13 +514,6 @@ public class ApicaBlocks {
                     .noOcclusion()
                     .requiresCorrectToolForDrops()));
 
-    // --- REPAIR TOOL STATION ---
-    public static final DeferredBlock<RepairToolStationBlock> REPAIR_TOOL_STATION = registerTimed("repair_tool_station",
-            () -> new RepairToolStationBlock(BlockBehaviour.Properties.of()
-                    .strength(3.0f)
-                    .sound(SoundType.METAL)
-                    .noOcclusion()
-                    .requiresCorrectToolForDrops()));
 
     // --- BEE STATUE ---
     public static final DeferredBlock<BeeStatueBlock> BEE_STATUE = registerTimed("bee_statue",

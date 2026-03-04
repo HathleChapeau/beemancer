@@ -15,18 +15,16 @@
     {"id": "honey_artifact_core", "position": {"x": 0, "y": 2}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
     {"id": "leaf_blower", "position": {"x": -2, "y": 2}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "repair_tool", "position": {"x": 2, "y": 2}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "building_staff", "position": {"x": 2, "y": 3}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "dubstep_gun", "position": {"x": -1, "y": 7}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "dubstep_radio", "position": {"x": -2, "y": 7}, "category": "NORMAL", "parent": "dubstep_gun", "hidden_until_parent_unlocked": false},
     {"id": "launchpad", "position": {"x": 1, "y": 3}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "repair_tool_station", "position": {"x": 3, "y": 3}, "category": "NORMAL", "parent": "repair_tool", "hidden_until_parent_unlocked": false},
 
     {"id": "royal_artifact_core", "position": {"x": 0, "y": 4}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "building_staff", "position": {"x": -2, "y": 4}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "mining_laser", "position": {"x": 2, "y": 4}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "chopper_hive", "position": {"x": -1, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
 
     {"id": "nectar_artifact_core", "position": {"x": 0, "y": 6}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "bee_elytra", "position": {"x": -2, "y": 6}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "railgun", "position": {"x": 1, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "uncrafting_table", "position": {"x": 1, "y": 7}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false}
   ]

@@ -120,7 +120,6 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("nectar_artifact_core", "apica:nectar_artifact_core");
         NODE_TO_ITEM.put("uncrafting_table", "apica:uncrafting_table");
         NODE_TO_ITEM.put("launchpad", "apica:launchpad");
-        NODE_TO_ITEM.put("repair_tool_station", "apica:repair_tool_station");
         NODE_TO_ITEM.put("dubstep_radio", "apica:dubstep_radio");
     }
 

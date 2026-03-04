@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "repairing=false": { "model": "apica:block/artifacts/repair_tool_station" },
-    "repairing=true": { "model": "apica:block/artifacts/repair_tool_station" }
-  }
-}

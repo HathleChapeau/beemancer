@@ -28,7 +28,6 @@ import com.chapeau.apica.common.blockentity.alchemy.MultiblockTankBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ApicaFurnaceBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.PoweredCentrifugeBlockEntity;
 import com.chapeau.apica.common.blockentity.artifacts.LaunchpadBlockEntity;
-import com.chapeau.apica.common.blockentity.artifacts.RepairToolStationBlockEntity;
 import com.chapeau.apica.common.blockentity.artifacts.UncraftingTableBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyPedestalBlockEntity;
@@ -390,13 +389,6 @@ public class ApicaBlockEntities {
                             ApicaBlocks.LAUNCHPAD.get()
                     ).build(null));
 
-    // --- REPAIR TOOL STATION ---
-    public static final Supplier<BlockEntityType<RepairToolStationBlockEntity>> REPAIR_TOOL_STATION =
-            BLOCK_ENTITIES.register("repair_tool_station",
-                    () -> BlockEntityType.Builder.of(
-                            RepairToolStationBlockEntity::new,
-                            ApicaBlocks.REPAIR_TOOL_STATION.get()
-                    ).build(null));
 
     // --- BEE NEST ---
     public static final Supplier<BlockEntityType<BeeNestBlockEntity>> BEE_NEST =

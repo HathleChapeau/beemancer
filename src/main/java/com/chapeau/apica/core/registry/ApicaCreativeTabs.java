@@ -152,7 +152,6 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.HONEY_LAMP.get());
         output.accept(ApicaItems.UNCRAFTING_TABLE.get());
         output.accept(ApicaItems.LAUNCHPAD.get());
-        output.accept(ApicaItems.REPAIR_TOOL_STATION.get());
     }
 
     private static void addPipesAndTanks(CreativeModeTab.Output output) {

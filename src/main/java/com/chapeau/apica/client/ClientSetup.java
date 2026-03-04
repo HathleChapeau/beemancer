@@ -41,7 +41,6 @@ import com.chapeau.apica.client.renderer.block.ApiRenderer;
 import com.chapeau.apica.client.renderer.block.AltarHeartRenderer;
 import com.chapeau.apica.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyPedestalRenderer;
-import com.chapeau.apica.client.renderer.block.RepairToolStationRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyReservoirRenderer;
 import com.chapeau.apica.client.renderer.block.CentrifugeHeartRenderer;
 import com.chapeau.apica.client.renderer.block.CrankRenderer;
@@ -72,7 +71,6 @@ import com.chapeau.apica.client.renderer.debug.HoverbikeDebugRenderer;
 import com.chapeau.apica.client.model.entity.LeafBlowerProjectileModel;
 import com.chapeau.apica.client.renderer.entity.LeafBlowerProjectileRenderer;
 import com.chapeau.apica.client.renderer.entity.MagicBeeRenderer;
-import com.chapeau.apica.client.renderer.layer.BeeElytraLayer;
 import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer;
 import com.chapeau.apica.client.renderer.item.LeafBlowerItemRenderer;
@@ -87,9 +85,7 @@ import com.chapeau.apica.core.registry.ApicaEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
 import com.chapeau.apica.core.registry.ApicaItems;
 import com.chapeau.apica.core.registry.ApicaMenus;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import com.chapeau.apica.client.animation.AnimationTimer;
@@ -121,7 +117,6 @@ public class ClientSetup {
         modEventBus.addListener((RegisterColorHandlersEvent.Item e)   -> timed("registerItemColors",      () -> registerItemColors(e)));
         modEventBus.addListener((ModelEvent.RegisterAdditional e)     -> timed("registerAdditionalModels",() -> registerAdditionalModels(e)));
         modEventBus.addListener((RegisterParticleProvidersEvent e)    -> timed("registerParticleProviders",() -> registerParticleProviders(e)));
-        modEventBus.addListener((EntityRenderersEvent.AddLayers e)   -> timed("addRenderLayers",         () -> addRenderLayers(e)));
         modEventBus.addListener((FMLClientSetupEvent e)              -> e.enqueueWork(ClientSetup::registerItemProperties));
 
         // AnimationTimer: compteur client-side pour animations sans stutter (pattern Create)
@@ -295,10 +290,6 @@ public class ClientSetup {
         // LaunchpadRenderer - plaque inclinable animee
         event.registerBlockEntityRenderer(ApicaBlockEntities.LAUNCHPAD.get(),
             LaunchpadRenderer::new);
-
-        // RepairToolStationRenderer - item pose sur la station de reparation
-        event.registerBlockEntityRenderer(ApicaBlockEntities.REPAIR_TOOL_STATION.get(),
-            RepairToolStationRenderer::new);
 
         // PipeExtractRenderer - indicateur d'extraction sur les pipes (item et liquide)
         event.registerBlockEntityRenderer(ApicaBlockEntities.ITEM_PIPE.get(),
@@ -512,15 +503,6 @@ public class ClientSetup {
     // =========================================================================
     // RENDER LAYERS
     // =========================================================================
-
-    private static void addRenderLayers(final EntityRenderersEvent.AddLayers event) {
-        for (net.minecraft.client.resources.PlayerSkin.Model skin : event.getSkins()) {
-            PlayerRenderer renderer = event.getSkin(skin);
-            if (renderer != null) {
-                renderer.addLayer(new BeeElytraLayer<>(renderer, event.getEntityModels()));
-            }
-        }
-    }
 
     // =========================================================================
     // PARTICLES

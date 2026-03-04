@@ -20,7 +20,6 @@ import com.chapeau.apica.common.item.mount.HoverbikeSpawnItem;
 import com.chapeau.apica.common.item.BarrelUpgradeItem;
 import com.chapeau.apica.common.item.VoidUpgradeItem;
 import com.chapeau.apica.common.item.ItemFilterItem;
-import com.chapeau.apica.common.item.BeeElytraItem;
 import com.chapeau.apica.common.item.NectarBreadItem;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
 import com.chapeau.apica.common.item.magazine.MagazineItem;
@@ -248,9 +247,6 @@ public class ApicaItems {
     public static final DeferredItem<BlockItem> LAUNCHPAD = ITEMS.register("launchpad",
             () -> new BlockItem(ApicaBlocks.LAUNCHPAD.get(), new Item.Properties()));
 
-    // --- REPAIR TOOL STATION ---
-    public static final DeferredItem<BlockItem> REPAIR_TOOL_STATION = ITEMS.register("repair_tool_station",
-            () -> new BlockItem(ApicaBlocks.REPAIR_TOOL_STATION.get(), new Item.Properties()));
 
     // --- BEE STATUE ---
     public static final DeferredItem<BlockItem> BEE_STATUE = ITEMS.register("bee_statue",
@@ -440,9 +436,6 @@ public class ApicaItems {
     public static final DeferredItem<MagazineItem> MAGAZINE = ITEMS.register("magazine",
             () -> new MagazineItem(new Item.Properties().stacksTo(1)));
 
-    // --- EQUIPMENT ---
-    public static final DeferredItem<BeeElytraItem> BEE_ELYTRA = ITEMS.register("bee_elytra",
-            () -> new BeeElytraItem(new Item.Properties().durability(432).rarity(Rarity.UNCOMMON)));
 
     // --- FOOD ---
     public static final DeferredItem<Item> HONEY_BREAD = ITEMS.register("honey_bread",
