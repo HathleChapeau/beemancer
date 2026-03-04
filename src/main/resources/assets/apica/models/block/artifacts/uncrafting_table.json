@@ -2,6 +2,7 @@
   "parent": "minecraft:block/block",
   "render_type": "cutout",
   "textures": {
+    "reservoir": "apica:block/reservoir_externe",
     "top": "apica:block/uncrafting_table/uncrafting_table_top",
     "side": "apica:block/uncrafting_table/uncrafting_table_side",
     "cross": "apica:block/uncrafting_table/uncrafting_table_front",
@@ -109,16 +110,16 @@
       }
     },
     {
-      "name": "antenna",
+      "name": "reservoir",
       "from": [14.5, 16, 14.5],
       "to": [16.5, 20, 16.5],
       "faces": {
-        "up":    {"texture": "#side"},
-        "down":  {"texture": "#side"},
-        "north": {"texture": "#side"},
-        "south": {"texture": "#side"},
-        "east":  {"texture": "#side"},
-        "west":  {"texture": "#side"}
+        "up":    {"texture": "#reservoir", "uv": [0,8,16,16]},
+        "down":  {"texture": "#reservoir", "uv": [0,8,16,16]},
+        "north": {"texture": "#reservoir", "uv": [0,0,16,10.66]},
+        "south": {"texture": "#reservoir", "uv": [0,0,16,10.66]},
+        "east":  {"texture": "#reservoir", "uv": [0,0,16,10.66]},
+        "west":  {"texture": "#reservoir", "uv": [0,0,16,10.66]}
       }
     }
   ]
