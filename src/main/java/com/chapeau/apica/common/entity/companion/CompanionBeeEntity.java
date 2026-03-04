@@ -39,6 +39,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -136,6 +137,7 @@ public class CompanionBeeEntity extends Bee {
         this.moveControl = new FlyingMoveControl(this, 20, true);
         this.setNoGravity(true);
         this.setPersistenceRequired();
+        this.setSilent(true);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -475,6 +477,15 @@ public class CompanionBeeEntity extends Bee {
 
     public void setCompanionType(CompanionType type) {
         entityData.set(DATA_COMPANION_TYPE, type.name());
+        refreshDimensions();
+    }
+
+    @Override
+    public EntityDimensions getDefaultDimensions(net.minecraft.world.entity.Pose pose) {
+        if (getCompanionType() == CompanionType.BACKPACK) {
+            return EntityDimensions.scalable(1.0F, 1.2F);
+        }
+        return super.getDefaultDimensions(pose);
     }
 
     // =========================================================================
