@@ -58,6 +58,7 @@ public class CodexNodeWidget extends AbstractWidget {
     private static final Map<String, String> NODE_TO_ITEM = new HashMap<>();
     private static final Map<String, ResourceLocation> NODE_TO_TEXTURE = new HashMap<>();
     private static final Map<String, String> NODE_TO_BADGE = new HashMap<>();
+    private static final Map<String, ResourceLocation> NODE_TO_BADGE_TEXTURE = new HashMap<>();
 
     static {
         // Mapping des nodes vers les items/blocs du mod
@@ -130,7 +131,8 @@ public class CodexNodeWidget extends AbstractWidget {
 
         // Badges en bas a droite du node (meme icone que le IItemDecorator de l'item)
         NODE_TO_BADGE.put("bee_backpack", "minecraft:chest");
-        NODE_TO_BADGE.put("magnet", "apica:bee_magnet");
+        NODE_TO_BADGE_TEXTURE.put("magnet", ResourceLocation.fromNamespaceAndPath(
+                Apica.MOD_ID, "textures/item/artifacts/magnet.png"));
     }
 
     private final CodexNode node;
@@ -140,6 +142,7 @@ public class CodexNodeWidget extends AbstractWidget {
     private final ItemStack iconItem;
     private final ResourceLocation iconTexture;
     private final ItemStack badgeItem;
+    private final ResourceLocation badgeTexture;
     private boolean unlocked;
     private boolean canUnlock;
     private boolean hovered;
@@ -185,7 +188,7 @@ public class CodexNodeWidget extends AbstractWidget {
                 ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/gui/codex/icon_unknown.png"));
         }
 
-        // Badge en bas a droite (petit item additionnel)
+        // Badge en bas a droite (item ou texture, meme icone que le IItemDecorator)
         String badgeId = NODE_TO_BADGE.get(id);
         if (badgeId != null) {
             ResourceLocation badgeLoc = ResourceLocation.parse(badgeId);
@@ -193,6 +196,7 @@ public class CodexNodeWidget extends AbstractWidget {
         } else {
             this.badgeItem = ItemStack.EMPTY;
         }
+        this.badgeTexture = NODE_TO_BADGE_TEXTURE.get(id);
     }
 
     private String formatDisplayName(String id) {
@@ -244,9 +248,13 @@ public class CodexNodeWidget extends AbstractWidget {
         // Dessiner l'icône
         renderIcon(graphics);
 
-        // Badge en bas a droite (petit item additionnel)
+        // Badge en bas a droite (aligne sur la zone icone 16x16 centree dans le node)
+        int iconX = getX() + (NODE_SIZE - 16) / 2;
+        int iconY = getY() + (NODE_SIZE - 16) / 2;
         if (!badgeItem.isEmpty()) {
-            GuiRenderHelper.renderBadgeIcon(graphics, badgeItem, getX(), getY(), NODE_SIZE, 0.5f, 200);
+            GuiRenderHelper.renderBadgeIcon(graphics, badgeItem, iconX, iconY, 16, 0.5f, 200);
+        } else if (badgeTexture != null) {
+            GuiRenderHelper.renderBadgeTexture(graphics, badgeTexture, iconX, iconY, 16, 0.5f, 200);
         }
 
         // Effet de survol

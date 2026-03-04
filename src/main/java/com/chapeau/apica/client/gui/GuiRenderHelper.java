@@ -454,20 +454,22 @@ public class GuiRenderHelper {
 
     /**
      * Rendu d'un petit item en badge dans le coin bas-droit d'une zone.
-     * Utilise par: IItemDecorator (magazine sur holders), CodexNodeWidget (badge node).
+     * Utilise par: IItemDecorator (backpack, magazine), CodexNodeWidget (badge node).
      * @param g       GuiGraphics
      * @param icon    Item a rendre en badge
      * @param x       Position X du coin haut-gauche de la zone parente
      * @param y       Position Y du coin haut-gauche de la zone parente
      * @param size    Taille de la zone parente (ex: 16 pour un slot, 24 pour un node)
      * @param scale   Echelle du badge (ex: 0.5f pour demi-taille)
-     * @param zOffset Z-offset pour le rendu (200 pour passer devant les items)
+     * @param zOffset Z effectif cible (200 = devant les items, sous les tooltips).
+     *                GuiGraphics.renderItem ajoute z=150 en interne, on compense ici.
      */
     public static void renderBadgeIcon(GuiGraphics g, ItemStack icon, int x, int y,
                                         int size, float scale, float zOffset) {
         PoseStack pose = g.pose();
         pose.pushPose();
-        pose.translate(x + size - 16 * scale, y + size - 16 * scale, zOffset);
+        // renderItem pousse z+150 en interne ; compenser pour atteindre le zOffset demande
+        pose.translate(x + size - 16 * scale, y + size - 16 * scale, Math.max(0, zOffset - 150));
         pose.scale(scale, scale, 1.0f);
         g.renderItem(icon, 0, 0);
         pose.popPose();
