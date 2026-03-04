@@ -49,7 +49,7 @@ public class FluidGaugeWidget {
     // Couleurs de fluides Apica
     private static final int HONEY_COLOR = 0xFFE8A317;
     private static final int ROYAL_JELLY_COLOR = 0xFFFFF8DC;
-    private static final int NECTAR_COLOR = 0xFF9B30FF;
+    private static final int NECTAR_COLOR = 0xFFB050FF;
 
     public FluidGaugeWidget(int x, int y, int width, int height, int capacity,
                             Supplier<FluidStack> fluidSupplier, Supplier<Integer> amountSupplier) {
