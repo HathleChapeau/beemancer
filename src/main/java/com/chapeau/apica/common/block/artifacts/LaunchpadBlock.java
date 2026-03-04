@@ -57,6 +57,8 @@ public class LaunchpadBlock extends BaseEntityBlock {
     public static final MapCodec<LaunchpadBlock> CODEC = simpleCodec(LaunchpadBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final IntegerProperty ANGLE = IntegerProperty.create("angle", 0, 9);
+    /** Type de fluide dans le tank: 0=none, 1=honey, 2=royal_jelly, 3=nectar. */
+    public static final IntegerProperty FLUID_TYPE = IntegerProperty.create("fluid_type", 0, 3);
 
     private static final VoxelShape SHAPE_NORTH = Shapes.or(
             Block.box(1, 0, 1, 15, 8, 15),

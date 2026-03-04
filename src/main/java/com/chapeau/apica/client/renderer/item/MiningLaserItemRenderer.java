@@ -121,8 +121,8 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final Vec3 ARC_END = new Vec3(7.0 / 16.0, 0, 11.0 / 16.0);
     private static final float ARC_AMPLITUDE = 2.0f / 16.0f;
     private static final int ARC_NODES = 2;
-    private static final int ARC_REFRESH_TICKS = 10;
-    private static final float ARC_HALF_WIDTH = 0.02f;
+    private static final int ARC_REFRESH_TICKS = 4;
+    private static final float ARC_HALF_WIDTH = 0.035f;
 
     // Animation state
     private int currentFrame = 0;

@@ -158,7 +158,7 @@ public class LightningArcRenderer {
         float alpha = arc.getAlpha(currentTick, baseAlpha);
         if (alpha <= 0f) return;
 
-        VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(texture));
+        VertexConsumer vc = buffer.getBuffer(RenderType.eyes(texture));
         PoseStack.Pose pose = poseStack.last();
 
         for (int i = 0; i < arc.points.length - 1; i++) {
