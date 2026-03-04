@@ -37,7 +37,6 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -70,18 +69,15 @@ public abstract class ContainerScreenMagazineMixin {
     /** Index du slot inventaire associe au bonus slot. */
     @Unique private int apica$magSlotIndex = -1;
 
-    @Shadow protected int leftPos;
-    @Shadow protected int topPos;
-
-    @Shadow protected abstract Slot findSlot(double mouseX, double mouseY);
-
     @Inject(method = "render", at = @At("TAIL"))
     private void apica$renderMagazineSlot(GuiGraphics graphics, int mouseX, int mouseY,
                                            float partialTick, CallbackInfo ci) {
         AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
+        int leftPos = self.getGuiLeft();
+        int topPos = self.getGuiTop();
 
-        // Chercher le slot sous la souris
-        Slot hoveredSlot = findSlot(mouseX, mouseY);
+        // Chercher le slot sous la souris (getSlotUnderMouse est public NeoForge)
+        Slot hoveredSlot = self.getSlotUnderMouse();
         boolean hoveringHolder = false;
 
         if (hoveredSlot != null && hoveredSlot.hasItem()) {

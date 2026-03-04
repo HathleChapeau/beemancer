@@ -53,39 +53,36 @@ public class MagazineGaugeHud {
         LocalPlayer player = mc.player;
         if (player == null) return;
 
-        // Chercher un IMagazineHolder avec magazine dans les deux mains
-        ItemStack holderStack = ItemStack.EMPTY;
-        boolean isOffHand = false;
-
         ItemStack mainHand = player.getMainHandItem();
         ItemStack offHand = player.getOffhandItem();
+        boolean mainValid = mainHand.getItem() instanceof IMagazineHolder && MagazineData.hasMagazine(mainHand);
+        boolean offValid = offHand.getItem() instanceof IMagazineHolder && MagazineData.hasMagazine(offHand);
 
-        if (mainHand.getItem() instanceof IMagazineHolder && MagazineData.hasMagazine(mainHand)) {
-            holderStack = mainHand;
-        } else if (offHand.getItem() instanceof IMagazineHolder && MagazineData.hasMagazine(offHand)) {
-            holderStack = offHand;
-            isOffHand = true;
-        }
-
-        if (holderStack.isEmpty()) return;
-
-        int amount = MagazineData.getFluidAmount(holderStack);
-        String fluidId = MagazineData.getFluidId(holderStack);
-        float ratio = (float) amount / MagazineFluidData.MAX_CAPACITY;
-
-        int color = getFluidColor(fluidId);
+        if (!mainValid && !offValid) return;
 
         GuiGraphics graphics = event.getGuiGraphics();
         int screenWidth = mc.getWindow().getGuiScaledWidth();
         int screenHeight = mc.getWindow().getGuiScaledHeight();
 
-        // Position: droite si main droite, gauche si main gauche
-        int x = isOffHand ? 12 : screenWidth - 28;
-        int y = screenHeight - 62;
+        // Main droite → barre a droite
+        if (mainValid) {
+            renderGauge(mc, graphics, mainHand, screenWidth - 28, screenHeight - 62);
+        }
+        // Main gauche → barre a gauche
+        if (offValid) {
+            renderGauge(mc, graphics, offHand, 12, screenHeight - 62);
+        }
+    }
+
+    /** Rend une jauge + label pour un holder donne a la position indiquee. */
+    private static void renderGauge(Minecraft mc, GuiGraphics graphics, ItemStack holderStack, int x, int y) {
+        int amount = MagazineData.getFluidAmount(holderStack);
+        String fluidId = MagazineData.getFluidId(holderStack);
+        float ratio = (float) amount / MagazineFluidData.MAX_CAPACITY;
+        int color = getFluidColor(fluidId);
 
         GuiRenderHelper.renderTintedBar(graphics, x, y, ratio, color);
 
-        // Label fluide en-dessous
         String label = getFluidLabel(fluidId);
         int textWidth = mc.font.width(label);
         graphics.drawString(mc.font, label,
