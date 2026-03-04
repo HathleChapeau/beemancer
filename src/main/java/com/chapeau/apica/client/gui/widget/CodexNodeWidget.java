@@ -21,6 +21,7 @@
 package com.chapeau.apica.client.gui.widget;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.item.debug.DebugWandItem;
@@ -56,6 +57,7 @@ public class CodexNodeWidget extends AbstractWidget {
 
     private static final Map<String, String> NODE_TO_ITEM = new HashMap<>();
     private static final Map<String, ResourceLocation> NODE_TO_TEXTURE = new HashMap<>();
+    private static final Map<String, String> NODE_TO_BADGE = new HashMap<>();
 
     static {
         // Mapping des nodes vers les items/blocs du mod
@@ -125,6 +127,10 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("magnet", "apica:bee_magnet");
         NODE_TO_ITEM.put("bee_backpack", "apica:backpack");
         NODE_TO_ITEM.put("altar", "apica:altar_heart");
+
+        // Badges en bas a droite du node (petit item additionnel)
+        NODE_TO_BADGE.put("magnet", "apica:companion_bee");
+        NODE_TO_BADGE.put("bee_backpack", "apica:companion_bee");
     }
 
     private final CodexNode node;
@@ -133,6 +139,7 @@ public class CodexNodeWidget extends AbstractWidget {
     private final Component displayDescription;
     private final ItemStack iconItem;
     private final ResourceLocation iconTexture;
+    private final ItemStack badgeItem;
     private boolean unlocked;
     private boolean canUnlock;
     private boolean hovered;
@@ -176,6 +183,15 @@ public class CodexNodeWidget extends AbstractWidget {
             this.iconItem = ItemStack.EMPTY;
             this.iconTexture = NODE_TO_TEXTURE.getOrDefault(id,
                 ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/gui/codex/icon_unknown.png"));
+        }
+
+        // Badge en bas a droite (petit item additionnel)
+        String badgeId = NODE_TO_BADGE.get(id);
+        if (badgeId != null) {
+            ResourceLocation badgeLoc = ResourceLocation.parse(badgeId);
+            this.badgeItem = new ItemStack(BuiltInRegistries.ITEM.get(badgeLoc));
+        } else {
+            this.badgeItem = ItemStack.EMPTY;
         }
     }
 
@@ -227,6 +243,11 @@ public class CodexNodeWidget extends AbstractWidget {
 
         // Dessiner l'icône
         renderIcon(graphics);
+
+        // Badge en bas a droite (petit item additionnel)
+        if (!badgeItem.isEmpty()) {
+            GuiRenderHelper.renderBadgeIcon(graphics, badgeItem, getX(), getY(), NODE_SIZE, 0.5f, 200);
+        }
 
         // Effet de survol
         if (hovered && canUnlock && !unlocked) {

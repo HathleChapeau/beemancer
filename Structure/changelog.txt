@@ -3,6 +3,32 @@
 ################################################################################
 
 ================================================================================
+2026-03-04 - Companion System Enhancements + Codex Fixes
+================================================================================
+
+Companion Bee enhancements (8 fichiers modifies, 2 tags crees):
+- IAccessory.java: +getTabIcon() default method pour icones tabs personnalisees
+- BackpackItem.java: +getTabIcon() retourne Items.CHEST pour le tab backpack
+- InventoryScreenAccessoryMixin.java: utilise getTabIcon() pour rendu tabs
+- BackpackScreen.java: meme correction tab icons
+- CompanionBeeEntity.java: +alimentation bee_food (coeurs) / bee_hated_food (fumee),
+  cooldown 5 min, +onSyncedDataUpdated (refresh hitbox client quand companion type change)
+- ContainerScreenMagazineMixin.java: +prediction client-side curseur unequip magazine
+  (empeche le swap vanilla)
+- BackpackMenu.java: +AccessorySyncPacket dans removed() pour refresh tooltip
+- ClientSetup.java: magazine decorator affiche icone magazine vide si pas equipe
+- Tags crees: bee_food.json, bee_hated_food.json
+- ApicaTags.Items: +BEE_FOOD, +BEE_HATED_FOOD
+
+Codex fixes (3 fichiers modifies, 1 data JSON modifie, lang):
+- CodexScreen.java: fix clipping — nodes hors du cadre ne recoivent plus hover/click/tooltip
+  (nodeMouseX/Y=-1 hors content, tooltips conditionnel, dispatch tabs manuel sans super)
+- CodexNodeWidget.java: +altar, +accessories, +magnet, +bee_backpack dans NODE_TO_ITEM
+- artifacts.json: retrait repair_tool, restructure arbre (accessories→infuser, api→accessories),
+  repositionnement 4 nodes (launchpad, building_staff, chopper_hive, api)
+- en_us.json: titres "Companion: Bee/Magnet/Backpack", retrait repair_tool
+
+================================================================================
 2026-03-04 - Bee Magnet Accessory
 ================================================================================
 

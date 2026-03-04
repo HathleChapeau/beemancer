@@ -8,6 +8,7 @@ package com.chapeau.apica.client;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.camera.HoverbikeCameraController;
+import com.chapeau.apica.client.gui.GuiRenderHelper;
 import com.chapeau.apica.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.apica.client.gui.hud.HoverbikeDebugHud;
 import com.chapeau.apica.client.gui.hud.HoverbikeGaugeHud;
@@ -691,23 +692,18 @@ public class ClientSetup {
             return false;
         });
 
-        // IMagazineHolder items: icone magazine en bas a droite (equipee ou vide)
+        // IMagazineHolder items: icone magazine en bas a droite (seulement si magazine equipe)
         net.minecraft.world.item.ItemStack emptyMag = new net.minecraft.world.item.ItemStack(ApicaItems.MAGAZINE.get());
         net.neoforged.neoforge.client.IItemDecorator magazineDecorator = (graphics, font, stack, xOffset, yOffset) -> {
-            net.minecraft.world.item.ItemStack displayMag;
-            if (com.chapeau.apica.common.item.magazine.MagazineData.hasMagazine(stack)) {
-                String fluidId = com.chapeau.apica.common.item.magazine.MagazineData.getFluidId(stack);
-                int amount = com.chapeau.apica.common.item.magazine.MagazineData.getFluidAmount(stack);
-                displayMag = com.chapeau.apica.common.item.magazine.MagazineItem.createFilled(fluidId, amount);
-            } else {
-                displayMag = emptyMag;
+            if (!com.chapeau.apica.common.item.magazine.MagazineData.hasMagazine(stack)) {
+                return false; // Pas de magazine equipe → pas d'icone
             }
-            com.mojang.blaze3d.vertex.PoseStack pose = graphics.pose();
-            pose.pushPose();
-            pose.translate(xOffset + 8, yOffset + 8, 200);
-            pose.scale(0.5f, 0.5f, 1.0f);
-            graphics.renderItem(displayMag, 0, 0);
-            pose.popPose();
+            String fluidId = com.chapeau.apica.common.item.magazine.MagazineData.getFluidId(stack);
+            int amount = com.chapeau.apica.common.item.magazine.MagazineData.getFluidAmount(stack);
+            net.minecraft.world.item.ItemStack displayMag = amount > 0
+                    ? com.chapeau.apica.common.item.magazine.MagazineItem.createFilled(fluidId, amount)
+                    : emptyMag;
+            GuiRenderHelper.renderBadgeIcon(graphics, displayMag, xOffset, yOffset, 16, 0.5f, 200);
             return false;
         };
         event.register(ApicaItems.LEAF_BLOWER.get(), magazineDecorator);

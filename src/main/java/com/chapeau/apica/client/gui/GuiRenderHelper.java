@@ -20,12 +20,14 @@
 package com.chapeau.apica.client.gui;
 
 import com.chapeau.apica.Apica;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 public class GuiRenderHelper {
@@ -448,6 +450,27 @@ public class GuiRenderHelper {
         int ax = screenX + barX;
         int ay = screenY + barY;
         return mouseX >= ax && mouseX < ax + HONEYBAR_W && mouseY >= ay && mouseY < ay + HONEYBAR_H;
+    }
+
+    /**
+     * Rendu d'un petit item en badge dans le coin bas-droit d'une zone.
+     * Utilise par: IItemDecorator (magazine sur holders), CodexNodeWidget (badge node).
+     * @param g       GuiGraphics
+     * @param icon    Item a rendre en badge
+     * @param x       Position X du coin haut-gauche de la zone parente
+     * @param y       Position Y du coin haut-gauche de la zone parente
+     * @param size    Taille de la zone parente (ex: 16 pour un slot, 24 pour un node)
+     * @param scale   Echelle du badge (ex: 0.5f pour demi-taille)
+     * @param zOffset Z-offset pour le rendu (200 pour passer devant les items)
+     */
+    public static void renderBadgeIcon(GuiGraphics g, ItemStack icon, int x, int y,
+                                        int size, float scale, float zOffset) {
+        PoseStack pose = g.pose();
+        pose.pushPose();
+        pose.translate(x + size - 16 * scale, y + size - 16 * scale, zOffset);
+        pose.scale(scale, scale, 1.0f);
+        g.renderItem(icon, 0, 0);
+        pose.popPose();
     }
 
     /**

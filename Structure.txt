@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
 #                         Dernière mise à jour: 2026-03-04                     #
-#  (Bee Magnet Accessory - 2026-03-04)                                            #
+#  (Companion System Enhancements + Codex Fixes - 2026-03-04)                    #
 ################################################################################
 
 ================================================================================
@@ -1029,6 +1029,46 @@ LISTE DES FEATURES:
   Registres modifies: ApicaEntities (+1 entity), ApicaItems (+1 item)
   Assets: (utilise textures vanilla bee)
   Reference: DeliveryBeeEntity (extends Bee pattern), Botania Ring of Magnetization (magnet logic)
+
+-> Companion Bee System Enhancements
+  Description: Extensions du systeme compagnon: tab icons personnalisees, alimentation bee_food/bee_hated_food,
+    ouverture backpack via entite, prediction client magazine, sync tooltip backpack, icone magazine vide.
+    L'accessoire "accessories" (Companion: Bee) est le meme que "companion" dans le codex artifacts.
+  Scripts modifies:
+    IAccessory.java (+getTabIcon default method),
+    BackpackItem.java (+getTabIcon → Items.CHEST),
+    InventoryScreenAccessoryMixin.java (tab icons via getTabIcon),
+    BackpackScreen.java (tab icons via getTabIcon),
+    CompanionBeeEntity.java (+FEED_COOLDOWN_TICKS, +feedCooldownUntil, +mobInteract feeding,
+      +onSyncedDataUpdated pour refresh hitbox client-side),
+    ContainerScreenMagazineMixin.java (+client-side prediction curseur magazine unequip),
+    BackpackMenu.java (+AccessorySyncPacket dans removed() pour sync tooltip),
+    ClientSetup.java (magazine decorator: icone vide quand pas de magazine equipe)
+  Tags crees: data/apica/tags/item/bee_food.json (#small_flowers, #tall_flowers, #combs,
+    honey_bottle, honey_bucket, royal_jelly_bucket, nectar_bucket),
+    data/apica/tags/item/bee_hated_food.json (magic_bee, bee_larva)
+  Registres modifies: ApicaTags.Items (+BEE_FOOD, +BEE_HATED_FOOD)
+  Dependances: ParticleHelper (burst HEAL/FAILURE), AccessorySyncPacket, MagazineData
+  Reference: Vanilla Bee feeding pattern, Curios tab rendering
+
+-> Codex Improvements (Artifacts Restructure + Frame Clipping)
+  Description: Restructuration arbre artifacts: accessories (Companion: Bee) enfant direct de infuser,
+    api enfant de accessories. Retrait node repair_tool. Repositionnement nodes (launchpad, building_staff,
+    chopper_hive, api). Titres mis a jour: "Companion: Bee", "Companion: Magnet", "Companion: Backpack".
+    Icones nodes: accessories→companion_bee, magnet→bee_magnet, bee_backpack→backpack, altar→altar_heart.
+    Fix clipping: nodes hors du cadre ne recoivent plus de hover/click/tooltip.
+  Scripts modifies:
+    CodexScreen.java (render: nodeMouseX/Y=-1 hors content area, tooltips conditionnel isInContentArea,
+      mouseClicked: dispatch tabs manuellement + pas de super.mouseClicked pour eviter dispatch aux nodes hors cadre),
+    CodexNodeWidget.java (+altar→altar_heart, +accessories→companion_bee, +magnet→bee_magnet,
+      +bee_backpack→backpack dans NODE_TO_ITEM)
+  Assets modifies: data/apica/codex/artifacts.json (retrait repair_tool, parent accessories→infuser,
+    parent api→accessories, positions launchpad/building_staff/chopper_hive/api)
+  Lang modifies: en_us.json (accessories→"Companion: Bee", magnet→"Companion: Magnet",
+    bee_backpack→"Companion: Backpack", -repair_tool translations)
+  Registres modifies: aucun
+  Dependances: CodexManager, CodexNodeWidget
+  Reference: Vanilla advancement frame clipping pattern
 
 ================================================================================
 6. FEATURES EN COURS
