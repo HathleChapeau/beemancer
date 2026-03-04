@@ -31,7 +31,6 @@ import com.chapeau.apica.core.network.packets.MagazineEquipPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -135,10 +134,17 @@ public abstract class ContainerScreenMagazineMixin {
         }
     }
 
+    /**
+     * Intercepte mouseClicked AVANT que vanilla ne demarre le quickcraft mode.
+     * Quand le curseur porte un item, vanilla ne passe PAS par slotClicked — il demarre
+     * le quickcraft (drag-split). On doit donc intercepter ici pour:
+     * - Clic gauche sur le bonus slot: equip/unequip/swap
+     * - Clic droit sur un IMagazineHolder: equip/unequip/swap
+     */
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void apica$onMouseClicked(double mouseX, double mouseY, int button,
                                        CallbackInfoReturnable<Boolean> cir) {
-        // Clic gauche sur le bonus slot uniquement
+        // Clic gauche sur le bonus slot
         if (button == 0 && apica$magSlotVisible) {
             boolean onBonusSlot = mouseX >= apica$magSlotScreenX
                     && mouseX < apica$magSlotScreenX + SLOT_SIZE
@@ -149,26 +155,22 @@ public abstract class ContainerScreenMagazineMixin {
                 AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
                 if (apica$tryMagazineAction(self)) {
                     cir.setReturnValue(true);
+                    return;
                 }
             }
         }
-    }
 
-    /**
-     * Intercepte slotClicked pour bloquer le clic droit vanilla quand on equipe/desequipe un magazine.
-     * C'est ici que vanilla envoie le click au serveur, donc c'est le bon endroit pour cancel.
-     */
-    @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
-    private void apica$onSlotClicked(@javax.annotation.Nullable Slot slot, int slotId, int mouseButton,
-                                      ClickType type, CallbackInfo ci) {
-        if (mouseButton != 1 || slot == null || !slot.hasItem()) return;
-        if (!(slot.getItem().getItem() instanceof IMagazineHolder)) return;
-
-        AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
-        apica$magSlotIndex = slot.index;
-
-        if (apica$tryMagazineAction(self)) {
-            ci.cancel();
+        // Clic droit sur un slot contenant un IMagazineHolder
+        if (button == 1) {
+            Slot hoveredSlot = findSlot(mouseX, mouseY);
+            if (hoveredSlot != null && hoveredSlot.hasItem()
+                    && hoveredSlot.getItem().getItem() instanceof IMagazineHolder) {
+                AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
+                apica$magSlotIndex = hoveredSlot.index;
+                if (apica$tryMagazineAction(self)) {
+                    cir.setReturnValue(true);
+                }
+            }
         }
     }
 
