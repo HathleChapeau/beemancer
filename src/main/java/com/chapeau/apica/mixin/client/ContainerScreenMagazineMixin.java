@@ -23,10 +23,12 @@
 package com.chapeau.apica.mixin.client;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.common.item.BackpackItem;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import com.chapeau.apica.common.item.magazine.MagazineItem;
+import com.chapeau.apica.core.network.packets.BackpackOpenPacket;
 import com.chapeau.apica.core.network.packets.MagazineEquipPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -164,10 +166,19 @@ public abstract class ContainerScreenMagazineMixin {
             }
         }
 
-        // Clic droit sur un slot contenant un IMagazineHolder
+        // Clic droit sur un slot
         if (button == 1) {
-            // Utiliser getSlotUnderMouse (public NeoForge) au lieu de findSlot (private)
             Slot hoveredSlot = self.getSlotUnderMouse();
+
+            // Backpack: ouvre le GUI du backpack
+            if (hoveredSlot != null && hoveredSlot.hasItem()
+                    && hoveredSlot.getItem().getItem() instanceof BackpackItem) {
+                PacketDistributor.sendToServer(new BackpackOpenPacket(hoveredSlot.index));
+                cir.setReturnValue(true);
+                return;
+            }
+
+            // IMagazineHolder: equip/unequip magazine
             APICA_LOG.info("[MAG] Right-click: hoveredSlot={}, hasItem={}, isHolder={}",
                     hoveredSlot != null ? hoveredSlot.index : "null",
                     hoveredSlot != null && hoveredSlot.hasItem(),

@@ -30,6 +30,7 @@ import com.chapeau.apica.core.network.packets.DubstepRadioTrackPacket;
 import com.chapeau.apica.core.network.packets.DubstepRadioTransportPacket;
 import com.chapeau.apica.core.network.packets.DubstepRadioSyncPacket;
 import com.chapeau.apica.core.network.packets.MagazineEquipPacket;
+import com.chapeau.apica.core.network.packets.BackpackOpenPacket;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -145,6 +146,13 @@ public class ApicaNetwork {
                 MagazineEquipPacket.TYPE,
                 MagazineEquipPacket.STREAM_CODEC,
                 MagazineEquipPacket::handle
+        );
+
+        // Backpack C2S
+        registrar.playToServer(
+                BackpackOpenPacket.TYPE,
+                BackpackOpenPacket.STREAM_CODEC,
+                BackpackOpenPacket::handle
         );
 
         // Server to Client packets

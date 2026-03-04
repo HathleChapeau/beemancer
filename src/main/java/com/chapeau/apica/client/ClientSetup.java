@@ -202,6 +202,9 @@ public class ClientSetup {
 
         // Dubstep Radio
         event.register(ApicaMenus.DUBSTEP_RADIO.get(), com.chapeau.apica.client.gui.screen.DubstepRadioScreen::new);
+
+        // Backpack
+        event.register(ApicaMenus.BACKPACK.get(), com.chapeau.apica.client.gui.screen.BackpackScreen::new);
     }
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {

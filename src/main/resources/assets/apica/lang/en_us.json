@@ -29,6 +29,8 @@
   "block.apica.item_pipe_mk4": "Item Pipe MK4",
   "item.apica.item_filter": "Item Filter",
   "container.apica.item_filter": "Item Filter",
+  "container.apica.backpack": "Backpack",
+  "item.apica.backpack": "Backpack",
   "gui.apica.item_filter.accept": "Accept Only",
   "gui.apica.item_filter.deny": "Deny Only",
   "gui.apica.item_filter.priority": "Priority",

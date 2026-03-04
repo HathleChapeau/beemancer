@@ -9,6 +9,7 @@ package com.chapeau.apica.core.registry;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.menu.IncubatorMenu;
 import com.chapeau.apica.common.menu.InjectorMenu;
+import com.chapeau.apica.common.menu.BackpackMenu;
 import com.chapeau.apica.common.menu.ItemFilterMenu;
 import com.chapeau.apica.common.menu.LiquidTrashCanMenu;
 import com.chapeau.apica.common.menu.TrashCanMenu;
@@ -121,6 +122,11 @@ public class ApicaMenus {
     public static final Supplier<MenuType<LiquidTrashCanMenu>> LIQUID_TRASH_CAN =
             MENUS.register("liquid_trash_can",
                     () -> IMenuTypeExtension.create(LiquidTrashCanMenu::new));
+
+    // --- BACKPACK ---
+    public static final Supplier<MenuType<BackpackMenu>> BACKPACK =
+            MENUS.register("backpack",
+                    () -> IMenuTypeExtension.create(BackpackMenu::new));
 
     // --- ITEM FILTER ---
     public static final Supplier<MenuType<ItemFilterMenu>> ITEM_FILTER =

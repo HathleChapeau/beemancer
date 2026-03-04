@@ -110,7 +110,6 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.CODEX.get());
         output.accept(ApicaItems.SCOOP.get());
         output.accept(ApicaItems.RESONATOR.get());
-        output.accept(ApicaItems.BEE_ELYTRA.get());
         output.accept(ApicaItems.LEAF_BLOWER.get());
         output.accept(ApicaItems.MINING_LASER.get());
         output.accept(ApicaItems.CHOPPER_HIVE.get());
@@ -119,6 +118,8 @@ public class ApicaCreativeTabs {
         output.accept(MagazineItem.createFilled("apica:honey", 1000));
         output.accept(MagazineItem.createFilled("apica:royal_jelly", 1000));
         output.accept(MagazineItem.createFilled("apica:nectar", 1000));
+        // Backpack
+        output.accept(ApicaItems.BACKPACK.get());
     }
 
     private static void addBees(CreativeModeTab.Output output) {
