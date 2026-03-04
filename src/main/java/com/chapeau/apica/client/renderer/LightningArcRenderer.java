@@ -9,7 +9,7 @@
  * | Dépendance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | AnimationTimer      | Temps client         | Tick de création / calcul âge  |
- * | RenderType          | Type de rendu        | entityTranslucent pour quads   |
+ * | RenderType          | Type de rendu        | Custom type sans depth test    |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -21,8 +21,10 @@ package com.chapeau.apica.client.renderer;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -32,11 +34,17 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Utilitaire de génération et rendu d'arcs électriques (lightning).
  * Chaque arc est une poly-ligne entre un point de départ et d'arrivée,
  * avec des nœuds intermédiaires déplacés aléatoirement perpendiculairement à la ligne.
  * Rendu en 2 quads croisés par segment (X-shape) pour visibilité sous tous les angles.
+ *
+ * Utilise un RenderType custom emissif sans depth test pour garantir la visibilité
+ * des arcs même lorsqu'ils sont géométriquement à l'intérieur d'un modèle.
  */
 @OnlyIn(Dist.CLIENT)
 public class LightningArcRenderer {
@@ -46,6 +54,41 @@ public class LightningArcRenderer {
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/lightning_arc.png");
 
     private static final int FULL_BRIGHT = 15728880;
+    private static final Map<ResourceLocation, RenderType> TYPE_CACHE = new HashMap<>();
+
+    // =========================================================================
+    // Custom RenderType (emissif, sans depth test)
+    // =========================================================================
+
+    /**
+     * Accès aux constantes protégées de RenderStateShard via héritage.
+     * Le constructeur n'est jamais appelé — seules les méthodes statiques sont utilisées.
+     */
+    private static abstract class TypeAccess extends RenderType {
+        private TypeAccess() {
+            super("", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS,
+                    256, false, false, () -> {}, () -> {});
+        }
+
+        static RenderType create(ResourceLocation texture) {
+            CompositeState state = CompositeState.builder()
+                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setCullState(NO_CULL)
+                    .setOverlayState(OVERLAY)
+                    .createCompositeState(false);
+            return RenderType.create("apica_lightning", DefaultVertexFormat.NEW_ENTITY,
+                    VertexFormat.Mode.QUADS, 256, true, true, state);
+        }
+    }
+
+    /** Retourne le RenderType lightning pour une texture (avec cache) */
+    public static RenderType getLightningType(ResourceLocation texture) {
+        return TYPE_CACHE.computeIfAbsent(texture, TypeAccess::create);
+    }
 
     // =========================================================================
     // Arc data
@@ -158,7 +201,7 @@ public class LightningArcRenderer {
         float alpha = arc.getAlpha(currentTick, baseAlpha);
         if (alpha <= 0f) return;
 
-        VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucentEmissive(texture));
+        VertexConsumer vc = buffer.getBuffer(getLightningType(texture));
         PoseStack.Pose pose = poseStack.last();
 
         for (int i = 0; i < arc.points.length - 1; i++) {
