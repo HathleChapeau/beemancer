@@ -31,6 +31,7 @@ import com.chapeau.apica.core.network.packets.MagazineEquipPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -137,31 +138,37 @@ public abstract class ContainerScreenMagazineMixin {
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void apica$onMouseClicked(double mouseX, double mouseY, int button,
                                        CallbackInfoReturnable<Boolean> cir) {
-        AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
-
-        // Clic gauche sur le bonus slot (equip/unequip/swap)
+        // Clic gauche sur le bonus slot uniquement
         if (button == 0 && apica$magSlotVisible) {
             boolean onBonusSlot = mouseX >= apica$magSlotScreenX
                     && mouseX < apica$magSlotScreenX + SLOT_SIZE
                     && mouseY >= apica$magSlotScreenY
                     && mouseY < apica$magSlotScreenY + SLOT_SIZE;
 
-            if (onBonusSlot && apica$tryMagazineAction(self)) {
-                cir.setReturnValue(true);
-                return;
-            }
-        }
-
-        // Clic droit sur un slot contenant un IMagazineHolder (equip/unequip/swap)
-        if (button == 1) {
-            Slot slot = findSlot(mouseX, mouseY);
-            if (slot != null && slot.hasItem() && slot.getItem().getItem() instanceof IMagazineHolder) {
-                apica$magSlotIndex = slot.index;
+            if (onBonusSlot) {
+                AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
                 if (apica$tryMagazineAction(self)) {
                     cir.setReturnValue(true);
-                    return;
                 }
             }
+        }
+    }
+
+    /**
+     * Intercepte slotClicked pour bloquer le clic droit vanilla quand on equipe/desequipe un magazine.
+     * C'est ici que vanilla envoie le click au serveur, donc c'est le bon endroit pour cancel.
+     */
+    @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
+    private void apica$onSlotClicked(@javax.annotation.Nullable Slot slot, int slotId, int mouseButton,
+                                      ClickType type, CallbackInfo ci) {
+        if (mouseButton != 1 || slot == null || !slot.hasItem()) return;
+        if (!(slot.getItem().getItem() instanceof IMagazineHolder)) return;
+
+        AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
+        apica$magSlotIndex = slot.index;
+
+        if (apica$tryMagazineAction(self)) {
+            ci.cancel();
         }
     }
 
@@ -177,11 +184,9 @@ public abstract class ContainerScreenMagazineMixin {
         boolean hasMagazine = MagazineData.hasMagazine(holderStack);
 
         if (cursorStack.getItem() instanceof MagazineItem && !MagazineFluidData.isEmpty(cursorStack)) {
-            // Equiper ou swap (le serveur gere les deux cas)
             PacketDistributor.sendToServer(new MagazineEquipPacket(apica$magSlotIndex, true));
             return true;
         } else if (hasMagazine && cursorStack.isEmpty()) {
-            // Desequiper
             PacketDistributor.sendToServer(new MagazineEquipPacket(apica$magSlotIndex, false));
             return true;
         }
