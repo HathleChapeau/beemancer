@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "apica:item/backpack"
+    "layer0": "apica:item/artifacts/backpack"
   }
 }
