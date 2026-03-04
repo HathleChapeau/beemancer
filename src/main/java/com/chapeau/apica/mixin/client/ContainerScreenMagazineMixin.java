@@ -34,6 +34,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -49,6 +51,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(AbstractContainerScreen.class)
 public abstract class ContainerScreenMagazineMixin {
+
+    @Unique
+    private static final Logger APICA_LOG = LoggerFactory.getLogger("ApicaMagazineMixin");
 
     private static final ResourceLocation MAGAZINE_SLOT_TEXTURE = ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "textures/gui/magazine_slot.png");
@@ -144,6 +149,10 @@ public abstract class ContainerScreenMagazineMixin {
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void apica$onMouseClicked(double mouseX, double mouseY, int button,
                                        CallbackInfoReturnable<Boolean> cir) {
+        AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
+        APICA_LOG.info("[MAG] mouseClicked FIRED: button={} screen={}", button,
+                self.getClass().getSimpleName());
+
         // Clic gauche sur le bonus slot
         if (button == 0 && apica$magSlotVisible) {
             boolean onBonusSlot = mouseX >= apica$magSlotScreenX
@@ -152,7 +161,6 @@ public abstract class ContainerScreenMagazineMixin {
                     && mouseY < apica$magSlotScreenY + SLOT_SIZE;
 
             if (onBonusSlot) {
-                AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
                 if (apica$tryMagazineAction(self)) {
                     cir.setReturnValue(true);
                     return;
@@ -162,12 +170,19 @@ public abstract class ContainerScreenMagazineMixin {
 
         // Clic droit sur un slot contenant un IMagazineHolder
         if (button == 1) {
-            Slot hoveredSlot = findSlot(mouseX, mouseY);
+            // Utiliser getSlotUnderMouse (public NeoForge) au lieu de findSlot (private)
+            Slot hoveredSlot = self.getSlotUnderMouse();
+            APICA_LOG.info("[MAG] Right-click: hoveredSlot={}, hasItem={}, isHolder={}",
+                    hoveredSlot != null ? hoveredSlot.index : "null",
+                    hoveredSlot != null && hoveredSlot.hasItem(),
+                    hoveredSlot != null && hoveredSlot.hasItem()
+                            && hoveredSlot.getItem().getItem() instanceof IMagazineHolder);
             if (hoveredSlot != null && hoveredSlot.hasItem()
                     && hoveredSlot.getItem().getItem() instanceof IMagazineHolder) {
-                AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
                 apica$magSlotIndex = hoveredSlot.index;
-                if (apica$tryMagazineAction(self)) {
+                boolean result = apica$tryMagazineAction(self);
+                APICA_LOG.info("[MAG] tryMagazineAction result={}", result);
+                if (result) {
                     cir.setReturnValue(true);
                 }
             }
@@ -177,21 +192,38 @@ public abstract class ContainerScreenMagazineMixin {
     /** Tente equip/unequip/swap sur le slot apica$magSlotIndex. Retourne true si action effectuee. */
     @Unique
     private boolean apica$tryMagazineAction(AbstractContainerScreen<?> self) {
-        if (apica$magSlotIndex < 0 || apica$magSlotIndex >= self.getMenu().slots.size()) return false;
+        if (apica$magSlotIndex < 0 || apica$magSlotIndex >= self.getMenu().slots.size()) {
+            APICA_LOG.info("[MAG] tryAction: invalid index {}", apica$magSlotIndex);
+            return false;
+        }
 
         ItemStack holderStack = self.getMenu().slots.get(apica$magSlotIndex).getItem();
-        if (!(holderStack.getItem() instanceof IMagazineHolder)) return false;
+        if (!(holderStack.getItem() instanceof IMagazineHolder)) {
+            APICA_LOG.info("[MAG] tryAction: slot {} not IMagazineHolder (item={})",
+                    apica$magSlotIndex, holderStack.getItem().getClass().getSimpleName());
+            return false;
+        }
 
         ItemStack cursorStack = self.getMenu().getCarried();
         boolean hasMagazine = MagazineData.hasMagazine(holderStack);
+        boolean isMagItem = cursorStack.getItem() instanceof MagazineItem;
+        boolean magNotEmpty = !MagazineFluidData.isEmpty(cursorStack);
+        String fluidId = isMagItem ? MagazineFluidData.getFluidId(cursorStack) : "N/A";
 
-        if (cursorStack.getItem() instanceof MagazineItem && !MagazineFluidData.isEmpty(cursorStack)) {
+        APICA_LOG.info("[MAG] tryAction: cursor={} isMagItem={} magNotEmpty={} fluidId='{}' hasMagazine={} cursorEmpty={}",
+                cursorStack.getItem().getClass().getSimpleName(),
+                isMagItem, magNotEmpty, fluidId, hasMagazine, cursorStack.isEmpty());
+
+        if (isMagItem && magNotEmpty) {
+            APICA_LOG.info("[MAG] SENDING EQUIP packet slotIndex={}", apica$magSlotIndex);
             PacketDistributor.sendToServer(new MagazineEquipPacket(apica$magSlotIndex, true));
             return true;
         } else if (hasMagazine && cursorStack.isEmpty()) {
+            APICA_LOG.info("[MAG] SENDING UNEQUIP packet slotIndex={}", apica$magSlotIndex);
             PacketDistributor.sendToServer(new MagazineEquipPacket(apica$magSlotIndex, false));
             return true;
         }
+        APICA_LOG.info("[MAG] tryAction: no action taken");
         return false;
     }
 }
