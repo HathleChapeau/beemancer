@@ -118,6 +118,8 @@ public class ClientSetup {
         modEventBus.addListener((ModelEvent.RegisterAdditional e)     -> timed("registerAdditionalModels",() -> registerAdditionalModels(e)));
         modEventBus.addListener((RegisterParticleProvidersEvent e)    -> timed("registerParticleProviders",() -> registerParticleProviders(e)));
         modEventBus.addListener((FMLClientSetupEvent e)              -> e.enqueueWork(ClientSetup::registerItemProperties));
+        modEventBus.addListener((net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent e) -> timed("registerTooltipComponents", () -> registerTooltipComponents(e)));
+        modEventBus.addListener((net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent e) -> timed("registerItemDecorations", () -> registerItemDecorations(e)));
 
         // AnimationTimer: compteur client-side pour animations sans stutter (pattern Create)
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> AnimationTimer.tick());
@@ -655,6 +657,36 @@ public class ClientSetup {
     // =========================================================================
     // ITEM PROPERTIES (model overrides)
     // =========================================================================
+
+    private static void registerTooltipComponents(final net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent event) {
+        event.register(com.chapeau.apica.common.item.BackpackTooltip.class,
+                com.chapeau.apica.client.gui.tooltip.ClientBackpackTooltip::new);
+    }
+
+    private static void registerItemDecorations(final net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent event) {
+        ResourceLocation slownessSprite = ResourceLocation.withDefaultNamespace("mob_effect/slowness");
+        event.register(ApicaItems.BACKPACK.get(), (graphics, font, stack, xOffset, yOffset) -> {
+            net.minecraft.world.item.component.ItemContainerContents contents =
+                    stack.get(net.minecraft.core.component.DataComponents.CONTAINER);
+            if (contents == null) return false;
+            net.minecraft.core.NonNullList<net.minecraft.world.item.ItemStack> items =
+                    net.minecraft.core.NonNullList.withSize(27, net.minecraft.world.item.ItemStack.EMPTY);
+            contents.copyInto(items);
+            boolean hasItems = false;
+            for (net.minecraft.world.item.ItemStack item : items) {
+                if (!item.isEmpty()) { hasItems = true; break; }
+            }
+            if (!hasItems) return false;
+            // Render scaled-down slowness icon (8x8) in top-right corner
+            com.mojang.blaze3d.vertex.PoseStack pose = graphics.pose();
+            pose.pushPose();
+            pose.translate(xOffset + 8, yOffset, 200);
+            pose.scale(0.5f, 0.5f, 1.0f);
+            graphics.blitSprite(slownessSprite, 0, 0, 16, 16);
+            pose.popPose();
+            return false;
+        });
+    }
 
     private static void registerItemProperties() {
         ItemProperties.register(ApicaItems.MAGAZINE.get(),

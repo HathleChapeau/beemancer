@@ -9,7 +9,8 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | BackpackMenu        | Donnees container    | Menu reference                 |
- * | AccessoryClientCache| Icone backpack       | Tab icon rendering             |
+ * | AccessoryClientCache| Icone backpack       | Tab icon rendering + tab list  |
+ * | IAccessory          | Type check           | Tab click delegation           |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -38,9 +39,12 @@ import java.util.List;
 
 /**
  * Ecran du backpack utilisant la texture vanilla du coffre simple (3 rangees).
- * Affiche 2 tabs en haut: Player (cliquable → retour inventaire) et Backpack (selectionne).
+ * Affiche des tabs dynamiques en haut: Player + un par accessoire avec hasInventoryTab().
  */
 public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
+
+    /** Position du curseur a restaurer quand le screen s'ouvre apres un tab switch asynchrone. */
+    private static double[] pendingCursorRestore = null;
 
     /** Texture vanilla du coffre (generic_54 gere 1 a 6 rangees). */
     private static final ResourceLocation CHEST_TEXTURE =
@@ -73,6 +77,18 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
         this.imageWidth = 176;
         this.imageHeight = 114 + ROWS * 18;
         this.inventoryLabelY = this.imageHeight - 94;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        // Restaurer la position du curseur apres un tab switch asynchrone (backpack→backpack)
+        if (pendingCursorRestore != null) {
+            Minecraft mc = Minecraft.getInstance();
+            GLFW.glfwSetCursorPos(mc.getWindow().getWindow(),
+                    pendingCursorRestore[0], pendingCursorRestore[1]);
+            pendingCursorRestore = null;
+        }
     }
 
     @Override
@@ -125,17 +141,20 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
                 int tabX = leftPos;
                 Minecraft mc = Minecraft.getInstance();
 
-                // Player tab → close backpack, open inventory
+                // Player tab → close backpack, open inventory (synchrone)
                 if (mouseX >= tabX && mouseX < tabX + TAB_W
                         && mouseY >= tabY && mouseY < tabY + TAB_H) {
                     if (mc.player != null) {
-                        apica$switchScreen(mc, () -> mc.setScreen(new InventoryScreen(mc.player)));
+                        saveCursorPosition(mc);
+                        mc.player.closeContainer();
+                        mc.setScreen(new InventoryScreen(mc.player));
+                        restoreCursorNow(mc);
                         return true;
                     }
                 }
                 tabX += TAB_W;
 
-                // Accessory tabs
+                // Accessory tabs (asynchrone — le serveur ouvre le nouveau screen)
                 int currentSlot = menu.getAccessorySlot();
                 for (int slot : tabSlots) {
                     if (slot != currentSlot
@@ -143,7 +162,9 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
                             && mouseY >= tabY && mouseY < tabY + TAB_H) {
                         ItemStack stack = AccessoryClientCache.getSlot(slot);
                         if (mc.player != null && stack.getItem() instanceof IAccessory acc) {
-                            apica$switchScreen(mc, () -> acc.onInventoryTabClicked(slot));
+                            saveCursorPosition(mc);
+                            mc.player.closeContainer();
+                            acc.onInventoryTabClicked(slot);
                             return true;
                         }
                     }
@@ -154,19 +175,21 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    /**
-     * Ferme le container et execute l'action de navigation en preservant la position du curseur.
-     * Evite que le curseur ne revienne au centre de l'ecran lors du changement de tab.
-     */
-    private void apica$switchScreen(Minecraft mc, Runnable action) {
+    /** Sauvegarde la position actuelle du curseur pour restauration ulterieure. */
+    private static void saveCursorPosition(Minecraft mc) {
         long window = mc.getWindow().getWindow();
         double[] xBuf = new double[1];
         double[] yBuf = new double[1];
         GLFW.glfwGetCursorPos(window, xBuf, yBuf);
+        pendingCursorRestore = new double[]{ xBuf[0], yBuf[0] };
+    }
 
-        mc.player.closeContainer();
-        action.run();
-
-        GLFW.glfwSetCursorPos(window, xBuf[0], yBuf[0]);
+    /** Restaure immediatement la position du curseur (pour les transitions synchrones). */
+    private static void restoreCursorNow(Minecraft mc) {
+        if (pendingCursorRestore != null) {
+            GLFW.glfwSetCursorPos(mc.getWindow().getWindow(),
+                    pendingCursorRestore[0], pendingCursorRestore[1]);
+            pendingCursorRestore = null;
+        }
     }
 }
