@@ -10,7 +10,7 @@
  * |---------------------|----------------------|--------------------------------|
  * | ApicaMenu           | Base menu            | Infrastructure slots           |
  * | ApicaMenus          | Type registre        | DUBSTEP_RADIO menu type        |
- * | ContainerData       | Sync data            | 4 valeurs (BPM, pages, etc.)   |
+ * | ContainerData       | Sync data            | 3 valeurs (BPM, pages, playing)|
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -33,11 +33,11 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Menu sans inventaire joueur pour le DAW.
- * Synchronise BPM, pageCount, transport et volume via ContainerData.
+ * Synchronise BPM, pageCount et transport via ContainerData.
  */
 public class DubstepRadioMenu extends ApicaMenu {
 
-    private static final int DATA_COUNT = 4;
+    private static final int DATA_COUNT = 3;
 
     private final ContainerData data;
     private final BlockPos blockPos;
@@ -72,11 +72,6 @@ public class DubstepRadioMenu extends ApicaMenu {
     /** True si la sequence joue. */
     public boolean isPlaying() {
         return data.get(2) == 1;
-    }
-
-    /** Master volume 0-100. */
-    public int getMasterVolume() {
-        return data.get(3);
     }
 
     @Override

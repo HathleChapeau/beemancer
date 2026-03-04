@@ -12,7 +12,7 @@
  * | SequenceData             | Donnees locales      | Copie client de la sequence    |
  * | SequencePlaybackEngine   | Moteur audio         | Play/stop/update chaque frame  |
  * | PlayMode                 | Mode de lecture      | Play/Loop/Page variants        |
- * | TransportBarWidget       | Barre transport      | Play/stop, BPM, mode, volume   |
+ * | TransportBarWidget       | Barre transport      | Play/stop, BPM, mode           |
  * | InstrumentColumnWidget   | Liste instruments    | M/S/X/Edit, add track          |
  * | TrackEditorWidget        | Piano-roll           | Edition notes par track        |
  * | PageBarWidget            | Navigation pages     | +/del pages, prev/next         |
@@ -114,10 +114,6 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
                 int newBpm = Math.max(40, Math.min(300, localData.getBpm() + delta));
                 localData.setBpm(newBpm);
                 sendTransportValue(DubstepRadioTransportPacket.SET_BPM, newBpm);
-            }
-            @Override
-            public void onVolumeChange(int pct) {
-                localData.setMasterVolume(pct / 100.0f);
             }
             @Override
             public void onModeChange(PlayMode newMode) {
@@ -273,14 +269,12 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
         gfx.fill(leftPos - 2, topPos - 2, leftPos + GUI_W + 2, topPos + currentH + 2, COL_BORDER);
         gfx.fill(leftPos, topPos, leftPos + GUI_W, topPos + currentH, COL_BG);
 
-        int volumePct = menu.getMasterVolume();
-
         if (editingTrack == -1) {
-            mainTransport.update(localData.getBpm(), isPlaying, volumePct, playMode);
+            mainTransport.update(localData.getBpm(), isPlaying, playMode);
             mainTransport.render(gfx);
             instrumentColumn.render(gfx, localData);
         } else {
-            editorTransport.update(localData.getBpm(), isPlaying, volumePct, playMode);
+            editorTransport.update(localData.getBpm(), isPlaying, playMode);
             editorTransport.render(gfx);
 
             TrackData track = localData.getTrack(editingTrack);
