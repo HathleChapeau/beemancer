@@ -23,6 +23,7 @@ package com.chapeau.apica.common.item.tool;
 import com.chapeau.apica.common.entity.projectile.LeafBlowerProjectileEntity;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
+import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -45,6 +46,11 @@ import java.util.Set;
  */
 public class LeafBlowerItem extends Item implements IMagazineHolder {
 
+    private static final int HONEY_COLOR = 0xE8A317;
+    private static final int ROYAL_JELLY_COLOR = 0xFFF8DC;
+    private static final int NECTAR_COLOR = 0xFFD700;
+    private static final int DEFAULT_COLOR = 0x888888;
+
     /** Tick thresholds: 0-9 = level 0, 10-24 = level 1, 25-39 = level 2, 40+ = level 3 */
     public static final int CHARGE_TIER1 = 10;
     public static final int CHARGE_TIER2 = 25;
@@ -62,6 +68,26 @@ public class LeafBlowerItem extends Item implements IMagazineHolder {
     @Override
     public Set<String> getAcceptedFluids() {
         return Set.of("apica:honey");
+    }
+
+    @Override
+    public boolean isBarVisible(ItemStack stack) {
+        return MagazineData.hasMagazine(stack);
+    }
+
+    @Override
+    public int getBarWidth(ItemStack stack) {
+        int amount = MagazineData.getFluidAmount(stack);
+        return Math.round((float) amount / MagazineFluidData.MAX_CAPACITY * 13f);
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack) {
+        String fluidId = MagazineData.getFluidId(stack);
+        if (fluidId.contains("honey")) return HONEY_COLOR;
+        if (fluidId.contains("royal_jelly")) return ROYAL_JELLY_COLOR;
+        if (fluidId.contains("nectar")) return NECTAR_COLOR;
+        return DEFAULT_COLOR;
     }
 
     @Override

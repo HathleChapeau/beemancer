@@ -27,6 +27,7 @@ import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -52,13 +53,24 @@ public class MagazineGaugeHud {
         LocalPlayer player = mc.player;
         if (player == null) return;
 
-        // Verifier main hand
-        ItemStack mainHand = player.getMainHandItem();
-        if (!(mainHand.getItem() instanceof IMagazineHolder)) return;
-        if (!MagazineData.hasMagazine(mainHand)) return;
+        // Chercher un IMagazineHolder avec magazine dans les deux mains
+        ItemStack holderStack = ItemStack.EMPTY;
+        boolean isOffHand = false;
 
-        int amount = MagazineData.getFluidAmount(mainHand);
-        String fluidId = MagazineData.getFluidId(mainHand);
+        ItemStack mainHand = player.getMainHandItem();
+        ItemStack offHand = player.getOffhandItem();
+
+        if (mainHand.getItem() instanceof IMagazineHolder && MagazineData.hasMagazine(mainHand)) {
+            holderStack = mainHand;
+        } else if (offHand.getItem() instanceof IMagazineHolder && MagazineData.hasMagazine(offHand)) {
+            holderStack = offHand;
+            isOffHand = true;
+        }
+
+        if (holderStack.isEmpty()) return;
+
+        int amount = MagazineData.getFluidAmount(holderStack);
+        String fluidId = MagazineData.getFluidId(holderStack);
         float ratio = (float) amount / MagazineFluidData.MAX_CAPACITY;
 
         int color = getFluidColor(fluidId);
@@ -67,8 +79,8 @@ public class MagazineGaugeHud {
         int screenWidth = mc.getWindow().getGuiScaledWidth();
         int screenHeight = mc.getWindow().getGuiScaledHeight();
 
-        // Position: droite de l'ecran, centree verticalement pres de la hotbar
-        int x = screenWidth - 28;
+        // Position: droite si main droite, gauche si main gauche
+        int x = isOffHand ? 12 : screenWidth - 28;
         int y = screenHeight - 62;
 
         GuiRenderHelper.renderTintedBar(graphics, x, y, ratio, color);
