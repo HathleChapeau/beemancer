@@ -24,7 +24,7 @@ import com.chapeau.apica.common.item.BeeElytraItem;
 import com.chapeau.apica.common.item.NectarBreadItem;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
 import com.chapeau.apica.common.item.tool.LeafBlowerItem;
-import com.chapeau.apica.common.item.tool.ChopperCubeItem;
+import com.chapeau.apica.common.item.tool.ChopperHiveItem;
 import com.chapeau.apica.common.item.tool.MiningLaserItem;
 import net.minecraft.world.food.FoodProperties;
 import com.chapeau.apica.common.item.tool.ScoopItem;
@@ -432,8 +432,8 @@ public class ApicaItems {
     public static final DeferredItem<MiningLaserItem> MINING_LASER = ITEMS.register("mining_laser",
             () -> new MiningLaserItem(new Item.Properties().stacksTo(1)));
 
-    public static final DeferredItem<ChopperCubeItem> CHOPPER_CUBE = ITEMS.register("chopper_cube",
-            () -> new ChopperCubeItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<ChopperHiveItem> CHOPPER_HIVE = ITEMS.register("chopper_hive",
+            () -> new ChopperHiveItem(new Item.Properties().stacksTo(1)));
 
     // --- EQUIPMENT ---
     public static final DeferredItem<BeeElytraItem> BEE_ELYTRA = ITEMS.register("bee_elytra",
@@ -453,6 +453,10 @@ public class ApicaItems {
     // --- RESONATOR ---
     public static final DeferredItem<BlockItem> RESONATOR = ITEMS.register("resonator",
             () -> new BlockItem(ApicaBlocks.RESONATOR.get(), new Item.Properties()));
+
+    // --- DUBSTEP RADIO ---
+    public static final DeferredItem<BlockItem> DUBSTEP_RADIO = ITEMS.register("dubstep_radio",
+            () -> new BlockItem(ApicaBlocks.DUBSTEP_RADIO.get(), new Item.Properties()));
 
     // --- CODEX ---
     public static final DeferredItem<CodexItem> CODEX = ITEMS.register("codex",

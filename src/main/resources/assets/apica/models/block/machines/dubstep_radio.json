@@ -1,0 +1,75 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "base": "apica:block/iron",
+    "top": "apica:block/machines/resonator_center_top",
+    "side": "apica:block/machines/resonator_bar"
+  },
+  "elements": [
+    {
+      "comment": "Base plate",
+      "from": [1, 0, 1],
+      "to": [15, 5, 15],
+      "faces": {
+        "north": {"texture": "#base"},
+        "east": {"texture": "#base"},
+        "south": {"texture": "#base"},
+        "west": {"texture": "#base"},
+        "up": {"texture": "#base"},
+        "down": {"texture": "#base"}
+      }
+    },
+    {
+      "comment": "Control surface",
+      "from": [2, 5, 2],
+      "to": [14, 7, 14],
+      "faces": {
+        "north": {"texture": "#side", "uv": [0, 0, 12, 2]},
+        "east": {"texture": "#side", "uv": [0, 0, 12, 2]},
+        "south": {"texture": "#side", "uv": [0, 0, 12, 2]},
+        "west": {"texture": "#side", "uv": [0, 0, 12, 2]},
+        "up": {"texture": "#top"},
+        "down": {"texture": "#base"}
+      }
+    },
+    {
+      "comment": "Left turntable",
+      "from": [2, 7, 3],
+      "to": [7, 8, 8],
+      "faces": {
+        "north": {"texture": "#side", "uv": [0, 0, 5, 1]},
+        "east": {"texture": "#side", "uv": [0, 0, 5, 1]},
+        "south": {"texture": "#side", "uv": [0, 0, 5, 1]},
+        "west": {"texture": "#side", "uv": [0, 0, 5, 1]},
+        "up": {"texture": "#top", "uv": [0, 0, 5, 5]},
+        "down": {"texture": "#base"}
+      }
+    },
+    {
+      "comment": "Right turntable",
+      "from": [9, 7, 3],
+      "to": [14, 8, 8],
+      "faces": {
+        "north": {"texture": "#side", "uv": [0, 0, 5, 1]},
+        "east": {"texture": "#side", "uv": [0, 0, 5, 1]},
+        "south": {"texture": "#side", "uv": [0, 0, 5, 1]},
+        "west": {"texture": "#side", "uv": [0, 0, 5, 1]},
+        "up": {"texture": "#top", "uv": [0, 0, 5, 5]},
+        "down": {"texture": "#base"}
+      }
+    },
+    {
+      "comment": "Mixer center strip",
+      "from": [7, 7, 9],
+      "to": [9, 8, 13],
+      "faces": {
+        "north": {"texture": "#side", "uv": [0, 0, 2, 1]},
+        "east": {"texture": "#side", "uv": [0, 0, 4, 1]},
+        "south": {"texture": "#side", "uv": [0, 0, 2, 1]},
+        "west": {"texture": "#side", "uv": [0, 0, 4, 1]},
+        "up": {"texture": "#side", "uv": [0, 0, 2, 4]},
+        "down": {"texture": "#base"}
+      }
+    }
+  ]
+}

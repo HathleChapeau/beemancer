@@ -39,4 +39,7 @@
 --- ITEM FILTER ---
 | item_filter        | ItemFilterMenu       | Item Filter      |
 
+--- DUBSTEP RADIO ---
+| dubstep_radio      | DubstepRadioMenu     | Dubstep Radio    |
+
 ################################################################################

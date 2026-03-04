@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-03-03                     #
-#  (Apica Dimension Phase 1 - 2026-03-03)                                        #
+#                         Dernière mise à jour: 2026-03-04                     #
+#  (Dubstep Radio - 2026-03-04)                                                  #
 ################################################################################
 
 ================================================================================
@@ -175,6 +175,22 @@ Philosophie:
 │   ItemPipeNetworkManager                │ SavedData singleton gestion réseaux    │
 │ common/data/ItemFilterData.java         │ Donnees filtre: ghost slots, mode, priority │
 │ common/item/ItemFilterItem.java         │ Item filtre pour pipes                 │
+│ common/data/NoteCell.java              │ Record cellule grille DAW (16 bits)    │
+│ common/data/DubstepInstrument.java     │ Enum 16 instruments Note Block         │
+│ common/data/TrackData.java             │ Donnees track (instrument, volume, mute)│
+│ common/data/SequenceData.java          │ Donnees sequence (tracks, BPM, swing)  │
+│ common/block/radio/DubstepRadioBlock.java      │ Bloc DAW avec property PLAYING │
+│ common/block/radio/DubstepRadioBlockEntity.java│ BE stocke SequenceData + tick  │
+│ common/menu/DubstepRadioMenu.java      │ Menu sans inventaire, ContainerData    │
+│ core/network/packets/DubstepRadioSyncPacket.java     │ S2C sync sequence complete│
+│ core/network/packets/DubstepRadioEditPacket.java     │ C2S edit cellule          │
+│ core/network/packets/DubstepRadioTrackPacket.java    │ C2S actions track         │
+│ core/network/packets/DubstepRadioTransportPacket.java│ C2S transport controls    │
+│ client/audio/SequencePlaybackEngine.java│ Moteur audio client frame-independent  │
+│ client/gui/screen/DubstepRadioScreen.java│ Ecran DAW principal                  │
+│ client/gui/widget/TransportBarWidget.java│ Barre play/stop/BPM/swing/volume     │
+│ client/gui/widget/InstrumentColumnWidget.java│ Colonne tracks + dropdown instr.  │
+│ client/gui/widget/SequenceGridWidget.java│ Grille notes toggle avec playhead    │
 └─────────────────────────────────────┴────────────────────────────────────────┘
 
 ================================================================================
@@ -926,6 +942,24 @@ LISTE DES FEATURES:
     models/item/apica_portal.json, textures/block/apica_portal.png
   Data: dimension/apica.json, dimension_type/apica.json
   Reference: Lost Cities (grid deterministique), Twilight Forest (portal pattern)
+
+-> Dubstep Radio (DAW Block)
+  Description: Bloc Digital Audio Workstation permettant de composer des sequences musicales
+    avec les 16 instruments vanilla Note Block. Interface DAW complete: grille de notes togglable,
+    colonne de tracks avec instruments selectionnables, barre de transport (play/stop/BPM/swing/volume).
+    Moteur audio client-side frame-rate independant du tick serveur. Synchronisation bidirectionnelle
+    via 4 packets reseau (3 C2S pour edits/tracks/transport, 1 S2C pour sync complete).
+  Scripts crees: NoteCell.java, DubstepInstrument.java, TrackData.java, SequenceData.java,
+    DubstepRadioBlock.java, DubstepRadioBlockEntity.java, DubstepRadioMenu.java,
+    DubstepRadioSyncPacket.java, DubstepRadioEditPacket.java, DubstepRadioTrackPacket.java,
+    DubstepRadioTransportPacket.java, SequencePlaybackEngine.java, DubstepRadioScreen.java,
+    TransportBarWidget.java, InstrumentColumnWidget.java, SequenceGridWidget.java
+  Dependances: ContainerData, BaseEntityBlock, ApicaMenu, ParticleHelper
+  Registres modifies: ApicaBlocks (+1), ApicaItems (+1), ApicaBlockEntities (+1),
+    ApicaMenus (+1), ApicaNetwork (+4 packets)
+  Assets: blockstates/dubstep_radio.json, models/block/machines/dubstep_radio.json,
+    models/item/dubstep_radio.json, lang en_us + fr_fr
+  Reference: Note Block vanilla (16 instruments), DAW pattern (transport/grid/tracks)
 
 ================================================================================
 6. FEATURES EN COURS

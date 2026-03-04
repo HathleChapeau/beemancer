@@ -25,6 +25,10 @@ import com.chapeau.apica.core.network.packets.ResonatorFinishPacket;
 import com.chapeau.apica.core.network.packets.ResonatorTraitMatchPacket;
 import com.chapeau.apica.core.network.packets.ResonatorUpdatePacket;
 import com.chapeau.apica.core.network.packets.StorageTasksSyncPacket;
+import com.chapeau.apica.core.network.packets.DubstepRadioEditPacket;
+import com.chapeau.apica.core.network.packets.DubstepRadioTrackPacket;
+import com.chapeau.apica.core.network.packets.DubstepRadioTransportPacket;
+import com.chapeau.apica.core.network.packets.DubstepRadioSyncPacket;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -116,6 +120,25 @@ public class ApicaNetwork {
                 ItemFilterActionPacket::handle
         );
 
+        // Dubstep Radio C2S
+        registrar.playToServer(
+                DubstepRadioEditPacket.TYPE,
+                DubstepRadioEditPacket.STREAM_CODEC,
+                DubstepRadioEditPacket::handle
+        );
+
+        registrar.playToServer(
+                DubstepRadioTrackPacket.TYPE,
+                DubstepRadioTrackPacket.STREAM_CODEC,
+                DubstepRadioTrackPacket::handle
+        );
+
+        registrar.playToServer(
+                DubstepRadioTransportPacket.TYPE,
+                DubstepRadioTransportPacket.STREAM_CODEC,
+                DubstepRadioTransportPacket::handle
+        );
+
         // Server to Client packets
         registrar.playToClient(
                 CodexSyncPacket.TYPE,
@@ -145,6 +168,13 @@ public class ApicaNetwork {
                 LaunchVelocityPacket.TYPE,
                 LaunchVelocityPacket.STREAM_CODEC,
                 LaunchVelocityPacket::handle
+        );
+
+        // Dubstep Radio S2C
+        registrar.playToClient(
+                DubstepRadioSyncPacket.TYPE,
+                DubstepRadioSyncPacket.STREAM_CODEC,
+                DubstepRadioSyncPacket::handle
         );
 
     }

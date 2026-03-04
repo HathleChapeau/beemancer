@@ -117,4 +117,7 @@
 --- DIMENSION ---
 | apica_portal           | ApicaPortalBlock          | Non          | Apica Dimension |
 
+--- DUBSTEP RADIO ---
+| dubstep_radio          | DubstepRadioBlock         | Oui          | Dubstep Radio   |
+
 ################################################################################

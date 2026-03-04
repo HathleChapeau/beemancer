@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [ChopperCubeChoppingState.java]
- * Description: Gestion server-side de la file de destruction du Chopper Cube
+ * [ChopperHiveChoppingState.java]
+ * Description: Gestion server-side de la file de destruction du Chopper Hive
  * ============================================================
  *
  * DEPENDANCES:
@@ -12,7 +12,7 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - ChopperCubeItem.java (start, tick, clear)
+ * - ChopperHiveItem.java (start, tick, clear)
  *
  * ============================================================
  */
@@ -33,12 +33,12 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Gere la file de destruction de blocs pour le Chopper Cube.
+ * Gere la file de destruction de blocs pour le Chopper Hive.
  * Chaque joueur peut avoir une session active.
  * Phase warmup (1 seconde) avant la destruction, puis blocs detruits du haut vers le bas.
- * Les particules rune sont gerees cote client (ChopperCubePreviewRenderer).
+ * Les particules rune sont gerees cote client (ChopperHivePreviewRenderer).
  */
-public final class ChopperCubeChoppingState {
+public final class ChopperHiveChoppingState {
 
     /** Ticks entre chaque destruction de bloc */
     private static final int TICKS_PER_BLOCK = 12;
@@ -145,6 +145,6 @@ public final class ChopperCubeChoppingState {
         activeStates.remove(playerId);
     }
 
-    private ChopperCubeChoppingState() {
+    private ChopperHiveChoppingState() {
     }
 }

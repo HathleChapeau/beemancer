@@ -550,6 +550,7 @@
   "gui.apica.injector.hunger": "Saturation Arcanique",
   "block.apica.bee_statue": "Statue d'Abeille",
   "block.apica.resonator": "Résonateur",
+  "block.apica.dubstep_radio": "Dubstep Radio",
   "message.apica.bee_statue.species_changed": "Espèce changée vers %s (%d/%d)",
   "message.apica.bee_statue.bee_given": "Vous avez reçu une %s !",
   "block.apica.assembly_table": "Table d'Assemblage",

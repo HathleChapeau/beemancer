@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [ChopperCubeItemRenderer.java]
- * Description: BEWLR pour le Chopper Cube — animation first person avec slabs, bees et bobbing
+ * [ChopperHiveItemRenderer.java]
+ * Description: BEWLR pour le Chopper Hive — animation first person avec slabs, bees et bobbing
  * ============================================================
  *
  * DEPENDANCES:
@@ -13,7 +13,7 @@
  * | AnimationTimer          | Temps client         | Tracking animation ticks       |
  * | BakedModel              | Modeles 3D           | Rendu statique via putBulkData |
  * | BeeModel                | Modele abeille       | Rendu mini-abeilles orbitantes |
- * | ChopperCubeLockHelper   | Etat chopping        | Detection phase active         |
+ * | ChopperHiveLockHelper   | Etat chopping        | Detection phase active         |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -30,7 +30,7 @@ import com.chapeau.apica.client.animation.IAnimatable;
 import com.chapeau.apica.client.animation.MoveAnimation;
 import com.chapeau.apica.client.animation.TimingEffect;
 import com.chapeau.apica.client.animation.TimingType;
-import com.chapeau.apica.common.item.tool.ChopperCubeLockHelper;
+import com.chapeau.apica.common.item.tool.ChopperHiveLockHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -56,7 +56,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
- * BEWLR pour le Chopper Cube.
+ * BEWLR pour le Chopper Hive.
  * En first person: slabs s'ecartent, 2 abeilles orbitent, cube central bobbing.
  * Lors du chopping: abeilles accelerent et montent hors ecran, puis redescendent a la fin.
  * Tous les autres contextes: rendu statique des 3 parties.
@@ -65,20 +65,20 @@ import net.neoforged.neoforge.client.model.data.ModelData;
  * pour les translations avec easing. Les abeilles restent procedurales (orbite circulaire).
  */
 @OnlyIn(Dist.CLIENT)
-public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer implements IAnimatable {
+public class ChopperHiveItemRenderer extends BlockEntityWithoutLevelRenderer implements IAnimatable {
 
     /** Modeles standalone pour les 3 parties. */
     public static final ModelResourceLocation BOTTOM_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "item/chopper_cube_bottom"));
+            Apica.MOD_ID, "item/chopper_hive_bottom"));
 
     public static final ModelResourceLocation CENTER_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "item/chopper_cube_center"));
+            Apica.MOD_ID, "item/chopper_hive_center"));
 
     public static final ModelResourceLocation TOP_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "item/chopper_cube_top"));
+            Apica.MOD_ID, "item/chopper_hive_top"));
 
     /** Texture vanilla de l'abeille. */
     private static final ResourceLocation BEE_TEXTURE =
@@ -170,7 +170,7 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     /** Temps fige au debut de l'envol pour geler l'angle d'orbite. */
     private float frozenTime = 0f;
 
-    public ChopperCubeItemRenderer() {
+    public ChopperHiveItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
               Minecraft.getInstance().getEntityModels());
         initAnimations();
@@ -230,14 +230,14 @@ public class ChopperCubeItemRenderer extends BlockEntityWithoutLevelRenderer imp
     }
 
     /**
-     * Met a jour la phase de chopping en fonction de ChopperCubeLockHelper.
+     * Met a jour la phase de chopping en fonction de ChopperHiveLockHelper.
      * Detecte les transitions locked/unlocked pour piloter les animations de montee/descente.
      */
     private void updateChoppingPhase(int currentTick) {
         if (currentTick == lastPhaseUpdateTick) return;
         lastPhaseUpdateTick = currentTick;
 
-        boolean isLocked = ChopperCubeLockHelper.isLocked();
+        boolean isLocked = ChopperHiveLockHelper.isLocked();
 
         switch (choppingPhase) {
             case IDLE:

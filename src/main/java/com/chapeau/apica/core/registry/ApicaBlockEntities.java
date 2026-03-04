@@ -33,6 +33,7 @@ import com.chapeau.apica.common.blockentity.artifacts.UncraftingTableBlockEntity
 import com.chapeau.apica.common.blockentity.altar.AltarHeartBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyPedestalBlockEntity;
 import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
+import com.chapeau.apica.common.block.radio.DubstepRadioBlockEntity;
 import com.chapeau.apica.common.block.resonator.ResonatorBlockEntity;
 import com.chapeau.apica.common.block.api.ApiBlockEntity;
 import com.chapeau.apica.common.block.statue.BeeStatueBlockEntity;
@@ -419,6 +420,14 @@ public class ApicaBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             ResonatorBlockEntity::new,
                             ApicaBlocks.RESONATOR.get()
+                    ).build(null));
+
+    // --- DUBSTEP RADIO ---
+    public static final Supplier<BlockEntityType<DubstepRadioBlockEntity>> DUBSTEP_RADIO =
+            BLOCK_ENTITIES.register("dubstep_radio",
+                    () -> BlockEntityType.Builder.of(
+                            DubstepRadioBlockEntity::new,
+                            ApicaBlocks.DUBSTEP_RADIO.get()
                     ).build(null));
 
     // --- BEE STATUE ---

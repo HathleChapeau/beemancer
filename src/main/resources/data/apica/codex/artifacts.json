@@ -23,7 +23,7 @@
     {"id": "royal_artifact_core", "position": {"x": 0, "y": 4}, "category": "NORMAL", "parent": "honey_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "building_staff", "position": {"x": -2, "y": 4}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "mining_laser", "position": {"x": 2, "y": 4}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
-    {"id": "chopper_cube", "position": {"x": -1, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
+    {"id": "chopper_hive", "position": {"x": -1, "y": 5}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
 
     {"id": "nectar_artifact_core", "position": {"x": 0, "y": 6}, "category": "NORMAL", "parent": "royal_artifact_core", "hidden_until_parent_unlocked": false},
     {"id": "bee_elytra", "position": {"x": -2, "y": 6}, "category": "NORMAL", "parent": "nectar_artifact_core", "hidden_until_parent_unlocked": false},

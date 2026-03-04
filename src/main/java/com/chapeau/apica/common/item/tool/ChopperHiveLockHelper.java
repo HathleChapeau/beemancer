@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [ChopperCubeLockHelper.java]
- * Description: Etat client-side du verrouillage glow du Chopper Cube
+ * [ChopperHiveLockHelper.java]
+ * Description: Etat client-side du verrouillage glow du Chopper Hive
  * ============================================================
  *
  * DEPENDANCES:
@@ -12,9 +12,9 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - ChopperCubeItem.java (toggle lock)
- * - ChopperCubePreviewRenderer.java (lecture etat lock + timing particules)
- * - ChopperCubeItemRenderer.java (detection phase chopping)
+ * - ChopperHiveItem.java (toggle lock)
+ * - ChopperHivePreviewRenderer.java (lecture etat lock + timing particules)
+ * - ChopperHiveItemRenderer.java (detection phase chopping)
  *
  * ============================================================
  */
@@ -25,11 +25,11 @@ import net.minecraft.core.BlockPos;
 import java.util.List;
 
 /**
- * Stocke l'etat de verrouillage du glow du Chopper Cube cote client.
+ * Stocke l'etat de verrouillage du glow du Chopper Hive cote client.
  * Separe de l'item pour eviter les problemes de state server/client.
  * Conserve le gameTime du lock pour synchroniser les animations et particules.
  */
-public final class ChopperCubeLockHelper {
+public final class ChopperHiveLockHelper {
 
     private static boolean locked = false;
     private static List<BlockPos> lockedPositions = List.of();
@@ -76,6 +76,6 @@ public final class ChopperCubeLockHelper {
         return lockGameTime;
     }
 
-    private ChopperCubeLockHelper() {
+    private ChopperHiveLockHelper() {
     }
 }

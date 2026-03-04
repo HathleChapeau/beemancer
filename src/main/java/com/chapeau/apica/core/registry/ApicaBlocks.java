@@ -62,6 +62,7 @@ import com.chapeau.apica.common.block.storage.StorageBarrelBlock;
 import com.chapeau.apica.common.block.storage.StorageControllerBlock;
 import com.chapeau.apica.common.block.storage.TrashCanBlock;
 import com.chapeau.apica.common.block.portal.ApicaPortalBlock;
+import com.chapeau.apica.common.block.radio.DubstepRadioBlock;
 import com.chapeau.apica.common.block.resonator.ResonatorBlock;
 import com.chapeau.apica.common.block.storage.StorageHiveBlock;
 import com.chapeau.apica.common.block.storage.StorageRelayBlock;
@@ -691,6 +692,13 @@ public class ApicaBlocks {
     // --- RESONATOR ---
     public static final DeferredBlock<ResonatorBlock> RESONATOR = registerTimed("resonator",
             () -> new ResonatorBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()));
+
+    // --- DUBSTEP RADIO ---
+    public static final DeferredBlock<DubstepRadioBlock> DUBSTEP_RADIO = registerTimed("dubstep_radio",
+            () -> new DubstepRadioBlock(BlockBehaviour.Properties.of()
                     .strength(2.0f)
                     .sound(SoundType.METAL)
                     .noOcclusion()));

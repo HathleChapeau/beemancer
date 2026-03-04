@@ -3,6 +3,22 @@
 ################################################################################
 
 ================================================================================
+2026-03-04 - Dubstep Radio (DAW Block)
+================================================================================
+
+Nouveau bloc Dubstep Radio — station de composition musicale in-game (DAW):
+- 16 fichiers Java crees: data layer (NoteCell, DubstepInstrument, TrackData, SequenceData),
+  bloc/BE/menu, 4 packets reseau, moteur audio client, ecran DAW + 3 widgets
+- Moteur audio SequencePlaybackEngine: timing frame-rate independant du tick serveur
+  (System.currentTimeMillis() dans render loop, ~8-16ms de resolution)
+- GUI vectoriel: grille de notes toggle, colonne instruments avec dropdown, transport bar
+- 4 registres ajoutes: ApicaBlocks, ApicaBlockEntities, ApicaMenus, ApicaItems
+- 4 packets enregistres dans ApicaNetwork (3 C2S + 1 S2C)
+- Screen enregistre dans ClientSetup, icon Codex dans CodexNodeWidget
+- Assets: blockstate, block model DJ deck, item model, lang en_us + fr_fr
+- Codex lore mis a jour pour le node dubstep_radio
+
+================================================================================
 2026-03-03 - Apica Dimension (Phase 1)
 ================================================================================
 

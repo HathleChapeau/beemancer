@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * [ChopperCubeItem.java]
+ * [ChopperHiveItem.java]
  * Description: Cube qui detecte, surligne et abat les buches connectees
  * ============================================================
  *
@@ -9,13 +9,13 @@
  * | Dependance                | Raison                | Utilisation                    |
  * |---------------------------|----------------------|--------------------------------|
  * | BlockTags                 | Detection buches     | Verification tag logs          |
- * | ChopperCubeChoppingState  | Destruction queue    | Gestion server-side            |
- * | ChopperCubeLockHelper     | Preview client       | Verrouillage glow              |
+ * | ChopperHiveChoppingState  | Destruction queue    | Gestion server-side            |
+ * | ChopperHiveLockHelper     | Preview client       | Verrouillage glow              |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
  * - ApicaItems.java (registration)
- * - ChopperCubePreviewRenderer.java (lecture des positions)
+ * - ChopperHivePreviewRenderer.java (lecture des positions)
  *
  * ============================================================
  */
@@ -45,19 +45,19 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * Chopper Cube — outil d'abattage d'arbres.
+ * Chopper Hive — outil d'abattage d'arbres.
  *
  * Quand le joueur regarde une buche en tenant cet item,
  * toutes les buches connectees du meme type au-dessus (y >= cible) sont surlignees.
  * Clic droit sur une buche: demarre la destruction du haut vers le bas,
  * avec 2 abeilles orbitantes autour de chaque bloc. Le loot va dans l'inventaire.
  */
-public class ChopperCubeItem extends Item {
+public class ChopperHiveItem extends Item {
 
     /** Nombre max de blocs scannes pour eviter les lags */
     public static final int MAX_SCAN = 256;
 
-    public ChopperCubeItem(Properties properties) {
+    public ChopperHiveItem(Properties properties) {
         super(properties);
     }
 
@@ -76,7 +76,7 @@ public class ChopperCubeItem extends Item {
 
         if (!level.isClientSide()) {
             // Ignorer si deja en cours de destruction
-            if (ChopperCubeChoppingState.isActive(player.getUUID())) {
+            if (ChopperHiveChoppingState.isActive(player.getUUID())) {
                 return InteractionResult.CONSUME;
             }
 
@@ -85,11 +85,11 @@ public class ChopperCubeItem extends Item {
             logs.sort(Comparator.<BlockPos>comparingInt(BlockPos::getY).reversed()
                     .thenComparingInt(BlockPos::getX)
                     .thenComparingInt(BlockPos::getZ));
-            ChopperCubeChoppingState.start(player.getUUID(), logs);
+            ChopperHiveChoppingState.start(player.getUUID(), logs);
         } else {
             // Lock le preview client-side
             List<BlockPos> logs = findConnectedLogs(level, clickedPos);
-            ChopperCubeLockHelper.lockWith(logs, level.getGameTime());
+            ChopperHiveLockHelper.lockWith(logs, level.getGameTime());
         }
 
         return InteractionResult.CONSUME;
@@ -100,7 +100,7 @@ public class ChopperCubeItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
 
         // Ignorer si deja en cours de destruction
-        if (!level.isClientSide() && ChopperCubeChoppingState.isActive(player.getUUID())) {
+        if (!level.isClientSide() && ChopperHiveChoppingState.isActive(player.getUUID())) {
             return InteractionResultHolder.success(stack);
         }
 
@@ -114,11 +114,11 @@ public class ChopperCubeItem extends Item {
         // Verifier que le joueur tient l'item (main ou offhand)
         boolean holding = selected || player.getOffhandItem() == stack;
         if (!holding) {
-            ChopperCubeChoppingState.clear(player.getUUID());
+            ChopperHiveChoppingState.clear(player.getUUID());
             return;
         }
 
-        ChopperCubeChoppingState.tick(player, (ServerLevel) level);
+        ChopperHiveChoppingState.tick(player, (ServerLevel) level);
     }
 
     @Override

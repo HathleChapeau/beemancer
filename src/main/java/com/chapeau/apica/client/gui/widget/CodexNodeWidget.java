@@ -114,13 +114,14 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("honey_bread", "apica:honey_bread");
         NODE_TO_ITEM.put("royal_bread", "apica:royal_bread");
         NODE_TO_ITEM.put("nectar_bread", "apica:nectar_bread");
-        NODE_TO_ITEM.put("chopper_cube", "apica:chopper_cube");
+        NODE_TO_ITEM.put("chopper_hive", "apica:chopper_hive");
         NODE_TO_ITEM.put("honey_artifact_core", "apica:honey_artifact_core");
         NODE_TO_ITEM.put("royal_artifact_core", "apica:royal_artifact_core");
         NODE_TO_ITEM.put("nectar_artifact_core", "apica:nectar_artifact_core");
         NODE_TO_ITEM.put("uncrafting_table", "apica:uncrafting_table");
         NODE_TO_ITEM.put("launchpad", "apica:launchpad");
         NODE_TO_ITEM.put("repair_tool_station", "apica:repair_tool_station");
+        NODE_TO_ITEM.put("dubstep_radio", "apica:dubstep_radio");
     }
 
     private final CodexNode node;

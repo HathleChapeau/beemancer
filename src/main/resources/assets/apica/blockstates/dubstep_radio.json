@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "playing=false": { "model": "apica:block/machines/dubstep_radio" },
+    "playing=true": { "model": "apica:block/machines/dubstep_radio" }
+  }
+}

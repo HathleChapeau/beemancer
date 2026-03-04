@@ -112,7 +112,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.BEE_ELYTRA.get());
         output.accept(ApicaItems.LEAF_BLOWER.get());
         output.accept(ApicaItems.MINING_LASER.get());
-        output.accept(ApicaItems.CHOPPER_CUBE.get());
+        output.accept(ApicaItems.CHOPPER_HIVE.get());
     }
 
     private static void addBees(CreativeModeTab.Output output) {

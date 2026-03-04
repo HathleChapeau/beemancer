@@ -1,16 +1,16 @@
 /**
  * ============================================================
- * [ChopperCubePreviewRenderer.java]
- * Description: Renderer pour le glow ambre, abeilles orbitantes et particules rune du Chopper Cube
+ * [ChopperHivePreviewRenderer.java]
+ * Description: Renderer pour le glow ambre, abeilles orbitantes et particules rune du Chopper Hive
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
  * | Dependance              | Raison                | Utilisation                    |
  * |-------------------------|----------------------|--------------------------------|
- * | ChopperCubeItem         | Scan buches          | findConnectedLogs()            |
- * | ChopperCubeLockHelper   | Etat lock            | Positions verrouillees + timing|
- * | ChopperCubeChoppingState| Warmup constant      | Delay avant particules         |
+ * | ChopperHiveItem         | Scan buches          | findConnectedLogs()            |
+ * | ChopperHiveLockHelper   | Etat lock            | Positions verrouillees + timing|
+ * | ChopperHiveChoppingState| Warmup constant      | Delay avant particules         |
  * | AnimationTimer          | Temps fluide         | Pulsation + orbite             |
  * | BeeModel                | Modele abeille       | Rendu mini-abeilles            |
  * | ParticleEmitter         | Spawn particules     | Runes client-side configurables|
@@ -27,9 +27,9 @@ package com.chapeau.apica.client.renderer;
 
 import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.client.particle.ParticleEmitter;
-import com.chapeau.apica.common.item.tool.ChopperCubeChoppingState;
-import com.chapeau.apica.common.item.tool.ChopperCubeItem;
-import com.chapeau.apica.common.item.tool.ChopperCubeLockHelper;
+import com.chapeau.apica.common.item.tool.ChopperHiveChoppingState;
+import com.chapeau.apica.common.item.tool.ChopperHiveItem;
+import com.chapeau.apica.common.item.tool.ChopperHiveLockHelper;
 import com.chapeau.apica.core.registry.ApicaParticles;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -57,13 +57,13 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Dessine des contours ambre pulsants autour des buches detectees par le Chopper Cube.
+ * Dessine des contours ambre pulsants autour des buches detectees par le Chopper Hive.
  * En mode destruction, 2 mini-abeilles orbitent autour du bloc en cours.
  * Emet des particules rune au niveau du cube dans la main pendant la destruction active.
  * Les positions des abeilles sont lerpees vers les points d'orbite pour un mouvement fluide.
  */
 @OnlyIn(Dist.CLIENT)
-public class ChopperCubePreviewRenderer {
+public class ChopperHivePreviewRenderer {
 
     // Couleur ambre/miel
     private static final float R = 1.0f;
@@ -114,11 +114,11 @@ public class ChopperCubePreviewRenderer {
         Player player = mc.player;
         if (player == null) return;
 
-        boolean hasItem = player.getMainHandItem().getItem() instanceof ChopperCubeItem
-                       || player.getOffhandItem().getItem() instanceof ChopperCubeItem;
+        boolean hasItem = player.getMainHandItem().getItem() instanceof ChopperHiveItem
+                       || player.getOffhandItem().getItem() instanceof ChopperHiveItem;
 
         if (!hasItem) {
-            ChopperCubeLockHelper.reset();
+            ChopperHiveLockHelper.reset();
             cachedTargetPos = null;
             cachedPositions = List.of();
             bee1Pos = null;
@@ -126,11 +126,11 @@ public class ChopperCubePreviewRenderer {
             return;
         }
 
-        boolean chopping = ChopperCubeLockHelper.isLocked();
+        boolean chopping = ChopperHiveLockHelper.isLocked();
         List<BlockPos> positions;
 
         if (chopping) {
-            positions = ChopperCubeLockHelper.getLockedPositions();
+            positions = ChopperHiveLockHelper.getLockedPositions();
         } else {
             positions = computeLivePositions(mc, player);
         }
@@ -144,7 +144,7 @@ public class ChopperCubePreviewRenderer {
                 .toList();
 
         if (remaining.isEmpty()) {
-            if (chopping) ChopperCubeLockHelper.reset();
+            if (chopping) ChopperHiveLockHelper.reset();
             bee1Pos = null;
             bee2Pos = null;
             return;
@@ -153,11 +153,11 @@ public class ChopperCubePreviewRenderer {
         renderOutlines(event, mc, remaining);
 
         if (chopping) {
-            long lockTime = ChopperCubeLockHelper.getLockGameTime();
+            long lockTime = ChopperHiveLockHelper.getLockGameTime();
             long elapsed = (lockTime >= 0) ? level.getGameTime() - lockTime : 0;
 
             // Abeilles de coupe: seulement apres l'envol des abeilles FP (warmup termine)
-            if (elapsed >= ChopperCubeChoppingState.WARMUP_TICKS) {
+            if (elapsed >= ChopperHiveChoppingState.WARMUP_TICKS) {
                 BlockPos target = remaining.stream()
                         .min(Comparator.<BlockPos>comparingInt(BlockPos::getY).reversed()
                                 .thenComparingInt(BlockPos::getX)
@@ -178,14 +178,14 @@ public class ChopperCubePreviewRenderer {
      * Ne spawne qu'apres le warmup (20 ticks) et avec throttle (toutes les 3 ticks).
      */
     private static void trySpawnRuneParticles(Player player, Level level) {
-        long lockTime = ChopperCubeLockHelper.getLockGameTime();
+        long lockTime = ChopperHiveLockHelper.getLockGameTime();
         if (lockTime < 0) return;
 
         long currentTime = level.getGameTime();
         long elapsed = currentTime - lockTime;
 
         // Attendre la fin du warmup avant d'emettre
-        if (elapsed < ChopperCubeChoppingState.WARMUP_TICKS) return;
+        if (elapsed < ChopperHiveChoppingState.WARMUP_TICKS) return;
 
         // Throttle: toutes les N ticks
         if (currentTime == lastParticleTick) return;
@@ -207,7 +207,7 @@ public class ChopperCubePreviewRenderer {
     }
 
     /**
-     * Calcule la position world de la main tenant le Chopper Cube.
+     * Calcule la position world de la main tenant le Chopper Hive.
      * Prend en compte le yaw du joueur et la main (principale ou secondaire).
      */
     private static Vec3 computeHandPosition(Player player) {
@@ -222,7 +222,7 @@ public class ChopperCubePreviewRenderer {
         double rightZ = -Math.sin(radYaw);
 
         // Determiner si le cube est en main principale (droite) ou secondaire (gauche)
-        boolean isMainHand = player.getMainHandItem().getItem() instanceof ChopperCubeItem;
+        boolean isMainHand = player.getMainHandItem().getItem() instanceof ChopperHiveItem;
         double sideSign = isMainHand ? 1.0 : -1.0;
 
         return new Vec3(
@@ -253,7 +253,7 @@ public class ChopperCubePreviewRenderer {
             return cachedPositions;
         }
 
-        List<BlockPos> result = ChopperCubeItem.findConnectedLogs(level, targetPos);
+        List<BlockPos> result = ChopperHiveItem.findConnectedLogs(level, targetPos);
         cachedTargetPos = targetPos.immutable();
         cachedPositions = result;
         return result;

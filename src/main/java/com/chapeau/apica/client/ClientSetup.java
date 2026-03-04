@@ -31,7 +31,7 @@ import com.chapeau.apica.client.gui.screen.alchemy.UncraftingTableScreen;
 import com.chapeau.apica.client.gui.screen.storage.NetworkInterfaceScreen;
 import com.chapeau.apica.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer;
-import com.chapeau.apica.client.renderer.ChopperCubePreviewRenderer;
+import com.chapeau.apica.client.renderer.ChopperHivePreviewRenderer;
 import com.chapeau.apica.client.renderer.MiningLaserBeamRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableStatsRenderer;
@@ -75,7 +75,7 @@ import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer;
 import com.chapeau.apica.client.renderer.item.LeafBlowerItemRenderer;
 import com.chapeau.apica.client.renderer.item.MiningLaserItemRenderer;
-import com.chapeau.apica.client.renderer.item.ChopperCubeItemRenderer;
+import com.chapeau.apica.client.renderer.item.ChopperHiveItemRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
 import com.chapeau.apica.common.blockentity.alchemy.ItemPipeBlockEntity;
@@ -123,7 +123,7 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> AnimationTimer.tick());
 
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
-        NeoForge.EVENT_BUS.register(ChopperCubePreviewRenderer.class);
+        NeoForge.EVENT_BUS.register(ChopperHivePreviewRenderer.class);
         NeoForge.EVENT_BUS.register(MiningLaserBeamRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
         NeoForge.EVENT_BUS.register(DebugKeyHandler.class);
@@ -196,6 +196,9 @@ public class ClientSetup {
 
         // Item Filter
         event.register(ApicaMenus.ITEM_FILTER.get(), com.chapeau.apica.client.gui.screen.ItemFilterScreen::new);
+
+        // Dubstep Radio
+        event.register(ApicaMenus.DUBSTEP_RADIO.get(), com.chapeau.apica.client.gui.screen.DubstepRadioScreen::new);
     }
 
     private static void registerEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
@@ -425,15 +428,15 @@ public class ClientSetup {
             }
         }, ApicaItems.MINING_LASER.get());
 
-        // Chopper Cube - render 3D model with animated slabs + orbiting bees in first person
+        // Chopper Hive - render 3D model with animated slabs + orbiting bees in first person
         // + hand transform freeze during chopping (no arm swing)
         event.registerItem(new IClientItemExtensions() {
-            private ChopperCubeItemRenderer renderer;
+            private ChopperHiveItemRenderer renderer;
 
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if (renderer == null) {
-                    renderer = new ChopperCubeItemRenderer();
+                    renderer = new ChopperHiveItemRenderer();
                 }
                 return renderer;
             }
@@ -446,7 +449,7 @@ public class ClientSetup {
                     net.minecraft.world.item.ItemStack itemInHand,
                     float partialTick, float equipProcess, float swingProcess) {
                 int side = arm == net.minecraft.world.entity.HumanoidArm.RIGHT ? 1 : -1;
-                if (com.chapeau.apica.common.item.tool.ChopperCubeLockHelper.isLocked()) {
+                if (com.chapeau.apica.common.item.tool.ChopperHiveLockHelper.isLocked()) {
                     // Main figee pendant le chopping (pas de swing)
                     poseStack.translate((float) side * 0.56F, -0.52F, -0.72F);
                 } else {
@@ -464,7 +467,7 @@ public class ClientSetup {
                 }
                 return true;
             }
-        }, ApicaItems.CHOPPER_CUBE.get());
+        }, ApicaItems.CHOPPER_HIVE.get());
 
         // --- Fluid Extensions ---
         registerFluidExtension(event, ApicaFluids.HONEY_FLUID_TYPE,
@@ -636,10 +639,10 @@ public class ClientSetup {
         // Mining Laser 3D body model (rendu par BEWLR)
         event.register(MiningLaserItemRenderer.BODY_MODEL_LOC);
 
-        // Chopper Cube 3D part models (rendu par BEWLR)
-        event.register(ChopperCubeItemRenderer.BOTTOM_MODEL_LOC);
-        event.register(ChopperCubeItemRenderer.CENTER_MODEL_LOC);
-        event.register(ChopperCubeItemRenderer.TOP_MODEL_LOC);
+        // Chopper Hive 3D part models (rendu par BEWLR)
+        event.register(ChopperHiveItemRenderer.BOTTOM_MODEL_LOC);
+        event.register(ChopperHiveItemRenderer.CENTER_MODEL_LOC);
+        event.register(ChopperHiveItemRenderer.TOP_MODEL_LOC);
 
         // Modèles multiblock tank
         event.register(MultiblockTankRenderer.FORMED_MODEL_LOC);  // Formé (scalé)
