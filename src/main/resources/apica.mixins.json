@@ -9,7 +9,8 @@
     "PlayerDimensionsMixin"
   ],
   "client": [
-    "client.ContainerScreenMagazineMixin"
+    "client.ContainerScreenMagazineMixin",
+    "client.InventoryScreenAccessoryMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -12,6 +12,8 @@
  * | ApicaMenus          | Registration         | Menu type                      |
  * | BackpackItem        | Type check           | Slot filter + validation       |
  * | DataComponents      | Stockage items       | CONTAINER read/write           |
+ * | ApicaAttachments    | Acces attachment     | stillValid check               |
+ * | AccessoryPlayerData | Donnees accessoire   | stillValid check               |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -23,7 +25,9 @@
  */
 package com.chapeau.apica.common.menu;
 
+import com.chapeau.apica.common.data.AccessoryPlayerData;
 import com.chapeau.apica.common.item.BackpackItem;
+import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.registry.ApicaMenus;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
@@ -31,7 +35,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -42,6 +45,7 @@ import java.util.List;
 /**
  * Menu pour le backpack. 27 slots d'inventaire backed par un SimpleContainer.
  * Le contenu est charge depuis DataComponents.CONTAINER et sauvegarde a la fermeture.
+ * Le backpack est stocke dans un slot accessoire (AccessoryPlayerData).
  */
 public class BackpackMenu extends ApicaMenu {
 
@@ -50,7 +54,7 @@ public class BackpackMenu extends ApicaMenu {
 
     private final SimpleContainer container;
     private final ItemStack backpackStack;
-    private final int backpackSlotIndex;
+    private final int accessorySlot;
 
     /** Client constructor (appele par IMenuTypeExtension). */
     public BackpackMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buf) {
@@ -59,10 +63,10 @@ public class BackpackMenu extends ApicaMenu {
 
     /** Server constructor. */
     public BackpackMenu(int containerId, Inventory playerInventory,
-                        ItemStack backpackStack, int slotIndex) {
+                        ItemStack backpackStack, int accessorySlot) {
         super(ApicaMenus.BACKPACK.get(), containerId);
         this.backpackStack = backpackStack;
-        this.backpackSlotIndex = slotIndex;
+        this.accessorySlot = accessorySlot;
         this.container = new SimpleContainer(CONTAINER_SLOTS);
 
         // Charger les items depuis DataComponents.CONTAINER
@@ -88,30 +92,6 @@ public class BackpackMenu extends ApicaMenu {
         addPlayerHotbar(playerInventory, 8, 142);
     }
 
-    /**
-     * Bloque les interactions avec le slot contenant le backpack ouvert.
-     * Empeche click, shift-click et swap (touche 1-9) sur ce slot.
-     */
-    @Override
-    public void clicked(int slotId, int button, ClickType clickType, Player player) {
-        // Bloquer le clic direct sur le slot du backpack
-        if (slotId >= 0 && slotId < slots.size()) {
-            Slot slot = slots.get(slotId);
-            if (slot.container == player.getInventory()
-                    && slot.getContainerSlot() == backpackSlotIndex) {
-                return;
-            }
-        }
-        // Bloquer le swap (touche 1-9) si le hotbar slot cible contient le backpack
-        if (clickType == ClickType.SWAP) {
-            if (button == backpackSlotIndex
-                    || (backpackSlotIndex >= 0 && backpackSlotIndex < 9 && button == backpackSlotIndex)) {
-                return;
-            }
-        }
-        super.clicked(slotId, button, clickType, player);
-    }
-
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         return doQuickMove(index, CONTAINER_SLOTS, 0, CONTAINER_SLOTS,
@@ -120,12 +100,9 @@ public class BackpackMenu extends ApicaMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        // Verifie que le backpack est toujours dans le slot d'origine
         if (backpackStack.isEmpty()) return true; // Client-side
-        if (backpackSlotIndex < 0 || backpackSlotIndex >= player.getInventory().getContainerSize()) {
-            return false;
-        }
-        return player.getInventory().getItem(backpackSlotIndex).getItem() instanceof BackpackItem;
+        AccessoryPlayerData data = player.getData(ApicaAttachments.ACCESSORY_DATA);
+        return data.getAccessory(accessorySlot).getItem() instanceof BackpackItem;
     }
 
     @Override

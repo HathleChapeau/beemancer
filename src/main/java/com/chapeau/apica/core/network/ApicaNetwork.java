@@ -31,6 +31,8 @@ import com.chapeau.apica.core.network.packets.DubstepRadioTransportPacket;
 import com.chapeau.apica.core.network.packets.DubstepRadioSyncPacket;
 import com.chapeau.apica.core.network.packets.MagazineEquipPacket;
 import com.chapeau.apica.core.network.packets.BackpackOpenPacket;
+import com.chapeau.apica.core.network.packets.AccessoryEquipPacket;
+import com.chapeau.apica.core.network.packets.AccessorySyncPacket;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -155,6 +157,13 @@ public class ApicaNetwork {
                 BackpackOpenPacket::handle
         );
 
+        // Accessory C2S
+        registrar.playToServer(
+                AccessoryEquipPacket.TYPE,
+                AccessoryEquipPacket.STREAM_CODEC,
+                AccessoryEquipPacket::handle
+        );
+
         // Server to Client packets
         registrar.playToClient(
                 CodexSyncPacket.TYPE,
@@ -184,6 +193,13 @@ public class ApicaNetwork {
                 LaunchVelocityPacket.TYPE,
                 LaunchVelocityPacket.STREAM_CODEC,
                 LaunchVelocityPacket::handle
+        );
+
+        // Accessory S2C
+        registrar.playToClient(
+                AccessorySyncPacket.TYPE,
+                AccessorySyncPacket.STREAM_CODEC,
+                AccessorySyncPacket::handle
         );
 
         // Dubstep Radio S2C

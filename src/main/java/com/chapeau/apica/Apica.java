@@ -42,6 +42,8 @@ import com.chapeau.apica.core.multiblock.MultiblockEvents;
 import com.chapeau.apica.core.network.ApicaNetwork;
 import com.chapeau.apica.core.util.SplitItemHandler;
 import com.chapeau.apica.core.registry.ApicaParticles;
+import com.chapeau.apica.common.data.AccessoryPlayerData;
+import com.chapeau.apica.core.network.packets.AccessorySyncPacket;
 import com.chapeau.apica.core.network.packets.CodexSyncPacket;
 import com.chapeau.apica.core.network.packets.QuestSyncPacket;
 import com.chapeau.apica.common.quest.QuestPlayerData;
@@ -74,8 +76,11 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
@@ -268,6 +273,8 @@ public class Apica {
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(this::onPlayerRespawn);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOW, false, LivingDeathEvent.class, this::onPlayerDeath);
         NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
         NeoForge.EVENT_BUS.register(StorageEvents.class);
         NeoForge.EVENT_BUS.register(MultiblockEvents.class);
@@ -295,6 +302,29 @@ public class Apica {
 
             syncCodexDataToPlayer(player);
             syncQuestDataToPlayer(player);
+            syncAccessoryDataToPlayer(player);
+        }
+    }
+
+    private void onPlayerRespawn(final PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            syncAccessoryDataToPlayer(player);
+        }
+    }
+
+    private void onPlayerDeath(final LivingDeathEvent event) {
+        if (event.isCanceled()) return;
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+
+        boolean keepInventory = player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY);
+        if (keepInventory) return;
+
+        AccessoryPlayerData data = player.getData(ApicaAttachments.ACCESSORY_DATA);
+        for (int i = 0; i < AccessoryPlayerData.SLOT_COUNT; i++) {
+            ItemStack stack = data.removeAccessory(i);
+            if (!stack.isEmpty()) {
+                player.drop(stack, true, false);
+            }
         }
     }
 
@@ -618,5 +648,10 @@ public class Apica {
         PacketDistributor.sendToPlayer(player, new QuestSyncPacket(data));
         LOGGER.info("Synced quest data to player {}: {} completed quests",
             player.getName().getString(), data.getCompletedQuests().size());
+    }
+
+    private void syncAccessoryDataToPlayer(ServerPlayer player) {
+        AccessoryPlayerData data = player.getData(ApicaAttachments.ACCESSORY_DATA);
+        PacketDistributor.sendToPlayer(player, new AccessorySyncPacket(data));
     }
 }

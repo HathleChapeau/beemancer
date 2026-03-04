@@ -23,6 +23,7 @@ package com.chapeau.apica.core.registry;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.codex.CodexPlayerData;
+import com.chapeau.apica.common.data.AccessoryPlayerData;
 import com.chapeau.apica.common.quest.QuestPlayerData;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -47,6 +48,14 @@ public class ApicaAttachments {
         "quest_data",
         () -> AttachmentType.builder(() -> new QuestPlayerData())
             .serialize(QuestPlayerData.CODEC)
+            .copyOnDeath()
+            .build()
+    );
+
+    public static final Supplier<AttachmentType<AccessoryPlayerData>> ACCESSORY_DATA = ATTACHMENTS.register(
+        "accessory_data",
+        () -> AttachmentType.builder(AccessoryPlayerData::new)
+            .serialize(AccessoryPlayerData.CODEC)
             .copyOnDeath()
             .build()
     );
