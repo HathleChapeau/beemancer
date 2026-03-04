@@ -32,6 +32,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import org.lwjgl.glfw.GLFW;
+
 import java.util.List;
 
 /**
@@ -93,7 +95,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
         List<Integer> tabSlots = AccessoryClientCache.getTabSlots();
         if (!tabSlots.isEmpty()) {
             int tabY = topPos - TAB_PROTRUDE;
-            int tabX = leftPos + 1;
+            int tabX = leftPos;
             int currentSlot = menu.getAccessorySlot();
 
             // Player tab (unselected — we're on BackpackScreen)
@@ -120,15 +122,14 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
             List<Integer> tabSlots = AccessoryClientCache.getTabSlots();
             if (!tabSlots.isEmpty()) {
                 int tabY = topPos - TAB_PROTRUDE;
-                int tabX = leftPos + 1;
+                int tabX = leftPos;
                 Minecraft mc = Minecraft.getInstance();
 
                 // Player tab → close backpack, open inventory
                 if (mouseX >= tabX && mouseX < tabX + TAB_W
                         && mouseY >= tabY && mouseY < tabY + TAB_H) {
                     if (mc.player != null) {
-                        mc.player.closeContainer();
-                        mc.setScreen(new InventoryScreen(mc.player));
+                        apica$switchScreen(mc, () -> mc.setScreen(new InventoryScreen(mc.player)));
                         return true;
                     }
                 }
@@ -142,8 +143,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
                             && mouseY >= tabY && mouseY < tabY + TAB_H) {
                         ItemStack stack = AccessoryClientCache.getSlot(slot);
                         if (mc.player != null && stack.getItem() instanceof IAccessory acc) {
-                            mc.player.closeContainer();
-                            acc.onInventoryTabClicked(slot);
+                            apica$switchScreen(mc, () -> acc.onInventoryTabClicked(slot));
                             return true;
                         }
                     }
@@ -152,5 +152,21 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    /**
+     * Ferme le container et execute l'action de navigation en preservant la position du curseur.
+     * Evite que le curseur ne revienne au centre de l'ecran lors du changement de tab.
+     */
+    private void apica$switchScreen(Minecraft mc, Runnable action) {
+        long window = mc.getWindow().getWindow();
+        double[] xBuf = new double[1];
+        double[] yBuf = new double[1];
+        GLFW.glfwGetCursorPos(window, xBuf, yBuf);
+
+        mc.player.closeContainer();
+        action.run();
+
+        GLFW.glfwSetCursorPos(window, xBuf[0], yBuf[0]);
     }
 }

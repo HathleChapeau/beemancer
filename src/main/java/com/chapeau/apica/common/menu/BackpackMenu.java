@@ -92,8 +92,8 @@ public class BackpackMenu extends ApicaMenu {
         }
 
         // Inventaire joueur (y=84) + hotbar (y=142)
-        addPlayerInventory(playerInventory, 8, 84);
-        addPlayerHotbar(playerInventory, 8, 142);
+        addPlayerInventory(playerInventory, 8, 85);
+        addPlayerHotbar(playerInventory, 8, 143);
     }
 
     @Override

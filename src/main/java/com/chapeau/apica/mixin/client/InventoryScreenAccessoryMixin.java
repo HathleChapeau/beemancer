@@ -48,10 +48,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class InventoryScreenAccessoryMixin {
 
     // Accessory slot positions (container-relative, above shield slot at 77,62)
-    @Unique private static final int SLOT_0_X = 77;
-    @Unique private static final int SLOT_0_Y = 44;
-    @Unique private static final int SLOT_1_X = 77;
-    @Unique private static final int SLOT_1_Y = 26;
+    @Unique private static final int SLOT_0_X = 76;
+    @Unique private static final int SLOT_0_Y = 43;
+    @Unique private static final int SLOT_1_X = 76;
+    @Unique private static final int SLOT_1_Y = 25;
     @Unique private static final int SLOT_SIZE = 18;
 
     // Tab sprites (vanilla advancement above-type tabs)
@@ -111,7 +111,7 @@ public abstract class InventoryScreenAccessoryMixin {
         List<Integer> tabSlots = AccessoryClientCache.getTabSlots();
         if (!tabSlots.isEmpty()) {
             int tabY = topPos - TAB_PROTRUDE;
-            int tabX = leftPos + 1;
+            int tabX = leftPos;
 
             // Player tab (selected — we're on InventoryScreen)
             graphics.blitSprite(TAB_SELECTED_LEFT, tabX, tabY, TAB_W, TAB_H);
@@ -148,7 +148,7 @@ public abstract class InventoryScreenAccessoryMixin {
         List<Integer> tabSlots = AccessoryClientCache.getTabSlots();
         if (!tabSlots.isEmpty()) {
             int tabY = topPos - TAB_PROTRUDE;
-            int tabX = leftPos + 1 + TAB_W;
+            int tabX = leftPos + TAB_W;
             for (int slot : tabSlots) {
                 if (mouseX >= tabX && mouseX < tabX + TAB_W
                         && mouseY >= tabY && mouseY < tabY + TAB_H) {
