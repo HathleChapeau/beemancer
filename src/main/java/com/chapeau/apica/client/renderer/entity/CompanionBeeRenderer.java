@@ -90,7 +90,7 @@ public class CompanionBeeRenderer extends BeeRenderer {
                              int packedLight, float entityYaw) {
         poseStack.pushPose();
         poseStack.translate(0.0, -0.25, 0.0);
-        poseStack.scale(0.9f, 0.9f, 0.9f);
+        poseStack.scale(1.0f, 1.0f, 1.0f);
         poseStack.mulPose(Axis.YP.rotationDegrees(-entityYaw));
         itemRenderer.renderStatic(CHEST_ICON, ItemDisplayContext.GROUND,
             packedLight, OverlayTexture.NO_OVERLAY, poseStack, bufferSource, null, 0);

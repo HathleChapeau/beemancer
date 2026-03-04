@@ -469,6 +469,19 @@ public class CompanionBeeEntity extends Bee {
     }
 
     // =========================================================================
+    // ANIMATION
+    // =========================================================================
+
+    /** Desactive le balancier du corps pour les abeilles BACKPACK (les ailes restent animees). */
+    @Override
+    public float getRollAmount(float partialTick) {
+        if (getCompanionType() == CompanionType.BACKPACK) {
+            return 0.0F;
+        }
+        return super.getRollAmount(partialTick);
+    }
+
+    // =========================================================================
     // INVULNERABILITY + NEUTRALIZATION
     // =========================================================================
 
