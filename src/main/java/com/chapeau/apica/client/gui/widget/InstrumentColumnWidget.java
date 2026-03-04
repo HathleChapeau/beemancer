@@ -60,6 +60,7 @@ public class InstrumentColumnWidget {
     private boolean dropdownOpen = false;
     private int dropdownScroll = 0;
     private boolean draggingScrollbar = false;
+    private int dropdownAnchorX, dropdownAnchorY;
 
     public interface Listener {
         void onAddTrack(DubstepInstrument instrument);
@@ -83,10 +84,12 @@ public class InstrumentColumnWidget {
         return dropdownOpen;
     }
 
-    /** Ouvre le dropdown de selection d'instrument (appele par TransportBarWidget). */
-    public void openDropdown() {
+    /** Ouvre le dropdown de selection d'instrument sous le bouton Add Instrument. */
+    public void openDropdown(int anchorX, int anchorY) {
         dropdownOpen = true;
         dropdownScroll = 0;
+        dropdownAnchorX = anchorX;
+        dropdownAnchorY = anchorY;
     }
 
     public void render(GuiGraphics gfx, SequenceData data) {
@@ -144,8 +147,8 @@ public class InstrumentColumnWidget {
     }
 
     private void renderDropdown(GuiGraphics gfx, Font font, int trackCount) {
-        int ddX = x + width / 2 - 50;
-        int ddY = y + trackCount * ROW_H + ROW_H;
+        int ddX = dropdownAnchorX;
+        int ddY = dropdownAnchorY;
         int ddW = 100;
         DubstepInstrument[] instruments = DubstepInstrument.values();
         int totalCount = instruments.length;
@@ -189,8 +192,8 @@ public class InstrumentColumnWidget {
         // Dropdown click
         if (dropdownOpen) {
             int trackCount = data.getTrackCount();
-            int ddX = x + width / 2 - 50;
-            int ddY = y + trackCount * ROW_H + ROW_H;
+            int ddX = dropdownAnchorX;
+            int ddY = dropdownAnchorY;
             int ddW = 100;
             DubstepInstrument[] instruments = DubstepInstrument.values();
             int totalCount = instruments.length;
@@ -269,8 +272,7 @@ public class InstrumentColumnWidget {
 
     public boolean mouseDragged(double mx, double my, SequenceData data) {
         if (!draggingScrollbar || !dropdownOpen) return false;
-        int trackCount = data.getTrackCount();
-        int ddY = y + trackCount * ROW_H + ROW_H;
+        int ddY = dropdownAnchorY;
         DubstepInstrument[] instruments = DubstepInstrument.values();
         int totalCount = instruments.length;
         int visible = Math.min(totalCount - dropdownScroll, DROPDOWN_VISIBLE);

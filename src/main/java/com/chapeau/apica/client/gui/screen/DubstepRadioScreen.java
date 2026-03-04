@@ -59,7 +59,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu>
         implements DubstepRadioSyncPacket.DubstepRadioSyncReceiver {
 
-    private static final int GUI_W = 260;
+    private static final int GUI_W = 220;
     private static final int MAIN_H = 150;
     private static final int EDITOR_H = TrackEditorWidget.PITCH_COUNT * TrackEditorWidget.CELL_H + 18 + 16; // 234
     private static final int BAR_H = 18;
@@ -126,7 +126,8 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
         };
 
         mainTransport = new TransportBarWidget(gx, gy, GUI_W, transportListener, null,
-                () -> instrumentColumn.openDropdown());
+                () -> instrumentColumn.openDropdown(
+                        mainTransport.getAddBtnX(), mainTransport.getAddBtnBottomY()));
         editorTransport = new TransportBarWidget(gx, gy, GUI_W, transportListener,
                 () -> { editingTrack = -1; updateLayout(); }, null);
 

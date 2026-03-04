@@ -49,10 +49,14 @@ public class TransportBarWidget {
     private final Runnable backAction;
     private final Runnable addAction;
 
+    private static final int COL_ADD_DISABLED = 0xFF444444;
+    private static final String ADD_LABEL = "Add Instrument";
+
     private int bpm = 120;
     private boolean playing = false;
     private PlayMode playMode = PlayMode.LOOP;
     private boolean canAdd = false;
+    private int addBtnX, addBtnBottomY;
 
     /** Callback pour les actions transport. */
     public interface Listener {
@@ -129,11 +133,16 @@ public class TransportBarWidget {
         gfx.drawString(font, ">", cx + 2, btnY + 3, COL_TEXT, false);
         cx += 10;
 
-        // Bouton [+] Add instrument (mode principal uniquement)
-        if (addAction != null && canAdd) {
+        // Bouton [Add Instrument] (mode principal uniquement)
+        if (addAction != null) {
             cx += 4;
-            gfx.fill(cx, btnY, cx + BTN_SIZE, btnY + BTN_SIZE, COL_ADD);
-            gfx.drawString(font, "+", cx + 4, btnY + 3, 0xFF111111, false);
+            int addW = font.width(ADD_LABEL) + 6;
+            int bgCol = canAdd ? COL_ADD : COL_ADD_DISABLED;
+            int txtCol = canAdd ? 0xFF111111 : 0xFF888888;
+            gfx.fill(cx, btnY, cx + addW, btnY + BTN_SIZE, bgCol);
+            gfx.drawString(font, ADD_LABEL, cx + 3, btnY + 3, txtCol, false);
+            addBtnX = cx;
+            addBtnBottomY = btnY + BTN_SIZE;
         }
     }
 
@@ -189,9 +198,11 @@ public class TransportBarWidget {
         cx += 10;
 
         // Add instrument button
-        if (addAction != null && canAdd) {
+        if (addAction != null) {
             cx += 4;
-            if (mx >= cx && mx < cx + BTN_SIZE && my >= btnY && my < btnY + BTN_SIZE) {
+            Font f = Minecraft.getInstance().font;
+            int addW = f.width(ADD_LABEL) + 6;
+            if (canAdd && mx >= cx && mx < cx + addW && my >= btnY && my < btnY + BTN_SIZE) {
                 addAction.run();
                 return true;
             }
@@ -206,6 +217,12 @@ public class TransportBarWidget {
 
     public void mouseReleased() {
     }
+
+    /** Position X du bouton Add Instrument (pour ancrer le dropdown). */
+    public int getAddBtnX() { return addBtnX; }
+
+    /** Position Y du bas du bouton Add Instrument (pour ancrer le dropdown). */
+    public int getAddBtnBottomY() { return addBtnBottomY; }
 
     public int getHeight() {
         return BAR_H;
