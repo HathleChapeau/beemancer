@@ -28,7 +28,7 @@ import net.minecraft.client.gui.GuiGraphics;
 /**
  * Piano-roll polyphonique pour une seule track.
  * 25 lignes de pitch (F#5 en haut, F#3 en bas) x N colonnes de steps.
- * Plusieurs pitches actifs par step (accords). Toggle via mouseClicked uniquement.
+ * Supporte un stepOffset pour afficher une page specifique de la sequence.
  */
 public class TrackEditorWidget {
 
@@ -86,13 +86,17 @@ public class TrackEditorWidget {
         this.playheadStep = step;
     }
 
-    public void render(GuiGraphics gfx, TrackData track, int stepCount) {
+    /**
+     * Rendu du piano-roll. Affiche stepsToShow colonnes a partir de stepOffset.
+     * Le playhead est affiche uniquement s'il tombe dans la plage visible.
+     */
+    public void render(GuiGraphics gfx, TrackData track, int stepsToShow, int stepOffset) {
         Font font = Minecraft.getInstance().font;
         int instIdx = track.getInstrument().ordinal();
         int activeColor = INST_COLORS[instIdx % INST_COLORS.length];
 
         int gridX = x + LABEL_W;
-        int gridW = stepCount * CELL_W;
+        int gridW = stepsToShow * CELL_W;
 
         // Background
         gfx.fill(x, y, x + width, y + height, 0xFF111122);
@@ -114,12 +118,13 @@ public class TrackEditorWidget {
             gfx.drawString(font, label, x + 1, ry + 1, labelColor, false);
 
             // Grid cells for this pitch row
-            for (int s = 0; s < stepCount; s++) {
+            for (int s = 0; s < stepsToShow; s++) {
+                int absoluteStep = s + stepOffset;
                 int cx = gridX + s * CELL_W;
                 boolean inBeatGroup = (s / 4) % 2 == 0;
                 int emptyCol = inBeatGroup ? COL_EMPTY : COL_EMPTY_ALT;
 
-                if (track.isPitchActive(s, pitch)) {
+                if (track.isPitchActive(absoluteStep, pitch)) {
                     gfx.fill(cx + 1, ry + 1, cx + CELL_W - 1, ry + CELL_H - 1, activeColor);
                 } else {
                     gfx.fill(cx + 1, ry + 1, cx + CELL_W - 1, ry + CELL_H - 1, emptyCol);
@@ -131,7 +136,7 @@ public class TrackEditorWidget {
         }
 
         // Beat markers (every 4 steps)
-        for (int s = 4; s < stepCount; s += 4) {
+        for (int s = 4; s < stepsToShow; s += 4) {
             int lx = gridX + s * CELL_W;
             gfx.fill(lx, y, lx + 1, y + PITCH_COUNT * CELL_H, COL_BEAT_LINE);
         }
@@ -145,34 +150,38 @@ public class TrackEditorWidget {
             }
         }
 
-        // Playhead
-        if (playheadStep >= 0 && playheadStep < stepCount) {
-            int px = gridX + playheadStep * CELL_W;
+        // Playhead (only if visible in current page)
+        int relativePlayhead = playheadStep - stepOffset;
+        if (relativePlayhead >= 0 && relativePlayhead < stepsToShow) {
+            int px = gridX + relativePlayhead * CELL_W;
             gfx.fill(px, y, px + CELL_W, y + PITCH_COUNT * CELL_H, COL_PLAYHEAD);
             gfx.fill(px, y, px + 1, y + PITCH_COUNT * CELL_H, COL_PLAYHEAD_LINE);
         }
     }
 
     /**
-     * Handle click — toggle pitch polyphonique (pas de drag).
+     * Handle click — toggle pitch polyphonique.
+     * stepOffset est ajoute pour convertir la colonne visuelle en step absolu.
      */
-    public boolean mouseClicked(double mx, double my, int button, TrackData track, int stepCount) {
+    public boolean mouseClicked(double mx, double my, int button, TrackData track,
+                                int stepsToShow, int stepOffset) {
         int gridX = x + LABEL_W;
 
-        if (mx < gridX || mx >= gridX + stepCount * CELL_W) return false;
+        if (mx < gridX || mx >= gridX + stepsToShow * CELL_W) return false;
         if (my < y || my >= y + PITCH_COUNT * CELL_H) return false;
 
         int col = (int) ((mx - gridX) / CELL_W);
         int row = (int) ((my - y) / CELL_H);
 
-        if (col < 0 || col >= stepCount) return false;
+        if (col < 0 || col >= stepsToShow) return false;
         if (row < 0 || row >= PITCH_COUNT) return false;
 
+        int absoluteStep = col + stepOffset;
         int clickedPitch = PITCH_COUNT - 1 - row;
-        boolean wasActive = track.isPitchActive(col, clickedPitch);
+        boolean wasActive = track.isPitchActive(absoluteStep, clickedPitch);
         boolean newState = !wasActive;
 
-        listener.onPitchToggle(col, clickedPitch, newState);
+        listener.onPitchToggle(absoluteStep, clickedPitch, newState);
         if (newState) {
             listener.onPitchPreview(clickedPitch);
         }
