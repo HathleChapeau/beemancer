@@ -72,13 +72,12 @@ public class LightningArcRenderer {
 
         static RenderType create(ResourceLocation texture) {
             CompositeState state = CompositeState.builder()
-                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                    .setShaderState(RENDERTYPE_EYES_SHADER)
                     .setTextureState(new TextureStateShard(texture, false, false))
-                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setTransparencyState(ADDITIVE_TRANSPARENCY)
                     .setDepthTestState(NO_DEPTH_TEST)
                     .setWriteMaskState(COLOR_WRITE)
                     .setCullState(NO_CULL)
-                    .setOverlayState(OVERLAY)
                     .createCompositeState(false);
             return RenderType.create("apica_lightning", DefaultVertexFormat.NEW_ENTITY,
                     VertexFormat.Mode.QUADS, 256, true, true, state);

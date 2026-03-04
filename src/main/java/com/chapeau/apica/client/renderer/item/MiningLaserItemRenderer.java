@@ -394,7 +394,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static int getMagazineColor(String fluidId) {
         if (fluidId.contains("honey")) return 0xE8A317;
         if (fluidId.contains("royal_jelly")) return 0xFFF8DC;
-        if (fluidId.contains("nectar")) return 0x9B30FF;
+        if (fluidId.contains("nectar")) return 0xCC70FF;
         return 0x888888;
     }
 
