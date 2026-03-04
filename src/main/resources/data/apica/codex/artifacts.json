@@ -9,7 +9,7 @@
     {"id": "nectar_bread", "position": {"x": -3, "y": -3}, "category": "NORMAL", "parent": "royal_bread", "hidden_until_parent_unlocked": false, "quest": "nectar_upgrade"},
     {"id": "accessories", "position": {"x": 2, "y": 0}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},
     {"id": "api", "position": {"x": 2, "y": -2}, "category": "NORMAL", "parent": "accessories", "hidden_until_parent_unlocked": false},
-    {"id": "bee_backpack", "position": {"x": 4, "y": 0}, "category": "NORMAL", "parent": "accessories", "hidden_until_parent_unlocked": false},
+    {"id": "bee_backpack", "position": {"x": 5, "y": 0}, "category": "NORMAL", "parent": "accessories", "hidden_until_parent_unlocked": false},
     {"id": "magnet", "position": {"x": 4, "y": 2}, "category": "NORMAL", "parent": "accessories", "hidden_until_parent_unlocked": false},
 
     {"id": "honey_artifact_core", "position": {"x": 0, "y": 2}, "category": "NORMAL", "parent": "infuser", "hidden_until_parent_unlocked": false},

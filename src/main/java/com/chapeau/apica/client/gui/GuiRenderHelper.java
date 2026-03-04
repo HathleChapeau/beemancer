@@ -474,6 +474,21 @@ public class GuiRenderHelper {
     }
 
     /**
+     * Rendu d'une texture en badge dans le coin bas-droit d'une zone.
+     * Variante texture de renderBadgeIcon pour les cas sans ItemStack.
+     * Utilise par: IItemDecorator (magnet sur bee_magnet).
+     */
+    public static void renderBadgeTexture(GuiGraphics g, ResourceLocation texture, int x, int y,
+                                           int size, float scale, float zOffset) {
+        PoseStack pose = g.pose();
+        pose.pushPose();
+        pose.translate(x + size - 16 * scale, y + size - 16 * scale, zOffset);
+        pose.scale(scale, scale, 1.0f);
+        g.blit(texture, 0, 0, 0, 0, 16, 16, 16, 16);
+        pose.popPose();
+    }
+
+    /**
      * Nom lisible d'un fluide Apica.
      */
     public static String getFluidName(FluidStack fluid) {

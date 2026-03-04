@@ -128,9 +128,9 @@ public class CodexNodeWidget extends AbstractWidget {
         NODE_TO_ITEM.put("bee_backpack", "apica:backpack");
         NODE_TO_ITEM.put("altar", "apica:altar_heart");
 
-        // Badges en bas a droite du node (petit item additionnel)
-        NODE_TO_BADGE.put("magnet", "apica:companion_bee");
-        NODE_TO_BADGE.put("bee_backpack", "apica:companion_bee");
+        // Badges en bas a droite du node (meme icone que le IItemDecorator de l'item)
+        NODE_TO_BADGE.put("bee_backpack", "minecraft:chest");
+        NODE_TO_BADGE.put("magnet", "apica:bee_magnet");
     }
 
     private final CodexNode node;

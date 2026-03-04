@@ -672,23 +672,13 @@ public class ClientSetup {
 
         // Backpack: icone coffre en bas a droite (toujours visible)
         event.register(ApicaItems.BACKPACK.get(), (graphics, font, stack, xOffset, yOffset) -> {
-            com.mojang.blaze3d.vertex.PoseStack pose = graphics.pose();
-            pose.pushPose();
-            pose.translate(xOffset + 8, yOffset + 8, 200);
-            pose.scale(0.5f, 0.5f, 1.0f);
-            graphics.renderItem(chestIcon, 0, 0);
-            pose.popPose();
+            GuiRenderHelper.renderBadgeIcon(graphics, chestIcon, xOffset, yOffset, 16, 0.5f, 200);
             return false;
         });
 
         // Bee Magnet: icone magnet en bas a droite (toujours visible)
         event.register(ApicaItems.BEE_MAGNET.get(), (graphics, font, stack, xOffset, yOffset) -> {
-            com.mojang.blaze3d.vertex.PoseStack pose = graphics.pose();
-            pose.pushPose();
-            pose.translate(xOffset + 8, yOffset + 8, 200);
-            pose.scale(0.5f, 0.5f, 1.0f);
-            graphics.blit(magnetTex, 0, 0, 0, 0, 16, 16, 16, 16);
-            pose.popPose();
+            GuiRenderHelper.renderBadgeTexture(graphics, magnetTex, xOffset, yOffset, 16, 0.5f, 200);
             return false;
         });
 
