@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [TransportBarWidget.java]
- * Description: Barre de transport du DAW — Play/Stop, Mode, BPM, Volume master, bouton Back optionnel
+ * Description: Barre de transport du DAW — Play/Stop, Mode, BPM, bouton Back optionnel
  * ============================================================
  *
  * DEPENDANCES:
@@ -26,15 +26,13 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
 /**
- * Barre de transport : [Back] (optionnel) | Play/Stop | [Mode] | BPM +/- | Volume slider.
+ * Barre de transport : [Back] (optionnel) | Play/Stop | [Mode] | BPM +/-.
  * Coordonnees absolues (leftPos + offsets passes au constructeur).
  */
 public class TransportBarWidget {
 
     private static final int BAR_H = 18;
     private static final int BTN_SIZE = 14;
-    private static final int SLIDER_W = 50;
-    private static final int SLIDER_H = 8;
 
     private static final int COL_BG = 0xFF1E1E2E;
     private static final int COL_BORDER = 0xFF555555;
@@ -42,8 +40,6 @@ public class TransportBarWidget {
     private static final int COL_STOP = 0xFFCC3333;
     private static final int COL_TEXT = 0xFFDDDDDD;
     private static final int COL_ACCENT = 0xFF00FF88;
-    private static final int COL_SLIDER_BG = 0xFF333333;
-    private static final int COL_SLIDER_FILL = 0xFF00CC88;
     private static final int COL_BACK = 0xFF4466AA;
     private static final int COL_MODE = 0xFF335577;
 
@@ -53,16 +49,13 @@ public class TransportBarWidget {
 
     private int bpm = 120;
     private boolean playing = false;
-    private int volumePct = 80;
     private PlayMode playMode = PlayMode.LOOP;
-    private boolean draggingVolume = false;
 
     /** Callback pour les actions transport. */
     public interface Listener {
         void onPlay();
         void onStop();
         void onBpmChange(int delta);
-        void onVolumeChange(int pct);
         void onModeChange(PlayMode newMode);
     }
 
@@ -74,10 +67,9 @@ public class TransportBarWidget {
         this.backAction = backAction;
     }
 
-    public void update(int bpm, boolean playing, int volumePct, PlayMode playMode) {
+    public void update(int bpm, boolean playing, PlayMode playMode) {
         this.bpm = bpm;
         this.playing = playing;
-        this.volumePct = volumePct;
         this.playMode = playMode;
     }
 
@@ -129,19 +121,6 @@ public class TransportBarWidget {
 
         gfx.fill(cx, btnY, cx + 8, btnY + BTN_SIZE, COL_BORDER);
         gfx.drawString(font, ">", cx + 2, btnY + 3, COL_TEXT, false);
-        cx += 14;
-
-        // Volume slider
-        gfx.drawString(font, "Vol", cx, y + 5, COL_TEXT, false);
-        cx += 18;
-        renderSlider(gfx, cx, y + 5, SLIDER_W, SLIDER_H, volumePct);
-    }
-
-    private void renderSlider(GuiGraphics gfx, int sx, int sy, int sw, int sh, int pct) {
-        gfx.fill(sx, sy, sx + sw, sy + sh, COL_SLIDER_BG);
-        int fill = (int) (sw * pct / 100.0f);
-        gfx.fill(sx, sy, sx + fill, sy + sh, COL_SLIDER_FILL);
-        gfx.fill(sx + fill - 1, sy - 1, sx + fill + 1, sy + sh + 1, COL_ACCENT);
     }
 
     public boolean mouseClicked(double mx, double my, int button) {
@@ -193,42 +172,15 @@ public class TransportBarWidget {
             listener.onBpmChange(5);
             return true;
         }
-        cx += 14;
-
-        // Volume slider area
-        cx += 18; // "Vol" label
-        if (mx >= cx && mx < cx + SLIDER_W) {
-            int pct = (int) ((mx - cx) / SLIDER_W * 100);
-            listener.onVolumeChange(Math.max(0, Math.min(100, pct)));
-            draggingVolume = true;
-            return true;
-        }
 
         return false;
     }
 
     public boolean mouseDragged(double mx, double my) {
-        if (!draggingVolume) return false;
-
-        Font font = Minecraft.getInstance().font;
-        int cx = x + 4;
-        if (backAction != null) {
-            cx += font.width("< Back") + 6 + 4;
-        }
-        cx += BTN_SIZE + 4; // play/stop
-        cx += font.width(playMode.getLabel()) + 6 + 4; // mode
-        cx += 10; // bpm <
-        cx += font.width(bpm + " BPM") + 2; // bpm text
-        cx += 8 + 14; // bpm >
-        cx += 18; // "Vol" label
-
-        int pct = (int) ((mx - cx) / SLIDER_W * 100);
-        listener.onVolumeChange(Math.max(0, Math.min(100, pct)));
-        return true;
+        return false;
     }
 
     public void mouseReleased() {
-        draggingVolume = false;
     }
 
     public int getHeight() {

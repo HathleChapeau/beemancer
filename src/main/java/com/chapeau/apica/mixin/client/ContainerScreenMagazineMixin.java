@@ -137,33 +137,54 @@ public abstract class ContainerScreenMagazineMixin {
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void apica$onMouseClicked(double mouseX, double mouseY, int button,
                                        CallbackInfoReturnable<Boolean> cir) {
-        if (!apica$magSlotVisible || button != 0) return;
-
-        boolean onBonusSlot = mouseX >= apica$magSlotScreenX
-                && mouseX < apica$magSlotScreenX + SLOT_SIZE
-                && mouseY >= apica$magSlotScreenY
-                && mouseY < apica$magSlotScreenY + SLOT_SIZE;
-
-        if (!onBonusSlot) return;
-
         AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
-        if (apica$magSlotIndex < 0 || apica$magSlotIndex >= self.getMenu().slots.size()) return;
+
+        // Clic gauche sur le bonus slot (equip/unequip/swap)
+        if (button == 0 && apica$magSlotVisible) {
+            boolean onBonusSlot = mouseX >= apica$magSlotScreenX
+                    && mouseX < apica$magSlotScreenX + SLOT_SIZE
+                    && mouseY >= apica$magSlotScreenY
+                    && mouseY < apica$magSlotScreenY + SLOT_SIZE;
+
+            if (onBonusSlot && apica$tryMagazineAction(self)) {
+                cir.setReturnValue(true);
+                return;
+            }
+        }
+
+        // Clic droit sur un slot contenant un IMagazineHolder (equip/unequip/swap)
+        if (button == 1) {
+            Slot slot = findSlot(mouseX, mouseY);
+            if (slot != null && slot.hasItem() && slot.getItem().getItem() instanceof IMagazineHolder) {
+                apica$magSlotIndex = slot.index;
+                if (apica$tryMagazineAction(self)) {
+                    cir.setReturnValue(true);
+                    return;
+                }
+            }
+        }
+    }
+
+    /** Tente equip/unequip/swap sur le slot apica$magSlotIndex. Retourne true si action effectuee. */
+    @Unique
+    private boolean apica$tryMagazineAction(AbstractContainerScreen<?> self) {
+        if (apica$magSlotIndex < 0 || apica$magSlotIndex >= self.getMenu().slots.size()) return false;
 
         ItemStack holderStack = self.getMenu().slots.get(apica$magSlotIndex).getItem();
-        if (!(holderStack.getItem() instanceof IMagazineHolder)) return;
+        if (!(holderStack.getItem() instanceof IMagazineHolder)) return false;
 
         ItemStack cursorStack = self.getMenu().getCarried();
         boolean hasMagazine = MagazineData.hasMagazine(holderStack);
 
-        if (!hasMagazine && cursorStack.getItem() instanceof MagazineItem
-                && !MagazineFluidData.isEmpty(cursorStack)) {
-            // Equiper
+        if (cursorStack.getItem() instanceof MagazineItem && !MagazineFluidData.isEmpty(cursorStack)) {
+            // Equiper ou swap (le serveur gere les deux cas)
             PacketDistributor.sendToServer(new MagazineEquipPacket(apica$magSlotIndex, true));
-            cir.setReturnValue(true);
+            return true;
         } else if (hasMagazine && cursorStack.isEmpty()) {
             // Desequiper
             PacketDistributor.sendToServer(new MagazineEquipPacket(apica$magSlotIndex, false));
-            cir.setReturnValue(true);
+            return true;
         }
+        return false;
     }
 }

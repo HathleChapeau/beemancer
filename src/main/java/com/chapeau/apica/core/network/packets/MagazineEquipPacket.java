@@ -86,23 +86,27 @@ public record MagazineEquipPacket(int slotIndex, boolean equip)
         // Verifier compatibilite fluide
         if (!holder.canAcceptMagazine(cursorStack)) return;
 
-        // Si le holder a deja un magazine, ne pas ecraser
-        if (MagazineData.hasMagazine(holderStack)) return;
+        // Lire les donnees du nouveau magazine
+        String newFluidId = MagazineFluidData.getFluidId(cursorStack);
+        int newAmount = MagazineFluidData.getFluidAmount(cursorStack);
 
-        // Transferer les donnees du magazine vers le holder
-        String fluidId = MagazineFluidData.getFluidId(cursorStack);
-        int amount = MagazineFluidData.getFluidAmount(cursorStack);
-        MagazineData.setMagazine(holderStack, fluidId, amount);
-
-        // Consommer le magazine du curseur
-        cursorStack.shrink(1);
-        player.containerMenu.setCarried(cursorStack);
+        if (MagazineData.hasMagazine(holderStack)) {
+            // Swap: retirer l'ancien magazine vers le curseur, equiper le nouveau
+            ItemStack oldMag = MagazineData.removeMagazine(holderStack);
+            MagazineData.setMagazine(holderStack, newFluidId, newAmount);
+            player.containerMenu.setCarried(oldMag);
+        } else {
+            // Equiper normalement
+            MagazineData.setMagazine(holderStack, newFluidId, newAmount);
+            cursorStack.shrink(1);
+            player.containerMenu.setCarried(cursorStack);
+        }
     }
 
     private static void handleUnequip(ServerPlayer player, ItemStack holderStack) {
+        if (!MagazineData.hasMagazine(holderStack)) return;
         // Le curseur doit etre vide pour recuperer le magazine
         if (!player.containerMenu.getCarried().isEmpty()) return;
-        if (!MagazineData.hasMagazine(holderStack)) return;
 
         ItemStack magazineStack = MagazineData.removeMagazine(holderStack);
         player.containerMenu.setCarried(magazineStack);

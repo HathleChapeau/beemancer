@@ -70,6 +70,7 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
     private int editingTrack = -1;
     private int currentPage = 0;
     private PlayMode playMode = PlayMode.LOOP;
+    private boolean autoStopPending = false;
 
     private TransportBarWidget mainTransport;
     private InstrumentColumnWidget instrumentColumn;
@@ -233,6 +234,7 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
         if (SequencePlaybackEngine.shouldAutoStop()) {
             sendTransport(DubstepRadioTransportPacket.STOP);
             SequencePlaybackEngine.stop();
+            autoStopPending = true;
         }
 
         localData.setBpm(menu.getBpm());
@@ -245,7 +247,12 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
 
         boolean isPlaying = menu.isPlaying();
 
-        if (isPlaying && !SequencePlaybackEngine.isPlaying()) {
+        // If server confirmed stop, clear the pending flag
+        if (autoStopPending && !isPlaying) {
+            autoStopPending = false;
+        }
+
+        if (!autoStopPending && isPlaying && !SequencePlaybackEngine.isPlaying()) {
             SequencePlaybackEngine.start(localData, menu.getBlockPos(), playMode, currentPage);
         } else if (!isPlaying && SequencePlaybackEngine.isPlaying()) {
             SequencePlaybackEngine.stop();
