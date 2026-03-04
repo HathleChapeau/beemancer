@@ -666,29 +666,27 @@ public class ClientSetup {
     }
 
     private static void registerItemDecorations(final net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent event) {
-        ResourceLocation slownessTex = ResourceLocation.withDefaultNamespace("textures/mob_effect/slowness.png");
+        ResourceLocation chestTex = ResourceLocation.withDefaultNamespace("textures/item/chest_minecart.png");
+        ResourceLocation compassTex = ResourceLocation.withDefaultNamespace("textures/item/compass_16.png");
+
+        // Backpack: icone coffre en bas a droite (toujours visible)
         event.register(ApicaItems.BACKPACK.get(), (graphics, font, stack, xOffset, yOffset) -> {
-            // Ne pas afficher l'icone si le backpack est dans un slot accessoire
-            for (int i = 0; i < 2; i++) {
-                if (stack == com.chapeau.apica.client.gui.AccessoryClientCache.getSlot(i)) return false;
-            }
-            net.minecraft.world.item.component.ItemContainerContents contents =
-                    stack.get(net.minecraft.core.component.DataComponents.CONTAINER);
-            if (contents == null) return false;
-            net.minecraft.core.NonNullList<net.minecraft.world.item.ItemStack> items =
-                    net.minecraft.core.NonNullList.withSize(27, net.minecraft.world.item.ItemStack.EMPTY);
-            contents.copyInto(items);
-            boolean hasItems = false;
-            for (net.minecraft.world.item.ItemStack item : items) {
-                if (!item.isEmpty()) { hasItems = true; break; }
-            }
-            if (!hasItems) return false;
-            // Render scaled-down slowness icon (8x8) in top-right corner
             com.mojang.blaze3d.vertex.PoseStack pose = graphics.pose();
             pose.pushPose();
-            pose.translate(xOffset + 8, yOffset, 200);
+            pose.translate(xOffset + 8, yOffset + 8, 200);
             pose.scale(0.5f, 0.5f, 1.0f);
-            graphics.blit(slownessTex, 0, 0, 0, 0, 18, 18, 18, 18);
+            graphics.blit(chestTex, 0, 0, 0, 0, 16, 16, 16, 16);
+            pose.popPose();
+            return false;
+        });
+
+        // Bee Magnet: icone compass en bas a droite (toujours visible)
+        event.register(ApicaItems.BEE_MAGNET.get(), (graphics, font, stack, xOffset, yOffset) -> {
+            com.mojang.blaze3d.vertex.PoseStack pose = graphics.pose();
+            pose.pushPose();
+            pose.translate(xOffset + 8, yOffset + 8, 200);
+            pose.scale(0.5f, 0.5f, 1.0f);
+            graphics.blit(compassTex, 0, 0, 0, 0, 16, 16, 16, 16);
             pose.popPose();
             return false;
         });
