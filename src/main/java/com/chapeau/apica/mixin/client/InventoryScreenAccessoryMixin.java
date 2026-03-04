@@ -49,9 +49,9 @@ public abstract class InventoryScreenAccessoryMixin {
 
     // Accessory slot positions (container-relative, above shield slot at 77,62)
     @Unique private static final int SLOT_0_X = 76;
-    @Unique private static final int SLOT_0_Y = 43;
+    @Unique private static final int SLOT_0_Y = 25;
     @Unique private static final int SLOT_1_X = 76;
-    @Unique private static final int SLOT_1_Y = 25;
+    @Unique private static final int SLOT_1_Y = 7;
     @Unique private static final int SLOT_SIZE = 18;
 
     // Tab sprites (vanilla advancement above-type tabs)
