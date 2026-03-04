@@ -67,6 +67,11 @@ public abstract class ContainerScreenMagazineMixin {
             if (isMagItem && magNotEmpty) {
                 PacketDistributor.sendToServer(new MagazineEquipPacket(hoveredSlot.index, true));
             } else if (hasMagazine && cursorStack.isEmpty()) {
+                // Client-side prediction: set cursor to expected magazine immediately
+                // to prevent vanilla right-click swap from sneaking in
+                String fluidId = MagazineData.getFluidId(hoveredSlot.getItem());
+                int amount = MagazineData.getFluidAmount(hoveredSlot.getItem());
+                self.getMenu().setCarried(MagazineItem.createFilled(fluidId, amount));
                 PacketDistributor.sendToServer(new MagazineEquipPacket(hoveredSlot.index, false));
             }
         }

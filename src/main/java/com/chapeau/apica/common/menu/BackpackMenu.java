@@ -27,17 +27,20 @@ package com.chapeau.apica.common.menu;
 
 import com.chapeau.apica.common.data.AccessoryPlayerData;
 import com.chapeau.apica.common.item.BackpackItem;
+import com.chapeau.apica.core.network.packets.AccessorySyncPacket;
 import com.chapeau.apica.core.registry.ApicaAttachments;
 import com.chapeau.apica.core.registry.ApicaMenus;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +123,12 @@ public class BackpackMenu extends ApicaMenu {
             }
             backpackStack.set(DataComponents.CONTAINER,
                     ItemContainerContents.fromItems(items));
+
+            // Synchroniser le cache accessoire client pour que le tooltip soit a jour
+            if (player instanceof ServerPlayer serverPlayer) {
+                AccessoryPlayerData data = player.getData(ApicaAttachments.ACCESSORY_DATA);
+                PacketDistributor.sendToPlayer(serverPlayer, new AccessorySyncPacket(data));
+            }
         }
     }
 

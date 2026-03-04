@@ -691,13 +691,17 @@ public class ClientSetup {
             return false;
         });
 
-        // IMagazineHolder items: icone magazine equipee en bas a droite
+        // IMagazineHolder items: icone magazine en bas a droite (equipee ou vide)
+        net.minecraft.world.item.ItemStack emptyMag = new net.minecraft.world.item.ItemStack(ApicaItems.MAGAZINE.get());
         net.neoforged.neoforge.client.IItemDecorator magazineDecorator = (graphics, font, stack, xOffset, yOffset) -> {
-            if (!com.chapeau.apica.common.item.magazine.MagazineData.hasMagazine(stack)) return false;
-            String fluidId = com.chapeau.apica.common.item.magazine.MagazineData.getFluidId(stack);
-            int amount = com.chapeau.apica.common.item.magazine.MagazineData.getFluidAmount(stack);
-            net.minecraft.world.item.ItemStack displayMag =
-                com.chapeau.apica.common.item.magazine.MagazineItem.createFilled(fluidId, amount);
+            net.minecraft.world.item.ItemStack displayMag;
+            if (com.chapeau.apica.common.item.magazine.MagazineData.hasMagazine(stack)) {
+                String fluidId = com.chapeau.apica.common.item.magazine.MagazineData.getFluidId(stack);
+                int amount = com.chapeau.apica.common.item.magazine.MagazineData.getFluidAmount(stack);
+                displayMag = com.chapeau.apica.common.item.magazine.MagazineItem.createFilled(fluidId, amount);
+            } else {
+                displayMag = emptyMag;
+            }
             com.mojang.blaze3d.vertex.PoseStack pose = graphics.pose();
             pose.pushPose();
             pose.translate(xOffset + 8, yOffset + 8, 200);

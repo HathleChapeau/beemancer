@@ -313,11 +313,14 @@ public class CodexScreen extends Screen {
         CodexDecorationRenderer.render(graphics, currentDecorations,
                 contentX + contentWidth / 2, contentY + contentHeight / 2, scrollX, scrollY);
 
-        // Connexions et nodes
+        // Connexions et nodes — passer des coordonnees hors ecran si la souris est hors du cadre
+        // pour empecher le hover sur les nodes qui depassent du cadre
         currentRenderer.renderConnections(graphics);
+        int nodeMouseX = isInContentArea(mouseX, mouseY) ? mouseX : -1;
+        int nodeMouseY = isInContentArea(mouseX, mouseY) ? mouseY : -1;
         for (Object widget : currentRenderer.getWidgets()) {
             if (widget instanceof AbstractWidget aw) {
-                aw.render(graphics, mouseX, mouseY, partialTick);
+                aw.render(graphics, nodeMouseX, nodeMouseY, partialTick);
             }
         }
 
@@ -329,8 +332,10 @@ public class CodexScreen extends Screen {
         // 5. Encadre avec le nom de la tab selectionnee, centre sous les boutons
         renderTabLabel(graphics);
 
-        // 7. Tooltips
-        currentRenderer.renderTooltips(graphics, mouseX, mouseY);
+        // 7. Tooltips — uniquement si la souris est dans la zone de contenu
+        if (isInContentArea(mouseX, mouseY)) {
+            currentRenderer.renderTooltips(graphics, mouseX, mouseY);
+        }
 
         // 8. Progress
         renderProgress(graphics);
@@ -476,20 +481,25 @@ public class CodexScreen extends Screen {
             return true;
         }
 
-        if (button == 0) {
-            if (isInContentArea(mouseX, mouseY)) {
-                boolean handled = currentRenderer.handleClick(mouseX, mouseY, this::handleNodeClick);
-                if (handled) {
-                    return true;
-                }
-            }
-
-            if (isInContentArea(mouseX, mouseY)) {
-                isDragging = true;
+        // Tab buttons (toujours cliquables, hors du cadre de contenu)
+        for (CodexTabButtonWidget btn : tabButtons.values()) {
+            if (btn.mouseClicked(mouseX, mouseY, button)) {
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+
+        if (button == 0 && isInContentArea(mouseX, mouseY)) {
+            boolean handled = currentRenderer.handleClick(mouseX, mouseY, this::handleNodeClick);
+            if (handled) {
+                return true;
+            }
+            isDragging = true;
+            return true;
+        }
+
+        // Ne PAS appeler super.mouseClicked pour eviter que les node widgets
+        // hors du cadre ne recoivent des clics
+        return false;
     }
 
     private void handleNodeClick(CodexNode node, boolean isUnlocked, boolean canUnlock) {
