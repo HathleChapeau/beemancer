@@ -28,6 +28,7 @@ import com.chapeau.apica.common.item.tool.ChopperHiveItem;
 import com.chapeau.apica.common.item.tool.MiningLaserItem;
 import com.chapeau.apica.common.item.BackpackItem;
 import com.chapeau.apica.common.item.accessory.BeeMagnetItem;
+import com.chapeau.apica.common.item.accessory.CompanionBeeItem;
 import net.minecraft.world.food.FoodProperties;
 import com.chapeau.apica.common.item.tool.ScoopItem;
 import net.minecraft.world.item.BlockItem;
@@ -445,6 +446,10 @@ public class ApicaItems {
     // --- Bee Magnet ---
     public static final DeferredItem<BeeMagnetItem> BEE_MAGNET = ITEMS.register("bee_magnet",
             () -> new BeeMagnetItem(new Item.Properties().stacksTo(1)));
+
+    // --- Companion Bee ---
+    public static final DeferredItem<CompanionBeeItem> COMPANION_BEE = ITEMS.register("companion_bee",
+            () -> new CompanionBeeItem(new Item.Properties().stacksTo(1)));
 
     // --- FOOD ---
     public static final DeferredItem<Item> HONEY_BREAD = ITEMS.register("honey_bread",

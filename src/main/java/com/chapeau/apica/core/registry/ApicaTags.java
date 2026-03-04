@@ -43,6 +43,16 @@ public class ApicaTags {
          */
         public static final TagKey<Item> ESSENCES = tag("essences");
 
+        /**
+         * Tag pour les items que les abeilles compagnon aiment (fleurs, combs, miel, etc.)
+         */
+        public static final TagKey<Item> BEE_FOOD = tag("bee_food");
+
+        /**
+         * Tag pour les items que les abeilles compagnon detestent (magic bee, larva)
+         */
+        public static final TagKey<Item> BEE_HATED_FOOD = tag("bee_hated_food");
+
         private static TagKey<Item> tag(String name) {
             return TagKey.create(Registries.ITEM,
                     ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, name));

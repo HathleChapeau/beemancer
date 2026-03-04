@@ -125,7 +125,12 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
                 boolean selected = (slot == currentSlot);
                 ResourceLocation sprite = selected ? TAB_SELECTED_MIDDLE : TAB_UNSELECTED_MIDDLE;
                 graphics.blitSprite(sprite, tabX, tabY, TAB_W, TAB_H);
-                graphics.renderItem(AccessoryClientCache.getSlot(slot), tabX + 6, tabY + 9);
+                ItemStack accStack = AccessoryClientCache.getSlot(slot);
+                ItemStack tabIcon = accStack;
+                if (accStack.getItem() instanceof IAccessory acc && acc.getTabIcon() != null) {
+                    tabIcon = acc.getTabIcon();
+                }
+                graphics.renderItem(tabIcon, tabX + 6, tabY + 9);
                 tabX += TAB_W + TAB_GAP;
             }
         }

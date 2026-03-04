@@ -31,6 +31,7 @@ import com.chapeau.apica.common.entity.companion.CompanionBeeEntity;
 import com.chapeau.apica.common.entity.delivery.DeliveryBeeEntity;
 import com.chapeau.apica.common.item.BackpackItem;
 import com.chapeau.apica.common.item.accessory.BeeMagnetItem;
+import com.chapeau.apica.common.item.accessory.CompanionBeeItem;
 import com.chapeau.apica.common.entity.mount.HoverbikeConfigManager;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
 import com.chapeau.apica.core.entity.InteractionMarkerEntity;
@@ -325,6 +326,7 @@ public class Apica {
 
         BeeMagnetItem.despawnAllCompanionBees(player);
         BackpackItem.despawnAllBackpackBees(player);
+        CompanionBeeItem.despawnAllCompanionBees(player);
 
         boolean keepInventory = player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY);
         if (keepInventory) return;
@@ -357,6 +359,8 @@ public class Apica {
                 BeeMagnetItem.spawnCompanionBee(player, i);
             } else if (stack.getItem() instanceof BackpackItem) {
                 BackpackItem.spawnCompanionBee(player, i);
+            } else if (stack.getItem() instanceof CompanionBeeItem) {
+                CompanionBeeItem.spawnCompanionBee(player, i);
             }
         }
     }

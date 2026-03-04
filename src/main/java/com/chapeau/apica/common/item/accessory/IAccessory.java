@@ -23,6 +23,7 @@ package com.chapeau.apica.common.item.accessory;
 
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Interface marqueur pour les items qui peuvent etre places dans les slots accessoire.
@@ -59,5 +60,15 @@ public interface IAccessory {
      * @param accessorySlot l'index du slot accessoire (0 ou 1)
      */
     default void onInventoryTabClicked(int accessorySlot) {
+    }
+
+    /**
+     * Retourne l'icone a afficher dans le tab de l'inventaire pour cet accessoire.
+     * Si null, utilise l'item lui-meme (comportement par defaut).
+     * @return l'ItemStack icone du tab, ou null pour le comportement par defaut
+     */
+    @Nullable
+    default ItemStack getTabIcon() {
+        return null;
     }
 }

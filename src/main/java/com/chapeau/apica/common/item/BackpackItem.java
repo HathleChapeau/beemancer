@@ -45,6 +45,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -124,6 +125,11 @@ public class BackpackItem extends Item implements IAccessory {
     @Override
     public void onInventoryTabClicked(int accessorySlot) {
         PacketDistributor.sendToServer(new BackpackOpenPacket(accessorySlot));
+    }
+
+    @Override
+    public ItemStack getTabIcon() {
+        return new ItemStack(Items.CHEST);
     }
 
     // =========================================================================

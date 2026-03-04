@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:small_flowers",
+    "#minecraft:tall_flowers",
+    "#apica:combs",
+    "minecraft:honey_bottle",
+    "apica:honey_bucket",
+    "apica:royal_jelly_bucket",
+    "apica:nectar_bucket"
+  ]
+}

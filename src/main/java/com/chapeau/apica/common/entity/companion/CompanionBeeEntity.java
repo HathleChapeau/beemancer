@@ -27,11 +27,14 @@ import com.chapeau.apica.common.data.AccessoryPlayerData;
 import com.chapeau.apica.common.item.BackpackItem;
 import com.chapeau.apica.common.menu.BackpackMenu;
 import com.chapeau.apica.core.registry.ApicaAttachments;
+import com.chapeau.apica.core.registry.ApicaTags;
+import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -92,6 +95,8 @@ public class CompanionBeeEntity extends Bee {
     private static final double TELEPORT_DISTANCE = 16.0;
     /** Cooldown avant de ramasser un item jete par le owner (en ticks). */
     private static final int THROW_COOLDOWN_TICKS = 60;
+    /** Cooldown entre deux nourrissages (5 minutes = 6000 ticks). */
+    private static final int FEED_COOLDOWN_TICKS = 6000;
     /** Offset Y au-dessus de l'epaule du joueur. */
     private static final double SHOULDER_Y = 1.8;
     /** Offset lateral pour l'epaule. */
@@ -111,10 +116,11 @@ public class CompanionBeeEntity extends Bee {
     private static final EntityDataAccessor<String> DATA_COMPANION_TYPE =
         SynchedEntityData.defineId(CompanionBeeEntity.class, EntityDataSerializers.STRING);
 
-    /** Type de compagnon: MAGNET ramasse les items, BACKPACK transporte un coffre. */
+    /** Type de compagnon: MAGNET ramasse les items, BACKPACK transporte un coffre, COMPANION simple. */
     public enum CompanionType {
         MAGNET,
-        BACKPACK
+        BACKPACK,
+        COMPANION
     }
 
     /** Etat actuel de l'abeille. */
@@ -131,6 +137,7 @@ public class CompanionBeeEntity extends Bee {
     private int pickupTimer = 0;
     private int targetItemId = -1;
     private long ownerLastThrowTime = -1000;
+    private long feedCooldownUntil = -1;
 
     public CompanionBeeEntity(EntityType<? extends Bee> entityType, Level level) {
         super(entityType, level);
@@ -196,8 +203,8 @@ public class CompanionBeeEntity extends Bee {
             return;
         }
 
-        // Les abeilles BACKPACK ne font que hover, pas de ramassage d'items
-        if (getCompanionType() == CompanionType.BACKPACK) {
+        // Les abeilles BACKPACK et COMPANION ne font que hover, pas de ramassage d'items
+        if (getCompanionType() != CompanionType.MAGNET) {
             Vec3 target = computeShoulderPosition(owner);
             flyTowards(target);
             return;
@@ -494,11 +501,34 @@ public class CompanionBeeEntity extends Bee {
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (getCompanionType() != CompanionType.BACKPACK) return InteractionResult.PASS;
-        if (level().isClientSide()) return InteractionResult.SUCCESS;
-
         Player owner = getOwnerPlayer();
         if (owner == null || !owner.getUUID().equals(player.getUUID())) return InteractionResult.PASS;
+
+        ItemStack heldItem = player.getItemInHand(hand);
+
+        // --- Feeding: bee_food or bee_hated_food ---
+        boolean isFood = heldItem.is(ApicaTags.Items.BEE_FOOD);
+        boolean isHated = !isFood && heldItem.is(ApicaTags.Items.BEE_HATED_FOOD);
+        if (isFood || isHated) {
+            if (level().isClientSide()) return InteractionResult.SUCCESS;
+            if (level().getGameTime() < feedCooldownUntil) return InteractionResult.PASS;
+
+            if (level() instanceof ServerLevel serverLevel) {
+                Vec3 beePos = position().add(0, 0.3, 0);
+                if (isFood) {
+                    ParticleHelper.burst(serverLevel, beePos, ParticleHelper.EffectType.HEAL, 5);
+                } else {
+                    ParticleHelper.burst(serverLevel, beePos, ParticleHelper.EffectType.FAILURE, 8);
+                }
+            }
+            heldItem.shrink(1);
+            feedCooldownUntil = level().getGameTime() + FEED_COOLDOWN_TICKS;
+            return InteractionResult.SUCCESS;
+        }
+
+        // --- Backpack: open chest interface ---
+        if (getCompanionType() != CompanionType.BACKPACK) return InteractionResult.PASS;
+        if (level().isClientSide()) return InteractionResult.SUCCESS;
         if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.PASS;
 
         int slot = getAccessorySlot();

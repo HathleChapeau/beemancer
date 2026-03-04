@@ -680,7 +680,7 @@ public class ClientSetup {
             return false;
         });
 
-        // Bee Magnet: icone compass en bas a droite (toujours visible)
+        // Bee Magnet: icone magnet en bas a droite (toujours visible)
         event.register(ApicaItems.BEE_MAGNET.get(), (graphics, font, stack, xOffset, yOffset) -> {
             com.mojang.blaze3d.vertex.PoseStack pose = graphics.pose();
             pose.pushPose();
@@ -690,6 +690,26 @@ public class ClientSetup {
             pose.popPose();
             return false;
         });
+
+        // IMagazineHolder items: icone magazine equipee en bas a droite
+        net.neoforged.neoforge.client.IItemDecorator magazineDecorator = (graphics, font, stack, xOffset, yOffset) -> {
+            if (!com.chapeau.apica.common.item.magazine.MagazineData.hasMagazine(stack)) return false;
+            String fluidId = com.chapeau.apica.common.item.magazine.MagazineData.getFluidId(stack);
+            int amount = com.chapeau.apica.common.item.magazine.MagazineData.getFluidAmount(stack);
+            net.minecraft.world.item.ItemStack displayMag =
+                com.chapeau.apica.common.item.magazine.MagazineItem.createFilled(fluidId, amount);
+            com.mojang.blaze3d.vertex.PoseStack pose = graphics.pose();
+            pose.pushPose();
+            pose.translate(xOffset + 8, yOffset + 8, 200);
+            pose.scale(0.5f, 0.5f, 1.0f);
+            graphics.renderItem(displayMag, 0, 0);
+            pose.popPose();
+            return false;
+        };
+        event.register(ApicaItems.LEAF_BLOWER.get(), magazineDecorator);
+        event.register(ApicaItems.MINING_LASER.get(), magazineDecorator);
+        event.register(ApicaItems.CHOPPER_HIVE.get(), magazineDecorator);
+        event.register(ApicaItems.BUILDING_STAFF.get(), magazineDecorator);
     }
 
     private static void registerItemProperties() {
