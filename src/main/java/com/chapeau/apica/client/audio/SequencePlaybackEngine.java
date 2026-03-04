@@ -90,30 +90,14 @@ public class SequencePlaybackEngine {
 
         long elapsed = now - startTimeMs;
         int stepCount = data.getStepCount();
-        float swing = data.getSwing();
-        double baseMs = 60000.0 / data.getBpm() / 4.0;
+        double msPerStep = 60000.0 / data.getBpm() / 4.0;
 
-        // Swing : les steps pairs sont allonges, les impairs raccourcis
-        double evenMs = baseMs * (1.0 + swing * 0.5);
-        double oddMs = baseMs * (1.0 - swing * 0.5);
-        double pairMs = evenMs + oddMs;
-
-        // Calculer le step cible en tenant compte du swing
-        long cycleMs = (long) (pairMs * (stepCount / 2));
+        // Calculer le step cible
+        long cycleMs = (long) (msPerStep * stepCount);
         if (cycleMs <= 0) return;
         long elapsedInCycle = elapsed % cycleMs;
-
-        int targetStep = 0;
-        double accumulated = 0;
-        for (int i = 0; i < stepCount; i++) {
-            double stepDuration = (i % 2 == 0) ? evenMs : oddMs;
-            if (accumulated + stepDuration > elapsedInCycle) {
-                targetStep = i;
-                break;
-            }
-            accumulated += stepDuration;
-            targetStep = i;
-        }
+        int targetStep = (int) (elapsedInCycle / msPerStep);
+        if (targetStep >= stepCount) targetStep = stepCount - 1;
 
         // Jouer les notes des steps manques
         while (currentStep != targetStep) {

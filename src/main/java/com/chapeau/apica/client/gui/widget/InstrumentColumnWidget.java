@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [InstrumentColumnWidget.java]
- * Description: Colonne gauche du DAW — liste des tracks avec mute/solo et bouton +
+ * Description: Liste pleine largeur des tracks avec boutons M/S/X/Edit et dropdown
  * ============================================================
  *
  * DEPENDANCES:
@@ -14,7 +14,7 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - DubstepRadioScreen (widget enfant, colonne gauche)
+ * - DubstepRadioScreen (widget enfant, mode principal)
  *
  * ============================================================
  */
@@ -28,16 +28,15 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
 /**
- * Colonne gauche : liste des tracks avec nom instrument, boutons M/S, bouton [+].
+ * Liste pleine largeur des tracks avec nom instrument, boutons M/S/X/Edit, et bouton [+].
  * Gere aussi le dropdown de selection d'instrument.
  */
 public class InstrumentColumnWidget {
 
-    public static final int COL_W = 56;
-    public static final int ROW_H = 14;
-    private static final int BTN_W = 10;
+    public static final int ROW_H = 18;
+    private static final int BTN_W = 14;
+    private static final int BTN_GAP = 2;
 
-    // Couleurs
     private static final int COL_BG = 0xFF1A1A2E;
     private static final int COL_ROW_ALT = 0xFF1F1F35;
     private static final int COL_BORDER = 0xFF555555;
@@ -46,34 +45,32 @@ public class InstrumentColumnWidget {
     private static final int COL_MUTE_OFF = 0xFF553333;
     private static final int COL_SOLO = 0xFFFFCC00;
     private static final int COL_SOLO_OFF = 0xFF555522;
+    private static final int COL_DELETE = 0xFFCC2222;
+    private static final int COL_DELETE_OFF = 0xFF442222;
+    private static final int COL_EDIT = 0xFF3388CC;
     private static final int COL_ADD = 0xFF00CC66;
     private static final int COL_DROPDOWN_BG = 0xEE222244;
-    private static final int COL_DROPDOWN_HOVER = 0xFF333366;
 
-    private final int x, y, height;
+    private final int x, y, width, height;
     private boolean dropdownOpen = false;
     private int dropdownScroll = 0;
-    private int selectedTrack = -1;
 
     public interface Listener {
         void onAddTrack(DubstepInstrument instrument);
-        void onRemoveTrack(int trackIndex);
+        void onDeleteTrack(int trackIndex);
         void onToggleMute(int trackIndex);
         void onToggleSolo(int trackIndex);
-        void onSelectTrack(int trackIndex);
+        void onEditTrack(int trackIndex);
     }
 
     private final Listener listener;
 
-    public InstrumentColumnWidget(int x, int y, int height, Listener listener) {
+    public InstrumentColumnWidget(int x, int y, int width, int height, Listener listener) {
         this.x = x;
         this.y = y;
+        this.width = width;
         this.height = height;
         this.listener = listener;
-    }
-
-    public int getSelectedTrack() {
-        return selectedTrack;
     }
 
     public boolean isDropdownOpen() {
@@ -83,9 +80,7 @@ public class InstrumentColumnWidget {
     public void render(GuiGraphics gfx, SequenceData data) {
         Font font = Minecraft.getInstance().font;
 
-        // Background
-        gfx.fill(x, y, x + COL_W, y + height, COL_BG);
-        gfx.fill(x + COL_W - 1, y, x + COL_W, y + height, COL_BORDER);
+        gfx.fill(x, y, x + width, y + height, COL_BG);
 
         int trackCount = data.getTrackCount();
         for (int i = 0; i < trackCount; i++) {
@@ -94,52 +89,65 @@ public class InstrumentColumnWidget {
 
             int ry = y + i * ROW_H;
             int bg = (i % 2 == 0) ? COL_BG : COL_ROW_ALT;
-            if (i == selectedTrack) bg = 0xFF2A2A4A;
-            gfx.fill(x, ry, x + COL_W - 1, ry + ROW_H, bg);
+            gfx.fill(x, ry, x + width, ry + ROW_H, bg);
 
-            // Nom instrument (tronque)
+            // Nom instrument complet
             String name = track.getInstrument().getDisplayName();
-            if (name.length() > 5) name = name.substring(0, 5);
-            gfx.drawString(font, name, x + 2, ry + 3, COL_TEXT, false);
+            gfx.drawString(font, name, x + 4, ry + 5, COL_TEXT, false);
 
-            // Bouton M (mute)
-            int mx = x + COL_W - BTN_W * 2 - 4;
+            // Boutons a droite : [M] [S] [X] [Edit]
+            int bx = x + width - (BTN_W * 4 + BTN_GAP * 3 + 4);
+            int by = ry + 2;
+            int bh = ROW_H - 4;
+
+            // M (mute)
             int mCol = track.isMuted() ? COL_MUTE : COL_MUTE_OFF;
-            gfx.fill(mx, ry + 2, mx + BTN_W, ry + ROW_H - 2, mCol);
-            gfx.drawString(font, "M", mx + 2, ry + 3, 0xFFFFFFFF, false);
+            gfx.fill(bx, by, bx + BTN_W, by + bh, mCol);
+            gfx.drawString(font, "M", bx + 3, by + 2, 0xFFFFFFFF, false);
+            bx += BTN_W + BTN_GAP;
 
-            // Bouton S (solo)
-            int sx = x + COL_W - BTN_W - 2;
+            // S (solo)
             int sCol = track.isSolo() ? COL_SOLO : COL_SOLO_OFF;
-            gfx.fill(sx, ry + 2, sx + BTN_W, ry + ROW_H - 2, sCol);
-            gfx.drawString(font, "S", sx + 2, ry + 3, 0xFF111111, false);
+            gfx.fill(bx, by, bx + BTN_W, by + bh, sCol);
+            gfx.drawString(font, "S", bx + 3, by + 2, 0xFF111111, false);
+            bx += BTN_W + BTN_GAP;
+
+            // X (delete)
+            gfx.fill(bx, by, bx + BTN_W, by + bh, COL_DELETE_OFF);
+            gfx.drawString(font, "X", bx + 3, by + 2, 0xFFFF6666, false);
+            bx += BTN_W + BTN_GAP;
+
+            // Edit
+            int editW = font.width("Edit") + 6;
+            gfx.fill(bx, by, bx + editW, by + bh, COL_EDIT);
+            gfx.drawString(font, "Edit", bx + 3, by + 2, 0xFFFFFFFF, false);
 
             // Ligne separatrice
-            gfx.fill(x, ry + ROW_H - 1, x + COL_W - 1, ry + ROW_H, 0xFF333344);
+            gfx.fill(x, ry + ROW_H - 1, x + width, ry + ROW_H, 0xFF333344);
         }
 
-        // Bouton [+]
+        // Bouton [+ Add Instrument]
         if (trackCount < SequenceData.MAX_TRACKS) {
             int addY = y + trackCount * ROW_H;
-            gfx.fill(x + 2, addY + 2, x + COL_W - 3, addY + ROW_H - 2, COL_ADD);
-            gfx.drawString(font, "+ Add", x + 6, addY + 3, 0xFF111111, false);
+            int addW = font.width("+ Add Instrument") + 10;
+            int addX = x + (width - addW) / 2;
+            gfx.fill(addX, addY + 2, addX + addW, addY + ROW_H - 2, COL_ADD);
+            gfx.drawString(font, "+ Add Instrument", addX + 5, addY + 5, 0xFF111111, false);
         }
 
-        // Dropdown
         if (dropdownOpen) {
-            renderDropdown(gfx, font, data.getTrackCount());
+            renderDropdown(gfx, font, trackCount);
         }
     }
 
     private void renderDropdown(GuiGraphics gfx, Font font, int trackCount) {
-        int ddX = x;
+        int ddX = x + width / 2 - 50;
         int ddY = y + trackCount * ROW_H + ROW_H;
-        int ddW = 80;
+        int ddW = 100;
         DubstepInstrument[] instruments = DubstepInstrument.values();
         int visible = Math.min(instruments.length - dropdownScroll, 8);
         int ddH = visible * 12 + 4;
 
-        // Ombre + fond
         gfx.fill(ddX - 1, ddY - 1, ddX + ddW + 1, ddY + ddH + 1, COL_BORDER);
         gfx.fill(ddX, ddY, ddX + ddW, ddY + ddH, COL_DROPDOWN_BG);
 
@@ -149,7 +157,6 @@ public class InstrumentColumnWidget {
             DubstepInstrument inst = instruments[idx];
             int iy = ddY + 2 + i * 12;
 
-            // Separateur percussion / melodique
             if (idx == 3 && i > 0) {
                 gfx.fill(ddX + 2, iy - 1, ddX + ddW - 2, iy, COL_BORDER);
             }
@@ -163,9 +170,9 @@ public class InstrumentColumnWidget {
         // Dropdown click
         if (dropdownOpen) {
             int trackCount = data.getTrackCount();
-            int ddX = x;
+            int ddX = x + width / 2 - 50;
             int ddY = y + trackCount * ROW_H + ROW_H;
-            int ddW = 80;
+            int ddW = 100;
             DubstepInstrument[] instruments = DubstepInstrument.values();
             int visible = Math.min(instruments.length - dropdownScroll, 8);
 
@@ -181,12 +188,13 @@ public class InstrumentColumnWidget {
             return true;
         }
 
-        if (mx < x || mx >= x + COL_W || my < y || my >= y + height) return false;
+        if (mx < x || mx >= x + width || my < y || my >= y + height) return false;
 
+        Font font = Minecraft.getInstance().font;
         int trackCount = data.getTrackCount();
         int row = (int) ((my - y) / ROW_H);
 
-        // Click on [+] button
+        // Click on [+ Add Instrument]
         if (row == trackCount && trackCount < SequenceData.MAX_TRACKS) {
             dropdownOpen = true;
             dropdownScroll = 0;
@@ -195,37 +203,50 @@ public class InstrumentColumnWidget {
 
         if (row < 0 || row >= trackCount) return false;
 
-        // Right click = remove
-        if (button == 1) {
-            listener.onRemoveTrack(row);
-            if (selectedTrack >= trackCount - 1) selectedTrack = trackCount - 2;
-            return true;
-        }
+        // Check button hits from right to left
+        int ry = y + row * ROW_H;
+        int by = ry + 2;
+        int bh = ROW_H - 4;
+        if (my < by || my >= by + bh) return false;
 
-        // Check M/S buttons
-        int mxRel = (int) mx;
-        int mBtnX = x + COL_W - BTN_W * 2 - 4;
-        int sBtnX = x + COL_W - BTN_W - 2;
+        int editW = font.width("Edit") + 6;
+        int bx = x + width - (BTN_W * 4 + BTN_GAP * 3 + 4);
 
-        if (mxRel >= mBtnX && mxRel < mBtnX + BTN_W) {
+        // M
+        if (mx >= bx && mx < bx + BTN_W) {
             listener.onToggleMute(row);
             return true;
         }
-        if (mxRel >= sBtnX && mxRel < sBtnX + BTN_W) {
+        bx += BTN_W + BTN_GAP;
+
+        // S
+        if (mx >= bx && mx < bx + BTN_W) {
             listener.onToggleSolo(row);
             return true;
         }
+        bx += BTN_W + BTN_GAP;
 
-        // Select track
-        selectedTrack = row;
-        listener.onSelectTrack(row);
-        return true;
+        // X
+        if (mx >= bx && mx < bx + BTN_W) {
+            listener.onDeleteTrack(row);
+            return true;
+        }
+        bx += BTN_W + BTN_GAP;
+
+        // Edit
+        if (mx >= bx && mx < bx + editW) {
+            listener.onEditTrack(row);
+            return true;
+        }
+
+        return false;
     }
 
     public boolean mouseScrolled(double mx, double my, double delta) {
         if (!dropdownOpen) return false;
         DubstepInstrument[] instruments = DubstepInstrument.values();
-        dropdownScroll = Math.max(0, Math.min(instruments.length - 8, dropdownScroll - (int) delta));
+        dropdownScroll = Math.max(0, Math.min(instruments.length - 8,
+                dropdownScroll - (int) delta));
         return true;
     }
 }
