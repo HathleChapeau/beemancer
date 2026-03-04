@@ -83,6 +83,12 @@ public class InstrumentColumnWidget {
         return dropdownOpen;
     }
 
+    /** Ouvre le dropdown de selection d'instrument (appele par TransportBarWidget). */
+    public void openDropdown() {
+        dropdownOpen = true;
+        dropdownScroll = 0;
+    }
+
     public void render(GuiGraphics gfx, SequenceData data) {
         Font font = Minecraft.getInstance().font;
 
@@ -130,15 +136,6 @@ public class InstrumentColumnWidget {
 
             // Ligne separatrice
             gfx.fill(x, ry + ROW_H - 1, x + width, ry + ROW_H, 0xFF333344);
-        }
-
-        // Bouton [+ Add Instrument]
-        if (trackCount < SequenceData.MAX_TRACKS) {
-            int addY = y + trackCount * ROW_H;
-            int addW = font.width("+ Add Instrument") + 10;
-            int addX = x + (width - addW) / 2;
-            gfx.fill(addX, addY + 2, addX + addW, addY + ROW_H - 2, COL_ADD);
-            gfx.drawString(font, "+ Add Instrument", addX + 5, addY + 5, 0xFF111111, false);
         }
 
         if (dropdownOpen) {
@@ -228,13 +225,6 @@ public class InstrumentColumnWidget {
         Font font = Minecraft.getInstance().font;
         int trackCount = data.getTrackCount();
         int row = (int) ((my - y) / ROW_H);
-
-        // Click on [+ Add Instrument]
-        if (row == trackCount && trackCount < SequenceData.MAX_TRACKS) {
-            dropdownOpen = true;
-            dropdownScroll = 0;
-            return true;
-        }
 
         if (row < 0 || row >= trackCount) return false;
 

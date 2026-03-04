@@ -125,9 +125,10 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
             }
         };
 
-        mainTransport = new TransportBarWidget(gx, gy, GUI_W, transportListener, null);
+        mainTransport = new TransportBarWidget(gx, gy, GUI_W, transportListener, null,
+                () -> instrumentColumn.openDropdown());
         editorTransport = new TransportBarWidget(gx, gy, GUI_W, transportListener,
-                () -> { editingTrack = -1; updateLayout(); });
+                () -> { editingTrack = -1; updateLayout(); }, null);
 
         instrumentColumn = new InstrumentColumnWidget(gx, gy + BAR_H, GUI_W, currentH - BAR_H,
                 new InstrumentColumnWidget.Listener() {
@@ -270,11 +271,12 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
         gfx.fill(leftPos, topPos, leftPos + GUI_W, topPos + currentH, COL_BG);
 
         if (editingTrack == -1) {
-            mainTransport.update(localData.getBpm(), isPlaying, playMode);
+            mainTransport.update(localData.getBpm(), isPlaying, playMode,
+                    localData.getTrackCount() < SequenceData.MAX_TRACKS);
             mainTransport.render(gfx);
             instrumentColumn.render(gfx, localData);
         } else {
-            editorTransport.update(localData.getBpm(), isPlaying, playMode);
+            editorTransport.update(localData.getBpm(), isPlaying, playMode, false);
             editorTransport.render(gfx);
 
             TrackData track = localData.getTrack(editingTrack);

@@ -42,14 +42,17 @@ public class TransportBarWidget {
     private static final int COL_ACCENT = 0xFF00FF88;
     private static final int COL_BACK = 0xFF4466AA;
     private static final int COL_MODE = 0xFF335577;
+    private static final int COL_ADD = 0xFF00CC66;
 
     private final int x, y, width;
     private final Listener listener;
     private final Runnable backAction;
+    private final Runnable addAction;
 
     private int bpm = 120;
     private boolean playing = false;
     private PlayMode playMode = PlayMode.LOOP;
+    private boolean canAdd = false;
 
     /** Callback pour les actions transport. */
     public interface Listener {
@@ -59,18 +62,21 @@ public class TransportBarWidget {
         void onModeChange(PlayMode newMode);
     }
 
-    public TransportBarWidget(int x, int y, int width, Listener listener, Runnable backAction) {
+    public TransportBarWidget(int x, int y, int width, Listener listener,
+                              Runnable backAction, Runnable addAction) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.listener = listener;
         this.backAction = backAction;
+        this.addAction = addAction;
     }
 
-    public void update(int bpm, boolean playing, PlayMode playMode) {
+    public void update(int bpm, boolean playing, PlayMode playMode, boolean canAdd) {
         this.bpm = bpm;
         this.playing = playing;
         this.playMode = playMode;
+        this.canAdd = canAdd;
     }
 
     public void render(GuiGraphics gfx) {
@@ -121,6 +127,14 @@ public class TransportBarWidget {
 
         gfx.fill(cx, btnY, cx + 8, btnY + BTN_SIZE, COL_BORDER);
         gfx.drawString(font, ">", cx + 2, btnY + 3, COL_TEXT, false);
+        cx += 10;
+
+        // Bouton [+] Add instrument (mode principal uniquement)
+        if (addAction != null && canAdd) {
+            cx += 4;
+            gfx.fill(cx, btnY, cx + BTN_SIZE, btnY + BTN_SIZE, COL_ADD);
+            gfx.drawString(font, "+", cx + 4, btnY + 3, 0xFF111111, false);
+        }
     }
 
     public boolean mouseClicked(double mx, double my, int button) {
@@ -171,6 +185,16 @@ public class TransportBarWidget {
         if (mx >= cx && mx < cx + 8) {
             listener.onBpmChange(5);
             return true;
+        }
+        cx += 10;
+
+        // Add instrument button
+        if (addAction != null && canAdd) {
+            cx += 4;
+            if (mx >= cx && mx < cx + BTN_SIZE && my >= btnY && my < btnY + BTN_SIZE) {
+                addAction.run();
+                return true;
+            }
         }
 
         return false;
