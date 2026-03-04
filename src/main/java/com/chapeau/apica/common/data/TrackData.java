@@ -101,6 +101,25 @@ public class TrackData {
         return maxSteps;
     }
 
+    /**
+     * Supprime une page en decalant les donnees vers le bas.
+     * Les slots liberes en fin de tableau sont remis a zero.
+     */
+    public void removePage(int pageIndex, int stepsPerPage) {
+        int start = pageIndex * stepsPerPage;
+        int end = start + stepsPerPage;
+        if (start >= maxSteps) return;
+        int remaining = maxSteps - end;
+        if (remaining > 0) {
+            System.arraycopy(pitchMasks, end, pitchMasks, start, remaining);
+            System.arraycopy(velocities, end, velocities, start, remaining);
+        }
+        for (int i = maxSteps - stepsPerPage; i < maxSteps; i++) {
+            pitchMasks[i] = 0;
+            velocities[i] = 80;
+        }
+    }
+
     // === Instrument ===
 
     public DubstepInstrument getInstrument() {

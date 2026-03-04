@@ -3,6 +3,25 @@
 ################################################################################
 
 ================================================================================
+2026-03-04 - Magazine System
+================================================================================
+
+Systeme modulaire de reservoir fluide pour items (7 fichiers crees, 8 modifies):
+- MagazineItem: item magazine stacksTo(1), durability bar dynamique, 1000 mB max
+- MagazineFluidData: R/W fluid data sur magazine via CUSTOM_DATA
+- MagazineData: R/W attachment data magazine sur items holder
+- IMagazineHolder: interface pour items acceptant magazines (getAcceptedFluids)
+- MagazineEquipPacket: packet C2S equip/unequip magazine depuis inventaire
+- ContainerScreenMagazineMixin: mixin AbstractContainerScreen, bonus slot au survol
+- MagazineGaugeHud: HUD gauge fluide quand le joueur tient un item equipe
+- InfuserBlockEntity: +tryMagazineFill + tank accepte honey/royal_jelly/nectar
+- LeafBlowerItem: implements IMagazineHolder (honey only, cout 25/75/150 mB par tier)
+- ApicaCreativeTabs: 4 entrees (empty + honey + royal_jelly + nectar)
+- Registres: ApicaItems (+MAGAZINE), ApicaNetwork (+MagazineEquipPacket)
+- Assets: magazine.png, magazine_slot.png, magazine.json (item model)
+- Lang: +item.apica.magazine, +tooltip.apica.magazine.empty
+
+================================================================================
 2026-03-04 - Dubstep Radio (DAW Block)
 ================================================================================
 

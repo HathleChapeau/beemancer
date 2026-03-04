@@ -12,6 +12,7 @@ import com.chapeau.apica.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.apica.client.gui.hud.HoverbikeDebugHud;
 import com.chapeau.apica.client.gui.hud.HoverbikeGaugeHud;
 import com.chapeau.apica.client.gui.hud.MagazineGaugeHud;
+import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import com.chapeau.apica.client.model.HoverbikeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.client.renderer.entity.HoverbikeRenderer;
@@ -93,11 +94,13 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import com.chapeau.apica.client.animation.AnimationTimer;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -119,6 +122,7 @@ public class ClientSetup {
         modEventBus.addListener((ModelEvent.RegisterAdditional e)     -> timed("registerAdditionalModels",() -> registerAdditionalModels(e)));
         modEventBus.addListener((RegisterParticleProvidersEvent e)    -> timed("registerParticleProviders",() -> registerParticleProviders(e)));
         modEventBus.addListener((EntityRenderersEvent.AddLayers e)   -> timed("addRenderLayers",         () -> addRenderLayers(e)));
+        modEventBus.addListener((FMLClientSetupEvent e)              -> e.enqueueWork(ClientSetup::registerItemProperties));
 
         // AnimationTimer: compteur client-side pour animations sans stutter (pattern Create)
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> AnimationTimer.tick());
@@ -661,6 +665,22 @@ public class ClientSetup {
 
         // Modèle plaque du Launchpad (rendu BER avec rotation dynamique)
         event.register(LaunchpadRenderer.PLATE_MODEL_LOC);
+    }
+
+    // =========================================================================
+    // ITEM PROPERTIES (model overrides)
+    // =========================================================================
+
+    private static void registerItemProperties() {
+        ItemProperties.register(ApicaItems.MAGAZINE.get(),
+                ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "magazine_fluid"),
+                (stack, level, entity, seed) -> {
+                    String fluidId = MagazineFluidData.getFluidId(stack);
+                    if (fluidId.contains("honey")) return 0.25f;
+                    if (fluidId.contains("royal_jelly")) return 0.5f;
+                    if (fluidId.contains("nectar")) return 0.75f;
+                    return 0.0f;
+                });
     }
 
 }

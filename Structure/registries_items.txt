@@ -126,6 +126,9 @@
 | leaf_blower              | LeafBlowerItem   | Leaf Blower     |
 | mining_laser             | MiningLaserItem  | Mining Laser    |
 
+--- MAGAZINE ---
+| magazine                 | MagazineItem     | Magazine System |
+
 --- BEE NESTS ---
 | bee_nest                 | BlockItem        | Worldgen        |
 

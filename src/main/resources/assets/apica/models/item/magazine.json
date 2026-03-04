@@ -1,6 +1,11 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "apica:item/magazine"
-  }
+    "layer0": "apica:item/magazine_empty"
+  },
+  "overrides": [
+    { "predicate": { "apica:magazine_fluid": 0.25 }, "model": "apica:item/magazine_honey" },
+    { "predicate": { "apica:magazine_fluid": 0.5 }, "model": "apica:item/magazine_royal_jelly" },
+    { "predicate": { "apica:magazine_fluid": 0.75 }, "model": "apica:item/magazine_nectar" }
+  ]
 }

@@ -46,6 +46,29 @@ core/util/
   - Client-side: addParticle, addAlwaysVisible
 
 ================================================================================
+common/item/magazine/
+================================================================================
+
+- IMagazineHolder.java: Interface pour items acceptant un magazine
+  - getAcceptedFluids(): Set de fluid IDs acceptes
+  - canAcceptMagazine(ItemStack): validation compatibilite
+  - Implemente par: LeafBlowerItem (honey only)
+  - Utilise par: MagazineEquipPacket, MagazineGaugeHud, ContainerScreenMagazineMixin
+
+- MagazineData.java: R/W donnees magazine attache sur items holder (CUSTOM_DATA)
+  - hasMagazine, getFluidId, getFluidAmount, setMagazine, removeMagazine, consumeFluid
+  - Utilise par: LeafBlowerItem, MagazineEquipPacket, MagazineGaugeHud, ContainerScreenMagazineMixin
+
+- MagazineFluidData.java: R/W donnees fluide sur MagazineItem (CUSTOM_DATA)
+  - MAX_CAPACITY: 1000 mB
+  - getFluidId, getFluidAmount, setFluid, isEmpty
+  - Utilise par: MagazineItem, InfuserBlockEntity, MagazineEquipPacket
+
+- MagazineItem.java: Item magazine avec durability bar dynamique
+  - createFilled(fluidId, amount): factory pour magazine rempli
+  - Utilise par: InfuserBlockEntity (filling), ApicaCreativeTabs, MagazineData (removeMagazine)
+
+================================================================================
 core/network/pipe/
 ================================================================================
 

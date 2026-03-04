@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [DubstepRadioMenu.java]
- * Description: Menu du Dubstep Radio — sync ContainerData (BPM, transport, swing, volume)
+ * Description: Menu du Dubstep Radio — sync ContainerData (BPM, pageCount, transport, volume)
  * ============================================================
  *
  * DEPENDANCES:
@@ -10,7 +10,7 @@
  * |---------------------|----------------------|--------------------------------|
  * | ApicaMenu           | Base menu            | Infrastructure slots           |
  * | ApicaMenus          | Type registre        | DUBSTEP_RADIO menu type        |
- * | ContainerData       | Sync data            | 5 valeurs (BPM, steps, etc.)   |
+ * | ContainerData       | Sync data            | 4 valeurs (BPM, pages, etc.)   |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -33,11 +33,11 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Menu sans inventaire joueur pour le DAW.
- * Synchronise BPM, steps, transport, swing et volume via ContainerData.
+ * Synchronise BPM, pageCount, transport et volume via ContainerData.
  */
 public class DubstepRadioMenu extends ApicaMenu {
 
-    private static final int DATA_COUNT = 5;
+    private static final int DATA_COUNT = 4;
 
     private final ContainerData data;
     private final BlockPos blockPos;
@@ -64,8 +64,8 @@ public class DubstepRadioMenu extends ApicaMenu {
         return data.get(0);
     }
 
-    /** Nombre de steps actifs. */
-    public int getStepCount() {
+    /** Nombre de pages (1-8). */
+    public int getPageCount() {
         return data.get(1);
     }
 
@@ -74,14 +74,9 @@ public class DubstepRadioMenu extends ApicaMenu {
         return data.get(2) == 1;
     }
 
-    /** Swing 0-100 (affiche comme 0-100%). */
-    public int getSwing() {
-        return data.get(3);
-    }
-
     /** Master volume 0-100. */
     public int getMasterVolume() {
-        return data.get(4);
+        return data.get(3);
     }
 
     @Override

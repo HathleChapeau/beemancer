@@ -11,7 +11,7 @@
  * | SequenceData             | Donnees musicales    | Stockage/serialisation         |
  * | DubstepRadioMenu         | Menu GUI             | createMenu()                   |
  * | ApicaBlockEntities       | Type enregistre      | Construction                   |
- * | ContainerData            | Sync S->C            | BPM, steps, transport, swing   |
+ * | ContainerData            | Sync S->C            | BPM, pageCount, transport, vol |
  * | ParticleHelper           | Particules au beat   | Effets visuels pendant play    |
  * ------------------------------------------------------------
  *
@@ -61,10 +61,9 @@ public class DubstepRadioBlockEntity extends BlockEntity implements MenuProvider
         public int get(int index) {
             return switch (index) {
                 case 0 -> sequenceData.getBpm();
-                case 1 -> sequenceData.getStepCount();
+                case 1 -> sequenceData.getPageCount();
                 case 2 -> playing ? 1 : 0;
-                case 3 -> (int) (sequenceData.getSwing() * 100);
-                case 4 -> (int) (sequenceData.getMasterVolume() * 100);
+                case 3 -> (int) (sequenceData.getMasterVolume() * 100);
                 default -> 0;
             };
         }
@@ -73,17 +72,16 @@ public class DubstepRadioBlockEntity extends BlockEntity implements MenuProvider
         public void set(int index, int value) {
             switch (index) {
                 case 0 -> sequenceData.setBpm(value);
-                case 1 -> sequenceData.setStepCount(value);
+                case 1 -> sequenceData.setPageCount(value);
                 case 2 -> playing = value == 1;
-                case 3 -> sequenceData.setSwing(value / 100.0f);
-                case 4 -> sequenceData.setMasterVolume(value / 100.0f);
+                case 3 -> sequenceData.setMasterVolume(value / 100.0f);
             }
             setChanged();
         }
 
         @Override
         public int getCount() {
-            return 5;
+            return 4;
         }
     };
 

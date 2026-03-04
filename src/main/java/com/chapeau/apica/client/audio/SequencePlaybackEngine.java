@@ -9,6 +9,7 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | SequenceData        | Donnees musicales    | Lecture des notes actives      |
+ * | PlayMode            | Mode de lecture      | Play/Loop/Page variants        |
  * | DubstepInstrument   | Sons instruments     | playLocalSound par instrument  |
  * ------------------------------------------------------------
  *
@@ -32,7 +33,7 @@ import java.util.List;
 /**
  * Moteur de playback singleton client-side.
  * Utilise System.currentTimeMillis() pour un timing precis independant du tick rate (50ms).
- * Appele depuis DubstepRadioScreen.render() a chaque frame (~8-16ms de resolution).
+ * Supporte 4 modes de lecture : Play, Play Page, Loop, Page Loop.
  */
 @OnlyIn(Dist.CLIENT)
 public class SequencePlaybackEngine {
@@ -44,11 +45,33 @@ public class SequencePlaybackEngine {
     private static int currentStep = -1;
     private static long lastUpdateMs;
 
-    public static void start(SequenceData sequenceData, BlockPos pos) {
+    private static PlayMode playMode = PlayMode.LOOP;
+    private static int rangeStart = 0;
+    private static int rangeEnd = 16;
+    private static boolean autoStopped = false;
+
+    public static void start(SequenceData sequenceData, BlockPos pos, PlayMode mode, int currentPage) {
         data = sequenceData.copy();
         sourcePos = pos;
+        playMode = mode;
         playing = true;
-        currentStep = -1;
+        autoStopped = false;
+
+        int totalSteps = data.getStepCount();
+        int stepsPerPage = SequenceData.STEPS_PER_PAGE;
+
+        switch (mode) {
+            case PLAY, LOOP -> {
+                rangeStart = 0;
+                rangeEnd = totalSteps;
+            }
+            case PLAY_PAGE, PAGE_LOOP -> {
+                rangeStart = currentPage * stepsPerPage;
+                rangeEnd = Math.min(rangeStart + stepsPerPage, totalSteps);
+            }
+        }
+
+        currentStep = rangeStart - 1;
         startTimeMs = System.currentTimeMillis();
         lastUpdateMs = startTimeMs;
     }
@@ -56,6 +79,7 @@ public class SequencePlaybackEngine {
     public static void stop() {
         playing = false;
         currentStep = 0;
+        autoStopped = false;
         data = null;
         sourcePos = null;
     }
@@ -75,6 +99,14 @@ public class SequencePlaybackEngine {
     }
 
     /**
+     * Retourne true si le mode non-looping a atteint la fin.
+     * Le screen doit verifier ceci et envoyer STOP au serveur.
+     */
+    public static boolean shouldAutoStop() {
+        return autoStopped;
+    }
+
+    /**
      * Appele chaque frame depuis le render du screen.
      * Calcule les steps ecoules et joue les notes correspondantes.
      */
@@ -89,20 +121,42 @@ public class SequencePlaybackEngine {
         lastUpdateMs = now;
 
         long elapsed = now - startTimeMs;
-        int stepCount = data.getStepCount();
+        int rangeLen = rangeEnd - rangeStart;
+        if (rangeLen <= 0) return;
+
         double msPerStep = 60000.0 / data.getBpm() / 4.0;
-
-        // Calculer le step cible
-        long cycleMs = (long) (msPerStep * stepCount);
+        long cycleMs = (long) (msPerStep * rangeLen);
         if (cycleMs <= 0) return;
-        long elapsedInCycle = elapsed % cycleMs;
-        int targetStep = (int) (elapsedInCycle / msPerStep);
-        if (targetStep >= stepCount) targetStep = stepCount - 1;
 
-        // Jouer les notes des steps manques
-        while (currentStep != targetStep) {
-            currentStep = (currentStep + 1) % stepCount;
-            playStep(currentStep, mc);
+        boolean isLooping = (playMode == PlayMode.LOOP || playMode == PlayMode.PAGE_LOOP);
+
+        if (isLooping) {
+            long elapsedInCycle = elapsed % cycleMs;
+            int targetStep = rangeStart + (int) (elapsedInCycle / msPerStep);
+            if (targetStep >= rangeEnd) targetStep = rangeEnd - 1;
+
+            while (currentStep != targetStep) {
+                currentStep++;
+                if (currentStep >= rangeEnd) currentStep = rangeStart;
+                playStep(currentStep, mc);
+            }
+        } else {
+            int targetStep = rangeStart + (int) (elapsed / msPerStep);
+            if (targetStep >= rangeEnd) {
+                // Play remaining steps before stopping
+                while (currentStep < rangeEnd - 1) {
+                    currentStep++;
+                    playStep(currentStep, mc);
+                }
+                autoStopped = true;
+                return;
+            }
+
+            while (currentStep < targetStep) {
+                currentStep++;
+                if (currentStep >= rangeEnd) break;
+                playStep(currentStep, mc);
+            }
         }
     }
 

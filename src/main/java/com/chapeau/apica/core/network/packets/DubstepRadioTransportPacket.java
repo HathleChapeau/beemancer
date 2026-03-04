@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [DubstepRadioTransportPacket.java]
- * Description: Packet bidirectionnel pour play/stop et changement BPM/swing
+ * Description: Packet C2S pour play/stop, changement BPM, et gestion des pages
  * ============================================================
  *
  * DEPENDANCES:
@@ -38,7 +38,8 @@ public record DubstepRadioTransportPacket(BlockPos pos, int action, int bpm, int
     public static final int PLAY = 0;
     public static final int STOP = 1;
     public static final int SET_BPM = 2;
-    public static final int SET_SWING = 3;
+    public static final int ADD_PAGE = 4;
+    public static final int REMOVE_PAGE = 5;
 
     public static final Type<DubstepRadioTransportPacket> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "dubstep_radio_transport"));
@@ -76,8 +77,12 @@ public record DubstepRadioTransportPacket(BlockPos pos, int action, int bpm, int
                         be.getSequenceData().setBpm(packet.bpm());
                         be.setChanged();
                     }
-                    case SET_SWING -> {
-                        be.getSequenceData().setSwing(packet.swing() / 100.0f);
+                    case ADD_PAGE -> {
+                        be.getSequenceData().addPage();
+                        be.setChanged();
+                    }
+                    case REMOVE_PAGE -> {
+                        be.getSequenceData().removePage(packet.bpm());
                         be.setChanged();
                     }
                 }

@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [SequenceData.java]
- * Description: Donnees completes d'une sequence musicale (tracks, BPM, swing)
+ * Description: Donnees completes d'une sequence musicale multi-pages (tracks, BPM, pages)
  * ============================================================
  *
  * DEPENDANCES:
@@ -10,7 +10,6 @@
  * |---------------------|----------------------|--------------------------------|
  * | TrackData           | Tracks individuelles | Collection de tracks           |
  * | DubstepInstrument   | Instruments          | Ajout de nouvelles tracks      |
- * | NoteCell            | Cellules             | Lecture des notes actives      |
  * | CompoundTag/ListTag | Serialisation NBT    | Sauvegarde/chargement          |
  * ------------------------------------------------------------
  *
@@ -33,20 +32,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Modele de donnees complet d'une sequence musicale.
- * Contient les tracks, le BPM, le swing et le volume master.
+ * Modele de donnees complet d'une sequence musicale multi-pages.
+ * Chaque page contient STEPS_PER_PAGE steps. Le total = pageCount * STEPS_PER_PAGE.
  */
 public class SequenceData {
 
     public static final int MAX_TRACKS = 6;
-    public static final int MAX_STEPS = 32;
-    public static final int DEFAULT_STEPS = 16;
+    public static final int STEPS_PER_PAGE = 16;
+    public static final int MAX_PAGES = 8;
+    public static final int MAX_STEPS = STEPS_PER_PAGE * MAX_PAGES;
     public static final int MIN_BPM = 40;
     public static final int MAX_BPM = 300;
 
-    private int stepCount = DEFAULT_STEPS;
+    private int pageCount = 1;
     private int bpm = 120;
-    private float swing = 0.0f;
     private float masterVolume = 0.8f;
     private final TrackData[] tracks = new TrackData[MAX_TRACKS];
     private int trackCount = 0;
@@ -80,11 +79,37 @@ public class SequenceData {
         return trackCount;
     }
 
+    // === Pages ===
+
+    public int getPageCount() {
+        return pageCount;
+    }
+
+    public void setPageCount(int count) {
+        this.pageCount = Math.max(1, Math.min(MAX_PAGES, count));
+    }
+
+    public int getStepCount() {
+        return pageCount * STEPS_PER_PAGE;
+    }
+
+    public boolean addPage() {
+        if (pageCount >= MAX_PAGES) return false;
+        pageCount++;
+        return true;
+    }
+
+    public boolean removePage(int pageIndex) {
+        if (pageCount <= 1 || pageIndex < 0 || pageIndex >= pageCount) return false;
+        for (int i = 0; i < trackCount; i++) {
+            tracks[i].removePage(pageIndex, STEPS_PER_PAGE);
+        }
+        pageCount--;
+        return true;
+    }
+
     // === Notes actives a un step ===
 
-    /**
-     * Retourne toutes les notes actives a un step donne, respectant mute/solo.
-     */
     public List<NoteEvent> getActiveNotes(int step) {
         List<NoteEvent> notes = new ArrayList<>();
         boolean hasSolo = hasSoloTrack();
@@ -116,14 +141,8 @@ public class SequenceData {
 
     // === Parametres ===
 
-    public int getStepCount() { return stepCount; }
-    public void setStepCount(int count) { this.stepCount = Math.max(1, Math.min(MAX_STEPS, count)); }
-
     public int getBpm() { return bpm; }
     public void setBpm(int bpm) { this.bpm = Math.max(MIN_BPM, Math.min(MAX_BPM, bpm)); }
-
-    public float getSwing() { return swing; }
-    public void setSwing(float swing) { this.swing = Math.max(0.0f, Math.min(1.0f, swing)); }
 
     public float getMasterVolume() { return masterVolume; }
     public void setMasterVolume(float vol) { this.masterVolume = Math.max(0.0f, Math.min(1.0f, vol)); }
@@ -133,8 +152,7 @@ public class SequenceData {
     public CompoundTag save() {
         CompoundTag tag = new CompoundTag();
         tag.putInt("BPM", bpm);
-        tag.putInt("Steps", stepCount);
-        tag.putFloat("Swing", swing);
+        tag.putInt("PageCount", pageCount);
         tag.putFloat("Volume", masterVolume);
         tag.putInt("TrackCount", trackCount);
 
@@ -149,9 +167,8 @@ public class SequenceData {
     public void load(CompoundTag tag) {
         bpm = tag.getInt("BPM");
         if (bpm < MIN_BPM || bpm > MAX_BPM) bpm = 120;
-        stepCount = tag.getInt("Steps");
-        if (stepCount < 1 || stepCount > MAX_STEPS) stepCount = DEFAULT_STEPS;
-        swing = tag.getFloat("Swing");
+        pageCount = tag.getInt("PageCount");
+        if (pageCount < 1 || pageCount > MAX_PAGES) pageCount = 1;
         masterVolume = tag.getFloat("Volume");
         if (masterVolume <= 0.0f) masterVolume = 0.8f;
 
@@ -169,22 +186,16 @@ public class SequenceData {
     // === Network ===
 
     public void writeToBuf(FriendlyByteBuf buf) {
-        CompoundTag tag = save();
-        buf.writeNbt(tag);
+        buf.writeNbt(save());
     }
 
     public static SequenceData readFromBuf(FriendlyByteBuf buf) {
         SequenceData data = new SequenceData();
         CompoundTag tag = buf.readNbt();
-        if (tag != null) {
-            data.load(tag);
-        }
+        if (tag != null) data.load(tag);
         return data;
     }
 
-    /**
-     * Cree une copie profonde de cette SequenceData.
-     */
     public SequenceData copy() {
         SequenceData copy = new SequenceData();
         copy.load(this.save());
@@ -193,9 +204,6 @@ public class SequenceData {
 
     // === Note Event ===
 
-    /**
-     * Evenement de note a jouer : instrument, pitch (0-24), volume final (0-1).
-     */
     public record NoteEvent(DubstepInstrument instrument, int pitch, float volume) {
     }
 }

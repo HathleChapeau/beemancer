@@ -84,7 +84,7 @@ public abstract class ContainerScreenMagazineMixin {
             if (stack.getItem() instanceof IMagazineHolder) {
                 hoveringHolder = true;
                 int slotScreenX = leftPos + hoveredSlot.x;
-                int slotScreenY = leftPos + hoveredSlot.y;
+                int slotScreenY = topPos + hoveredSlot.y;
                 apica$magSlotScreenX = slotScreenX;
                 apica$magSlotScreenY = slotScreenY - SLOT_Y_OFFSET;
                 apica$magSlotVisible = true;
