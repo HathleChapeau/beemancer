@@ -666,8 +666,8 @@ public class ClientSetup {
     }
 
     private static void registerItemDecorations(final net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent event) {
-        ResourceLocation chestTex = ResourceLocation.withDefaultNamespace("textures/item/chest_minecart.png");
-        ResourceLocation compassTex = ResourceLocation.withDefaultNamespace("textures/item/compass_16.png");
+        net.minecraft.world.item.ItemStack chestIcon = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CHEST);
+        ResourceLocation magnetTex = ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/item/artifacts/magnet.png");
 
         // Backpack: icone coffre en bas a droite (toujours visible)
         event.register(ApicaItems.BACKPACK.get(), (graphics, font, stack, xOffset, yOffset) -> {
@@ -675,7 +675,7 @@ public class ClientSetup {
             pose.pushPose();
             pose.translate(xOffset + 8, yOffset + 8, 200);
             pose.scale(0.5f, 0.5f, 1.0f);
-            graphics.blit(chestTex, 0, 0, 0, 0, 16, 16, 16, 16);
+            graphics.renderItem(chestIcon, 0, 0);
             pose.popPose();
             return false;
         });
@@ -686,7 +686,7 @@ public class ClientSetup {
             pose.pushPose();
             pose.translate(xOffset + 8, yOffset + 8, 200);
             pose.scale(0.5f, 0.5f, 1.0f);
-            graphics.blit(compassTex, 0, 0, 0, 0, 16, 16, 16, 16);
+            graphics.blit(magnetTex, 0, 0, 0, 0, 16, 16, 16, 16);
             pose.popPose();
             return false;
         });
