@@ -1,15 +1,14 @@
 /**
  * ============================================================
  * [TrackEditorWidget.java]
- * Description: Piano-roll editor pour une track — pitches verticaux, steps horizontaux
+ * Description: Piano-roll polyphonique pour une track — pitches verticaux, steps horizontaux
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | TrackData           | Donnees track        | Lecture/edition des cellules   |
- * | NoteCell            | Cellule de note      | Toggle actif/pitch             |
+ * | TrackData           | Donnees track        | Lecture/edition bitmask pitches |
  * | DubstepInstrument   | Couleur instrument   | Palette par instrument         |
  * | GuiGraphics         | Rendu vectoriel      | fill(), drawString()           |
  * ------------------------------------------------------------
@@ -21,33 +20,33 @@
  */
 package com.chapeau.apica.client.gui.widget;
 
-import com.chapeau.apica.common.data.NoteCell;
 import com.chapeau.apica.common.data.TrackData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
 /**
- * Piano-roll pour une seule track (monophonique).
+ * Piano-roll polyphonique pour une seule track.
  * 25 lignes de pitch (F#5 en haut, F#3 en bas) x N colonnes de steps.
- * Toggle uniquement via mouseClicked (pas de drag) pour eviter le flickering.
+ * Plusieurs pitches actifs par step (accords). Toggle via mouseClicked uniquement.
  */
 public class TrackEditorWidget {
 
     private static final int PITCH_COUNT = 25;
     private static final int LABEL_W = 24;
     public static final int CELL_W = 14;
-    public static final int CELL_H = 6;
+    public static final int CELL_H = 8;
 
     private static final int COL_EMPTY = 0xFF181828;
     private static final int COL_EMPTY_ALT = 0xFF1C1C30;
-    private static final int COL_BORDER = 0xFF333344;
+    private static final int COL_BORDER = 0xFF222233;
     private static final int COL_BEAT_LINE = 0xFF444455;
     private static final int COL_PLAYHEAD = 0x5500FF88;
     private static final int COL_PLAYHEAD_LINE = 0xFF00FF88;
     private static final int COL_OCTAVE_LINE = 0xFF2A2A44;
     private static final int COL_LABEL = 0xFF888888;
     private static final int COL_LABEL_C = 0xFFBBBBBB;
+    private static final int COL_ROW_SEP = 0xFF1E1E33;
 
     /** Palette arc-en-ciel pour les 16 instruments. */
     private static final int[] INST_COLORS = {
@@ -69,8 +68,8 @@ public class TrackEditorWidget {
     private int playheadStep = -1;
 
     public interface Listener {
-        void onCellEdit(int stepIndex, NoteCell newCell);
-        void onCellPreview(int stepIndex, NoteCell cell);
+        void onPitchToggle(int stepIndex, int pitch, boolean activate);
+        void onPitchPreview(int pitch);
     }
 
     private final Listener listener;
@@ -93,48 +92,42 @@ public class TrackEditorWidget {
         int activeColor = INST_COLORS[instIdx % INST_COLORS.length];
 
         int gridX = x + LABEL_W;
+        int gridW = stepCount * CELL_W;
 
         // Background
         gfx.fill(x, y, x + width, y + height, 0xFF111122);
 
-        // Note labels (top = high pitch, bottom = low pitch)
         for (int p = 0; p < PITCH_COUNT; p++) {
             int pitch = PITCH_COUNT - 1 - p; // Row 0 = F#5 (pitch 24)
             int ry = y + p * CELL_H;
             boolean isC = (pitch == 6 || pitch == 18); // C4, C5
 
-            String label = NOTE_NAMES[pitch];
-            // Abbreviate: show full name for C and F# notes, short for others
-            if (label.length() > 2) {
-                label = label.substring(0, Math.min(3, label.length()));
+            // Octave highlight for C notes
+            if (isC) {
+                gfx.fill(x, ry, gridX + gridW, ry + CELL_H, COL_OCTAVE_LINE);
             }
+
+            // Note label
+            String label = NOTE_NAMES[pitch];
+            if (label.length() > 3) label = label.substring(0, 3);
             int labelColor = isC ? COL_LABEL_C : COL_LABEL;
             gfx.drawString(font, label, x + 1, ry + 1, labelColor, false);
 
-            // Octave highlight for C notes
-            if (isC) {
-                gfx.fill(gridX, ry, gridX + stepCount * CELL_W, ry + CELL_H, COL_OCTAVE_LINE);
-            }
-        }
-
-        // Grid cells
-        for (int p = 0; p < PITCH_COUNT; p++) {
-            int pitch = PITCH_COUNT - 1 - p;
-            int ry = y + p * CELL_H;
-
+            // Grid cells for this pitch row
             for (int s = 0; s < stepCount; s++) {
                 int cx = gridX + s * CELL_W;
-                NoteCell cell = track.getCell(s);
                 boolean inBeatGroup = (s / 4) % 2 == 0;
                 int emptyCol = inBeatGroup ? COL_EMPTY : COL_EMPTY_ALT;
 
-                if (cell.active() && cell.pitch() == pitch) {
-                    // Active cell at this pitch
-                    gfx.fill(cx + 1, ry, cx + CELL_W - 1, ry + CELL_H, activeColor);
+                if (track.isPitchActive(s, pitch)) {
+                    gfx.fill(cx + 1, ry + 1, cx + CELL_W - 1, ry + CELL_H - 1, activeColor);
                 } else {
-                    gfx.fill(cx + 1, ry, cx + CELL_W - 1, ry + CELL_H, emptyCol);
+                    gfx.fill(cx + 1, ry + 1, cx + CELL_W - 1, ry + CELL_H - 1, emptyCol);
                 }
             }
+
+            // Row separator line
+            gfx.fill(gridX, ry + CELL_H - 1, gridX + gridW, ry + CELL_H, COL_ROW_SEP);
         }
 
         // Beat markers (every 4 steps)
@@ -143,12 +136,12 @@ public class TrackEditorWidget {
             gfx.fill(lx, y, lx + 1, y + PITCH_COUNT * CELL_H, COL_BEAT_LINE);
         }
 
-        // Horizontal lines between pitches (every octave: C4=pitch6, C5=pitch18)
+        // Octave separator lines (thicker for C4, C5)
         for (int p = 0; p < PITCH_COUNT; p++) {
             int pitch = PITCH_COUNT - 1 - p;
             if (pitch == 6 || pitch == 12 || pitch == 18) {
                 int ly = y + p * CELL_H;
-                gfx.fill(gridX, ly, gridX + stepCount * CELL_W, ly + 1, COL_BORDER);
+                gfx.fill(gridX, ly, gridX + gridW, ly + 1, COL_BORDER);
             }
         }
 
@@ -161,8 +154,7 @@ public class TrackEditorWidget {
     }
 
     /**
-     * Handle click — toggle uniquement (pas de drag).
-     * Monophonique : un seul pitch actif par step.
+     * Handle click — toggle pitch polyphonique (pas de drag).
      */
     public boolean mouseClicked(double mx, double my, int button, TrackData track, int stepCount) {
         int gridX = x + LABEL_W;
@@ -177,20 +169,12 @@ public class TrackEditorWidget {
         if (row < 0 || row >= PITCH_COUNT) return false;
 
         int clickedPitch = PITCH_COUNT - 1 - row;
-        NoteCell current = track.getCell(col);
+        boolean wasActive = track.isPitchActive(col, clickedPitch);
+        boolean newState = !wasActive;
 
-        NoteCell newCell;
-        if (current.active() && current.pitch() == clickedPitch) {
-            // Deactivate this note
-            newCell = new NoteCell(false, clickedPitch, current.velocity());
-        } else {
-            // Activate at this pitch (replaces any existing note at this step)
-            newCell = new NoteCell(true, clickedPitch, current.active() ? current.velocity() : 80);
-        }
-
-        listener.onCellEdit(col, newCell);
-        if (newCell.active()) {
-            listener.onCellPreview(col, newCell);
+        listener.onPitchToggle(col, clickedPitch, newState);
+        if (newState) {
+            listener.onPitchPreview(clickedPitch);
         }
         return true;
     }

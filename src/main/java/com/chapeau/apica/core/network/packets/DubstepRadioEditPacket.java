@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [DubstepRadioEditPacket.java]
- * Description: Packet C2S pour modifier une cellule de la grille du sequenceur
+ * Description: Packet C2S pour activer/desactiver un pitch dans la grille du sequenceur
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,7 +9,7 @@
  * | Dependance               | Raison                | Utilisation                    |
  * |--------------------------|----------------------|--------------------------------|
  * | DubstepRadioBlockEntity  | BE cible             | Application du changement      |
- * | NoteCell                 | Donnees cellule      | Decodage compact               |
+ * | TrackData                | Donnees track        | setPitchActive                 |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -22,7 +22,6 @@ package com.chapeau.apica.core.network.packets;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.block.radio.DubstepRadioBlockEntity;
-import com.chapeau.apica.common.data.NoteCell;
 import com.chapeau.apica.common.data.TrackData;
 import com.chapeau.apica.common.menu.DubstepRadioMenu;
 import net.minecraft.core.BlockPos;
@@ -33,7 +32,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record DubstepRadioEditPacket(BlockPos pos, int trackIndex, int stepIndex, short cellData)
+public record DubstepRadioEditPacket(BlockPos pos, int trackIndex, int stepIndex,
+                                     int pitch, boolean activate)
         implements CustomPacketPayload {
 
     public static final Type<DubstepRadioEditPacket> TYPE = new Type<>(
@@ -46,11 +46,14 @@ public record DubstepRadioEditPacket(BlockPos pos, int trackIndex, int stepIndex
         buf.writeBlockPos(packet.pos());
         buf.writeByte(packet.trackIndex());
         buf.writeByte(packet.stepIndex());
-        buf.writeShort(packet.cellData());
+        buf.writeByte(packet.pitch());
+        buf.writeBoolean(packet.activate());
     }
 
     private static DubstepRadioEditPacket read(FriendlyByteBuf buf) {
-        return new DubstepRadioEditPacket(buf.readBlockPos(), buf.readByte(), buf.readByte(), buf.readShort());
+        return new DubstepRadioEditPacket(
+                buf.readBlockPos(), buf.readByte(), buf.readByte(),
+                buf.readByte(), buf.readBoolean());
     }
 
     @Override
@@ -67,7 +70,7 @@ public record DubstepRadioEditPacket(BlockPos pos, int trackIndex, int stepIndex
             if (player.level().getBlockEntity(packet.pos()) instanceof DubstepRadioBlockEntity be) {
                 TrackData track = be.getSequenceData().getTrack(packet.trackIndex());
                 if (track != null) {
-                    track.setCell(packet.stepIndex(), NoteCell.fromCompact(packet.cellData()));
+                    track.setPitchActive(packet.stepIndex(), packet.pitch(), packet.activate());
                     be.setChanged();
                 }
             }

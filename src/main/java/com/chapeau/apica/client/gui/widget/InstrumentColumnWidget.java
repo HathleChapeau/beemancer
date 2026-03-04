@@ -95,8 +95,8 @@ public class InstrumentColumnWidget {
             String name = track.getInstrument().getDisplayName();
             gfx.drawString(font, name, x + 4, ry + 5, COL_TEXT, false);
 
-            // Boutons a droite : [M] [S] [X] [Edit]
-            int bx = x + width - (BTN_W * 4 + BTN_GAP * 3 + 4);
+            // Boutons apres le nom : [M] [S] [X] [Edit]
+            int bx = x + 105;
             int by = ry + 2;
             int bh = ROW_H - 4;
 
@@ -210,7 +210,7 @@ public class InstrumentColumnWidget {
         if (my < by || my >= by + bh) return false;
 
         int editW = font.width("Edit") + 6;
-        int bx = x + width - (BTN_W * 4 + BTN_GAP * 3 + 4);
+        int bx = x + 105;
 
         // M
         if (mx >= bx && mx < bx + BTN_W) {

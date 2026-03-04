@@ -38,7 +38,7 @@ import java.util.List;
  */
 public class SequenceData {
 
-    public static final int MAX_TRACKS = 8;
+    public static final int MAX_TRACKS = 6;
     public static final int MAX_STEPS = 32;
     public static final int DEFAULT_STEPS = 16;
     public static final int MIN_BPM = 40;
@@ -94,10 +94,14 @@ public class SequenceData {
             if (track.isMuted()) continue;
             if (hasSolo && !track.isSolo()) continue;
 
-            NoteCell cell = track.getCell(step);
-            if (cell.active()) {
-                float vol = cell.velocity() / 100.0f * track.getVolume() * masterVolume;
-                notes.add(new NoteEvent(track.getInstrument(), cell.pitch(), vol));
+            int mask = track.getPitchMask(step);
+            if (mask == 0) continue;
+
+            float vel = track.getVelocity(step) / 100.0f * track.getVolume() * masterVolume;
+            for (int p = 0; p < TrackData.PITCH_COUNT; p++) {
+                if ((mask & (1 << p)) != 0) {
+                    notes.add(new NoteEvent(track.getInstrument(), p, vel));
+                }
             }
         }
         return notes;

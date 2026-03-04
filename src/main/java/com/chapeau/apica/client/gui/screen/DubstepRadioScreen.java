@@ -30,7 +30,6 @@ import com.chapeau.apica.client.gui.widget.InstrumentColumnWidget;
 import com.chapeau.apica.client.gui.widget.TrackEditorWidget;
 import com.chapeau.apica.client.gui.widget.TransportBarWidget;
 import com.chapeau.apica.common.data.DubstepInstrument;
-import com.chapeau.apica.common.data.NoteCell;
 import com.chapeau.apica.common.data.SequenceData;
 import com.chapeau.apica.common.data.TrackData;
 import com.chapeau.apica.common.menu.DubstepRadioMenu;
@@ -46,44 +45,51 @@ import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Ecran DAW avec deux modes :
- * - Mode principal (editingTrack == -1) : liste des instruments avec M/S/X/Edit
- * - Mode editeur (editingTrack >= 0) : piano-roll pour un track
+ * Ecran DAW avec deux modes et taille dynamique :
+ * - Mode principal (editingTrack == -1) : liste des instruments (hauteur reduite)
+ * - Mode editeur (editingTrack >= 0) : piano-roll pour un track (hauteur etendue)
  */
 public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu>
         implements DubstepRadioSyncPacket.DubstepRadioSyncReceiver {
 
-    private static final int GUI_W = 290;
-    private static final int GUI_H = 170;
+    private static final int GUI_W = 260;
+    private static final int MAIN_H = 150;
+    private static final int EDITOR_H = 220;
+    private static final int BAR_H = 18;
     private static final int COL_BG = 0xCC1A1A2E;
     private static final int COL_BORDER = 0xFF555555;
 
     private SequenceData localData = new SequenceData();
-    private int editingTrack = -1; // -1 = main, 0-7 = editor
+    private int editingTrack = -1;
 
-    // Widgets mode principal
     private TransportBarWidget mainTransport;
     private InstrumentColumnWidget instrumentColumn;
-
-    // Widgets mode editeur
     private TransportBarWidget editorTransport;
     private TrackEditorWidget trackEditor;
 
     public DubstepRadioScreen(DubstepRadioMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
         this.imageWidth = GUI_W;
-        this.imageHeight = GUI_H;
-        this.inventoryLabelY = GUI_H + 1;
+        this.imageHeight = MAIN_H;
+        this.inventoryLabelY = MAIN_H + 1;
     }
 
     @Override
     protected void init() {
         super.init();
+        updateLayout();
+    }
+
+    private void updateLayout() {
+        int currentH = (editingTrack == -1) ? MAIN_H : EDITOR_H;
+        this.imageHeight = currentH;
+        this.leftPos = (this.width - GUI_W) / 2;
+        this.topPos = (this.height - currentH) / 2;
+        this.inventoryLabelY = currentH + 1;
+
         int gx = this.leftPos;
         int gy = this.topPos;
-        int barH = 18;
 
-        // Transport bar listener (shared between modes)
         TransportBarWidget.Listener transportListener = new TransportBarWidget.Listener() {
             @Override
             public void onPlay() { sendTransport(DubstepRadioTransportPacket.PLAY); }
@@ -104,15 +110,11 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
             }
         };
 
-        // Main transport (no back button)
         mainTransport = new TransportBarWidget(gx, gy, GUI_W, transportListener, null);
-
-        // Editor transport (with back button)
         editorTransport = new TransportBarWidget(gx, gy, GUI_W, transportListener,
-                () -> editingTrack = -1);
+                () -> { editingTrack = -1; updateLayout(); });
 
-        // Instrument list (full width)
-        instrumentColumn = new InstrumentColumnWidget(gx, gy + barH, GUI_W, GUI_H - barH,
+        instrumentColumn = new InstrumentColumnWidget(gx, gy + BAR_H, GUI_W, currentH - BAR_H,
                 new InstrumentColumnWidget.Listener() {
             @Override
             public void onAddTrack(DubstepInstrument instrument) {
@@ -148,30 +150,29 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
             @Override
             public void onEditTrack(int trackIndex) {
                 editingTrack = trackIndex;
+                updateLayout();
             }
         });
 
-        // Track editor (piano-roll)
-        trackEditor = new TrackEditorWidget(gx, gy + barH, GUI_W, GUI_H - barH,
+        trackEditor = new TrackEditorWidget(gx, gy + BAR_H, GUI_W, currentH - BAR_H,
                 new TrackEditorWidget.Listener() {
             @Override
-            public void onCellEdit(int stepIndex, NoteCell newCell) {
+            public void onPitchToggle(int stepIndex, int pitch, boolean activate) {
                 if (editingTrack < 0) return;
                 TrackData track = localData.getTrack(editingTrack);
                 if (track == null) return;
-                track.setCell(stepIndex, newCell);
+                track.setPitchActive(stepIndex, pitch, activate);
                 PacketDistributor.sendToServer(new DubstepRadioEditPacket(
-                        menu.getBlockPos(), editingTrack, stepIndex, newCell.toCompact()));
+                        menu.getBlockPos(), editingTrack, stepIndex, pitch, activate));
             }
             @Override
-            public void onCellPreview(int stepIndex, NoteCell cell) {
+            public void onPitchPreview(int pitch) {
                 if (editingTrack < 0) return;
                 TrackData track = localData.getTrack(editingTrack);
                 if (track == null) return;
-                float vol = cell.velocity() / 100.0f * track.getVolume()
-                        * localData.getMasterVolume();
+                float vol = track.getVolume() * localData.getMasterVolume();
                 SequencePlaybackEngine.playPreview(
-                        new SequenceData.NoteEvent(track.getInstrument(), cell.pitch(), vol),
+                        new SequenceData.NoteEvent(track.getInstrument(), pitch, vol),
                         menu.getBlockPos());
             }
         });
@@ -188,7 +189,6 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
     protected void renderBg(GuiGraphics gfx, float partialTick, int mouseX, int mouseY) {
         SequencePlaybackEngine.update();
 
-        // Sync ContainerData
         localData.setBpm(menu.getBpm());
         boolean isPlaying = menu.isPlaying();
 
@@ -202,24 +202,24 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
             SequencePlaybackEngine.updateData(localData);
         }
 
-        // Safety: if editing track was deleted
         if (editingTrack >= localData.getTrackCount()) {
             editingTrack = -1;
+            updateLayout();
         }
 
+        int currentH = (editingTrack == -1) ? MAIN_H : EDITOR_H;
+
         // Background
-        gfx.fill(leftPos - 2, topPos - 2, leftPos + GUI_W + 2, topPos + GUI_H + 2, COL_BORDER);
-        gfx.fill(leftPos, topPos, leftPos + GUI_W, topPos + GUI_H, COL_BG);
+        gfx.fill(leftPos - 2, topPos - 2, leftPos + GUI_W + 2, topPos + currentH + 2, COL_BORDER);
+        gfx.fill(leftPos, topPos, leftPos + GUI_W, topPos + currentH, COL_BG);
 
         int volumePct = menu.getMasterVolume();
 
         if (editingTrack == -1) {
-            // Mode principal
             mainTransport.update(localData.getBpm(), isPlaying, volumePct);
             mainTransport.render(gfx);
             instrumentColumn.render(gfx, localData);
         } else {
-            // Mode editeur
             editorTransport.update(localData.getBpm(), isPlaying, volumePct);
             editorTransport.render(gfx);
 
@@ -233,7 +233,6 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
 
     @Override
     protected void renderLabels(GuiGraphics gfx, int mouseX, int mouseY) {
-        // Pas de labels par defaut
     }
 
     @Override
@@ -282,7 +281,7 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 32) { // Space
+        if (keyCode == 32) {
             if (menu.isPlaying()) {
                 sendTransport(DubstepRadioTransportPacket.STOP);
                 SequencePlaybackEngine.stop();

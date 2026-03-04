@@ -1,14 +1,13 @@
 /**
  * ============================================================
  * [TrackData.java]
- * Description: Donnees d'une track du sequenceur (instrument, volume, mute, cellules)
+ * Description: Donnees d'une track du sequenceur — polyphonique via bitmask de pitches
  * ============================================================
  *
  * DEPENDANCES:
  * ------------------------------------------------------------
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | NoteCell            | Cellule de note      | Tableau de cellules par step    |
  * | DubstepInstrument   | Instrument assigne   | Son joue par cette track       |
  * | CompoundTag         | Serialisation NBT    | Sauvegarde/chargement          |
  * ------------------------------------------------------------
@@ -16,7 +15,7 @@
  * UTILISE PAR:
  * - SequenceData.java (collection de tracks)
  * - InstrumentColumnWidget.java (affichage track)
- * - SequenceGridWidget.java (affichage cellules)
+ * - TrackEditorWidget.java (affichage/edition piano-roll)
  *
  * ============================================================
  */
@@ -25,54 +24,81 @@ package com.chapeau.apica.common.data;
 import net.minecraft.nbt.CompoundTag;
 
 /**
- * Une track du sequenceur : un instrument + ses parametres + un tableau de NoteCell.
+ * Une track du sequenceur : un instrument + parametres + grille polyphonique.
+ * Chaque step stocke un bitmask de pitches actifs (25 bits pour pitches 0-24)
+ * et une velocity partagee par toutes les notes du step.
  */
 public class TrackData {
+
+    public static final int PITCH_COUNT = 25;
 
     private DubstepInstrument instrument;
     private float volume;
     private boolean muted;
     private boolean solo;
-    private final NoteCell[] cells;
+    private final int[] pitchMasks;
+    private final int[] velocities;
+    private final int maxSteps;
 
     public TrackData(DubstepInstrument instrument, int maxSteps) {
         this.instrument = instrument;
         this.volume = 1.0f;
         this.muted = false;
         this.solo = false;
-        this.cells = new NoteCell[maxSteps];
+        this.maxSteps = maxSteps;
+        this.pitchMasks = new int[maxSteps];
+        this.velocities = new int[maxSteps];
         for (int i = 0; i < maxSteps; i++) {
-            cells[i] = NoteCell.EMPTY;
+            velocities[i] = 80;
         }
     }
 
-    // === Cellules ===
+    // === Pitch grid ===
 
-    public NoteCell getCell(int step) {
-        if (step < 0 || step >= cells.length) return NoteCell.EMPTY;
-        return cells[step];
+    public boolean isPitchActive(int step, int pitch) {
+        if (step < 0 || step >= maxSteps || pitch < 0 || pitch >= PITCH_COUNT) return false;
+        return (pitchMasks[step] & (1 << pitch)) != 0;
     }
 
-    public void setCell(int step, NoteCell cell) {
-        if (step >= 0 && step < cells.length) {
-            cells[step] = cell;
+    public void setPitchActive(int step, int pitch, boolean active) {
+        if (step < 0 || step >= maxSteps || pitch < 0 || pitch >= PITCH_COUNT) return;
+        if (active) {
+            pitchMasks[step] |= (1 << pitch);
+        } else {
+            pitchMasks[step] &= ~(1 << pitch);
         }
     }
 
-    public void toggleCell(int step) {
-        if (step >= 0 && step < cells.length) {
-            cells[step] = cells[step].toggled();
+    public boolean hasAnyNote(int step) {
+        if (step < 0 || step >= maxSteps) return false;
+        return pitchMasks[step] != 0;
+    }
+
+    public int getPitchMask(int step) {
+        if (step < 0 || step >= maxSteps) return 0;
+        return pitchMasks[step];
+    }
+
+    public int getVelocity(int step) {
+        if (step < 0 || step >= maxSteps) return 80;
+        return velocities[step];
+    }
+
+    public void setVelocity(int step, int vel) {
+        if (step >= 0 && step < maxSteps) {
+            velocities[step] = Math.max(0, Math.min(100, vel));
         }
     }
 
     public void clearAll() {
-        for (int i = 0; i < cells.length; i++) {
-            cells[i] = NoteCell.EMPTY;
+        for (int i = 0; i < maxSteps; i++) {
+            pitchMasks[i] = 0;
+            velocities[i] = 80;
         }
     }
 
-    public int getCellCount() {
-        return cells.length;
+    public int getMaxSteps() {
+        return maxSteps;
     }
 
     // === Instrument ===
@@ -121,12 +147,8 @@ public class TrackData {
         tag.putFloat("Volume", volume);
         tag.putBoolean("Muted", muted);
         tag.putBoolean("Solo", solo);
-
-        int[] compactCells = new int[cells.length];
-        for (int i = 0; i < cells.length; i++) {
-            compactCells[i] = cells[i].toCompact() & 0xFFFF;
-        }
-        tag.putIntArray("Cells", compactCells);
+        tag.putIntArray("PitchMasks", pitchMasks.clone());
+        tag.putIntArray("Velocities", velocities.clone());
         return tag;
     }
 
@@ -137,12 +159,15 @@ public class TrackData {
         track.muted = tag.getBoolean("Muted");
         track.solo = tag.getBoolean("Solo");
 
-        if (tag.contains("Cells")) {
-            int[] compactCells = tag.getIntArray("Cells");
-            int count = Math.min(compactCells.length, maxSteps);
-            for (int i = 0; i < count; i++) {
-                track.cells[i] = NoteCell.fromCompact((short) compactCells[i]);
-            }
+        if (tag.contains("PitchMasks")) {
+            int[] masks = tag.getIntArray("PitchMasks");
+            int count = Math.min(masks.length, maxSteps);
+            System.arraycopy(masks, 0, track.pitchMasks, 0, count);
+        }
+        if (tag.contains("Velocities")) {
+            int[] vels = tag.getIntArray("Velocities");
+            int count = Math.min(vels.length, maxSteps);
+            System.arraycopy(vels, 0, track.velocities, 0, count);
         }
         return track;
     }
