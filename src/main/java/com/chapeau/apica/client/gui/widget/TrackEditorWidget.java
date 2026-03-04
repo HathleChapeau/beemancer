@@ -32,7 +32,7 @@ import net.minecraft.client.gui.GuiGraphics;
  */
 public class TrackEditorWidget {
 
-    private static final int PITCH_COUNT = 25;
+    public static final int PITCH_COUNT = 25;
     private static final int LABEL_W = 24;
     public static final int CELL_W = 14;
     public static final int CELL_H = 8;

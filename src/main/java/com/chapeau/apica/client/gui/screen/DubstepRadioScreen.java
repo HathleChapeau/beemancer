@@ -11,9 +11,11 @@
  * | DubstepRadioMenu         | Menu associe         | ContainerData sync auto        |
  * | SequenceData             | Donnees locales      | Copie client de la sequence    |
  * | SequencePlaybackEngine   | Moteur audio         | Play/stop/update chaque frame  |
- * | TransportBarWidget       | Barre transport      | Play/stop, BPM, volume, back   |
+ * | PlayMode                 | Mode de lecture      | Play/Loop/Page variants        |
+ * | TransportBarWidget       | Barre transport      | Play/stop, BPM, mode, volume   |
  * | InstrumentColumnWidget   | Liste instruments    | M/S/X/Edit, add track          |
  * | TrackEditorWidget        | Piano-roll           | Edition notes par track        |
+ * | PageBarWidget            | Navigation pages     | +/del pages, prev/next         |
  * | DubstepRadioSyncPacket   | Sync S2C             | Reception donnees completes    |
  * | DubstepRadio*Packet      | Actions C2S          | Envoi modifications au serveur |
  * ------------------------------------------------------------
@@ -25,8 +27,10 @@
  */
 package com.chapeau.apica.client.gui.screen;
 
+import com.chapeau.apica.client.audio.PlayMode;
 import com.chapeau.apica.client.audio.SequencePlaybackEngine;
 import com.chapeau.apica.client.gui.widget.InstrumentColumnWidget;
+import com.chapeau.apica.client.gui.widget.PageBarWidget;
 import com.chapeau.apica.client.gui.widget.TrackEditorWidget;
 import com.chapeau.apica.client.gui.widget.TransportBarWidget;
 import com.chapeau.apica.common.data.DubstepInstrument;
@@ -46,26 +50,32 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Ecran DAW avec deux modes et taille dynamique :
- * - Mode principal (editingTrack == -1) : liste des instruments (hauteur reduite)
- * - Mode editeur (editingTrack >= 0) : piano-roll pour un track (hauteur etendue)
+ * - Mode principal (editingTrack == -1) : liste des instruments
+ * - Mode editeur (editingTrack >= 0) : piano-roll pour une track
+ *
+ * En mode editeur, les pages sont navigables via PageBarWidget.
+ * Les 4 modes de lecture (Play/PlayPage/Loop/PageLoop) sont selectionnes via TransportBarWidget.
  */
 public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu>
         implements DubstepRadioSyncPacket.DubstepRadioSyncReceiver {
 
     private static final int GUI_W = 260;
     private static final int MAIN_H = 150;
-    private static final int EDITOR_H = 220;
+    private static final int EDITOR_H = TrackEditorWidget.PITCH_COUNT * TrackEditorWidget.CELL_H + 18 + 16; // 234
     private static final int BAR_H = 18;
     private static final int COL_BG = 0xCC1A1A2E;
     private static final int COL_BORDER = 0xFF555555;
 
     private SequenceData localData = new SequenceData();
     private int editingTrack = -1;
+    private int currentPage = 0;
+    private PlayMode playMode = PlayMode.LOOP;
 
     private TransportBarWidget mainTransport;
     private InstrumentColumnWidget instrumentColumn;
     private TransportBarWidget editorTransport;
     private TrackEditorWidget trackEditor;
+    private PageBarWidget pageBar;
 
     public DubstepRadioScreen(DubstepRadioMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -107,6 +117,14 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
             @Override
             public void onVolumeChange(int pct) {
                 localData.setMasterVolume(pct / 100.0f);
+            }
+            @Override
+            public void onModeChange(PlayMode newMode) {
+                playMode = newMode;
+                // If already playing, restart engine with new mode
+                if (SequencePlaybackEngine.isPlaying()) {
+                    SequencePlaybackEngine.start(localData, menu.getBlockPos(), playMode, currentPage);
+                }
             }
         };
 
@@ -154,7 +172,10 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
             }
         });
 
-        trackEditor = new TrackEditorWidget(gx, gy + BAR_H, GUI_W, currentH - BAR_H,
+        int editorH = TrackEditorWidget.PITCH_COUNT * TrackEditorWidget.CELL_H;
+        int editorY = gy + BAR_H;
+
+        trackEditor = new TrackEditorWidget(gx, editorY, GUI_W, editorH,
                 new TrackEditorWidget.Listener() {
             @Override
             public void onPitchToggle(int stepIndex, int pitch, boolean activate) {
@@ -176,12 +197,31 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
                         menu.getBlockPos());
             }
         });
+
+        pageBar = new PageBarWidget(gx, editorY + editorH, GUI_W, new PageBarWidget.Listener() {
+            @Override
+            public void onPageChange(int newPage) {
+                currentPage = newPage;
+            }
+            @Override
+            public void onAddPage() {
+                localData.addPage();
+                sendTransportValue(DubstepRadioTransportPacket.ADD_PAGE, 0);
+            }
+            @Override
+            public void onDeletePage(int pageIndex) {
+                localData.removePage(pageIndex);
+                currentPage = Math.min(currentPage, localData.getPageCount() - 1);
+                sendTransportValue(DubstepRadioTransportPacket.REMOVE_PAGE, pageIndex);
+            }
+        });
     }
 
     @Override
     public void onSequenceSync(BlockPos pos, SequenceData data) {
         if (pos.equals(menu.getBlockPos())) {
             this.localData = data;
+            currentPage = Math.min(currentPage, Math.max(0, localData.getPageCount() - 1));
         }
     }
 
@@ -189,11 +229,24 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
     protected void renderBg(GuiGraphics gfx, float partialTick, int mouseX, int mouseY) {
         SequencePlaybackEngine.update();
 
+        // Auto-stop check: non-looping mode reached end
+        if (SequencePlaybackEngine.shouldAutoStop()) {
+            sendTransport(DubstepRadioTransportPacket.STOP);
+            SequencePlaybackEngine.stop();
+        }
+
         localData.setBpm(menu.getBpm());
+        // Sync pageCount from server
+        int serverPageCount = menu.getPageCount();
+        if (serverPageCount > 0 && serverPageCount != localData.getPageCount()) {
+            localData.setPageCount(serverPageCount);
+            currentPage = Math.min(currentPage, localData.getPageCount() - 1);
+        }
+
         boolean isPlaying = menu.isPlaying();
 
         if (isPlaying && !SequencePlaybackEngine.isPlaying()) {
-            SequencePlaybackEngine.start(localData, menu.getBlockPos());
+            SequencePlaybackEngine.start(localData, menu.getBlockPos(), playMode, currentPage);
         } else if (!isPlaying && SequencePlaybackEngine.isPlaying()) {
             SequencePlaybackEngine.stop();
         }
@@ -216,18 +269,21 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
         int volumePct = menu.getMasterVolume();
 
         if (editingTrack == -1) {
-            mainTransport.update(localData.getBpm(), isPlaying, volumePct);
+            mainTransport.update(localData.getBpm(), isPlaying, volumePct, playMode);
             mainTransport.render(gfx);
             instrumentColumn.render(gfx, localData);
         } else {
-            editorTransport.update(localData.getBpm(), isPlaying, volumePct);
+            editorTransport.update(localData.getBpm(), isPlaying, volumePct, playMode);
             editorTransport.render(gfx);
 
             TrackData track = localData.getTrack(editingTrack);
             if (track != null) {
+                int stepOffset = currentPage * SequenceData.STEPS_PER_PAGE;
                 trackEditor.setPlayheadStep(SequencePlaybackEngine.getCurrentStep());
-                trackEditor.render(gfx, track, localData.getStepCount());
+                trackEditor.render(gfx, track, SequenceData.STEPS_PER_PAGE, stepOffset);
             }
+
+            pageBar.render(gfx, currentPage, localData.getPageCount());
         }
     }
 
@@ -244,10 +300,12 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
             if (instrumentColumn.mouseClicked(mouseX, mouseY, button, localData)) return true;
         } else {
             if (editorTransport.mouseClicked(mouseX, mouseY, button)) return true;
+            if (pageBar.mouseClicked(mouseX, mouseY, currentPage, localData.getPageCount())) return true;
             TrackData track = localData.getTrack(editingTrack);
             if (track != null) {
+                int stepOffset = currentPage * SequenceData.STEPS_PER_PAGE;
                 if (trackEditor.mouseClicked(mouseX, mouseY, button, track,
-                        localData.getStepCount())) return true;
+                        SequenceData.STEPS_PER_PAGE, stepOffset)) return true;
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -303,12 +361,12 @@ public class DubstepRadioScreen extends AbstractContainerScreen<DubstepRadioMenu
 
     private void sendTransport(int action) {
         PacketDistributor.sendToServer(new DubstepRadioTransportPacket(
-                menu.getBlockPos(), action, localData.getBpm(), 0));
+                menu.getBlockPos(), action, 0, 0));
     }
 
-    private void sendTransportValue(int action, int bpm) {
+    private void sendTransportValue(int action, int value) {
         PacketDistributor.sendToServer(new DubstepRadioTransportPacket(
-                menu.getBlockPos(), action, bpm, 0));
+                menu.getBlockPos(), action, value, 0));
     }
 
     private void sendTrackAction(int trackIndex, int action, int value) {
