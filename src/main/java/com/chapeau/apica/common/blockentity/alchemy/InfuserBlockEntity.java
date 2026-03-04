@@ -48,6 +48,8 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import javax.annotation.Nullable;
+import com.chapeau.apica.common.item.magazine.MagazineFluidData;
+import com.chapeau.apica.common.item.magazine.MagazineItem;
 import com.chapeau.apica.core.util.ParticleHelper;
 import java.util.Optional;
 
@@ -60,6 +62,7 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
     public static final float TIER2_PROCESS_MULTIPLIER = 0.7f;
 
     private static final int DEFAULT_PROCESS_TIME = 200;
+    private static final int MAGAZINE_FILL_TIME = 100;
 
     private final int tankCapacity;
     private final float processTimeMultiplier;
@@ -128,7 +131,9 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         this.honeyTank = new FluidTank(tankCapacity) {
             @Override
             public boolean isFluidValid(FluidStack stack) {
-                return stack.getFluid() == ApicaFluids.HONEY_SOURCE.get();
+                return stack.getFluid() == ApicaFluids.HONEY_SOURCE.get()
+                    || stack.getFluid() == ApicaFluids.ROYAL_JELLY_SOURCE.get()
+                    || stack.getFluid() == ApicaFluids.NECTAR_SOURCE.get();
             }
             @Override
             protected void onContentsChanged() {
@@ -153,7 +158,12 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         boolean wasWorking = state.getValue(InfuserBlock.WORKING);
         boolean isWorking = false;
 
-        Optional<RecipeHolder<InfusingRecipe>> recipe = be.findRecipe(level);
+        // Magazine filling: empty magazine + tank with fluid → fill magazine
+        if (be.tryMagazineFill()) {
+            isWorking = true;
+        }
+
+        Optional<RecipeHolder<InfusingRecipe>> recipe = !isWorking ? be.findRecipe(level) : Optional.empty();
         if (recipe.isPresent()) {
             be.currentRecipe = recipe.get();
             be.currentProcessTime = Math.max(1, (int)(recipe.get().value().processingTime() * be.processTimeMultiplier));
@@ -237,6 +247,54 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         } else {
             output.grow(1);
         }
+    }
+
+    /**
+     * Tente de remplir un magazine vide avec le fluide du tank.
+     * Retourne true si le processus est en cours ou vient de terminer.
+     */
+    private boolean tryMagazineFill() {
+        ItemStack input = inputSlot.getStackInSlot(0);
+        if (!(input.getItem() instanceof MagazineItem)) return false;
+        if (!MagazineFluidData.isEmpty(input)) return false;
+        if (honeyTank.isEmpty()) return false;
+
+        int fillAmount = Math.min(honeyTank.getFluidAmount(), MagazineFluidData.MAX_CAPACITY);
+        if (fillAmount <= 0) return false;
+
+        // Output must be empty for the filled magazine
+        if (!outputSlot.getStackInSlot(0).isEmpty()) return false;
+
+        currentProcessTime = MAGAZINE_FILL_TIME;
+        progress++;
+
+        if (progress >= currentProcessTime) {
+            // Determine fluid ID from tank
+            FluidStack tankFluid = honeyTank.getFluid();
+            String fluidId = getFluidIdFromStack(tankFluid);
+
+            // Create filled magazine
+            ItemStack filledMag = MagazineItem.createFilled(fluidId, fillAmount);
+            outputSlot.setStackInSlot(0, filledMag);
+
+            // Consume input magazine and drain tank
+            inputSlot.extractItem(0, 1, false);
+            isProcessingDrain = true;
+            honeyTank.drain(fillAmount, IFluidHandler.FluidAction.EXECUTE);
+            isProcessingDrain = false;
+
+            progress = 0;
+            currentRecipe = null;
+        }
+        return true;
+    }
+
+    /** Convertit un FluidStack en fluid ID string pour le systeme magazine. */
+    private static String getFluidIdFromStack(FluidStack stack) {
+        if (stack.getFluid() == ApicaFluids.HONEY_SOURCE.get()) return "apica:honey";
+        if (stack.getFluid() == ApicaFluids.ROYAL_JELLY_SOURCE.get()) return "apica:royal_jelly";
+        if (stack.getFluid() == ApicaFluids.NECTAR_SOURCE.get()) return "apica:nectar";
+        return "apica:honey";
     }
 
     public FluidTank getHoneyTank() { return honeyTank; }

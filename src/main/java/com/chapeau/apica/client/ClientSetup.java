@@ -11,6 +11,7 @@ import com.chapeau.apica.client.camera.HoverbikeCameraController;
 import com.chapeau.apica.client.gui.hud.DebugPanelRenderer;
 import com.chapeau.apica.client.gui.hud.HoverbikeDebugHud;
 import com.chapeau.apica.client.gui.hud.HoverbikeGaugeHud;
+import com.chapeau.apica.client.gui.hud.MagazineGaugeHud;
 import com.chapeau.apica.client.model.HoverbikeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.client.renderer.entity.HoverbikeRenderer;
@@ -147,6 +148,9 @@ public class ClientSetup {
 
         // Overlay quand on ouvre un GUI adjacent depuis le bouton Debug de l'interface
         NeoForge.EVENT_BUS.register(com.chapeau.apica.client.gui.screen.storage.AdjacentGuiOverlayRenderer.class);
+
+        // Magazine gauge HUD
+        NeoForge.EVENT_BUS.register(MagazineGaugeHud.class);
 
         // Fix outline translucent pour blocs comme le Crystallizer
         NeoForge.EVENT_BUS.register(TranslucentOutlineRenderer.class);

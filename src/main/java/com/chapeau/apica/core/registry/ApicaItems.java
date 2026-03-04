@@ -23,6 +23,7 @@ import com.chapeau.apica.common.item.ItemFilterItem;
 import com.chapeau.apica.common.item.BeeElytraItem;
 import com.chapeau.apica.common.item.NectarBreadItem;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
+import com.chapeau.apica.common.item.magazine.MagazineItem;
 import com.chapeau.apica.common.item.tool.LeafBlowerItem;
 import com.chapeau.apica.common.item.tool.ChopperHiveItem;
 import com.chapeau.apica.common.item.tool.MiningLaserItem;
@@ -434,6 +435,10 @@ public class ApicaItems {
 
     public static final DeferredItem<ChopperHiveItem> CHOPPER_HIVE = ITEMS.register("chopper_hive",
             () -> new ChopperHiveItem(new Item.Properties().stacksTo(1)));
+
+    // --- Magazine ---
+    public static final DeferredItem<MagazineItem> MAGAZINE = ITEMS.register("magazine",
+            () -> new MagazineItem(new Item.Properties().stacksTo(1)));
 
     // --- EQUIPMENT ---
     public static final DeferredItem<BeeElytraItem> BEE_ELYTRA = ITEMS.register("bee_elytra",

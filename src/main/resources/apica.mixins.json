@@ -8,7 +8,9 @@
     "LivingEntitySuffocationMixin",
     "PlayerDimensionsMixin"
   ],
-  "client": [],
+  "client": [
+    "client.ContainerScreenMagazineMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

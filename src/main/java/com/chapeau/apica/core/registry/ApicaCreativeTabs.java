@@ -13,6 +13,7 @@
 package com.chapeau.apica.core.registry;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.common.item.magazine.MagazineItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -113,6 +114,11 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.LEAF_BLOWER.get());
         output.accept(ApicaItems.MINING_LASER.get());
         output.accept(ApicaItems.CHOPPER_HIVE.get());
+        // Magazines
+        output.accept(ApicaItems.MAGAZINE.get());
+        output.accept(MagazineItem.createFilled("apica:honey", 1000));
+        output.accept(MagazineItem.createFilled("apica:royal_jelly", 1000));
+        output.accept(MagazineItem.createFilled("apica:nectar", 1000));
     }
 
     private static void addBees(CreativeModeTab.Output output) {
