@@ -653,8 +653,11 @@ public class ClientSetup {
         // Modèle Api (bloc vivant scalé dynamiquement)
         event.register(ApiRenderer.API_MODEL_LOC);
 
-        // Modèle plaque du Launchpad (rendu BER avec rotation dynamique)
+        // Modèles plaque du Launchpad (rendu BER avec rotation dynamique, variantes par fluide)
         event.register(LaunchpadRenderer.PLATE_MODEL_LOC);
+        event.register(LaunchpadRenderer.PLATE_HONEY_LOC);
+        event.register(LaunchpadRenderer.PLATE_ROYAL_LOC);
+        event.register(LaunchpadRenderer.PLATE_NECTAR_LOC);
     }
 
     // =========================================================================

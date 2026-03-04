@@ -48,6 +48,15 @@ public class LaunchpadRenderer implements BlockEntityRenderer<LaunchpadBlockEnti
     public static final ModelResourceLocation PLATE_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
             Apica.MOD_ID, "block/artifacts/launchpad_plate"));
+    public static final ModelResourceLocation PLATE_HONEY_LOC =
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
+            Apica.MOD_ID, "block/artifacts/launchpad_plate_honey"));
+    public static final ModelResourceLocation PLATE_ROYAL_LOC =
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
+            Apica.MOD_ID, "block/artifacts/launchpad_plate_royal"));
+    public static final ModelResourceLocation PLATE_NECTAR_LOC =
+        ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
+            Apica.MOD_ID, "block/artifacts/launchpad_plate_nectar"));
 
     public LaunchpadRenderer(BlockEntityRendererProvider.Context context) {
         this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
@@ -65,9 +74,16 @@ public class LaunchpadRenderer implements BlockEntityRenderer<LaunchpadBlockEnti
         Direction facing = state.getValue(LaunchpadBlock.FACING);
         int angleIndex = state.getValue(LaunchpadBlock.ANGLE);
         float tiltDegrees = angleIndex * 10f;
+        int fluidType = state.getValue(LaunchpadBlock.FLUID_TYPE);
 
+        ModelResourceLocation plateLoc = switch (fluidType) {
+            case 1 -> PLATE_HONEY_LOC;
+            case 2 -> PLATE_ROYAL_LOC;
+            case 3 -> PLATE_NECTAR_LOC;
+            default -> PLATE_MODEL_LOC;
+        };
         BakedModel plateModel = Minecraft.getInstance().getModelManager()
-            .getModel(PLATE_MODEL_LOC);
+            .getModel(plateLoc);
 
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.solid());
 

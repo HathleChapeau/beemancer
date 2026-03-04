@@ -2,8 +2,8 @@
   "parent": "minecraft:block/block",
   "render_type": "cutout",
   "textures": {
-    "plate": "minecraft:block/iron_block",
-    "particle": "minecraft:block/iron_block"
+    "plate": "apica:block/nectar_diamond_block",
+    "particle": "apica:block/nectar_diamond_block"
   },
   "elements": [
     {

@@ -2,8 +2,8 @@
   "parent": "minecraft:block/block",
   "render_type": "cutout",
   "textures": {
-    "plate": "minecraft:block/iron_block",
-    "particle": "minecraft:block/iron_block"
+    "plate": "apica:block/honeyed_iron_block",
+    "particle": "apica:block/honeyed_iron_block"
   },
   "elements": [
     {

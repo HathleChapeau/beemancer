@@ -81,7 +81,8 @@ public class LaunchpadBlock extends BaseEntityBlock {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(ANGLE, 0));
+                .setValue(ANGLE, 0)
+                .setValue(FLUID_TYPE, 0));
     }
 
     @Override
@@ -91,7 +92,7 @@ public class LaunchpadBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, ANGLE);
+        builder.add(FACING, ANGLE, FLUID_TYPE);
     }
 
     @Nullable

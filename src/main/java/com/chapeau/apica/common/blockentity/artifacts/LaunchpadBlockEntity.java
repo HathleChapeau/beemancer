@@ -81,6 +81,7 @@ public class LaunchpadBlockEntity extends BlockEntity {
             @Override
             protected void onContentsChanged() {
                 setChanged();
+                updateFluidBlockState();
                 syncToClient();
             }
         };
@@ -162,6 +163,26 @@ public class LaunchpadBlockEntity extends BlockEntity {
 
     public FluidTank getFluidTank() {
         return fluidTank;
+    }
+
+    /** Returns the fluid type index for blockstate: 0=none, 1=honey, 2=royal_jelly, 3=nectar. */
+    public int getFluidTypeIndex() {
+        FluidStack fluid = fluidTank.getFluid();
+        if (fluid.isEmpty()) return 0;
+        if (fluid.getFluid().isSame(ApicaFluids.HONEY_SOURCE.get())) return 1;
+        if (fluid.getFluid().isSame(ApicaFluids.ROYAL_JELLY_SOURCE.get())) return 2;
+        if (fluid.getFluid().isSame(ApicaFluids.NECTAR_SOURCE.get())) return 3;
+        return 0;
+    }
+
+    private void updateFluidBlockState() {
+        if (level == null || level.isClientSide()) return;
+        int newType = getFluidTypeIndex();
+        BlockState current = getBlockState();
+        int oldType = current.getValue(LaunchpadBlock.FLUID_TYPE);
+        if (newType != oldType) {
+            level.setBlock(worldPosition, current.setValue(LaunchpadBlock.FLUID_TYPE, newType), 3);
+        }
     }
 
     // ==================== Sync ====================
