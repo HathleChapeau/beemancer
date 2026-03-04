@@ -23,9 +23,11 @@
 package com.chapeau.apica.common.item;
 
 import com.chapeau.apica.common.item.accessory.IAccessory;
+import com.chapeau.apica.core.network.packets.BackpackOpenPacket;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * Item backpack portable. S'equipe en slot accessoire et s'ouvre via l'onglet Backpack.
@@ -45,5 +47,15 @@ public class BackpackItem extends Item implements IAccessory {
     @Override
     public void onUnequip(Player player, ItemStack stack) {
         // Rien de special au desequip pour l'instant
+    }
+
+    @Override
+    public boolean hasInventoryTab() {
+        return true;
+    }
+
+    @Override
+    public void onInventoryTabClicked(int accessorySlot) {
+        PacketDistributor.sendToServer(new BackpackOpenPacket(accessorySlot));
     }
 }

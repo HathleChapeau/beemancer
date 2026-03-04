@@ -23,7 +23,11 @@ package com.chapeau.apica.client.gui;
 
 import com.chapeau.apica.common.data.AccessoryPlayerData;
 import com.chapeau.apica.common.item.BackpackItem;
+import com.chapeau.apica.common.item.accessory.IAccessory;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Cache statique client-side des accessoires equipes.
@@ -62,6 +66,21 @@ public final class AccessoryClientCache {
 
     public static boolean hasBackpack() {
         return findBackpackSlot() >= 0;
+    }
+
+    /**
+     * Retourne la liste des slots accessoire qui fournissent un onglet inventaire.
+     */
+    public static List<Integer> getTabSlots() {
+        List<Integer> result = new ArrayList<>();
+        for (int i = 0; i < AccessoryPlayerData.SLOT_COUNT; i++) {
+            if (!slots[i].isEmpty()
+                    && slots[i].getItem() instanceof IAccessory acc
+                    && acc.hasInventoryTab()) {
+                result.add(i);
+            }
+        }
+        return result;
     }
 
     public static void clear() {

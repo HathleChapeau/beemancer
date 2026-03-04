@@ -45,4 +45,19 @@ public interface IAccessory {
      */
     default void onUnequip(Player player, ItemStack stack) {
     }
+
+    /**
+     * Indique si cet accessoire ajoute un onglet en haut de l'inventaire.
+     * @return true si un tab doit etre affiche
+     */
+    default boolean hasInventoryTab() {
+        return false;
+    }
+
+    /**
+     * Appele cote client quand le joueur clique sur le tab de cet accessoire.
+     * @param accessorySlot l'index du slot accessoire (0 ou 1)
+     */
+    default void onInventoryTabClicked(int accessorySlot) {
+    }
 }

@@ -56,6 +56,10 @@ public class BackpackMenu extends ApicaMenu {
     private final ItemStack backpackStack;
     private final int accessorySlot;
 
+    public int getAccessorySlot() {
+        return accessorySlot;
+    }
+
     /** Client constructor (appele par IMenuTypeExtension). */
     public BackpackMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buf) {
         this(containerId, playerInventory, ItemStack.EMPTY, buf.readInt());

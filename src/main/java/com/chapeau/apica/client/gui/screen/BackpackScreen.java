@@ -20,6 +20,7 @@
 package com.chapeau.apica.client.gui.screen;
 
 import com.chapeau.apica.client.gui.AccessoryClientCache;
+import com.chapeau.apica.common.item.accessory.IAccessory;
 import com.chapeau.apica.common.menu.BackpackMenu;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -30,6 +31,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+
+import java.util.List;
 
 /**
  * Ecran du backpack utilisant la texture vanilla du coffre simple (3 rangees).
@@ -86,20 +89,26 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
 
-        // --- Tabs ---
-        int tabY = topPos - TAB_PROTRUDE;
-        int tab0X = leftPos + 4;
-        int tab1X = tab0X + TAB_W;
+        // --- Tabs (dynamiques: Player + un par accessoire avec tab) ---
+        List<Integer> tabSlots = AccessoryClientCache.getTabSlots();
+        if (!tabSlots.isEmpty()) {
+            int tabY = topPos - TAB_PROTRUDE;
+            int tabX = leftPos + 1;
+            int currentSlot = menu.getAccessorySlot();
 
-        // Player tab (unselected — we're on BackpackScreen)
-        graphics.blitSprite(TAB_UNSELECTED_LEFT, tab0X, tabY, TAB_W, TAB_H);
-        graphics.renderItem(getPlayerIcon(), tab0X + 6, tabY + 9);
+            // Player tab (unselected — we're on BackpackScreen)
+            graphics.blitSprite(TAB_UNSELECTED_LEFT, tabX, tabY, TAB_W, TAB_H);
+            graphics.renderItem(getPlayerIcon(), tabX + 6, tabY + 9);
+            tabX += TAB_W;
 
-        // Backpack tab (selected)
-        graphics.blitSprite(TAB_SELECTED_MIDDLE, tab1X, tabY, TAB_W, TAB_H);
-        int bpSlot = AccessoryClientCache.findBackpackSlot();
-        if (bpSlot >= 0) {
-            graphics.renderItem(AccessoryClientCache.getSlot(bpSlot), tab1X + 6, tabY + 9);
+            // Accessory tabs
+            for (int slot : tabSlots) {
+                boolean selected = (slot == currentSlot);
+                ResourceLocation sprite = selected ? TAB_SELECTED_MIDDLE : TAB_UNSELECTED_MIDDLE;
+                graphics.blitSprite(sprite, tabX, tabY, TAB_W, TAB_H);
+                graphics.renderItem(AccessoryClientCache.getSlot(slot), tabX + 6, tabY + 9);
+                tabX += TAB_W;
+            }
         }
 
         renderTooltip(graphics, mouseX, mouseY);
@@ -108,17 +117,37 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
-            int tabY = topPos - TAB_PROTRUDE;
-            int tab0X = leftPos + 4;
-
-            // Click on Player tab → close backpack, open inventory
-            if (mouseX >= tab0X && mouseX < tab0X + TAB_W
-                    && mouseY >= tabY && mouseY < tabY + TAB_H) {
+            List<Integer> tabSlots = AccessoryClientCache.getTabSlots();
+            if (!tabSlots.isEmpty()) {
+                int tabY = topPos - TAB_PROTRUDE;
+                int tabX = leftPos + 1;
                 Minecraft mc = Minecraft.getInstance();
-                if (mc.player != null) {
-                    mc.player.closeContainer();
-                    mc.setScreen(new InventoryScreen(mc.player));
-                    return true;
+
+                // Player tab → close backpack, open inventory
+                if (mouseX >= tabX && mouseX < tabX + TAB_W
+                        && mouseY >= tabY && mouseY < tabY + TAB_H) {
+                    if (mc.player != null) {
+                        mc.player.closeContainer();
+                        mc.setScreen(new InventoryScreen(mc.player));
+                        return true;
+                    }
+                }
+                tabX += TAB_W;
+
+                // Accessory tabs
+                int currentSlot = menu.getAccessorySlot();
+                for (int slot : tabSlots) {
+                    if (slot != currentSlot
+                            && mouseX >= tabX && mouseX < tabX + TAB_W
+                            && mouseY >= tabY && mouseY < tabY + TAB_H) {
+                        ItemStack stack = AccessoryClientCache.getSlot(slot);
+                        if (mc.player != null && stack.getItem() instanceof IAccessory acc) {
+                            mc.player.closeContainer();
+                            acc.onInventoryTabClicked(slot);
+                            return true;
+                        }
+                    }
+                    tabX += TAB_W;
                 }
             }
         }

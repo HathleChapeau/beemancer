@@ -8,10 +8,9 @@
  * ------------------------------------------------------------
  * | Dependance            | Raison                | Utilisation                    |
  * |-----------------------|----------------------|--------------------------------|
- * | AccessoryClientCache  | Cache client         | Lecture items equipes          |
+ * | AccessoryClientCache  | Cache client         | Lecture items equipes + tabs   |
  * | AccessoryEquipPacket  | Reseau               | Envoi equip/unequip            |
- * | BackpackOpenPacket    | Reseau               | Ouverture backpack             |
- * | IAccessory            | Type check           | Validation curseur             |
+ * | IAccessory            | Type check           | Validation + tab click         |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -24,7 +23,6 @@ package com.chapeau.apica.mixin.client;
 import com.chapeau.apica.client.gui.AccessoryClientCache;
 import com.chapeau.apica.common.item.accessory.IAccessory;
 import com.chapeau.apica.core.network.packets.AccessoryEquipPacket;
-import com.chapeau.apica.core.network.packets.BackpackOpenPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -33,6 +31,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.network.PacketDistributor;
+
+import java.util.List;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -41,17 +41,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Ajoute 2 slots accessoire a droite du shield dans l'inventaire joueur.
- * Ajoute des tabs (Player/Backpack) en haut du GUI quand un backpack est equipe.
+ * Ajoute 2 slots accessoire au-dessus du shield dans l'inventaire joueur.
+ * Ajoute des tabs dynamiques en haut du GUI pour chaque accessoire avec hasInventoryTab().
  */
 @Mixin(InventoryScreen.class)
 public abstract class InventoryScreenAccessoryMixin {
 
-    // Accessory slot positions (container-relative)
-    @Unique private static final int SLOT_0_X = 98;
-    @Unique private static final int SLOT_0_Y = 62;
-    @Unique private static final int SLOT_1_X = 116;
-    @Unique private static final int SLOT_1_Y = 62;
+    // Accessory slot positions (container-relative, above shield slot at 77,62)
+    @Unique private static final int SLOT_0_X = 77;
+    @Unique private static final int SLOT_0_Y = 44;
+    @Unique private static final int SLOT_1_X = 77;
+    @Unique private static final int SLOT_1_Y = 26;
     @Unique private static final int SLOT_SIZE = 18;
 
     // Tab sprites (vanilla advancement above-type tabs)
@@ -107,21 +107,23 @@ public abstract class InventoryScreenAccessoryMixin {
             graphics.fill(sx + 1, sy + 1, sx + SLOT_SIZE - 1, sy + SLOT_SIZE - 1, 0x80FFFFFF);
         }
 
-        // --- Tabs ---
-        boolean hasBackpack = AccessoryClientCache.hasBackpack();
-        if (hasBackpack) {
+        // --- Tabs (dynamiques: Player + un par accessoire avec tab) ---
+        List<Integer> tabSlots = AccessoryClientCache.getTabSlots();
+        if (!tabSlots.isEmpty()) {
             int tabY = topPos - TAB_PROTRUDE;
-            int tab0X = leftPos + 4;
-            int tab1X = tab0X + TAB_W;
+            int tabX = leftPos + 1;
 
             // Player tab (selected — we're on InventoryScreen)
-            graphics.blitSprite(TAB_SELECTED_LEFT, tab0X, tabY, TAB_W, TAB_H);
-            graphics.renderItem(apica$getPlayerIcon(), tab0X + 6, tabY + 9);
+            graphics.blitSprite(TAB_SELECTED_LEFT, tabX, tabY, TAB_W, TAB_H);
+            graphics.renderItem(apica$getPlayerIcon(), tabX + 6, tabY + 9);
+            tabX += TAB_W;
 
-            // Backpack tab (unselected)
-            graphics.blitSprite(TAB_UNSELECTED_MIDDLE, tab1X, tabY, TAB_W, TAB_H);
-            int bpSlot = AccessoryClientCache.findBackpackSlot();
-            graphics.renderItem(AccessoryClientCache.getSlot(bpSlot), tab1X + 6, tabY + 9);
+            // Accessory tabs (unselected)
+            for (int slot : tabSlots) {
+                graphics.blitSprite(TAB_UNSELECTED_MIDDLE, tabX, tabY, TAB_W, TAB_H);
+                graphics.renderItem(AccessoryClientCache.getSlot(slot), tabX + 6, tabY + 9);
+                tabX += TAB_W;
+            }
         }
 
         // --- Tooltip for hovered accessory slot ---
@@ -142,16 +144,22 @@ public abstract class InventoryScreenAccessoryMixin {
         int leftPos = self.getGuiLeft();
         int topPos = self.getGuiTop();
 
-        // --- Tab click: open backpack ---
-        if (AccessoryClientCache.hasBackpack()) {
+        // --- Tab click: accessory tabs ---
+        List<Integer> tabSlots = AccessoryClientCache.getTabSlots();
+        if (!tabSlots.isEmpty()) {
             int tabY = topPos - TAB_PROTRUDE;
-            int tab1X = leftPos + 4 + TAB_W;
-            if (mouseX >= tab1X && mouseX < tab1X + TAB_W
-                    && mouseY >= tabY && mouseY < tabY + TAB_H) {
-                int bpSlot = AccessoryClientCache.findBackpackSlot();
-                PacketDistributor.sendToServer(new BackpackOpenPacket(bpSlot));
-                cir.setReturnValue(true);
-                return;
+            int tabX = leftPos + 1 + TAB_W;
+            for (int slot : tabSlots) {
+                if (mouseX >= tabX && mouseX < tabX + TAB_W
+                        && mouseY >= tabY && mouseY < tabY + TAB_H) {
+                    ItemStack stack = AccessoryClientCache.getSlot(slot);
+                    if (stack.getItem() instanceof IAccessory acc) {
+                        acc.onInventoryTabClicked(slot);
+                    }
+                    cir.setReturnValue(true);
+                    return;
+                }
+                tabX += TAB_W;
             }
         }
 
