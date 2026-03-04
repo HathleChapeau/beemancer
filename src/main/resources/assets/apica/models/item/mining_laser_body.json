@@ -1,7 +1,7 @@
 {
   "textures": {
     "0": "apica:item/artifacts/laser",
-    "ring": "apica:item/artifacts/leaf_blower_body",
+    "ring": "apica:item/artifacts/laser",
     "particle": "apica:item/artifacts/laser"
   },
   "elements": [

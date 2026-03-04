@@ -23,8 +23,8 @@
     },
     {
       "name": "back_panel",
-      "from": [3, 0, 14],
-      "to": [13, 10, 16],
+      "from": [4, 4, 14],
+      "to": [12, 12, 16],
       "faces": {
         "up":    {"texture": "#back"},
         "down":  {"texture": "#back"},
@@ -35,29 +35,16 @@
       }
     },
     {
-      "name": "indicator_dot",
-      "from": [15, 15, 15],
-      "to": [16, 16, 16],
+      "name": "back_panel2",
+      "from": [5, 5, 13],
+      "to": [11, 11, 14],
       "faces": {
-        "up":    {"texture": "#antenna"},
-        "down":  {"texture": "#antenna"},
-        "north": {"texture": "#antenna"},
-        "south": {"texture": "#antenna"},
-        "east":  {"texture": "#antenna"},
-        "west":  {"texture": "#antenna"}
-      }
-    },
-    {
-      "name": "antenna",
-      "from": [14.5, 16, 14.5],
-      "to": [16.5, 20, 16.5],
-      "faces": {
-        "up":    {"texture": "#antenna"},
-        "down":  {"texture": "#antenna"},
-        "north": {"texture": "#antenna"},
-        "south": {"texture": "#antenna"},
-        "east":  {"texture": "#antenna"},
-        "west":  {"texture": "#antenna"}
+        "up":    {"texture": "#back"},
+        "down":  {"texture": "#back"},
+        "north": {"texture": "#back"},
+        "south": {"texture": "#back"},
+        "east":  {"texture": "#back"},
+        "west":  {"texture": "#back"}
       }
     }
   ]

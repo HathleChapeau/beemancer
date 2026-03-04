@@ -426,7 +426,7 @@ public class CompanionBeeEntity extends Bee {
             if (pitch > 0) {
                 worldY += pitchOffset;  // regarde en bas → compagnon monte
             } else {
-                worldY -= pitchOffset * 10.5f;  // regarde en haut → compagnon descend
+                worldY -= pitchOffset * 2.0f;  // regarde en haut → compagnon descend
             }
         }
 
