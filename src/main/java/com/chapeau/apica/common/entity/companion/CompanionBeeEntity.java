@@ -103,6 +103,10 @@ public class CompanionBeeEntity extends Bee {
     private static final double SHOULDER_X = 0.6;
     /** Offset vers l'arriere du joueur. */
     private static final double SHOULDER_Z = -0.3;
+    /** Angle de pitch (deg) a partir duquel la compensation Y s'active. */
+    private static final float PITCH_THRESHOLD = 30.0f;
+    /** Offset Y max applique quand le joueur regarde a 90 deg (haut ou bas). */
+    private static final double PITCH_MAX_OFFSET = 1.0;
 
     // --- Synched data ---
     private static final EntityDataAccessor<String> DATA_STATE =
@@ -412,6 +416,19 @@ public class CompanionBeeEntity extends Bee {
         double worldZ = owner.getZ() + offsetX * Math.sin(angle) + offsetZ * Math.cos(angle);
         double bob = Math.sin(tickCount * 0.15) * 0.1;
         double worldY = owner.getY() + SHOULDER_Y + bob;
+
+        // Compensation pitch: monte quand le joueur regarde en bas, descend quand il regarde en haut
+        float pitch = owner.getXRot(); // positif = regarde en bas, negatif = regarde en haut
+        float absPitch = Math.abs(pitch);
+        if (absPitch > PITCH_THRESHOLD) {
+            double factor = (absPitch - PITCH_THRESHOLD) / (90.0 - PITCH_THRESHOLD);
+            double pitchOffset = factor * PITCH_MAX_OFFSET;
+            if (pitch > 0) {
+                worldY += pitchOffset;  // regarde en bas → compagnon monte
+            } else {
+                worldY -= pitchOffset;  // regarde en haut → compagnon descend
+            }
+        }
 
         return new Vec3(worldX, worldY, worldZ);
     }
