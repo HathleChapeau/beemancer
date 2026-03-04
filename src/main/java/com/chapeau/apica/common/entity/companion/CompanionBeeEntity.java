@@ -23,11 +23,20 @@
  */
 package com.chapeau.apica.common.entity.companion;
 
+import com.chapeau.apica.common.data.AccessoryPlayerData;
+import com.chapeau.apica.common.item.BackpackItem;
+import com.chapeau.apica.common.menu.BackpackMenu;
+import com.chapeau.apica.core.registry.ApicaAttachments;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -469,16 +478,31 @@ public class CompanionBeeEntity extends Bee {
     }
 
     // =========================================================================
-    // ANIMATION
+    // INTERACTION — Clic droit ouvre le backpack
     // =========================================================================
 
-    /** Desactive le balancier du corps pour les abeilles BACKPACK (les ailes restent animees). */
     @Override
-    public float getRollAmount(float partialTick) {
-        if (getCompanionType() == CompanionType.BACKPACK) {
-            return 0.0F;
-        }
-        return super.getRollAmount(partialTick);
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (getCompanionType() != CompanionType.BACKPACK) return InteractionResult.PASS;
+        if (level().isClientSide()) return InteractionResult.SUCCESS;
+
+        Player owner = getOwnerPlayer();
+        if (owner == null || !owner.getUUID().equals(player.getUUID())) return InteractionResult.PASS;
+        if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.PASS;
+
+        int slot = getAccessorySlot();
+        AccessoryPlayerData data = serverPlayer.getData(ApicaAttachments.ACCESSORY_DATA);
+        ItemStack backpackStack = data.getAccessory(slot);
+        if (!(backpackStack.getItem() instanceof BackpackItem)) return InteractionResult.PASS;
+
+        serverPlayer.openMenu(
+            new SimpleMenuProvider(
+                (containerId, playerInv, p) -> new BackpackMenu(containerId, playerInv, backpackStack, slot),
+                Component.translatable("container.apica.backpack")
+            ),
+            buf -> buf.writeInt(slot)
+        );
+        return InteractionResult.SUCCESS;
     }
 
     // =========================================================================

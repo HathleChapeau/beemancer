@@ -68,7 +68,7 @@ public abstract class InventoryScreenAccessoryMixin {
     @Unique private static final int TAB_W = 28;
     @Unique private static final int TAB_H = 32;
     @Unique private static final int TAB_PROTRUDE = 28;
-    @Unique private static final int TAB_GAP = 3;
+    @Unique private static final int TAB_GAP = 1;
 
     // Lazy icon stacks
     @Unique private static ItemStack apica$playerIcon;

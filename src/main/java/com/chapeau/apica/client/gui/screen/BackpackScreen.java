@@ -65,7 +65,7 @@ public class BackpackScreen extends AbstractContainerScreen<BackpackMenu> {
     private static final int TAB_W = 28;
     private static final int TAB_H = 32;
     private static final int TAB_PROTRUDE = 28;
-    private static final int TAB_GAP = 3;
+    private static final int TAB_GAP = 1;
 
     private static ItemStack playerIcon;
     private static ItemStack getPlayerIcon() {
