@@ -44,6 +44,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ContainerScreenMagazineMixin {
 
     /**
+     * Bloque le clic droit vanilla sur un IMagazineHolder (empeche de prendre/deplacer l'item).
+     * La logique d'equip/unequip est geree dans mouseReleased.
+     */
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    private void apica$onMouseClicked(double mouseX, double mouseY, int button,
+                                       CallbackInfoReturnable<Boolean> cir) {
+        if (button != 1) return;
+        AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
+        Slot hoveredSlot = self.getSlotUnderMouse();
+        if (hoveredSlot != null && hoveredSlot.hasItem()
+                && hoveredSlot.getItem().getItem() instanceof IMagazineHolder) {
+            cir.setReturnValue(true);
+        }
+    }
+
+    /**
      * Intercepte le relachement du clic droit sur un IMagazineHolder pour equiper/desequiper un magazine.
      */
     @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)

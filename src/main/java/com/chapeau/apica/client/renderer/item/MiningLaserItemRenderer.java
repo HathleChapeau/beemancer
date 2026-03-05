@@ -88,10 +88,10 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float OVL_MAX_Z = 0.5f / 16f;
 
     // --- 3 Bar boxes (charge indicators on barrel, 2px, rotated 45°) ---
-    private static final float BAR_MIN_X = 6f / 16f;
-    private static final float BAR_MIN_Y = -1f / 16f;
-    private static final float BAR_MAX_X = 8f / 16f;
-    private static final float BAR_MAX_Y = 1f / 16f;
+    private static final float BAR_MIN_X = 6.5f / 16f;
+    private static final float BAR_MIN_Y = -0.5f / 16f;
+    private static final float BAR_MAX_X = 7.5f / 16f;
+    private static final float BAR_MAX_Y = 0.5f / 16f;
     private static final float[] BAR_Z_MIN = {-6f / 16f, -4f / 16f, -2f / 16f};
     private static final float[] BAR_Z_MAX = {-5f / 16f, -3f / 16f, -1f / 16f};
     private static final float[] BAR_U0 = {0f, 1f / 3f, 2f / 3f};
