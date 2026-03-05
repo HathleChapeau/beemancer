@@ -38,8 +38,8 @@ import net.neoforged.api.distmarker.OnlyIn;
 public final class MiningLaserRingOverlay {
 
     private static final int FACE_COUNT = 12;
-    private static final float RING_INNER_RADIUS = 0.28f;
-    private static final float RING_OUTER_RADIUS = 0.35f;
+    private static final float RING_INNER_RADIUS = 0.1f;
+    private static final float RING_OUTER_RADIUS = 0.125f;
     private static final float FACE_HALF_WIDTH = 0.025f;
 
     /**
@@ -62,6 +62,7 @@ public final class MiningLaserRingOverlay {
 
         poseStack.pushPose();
         poseStack.translate(centerX, centerY, centerZ);
+        poseStack.mulPose(Axis.XP.rotationDegrees(45));
         poseStack.mulPose(Axis.ZP.rotation(rotation));
 
         float angleStep = (float) (2.0 * Math.PI / FACE_COUNT);

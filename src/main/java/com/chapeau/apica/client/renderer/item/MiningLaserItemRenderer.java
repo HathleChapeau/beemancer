@@ -82,7 +82,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     // --- Overlay box (beam barrel charge inner) ---
     private static final float OVL_MIN_X = 6.5f / 16f;
     private static final float OVL_MIN_Y = -0.5f / 16f;
-    private static final float OVL_MIN_Z = -5.4f / 16f;
+    private static final float OVL_MIN_Z = -6.4f / 16f;
     private static final float OVL_MAX_X = 7.5f / 16f;
     private static final float OVL_MAX_Y = 0.5f / 16f;
     private static final float OVL_MAX_Z = 0.5f / 16f;
@@ -92,8 +92,8 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float BAR_MIN_Y = -1.5f / 16f;
     private static final float BAR_MAX_X = 8.5f / 16f;
     private static final float BAR_MAX_Y = 1.5f / 16f;
-    private static final float[] BAR_Z_MIN = {-4.5f / 16f, -3f / 16f, -1.5f / 16f};
-    private static final float[] BAR_Z_MAX = {-3.5f / 16f, -2f / 16f, -0.5f / 16f};
+    private static final float[] BAR_Z_MIN = {-5.5f / 16f, -3.5f / 16f, -1.5f / 16f};
+    private static final float[] BAR_Z_MAX = {-4.5f / 16f, -2.5f / 16f, -0.5f / 16f};
     private static final float[] BAR_U0 = {0f, 1f / 3f, 2f / 3f};
     private static final float[] BAR_U1 = {1f / 3f, 2f / 3f, 1f};
 
@@ -115,7 +115,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     // Halo position (devant le canon, pointe du barrel)
     private static final float HALO_X = 7f / 16f;
     private static final float HALO_Y = 0f / 16f;
-    private static final float HALO_Z = -6f / 16f;
+    private static final float HALO_Z = -7f / 16f;
 
     // --- Lightning arcs (entre ring_front et ring_back) ---
     private static final Vec3 ARC_START = new Vec3(7.0 / 16.0, 0, 6.0 / 16.0);
