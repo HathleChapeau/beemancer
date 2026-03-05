@@ -61,6 +61,8 @@ public class HoverbikeRenderer extends MobRenderer<HoverbikeEntity, HoverbikeMod
     @Override
     protected void scale(HoverbikeEntity entity, PoseStack poseStack, float partialTick) {
         poseStack.scale(BEE_SCALE, BEE_SCALE, BEE_SCALE);
+        // Avance le modele vers l'avant pour que le joueur soit assis vers l'arriere du corps
+        poseStack.translate(0.0F, 0.0F, -0.15F);
     }
 
     /**

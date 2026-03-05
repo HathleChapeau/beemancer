@@ -62,8 +62,6 @@ import com.chapeau.apica.core.entity.InteractionMarkerManager;
 import com.chapeau.apica.core.registry.ApicaTags;
 import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -222,12 +220,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 Vec3 beePos = position().add(0, 0.5, 0);
                 if (isFood) {
                     ParticleHelper.burst(serverLevel, beePos, ParticleHelper.EffectType.HEAL, 5);
-                    level().playSound(null, blockPosition(), SoundEvents.BEE_POLLINATE,
-                            SoundSource.NEUTRAL, 1.0f, 1.0f);
                 } else {
                     ParticleHelper.burst(serverLevel, beePos, ParticleHelper.EffectType.FAILURE, 8);
-                    level().playSound(null, blockPosition(), SoundEvents.BEE_HURT,
-                            SoundSource.NEUTRAL, 1.0f, 1.0f);
                 }
             }
             heldItem.shrink(1);
@@ -394,7 +388,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity entity, EntityDimensions dimensions, float scale) {
-        return new Vec3(0, dimensions.height() + 0.1, 0.3);
+        return new Vec3(0, dimensions.height() + 0.1, 0);
     }
 
     // --- Movement Overrides (Pattern Cobblemon PokemonEntity.kt L1805-1813) ---
