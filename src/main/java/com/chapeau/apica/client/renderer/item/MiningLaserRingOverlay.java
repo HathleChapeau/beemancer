@@ -38,9 +38,8 @@ import net.neoforged.api.distmarker.OnlyIn;
 public final class MiningLaserRingOverlay {
 
     private static final int FACE_COUNT = 12;
-    private static final float RING_INNER_RADIUS = 0.15f;
-    private static final float RING_OUTER_RADIUS = 0.16f;
-    private static final float FACE_HALF_WIDTH = 0.025f;
+    private static final float RING_RADIUS = 0.155f;
+    private static final float RING_HALF_DEPTH = 0.02f;
 
     /**
      * Rend un anneau géométrique autour d'un point dans l'espace item.
@@ -69,36 +68,28 @@ public final class MiningLaserRingOverlay {
         for (int i = 0; i < FACE_COUNT; i++) {
             float angle0 = i * angleStep;
             float angle1 = (i + 1) * angleStep;
+            float angleMid = (angle0 + angle1) * 0.5f;
 
             float cos0 = (float) Math.cos(angle0);
             float sin0 = (float) Math.sin(angle0);
             float cos1 = (float) Math.cos(angle1);
             float sin1 = (float) Math.sin(angle1);
 
-            float ix0 = cos0 * RING_INNER_RADIUS;
-            float iy0 = sin0 * RING_INNER_RADIUS;
-            float ox0 = cos0 * RING_OUTER_RADIUS;
-            float oy0 = sin0 * RING_OUTER_RADIUS;
-            float ix1 = cos1 * RING_INNER_RADIUS;
-            float iy1 = sin1 * RING_INNER_RADIUS;
-            float ox1 = cos1 * RING_OUTER_RADIUS;
-            float oy1 = sin1 * RING_OUTER_RADIUS;
+            float x0 = cos0 * RING_RADIUS;
+            float y0 = sin0 * RING_RADIUS;
+            float x1 = cos1 * RING_RADIUS;
+            float y1 = sin1 * RING_RADIUS;
 
-            // Face avant (z = +FACE_HALF_WIDTH)
-            emitQuad(vc, poseStack.last(), light, overlay,
-                    ix0, iy0, FACE_HALF_WIDTH,
-                    ox0, oy0, FACE_HALF_WIDTH,
-                    ox1, oy1, FACE_HALF_WIDTH,
-                    ix1, iy1, FACE_HALF_WIDTH,
-                    0, 0, 1);
+            float nx = (float) Math.cos(angleMid);
+            float ny = (float) Math.sin(angleMid);
 
-            // Face arrière (z = -FACE_HALF_WIDTH)
+            // Face extérieure (cylindre, normale vers l'extérieur)
             emitQuad(vc, poseStack.last(), light, overlay,
-                    ix1, iy1, -FACE_HALF_WIDTH,
-                    ox1, oy1, -FACE_HALF_WIDTH,
-                    ox0, oy0, -FACE_HALF_WIDTH,
-                    ix0, iy0, -FACE_HALF_WIDTH,
-                    0, 0, -1);
+                    x0, y0, -RING_HALF_DEPTH,
+                    x0, y0, RING_HALF_DEPTH,
+                    x1, y1, RING_HALF_DEPTH,
+                    x1, y1, -RING_HALF_DEPTH,
+                    nx, ny, 0);
         }
 
         poseStack.popPose();
