@@ -52,10 +52,12 @@ import java.util.Set;
  * Accepte honey, royal_jelly, nectar. Cout par tir selon niveau AoE + multiplicateur fluide.
  *
  * Mecanique :
- * 1. Double right-click : cycle le niveau AoE (0-1-2-3-0)
- * 2. Hold right-click : charge la jauge (requiert magazine)
- * 3. Jauge pleine : tir continu (1 tir / 5 ticks), consomme du fluide
- * 4. Fluide epuise en cours de tir : arret automatique
+ * 1. Sans magazine : bloque au niveau 0, pas de charge
+ * 2. Avec magazine : double right-click cycle le niveau (1-2-3-1)
+ * 3. Hold right-click : charge la jauge
+ * 4. Jauge pleine : tir continu (1 tir / 5 ticks), consomme du fluide
+ * 5. Fluide epuise en cours de tir : arret automatique
+ * AoE : niveau 1 = bloc unique, niveau 2 = voisins directs (r1), niveau 3 = sphere r2
  */
 public class MiningLaserItem extends Item implements IMagazineHolder {
 
@@ -71,7 +73,7 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     private static final int FIRE_INTERVAL = 5;
 
     /** Portee maximale du laser en blocs */
-    public static final int MAX_RANGE = 32;
+    public static final int MAX_RANGE = 24;
 
     /** Nombre max de niveaux de charge (3 barres) */
     public static final int MAX_CHARGE_LEVEL = 3;
@@ -79,11 +81,10 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
     /** Fenetre de double-click en ticks */
     private static final int DOUBLE_CLICK_WINDOW = 10;
 
-    /** Cout base par tir selon niveau AoE (avant multiplicateur fluide) */
-    private static final int COST_AOE0 = 5;
-    private static final int COST_AOE1 = 15;
-    private static final int COST_AOE2 = 30;
-    private static final int COST_AOE3 = 50;
+    /** Cout base par tir selon niveau de charge (avant multiplicateur fluide) */
+    private static final int COST_LEVEL1 = 5;
+    private static final int COST_LEVEL2 = 20;
+    private static final int COST_LEVEL3 = 40;
 
     private static final String TAG_CHARGE_LEVEL = "ChargeLevel";
     private static final String TAG_LAST_CLICK_TICK = "LastClickTick";
@@ -123,12 +124,21 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         long gameTime = level.getGameTime();
         long lastClick = getLastClickTick(stack);
 
-        // Double-click: cycle le niveau AoE (ne requiert pas de magazine)
+        boolean hasMag = MagazineData.hasMagazine(stack) && MagazineData.getFluidAmount(stack) > 0;
+
+        // Double-click: cycle le niveau (1-2-3-1), requiert magazine
         if (gameTime - lastClick <= DOUBLE_CLICK_WINDOW) {
-            int current = getChargeLevel(stack);
-            int next = (current + 1) % (MAX_CHARGE_LEVEL + 1);
-            setChargeLevel(stack, next);
             setLastClickTick(stack, 0);
+
+            if (!hasMag) {
+                setChargeLevel(stack, 0);
+                return InteractionResultHolder.pass(stack);
+            }
+
+            int current = getChargeLevel(stack);
+            int next = current >= MAX_CHARGE_LEVEL ? 1 : current + 1;
+            if (next < 1) next = 1;
+            setChargeLevel(stack, next);
 
             if (!level.isClientSide()) {
                 float pitch = 0.6f + next * 0.15f;
@@ -140,9 +150,15 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
             return InteractionResultHolder.consume(stack);
         }
 
-        // Sans magazine = pas de charge
-        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
+        // Sans magazine = bloque au niveau 0, pas de charge
+        if (!hasMag) {
+            setChargeLevel(stack, 0);
             return InteractionResultHolder.pass(stack);
+        }
+
+        // Avec magazine, force minimum niveau 1
+        if (getChargeLevel(stack) < 1) {
+            setChargeLevel(stack, 1);
         }
 
         setLastClickTick(stack, gameTime);
@@ -192,21 +208,22 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
                 return;
             }
 
-            MiningLaserBlockBreaker.tryBreakBlock(level, player, MAX_RANGE, chargeLevel);
+            boolean brokeBlock = MiningLaserBlockBreaker.tryBreakBlock(level, player, MAX_RANGE, chargeLevel);
 
-            float pitch = 0.8f + level.random.nextFloat() * 0.4f;
-            level.playSound(null, player.blockPosition(), SoundEvents.BREEZE_WIND_CHARGE_BURST.value(),
-                    SoundSource.PLAYERS, 0.6f, pitch);
+            if (brokeBlock) {
+                float pitch = 0.8f + level.random.nextFloat() * 0.4f;
+                level.playSound(null, player.blockPosition(), SoundEvents.BREEZE_WIND_CHARGE_BURST.value(),
+                        SoundSource.PLAYERS, 0.6f, pitch);
+            }
         }
     }
 
-    /** Retourne le cout base par tir selon le niveau AoE. */
-    private static int getBaseCostForAoE(int aoeLvl) {
-        return switch (aoeLvl) {
-            case 1 -> COST_AOE1;
-            case 2 -> COST_AOE2;
-            case 3 -> COST_AOE3;
-            default -> COST_AOE0;
+    /** Retourne le cout base par tir selon le niveau de charge. */
+    private static int getBaseCostForAoE(int chargeLevel) {
+        return switch (chargeLevel) {
+            case 2 -> COST_LEVEL2;
+            case 3 -> COST_LEVEL3;
+            default -> COST_LEVEL1;
         };
     }
 

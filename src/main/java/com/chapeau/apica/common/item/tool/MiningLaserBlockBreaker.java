@@ -39,10 +39,10 @@ import java.util.List;
  * Le rayon part de la position des yeux du joueur dans la direction du regard,
  * détruit le premier bloc solide (hardness 0-50, exclut bedrock).
  * Le chargeLevel détermine le rayon AoE :
- * - 0 : bloc ciblé uniquement
- * - 1 : sphère rayon 1 (voisins directs)
- * - 2 : sphère rayon 2
- * - 3 : sphère rayon 3
+ * - 0 : pas de tir (pas de magazine)
+ * - 1 : bloc ciblé uniquement
+ * - 2 : sphère rayon 1 (voisins directs)
+ * - 3 : sphère rayon 2
  */
 public final class MiningLaserBlockBreaker {
 
@@ -56,10 +56,10 @@ public final class MiningLaserBlockBreaker {
      * @param level       Le ServerLevel dans lequel opérer
      * @param player      Le joueur qui tire
      * @param range       Portée maximale en blocs
-     * @param chargeLevel Niveau de charge (0-3), détermine le rayon AoE
-     * @return La position du bloc touché, ou null si aucun bloc touché
+     * @param chargeLevel Niveau de charge (1-3), détermine le rayon AoE
+     * @return true si au moins un bloc a été détruit
      */
-    public static BlockPos tryBreakBlock(ServerLevel level, Player player, int range, int chargeLevel) {
+    public static boolean tryBreakBlock(ServerLevel level, Player player, int range, int chargeLevel) {
         Vec3 eyePos = player.getEyePosition();
         Vec3 lookVec = player.getLookAngle();
         Vec3 endPos = eyePos.add(lookVec.scale(range));
@@ -71,32 +71,33 @@ public final class MiningLaserBlockBreaker {
                 player));
 
         if (hitResult.getType() != HitResult.Type.BLOCK) {
-            return null;
+            return false;
         }
 
         BlockPos hitPos = hitResult.getBlockPos();
         BlockState state = level.getBlockState(hitPos);
 
         if (state.isAir()) {
-            return null;
+            return false;
         }
 
         float hardness = state.getDestroySpeed(level, hitPos);
         if (hardness < 0 || hardness > MAX_HARDNESS) {
             spawnImpactParticles(level, hitResult);
-            return hitPos;
+            return false;
         }
 
         // Détruire le bloc central avec prise en compte des enchantements (Fortune, Silk Touch)
         breakBlockWithTool(level, player, hitPos);
 
-        // Détruire les blocs voisins en sphère si chargeLevel > 0
-        if (chargeLevel > 0) {
-            destroySphere(level, player, hitPos, chargeLevel);
+        // Détruire les blocs voisins en sphère (chargeLevel 2 = rayon 1, 3 = rayon 2)
+        int aoeRadius = chargeLevel - 1;
+        if (aoeRadius > 0) {
+            destroySphere(level, player, hitPos, aoeRadius);
         }
 
         spawnBreakParticles(level, hitPos, chargeLevel);
-        return hitPos;
+        return true;
     }
 
     /**

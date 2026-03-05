@@ -131,12 +131,12 @@ public final class MagazineData {
 
     /**
      * Retourne le multiplicateur de cout base sur le fluide du magazine attache.
-     * Honey = 1x, Royal Jelly = 0.5x, Nectar = 1/6x.
+     * Honey = 1x, Royal Jelly = 0.9x, Nectar = 0.8x.
      */
     public static float getFluidCostMultiplier(ItemStack holder) {
         String fluidId = getFluidId(holder);
-        if (fluidId.contains("nectar")) return 1f / 6f;
-        if (fluidId.contains("royal_jelly")) return 0.5f;
+        if (fluidId.contains("nectar")) return 0.8f;
+        if (fluidId.contains("royal_jelly")) return 0.9f;
         return 1f;
     }
 
