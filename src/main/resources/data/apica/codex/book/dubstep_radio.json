@@ -6,6 +6,20 @@
     {
       "type": "text",
       "key": "codex.apica.artifacts.dubstep_radio.lore.p1"
+    },
+    {
+      "type": "handraw_line"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.dubstep_radio.lore.p2"
+    },
+    {
+      "type": "handraw_line"
+    },
+    {
+      "type": "text",
+      "key": "codex.apica.artifacts.dubstep_radio.lore.p3"
     }
   ],
   "sticky_notes": []
