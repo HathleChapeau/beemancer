@@ -83,8 +83,8 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
 
     /** Cout base par tir selon niveau de charge (avant multiplicateur fluide) */
     private static final int COST_LEVEL1 = 5;
-    private static final int COST_LEVEL2 = 20;
-    private static final int COST_LEVEL3 = 40;
+    private static final int COST_LEVEL2 = 15;
+    private static final int COST_LEVEL3 = 30;
 
     private static final String TAG_CHARGE_LEVEL = "ChargeLevel";
     private static final String TAG_LAST_CLICK_TICK = "LastClickTick";
