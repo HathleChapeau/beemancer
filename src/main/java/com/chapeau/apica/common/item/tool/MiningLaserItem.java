@@ -204,8 +204,14 @@ public class MiningLaserItem extends Item implements IMagazineHolder {
         if ((useTicks - CHARGE_TICKS) % FIRE_INTERVAL == 0) {
             int cost = MagazineData.computeEffectiveCost(stack, getBaseCostForAoE(chargeLevel));
             if (!MagazineData.consumeFluid(stack, cost)) {
+                setChargeLevel(stack, 0);
                 player.stopUsingItem();
                 return;
+            }
+
+            // Magazine vide apres consommation → passer au niveau 0
+            if (MagazineData.getFluidAmount(stack) <= 0) {
+                setChargeLevel(stack, 0);
             }
 
             boolean brokeBlock = MiningLaserBlockBreaker.tryBreakBlock(level, player, MAX_RANGE, chargeLevel);

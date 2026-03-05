@@ -27,6 +27,7 @@ import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import com.chapeau.apica.common.item.magazine.MagazineItem;
+import com.chapeau.apica.common.item.tool.MiningLaserItem;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -93,6 +94,7 @@ public record MagazineEquipPacket(int slotIndex, boolean equip)
                 handleUnequip(player, holderStack);
             }
 
+            syncChargeLevelAfterMagazineChange(holderStack);
             player.containerMenu.broadcastChanges();
         });
     }
@@ -131,6 +133,24 @@ public record MagazineEquipPacket(int slotIndex, boolean equip)
             cursorStack.shrink(1);
             player.containerMenu.setCarried(cursorStack);
             LOG.info("[MAG-SRV] handleEquip: EQUIP done, newFluid={} newAmount={}", newFluidId, newAmount);
+        }
+    }
+
+    /**
+     * Synchronise le chargeLevel du MiningLaser apres un changement de magazine.
+     * Equip/swap → force minimum niveau 1. Unequip → force niveau 0.
+     */
+    private static void syncChargeLevelAfterMagazineChange(ItemStack holderStack) {
+        if (!(holderStack.getItem() instanceof MiningLaserItem)) return;
+
+        boolean hasMag = MagazineData.hasMagazine(holderStack)
+                && MagazineData.getFluidAmount(holderStack) > 0;
+        if (hasMag) {
+            if (MiningLaserItem.getChargeLevel(holderStack) < 1) {
+                MiningLaserItem.setChargeLevel(holderStack, 1);
+            }
+        } else {
+            MiningLaserItem.setChargeLevel(holderStack, 0);
         }
     }
 

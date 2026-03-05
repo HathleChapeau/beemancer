@@ -109,7 +109,8 @@ public final class MagazineData {
 
     /**
      * Consomme du fluide du magazine attache.
-     * Retourne true si la consommation a reussi (assez de fluide).
+     * Si le fluide restant est insuffisant mais > 0, consomme tout le reste et retourne true.
+     * Retourne false uniquement si le magazine est absent ou deja vide.
      */
     public static boolean consumeFluid(ItemStack holder, int cost) {
         if (cost <= 0) return true;
@@ -117,10 +118,10 @@ public final class MagazineData {
         if (tag == null) return false;
 
         int current = tag.getInt(AMOUNT_KEY);
-        if (current < cost) return false;
+        if (current <= 0) return false;
 
         CompoundTag writeTag = getOrCreateDataTag(holder);
-        writeTag.putInt(AMOUNT_KEY, current - cost);
+        writeTag.putInt(AMOUNT_KEY, Math.max(0, current - cost));
         saveDataTag(holder, writeTag);
         return true;
     }
