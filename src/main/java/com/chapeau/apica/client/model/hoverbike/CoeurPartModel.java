@@ -55,14 +55,14 @@ public class CoeurPartModel extends HoverbikePartModel {
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         .addBox(-3.0F, -0.5F, -3.0F, 6.0F, 1.0F, 6.0F),
-                PartPose.offset(0.0F, 13.0F, -5.0F));
+                PartPose.offset(0.0F, 14.5F, -5.0F));
 
         // Cylindre du chapeau : 4x4x4
         root.addOrReplaceChild("crown",
                 CubeListBuilder.create()
                         .texOffs(0, 7)
                         .addBox(-2.0F, -4.0F, -2.0F, 4.0F, 4.0F, 4.0F),
-                PartPose.offset(0.0F, 13.0F, -5.0F));
+                PartPose.offset(0.0F, 14.5F, -5.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }
