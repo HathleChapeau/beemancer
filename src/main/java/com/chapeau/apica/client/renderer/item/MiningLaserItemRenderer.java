@@ -80,11 +80,11 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/ring.png");
 
     // --- Overlay box (beam barrel charge inner) ---
-    private static final float OVL_MIN_X = 6.25f / 16f;
-    private static final float OVL_MIN_Y = -0.75f / 16f;
-    private static final float OVL_MIN_Z = -12.4f / 16f;
-    private static final float OVL_MAX_X = 7.75f / 16f;
-    private static final float OVL_MAX_Y = 0.75f / 16f;
+    private static final float OVL_MIN_X = 6.5f / 16f;
+    private static final float OVL_MIN_Y = -0.5f / 16f;
+    private static final float OVL_MIN_Z = -5.4f / 16f;
+    private static final float OVL_MAX_X = 7.5f / 16f;
+    private static final float OVL_MAX_Y = 0.5f / 16f;
     private static final float OVL_MAX_Z = 0.5f / 16f;
 
     // --- 3 Bar boxes (charge indicators on barrel) ---
@@ -92,8 +92,8 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float BAR_MIN_Y = -1.5f / 16f;
     private static final float BAR_MAX_X = 8.5f / 16f;
     private static final float BAR_MAX_Y = 1.5f / 16f;
-    private static final float[] BAR_Z_MIN = {-10f / 16f, -8f / 16f, -6f / 16f};
-    private static final float[] BAR_Z_MAX = {-9f / 16f, -7f / 16f, -5f / 16f};
+    private static final float[] BAR_Z_MIN = {-4.5f / 16f, -3f / 16f, -1.5f / 16f};
+    private static final float[] BAR_Z_MAX = {-3.5f / 16f, -2f / 16f, -0.5f / 16f};
     private static final float[] BAR_U0 = {0f, 1f / 3f, 2f / 3f};
     private static final float[] BAR_U1 = {1f / 3f, 2f / 3f, 1f};
 
@@ -115,7 +115,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     // Halo position (devant le canon, pointe du barrel)
     private static final float HALO_X = 7f / 16f;
     private static final float HALO_Y = 0f / 16f;
-    private static final float HALO_Z = -13f / 16f;
+    private static final float HALO_Z = -6f / 16f;
 
     // --- Lightning arcs (entre ring_front et ring_back) ---
     private static final Vec3 ARC_START = new Vec3(7.0 / 16.0, 0, 6.0 / 16.0);
@@ -222,6 +222,11 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
      * - 14 frames de 2 rows chacune, chargement progressif gauche→droite
      */
     private void renderChargingOverlay(PoseStack poseStack, MultiBufferSource buffer, int packedLight, int frame) {
+        poseStack.pushPose();
+        poseStack.translate(7f / 16f, 0, 0);
+        poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(45));
+        poseStack.translate(-7f / 16f, 0, 0);
+
         VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(BEAM_CORE_TEXTURE));
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
@@ -261,6 +266,8 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
                 OVL_MAX_X, OVL_MIN_Y, OVL_MIN_Z,
                 OVL_MAX_X, OVL_MIN_Y, OVL_MAX_Z,
                 SIDE_U0, v0, SIDE_U1, v0, SIDE_U1, v1, SIDE_U0, v1, 0, -1, 0, packedLight, overlay);
+
+        poseStack.popPose();
     }
 
     // =========================================================================
