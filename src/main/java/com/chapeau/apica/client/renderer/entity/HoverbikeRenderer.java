@@ -46,7 +46,7 @@ public class HoverbikeRenderer extends MobRenderer<HoverbikeEntity, HoverbikeMod
             "textures/entity/bee/bee.png");
 
     /** Facteur d'echelle pour transformer l'abeille en monture */
-    private static final float BEE_SCALE = 1.7F;
+    private static final float BEE_SCALE = 1.87F;
 
     public HoverbikeRenderer(EntityRendererProvider.Context context) {
         super(context, new HoverbikeModel(context.bakeLayer(LAYER_LOCATION)), 1.2f);

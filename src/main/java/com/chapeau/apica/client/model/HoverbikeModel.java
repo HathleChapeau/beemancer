@@ -77,9 +77,9 @@ public class HoverbikeModel extends GiantBeeModel<HoverbikeEntity> {
             amplitude = 0.05F;
             legTuck = 0.3F;
         } else {
-            // A l'arret : pas de battement, ailes relevees
-            speed = 0.0F;
-            amplitude = 0.0F;
+            // A l'arret : leger battement au repos
+            speed = 0.3F;
+            amplitude = 0.02F;
             legTuck = 0.15F;
         }
 

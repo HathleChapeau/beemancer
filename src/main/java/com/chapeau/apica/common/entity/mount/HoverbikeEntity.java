@@ -59,7 +59,11 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.Nullable;
 
 import com.chapeau.apica.core.entity.InteractionMarkerManager;
+import com.chapeau.apica.core.registry.ApicaTags;
+import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -118,6 +122,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private boolean sprintPressed = false;
     private boolean jumpPressed = false;
     private float gaugeLevel = 1.0f;
+    private long feedCooldownUntil = -1;
 
     /** Facteur de surconsommation de la jauge en mode RUN. */
     private static final float RUN_GAUGE_DRAIN_MULTIPLIER = 1.5f;
@@ -203,6 +208,31 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             if (getOwnerUUID().isPresent() && !isOwner(player)) {
                 return InteractionResult.PASS;
             }
+        }
+
+        // Nourriture : reaction de l'abeille (meme pattern que CompanionBeeEntity)
+        ItemStack heldItem = player.getItemInHand(hand);
+        boolean isFood = heldItem.is(ApicaTags.Items.BEE_FOOD);
+        boolean isHated = !isFood && heldItem.is(ApicaTags.Items.BEE_HATED_FOOD);
+        if (isFood || isHated) {
+            if (level().isClientSide()) return InteractionResult.SUCCESS;
+            if (level().getGameTime() < feedCooldownUntil) return InteractionResult.PASS;
+
+            if (level() instanceof ServerLevel serverLevel) {
+                Vec3 beePos = position().add(0, 0.5, 0);
+                if (isFood) {
+                    ParticleHelper.burst(serverLevel, beePos, ParticleHelper.EffectType.HEAL, 5);
+                    level().playSound(null, blockPosition(), SoundEvents.BEE_POLLINATE,
+                            SoundSource.NEUTRAL, 1.0f, 1.0f);
+                } else {
+                    ParticleHelper.burst(serverLevel, beePos, ParticleHelper.EffectType.FAILURE, 8);
+                    level().playSound(null, blockPosition(), SoundEvents.BEE_HURT,
+                            SoundSource.NEUTRAL, 1.0f, 1.0f);
+                }
+            }
+            heldItem.shrink(1);
+            feedCooldownUntil = level().getGameTime() + 40;
+            return InteractionResult.SUCCESS;
         }
 
         // Shift+click : toggle edit mode
@@ -364,7 +394,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity entity, EntityDimensions dimensions, float scale) {
-        return new Vec3(0, dimensions.height() + 0.1, 0);
+        return new Vec3(0, dimensions.height() + 0.1, 0.3);
     }
 
     // --- Movement Overrides (Pattern Cobblemon PokemonEntity.kt L1805-1813) ---
