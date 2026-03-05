@@ -57,6 +57,10 @@ public class HoverbikeModel extends GiantBeeModel<HoverbikeEntity> {
         float amplitude;
         float legTuck;
 
+        // Detecter le mouvement via la velocite reelle (limbSwingAmount ne fonctionne pas pour un vehicule)
+        double horizontalSpeed = entity.getDeltaMovement().horizontalDistance();
+        boolean isMoving = horizontalSpeed > 0.01;
+
         if (entity.isJumpPressed()) {
             // Vol actif (espace appuye) : battement normal
             speed = 1.8F;
@@ -67,7 +71,7 @@ public class HoverbikeModel extends GiantBeeModel<HoverbikeEntity> {
             speed = 1.0F;
             amplitude = 0.08F;
             legTuck = 0.5F;
-        } else if (limbSwingAmount > 0.01F) {
+        } else if (isMoving) {
             // Hover en mouvement : battement lent et leger
             speed = 0.6F;
             amplitude = 0.05F;
