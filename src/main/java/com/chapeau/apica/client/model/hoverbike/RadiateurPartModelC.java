@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [RadiateurPartModelC.java]
- * Description: Variante C du radiateur — larges panneaux
+ * Description: Variante C — armure lourde avec plaques epaisses
  * ============================================================
  *
  * DEPENDANCES:
@@ -32,15 +32,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Radiateur variante C : larges panneaux epais.
- * Grande surface, aspect robuste et protecteur.
+ * Armure lourde : plaques epaisses couvrant les flancs et le dessous
+ * du thorax. Maximum de protection, aspect tank.
  */
 public class RadiateurPartModelC extends HoverbikePartModel {
 
     public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("radiateur_c");
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/block/oxidized_copper.png");
+            ResourceLocation.withDefaultNamespace("textures/block/netherite_block.png");
 
     public RadiateurPartModelC(ModelPart root) {
         super(root);
@@ -50,19 +50,26 @@ public class RadiateurPartModelC extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Large panneau gauche : 2x12x24
-        root.addOrReplaceChild("panel_left",
+        // Plaque gauche : 2x6x9
+        root.addOrReplaceChild("armor_left",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-1.0F, 0.0F, -12.0F, 2.0F, 12.0F, 24.0F),
-                PartPose.offset(-11.0F, 10.0F, -2.0F));
+                        .addBox(-1.0F, -3.0F, -4.5F, 2.0F, 6.0F, 9.0F),
+                PartPose.offset(-4.5F, 18.0F, 0.0F));
 
-        // Large panneau droit
-        root.addOrReplaceChild("panel_right",
+        // Plaque droite : 2x6x9
+        root.addOrReplaceChild("armor_right",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-1.0F, 0.0F, -12.0F, 2.0F, 12.0F, 24.0F),
-                PartPose.offset(11.0F, 10.0F, -2.0F));
+                        .addBox(-1.0F, -3.0F, -4.5F, 2.0F, 6.0F, 9.0F),
+                PartPose.offset(4.5F, 18.0F, 0.0F));
+
+        // Plaque ventrale : 7x1x8
+        root.addOrReplaceChild("belly_plate",
+                CubeListBuilder.create()
+                        .texOffs(0, 15)
+                        .addBox(-3.5F, 0.0F, -4.0F, 7.0F, 1.0F, 8.0F),
+                PartPose.offset(0.0F, 22.0F, 0.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }
@@ -79,6 +86,6 @@ public class RadiateurPartModelC extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(0, 0, -1);
+        return new Vec3(1, 0, 0);
     }
 }

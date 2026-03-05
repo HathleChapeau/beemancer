@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ChassisPartModel.java]
- * Description: Modele de la partie Chassis — cadre structural du Hoverbike
+ * Description: Selle simple posee sur le dos de l'abeille
  * ============================================================
  *
  * DEPENDANCES:
@@ -32,16 +32,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Chassis : cadre structural du hoverbike.
- * 2 rails lateraux le long de la moto + 1 plaque inferieure.
- * Enveloppe le modele de base pour donner la structure.
+ * Selle simple : assise plate sur le dos de l'abeille avec un petit dossier.
+ * Se place sur le thorax (haut du body, Y=15).
  */
 public class ChassisPartModel extends HoverbikePartModel {
 
     public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("chassis");
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/block/iron_block.png");
+            ResourceLocation.withDefaultNamespace("textures/block/oak_planks.png");
 
     public ChassisPartModel(ModelPart root) {
         super(root);
@@ -51,28 +50,35 @@ public class ChassisPartModel extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Rail lateral gauche : 2x4x32, longe toute la moto
-        root.addOrReplaceChild("rail_left",
+        // Assise de la selle : 5x1x6, posee sur le dos
+        root.addOrReplaceChild("seat",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-1.0F, 0.0F, -16.0F, 2.0F, 4.0F, 32.0F),
-                PartPose.offset(-9.0F, 10.0F, 0.0F));
+                        .addBox(-2.5F, -0.5F, -3.0F, 5.0F, 1.0F, 6.0F),
+                PartPose.offset(0.0F, 14.5F, 1.0F));
 
-        // Rail lateral droit : miroir du gauche
-        root.addOrReplaceChild("rail_right",
+        // Dossier arriere : 5x3x1
+        root.addOrReplaceChild("backrest",
                 CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .addBox(-1.0F, 0.0F, -16.0F, 2.0F, 4.0F, 32.0F),
-                PartPose.offset(9.0F, 10.0F, 0.0F));
+                        .texOffs(0, 7)
+                        .addBox(-2.5F, -3.0F, 0.0F, 5.0F, 3.0F, 1.0F),
+                PartPose.offset(0.0F, 14.5F, 4.0F));
 
-        // Plaque inferieure : relie avant et arriere par dessous
-        root.addOrReplaceChild("bottom_plate",
+        // Rebord gauche : 1x2x6
+        root.addOrReplaceChild("side_left",
                 CubeListBuilder.create()
-                        .texOffs(0, 36)
-                        .addBox(-8.0F, 0.0F, -16.0F, 16.0F, 2.0F, 32.0F),
-                PartPose.offset(0.0F, 7.0F, 0.0F));
+                        .texOffs(0, 11)
+                        .addBox(-0.5F, -1.5F, -3.0F, 1.0F, 2.0F, 6.0F),
+                PartPose.offset(-3.0F, 14.5F, 1.0F));
 
-        return LayerDefinition.create(mesh, 128, 128);
+        // Rebord droit : 1x2x6
+        root.addOrReplaceChild("side_right",
+                CubeListBuilder.create()
+                        .texOffs(0, 11)
+                        .addBox(-0.5F, -1.5F, -3.0F, 1.0F, 2.0F, 6.0F),
+                PartPose.offset(3.0F, 14.5F, 1.0F));
+
+        return LayerDefinition.create(mesh, 64, 64);
     }
 
     @Override
@@ -87,6 +93,6 @@ public class ChassisPartModel extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(0, 1, 1);
+        return new Vec3(0, -1, 0);
     }
 }

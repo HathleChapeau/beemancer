@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [PropulseurPartModelC.java]
- * Description: Variante C du propulseur — gros reacteur central
+ * Description: Variante C — banniere decorative a l'arriere
  * ============================================================
  *
  * DEPENDANCES:
@@ -32,15 +32,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Propulseur variante C : un seul gros reacteur central.
- * Aspect puissant, poussee concentree.
+ * Banniere : petit fanion fixe sur un mat derriere l'abdomen.
+ * Aspect heraldique/chevaleresque.
  */
 public class PropulseurPartModelC extends HoverbikePartModel {
 
     public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("propulseur_c");
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/block/shroomlight.png");
+            ResourceLocation.withDefaultNamespace("textures/block/yellow_wool.png");
 
     public PropulseurPartModelC(ModelPart root) {
         super(root);
@@ -50,12 +50,26 @@ public class PropulseurPartModelC extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Gros reacteur central : 8x8x8
-        root.addOrReplaceChild("reactor",
+        // Mat : 1x8x1
+        root.addOrReplaceChild("pole",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-4.0F, 0.0F, 0.0F, 8.0F, 8.0F, 8.0F),
-                PartPose.offset(0.0F, 10.0F, 16.0F));
+                        .addBox(-0.5F, -8.0F, -0.5F, 1.0F, 8.0F, 1.0F),
+                PartPose.offset(0.0F, 17.0F, 6.5F));
+
+        // Drapeau : 0x5x4, plan plat
+        root.addOrReplaceChild("flag",
+                CubeListBuilder.create()
+                        .texOffs(4, 0)
+                        .addBox(0.0F, -5.0F, 0.0F, 0.0F, 5.0F, 4.0F),
+                PartPose.offset(0.5F, 11.0F, 6.5F));
+
+        // Pointe du mat : 1x1x1
+        root.addOrReplaceChild("tip",
+                CubeListBuilder.create()
+                        .texOffs(0, 9)
+                        .addBox(-0.5F, -1.0F, -0.5F, 1.0F, 1.0F, 1.0F),
+                PartPose.offset(0.0F, 9.0F, 6.5F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }

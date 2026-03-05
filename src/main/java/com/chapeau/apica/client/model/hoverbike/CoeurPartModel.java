@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [CoeurPartModel.java]
- * Description: Modele de la partie Coeur — source d'energie centrale du Hoverbike
+ * Description: Petit chapeau cylindrique pose sur la tete de l'abeille
  * ============================================================
  *
  * DEPENDANCES:
@@ -32,16 +32,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Coeur : source d'energie du hoverbike.
- * Cube central lumineux place au-dessus du centre de la moto,
- * a la jonction entre le bloc avant et arriere.
+ * Petit chapeau cylindrique (top hat) pose sur la tete de l'abeille.
+ * Se place au-dessus des antennes, legerement en avant.
  */
 public class CoeurPartModel extends HoverbikePartModel {
 
     public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("coeur");
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/block/glowstone.png");
+            ResourceLocation.withDefaultNamespace("textures/block/black_wool.png");
 
     public CoeurPartModel(ModelPart root) {
         super(root);
@@ -51,12 +50,19 @@ public class CoeurPartModel extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Cube central : 6x6x6, au-dessus du centre de la moto
-        root.addOrReplaceChild("core",
+        // Bord du chapeau : 6x1x6
+        root.addOrReplaceChild("brim",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-3.0F, 0.0F, -3.0F, 6.0F, 6.0F, 6.0F),
-                PartPose.offset(0.0F, 25.0F, 0.0F));
+                        .addBox(-3.0F, -0.5F, -3.0F, 6.0F, 1.0F, 6.0F),
+                PartPose.offset(0.0F, 13.0F, -5.0F));
+
+        // Cylindre du chapeau : 4x4x4
+        root.addOrReplaceChild("crown",
+                CubeListBuilder.create()
+                        .texOffs(0, 7)
+                        .addBox(-2.0F, -4.0F, -2.0F, 4.0F, 4.0F, 4.0F),
+                PartPose.offset(0.0F, 13.0F, -5.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }
@@ -73,6 +79,6 @@ public class CoeurPartModel extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(0, 1, -1);
+        return new Vec3(0, -1, -1);
     }
 }

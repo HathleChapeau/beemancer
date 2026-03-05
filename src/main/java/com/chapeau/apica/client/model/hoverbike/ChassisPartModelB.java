@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ChassisPartModelB.java]
- * Description: Variante B du chassis — cadre large et epais
+ * Description: Variante B — selle royale avec pommeaux et assise large
  * ============================================================
  *
  * DEPENDANCES:
@@ -32,8 +32,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Chassis variante B : cadre lourd avec rails larges et barre transversale.
- * Donne un aspect plus massif et industriel.
+ * Selle royale : assise plus large avec pommeaux avant et arriere.
+ * Donne un aspect monte plus confortable et noble.
  */
 public class ChassisPartModelB extends HoverbikePartModel {
 
@@ -50,35 +50,42 @@ public class ChassisPartModelB extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Rail large gauche : 4x6x32
-        root.addOrReplaceChild("rail_left",
+        // Assise large : 7x1x8
+        root.addOrReplaceChild("seat",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-2.0F, 0.0F, -16.0F, 4.0F, 6.0F, 32.0F),
-                PartPose.offset(-8.0F, 8.0F, 0.0F));
+                        .addBox(-3.5F, -0.5F, -4.0F, 7.0F, 1.0F, 8.0F),
+                PartPose.offset(0.0F, 14.5F, 1.0F));
 
-        // Rail large droit
-        root.addOrReplaceChild("rail_right",
+        // Pommeau avant : 2x2x1
+        root.addOrReplaceChild("pommel_front",
                 CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .addBox(-2.0F, 0.0F, -16.0F, 4.0F, 6.0F, 32.0F),
-                PartPose.offset(8.0F, 8.0F, 0.0F));
+                        .texOffs(0, 9)
+                        .addBox(-1.0F, -2.0F, -0.5F, 2.0F, 2.0F, 1.0F),
+                PartPose.offset(0.0F, 14.5F, -3.0F));
 
-        // Barre transversale avant : 16x3x3
-        root.addOrReplaceChild("cross_front",
+        // Pommeau arriere : 3x3x1
+        root.addOrReplaceChild("pommel_rear",
                 CubeListBuilder.create()
-                        .texOffs(0, 38)
-                        .addBox(-8.0F, 0.0F, -1.5F, 16.0F, 3.0F, 3.0F),
-                PartPose.offset(0.0F, 9.0F, -10.0F));
+                        .texOffs(6, 9)
+                        .addBox(-1.5F, -3.0F, 0.0F, 3.0F, 3.0F, 1.0F),
+                PartPose.offset(0.0F, 14.5F, 5.0F));
 
-        // Barre transversale arriere : 16x3x3
-        root.addOrReplaceChild("cross_rear",
+        // Decoration laterale gauche : 1x1x8
+        root.addOrReplaceChild("trim_left",
                 CubeListBuilder.create()
-                        .texOffs(0, 44)
-                        .addBox(-8.0F, 0.0F, -1.5F, 16.0F, 3.0F, 3.0F),
-                PartPose.offset(0.0F, 9.0F, 10.0F));
+                        .texOffs(0, 13)
+                        .addBox(-0.5F, -1.0F, -4.0F, 1.0F, 1.0F, 8.0F),
+                PartPose.offset(-4.0F, 14.5F, 1.0F));
 
-        return LayerDefinition.create(mesh, 128, 128);
+        // Decoration laterale droite : 1x1x8
+        root.addOrReplaceChild("trim_right",
+                CubeListBuilder.create()
+                        .texOffs(0, 13)
+                        .addBox(-0.5F, -1.0F, -4.0F, 1.0F, 1.0F, 8.0F),
+                PartPose.offset(4.0F, 14.5F, 1.0F));
+
+        return LayerDefinition.create(mesh, 64, 64);
     }
 
     @Override
@@ -93,6 +100,6 @@ public class ChassisPartModelB extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(0, 1, 1);
+        return new Vec3(0, -1, 0);
     }
 }

@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [RadiateurPartModel.java]
- * Description: Modele de la partie Radiateur — ailettes de refroidissement du Hoverbike
+ * Description: Plastrons lateraux legers sur les flancs de l'abeille
  * ============================================================
  *
  * DEPENDANCES:
@@ -32,9 +32,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Radiateur : ailettes de refroidissement sur les cotes du hoverbike.
- * Deux panneaux plats sur les flancs gauche et droit,
- * representant les grilles de dissipation thermique.
+ * Plastrons legers : plaques fines sur chaque flanc du thorax.
+ * Protection minimale, aspect discret.
  */
 public class RadiateurPartModel extends HoverbikePartModel {
 
@@ -51,19 +50,19 @@ public class RadiateurPartModel extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Panneau gauche : 1x8x20, sur le flanc gauche
-        root.addOrReplaceChild("panel_left",
+        // Plastron gauche : 1x5x8
+        root.addOrReplaceChild("plate_left",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-0.5F, 0.0F, -10.0F, 1.0F, 8.0F, 20.0F),
-                PartPose.offset(-10.0F, 12.0F, -2.0F));
+                        .addBox(-0.5F, -2.5F, -4.0F, 1.0F, 5.0F, 8.0F),
+                PartPose.offset(-4.0F, 18.0F, 0.0F));
 
-        // Panneau droit : miroir du gauche
-        root.addOrReplaceChild("panel_right",
+        // Plastron droit : 1x5x8
+        root.addOrReplaceChild("plate_right",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-0.5F, 0.0F, -10.0F, 1.0F, 8.0F, 20.0F),
-                PartPose.offset(10.0F, 12.0F, -2.0F));
+                        .addBox(-0.5F, -2.5F, -4.0F, 1.0F, 5.0F, 8.0F),
+                PartPose.offset(4.0F, 18.0F, 0.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }
@@ -80,6 +79,6 @@ public class RadiateurPartModel extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(0, 0, -1);
+        return new Vec3(1, 0, 0);
     }
 }

@@ -12,7 +12,7 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - HoverbikeModel.java: Modele du Hoverbike (alias type)
+ * - HoverbikeModel.java: Modele du Hoverbike (specialise les animations)
  * - HoverbikeRenderer.java: Via HoverbikeModel
  * - ClientSetup.java: Enregistrement du layer via HoverbikeModel
  *
@@ -32,23 +32,22 @@ import net.minecraft.world.entity.Entity;
 
 /**
  * Modele d'abeille geante generique.
- * Reproduit la geometrie du BeeModel vanilla (corps, ailes, pattes, antennes, dard)
- * avec un setupAnim custom adapte au vol permanent (battement d'ailes continu,
- * pattes repliees).
+ * Reproduit la geometrie du BeeModel vanilla (corps, ailes, pattes, antennes, dard).
+ * Les animations sont pilotees via des methodes protegees que les sous-classes
+ * peuvent appeler avec des parametres contextuels.
  *
  * Utilise la texture vanilla bee.png (64x64).
- * Le scale est gere par le renderer qui utilise ce modele.
  *
  * @param <T> Type d'entite compatible
  */
 public class GiantBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
     private final ModelPart root;
-    private final ModelPart rightWing;
-    private final ModelPart leftWing;
-    private final ModelPart frontLegs;
-    private final ModelPart middleLegs;
-    private final ModelPart backLegs;
+    protected final ModelPart rightWing;
+    protected final ModelPart leftWing;
+    protected final ModelPart frontLegs;
+    protected final ModelPart middleLegs;
+    protected final ModelPart backLegs;
 
     public GiantBeeModel(ModelPart root) {
         this.root = root;
@@ -68,47 +67,40 @@ public class GiantBeeModel<T extends Entity> extends HierarchicalModel<T> {
         MeshDefinition meshDefinition = new MeshDefinition();
         PartDefinition partDefinition = meshDefinition.getRoot();
 
-        // Bone racine — offset Y=19 comme le modele vanilla
         PartDefinition bone = partDefinition.addOrReplaceChild("bone",
                 CubeListBuilder.create(),
                 PartPose.offset(0.0F, 19.0F, 0.0F));
 
-        // Corps (thorax + abdomen) — 7x7x10
         PartDefinition body = bone.addOrReplaceChild("body",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         .addBox(-3.5F, -4.0F, -5.0F, 7.0F, 7.0F, 10.0F),
                 PartPose.ZERO);
 
-        // Dard — plan vertical plat
         body.addOrReplaceChild("stinger",
                 CubeListBuilder.create()
                         .texOffs(26, 7)
                         .addBox(0.0F, -1.0F, 5.0F, 0.0F, 1.0F, 2.0F),
                 PartPose.ZERO);
 
-        // Antenne gauche
         body.addOrReplaceChild("left_antenna",
                 CubeListBuilder.create()
                         .texOffs(2, 0)
                         .addBox(1.5F, -2.0F, -3.0F, 1.0F, 2.0F, 3.0F),
                 PartPose.offset(0.0F, -2.0F, -5.0F));
 
-        // Antenne droite
         body.addOrReplaceChild("right_antenna",
                 CubeListBuilder.create()
                         .texOffs(2, 3)
                         .addBox(-2.5F, -2.0F, -3.0F, 1.0F, 2.0F, 3.0F),
                 PartPose.offset(0.0F, -2.0F, -5.0F));
 
-        // Aile droite — plan horizontal plat
         bone.addOrReplaceChild("right_wing",
                 CubeListBuilder.create()
                         .texOffs(0, 18)
                         .addBox(-9.0F, 0.0F, 0.0F, 9.0F, 0.0F, 6.0F),
                 PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
 
-        // Aile gauche — miroir de la droite
         bone.addOrReplaceChild("left_wing",
                 CubeListBuilder.create()
                         .texOffs(0, 18)
@@ -116,21 +108,18 @@ public class GiantBeeModel<T extends Entity> extends HierarchicalModel<T> {
                         .addBox(0.0F, 0.0F, 0.0F, 9.0F, 0.0F, 6.0F),
                 PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
 
-        // Pattes avant
         bone.addOrReplaceChild("front_legs",
                 CubeListBuilder.create()
                         .texOffs(26, 1)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
                 PartPose.offset(1.5F, 3.0F, -2.0F));
 
-        // Pattes milieu
         bone.addOrReplaceChild("middle_legs",
                 CubeListBuilder.create()
                         .texOffs(26, 3)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
                 PartPose.offset(1.5F, 3.0F, 0.0F));
 
-        // Pattes arriere
         bone.addOrReplaceChild("back_legs",
                 CubeListBuilder.create()
                         .texOffs(26, 5)
@@ -145,18 +134,40 @@ public class GiantBeeModel<T extends Entity> extends HierarchicalModel<T> {
         return this.root;
     }
 
+    /**
+     * Anime les ailes avec vitesse et amplitude configurables.
+     *
+     * @param ageInTicks Temps d'animation
+     * @param speed      Vitesse de battement (0 = immobile, 1.8 = vol)
+     * @param amplitude  Amplitude du battement en radians (0 = immobile)
+     * @param upBias     Bias vers le haut en radians (decale la position neutre)
+     */
+    protected void animateWings(float ageInTicks, float speed, float amplitude, float upBias) {
+        if (speed <= 0.001F || amplitude <= 0.001F) {
+            rightWing.zRot = -upBias;
+            leftWing.zRot = upBias;
+            return;
+        }
+        float flap = Mth.cos(ageInTicks * speed) * amplitude;
+        rightWing.zRot = flap - upBias;
+        leftWing.zRot = -flap + upBias;
+    }
+
+    /**
+     * Anime les pattes avec un angle de repli.
+     *
+     * @param tuckAngle Angle de repli en radians (0 = pendantes, 0.78 = repliees)
+     */
+    protected void animateLegs(float tuckAngle) {
+        frontLegs.xRot = tuckAngle;
+        middleLegs.xRot = tuckAngle;
+        backLegs.xRot = tuckAngle;
+    }
+
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount,
                           float ageInTicks, float netHeadYaw, float headPitch) {
-        // Battement d'ailes rapide et permanent (vol)
-        float wingFlap = Mth.cos(ageInTicks * 2.1F) * (float) Math.PI * 0.15F;
-        rightWing.zRot = wingFlap;
-        leftWing.zRot = -wingFlap;
-
-        // Pattes repliees vers l'arriere (pose de vol)
-        float legTuck = 0.7854F; // 45 degrees
-        frontLegs.xRot = legTuck;
-        middleLegs.xRot = legTuck;
-        backLegs.xRot = legTuck;
+        animateWings(ageInTicks, 1.8F, 0.12F, 0.05F);
+        animateLegs(0.7854F);
     }
 }

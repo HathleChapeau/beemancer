@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [PropulseurPartModelB.java]
- * Description: Variante B du propulseur — 4 micro-tuyeres
+ * Description: Variante B — sacoches laterales arriere
  * ============================================================
  *
  * DEPENDANCES:
@@ -32,15 +32,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Propulseur variante B : quatre micro-tuyeres aux coins.
- * Aspect agile, distribue la poussee sur 4 points.
+ * Sacoches : deux petits sacs accroches de chaque cote de l'abdomen arriere.
+ * Pour transporter du butin. Aspect utilitaire.
  */
 public class PropulseurPartModelB extends HoverbikePartModel {
 
     public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("propulseur_b");
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/block/redstone_block.png");
+            ResourceLocation.withDefaultNamespace("textures/block/oak_planks.png");
 
     public PropulseurPartModelB(ModelPart root) {
         super(root);
@@ -50,33 +50,33 @@ public class PropulseurPartModelB extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Tuyere haut-gauche : 2x2x4
-        root.addOrReplaceChild("nozzle_tl",
+        // Sacoche gauche : 2x4x4
+        root.addOrReplaceChild("bag_left",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-1.0F, 0.0F, 0.0F, 2.0F, 2.0F, 4.0F),
-                PartPose.offset(-5.0F, 10.0F, 16.0F));
+                        .addBox(-1.0F, -1.0F, -2.0F, 2.0F, 4.0F, 4.0F),
+                PartPose.offset(-4.5F, 18.0F, 3.0F));
 
-        // Tuyere haut-droite
-        root.addOrReplaceChild("nozzle_tr",
+        // Rabat sacoche gauche : 2x1x4
+        root.addOrReplaceChild("flap_left",
                 CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .addBox(-1.0F, 0.0F, 0.0F, 2.0F, 2.0F, 4.0F),
-                PartPose.offset(5.0F, 10.0F, 16.0F));
+                        .texOffs(0, 8)
+                        .addBox(-1.0F, -0.5F, -2.0F, 2.0F, 1.0F, 4.0F),
+                PartPose.offset(-4.5F, 17.0F, 3.0F));
 
-        // Tuyere bas-gauche
-        root.addOrReplaceChild("nozzle_bl",
+        // Sacoche droite : 2x4x4
+        root.addOrReplaceChild("bag_right",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-1.0F, 0.0F, 0.0F, 2.0F, 2.0F, 4.0F),
-                PartPose.offset(-5.0F, 14.0F, 16.0F));
+                        .addBox(-1.0F, -1.0F, -2.0F, 2.0F, 4.0F, 4.0F),
+                PartPose.offset(4.5F, 18.0F, 3.0F));
 
-        // Tuyere bas-droite
-        root.addOrReplaceChild("nozzle_br",
+        // Rabat sacoche droite : 2x1x4
+        root.addOrReplaceChild("flap_right",
                 CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .addBox(-1.0F, 0.0F, 0.0F, 2.0F, 2.0F, 4.0F),
-                PartPose.offset(5.0F, 14.0F, 16.0F));
+                        .texOffs(0, 8)
+                        .addBox(-1.0F, -0.5F, -2.0F, 2.0F, 1.0F, 4.0F),
+                PartPose.offset(4.5F, 17.0F, 3.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }

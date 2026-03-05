@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [RadiateurPartModelB.java]
- * Description: Variante B du radiateur — ailettes multiples
+ * Description: Variante B — epaulettes decoratives sur les flancs
  * ============================================================
  *
  * DEPENDANCES:
@@ -32,8 +32,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Radiateur variante B : 6 ailettes fines (3 par cote).
- * Style grille d'aeration, haute surface de dissipation.
+ * Epaulettes : petites extensions rigides sur les flancs du thorax,
+ * comme des epaulettes de chevalier. 3 ailettes par cote.
  */
 public class RadiateurPartModelB extends HoverbikePartModel {
 
@@ -50,43 +50,47 @@ public class RadiateurPartModelB extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // 3 ailettes gauche : 1x6x6, espacees sur Z
+        // Ailette gauche avant : 2x3x1
         root.addOrReplaceChild("fin_l1",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-0.5F, 0.0F, -3.0F, 1.0F, 6.0F, 6.0F),
-                PartPose.offset(-10.0F, 13.0F, -8.0F));
+                        .addBox(-2.0F, -1.5F, -0.5F, 2.0F, 3.0F, 1.0F),
+                PartPose.offset(-4.0F, 17.0F, -2.0F));
 
+        // Ailette gauche milieu : 3x3x1
         root.addOrReplaceChild("fin_l2",
                 CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .addBox(-0.5F, 0.0F, -3.0F, 1.0F, 6.0F, 6.0F),
-                PartPose.offset(-10.0F, 13.0F, 0.0F));
+                        .texOffs(6, 0)
+                        .addBox(-3.0F, -1.5F, -0.5F, 3.0F, 3.0F, 1.0F),
+                PartPose.offset(-4.0F, 17.0F, 0.0F));
 
+        // Ailette gauche arriere : 2x3x1
         root.addOrReplaceChild("fin_l3",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-0.5F, 0.0F, -3.0F, 1.0F, 6.0F, 6.0F),
-                PartPose.offset(-10.0F, 13.0F, 8.0F));
+                        .addBox(-2.0F, -1.5F, -0.5F, 2.0F, 3.0F, 1.0F),
+                PartPose.offset(-4.0F, 17.0F, 2.0F));
 
-        // 3 ailettes droite
+        // Ailette droite avant : 2x3x1
         root.addOrReplaceChild("fin_r1",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-0.5F, 0.0F, -3.0F, 1.0F, 6.0F, 6.0F),
-                PartPose.offset(10.0F, 13.0F, -8.0F));
+                        .addBox(0.0F, -1.5F, -0.5F, 2.0F, 3.0F, 1.0F),
+                PartPose.offset(4.0F, 17.0F, -2.0F));
 
+        // Ailette droite milieu : 3x3x1
         root.addOrReplaceChild("fin_r2",
                 CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .addBox(-0.5F, 0.0F, -3.0F, 1.0F, 6.0F, 6.0F),
-                PartPose.offset(10.0F, 13.0F, 0.0F));
+                        .texOffs(6, 0)
+                        .addBox(0.0F, -1.5F, -0.5F, 3.0F, 3.0F, 1.0F),
+                PartPose.offset(4.0F, 17.0F, 0.0F));
 
+        // Ailette droite arriere : 2x3x1
         root.addOrReplaceChild("fin_r3",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-0.5F, 0.0F, -3.0F, 1.0F, 6.0F, 6.0F),
-                PartPose.offset(10.0F, 13.0F, 8.0F));
+                        .addBox(0.0F, -1.5F, -0.5F, 2.0F, 3.0F, 1.0F),
+                PartPose.offset(4.0F, 17.0F, 2.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }
@@ -103,6 +107,6 @@ public class RadiateurPartModelB extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(0, 0, -1);
+        return new Vec3(1, 0, 0);
     }
 }

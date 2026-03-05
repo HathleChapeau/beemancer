@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ChassisPartModelC.java]
- * Description: Variante C du chassis — plaques blindees
+ * Description: Variante C — harnais complet avec sangles autour du corps
  * ============================================================
  *
  * DEPENDANCES:
@@ -32,8 +32,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Chassis variante C : plaques blindees avec protection laterale et dessus.
- * Aspect lourd, tank-like.
+ * Harnais complet : sangles qui entourent le thorax de l'abeille
+ * avec une assise integree. Aspect utilitaire et securise.
  */
 public class ChassisPartModelC extends HoverbikePartModel {
 
@@ -50,28 +50,49 @@ public class ChassisPartModelC extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Plaque laterale gauche : 3x10x30
-        root.addOrReplaceChild("plate_left",
+        // Assise : 5x1x6
+        root.addOrReplaceChild("seat",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-1.5F, 0.0F, -15.0F, 3.0F, 10.0F, 30.0F),
-                PartPose.offset(-9.0F, 7.0F, 0.0F));
+                        .addBox(-2.5F, -0.5F, -3.0F, 5.0F, 1.0F, 6.0F),
+                PartPose.offset(0.0F, 14.5F, 1.0F));
 
-        // Plaque laterale droite
-        root.addOrReplaceChild("plate_right",
+        // Sangle dorsale (haut) : 8x1x1
+        root.addOrReplaceChild("strap_top",
                 CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .addBox(-1.5F, 0.0F, -15.0F, 3.0F, 10.0F, 30.0F),
-                PartPose.offset(9.0F, 7.0F, 0.0F));
+                        .texOffs(0, 7)
+                        .addBox(-4.0F, -0.5F, -0.5F, 8.0F, 1.0F, 1.0F),
+                PartPose.offset(0.0F, 14.5F, -1.0F));
 
-        // Plaque superieure : 18x2x30
-        root.addOrReplaceChild("top_plate",
+        // Sangle ventrale gauche : 1x7x1
+        root.addOrReplaceChild("strap_left",
                 CubeListBuilder.create()
-                        .texOffs(0, 40)
-                        .addBox(-9.0F, 0.0F, -15.0F, 18.0F, 2.0F, 30.0F),
-                PartPose.offset(0.0F, 5.0F, 0.0F));
+                        .texOffs(0, 9)
+                        .addBox(-0.5F, 0.0F, -0.5F, 1.0F, 7.0F, 1.0F),
+                PartPose.offset(-4.0F, 14.5F, -1.0F));
 
-        return LayerDefinition.create(mesh, 128, 128);
+        // Sangle ventrale droite : 1x7x1
+        root.addOrReplaceChild("strap_right",
+                CubeListBuilder.create()
+                        .texOffs(0, 9)
+                        .addBox(-0.5F, 0.0F, -0.5F, 1.0F, 7.0F, 1.0F),
+                PartPose.offset(4.0F, 14.5F, -1.0F));
+
+        // Sangle ventrale (bas) : 8x1x1
+        root.addOrReplaceChild("strap_bottom",
+                CubeListBuilder.create()
+                        .texOffs(0, 7)
+                        .addBox(-4.0F, -0.5F, -0.5F, 8.0F, 1.0F, 1.0F),
+                PartPose.offset(0.0F, 21.5F, -1.0F));
+
+        // Sangle longitudinale avant : 1x1x4
+        root.addOrReplaceChild("strap_front",
+                CubeListBuilder.create()
+                        .texOffs(4, 9)
+                        .addBox(-0.5F, -0.5F, -2.0F, 1.0F, 1.0F, 4.0F),
+                PartPose.offset(0.0F, 14.5F, -3.0F));
+
+        return LayerDefinition.create(mesh, 64, 64);
     }
 
     @Override
@@ -86,6 +107,6 @@ public class ChassisPartModelC extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(0, 1, 1);
+        return new Vec3(0, -1, 0);
     }
 }

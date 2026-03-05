@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [CoeurPartModelB.java]
- * Description: Variante B du coeur — pyramide a etages
+ * Description: Variante B — couronne doree sur la tete de l'abeille
  * ============================================================
  *
  * DEPENDANCES:
@@ -32,15 +32,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Coeur variante B : pyramide a deux etages.
- * Base large surmontee d'un sommet plus etroit.
+ * Couronne doree : anneau avec 4 pointes, posee sur la tete.
+ * Aspect royal.
  */
 public class CoeurPartModelB extends HoverbikePartModel {
 
     public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("coeur_b");
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/block/sea_lantern.png");
+            ResourceLocation.withDefaultNamespace("textures/block/gold_block.png");
 
     public CoeurPartModelB(ModelPart root) {
         super(root);
@@ -50,19 +50,61 @@ public class CoeurPartModelB extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Base de la pyramide : 8x3x8
-        root.addOrReplaceChild("base",
+        // Anneau avant : 6x2x1
+        root.addOrReplaceChild("band_front",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-4.0F, 0.0F, -4.0F, 8.0F, 3.0F, 8.0F),
-                PartPose.offset(0.0F, 25.0F, 0.0F));
+                        .addBox(-3.0F, -2.0F, -0.5F, 6.0F, 2.0F, 1.0F),
+                PartPose.offset(0.0F, 14.0F, -7.5F));
 
-        // Sommet : 4x4x4
-        root.addOrReplaceChild("top",
+        // Anneau arriere : 6x2x1
+        root.addOrReplaceChild("band_back",
                 CubeListBuilder.create()
-                        .texOffs(0, 11)
-                        .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 4.0F, 4.0F),
-                PartPose.offset(0.0F, 28.0F, 0.0F));
+                        .texOffs(0, 0)
+                        .addBox(-3.0F, -2.0F, -0.5F, 6.0F, 2.0F, 1.0F),
+                PartPose.offset(0.0F, 14.0F, -2.5F));
+
+        // Anneau gauche : 1x2x5
+        root.addOrReplaceChild("band_left",
+                CubeListBuilder.create()
+                        .texOffs(0, 3)
+                        .addBox(-0.5F, -2.0F, -2.5F, 1.0F, 2.0F, 5.0F),
+                PartPose.offset(-3.0F, 14.0F, -5.0F));
+
+        // Anneau droit : 1x2x5
+        root.addOrReplaceChild("band_right",
+                CubeListBuilder.create()
+                        .texOffs(0, 3)
+                        .addBox(-0.5F, -2.0F, -2.5F, 1.0F, 2.0F, 5.0F),
+                PartPose.offset(3.0F, 14.0F, -5.0F));
+
+        // Pointe avant : 1x2x1
+        root.addOrReplaceChild("spike_front",
+                CubeListBuilder.create()
+                        .texOffs(0, 10)
+                        .addBox(-0.5F, -4.0F, -0.5F, 1.0F, 2.0F, 1.0F),
+                PartPose.offset(0.0F, 14.0F, -7.5F));
+
+        // Pointe arriere : 1x2x1
+        root.addOrReplaceChild("spike_back",
+                CubeListBuilder.create()
+                        .texOffs(0, 10)
+                        .addBox(-0.5F, -4.0F, -0.5F, 1.0F, 2.0F, 1.0F),
+                PartPose.offset(0.0F, 14.0F, -2.5F));
+
+        // Pointe gauche : 1x2x1
+        root.addOrReplaceChild("spike_left",
+                CubeListBuilder.create()
+                        .texOffs(0, 10)
+                        .addBox(-0.5F, -4.0F, -0.5F, 1.0F, 2.0F, 1.0F),
+                PartPose.offset(-3.0F, 14.0F, -5.0F));
+
+        // Pointe droite : 1x2x1
+        root.addOrReplaceChild("spike_right",
+                CubeListBuilder.create()
+                        .texOffs(0, 10)
+                        .addBox(-0.5F, -4.0F, -0.5F, 1.0F, 2.0F, 1.0F),
+                PartPose.offset(3.0F, 14.0F, -5.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }
@@ -79,6 +121,6 @@ public class CoeurPartModelB extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(0, 1, -1);
+        return new Vec3(0, -1, -1);
     }
 }
