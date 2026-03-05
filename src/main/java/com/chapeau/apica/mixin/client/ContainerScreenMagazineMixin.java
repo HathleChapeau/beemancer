@@ -44,11 +44,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ContainerScreenMagazineMixin {
 
     /**
-     * Intercepte le clic droit sur un IMagazineHolder pour equiper/desequiper un magazine.
+     * Intercepte le relachement du clic droit sur un IMagazineHolder pour equiper/desequiper un magazine.
      */
-    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void apica$onMouseClicked(double mouseX, double mouseY, int button,
-                                       CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)
+    private void apica$onMouseReleased(double mouseX, double mouseY, int button,
+                                        CallbackInfoReturnable<Boolean> cir) {
         if (button != 1) return;
 
         AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;

@@ -87,13 +87,13 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float OVL_MAX_Y = 0.5f / 16f;
     private static final float OVL_MAX_Z = 0.5f / 16f;
 
-    // --- 3 Bar boxes (charge indicators on barrel) ---
-    private static final float BAR_MIN_X = 5.5f / 16f;
-    private static final float BAR_MIN_Y = -1.5f / 16f;
-    private static final float BAR_MAX_X = 8.5f / 16f;
-    private static final float BAR_MAX_Y = 1.5f / 16f;
-    private static final float[] BAR_Z_MIN = {-5.5f / 16f, -3.5f / 16f, -1.5f / 16f};
-    private static final float[] BAR_Z_MAX = {-4.5f / 16f, -2.5f / 16f, -0.5f / 16f};
+    // --- 3 Bar boxes (charge indicators on barrel, 2px, rotated 45°) ---
+    private static final float BAR_MIN_X = 6f / 16f;
+    private static final float BAR_MIN_Y = -1f / 16f;
+    private static final float BAR_MAX_X = 8f / 16f;
+    private static final float BAR_MAX_Y = 1f / 16f;
+    private static final float[] BAR_Z_MIN = {-6f / 16f, -4f / 16f, -2f / 16f};
+    private static final float[] BAR_Z_MAX = {-5f / 16f, -3f / 16f, -1f / 16f};
     private static final float[] BAR_U0 = {0f, 1f / 3f, 2f / 3f};
     private static final float[] BAR_U1 = {1f / 3f, 2f / 3f, 1f};
 
@@ -276,6 +276,11 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     private void renderChargeBars(PoseStack poseStack, MultiBufferSource buffer,
                                    int packedLight, int chargeLevel) {
+        poseStack.pushPose();
+        poseStack.translate(7f / 16f, 0, 0);
+        poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(45));
+        poseStack.translate(-7f / 16f, 0, 0);
+
         VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(CHARGING2_TEXTURE));
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
@@ -290,6 +295,8 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
                     BAR_MAX_X, BAR_MAX_Y, BAR_Z_MAX[i],
                     BAR_U0[i], bv0, BAR_U1[i], bv1, packedLight, overlay);
         }
+
+        poseStack.popPose();
     }
 
     private void renderBarBox(VertexConsumer vc, PoseStack.Pose pose,
