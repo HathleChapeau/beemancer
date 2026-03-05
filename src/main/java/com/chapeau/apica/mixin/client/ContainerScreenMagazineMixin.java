@@ -44,8 +44,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ContainerScreenMagazineMixin {
 
     /**
-     * Bloque le clic droit vanilla sur un IMagazineHolder (empeche de prendre/deplacer l'item).
-     * La logique d'equip/unequip est geree dans mouseReleased.
+     * Verifie si une operation magazine est possible (equip ou unequip).
+     * Si non, laisse le comportement vanilla du clic droit.
+     */
+    private static boolean hasMagazineAction(AbstractContainerScreen<?> screen, Slot slot) {
+        ItemStack cursorStack = screen.getMenu().getCarried();
+        boolean hasMagazine = MagazineData.hasMagazine(slot.getItem());
+        boolean cursorIsMag = cursorStack.getItem() instanceof MagazineItem
+                && !MagazineFluidData.isEmpty(cursorStack);
+        return cursorIsMag || (hasMagazine && cursorStack.isEmpty());
+    }
+
+    /**
+     * Bloque le clic droit vanilla sur un IMagazineHolder uniquement si une operation
+     * magazine est possible. Sinon laisse le comportement vanilla.
      */
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     private void apica$onMouseClicked(double mouseX, double mouseY, int button,
@@ -54,13 +66,15 @@ public abstract class ContainerScreenMagazineMixin {
         AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
         Slot hoveredSlot = self.getSlotUnderMouse();
         if (hoveredSlot != null && hoveredSlot.hasItem()
-                && hoveredSlot.getItem().getItem() instanceof IMagazineHolder) {
+                && hoveredSlot.getItem().getItem() instanceof IMagazineHolder
+                && hasMagazineAction(self, hoveredSlot)) {
             cir.setReturnValue(true);
         }
     }
 
     /**
      * Intercepte le relachement du clic droit sur un IMagazineHolder pour equiper/desequiper un magazine.
+     * Ne se declenche que si une operation magazine est possible.
      */
     @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)
     private void apica$onMouseReleased(double mouseX, double mouseY, int button,
@@ -71,8 +85,8 @@ public abstract class ContainerScreenMagazineMixin {
         Slot hoveredSlot = self.getSlotUnderMouse();
 
         if (hoveredSlot != null && hoveredSlot.hasItem()
-                && hoveredSlot.getItem().getItem() instanceof IMagazineHolder) {
-            // Toujours bloquer le clic droit vanilla sur un holder (empeche de prendre l'item)
+                && hoveredSlot.getItem().getItem() instanceof IMagazineHolder
+                && hasMagazineAction(self, hoveredSlot)) {
             cir.setReturnValue(true);
 
             ItemStack cursorStack = self.getMenu().getCarried();
@@ -83,8 +97,6 @@ public abstract class ContainerScreenMagazineMixin {
             if (isMagItem && magNotEmpty) {
                 PacketDistributor.sendToServer(new MagazineEquipPacket(hoveredSlot.index, true));
             } else if (hasMagazine && cursorStack.isEmpty()) {
-                // Client-side prediction: set cursor to expected magazine immediately
-                // to prevent vanilla right-click swap from sneaking in
                 String fluidId = MagazineData.getFluidId(hoveredSlot.getItem());
                 int amount = MagazineData.getFluidAmount(hoveredSlot.getItem());
                 self.getMenu().setCarried(MagazineItem.createFilled(fluidId, amount));

@@ -156,7 +156,6 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
             renderChargingOverlay(poseStack, buffer, packedLight);
             renderChargeBars(poseStack, buffer, packedLight, chargeLevel);
             renderRingEffects(poseStack, buffer, packedLight, chargeLevel);
-            renderHaloSprite(poseStack, buffer);
             renderLightningArcs(poseStack, buffer, stack);
         } else {
             chargeLevel = MiningLaserItem.getChargeLevel(stack);
@@ -335,7 +334,7 @@ public class MiningLaserItemRenderer extends BlockEntityWithoutLevelRenderer {
 
         for (int i = 0; i < Math.min(chargeLevel, 3); i++) {
             float centerZ = (BAR_Z_MIN[i] + BAR_Z_MAX[i]) / 2f;
-            float rotation = time * (1.2f + i * 0.3f);
+            float rotation = time * (1.5f + (i - 1) * 0.15f);
             MiningLaserRingOverlay.renderRing(poseStack, buffer, packedLight,
                     centerX, centerY, centerZ, rotation, RING_TEXTURE);
         }
