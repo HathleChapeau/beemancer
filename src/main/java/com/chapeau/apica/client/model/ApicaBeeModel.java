@@ -120,23 +120,23 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         bone.addOrReplaceChild("eyes",
                 CubeListBuilder.create()
                         .texOffs(0, 42)
-                        .addBox(-3.51F, -3.0F, -5.01F, 2.0F, 3.0F, 1.0F)
+                        .addBox(-3.51F, -5.0F, -5.01F, 2.0F, 3.0F, 1.0F)
                         .texOffs(8, 42)
-                        .addBox(1.51F, -3.0F, -5.01F, 2.0F, 3.0F, 1.0F),
+                        .addBox(1.51F, -5.0F, -5.01F, 2.0F, 3.0F, 1.0F),
                 PartPose.ZERO);
 
         // Pupille gauche: 1x1 en haut-droite de l'oeil gauche (coin interne)
         bone.addOrReplaceChild("left_pupil",
                 CubeListBuilder.create()
                         .texOffs(0, 46)
-                        .addBox(-2.51F, -1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
+                        .addBox(-2.51F, -3.0F, -5.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
         // Pupille droite: 1x1 en haut-gauche de l'oeil droit (coin interne, miroir)
         bone.addOrReplaceChild("right_pupil",
                 CubeListBuilder.create()
                         .texOffs(4, 46)
-                        .addBox(1.51F, -1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
+                        .addBox(1.51F, -3.0F, -5.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
         // Pattes (non tintees)
