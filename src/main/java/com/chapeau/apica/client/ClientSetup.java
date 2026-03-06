@@ -197,6 +197,9 @@ public class ClientSetup {
         // Resonator
         event.register(ApicaMenus.RESONATOR.get(), ResonatorScreen::new);
 
+        // Bee Creator
+        event.register(ApicaMenus.BEE_CREATOR.get(), com.chapeau.apica.client.gui.screen.BeeCreatorScreen::new);
+
         // Trash Cans
         event.register(ApicaMenus.TRASH_CAN.get(), com.chapeau.apica.client.gui.screen.TrashCanScreen::new);
         event.register(ApicaMenus.LIQUID_TRASH_CAN.get(), com.chapeau.apica.client.gui.screen.LiquidTrashCanScreen::new);

@@ -133,6 +133,7 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.ANTIBREEDING_CRYSTAL.get());
         output.accept(ApicaItems.HIVE_MULTIBLOCK.get());
         output.accept(ApicaItems.BEE_NEST.get());
+        output.accept(ApicaItems.BEE_CREATOR.get());
     }
 
     private static void addAlchemyMachines(CreativeModeTab.Output output) {

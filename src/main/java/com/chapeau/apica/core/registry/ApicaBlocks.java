@@ -695,6 +695,13 @@ public class ApicaBlocks {
                     .sound(SoundType.METAL)
                     .noOcclusion()));
 
+    // --- BEE CREATOR ---
+    public static final DeferredBlock<com.chapeau.apica.common.block.beecreator.BeeCreatorBlock> BEE_CREATOR = registerTimed("bee_creator",
+            () -> new com.chapeau.apica.common.block.beecreator.BeeCreatorBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()));
+
     // --- ASSEMBLY TABLE ---
     public static final DeferredBlock<AssemblyTableBlock> ASSEMBLY_TABLE = registerTimed("assembly_table",
             () -> new AssemblyTableBlock(BlockBehaviour.Properties.of()

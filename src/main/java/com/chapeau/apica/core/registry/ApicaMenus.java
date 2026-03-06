@@ -104,6 +104,11 @@ public class ApicaMenus {
             MENUS.register("uncrafting_table",
                     () -> IMenuTypeExtension.create(UncraftingTableMenu::new));
 
+    // --- BEE CREATOR ---
+    public static final Supplier<MenuType<com.chapeau.apica.common.menu.BeeCreatorMenu>> BEE_CREATOR =
+            MENUS.register("bee_creator",
+                    () -> IMenuTypeExtension.create(com.chapeau.apica.common.menu.BeeCreatorMenu::new));
+
     // --- RESONATOR ---
     public static final Supplier<MenuType<ResonatorMenu>> RESONATOR =
             MENUS.register("resonator",

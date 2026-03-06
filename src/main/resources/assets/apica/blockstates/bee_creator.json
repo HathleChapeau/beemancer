@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "apica:block/machines/bee_creator" }
+  }
+}

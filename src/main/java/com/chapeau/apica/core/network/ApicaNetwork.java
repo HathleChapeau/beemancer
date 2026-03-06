@@ -33,6 +33,7 @@ import com.chapeau.apica.core.network.packets.MagazineEquipPacket;
 import com.chapeau.apica.core.network.packets.BackpackOpenPacket;
 import com.chapeau.apica.core.network.packets.AccessoryEquipPacket;
 import com.chapeau.apica.core.network.packets.AccessorySyncPacket;
+import com.chapeau.apica.core.network.packets.BeeCreatorUpdatePacket;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -148,6 +149,13 @@ public class ApicaNetwork {
                 MagazineEquipPacket.TYPE,
                 MagazineEquipPacket.STREAM_CODEC,
                 MagazineEquipPacket::handle
+        );
+
+        // Bee Creator C2S
+        registrar.playToServer(
+                BeeCreatorUpdatePacket.TYPE,
+                BeeCreatorUpdatePacket.STREAM_CODEC,
+                BeeCreatorUpdatePacket::handle
         );
 
         // Backpack C2S

@@ -462,6 +462,10 @@ public class ApicaItems {
             () -> new NectarBreadItem(new Item.Properties().food(new FoodProperties.Builder()
                     .nutrition(15).saturationModifier(0.8f).build()).rarity(Rarity.RARE)));
 
+    // --- BEE CREATOR ---
+    public static final DeferredItem<BlockItem> BEE_CREATOR = ITEMS.register("bee_creator",
+            () -> new BlockItem(ApicaBlocks.BEE_CREATOR.get(), new Item.Properties()));
+
     // --- RESONATOR ---
     public static final DeferredItem<BlockItem> RESONATOR = ITEMS.register("resonator",
             () -> new BlockItem(ApicaBlocks.RESONATOR.get(), new Item.Properties()));

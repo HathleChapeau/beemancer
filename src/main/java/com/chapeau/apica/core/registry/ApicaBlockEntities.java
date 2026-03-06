@@ -406,6 +406,14 @@ public class ApicaBlockEntities {
                             ApicaBlocks.ASSEMBLY_TABLE.get()
                     ).build(null));
 
+    // --- BEE CREATOR ---
+    public static final Supplier<BlockEntityType<com.chapeau.apica.common.block.beecreator.BeeCreatorBlockEntity>> BEE_CREATOR =
+            BLOCK_ENTITIES.register("bee_creator",
+                    () -> BlockEntityType.Builder.of(
+                            com.chapeau.apica.common.block.beecreator.BeeCreatorBlockEntity::new,
+                            ApicaBlocks.BEE_CREATOR.get()
+                    ).build(null));
+
     // --- RESONATOR ---
     public static final Supplier<BlockEntityType<ResonatorBlockEntity>> RESONATOR =
             BLOCK_ENTITIES.register("resonator",
