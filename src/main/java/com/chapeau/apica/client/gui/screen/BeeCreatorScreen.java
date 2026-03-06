@@ -268,7 +268,8 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
         beeModel.showUntintedOnly();
         beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
-                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
+                toArgb(localColors[BeePart.STRIPE.getIndex()]));
 
         RenderType wingRT = RenderType.entityCutout(ApicaBeeModel.WING_TEXTURE);
         beeModel.renderWings(gfx.pose(), bufferSource.getBuffer(wingRT),
