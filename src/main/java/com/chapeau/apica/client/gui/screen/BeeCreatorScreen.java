@@ -224,7 +224,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         animController.tick(renderTime);
 
         int centerX = x + w / 2;
-        int centerY = y + h / 2 + 10;
+        int centerY = y + h / 2 - 20;
         int scale = 38;
 
         gfx.enableScissor(x, y, x + w, y + h);
