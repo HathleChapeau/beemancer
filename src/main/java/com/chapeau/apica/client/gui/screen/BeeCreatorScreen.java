@@ -232,6 +232,20 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
         gfx.enableScissor(x, y, x + w, y + h);
 
+        // Sauvegarder les rotations de l'entite
+        float oldBodyRot = previewBee.yBodyRot;
+        float oldYRot = previewBee.getYRot();
+        float oldXRot = previewBee.getXRot();
+        float oldHeadRotO = previewBee.yHeadRotO;
+        float oldHeadRot = previewBee.yHeadRot;
+
+        // Forcer l'entite a faire face a la camera (180 = face au viewer avec -scale Z)
+        previewBee.yBodyRot = 180.0f;
+        previewBee.setYRot(180.0f);
+        previewBee.setXRot(0.0f);
+        previewBee.yHeadRot = 180.0f;
+        previewBee.yHeadRotO = 180.0f;
+
         // Rendu manuel de l'entite avec le PoseStack anime
         gfx.pose().pushPose();
         gfx.pose().translate(centerX, centerY, 50.0f);
@@ -254,6 +268,13 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         bufferSource.endBatch();
         dispatcher.setRenderShadow(true);
         Lighting.setupFor3DItems();
+
+        // Restaurer les rotations de l'entite
+        previewBee.yBodyRot = oldBodyRot;
+        previewBee.setYRot(oldYRot);
+        previewBee.setXRot(oldXRot);
+        previewBee.yHeadRotO = oldHeadRotO;
+        previewBee.yHeadRot = oldHeadRot;
 
         gfx.pose().popPose();
         gfx.disableScissor();
