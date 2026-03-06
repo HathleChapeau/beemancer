@@ -36,7 +36,7 @@ public class InfuserScreen extends AbstractApicaScreen<InfuserMenu> {
         Apica.MOD_ID, "textures/gui/bg.png");
 
     // Layout centre dans 190px: honey(16) + 12 + slot(18) + 6 + progress(54) + 6 + slot(18) = 130
-    private static final int HONEYBAR_X = 30;
+    private static final int HONEYBAR_X = 8;
     private static final int HONEYBAR_Y = 27;
     private static final int INPUT_SLOT_X = 58;
     private static final int OUTPUT_SLOT_X = 142;

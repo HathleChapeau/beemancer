@@ -48,7 +48,7 @@ public class CrystallizerMenu extends ApicaMenu {
 
         // Output slot (extraction seulement) avec callback pour les quêtes
         // Positions pour reduced_bg (110px panel centre dans 176px container, panel offset=33)
-        addSlot(ApicaSlot.output(blockEntity.getOutputSlot(), 0, 33 + 67, 33)
+        addSlot(ApicaSlot.output(blockEntity.getOutputSlot(), 0, 33 + 63, 39)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "crystallizer", s)));
 
         // Player inventory (centered in 176px container)

@@ -38,11 +38,11 @@ public class CreativeTankScreen extends AbstractApicaScreen<CreativeTankMenu> {
     private static final int PANEL_W = 110;
     private static final int PANEL_OFFSET = (176 - PANEL_W) / 2; // 33
 
-    // Positions relatives au panel (110px)
-    private static final int BUCKET_SLOT_X = 14;
-    private static final int BUCKET_SLOT_Y = 37;
-    private static final int HONEYBAR_X = 60;
+    // Positions relatives au panel (110px) — reservoir a gauche, slot a droite
+    private static final int HONEYBAR_X = 8;
     private static final int HONEYBAR_Y = 22;
+    private static final int BUCKET_SLOT_X = 62;
+    private static final int BUCKET_SLOT_Y = 38;
 
     public CreativeTankScreen(CreativeTankMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 99, 0);

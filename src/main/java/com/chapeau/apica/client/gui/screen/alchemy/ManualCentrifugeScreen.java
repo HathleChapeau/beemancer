@@ -35,11 +35,11 @@ public class ManualCentrifugeScreen extends AbstractApicaScreen<ManualCentrifuge
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Apica.MOD_ID, "textures/gui/bg.png");
 
-    // Layout centre: slot(18) +13+ progress(54) +13+ 2x2(36) +14+ honeybar(16) = 190
-    private static final int INPUT_SLOT_X = 13;
-    private static final int PROGRESS_X = 44;
-    private static final int SLOTS_2X2_X = 111;
-    private static final int HONEYBAR_X = 161;
+    // Meme placement que PoweredCentrifugeScreen
+    private static final int INPUT_SLOT_X = 32;
+    private static final int PROGRESS_X = 59;
+    private static final int SLOTS_2X2_X = 122;
+    private static final int HONEYBAR_X = 166;
     private static final int HONEYBAR_Y = 27;
 
     public ManualCentrifugeScreen(ManualCentrifugeMenu menu, Inventory playerInventory, Component title) {
@@ -83,7 +83,7 @@ public class ManualCentrifugeScreen extends AbstractApicaScreen<ManualCentrifuge
 
         // Progress bar tooltip
         float ratio = menu.getProgressRatio();
-        if (ratio > 0 && mouseX >= x + 72 && mouseX < x + 108 && mouseY >= y + 45 && mouseY < y + 62) {
+        if (ratio > 0 && mouseX >= x + PROGRESS_X && mouseX < x + PROGRESS_X + 54 && mouseY >= y + 48 && mouseY < y + 58) {
             g.renderTooltip(font, Component.literal(String.format("%.0f%%", ratio * 100)), mouseX, mouseY);
         }
     }

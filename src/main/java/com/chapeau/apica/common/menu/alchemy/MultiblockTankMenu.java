@@ -54,7 +54,7 @@ public class MultiblockTankMenu extends ApicaMenu {
         addDataSlots(data);
 
         // Bucket slot (reduced_bg layout: 110px panel centre dans 176px, panel offset=33)
-        addSlot(new SlotItemHandler(blockEntity.getBucketSlot(), 0, 33 + 15, 38));
+        addSlot(new SlotItemHandler(blockEntity.getBucketSlot(), 0, 33 + 63, 39));
 
         // Player inventory (centered in 176px container)
         addPlayerInventory(playerInv, 7, 107);

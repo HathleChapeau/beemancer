@@ -39,11 +39,11 @@ public class MultiblockTankScreen extends AbstractApicaScreen<MultiblockTankMenu
     private static final int PANEL_W = 110;
     private static final int PANEL_OFFSET = (176 - PANEL_W) / 2; // 33
 
-    // Positions relatives au panel (110px)
-    private static final int BUCKET_SLOT_X = 14;
-    private static final int BUCKET_SLOT_Y = 37;
-    private static final int HONEYBAR_X = 50;
+    // Positions relatives au panel (110px) — reservoir a gauche, slot a droite
+    private static final int HONEYBAR_X = 8;
     private static final int HONEYBAR_Y = 22;
+    private static final int BUCKET_SLOT_X = 62;
+    private static final int BUCKET_SLOT_Y = 38;
 
     public MultiblockTankScreen(MultiblockTankMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 99, 0);
@@ -66,10 +66,13 @@ public class MultiblockTankScreen extends AbstractApicaScreen<MultiblockTankMenu
         float ratio = capacity > 0 ? (float) menu.getFluidAmount() / capacity : 0;
         GuiRenderHelper.renderLeftHoneyBar(g, px + HONEYBAR_X, y + HONEYBAR_Y, ratio);
 
-        // Block count and capacity text
+        // Block count and capacity text (sous le slot)
         int blockCount = menu.getBlockCount();
-        g.drawString(font, blockCount + " blocks", px + 72, y + 30, 0xDDDDDD, false);
-        g.drawString(font, (capacity / 1000) + "B", px + 72, y + 42, 0xDDDDDD, false);
+        String blocksText = blockCount + " blocks";
+        String capText = (capacity / 1000) + "B";
+        int slotCenterX = BUCKET_SLOT_X + 9;
+        g.drawString(font, blocksText, px + slotCenterX - font.width(blocksText) / 2, y + 60, 0xDDDDDD, false);
+        g.drawString(font, capText, px + slotCenterX - font.width(capText) / 2, y + 72, 0xDDDDDD, false);
     }
 
     @Override
