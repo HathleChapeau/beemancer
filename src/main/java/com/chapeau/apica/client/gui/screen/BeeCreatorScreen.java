@@ -11,8 +11,6 @@
  * | BeeCreatorMenu           | Menu associe         | ContainerData sync             |
  * | BeePart                  | Enum parties         | Liste des parties              |
  * | BeeCreatorUpdatePacket   | Packet C2S           | Envoi couleur au serveur       |
- * | AnimationController      | Rotation fluide      | Gestion animation turntable    |
- * | RotateAnimation          | Rotation LOOP        | Rotation Y continue            |
  * | ApicaBeeModel            | Modele customisable  | Preview 3D tintee              |
  * ------------------------------------------------------------
  *
@@ -23,17 +21,12 @@
  */
 package com.chapeau.apica.client.gui.screen;
 
-import com.chapeau.apica.client.animation.AnimationController;
-import com.chapeau.apica.client.animation.AnimationTimer;
-import com.chapeau.apica.client.animation.RotateAnimation;
-import com.chapeau.apica.client.animation.TimingEffect;
-import com.chapeau.apica.client.animation.TimingType;
 import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.common.block.beecreator.BeePart;
 import com.chapeau.apica.common.menu.BeeCreatorMenu;
 import com.chapeau.apica.core.network.packets.BeeCreatorUpdatePacket;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -67,13 +60,17 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     private static final int COL_TITLE = 0xFFE8A317;
     private static final int COL_FIELD_BORDER = 0xFF444466;
 
-    /** Duree d'un tour complet en ticks (240 = 12 secondes). */
-    private static final float SPIN_DURATION = 240f;
+    /** Longueur des axes du gizmo en pixels ecran. */
+    private static final int GIZMO_LENGTH = 20;
 
     private final EditBox[] hexFields = new EditBox[BeePart.COUNT];
     private final int[] localColors = new int[BeePart.COUNT];
     private ApicaBeeModel<?> beeModel;
-    private final AnimationController animController = new AnimationController();
+
+    /** Rotation Y accumulee par drag souris (en degres). */
+    private float dragRotationY = 25f;
+    private boolean isDraggingPreview;
+    private double lastDragX;
 
     public BeeCreatorScreen(BeeCreatorMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -96,17 +93,6 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
                 entityModels.bakeLayer(ApicaBeeModel.LAYER_LOCATION),
                 entityModels.bakeLayer(ApicaBeeModel.WING_LAYER),
                 entityModels.bakeLayer(ApicaBeeModel.STINGER_LAYER));
-
-        // Animation turntable: rotation Y continue en boucle
-        animController.createAnimation("spin", RotateAnimation.builder()
-                .axis(Axis.YP)
-                .startAngle(0f)
-                .endAngle(360f)
-                .timingType(TimingType.NORMAL)
-                .timingEffect(TimingEffect.LOOP)
-                .duration(SPIN_DURATION)
-                .build());
-        animController.playAnimation("spin");
 
         int gx = this.leftPos;
         int gy = this.topPos;
@@ -222,10 +208,6 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     private void renderBeePreview(GuiGraphics gfx, int x, int y, int w, int h, float partialTick) {
         if (beeModel == null) return;
 
-        // Tick l'animation avec le temps fluide
-        float renderTime = AnimationTimer.getRenderTime(partialTick);
-        animController.tick(renderTime);
-
         int centerX = x + w / 2;
         int centerY = y + h / 2 - 20;
         int scale = 38;
@@ -235,10 +217,10 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         gfx.pose().translate(centerX, centerY, 50.0f);
         float s = -scale;
         gfx.pose().scale(s, s, s);
-        // Flip + inclinaison pour voir le dessus (pattern BeeNodeWidget)
+        // Flip + inclinaison pour voir le dessus
         gfx.pose().mulPose(Axis.XP.rotationDegrees(160f));
-        // Rotation Y via le systeme d'animation Apica
-        animController.applyAnimation("spin", gfx.pose());
+        // Rotation Y par drag souris
+        gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
 
         Lighting.setupForEntityInInventory();
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
@@ -246,31 +228,26 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         // --- Passes body texture (apica_bee.png, 64x64) ---
         RenderType bodyRT = RenderType.entityCutout(ApicaBeeModel.TEXTURE);
 
-        // Pass 1: Couleur corps
         beeModel.showCorpusOnly();
         beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.BODY.getIndex()]));
 
-        // Pass 2: Couleur rayure
         beeModel.showStripeOnly();
         beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STRIPE.getIndex()]));
 
-        // Pass 3: Couleur yeux
         beeModel.showEyesOnly();
         beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.EYE.getIndex()]));
 
-        // Pass 4: Couleur pupilles
         beeModel.showPupilsOnly();
         beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.PUPIL.getIndex()]));
 
-        // Pass 5: Parties non tintees (pattes)
         beeModel.showUntintedOnly();
         beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
@@ -291,7 +268,56 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         Lighting.setupFor3DItems();
 
         gfx.pose().popPose();
+
+        // Gizmo XYZ dans le coin bas-gauche de la preview
+        renderGizmo(gfx, x + 16, y + h - 16);
+
         gfx.disableScissor();
+    }
+
+    /** Rend un gizmo XYZ colore dans le coin de la preview, oriente selon la rotation actuelle. */
+    private void renderGizmo(GuiGraphics gfx, int cx, int cy) {
+        // Appliquer les memes rotations que la preview pour orienter le gizmo
+        PoseStack.Pose pose = gfx.pose().last();
+        gfx.pose().pushPose();
+        gfx.pose().setIdentity();
+        gfx.pose().mulPose(Axis.XP.rotationDegrees(160f));
+        gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
+        org.joml.Matrix4f mat = gfx.pose().last().pose();
+
+        // Projeter les axes unitaires via la matrice de rotation
+        float xEndX = mat.m00() * GIZMO_LENGTH;
+        float xEndY = mat.m10() * GIZMO_LENGTH;
+        float yEndX = mat.m01() * GIZMO_LENGTH;
+        float yEndY = mat.m11() * GIZMO_LENGTH;
+        float zEndX = mat.m02() * GIZMO_LENGTH;
+        float zEndY = mat.m12() * GIZMO_LENGTH;
+
+        gfx.pose().popPose();
+
+        // Dessiner les lignes d'axes (X=rouge, Y=vert, Z=bleu)
+        drawGizmoLine(gfx, cx, cy, cx + (int) xEndX, cy - (int) xEndY, 0xFFFF4444, "X");
+        drawGizmoLine(gfx, cx, cy, cx + (int) yEndX, cy - (int) yEndY, 0xFF44FF44, "Y");
+        drawGizmoLine(gfx, cx, cy, cx + (int) zEndX, cy - (int) zEndY, 0xFF4488FF, "Z");
+    }
+
+    /** Dessine une ligne de gizmo avec un label a l'extremite. */
+    private void drawGizmoLine(GuiGraphics gfx, int x0, int y0, int x1, int y1, int color, String label) {
+        // Bresenham simplifie: dessiner des pixels 1x1
+        int dx = Math.abs(x1 - x0);
+        int dy = Math.abs(y1 - y0);
+        int sx = x0 < x1 ? 1 : -1;
+        int sy = y0 < y1 ? 1 : -1;
+        int err = dx - dy;
+        int cx = x0, cy = y0;
+        while (true) {
+            gfx.fill(cx, cy, cx + 1, cy + 1, color);
+            if (cx == x1 && cy == y1) break;
+            int e2 = 2 * err;
+            if (e2 > -dy) { err -= dy; cx += sx; }
+            if (e2 < dx) { err += dx; cy += sy; }
+        }
+        gfx.drawString(font, label, x1 + 2, y1 - 4, color, false);
     }
 
     @Override
@@ -303,6 +329,42 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
         super.render(gfx, mouseX, mouseY, partialTick);
         renderTooltip(gfx, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0 && isInsidePreview(mouseX, mouseY)) {
+            isDraggingPreview = true;
+            lastDragX = mouseX;
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (button == 0 && isDraggingPreview) {
+            dragRotationY += (float) (mouseX - lastDragX);
+            lastDragX = mouseX;
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0 && isDraggingPreview) {
+            isDraggingPreview = false;
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    private boolean isInsidePreview(double mouseX, double mouseY) {
+        int previewX = this.leftPos + LEFT_PANEL_W + 10;
+        int previewY = this.topPos + 24;
+        return mouseX >= previewX && mouseX < previewX + PREVIEW_SIZE
+                && mouseY >= previewY && mouseY < previewY + PREVIEW_SIZE;
     }
 
     @Override
