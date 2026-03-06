@@ -20,6 +20,7 @@
 package com.chapeau.apica.client.gui.widget;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.client.gui.GuiRenderHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -208,19 +209,12 @@ public class FluidGaugeWidget {
     }
 
     /**
-     * Obtient le tooltip pour la jauge
+     * Obtient le tooltip unifie pour la jauge.
+     * Utilise le fluidSupplier pour resoudre le nom automatiquement.
      */
-    public List<Component> getTooltip(String fluidName) {
-        int amount = amountSupplier.get();
-        int cap = capacitySupplier.get();
-        String line1 = fluidName.isEmpty()
-                ? amount + " / " + cap + " mB"
-                : fluidName + ": " + amount + " / " + cap + " mB";
-        return List.of(
-            Component.literal(line1),
-            Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
-                .withStyle(style -> style.withColor(0xAAAAAA))
-        );
+    public List<Component> getTooltip() {
+        FluidStack fluid = fluidSupplier != null ? fluidSupplier.get() : FluidStack.EMPTY;
+        return GuiRenderHelper.buildFluidTooltip(fluid, amountSupplier.get(), capacitySupplier.get());
     }
 
     // Getters

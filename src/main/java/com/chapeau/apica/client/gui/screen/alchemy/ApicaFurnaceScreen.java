@@ -89,26 +89,13 @@ public class ApicaFurnaceScreen extends AbstractApicaScreen<ApicaFurnaceMenu> {
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         if (GuiRenderHelper.isHoneyBarHovered(FUEL_BAR_X, FUEL_BAR_Y, x, y, mouseX, mouseY)) {
-            String name = getAcceptedFluidName();
-            int amount = menu.getFuelAmount();
-            int cap = menu.getFuelCapacity();
-            String line1 = name + ": " + amount + " / " + cap + " mB";
-            g.renderComponentTooltip(font, List.of(
-                Component.literal(line1),
-                Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
-                    .withStyle(s -> s.withColor(0xAAAAAA))
+            FluidStack fluid = menu.getFuelTank().getFluid();
+            if (fluid.isEmpty() && menu.getBlockEntity() instanceof ApicaFurnaceBlockEntity furnace) {
+                fluid = new FluidStack(furnace.getAcceptedFluid(), 1);
+            }
+            g.renderComponentTooltip(font, GuiRenderHelper.buildFluidTooltip(
+                fluid, menu.getFuelAmount(), menu.getFuelCapacity()
             ), mouseX, mouseY);
         }
-    }
-
-    private String getAcceptedFluidName() {
-        FluidStack tankFluid = menu.getFuelTank().getFluid();
-        if (!tankFluid.isEmpty()) {
-            return GuiRenderHelper.getFluidName(tankFluid);
-        }
-        if (menu.getBlockEntity() instanceof ApicaFurnaceBlockEntity furnace) {
-            return GuiRenderHelper.getFluidName(new FluidStack(furnace.getAcceptedFluid(), 1));
-        }
-        return "Empty";
     }
 }

@@ -63,21 +63,9 @@ public class ManualCentrifugeScreen extends AbstractApicaScreen<ManualCentrifuge
 
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        // Honey bar tooltip
         if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, x, y, mouseX, mouseY)) {
-            String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getFluidTank().getFluid());
-            if (name.isEmpty() && menu.getFluidAmount() > 0) {
-                name = "Honey";
-            }
-            int amount = menu.getFluidAmount();
-            int cap = 4000;
-            String line1 = name.isEmpty()
-                    ? amount + " / " + cap + " mB"
-                    : name + ": " + amount + " / " + cap + " mB";
-            g.renderComponentTooltip(font, List.of(
-                Component.literal(line1),
-                Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
-                    .withStyle(s -> s.withColor(0xAAAAAA))
+            g.renderComponentTooltip(font, GuiRenderHelper.buildFluidTooltip(
+                menu.getBlockEntity().getFluidTank().getFluid(), menu.getFluidAmount(), 4000
             ), mouseX, mouseY);
         }
 

@@ -80,6 +80,14 @@ public class HiveMultiblockBlock extends BaseEntityBlock {
     }
 
     @Override
+    protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE && !state.getValue(CONTROLLER)) {
+            return 0;
+        }
+        return super.getLightBlock(state, level, pos);
+    }
+
+    @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE && state.getValue(CONTROLLER)) {
             return SHAPE_CONTROLLER;

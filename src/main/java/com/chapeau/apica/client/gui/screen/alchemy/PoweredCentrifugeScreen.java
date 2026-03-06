@@ -69,39 +69,14 @@ public class PoweredCentrifugeScreen extends AbstractApicaScreen<PoweredCentrifu
 
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
-        // Fuel gauge tooltip (gauche)
         if (GuiRenderHelper.isHoneyBarHovered(FUEL_BAR_X, FUEL_BAR_Y, x, y, mouseX, mouseY)) {
-            String name = GuiRenderHelper.getFluidName(menu.getFuelTank().getFluid());
-            if (name.isEmpty() && menu.getFuelAmount() > 0) {
-                name = "Honey";
-            }
-            int amount = menu.getFuelAmount();
-            int cap = menu.getFuelCapacity();
-            String line1 = name.isEmpty()
-                    ? amount + " / " + cap + " mB"
-                    : name + ": " + amount + " / " + cap + " mB";
-            g.renderComponentTooltip(font, List.of(
-                Component.literal(line1),
-                Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
-                    .withStyle(s -> s.withColor(0xAAAAAA))
+            g.renderComponentTooltip(font, GuiRenderHelper.buildFluidTooltip(
+                menu.getFuelTank().getFluid(), menu.getFuelAmount(), menu.getFuelCapacity()
             ), mouseX, mouseY);
         }
-
-        // Output gauge tooltip (droite)
         if (GuiRenderHelper.isHoneyBarHovered(OUTPUT_BAR_X, OUTPUT_BAR_Y, x, y, mouseX, mouseY)) {
-            String name = GuiRenderHelper.getFluidName(menu.getOutputTank().getFluid());
-            if (name.isEmpty() && menu.getOutputAmount() > 0) {
-                name = "Honey";
-            }
-            int amount = menu.getOutputAmount();
-            int cap = menu.getOutputCapacity();
-            String line1 = name.isEmpty()
-                    ? amount + " / " + cap + " mB"
-                    : name + ": " + amount + " / " + cap + " mB";
-            g.renderComponentTooltip(font, List.of(
-                Component.literal(line1),
-                Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
-                    .withStyle(s -> s.withColor(0xAAAAAA))
+            g.renderComponentTooltip(font, GuiRenderHelper.buildFluidTooltip(
+                menu.getOutputTank().getFluid(), menu.getOutputAmount(), menu.getOutputCapacity()
             ), mouseX, mouseY);
         }
     }

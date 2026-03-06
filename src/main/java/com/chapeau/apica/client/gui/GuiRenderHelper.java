@@ -501,4 +501,20 @@ public class GuiRenderHelper {
         if (path.contains("nectar")) return "Nectar";
         return "Fluid";
     }
+
+    /**
+     * Tooltip unifie pour les reservoirs de fluide.
+     * Format: "FluidName: amount / capacity mB" + pourcentage.
+     * Affiche "Empty" si pas de fluide.
+     */
+    public static java.util.List<Component> buildFluidTooltip(FluidStack fluid, int amount, int capacity) {
+        String name = (fluid == null || fluid.isEmpty()) ? "Empty" : getFluidName(fluid);
+        if (name.isEmpty()) name = "Empty";
+        String line1 = name + ": " + amount + " / " + capacity + " mB";
+        return java.util.List.of(
+            Component.literal(line1),
+            Component.literal(String.format("%.1f%%", capacity > 0 ? (float) amount / capacity * 100 : 0))
+                .withStyle(s -> s.withColor(0xAAAAAA))
+        );
+    }
 }

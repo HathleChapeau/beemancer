@@ -71,12 +71,8 @@ public class InfuserScreen extends AbstractApicaScreen<InfuserMenu> {
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, x, y, mouseX, mouseY)) {
-            String name = GuiRenderHelper.getFluidName(menu.getHoneyTank().getFluid());
-            int amount = menu.getHoneyAmount();
-            g.renderComponentTooltip(font, List.of(
-                Component.literal(name + ": " + amount + " / 4000 mB"),
-                Component.literal(String.format("%.1f%%", amount / 4000f * 100))
-                    .withStyle(s -> s.withColor(0xAAAAAA))
+            g.renderComponentTooltip(font, GuiRenderHelper.buildFluidTooltip(
+                menu.getHoneyTank().getFluid(), menu.getHoneyAmount(), 4000
             ), mouseX, mouseY);
         }
     }

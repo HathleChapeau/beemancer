@@ -142,14 +142,8 @@ public class UncraftingTableScreen extends AbstractContainerScreen<UncraftingTab
         int x = leftPos;
         int y = topPos;
         if (GuiRenderHelper.isHoneyBarHovered(NECTAR_BAR_X, NECTAR_BAR_Y, x, y, mouseX, mouseY)) {
-            int amount = menu.getFluidAmount();
-            int cap = menu.getFluidCapacity();
-            FluidStack tankFluid = menu.getNectarTank().getFluid();
-            String name = tankFluid.isEmpty() ? "Nectar" : GuiRenderHelper.getFluidName(tankFluid);
-            g.renderComponentTooltip(font, List.of(
-                    Component.literal(name + ": " + amount + " / " + cap + " mB"),
-                    Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
-                            .withStyle(s -> s.withColor(0xAAAAAA))
+            g.renderComponentTooltip(font, GuiRenderHelper.buildFluidTooltip(
+                menu.getNectarTank().getFluid(), menu.getFluidAmount(), menu.getFluidCapacity()
             ), mouseX, mouseY);
         }
     }

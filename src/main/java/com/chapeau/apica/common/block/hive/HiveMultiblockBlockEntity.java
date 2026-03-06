@@ -197,23 +197,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
     @Override
     public void onMultiblockBroken() {
-        if (isController && formed) {
-            dropContents();
-            onBroken();
-            return;
-        }
-        formed = false;
-        isController = false;
-        controllerPos = null;
-        if (level != null) {
-            BlockState blockState = level.getBlockState(worldPosition);
-            if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
-                level.setBlock(worldPosition, blockState
-                        .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE)
-                        .setValue(HiveMultiblockBlock.CONTROLLER, false), 3);
-            }
-        }
-        setChanged();
+        onBroken();
     }
 
     @Nullable
@@ -315,6 +299,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         if (isController && formed) {
             dropContents();
 
+            // Reset all member blocks
             MultiblockPattern pattern = getPattern();
             for (Vec3i offset : pattern.getStructurePositions()) {
                 BlockPos structurePos = worldPosition.offset(offset);
@@ -333,6 +318,14 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                         hive.setChanged();
                     }
                 }
+            }
+
+            // Reset the controller block itself
+            BlockState controllerState = level.getBlockState(worldPosition);
+            if (controllerState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
+                level.setBlock(worldPosition, controllerState
+                        .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE)
+                        .setValue(HiveMultiblockBlock.CONTROLLER, false), 3);
             }
 
             MultiblockEvents.unregisterController(worldPosition);

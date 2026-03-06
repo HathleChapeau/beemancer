@@ -10,12 +10,18 @@ import com.chapeau.apica.common.blockentity.alchemy.HoneyTankBlockEntity;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -26,7 +32,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -83,6 +91,26 @@ public class HoneyTankBlock extends BaseEntityBlock {
             }
         }
         return drops;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+        if (customData != null && context.registries() != null) {
+            CompoundTag tag = customData.copyTag();
+            if (tag.contains("Fluid")) {
+                FluidTank tempTank = new FluidTank(HoneyTankBlockEntity.CAPACITY);
+                tempTank.readFromNBT(context.registries(), tag.getCompound("Fluid"));
+                FluidStack fluid = tempTank.getFluid();
+                if (!fluid.isEmpty()) {
+                    String name = fluid.getHoverName().getString();
+                    tooltip.add(Component.literal(name + ": " + tempTank.getFluidAmount()
+                        + " / " + tempTank.getCapacity() + " mB")
+                        .withStyle(style -> style.withColor(0xAAAAAA)));
+                }
+            }
+        }
     }
 
     @Override

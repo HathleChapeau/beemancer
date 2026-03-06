@@ -30,6 +30,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.fluids.FluidStack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MultiblockTankScreen extends AbstractApicaScreen<MultiblockTankMenu> {
@@ -79,19 +80,15 @@ public class MultiblockTankScreen extends AbstractApicaScreen<MultiblockTankMenu
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         int px = x + PANEL_OFFSET;
         if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, px, y, mouseX, mouseY)) {
-            int amount = menu.getFluidAmount();
-            int capacity = menu.getCapacity();
-            float pct = capacity > 0 ? (float) amount / capacity * 100 : 0;
-            String fluidName = "Fluid";
+            FluidStack fluid = FluidStack.EMPTY;
             if (menu.getBlockEntity() != null && menu.getBlockEntity().getFluidTank() != null) {
-                FluidStack stack = menu.getBlockEntity().getFluidTank().getFluid();
-                if (!stack.isEmpty()) fluidName = stack.getHoverName().getString();
+                fluid = menu.getBlockEntity().getFluidTank().getFluid();
             }
-            g.renderComponentTooltip(font, List.of(
-                Component.literal(fluidName + ": " + amount + " / " + capacity + " mB"),
-                Component.literal(String.format("%.1f%%", pct)).withStyle(s -> s.withColor(0xAAAAAA)),
-                Component.literal(menu.getBlockCount() + " tank blocks").withStyle(s -> s.withColor(0x808080))
-            ), mouseX, mouseY);
+            List<Component> tooltip = new ArrayList<>(
+                GuiRenderHelper.buildFluidTooltip(fluid, menu.getFluidAmount(), menu.getCapacity()));
+            tooltip.add(Component.literal(menu.getBlockCount() + " tank blocks")
+                .withStyle(s -> s.withColor(0x808080)));
+            g.renderComponentTooltip(font, tooltip, mouseX, mouseY);
         }
     }
 }

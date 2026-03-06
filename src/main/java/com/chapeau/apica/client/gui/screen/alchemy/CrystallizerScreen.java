@@ -78,12 +78,8 @@ public class CrystallizerScreen extends AbstractApicaScreen<CrystallizerMenu> {
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         int px = x + PANEL_OFFSET;
         if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, px, y, mouseX, mouseY)) {
-            String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getInputTank().getFluid());
-            int amount = menu.getFluidAmount();
-            g.renderComponentTooltip(font, List.of(
-                Component.literal(name + ": " + amount + " / 4000 mB"),
-                Component.literal(String.format("%.1f%%", amount / 4000f * 100))
-                    .withStyle(s -> s.withColor(0xAAAAAA))
+            g.renderComponentTooltip(font, GuiRenderHelper.buildFluidTooltip(
+                menu.getBlockEntity().getInputTank().getFluid(), menu.getFluidAmount(), 4000
             ), mouseX, mouseY);
         }
     }

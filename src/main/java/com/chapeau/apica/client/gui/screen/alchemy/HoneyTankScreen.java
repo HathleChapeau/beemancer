@@ -70,19 +70,9 @@ public class HoneyTankScreen extends AbstractApicaScreen<HoneyTankMenu> {
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         int px = x + PANEL_OFFSET;
         if (GuiRenderHelper.isHoneyBarHovered(HONEYBAR_X, HONEYBAR_Y, px, y, mouseX, mouseY)) {
-            String name = GuiRenderHelper.getFluidName(menu.getBlockEntity().getFluid());
-            if (name.isEmpty() && menu.getFluidAmount() > 0) {
-                name = "Honey";
-            }
-            int amount = menu.getFluidAmount();
-            int cap = 16000;
-            String line1 = name.isEmpty()
-                    ? amount + " / " + cap + " mB"
-                    : name + ": " + amount + " / " + cap + " mB";
-            g.renderComponentTooltip(font, List.of(
-                Component.literal(line1),
-                Component.literal(String.format("%.1f%%", cap > 0 ? (float) amount / cap * 100 : 0))
-                    .withStyle(s -> s.withColor(0xAAAAAA))
+            g.renderComponentTooltip(font, GuiRenderHelper.buildFluidTooltip(
+                menu.getBlockEntity().getFluid(), menu.getFluidAmount(),
+                menu.getBlockEntity().getCapacity()
             ), mouseX, mouseY);
         }
     }

@@ -78,13 +78,13 @@ public class AlembicScreen extends AbstractApicaScreen<AlembicMenu> {
     @Override
     protected void renderMachineTooltips(GuiGraphics g, int x, int y, int mouseX, int mouseY) {
         if (honeyGauge.isMouseOver(x, y, mouseX, mouseY)) {
-            g.renderComponentTooltip(font, honeyGauge.getTooltip("Honey"), mouseX, mouseY);
+            g.renderComponentTooltip(font, honeyGauge.getTooltip(), mouseX, mouseY);
         }
         if (royalJellyGauge.isMouseOver(x, y, mouseX, mouseY)) {
-            g.renderComponentTooltip(font, royalJellyGauge.getTooltip("Royal Jelly"), mouseX, mouseY);
+            g.renderComponentTooltip(font, royalJellyGauge.getTooltip(), mouseX, mouseY);
         }
         if (nectarGauge.isMouseOver(x, y, mouseX, mouseY)) {
-            g.renderComponentTooltip(font, nectarGauge.getTooltip("Nectar"), mouseX, mouseY);
+            g.renderComponentTooltip(font, nectarGauge.getTooltip(), mouseX, mouseY);
         }
     }
 }

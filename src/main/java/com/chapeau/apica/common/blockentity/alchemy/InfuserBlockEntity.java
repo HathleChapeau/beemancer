@@ -161,28 +161,29 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         // Magazine filling: empty magazine + tank with fluid → fill magazine
         if (be.tryMagazineFill()) {
             isWorking = true;
-        }
+        } else {
+            // Normal recipe processing (only if not filling a magazine)
+            Optional<RecipeHolder<InfusingRecipe>> recipe = be.findRecipe(level);
+            if (recipe.isPresent()) {
+                be.currentRecipe = recipe.get();
+                be.currentProcessTime = Math.max(1, (int)(recipe.get().value().processingTime() * be.processTimeMultiplier));
 
-        Optional<RecipeHolder<InfusingRecipe>> recipe = !isWorking ? be.findRecipe(level) : Optional.empty();
-        if (recipe.isPresent()) {
-            be.currentRecipe = recipe.get();
-            be.currentProcessTime = Math.max(1, (int)(recipe.get().value().processingTime() * be.processTimeMultiplier));
+                if (be.canProcess(recipe.get().value())) {
+                    be.progress++;
+                    isWorking = true;
 
-            if (be.canProcess(recipe.get().value())) {
-                be.progress++;
-                isWorking = true;
-
-                if (be.progress >= be.currentProcessTime) {
-                    be.processItem(recipe.get().value());
+                    if (be.progress >= be.currentProcessTime) {
+                        be.processItem(recipe.get().value());
+                        be.progress = 0;
+                        be.currentRecipe = null;
+                    }
+                } else {
                     be.progress = 0;
-                    be.currentRecipe = null;
                 }
             } else {
                 be.progress = 0;
+                be.currentRecipe = null;
             }
-        } else {
-            be.progress = 0;
-            be.currentRecipe = null;
         }
 
         if (wasWorking != isWorking) {
