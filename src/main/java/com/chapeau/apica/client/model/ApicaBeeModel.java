@@ -64,8 +64,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     private final ModelPart root;
     public final ModelPart bodyCorpus;
     public final ModelPart bodyStripe;
-    public final ModelPart leftEye;
-    public final ModelPart rightEye;
+    public final ModelPart eyes;
     public final ModelPart leftPupil;
     public final ModelPart rightPupil;
     public final ModelPart frontLegs;
@@ -83,8 +82,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         ModelPart bone = bodyRoot.getChild("bone");
         this.bodyCorpus = bone.getChild("body_corpus");
         this.bodyStripe = bone.getChild("body_stripe");
-        this.leftEye = bone.getChild("left_eye");
-        this.rightEye = bone.getChild("right_eye");
+        this.eyes = bone.getChild("eyes");
         this.leftPupil = bone.getChild("left_pupil");
         this.rightPupil = bone.getChild("right_pupil");
         this.frontLegs = bone.getChild("front_legs");
@@ -117,32 +115,27 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
                         .addBox(-3.5F, -4.0F, -5.0F, 7.0F, 7.0F, 10.0F),
                 PartPose.ZERO);
 
-        // Oeil gauche (cote -x): panneau plat 3x3 sur la face avant
-        bone.addOrReplaceChild("left_eye",
+        // Yeux: cube overlay identique au corps (7x7x10) a z=-5.001 pour eviter z-fighting.
+        // Seuls les pixels des yeux sur la face avant sont opaques, le reste est transparent
+        // (entityCutout discarde). Evite le probleme de panneau plat qui se decolle a la rotation.
+        bone.addOrReplaceChild("eyes",
                 CubeListBuilder.create()
                         .texOffs(0, 42)
-                        .addBox(-3.5F, -2.0F, -5.01F, 3.0F, 3.0F, 0.0F),
+                        .addBox(-3.5F, -4.0F, -5.001F, 7.0F, 7.0F, 10.0F),
                 PartPose.ZERO);
 
-        // Oeil droit (cote +x): panneau plat 3x3 sur la face avant
-        bone.addOrReplaceChild("right_eye",
-                CubeListBuilder.create()
-                        .texOffs(8, 42)
-                        .addBox(0.5F, -2.0F, -5.01F, 3.0F, 3.0F, 0.0F),
-                PartPose.ZERO);
-
-        // Pupille gauche: 1x1 au coin interne-haut de l'oeil gauche
+        // Pupille gauche: 1x1 au coin haut-droit de l'oeil gauche (face col 2, row 3)
         bone.addOrReplaceChild("left_pupil",
                 CubeListBuilder.create()
-                        .texOffs(0, 46)
-                        .addBox(-1.5F, 1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
+                        .texOffs(0, 59)
+                        .addBox(-1.5F, -1.0F, -5.002F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
-        // Pupille droite: 1x1 au coin interne-haut de l'oeil droit
+        // Pupille droite: 1x1 au coin haut-gauche de l'oeil droit (face col 4, row 3)
         bone.addOrReplaceChild("right_pupil",
                 CubeListBuilder.create()
-                        .texOffs(4, 46)
-                        .addBox(0.5F, 1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
+                        .texOffs(4, 59)
+                        .addBox(0.5F, -1.0F, -5.002F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
         // Pattes (non tintees)
@@ -253,8 +246,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     /** Affiche uniquement les yeux (pour tint pass yeux). */
     public void showEyesOnly() {
         setBodyPartsVisible(false);
-        leftEye.visible = true;
-        rightEye.visible = true;
+        eyes.visible = true;
     }
 
     /** Affiche uniquement les pupilles (pour tint pass pupilles). */
@@ -280,8 +272,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     private void setBodyPartsVisible(boolean visible) {
         bodyCorpus.visible = visible;
         bodyStripe.visible = visible;
-        leftEye.visible = visible;
-        rightEye.visible = visible;
+        eyes.visible = visible;
         leftPupil.visible = visible;
         rightPupil.visible = visible;
         frontLegs.visible = visible;
