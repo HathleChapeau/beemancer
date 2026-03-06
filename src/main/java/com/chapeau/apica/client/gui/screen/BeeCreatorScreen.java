@@ -303,10 +303,10 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         gfx.enableScissor(x, y, x + w, y + h);
         gfx.pose().pushPose();
         gfx.pose().translate(centerX, centerY, 50.0f);
-        // Scale negatif: convention vanilla entity rendering (BeeNodeWidget pattern)
-        gfx.pose().scale(-scale, -scale, -scale);
+        gfx.pose().scale(scale, scale, scale);
         gfx.pose().mulPose(Axis.XP.rotationDegrees(dragRotationX));
         gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
+        gfx.pose().translate(0.0f, -1.15625f, 0.0f);
 
         Lighting.setupForEntityInInventory();
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();

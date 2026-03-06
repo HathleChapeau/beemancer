@@ -26,6 +26,7 @@ import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
@@ -162,10 +163,10 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     }
 
     /**
-     * Ailes (32x32). Plan horizontal 8x16 pour couvrir plus de texture.
-     * Les pixels transparents ne rendent pas (entityCutout), donc seule la
-     * zone peinte dans la texture est visible. Peindre plus de pixels dans
-     * le top face (cols 16-23, rows 0-15) agrandit visuellement l'aile.
+     * Ailes (32x32). Geometrie identique au vanilla BeeModel:
+     * 9x0x6, offset Z=-3 (milieu du corps), angle ±0.2618 (15 deg),
+     * CubeDeformation(0.001) pour eviter le z-fighting, mirror() pour l'aile gauche.
+     * Texture 32x32 avec les ailes peintes dans la zone UV du top face.
      */
     public static LayerDefinition createWingLayer() {
         MeshDefinition mesh = new MeshDefinition();
@@ -174,18 +175,19 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
+        CubeDeformation inflate = new CubeDeformation(0.001F);
+
         bone.addOrReplaceChild("right_wing",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-8.0F, 0.0F, 0.0F, 8.0F, 0.0F, 16.0F),
-                PartPose.offsetAndRotation(-1.5F, -4.0F, -5.0F, 0.0F, -0.1309F, 0.0F));
+                        .addBox(-12.0F, 0.0F, -1.0F, 12.0F, 0.0F, 8.0F, inflate),
+                PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
 
         bone.addOrReplaceChild("left_wing",
                 CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .mirror()
-                        .addBox(0.0F, 0.0F, 0.0F, 8.0F, 0.0F, 16.0F),
-                PartPose.offsetAndRotation(1.5F, -4.0F, -5.0F, 0.0F, 0.1309F, 0.0F));
+                        .texOffs(0, 8)
+                        .addBox(0.0F, 0.0F, -1.0F, 12.0F, 0.0F, 8.0F, inflate),
+                PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
 
         return LayerDefinition.create(mesh, 32, 32);
     }
