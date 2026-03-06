@@ -184,15 +184,17 @@ public class ItemPipeBlockEntity extends BlockEntity {
             IItemHandler cap = level.getCapability(Capabilities.ItemHandler.BLOCK, neighborPos, dir.getOpposite());
             if (cap == null) continue;
 
-            extractWithPreValidation(cap, serverLevel, pos);
+            extractWithPreValidation(cap, serverLevel, pos, neighborPos);
         }
     }
 
     /**
      * Extrait un item du handler source seulement si une destination valide existe dans le réseau.
      * L'item est immédiatement placé en transit avec une route pré-calculée.
+     * @param sourceMachinePos position de la machine source (pour éviter de router vers la même machine)
      */
-    private void extractWithPreValidation(IItemHandler handler, ServerLevel level, BlockPos myPos) {
+    private void extractWithPreValidation(IItemHandler handler, ServerLevel level, BlockPos myPos,
+                                           BlockPos sourceMachinePos) {
         PipeNetwork network = ItemPipeNetworkManager.get(level).getNetworkAt(myPos);
         if (network == null) return;
 
@@ -200,8 +202,8 @@ public class ItemPipeBlockEntity extends BlockEntity {
             ItemStack simulated = handler.extractItem(i, transferAmount, true);
             if (simulated.isEmpty()) continue;
 
-            // Pre-validation : chercher une destination dans le réseau
-            PipeNetwork.RouteResult result = network.findDestination(myPos, simulated, level);
+            // Pre-validation : chercher une destination dans le réseau (exclure la machine source)
+            PipeNetwork.RouteResult result = network.findDestination(myPos, simulated, level, sourceMachinePos);
             if (result == null) continue;
 
             // Destination trouvée : extraire pour de vrai
@@ -224,6 +226,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
         if (transitItems.isEmpty()) return;
         if (!(level instanceof ServerLevel serverLevel)) return;
 
+        boolean changed = false;
         Iterator<PipeTransitItem> it = transitItems.iterator();
         while (it.hasNext()) {
             PipeTransitItem transit = it.next();
@@ -232,6 +235,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
                 // On est à la dernière pipe : tenter l'insertion dans la machine destination
                 if (tryDeliverToDestination(transit, serverLevel)) {
                     it.remove();
+                    changed = true;
                 } else {
                     // Destination pleine : tenter re-route
                     tryReroute(transit, pos, serverLevel);
@@ -251,12 +255,16 @@ public class ItemPipeBlockEntity extends BlockEntity {
                     nextPipe.transitItems.add(transit);
                     nextPipe.setChanged();
                     it.remove();
+                    changed = true;
                 }
                 // Si le prochain pipe est plein : backpressure (attendre)
             } else {
                 // Le prochain hop n'est plus une pipe valide : tenter re-route
                 tryReroute(transit, pos, serverLevel);
             }
+        }
+        if (changed) {
+            setChanged();
         }
     }
 
@@ -300,7 +308,7 @@ public class ItemPipeBlockEntity extends BlockEntity {
         PipeNetwork network = ItemPipeNetworkManager.get(level).getNetworkAt(myPos);
         if (network == null) return;
 
-        PipeNetwork.RouteResult newRoute = network.findDestination(myPos, transit.getStack(), level);
+        PipeNetwork.RouteResult newRoute = network.findDestination(myPos, transit.getStack(), level, null);
         if (newRoute != null) {
             // Remplacer par un nouveau transit item avec la nouvelle route
             int idx = transitItems.indexOf(transit);
@@ -323,6 +331,20 @@ public class ItemPipeBlockEntity extends BlockEntity {
             if (dir.getNormal().equals(diff)) return dir;
         }
         return null;
+    }
+
+    // --- Transit drop ---
+
+    /**
+     * Drop tous les items en transit au sol. Appele quand le pipe est casse.
+     */
+    public void dropTransitItems(Level level, BlockPos pos) {
+        for (PipeTransitItem transit : transitItems) {
+            if (!transit.getStack().isEmpty()) {
+                net.minecraft.world.level.block.Block.popResource(level, pos, transit.getStack());
+            }
+        }
+        transitItems.clear();
     }
 
     // --- Buffer helpers ---

@@ -148,11 +148,14 @@ public class PipeNetwork {
      * Trouve la prochaine destination valide avec support des filtres.
      * Les pipes avec filtre qui refuse l'item sont non-traversables.
      * Parmi les routes valides, prefere celles passant par des pipes de priority plus haute.
+     * @param excludeMachinePos position de la machine source a exclure (evite les boucles)
      */
     @Nullable
-    public RouteResult findDestination(BlockPos sourcePipePos, ItemStack stack, ServerLevel level) {
+    public RouteResult findDestination(BlockPos sourcePipePos, ItemStack stack, ServerLevel level,
+                                        @Nullable BlockPos excludeMachinePos) {
         List<PipeEndpoint> insertEndpoints = endpoints.stream()
             .filter(e -> e.type() == PipeEndpoint.EndpointType.INSERT)
+            .filter(e -> excludeMachinePos == null || !e.machinePos().equals(excludeMachinePos))
             .toList();
 
         if (insertEndpoints.isEmpty()) return null;

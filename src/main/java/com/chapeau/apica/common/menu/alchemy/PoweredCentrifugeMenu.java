@@ -95,17 +95,17 @@ public class PoweredCentrifugeMenu extends ApicaMenu {
         addDataSlots(data);
 
         // Input slot (gauche)
-        addSlot(ApicaSlot.combInput(inputHandler, 0, 40, 45)
+        addSlot(ApicaSlot.combInput(inputHandler, 0, 33, 45)
             .withFilter(stack -> stack.is(ApicaTags.Items.COMBS)));
 
         // Output slots (droite, 2x2) avec callback pour les quêtes
-        addSlot(ApicaSlot.output(outputHandler, 0, 116, 36)
+        addSlot(ApicaSlot.output(outputHandler, 0, 123, 36)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
-        addSlot(ApicaSlot.output(outputHandler, 1, 134, 36)
+        addSlot(ApicaSlot.output(outputHandler, 1, 141, 36)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
-        addSlot(ApicaSlot.output(outputHandler, 2, 116, 54)
+        addSlot(ApicaSlot.output(outputHandler, 2, 123, 54)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
-        addSlot(ApicaSlot.output(outputHandler, 3, 134, 54)
+        addSlot(ApicaSlot.output(outputHandler, 3, 141, 54)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "powered_centrifuge", s)));
 
         // Player inventory (centered in 190px container)
@@ -159,6 +159,7 @@ public class PoweredCentrifugeMenu extends ApicaMenu {
     @Override
     public boolean stillValid(Player player) {
         return stillValid(access, player, ApicaBlocks.POWERED_CENTRIFUGE.get())
+            || stillValid(access, player, ApicaBlocks.POWERED_CENTRIFUGE_TIER2.get())
             || stillValid(access, player, ApicaBlocks.CENTRIFUGE_HEART.get());
     }
 }

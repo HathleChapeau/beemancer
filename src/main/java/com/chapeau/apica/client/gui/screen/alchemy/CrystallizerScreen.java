@@ -39,12 +39,13 @@ public class CrystallizerScreen extends AbstractApicaScreen<CrystallizerMenu> {
     private static final int PANEL_OFFSET = (176 - PANEL_W) / 2; // 33
 
     // Positions relatives au panel (110px)
-    private static final int HONEYBAR_X = 14;
+    // Reservoir a gauche, slot centre entre reservoir et bord droit, barre sous le slot
+    private static final int HONEYBAR_X = 24;
     private static final int HONEYBAR_Y = 22;
-    private static final int SLOT_X = 65; // slot bg render = panel + 65
-    private static final int SLOT_Y = 36;
-    private static final int PROGRESS_X = 10;
-    private static final int PROGRESS_Y = 78;
+    private static final int SLOT_X = 66;
+    private static final int SLOT_Y = 32;
+    private static final int PROGRESS_X = 55;
+    private static final int PROGRESS_Y = 56;
 
     public CrystallizerScreen(CrystallizerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 99, 0);
@@ -70,7 +71,7 @@ public class CrystallizerScreen extends AbstractApicaScreen<CrystallizerMenu> {
         // Progress bar (ancienne version programmatique conservee)
         int processTime = menu.getProcessTime();
         float ratio = processTime > 0 ? (float) menu.getProgress() / processTime : 0;
-        GuiRenderHelper.renderProgressBar(g, px + PROGRESS_X, y + PROGRESS_Y, 90, 6, ratio);
+        GuiRenderHelper.renderProgressBar(g, px + PROGRESS_X, y + PROGRESS_Y, 40, 6, ratio);
     }
 
     @Override

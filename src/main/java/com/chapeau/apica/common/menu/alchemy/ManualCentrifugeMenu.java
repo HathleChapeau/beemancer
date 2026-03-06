@@ -56,17 +56,17 @@ public class ManualCentrifugeMenu extends ApicaMenu {
         addDataSlots(data);
 
         // Input slot (gauche) - filtre par recette de centrifugation
-        addSlot(ApicaSlot.combInput(blockEntity.getInputSlot(), 0, 40, 45)
+        addSlot(ApicaSlot.combInput(blockEntity.getInputSlot(), 0, 14, 45)
             .withFilter(stack -> blockEntity.isValidComb(stack)));
 
         // Output slots (droite, 2x2) avec callback pour les quêtes
-        addSlot(ApicaSlot.output(blockEntity.getOutputSlots(), 0, 116, 36)
+        addSlot(ApicaSlot.output(blockEntity.getOutputSlots(), 0, 112, 36)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
-        addSlot(ApicaSlot.output(blockEntity.getOutputSlots(), 1, 134, 36)
+        addSlot(ApicaSlot.output(blockEntity.getOutputSlots(), 1, 130, 36)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
-        addSlot(ApicaSlot.output(blockEntity.getOutputSlots(), 2, 116, 54)
+        addSlot(ApicaSlot.output(blockEntity.getOutputSlots(), 2, 112, 54)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
-        addSlot(ApicaSlot.output(blockEntity.getOutputSlots(), 3, 134, 54)
+        addSlot(ApicaSlot.output(blockEntity.getOutputSlots(), 3, 130, 54)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "manual_centrifuge", s)));
 
         // Player inventory (centered in 190px container)

@@ -35,7 +35,11 @@ public class ManualCentrifugeScreen extends AbstractApicaScreen<ManualCentrifuge
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Apica.MOD_ID, "textures/gui/bg.png");
 
-    private static final int HONEYBAR_X = 159;
+    // Layout centre: slot(18) +13+ progress(54) +13+ 2x2(36) +14+ honeybar(16) = 190
+    private static final int INPUT_SLOT_X = 13;
+    private static final int PROGRESS_X = 44;
+    private static final int SLOTS_2X2_X = 111;
+    private static final int HONEYBAR_X = 161;
     private static final int HONEYBAR_Y = 27;
 
     public ManualCentrifugeScreen(ManualCentrifugeMenu menu, Inventory playerInventory, Component title) {
@@ -47,9 +51,9 @@ public class ManualCentrifugeScreen extends AbstractApicaScreen<ManualCentrifuge
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        GuiRenderHelper.renderSlot(g, x + 39, y + 44);
-        GuiRenderHelper.renderSlots2x2(g, x + 115, y + 35);
-        GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 48, menu.getProgressRatio());
+        GuiRenderHelper.renderSlot(g, x + INPUT_SLOT_X, y + 44);
+        GuiRenderHelper.renderSlots2x2(g, x + SLOTS_2X2_X, y + 35);
+        GuiRenderHelper.renderTextureProgressBar(g, x + PROGRESS_X, y + 48, menu.getProgressRatio());
 
         // Honey bar droite (output)
         int cap = 4000;

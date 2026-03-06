@@ -54,6 +54,7 @@ public class InstrumentColumnWidget {
     private static final int COL_SCROLLBAR_THUMB = 0xFF8888CC;
     private static final int DROPDOWN_VISIBLE = 8;
     private static final int DROPDOWN_ITEM_H = 12;
+    private static final int DROPDOWN_W = 130;
     private static final int SCROLLBAR_W = 4;
 
     private final int x, y, width, height;
@@ -149,7 +150,7 @@ public class InstrumentColumnWidget {
     private void renderDropdown(GuiGraphics gfx, Font font, int trackCount) {
         int ddX = dropdownAnchorX;
         int ddY = dropdownAnchorY;
-        int ddW = 100;
+        int ddW = DROPDOWN_W;
         DubstepInstrument[] instruments = DubstepInstrument.values();
         int totalCount = instruments.length;
         int visible = Math.min(totalCount - dropdownScroll, DROPDOWN_VISIBLE);
@@ -194,7 +195,7 @@ public class InstrumentColumnWidget {
             int trackCount = data.getTrackCount();
             int ddX = dropdownAnchorX;
             int ddY = dropdownAnchorY;
-            int ddW = 100;
+            int ddW = DROPDOWN_W;
             DubstepInstrument[] instruments = DubstepInstrument.values();
             int totalCount = instruments.length;
             int visible = Math.min(totalCount - dropdownScroll, DROPDOWN_VISIBLE);

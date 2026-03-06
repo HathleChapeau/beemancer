@@ -35,9 +35,13 @@ public class PoweredCentrifugeScreen extends AbstractApicaScreen<PoweredCentrifu
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Apica.MOD_ID, "textures/gui/bg.png");
 
-    private static final int FUEL_BAR_X = 15;
+    // Layout centre: barL(16) +8+ slot(18) +9+ progress(54) +9+ 2x2(36) +8+ barR(16) = 190
+    private static final int FUEL_BAR_X = 8;
     private static final int FUEL_BAR_Y = 27;
-    private static final int OUTPUT_BAR_X = 159;
+    private static final int INPUT_SLOT_X = 32;
+    private static final int PROGRESS_X = 59;
+    private static final int SLOTS_2X2_X = 122;
+    private static final int OUTPUT_BAR_X = 166;
     private static final int OUTPUT_BAR_Y = 27;
 
     public PoweredCentrifugeScreen(PoweredCentrifugeMenu menu, Inventory playerInventory, Component title) {
@@ -49,9 +53,9 @@ public class PoweredCentrifugeScreen extends AbstractApicaScreen<PoweredCentrifu
 
     @Override
     protected void renderMachineContent(GuiGraphics g, int x, int y, float partialTick) {
-        GuiRenderHelper.renderSlot(g, x + 39, y + 44);
-        GuiRenderHelper.renderSlots2x2(g, x + 115, y + 35);
-        GuiRenderHelper.renderTextureProgressBar(g, x + 61, y + 48, menu.getProgressRatio());
+        GuiRenderHelper.renderSlot(g, x + INPUT_SLOT_X, y + 44);
+        GuiRenderHelper.renderSlots2x2(g, x + SLOTS_2X2_X, y + 35);
+        GuiRenderHelper.renderTextureProgressBar(g, x + PROGRESS_X, y + 48, menu.getProgressRatio());
 
         // Honey bars: gauche = fuel, droite = output
         int fuelCap = menu.getFuelCapacity();

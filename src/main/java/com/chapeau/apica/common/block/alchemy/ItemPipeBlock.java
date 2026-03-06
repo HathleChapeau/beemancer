@@ -203,9 +203,13 @@ public class ItemPipeBlock extends AbstractPipeBlock {
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!level.isClientSide() && level instanceof ServerLevel serverLevel) {
             if (!state.is(newState.getBlock())) {
-                // Drop le filtre si installe
-                if (level.getBlockEntity(pos) instanceof ItemPipeBlockEntity pipe && pipe.hasFilter()) {
-                    Block.popResource(level, pos, new ItemStack(ApicaItems.ITEM_FILTER.get()));
+                if (level.getBlockEntity(pos) instanceof ItemPipeBlockEntity pipe) {
+                    // Drop le filtre si installe
+                    if (pipe.hasFilter()) {
+                        Block.popResource(level, pos, new ItemStack(ApicaItems.ITEM_FILTER.get()));
+                    }
+                    // Drop les items en transit pour ne pas les perdre
+                    pipe.dropTransitItems(level, pos);
                 }
                 // Notifier avant que le BlockEntity soit retiré
                 ItemPipeNetworkManager.get(serverLevel).onPipeRemoved(pos, serverLevel);
