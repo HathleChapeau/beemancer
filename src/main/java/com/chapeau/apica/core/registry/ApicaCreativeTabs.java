@@ -181,6 +181,8 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.HONEY_BUCKET.get());
         output.accept(ApicaItems.ROYAL_JELLY_BUCKET.get());
         output.accept(ApicaItems.NECTAR_BUCKET.get());
+        output.accept(ApicaItems.ROYAL_JELLY_BOTTLE.get());
+        output.accept(ApicaItems.NECTAR_BOTTLE.get());
     }
 
     private static void addStorageBlocks(CreativeModeTab.Output output) {
@@ -293,6 +295,8 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.ROYAL_GOLD_BLOCK.get());
         output.accept(ApicaItems.NECTAR_DIAMOND.get());
         output.accept(ApicaItems.NECTAR_DIAMOND_BLOCK.get());
+        output.accept(ApicaItems.ROYAL_JELLY_BLOCK.get());
+        output.accept(ApicaItems.NECTAR_BLOCK.get());
         output.accept(ApicaItems.NECTAR_CRYSTAL.get());
         output.accept(ApicaItems.BLANK_RUNE.get());
         output.accept(ApicaItems.HONEY_ARTIFACT_CORE.get());

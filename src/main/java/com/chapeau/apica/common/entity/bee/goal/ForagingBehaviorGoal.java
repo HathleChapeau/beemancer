@@ -65,18 +65,26 @@ public class ForagingBehaviorGoal extends Goal {
 
     private static final double REACH_DISTANCE = 1.5;
     private static final double REACH_DISTANCE_VERTICAL = 0.8;
-    private static final double FLIGHT_ALTITUDE = 1.0; // Altitude de vol au-dessus des destinations
-    private static final double HOVER_HEIGHT = 0.4; // Hauteur au-dessus de la fleur pour l'approche finale
-    private static final double APPROACH_OFFSET = 0.2; // Décalage d'approche depuis la ruche
-    private static final double FALL_SPEED = 0.02; // Vitesse de descente pendant le butinage
-    private static final float FORAGING_PITCH = 40.0f; // Inclinaison vers l'avant (degrés)
+    private static final double FLIGHT_ALTITUDE = 1.0;
+    private static final double HOVER_HEIGHT = 0.4;
+    private static final double APPROACH_OFFSET = 0.2;
+    private static final double FALL_SPEED = 0.02;
+    private static final float FORAGING_PITCH = 40.0f;
     private static final Random RANDOM = new Random();
+    private static final int GRACE_PERIOD_TICKS = 12;
+    private static final int LEAVING_HIVE_TICKS = 15;
 
     private final MagicBeeEntity bee;
     private final BeeAIStateMachine stateMachine;
     private BeePathfinding pathfinding;
 
-    // État d'approche
+    // Grace period: pas de throttle pendant les N premiers ticks apres start()
+    private int ticksSinceStart = 0;
+
+    // Phase LEAVING_HIVE
+    private int leavingHiveTicks = 0;
+
+    // Etat d'approche
     private boolean isApproachingFromAbove = false;
     private float originalPitch = 0;
 
@@ -107,37 +115,54 @@ public class ForagingBehaviorGoal extends Goal {
     }
 
     @Override
+    public boolean requiresUpdateEveryTick() {
+        return true;
+    }
+
+    @Override
     public void start() {
         stateMachine.reset();
-        stateMachine.setState(BeeActivityState.SEEKING_FLOWER);
 
-        // Initialiser le pathfinding (lazy init)
         if (pathfinding == null) {
             pathfinding = new BeePathfinding(bee.level());
         }
         pathfinding.clearPath();
 
-        // Reset état d'approche
+        // Grace period: pas de throttle pendant les premiers ticks
+        ticksSinceStart = 0;
+
+        // Commencer par la phase LEAVING_HIVE: monter au-dessus de la ruche
+        leavingHiveTicks = LEAVING_HIVE_TICKS;
+        stateMachine.setState(BeeActivityState.LEAVING_HIVE);
+
         isApproachingFromAbove = false;
         resetPitch();
     }
 
     @Override
     public void tick() {
-        // Tick la machine à états AVANT le throttle (timeouts doivent rester precis)
-        boolean timedOut = stateMachine.tick();
+        ticksSinceStart++;
 
-        // Si timeout géré, ne pas continuer le tick normal
+        // Tick la machine a etats AVANT le throttle (timeouts doivent rester precis)
+        boolean timedOut = stateMachine.tick();
         if (timedOut) return;
 
-        // Throttle N=4: traitement mouvement 1 tick sur 4, offset par UUID
-        if (bee.tickCount % 4 != (int)(bee.getUUID().getLeastSignificantBits() & 0x3)) return;
+        // Phase LEAVING_HIVE: pas de throttle, toujours tickee
+        if (stateMachine.getState() == BeeActivityState.LEAVING_HIVE) {
+            tickLeavingHive();
+            return;
+        }
+
+        // Throttle N=2 au lieu de N=4, skip pendant la grace period
+        if (ticksSinceStart > GRACE_PERIOD_TICKS) {
+            if (bee.tickCount % 2 != (int)(bee.getUUID().getLeastSignificantBits() & 0x1)) return;
+        }
 
         switch (stateMachine.getState()) {
             case SEEKING_FLOWER -> tickSeekingFlower();
             case WORKING -> tickWorking();
             case RETURNING -> tickReturning();
-            default -> {} // IDLE, LEAVING_HIVE, RESTING gérés par la ruche
+            default -> {}
         }
     }
 

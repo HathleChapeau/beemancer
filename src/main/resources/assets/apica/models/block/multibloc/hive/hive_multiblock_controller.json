@@ -1,9 +1,9 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "side": "apica:block/machines/hiveblock_side",
-    "end": "apica:block/machines/hiveblock_end",
-    "particle": "apica:block/machines/hiveblock_side"
+    "side": "apica:block/machines/apiary_side",
+    "end": "apica:block/machines/apiary_end",
+    "particle": "apica:block/machines/apiary_side"
   },
   "elements": [
     {
