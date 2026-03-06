@@ -13,6 +13,7 @@
  * | BeeCreatorUpdatePacket   | Packet C2S           | Envoi couleur au serveur       |
  * | AnimationController      | Rotation fluide      | Gestion animation turntable    |
  * | RotateAnimation          | Rotation LOOP        | Rotation Y continue            |
+ * | ApicaBeeModel            | Modele customisable  | Preview 3D tintee              |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -27,10 +28,12 @@ import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.client.animation.RotateAnimation;
 import com.chapeau.apica.client.animation.TimingEffect;
 import com.chapeau.apica.client.animation.TimingType;
+import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.common.block.beecreator.BeePart;
 import com.chapeau.apica.common.menu.BeeCreatorMenu;
 import com.chapeau.apica.core.network.packets.BeeCreatorUpdatePacket;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -38,18 +41,16 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import com.mojang.blaze3d.platform.Lighting;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * GUI du Bee Creator. Layout large:
  * - Panneau gauche: 7 rangees (une par partie) avec label + champ hex couleur + preview couleur
- * - Panneau droit: carre avec preview 3D de l'abeille qui tourne lentement
+ * - Panneau droit: carre avec preview 3D de l'abeille tintee qui tourne lentement
  */
 public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
@@ -64,7 +65,6 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     private static final int COL_DARK = 0xFF111122;
     private static final int COL_LABEL = 0xFFDDDDDD;
     private static final int COL_TITLE = 0xFFE8A317;
-    private static final int COL_FIELD_BG = 0xFF222233;
     private static final int COL_FIELD_BORDER = 0xFF444466;
 
     /** Duree d'un tour complet en ticks (240 = 12 secondes). */
@@ -72,7 +72,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
     private final EditBox[] hexFields = new EditBox[BeePart.COUNT];
     private final int[] localColors = new int[BeePart.COUNT];
-    private Bee previewBee;
+    private ApicaBeeModel<?> beeModel;
     private final AnimationController animController = new AnimationController();
 
     public BeeCreatorScreen(BeeCreatorMenu menu, Inventory inv, Component title) {
@@ -89,6 +89,10 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     @Override
     protected void init() {
         super.init();
+
+        // Bake le modele ApicaBee
+        beeModel = new ApicaBeeModel<>(
+                Minecraft.getInstance().getEntityModels().bakeLayer(ApicaBeeModel.LAYER_LOCATION));
 
         // Animation turntable: rotation Y continue en boucle
         animController.createAnimation("spin", RotateAnimation.builder()
@@ -196,7 +200,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         gfx.drawCenteredString(font, "Preview",
                 previewX + PREVIEW_SIZE / 2, previewY - 14, 0xFF888888);
 
-        // Rendu de l'abeille qui tourne
+        // Rendu de l'abeille tintee qui tourne
         renderBeePreview(gfx, previewX, previewY, PREVIEW_SIZE, PREVIEW_SIZE, partialTick);
 
         // Legende couleurs sous la preview
@@ -213,16 +217,9 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     }
 
     private void renderBeePreview(GuiGraphics gfx, int x, int y, int w, int h, float partialTick) {
-        if (previewBee == null && minecraft != null && minecraft.level != null) {
-            previewBee = EntityType.BEE.create(minecraft.level);
-            if (previewBee != null) {
-                previewBee.setNoGravity(true);
-                previewBee.setBaby(false);
-            }
-        }
-        if (previewBee == null) return;
+        if (beeModel == null) return;
 
-        // Tick le controller avec le temps fluide d'AnimationTimer
+        // Tick l'animation avec le temps fluide
         float renderTime = AnimationTimer.getRenderTime(partialTick);
         animController.tick(renderTime);
 
@@ -231,8 +228,6 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         int scale = 38;
 
         gfx.enableScissor(x, y, x + w, y + h);
-
-        // Rendu manuel de l'entite avec le PoseStack anime
         gfx.pose().pushPose();
         gfx.pose().translate(centerX, centerY, 50.0f);
         gfx.pose().scale(scale, scale, scale);
@@ -244,17 +239,29 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         // Rotation Y via le systeme d'animation Apica
         animController.applyAnimation("spin", gfx.pose());
 
-        // Lighting pour entite en GUI
         Lighting.setupForEntityInInventory();
-        EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-        dispatcher.setRenderShadow(false);
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-        RenderSystem.runAsFancy(() ->
-            dispatcher.render(previewBee, 0.0, 0.0, 0.0, 0.0f, 1.0f,
-                    gfx.pose(), bufferSource, LightTexture.FULL_BRIGHT)
-        );
+        RenderType renderType = RenderType.entityCutout(ApicaBeeModel.TEXTURE);
+
+        // Pass 1: Couleur corps
+        beeModel.showCorpusOnly();
+        VertexConsumer vc1 = bufferSource.getBuffer(renderType);
+        beeModel.renderToBuffer(gfx.pose(), vc1, LightTexture.FULL_BRIGHT,
+                OverlayTexture.NO_OVERLAY, toArgb(localColors[BeePart.BODY.getIndex()]));
+
+        // Pass 2: Couleur rayure
+        beeModel.showStripeOnly();
+        VertexConsumer vc2 = bufferSource.getBuffer(renderType);
+        beeModel.renderToBuffer(gfx.pose(), vc2, LightTexture.FULL_BRIGHT,
+                OverlayTexture.NO_OVERLAY, toArgb(localColors[BeePart.STRIPE.getIndex()]));
+
+        // Pass 3: Parties non tintees (pattes)
+        beeModel.showUntintedOnly();
+        VertexConsumer vc3 = bufferSource.getBuffer(renderType);
+        beeModel.renderToBuffer(gfx.pose(), vc3, LightTexture.FULL_BRIGHT,
+                OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+
         bufferSource.endBatch();
-        dispatcher.setRenderShadow(true);
         Lighting.setupFor3DItems();
 
         gfx.pose().popPose();
@@ -274,7 +281,6 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // Empecher la fermeture du menu quand on tape dans un champ texte
         for (EditBox field : hexFields) {
             if (field != null && field.isFocused()) {
                 if (keyCode == 256) {
@@ -297,17 +303,12 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         return super.charTyped(chr, modifiers);
     }
 
-    // ========== Hex Utilities ==========
+    // ========== Utilities ==========
 
-    /** Convertit un int couleur en String hex (#RRGGBB). */
     private static String toHex(int color) {
         return String.format("#%06X", color & 0xFFFFFF);
     }
 
-    /**
-     * Parse un String hex (#RRGGBB ou RRGGBB) en int couleur.
-     * Retourne -1 si invalide.
-     */
     private static int parseHex(String text) {
         String cleaned = text.startsWith("#") ? text.substring(1) : text;
         if (cleaned.length() != 6) return -1;
@@ -316,5 +317,9 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         } catch (NumberFormatException e) {
             return -1;
         }
+    }
+
+    private static int toArgb(int rgb) {
+        return 0xFF000000 | (rgb & 0xFFFFFF);
     }
 }
