@@ -26,7 +26,6 @@ import com.chapeau.apica.common.block.beecreator.BeePart;
 import com.chapeau.apica.common.menu.BeeCreatorMenu;
 import com.chapeau.apica.core.network.packets.BeeCreatorUpdatePacket;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -274,34 +273,56 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
                 toArgb(localColors[BeePart.STINGER.getIndex()]));
 
         bufferSource.endBatch();
-
-        // Gizmo au point de pivot du modele (dans le meme espace 3D)
-        if (showGizmo) {
-            renderGizmo(gfx, bufferSource);
-            bufferSource.endBatch();
-        }
-
         Lighting.setupFor3DItems();
 
         gfx.pose().popPose();
+
+        // Gizmo 2D au pivot du modele
+        if (showGizmo) {
+            renderGizmo(gfx, centerX, centerY);
+        }
+
         gfx.disableScissor();
     }
 
-    /** Rend un gizmo XYZ au centre du modele via des lignes 3D dans le meme espace de pose. */
-    private void renderGizmo(GuiGraphics gfx, MultiBufferSource.BufferSource bufferSource) {
-        float len = 0.6f;
-        VertexConsumer vc = bufferSource.getBuffer(RenderType.lines());
-        org.joml.Matrix4f poseMat = gfx.pose().last().pose();
+    /** Rend un gizmo 2D projete au centre du modele avec labels Right/Up/Front. */
+    private void renderGizmo(GuiGraphics gfx, int cx, int cy) {
+        // Construire la matrice de rotation (memes rotations que la preview)
+        gfx.pose().pushPose();
+        gfx.pose().setIdentity();
+        gfx.pose().mulPose(Axis.XP.rotationDegrees(160f));
+        gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
+        org.joml.Matrix4f mat = gfx.pose().last().pose();
 
-        // X = rouge
-        vc.addVertex(poseMat, 0, 0, 0).setColor(255, 68, 68, 255).setNormal(1, 0, 0);
-        vc.addVertex(poseMat, len, 0, 0).setColor(255, 68, 68, 255).setNormal(1, 0, 0);
-        // Y = vert
-        vc.addVertex(poseMat, 0, 0, 0).setColor(68, 255, 68, 255).setNormal(0, 1, 0);
-        vc.addVertex(poseMat, 0, len, 0).setColor(68, 255, 68, 255).setNormal(0, 1, 0);
-        // Z = bleu
-        vc.addVertex(poseMat, 0, 0, 0).setColor(68, 136, 255, 255).setNormal(0, 0, 1);
-        vc.addVertex(poseMat, 0, 0, len).setColor(68, 136, 255, 255).setNormal(0, 0, 1);
+        // Projeter les 3 axes unitaires en 2D ecran
+        // X = Right, Y = Up, Z = Front (vers le joueur = -Z en model, mais on affiche +Z comme Front)
+        float rxX = mat.m00() * GIZMO_LENGTH, rxY = -mat.m10() * GIZMO_LENGTH;
+        float ryX = mat.m01() * GIZMO_LENGTH, ryY = -mat.m11() * GIZMO_LENGTH;
+        float rzX = mat.m02() * GIZMO_LENGTH, rzY = -mat.m12() * GIZMO_LENGTH;
+
+        gfx.pose().popPose();
+
+        drawGizmoLine(gfx, cx, cy, cx + (int) rxX, cy + (int) rxY, 0xFFFF4444, "Right");
+        drawGizmoLine(gfx, cx, cy, cx + (int) ryX, cy + (int) ryY, 0xFF44FF44, "Up");
+        drawGizmoLine(gfx, cx, cy, cx + (int) rzX, cy + (int) rzY, 0xFF4488FF, "Front");
+    }
+
+    /** Dessine une ligne de gizmo avec un label a l'extremite. */
+    private void drawGizmoLine(GuiGraphics gfx, int x0, int y0, int x1, int y1, int color, String label) {
+        int dx = Math.abs(x1 - x0);
+        int dy = Math.abs(y1 - y0);
+        int sx = x0 < x1 ? 1 : -1;
+        int sy = y0 < y1 ? 1 : -1;
+        int err = dx - dy;
+        int px = x0, py = y0;
+        while (true) {
+            gfx.fill(px, py, px + 1, py + 1, color);
+            if (px == x1 && py == y1) break;
+            int e2 = 2 * err;
+            if (e2 > -dy) { err -= dy; px += sx; }
+            if (e2 < dx) { err += dx; py += sy; }
+        }
+        gfx.drawString(font, label, x1 + 2, y1 - 4, color, false);
     }
 
     @Override
