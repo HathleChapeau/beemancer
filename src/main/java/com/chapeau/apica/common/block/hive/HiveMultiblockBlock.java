@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
@@ -79,12 +80,33 @@ public class HiveMultiblockBlock extends BaseEntityBlock {
         return RenderShape.MODEL;
     }
 
+    private boolean isFormedMember(BlockState state) {
+        return state.getValue(MULTIBLOCK) != MultiblockProperty.NONE && !state.getValue(CONTROLLER);
+    }
+
     @Override
     protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
-        if (state.getValue(MULTIBLOCK) != MultiblockProperty.NONE && !state.getValue(CONTROLLER)) {
-            return 0;
-        }
-        return super.getLightBlock(state, level, pos);
+        return isFormedMember(state) ? 0 : super.getLightBlock(state, level, pos);
+    }
+
+    @Override
+    protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return isFormedMember(state) || super.propagatesSkylightDown(state, level, pos);
+    }
+
+    @Override
+    protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+        return isFormedMember(state) ? 1.0f : super.getShadeBrightness(state, level, pos);
+    }
+
+    @Override
+    protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return isFormedMember(state) ? Shapes.empty() : super.getOcclusionShape(state, level, pos);
+    }
+
+    @Override
+    protected boolean useShapeForLightOcclusion(BlockState state) {
+        return isFormedMember(state) || super.useShapeForLightOcclusion(state);
     }
 
     @Override
