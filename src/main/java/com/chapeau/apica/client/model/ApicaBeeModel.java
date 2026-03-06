@@ -178,14 +178,14 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         .addBox(-8.0F, 0.0F, 0.0F, 8.0F, 0.0F, 16.0F),
-                PartPose.offsetAndRotation(-1.5F, -4.0F, -8.0F, 0.0F, -0.2618F, 0.0F));
+                PartPose.offsetAndRotation(-1.5F, -4.0F, -5.0F, 0.0F, -0.1309F, 0.0F));
 
         bone.addOrReplaceChild("left_wing",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         .mirror()
                         .addBox(0.0F, 0.0F, 0.0F, 8.0F, 0.0F, 16.0F),
-                PartPose.offsetAndRotation(1.5F, -4.0F, -8.0F, 0.0F, 0.2618F, 0.0F));
+                PartPose.offsetAndRotation(1.5F, -4.0F, -5.0F, 0.0F, 0.1309F, 0.0F));
 
         return LayerDefinition.create(mesh, 32, 32);
     }
