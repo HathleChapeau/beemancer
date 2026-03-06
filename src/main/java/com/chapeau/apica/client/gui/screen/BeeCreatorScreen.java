@@ -30,6 +30,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.LightTexture;
@@ -71,6 +72,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     private float dragRotationY = 25f;
     private boolean isDraggingPreview;
     private double lastDragX;
+    private boolean showGizmo;
 
     public BeeCreatorScreen(BeeCreatorMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -115,6 +117,13 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
             hexFields[part.getIndex()] = field;
             addRenderableWidget(field);
         }
+
+        // Bouton toggle gizmo sous la preview
+        int previewX = gx + LEFT_PANEL_W + 10;
+        int previewBottom = gy + 24 + PREVIEW_SIZE;
+        addRenderableWidget(Button.builder(Component.literal("XYZ"), btn -> {
+            showGizmo = !showGizmo;
+        }).bounds(previewX + PREVIEW_SIZE - 24, previewBottom + 2, 24, 14).build());
     }
 
     private void onHexFieldChanged(int partIndex, String text) {
