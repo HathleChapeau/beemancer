@@ -1,0 +1,7 @@
+{
+  "type": "apica:infusing",
+  "ingredient": { "item": "minecraft:glass_bottle" },
+  "fluid_ingredient": { "fluid": "apica:royal_jelly", "amount": 1000 },
+  "result": { "id": "apica:royal_jelly_bottle" },
+  "processing_time": 100
+}

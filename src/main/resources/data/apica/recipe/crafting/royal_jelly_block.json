@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": { "item": "apica:royal_jelly_bottle" }
+  },
+  "pattern": [ "BB", "BB" ],
+  "result": { "id": "apica:royal_jelly_block", "count": 1 }
+}

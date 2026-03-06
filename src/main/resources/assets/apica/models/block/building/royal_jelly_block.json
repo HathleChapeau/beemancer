@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "apica:block/royal_jelly_block_top",
+    "bottom": "apica:block/royal_jelly_block_bottom",
+    "side": "apica:block/royal_jelly_block_side"
+  }
+}

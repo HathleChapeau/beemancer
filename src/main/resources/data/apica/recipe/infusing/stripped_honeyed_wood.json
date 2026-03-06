@@ -1,7 +1,7 @@
 {
   "type": "apica:infusing",
-  "ingredient": { "tag": "apica:logs" },
+  "ingredient": { "tag": "apica:stripped_wood" },
   "fluid_ingredient": { "fluid": "apica:honey", "amount": 500 },
-  "result": { "id": "apica:honeyed_log" },
+  "result": { "id": "apica:stripped_honeyed_wood" },
   "processing_time": 200
 }

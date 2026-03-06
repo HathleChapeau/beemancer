@@ -85,10 +85,10 @@ public class InfuserMenu extends ApicaMenu {
         QuestEvents.onMenuOpen(playerInv.player, "infuser");
 
         // Input slot - accepte tout item valide pour une recette d'infusion
-        addSlot(new ApicaSlot(inputHandler, 0, 59, 45));
+        addSlot(new ApicaSlot(inputHandler, 0, 45, 45));
 
         // Output slot (extraction seulement) avec callback pour les quêtes
-        addSlot(ApicaSlot.output(outputHandler, 0, 143, 45)
+        addSlot(ApicaSlot.output(outputHandler, 0, 129, 45)
                 .withOnExtract((p, s) -> QuestEvents.onMachineExtract(p, "infuser", s)));
 
         // Player inventory (centered in 190px container)

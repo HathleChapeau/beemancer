@@ -35,14 +35,14 @@ public class InfuserScreen extends AbstractApicaScreen<InfuserMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
         Apica.MOD_ID, "textures/gui/bg.png");
 
-    // Layout centre dans 190px: honey(16) + 12 + slot(18) + 6 + progress(54) + 6 + slot(18) = 130
-    private static final int HONEYBAR_X = 8;
-    private static final int HONEYBAR_Y = 27;
-    private static final int INPUT_SLOT_X = 58;
-    private static final int OUTPUT_SLOT_X = 142;
+    // Layout: jauge chargement centree, slots de part et d'autre
+    private static final int HONEYBAR_X = 16;
+    private static final int HONEYBAR_Y = 28;
+    private static final int INPUT_SLOT_X = 44;
+    private static final int OUTPUT_SLOT_X = 128;
     private static final int SLOT_Y = 44;
-    private static final int PROGRESS_BAR_X = 82;
-    private static final int PROGRESS_BAR_Y = 45;
+    private static final int PROGRESS_BAR_X = 68;
+    private static final int PROGRESS_BAR_Y = 48;
 
     public InfuserScreen(InfuserMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 99);

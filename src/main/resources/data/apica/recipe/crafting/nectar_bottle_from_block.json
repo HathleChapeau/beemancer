@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:nectar_block" }
+  ],
+  "result": { "id": "apica:nectar_bottle", "count": 4 }
+}

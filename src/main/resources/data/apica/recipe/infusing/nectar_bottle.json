@@ -1,0 +1,7 @@
+{
+  "type": "apica:infusing",
+  "ingredient": { "item": "minecraft:glass_bottle" },
+  "fluid_ingredient": { "fluid": "apica:nectar", "amount": 1000 },
+  "result": { "id": "apica:nectar_bottle" },
+  "processing_time": 100
+}

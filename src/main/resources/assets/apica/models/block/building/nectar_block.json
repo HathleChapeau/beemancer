@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "apica:block/nectar_block_top",
+    "bottom": "apica:block/nectar_block_bottom",
+    "side": "apica:block/nectar_block_side"
+  }
+}

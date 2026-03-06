@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "apica:royal_jelly_block" }
+  ],
+  "result": { "id": "apica:royal_jelly_bottle", "count": 4 }
+}

@@ -35,6 +35,7 @@ import com.chapeau.apica.common.block.altar.HoneyedStoneBrickBlock;
 import com.chapeau.apica.common.block.altar.HoneyedStoneBrickSlabBlock;
 import com.chapeau.apica.common.block.altar.HoneyedStoneBrickStairBlock;
 import com.chapeau.apica.common.block.altar.HoneyedStoneStairBlock;
+import com.chapeau.apica.common.block.building.BouncyHoneyBlock;
 import com.chapeau.apica.common.block.building.HoneyedGlassBlock;
 import com.chapeau.apica.common.block.building.HoneyedStoneBrickWallBlock;
 import com.chapeau.apica.common.block.building.HoneyedStoneWallBlock;
@@ -662,6 +663,16 @@ public class ApicaBlocks {
     public static final DeferredBlock<Block> NECTAR_DIAMOND_BLOCK = registerTimed("nectar_diamond_block",
             () -> new Block(BlockBehaviour.Properties.of()
                     .strength(5.0f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops()));
+
+    // --- FLUID STORAGE BLOCKS (honey block variants with bounce) ---
+    // Honey block vanilla = 0 bounce, Royal Jelly = 0.5, Nectar = 1.0
+    public static final DeferredBlock<BouncyHoneyBlock> ROYAL_JELLY_BLOCK = registerTimed("royal_jelly_block",
+            () -> new BouncyHoneyBlock(0.5f, BlockBehaviour.Properties.of()
+                    .strength(0.5f).sound(SoundType.HONEY_BLOCK).noOcclusion()));
+
+    public static final DeferredBlock<BouncyHoneyBlock> NECTAR_BLOCK = registerTimed("nectar_block",
+            () -> new BouncyHoneyBlock(1.0f, BlockBehaviour.Properties.of()
+                    .strength(0.5f).sound(SoundType.HONEY_BLOCK).noOcclusion()));
 
     public static final DeferredBlock<HoneyCrystalBlock> ROYAL_CRYSTAL = registerTimed("royal_crystal",
             () -> new HoneyCrystalBlock(BlockBehaviour.Properties.of()

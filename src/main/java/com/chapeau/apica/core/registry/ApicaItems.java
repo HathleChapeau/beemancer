@@ -478,6 +478,18 @@ public class ApicaItems {
     public static final DeferredItem<CodexItem> CODEX = ITEMS.register("codex",
             () -> new CodexItem(new Item.Properties()));
 
+    // --- FLUID BOTTLES ---
+    public static final DeferredItem<Item> ROYAL_JELLY_BOTTLE = ITEMS.register("royal_jelly_bottle",
+            () -> new Item(new Item.Properties().craftRemainder(Items.GLASS_BOTTLE).stacksTo(16)));
+    public static final DeferredItem<Item> NECTAR_BOTTLE = ITEMS.register("nectar_bottle",
+            () -> new Item(new Item.Properties().craftRemainder(Items.GLASS_BOTTLE).stacksTo(16)));
+
+    // --- FLUID BLOCKS ---
+    public static final DeferredItem<BlockItem> ROYAL_JELLY_BLOCK = ITEMS.register("royal_jelly_block",
+            () -> new BlockItem(ApicaBlocks.ROYAL_JELLY_BLOCK.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> NECTAR_BLOCK = ITEMS.register("nectar_block",
+            () -> new BlockItem(ApicaBlocks.NECTAR_BLOCK.get(), new Item.Properties()));
+
     // --- FLUID BUCKETS ---
     public static final DeferredItem<BucketItem> HONEY_BUCKET = ITEMS.register("honey_bucket",
             () -> new BucketItem(ApicaFluids.HONEY_SOURCE.get(),

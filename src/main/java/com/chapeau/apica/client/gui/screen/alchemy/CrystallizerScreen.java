@@ -40,7 +40,7 @@ public class CrystallizerScreen extends AbstractApicaScreen<CrystallizerMenu> {
 
     // Positions relatives au panel (110px)
     // Reservoir a gauche, slot+jauge centres entre reservoir et bord droit
-    private static final int HONEYBAR_X = 8;
+    private static final int HONEYBAR_X = 16;
     private static final int HONEYBAR_Y = 28;
     private static final int SLOT_X = 62;
     private static final int SLOT_Y = 38;

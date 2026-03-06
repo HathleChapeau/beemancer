@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": { "item": "apica:nectar_bottle" }
+  },
+  "pattern": [ "BB", "BB" ],
+  "result": { "id": "apica:nectar_block", "count": 1 }
+}
