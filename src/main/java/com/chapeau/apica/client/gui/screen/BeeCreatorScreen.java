@@ -292,17 +292,16 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         float len = 0.6f;
         VertexConsumer vc = bufferSource.getBuffer(RenderType.lines());
         org.joml.Matrix4f poseMat = gfx.pose().last().pose();
-        org.joml.Matrix3f normalMat = gfx.pose().last().normal();
 
         // X = rouge
-        vc.addVertex(poseMat, 0, 0, 0).setColor(255, 68, 68, 255).setNormal(normalMat, 1, 0, 0);
-        vc.addVertex(poseMat, len, 0, 0).setColor(255, 68, 68, 255).setNormal(normalMat, 1, 0, 0);
+        vc.addVertex(poseMat, 0, 0, 0).setColor(255, 68, 68, 255).setNormal(1, 0, 0);
+        vc.addVertex(poseMat, len, 0, 0).setColor(255, 68, 68, 255).setNormal(1, 0, 0);
         // Y = vert
-        vc.addVertex(poseMat, 0, 0, 0).setColor(68, 255, 68, 255).setNormal(normalMat, 0, 1, 0);
-        vc.addVertex(poseMat, 0, len, 0).setColor(68, 255, 68, 255).setNormal(normalMat, 0, 1, 0);
+        vc.addVertex(poseMat, 0, 0, 0).setColor(68, 255, 68, 255).setNormal(0, 1, 0);
+        vc.addVertex(poseMat, 0, len, 0).setColor(68, 255, 68, 255).setNormal(0, 1, 0);
         // Z = bleu
-        vc.addVertex(poseMat, 0, 0, 0).setColor(68, 136, 255, 255).setNormal(normalMat, 0, 0, 1);
-        vc.addVertex(poseMat, 0, 0, len).setColor(68, 136, 255, 255).setNormal(normalMat, 0, 0, 1);
+        vc.addVertex(poseMat, 0, 0, 0).setColor(68, 136, 255, 255).setNormal(0, 0, 1);
+        vc.addVertex(poseMat, 0, 0, len).setColor(68, 136, 255, 255).setNormal(0, 0, 1);
     }
 
     @Override
