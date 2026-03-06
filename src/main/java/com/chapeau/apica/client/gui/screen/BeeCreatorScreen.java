@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [BeeCreatorScreen.java]
- * Description: Ecran du Bee Creator — selection de parties et couleurs avec preview 3D
+ * Description: Ecran du Bee Creator — selection de parties, couleurs et body type avec preview 3D
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,8 +9,10 @@
  * | Dependance               | Raison                | Utilisation                    |
  * |--------------------------|----------------------|--------------------------------|
  * | BeeCreatorMenu           | Menu associe         | ContainerData sync             |
+ * | BeeCreatorBlockEntity    | DATA_COUNT, slots    | Body type slot index           |
  * | BeePart                  | Enum parties         | Liste des parties              |
- * | BeeCreatorUpdatePacket   | Packet C2S           | Envoi couleur au serveur       |
+ * | BeeBodyType              | Types de corps       | Selecteur body                 |
+ * | BeeCreatorUpdatePacket   | Packet C2S           | Envoi couleur/body au serveur  |
  * | ApicaBeeModel            | Modele customisable  | Preview 3D tintee              |
  * | BeeModel                 | Modele vanilla       | Preview reference              |
  * ------------------------------------------------------------
@@ -23,6 +25,8 @@
 package com.chapeau.apica.client.gui.screen;
 
 import com.chapeau.apica.client.model.ApicaBeeModel;
+import com.chapeau.apica.common.block.beecreator.BeeBodyType;
+import com.chapeau.apica.common.block.beecreator.BeeCreatorBlockEntity;
 import com.chapeau.apica.common.block.beecreator.BeePart;
 import com.chapeau.apica.common.menu.BeeCreatorMenu;
 import com.chapeau.apica.core.network.packets.BeeCreatorUpdatePacket;
@@ -35,6 +39,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.model.BeeModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -47,6 +52,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 /**
  * GUI du Bee Creator. Layout:
  * - Panneau gauche: 7 rangees (une par partie) avec label + champ hex couleur + preview couleur
+ * - Selecteur body type (< Body >) au-dessus de la preview
  * - Panneau droit: preview 3D de l'abeille tintee avec rotation souris
  * - Mini panneau haut-droite (toggle): abeille vanilla pour comparaison
  */
@@ -74,6 +80,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     private final int[] localColors = new int[BeePart.COUNT];
     private ApicaBeeModel<?> beeModel;
     private BeeModel<?> vanillaBeeModel;
+    private BeeBodyType currentBodyType = BeeBodyType.DEFAULT;
 
     /** Rotation par drag souris (en degres). */
     private float dragRotationY = 25f;
@@ -99,11 +106,9 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     protected void init() {
         super.init();
 
+        currentBodyType = menu.getBodyType();
+        rebuildBeeModel();
         var entityModels = Minecraft.getInstance().getEntityModels();
-        beeModel = new ApicaBeeModel<>(
-                entityModels.bakeLayer(ApicaBeeModel.LAYER_LOCATION),
-                entityModels.bakeLayer(ApicaBeeModel.WING_LAYER),
-                entityModels.bakeLayer(ApicaBeeModel.STINGER_LAYER));
         vanillaBeeModel = new BeeModel<>(entityModels.bakeLayer(ModelLayers.BEE));
 
         int gx = this.leftPos;
@@ -128,8 +133,15 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
             addRenderableWidget(field);
         }
 
-        // Boutons toggle sous la preview
+        // Body selector buttons (< Body >)
         int previewX = gx + LEFT_PANEL_W + 10;
+        int selectorY = gy + 8;
+        addRenderableWidget(Button.builder(Component.literal("<"), btn -> cycleBody(-1))
+                .bounds(previewX, selectorY, 16, 14).build());
+        addRenderableWidget(Button.builder(Component.literal(">"), btn -> cycleBody(1))
+                .bounds(previewX + PREVIEW_SIZE - 16, selectorY, 16, 14).build());
+
+        // Boutons toggle sous la preview
         int previewBottom = gy + 24 + PREVIEW_SIZE;
         addRenderableWidget(Button.builder(Component.literal("XYZ"), btn -> {
             showGizmo = !showGizmo;
@@ -138,6 +150,22 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         addRenderableWidget(Button.builder(Component.literal("Vanilla"), btn -> {
             showVanilla = !showVanilla;
         }).bounds(previewX, previewBottom + 2, 42, 14).build());
+    }
+
+    private void cycleBody(int direction) {
+        BeeBodyType next = direction > 0 ? currentBodyType.next() : currentBodyType.prev();
+        currentBodyType = next;
+        rebuildBeeModel();
+        PacketDistributor.sendToServer(new BeeCreatorUpdatePacket(
+                menu.getBlockPos(), BeeCreatorBlockEntity.BODY_TYPE_SLOT, next.getIndex()));
+    }
+
+    private void rebuildBeeModel() {
+        var entityModels = Minecraft.getInstance().getEntityModels();
+        ModelPart bodyRoot = entityModels.bakeLayer(ApicaBeeModel.getBodyLayer(currentBodyType));
+        ModelPart wingRoot = entityModels.bakeLayer(ApicaBeeModel.WING_LAYER);
+        ModelPart stingerRoot = entityModels.bakeLayer(ApicaBeeModel.STINGER_LAYER);
+        beeModel = new ApicaBeeModel<>(bodyRoot, wingRoot, stingerRoot, currentBodyType);
     }
 
     private void onHexFieldChanged(int partIndex, String text) {
@@ -161,6 +189,11 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
                     field.setValue(toHex(serverColor));
                 }
             }
+        }
+        BeeBodyType serverBodyType = menu.getBodyType();
+        if (serverBodyType != currentBodyType) {
+            currentBodyType = serverBodyType;
+            rebuildBeeModel();
         }
     }
 
@@ -188,16 +221,18 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
             gfx.fill(pvX + 1, pvY + 1, pvX + 13, pvY + 13, 0xFF000000 | color);
         }
 
-        // Preview principale
+        // Body type label between < > buttons
         int previewX = gx + LEFT_PANEL_W + 10;
+        gfx.drawCenteredString(font, currentBodyType.getDisplayName(),
+                previewX + PREVIEW_SIZE / 2, gy + 11, COL_LABEL);
+
+        // Preview principale
         int previewY = gy + 24;
         int previewRight = previewX + PREVIEW_SIZE;
         int previewBottom = previewY + PREVIEW_SIZE;
 
         gfx.fill(previewX - 1, previewY - 1, previewRight + 1, previewBottom + 1, COL_BORDER);
         gfx.fill(previewX, previewY, previewRight, previewBottom, COL_DARK);
-        gfx.drawCenteredString(font, "Preview",
-                previewX + PREVIEW_SIZE / 2, previewY - 14, 0xFF888888);
 
         renderBeePreview(gfx, previewX, previewY, PREVIEW_SIZE, PREVIEW_SIZE, partialTick);
 
@@ -232,19 +267,22 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         int centerY = y + h / 2;
         float scale = 38f;
 
+        ResourceLocation bodyTex = ApicaBeeModel.getBodyTexture(currentBodyType);
+        ResourceLocation wingTex = ApicaBeeModel.getWingTexture(currentBodyType);
+        ResourceLocation stingerTex = ApicaBeeModel.getStingerTexture(currentBodyType);
+
         gfx.enableScissor(x, y, x + w, y + h);
         gfx.pose().pushPose();
         gfx.pose().translate(centerX, centerY, 50.0f);
         gfx.pose().scale(scale, scale, scale);
         gfx.pose().mulPose(Axis.XP.rotationDegrees(dragRotationX));
         gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
-        // Centrer: bone Y=19/16=1.1875, centre corps = bone + (-0.5/16)
         gfx.pose().translate(0.0f, -1.15625f, 0.0f);
 
         Lighting.setupForEntityInInventory();
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 
-        RenderType bodyRT = RenderType.entityCutout(ApicaBeeModel.TEXTURE);
+        RenderType bodyRT = RenderType.entityCutout(bodyTex);
 
         beeModel.showCorpusOnly();
         beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
@@ -271,12 +309,12 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STRIPE.getIndex()]));
 
-        RenderType wingRT = RenderType.entityCutout(ApicaBeeModel.WING_TEXTURE);
+        RenderType wingRT = RenderType.entityCutout(wingTex);
         beeModel.renderWings(gfx.pose(), bufferSource.getBuffer(wingRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.WING.getIndex()]));
 
-        RenderType stingerRT = RenderType.entityCutout(ApicaBeeModel.STINGER_TEXTURE);
+        RenderType stingerRT = RenderType.entityCutout(stingerTex);
         beeModel.renderStinger(gfx.pose(), bufferSource.getBuffer(stingerRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STINGER.getIndex()]));

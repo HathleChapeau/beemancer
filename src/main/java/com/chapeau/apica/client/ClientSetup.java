@@ -329,8 +329,10 @@ public class ClientSetup {
         // Leaf Blower orb model
         event.registerLayerDefinition(LeafBlowerProjectileModel.LAYER_LOCATION, LeafBlowerProjectileModel::createBodyLayer);
 
-        // ApicaBee — modele customisable pour le Bee Creator (3 layers: body, wings, stinger)
-        event.registerLayerDefinition(ApicaBeeModel.LAYER_LOCATION, ApicaBeeModel::createBodyLayer);
+        // ApicaBee — modele customisable pour le Bee Creator (body per type + shared wings/stinger)
+        for (com.chapeau.apica.common.block.beecreator.BeeBodyType bodyType : com.chapeau.apica.common.block.beecreator.BeeBodyType.values()) {
+            event.registerLayerDefinition(ApicaBeeModel.getBodyLayer(bodyType), () -> ApicaBeeModel.createBodyLayerFor(bodyType));
+        }
         event.registerLayerDefinition(ApicaBeeModel.WING_LAYER, ApicaBeeModel::createWingLayer);
         event.registerLayerDefinition(ApicaBeeModel.STINGER_LAYER, ApicaBeeModel::createStingerLayer);
 

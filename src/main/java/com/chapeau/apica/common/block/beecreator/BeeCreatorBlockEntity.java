@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [BeeCreatorBlockEntity.java]
- * Description: Stocke les couleurs des 7 parties d'abeille du Bee Creator
+ * Description: Stocke les couleurs des 7 parties + le type de corps du Bee Creator
  * ============================================================
  *
  * DEPENDANCES:
@@ -11,7 +11,8 @@
  * | ApicaBlockEntities       | Type enregistre      | Construction                   |
  * | BeeCreatorMenu           | Menu associe         | createMenu()                   |
  * | BeePart                  | Enum parties         | Indices couleurs               |
- * | ContainerData            | Sync serveur→client  | 7 couleurs                     |
+ * | BeeBodyType              | Types de corps       | Index body type                |
+ * | ContainerData            | Sync serveur→client  | 7 couleurs + 1 body type       |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -44,12 +45,18 @@ import javax.annotation.Nullable;
 
 public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
 
+    /** 7 color slots + 1 body type slot. */
+    public static final int DATA_COUNT = BeePart.COUNT + 1;
+    public static final int BODY_TYPE_SLOT = BeePart.COUNT;
+
     private final int[] partColors = new int[BeePart.COUNT];
+    private int bodyTypeIndex = 0;
 
     public final ContainerData containerData = new ContainerData() {
         @Override
         public int get(int index) {
             if (index >= 0 && index < BeePart.COUNT) return partColors[index];
+            if (index == BODY_TYPE_SLOT) return bodyTypeIndex;
             return 0;
         }
 
@@ -58,12 +65,15 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
             if (index >= 0 && index < BeePart.COUNT) {
                 partColors[index] = value;
                 setChanged();
+            } else if (index == BODY_TYPE_SLOT) {
+                bodyTypeIndex = value;
+                setChanged();
             }
         }
 
         @Override
         public int getCount() {
-            return BeePart.COUNT;
+            return DATA_COUNT;
         }
     };
 
@@ -80,6 +90,14 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
 
     public void setPartColor(BeePart part, int color) {
         partColors[part.getIndex()] = color;
+        setChanged();
+        syncToClient();
+    }
+
+    public int getBodyTypeIndex() { return bodyTypeIndex; }
+
+    public void setBodyType(int index) {
+        this.bodyTypeIndex = BeeBodyType.byIndex(index).getIndex();
         setChanged();
         syncToClient();
     }
@@ -105,6 +123,7 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
         for (BeePart part : BeePart.values()) {
             tag.putInt("Color_" + part.getId(), partColors[part.getIndex()]);
         }
+        tag.putInt("BodyType", bodyTypeIndex);
     }
 
     @Override
@@ -115,6 +134,9 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
             if (tag.contains(key)) {
                 partColors[part.getIndex()] = tag.getInt(key);
             }
+        }
+        if (tag.contains("BodyType")) {
+            bodyTypeIndex = tag.getInt("BodyType");
         }
     }
 
@@ -132,6 +154,7 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
         for (BeePart part : BeePart.values()) {
             tag.putInt("Color_" + part.getId(), partColors[part.getIndex()]);
         }
+        tag.putInt("BodyType", bodyTypeIndex);
         return tag;
     }
 

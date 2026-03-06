@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ApicaBeeModel.java]
- * Description: Modele d'abeille customisable avec corps, rayures, yeux, ailes et dard tintables
+ * Description: Modele d'abeille modulaire — corps interchangeables avec attaches pour ailes/dard
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,6 +9,7 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | Apica               | MOD_ID               | ModelLayerLocation, textures   |
+ * | BeeBodyType         | Types de corps       | Layer factories, attachments   |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -20,6 +21,7 @@
 package com.chapeau.apica.client.model;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.HierarchicalModel;
@@ -35,31 +37,24 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 /**
- * Modele d'abeille customisable pour le Bee Creator.
- * Trois LayerDefinitions separees pour supporter des textures de tailles differentes:
- * - Corps (64x64): body_corpus, body_stripe, yeux, pupilles, pattes
- * - Ailes (32x32): left_wing, right_wing
- * - Dard (32x32): stinger
+ * Modele d'abeille modulaire pour le Bee Creator.
+ * Corps interchangeable (DEFAULT, ROUND, ...) avec points d'attache
+ * pour les parties separees (ailes, dard).
+ *
+ * Architecture:
+ * - Body layer (64x64): corpus, stripe, eyes, pupils, legs — per body type
+ * - Wing layer (32x32): shared geometry, positions ajustees par body type
+ * - Stinger layer (32x32): shared geometry, position ajustee par body type
  *
  * @param <T> Type d'entite compatible
  */
 public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
-    // --- Layer locations ---
-    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee"), "main");
+    // --- Shared layer locations (wings/stinger geometry) ---
     public static final ModelLayerLocation WING_LAYER = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee"), "wing");
     public static final ModelLayerLocation STINGER_LAYER = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee"), "stinger");
-
-    // --- Textures ---
-    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "textures/entity/apica_bee.png");
-    public static final ResourceLocation WING_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "textures/entity/apica_bee_wing.png");
-    public static final ResourceLocation STINGER_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "textures/entity/apica_bee_stinger.png");
 
     // --- Body parts (64x64 texture) ---
     private final ModelPart root;
@@ -74,12 +69,20 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
     // --- Wing parts (32x32 texture, separate root) ---
     private final ModelPart wingRoot;
+    private final ModelPart rightWing;
+    private final ModelPart leftWing;
 
     // --- Stinger (32x32 texture, separate root) ---
     private final ModelPart stingerRoot;
+    private final ModelPart stinger;
 
-    public ApicaBeeModel(ModelPart bodyRoot, ModelPart wingRoot, ModelPart stingerRoot) {
+    // --- Current body type ---
+    private final BeeBodyType bodyType;
+
+    public ApicaBeeModel(ModelPart bodyRoot, ModelPart wingRoot, ModelPart stingerRoot, BeeBodyType bodyType) {
         this.root = bodyRoot;
+        this.bodyType = bodyType;
+
         ModelPart bone = bodyRoot.getChild("bone");
         this.bodyCorpus = bone.getChild("body_corpus");
         this.bodyStripe = bone.getChild("body_stripe");
@@ -91,175 +94,261 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         this.backLegs = bone.getChild("back_legs");
 
         this.wingRoot = wingRoot;
+        ModelPart wingBone = wingRoot.getChild("bone");
+        this.rightWing = wingBone.getChild("right_wing");
+        this.leftWing = wingBone.getChild("left_wing");
+
         this.stingerRoot = stingerRoot;
+        this.stinger = stingerRoot.getChild("bone").getChild("stinger");
+
+        applyAttachments();
     }
 
-    /** Corps principal: body, stripe, yeux, pupilles, pattes (64x64). */
-    public static LayerDefinition createBodyLayer() {
+    /** Repositionne ailes et dard selon les points d'attache du body type. */
+    private void applyAttachments() {
+        float[] rw = getRightWingAttach(bodyType);
+        rightWing.x = rw[0];
+        rightWing.y = rw[1];
+        rightWing.z = rw[2];
+        rightWing.yRot = rw[3];
+
+        leftWing.x = -rw[0];
+        leftWing.y = rw[1];
+        leftWing.z = rw[2];
+        leftWing.yRot = -rw[3];
+
+        float[] st = getStingerAttach(bodyType);
+        stinger.x = st[0];
+        stinger.y = st[1];
+        stinger.z = st[2];
+    }
+
+    // ========== Attachment points per body type ==========
+
+    /** Right wing: {x, y, z, rotY}. Left wing is mirrored. */
+    private static float[] getRightWingAttach(BeeBodyType type) {
+        return switch (type) {
+            case DEFAULT -> new float[]{-1.5f, -4.0f, -3.0f, -0.2618f};
+            case ROUND -> new float[]{-2.0f, -3.0f, -2.0f, -0.35f};
+        };
+    }
+
+    /** Stinger: {x, y, z} relative to bone. */
+    private static float[] getStingerAttach(BeeBodyType type) {
+        return switch (type) {
+            case DEFAULT -> new float[]{0.0f, -1.0f, 5.0f};
+            case ROUND -> new float[]{0.0f, -0.5f, 4.0f};
+        };
+    }
+
+    // ========== Layer locations per body type ==========
+
+    public static ModelLayerLocation getBodyLayer(BeeBodyType type) {
+        return new ModelLayerLocation(
+                ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee_" + type.getId()), "body");
+    }
+
+    // ========== Textures per body type ==========
+
+    public static ResourceLocation getBodyTexture(BeeBodyType type) {
+        return switch (type) {
+            case DEFAULT -> ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee.png");
+            case ROUND -> ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_round.png");
+        };
+    }
+
+    public static ResourceLocation getWingTexture(BeeBodyType type) {
+        return switch (type) {
+            case DEFAULT -> ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_wing.png");
+            case ROUND -> ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_wing_round.png");
+        };
+    }
+
+    public static ResourceLocation getStingerTexture(BeeBodyType type) {
+        return ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_stinger.png");
+    }
+
+    public BeeBodyType getBodyType() { return bodyType; }
+
+    // ========== Body layer factories ==========
+
+    /** Dispatch: retourne la LayerDefinition du body type donne. */
+    public static LayerDefinition createBodyLayerFor(BeeBodyType type) {
+        return switch (type) {
+            case DEFAULT -> createDefaultBodyLayer();
+            case ROUND -> createRoundBodyLayer();
+        };
+    }
+
+    /** Corps DEFAULT: vanilla-like (7x7x10), texture 64x64. */
+    public static LayerDefinition createDefaultBodyLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition partRoot = mesh.getRoot();
-
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
-        // Corps — layer corpus (tinte avec couleur corps)
         bone.addOrReplaceChild("body_corpus",
-                CubeListBuilder.create()
-                        .texOffs(0, 0)
+                CubeListBuilder.create().texOffs(0, 0)
                         .addBox(-3.5F, -4.0F, -5.0F, 7.0F, 7.0F, 10.0F),
                 PartPose.ZERO);
-
-        // Corps — layer rayure (tinte avec couleur rayure)
         bone.addOrReplaceChild("body_stripe",
-                CubeListBuilder.create()
-                        .texOffs(0, 17)
+                CubeListBuilder.create().texOffs(0, 17)
                         .addBox(-3.5F, -4.0F, -5.0F, 7.0F, 7.0F, 10.0F),
                 PartPose.ZERO);
-
-        // Yeux: box 2x3x1 au coin du corps. 2 colonnes sur la face avant + 1 colonne sur le cote.
-        // Legere protrusion (0.01) pour rendre par-dessus le corps. entityCutout masque le reste.
         bone.addOrReplaceChild("eyes",
                 CubeListBuilder.create()
-                        .texOffs(0, 42)
-                        .addBox(-3.51F, -1.0F, -5.01F, 2.0F, 3.0F, 1.0F)
-                        .texOffs(8, 42)
-                        .addBox(1.51F, -1.0F, -5.01F, 2.0F, 3.0F, 1.0F),
+                        .texOffs(0, 42).addBox(-3.51F, -1.0F, -5.01F, 2.0F, 3.0F, 1.0F)
+                        .texOffs(8, 42).addBox(1.51F, -1.0F, -5.01F, 2.0F, 3.0F, 1.0F),
                 PartPose.ZERO);
-
-        // Pupille gauche: 1x1 en haut-droite de l'oeil gauche (coin interne)
         bone.addOrReplaceChild("left_pupil",
-                CubeListBuilder.create()
-                        .texOffs(0, 46)
+                CubeListBuilder.create().texOffs(0, 46)
                         .addBox(-2.51F, -1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
-
-        // Pupille droite: 1x1 en haut-gauche de l'oeil droit (coin interne, miroir)
         bone.addOrReplaceChild("right_pupil",
-                CubeListBuilder.create()
-                        .texOffs(4, 46)
+                CubeListBuilder.create().texOffs(4, 46)
                         .addBox(1.51F, -1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
-
-        // Pattes (non tintees)
         bone.addOrReplaceChild("front_legs",
-                CubeListBuilder.create()
-                        .texOffs(0, 35)
+                CubeListBuilder.create().texOffs(0, 35)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
                 PartPose.offset(1.5F, 3.0F, -2.0F));
-
         bone.addOrReplaceChild("middle_legs",
-                CubeListBuilder.create()
-                        .texOffs(0, 37)
+                CubeListBuilder.create().texOffs(0, 37)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
                 PartPose.offset(1.5F, 3.0F, 0.0F));
-
         bone.addOrReplaceChild("back_legs",
-                CubeListBuilder.create()
-                        .texOffs(0, 39)
+                CubeListBuilder.create().texOffs(0, 39)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
                 PartPose.offset(1.5F, 3.0F, 2.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }
 
-    /**
-     * Ailes (32x32). Geometrie identique au vanilla BeeModel:
-     * 9x0x6, offset Z=-3 (milieu du corps), angle ±0.2618 (15 deg),
-     * CubeDeformation(0.001) pour eviter le z-fighting, mirror() pour l'aile gauche.
-     * Texture 32x32 avec les ailes peintes dans la zone UV du top face.
-     */
+    /** Corps ROUND: plus large et court (9x6x8), texture 64x64. */
+    public static LayerDefinition createRoundBodyLayer() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition partRoot = mesh.getRoot();
+        PartDefinition bone = partRoot.addOrReplaceChild("bone",
+                CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
+
+        bone.addOrReplaceChild("body_corpus",
+                CubeListBuilder.create().texOffs(0, 0)
+                        .addBox(-4.5F, -3.0F, -4.0F, 9.0F, 6.0F, 8.0F),
+                PartPose.ZERO);
+        bone.addOrReplaceChild("body_stripe",
+                CubeListBuilder.create().texOffs(0, 14)
+                        .addBox(-4.5F, -3.0F, -4.0F, 9.0F, 6.0F, 8.0F),
+                PartPose.ZERO);
+        bone.addOrReplaceChild("eyes",
+                CubeListBuilder.create()
+                        .texOffs(0, 42).addBox(-4.51F, -1.0F, -4.01F, 2.0F, 3.0F, 1.0F)
+                        .texOffs(8, 42).addBox(2.51F, -1.0F, -4.01F, 2.0F, 3.0F, 1.0F),
+                PartPose.ZERO);
+        bone.addOrReplaceChild("left_pupil",
+                CubeListBuilder.create().texOffs(0, 46)
+                        .addBox(-3.51F, -1.0F, -4.02F, 1.0F, 1.0F, 0.0F),
+                PartPose.ZERO);
+        bone.addOrReplaceChild("right_pupil",
+                CubeListBuilder.create().texOffs(4, 46)
+                        .addBox(2.51F, -1.0F, -4.02F, 1.0F, 1.0F, 0.0F),
+                PartPose.ZERO);
+        bone.addOrReplaceChild("front_legs",
+                CubeListBuilder.create().texOffs(0, 35)
+                        .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
+                PartPose.offset(2.0F, 3.0F, -1.5F));
+        bone.addOrReplaceChild("middle_legs",
+                CubeListBuilder.create().texOffs(0, 37)
+                        .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
+                PartPose.offset(2.0F, 3.0F, 0.5F));
+        bone.addOrReplaceChild("back_legs",
+                CubeListBuilder.create().texOffs(0, 39)
+                        .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
+                PartPose.offset(2.0F, 3.0F, 2.5F));
+
+        return LayerDefinition.create(mesh, 64, 64);
+    }
+
+    /** Ailes (32x32). Geometrie partagee, positions ajustees par body type au runtime. */
     public static LayerDefinition createWingLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition partRoot = mesh.getRoot();
-
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
         CubeDeformation inflate = new CubeDeformation(0.001F);
 
+        // Positions par defaut (overrides par applyAttachments)
         bone.addOrReplaceChild("right_wing",
-                CubeListBuilder.create()
-                        .texOffs(2, 20)
+                CubeListBuilder.create().texOffs(2, 20)
                         .addBox(-18.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F, inflate),
                 PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
 
         bone.addOrReplaceChild("left_wing",
-                CubeListBuilder.create()
-                        .texOffs(-12, 7)
+                CubeListBuilder.create().texOffs(-12, 7)
                         .addBox(0.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F, inflate),
                 PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
 
         return LayerDefinition.create(mesh, 32, 32);
     }
 
-    /** Dard (32x32). Plan vertical depassant a l'arriere du corps. */
+    /** Dard (32x32). Position ajustee par body type au runtime. */
     public static LayerDefinition createStingerLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition partRoot = mesh.getRoot();
-
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
         bone.addOrReplaceChild("stinger",
-                CubeListBuilder.create()
-                        .texOffs(0, 0)
+                CubeListBuilder.create().texOffs(0, 0)
                         .addBox(0.0F, -1.0F, 5.0F, 0.0F, 1.0F, 2.0F),
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 32, 32);
     }
 
+    // ========== HierarchicalModel ==========
+
     @Override
-    public ModelPart root() {
-        return root;
-    }
+    public ModelPart root() { return root; }
 
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount,
                           float ageInTicks, float netHeadYaw, float headPitch) {
-        // Pose statique pour la preview
     }
 
-    // ========== Render helpers pour les textures separees ==========
+    // ========== Render helpers ==========
 
-    /** Rend les ailes avec leur propre texture. */
     public void renderWings(PoseStack pose, VertexConsumer vc, int light, int overlay, int color) {
         wingRoot.render(pose, vc, light, overlay, color);
     }
 
-    /** Rend le dard avec sa propre texture. */
     public void renderStinger(PoseStack pose, VertexConsumer vc, int light, int overlay, int color) {
         stingerRoot.render(pose, vc, light, overlay, color);
     }
 
-    // ========== Visibility toggles (body texture parts only) ==========
+    // ========== Visibility toggles ==========
 
-    /** Affiche uniquement le corps (pour tint pass corps). */
     public void showCorpusOnly() {
         setBodyPartsVisible(false);
         bodyCorpus.visible = true;
     }
 
-    /** Affiche uniquement les rayures (pour tint pass rayure). */
     public void showStripeOnly() {
         setBodyPartsVisible(false);
         bodyStripe.visible = true;
     }
 
-    /** Affiche uniquement les yeux (pour tint pass yeux). */
     public void showEyesOnly() {
         setBodyPartsVisible(false);
         eyes.visible = true;
     }
 
-    /** Affiche uniquement les pupilles (pour tint pass pupilles). */
     public void showPupilsOnly() {
         setBodyPartsVisible(false);
         leftPupil.visible = true;
         rightPupil.visible = true;
     }
 
-    /** Affiche uniquement les parties non tintees (pattes). */
     public void showUntintedOnly() {
         setBodyPartsVisible(false);
         frontLegs.visible = true;
@@ -267,7 +356,6 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         backLegs.visible = true;
     }
 
-    /** Affiche toutes les parties body. */
     public void showAll() {
         setBodyPartsVisible(true);
     }

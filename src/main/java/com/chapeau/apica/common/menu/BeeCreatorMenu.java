@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [BeeCreatorMenu.java]
- * Description: Menu du Bee Creator — sync ContainerData pour 7 couleurs de parties
+ * Description: Menu du Bee Creator — sync ContainerData pour 7 couleurs + 1 body type
  * ============================================================
  *
  * DEPENDANCES:
@@ -11,7 +11,8 @@
  * | ApicaMenu           | Base menu            | Infrastructure                 |
  * | ApicaMenus          | Type registre        | BEE_CREATOR menu type          |
  * | BeePart             | Enum parties         | COUNT pour ContainerData       |
- * | ContainerData       | Sync data            | 7 couleurs (une par partie)    |
+ * | BeeCreatorBlockEntity| DATA_COUNT           | Taille ContainerData (8)       |
+ * | ContainerData       | Sync data            | 7 couleurs + 1 body type       |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -23,6 +24,8 @@
  */
 package com.chapeau.apica.common.menu;
 
+import com.chapeau.apica.common.block.beecreator.BeeBodyType;
+import com.chapeau.apica.common.block.beecreator.BeeCreatorBlockEntity;
 import com.chapeau.apica.common.block.beecreator.BeePart;
 import com.chapeau.apica.core.registry.ApicaMenus;
 import net.minecraft.core.BlockPos;
@@ -40,7 +43,7 @@ public class BeeCreatorMenu extends ApicaMenu {
 
     /** Client constructor (from network). */
     public BeeCreatorMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buf) {
-        this(containerId, playerInventory, new SimpleContainerData(BeePart.COUNT), buf.readBlockPos());
+        this(containerId, playerInventory, new SimpleContainerData(BeeCreatorBlockEntity.DATA_COUNT), buf.readBlockPos());
     }
 
     /** Server constructor (from BlockEntity via openMenu buf callback). */
@@ -56,6 +59,11 @@ public class BeeCreatorMenu extends ApicaMenu {
     /** Couleur de la partie a l'index donne (0xRRGGBB). */
     public int getPartColor(BeePart part) {
         return data.get(part.getIndex());
+    }
+
+    /** Type de corps selectionne (sync via ContainerData slot 7). */
+    public BeeBodyType getBodyType() {
+        return BeeBodyType.byIndex(data.get(BeeCreatorBlockEntity.BODY_TYPE_SLOT));
     }
 
     @Override
