@@ -217,18 +217,21 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         if (beeModel == null) return;
 
         int centerX = x + w / 2;
-        int centerY = y + h / 2 - 20;
-        int scale = 38;
+        int centerY = y + h / 2;
+        float scale = 38f;
 
         gfx.enableScissor(x, y, x + w, y + h);
         gfx.pose().pushPose();
         gfx.pose().translate(centerX, centerY, 50.0f);
-        float s = -scale;
-        gfx.pose().scale(s, s, s);
-        // Flip + inclinaison pour voir le dessus
+        // Scale negatif = flip pour rendu entite GUI (Y model up = Y ecran up)
+        gfx.pose().scale(-scale, -scale, -scale);
+        // Inclinaison pour voir legerement le dessus
         gfx.pose().mulPose(Axis.XP.rotationDegrees(160f));
         // Rotation Y par drag souris
         gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
+        // Compenser l'offset du bone (Y=19) + centrer le corps (centre a Y=-0.5 local)
+        // bone Y=19 en model pixels = 19/16 = 1.1875 blocs. Centre corps = bone + (-4+3.5)/16 = -0.03125
+        gfx.pose().translate(0.0f, -1.1875f + 0.03125f, 0.0f);
 
         Lighting.setupForEntityInInventory();
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
@@ -285,26 +288,26 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         gfx.disableScissor();
     }
 
-    /** Rend un gizmo 2D projete au centre du modele avec labels Right/Up/Front. */
+    /** Rend un gizmo 2D projete au centre du modele — memes transforms que la preview, sans compensation. */
     private void renderGizmo(GuiGraphics gfx, int cx, int cy) {
-        // Construire la matrice de rotation (memes rotations que la preview)
+        // Reproduire exactement la chaine de transforms de la preview (scale inclus)
         gfx.pose().pushPose();
         gfx.pose().setIdentity();
+        gfx.pose().scale(-1f, -1f, -1f);
         gfx.pose().mulPose(Axis.XP.rotationDegrees(160f));
         gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
         org.joml.Matrix4f mat = gfx.pose().last().pose();
 
-        // Projeter les 3 axes unitaires en 2D ecran
-        // X = Right, Y = Up, Z = Front (vers le joueur = -Z en model, mais on affiche +Z comme Front)
-        float rxX = mat.m00() * GIZMO_LENGTH, rxY = -mat.m10() * GIZMO_LENGTH;
-        float ryX = mat.m01() * GIZMO_LENGTH, ryY = -mat.m11() * GIZMO_LENGTH;
-        float rzX = mat.m02() * GIZMO_LENGTH, rzY = -mat.m12() * GIZMO_LENGTH;
+        // Projection directe des axes unitaires — aucune correction
+        float rxSX = mat.m00() * GIZMO_LENGTH, rxSY = mat.m10() * GIZMO_LENGTH;
+        float rySX = mat.m01() * GIZMO_LENGTH, rySY = mat.m11() * GIZMO_LENGTH;
+        float rzSX = mat.m02() * GIZMO_LENGTH, rzSY = mat.m12() * GIZMO_LENGTH;
 
         gfx.pose().popPose();
 
-        drawGizmoLine(gfx, cx, cy, cx + (int) rxX, cy + (int) rxY, 0xFFFF4444, "Right");
-        drawGizmoLine(gfx, cx, cy, cx + (int) ryX, cy + (int) ryY, 0xFF44FF44, "Up");
-        drawGizmoLine(gfx, cx, cy, cx + (int) rzX, cy + (int) rzY, 0xFF4488FF, "Front");
+        drawGizmoLine(gfx, cx, cy, cx + (int) rxSX, cy + (int) rxSY, 0xFFFF4444, "Right");
+        drawGizmoLine(gfx, cx, cy, cx + (int) rySX, cy + (int) rySY, 0xFF44FF44, "Up");
+        drawGizmoLine(gfx, cx, cy, cx + (int) rzSX, cy + (int) rzSY, 0xFF4488FF, "Front");
     }
 
     /** Dessine une ligne de gizmo avec un label a l'extremite. */
