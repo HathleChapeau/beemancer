@@ -223,8 +223,8 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         gfx.enableScissor(x, y, x + w, y + h);
         gfx.pose().pushPose();
         gfx.pose().translate(centerX, centerY, 50.0f);
-        // Scale negatif = flip pour rendu entite GUI (Y model up = Y ecran up)
-        gfx.pose().scale(-scale, -scale, -scale);
+        // X positif = droite ecran, Y negatif = model up vers ecran up, Z positif = profondeur
+        gfx.pose().scale(scale, -scale, scale);
         // Inclinaison pour voir legerement le dessus
         gfx.pose().mulPose(Axis.XP.rotationDegrees(160f));
         // Rotation Y par drag souris
@@ -293,7 +293,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         // Reproduire exactement la chaine de transforms de la preview (scale inclus)
         gfx.pose().pushPose();
         gfx.pose().setIdentity();
-        gfx.pose().scale(-1f, -1f, -1f);
+        gfx.pose().scale(1f, -1f, 1f);
         gfx.pose().mulPose(Axis.XP.rotationDegrees(160f));
         gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
         org.joml.Matrix4f mat = gfx.pose().last().pose();
