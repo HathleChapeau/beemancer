@@ -2,7 +2,8 @@
   "parent": "minecraft:block/block",
   "render_type": "cutout",
   "textures": {
-    "plate": "apica:block/honeyed_iron_block",
+    "plate": "apica:block/artifacts/launchpad_top_honey",
+    "iron": "apica:block/iron",
     "particle": "apica:block/honeyed_iron_block"
   },
   "elements": [
@@ -12,11 +13,11 @@
       "to": [15, 8, 15],
       "faces": {
         "up":    {"texture": "#plate"},
-        "down":  {"texture": "#plate"},
-        "north": {"texture": "#plate"},
-        "south": {"texture": "#plate"},
-        "east":  {"texture": "#plate"},
-        "west":  {"texture": "#plate"}
+        "down":  {"texture": "#iron"},
+        "north": {"texture": "#iron"},
+        "south": {"texture": "#iron"},
+        "east":  {"texture": "#iron"},
+        "west":  {"texture": "#iron"}
       }
     }
   ]

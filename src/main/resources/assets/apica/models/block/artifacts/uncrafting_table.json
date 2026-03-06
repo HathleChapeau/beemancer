@@ -95,32 +95,6 @@
         "east":  {"texture": "#side"},
         "west":  {"texture": "#side"}
       }
-    },
-    {
-      "name": "reservoir",
-      "from": [6.5, 2, 14],
-      "to": [9.5, 7, 17],
-      "faces": {
-        "up":    {"texture": "#reservoir", "uv": [0,8,16,16]},
-        "down":  {"texture": "#reservoir", "uv": [0,0,1,1]},
-        "north": {"texture": "#reservoir", "uv": [0,0,16,8]},
-        "south": {"texture": "#reservoir", "uv": [0,0,16,8]},
-        "east":  {"texture": "#reservoir", "uv": [0,0,16,8]},
-        "west":  {"texture": "#reservoir", "uv": [0,0,16,8]}
-      }
-    },
-    {
-      "name": "reservoir reverse",
-      "from": [6.5, 7, 14],
-      "to": [9.5, 2, 17],
-      "faces": {
-        "up":    {"texture": "#reservoir", "uv": [0,0,1,1]},
-        "down":  {"texture": "#reservoir", "uv": [0,8,16,16]},
-        "north": {"texture": "#reservoir", "uv": [0,0,16,8]},
-        "south": {"texture": "#reservoir", "uv": [0,0,16,8]},
-        "east":  {"texture": "#reservoir", "uv": [0,0,16,8]},
-        "west":  {"texture": "#reservoir", "uv": [0,0,16,8]}
-      }
     }
   ]
 }

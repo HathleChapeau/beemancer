@@ -2,10 +2,10 @@
   "parent": "minecraft:block/block",
   "render_type": "cutout",
   "textures": {
-    "base": "minecraft:block/iron_block",
-    "back": "minecraft:block/iron_block",
-    "antenna": "minecraft:block/gold_block",
-    "particle": "minecraft:block/iron_block"
+    "iron": "apica:block/iron",
+    "base": "apica:block/wood",
+    "back": "apica:block/wood",
+    "particle": "apica:block/wood"
   },
   "elements": [
     {
@@ -26,12 +26,12 @@
       "from": [4, 4, 14],
       "to": [12, 12, 16],
       "faces": {
-        "up":    {"texture": "#back"},
-        "down":  {"texture": "#back"},
-        "north": {"texture": "#back"},
-        "south": {"texture": "#back"},
-        "east":  {"texture": "#back"},
-        "west":  {"texture": "#back"}
+        "up":    {"texture": "#iron"},
+        "down":  {"texture": "#iron"},
+        "north": {"texture": "#iron"},
+        "south": {"texture": "#iron"},
+        "east":  {"texture": "#iron"},
+        "west":  {"texture": "#iron"}
       }
     },
     {
