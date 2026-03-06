@@ -115,27 +115,28 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
                         .addBox(-3.5F, -4.0F, -5.0F, 7.0F, 7.0F, 10.0F),
                 PartPose.ZERO);
 
-        // Yeux: cube overlay identique au corps (7x7x10) a z=-5.001 pour eviter z-fighting.
-        // Seuls les pixels des yeux sur la face avant sont opaques, le reste est transparent
-        // (entityCutout discarde). Evite le probleme de panneau plat qui se decolle a la rotation.
+        // Yeux: box 2x3x1 au coin du corps. 2 colonnes sur la face avant + 1 colonne sur le cote.
+        // Legere protrusion (0.01) pour rendre par-dessus le corps. entityCutout masque le reste.
         bone.addOrReplaceChild("eyes",
                 CubeListBuilder.create()
                         .texOffs(0, 42)
-                        .addBox(-3.5F, -4.0F, -5.001F, 7.0F, 7.0F, 10.0F),
+                        .addBox(-3.51F, -3.0F, -5.01F, 2.0F, 3.0F, 1.0F)
+                        .texOffs(8, 42)
+                        .addBox(1.51F, -3.0F, -5.01F, 2.0F, 3.0F, 1.0F),
                 PartPose.ZERO);
 
-        // Pupille gauche: 1x1 au coin haut-droit de l'oeil gauche (face col 2, row 3)
+        // Pupille gauche: 1x1 en haut-droite de l'oeil gauche (coin interne)
         bone.addOrReplaceChild("left_pupil",
                 CubeListBuilder.create()
-                        .texOffs(0, 59)
-                        .addBox(-1.5F, -1.0F, -5.002F, 1.0F, 1.0F, 0.0F),
+                        .texOffs(0, 46)
+                        .addBox(-2.51F, -1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
-        // Pupille droite: 1x1 au coin haut-gauche de l'oeil droit (face col 4, row 3)
+        // Pupille droite: 1x1 en haut-gauche de l'oeil droit (coin interne, miroir)
         bone.addOrReplaceChild("right_pupil",
                 CubeListBuilder.create()
-                        .texOffs(4, 59)
-                        .addBox(0.5F, -1.0F, -5.002F, 1.0F, 1.0F, 0.0F),
+                        .texOffs(4, 46)
+                        .addBox(1.51F, -1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
         // Pattes (non tintees)
