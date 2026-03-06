@@ -26,7 +26,7 @@ import com.chapeau.apica.common.block.beecreator.BeePart;
 import com.chapeau.apica.common.menu.BeeCreatorMenu;
 import com.chapeau.apica.core.network.packets.BeeCreatorUpdatePacket;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -274,59 +274,35 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
                 toArgb(localColors[BeePart.STINGER.getIndex()]));
 
         bufferSource.endBatch();
+
+        // Gizmo au point de pivot du modele (dans le meme espace 3D)
+        if (showGizmo) {
+            renderGizmo(gfx, bufferSource);
+            bufferSource.endBatch();
+        }
+
         Lighting.setupFor3DItems();
 
         gfx.pose().popPose();
-
-        // Gizmo XYZ dans le coin bas-gauche de la preview
-        renderGizmo(gfx, x + 16, y + h - 16);
-
         gfx.disableScissor();
     }
 
-    /** Rend un gizmo XYZ colore dans le coin de la preview, oriente selon la rotation actuelle. */
-    private void renderGizmo(GuiGraphics gfx, int cx, int cy) {
-        // Appliquer les memes rotations que la preview pour orienter le gizmo
-        PoseStack.Pose pose = gfx.pose().last();
-        gfx.pose().pushPose();
-        gfx.pose().setIdentity();
-        gfx.pose().mulPose(Axis.XP.rotationDegrees(160f));
-        gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
-        org.joml.Matrix4f mat = gfx.pose().last().pose();
+    /** Rend un gizmo XYZ au centre du modele via des lignes 3D dans le meme espace de pose. */
+    private void renderGizmo(GuiGraphics gfx, MultiBufferSource.BufferSource bufferSource) {
+        float len = 0.6f;
+        VertexConsumer vc = bufferSource.getBuffer(RenderType.lines());
+        org.joml.Matrix4f poseMat = gfx.pose().last().pose();
+        org.joml.Matrix3f normalMat = gfx.pose().last().normal();
 
-        // Projeter les axes unitaires via la matrice de rotation
-        float xEndX = mat.m00() * GIZMO_LENGTH;
-        float xEndY = mat.m10() * GIZMO_LENGTH;
-        float yEndX = mat.m01() * GIZMO_LENGTH;
-        float yEndY = mat.m11() * GIZMO_LENGTH;
-        float zEndX = mat.m02() * GIZMO_LENGTH;
-        float zEndY = mat.m12() * GIZMO_LENGTH;
-
-        gfx.pose().popPose();
-
-        // Dessiner les lignes d'axes (X=rouge, Y=vert, Z=bleu)
-        drawGizmoLine(gfx, cx, cy, cx + (int) xEndX, cy - (int) xEndY, 0xFFFF4444, "X");
-        drawGizmoLine(gfx, cx, cy, cx + (int) yEndX, cy - (int) yEndY, 0xFF44FF44, "Y");
-        drawGizmoLine(gfx, cx, cy, cx + (int) zEndX, cy - (int) zEndY, 0xFF4488FF, "Z");
-    }
-
-    /** Dessine une ligne de gizmo avec un label a l'extremite. */
-    private void drawGizmoLine(GuiGraphics gfx, int x0, int y0, int x1, int y1, int color, String label) {
-        // Bresenham simplifie: dessiner des pixels 1x1
-        int dx = Math.abs(x1 - x0);
-        int dy = Math.abs(y1 - y0);
-        int sx = x0 < x1 ? 1 : -1;
-        int sy = y0 < y1 ? 1 : -1;
-        int err = dx - dy;
-        int cx = x0, cy = y0;
-        while (true) {
-            gfx.fill(cx, cy, cx + 1, cy + 1, color);
-            if (cx == x1 && cy == y1) break;
-            int e2 = 2 * err;
-            if (e2 > -dy) { err -= dy; cx += sx; }
-            if (e2 < dx) { err += dx; cy += sy; }
-        }
-        gfx.drawString(font, label, x1 + 2, y1 - 4, color, false);
+        // X = rouge
+        vc.addVertex(poseMat, 0, 0, 0).setColor(255, 68, 68, 255).setNormal(normalMat, 1, 0, 0);
+        vc.addVertex(poseMat, len, 0, 0).setColor(255, 68, 68, 255).setNormal(normalMat, 1, 0, 0);
+        // Y = vert
+        vc.addVertex(poseMat, 0, 0, 0).setColor(68, 255, 68, 255).setNormal(normalMat, 0, 1, 0);
+        vc.addVertex(poseMat, 0, len, 0).setColor(68, 255, 68, 255).setNormal(normalMat, 0, 1, 0);
+        // Z = bleu
+        vc.addVertex(poseMat, 0, 0, 0).setColor(68, 136, 255, 255).setNormal(normalMat, 0, 0, 1);
+        vc.addVertex(poseMat, 0, 0, len).setColor(68, 136, 255, 255).setNormal(normalMat, 0, 0, 1);
     }
 
     @Override
