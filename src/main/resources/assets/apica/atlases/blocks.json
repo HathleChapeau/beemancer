@@ -1,8 +1,8 @@
 {
   "sources": [
     {
-      "type": "minecraft:single",
-      "resource": "apica:gui/empty_slot_comb"
+      "type": "single",
+      "resource": "apica:item/empty_slot_comb"
     }
   ]
 }

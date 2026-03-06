@@ -71,7 +71,7 @@ public class CrystallizerScreen extends AbstractApicaScreen<CrystallizerMenu> {
         // Progress bar (ancienne version programmatique conservee)
         int processTime = menu.getProcessTime();
         float ratio = processTime > 0 ? (float) menu.getProgress() / processTime : 0;
-        GuiRenderHelper.renderProgressBar(g, px + PROGRESS_X, y + PROGRESS_Y, 50, 6, ratio);
+        GuiRenderHelper.renderProgressBar(g, px + PROGRESS_X, y + PROGRESS_Y, 58, 6, ratio);
     }
 
     @Override

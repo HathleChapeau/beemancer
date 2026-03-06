@@ -168,7 +168,7 @@ public class ApicaSlot extends SlotItemHandler {
      */
     public static ApicaSlot combInput(IItemHandler handler, int index, int x, int y) {
         return new ApicaSlot(handler, index, x, y,
-            ResourceLocation.fromNamespaceAndPath("apica", "gui/empty_slot_comb"));
+            ResourceLocation.fromNamespaceAndPath("apica", "item/empty_slot_comb"));
     }
 
     /**

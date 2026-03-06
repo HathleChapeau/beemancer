@@ -23,10 +23,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.fluids.FluidUtil;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class HoneyTankBlock extends BaseEntityBlock {
     public static final MapCodec<HoneyTankBlock> CODEC = simpleCodec(HoneyTankBlock::new);
@@ -66,6 +69,20 @@ public class HoneyTankBlock extends BaseEntityBlock {
             }
         }
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
+    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        List<ItemStack> drops = super.getDrops(state, builder);
+        BlockEntity be = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if (be instanceof HoneyTankBlockEntity tank && !tank.getFluid().isEmpty()) {
+            for (ItemStack drop : drops) {
+                if (drop.is(this.asItem())) {
+                    be.saveToItem(drop, builder.getLevel().registryAccess());
+                }
+            }
+        }
+        return drops;
     }
 
     @Override
