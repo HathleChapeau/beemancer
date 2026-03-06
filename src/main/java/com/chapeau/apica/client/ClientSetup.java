@@ -329,8 +329,10 @@ public class ClientSetup {
         // Leaf Blower orb model
         event.registerLayerDefinition(LeafBlowerProjectileModel.LAYER_LOCATION, LeafBlowerProjectileModel::createBodyLayer);
 
-        // ApicaBee — modele customisable pour le Bee Creator
+        // ApicaBee — modele customisable pour le Bee Creator (3 layers: body, wings, stinger)
         event.registerLayerDefinition(ApicaBeeModel.LAYER_LOCATION, ApicaBeeModel::createBodyLayer);
+        event.registerLayerDefinition(ApicaBeeModel.WING_LAYER, ApicaBeeModel::createWingLayer);
+        event.registerLayerDefinition(ApicaBeeModel.STINGER_LAYER, ApicaBeeModel::createStingerLayer);
 
         // Hoverbike — parties modulaires (toutes variantes, enregistrees dynamiquement)
         for (HoverbikePartVariants.ModelFactory factory : HoverbikePartVariants.getAllModelFactories().values()) {

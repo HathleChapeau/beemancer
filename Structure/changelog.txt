@@ -3,6 +3,34 @@
 ################################################################################
 
 ================================================================================
+2026-03-06 - Bee Creator: Eyes, Wings, Stinger Integration
+================================================================================
+
+ApicaBeeModel multi-texture support (3 LayerDefinitions):
+- Body layer (64x64): +leftEye, rightEye, leftPupil, rightPupil model parts
+  Flat panels on front face (z=-5.01/-5.02) with entityCutout transparency
+- Wing layer (32x32): horizontal 8x16 plane, expandable texture area
+  Separate texture: apica_bee_wing.png (from bee_wing.png source)
+- Stinger layer (32x32): vanilla stinger geometry (0x1x2)
+  Separate texture: apica_bee_stinger.png (2 grayscale pixels)
+
+BeeCreatorScreen: 7 render passes for all BeePart tint colors:
+  1. Body corpus (BeePart.BODY)
+  2. Body stripe (BeePart.STRIPE)
+  3. Eyes (BeePart.EYE)
+  4. Pupils (BeePart.PUPIL)
+  5. Legs (untinted, white)
+  6. Wings (BeePart.WING, separate texture)
+  7. Stinger (BeePart.STINGER, separate texture)
+
+Textures:
+- apica_bee.png: +eye data at texOffs(0,42)/(8,42), +pupil at (0,46)/(4,46)
+- apica_bee_wing.png: new 32x32, top face UV at (16,0)-(24,16)
+- apica_bee_stinger.png: new 32x32, west/east face at (0,2)-(3,2)
+
+ClientSetup: +WING_LAYER, +STINGER_LAYER registration
+
+================================================================================
 2026-03-04 - Companion System Enhancements + Codex Fixes
 ================================================================================
 

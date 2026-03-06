@@ -90,9 +90,12 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     protected void init() {
         super.init();
 
-        // Bake le modele ApicaBee
+        // Bake les 3 layers du modele ApicaBee
+        var entityModels = Minecraft.getInstance().getEntityModels();
         beeModel = new ApicaBeeModel<>(
-                Minecraft.getInstance().getEntityModels().bakeLayer(ApicaBeeModel.LAYER_LOCATION));
+                entityModels.bakeLayer(ApicaBeeModel.LAYER_LOCATION),
+                entityModels.bakeLayer(ApicaBeeModel.WING_LAYER),
+                entityModels.bakeLayer(ApicaBeeModel.STINGER_LAYER));
 
         // Animation turntable: rotation Y continue en boucle
         animController.createAnimation("spin", RotateAnimation.builder()
@@ -239,25 +242,50 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
         Lighting.setupForEntityInInventory();
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-        RenderType renderType = RenderType.entityCutout(ApicaBeeModel.TEXTURE);
+
+        // --- Passes body texture (apica_bee.png, 64x64) ---
+        RenderType bodyRT = RenderType.entityCutout(ApicaBeeModel.TEXTURE);
 
         // Pass 1: Couleur corps
         beeModel.showCorpusOnly();
-        VertexConsumer vc1 = bufferSource.getBuffer(renderType);
-        beeModel.renderToBuffer(gfx.pose(), vc1, LightTexture.FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, toArgb(localColors[BeePart.BODY.getIndex()]));
+        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
+                toArgb(localColors[BeePart.BODY.getIndex()]));
 
         // Pass 2: Couleur rayure
         beeModel.showStripeOnly();
-        VertexConsumer vc2 = bufferSource.getBuffer(renderType);
-        beeModel.renderToBuffer(gfx.pose(), vc2, LightTexture.FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, toArgb(localColors[BeePart.STRIPE.getIndex()]));
+        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
+                toArgb(localColors[BeePart.STRIPE.getIndex()]));
 
-        // Pass 3: Parties non tintees (pattes)
+        // Pass 3: Couleur yeux
+        beeModel.showEyesOnly();
+        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
+                toArgb(localColors[BeePart.EYE.getIndex()]));
+
+        // Pass 4: Couleur pupilles
+        beeModel.showPupilsOnly();
+        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
+                toArgb(localColors[BeePart.PUPIL.getIndex()]));
+
+        // Pass 5: Parties non tintees (pattes)
         beeModel.showUntintedOnly();
-        VertexConsumer vc3 = bufferSource.getBuffer(renderType);
-        beeModel.renderToBuffer(gfx.pose(), vc3, LightTexture.FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+
+        // --- Pass ailes (apica_bee_wing.png, 32x32) ---
+        RenderType wingRT = RenderType.entityCutout(ApicaBeeModel.WING_TEXTURE);
+        beeModel.renderWings(gfx.pose(), bufferSource.getBuffer(wingRT),
+                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
+                toArgb(localColors[BeePart.WING.getIndex()]));
+
+        // --- Pass dard (apica_bee_stinger.png, 32x32) ---
+        RenderType stingerRT = RenderType.entityCutout(ApicaBeeModel.STINGER_TEXTURE);
+        beeModel.renderStinger(gfx.pose(), bufferSource.getBuffer(stingerRT),
+                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
+                toArgb(localColors[BeePart.STINGER.getIndex()]));
 
         bufferSource.endBatch();
         Lighting.setupFor3DItems();
