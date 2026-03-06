@@ -51,17 +51,20 @@ public class BeePathfinding {
     private static final double OFF_PATH_THRESHOLD = 5.0;
     private static final double WAYPOINT_REACH_DISTANCE = 0.7;
     private static final int RECOMPUTE_INTERVAL = 20;
-    private static final int STALL_THRESHOLD = 60;
+    private static final int STALL_THRESHOLD = 40;
+    private static final int MAX_CONSECUTIVE_STALLS = 3;
 
     private final Level level;
 
     @Nullable private List<BlockPos> currentPath = null;
     private int currentPathIndex = 0;
     @Nullable private BlockPos cachedEnd = null;
+    @Nullable private BlockPos recoveryWaypoint = null;
 
     private long lastComputeGameTime = 0;
     private int progressStallCounter = 0;
     private int lastTrackedPathIndex = 0;
+    private int consecutiveStalls = 0;
 
     private boolean debugMode = false;
     private long lastParticleTime = 0;
@@ -78,6 +81,10 @@ public class BeePathfinding {
      */
     @Nullable
     public List<BlockPos> findPath(BlockPos start, BlockPos end) {
+        if (recoveryWaypoint != null) {
+            return null;
+        }
+
         long gameTime = level.getGameTime();
 
         if (end.equals(cachedEnd) && currentPath != null
@@ -108,6 +115,16 @@ public class BeePathfinding {
      */
     @Nullable
     public BlockPos getNextWaypoint(Vec3 currentPos, double reachDistance) {
+        // Recovery waypoint takes priority: guide bee out of stuck position
+        if (recoveryWaypoint != null) {
+            double dist = currentPos.distanceTo(Vec3.atCenterOf(recoveryWaypoint));
+            if (dist <= reachDistance) {
+                recoveryWaypoint = null;
+                return null;
+            }
+            return recoveryWaypoint;
+        }
+
         if (currentPath == null || currentPath.isEmpty()) {
             return null;
         }
@@ -115,12 +132,23 @@ public class BeePathfinding {
         if (currentPathIndex == lastTrackedPathIndex) {
             progressStallCounter++;
             if (progressStallCounter >= STALL_THRESHOLD) {
+                consecutiveStalls++;
                 clearPath();
+                if (consecutiveStalls >= MAX_CONSECUTIVE_STALLS) {
+                    // Fly upward + random horizontal jitter to escape stuck position
+                    recoveryWaypoint = BlockPos.containing(
+                            currentPos.x + (Math.random() * 4 - 2),
+                            currentPos.y + 3,
+                            currentPos.z + (Math.random() * 4 - 2)
+                    );
+                    consecutiveStalls = 0;
+                }
                 return null;
             }
         } else {
             lastTrackedPathIndex = currentPathIndex;
             progressStallCounter = 0;
+            consecutiveStalls = 0;
         }
 
         while (currentPathIndex < currentPath.size()) {
@@ -182,6 +210,7 @@ public class BeePathfinding {
         cachedEnd = null;
         progressStallCounter = 0;
         lastTrackedPathIndex = 0;
+        recoveryWaypoint = null;
     }
 
     public boolean isPathComplete() {

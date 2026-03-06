@@ -101,7 +101,7 @@ public class ForagingBehaviorGoal extends Goal {
     public boolean canUse() {
         if (!bee.hasAssignedHive()) return false;
         if (bee.shouldFlee()) return false;
-        if (bee.isEnraged()) return false;
+        if (bee.isEnraged() && bee.getTarget() != null) return false;
 
         BeeBehaviorConfig config = bee.getBehaviorConfig();
         if (config.getBehaviorType() != BeeBehaviorType.FORAGER) return false;
@@ -163,6 +163,53 @@ public class ForagingBehaviorGoal extends Goal {
             case WORKING -> tickWorking();
             case RETURNING -> tickReturning();
             default -> {}
+        }
+    }
+
+    /**
+     * Phase LEAVING_HIVE: monter au-dessus de la ruche avant de pathfinder.
+     * Evite les collisions avec la ruche et les blocs adjacents au spawn.
+     */
+    private void tickLeavingHive() {
+        leavingHiveTicks--;
+
+        // Monter en diagonale aléatoire pour s'écarter de la ruche
+        BlockPos hivePos = bee.getAssignedHivePos();
+        if (hivePos != null) {
+            Vec3 hiveCenter = Vec3.atCenterOf(hivePos);
+            Vec3 beePos = bee.position();
+            double upSpeed = 0.15;
+            double lateralSpeed = 0.05;
+
+            // S'écarter horizontalement du centre de la ruche
+            double dx = beePos.x - hiveCenter.x;
+            double dz = beePos.z - hiveCenter.z;
+            double hLen = Math.sqrt(dx * dx + dz * dz);
+            if (hLen < 0.1) {
+                // Trop centré sur la ruche, pousser dans une direction basée sur UUID
+                long uuidBits = bee.getUUID().getLeastSignificantBits();
+                dx = ((uuidBits & 1) == 0) ? 1.0 : -1.0;
+                dz = ((uuidBits & 2) == 0) ? 1.0 : -1.0;
+                hLen = Math.sqrt(dx * dx + dz * dz);
+            }
+
+            Vec3 movement = new Vec3(
+                    (dx / hLen) * lateralSpeed,
+                    upSpeed,
+                    (dz / hLen) * lateralSpeed
+            );
+
+            // Separation boids
+            Vec3 separation = BeeFlightHelper.computeSeparation(bee);
+            movement = movement.add(separation);
+
+            bee.setDeltaMovement(movement);
+        } else {
+            bee.setDeltaMovement(0, 0.15, 0);
+        }
+
+        if (leavingHiveTicks <= 0) {
+            stateMachine.setState(BeeActivityState.SEEKING_FLOWER);
         }
     }
 

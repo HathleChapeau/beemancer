@@ -44,8 +44,12 @@ public class ReturnToHiveWhenLowHealthGoal extends Goal {
     }
     
     @Override
+    public boolean requiresUpdateEveryTick() {
+        return true;
+    }
+
+    @Override
     public boolean canUse() {
-        // Vérifier si l'abeille a une ruche assignée et si elle doit fuir
         return bee.hasAssignedHive() && bee.shouldFlee();
     }
     

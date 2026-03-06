@@ -77,6 +77,42 @@ public class HiveBeeLifecycleManager {
         return species != null ? species.getId() : "meadow";
     }
 
+    // === Spawn Position ===
+
+    /**
+     * Trouve une position de spawn libre au-dessus de la ruche.
+     * Verifie que le bloc et le bloc au-dessus sont non-solides (clearance pour la hitbox 0.7x0.6).
+     * Si la position par defaut est bloquee, cherche en spirale autour.
+     */
+    private static BlockPos findClearSpawnPos(BlockPos hivePos, int heightOffset, Level level) {
+        BlockPos defaultPos = hivePos.above(heightOffset + 1);
+
+        if (isSpawnClear(level, defaultPos)) {
+            return defaultPos;
+        }
+
+        // Chercher en spirale: d'abord directement au-dessus, puis sur les cotes
+        for (int dy = 1; dy <= 3; dy++) {
+            BlockPos above = defaultPos.above(dy);
+            if (isSpawnClear(level, above)) return above;
+        }
+
+        // Chercher autour sur les 4 directions cardinales
+        for (int dy = 0; dy <= 2; dy++) {
+            for (net.minecraft.core.Direction dir : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                BlockPos candidate = defaultPos.above(dy).relative(dir);
+                if (isSpawnClear(level, candidate)) return candidate;
+            }
+        }
+
+        // Fallback: position par defaut meme si bloquee (le LEAVING_HIVE du goal tentera de s'extraire)
+        return defaultPos;
+    }
+
+    private static boolean isSpawnClear(Level level, BlockPos pos) {
+        return !level.getBlockState(pos).isSolid() && !level.getBlockState(pos.above()).isSolid();
+    }
+
     // === Bee Release/Entry ===
 
     public void releaseBee(int slot) {
@@ -94,9 +130,9 @@ public class HiveBeeLifecycleManager {
         MagicBeeEntity bee = ApicaEntities.MAGIC_BEE.get().create(parent.getLevel());
         if (bee == null) return;
 
-        BlockPos spawnPos = parent.getBlockPos().above(config.spawnHeightOffset());
-        bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY() + 1, spawnPos.getZ() + 0.5, 0, 0);
-        bee.setDeltaMovement(Vec3.ZERO);
+        BlockPos spawnPos = findClearSpawnPos(parent.getBlockPos(), config.spawnHeightOffset(), parent.getLevel());
+        bee.moveTo(spawnPos.getX() + 0.5, spawnPos.getY() + 0.1, spawnPos.getZ() + 0.5, 0, 0);
+        bee.setDeltaMovement(0, 0.1, 0);
 
         BeeGeneData geneData = MagicBeeItem.getGeneData(beeItem);
         bee.getGeneData().copyFrom(geneData);
