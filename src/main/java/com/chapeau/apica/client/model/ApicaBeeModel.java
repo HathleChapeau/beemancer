@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ApicaBeeModel.java]
- * Description: Modele d'abeille modulaire — corps interchangeables avec attaches pour ailes/dard
+ * Description: Modele d'abeille modulaire — corps, ailes et dard interchangeables
  * ============================================================
  *
  * DEPENDANCES:
@@ -10,6 +10,8 @@
  * |---------------------|----------------------|--------------------------------|
  * | Apica               | MOD_ID               | ModelLayerLocation, textures   |
  * | BeeBodyType         | Types de corps       | Layer factories, attachments   |
+ * | BeeWingType          | Types d'ailes        | Layer factories, textures      |
+ * | BeeStingerType       | Types de dard        | Layer factories, textures      |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -22,6 +24,8 @@ package com.chapeau.apica.client.model;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
+import com.chapeau.apica.common.block.beecreator.BeeStingerType;
+import com.chapeau.apica.common.block.beecreator.BeeWingType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.HierarchicalModel;
@@ -38,23 +42,13 @@ import net.minecraft.world.entity.Entity;
 
 /**
  * Modele d'abeille modulaire pour le Bee Creator.
- * Corps interchangeable (DEFAULT, ROUND, ...) avec points d'attache
- * pour les parties separees (ailes, dard).
- *
- * Architecture:
- * - Body layer (64x64): corpus, stripe, eyes, pupils, legs — per body type
- * - Wing layer (32x32): shared geometry, positions ajustees par body type
- * - Stinger layer (32x32): shared geometry, position ajustee par body type
+ * Corps, ailes et dard sont independamment interchangeables.
+ * Chaque type a sa propre geometrie, texture et layer.
+ * Les points d'attache (position des ailes/dard) dependent du body type.
  *
  * @param <T> Type d'entite compatible
  */
 public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
-
-    // --- Shared layer locations (wings/stinger geometry) ---
-    public static final ModelLayerLocation WING_LAYER = new ModelLayerLocation(
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee"), "wing");
-    public static final ModelLayerLocation STINGER_LAYER = new ModelLayerLocation(
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee"), "stinger");
 
     // --- Body parts (64x64 texture) ---
     private final ModelPart root;
@@ -76,7 +70,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     private final ModelPart stingerRoot;
     private final ModelPart stinger;
 
-    // --- Current body type ---
+    // --- Current types ---
     private final BeeBodyType bodyType;
 
     public ApicaBeeModel(ModelPart bodyRoot, ModelPart wingRoot, ModelPart stingerRoot, BeeBodyType bodyType) {
@@ -141,36 +135,44 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         };
     }
 
-    // ========== Layer locations per body type ==========
+    // ========== Layer locations ==========
 
     public static ModelLayerLocation getBodyLayer(BeeBodyType type) {
         return new ModelLayerLocation(
-                ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee_" + type.getId()), "body");
+                ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee_body_" + type.getId()), "main");
+    }
+
+    public static ModelLayerLocation getWingLayer(BeeWingType type) {
+        return new ModelLayerLocation(
+                ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee_wing_" + type.getId()), "main");
+    }
+
+    public static ModelLayerLocation getStingerLayer(BeeStingerType type) {
+        return new ModelLayerLocation(
+                ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee_stinger_" + type.getId()), "main");
     }
 
     // ========== Textures ==========
 
-    /** Texture du corps — depend du body type. */
     public static ResourceLocation getBodyTexture(BeeBodyType type) {
-        return switch (type) {
-            case DEFAULT -> ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee.png");
-            case ROUND -> ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_round.png");
-        };
+        return ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID,
+                "textures/entity/apica_bee_body_" + type.getId() + ".png");
     }
 
-    /** Texture des ailes — independante du body type. */
-    public static final ResourceLocation WING_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_wing.png");
+    public static ResourceLocation getWingTexture(BeeWingType type) {
+        return ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID,
+                "textures/entity/apica_bee_wing_" + type.getId() + ".png");
+    }
 
-    /** Texture du dard — independante du body type. */
-    public static final ResourceLocation STINGER_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_stinger.png");
+    public static ResourceLocation getStingerTexture(BeeStingerType type) {
+        return ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID,
+                "textures/entity/apica_bee_stinger_" + type.getId() + ".png");
+    }
 
     public BeeBodyType getBodyType() { return bodyType; }
 
     // ========== Body layer factories ==========
 
-    /** Dispatch: retourne la LayerDefinition du body type donne. */
     public static LayerDefinition createBodyLayerFor(BeeBodyType type) {
         return switch (type) {
             case DEFAULT -> createDefaultBodyLayer();
@@ -179,7 +181,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     }
 
     /** Corps DEFAULT: vanilla-like (7x7x10), texture 64x64. */
-    public static LayerDefinition createDefaultBodyLayer() {
+    private static LayerDefinition createDefaultBodyLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition partRoot = mesh.getRoot();
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
@@ -223,7 +225,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     }
 
     /** Corps ROUND: plus large et court (9x6x8), texture 64x64. */
-    public static LayerDefinition createRoundBodyLayer() {
+    private static LayerDefinition createRoundBodyLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition partRoot = mesh.getRoot();
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
@@ -266,8 +268,17 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         return LayerDefinition.create(mesh, 64, 64);
     }
 
-    /** Ailes (32x32). Geometrie partagee, positions ajustees par body type au runtime. */
-    public static LayerDefinition createWingLayer() {
+    // ========== Wing layer factories ==========
+
+    public static LayerDefinition createWingLayerFor(BeeWingType type) {
+        return switch (type) {
+            case DEFAULT -> createDefaultWingLayer();
+            case ROUND -> createRoundWingLayer();
+        };
+    }
+
+    /** Ailes DEFAULT: grandes (18x12), texture 32x32. */
+    private static LayerDefinition createDefaultWingLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition partRoot = mesh.getRoot();
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
@@ -275,7 +286,6 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
         CubeDeformation inflate = new CubeDeformation(0.001F);
 
-        // Positions par defaut (overrides par applyAttachments)
         bone.addOrReplaceChild("right_wing",
                 CubeListBuilder.create().texOffs(2, 20)
                         .addBox(-18.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F, inflate),
@@ -289,8 +299,39 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         return LayerDefinition.create(mesh, 32, 32);
     }
 
-    /** Dard (32x32). Position ajustee par body type au runtime. */
-    public static LayerDefinition createStingerLayer() {
+    /** Ailes ROUND: plus courtes et larges (12x8), texture 32x32. */
+    private static LayerDefinition createRoundWingLayer() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition partRoot = mesh.getRoot();
+        PartDefinition bone = partRoot.addOrReplaceChild("bone",
+                CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
+
+        CubeDeformation inflate = new CubeDeformation(0.001F);
+
+        bone.addOrReplaceChild("right_wing",
+                CubeListBuilder.create().texOffs(2, 22)
+                        .addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 10.0F, inflate),
+                PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
+
+        bone.addOrReplaceChild("left_wing",
+                CubeListBuilder.create().texOffs(-10, 6)
+                        .addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 10.0F, inflate),
+                PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
+
+        return LayerDefinition.create(mesh, 32, 32);
+    }
+
+    // ========== Stinger layer factories ==========
+
+    public static LayerDefinition createStingerLayerFor(BeeStingerType type) {
+        return switch (type) {
+            case DEFAULT -> createDefaultStingerLayer();
+            case SHARP -> createSharpStingerLayer();
+        };
+    }
+
+    /** Dard DEFAULT: court (0x1x2), texture 32x32. */
+    private static LayerDefinition createDefaultStingerLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition partRoot = mesh.getRoot();
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
@@ -299,6 +340,21 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         bone.addOrReplaceChild("stinger",
                 CubeListBuilder.create().texOffs(0, 0)
                         .addBox(0.0F, -1.0F, 0.0F, 0.0F, 1.0F, 2.0F),
+                PartPose.ZERO);
+
+        return LayerDefinition.create(mesh, 32, 32);
+    }
+
+    /** Dard SHARP: long (0x1x4), texture 32x32. */
+    private static LayerDefinition createSharpStingerLayer() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition partRoot = mesh.getRoot();
+        PartDefinition bone = partRoot.addOrReplaceChild("bone",
+                CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
+
+        bone.addOrReplaceChild("stinger",
+                CubeListBuilder.create().texOffs(0, 0)
+                        .addBox(0.0F, -1.0F, 0.0F, 0.0F, 1.0F, 4.0F),
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 32, 32);

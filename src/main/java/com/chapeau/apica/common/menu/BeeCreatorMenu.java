@@ -27,6 +27,8 @@ package com.chapeau.apica.common.menu;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.block.beecreator.BeeCreatorBlockEntity;
 import com.chapeau.apica.common.block.beecreator.BeePart;
+import com.chapeau.apica.common.block.beecreator.BeeStingerType;
+import com.chapeau.apica.common.block.beecreator.BeeWingType;
 import com.chapeau.apica.core.registry.ApicaMenus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -64,6 +66,16 @@ public class BeeCreatorMenu extends ApicaMenu {
     /** Type de corps selectionne (sync via ContainerData slot 7). */
     public BeeBodyType getBodyType() {
         return BeeBodyType.byIndex(data.get(BeeCreatorBlockEntity.BODY_TYPE_SLOT));
+    }
+
+    /** Type d'ailes selectionne (sync via ContainerData slot 8). */
+    public BeeWingType getWingType() {
+        return BeeWingType.byIndex(data.get(BeeCreatorBlockEntity.WING_TYPE_SLOT));
+    }
+
+    /** Type de dard selectionne (sync via ContainerData slot 9). */
+    public BeeStingerType getStingerType() {
+        return BeeStingerType.byIndex(data.get(BeeCreatorBlockEntity.STINGER_TYPE_SLOT));
     }
 
     @Override

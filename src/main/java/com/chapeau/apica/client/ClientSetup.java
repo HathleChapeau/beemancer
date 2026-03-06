@@ -329,12 +329,16 @@ public class ClientSetup {
         // Leaf Blower orb model
         event.registerLayerDefinition(LeafBlowerProjectileModel.LAYER_LOCATION, LeafBlowerProjectileModel::createBodyLayer);
 
-        // ApicaBee — modele customisable pour le Bee Creator (body per type + shared wings/stinger)
-        for (com.chapeau.apica.common.block.beecreator.BeeBodyType bodyType : com.chapeau.apica.common.block.beecreator.BeeBodyType.values()) {
-            event.registerLayerDefinition(ApicaBeeModel.getBodyLayer(bodyType), () -> ApicaBeeModel.createBodyLayerFor(bodyType));
+        // ApicaBee — modele customisable pour le Bee Creator (body/wing/stinger per type)
+        for (com.chapeau.apica.common.block.beecreator.BeeBodyType bt : com.chapeau.apica.common.block.beecreator.BeeBodyType.values()) {
+            event.registerLayerDefinition(ApicaBeeModel.getBodyLayer(bt), () -> ApicaBeeModel.createBodyLayerFor(bt));
         }
-        event.registerLayerDefinition(ApicaBeeModel.WING_LAYER, ApicaBeeModel::createWingLayer);
-        event.registerLayerDefinition(ApicaBeeModel.STINGER_LAYER, ApicaBeeModel::createStingerLayer);
+        for (com.chapeau.apica.common.block.beecreator.BeeWingType wt : com.chapeau.apica.common.block.beecreator.BeeWingType.values()) {
+            event.registerLayerDefinition(ApicaBeeModel.getWingLayer(wt), () -> ApicaBeeModel.createWingLayerFor(wt));
+        }
+        for (com.chapeau.apica.common.block.beecreator.BeeStingerType st : com.chapeau.apica.common.block.beecreator.BeeStingerType.values()) {
+            event.registerLayerDefinition(ApicaBeeModel.getStingerLayer(st), () -> ApicaBeeModel.createStingerLayerFor(st));
+        }
 
         // Hoverbike — parties modulaires (toutes variantes, enregistrees dynamiquement)
         for (HoverbikePartVariants.ModelFactory factory : HoverbikePartVariants.getAllModelFactories().values()) {

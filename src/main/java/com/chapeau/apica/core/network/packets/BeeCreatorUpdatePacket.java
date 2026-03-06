@@ -64,10 +64,15 @@ public record BeeCreatorUpdatePacket(BlockPos pos, int partIndex, int color)
             if (player.blockPosition().distSqr(packet.pos()) > 64 * 64) return;
 
             if (player.level().getBlockEntity(packet.pos()) instanceof BeeCreatorBlockEntity be) {
-                if (packet.partIndex() == BeeCreatorBlockEntity.BODY_TYPE_SLOT) {
+                int idx = packet.partIndex();
+                if (idx == BeeCreatorBlockEntity.BODY_TYPE_SLOT) {
                     be.setBodyType(packet.color());
+                } else if (idx == BeeCreatorBlockEntity.WING_TYPE_SLOT) {
+                    be.setWingType(packet.color());
+                } else if (idx == BeeCreatorBlockEntity.STINGER_TYPE_SLOT) {
+                    be.setStingerType(packet.color());
                 } else {
-                    BeePart part = BeePart.byIndex(packet.partIndex());
+                    BeePart part = BeePart.byIndex(idx);
                     be.setPartColor(part, packet.color());
                 }
             }
