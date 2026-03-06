@@ -230,10 +230,10 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         gfx.enableScissor(x, y, x + w, y + h);
         gfx.pose().pushPose();
         gfx.pose().translate(centerX, centerY, 50.0f);
-        gfx.pose().scale(scale, -scale, scale);
-
-        // Inclinaison X fixe pour voir le dessus de l'abeille
-        gfx.pose().mulPose(Axis.XP.rotationDegrees(15f));
+        float s = -scale;
+        gfx.pose().scale(s, s, s);
+        // Flip + inclinaison pour voir le dessus (pattern BeeNodeWidget)
+        gfx.pose().mulPose(Axis.XP.rotationDegrees(160f));
         // Rotation Y via le systeme d'animation Apica
         animController.applyAnimation("spin", gfx.pose());
 
