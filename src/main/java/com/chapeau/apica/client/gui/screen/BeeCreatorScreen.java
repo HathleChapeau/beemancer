@@ -11,7 +11,8 @@
  * | BeeCreatorMenu           | Menu associe         | ContainerData sync             |
  * | BeePart                  | Enum parties         | Liste des parties              |
  * | BeeCreatorUpdatePacket   | Packet C2S           | Envoi couleur au serveur       |
- * | InventoryScreen          | Rendu entite         | Preview abeille 3D             |
+ * | AnimationController      | Rotation fluide      | Gestion animation turntable    |
+ * | RotateAnimation          | Rotation LOOP        | Rotation Y continue            |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -21,22 +22,29 @@
  */
 package com.chapeau.apica.client.gui.screen;
 
+import com.chapeau.apica.client.animation.AnimationController;
+import com.chapeau.apica.client.animation.AnimationTimer;
+import com.chapeau.apica.client.animation.RotateAnimation;
+import com.chapeau.apica.client.animation.TimingEffect;
+import com.chapeau.apica.client.animation.TimingType;
 import com.chapeau.apica.common.block.beecreator.BeePart;
 import com.chapeau.apica.common.menu.BeeCreatorMenu;
 import com.chapeau.apica.core.network.packets.BeeCreatorUpdatePacket;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import com.mojang.blaze3d.platform.Lighting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 /**
  * GUI du Bee Creator. Layout large:
@@ -59,9 +67,13 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     private static final int COL_FIELD_BG = 0xFF222233;
     private static final int COL_FIELD_BORDER = 0xFF444466;
 
+    /** Duree d'un tour complet en ticks (240 = 12 secondes). */
+    private static final float SPIN_DURATION = 240f;
+
     private final EditBox[] hexFields = new EditBox[BeePart.COUNT];
     private final int[] localColors = new int[BeePart.COUNT];
     private Bee previewBee;
+    private final AnimationController animController = new AnimationController();
 
     public BeeCreatorScreen(BeeCreatorMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -77,6 +89,18 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     @Override
     protected void init() {
         super.init();
+
+        // Animation turntable: rotation Y continue en boucle
+        animController.createAnimation("spin", RotateAnimation.builder()
+                .axis(Axis.YP)
+                .startAngle(0f)
+                .endAngle(360f)
+                .timingType(TimingType.NORMAL)
+                .timingEffect(TimingEffect.LOOP)
+                .duration(SPIN_DURATION)
+                .build());
+        animController.playAnimation("spin");
+
         int gx = this.leftPos;
         int gy = this.topPos;
 
@@ -198,30 +222,40 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         }
         if (previewBee == null) return;
 
+        // Tick le controller avec le temps fluide d'AnimationTimer
+        float renderTime = AnimationTimer.getRenderTime(partialTick);
+        animController.tick(renderTime);
+
         int centerX = x + w / 2;
         int centerY = y + h / 2 + 10;
         int scale = 38;
 
-        // Rotation lente basee sur le temps de jeu
-        long gameTime = minecraft != null && minecraft.level != null ? minecraft.level.getGameTime() : 0;
-        float angle = ((gameTime + partialTick) * 1.5f) % 360.0f;
-        float angleRad = (float) Math.toRadians(angle);
-
-        Quaternionf rotation = new Quaternionf().rotateY(angleRad);
-        // Legere inclinaison vers l'avant pour voir le dessus
-        Quaternionf tilt = new Quaternionf().rotateX((float) Math.toRadians(-15));
-
-        // Enabler le scissor pour clipper dans la zone de preview
         gfx.enableScissor(x, y, x + w, y + h);
 
-        InventoryScreen.renderEntityInInventory(
-                gfx, centerX, centerY, scale,
-                new Vector3f(0, 0, 0),
-                rotation.mul(tilt),
-                null,
-                previewBee
-        );
+        // Rendu manuel de l'entite avec le PoseStack anime
+        gfx.pose().pushPose();
+        gfx.pose().translate(centerX, centerY, 50.0f);
+        gfx.pose().scale(scale, scale, -scale);
 
+        // Inclinaison X fixe pour voir le dessus de l'abeille
+        gfx.pose().mulPose(Axis.XP.rotationDegrees(15f));
+        // Rotation Y via le systeme d'animation Apica
+        animController.applyAnimation("spin", gfx.pose());
+
+        // Lighting pour entite en GUI
+        Lighting.setupForEntityInInventory();
+        EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
+        dispatcher.setRenderShadow(false);
+        MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+        RenderSystem.runAsFancy(() ->
+            dispatcher.render(previewBee, 0.0, 0.0, 0.0, 0.0f, 1.0f,
+                    gfx.pose(), bufferSource, LightTexture.FULL_BRIGHT)
+        );
+        bufferSource.endBatch();
+        dispatcher.setRenderShadow(true);
+        Lighting.setupFor3DItems();
+
+        gfx.pose().popPose();
         gfx.disableScissor();
     }
 
