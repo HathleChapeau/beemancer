@@ -244,7 +244,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         Lighting.setupForEntityInInventory();
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 
-        RenderType bodyRT = RenderType.entityCutoutNoCull(ApicaBeeModel.TEXTURE);
+        RenderType bodyRT = RenderType.entityCutout(ApicaBeeModel.TEXTURE);
 
         beeModel.showCorpusOnly();
         beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
@@ -270,12 +270,12 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
 
-        RenderType wingRT = RenderType.entityCutoutNoCull(ApicaBeeModel.WING_TEXTURE);
+        RenderType wingRT = RenderType.entityCutout(ApicaBeeModel.WING_TEXTURE);
         beeModel.renderWings(gfx.pose(), bufferSource.getBuffer(wingRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.WING.getIndex()]));
 
-        RenderType stingerRT = RenderType.entityCutoutNoCull(ApicaBeeModel.STINGER_TEXTURE);
+        RenderType stingerRT = RenderType.entityCutout(ApicaBeeModel.STINGER_TEXTURE);
         beeModel.renderStinger(gfx.pose(), bufferSource.getBuffer(stingerRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STINGER.getIndex()]));
@@ -313,7 +313,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         Lighting.setupForEntityInInventory();
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 
-        RenderType rt = RenderType.entityCutoutNoCull(VANILLA_BEE_TEXTURE);
+        RenderType rt = RenderType.entityCutout(VANILLA_BEE_TEXTURE);
         vanillaBeeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(rt),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
 
@@ -389,7 +389,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (button == 0 && isDraggingPreview) {
-            dragRotationY += (float) (mouseX - lastDragX);
+            dragRotationY -= (float) (mouseX - lastDragX);
             dragRotationX += (float) (mouseY - lastDragY);
             lastDragX = mouseX;
             lastDragY = mouseY;
