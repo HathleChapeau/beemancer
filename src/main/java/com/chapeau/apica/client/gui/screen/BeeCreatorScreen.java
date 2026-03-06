@@ -51,26 +51,36 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * GUI du Bee Creator. Layout:
- * - Panneau gauche: 7 rangees (une par partie) avec label + champ hex couleur + preview couleur
- * - Selecteur body type (< Body >) au-dessus de la preview
- * - Panneau droit: preview 3D de l'abeille tintee avec rotation souris
- * - Mini panneau haut-droite (toggle): abeille vanilla pour comparaison
+ * - Gauche: grande preview 3D (150x150) avec drag rotation
+ * - Droite: selecteur body type + 7 champs hex couleur
+ * - Bas droite: toggles Vanilla/XYZ
  */
 public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
-    private static final int GUI_W = 310;
-    private static final int GUI_H = 200;
-    private static final int LEFT_PANEL_W = 180;
-    private static final int PREVIEW_SIZE = 110;
+    private static final int GUI_W = 320;
+    private static final int GUI_H = 210;
+
+    // Preview (gauche)
+    private static final int PREVIEW_X = 8;
+    private static final int PREVIEW_Y = 22;
+    private static final int PREVIEW_SIZE = 150;
     private static final int VANILLA_SIZE = 50;
-    private static final int ROW_H = 22;
-    private static final int PART_START_Y = 24;
+
+    // Panel couleurs (droite)
+    private static final int PANEL_X = PREVIEW_X + PREVIEW_SIZE + 10;
+    private static final int PANEL_W = GUI_W - PANEL_X - 6;
+    private static final int ROW_H = 20;
+    private static final int BODY_SELECTOR_Y = 22;
+    private static final int COLORS_START_Y = 44;
+
+    // Couleurs UI
     private static final int COL_BG = 0xCC1A1A2E;
     private static final int COL_BORDER = 0xFF555555;
     private static final int COL_DARK = 0xFF111122;
     private static final int COL_LABEL = 0xFFDDDDDD;
     private static final int COL_TITLE = 0xFFE8A317;
     private static final int COL_FIELD_BORDER = 0xFF444466;
+    private static final int COL_ACCENT = 0xFF333355;
     private static final int GIZMO_LENGTH = 20;
 
     private static final ResourceLocation VANILLA_BEE_TEXTURE =
@@ -82,7 +92,6 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     private BeeModel<?> vanillaBeeModel;
     private BeeBodyType currentBodyType = BeeBodyType.DEFAULT;
 
-    /** Rotation par drag souris (en degres). */
     private float dragRotationY = 25f;
     private float dragRotationX = 160f;
     private boolean isDraggingPreview;
@@ -114,11 +123,20 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         int gx = this.leftPos;
         int gy = this.topPos;
 
-        for (BeePart part : BeePart.values()) {
-            int fieldX = gx + 80;
-            int fieldY = gy + PART_START_Y + part.getIndex() * ROW_H + 2;
+        // Body selector: [<] Default [>]
+        int selectorX = gx + PANEL_X;
+        int selectorY = gy + BODY_SELECTOR_Y;
+        addRenderableWidget(Button.builder(Component.literal("<"), btn -> cycleBody(-1))
+                .bounds(selectorX, selectorY, 14, 14).build());
+        addRenderableWidget(Button.builder(Component.literal(">"), btn -> cycleBody(1))
+                .bounds(selectorX + PANEL_W - 14, selectorY, 14, 14).build());
 
-            EditBox field = new EditBox(font, fieldX, fieldY, 72, 16, Component.empty());
+        // Color fields
+        for (BeePart part : BeePart.values()) {
+            int rowY = gy + COLORS_START_Y + part.getIndex() * ROW_H + 2;
+            int fieldX = gx + PANEL_X + 50;
+
+            EditBox field = new EditBox(font, fieldX, rowY, 68, 14, Component.empty());
             field.setMaxLength(7);
             field.setBordered(true);
             int syncedColor = menu.getPartColor(part);
@@ -133,23 +151,12 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
             addRenderableWidget(field);
         }
 
-        // Body selector buttons (< Body >)
-        int previewX = gx + LEFT_PANEL_W + 10;
-        int selectorY = gy + 8;
-        addRenderableWidget(Button.builder(Component.literal("<"), btn -> cycleBody(-1))
-                .bounds(previewX, selectorY, 16, 14).build());
-        addRenderableWidget(Button.builder(Component.literal(">"), btn -> cycleBody(1))
-                .bounds(previewX + PREVIEW_SIZE - 16, selectorY, 16, 14).build());
-
-        // Boutons toggle sous la preview
-        int previewBottom = gy + 24 + PREVIEW_SIZE;
-        addRenderableWidget(Button.builder(Component.literal("XYZ"), btn -> {
-            showGizmo = !showGizmo;
-        }).bounds(previewX + PREVIEW_SIZE - 24, previewBottom + 2, 24, 14).build());
-
-        addRenderableWidget(Button.builder(Component.literal("Vanilla"), btn -> {
-            showVanilla = !showVanilla;
-        }).bounds(previewX, previewBottom + 2, 42, 14).build());
+        // Toggle buttons sous les couleurs
+        int btnsY = gy + COLORS_START_Y + BeePart.COUNT * ROW_H + 6;
+        addRenderableWidget(Button.builder(Component.literal("Vanilla"), btn -> showVanilla = !showVanilla)
+                .bounds(gx + PANEL_X, btnsY, 42, 14).build());
+        addRenderableWidget(Button.builder(Component.literal("XYZ"), btn -> showGizmo = !showGizmo)
+                .bounds(gx + PANEL_X + 46, btnsY, 24, 14).build());
     }
 
     private void cycleBody(int direction) {
@@ -197,79 +204,82 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         }
     }
 
+    // ========== Rendering ==========
+
     @Override
     protected void renderBg(GuiGraphics gfx, float partialTick, int mouseX, int mouseY) {
         int gx = this.leftPos;
         int gy = this.topPos;
 
+        // Fond principal
         gfx.fill(gx - 2, gy - 2, gx + GUI_W + 2, gy + GUI_H + 2, COL_BORDER);
         gfx.fill(gx, gy, gx + GUI_W, gy + GUI_H, COL_BG);
 
+        // Titre
         gfx.drawString(font, Component.translatable("block.apica.bee_creator"),
                 gx + 8, gy + 8, COL_TITLE, false);
 
-        for (BeePart part : BeePart.values()) {
-            int rowY = gy + PART_START_Y + part.getIndex() * ROW_H;
-            if (part.getIndex() % 2 == 0) {
-                gfx.fill(gx + 4, rowY, gx + LEFT_PANEL_W - 4, rowY + ROW_H, 0x20FFFFFF);
-            }
-            gfx.drawString(font, part.getDisplayName(), gx + 10, rowY + 6, COL_LABEL, false);
-            int pvX = gx + 158;
-            int pvY = rowY + 3;
-            int color = localColors[part.getIndex()];
-            gfx.fill(pvX, pvY, pvX + 14, pvY + 14, COL_FIELD_BORDER);
-            gfx.fill(pvX + 1, pvY + 1, pvX + 13, pvY + 13, 0xFF000000 | color);
-        }
+        // === PREVIEW PANEL (gauche) ===
+        int px = gx + PREVIEW_X;
+        int py = gy + PREVIEW_Y;
+        gfx.fill(px - 1, py - 1, px + PREVIEW_SIZE + 1, py + PREVIEW_SIZE + 1, COL_BORDER);
+        gfx.fill(px, py, px + PREVIEW_SIZE, py + PREVIEW_SIZE, COL_DARK);
 
-        // Body type label between < > buttons
-        int previewX = gx + LEFT_PANEL_W + 10;
-        gfx.drawCenteredString(font, currentBodyType.getDisplayName(),
-                previewX + PREVIEW_SIZE / 2, gy + 11, COL_LABEL);
+        renderBeePreview(gfx, px, py, PREVIEW_SIZE, PREVIEW_SIZE, partialTick);
 
-        // Preview principale
-        int previewY = gy + 24;
-        int previewRight = previewX + PREVIEW_SIZE;
-        int previewBottom = previewY + PREVIEW_SIZE;
-
-        gfx.fill(previewX - 1, previewY - 1, previewRight + 1, previewBottom + 1, COL_BORDER);
-        gfx.fill(previewX, previewY, previewRight, previewBottom, COL_DARK);
-
-        renderBeePreview(gfx, previewX, previewY, PREVIEW_SIZE, PREVIEW_SIZE, partialTick);
-
-        // Mini preview vanilla (haut-droite de la preview principale)
+        // Mini vanilla overlay (coin haut-droit de la preview)
         if (showVanilla) {
-            int vx = previewRight - VANILLA_SIZE;
-            int vy = previewY;
+            int vx = px + PREVIEW_SIZE - VANILLA_SIZE;
+            int vy = py;
             gfx.fill(vx - 1, vy - 1, vx + VANILLA_SIZE + 1, vy + VANILLA_SIZE + 1, COL_BORDER);
             gfx.fill(vx, vy, vx + VANILLA_SIZE, vy + VANILLA_SIZE, COL_DARK);
             renderVanillaPreview(gfx, vx, vy, VANILLA_SIZE, VANILLA_SIZE);
         }
 
-        // Legende couleurs
-        int legendY = previewBottom + 18;
+        // === CONTROLS PANEL (droite) ===
+        int cpx = gx + PANEL_X;
+
+        // Body selector label
+        gfx.drawCenteredString(font, currentBodyType.getDisplayName(),
+                cpx + PANEL_W / 2, gy + BODY_SELECTOR_Y + 3, COL_LABEL);
+
+        // Separateur sous body selector
+        gfx.fill(cpx, gy + BODY_SELECTOR_Y + 16, cpx + PANEL_W, gy + BODY_SELECTOR_Y + 17, COL_ACCENT);
+
+        // Color rows
         for (BeePart part : BeePart.values()) {
-            if (part.getIndex() >= 4) break;
-            int lx = previewX + (part.getIndex() % 2) * 56;
-            int ly = legendY + (part.getIndex() / 2) * 12;
-            int c = localColors[part.getIndex()];
-            gfx.fill(lx, ly, lx + 8, ly + 8, 0xFF000000 | c);
-            gfx.drawString(font, part.getDisplayName().substring(0, Math.min(3, part.getDisplayName().length())),
-                    lx + 10, ly, 0xFF999999, false);
+            int rowY = gy + COLORS_START_Y + part.getIndex() * ROW_H;
+
+            // Alternance fond
+            if (part.getIndex() % 2 == 0) {
+                gfx.fill(cpx, rowY, cpx + PANEL_W, rowY + ROW_H, 0x15FFFFFF);
+            }
+
+            // Label
+            gfx.drawString(font, part.getDisplayName(), cpx + 2, rowY + 4, COL_LABEL, false);
+
+            // Color swatch apres le champ hex
+            int swatchX = cpx + 50 + 70;
+            int swatchY = rowY + 2;
+            int color = localColors[part.getIndex()];
+            gfx.fill(swatchX, swatchY, swatchX + 14, swatchY + 14, COL_FIELD_BORDER);
+            gfx.fill(swatchX + 1, swatchY + 1, swatchX + 13, swatchY + 13, 0xFF000000 | color);
         }
+
+        // Info sous la preview
+        gfx.drawString(font, "Drag to rotate", px + 2, py + PREVIEW_SIZE + 3, 0xFF666666, false);
     }
 
-    // ========== Rendu preview ApicaBee ==========
+    // ========== Preview ApicaBee ==========
 
     private void renderBeePreview(GuiGraphics gfx, int x, int y, int w, int h, float partialTick) {
         if (beeModel == null) return;
 
         int centerX = x + w / 2;
         int centerY = y + h / 2;
-        float scale = 38f;
+        float scale = 48f;
 
         ResourceLocation bodyTex = ApicaBeeModel.getBodyTexture(currentBodyType);
-        ResourceLocation wingTex = ApicaBeeModel.getWingTexture(currentBodyType);
-        ResourceLocation stingerTex = ApicaBeeModel.getStingerTexture(currentBodyType);
 
         gfx.enableScissor(x, y, x + w, y + h);
         gfx.pose().pushPose();
@@ -309,12 +319,12 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STRIPE.getIndex()]));
 
-        RenderType wingRT = RenderType.entityCutout(wingTex);
+        RenderType wingRT = RenderType.entityCutout(ApicaBeeModel.WING_TEXTURE);
         beeModel.renderWings(gfx.pose(), bufferSource.getBuffer(wingRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.WING.getIndex()]));
 
-        RenderType stingerRT = RenderType.entityCutout(stingerTex);
+        RenderType stingerRT = RenderType.entityCutout(ApicaBeeModel.STINGER_TEXTURE);
         beeModel.renderStinger(gfx.pose(), bufferSource.getBuffer(stingerRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STINGER.getIndex()]));
@@ -330,7 +340,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         gfx.disableScissor();
     }
 
-    // ========== Rendu preview Vanilla Bee ==========
+    // ========== Preview Vanilla ==========
 
     private void renderVanillaPreview(GuiGraphics gfx, int x, int y, int w, int h) {
         if (vanillaBeeModel == null) return;
@@ -362,7 +372,6 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
     // ========== Gizmo ==========
 
-    /** Gizmo 2D projete — scale (1,1,1), memes rotations que la preview, aucune compensation. */
     private void renderGizmo(GuiGraphics gfx, int cx, int cy) {
         gfx.pose().pushPose();
         gfx.pose().setIdentity();
@@ -376,9 +385,9 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
         gfx.pose().popPose();
 
-        drawGizmoLine(gfx, cx, cy, cx + (int) rxSX, cy + (int) rxSY, 0xFFFF4444, "Right");
-        drawGizmoLine(gfx, cx, cy, cx + (int) rySX, cy + (int) rySY, 0xFF44FF44, "Up");
-        drawGizmoLine(gfx, cx, cy, cx + (int) rzSX, cy + (int) rzSY, 0xFF4488FF, "Front");
+        drawGizmoLine(gfx, cx, cy, cx + (int) rxSX, cy + (int) rxSY, 0xFFFF4444, "X");
+        drawGizmoLine(gfx, cx, cy, cx + (int) rySX, cy + (int) rySY, 0xFF44FF44, "Y");
+        drawGizmoLine(gfx, cx, cy, cx + (int) rzSX, cy + (int) rzSY, 0xFF4488FF, "Z");
     }
 
     private void drawGizmoLine(GuiGraphics gfx, int x0, int y0, int x1, int y1, int color, String label) {
@@ -445,10 +454,10 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     }
 
     private boolean isInsidePreview(double mouseX, double mouseY) {
-        int previewX = this.leftPos + LEFT_PANEL_W + 10;
-        int previewY = this.topPos + 24;
-        return mouseX >= previewX && mouseX < previewX + PREVIEW_SIZE
-                && mouseY >= previewY && mouseY < previewY + PREVIEW_SIZE;
+        int px = this.leftPos + PREVIEW_X;
+        int py = this.topPos + PREVIEW_Y;
+        return mouseX >= px && mouseX < px + PREVIEW_SIZE
+                && mouseY >= py && mouseY < py + PREVIEW_SIZE;
     }
 
     @Override

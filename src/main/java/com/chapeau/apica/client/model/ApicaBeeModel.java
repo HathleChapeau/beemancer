@@ -148,8 +148,9 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
                 ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee_" + type.getId()), "body");
     }
 
-    // ========== Textures per body type ==========
+    // ========== Textures ==========
 
+    /** Texture du corps — depend du body type. */
     public static ResourceLocation getBodyTexture(BeeBodyType type) {
         return switch (type) {
             case DEFAULT -> ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee.png");
@@ -157,16 +158,13 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         };
     }
 
-    public static ResourceLocation getWingTexture(BeeBodyType type) {
-        return switch (type) {
-            case DEFAULT -> ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_wing.png");
-            case ROUND -> ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_wing_round.png");
-        };
-    }
+    /** Texture des ailes — independante du body type. */
+    public static final ResourceLocation WING_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_wing.png");
 
-    public static ResourceLocation getStingerTexture(BeeBodyType type) {
-        return ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_stinger.png");
-    }
+    /** Texture du dard — independante du body type. */
+    public static final ResourceLocation STINGER_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/apica_bee_stinger.png");
 
     public BeeBodyType getBodyType() { return bodyType; }
 
@@ -300,7 +298,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
         bone.addOrReplaceChild("stinger",
                 CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(0.0F, -1.0F, 5.0F, 0.0F, 1.0F, 2.0F),
+                        .addBox(0.0F, -1.0F, 0.0F, 0.0F, 1.0F, 2.0F),
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 32, 32);
