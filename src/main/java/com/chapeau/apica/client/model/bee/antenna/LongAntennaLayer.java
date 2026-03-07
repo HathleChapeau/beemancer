@@ -25,7 +25,7 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 /**
- * Antennes LONG: longues (1x1x5), texture 32x32.
+ * Antennes LONG: quad plat de 5px (0x1x5), texture 32x32.
  * Geometrie en position neutre (PartPose.ZERO), positionnement via attachment points.
  */
 public final class LongAntennaLayer {
@@ -40,11 +40,11 @@ public final class LongAntennaLayer {
 
         bone.addOrReplaceChild("left_antenna",
                 CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(0.0F, -1.0F, -5.0F, 1.0F, 1.0F, 5.0F),
+                        .addBox(0.0F, -1.0F, -5.0F, 0.0F, 1.0F, 5.0F),
                 PartPose.ZERO);
         bone.addOrReplaceChild("right_antenna",
-                CubeListBuilder.create().texOffs(12, 0)
-                        .addBox(-1.0F, -1.0F, -5.0F, 1.0F, 1.0F, 5.0F),
+                CubeListBuilder.create().texOffs(0, 1)
+                        .addBox(0.0F, -1.0F, -5.0F, 0.0F, 1.0F, 5.0F),
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 32, 32);

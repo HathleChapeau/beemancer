@@ -74,19 +74,19 @@ public final class SegmentedBodyLayer {
                         .addBox(1.51F, -1.0F, -9.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
-        // Legs under head (head Z: -9 to -4, bottom Y: 3)
+        // Legs: front under head (1px from back), middle under body center, back under waist center
         bone.addOrReplaceChild("front_legs",
                 CubeListBuilder.create().texOffs(0, 31)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(1.5F, 3.0F, -8.0F));
+                PartPose.offset(1.5F, 3.0F, -5.0F));
         bone.addOrReplaceChild("middle_legs",
                 CubeListBuilder.create().texOffs(0, 33)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(1.5F, 3.0F, -6.5F));
+                PartPose.offset(1.5F, 3.0F, -1.0F));
         bone.addOrReplaceChild("back_legs",
                 CubeListBuilder.create().texOffs(0, 35)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(1.5F, 3.0F, -5.0F));
+                PartPose.offset(1.5F, 3.0F, 3.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }

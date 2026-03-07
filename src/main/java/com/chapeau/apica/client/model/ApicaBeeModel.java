@@ -131,7 +131,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     private static float[] getRightWingAttach(BeeBodyType type) {
         return switch (type) {
             case DEFAULT -> new float[]{-1.5f, -4.0f, -3.0f, -0.2618f};
-            case THICK -> new float[]{-1.5f, -4.0f, -3.0f, -0.2618f};
+            case THICK -> new float[]{-1.5f, -4.5f, 0.0f, -0.2618f};
             case SEGMENTED -> new float[]{-1.5f, -4.0f, -1.0f, -0.2618f};
         };
     }
@@ -139,7 +139,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     private static float[] getStingerAttach(BeeBodyType type) {
         return switch (type) {
             case DEFAULT -> new float[]{0.0f, -1.0f, 5.0f};
-            case THICK -> new float[]{0.0f, -1.0f, 12.0f};
+            case THICK -> new float[]{0.0f, -1.0f, 9.5f};
             case SEGMENTED -> new float[]{0.0f, -1.0f, 9.0f};
         };
     }
@@ -147,7 +147,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     private static float[] getLeftAntennaAttach(BeeBodyType type) {
         return switch (type) {
             case DEFAULT -> new float[]{-1.5f, -4.0f, -5.0f};
-            case THICK -> new float[]{-1.5f, -4.0f, -5.0f};
+            case THICK -> new float[]{-1.5f, -4.0f, -15.5f};
             case SEGMENTED -> new float[]{-1.5f, -4.0f, -9.0f};
         };
     }
