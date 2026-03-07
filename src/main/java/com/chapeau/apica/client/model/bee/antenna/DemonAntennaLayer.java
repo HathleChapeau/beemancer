@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [DemonAntennaLayer.java]
- * Description: LayerDefinition des antennes DEMON (cornes devil classiques)
+ * Description: LayerDefinition des antennes DEMON (cornes de belier/ram enroulees)
  * ============================================================
  *
  * DEPENDANCES:
@@ -25,17 +25,16 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 /**
- * Cornes de demon classiques: montent en s'ecartant, pointe recourbee vers l'interieur/avant.
- * Base 2x3x2 (12° out) → Mid 1x3x1 (5° out, 12° forward) → Tip 1x2x1 (-8° inward, 18° forward).
- * L'arc d'abord vers l'exterieur puis la pointe revient vers l'interieur donne la silhouette devil.
+ * Cornes de demon style belier/ram: partent sur les cotes, s'enroulent
+ * vers l'arriere puis vers le bas en formant un C.
+ * Base 2x2x2 (30° out) → Mid 2x2x1 (45° back) → Tip 1x2x1 (40° more back+down).
  * Texture 32x32.
  */
 public final class DemonAntennaLayer {
 
-    private static final float DEG5  = (float) Math.toRadians(5);
-    private static final float DEG8  = (float) Math.toRadians(8);
-    private static final float DEG12 = (float) Math.toRadians(12);
-    private static final float DEG18 = (float) Math.toRadians(18);
+    private static final float DEG30 = (float) Math.toRadians(30);
+    private static final float DEG40 = (float) Math.toRadians(40);
+    private static final float DEG45 = (float) Math.toRadians(45);
 
     private DemonAntennaLayer() {}
 
@@ -45,37 +44,37 @@ public final class DemonAntennaLayer {
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
-        // Left horn: up and outward, tip curves inward + forward
+        // Left horn: outward → backward → downward (ram curl)
         PartDefinition leftAntenna = bone.addOrReplaceChild("left_antenna",
                 CubeListBuilder.create(), PartPose.ZERO);
         PartDefinition leftBase = leftAntenna.addOrReplaceChild("base",
                 CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(-1.0F, -3.0F, -1.0F, 2.0F, 3.0F, 2.0F),
-                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0, 0, DEG12));
+                        .addBox(-1.0F, -2.0F, -1.0F, 2.0F, 2.0F, 2.0F),
+                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0, 0, DEG30));
         PartDefinition leftMid = leftBase.addOrReplaceChild("mid",
-                CubeListBuilder.create().texOffs(0, 5)
-                        .addBox(-0.5F, -3.0F, -0.5F, 1.0F, 3.0F, 1.0F),
-                PartPose.offsetAndRotation(0.0F, -3.0F, 0.0F, -DEG12, 0, DEG5));
+                CubeListBuilder.create().texOffs(0, 4)
+                        .addBox(-1.0F, -2.0F, -0.5F, 2.0F, 2.0F, 1.0F),
+                PartPose.offsetAndRotation(0.0F, -2.0F, 0.0F, DEG45, 0, 0));
         leftMid.addOrReplaceChild("tip",
-                CubeListBuilder.create().texOffs(0, 9)
+                CubeListBuilder.create().texOffs(0, 7)
                         .addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.0F, 1.0F),
-                PartPose.offsetAndRotation(0.0F, -3.0F, 0.0F, -DEG18, 0, -DEG8));
+                PartPose.offsetAndRotation(0.0F, -2.0F, 0.0F, DEG40, 0, 0));
 
-        // Right horn: mirrored Z rotations
+        // Right horn: mirrored Z rotation
         PartDefinition rightAntenna = bone.addOrReplaceChild("right_antenna",
                 CubeListBuilder.create(), PartPose.ZERO);
         PartDefinition rightBase = rightAntenna.addOrReplaceChild("base",
                 CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(-1.0F, -3.0F, -1.0F, 2.0F, 3.0F, 2.0F),
-                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0, 0, -DEG12));
+                        .addBox(-1.0F, -2.0F, -1.0F, 2.0F, 2.0F, 2.0F),
+                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0, 0, -DEG30));
         PartDefinition rightMid = rightBase.addOrReplaceChild("mid",
-                CubeListBuilder.create().texOffs(0, 5)
-                        .addBox(-0.5F, -3.0F, -0.5F, 1.0F, 3.0F, 1.0F),
-                PartPose.offsetAndRotation(0.0F, -3.0F, 0.0F, -DEG12, 0, -DEG5));
+                CubeListBuilder.create().texOffs(0, 4)
+                        .addBox(-1.0F, -2.0F, -0.5F, 2.0F, 2.0F, 1.0F),
+                PartPose.offsetAndRotation(0.0F, -2.0F, 0.0F, DEG45, 0, 0));
         rightMid.addOrReplaceChild("tip",
-                CubeListBuilder.create().texOffs(0, 9)
+                CubeListBuilder.create().texOffs(0, 7)
                         .addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.0F, 1.0F),
-                PartPose.offsetAndRotation(0.0F, -3.0F, 0.0F, -DEG18, 0, DEG8));
+                PartPose.offsetAndRotation(0.0F, -2.0F, 0.0F, DEG40, 0, 0));
 
         return LayerDefinition.create(mesh, 32, 32);
     }
