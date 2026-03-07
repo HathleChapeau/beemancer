@@ -26,7 +26,8 @@ package com.chapeau.apica.common.block.beecreator;
  */
 public enum BeeStingerType {
     DEFAULT(0, "default", "Default"),
-    SHARP(1, "sharp", "Sharp");
+    SHARP(1, "sharp", "Sharp"),
+    CHUNKY(2, "chunky", "Chunky");
 
     public static final int COUNT = values().length;
 
