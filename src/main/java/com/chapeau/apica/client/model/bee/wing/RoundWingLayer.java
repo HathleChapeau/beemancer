@@ -1,0 +1,53 @@
+/**
+ * ============================================================
+ * [RoundWingLayer.java]
+ * Description: LayerDefinition des ailes ROUND (courtes et larges, 12x10)
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance          | Raison                | Utilisation                    |
+ * |---------------------|----------------------|--------------------------------|
+ * | (aucune)            |                      |                                |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - ApicaBeeModel (createWingLayerFor)
+ *
+ * ============================================================
+ */
+package com.chapeau.apica.client.model.bee.wing;
+
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
+
+public final class RoundWingLayer {
+
+    private RoundWingLayer() {}
+
+    /** Ailes ROUND: plus courtes et larges (12x10), texture 32x32. */
+    public static LayerDefinition create() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition partRoot = mesh.getRoot();
+        PartDefinition bone = partRoot.addOrReplaceChild("bone",
+                CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
+
+        CubeDeformation inflate = new CubeDeformation(0.001F);
+
+        bone.addOrReplaceChild("right_wing",
+                CubeListBuilder.create().texOffs(2, 22)
+                        .addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 10.0F, inflate),
+                PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
+
+        bone.addOrReplaceChild("left_wing",
+                CubeListBuilder.create().texOffs(-10, 6)
+                        .addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 10.0F, inflate),
+                PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
+
+        return LayerDefinition.create(mesh, 32, 32);
+    }
+}

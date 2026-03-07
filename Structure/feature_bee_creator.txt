@@ -14,9 +14,10 @@ Scripts:
 
 Types de Corps:
   DEFAULT — Corps simple (7x7x10), texture 64x64
-  THICK   — Corps segmente (body 7x7x10 + thorax 8x8x5 + waist 6x6x1 + tail 7x7x6)
+  THICK   — Corps segmente en 4 parties (toutes 7x7 de section), texture 64x64
+            Head (7x7x5) → 2px gap → Body (7x7x2) → 2px gap → Waist (7x7x2) → 2px gap → Tail (7x7x3)
             Double couche (corpus + stripe) sur tous les cubes sauf waist
-            Antennes, yeux et pattes sur le thorax
+            Yeux et antennes sur la tete (comme vanilla). Pattes sous la tete. Ailes sur le body. Dard derriere la tail.
 
 Types d'Ailes:
   DEFAULT — Grandes (18x12), texture 32x32

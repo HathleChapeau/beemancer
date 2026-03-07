@@ -34,7 +34,7 @@ import com.chapeau.apica.common.block.beecreator.BeeStingerType;
 import com.chapeau.apica.common.block.beecreator.BeeWingType;
 import com.chapeau.apica.common.menu.BeeCreatorMenu;
 import com.chapeau.apica.core.network.packets.BeeCreatorUpdatePacket;
-import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -367,68 +367,69 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
         int centerX = x + w / 2;
         int centerY = y + h / 2;
-        float scale = 48f;
 
         ResourceLocation bodyTex = ApicaBeeModel.getBodyTexture(currentBodyType);
         ResourceLocation wingTex = ApicaBeeModel.getWingTexture(currentWingType);
         ResourceLocation stingerTex = ApicaBeeModel.getStingerTexture(currentStingerType);
 
         gfx.enableScissor(x, y, x + w, y + h);
-        gfx.pose().pushPose();
-        gfx.pose().translate(centerX, centerY, 50.0f);
-        gfx.pose().scale(scale, scale, scale);
-        gfx.pose().mulPose(Axis.XP.rotationDegrees(dragRotationX));
-        gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
-        gfx.pose().translate(0.0f, -1.15625f, 0.0f);
 
-        Lighting.setupForEntityInInventory();
+        PoseStack poseStack = gfx.pose();
+        poseStack.pushPose();
+
+        // Same rendering approach as BeeNodeWidget.renderBee3D (codex bee page)
+        poseStack.translate(centerX, centerY - 150, 100);
+        float scale = -120;
+        poseStack.scale(scale, scale, scale);
+        poseStack.mulPose(Axis.XP.rotationDegrees(dragRotationX));
+        poseStack.mulPose(Axis.YP.rotationDegrees(dragRotationY));
+
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 
         RenderType bodyRT = RenderType.entityCutout(bodyTex);
 
         beeModel.showCorpusOnly();
-        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+        beeModel.renderToBuffer(poseStack, bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.BODY.getIndex()]));
 
         beeModel.showStripeOnly();
-        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+        beeModel.renderToBuffer(poseStack, bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STRIPE.getIndex()]));
 
         beeModel.showEyesOnly();
-        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+        beeModel.renderToBuffer(poseStack, bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.EYE.getIndex()]));
 
         beeModel.showPupilsOnly();
-        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+        beeModel.renderToBuffer(poseStack, bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.PUPIL.getIndex()]));
 
         beeModel.showUntintedOnly();
-        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+        beeModel.renderToBuffer(poseStack, bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STRIPE.getIndex()]));
 
         beeModel.showAntennaOnly();
-        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+        beeModel.renderToBuffer(poseStack, bufferSource.getBuffer(bodyRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.ANTENNA.getIndex()]));
 
         RenderType wingRT = RenderType.entityCutout(wingTex);
-        beeModel.renderWings(gfx.pose(), bufferSource.getBuffer(wingRT),
+        beeModel.renderWings(poseStack, bufferSource.getBuffer(wingRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.WING.getIndex()]));
 
         RenderType stingerRT = RenderType.entityCutout(stingerTex);
-        beeModel.renderStinger(gfx.pose(), bufferSource.getBuffer(stingerRT),
+        beeModel.renderStinger(poseStack, bufferSource.getBuffer(stingerRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STINGER.getIndex()]));
 
         bufferSource.endBatch();
-        Lighting.setupFor3DItems();
-        gfx.pose().popPose();
+        poseStack.popPose();
 
         if (showGizmo) renderGizmo(gfx, centerX, centerY);
 
@@ -442,20 +443,20 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         int centerY = y + h / 2;
 
         gfx.enableScissor(x, y, x + w, y + h);
-        gfx.pose().pushPose();
-        gfx.pose().translate(centerX, centerY, 50.0f);
-        gfx.pose().scale(38f, 38f, 38f);
-        gfx.pose().mulPose(Axis.XP.rotationDegrees(dragRotationX));
-        gfx.pose().mulPose(Axis.YP.rotationDegrees(dragRotationY));
-        gfx.pose().translate(0.0f, -1.15625f, 0.0f);
+        PoseStack poseStack = gfx.pose();
+        poseStack.pushPose();
 
-        Lighting.setupForEntityInInventory();
+        poseStack.translate(centerX, centerY - 50, 100);
+        float scale = -40;
+        poseStack.scale(scale, scale, scale);
+        poseStack.mulPose(Axis.XP.rotationDegrees(dragRotationX));
+        poseStack.mulPose(Axis.YP.rotationDegrees(dragRotationY));
+
         MultiBufferSource.BufferSource buf = Minecraft.getInstance().renderBuffers().bufferSource();
-        vanillaBeeModel.renderToBuffer(gfx.pose(), buf.getBuffer(RenderType.entityCutout(VANILLA_BEE_TEXTURE)),
+        vanillaBeeModel.renderToBuffer(poseStack, buf.getBuffer(RenderType.entityCutout(VANILLA_BEE_TEXTURE)),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
         buf.endBatch();
-        Lighting.setupFor3DItems();
-        gfx.pose().popPose();
+        poseStack.popPose();
         gfx.disableScissor();
     }
 
