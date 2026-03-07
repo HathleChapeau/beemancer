@@ -32,6 +32,7 @@ import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.model.bee.antenna.DefaultAntennaLayer;
 import com.chapeau.apica.client.model.bee.antenna.DemonAntennaLayer;
 import com.chapeau.apica.client.model.bee.antenna.DragonAntennaLayer;
+import com.chapeau.apica.client.model.bee.antenna.GlassesAntennaLayer;
 import com.chapeau.apica.client.model.bee.antenna.LongAntennaLayer;
 import com.chapeau.apica.client.model.bee.body.ArmoredBodyLayer;
 import com.chapeau.apica.client.model.bee.body.DefaultBodyLayer;
@@ -201,6 +202,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
             case LONG -> LongAntennaLayer.create();
             case DRAGON -> DragonAntennaLayer.create();
             case DEMON -> DemonAntennaLayer.create();
+            case GLASSES -> GlassesAntennaLayer.create();
         };
     }
 
