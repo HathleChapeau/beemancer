@@ -27,7 +27,7 @@ package com.chapeau.apica.common.block.beecreator;
  */
 public enum BeeBodyType {
     DEFAULT(0, "default", "Default"),
-    THICK(1, "thick", "Thick"),
+    ROYAL(1, "royal", "Royal"),
     SEGMENTED(2, "segmented", "Segmented");
 
     public static final int COUNT = values().length;
