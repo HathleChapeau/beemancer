@@ -102,6 +102,9 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     // UUID sync verification timer (transient, not saved)
     private int outsideVerifyTimer = 0;
 
+    // Auto-formation check on load (transient, not saved)
+    private boolean pendingFormationCheck = false;
+
     // Proximity check (transient, not saved)
     private boolean crowded = false;
     private int crowdedCheckTimer = 0;
@@ -140,8 +143,13 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     @Override
     public void onLoad() {
         super.onLoad();
-        if (isController && formed && level != null && !level.isClientSide()) {
-            MultiblockEvents.registerActiveController(level, worldPosition);
+        if (level != null && !level.isClientSide()) {
+            if (isController && formed) {
+                MultiblockEvents.registerActiveController(level, worldPosition);
+            }
+            if (!formed) {
+                pendingFormationCheck = true;
+            }
         }
     }
 
@@ -542,6 +550,12 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     // ==================== Tick ====================
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HiveMultiblockBlockEntity hive) {
+        if (hive.pendingFormationCheck) {
+            hive.pendingFormationCheck = false;
+            if (!hive.formed) {
+                hive.findOrBecomeController();
+            }
+        }
         if (!hive.isController || !hive.formed) return;
 
         hive.breedingMode = level.getBlockState(pos.above(2)).is(ApicaBlocks.BREEDING_CRYSTAL.get());
