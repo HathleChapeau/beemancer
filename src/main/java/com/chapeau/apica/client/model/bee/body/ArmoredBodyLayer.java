@@ -58,12 +58,9 @@ public final class ArmoredBodyLayer {
                         .texOffs(74, 0).addBox(-4.5F, -6.5F, 4.5F, 9.0F, 5.0F, 3.0F),       // Plate 3 tail
                 PartPose.ZERO);
 
-        // body_stripe: head + body + tail + 3 plates
+        // body_stripe: plaques seulement (le corps armored n'a pas de rayures)
         bone.addOrReplaceChild("body_stripe",
                 CubeListBuilder.create()
-                        .texOffs(0, 17).addBox(-4.0F, -4.0F, -4.5F, 8.0F, 8.0F, 9.0F)
-                        .texOffs(34, 17).addBox(-3.5F, -3.5F, -7.5F, 7.0F, 7.0F, 3.0F)
-                        .texOffs(54, 17).addBox(-3.5F, -1.5F, 4.5F, 7.0F, 2.0F, 3.0F)
                         .texOffs(74, 8).addBox(-4.5F, -4.5F, -4.5F, 9.0F, 5.0F, 3.0F)
                         .texOffs(74, 8).addBox(-4.5F, -4.5F, 1.5F, 9.0F, 5.0F, 3.0F)
                         .texOffs(74, 8).addBox(-4.5F, -6.5F, 4.5F, 9.0F, 5.0F, 3.0F),
