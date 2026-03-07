@@ -101,7 +101,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
         if (tank == null || tank.isEmpty()) return;
 
         FluidStack fluidStack = tank.getFluid();
-        float fillRatio = (float) tank.getFluidAmount() / tank.getCapacity();
+        float fillRatio = (float) tank.getFluidAmount() / tank.getCapacity() / (float) (Math.pow(cubeSize, 3));
         if (fillRatio <= 0f) return;
 
         TextureAtlasSprite sprite = RenderHelper.getFluidSprite(fluidStack.getFluid());
