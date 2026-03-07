@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [DefaultAntennaLayer.java]
- * Description: LayerDefinition des antennes DEFAULT (courtes, 1x1x3)
+ * Description: LayerDefinition des antennes DEFAULT (courtes, 1x2x3)
  * ============================================================
  *
  * DEPENDANCES:
@@ -25,8 +25,9 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 /**
- * Antennes DEFAULT: quad plat de 3px (0x1x3), texture 32x32.
+ * Antennes DEFAULT: cubes fins 1x2x3 (comme vanilla bee), texture 32x32.
  * Geometrie en position neutre (PartPose.ZERO), positionnement via attachment points.
+ * Left box s'etend vers -X, right box vers +X depuis leur pivot.
  */
 public final class DefaultAntennaLayer {
 
@@ -40,11 +41,11 @@ public final class DefaultAntennaLayer {
 
         bone.addOrReplaceChild("left_antenna",
                 CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(0.0F, -1.0F, -3.0F, 0.0F, 1.0F, 3.0F),
+                        .addBox(-1.0F, -2.0F, -3.0F, 1.0F, 2.0F, 3.0F),
                 PartPose.ZERO);
         bone.addOrReplaceChild("right_antenna",
-                CubeListBuilder.create().texOffs(0, 1)
-                        .addBox(0.0F, -1.0F, -3.0F, 0.0F, 1.0F, 3.0F),
+                CubeListBuilder.create().texOffs(0, 5)
+                        .addBox(0.0F, -2.0F, -3.0F, 1.0F, 2.0F, 3.0F),
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 32, 32);
