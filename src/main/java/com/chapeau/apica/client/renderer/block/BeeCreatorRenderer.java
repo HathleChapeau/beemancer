@@ -32,6 +32,7 @@ import com.chapeau.apica.common.block.beecreator.BeeWingType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -82,8 +83,7 @@ public class BeeCreatorRenderer implements BlockEntityRenderer<BeeCreatorBlockEn
         int light = LevelRenderer.getLightColor(be.getLevel(), be.getBlockPos().above());
 
         poseStack.pushPose();
-        poseStack.translate(0.5, 1.7 + bob, 0.5);
-        poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
+        poseStack.translate(0.5, 2.2 + bob, 0.5);
         poseStack.mulPose(Axis.XP.rotationDegrees(180));
         float scale = 0.6f;
         poseStack.scale(scale, scale, scale);
