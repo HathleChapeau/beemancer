@@ -11,6 +11,7 @@
  * | BeeCreatorBlockEntity    | Donnees types/couleurs| getBodyTypeIndex(), etc.      |
  * | ApicaBeeModel            | Modele modulaire     | Multi-pass tinted render       |
  * | BeeBodyType/Wing/Stinger | Enum types           | Textures et layers             |
+ * | BeeAntennaType           | Enum antennes        | Textures et layers             |
  * | BeePart                  | Enum parties         | Indices couleurs               |
  * | AnimationTimer           | Temps smooth         | Rotation                       |
  * ------------------------------------------------------------
@@ -24,6 +25,7 @@ package com.chapeau.apica.client.renderer.block;
 
 import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.client.model.ApicaBeeModel;
+import com.chapeau.apica.common.block.beecreator.BeeAntennaType;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.block.beecreator.BeePart;
 import com.chapeau.apica.common.block.beecreator.BeeCreatorBlockEntity;
@@ -53,6 +55,7 @@ public class BeeCreatorRenderer implements BlockEntityRenderer<BeeCreatorBlockEn
     private int cachedBodyIdx = -1;
     private int cachedWingIdx = -1;
     private int cachedStingerIdx = -1;
+    private int cachedAntennaIdx = -1;
 
     public BeeCreatorRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -64,19 +67,23 @@ public class BeeCreatorRenderer implements BlockEntityRenderer<BeeCreatorBlockEn
         int bodyIdx = be.getBodyTypeIndex();
         int wingIdx = be.getWingTypeIndex();
         int stingerIdx = be.getStingerTypeIndex();
+        int antennaIdx = be.getAntennaTypeIndex();
 
-        if (model == null || bodyIdx != cachedBodyIdx || wingIdx != cachedWingIdx || stingerIdx != cachedStingerIdx) {
-            rebuildModel(bodyIdx, wingIdx, stingerIdx);
+        if (model == null || bodyIdx != cachedBodyIdx || wingIdx != cachedWingIdx
+                || stingerIdx != cachedStingerIdx || antennaIdx != cachedAntennaIdx) {
+            rebuildModel(bodyIdx, wingIdx, stingerIdx, antennaIdx);
         }
         if (model == null) return;
 
         BeeBodyType bodyType = BeeBodyType.byIndex(bodyIdx);
         BeeWingType wingType = BeeWingType.byIndex(wingIdx);
         BeeStingerType stingerType = BeeStingerType.byIndex(stingerIdx);
+        BeeAntennaType antennaType = BeeAntennaType.byIndex(antennaIdx);
 
         ResourceLocation bodyTex = ApicaBeeModel.getBodyTexture(bodyType);
         ResourceLocation wingTex = ApicaBeeModel.getWingTexture(wingType);
         ResourceLocation stingerTex = ApicaBeeModel.getStingerTexture(stingerType);
+        ResourceLocation antennaTex = ApicaBeeModel.getAntennaTexture(antennaType);
 
         float time = AnimationTimer.getRenderTime(partialTick);
         float bob = (float) Math.sin(time * 0.1) * 0.03f;
@@ -111,8 +118,8 @@ public class BeeCreatorRenderer implements BlockEntityRenderer<BeeCreatorBlockEn
         model.renderToBuffer(poseStack, bodyVC, light, OverlayTexture.NO_OVERLAY,
                 toArgb(be.getPartColor(BeePart.STRIPE)));
 
-        model.showAntennaOnly();
-        model.renderToBuffer(poseStack, bodyVC, light, OverlayTexture.NO_OVERLAY,
+        VertexConsumer antennaVC = buffer.getBuffer(RenderType.entityCutout(antennaTex));
+        model.renderAntenna(poseStack, antennaVC, light, OverlayTexture.NO_OVERLAY,
                 toArgb(be.getPartColor(BeePart.ANTENNA)));
 
         VertexConsumer wingVC = buffer.getBuffer(RenderType.entityCutout(wingTex));
@@ -126,20 +133,23 @@ public class BeeCreatorRenderer implements BlockEntityRenderer<BeeCreatorBlockEn
         poseStack.popPose();
     }
 
-    private void rebuildModel(int bodyIdx, int wingIdx, int stingerIdx) {
+    private void rebuildModel(int bodyIdx, int wingIdx, int stingerIdx, int antennaIdx) {
         var entityModels = Minecraft.getInstance().getEntityModels();
         BeeBodyType bodyType = BeeBodyType.byIndex(bodyIdx);
         BeeWingType wingType = BeeWingType.byIndex(wingIdx);
         BeeStingerType stingerType = BeeStingerType.byIndex(stingerIdx);
+        BeeAntennaType antennaType = BeeAntennaType.byIndex(antennaIdx);
 
         ModelPart bodyRoot = entityModels.bakeLayer(ApicaBeeModel.getBodyLayer(bodyType));
         ModelPart wingRoot = entityModels.bakeLayer(ApicaBeeModel.getWingLayer(wingType));
         ModelPart stingerRoot = entityModels.bakeLayer(ApicaBeeModel.getStingerLayer(stingerType));
+        ModelPart antennaRoot = entityModels.bakeLayer(ApicaBeeModel.getAntennaLayer(antennaType));
 
-        model = new ApicaBeeModel<>(bodyRoot, wingRoot, stingerRoot, bodyType);
+        model = new ApicaBeeModel<>(bodyRoot, wingRoot, stingerRoot, antennaRoot, bodyType);
         cachedBodyIdx = bodyIdx;
         cachedWingIdx = wingIdx;
         cachedStingerIdx = stingerIdx;
+        cachedAntennaIdx = antennaIdx;
     }
 
     private static int toArgb(int rgb) {

@@ -24,6 +24,7 @@
  */
 package com.chapeau.apica.common.menu;
 
+import com.chapeau.apica.common.block.beecreator.BeeAntennaType;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.block.beecreator.BeeCreatorBlockEntity;
 import com.chapeau.apica.common.block.beecreator.BeePart;
@@ -76,6 +77,11 @@ public class BeeCreatorMenu extends ApicaMenu {
     /** Type de dard selectionne (sync via ContainerData slot 9). */
     public BeeStingerType getStingerType() {
         return BeeStingerType.byIndex(data.get(BeeCreatorBlockEntity.STINGER_TYPE_SLOT));
+    }
+
+    /** Type d'antennes selectionne (sync via ContainerData slot 10). */
+    public BeeAntennaType getAntennaType() {
+        return BeeAntennaType.byIndex(data.get(BeeCreatorBlockEntity.ANTENNA_TYPE_SLOT));
     }
 
     @Override

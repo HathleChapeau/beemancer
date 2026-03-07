@@ -45,16 +45,18 @@ import javax.annotation.Nullable;
 
 public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
 
-    /** 7 color slots + 3 type slots (body, wing, stinger). */
-    public static final int DATA_COUNT = BeePart.COUNT + 3;
+    /** 7 color slots + 4 type slots (body, wing, stinger, antenna). */
+    public static final int DATA_COUNT = BeePart.COUNT + 4;
     public static final int BODY_TYPE_SLOT = BeePart.COUNT;
     public static final int WING_TYPE_SLOT = BeePart.COUNT + 1;
     public static final int STINGER_TYPE_SLOT = BeePart.COUNT + 2;
+    public static final int ANTENNA_TYPE_SLOT = BeePart.COUNT + 3;
 
     private final int[] partColors = new int[BeePart.COUNT];
     private int bodyTypeIndex = 0;
     private int wingTypeIndex = 0;
     private int stingerTypeIndex = 0;
+    private int antennaTypeIndex = 0;
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -63,6 +65,7 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
             if (index == BODY_TYPE_SLOT) return bodyTypeIndex;
             if (index == WING_TYPE_SLOT) return wingTypeIndex;
             if (index == STINGER_TYPE_SLOT) return stingerTypeIndex;
+            if (index == ANTENNA_TYPE_SLOT) return antennaTypeIndex;
             return 0;
         }
 
@@ -79,6 +82,9 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
                 setChanged();
             } else if (index == STINGER_TYPE_SLOT) {
                 stingerTypeIndex = value;
+                setChanged();
+            } else if (index == ANTENNA_TYPE_SLOT) {
+                antennaTypeIndex = value;
                 setChanged();
             }
         }
@@ -109,6 +115,7 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
     public int getBodyTypeIndex() { return bodyTypeIndex; }
     public int getWingTypeIndex() { return wingTypeIndex; }
     public int getStingerTypeIndex() { return stingerTypeIndex; }
+    public int getAntennaTypeIndex() { return antennaTypeIndex; }
 
     public void setBodyType(int index) {
         this.bodyTypeIndex = BeeBodyType.byIndex(index).getIndex();
@@ -124,6 +131,12 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
 
     public void setStingerType(int index) {
         this.stingerTypeIndex = BeeStingerType.byIndex(index).getIndex();
+        setChanged();
+        syncToClient();
+    }
+
+    public void setAntennaType(int index) {
+        this.antennaTypeIndex = BeeAntennaType.byIndex(index).getIndex();
         setChanged();
         syncToClient();
     }
@@ -152,6 +165,7 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
         tag.putInt("BodyType", bodyTypeIndex);
         tag.putInt("WingType", wingTypeIndex);
         tag.putInt("StingerType", stingerTypeIndex);
+        tag.putInt("AntennaType", antennaTypeIndex);
     }
 
     @Override
@@ -166,6 +180,7 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
         if (tag.contains("BodyType")) bodyTypeIndex = tag.getInt("BodyType");
         if (tag.contains("WingType")) wingTypeIndex = tag.getInt("WingType");
         if (tag.contains("StingerType")) stingerTypeIndex = tag.getInt("StingerType");
+        if (tag.contains("AntennaType")) antennaTypeIndex = tag.getInt("AntennaType");
     }
 
     // ========== CLIENT SYNC ==========
@@ -185,6 +200,7 @@ public class BeeCreatorBlockEntity extends BlockEntity implements MenuProvider {
         tag.putInt("BodyType", bodyTypeIndex);
         tag.putInt("WingType", wingTypeIndex);
         tag.putInt("StingerType", stingerTypeIndex);
+        tag.putInt("AntennaType", antennaTypeIndex);
         return tag;
     }
 

@@ -347,6 +347,9 @@ public class ClientSetup {
         for (com.chapeau.apica.common.block.beecreator.BeeStingerType st : com.chapeau.apica.common.block.beecreator.BeeStingerType.values()) {
             event.registerLayerDefinition(ApicaBeeModel.getStingerLayer(st), () -> ApicaBeeModel.createStingerLayerFor(st));
         }
+        for (com.chapeau.apica.common.block.beecreator.BeeAntennaType at : com.chapeau.apica.common.block.beecreator.BeeAntennaType.values()) {
+            event.registerLayerDefinition(ApicaBeeModel.getAntennaLayer(at), () -> ApicaBeeModel.createAntennaLayerFor(at));
+        }
 
         // Hoverbike — parties modulaires (toutes variantes, enregistrees dynamiquement)
         for (HoverbikePartVariants.ModelFactory factory : HoverbikePartVariants.getAllModelFactories().values()) {

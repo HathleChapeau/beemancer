@@ -9,11 +9,12 @@
  * | Dependance               | Raison                | Utilisation                    |
  * |--------------------------|----------------------|--------------------------------|
  * | BeeCreatorMenu           | Menu associe         | ContainerData sync             |
- * | BeeCreatorBlockEntity    | Slot constants       | Body/Wing/Stinger type slots   |
+ * | BeeCreatorBlockEntity    | Slot constants       | Body/Wing/Stinger/Antenna      |
  * | BeePart                  | Enum parties         | Liste des parties              |
  * | BeeBodyType              | Types de corps       | Selecteur body                 |
  * | BeeWingType              | Types d'ailes        | Selecteur ailes                |
  * | BeeStingerType           | Types de dard        | Selecteur dard                 |
+ * | BeeAntennaType           | Types d'antennes     | Selecteur antennes             |
  * | BeeCreatorUpdatePacket   | Packet C2S           | Envoi couleur/type au serveur  |
  * | ApicaBeeModel            | Modele customisable  | Preview 3D tintee              |
  * | BeeModel                 | Modele vanilla       | Preview reference              |
@@ -27,6 +28,7 @@
 package com.chapeau.apica.client.gui.screen;
 
 import com.chapeau.apica.client.model.ApicaBeeModel;
+import com.chapeau.apica.common.block.beecreator.BeeAntennaType;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.block.beecreator.BeeCreatorBlockEntity;
 import com.chapeau.apica.common.block.beecreator.BeePart;
@@ -56,9 +58,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 /**
  * GUI du Bee Creator. Layout (gauche a droite):
  * - Preview 3D (150x150) avec drag rotation
- * - Panel selecteurs (Body / Wings / Stinger) empiles verticalement
+ * - Panel selecteurs (Body / Wings / Stinger / Antenna) empiles verticalement
  * - Panel couleurs (7 champs hex)
- * Selecteurs: fire sur mouse release.
+ * Selecteurs: fire sur mouse click directement.
  */
 public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
@@ -104,7 +106,8 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     private static final int SEL_BODY = 0;
     private static final int SEL_WING = 1;
     private static final int SEL_STINGER = 2;
-    private static final int SEL_COUNT = 3;
+    private static final int SEL_ANTENNA = 3;
+    private static final int SEL_COUNT = 4;
 
     private final EditBox[] hexFields = new EditBox[BeePart.COUNT];
     private final int[] localColors = new int[BeePart.COUNT];
@@ -114,6 +117,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     private BeeBodyType currentBodyType = BeeBodyType.DEFAULT;
     private BeeWingType currentWingType = BeeWingType.DEFAULT;
     private BeeStingerType currentStingerType = BeeStingerType.DEFAULT;
+    private BeeAntennaType currentAntennaType = BeeAntennaType.DEFAULT;
 
     private float dragRotationY = 25f;
     private float dragRotationX = 160f;
@@ -122,10 +126,6 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     private double lastDragY;
     private boolean showGizmo;
     private boolean showVanilla;
-
-    /** Pending selector action: which row was pressed, and direction. -1 = none. */
-    private int pendingSelectorRow = -1;
-    private int pendingSelectorDir = 0;
 
     public BeeCreatorScreen(BeeCreatorMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -145,6 +145,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         currentBodyType = menu.getBodyType();
         currentWingType = menu.getWingType();
         currentStingerType = menu.getStingerType();
+        currentAntennaType = menu.getAntennaType();
         rebuildBeeModel();
 
         var entityModels = Minecraft.getInstance().getEntityModels();
@@ -182,13 +183,14 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
                 .bounds(btnsX + 46, btnsY, 24, 14).build());
     }
 
-    // ========== Selector logic (mouse release) ==========
+    // ========== Selector logic ==========
 
     private String getSelectorLabel(int row) {
         return switch (row) {
             case SEL_BODY -> currentBodyType.getDisplayName();
             case SEL_WING -> currentWingType.getDisplayName();
             case SEL_STINGER -> currentStingerType.getDisplayName();
+            case SEL_ANTENNA -> currentAntennaType.getDisplayName();
             default -> "";
         };
     }
@@ -198,6 +200,7 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
             case SEL_BODY -> "Body";
             case SEL_WING -> "Wings";
             case SEL_STINGER -> "Stinger";
+            case SEL_ANTENNA -> "Antenna";
             default -> "";
         };
     }
@@ -221,6 +224,12 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
                 rebuildBeeModel();
                 PacketDistributor.sendToServer(new BeeCreatorUpdatePacket(
                         menu.getBlockPos(), BeeCreatorBlockEntity.STINGER_TYPE_SLOT, currentStingerType.getIndex()));
+            }
+            case SEL_ANTENNA -> {
+                currentAntennaType = direction > 0 ? currentAntennaType.next() : currentAntennaType.prev();
+                rebuildBeeModel();
+                PacketDistributor.sendToServer(new BeeCreatorUpdatePacket(
+                        menu.getBlockPos(), BeeCreatorBlockEntity.ANTENNA_TYPE_SLOT, currentAntennaType.getIndex()));
             }
         }
     }
@@ -250,7 +259,8 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         ModelPart bodyRoot = entityModels.bakeLayer(ApicaBeeModel.getBodyLayer(currentBodyType));
         ModelPart wingRoot = entityModels.bakeLayer(ApicaBeeModel.getWingLayer(currentWingType));
         ModelPart stingerRoot = entityModels.bakeLayer(ApicaBeeModel.getStingerLayer(currentStingerType));
-        beeModel = new ApicaBeeModel<>(bodyRoot, wingRoot, stingerRoot, currentBodyType);
+        ModelPart antennaRoot = entityModels.bakeLayer(ApicaBeeModel.getAntennaLayer(currentAntennaType));
+        beeModel = new ApicaBeeModel<>(bodyRoot, wingRoot, stingerRoot, antennaRoot, currentBodyType);
     }
 
     private void onHexFieldChanged(int partIndex, String text) {
@@ -278,10 +288,12 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         BeeBodyType sb = menu.getBodyType();
         BeeWingType sw = menu.getWingType();
         BeeStingerType ss = menu.getStingerType();
+        BeeAntennaType sa = menu.getAntennaType();
         boolean changed = false;
         if (sb != currentBodyType) { currentBodyType = sb; changed = true; }
         if (sw != currentWingType) { currentWingType = sw; changed = true; }
         if (ss != currentStingerType) { currentStingerType = ss; changed = true; }
+        if (sa != currentAntennaType) { currentAntennaType = sa; changed = true; }
         if (changed) rebuildBeeModel();
     }
 
@@ -371,18 +383,20 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         ResourceLocation bodyTex = ApicaBeeModel.getBodyTexture(currentBodyType);
         ResourceLocation wingTex = ApicaBeeModel.getWingTexture(currentWingType);
         ResourceLocation stingerTex = ApicaBeeModel.getStingerTexture(currentStingerType);
+        ResourceLocation antennaTex = ApicaBeeModel.getAntennaTexture(currentAntennaType);
 
         gfx.enableScissor(x, y, x + w, y + h);
 
         PoseStack poseStack = gfx.pose();
         poseStack.pushPose();
 
-        // Same rendering approach as BeeNodeWidget.renderBee3D (codex bee page)
-        poseStack.translate(centerX, centerY - 150, 100);
-        float scale = -120;
+        poseStack.translate(centerX, centerY, 100);
+        float scale = -60;
         poseStack.scale(scale, scale, scale);
         poseStack.mulPose(Axis.XP.rotationDegrees(dragRotationX));
-        poseStack.mulPose(Axis.YP.rotationDegrees(dragRotationY));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-dragRotationY));
+        // Center rotation on the model (bone is at Y=19/16 in model space)
+        poseStack.translate(0.0, -19.0 / 16.0, 0.0);
 
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 
@@ -413,8 +427,8 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STRIPE.getIndex()]));
 
-        beeModel.showAntennaOnly();
-        beeModel.renderToBuffer(poseStack, bufferSource.getBuffer(bodyRT),
+        RenderType antennaRT = RenderType.entityCutout(antennaTex);
+        beeModel.renderAntenna(poseStack, bufferSource.getBuffer(antennaRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.ANTENNA.getIndex()]));
 
@@ -446,11 +460,12 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
         PoseStack poseStack = gfx.pose();
         poseStack.pushPose();
 
-        poseStack.translate(centerX, centerY - 50, 100);
+        poseStack.translate(centerX, centerY, 100);
         float scale = -40;
         poseStack.scale(scale, scale, scale);
         poseStack.mulPose(Axis.XP.rotationDegrees(dragRotationX));
         poseStack.mulPose(Axis.YP.rotationDegrees(dragRotationY));
+        poseStack.translate(0.0, -19.0 / 16.0, 0.0);
 
         MultiBufferSource.BufferSource buf = Minecraft.getInstance().renderBuffers().bufferSource();
         vanillaBeeModel.renderToBuffer(poseStack, buf.getBuffer(RenderType.entityCutout(VANILLA_BEE_TEXTURE)),
@@ -508,11 +523,10 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
-            // Check selector arrows — record pending, fire on release
+            // Fire selector immediately on click
             int[] hit = hitTestSelectorArrow(mouseX, mouseY);
             if (hit != null) {
-                pendingSelectorRow = hit[0];
-                pendingSelectorDir = hit[1];
+                cycleSelector(hit[0], hit[1]);
                 return true;
             }
             // Preview drag
@@ -540,21 +554,9 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
-            // Fire pending selector on release
-            if (pendingSelectorRow >= 0) {
-                int[] hit = hitTestSelectorArrow(mouseX, mouseY);
-                if (hit != null && hit[0] == pendingSelectorRow && hit[1] == pendingSelectorDir) {
-                    cycleSelector(pendingSelectorRow, pendingSelectorDir);
-                }
-                pendingSelectorRow = -1;
-                pendingSelectorDir = 0;
-                return true;
-            }
-            if (isDraggingPreview) {
-                isDraggingPreview = false;
-                return true;
-            }
+        if (button == 0 && isDraggingPreview) {
+            isDraggingPreview = false;
+            return true;
         }
         return super.mouseReleased(mouseX, mouseY, button);
     }

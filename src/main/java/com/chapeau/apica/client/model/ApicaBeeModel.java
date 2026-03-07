@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ApicaBeeModel.java]
- * Description: Modele d'abeille modulaire — corps, ailes et dard interchangeables
+ * Description: Modele d'abeille modulaire — corps, ailes, dard et antennes interchangeables
  * ============================================================
  *
  * DEPENDANCES:
@@ -12,9 +12,11 @@
  * | BeeBodyType         | Types de corps       | Attachments, dispatch          |
  * | BeeWingType          | Types d'ailes        | Dispatch                       |
  * | BeeStingerType       | Types de dard        | Dispatch                       |
+ * | BeeAntennaType       | Types d'antennes     | Dispatch                       |
  * | bee/body/*           | Layer definitions    | Geometrie par body type        |
  * | bee/wing/*           | Layer definitions    | Geometrie par wing type        |
  * | bee/stinger/*        | Layer definitions    | Geometrie par stinger type     |
+ * | bee/antenna/*        | Layer definitions    | Geometrie par antenna type     |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -27,6 +29,8 @@
 package com.chapeau.apica.client.model;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.client.model.bee.antenna.DefaultAntennaLayer;
+import com.chapeau.apica.client.model.bee.antenna.LongAntennaLayer;
 import com.chapeau.apica.client.model.bee.body.DefaultBodyLayer;
 import com.chapeau.apica.client.model.bee.body.SegmentedBodyLayer;
 import com.chapeau.apica.client.model.bee.body.ThickBodyLayer;
@@ -34,6 +38,7 @@ import com.chapeau.apica.client.model.bee.stinger.DefaultStingerLayer;
 import com.chapeau.apica.client.model.bee.stinger.SharpStingerLayer;
 import com.chapeau.apica.client.model.bee.wing.DefaultWingLayer;
 import com.chapeau.apica.client.model.bee.wing.RoundWingLayer;
+import com.chapeau.apica.common.block.beecreator.BeeAntennaType;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.block.beecreator.BeeStingerType;
 import com.chapeau.apica.common.block.beecreator.BeeWingType;
@@ -48,9 +53,9 @@ import net.minecraft.world.entity.Entity;
 
 /**
  * Modele d'abeille modulaire pour le Bee Creator.
- * Corps, ailes et dard sont independamment interchangeables.
- * Chaque type a sa propre geometrie, texture et layer (dans bee/body/, bee/wing/, bee/stinger/).
- * Les points d'attache (position des ailes/dard) dependent du body type.
+ * Corps, ailes, dard et antennes sont independamment interchangeables.
+ * Chaque type a sa propre geometrie, texture et layer.
+ * Les points d'attache (ailes/dard/antennes) dependent du body type.
  */
 public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
@@ -63,8 +68,6 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     public final ModelPart frontLegs;
     public final ModelPart middleLegs;
     public final ModelPart backLegs;
-    public final ModelPart leftAntenna;
-    public final ModelPart rightAntenna;
 
     private final ModelPart wingRoot;
     private final ModelPart rightWing;
@@ -73,9 +76,14 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     private final ModelPart stingerRoot;
     private final ModelPart stinger;
 
+    private final ModelPart antennaRoot;
+    private final ModelPart leftAntenna;
+    private final ModelPart rightAntenna;
+
     private final BeeBodyType bodyType;
 
-    public ApicaBeeModel(ModelPart bodyRoot, ModelPart wingRoot, ModelPart stingerRoot, BeeBodyType bodyType) {
+    public ApicaBeeModel(ModelPart bodyRoot, ModelPart wingRoot, ModelPart stingerRoot,
+                         ModelPart antennaRoot, BeeBodyType bodyType) {
         this.root = bodyRoot;
         this.bodyType = bodyType;
 
@@ -88,8 +96,6 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         this.frontLegs = bone.getChild("front_legs");
         this.middleLegs = bone.getChild("middle_legs");
         this.backLegs = bone.getChild("back_legs");
-        this.leftAntenna = bone.getChild("left_antenna");
-        this.rightAntenna = bone.getChild("right_antenna");
 
         this.wingRoot = wingRoot;
         ModelPart wingBone = wingRoot.getChild("bone");
@@ -98,6 +104,11 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
         this.stingerRoot = stingerRoot;
         this.stinger = stingerRoot.getChild("bone").getChild("stinger");
+
+        this.antennaRoot = antennaRoot;
+        ModelPart antennaBone = antennaRoot.getChild("bone");
+        this.leftAntenna = antennaBone.getChild("left_antenna");
+        this.rightAntenna = antennaBone.getChild("right_antenna");
 
         applyAttachments();
     }
@@ -109,6 +120,10 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
         float[] st = getStingerAttach(bodyType);
         stinger.x = st[0]; stinger.y = st[1]; stinger.z = st[2];
+
+        float[] la = getLeftAntennaAttach(bodyType);
+        leftAntenna.x = la[0]; leftAntenna.y = la[1]; leftAntenna.z = la[2];
+        rightAntenna.x = -la[0]; rightAntenna.y = la[1]; rightAntenna.z = la[2];
     }
 
     // ========== Attachment points per body type ==========
@@ -126,6 +141,14 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
             case DEFAULT -> new float[]{0.0f, -1.0f, 5.0f};
             case THICK -> new float[]{0.0f, -1.0f, 12.0f};
             case SEGMENTED -> new float[]{0.0f, -1.0f, 9.0f};
+        };
+    }
+
+    private static float[] getLeftAntennaAttach(BeeBodyType type) {
+        return switch (type) {
+            case DEFAULT -> new float[]{-1.5f, -4.0f, -5.0f};
+            case THICK -> new float[]{-1.5f, -4.0f, -5.0f};
+            case SEGMENTED -> new float[]{-1.5f, -4.0f, -9.0f};
         };
     }
 
@@ -153,6 +176,13 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         };
     }
 
+    public static LayerDefinition createAntennaLayerFor(BeeAntennaType type) {
+        return switch (type) {
+            case DEFAULT -> DefaultAntennaLayer.create();
+            case LONG -> LongAntennaLayer.create();
+        };
+    }
+
     // ========== Layer locations ==========
 
     public static ModelLayerLocation getBodyLayer(BeeBodyType type) {
@@ -170,6 +200,11 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
                 ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee_stinger_" + type.getId()), "main");
     }
 
+    public static ModelLayerLocation getAntennaLayer(BeeAntennaType type) {
+        return new ModelLayerLocation(
+                ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "apica_bee_antenna_" + type.getId()), "main");
+    }
+
     // ========== Textures ==========
 
     public static ResourceLocation getBodyTexture(BeeBodyType type) {
@@ -185,6 +220,11 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     public static ResourceLocation getStingerTexture(BeeStingerType type) {
         return ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID,
                 "textures/entity/apica_bee_stinger_" + type.getId() + ".png");
+    }
+
+    public static ResourceLocation getAntennaTexture(BeeAntennaType type) {
+        return ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID,
+                "textures/entity/apica_bee_antenna_" + type.getId() + ".png");
     }
 
     public BeeBodyType getBodyType() { return bodyType; }
@@ -209,6 +249,10 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         stingerRoot.render(pose, vc, light, overlay, color);
     }
 
+    public void renderAntenna(PoseStack pose, VertexConsumer vc, int light, int overlay, int color) {
+        antennaRoot.render(pose, vc, light, overlay, color);
+    }
+
     // ========== Visibility toggles ==========
 
     public void showCorpusOnly() { setBodyPartsVisible(false); bodyCorpus.visible = true; }
@@ -228,12 +272,6 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         backLegs.visible = true;
     }
 
-    public void showAntennaOnly() {
-        setBodyPartsVisible(false);
-        leftAntenna.visible = true;
-        rightAntenna.visible = true;
-    }
-
     public void showAll() { setBodyPartsVisible(true); }
 
     private void setBodyPartsVisible(boolean visible) {
@@ -245,7 +283,5 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         frontLegs.visible = visible;
         middleLegs.visible = visible;
         backLegs.visible = visible;
-        leftAntenna.visible = visible;
-        rightAntenna.visible = visible;
     }
 }

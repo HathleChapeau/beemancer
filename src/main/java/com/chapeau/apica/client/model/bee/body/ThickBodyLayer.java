@@ -74,29 +74,19 @@ public final class ThickBodyLayer {
                         .addBox(1.51F, -1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
-        // Legs under thorax (thorax Z: -13 to -8, bottom Y: 3.5)
+        // Legs under body (body Z: -5 to +5, bottom Y: 3)
         bone.addOrReplaceChild("front_legs",
                 CubeListBuilder.create().texOffs(0, 41)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(1.5F, 3.5F, -12.0F));
+                PartPose.offset(1.5F, 3.0F, -2.0F));
         bone.addOrReplaceChild("middle_legs",
                 CubeListBuilder.create().texOffs(0, 43)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(1.5F, 3.5F, -10.5F));
+                PartPose.offset(1.5F, 3.0F, 0.0F));
         bone.addOrReplaceChild("back_legs",
                 CubeListBuilder.create().texOffs(0, 45)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(1.5F, 3.5F, -9.0F));
-
-        // Antennae on thorax front (Z=-13), top (Y=-4.5)
-        bone.addOrReplaceChild("left_antenna",
-                CubeListBuilder.create().texOffs(0, 53)
-                        .addBox(0.0F, -1.0F, -3.0F, 1.0F, 1.0F, 3.0F),
-                PartPose.offset(-2.0F, -4.5F, -13.0F));
-        bone.addOrReplaceChild("right_antenna",
-                CubeListBuilder.create().texOffs(10, 53)
-                        .addBox(-1.0F, -1.0F, -3.0F, 1.0F, 1.0F, 3.0F),
-                PartPose.offset(2.0F, -4.5F, -13.0F));
+                PartPose.offset(1.5F, 3.0F, 2.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }

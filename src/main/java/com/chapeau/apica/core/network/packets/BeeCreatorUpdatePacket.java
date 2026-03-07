@@ -71,6 +71,8 @@ public record BeeCreatorUpdatePacket(BlockPos pos, int partIndex, int color)
                     be.setWingType(packet.color());
                 } else if (idx == BeeCreatorBlockEntity.STINGER_TYPE_SLOT) {
                     be.setStingerType(packet.color());
+                } else if (idx == BeeCreatorBlockEntity.ANTENNA_TYPE_SLOT) {
+                    be.setAntennaType(packet.color());
                 } else {
                     BeePart part = BeePart.byIndex(idx);
                     be.setPartColor(part, packet.color());

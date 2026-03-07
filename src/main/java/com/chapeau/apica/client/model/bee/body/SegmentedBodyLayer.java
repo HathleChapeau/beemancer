@@ -88,16 +88,6 @@ public final class SegmentedBodyLayer {
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
                 PartPose.offset(1.5F, 3.0F, -5.0F));
 
-        // Antennae above eyes on head front (Z=-9), like vanilla
-        bone.addOrReplaceChild("left_antenna",
-                CubeListBuilder.create().texOffs(14, 31)
-                        .addBox(0.0F, -1.0F, -3.0F, 1.0F, 1.0F, 3.0F),
-                PartPose.offset(-1.5F, -4.0F, -9.0F));
-        bone.addOrReplaceChild("right_antenna",
-                CubeListBuilder.create().texOffs(22, 31)
-                        .addBox(-1.0F, -1.0F, -3.0F, 1.0F, 1.0F, 3.0F),
-                PartPose.offset(1.5F, -4.0F, -9.0F));
-
         return LayerDefinition.create(mesh, 64, 64);
     }
 }
