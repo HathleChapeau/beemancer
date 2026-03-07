@@ -61,7 +61,7 @@ public class HoneyTankScreen extends AbstractApicaScreen<HoneyTankMenu> {
         GuiRenderHelper.renderSlot(g, px + BUCKET_SLOT_X, y + BUCKET_SLOT_Y);
 
         // Texture honey bar
-        int cap = 16000;
+        int cap = menu.getBlockEntity().getCapacity();
         float ratio = cap > 0 ? (float) menu.getFluidAmount() / cap : 0;
         GuiRenderHelper.renderLeftHoneyBar(g, px + HONEYBAR_X, y + HONEYBAR_Y, ratio);
     }

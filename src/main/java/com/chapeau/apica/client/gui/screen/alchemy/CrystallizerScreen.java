@@ -44,7 +44,7 @@ public class CrystallizerScreen extends AbstractApicaScreen<CrystallizerMenu> {
     private static final int HONEYBAR_Y = 28;
     private static final int SLOT_X = 62;
     private static final int SLOT_Y = 38;
-    private static final int PROGRESS_X = 6;
+    private static final int PROGRESS_X = 42;
     private static final int PROGRESS_Y = 61;
 
     public CrystallizerScreen(CrystallizerMenu menu, Inventory playerInventory, Component title) {

@@ -216,6 +216,7 @@ public class CrystallizerBlockEntity extends BlockEntity implements MenuProvider
         tag.putInt("Progress", progress);
         tag.putInt("ProcessTime", currentProcessTime);
         tag.put("Output", outputSlot.serializeNBT(registries));
+        tag.put("InputTank", inputTank.writeToNBT(registries, new CompoundTag()));
         return tag;
     }
 

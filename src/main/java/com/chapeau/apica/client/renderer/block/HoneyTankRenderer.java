@@ -20,13 +20,13 @@
  */
 package com.chapeau.apica.client.renderer.block;
 
+import com.chapeau.apica.client.renderer.util.ApicaRenderTypes;
 import com.chapeau.apica.client.renderer.util.FluidCubeRenderer;
 import com.chapeau.apica.client.renderer.util.RenderHelper;
 import com.chapeau.apica.common.blockentity.alchemy.HoneyTankBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -56,7 +56,7 @@ public class HoneyTankRenderer implements BlockEntityRenderer<HoneyTankBlockEnti
 
         TextureAtlasSprite sprite = RenderHelper.getFluidSprite(fluidStack.getFluid());
 
-        VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
+        VertexConsumer consumer = buffer.getBuffer(ApicaRenderTypes.FLUID_TRANSLUCENT);
         var pose = poseStack.last();
 
         // Cube de fluide de [2,2,2] a [14, 2 + fillRatio*12, 14] (en pixels / 16)

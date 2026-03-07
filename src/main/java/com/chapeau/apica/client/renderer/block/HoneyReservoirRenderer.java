@@ -23,6 +23,7 @@
 package com.chapeau.apica.client.renderer.block;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.client.renderer.util.ApicaRenderTypes;
 import com.chapeau.apica.client.renderer.util.FluidCubeRenderer;
 import com.chapeau.apica.client.renderer.util.RenderHelper;
 import com.chapeau.apica.common.block.altar.HoneyReservoirBlock;
@@ -102,7 +103,7 @@ public class HoneyReservoirRenderer implements BlockEntityRenderer<HoneyReservoi
             poseStack.translate(spreadX, 0, spreadZ);
         }
 
-        VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
+        VertexConsumer consumer = buffer.getBuffer(ApicaRenderTypes.FLUID_TRANSLUCENT);
         if (formed) {
             renderFormedFluid(poseStack, consumer, sprite, fillRatio);
         } else {

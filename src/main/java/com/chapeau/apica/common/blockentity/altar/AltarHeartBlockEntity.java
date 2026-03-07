@@ -41,6 +41,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -623,6 +624,14 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
 
     public long getCraftStartGameTime() {
         return craftStartGameTime;
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        return new AABB(
+                worldPosition.getX() - 3, worldPosition.getY() - 3, worldPosition.getZ() - 3,
+                worldPosition.getX() + 4, worldPosition.getY() + 4, worldPosition.getZ() + 4
+        );
     }
 
     // ==================== Lifecycle ====================

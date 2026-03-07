@@ -340,6 +340,7 @@ public class InfuserBlockEntity extends BlockEntity implements MenuProvider {
         CompoundTag tag = super.getUpdateTag(registries);
         tag.put("Input", inputSlot.serializeNBT(registries));
         tag.put("Output", outputSlot.serializeNBT(registries));
+        tag.put("HoneyTank", honeyTank.writeToNBT(registries, new CompoundTag()));
         return tag;
     }
 
