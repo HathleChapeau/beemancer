@@ -266,20 +266,20 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
                         .texOffs(34, 39).addBox(-3.5F, -4.0F, 6.0F, 7.0F, 7.0F, 6.0F),      // Tail stripe
                 PartPose.ZERO);
 
-        // Eyes on thorax front face (Z=-13)
+        // Eyes on body front face (Z=-5)
         bone.addOrReplaceChild("eyes",
                 CubeListBuilder.create()
-                        .texOffs(0, 47).addBox(-4.01F, -1.0F, -13.01F, 2.0F, 3.0F, 1.0F)
-                        .texOffs(8, 47).addBox(2.01F, -1.0F, -13.01F, 2.0F, 3.0F, 1.0F),
+                        .texOffs(0, 47).addBox(-3.51F, -1.0F, -5.01F, 2.0F, 3.0F, 1.0F)
+                        .texOffs(8, 47).addBox(1.51F, -1.0F, -5.01F, 2.0F, 3.0F, 1.0F),
                 PartPose.ZERO);
 
         bone.addOrReplaceChild("left_pupil",
                 CubeListBuilder.create().texOffs(0, 51)
-                        .addBox(-3.01F, -1.0F, -13.02F, 1.0F, 1.0F, 0.0F),
+                        .addBox(-2.51F, -1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
         bone.addOrReplaceChild("right_pupil",
                 CubeListBuilder.create().texOffs(4, 51)
-                        .addBox(2.01F, -1.0F, -13.02F, 1.0F, 1.0F, 0.0F),
+                        .addBox(1.51F, -1.0F, -5.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
         // Legs under thorax (thorax Z: -13 to -8, bottom Y: 3.5)
