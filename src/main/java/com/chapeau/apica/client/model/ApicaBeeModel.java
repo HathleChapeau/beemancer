@@ -125,7 +125,8 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
         float[] la = getLeftAntennaAttach(bodyType);
         leftAntenna.x = la[0]; leftAntenna.y = la[1]; leftAntenna.z = la[2];
-        rightAntenna.x = -la[0]; rightAntenna.y = la[1]; rightAntenna.z = la[2];
+        float[] ra = getRightAntennaAttach(bodyType);
+        rightAntenna.x = ra[0]; rightAntenna.y = ra[1]; rightAntenna.z = ra[2];
     }
 
     // ========== Attachment points per body type ==========
@@ -144,7 +145,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
             case DEFAULT -> new float[]{0.0f, -1.0f, 5.0f};
             case ROYAL -> new float[]{0.0f, -1.0f, 11.5f};
             case SEGMENTED -> new float[]{0.0f, -1.0f, 9.0f};
-            case ARMORED -> new float[]{0.0f, -1.0f, 7.5f};
+            case ARMORED -> new float[]{0.0f, 1.0f, 7.5f};
         };
     }
 
@@ -153,7 +154,16 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
             case DEFAULT -> new float[]{-1.5f, -4.0f, -5.0f};
             case ROYAL -> new float[]{-1.5f, -4.0f, -5.5f};
             case SEGMENTED -> new float[]{-1.5f, -4.0f, -9.0f};
-            case ARMORED -> new float[]{-1.5f, -4.0f, -7.5f};
+            case ARMORED -> new float[]{-1.5f, -3.5f, -7.5f};
+        };
+    }
+
+    private static float[] getRightAntennaAttach(BeeBodyType type) {
+        return switch (type) {
+            case DEFAULT -> new float[]{1.5f, -4.0f, -5.0f};
+            case ROYAL -> new float[]{1.5f, -4.0f, -5.5f};
+            case SEGMENTED -> new float[]{1.5f, -4.0f, -9.0f};
+            case ARMORED -> new float[]{1.5f, -3.5f, -7.5f};
         };
     }
 
