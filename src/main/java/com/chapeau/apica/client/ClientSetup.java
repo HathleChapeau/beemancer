@@ -42,6 +42,7 @@ import com.chapeau.apica.client.renderer.block.AssemblyTableRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableStatsRenderer;
 import com.chapeau.apica.client.renderer.block.ApiRenderer;
 import com.chapeau.apica.client.renderer.block.AltarHeartRenderer;
+import com.chapeau.apica.client.renderer.block.BeeCreatorRenderer;
 import com.chapeau.apica.client.renderer.block.BeeStatueRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyPedestalRenderer;
 import com.chapeau.apica.client.renderer.block.HoneyReservoirRenderer;
@@ -301,6 +302,10 @@ public class ClientSetup {
         // HoneyLampRenderer - halo translucide cross planes
         event.registerBlockEntityRenderer(ApicaBlockEntities.HONEY_LAMP.get(),
             com.chapeau.apica.client.renderer.block.HoneyLampRenderer::new);
+
+        // BeeCreatorRenderer - modele d'abeille au-dessus du bee creator
+        event.registerBlockEntityRenderer(ApicaBlockEntities.BEE_CREATOR.get(),
+            BeeCreatorRenderer::new);
 
         // LaunchpadRenderer - plaque inclinable animee
         event.registerBlockEntityRenderer(ApicaBlockEntities.LAUNCHPAD.get(),
