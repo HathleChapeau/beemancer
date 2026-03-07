@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [LongAntennaLayer.java]
- * Description: LayerDefinition des antennes LONG (longues, 1x2x5)
+ * Description: LayerDefinition des antennes LONG (longues, quad 0x2x5)
  * ============================================================
  *
  * DEPENDANCES:
@@ -25,9 +25,9 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 /**
- * Antennes LONG: cubes fins 1x2x5, texture 32x32.
+ * Antennes LONG: quads plats 0x2x5 (face interieure visible des 2 cotes).
  * Geometrie en position neutre (PartPose.ZERO), positionnement via attachment points.
- * Left box s'etend vers -X, right box vers +X depuis leur pivot.
+ * Box a X=0, la face interieure est le plan YZ au pivot de chaque antenne.
  */
 public final class LongAntennaLayer {
 
@@ -41,11 +41,11 @@ public final class LongAntennaLayer {
 
         bone.addOrReplaceChild("left_antenna",
                 CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(-1.0F, -2.0F, -5.0F, 1.0F, 2.0F, 5.0F),
+                        .addBox(0.0F, -2.0F, -5.0F, 0.0F, 2.0F, 5.0F),
                 PartPose.ZERO);
         bone.addOrReplaceChild("right_antenna",
                 CubeListBuilder.create().texOffs(0, 7)
-                        .addBox(0.0F, -2.0F, -5.0F, 1.0F, 2.0F, 5.0F),
+                        .addBox(0.0F, -2.0F, -5.0F, 0.0F, 2.0F, 5.0F),
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 32, 32);

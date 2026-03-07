@@ -26,7 +26,9 @@ package com.chapeau.apica.common.block.beecreator;
  */
 public enum BeeAntennaType {
     DEFAULT(0, "default", "Default"),
-    LONG(1, "long", "Long");
+    LONG(1, "long", "Long"),
+    DRAGON(2, "dragon", "Dragon"),
+    DEMON(3, "demon", "Demon");
 
     public static final int COUNT = values().length;
 

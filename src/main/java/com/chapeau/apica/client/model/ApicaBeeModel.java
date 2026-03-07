@@ -30,6 +30,8 @@ package com.chapeau.apica.client.model;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.model.bee.antenna.DefaultAntennaLayer;
+import com.chapeau.apica.client.model.bee.antenna.DemonAntennaLayer;
+import com.chapeau.apica.client.model.bee.antenna.DragonAntennaLayer;
 import com.chapeau.apica.client.model.bee.antenna.LongAntennaLayer;
 import com.chapeau.apica.client.model.bee.body.ArmoredBodyLayer;
 import com.chapeau.apica.client.model.bee.body.DefaultBodyLayer;
@@ -151,19 +153,19 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
     private static float[] getLeftAntennaAttach(BeeBodyType type) {
         return switch (type) {
-            case DEFAULT -> new float[]{-1.5f, -4.0f, -5.0f};
-            case ROYAL -> new float[]{-1.5f, -4.0f, -5.5f};
-            case SEGMENTED -> new float[]{-1.5f, -4.0f, -9.0f};
-            case ARMORED -> new float[]{-1.5f, -3.5f, -7.5f};
+            case DEFAULT -> new float[]{-1.5f, -2.0f, -5.0f};
+            case ROYAL -> new float[]{-1.5f, -2.0f, -5.5f};
+            case SEGMENTED -> new float[]{-1.5f, -2.0f, -9.0f};
+            case ARMORED -> new float[]{-1.5f, -1.5f, -7.5f};
         };
     }
 
     private static float[] getRightAntennaAttach(BeeBodyType type) {
         return switch (type) {
-            case DEFAULT -> new float[]{1.5f, -4.0f, -5.0f};
-            case ROYAL -> new float[]{1.5f, -4.0f, -5.5f};
-            case SEGMENTED -> new float[]{1.5f, -4.0f, -9.0f};
-            case ARMORED -> new float[]{1.5f, -3.5f, -7.5f};
+            case DEFAULT -> new float[]{1.5f, -2.0f, -5.0f};
+            case ROYAL -> new float[]{1.5f, -2.0f, -5.5f};
+            case SEGMENTED -> new float[]{1.5f, -2.0f, -9.0f};
+            case ARMORED -> new float[]{1.5f, -1.5f, -7.5f};
         };
     }
 
@@ -197,6 +199,8 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         return switch (type) {
             case DEFAULT -> DefaultAntennaLayer.create();
             case LONG -> LongAntennaLayer.create();
+            case DRAGON -> DragonAntennaLayer.create();
+            case DEMON -> DemonAntennaLayer.create();
         };
     }
 
