@@ -34,11 +34,11 @@ import com.chapeau.apica.common.block.alchemy.InfuserHeartBlock;
 import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.apica.common.menu.alchemy.InfuserMenu;
 import com.chapeau.apica.core.multiblock.BlockIORule;
-import com.chapeau.apica.core.multiblock.BlockMatcher;
 import com.chapeau.apica.core.multiblock.IOMode;
 import com.chapeau.apica.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.apica.core.multiblock.MultiblockController;
 import com.chapeau.apica.core.multiblock.MultiblockEvents;
+import com.chapeau.apica.core.multiblock.MultiblockFormationHelper;
 import com.chapeau.apica.core.multiblock.MultiblockIOConfig;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
@@ -55,6 +55,7 @@ import com.chapeau.apica.core.util.SplitItemHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -130,6 +131,7 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
         .build();
 
     private boolean formed = false;
+    private int multiblockRotation = 0;
     private boolean isProcessingDrain = false;
 
     private final ItemStackHandler inputSlot = new ItemStackHandler(1) {
@@ -210,21 +212,24 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
     public BlockPos getControllerPos() { return worldPosition; }
 
     @Override
+    public int getRotation() { return multiblockRotation; }
+
+    @Override
     public void onMultiblockFormed() {
         formed = true;
         if (level != null && !level.isClientSide()) {
             // 1. Link reservoirs au controller d'abord
-            linkReservoirControllers(true);
+            MultiblockFormationHelper.linkReservoirs(level, worldPosition, new BlockPos[][]{INPUT_RESERVOIR_OFFSETS, OUTPUT_RESERVOIR_OFFSETS}, multiblockRotation, true);
 
             // 2. Changer les blockstates
             BlockState state = level.getBlockState(worldPosition);
             if (state.hasProperty(InfuserHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(InfuserHeartBlock.MULTIBLOCK, MultiblockProperty.INFUSER), 3);
             }
-            setFormedOnStructureBlocks(true);
+            MultiblockFormationHelper.setFormedOnStructureBlocks(level, worldPosition, getPattern(), MultiblockProperty.INFUSER, multiblockRotation);
 
             // 3. Invalider les capabilities de tous les blocs du multibloc
-            invalidateAllCapabilities();
+            MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), multiblockRotation);
 
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
@@ -240,40 +245,17 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
             if (state.hasProperty(InfuserHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(InfuserHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
-            setFormedOnStructureBlocks(false);
+            MultiblockFormationHelper.clearFormedOnStructureBlocks(level, worldPosition, getPattern(), multiblockRotation);
 
             // 2. Unlink reservoirs
-            linkReservoirControllers(false);
+            MultiblockFormationHelper.linkReservoirs(level, worldPosition, new BlockPos[][]{INPUT_RESERVOIR_OFFSETS, OUTPUT_RESERVOIR_OFFSETS}, multiblockRotation, false);
 
             // 3. Invalider les capabilities de tous les blocs du multibloc
-            invalidateAllCapabilities();
+            MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), multiblockRotation);
 
-            MultiblockEvents.unregisterController(worldPosition);
+            MultiblockEvents.unregisterController(level, worldPosition);
+            multiblockRotation = 0;
             setChanged();
-        }
-    }
-
-    /**
-     * Met a jour la propriete MULTIBLOCK sur tous les blocs de la structure.
-     */
-    private void setFormedOnStructureBlocks(boolean formed) {
-        if (level == null) return;
-        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
-            if (BlockMatcher.isAirMatcher(element.matcher())) continue;
-            BlockPos blockPos = worldPosition.offset(element.offset());
-            BlockState state = level.getBlockState(blockPos);
-            for (var prop : state.getProperties()) {
-                if (prop.getName().equals("multiblock") && prop instanceof net.minecraft.world.level.block.state.properties.EnumProperty<?> enumProp) {
-                    @SuppressWarnings("unchecked")
-                    net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty> mbProp =
-                        (net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty>) enumProp;
-                    MultiblockProperty value = formed ? MultiblockProperty.INFUSER : MultiblockProperty.NONE;
-                    if (mbProp.getPossibleValues().contains(value) && state.getValue(mbProp) != value) {
-                        level.setBlock(blockPos, state.setValue(mbProp, value), 3);
-                    }
-                    break;
-                }
-            }
         }
     }
 
@@ -286,6 +268,7 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
 
         int rotation = MultiblockValidator.validateWithRotations(getPattern(), level, worldPosition);
         if (rotation >= 0) {
+            this.multiblockRotation = rotation;
             onMultiblockFormed();
             return true;
         }
@@ -300,7 +283,7 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
     @Nullable
     public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
         if (!formed) return null;
-        IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face);
+        IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face, multiblockRotation);
         if (mode == null || mode == IOMode.NONE) return null;
         return switch (mode) {
             case INPUT -> SplitFluidHandler.inputOnly(honeyTank);
@@ -314,7 +297,7 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
     @Nullable
     public IItemHandler getItemHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
         if (!formed) return null;
-        IOMode mode = IO_CONFIG.getItemMode(worldPosition, worldPos, face);
+        IOMode mode = IO_CONFIG.getItemMode(worldPosition, worldPos, face, multiblockRotation);
         if (mode == null || mode == IOMode.NONE) return null;
         return switch (mode) {
             case INPUT -> SplitItemHandler.inputOnly(inputSlot);
@@ -322,34 +305,6 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
             case BOTH -> inputSlot;
             default -> null;
         };
-    }
-
-    /**
-     * Lie ou delie les reservoirs au controleur pour la delegation de capabilities.
-     */
-    private void linkReservoirControllers(boolean link) {
-        if (level == null) return;
-        BlockPos[][] allOffsets = { INPUT_RESERVOIR_OFFSETS, OUTPUT_RESERVOIR_OFFSETS };
-        for (BlockPos[] offsets : allOffsets) {
-            for (BlockPos offset : offsets) {
-                BlockPos reservoirPos = worldPosition.offset(offset);
-                if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
-                    reservoir.setControllerPosQuiet(link ? worldPosition : null);
-                }
-            }
-        }
-    }
-
-    /**
-     * Invalide les capabilities de tous les blocs du multibloc.
-     */
-    private void invalidateAllCapabilities() {
-        if (level == null) return;
-        level.invalidateCapabilities(worldPosition);
-        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
-            BlockPos blockPos = worldPosition.offset(element.offset());
-            level.invalidateCapabilities(blockPos);
-        }
     }
 
     // ==================== Processing ====================
@@ -413,7 +368,8 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
 
         // Mise a jour des reservoirs input (haut): affichent le miel
         for (BlockPos offset : INPUT_RESERVOIR_OFFSETS) {
-            BlockPos reservoirPos = worldPosition.offset(offset);
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
                 FluidTank tank = reservoir.getFluidTank();
                 FluidStack currentFluid = honeyTank.getFluid();
@@ -425,7 +381,8 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
 
         // Mise a jour des reservoirs output (bas): vides (pas de output tank fluide)
         for (BlockPos offset : OUTPUT_RESERVOIR_OFFSETS) {
-            BlockPos reservoirPos = worldPosition.offset(offset);
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
                 reservoir.getFluidTank().setFluid(FluidStack.EMPTY);
             }
@@ -493,7 +450,11 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
     @Override
     public void setRemoved() {
         super.setRemoved();
-        MultiblockEvents.unregisterController(worldPosition);
+        if (level != null) {
+            MultiblockEvents.unregisterController(level, worldPosition);
+        } else {
+            MultiblockEvents.unregisterController(worldPosition);
+        }
     }
 
     @Override
@@ -510,6 +471,7 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putBoolean("Formed", formed);
+        tag.putInt("MultiblockRotation", multiblockRotation);
         tag.put("Input", inputSlot.serializeNBT(registries));
         tag.put("Output", outputSlot.serializeNBT(registries));
         tag.put("HoneyTank", honeyTank.writeToNBT(registries, new CompoundTag()));
@@ -520,6 +482,7 @@ public class InfuserHeartBlockEntity extends BlockEntity implements MultiblockCo
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         formed = tag.getBoolean("Formed");
+        multiblockRotation = tag.getInt("MultiblockRotation");
         inputSlot.deserializeNBT(registries, tag.getCompound("Input"));
         outputSlot.deserializeNBT(registries, tag.getCompound("Output"));
         honeyTank.readFromNBT(registries, tag.getCompound("HoneyTank"));

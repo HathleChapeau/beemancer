@@ -102,7 +102,7 @@ public class StorageMultiblockManager {
                 parent.getLevel().setBlock(parent.getBlockPos(),
                     parent.getBlockState().setValue(StorageControllerBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
-            MultiblockEvents.unregisterController(parent.getBlockPos());
+            MultiblockEvents.unregisterController(parent.getLevel(), parent.getBlockPos());
             parent.notifyLinkedHives();
             parent.setChanged();
         }

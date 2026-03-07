@@ -32,12 +32,12 @@ import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.block.alchemy.CentrifugeHeartBlock;
 import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.apica.common.menu.alchemy.PoweredCentrifugeMenu;
-import com.chapeau.apica.core.multiblock.BlockMatcher;
 import com.chapeau.apica.core.multiblock.BlockIORule;
 import com.chapeau.apica.core.multiblock.IOMode;
 import com.chapeau.apica.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.apica.core.multiblock.MultiblockController;
 import com.chapeau.apica.core.multiblock.MultiblockEvents;
+import com.chapeau.apica.core.multiblock.MultiblockFormationHelper;
 import com.chapeau.apica.core.multiblock.MultiblockIOConfig;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
@@ -54,6 +54,7 @@ import com.chapeau.apica.core.registry.ApicaFluids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -126,6 +127,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
         .build();
 
     private boolean formed = false;
+    private int multiblockRotation = 0;
     private ItemStack previousInputType = ItemStack.EMPTY;
 
     // Animation (client-side principalement)
@@ -211,21 +213,24 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     public BlockPos getControllerPos() { return worldPosition; }
 
     @Override
+    public int getRotation() { return multiblockRotation; }
+
+    @Override
     public void onMultiblockFormed() {
         formed = true;
         if (level != null && !level.isClientSide()) {
             // 1. Link réservoirs AU CONTROLLER d'abord (avant que les blockstates ne déclenchent updateShape)
-            linkReservoirControllers(true);
+            MultiblockFormationHelper.linkReservoirs(level, worldPosition, new BlockPos[][]{FUEL_RESERVOIR_OFFSETS, OUTPUT_RESERVOIR_OFFSETS}, multiblockRotation, true);
 
             // 2. Puis changer les blockstates (déclenche updateShape sur les pipes voisines)
             BlockState state = level.getBlockState(worldPosition);
             if (state.hasProperty(CentrifugeHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(CentrifugeHeartBlock.MULTIBLOCK, MultiblockProperty.CENTRIFUGE), 3);
             }
-            setFormedOnStructureBlocks(true);
+            MultiblockFormationHelper.setFormedOnStructureBlocks(level, worldPosition, getPattern(), MultiblockProperty.CENTRIFUGE, multiblockRotation);
 
             // 3. Invalider les capabilities de TOUS les blocs du multibloc
-            invalidateAllCapabilities();
+            MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), multiblockRotation);
 
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
@@ -241,40 +246,17 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
             if (state.hasProperty(CentrifugeHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(CentrifugeHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
-            setFormedOnStructureBlocks(false);
+            MultiblockFormationHelper.clearFormedOnStructureBlocks(level, worldPosition, getPattern(), multiblockRotation);
 
             // 2. Unlink réservoirs (controllerPos = null)
-            linkReservoirControllers(false);
+            MultiblockFormationHelper.linkReservoirs(level, worldPosition, new BlockPos[][]{FUEL_RESERVOIR_OFFSETS, OUTPUT_RESERVOIR_OFFSETS}, multiblockRotation, false);
 
             // 3. Invalider les capabilities de TOUS les blocs du multibloc
-            invalidateAllCapabilities();
+            MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), multiblockRotation);
 
-            MultiblockEvents.unregisterController(worldPosition);
+            MultiblockEvents.unregisterController(level, worldPosition);
+            multiblockRotation = 0;
             setChanged();
-        }
-    }
-
-    /**
-     * Met à jour la propriété MULTIBLOCK sur tous les blocs de la structure.
-     */
-    private void setFormedOnStructureBlocks(boolean formed) {
-        if (level == null) return;
-        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
-            if (BlockMatcher.isAirMatcher(element.matcher())) continue;
-            BlockPos blockPos = worldPosition.offset(element.offset());
-            BlockState state = level.getBlockState(blockPos);
-            for (var prop : state.getProperties()) {
-                if (prop.getName().equals("multiblock") && prop instanceof net.minecraft.world.level.block.state.properties.EnumProperty<?> enumProp) {
-                    @SuppressWarnings("unchecked")
-                    net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty> mbProp =
-                        (net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty>) enumProp;
-                    MultiblockProperty value = formed ? MultiblockProperty.CENTRIFUGE : MultiblockProperty.NONE;
-                    if (mbProp.getPossibleValues().contains(value) && state.getValue(mbProp) != value) {
-                        level.setBlock(blockPos, state.setValue(mbProp, value), 3);
-                    }
-                    break;
-                }
-            }
         }
     }
 
@@ -287,6 +269,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
 
         int rotation = MultiblockValidator.validateWithRotations(getPattern(), level, worldPosition);
         if (rotation >= 0) {
+            this.multiblockRotation = rotation;
             onMultiblockFormed();
             return true;
         }
@@ -301,7 +284,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     @Nullable
     public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
         if (!formed) return null;
-        IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face);
+        IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face, multiblockRotation);
         if (mode == null || mode == IOMode.NONE) return null;
         return switch (mode) {
             case INPUT -> SplitFluidHandler.inputOnly(fuelTank);
@@ -315,7 +298,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     @Nullable
     public IItemHandler getItemHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
         if (!formed) return null;
-        IOMode mode = IO_CONFIG.getItemMode(worldPosition, worldPos, face);
+        IOMode mode = IO_CONFIG.getItemMode(worldPosition, worldPos, face, multiblockRotation);
         if (mode == null || mode == IOMode.NONE) return null;
         return switch (mode) {
             case INPUT -> SplitItemHandler.inputOnly(inputSlot);
@@ -323,38 +306,6 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
             case BOTH -> splitItemHandler;
             default -> null;
         };
-    }
-
-    /**
-     * Lie ou délie les réservoirs au contrôleur pour la délégation de capabilities.
-     * Ne déclenche PAS invalidateCapabilities ici (fait séparément dans invalidateAllCapabilities).
-     */
-    private void linkReservoirControllers(boolean link) {
-        if (level == null) return;
-        BlockPos[][] allOffsets = { FUEL_RESERVOIR_OFFSETS, OUTPUT_RESERVOIR_OFFSETS };
-        for (BlockPos[] offsets : allOffsets) {
-            for (BlockPos offset : offsets) {
-                BlockPos reservoirPos = worldPosition.offset(offset);
-                if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
-                    reservoir.setControllerPosQuiet(link ? worldPosition : null);
-                }
-            }
-        }
-    }
-
-    /**
-     * Invalide les capabilities de TOUS les blocs du multibloc (coeur + réservoirs + structure).
-     * Force NeoForge à re-query les lambdas de capabilities pour chaque bloc.
-     */
-    private void invalidateAllCapabilities() {
-        if (level == null) return;
-        // Invalider le coeur
-        level.invalidateCapabilities(worldPosition);
-        // Invalider tous les blocs structurels (réservoirs, honeyed stone)
-        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
-            BlockPos blockPos = worldPosition.offset(element.offset());
-            level.invalidateCapabilities(blockPos);
-        }
     }
 
     // ==================== Animation ====================
@@ -456,9 +407,10 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
         int fuelPerReservoir = fuelTank.getFluidAmount() / 4;
         int outputPerReservoir = outputTank.getFluidAmount() / 4;
 
-        // Mise à jour des reservoirs fuel (bas)
+        // Mise à jour des reservoirs fuel (haut)
         for (BlockPos offset : FUEL_RESERVOIR_OFFSETS) {
-            BlockPos reservoirPos = worldPosition.offset(offset);
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
                 FluidTank tank = reservoir.getFluidTank();
                 FluidStack currentFluid = fuelTank.getFluid();
@@ -470,9 +422,10 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
             }
         }
 
-        // Mise à jour des reservoirs output (haut)
+        // Mise à jour des reservoirs output (bas)
         for (BlockPos offset : OUTPUT_RESERVOIR_OFFSETS) {
-            BlockPos reservoirPos = worldPosition.offset(offset);
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
                 FluidTank tank = reservoir.getFluidTank();
                 FluidStack currentFluid = outputTank.getFluid();
@@ -585,7 +538,11 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     @Override
     public void setRemoved() {
         super.setRemoved();
-        MultiblockEvents.unregisterController(worldPosition);
+        if (level != null) {
+            MultiblockEvents.unregisterController(level, worldPosition);
+        } else {
+            MultiblockEvents.unregisterController(worldPosition);
+        }
     }
 
     @Override
@@ -602,6 +559,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putBoolean("Formed", formed);
+        tag.putInt("MultiblockRotation", multiblockRotation);
         tag.put("Input", inputSlot.serializeNBT(registries));
         tag.put("Output", outputSlots.serializeNBT(registries));
         tag.put("FuelTank", fuelTank.writeToNBT(registries, new CompoundTag()));
@@ -613,6 +571,7 @@ public class CentrifugeHeartBlockEntity extends BlockEntity implements Multibloc
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         formed = tag.getBoolean("Formed");
+        multiblockRotation = tag.getInt("MultiblockRotation");
         inputSlot.deserializeNBT(registries, tag.getCompound("Input"));
         outputSlots.deserializeNBT(registries, tag.getCompound("Output"));
         fuelTank.readFromNBT(registries, tag.getCompound("FuelTank"));

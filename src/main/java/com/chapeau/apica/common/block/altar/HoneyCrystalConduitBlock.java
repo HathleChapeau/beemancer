@@ -12,7 +12,7 @@
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
- * - HoneyAltarMultiblock.java (validation pattern - étage 4)
+ * - MultiblockPatterns.HONEY_ALTAR (validation pattern - étage 4)
  * - ApicaBlocks.java (enregistrement)
  *
  * ============================================================

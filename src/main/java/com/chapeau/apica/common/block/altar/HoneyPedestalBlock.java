@@ -13,7 +13,7 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - HoneyAltarMultiblock.java (validation pattern - centre base)
+ * - MultiblockPatterns.HONEY_ALTAR (validation pattern - centre base)
  * - ApicaBlocks.java (enregistrement)
  * - AltarHeartBlockEntity.java (lecture item pour craft)
  *

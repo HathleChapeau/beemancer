@@ -184,9 +184,13 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
         //LOGGER.warn("Ratio : {}/{}/{}/{}", fillRatio, (float) tank.getFluidAmount(), tank.getCapacity(), (Math.pow(cubeSize, 3)));
 
         var pose = poseStack.last();
+        // Rendu double-sided: faces extérieures (normales sortantes)
         FluidCubeRenderer.renderFluidCube(consumer, pose, sprite,
             minX, minY, minZ, maxX, maxY, maxZ,
             true, true, true, true, true, true);
+        // Rendu faces intérieures (normales inversées) pour visibilité depuis en dessous
+        FluidCubeRenderer.renderFluidCubeInverted(consumer, pose, sprite,
+            minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     @Override

@@ -29,14 +29,13 @@ package com.chapeau.apica.common.blockentity.alchemy;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.block.alchemy.AlembicHeartBlock;
-import com.chapeau.apica.common.blockentity.altar.HoneyReservoirBlockEntity;
 import com.chapeau.apica.common.menu.alchemy.AlembicMenu;
 import com.chapeau.apica.core.multiblock.BlockIORule;
-import com.chapeau.apica.core.multiblock.BlockMatcher;
 import com.chapeau.apica.core.multiblock.IOMode;
 import com.chapeau.apica.core.multiblock.MultiblockCapabilityProvider;
 import com.chapeau.apica.core.multiblock.MultiblockController;
 import com.chapeau.apica.core.multiblock.MultiblockEvents;
+import com.chapeau.apica.core.multiblock.MultiblockFormationHelper;
 import com.chapeau.apica.core.multiblock.MultiblockIOConfig;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
@@ -109,6 +108,7 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
         .build();
 
     private boolean formed = false;
+    private int multiblockRotation = 0;
     private boolean isProcessingDrain = false;
 
     private final FluidTank honeyTank = new FluidTank(TANK_CAPACITY) {
@@ -192,21 +192,28 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
     }
 
     @Override
+    public int getRotation() {
+        return multiblockRotation;
+    }
+
+    @Override
     public void onMultiblockFormed() {
         formed = true;
         if (level != null && !level.isClientSide()) {
             // 1. Link reservoirs AU CONTROLLER d'abord (avant que les blockstates ne declenchent updateShape)
-            linkReservoirControllers(true);
+            MultiblockFormationHelper.linkReservoirs(level, worldPosition, RESERVOIR_OFFSETS, multiblockRotation, true);
 
             // 2. Puis changer les blockstates (declenche updateShape sur les pipes voisines)
             BlockState state = level.getBlockState(worldPosition);
             if (state.hasProperty(AlembicHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(AlembicHeartBlock.MULTIBLOCK, MultiblockProperty.ALEMBIC), 3);
             }
-            setFormedOnStructureBlocks(true);
+            MultiblockFormationHelper.setFormedOnStructureBlocks(level, worldPosition, getPattern(),
+                offset -> offset.getY() >= 1 ? MultiblockProperty.ALEMBIC_1 : MultiblockProperty.ALEMBIC_0,
+                multiblockRotation);
 
             // 3. Invalider les capabilities de TOUS les blocs du multibloc
-            invalidateAllCapabilities();
+            MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), multiblockRotation);
 
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
@@ -222,53 +229,17 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
             if (state.hasProperty(AlembicHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, state.setValue(AlembicHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
-            setFormedOnStructureBlocks(false);
+            MultiblockFormationHelper.clearFormedOnStructureBlocks(level, worldPosition, getPattern(), multiblockRotation);
 
             // 2. Unlink reservoirs (controllerPos = null)
-            linkReservoirControllers(false);
+            MultiblockFormationHelper.linkReservoirs(level, worldPosition, RESERVOIR_OFFSETS, multiblockRotation, false);
 
             // 3. Invalider les capabilities de TOUS les blocs du multibloc
-            invalidateAllCapabilities();
+            MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), multiblockRotation);
 
-            MultiblockEvents.unregisterController(worldPosition);
+            multiblockRotation = 0;
+            MultiblockEvents.unregisterController(level, worldPosition);
             setChanged();
-        }
-    }
-
-    /**
-     * Met a jour la propriete MULTIBLOCK sur tous les blocs de la structure.
-     * Les HoneyReservoir recoivent ALEMBIC_0 (Y-1) ou ALEMBIC_1 (Y+0) selon leur couche.
-     * Les autres blocs recoivent ALEMBIC.
-     */
-    private void setFormedOnStructureBlocks(boolean formed) {
-        if (level == null) return;
-        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
-            if (BlockMatcher.isAirMatcher(element.matcher())) continue;
-            BlockPos blockPos = worldPosition.offset(element.offset());
-            BlockState state = level.getBlockState(blockPos);
-            for (var prop : state.getProperties()) {
-                if (prop.getName().equals("multiblock") && prop instanceof net.minecraft.world.level.block.state.properties.EnumProperty<?> enumProp) {
-                    @SuppressWarnings("unchecked")
-                    net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty> mbProp =
-                        (net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty>) enumProp;
-                    MultiblockProperty value;
-                    if (!formed) {
-                        value = MultiblockProperty.NONE;
-                    } else {
-                        int yOffset = element.offset().getY();
-                        MultiblockProperty layerValue = (yOffset <= -1)
-                            ? MultiblockProperty.ALEMBIC_0
-                            : MultiblockProperty.ALEMBIC_1;
-                        value = mbProp.getPossibleValues().contains(layerValue)
-                            ? layerValue
-                            : MultiblockProperty.ALEMBIC;
-                    }
-                    if (mbProp.getPossibleValues().contains(value) && state.getValue(mbProp) != value) {
-                        level.setBlock(blockPos, state.setValue(mbProp, value), 3);
-                    }
-                    break;
-                }
-            }
         }
     }
 
@@ -281,6 +252,7 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
 
         int rotation = MultiblockValidator.validateWithRotations(getPattern(), level, worldPosition);
         if (rotation >= 0) {
+            multiblockRotation = rotation;
             onMultiblockFormed();
             return true;
         }
@@ -295,10 +267,12 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
     @Nullable
     public IFluidHandler getFluidHandlerForBlock(BlockPos worldPos, @Nullable Direction face) {
         if (!formed) return null;
-        IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face);
+        IOMode mode = IO_CONFIG.getFluidMode(worldPosition, worldPos, face, multiblockRotation);
         if (mode == null || mode == IOMode.NONE) return null;
-        Vec3i offset = worldPos.subtract(worldPosition);
-        FluidTank tank = getAlembicTankForOffset(offset, face);
+        // Inverse-rotate the world offset to get back to pattern coordinates for tank selection
+        Vec3i worldOffset = worldPos.subtract(worldPosition);
+        Vec3i patternOffset = MultiblockPattern.rotateY(worldOffset, (4 - multiblockRotation) & 3);
+        FluidTank tank = getAlembicTankForOffset(patternOffset, face);
         if (tank == null) return null;
         return switch (mode) {
             case INPUT -> SplitFluidHandler.inputOnly(tank);
@@ -322,31 +296,6 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
         if (offset.getX() == -1) return honeyTank;
         if (offset.getX() == 1) return royalJellyTank;
         return null;
-    }
-
-    /**
-     * Lie ou delie les reservoirs au controleur pour la delegation de capabilities.
-     */
-    private void linkReservoirControllers(boolean link) {
-        if (level == null) return;
-        for (BlockPos offset : RESERVOIR_OFFSETS) {
-            BlockPos reservoirPos = worldPosition.offset(offset);
-            if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
-                reservoir.setControllerPosQuiet(link ? worldPosition : null);
-            }
-        }
-    }
-
-    /**
-     * Invalide les capabilities de TOUS les blocs du multibloc (coeur + structure).
-     */
-    private void invalidateAllCapabilities() {
-        if (level == null) return;
-        level.invalidateCapabilities(worldPosition);
-        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
-            BlockPos blockPos = worldPosition.offset(element.offset());
-            level.invalidateCapabilities(blockPos);
-        }
     }
 
     // ==================== Processing ====================
@@ -456,7 +405,11 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
     @Override
     public void setRemoved() {
         super.setRemoved();
-        MultiblockEvents.unregisterController(worldPosition);
+        if (level != null) {
+            MultiblockEvents.unregisterController(level, worldPosition);
+        } else {
+            MultiblockEvents.unregisterController(worldPosition);
+        }
     }
 
     @Override
@@ -473,6 +426,7 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putBoolean("Formed", formed);
+        tag.putInt("MultiblockRotation", multiblockRotation);
         tag.put("HoneyTank", honeyTank.writeToNBT(registries, new CompoundTag()));
         tag.put("RoyalJellyTank", royalJellyTank.writeToNBT(registries, new CompoundTag()));
         tag.put("NectarTank", nectarTank.writeToNBT(registries, new CompoundTag()));
@@ -483,6 +437,7 @@ public class AlembicHeartBlockEntity extends BlockEntity implements MultiblockCo
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         formed = tag.getBoolean("Formed");
+        multiblockRotation = tag.getInt("MultiblockRotation");
         honeyTank.readFromNBT(registries, tag.getCompound("HoneyTank"));
         royalJellyTank.readFromNBT(registries, tag.getCompound("RoyalJellyTank"));
         nectarTank.readFromNBT(registries, tag.getCompound("NectarTank"));

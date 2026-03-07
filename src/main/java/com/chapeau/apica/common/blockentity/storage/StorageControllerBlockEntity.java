@@ -830,7 +830,11 @@ public class StorageControllerBlockEntity extends AbstractNetworkNodeBlockEntity
                 }
             }
         }
-        MultiblockEvents.unregisterController(worldPosition);
+        if (level != null) {
+            MultiblockEvents.unregisterController(level, worldPosition);
+        } else {
+            MultiblockEvents.unregisterController(worldPosition);
+        }
         LOGGER.debug("[Controller] setRemoved END at {}", worldPosition);
     }
 

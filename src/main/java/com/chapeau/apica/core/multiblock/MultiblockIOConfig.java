@@ -45,7 +45,7 @@ public class MultiblockIOConfig {
     }
 
     /**
-     * Retourne le mode IO fluid pour une position monde et une face.
+     * Retourne le mode IO fluid pour une position monde et une face (sans rotation).
      * @param controllerPos position monde du controleur
      * @param queriedPos position monde du bloc querie
      * @param face face du bloc querie (nullable)
@@ -53,13 +53,31 @@ public class MultiblockIOConfig {
      */
     @Nullable
     public IOMode getFluidMode(BlockPos controllerPos, BlockPos queriedPos, @Nullable Direction face) {
-        Vec3i offset = queriedPos.subtract(controllerPos);
-        BlockIORule rule = fluidRules.get(offset);
+        return getFluidMode(controllerPos, queriedPos, face, 0);
+    }
+
+    /**
+     * Retourne le mode IO fluid pour une position monde et une face, avec rotation.
+     * Les offsets définis dans le builder sont en coordonnées non-rotatées (pattern de base).
+     * La rotation est appliquée pour trouver la correspondance.
+     *
+     * @param controllerPos position monde du controleur
+     * @param queriedPos position monde du bloc querie
+     * @param face face du bloc querie (nullable)
+     * @param rotation rotation horizontale (0-3)
+     * @return le mode IO, ou null si aucune regle pour cette position
+     */
+    @Nullable
+    public IOMode getFluidMode(BlockPos controllerPos, BlockPos queriedPos, @Nullable Direction face, int rotation) {
+        Vec3i worldOffset = queriedPos.subtract(controllerPos);
+        // Inverse-rotate the world offset to get back to pattern coordinates
+        Vec3i patternOffset = MultiblockPattern.rotateY(worldOffset, (4 - rotation) & 3);
+        BlockIORule rule = fluidRules.get(patternOffset);
         return rule != null ? rule.getModeFor(face) : null;
     }
 
     /**
-     * Retourne le mode IO item pour une position monde et une face.
+     * Retourne le mode IO item pour une position monde et une face (sans rotation).
      * @param controllerPos position monde du controleur
      * @param queriedPos position monde du bloc querie
      * @param face face du bloc querie (nullable)
@@ -67,8 +85,24 @@ public class MultiblockIOConfig {
      */
     @Nullable
     public IOMode getItemMode(BlockPos controllerPos, BlockPos queriedPos, @Nullable Direction face) {
-        Vec3i offset = queriedPos.subtract(controllerPos);
-        BlockIORule rule = itemRules.get(offset);
+        return getItemMode(controllerPos, queriedPos, face, 0);
+    }
+
+    /**
+     * Retourne le mode IO item pour une position monde et une face, avec rotation.
+     *
+     * @param controllerPos position monde du controleur
+     * @param queriedPos position monde du bloc querie
+     * @param face face du bloc querie (nullable)
+     * @param rotation rotation horizontale (0-3)
+     * @return le mode IO, ou null si aucune regle pour cette position
+     */
+    @Nullable
+    public IOMode getItemMode(BlockPos controllerPos, BlockPos queriedPos, @Nullable Direction face, int rotation) {
+        Vec3i worldOffset = queriedPos.subtract(controllerPos);
+        // Inverse-rotate the world offset to get back to pattern coordinates
+        Vec3i patternOffset = MultiblockPattern.rotateY(worldOffset, (4 - rotation) & 3);
+        BlockIORule rule = itemRules.get(patternOffset);
         return rule != null ? rule.getModeFor(face) : null;
     }
 

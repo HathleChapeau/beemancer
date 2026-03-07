@@ -6,12 +6,13 @@
  *
  * DÉPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation           |
- * |---------------------|----------------------|-----------------------|
- * | MultiblockController| Interface contrôleur | Implémentation        |
- * | MultiblockPatterns  | Définition pattern   | HONEY_ALTAR           |
- * | MultiblockValidator | Validation           | tryFormAltar()        |
- * | MultiblockEvents    | Enregistrement       | Détection destruction |
+ * | Dépendance               | Raison                | Utilisation                    |
+ * |--------------------------|----------------------|--------------------------------|
+ * | MultiblockController     | Interface contrôleur | Implémentation                 |
+ * | MultiblockPatterns       | Définition pattern   | HONEY_ALTAR                    |
+ * | MultiblockValidator      | Validation           | tryFormAltar()                 |
+ * | MultiblockFormationHelper| Formation/Destruction| Framework uniforme             |
+ * | MultiblockEvents         | Enregistrement       | Détection destruction          |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -23,12 +24,12 @@ package com.chapeau.apica.common.blockentity.altar;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.block.altar.AltarHeartBlock;
-import com.chapeau.apica.core.multiblock.BlockMatcher;
 import com.chapeau.apica.core.multiblock.MultiblockProperty;
 import com.chapeau.apica.common.block.pollenpot.PollenPotBlockEntity;
 import com.chapeau.apica.core.util.ParticleHelper;
 import com.chapeau.apica.core.multiblock.MultiblockController;
 import com.chapeau.apica.core.multiblock.MultiblockEvents;
+import com.chapeau.apica.core.multiblock.MultiblockFormationHelper;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
 import com.chapeau.apica.core.multiblock.MultiblockValidator;
@@ -55,7 +56,6 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.Fluid;
 
 import javax.annotation.Nullable;
@@ -80,6 +80,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     };
 
     private boolean altarFormed = false;
+    private int multiblockRotation = 0;
 
     // === Craft Animation ===
     private boolean crafting = false;
@@ -107,11 +108,16 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     }
 
     @Override
+    public int getRotation() {
+        return multiblockRotation;
+    }
+
+    @Override
     public void onMultiblockFormed() {
         altarFormed = true;
         if (level != null && !level.isClientSide()) {
             // 1. Link reservoirs au controller
-            linkReservoirControllers(true);
+            MultiblockFormationHelper.linkReservoirs(level, worldPosition, RESERVOIR_OFFSETS, multiblockRotation, true);
 
             // 2. Blockstate controller
             BlockState state = level.getBlockState(worldPosition);
@@ -119,13 +125,16 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
                 level.setBlock(worldPosition, state.setValue(AltarHeartBlock.MULTIBLOCK, MultiblockProperty.ALTAR), 3);
             }
 
-            // 3. Blockstates structure
-            setFormedOnStructureBlocks(true);
+            // 3. Blockstates structure (MULTIBLOCK property via framework)
+            MultiblockFormationHelper.setFormedOnStructureBlocks(level, worldPosition, getPattern(), MultiblockProperty.ALTAR, multiblockRotation);
 
-            // 4. Invalider capabilities
-            invalidateAllCapabilities();
+            // 4. FACING sur les blocs cardinaux (logique specifique Altar)
+            setFacingOnStructureBlocks();
 
-            // 5. Register events
+            // 5. Invalider capabilities
+            MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), multiblockRotation);
+
+            // 6. Register events
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
         }
@@ -141,62 +150,44 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
                 level.setBlock(worldPosition, getBlockState().setValue(AltarHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
 
-            // 2. Blockstates structure
-            setFormedOnStructureBlocks(false);
+            // 2. Blockstates structure (clear MULTIBLOCK via framework)
+            MultiblockFormationHelper.clearFormedOnStructureBlocks(level, worldPosition, getPattern(), multiblockRotation);
 
             // 3. Unlink reservoirs
-            linkReservoirControllers(false);
+            MultiblockFormationHelper.linkReservoirs(level, worldPosition, RESERVOIR_OFFSETS, multiblockRotation, false);
 
             // 4. Invalider capabilities
-            invalidateAllCapabilities();
+            MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), multiblockRotation);
 
-            // 5. Unregister events
-            MultiblockEvents.unregisterController(worldPosition);
+            // 5. Unregister events (dimension-aware)
+            MultiblockEvents.unregisterController(level, worldPosition);
+            multiblockRotation = 0;
             setChanged();
         }
     }
 
     /**
-     * Met a jour la propriete MULTIBLOCK (et FACING pour les blocs cardinaux)
-     * sur tous les blocs de la structure en iterant le pattern.
+     * Set FACING sur les blocs cardinaux de la structure (conduits, reservoirs).
+     * Logique specifique a l'Altar: les blocs cardinaux pointent vers l'exterieur.
+     * La propriete MULTIBLOCK est geree par le framework MultiblockFormationHelper.
      */
-    private void setFormedOnStructureBlocks(boolean formed) {
+    private void setFacingOnStructureBlocks() {
         if (level == null) return;
         for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
-            if (BlockMatcher.isAirMatcher(element.matcher())) continue;
-            BlockPos blockPos = worldPosition.offset(element.offset());
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(element.offset(), multiblockRotation);
+            BlockPos blockPos = worldPosition.offset(rotatedOffset);
             BlockState state = level.getBlockState(blockPos);
-            BlockState newState = state;
-
-            // Set MULTIBLOCK generiquement
-            for (var prop : newState.getProperties()) {
-                if (prop.getName().equals("multiblock") && prop instanceof EnumProperty<?> enumProp) {
-                    @SuppressWarnings("unchecked")
-                    EnumProperty<MultiblockProperty> mbProp = (EnumProperty<MultiblockProperty>) enumProp;
-                    MultiblockProperty value = formed ? MultiblockProperty.ALTAR : MultiblockProperty.NONE;
-                    if (mbProp.getPossibleValues().contains(value) && newState.getValue(mbProp) != value) {
-                        newState = newState.setValue(mbProp, value);
-                    }
-                    break;
+            if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                Direction facing = getFacingOutward(rotatedOffset);
+                if (facing != null && state.getValue(BlockStateProperties.HORIZONTAL_FACING) != facing) {
+                    level.setBlock(blockPos, state.setValue(BlockStateProperties.HORIZONTAL_FACING, facing), 3);
                 }
-            }
-
-            // Set FACING pour les blocs cardinaux (conduits, reservoirs)
-            if (formed && newState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-                Direction facing = getFacingOutward(element.offset());
-                if (facing != null) {
-                    newState = newState.setValue(BlockStateProperties.HORIZONTAL_FACING, facing);
-                }
-            }
-
-            if (newState != state) {
-                level.setBlock(blockPos, newState, 3);
             }
         }
     }
 
     /**
-     * Derive la direction FACING depuis un offset relatif au controller.
+     * Derive la direction FACING depuis un offset rotaté relatif au controller.
      * Les blocs cardinaux pointent vers l'exterieur de l'altar.
      *
      * @return la direction vers l'exterieur, ou null si centre/diagonale
@@ -212,31 +203,6 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         return null;
     }
 
-    /**
-     * Lie ou delie les reservoirs au controleur pour la detection de multibloc.
-     */
-    private void linkReservoirControllers(boolean link) {
-        if (level == null) return;
-        for (BlockPos offset : RESERVOIR_OFFSETS) {
-            BlockPos reservoirPos = worldPosition.offset(offset);
-            if (level.getBlockEntity(reservoirPos) instanceof HoneyReservoirBlockEntity reservoir) {
-                reservoir.setControllerPosQuiet(link ? worldPosition : null);
-            }
-        }
-    }
-
-    /**
-     * Invalide les capabilities de tous les blocs du multibloc.
-     */
-    private void invalidateAllCapabilities() {
-        if (level == null) return;
-        level.invalidateCapabilities(worldPosition);
-        for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
-            BlockPos blockPos = worldPosition.offset(element.offset());
-            level.invalidateCapabilities(blockPos);
-        }
-    }
-
     // ==================== Public API ====================
 
     /**
@@ -248,6 +214,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
 
         int rotation = MultiblockValidator.validateWithRotations(getPattern(), level, worldPosition);
         if (rotation >= 0) {
+            multiblockRotation = rotation;
             onMultiblockFormed();
             return true;
         }
@@ -265,7 +232,8 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
         if (!altarFormed || level == null) return reservoirs;
 
         for (BlockPos offset : RESERVOIR_OFFSETS) {
-            BlockEntity be = level.getBlockEntity(worldPosition.offset(offset));
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockEntity be = level.getBlockEntity(worldPosition.offset(rotatedOffset));
             if (be instanceof HoneyReservoirBlockEntity reservoir) {
                 reservoirs.add(reservoir);
             }
@@ -630,8 +598,11 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     @Override
     public void setRemoved() {
         super.setRemoved();
-        // Se désinscrire quand le bloc est enlevé
-        MultiblockEvents.unregisterController(worldPosition);
+        if (level != null) {
+            MultiblockEvents.unregisterController(level, worldPosition);
+        } else {
+            MultiblockEvents.unregisterController(worldPosition);
+        }
     }
 
     @Override
@@ -649,6 +620,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putBoolean("AltarFormed", altarFormed);
+        tag.putInt("MultiblockRotation", multiblockRotation);
         tag.putBoolean("Crafting", crafting);
         tag.putLong("CraftStartGameTime", craftStartGameTime);
     }
@@ -657,6 +629,7 @@ public class AltarHeartBlockEntity extends BlockEntity implements MultiblockCont
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         altarFormed = tag.getBoolean("AltarFormed");
+        multiblockRotation = tag.getInt("MultiblockRotation");
         crafting = tag.getBoolean("Crafting");
         craftStartGameTime = tag.getLong("CraftStartGameTime");
     }

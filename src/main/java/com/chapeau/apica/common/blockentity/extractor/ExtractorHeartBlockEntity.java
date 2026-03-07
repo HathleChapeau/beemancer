@@ -34,9 +34,9 @@ import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.gene.BeeGeneData;
 import com.chapeau.apica.core.gene.Gene;
 import com.chapeau.apica.core.gene.GeneCategory;
-import com.chapeau.apica.core.multiblock.BlockMatcher;
 import com.chapeau.apica.core.multiblock.MultiblockController;
 import com.chapeau.apica.core.multiblock.MultiblockEvents;
+import com.chapeau.apica.core.multiblock.MultiblockFormationHelper;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
 import com.chapeau.apica.core.multiblock.MultiblockValidator;
@@ -45,11 +45,11 @@ import com.chapeau.apica.core.registry.ApicaFluids;
 import com.chapeau.apica.core.registry.ApicaItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -78,6 +78,7 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     private static final int WEIGHT_PERFECT = 1;
 
     private boolean extractorFormed = false;
+    private int multiblockRotation = 0;
     private int tickCounter = 0;
 
     // Positions relatives des pedestals (Y-2)
@@ -261,7 +262,8 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     @Nullable
     private HoneyPedestalBlockEntity getPedestal(int index) {
         if (level == null || index < 0 || index >= PEDESTAL_OFFSETS.length) return null;
-        BlockPos pedestalPos = worldPosition.offset(PEDESTAL_OFFSETS[index]);
+        Vec3i rotatedOffset = MultiblockPattern.rotateY(PEDESTAL_OFFSETS[index], multiblockRotation);
+        BlockPos pedestalPos = worldPosition.offset(rotatedOffset);
         BlockEntity be = level.getBlockEntity(pedestalPos);
         return be instanceof HoneyPedestalBlockEntity pedestal ? pedestal : null;
     }
@@ -284,7 +286,8 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
         if (level == null) return 0;
         int total = 0;
         for (BlockPos offset : RESERVOIR_OFFSETS) {
-            BlockPos reservoirPos = worldPosition.offset(offset);
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             BlockEntity be = level.getBlockEntity(reservoirPos);
             if (be instanceof HoneyReservoirBlockEntity reservoir) {
                 FluidStack fluid = reservoir.getFluid();
@@ -301,7 +304,8 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
         int remaining = amount;
         for (BlockPos offset : RESERVOIR_OFFSETS) {
             if (remaining <= 0) break;
-            BlockPos reservoirPos = worldPosition.offset(offset);
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(offset, multiblockRotation);
+            BlockPos reservoirPos = worldPosition.offset(rotatedOffset);
             BlockEntity be = level.getBlockEntity(reservoirPos);
             if (be instanceof HoneyReservoirBlockEntity reservoir) {
                 FluidStack fluid = reservoir.getFluid();
@@ -331,11 +335,25 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     }
 
     @Override
+    public int getRotation() {
+        return multiblockRotation;
+    }
+
+    @Override
     public void onMultiblockFormed() {
         extractorFormed = true;
         if (level != null && !level.isClientSide()) {
+            // 1. Link réservoirs au contrôleur
+            MultiblockFormationHelper.linkReservoirs(level, worldPosition, RESERVOIR_OFFSETS, multiblockRotation, true);
+            // 2. Blockstate contrôleur
             level.setBlock(worldPosition, getBlockState().setValue(ExtractorHeartBlock.MULTIBLOCK, MultiblockProperty.EXTRACTOR), 3);
-            setFormedOnStructureBlocks(true);
+            // 3. Blockstates structure (framework)
+            MultiblockFormationHelper.setFormedOnStructureBlocks(level, worldPosition, getPattern(), MultiblockProperty.EXTRACTOR, multiblockRotation);
+            // 4. Pedestal rotations (spécifique extractor)
+            setPedestalRotations(true, multiblockRotation);
+            // 5. Invalider capabilities
+            MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), multiblockRotation);
+            // 6. Register events
             MultiblockEvents.registerActiveController(level, worldPosition);
             setChanged();
             syncToClient();
@@ -344,69 +362,58 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
 
     @Override
     public void onMultiblockBroken() {
+        int savedRotation = multiblockRotation;
         extractorFormed = false;
+        multiblockRotation = 0;
         if (level != null && !level.isClientSide()) {
+            // 1. Blockstate contrôleur
             if (level.getBlockState(worldPosition).hasProperty(ExtractorHeartBlock.MULTIBLOCK)) {
                 level.setBlock(worldPosition, getBlockState().setValue(ExtractorHeartBlock.MULTIBLOCK, MultiblockProperty.NONE), 3);
             }
-            setFormedOnStructureBlocks(false);
-            MultiblockEvents.unregisterController(worldPosition);
+            // 2. Blockstates structure (framework)
+            MultiblockFormationHelper.clearFormedOnStructureBlocks(level, worldPosition, getPattern(), savedRotation);
+            // 3. Pedestal rotations (spécifique extractor)
+            setPedestalRotations(false, savedRotation);
+            // 4. Unlink réservoirs
+            MultiblockFormationHelper.linkReservoirs(level, worldPosition, RESERVOIR_OFFSETS, savedRotation, false);
+            // 5. Invalider capabilities
+            MultiblockFormationHelper.invalidateAllCapabilities(level, worldPosition, getPattern(), savedRotation);
+            // 6. Unregister events (dimension-aware)
+            MultiblockEvents.unregisterController(level, worldPosition);
             setChanged();
             syncToClient();
         }
     }
 
     /**
-     * Met à jour la propriété MULTIBLOCK et FORMED_ROTATION sur tous les blocs de la structure.
+     * Met à jour FORMED_ROTATION sur les pedestals de la structure.
+     * La propriété MULTIBLOCK est gérée par MultiblockFormationHelper.
      */
-    private void setFormedOnStructureBlocks(boolean formed) {
+    private void setPedestalRotations(boolean formed, int rotation) {
         if (level == null) return;
         for (MultiblockPattern.PatternElement element : getPattern().getElements()) {
-            if (BlockMatcher.isAirMatcher(element.matcher())) continue;
-            BlockPos blockPos = worldPosition.offset(element.offset());
+            Vec3i rotatedOffset = MultiblockPattern.rotateY(element.offset(), rotation);
+            BlockPos blockPos = worldPosition.offset(rotatedOffset);
             BlockState state = level.getBlockState(blockPos);
 
-            boolean changed = false;
-
-            // Mise à jour MULTIBLOCK
-            for (var prop : state.getProperties()) {
-                if (prop.getName().equals("multiblock") && prop instanceof net.minecraft.world.level.block.state.properties.EnumProperty<?> enumProp) {
-                    @SuppressWarnings("unchecked")
-                    net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty> mbProp =
-                        (net.minecraft.world.level.block.state.properties.EnumProperty<MultiblockProperty>) enumProp;
-                    MultiblockProperty value = formed ? MultiblockProperty.EXTRACTOR : MultiblockProperty.NONE;
-                    if (mbProp.getPossibleValues().contains(value) && state.getValue(mbProp) != value) {
-                        state = state.setValue(mbProp, value);
-                        changed = true;
-                    }
-                    break;
+            if (state.getBlock() instanceof com.chapeau.apica.common.block.altar.HoneyPedestalBlock
+                && state.hasProperty(com.chapeau.apica.common.block.altar.HoneyPedestalBlock.FORMED_ROTATION)) {
+                int pedestalRot = computePedestalRotation(element.offset(), formed);
+                if (state.getValue(com.chapeau.apica.common.block.altar.HoneyPedestalBlock.FORMED_ROTATION) != pedestalRot) {
+                    level.setBlock(blockPos, state.setValue(com.chapeau.apica.common.block.altar.HoneyPedestalBlock.FORMED_ROTATION, pedestalRot), 3);
                 }
-            }
-
-            // Mise à jour FORMED_ROTATION pour les pedestals
-            if (state.getBlock() instanceof com.chapeau.apica.common.block.altar.HoneyPedestalBlock) {
-                int rotation = computePedestalRotation(element.offset(), formed);
-                if (state.hasProperty(com.chapeau.apica.common.block.altar.HoneyPedestalBlock.FORMED_ROTATION)) {
-                    if (state.getValue(com.chapeau.apica.common.block.altar.HoneyPedestalBlock.FORMED_ROTATION) != rotation) {
-                        state = state.setValue(com.chapeau.apica.common.block.altar.HoneyPedestalBlock.FORMED_ROTATION, rotation);
-                        changed = true;
-                    }
-                }
-            }
-
-            if (changed) {
-                level.setBlock(blockPos, state, 3);
             }
         }
     }
 
     /**
      * Calcule la rotation du pedestal selon sa position dans le multibloc.
+     * Utilise l'offset NON rotaté (position dans le pattern original).
      * - 0: pedestal normal (non formé)
      * - 1: pedestal extractor centre (0, -2, 0)
      * - 2-5: pedestals extractor côtés (N, E, S, W)
      */
-    private int computePedestalRotation(net.minecraft.core.Vec3i offset, boolean formed) {
+    private int computePedestalRotation(Vec3i offset, boolean formed) {
         if (!formed) return 0;
 
         // Centre
@@ -430,22 +437,14 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     public boolean tryFormExtractor() {
         if (level == null || level.isClientSide()) return false;
 
-        var result = MultiblockValidator.validateDetailed(getPattern(), level, worldPosition);
-
-        if (result.valid()) {
+        int rotation = MultiblockValidator.validateWithRotations(getPattern(), level, worldPosition);
+        if (rotation >= 0) {
+            this.multiblockRotation = rotation;
             onMultiblockFormed();
             return true;
         }
 
-        // Log détaillé pour debug
-        BlockPos failPos = result.failedAt();
-        if (failPos != null) {
-            BlockState failedState = level.getBlockState(failPos);
-            Apica.LOGGER.warn("Extractor validation failed at {} (offset from controller: {}) - Found: {} - {}",
-                failPos, failPos.subtract(worldPosition), failedState, result.reason());
-        } else {
-            Apica.LOGGER.warn("Extractor validation failed - {}", result.reason());
-        }
+        Apica.LOGGER.debug("Extractor validation failed at {}", worldPosition);
         return false;
     }
 
@@ -454,7 +453,9 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (extractorFormed) {
+        if (level != null) {
+            MultiblockEvents.unregisterController(level, worldPosition);
+        } else {
             MultiblockEvents.unregisterController(worldPosition);
         }
     }
@@ -481,12 +482,14 @@ public class ExtractorHeartBlockEntity extends BlockEntity implements Multiblock
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putBoolean("ExtractorFormed", extractorFormed);
+        tag.putInt("MultiblockRotation", multiblockRotation);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         extractorFormed = tag.getBoolean("ExtractorFormed");
+        multiblockRotation = tag.getInt("MultiblockRotation");
     }
 
     @Override

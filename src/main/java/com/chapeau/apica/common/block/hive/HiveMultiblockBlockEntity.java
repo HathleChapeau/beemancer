@@ -31,6 +31,7 @@ import com.chapeau.apica.core.gene.Gene;
 import com.chapeau.apica.core.gene.GeneCategory;
 import com.chapeau.apica.core.multiblock.MultiblockController;
 import com.chapeau.apica.core.multiblock.MultiblockEvents;
+import com.chapeau.apica.core.multiblock.MultiblockFormationHelper;
 import com.chapeau.apica.core.multiblock.MultiblockPattern;
 import com.chapeau.apica.core.multiblock.MultiblockPatterns;
 import com.chapeau.apica.core.multiblock.MultiblockProperty;
@@ -147,8 +148,8 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (isController) {
-            MultiblockEvents.unregisterController(worldPosition);
+        if (isController && level != null) {
+            MultiblockEvents.unregisterController(level, worldPosition);
         }
     }
 
@@ -192,12 +193,64 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
 
     @Override
     public void onMultiblockFormed() {
-        // Formation logic is handled in formMultiblock()
+        isController = true;
+        formed = true;
+        controllerPos = null;
+        if (level != null && !level.isClientSide()) {
+            // 1. Controller blockstate
+            BlockState controllerState = level.getBlockState(worldPosition);
+            if (controllerState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
+                level.setBlock(worldPosition, controllerState
+                        .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE)
+                        .setValue(HiveMultiblockBlock.CONTROLLER, true), 3);
+            }
+
+            // 2. Structure blockstates (via framework)
+            MultiblockFormationHelper.setFormedOnStructureBlocks(level, worldPosition, getPattern(), MultiblockProperty.HIVE, 0);
+
+            // 3. Set member block entities
+            setMemberControllerPos();
+
+            // 4. Register events
+            MultiblockEvents.registerActiveController(level, worldPosition);
+            setChanged();
+
+            // 5. Notification
+            if (level instanceof ServerLevel serverLevel) {
+                serverLevel.players().stream()
+                    .filter(p -> p.distanceToSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()) < 256)
+                    .forEach(p -> p.sendSystemMessage(Component.translatable("message.apica.hive_multiblock.formed")));
+            }
+        }
     }
 
     @Override
     public void onMultiblockBroken() {
-        onBroken();
+        if (level == null || level.isClientSide()) return;
+        if (isController && formed) {
+            dropContents();
+
+            // 1. Reset controller blockstate
+            BlockState controllerState = level.getBlockState(worldPosition);
+            if (controllerState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
+                level.setBlock(worldPosition, controllerState
+                        .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE)
+                        .setValue(HiveMultiblockBlock.CONTROLLER, false), 3);
+            }
+
+            // 2. Clear structure blockstates (via framework)
+            MultiblockFormationHelper.clearFormedOnStructureBlocks(level, worldPosition, getPattern(), 0);
+
+            // 3. Reset member BEs
+            clearMemberControllerPos();
+
+            // 4. Unregister events
+            MultiblockEvents.unregisterController(level, worldPosition);
+        }
+        formed = false;
+        isController = false;
+        controllerPos = null;
+        setChanged();
     }
 
     @Nullable
@@ -231,7 +284,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                     if (MultiblockValidator.validate(MultiblockPatterns.HIVE_MULTIBLOCK, level, potentialController)) {
                         BlockEntity be = level.getBlockEntity(potentialController);
                         if (be instanceof HiveMultiblockBlockEntity controller) {
-                            controller.formMultiblock();
+                            controller.onMultiblockFormed();
 
                             if (controller != this) {
                                 this.controllerPos = potentialController;
@@ -247,49 +300,38 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         return null;
     }
 
-    private void formMultiblock() {
-        if (level == null) return;
-
-        isController = true;
-        formed = true;
-        controllerPos = null;
-
-        // Set controller blockstate: MULTIBLOCK=HIVE, CONTROLLER=true
-        BlockState controllerState = level.getBlockState(worldPosition);
-        if (controllerState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
-            level.setBlock(worldPosition, controllerState
-                    .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE)
-                    .setValue(HiveMultiblockBlock.CONTROLLER, true), 3);
-        }
-
-        // Set all structure members: MULTIBLOCK=HIVE, CONTROLLER=false
-        MultiblockPattern pattern = getPattern();
-        for (Vec3i offset : pattern.getStructurePositions()) {
+    private void setMemberControllerPos() {
+        for (Vec3i offset : getPattern().getStructurePositions()) {
             BlockPos structurePos = worldPosition.offset(offset);
             if (structurePos.equals(worldPosition)) continue;
 
-            BlockState blockState = level.getBlockState(structurePos);
-            if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
-                level.setBlock(structurePos, blockState
-                        .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE)
-                        .setValue(HiveMultiblockBlock.CONTROLLER, false), 3);
-                BlockEntity be = level.getBlockEntity(structurePos);
-                if (be instanceof HiveMultiblockBlockEntity hive) {
-                    hive.controllerPos = worldPosition;
-                    hive.isController = false;
-                    hive.formed = true;
-                    hive.setChanged();
+            BlockEntity be = level.getBlockEntity(structurePos);
+            if (be instanceof HiveMultiblockBlockEntity hive) {
+                hive.controllerPos = worldPosition;
+                hive.isController = false;
+                hive.formed = true;
+                // Ensure CONTROLLER=false on member blockstate
+                BlockState blockState = level.getBlockState(structurePos);
+                if (blockState.hasProperty(HiveMultiblockBlock.CONTROLLER) && blockState.getValue(HiveMultiblockBlock.CONTROLLER)) {
+                    level.setBlock(structurePos, blockState.setValue(HiveMultiblockBlock.CONTROLLER, false), 3);
                 }
+                hive.setChanged();
             }
         }
+    }
 
-        MultiblockEvents.registerActiveController(level, worldPosition);
-        setChanged();
+    private void clearMemberControllerPos() {
+        for (Vec3i offset : getPattern().getStructurePositions()) {
+            BlockPos structurePos = worldPosition.offset(offset);
+            if (structurePos.equals(worldPosition)) continue;
 
-        if (level instanceof ServerLevel serverLevel) {
-            serverLevel.players().stream()
-                .filter(p -> p.distanceToSqr(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()) < 256)
-                .forEach(p -> p.sendSystemMessage(Component.translatable("message.apica.hive_multiblock.formed")));
+            BlockEntity be = level.getBlockEntity(structurePos);
+            if (be instanceof HiveMultiblockBlockEntity hive) {
+                hive.controllerPos = null;
+                hive.isController = false;
+                hive.formed = false;
+                hive.setChanged();
+            }
         }
     }
 
@@ -297,45 +339,13 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
         if (level == null || level.isClientSide()) return;
 
         if (isController && formed) {
-            dropContents();
-
-            // Reset all member blocks
-            MultiblockPattern pattern = getPattern();
-            for (Vec3i offset : pattern.getStructurePositions()) {
-                BlockPos structurePos = worldPosition.offset(offset);
-                if (structurePos.equals(worldPosition)) continue;
-
-                BlockState blockState = level.getBlockState(structurePos);
-                if (blockState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
-                    level.setBlock(structurePos, blockState
-                            .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE)
-                            .setValue(HiveMultiblockBlock.CONTROLLER, false), 3);
-                    BlockEntity be = level.getBlockEntity(structurePos);
-                    if (be instanceof HiveMultiblockBlockEntity hive) {
-                        hive.controllerPos = null;
-                        hive.isController = false;
-                        hive.formed = false;
-                        hive.setChanged();
-                    }
-                }
-            }
-
-            // Reset the controller block itself
-            BlockState controllerState = level.getBlockState(worldPosition);
-            if (controllerState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)) {
-                level.setBlock(worldPosition, controllerState
-                        .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.NONE)
-                        .setValue(HiveMultiblockBlock.CONTROLLER, false), 3);
-            }
-
-            MultiblockEvents.unregisterController(worldPosition);
+            onMultiblockBroken();
         } else if (controllerPos != null) {
             BlockEntity be = level.getBlockEntity(controllerPos);
             if (be instanceof HiveMultiblockBlockEntity controller) {
-                controller.onBroken();
+                controller.onMultiblockBroken();
             }
         }
-
         formed = false;
         isController = false;
         controllerPos = null;

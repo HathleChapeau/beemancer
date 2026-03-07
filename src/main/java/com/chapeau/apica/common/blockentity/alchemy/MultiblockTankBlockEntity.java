@@ -8,6 +8,10 @@ package com.chapeau.apica.common.blockentity.alchemy;
 
 import com.chapeau.apica.common.block.alchemy.MultiblockTankBlock;
 import com.chapeau.apica.common.menu.alchemy.MultiblockTankMenu;
+import com.chapeau.apica.core.multiblock.MultiblockController;
+import com.chapeau.apica.core.multiblock.MultiblockEvents;
+import com.chapeau.apica.core.multiblock.MultiblockPattern;
+import com.chapeau.apica.core.multiblock.MultiblockPatterns;
 import com.chapeau.apica.core.multiblock.MultiblockProperty;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.chapeau.apica.core.registry.ApicaFluids;
@@ -43,7 +47,7 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvider {
+public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvider, MultiblockController {
     public static final int CAPACITY_PER_BLOCK = 8000;
 
     // Master position (null = this IS the master)
@@ -54,10 +58,6 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     private final Set<BlockPos> connectedBlocks = new HashSet<>();
     private FluidTank fluidTank;
     private int cubeSize = 0;
-
-    // Position du bloc en cours de cassage (pour exclure du BFS)
-    @Nullable
-    private static BlockPos breakingPos = null;
 
     // Validation différée après chargement
     private boolean needsLoadValidation = false;
@@ -150,6 +150,30 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         }
         return false;
     }
+
+    // ==================== MultiblockController ====================
+
+    @Override
+    public MultiblockPattern getPattern() {
+        return MultiblockPatterns.TANK_MULTIBLOCK;
+    }
+
+    @Override
+    public BlockPos getControllerPos() {
+        return isMaster() ? worldPosition : (masterPos != null ? masterPos : worldPosition);
+    }
+
+    @Override
+    public void onMultiblockFormed() {
+        // Formation is handled by the custom BFS in formMultiblock()
+    }
+
+    @Override
+    public void onMultiblockBroken() {
+        onBroken();
+    }
+
+    // ==================== Master/Slave Accessors ====================
 
     public BlockPos getMasterPos() {
         if (isMaster()) return worldPosition;
@@ -310,6 +334,9 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         }
         master.setChanged();
 
+        // Enregistrer le master dans le framework multibloc
+        MultiblockEvents.registerActiveController(level, newMasterPos);
+
         // Mettre à jour TOUS les blocs: blockstate (MULTIBLOCK + MASTER)
         for (BlockPos pos : blocks) {
             boolean isMasterBlock = pos.equals(newMasterPos);
@@ -373,11 +400,13 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
     public void onBroken() {
         if (level == null || level.isClientSide()) return;
 
-        // Marquer cette position comme en cours de cassage
         BlockPos myPos = worldPosition;
 
         // Si on est le master ET formé
         if (isMaster() && isFormed()) {
+            // Désenregistrer du framework multibloc
+            MultiblockEvents.unregisterController(level, worldPosition);
+
             // Détruire le fluide
             if (fluidTank != null) {
                 fluidTank.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
@@ -503,6 +532,21 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         if (level != null && !level.isClientSide()) {
             needsLoadValidation = true;
             loadValidationDelay = 0;
+            if (isMaster() && isFormed()) {
+                MultiblockEvents.registerActiveController(level, worldPosition);
+            }
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (isMaster()) {
+            if (level != null) {
+                MultiblockEvents.unregisterController(level, worldPosition);
+            } else {
+                MultiblockEvents.unregisterController(worldPosition);
+            }
         }
     }
 
