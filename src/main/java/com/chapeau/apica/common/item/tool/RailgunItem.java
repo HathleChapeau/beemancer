@@ -60,17 +60,17 @@ public class RailgunItem extends Item implements IMagazineHolder {
     private static final int DEFAULT_COLOR = 0x888888;
 
     /** Ticks de charge base (honey). Royal jelly = /1.4, nectar = /2. */
-    public static final int CHARGE_THRESHOLD = 30;
+    public static final int CHARGE_THRESHOLD = 50;
     /** Portee max en blocs */
-    public static final int MAX_RANGE = 64;
+    public static final int MAX_RANGE = 48;
     /** Cooldown apres tir en ticks */
     private static final int FIRE_COOLDOWN = 40;
     /** Cout en mB par tir (avant multiplicateur fluide) */
     private static final int SHOT_COST = 100;
 
     private static final float DAMAGE_HONEY = 15f;
-    private static final float DAMAGE_ROYAL_JELLY = 25f;
-    private static final float DAMAGE_NECTAR = 40f;
+    private static final float DAMAGE_ROYAL_JELLY = 20f;
+    private static final float DAMAGE_NECTAR = 26f;
 
     public RailgunItem(Properties properties) {
         super(properties);
@@ -184,8 +184,8 @@ public class RailgunItem extends Item implements IMagazineHolder {
     /** Multiplicateur de vitesse de charge. Honey=1x, Royal Jelly=1.4x, Nectar=2x. */
     public static float getChargeSpeedMultiplier(ItemStack stack) {
         String fluidId = MagazineData.getFluidId(stack);
-        if (fluidId.contains("nectar")) return 2f;
-        if (fluidId.contains("royal_jelly")) return 1.4f;
+        if (fluidId.contains("nectar")) return 1.5f;
+        if (fluidId.contains("royal_jelly")) return 1.25f;
         return 1f;
     }
 
@@ -195,6 +195,16 @@ public class RailgunItem extends Item implements IMagazineHolder {
         if (fluidId.contains("royal_jelly")) return DAMAGE_ROYAL_JELLY;
         return DAMAGE_HONEY;
     }
+
+    @Override
+    public boolean supportsEnchantment(ItemStack stack, net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment> enchantment) {
+        net.minecraft.resources.ResourceKey<net.minecraft.world.item.enchantment.Enchantment> key = enchantment.unwrapKey().orElse(null);
+        if (key == null) return false;
+        return key.equals(net.minecraft.world.item.enchantment.Enchantments.LOOTING);
+    }
+
+    @Override
+    public int getEnchantmentValue() { return 1; }
 
     @Override
     public int getUseDuration(ItemStack stack, LivingEntity entity) { return 72000; }
