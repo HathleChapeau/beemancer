@@ -37,6 +37,7 @@ import com.chapeau.apica.client.gui.screen.storage.StorageTerminalScreen;
 import com.chapeau.apica.client.renderer.BuildingWandPreviewRenderer;
 import com.chapeau.apica.client.renderer.ChopperHivePreviewRenderer;
 import com.chapeau.apica.client.renderer.MiningLaserBeamRenderer;
+import com.chapeau.apica.client.renderer.RailgunBeamRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableRenderer;
 import com.chapeau.apica.client.renderer.block.AssemblyTableStatsRenderer;
 import com.chapeau.apica.client.renderer.block.ApiRenderer;
@@ -78,6 +79,7 @@ import com.chapeau.apica.client.renderer.entity.DeliveryBeeRenderer;
 import com.chapeau.apica.client.renderer.item.BuildingStaffItemRenderer;
 import com.chapeau.apica.client.renderer.item.LeafBlowerItemRenderer;
 import com.chapeau.apica.client.renderer.item.MiningLaserItemRenderer;
+import com.chapeau.apica.client.renderer.item.RailgunItemRenderer;
 import com.chapeau.apica.client.renderer.item.ChopperHiveItemRenderer;
 import com.chapeau.apica.client.renderer.item.MagicBeeItemRenderer;
 import com.chapeau.apica.common.blockentity.alchemy.LiquidPipeBlockEntity;
@@ -130,6 +132,7 @@ public class ClientSetup {
         NeoForge.EVENT_BUS.register(BuildingWandPreviewRenderer.class);
         NeoForge.EVENT_BUS.register(ChopperHivePreviewRenderer.class);
         NeoForge.EVENT_BUS.register(MiningLaserBeamRenderer.class);
+        NeoForge.EVENT_BUS.register(RailgunBeamRenderer.class);
         NeoForge.EVENT_BUS.register(DebugPanelRenderer.class);
         NeoForge.EVENT_BUS.register(DebugKeyHandler.class);
         NeoForge.EVENT_BUS.register(BeeDebugRenderer.class);
@@ -450,6 +453,44 @@ public class ClientSetup {
             }
         }, ApicaItems.MINING_LASER.get());
 
+        // Railgun - render 3D model (leaf blower placeholder) + no equip bob
+        event.registerItem(new IClientItemExtensions() {
+            private RailgunItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new RailgunItemRenderer();
+                }
+                return renderer;
+            }
+
+            @Override
+            public boolean applyForgeHandTransform(
+                    com.mojang.blaze3d.vertex.PoseStack poseStack,
+                    net.minecraft.client.player.LocalPlayer player,
+                    net.minecraft.world.entity.HumanoidArm arm,
+                    net.minecraft.world.item.ItemStack itemInHand,
+                    float partialTick, float equipProcess, float swingProcess) {
+                int side = arm == net.minecraft.world.entity.HumanoidArm.RIGHT ? 1 : -1;
+                if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0) {
+                    poseStack.translate((float) side * 0.56F, -0.52F, -0.72F);
+                } else {
+                    float sqrtSwing = net.minecraft.util.Mth.sqrt(swingProcess);
+                    float f5 = -0.4F * net.minecraft.util.Mth.sin(sqrtSwing * (float) Math.PI);
+                    float f6 = 0.2F * net.minecraft.util.Mth.sin(sqrtSwing * (float) (Math.PI * 2));
+                    float f10 = -0.2F * net.minecraft.util.Mth.sin(swingProcess * (float) Math.PI);
+                    poseStack.translate((float) side * f5, f6, f10);
+                    poseStack.translate((float) side * 0.56F, -0.52F, -0.72F);
+                    float f = net.minecraft.util.Mth.sin(swingProcess * swingProcess * (float) Math.PI);
+                    float f1 = net.minecraft.util.Mth.sin(sqrtSwing * (float) Math.PI);
+                    poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees((float) side * f1 * 70.0F));
+                    poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees((float) side * f * -20.0F));
+                }
+                return true;
+            }
+        }, ApicaItems.RAILGUN.get());
+
         // Chopper Hive - render 3D model with animated slabs + orbiting bees in first person
         // + hand transform freeze during chopping (no arm swing)
         event.registerItem(new IClientItemExtensions() {
@@ -651,6 +692,9 @@ public class ClientSetup {
 
         // Mining Laser 3D body model (rendu par BEWLR)
         event.register(MiningLaserItemRenderer.BODY_MODEL_LOC);
+
+        // Railgun 3D body model (placeholder leaf blower, rendu par BEWLR)
+        event.register(RailgunItemRenderer.BODY_MODEL_LOC);
 
         // Chopper Hive 3D part models (rendu par BEWLR)
         event.register(ChopperHiveItemRenderer.BOTTOM_MODEL_LOC);

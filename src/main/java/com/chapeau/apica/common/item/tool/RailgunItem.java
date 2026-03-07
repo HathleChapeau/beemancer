@@ -1,0 +1,215 @@
+/**
+ * ============================================================
+ * [RailgunItem.java]
+ * Description: Arme chargeable one-shot avec beam instantane et degats par fluide
+ * ============================================================
+ *
+ * DEPENDANCES:
+ * ------------------------------------------------------------
+ * | Dependance              | Raison                | Utilisation                    |
+ * |-------------------------|----------------------|--------------------------------|
+ * | IMagazineHolder         | Interface magazine   | Requiert magazine pour charger  |
+ * | MagazineData            | Data magazine        | Lecture/consommation fluide    |
+ * | ParticleHelper          | Particules impact    | burst() au point d'impact      |
+ * ------------------------------------------------------------
+ *
+ * UTILISE PAR:
+ * - ApicaItems.java (registration)
+ * - RailgunBeamRenderer.java (lecture constantes charge)
+ * - RailgunItemRenderer.java (rendu BEWLR)
+ *
+ * ============================================================
+ */
+package com.chapeau.apica.common.item.tool;
+
+import com.chapeau.apica.common.item.magazine.IMagazineHolder;
+import com.chapeau.apica.common.item.magazine.MagazineData;
+import com.chapeau.apica.common.item.magazine.MagazineFluidData;
+import com.chapeau.apica.core.util.ParticleHelper;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.Optional;
+import java.util.Set;
+
+/**
+ * Railgun — arme chargeable one-shot. Hold right-click pour charger, release pour tirer.
+ * Le beam apparait instantanement puis retrecit en epaisseur (rendu par RailgunBeamRenderer).
+ * Accepte honey, royal_jelly, nectar. Degats et vitesse de charge varient par fluide.
+ */
+public class RailgunItem extends Item implements IMagazineHolder {
+
+    private static final int HONEY_COLOR = 0xE8A317;
+    private static final int ROYAL_JELLY_COLOR = 0xFFF8DC;
+    private static final int NECTAR_COLOR = 0xB050FF;
+    private static final int DEFAULT_COLOR = 0x888888;
+
+    /** Ticks de charge base (honey). Royal jelly = /1.4, nectar = /2. */
+    public static final int CHARGE_THRESHOLD = 30;
+    /** Portee max en blocs */
+    public static final int MAX_RANGE = 64;
+    /** Cooldown apres tir en ticks */
+    private static final int FIRE_COOLDOWN = 40;
+    /** Cout en mB par tir (avant multiplicateur fluide) */
+    private static final int SHOT_COST = 100;
+
+    private static final float DAMAGE_HONEY = 15f;
+    private static final float DAMAGE_ROYAL_JELLY = 25f;
+    private static final float DAMAGE_NECTAR = 40f;
+
+    public RailgunItem(Properties properties) {
+        super(properties);
+    }
+
+    @Override
+    public Set<String> getAcceptedFluids() {
+        return Set.of("apica:honey", "apica:royal_jelly", "apica:nectar");
+    }
+
+    @Override
+    public boolean isBarVisible(ItemStack stack) {
+        return MagazineData.hasMagazine(stack);
+    }
+
+    @Override
+    public int getBarWidth(ItemStack stack) {
+        int amount = MagazineData.getFluidAmount(stack);
+        return Math.round((float) amount / MagazineFluidData.MAX_CAPACITY * 13f);
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack) {
+        String fluidId = MagazineData.getFluidId(stack);
+        if (fluidId.contains("honey")) return HONEY_COLOR;
+        if (fluidId.contains("royal_jelly")) return ROYAL_JELLY_COLOR;
+        if (fluidId.contains("nectar")) return NECTAR_COLOR;
+        return DEFAULT_COLOR;
+    }
+
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (player.getCooldowns().isOnCooldown(this)) return InteractionResultHolder.pass(stack);
+
+        int minCost = MagazineData.computeEffectiveCost(stack, SHOT_COST);
+        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) < minCost) {
+            return InteractionResultHolder.pass(stack);
+        }
+
+        player.startUsingItem(hand);
+        return InteractionResultHolder.consume(stack);
+    }
+
+    @Override
+    public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int remainingTicks) {
+        if (!level.isClientSide()) return;
+        if (!(entity instanceof Player player)) return;
+
+        int useTicks = getUseDuration(stack, entity) - remainingTicks;
+        float speedMult = getChargeSpeedMultiplier(stack);
+        float effective = useTicks * speedMult;
+
+        if (useTicks % 4 == 0 && effective < CHARGE_THRESHOLD) {
+            float pitch = 0.5f + Math.min(1f, effective / CHARGE_THRESHOLD);
+            level.playLocalSound(player.blockPosition(), SoundEvents.BREEZE_CHARGE,
+                SoundSource.PLAYERS, 0.4f, pitch, false);
+        }
+
+        float prevEffective = (useTicks - 1) * speedMult;
+        if (prevEffective < CHARGE_THRESHOLD && effective >= CHARGE_THRESHOLD) {
+            level.playLocalSound(player.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.value(),
+                SoundSource.PLAYERS, 1.0f, 1.5f, false);
+        }
+    }
+
+    @Override
+    public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
+        if (level.isClientSide()) return;
+        if (!(entity instanceof Player player)) return;
+
+        int useDuration = getUseDuration(stack, entity) - timeLeft;
+        if (useDuration * getChargeSpeedMultiplier(stack) < CHARGE_THRESHOLD) return;
+
+        int cost = MagazineData.computeEffectiveCost(stack, SHOT_COST);
+        if (!MagazineData.consumeFluid(stack, cost)) return;
+
+        player.getCooldowns().addCooldown(this, FIRE_COOLDOWN);
+
+        ServerLevel serverLevel = (ServerLevel) level;
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 look = player.getLookAngle();
+        Vec3 endPos = eyePos.add(look.scale(MAX_RANGE));
+
+        BlockHitResult blockHit = level.clip(new ClipContext(
+            eyePos, endPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        Vec3 beamEnd = blockHit.getType() == HitResult.Type.BLOCK ? blockHit.getLocation() : endPos;
+
+        Entity closestHit = null;
+        Vec3 impactPos = beamEnd;
+        double closestDistSq = beamEnd.distanceToSqr(eyePos);
+        AABB searchBox = new AABB(eyePos, beamEnd).inflate(1.0);
+        for (Entity e : level.getEntities(player, searchBox,
+                e -> !e.isSpectator() && e.isAlive() && e.isPickable())) {
+            Optional<Vec3> hitOpt = e.getBoundingBox().inflate(0.3).clip(eyePos, beamEnd);
+            if (hitOpt.isPresent()) {
+                double distSq = hitOpt.get().distanceToSqr(eyePos);
+                if (distSq < closestDistSq) {
+                    closestDistSq = distSq;
+                    closestHit = e;
+                    impactPos = hitOpt.get();
+                }
+            }
+        }
+
+        if (closestHit != null) {
+            closestHit.hurt(player.damageSources().playerAttack(player), getDamageForFluid(stack));
+        }
+
+        ParticleHelper.burst(serverLevel, impactPos, ParticleHelper.EffectType.ELECTRIC, 12);
+        level.playSound(null, player.blockPosition(), SoundEvents.BREEZE_WIND_CHARGE_BURST.value(),
+            SoundSource.PLAYERS, 1.5f, 0.5f);
+        level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.value(),
+            SoundSource.PLAYERS, 1.0f, 2.0f);
+    }
+
+    /** Multiplicateur de vitesse de charge. Honey=1x, Royal Jelly=1.4x, Nectar=2x. */
+    public static float getChargeSpeedMultiplier(ItemStack stack) {
+        String fluidId = MagazineData.getFluidId(stack);
+        if (fluidId.contains("nectar")) return 2f;
+        if (fluidId.contains("royal_jelly")) return 1.4f;
+        return 1f;
+    }
+
+    private static float getDamageForFluid(ItemStack stack) {
+        String fluidId = MagazineData.getFluidId(stack);
+        if (fluidId.contains("nectar")) return DAMAGE_NECTAR;
+        if (fluidId.contains("royal_jelly")) return DAMAGE_ROYAL_JELLY;
+        return DAMAGE_HONEY;
+    }
+
+    @Override
+    public int getUseDuration(ItemStack stack, LivingEntity entity) { return 72000; }
+
+    @Override
+    public UseAnim getUseAnimation(ItemStack stack) { return UseAnim.NONE; }
+
+    @Override
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+        return slotChanged;
+    }
+}

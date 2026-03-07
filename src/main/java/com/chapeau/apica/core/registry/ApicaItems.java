@@ -26,6 +26,7 @@ import com.chapeau.apica.common.item.magazine.MagazineItem;
 import com.chapeau.apica.common.item.tool.LeafBlowerItem;
 import com.chapeau.apica.common.item.tool.ChopperHiveItem;
 import com.chapeau.apica.common.item.tool.MiningLaserItem;
+import com.chapeau.apica.common.item.tool.RailgunItem;
 import com.chapeau.apica.common.item.BackpackItem;
 import com.chapeau.apica.common.item.accessory.BeeMagnetItem;
 import com.chapeau.apica.common.item.accessory.CompanionBeeItem;
@@ -431,6 +432,9 @@ public class ApicaItems {
 
     public static final DeferredItem<MiningLaserItem> MINING_LASER = ITEMS.register("mining_laser",
             () -> new MiningLaserItem(new Item.Properties().stacksTo(1)));
+
+    public static final DeferredItem<RailgunItem> RAILGUN = ITEMS.register("railgun",
+            () -> new RailgunItem(new Item.Properties().stacksTo(1)));
 
     public static final DeferredItem<ChopperHiveItem> CHOPPER_HIVE = ITEMS.register("chopper_hive",
             () -> new ChopperHiveItem(new Item.Properties().stacksTo(1)));
