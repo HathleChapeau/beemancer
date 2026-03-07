@@ -47,7 +47,7 @@ public final class DragonAntennaLayer {
                 CubeListBuilder.create(), PartPose.ZERO);
         PartDefinition leftBase = leftAntenna.addOrReplaceChild("base",
                 CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(-1.0F, -2.0F, -1.0F, 2.0F, 2.0F, 2.0F),
+                        .addBox(-1.0F, -2.5F, -1.0F, 2.0F, 2.0F, 2.0F),
                 PartPose.ZERO);
         PartDefinition leftMid = leftBase.addOrReplaceChild("mid",
                 CubeListBuilder.create().texOffs(0, 4)
@@ -63,7 +63,7 @@ public final class DragonAntennaLayer {
                 CubeListBuilder.create(), PartPose.ZERO);
         PartDefinition rightBase = rightAntenna.addOrReplaceChild("base",
                 CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(-1.0F, -2.0F, -1.0F, 2.0F, 2.0F, 2.0F),
+                        .addBox(-1.0F, -2.5F, -1.0F, 2.0F, 2.0F, 2.0F),
                 PartPose.ZERO);
         PartDefinition rightMid = rightBase.addOrReplaceChild("mid",
                 CubeListBuilder.create().texOffs(0, 4)
