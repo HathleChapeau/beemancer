@@ -50,13 +50,12 @@ public final class SegmentedBodyLayer {
                         .texOffs(0, 21).addBox(-3.5F, -4.0F, 6.0F, 7.0F, 7.0F, 3.0F),       // Tail (7x7x3)
                 PartPose.ZERO);
 
-        // body_stripe: faces interieures seulement (quads plats dans les gaps)
+        // body_stripe: head + body + tail (NO waist)
         bone.addOrReplaceChild("body_stripe",
                 CubeListBuilder.create()
-                        .texOffs(24, 0).addBox(-3.5F, -4.0F, -4.0F, 7.0F, 7.0F, 0.0F)    // Head inner (gap head/body)
-                        .texOffs(38, 0).addBox(-3.5F, -4.0F, -2.0F, 7.0F, 7.0F, 0.0F)     // Body front inner (gap head/body)
-                        .texOffs(24, 7).addBox(-3.5F, -4.0F, 0.0F, 7.0F, 7.0F, 0.0F)      // Body back inner (gap body/waist)
-                        .texOffs(38, 7).addBox(-3.5F, -4.0F, 6.0F, 7.0F, 7.0F, 0.0F),     // Tail front inner (gap waist/tail)
+                        .texOffs(24, 0).addBox(-3.5F, -4.0F, -9.0F, 7.0F, 7.0F, 5.0F)
+                        .texOffs(18, 12).addBox(-3.5F, -4.0F, -2.0F, 7.0F, 7.0F, 2.0F)
+                        .texOffs(20, 21).addBox(-3.5F, -4.0F, 6.0F, 7.0F, 7.0F, 3.0F),
                 PartPose.ZERO);
 
         // Eyes on head front face (Z=-9)

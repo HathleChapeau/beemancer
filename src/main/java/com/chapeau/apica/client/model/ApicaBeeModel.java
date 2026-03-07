@@ -142,9 +142,9 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
 
     private static float[] getStingerAttach(BeeBodyType type) {
         return switch (type) {
-            case DEFAULT -> new float[]{0.0f, -1.0f, 5.0f};
-            case ROYAL -> new float[]{0.0f, -1.0f, 11.5f};
-            case SEGMENTED -> new float[]{0.0f, -1.0f, 9.0f};
+            case DEFAULT -> new float[]{0.0f, 0.0f, 5.0f};
+            case ROYAL -> new float[]{0.0f, 0.0f, 11.5f};
+            case SEGMENTED -> new float[]{0.0f, 0.0f, 9.0f};
             case ARMORED -> new float[]{0.0f, 1.0f, 7.5f};
         };
     }
