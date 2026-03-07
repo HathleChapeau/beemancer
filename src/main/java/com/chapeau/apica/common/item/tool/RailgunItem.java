@@ -129,11 +129,6 @@ public class RailgunItem extends Item implements IMagazineHolder {
                 SoundSource.PLAYERS, 0.4f, pitch, false);
         }
 
-        float prevEffective = (useTicks - 1) * speedMult;
-        if (prevEffective < CHARGE_THRESHOLD && effective >= CHARGE_THRESHOLD) {
-            level.playLocalSound(player.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.value(),
-                SoundSource.PLAYERS, 1.0f, 1.5f, false);
-        }
     }
 
     @Override
