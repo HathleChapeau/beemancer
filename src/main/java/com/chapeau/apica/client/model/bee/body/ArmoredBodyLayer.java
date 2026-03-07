@@ -52,18 +52,18 @@ public final class ArmoredBodyLayer {
                 CubeListBuilder.create()
                         .texOffs(0, 0).addBox(-4.0F, -4.0F, -4.5F, 8.0F, 8.0F, 9.0F)       // Body (8x8x9)
                         .texOffs(34, 0).addBox(-3.5F, -3.5F, -7.5F, 7.0F, 7.0F, 3.0F)       // Head (7x7x3)
-                        .texOffs(54, 0).addBox(-3.5F, -1.5F, 4.5F, 7.0F, 2.0F, 3.0F)        // Tail (7x2x3) 0.5 higher
-                        .texOffs(74, 0).addBox(-4.5F, -4.5F, -4.5F, 9.0F, 5.0F, 3.0F)       // Plate 1 front body
-                        .texOffs(74, 0).addBox(-4.5F, -4.5F, 1.5F, 9.0F, 5.0F, 3.0F)        // Plate 2 back body
-                        .texOffs(74, 0).addBox(-4.5F, -6.5F, 4.5F, 9.0F, 5.0F, 3.0F),       // Plate 3 tail
+                        .texOffs(54, 0).addBox(-3.5F, 2.5F, 4.5F, 7.0F, 2.0F, 3.0F)         // Tail (7x2x3) -4px down
+                        .texOffs(74, 0).addBox(-4.5F, -4.5F, -3.5F, 9.0F, 5.0F, 3.0F)       // Plate 1 front body (-1px Z)
+                        .texOffs(74, 0).addBox(-4.5F, -4.5F, 0.5F, 9.0F, 5.0F, 3.0F)        // Plate 2 back body (+1px Z)
+                        .texOffs(74, 0).addBox(-4.5F, -2.5F, 4.5F, 9.0F, 5.0F, 3.0F),       // Plate 3 tail -4px down
                 PartPose.ZERO);
 
         // body_stripe: plaques seulement (le corps armored n'a pas de rayures)
         bone.addOrReplaceChild("body_stripe",
                 CubeListBuilder.create()
-                        .texOffs(74, 8).addBox(-4.5F, -4.5F, -4.5F, 9.0F, 5.0F, 3.0F)
-                        .texOffs(74, 8).addBox(-4.5F, -4.5F, 1.5F, 9.0F, 5.0F, 3.0F)
-                        .texOffs(74, 8).addBox(-4.5F, -6.5F, 4.5F, 9.0F, 5.0F, 3.0F),
+                        .texOffs(74, 8).addBox(-4.5F, -4.5F, -3.5F, 9.0F, 5.0F, 3.0F)
+                        .texOffs(74, 8).addBox(-4.5F, -4.5F, 0.5F, 9.0F, 5.0F, 3.0F)
+                        .texOffs(74, 8).addBox(-4.5F, -2.5F, 4.5F, 9.0F, 5.0F, 3.0F),
                 PartPose.ZERO);
 
         // Eyes on head front face (Z=-7.5)
@@ -82,42 +82,42 @@ public final class ArmoredBodyLayer {
                         .addBox(1.51F, -1.0F, -7.52F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
-        // Legs: 3D angled (5x1x1), attached below plates at Y=0.5
-        // Front legs (60° down) — under plate 1, Z=-3
+        // Legs: 3D angled (5x1x1), angles inverted, lowered 1px
+        // Front legs (60° down) — under plate 1, Z=-2
         PartDefinition frontLegs = bone.addOrReplaceChild("front_legs",
                 CubeListBuilder.create(), PartPose.ZERO);
         frontLegs.addOrReplaceChild("right_front",
                 CubeListBuilder.create().texOffs(0, 40)
                         .addBox(0.0F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
-                PartPose.offsetAndRotation(4.0F, 0.5F, -3.0F, 0, 0, -DEG60));
+                PartPose.offsetAndRotation(4.0F, 1.5F, -2.0F, 0, 0, DEG60));
         frontLegs.addOrReplaceChild("left_front",
                 CubeListBuilder.create().texOffs(0, 40)
                         .addBox(-5.0F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
-                PartPose.offsetAndRotation(-4.0F, 0.5F, -3.0F, 0, 0, DEG60));
+                PartPose.offsetAndRotation(-4.0F, 1.5F, -2.0F, 0, 0, -DEG60));
 
-        // Middle legs (50° down) — gap between plates, Z=0
+        // Middle legs (50° down) — gap between plates, Z=-1.5
         PartDefinition middleLegs = bone.addOrReplaceChild("middle_legs",
                 CubeListBuilder.create(), PartPose.ZERO);
         middleLegs.addOrReplaceChild("right_middle",
                 CubeListBuilder.create().texOffs(0, 42)
                         .addBox(0.0F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
-                PartPose.offsetAndRotation(4.0F, 0.5F, 0.0F, 0, 0, -DEG50));
+                PartPose.offsetAndRotation(4.0F, 1.5F, -1.5F, 0, 0, DEG50));
         middleLegs.addOrReplaceChild("left_middle",
                 CubeListBuilder.create().texOffs(0, 42)
                         .addBox(-5.0F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
-                PartPose.offsetAndRotation(-4.0F, 0.5F, 0.0F, 0, 0, DEG50));
+                PartPose.offsetAndRotation(-4.0F, 1.5F, -1.5F, 0, 0, -DEG50));
 
-        // Back legs (60° down) — under plate 2, Z=+3
+        // Back legs (60° down) — under plate 2, Z=2
         PartDefinition backLegs = bone.addOrReplaceChild("back_legs",
                 CubeListBuilder.create(), PartPose.ZERO);
         backLegs.addOrReplaceChild("right_back",
                 CubeListBuilder.create().texOffs(0, 44)
                         .addBox(0.0F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
-                PartPose.offsetAndRotation(4.0F, 0.5F, 3.0F, 0, 0, -DEG60));
+                PartPose.offsetAndRotation(4.0F, 1.5F, 2.0F, 0, 0, DEG60));
         backLegs.addOrReplaceChild("left_back",
                 CubeListBuilder.create().texOffs(0, 44)
                         .addBox(-5.0F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
-                PartPose.offsetAndRotation(-4.0F, 0.5F, 3.0F, 0, 0, DEG60));
+                PartPose.offsetAndRotation(-4.0F, 1.5F, 2.0F, 0, 0, -DEG60));
 
         return LayerDefinition.create(mesh, 128, 64);
     }
