@@ -46,6 +46,7 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Vector3f;
@@ -279,6 +280,15 @@ public class AltarHeartRenderer implements BlockEntityRenderer<AltarHeartBlockEn
     @Override
     public boolean shouldRenderOffScreen(AltarHeartBlockEntity blockEntity) {
         return true;
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(AltarHeartBlockEntity blockEntity) {
+        BlockPos pos = blockEntity.getBlockPos();
+        return new AABB(
+                pos.getX() - 3, pos.getY() - 3, pos.getZ() - 3,
+                pos.getX() + 4, pos.getY() + 4, pos.getZ() + 4
+        );
     }
 
     @Override
