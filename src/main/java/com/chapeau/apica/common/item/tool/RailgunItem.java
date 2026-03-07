@@ -106,8 +106,7 @@ public class RailgunItem extends Item implements IMagazineHolder {
         ItemStack stack = player.getItemInHand(hand);
         if (player.getCooldowns().isOnCooldown(this)) return InteractionResultHolder.pass(stack);
 
-        int minCost = MagazineData.computeEffectiveCost(stack, SHOT_COST);
-        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) < minCost) {
+        if (!MagazineData.hasMagazine(stack) || MagazineData.getFluidAmount(stack) <= 0) {
             return InteractionResultHolder.pass(stack);
         }
 

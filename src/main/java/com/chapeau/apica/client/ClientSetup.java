@@ -453,7 +453,7 @@ public class ClientSetup {
             }
         }, ApicaItems.MINING_LASER.get());
 
-        // Railgun - render 3D model (leaf blower placeholder) + no equip bob
+        // Railgun - render 3D model (leaf blower placeholder) + arm pose (crossbow hold) + no equip bob
         event.registerItem(new IClientItemExtensions() {
             private RailgunItemRenderer renderer;
 
@@ -463,6 +463,17 @@ public class ClientSetup {
                     renderer = new RailgunItemRenderer();
                 }
                 return renderer;
+            }
+
+            @Override
+            public net.minecraft.client.model.HumanoidModel.ArmPose getArmPose(
+                    net.minecraft.world.entity.LivingEntity entityLiving,
+                    net.minecraft.world.InteractionHand hand,
+                    net.minecraft.world.item.ItemStack itemStack) {
+                if (entityLiving.isUsingItem() && entityLiving.getUsedItemHand() == hand) {
+                    return net.minecraft.client.model.HumanoidModel.ArmPose.CROSSBOW_HOLD;
+                }
+                return null;
             }
 
             @Override
@@ -762,6 +773,7 @@ public class ClientSetup {
         event.register(ApicaItems.MINING_LASER.get(), magazineDecorator);
         event.register(ApicaItems.CHOPPER_HIVE.get(), magazineDecorator);
         event.register(ApicaItems.BUILDING_STAFF.get(), magazineDecorator);
+        event.register(ApicaItems.RAILGUN.get(), magazineDecorator);
     }
 
     private static void registerItemProperties() {
