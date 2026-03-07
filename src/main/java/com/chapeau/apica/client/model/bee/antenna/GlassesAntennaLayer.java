@@ -37,22 +37,22 @@ public final class GlassesAntennaLayer {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition partRoot = mesh.getRoot();
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
-                CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
+                CubeListBuilder.create(), PartPose.offset(0.0F, 18.0F, 0.0F));
 
         // Left lens: extends in -X
         bone.addOrReplaceChild("left_antenna",
                 CubeListBuilder.create()
-                        .texOffs(0, 0).addBox(-2.25F, 0.0F, -0.25F, 4.0F, 1.0F, 5.0F)    // Frame (branche, 0.25 out)
+                        .texOffs(0, 0).addBox(-2.25F, 0.0F, 0.75F, 4.0F, 1.0F, 6.0F)     // Frame (branche)
                         .texOffs(0, 6).addBox(-1.75F, -0.5F, -0.5F, 2.0F, 2.0F, 1.0F)     // Side (charniere, 0.25 in)
-                        .texOffs(0, 9).addBox(-1.0F, 0.0F, -0.5F, 1.0F, 1.0F, 1.0F),      // Nose (pont, 0.25 forward)
+                        .texOffs(0, 9).addBox(-1.25F, 0.0F, -0.75F, 1.0F, 1.0F, 1.0F),     // Nose (pont)
                 PartPose.ZERO);
 
         // Right lens: extends in +X (mirrored)
         bone.addOrReplaceChild("right_antenna",
                 CubeListBuilder.create()
-                        .texOffs(0, 0).addBox(-1.75F, 0.0F, -0.25F, 4.0F, 1.0F, 5.0F)
+                        .texOffs(0, 0).addBox(-1.75F, 0.0F, 0.75F, 4.0F, 1.0F, 6.0F)
                         .texOffs(0, 6).addBox(-0.25F, -0.5F, -0.5F, 2.0F, 2.0F, 1.0F)
-                        .texOffs(0, 9).addBox(0.0F, 0.0F, -0.5F, 1.0F, 1.0F, 1.0F),
+                        .texOffs(0, 9).addBox(0.25F, 0.0F, -0.75F, 1.0F, 1.0F, 1.0F),
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 32, 32);

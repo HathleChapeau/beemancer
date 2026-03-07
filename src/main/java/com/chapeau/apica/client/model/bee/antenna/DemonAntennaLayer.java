@@ -48,7 +48,7 @@ public final class DemonAntennaLayer {
         PartDefinition leftBase = leftAntenna.addOrReplaceChild("base",
                 CubeListBuilder.create().texOffs(0, 0)
                         .addBox(-1.0F, -3.0F, -1.0F, 2.0F, 3.0F, 2.0F),
-                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0, 0, DEG15));
+                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0, 0, -DEG15));
         leftBase.addOrReplaceChild("tip",
                 CubeListBuilder.create().texOffs(0, 5)
                         .addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.0F, 1.0F),
@@ -60,7 +60,7 @@ public final class DemonAntennaLayer {
         PartDefinition rightBase = rightAntenna.addOrReplaceChild("base",
                 CubeListBuilder.create().texOffs(0, 0)
                         .addBox(-1.0F, -3.0F, -1.0F, 2.0F, 3.0F, 2.0F),
-                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0, 0, -DEG15));
+                PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0, 0, DEG15));
         rightBase.addOrReplaceChild("tip",
                 CubeListBuilder.create().texOffs(0, 5)
                         .addBox(-0.5F, -2.0F, -0.5F, 1.0F, 2.0F, 1.0F),
