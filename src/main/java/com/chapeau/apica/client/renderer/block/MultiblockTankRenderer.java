@@ -10,7 +10,7 @@
  * |-------------------------------|----------------------|---------------------------|
  * | MultiblockTankBlockEntity     | Données fluide/taille| getFluidTank(), getCubeSize |
  * | FluidCubeRenderer             | Rendu cube fluide    | renderFluidCube()         |
- * | IClientFluidTypeExtensions    | Texture atlas        | getStillTexture()         |
+ * | RenderHelper                  | Texture atlas fluide | getFluidSprite()          |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -36,13 +36,10 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import net.minecraft.world.phys.AABB;
-import com.mojang.logging.LogUtils;
-import org.slf4j.Logger;
-
 
 /**
  * Renderer pour le multiblock tank.
@@ -51,17 +48,11 @@ import org.slf4j.Logger;
  */
 public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTankBlockEntity> {
 
-    private static final Logger LOGGER = LogUtils.getLogger();
-
-    // Modèle formé (scalé par le renderer)
     public static final ModelResourceLocation FORMED_MODEL_LOC = ModelResourceLocation.standalone(
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "block/alchemy/multiblock_tank_formed"));
 
-    // Modèle bloc simple (non formé)
     public static final ModelResourceLocation SINGLE_MODEL_LOC = ModelResourceLocation.standalone(
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "block/alchemy/multiblock_tank_single"));
-
-    private static final float FLUID_INSET = 2f / 16f;
 
     public MultiblockTankRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -70,123 +61,64 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
     public void render(MultiblockTankBlockEntity blockEntity, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
-        // Non forme: rendu par le chunk mesh (RenderShape.MODEL), rien a faire ici
-        if (!blockEntity.isFormed()) return;
+        if (!blockEntity.isFormed() || !blockEntity.isMaster()) return;
 
-        // Forme mais pas master: invisible (le master gere tout)
-        if (!blockEntity.isMaster()) return;
-
-        // Cas 3: Formé et master → afficher le modèle scalé + fluide
         int cubeSize = blockEntity.getCubeSize();
         if (cubeSize < 2) {
-            // Fallback: si cubeSize pas encore synced, afficher bloc simple
-            renderSingleBlock(poseStack, buffer, packedLight);
+            renderModel(poseStack, buffer, packedLight, SINGLE_MODEL_LOC, 1f);
             return;
         }
 
-        // Le modèle fait 32 pixels (2 blocs), donc scale = cubeSize / 2
         float scale = cubeSize / 2.0f;
-
-        // Render le modèle formé (scalé)
-        poseStack.pushPose();
-        poseStack.scale(scale, scale, scale);
-        renderFormedModel(poseStack, buffer, packedLight);
-        poseStack.popPose();
-
-        // Render le fluide (coordonnées monde, pas scalé)
+        renderModel(poseStack, buffer, packedLight, FORMED_MODEL_LOC, scale);
         renderFluid(blockEntity, cubeSize, poseStack, buffer);
     }
 
-    private void renderSingleBlock(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+    private void renderModel(PoseStack poseStack, MultiBufferSource buffer, int packedLight,
+                             ModelResourceLocation modelLoc, float scale) {
         var minecraft = Minecraft.getInstance();
         var modelManager = minecraft.getModelManager();
-        BakedModel model = modelManager.getModel(SINGLE_MODEL_LOC);
+        BakedModel model = modelManager.getModel(modelLoc);
 
         if (model == null || model == modelManager.getMissingModel()) return;
 
-        var blockRenderer = minecraft.getBlockRenderer().getModelRenderer();
+        poseStack.pushPose();
+        poseStack.scale(scale, scale, scale);
 
         VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
-        blockRenderer.renderModel(
-            poseStack.last(),
-            consumer,
-            null,
-            model,
-            1f, 1f, 1f,
-            packedLight,
-            OverlayTexture.NO_OVERLAY,
-            ModelData.EMPTY,
-            RenderType.translucent()
+        minecraft.getBlockRenderer().getModelRenderer().renderModel(
+            poseStack.last(), consumer, null, model,
+            1f, 1f, 1f, packedLight, OverlayTexture.NO_OVERLAY,
+            ModelData.EMPTY, RenderType.translucent()
         );
+
+        poseStack.popPose();
     }
 
-    private void renderFormedModel(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        var minecraft = Minecraft.getInstance();
-        var modelManager = minecraft.getModelManager();
-        BakedModel model = modelManager.getModel(FORMED_MODEL_LOC);
-
-        if (model == null || model == modelManager.getMissingModel()) return;
-
-        var blockRenderer = minecraft.getBlockRenderer().getModelRenderer();
-
-        // Le modèle est entièrement translucent (render_type dans le JSON)
-        VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
-        blockRenderer.renderModel(
-            poseStack.last(),
-            consumer,
-            null,
-            model,
-            1f, 1f, 1f,
-            packedLight,
-            OverlayTexture.NO_OVERLAY,
-            ModelData.EMPTY,
-            RenderType.translucent()
-        );
-    }
-
-    private void renderFluid(MultiblockTankBlockEntity blockEntity, int cubeSize, PoseStack poseStack, MultiBufferSource buffer) {
+    private void renderFluid(MultiblockTankBlockEntity blockEntity, int cubeSize,
+                             PoseStack poseStack, MultiBufferSource buffer) {
         FluidTank tank = blockEntity.getFluidTank();
         if (tank == null || tank.isEmpty()) return;
 
         FluidStack fluidStack = tank.getFluid();
-        float fillRatio = (float) tank.getFluidAmount() / tank.getCapacity() / (float) (Math.pow(cubeSize, 3));
+        float fillRatio = (float) tank.getFluidAmount() / tank.getCapacity();
         if (fillRatio <= 0f) return;
 
         TextureAtlasSprite sprite = RenderHelper.getFluidSprite(fluidStack.getFluid());
-
         VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
 
-        // Coordonnées en blocs, relatives à la position du BlockEntity
-        // Le modèle fait 2 blocs de base, scalé à cubeSize blocs
-        // Glass dans le modèle: X/Z de 3 à 29 pixels (sur 32), Y de 10 à 32 pixels
-        // En ratio du cubeSize:
-        // - X/Z inset: 3/32 ≈ 0.09375, on utilise 0.125 (marge)
-        // - Y start: 10/32 = 0.3125, Y end: 32/32 = 1.0
-
-        float inset = 0.125f * cubeSize;  // Marge X/Z depuis les bords
-
+        float inset = 0.125f * cubeSize;
         float minX = inset;
         float maxX = cubeSize - inset;
         float minZ = inset;
         float maxZ = cubeSize - inset;
 
-        // Y de départ (juste au-dessus de la base opaque): 0.32 * cubeSize
-        // Y d'arrivée (juste en dessous du top): 0.95 * cubeSize
         float yStart = 0.32f * cubeSize;
         float yEnd = 0.97f * cubeSize;
-
-        // Lerp entre yStart et yEnd selon le % de remplissage
         float minY = yStart;
         float maxY = yStart + (yEnd - yStart) * fillRatio;
-        //LOGGER.warn("Ratio : {}/{}/{}/{}", fillRatio, (float) tank.getFluidAmount(), tank.getCapacity(), (Math.pow(cubeSize, 3)));
 
-        var pose = poseStack.last();
-        // Rendu double-sided: faces extérieures (normales sortantes)
-        FluidCubeRenderer.renderFluidCube(consumer, pose, sprite,
-            minX, minY, minZ, maxX, maxY, maxZ,
-            true, true, true, true, true, true);
-        // Rendu faces intérieures (normales inversées) pour visibilité depuis en dessous
-        FluidCubeRenderer.renderFluidCubeInverted(consumer, pose, sprite,
+        FluidCubeRenderer.renderFluidCube(consumer, poseStack.last(), sprite,
             minX, minY, minZ, maxX, maxY, maxZ);
     }
 
