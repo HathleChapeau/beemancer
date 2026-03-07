@@ -70,13 +70,10 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
     public void render(MultiblockTankBlockEntity blockEntity, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
-        // Cas 1: Non formé → afficher le bloc simple
-        if (!blockEntity.isFormed()) {
-            renderSingleBlock(poseStack, buffer, packedLight);
-            return;
-        }
+        // Non forme: rendu par le chunk mesh (RenderShape.MODEL), rien a faire ici
+        if (!blockEntity.isFormed()) return;
 
-        // Cas 2: Formé mais pas master → invisible (le master gère tout)
+        // Forme mais pas master: invisible (le master gere tout)
         if (!blockEntity.isMaster()) return;
 
         // Cas 3: Formé et master → afficher le modèle scalé + fluide

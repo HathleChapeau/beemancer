@@ -102,8 +102,8 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     // UUID sync verification timer (transient, not saved)
     private int outsideVerifyTimer = 0;
 
-    // Auto-formation check on load (transient, not saved)
-    private boolean pendingFormationCheck = false;
+    // Post-load check: re-form or restore state (transient, not saved)
+    private boolean pendingLoadCheck = false;
 
     // Proximity check (transient, not saved)
     private boolean crowded = false;
@@ -147,9 +147,7 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
             if (isController && formed) {
                 MultiblockEvents.registerActiveController(level, worldPosition);
             }
-            if (!formed) {
-                pendingFormationCheck = true;
-            }
+            pendingLoadCheck = true;
         }
     }
 
@@ -341,6 +339,26 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
                 hive.setChanged();
             }
         }
+    }
+
+    /**
+     * Re-applique les blockstates et re-lie les membres apres chargement.
+     * Appele sur le premier tick du controller pour garantir la coherence visuelle.
+     */
+    private void restoreFormedState() {
+        if (level == null || level.isClientSide()) return;
+        // Re-apply controller blockstate
+        BlockState controllerState = level.getBlockState(worldPosition);
+        if (controllerState.hasProperty(HiveMultiblockBlock.MULTIBLOCK)
+                && controllerState.getValue(HiveMultiblockBlock.MULTIBLOCK) != MultiblockProperty.HIVE) {
+            level.setBlock(worldPosition, controllerState
+                    .setValue(HiveMultiblockBlock.MULTIBLOCK, MultiblockProperty.HIVE)
+                    .setValue(HiveMultiblockBlock.CONTROLLER, true), 3);
+        }
+        // Re-apply structure blockstates
+        MultiblockFormationHelper.setFormedOnStructureBlocks(level, worldPosition, getPattern(), MultiblockProperty.HIVE, 0);
+        // Re-link member BEs
+        setMemberControllerPos();
     }
 
     public void onBroken() {
@@ -550,10 +568,14 @@ public class HiveMultiblockBlockEntity extends BlockEntity implements MenuProvid
     // ==================== Tick ====================
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HiveMultiblockBlockEntity hive) {
-        if (hive.pendingFormationCheck) {
-            hive.pendingFormationCheck = false;
+        if (hive.pendingLoadCheck) {
+            hive.pendingLoadCheck = false;
             if (!hive.formed) {
+                // Not formed: try auto-formation
                 hive.findOrBecomeController();
+            } else if (hive.isController) {
+                // Already formed: re-apply blockstates + re-link members to ensure consistency
+                hive.restoreFormedState();
             }
         }
         if (!hive.isController || !hive.formed) return;

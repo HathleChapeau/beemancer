@@ -61,7 +61,13 @@ public class MultiblockTankBlock extends BaseEntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
+        if (state.getValue(MULTIBLOCK) == MultiblockProperty.NONE) {
+            return RenderShape.MODEL;
+        }
+        if (state.getValue(MASTER)) {
+            return RenderShape.ENTITYBLOCK_ANIMATED;
+        }
+        return RenderShape.INVISIBLE;
     }
 
     @Nullable
