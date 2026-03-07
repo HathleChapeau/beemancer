@@ -4,38 +4,36 @@
  * Description: Renderer dynamique du fluide dans le Honey Tank
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance                    | Raison                | Utilisation               |
+ * | Dependance                    | Raison                | Utilisation               |
  * |------------------------------|----------------------|---------------------------|
- * | HoneyTankBlockEntity         | Données fluide       | getFluid(), getFluidAmount |
- * | IClientFluidTypeExtensions   | Texture atlas        | getStillTexture()         |
- * | FluidCubeRenderer            | Rendu cube fluide    | renderFluidCube()         |
+ * | HoneyTankBlockEntity         | Donnees fluide       | getFluid(), getFluidAmount |
+ * | RenderHelper                 | Texture atlas        | getFluidSprite()          |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - ClientSetup.java (enregistrement renderer)
  *
  * ============================================================
  */
 package com.chapeau.apica.client.renderer.block;
 
-import com.chapeau.apica.client.renderer.util.ApicaRenderTypes;
-import com.chapeau.apica.client.renderer.util.FluidCubeRenderer;
 import com.chapeau.apica.client.renderer.util.RenderHelper;
 import com.chapeau.apica.common.blockentity.alchemy.HoneyTankBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.LightTexture;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 /**
- * Renderer pour le fluide à l'intérieur du Honey Tank.
- * Affiche un cube de fluide translucent dont la hauteur est proportionnelle au remplissage.
- * Utilise la texture atlas animée du fluide pour un rendu dynamique.
+ * Renderer pour le fluide a l'interieur du Honey Tank.
+ * Dessine un simple quad plat (surface du fluide) a la hauteur du remplissage.
  */
 public class HoneyTankRenderer implements BlockEntityRenderer<HoneyTankBlockEntity> {
 
@@ -47,26 +45,35 @@ public class HoneyTankRenderer implements BlockEntityRenderer<HoneyTankBlockEnti
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
         FluidStack fluidStack = blockEntity.getFluid();
-        if (fluidStack.isEmpty()) {
-            return;
-        }
+        if (fluidStack.isEmpty()) return;
 
         float fillRatio = (float) blockEntity.getFluidAmount() / blockEntity.getCapacity();
         if (fillRatio <= 0f) return;
 
         TextureAtlasSprite sprite = RenderHelper.getFluidSprite(fluidStack.getFluid());
-
-        VertexConsumer consumer = buffer.getBuffer(ApicaRenderTypes.FLUID_TRANSLUCENT);
+        VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
         var pose = poseStack.last();
 
-        // Cube de fluide de [2,2,2] a [14, 2 + fillRatio*12, 14] (en pixels / 16)
         float minX = 2f / 16f;
         float maxX = 14f / 16f;
         float minZ = 2f / 16f;
         float maxZ = 14f / 16f;
-        float minY = 2f / 16f;
-        float maxY = minY + (12f * fillRatio / 16f);
+        float y = 2f / 16f + (12f * fillRatio / 16f);
 
-        FluidCubeRenderer.renderFluidCube(consumer, pose, sprite, minX, minY, minZ, maxX, maxY, maxZ);
+        float u0 = sprite.getU0();
+        float u1 = sprite.getU1();
+        float v0 = sprite.getV0();
+        float v1 = sprite.getV1();
+        int light = LightTexture.FULL_BRIGHT;
+
+        // Quad surface du fluide (face Y+)
+        consumer.addVertex(pose, minX, y, minZ).setColor(1f, 1f, 1f, 0.9f)
+            .setUv(u0, v0).setLight(light).setNormal(pose, 0, 1, 0);
+        consumer.addVertex(pose, minX, y, maxZ).setColor(1f, 1f, 1f, 0.9f)
+            .setUv(u0, v1).setLight(light).setNormal(pose, 0, 1, 0);
+        consumer.addVertex(pose, maxX, y, maxZ).setColor(1f, 1f, 1f, 0.9f)
+            .setUv(u1, v1).setLight(light).setNormal(pose, 0, 1, 0);
+        consumer.addVertex(pose, maxX, y, minZ).setColor(1f, 1f, 1f, 0.9f)
+            .setUv(u1, v0).setLight(light).setNormal(pose, 0, 1, 0);
     }
 }

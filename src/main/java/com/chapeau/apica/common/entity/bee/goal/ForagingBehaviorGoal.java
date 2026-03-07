@@ -72,7 +72,6 @@ public class ForagingBehaviorGoal extends Goal {
     private static final float FORAGING_PITCH = 40.0f;
     private static final Random RANDOM = new Random();
     private static final int GRACE_PERIOD_TICKS = 12;
-    private static final int LEAVING_HIVE_TICKS = 15;
 
     private final MagicBeeEntity bee;
     private final BeeAIStateMachine stateMachine;
@@ -80,9 +79,6 @@ public class ForagingBehaviorGoal extends Goal {
 
     // Grace period: pas de throttle pendant les N premiers ticks apres start()
     private int ticksSinceStart = 0;
-
-    // Phase LEAVING_HIVE
-    private int leavingHiveTicks = 0;
 
     // Etat d'approche
     private boolean isApproachingFromAbove = false;
@@ -128,13 +124,8 @@ public class ForagingBehaviorGoal extends Goal {
         }
         pathfinding.clearPath();
 
-        // Grace period: pas de throttle pendant les premiers ticks
         ticksSinceStart = 0;
-
-        // Commencer par la phase LEAVING_HIVE: monter au-dessus de la ruche
-        leavingHiveTicks = LEAVING_HIVE_TICKS;
-        stateMachine.setState(BeeActivityState.LEAVING_HIVE);
-
+        stateMachine.setState(BeeActivityState.SEEKING_FLOWER);
         isApproachingFromAbove = false;
         resetPitch();
     }
@@ -147,13 +138,7 @@ public class ForagingBehaviorGoal extends Goal {
         boolean timedOut = stateMachine.tick();
         if (timedOut) return;
 
-        // Phase LEAVING_HIVE: pas de throttle, toujours tickee
-        if (stateMachine.getState() == BeeActivityState.LEAVING_HIVE) {
-            tickLeavingHive();
-            return;
-        }
-
-        // Throttle N=2 au lieu de N=4, skip pendant la grace period
+        // Throttle N=2, skip pendant la grace period
         if (ticksSinceStart > GRACE_PERIOD_TICKS) {
             if (bee.tickCount % 2 != (int)(bee.getUUID().getLeastSignificantBits() & 0x1)) return;
         }
@@ -163,53 +148,6 @@ public class ForagingBehaviorGoal extends Goal {
             case WORKING -> tickWorking();
             case RETURNING -> tickReturning();
             default -> {}
-        }
-    }
-
-    /**
-     * Phase LEAVING_HIVE: monter au-dessus de la ruche avant de pathfinder.
-     * Evite les collisions avec la ruche et les blocs adjacents au spawn.
-     */
-    private void tickLeavingHive() {
-        leavingHiveTicks--;
-
-        // Monter en diagonale aléatoire pour s'écarter de la ruche
-        BlockPos hivePos = bee.getAssignedHivePos();
-        if (hivePos != null) {
-            Vec3 hiveCenter = Vec3.atCenterOf(hivePos);
-            Vec3 beePos = bee.position();
-            double upSpeed = 0.15;
-            double lateralSpeed = 0.05;
-
-            // S'écarter horizontalement du centre de la ruche
-            double dx = beePos.x - hiveCenter.x;
-            double dz = beePos.z - hiveCenter.z;
-            double hLen = Math.sqrt(dx * dx + dz * dz);
-            if (hLen < 0.1) {
-                // Trop centré sur la ruche, pousser dans une direction basée sur UUID
-                long uuidBits = bee.getUUID().getLeastSignificantBits();
-                dx = ((uuidBits & 1) == 0) ? 1.0 : -1.0;
-                dz = ((uuidBits & 2) == 0) ? 1.0 : -1.0;
-                hLen = Math.sqrt(dx * dx + dz * dz);
-            }
-
-            Vec3 movement = new Vec3(
-                    (dx / hLen) * lateralSpeed,
-                    upSpeed,
-                    (dz / hLen) * lateralSpeed
-            );
-
-            // Separation boids
-            Vec3 separation = BeeFlightHelper.computeSeparation(bee);
-            movement = movement.add(separation);
-
-            bee.setDeltaMovement(movement);
-        } else {
-            bee.setDeltaMovement(0, 0.15, 0);
-        }
-
-        if (leavingHiveTicks <= 0) {
-            stateMachine.setState(BeeActivityState.SEEKING_FLOWER);
         }
     }
 

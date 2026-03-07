@@ -49,10 +49,8 @@ public class WildBeePatrolGoal extends Goal {
     private static final double REACH_DISTANCE = 2.0;
     private static final int MOVE_TIMEOUT = 600;     // 30 secondes max pour atteindre un point
     private static final int GRACE_PERIOD_TICKS = 12;
-    private static final int LEAVING_NEST_TICKS = 15;
 
     private enum PatrolState {
-        LEAVING_NEST,
         MOVING_TO_WAYPOINT,
         WAITING_AT_WAYPOINT,
         RETURNING_TO_NEST
@@ -66,7 +64,6 @@ public class WildBeePatrolGoal extends Goal {
     private int currentWaypointIndex = 0;
     private int timer = 0;
     private int ticksSinceStart = 0;
-    private int leavingNestTicks = 0;
 
     public WildBeePatrolGoal(MagicBeeEntity bee) {
         this.bee = bee;
@@ -101,22 +98,13 @@ public class WildBeePatrolGoal extends Goal {
         waypoints.clear();
         currentWaypointIndex = 0;
         ticksSinceStart = 0;
-
-        // Phase LEAVING_NEST: monter avant de patrouiller
-        leavingNestTicks = LEAVING_NEST_TICKS;
-        state = PatrolState.LEAVING_NEST;
+        startNewPatrol();
     }
 
     @Override
     public void tick() {
         ticksSinceStart++;
         timer--;
-
-        // Phase LEAVING_NEST: pas de throttle
-        if (state == PatrolState.LEAVING_NEST) {
-            tickLeavingNest();
-            return;
-        }
 
         // Throttle N=2, skip pendant la grace period
         if (ticksSinceStart > GRACE_PERIOD_TICKS) {
@@ -128,37 +116,6 @@ public class WildBeePatrolGoal extends Goal {
             case WAITING_AT_WAYPOINT -> tickWaitingAtWaypoint();
             case RETURNING_TO_NEST -> tickReturningToNest();
             default -> {}
-        }
-    }
-
-    /**
-     * Phase de sortie du nid: monter pour s'eloigner avant de patrouiller.
-     */
-    private void tickLeavingNest() {
-        leavingNestTicks--;
-
-        BlockPos nestPos = bee.getHomeNestPos();
-        if (nestPos != null) {
-            Vec3 nestCenter = Vec3.atCenterOf(nestPos);
-            Vec3 beePos = bee.position();
-            double dx = beePos.x - nestCenter.x;
-            double dz = beePos.z - nestCenter.z;
-            double hLen = Math.sqrt(dx * dx + dz * dz);
-            if (hLen < 0.1) {
-                long uuidBits = bee.getUUID().getLeastSignificantBits();
-                dx = ((uuidBits & 1) == 0) ? 1.0 : -1.0;
-                dz = ((uuidBits & 2) == 0) ? 1.0 : -1.0;
-                hLen = Math.sqrt(dx * dx + dz * dz);
-            }
-            Vec3 movement = new Vec3((dx / hLen) * 0.05, 0.15, (dz / hLen) * 0.05);
-            Vec3 separation = BeeFlightHelper.computeSeparation(bee);
-            bee.setDeltaMovement(movement.add(separation));
-        } else {
-            bee.setDeltaMovement(0, 0.15, 0);
-        }
-
-        if (leavingNestTicks <= 0) {
-            startNewPatrol();
         }
     }
 

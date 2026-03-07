@@ -21,7 +21,6 @@
 package com.chapeau.apica.client.renderer.block;
 
 import com.chapeau.apica.Apica;
-import com.chapeau.apica.client.renderer.util.ApicaRenderTypes;
 import com.chapeau.apica.client.renderer.util.FluidCubeRenderer;
 import com.chapeau.apica.client.renderer.util.RenderHelper;
 import com.chapeau.apica.common.blockentity.alchemy.MultiblockTankBlockEntity;
@@ -158,7 +157,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
 
         TextureAtlasSprite sprite = RenderHelper.getFluidSprite(fluidStack.getFluid());
 
-        VertexConsumer consumer = buffer.getBuffer(ApicaRenderTypes.FLUID_TRANSLUCENT);
+        VertexConsumer consumer = buffer.getBuffer(RenderType.translucent());
 
         // Coordonnées en blocs, relatives à la position du BlockEntity
         // Le modèle fait 2 blocs de base, scalé à cubeSize blocs
