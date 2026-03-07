@@ -27,7 +27,7 @@ package com.chapeau.apica.common.block.beecreator;
  */
 public enum BeeBodyType {
     DEFAULT(0, "default", "Default"),
-    ROUND(1, "round", "Round");
+    THICK(1, "thick", "Thick");
 
     public static final int COUNT = values().length;
 

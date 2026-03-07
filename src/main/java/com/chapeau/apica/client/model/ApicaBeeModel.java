@@ -60,6 +60,8 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     public final ModelPart frontLegs;
     public final ModelPart middleLegs;
     public final ModelPart backLegs;
+    public final ModelPart leftAntenna;
+    public final ModelPart rightAntenna;
 
     // --- Wing parts (32x32 texture, separate root) ---
     private final ModelPart wingRoot;
@@ -86,6 +88,8 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         this.frontLegs = bone.getChild("front_legs");
         this.middleLegs = bone.getChild("middle_legs");
         this.backLegs = bone.getChild("back_legs");
+        this.leftAntenna = bone.getChild("left_antenna");
+        this.rightAntenna = bone.getChild("right_antenna");
 
         this.wingRoot = wingRoot;
         ModelPart wingBone = wingRoot.getChild("bone");
@@ -123,7 +127,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     private static float[] getRightWingAttach(BeeBodyType type) {
         return switch (type) {
             case DEFAULT -> new float[]{-1.5f, -4.0f, -3.0f, -0.2618f};
-            case ROUND -> new float[]{-2.0f, -3.0f, -2.0f, -0.35f};
+            case THICK -> new float[]{-1.5f, -4.0f, -3.0f, -0.2618f};
         };
     }
 
@@ -131,7 +135,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     private static float[] getStingerAttach(BeeBodyType type) {
         return switch (type) {
             case DEFAULT -> new float[]{0.0f, -1.0f, 5.0f};
-            case ROUND -> new float[]{0.0f, -0.5f, 4.0f};
+            case THICK -> new float[]{0.0f, -1.0f, 12.0f};
         };
     }
 
@@ -176,7 +180,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     public static LayerDefinition createBodyLayerFor(BeeBodyType type) {
         return switch (type) {
             case DEFAULT -> createDefaultBodyLayer();
-            case ROUND -> createRoundBodyLayer();
+            case THICK -> createThickBodyLayer();
         };
     }
 
@@ -220,50 +224,86 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
                 CubeListBuilder.create().texOffs(0, 39)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
                 PartPose.offset(1.5F, 3.0F, 2.0F));
+        bone.addOrReplaceChild("left_antenna",
+                CubeListBuilder.create().texOffs(14, 35)
+                        .addBox(0.0F, -1.0F, -3.0F, 1.0F, 1.0F, 3.0F),
+                PartPose.offset(-1.5F, -4.0F, -5.0F));
+        bone.addOrReplaceChild("right_antenna",
+                CubeListBuilder.create().texOffs(22, 35)
+                        .addBox(-1.0F, -1.0F, -3.0F, 1.0F, 1.0F, 3.0F),
+                PartPose.offset(1.5F, -4.0F, -5.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }
 
-    /** Corps ROUND: plus large et court (9x6x8), texture 64x64. */
-    private static LayerDefinition createRoundBodyLayer() {
+    /**
+     * Corps THICK: segmente (body 7x7x10 + thorax 8x8x5 + waist 6x6x1 + tail 7x7x6).
+     * Thorax a l'avant (3px depuis le front du body), waist a l'arriere du body, tail derriere.
+     * Double couche (corpus + stripe) sur tous les cubes sauf waist.
+     * Texture 64x64.
+     */
+    private static LayerDefinition createThickBodyLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition partRoot = mesh.getRoot();
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
+        // body_corpus: body + thorax + waist + tail (all solid geometry)
         bone.addOrReplaceChild("body_corpus",
-                CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(-4.5F, -3.0F, -4.0F, 9.0F, 6.0F, 8.0F),
+                CubeListBuilder.create()
+                        .texOffs(0, 0).addBox(-3.5F, -4.0F, -5.0F, 7.0F, 7.0F, 10.0F)      // Body (7x7x10)
+                        .texOffs(34, 0).addBox(-4.0F, -4.5F, -7.0F, 8.0F, 8.0F, 5.0F)       // Thorax (8x8x5)
+                        .texOffs(0, 34).addBox(-3.0F, -3.5F, 5.0F, 6.0F, 6.0F, 1.0F)        // Waist (6x6x1)
+                        .texOffs(34, 26).addBox(-3.5F, -4.0F, 6.0F, 7.0F, 7.0F, 6.0F),      // Tail (7x7x6)
                 PartPose.ZERO);
+
+        // body_stripe: body + thorax + tail (NO waist)
         bone.addOrReplaceChild("body_stripe",
-                CubeListBuilder.create().texOffs(0, 14)
-                        .addBox(-4.5F, -3.0F, -4.0F, 9.0F, 6.0F, 8.0F),
+                CubeListBuilder.create()
+                        .texOffs(0, 17).addBox(-3.5F, -4.0F, -5.0F, 7.0F, 7.0F, 10.0F)     // Body stripe
+                        .texOffs(34, 13).addBox(-4.0F, -4.5F, -7.0F, 8.0F, 8.0F, 5.0F)      // Thorax stripe
+                        .texOffs(34, 39).addBox(-3.5F, -4.0F, 6.0F, 7.0F, 7.0F, 6.0F),      // Tail stripe
                 PartPose.ZERO);
+
+        // Eyes on thorax front face (Z=-7)
         bone.addOrReplaceChild("eyes",
                 CubeListBuilder.create()
-                        .texOffs(0, 42).addBox(-4.51F, -1.0F, -4.01F, 2.0F, 3.0F, 1.0F)
-                        .texOffs(8, 42).addBox(2.51F, -1.0F, -4.01F, 2.0F, 3.0F, 1.0F),
+                        .texOffs(0, 47).addBox(-4.01F, -1.0F, -7.01F, 2.0F, 3.0F, 1.0F)
+                        .texOffs(8, 47).addBox(2.01F, -1.0F, -7.01F, 2.0F, 3.0F, 1.0F),
                 PartPose.ZERO);
+
         bone.addOrReplaceChild("left_pupil",
-                CubeListBuilder.create().texOffs(0, 46)
-                        .addBox(-3.51F, -1.0F, -4.02F, 1.0F, 1.0F, 0.0F),
+                CubeListBuilder.create().texOffs(0, 51)
+                        .addBox(-3.01F, -1.0F, -7.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
         bone.addOrReplaceChild("right_pupil",
-                CubeListBuilder.create().texOffs(4, 46)
-                        .addBox(2.51F, -1.0F, -4.02F, 1.0F, 1.0F, 0.0F),
+                CubeListBuilder.create().texOffs(4, 51)
+                        .addBox(2.01F, -1.0F, -7.02F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
+
+        // Legs under thorax (thorax Z: -7 to -2, bottom Y: 3.5)
         bone.addOrReplaceChild("front_legs",
-                CubeListBuilder.create().texOffs(0, 35)
+                CubeListBuilder.create().texOffs(0, 41)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(2.0F, 3.0F, -1.5F));
+                PartPose.offset(1.5F, 3.5F, -6.0F));
         bone.addOrReplaceChild("middle_legs",
-                CubeListBuilder.create().texOffs(0, 37)
+                CubeListBuilder.create().texOffs(0, 43)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(2.0F, 3.0F, 0.5F));
+                PartPose.offset(1.5F, 3.5F, -4.5F));
         bone.addOrReplaceChild("back_legs",
-                CubeListBuilder.create().texOffs(0, 39)
+                CubeListBuilder.create().texOffs(0, 45)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(2.0F, 3.0F, 2.5F));
+                PartPose.offset(1.5F, 3.5F, -3.0F));
+
+        // Antennae on thorax front (Z=-7), top (Y=-4.5)
+        bone.addOrReplaceChild("left_antenna",
+                CubeListBuilder.create().texOffs(0, 53)
+                        .addBox(0.0F, -1.0F, -3.0F, 1.0F, 1.0F, 3.0F),
+                PartPose.offset(-2.0F, -4.5F, -7.0F));
+        bone.addOrReplaceChild("right_antenna",
+                CubeListBuilder.create().texOffs(10, 53)
+                        .addBox(-1.0F, -1.0F, -3.0F, 1.0F, 1.0F, 3.0F),
+                PartPose.offset(2.0F, -4.5F, -7.0F));
 
         return LayerDefinition.create(mesh, 64, 64);
     }
@@ -299,7 +339,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         return LayerDefinition.create(mesh, 32, 32);
     }
 
-    /** Ailes ROUND: plus courtes et larges (12x8), texture 32x32. */
+    /** Ailes ROUND: plus courtes et larges (12x10), texture 32x32. */
     private static LayerDefinition createRoundWingLayer() {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition partRoot = mesh.getRoot();
@@ -410,6 +450,12 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         backLegs.visible = true;
     }
 
+    public void showAntennaOnly() {
+        setBodyPartsVisible(false);
+        leftAntenna.visible = true;
+        rightAntenna.visible = true;
+    }
+
     public void showAll() {
         setBodyPartsVisible(true);
     }
@@ -423,5 +469,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
         frontLegs.visible = visible;
         middleLegs.visible = visible;
         backLegs.visible = visible;
+        leftAntenna.visible = visible;
+        rightAntenna.visible = visible;
     }
 }

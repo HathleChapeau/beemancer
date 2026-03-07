@@ -411,6 +411,11 @@ public class BeeCreatorScreen extends AbstractContainerScreen<BeeCreatorMenu> {
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
                 toArgb(localColors[BeePart.STRIPE.getIndex()]));
 
+        beeModel.showAntennaOnly();
+        beeModel.renderToBuffer(gfx.pose(), bufferSource.getBuffer(bodyRT),
+                LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,
+                toArgb(localColors[BeePart.ANTENNA.getIndex()]));
+
         RenderType wingRT = RenderType.entityCutout(wingTex);
         beeModel.renderWings(gfx.pose(), bufferSource.getBuffer(wingRT),
                 LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY,

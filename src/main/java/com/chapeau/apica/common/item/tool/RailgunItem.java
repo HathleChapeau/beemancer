@@ -137,10 +137,12 @@ public class RailgunItem extends Item implements IMagazineHolder {
         if (!(entity instanceof Player player)) return;
 
         int useDuration = getUseDuration(stack, entity) - timeLeft;
-        if (useDuration * getChargeSpeedMultiplier(stack) < CHARGE_THRESHOLD) return;
+        if (useDuration <= 0) return;
 
         int cost = MagazineData.computeEffectiveCost(stack, SHOT_COST);
         if (!MagazineData.consumeFluid(stack, cost)) return;
+
+        float chargeProgress = Math.min(1f, useDuration * getChargeSpeedMultiplier(stack) / CHARGE_THRESHOLD);
 
         player.getCooldowns().addCooldown(this, FIRE_COOLDOWN);
 
@@ -171,7 +173,9 @@ public class RailgunItem extends Item implements IMagazineHolder {
         }
 
         if (closestHit != null) {
-            closestHit.hurt(player.damageSources().playerAttack(player), getDamageForFluid(stack));
+            float maxDmg = getDamageForFluid(stack);
+            float dmg = chargeProgress >= 1f ? maxDmg : maxDmg * 0.5f * chargeProgress;
+            closestHit.hurt(player.damageSources().playerAttack(player), dmg);
         }
 
         ParticleHelper.burst(serverLevel, impactPos, ParticleHelper.EffectType.ELECTRIC, 12);

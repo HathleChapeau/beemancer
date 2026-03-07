@@ -1,0 +1,41 @@
+FEATURE: Bee Creator
+Description: Interface GUI pour personnaliser l'apparence des abeilles (corps, ailes, dard, couleurs)
+Statut: En cours
+
+Scripts:
+  - common/block/beecreator/BeeBodyType.java     — Enum types de corps (DEFAULT, THICK)
+  - common/block/beecreator/BeeWingType.java      — Enum types d'ailes (DEFAULT, ROUND)
+  - common/block/beecreator/BeeStingerType.java   — Enum types de dard (DEFAULT, SHARP)
+  - common/block/beecreator/BeePart.java           — Enum parties colorisables (7: BODY, STRIPE, WING, ANTENNA, STINGER, EYE, PUPIL)
+  - common/block/beecreator/BeeCreatorBlock.java   — Bloc du Bee Creator
+  - common/block/beecreator/BeeCreatorBlockEntity.java — BlockEntity stockage types + couleurs
+  - client/model/ApicaBeeModel.java                — Modele modulaire (corps + ailes + dard interchangeables)
+  - client/gui/screen/BeeCreatorScreen.java        — GUI avec preview 3D multi-pass tintee
+
+Types de Corps:
+  DEFAULT — Corps simple (7x7x10), texture 64x64
+  THICK   — Corps segmente (body 7x7x10 + thorax 8x8x5 + waist 6x6x1 + tail 7x7x6)
+            Double couche (corpus + stripe) sur tous les cubes sauf waist
+            Antennes, yeux et pattes sur le thorax
+
+Types d'Ailes:
+  DEFAULT — Grandes (18x12), texture 32x32
+  ROUND   — Plus courtes (12x10), texture 32x32
+
+Types de Dard:
+  DEFAULT — Court (0x1x2), texture 32x32
+  SHARP   — Long (0x1x4), texture 32x32
+
+Systeme Modulaire:
+  - Chaque type (corps/ailes/dard) est un LayerDefinition independant
+  - Les points d'attache (ailes, dard) dependent du body type
+  - 7 passes de rendu avec tint couleur par partie
+  - Antennes rendues avec couleur ANTENNA (pass dedie)
+
+Textures:
+  - textures/entity/apica_bee_body_default.png  (64x64)
+  - textures/entity/apica_bee_body_thick.png    (64x64, placeholder)
+  - textures/entity/apica_bee_wing_default.png  (32x32)
+  - textures/entity/apica_bee_wing_round.png    (32x32)
+  - textures/entity/apica_bee_stinger_default.png (32x32)
+  - textures/entity/apica_bee_stinger_sharp.png (32x32)

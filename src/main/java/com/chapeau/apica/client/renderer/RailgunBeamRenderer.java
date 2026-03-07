@@ -85,10 +85,7 @@ public class RailgunBeamRenderer {
         if (wasUsing && !isUsing && storedUseTicks > 0) {
             ItemStack currentItem = player.getItemInHand(storedHand);
             if (currentItem.getItem() instanceof RailgunItem) {
-                float speedMult = RailgunItem.getChargeSpeedMultiplier(storedStack);
-                if (storedUseTicks * speedMult >= RailgunItem.CHARGE_THRESHOLD) {
-                    triggerBeam(player, mc);
-                }
+                triggerBeam(player, mc);
             }
             storedUseTicks = 0;
         }
