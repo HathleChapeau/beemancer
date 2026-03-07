@@ -42,7 +42,7 @@ public final class GlassesAntennaLayer {
         // Left lens: extends in -X
         bone.addOrReplaceChild("left_antenna",
                 CubeListBuilder.create()
-                        .texOffs(0, 0).addBox(-4.0F, 0.0F, -4.25F, 4.0F, 1.0F, 5.0F)     // Frame (branche)
+                        .texOffs(0, 0).addBox(-4.0F, 0.0F, -0.25F, 4.0F, 1.0F, 5.0F)     // Frame (branche)
                         .texOffs(0, 6).addBox(-2.0F, 0.0F, -0.5F, 2.0F, 2.0F, 1.0F)       // Side (charniere)
                         .texOffs(0, 9).addBox(-1.0F, 0.0F, -0.25F, 1.0F, 1.0F, 1.0F),     // Nose (pont)
                 PartPose.ZERO);
@@ -50,7 +50,7 @@ public final class GlassesAntennaLayer {
         // Right lens: extends in +X (mirrored)
         bone.addOrReplaceChild("right_antenna",
                 CubeListBuilder.create()
-                        .texOffs(0, 0).addBox(0.0F, 0.0F, -4.25F, 4.0F, 1.0F, 5.0F)
+                        .texOffs(0, 0).addBox(0.0F, 0.0F, -0.25F, 4.0F, 1.0F, 5.0F)
                         .texOffs(0, 6).addBox(0.0F, 0.0F, -0.5F, 2.0F, 2.0F, 1.0F)
                         .texOffs(0, 9).addBox(0.0F, 0.0F, -0.25F, 1.0F, 1.0F, 1.0F),
                 PartPose.ZERO);
