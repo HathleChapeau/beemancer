@@ -192,7 +192,7 @@ public class MultiblockTankRenderer implements BlockEntityRenderer<MultiblockTan
 
     @Override
     public int getViewDistance() {
-        return 64;
+        return 256;
     }
 
     @Override

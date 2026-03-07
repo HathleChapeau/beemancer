@@ -332,16 +332,30 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             int toFill = Math.min(totalFluid.getAmount(), newCapacity);
             master.fluidTank.fill(new FluidStack(totalFluid.getFluid(), toFill), IFluidHandler.FluidAction.EXECUTE);
         }
+        master.needsLoadValidation = false;
         master.setChanged();
 
         // Enregistrer le master dans le framework multibloc
         MultiblockEvents.registerActiveController(level, newMasterPos);
 
-        // Mettre à jour TOUS les blocs: blockstate (MULTIBLOCK + MASTER)
+        // Configurer les BlockEntities AVANT setBlock (setBlock peut trigger sync client)
+        for (BlockPos pos : blocks) {
+            if (!pos.equals(newMasterPos)) {
+                BlockEntity be = level.getBlockEntity(pos);
+                if (be instanceof MultiblockTankBlockEntity tank) {
+                    tank.masterPos = newMasterPos;
+                    tank.connectedBlocks.clear();
+                    tank.fluidTank = null;
+                    tank.cubeSize = 0;
+                    tank.needsLoadValidation = false;
+                    tank.setChanged();
+                }
+            }
+        }
+
+        // Mettre à jour TOUS les blockstates (sync client avec BE data déjà à jour)
         for (BlockPos pos : blocks) {
             boolean isMasterBlock = pos.equals(newMasterPos);
-
-            // Mettre à jour le blockstate avec MULTIBLOCK=TANK et MASTER=true/false
             BlockState blockState = level.getBlockState(pos);
             if (blockState.hasProperty(MultiblockTankBlock.MULTIBLOCK) && blockState.hasProperty(MultiblockTankBlock.MASTER)) {
                 BlockState newState = blockState
@@ -349,20 +363,11 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
                     .setValue(MultiblockTankBlock.MASTER, isMasterBlock);
                 level.setBlock(pos, newState, 3);
             }
-
-            // Configurer le BlockEntity
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof MultiblockTankBlockEntity tank) {
-                if (!isMasterBlock) {
-                    tank.masterPos = newMasterPos;
-                    tank.connectedBlocks.clear();
-                    tank.fluidTank = null;
-                    tank.cubeSize = 0;
-                }
-                tank.needsLoadValidation = false;
-                tank.setChanged();
-            }
         }
+
+        // Sync explicite du master pour le renderer client (cubeSize, fluid)
+        level.sendBlockUpdated(newMasterPos, level.getBlockState(newMasterPos),
+            level.getBlockState(newMasterPos), 3);
     }
 
     private void resetBlock(BlockPos pos) {
@@ -384,6 +389,8 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
             tank.fluidTank = tank.createFluidTank(CAPACITY_PER_BLOCK);
             tank.cubeSize = 0;
             tank.setChanged();
+            // Sync BE data au client
+            level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
         }
     }
 
@@ -461,32 +468,30 @@ public class MultiblockTankBlockEntity extends BlockEntity implements MenuProvid
         if (level == null || level.isClientSide()) return;
         if (!isMaster() || !isFormed()) return;
 
+        // Désenregistrer du framework multibloc
+        MultiblockEvents.unregisterController(level, worldPosition);
+
         // Détruire le fluide
         if (fluidTank != null) {
             fluidTank.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
         }
 
-        // Copier la liste des blocs (exclure le bloc cassé ET le master)
-        Set<BlockPos> blocksToReset = new HashSet<>(connectedBlocks);
-        blocksToReset.remove(brokenPos);
-        blocksToReset.remove(worldPosition);
+        // Copier la liste AVANT d'itérer (évite ConcurrentModificationException)
+        Set<BlockPos> allBlocks = new HashSet<>(connectedBlocks);
+        allBlocks.remove(brokenPos);
 
-        // Reset TOUS les blocs (y compris le master)
-        for (BlockPos pos : connectedBlocks) {
-            if (!pos.equals(brokenPos)) {
-                resetBlock(pos);
-            }
+        // Reset TOUS les blocs sauf le cassé
+        for (BlockPos pos : allBlocks) {
+            resetBlock(pos);
         }
 
         // Trouver un voisin du bloc cassé pour reformer
         BlockPos reformFrom = null;
         for (Direction dir : Direction.values()) {
             BlockPos neighbor = brokenPos.relative(dir);
-            if (blocksToReset.contains(neighbor) || neighbor.equals(worldPosition)) {
-                if (!neighbor.equals(brokenPos)) {
-                    reformFrom = neighbor;
-                    break;
-                }
+            if (allBlocks.contains(neighbor)) {
+                reformFrom = neighbor;
+                break;
             }
         }
 

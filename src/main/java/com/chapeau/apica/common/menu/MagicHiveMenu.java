@@ -47,9 +47,9 @@ public class MagicHiveMenu extends ApicaMenu {
     private static final int SMALL_BEE_Y = 17;
     private static final int SMALL_COMB_CENTER_X = SMALL_PANEL_OFFSET + 71;
     private static final int SMALL_COMB_CENTER_Y = 70;
-    private static final int SMALL_INV_X = 7;
-    private static final int SMALL_INV_Y = 122;
-    private static final int SMALL_HOTBAR_Y = 180;
+    private static final int SMALL_INV_X = 8;
+    private static final int SMALL_INV_Y = 130;
+    private static final int SMALL_HOTBAR_Y = 188;
 
     // Layout constants for multiblock hive (bg_beehive 216x110)
     private static final int LARGE_BEE_START_X = 56;
@@ -57,8 +57,8 @@ public class MagicHiveMenu extends ApicaMenu {
     private static final int LARGE_COMB_CENTER_X = 108;
     private static final int LARGE_COMB_CENTER_Y = 70;
     private static final int LARGE_INV_X = 28;
-    private static final int LARGE_INV_Y = 122;
-    private static final int LARGE_HOTBAR_Y = 180;
+    private static final int LARGE_INV_Y = 130;
+    private static final int LARGE_HOTBAR_Y = 188;
 
     // Client constructor
     public MagicHiveMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buf) {
