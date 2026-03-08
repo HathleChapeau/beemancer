@@ -41,8 +41,8 @@ public final class ChunkyStingerLayer {
 
         bone.addOrReplaceChild("stinger",
                 CubeListBuilder.create()
-                        .texOffs(0, 0).addBox(-1.0F, -1.0F, 0.0F, 2.0F, 2.0F, 1.0F)    // Base (2x2x1)
-                        .texOffs(6, 0).addBox(-0.5F, -0.5F, 1.0F, 1.0F, 1.0F, 2.0F),    // Pointe (1x1x2)
+                        .texOffs(0, 0).addBox(-1.0F, -1.5F, 0.0F, 2.0F, 2.0F, 1.0F)    // Base (2x2x1)
+                        .texOffs(6, 0).addBox(-0.5F, -1.0F, 1.0F, 1.0F, 1.0F, 2.0F),    // Pointe (1x1x2)
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 32, 32);
