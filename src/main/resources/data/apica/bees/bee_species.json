@@ -366,7 +366,7 @@
       "texture": "Monsty_Bee",
       "color": "#54BD1E",
       "model": {
-        "body": "default",
+        "body": "armored",
         "wing": "default",
         "stinger": "default",
         "antenna": "default"
@@ -774,7 +774,7 @@
       "texture": "Festering_Bee",
       "color": "#6F8C23",
       "model": {
-        "body": "default",
+        "body": "armored",
         "wing": "default",
         "stinger": "default",
         "antenna": "default"
@@ -825,7 +825,7 @@
       "texture": "Skeletal_Bee",
       "color": "#DFD2B8",
       "model": {
-        "body": "default",
+        "body": "armored",
         "wing": "default",
         "stinger": "default",
         "antenna": "default"
@@ -876,7 +876,7 @@
       "texture": "Silken_Bee",
       "color": "#E7DABF",
       "model": {
-        "body": "default",
+        "body": "armored",
         "wing": "default",
         "stinger": "default",
         "antenna": "default"
@@ -927,7 +927,7 @@
       "texture": "Arachnid_Bee",
       "color": "#421C34",
       "model": {
-        "body": "default",
+        "body": "armored",
         "wing": "default",
         "stinger": "default",
         "antenna": "default"
@@ -4032,9 +4032,9 @@
       "texture": "Blazing_Bee",
       "color": "#FF8020",
       "model": {
-        "body": "default",
+        "body": "armored",
         "wing": "default",
-        "stinger": "default",
+        "stinger": "chunky",
         "antenna": "demon"
       },
       "part_colors": {
