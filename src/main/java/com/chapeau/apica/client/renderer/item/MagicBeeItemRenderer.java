@@ -26,6 +26,7 @@ import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.block.beecreator.BeeStingerType;
 import com.chapeau.apica.common.block.beecreator.BeeWingType;
 import com.chapeau.apica.common.item.bee.MagicBeeItem;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.chapeau.apica.core.gene.BeeGeneData;
 import com.chapeau.apica.core.gene.Gene;
@@ -97,32 +98,31 @@ public class MagicBeeItemRenderer extends BlockEntityWithoutLevelRenderer {
         // Ajuster position/echelle selon le contexte d'affichage
         switch (displayContext) {
             case GUI -> {
-                poseStack.translate(0.5f, 2.2f, 0.5f);
-                poseStack.scale(-1.0f, -1.0f, 1.0f);
-                poseStack.mulPose(Axis.XP.rotationDegrees(-30));
-                poseStack.mulPose(Axis.YP.rotationDegrees(225));
-                poseStack.scale(0.98f, 0.98f, 0.98f);
+                poseStack.translate(0.53f, 1.33f, 0.5f);
+                poseStack.mulPose(Axis.XP.rotationDegrees(200.7f));
+                poseStack.mulPose(Axis.YP.rotationDegrees(37));
+                poseStack.scale(0.8f, 0.8f, 0.8f);
             }
             case FIXED -> {
-                poseStack.translate(0.5, 0.5, 0.5);
-                poseStack.scale(-1.0f, -1.0f, 1.0f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(225));
+                poseStack.translate(0.5, 1.23, 0.48);
+                poseStack.mulPose(Axis.XP.rotationDegrees(180));
+                poseStack.mulPose(Axis.YP.rotationDegrees(89));
                 poseStack.scale(0.63f, 0.63f, 0.63f);
             }
             case FIRST_PERSON_RIGHT_HAND, FIRST_PERSON_LEFT_HAND -> {
-                poseStack.translate(0.5, 2.0f, 0.5);
-                poseStack.scale(-1.0f, -1.0f, 1.0f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(-114.0f));
-                poseStack.scale(0.7f, 0.7f, 0.7f);
+                poseStack.translate(0.58, 1.10, 0.5);
+                poseStack.mulPose(Axis.XP.rotationDegrees(172.5f));
+                poseStack.mulPose(Axis.YP.rotationDegrees(62));
+                poseStack.scale( 0.35f, 0.35f, 0.35f);
             }
             case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND -> {
-                poseStack.translate(0.5f, 0.2f, 1.2f);
-                poseStack.scale(-1.0f, -1.0f, 1.0f);
-                poseStack.mulPose(Axis.XP.rotationDegrees(-116.4f));
-                poseStack.scale(0.42f, 0.42f, 0.42f);
+                poseStack.translate(0.5f, 0.7f, 0.9f);
+                poseStack.mulPose(Axis.XP.rotationDegrees(-114.1f));
+                poseStack.mulPose(Axis.YP.rotationDegrees(112.0f));
+                poseStack.scale(0.32f, 0.32f, 0.32f);
             }
             case GROUND -> {
-                poseStack.translate(0.5, 1.2f, 0.5);
+                poseStack.translate(0.5, 1.0f, 0.5);
                 poseStack.scale(-1.0f, -1.0f, 1.0f);
                 poseStack.mulPose(Axis.YP.rotationDegrees(225));
                 poseStack.scale(0.42f, 0.42f, 0.42f);

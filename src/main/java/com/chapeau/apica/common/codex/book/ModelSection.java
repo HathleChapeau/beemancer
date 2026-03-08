@@ -27,6 +27,7 @@ import com.chapeau.apica.common.block.beecreator.BeeAntennaType;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.block.beecreator.BeeStingerType;
 import com.chapeau.apica.common.block.beecreator.BeeWingType;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -122,8 +123,8 @@ public class ModelSection extends CodexBookSection {
         PoseStack poseStack = graphics.pose();
         poseStack.pushPose();
 
-        poseStack.translate(centerX, centerY, offsetZ);
-        poseStack.scale(scale, scale, scale);
+        poseStack.translate(centerX, centerY + 54, offsetZ);
+        poseStack.scale(scale + 40, scale + 40, scale + 40);
         poseStack.mulPose(Axis.XP.rotationDegrees(rotX));
         poseStack.mulPose(Axis.YP.rotationDegrees(rotY));
 

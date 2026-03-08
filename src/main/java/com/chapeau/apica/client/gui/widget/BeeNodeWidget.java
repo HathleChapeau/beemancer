@@ -28,6 +28,7 @@ import com.chapeau.apica.common.block.beecreator.BeeWingType;
 import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPlayerData;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.quest.NodeState;
 import com.chapeau.apica.common.quest.QuestPlayerData;
 import com.chapeau.apica.core.bee.BeeSpeciesManager;
@@ -329,11 +330,11 @@ public class BeeNodeWidget extends AbstractWidget {
         PoseStack poseStack = graphics.pose();
         poseStack.pushPose();
 
-        poseStack.translate(centerX, centerY - 54, 100);
-        float scale = -28;
+        poseStack.translate(centerX, centerY - 17, 100);
+        float scale = -16;
         poseStack.scale(scale, scale, scale);
         poseStack.mulPose(Axis.XP.rotationDegrees(160));
-        poseStack.mulPose(Axis.YP.rotationDegrees(129 + (hovered ? partialTick * 2 : 0)));
+        poseStack.mulPose(Axis.YP.rotationDegrees(219));
 
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         int light = LightTexture.FULL_BRIGHT;
