@@ -84,9 +84,6 @@ public class MagicBeeRenderer extends MobRenderer<MagicBeeEntity, ApicaBeeModel<
             this.model = speciesModel;
         }
 
-        // super gere: transforms, setupAnim, overlay, death anim, layers, nametag, shadow
-        // getRenderType retourne null → le renderToBuffer standard est skippe
-        // MagicBeeRenderLayer fait le rendu multi-pass tinte
         super.render(bee, entityYaw, partialTick, poseStack, buffer, packedLight);
     }
 
