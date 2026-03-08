@@ -4243,7 +4243,7 @@
       },
       "part_colors": {
         "body": "#CCB830",
-        "stripe": "#CCFF00",
+        "stripe": "#88BB00",
         "wing": "#DDCC44",
         "antenna": "#665500",
         "stinger": "#665500",
@@ -4294,7 +4294,7 @@
       },
       "part_colors": {
         "body": "#004444",
-        "stripe": "#00BBFF",
+        "stripe": "#55DDFF",
         "wing": "#009977",
         "antenna": "#002222",
         "stinger": "#002222",
@@ -4702,7 +4702,7 @@
       },
       "part_colors": {
         "body": "#8800CC",
-        "stripe": "#FF00CC",
+        "stripe": "#CC0099",
         "wing": "#BB00FF",
         "antenna": "#440066",
         "stinger": "#440066",
