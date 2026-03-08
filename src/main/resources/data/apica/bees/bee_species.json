@@ -4285,7 +4285,7 @@
       },
       "pollen": null,
       "texture": "Traveler_Bee",
-      "color": "#004444",
+      "color": "#002222",
       "model": {
         "body": "segmented",
         "wing": "default",
@@ -4293,7 +4293,7 @@
         "antenna": "glasses"
       },
       "part_colors": {
-        "body": "#004444",
+        "body": "#002222",
         "stripe": "#55DDFF",
         "wing": "#009977",
         "antenna": "#002222",
@@ -4693,7 +4693,7 @@
       },
       "pollen": null,
       "texture": "Chorus_Bee",
-      "color": "#8800CC",
+      "color": "#AA22EE",
       "model": {
         "body": "segmented",
         "wing": "default",
@@ -4701,7 +4701,7 @@
         "antenna": "default"
       },
       "part_colors": {
-        "body": "#8800CC",
+        "body": "#AA22EE",
         "stripe": "#CC0099",
         "wing": "#BB00FF",
         "antenna": "#440066",
@@ -4855,7 +4855,7 @@
       },
       "part_colors": {
         "body": "#1A0033",
-        "stripe": "#FF6600",
+        "stripe": "#FF00FF",
         "wing": "#5500BB",
         "antenna": "#0D0018",
         "stinger": "#AA00FF",
