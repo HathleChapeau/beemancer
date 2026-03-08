@@ -236,6 +236,27 @@ public class BeeSpeciesManager {
             }
         }
 
+        // Model (body/wing/stinger/antenna type IDs)
+        if (json.has("model")) {
+            JsonObject model = json.getAsJsonObject("model");
+            data.modelBody = model.has("body") ? model.get("body").getAsString() : "default";
+            data.modelWing = model.has("wing") ? model.get("wing").getAsString() : "default";
+            data.modelStinger = model.has("stinger") ? model.get("stinger").getAsString() : "default";
+            data.modelAntenna = model.has("antenna") ? model.get("antenna").getAsString() : "default";
+        }
+
+        // Part colors (hex per part)
+        if (json.has("part_colors")) {
+            JsonObject pc = json.getAsJsonObject("part_colors");
+            data.partColorBody = parseHexColor(pc, "body", data.partColorBody);
+            data.partColorStripe = parseHexColor(pc, "stripe", data.partColorStripe);
+            data.partColorWing = parseHexColor(pc, "wing", data.partColorWing);
+            data.partColorAntenna = parseHexColor(pc, "antenna", data.partColorAntenna);
+            data.partColorStinger = parseHexColor(pc, "stinger", data.partColorStinger);
+            data.partColorEye = parseHexColor(pc, "eye", data.partColorEye);
+            data.partColorPupil = parseHexColor(pc, "pupil", data.partColorPupil);
+        }
+
         // Waveform combinee
         if (json.has("waveform")) {
             JsonObject wf = json.getAsJsonObject("waveform");
@@ -249,6 +270,18 @@ public class BeeSpeciesManager {
         data.harmonized = json.has("harmonized") && json.get("harmonized").getAsBoolean();
 
         return data;
+    }
+
+    private static int parseHexColor(JsonObject obj, String key, int defaultValue) {
+        if (obj.has(key)) {
+            String hex = obj.get(key).getAsString().replace("#", "");
+            try {
+                return Integer.parseInt(hex, 16);
+            } catch (NumberFormatException e) {
+                LOGGER.warn("Invalid hex color '{}' for key '{}'", obj.get(key).getAsString(), key);
+            }
+        }
+        return defaultValue;
     }
 
     private static void setupDefaults() {
@@ -429,6 +462,21 @@ public class BeeSpeciesManager {
 
         // Couleur de l'espece (hex RGB, ex: "#F7C325")
         public int color = 0xFFFFFF;
+
+        // Modele ApicaBee (body/wing/stinger/antenna type IDs)
+        public String modelBody = "default";
+        public String modelWing = "default";
+        public String modelStinger = "default";
+        public String modelAntenna = "default";
+
+        // Couleurs par partie (RGB int, sans alpha)
+        public int partColorBody = 0xCC8800;
+        public int partColorStripe = 0x1A1A1A;
+        public int partColorWing = 0xAADDFF;
+        public int partColorAntenna = 0x1A1A1A;
+        public int partColorStinger = 0xDDAA00;
+        public int partColorEye = 0x1A1A1A;
+        public int partColorPupil = 0xFFFFFF;
 
         // Waveform combinee de l'espece
         public int waveformFreq = 20;

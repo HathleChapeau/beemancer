@@ -1,26 +1,33 @@
 /**
  * ============================================================
  * [ModelSection.java]
- * Description: Module modèle 3D du Codex Book - affiche un modèle d'abeille
+ * Description: Module modele 3D du Codex Book - affiche un ApicaBeeModel tinte par espece
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance          | Raison                | Utilisation                    |
+ * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | CodexBookSection    | Classe parente       | Système de sections modulaires |
- * | BeeModel            | Modèle vanilla       | Rendu 3D de l'abeille          |
+ * | CodexBookSection    | Classe parente       | Systeme de sections modulaires |
+ * | ApicaBeeModel       | Modele modulaire     | Rendu 3D de l'abeille tintee   |
+ * | BeeSpeciesManager   | Donnees especes      | Model types + couleurs parties |
+ * | BeeBodyType etc.    | Enum types           | Resolution modele par espece   |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
- * - CodexBookContent (sections avec modèle 3D)
- * - CodexBookScreen (rendu du modèle sur la page)
+ * UTILISE PAR:
+ * - CodexBookContent (sections avec modele 3D)
+ * - CodexBookScreen (rendu du modele sur la page)
  *
  * ============================================================
  */
 package com.chapeau.apica.common.codex.book;
 
-import com.chapeau.apica.Apica;
+import com.chapeau.apica.client.model.ApicaBeeModel;
+import com.chapeau.apica.common.block.beecreator.BeeAntennaType;
+import com.chapeau.apica.common.block.beecreator.BeeBodyType;
+import com.chapeau.apica.common.block.beecreator.BeeStingerType;
+import com.chapeau.apica.common.block.beecreator.BeeWingType;
+import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -28,21 +35,22 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.model.BeeModel;
-import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ModelSection extends CodexBookSection {
 
-    private static final ResourceLocation VANILLA_BEE_TEXTURE = ResourceLocation.withDefaultNamespace(
-            "textures/entity/bee/bee.png");
     private static final int PADDING_BOTTOM = 6;
 
-    private static BeeModel<?> beeModel;
+    /** Cache des modeles par cle de combinaison de types. */
+    private static final Map<String, ApicaBeeModel<?>> MODEL_CACHE = new HashMap<>();
 
     private final String species;
     private final int displayHeight;
@@ -79,7 +87,35 @@ public class ModelSection extends CodexBookSection {
     @Override
     public void render(GuiGraphics graphics, Font font, int x, int y,
                        int pageWidth, String nodeTitle, long relativeDay) {
-        ResourceLocation texture = getTexture();
+        BeeSpeciesManager.ensureClientLoaded();
+        BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(species);
+
+        String bodyId = data != null ? data.modelBody : "default";
+        String wingId = data != null ? data.modelWing : "default";
+        String stingerId = data != null ? data.modelStinger : "default";
+        String antennaId = data != null ? data.modelAntenna : "default";
+
+        BeeBodyType bodyType = resolveBodyType(bodyId);
+        BeeWingType wingType = resolveWingType(wingId);
+        BeeStingerType stingerType = resolveStingerType(stingerId);
+        BeeAntennaType antennaType = resolveAntennaType(antennaId);
+
+        ApicaBeeModel<?> model = getOrBuildModel(bodyType, wingType, stingerType, antennaType);
+        if (model == null) return;
+
+        int bodyColor = data != null ? data.partColorBody : 0xCC8800;
+        int stripeColor = data != null ? data.partColorStripe : 0x1A1A1A;
+        int wingColor = data != null ? data.partColorWing : 0xAADDFF;
+        int antennaColor = data != null ? data.partColorAntenna : 0x1A1A1A;
+        int stingerColor = data != null ? data.partColorStinger : 0xDDAA00;
+        int eyeColor = data != null ? data.partColorEye : 0x1A1A1A;
+        int pupilColor = data != null ? data.partColorPupil : 0xFFFFFF;
+
+        ResourceLocation bodyTex = ApicaBeeModel.getBodyTexture(bodyType);
+        ResourceLocation wingTex = ApicaBeeModel.getWingTexture(wingType);
+        ResourceLocation stingerTex = ApicaBeeModel.getStingerTexture(stingerType);
+        ResourceLocation antennaTex = ApicaBeeModel.getAntennaTexture(antennaType);
+
         float centerX = x + pageWidth / 2.0f + offsetX;
         float centerY = y + displayHeight / 2.0f + offsetY;
 
@@ -93,32 +129,96 @@ public class ModelSection extends CodexBookSection {
 
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance()
                 .renderBuffers().bufferSource();
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(
-                RenderType.entityCutout(texture));
 
-        BeeModel<?> model = getOrCreateModel();
-        model.renderToBuffer(poseStack, vertexConsumer, LightTexture.FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+        int light = LightTexture.FULL_BRIGHT;
+        int overlay = OverlayTexture.NO_OVERLAY;
+
+        // Multi-pass body render
+        VertexConsumer bodyVC = bufferSource.getBuffer(RenderType.entityCutout(bodyTex));
+
+        model.showCorpusOnly();
+        model.renderToBuffer(poseStack, bodyVC, light, overlay, toArgb(bodyColor));
+
+        model.showStripeOnly();
+        model.renderToBuffer(poseStack, bodyVC, light, overlay, toArgb(stripeColor));
+
+        model.showEyesOnly();
+        model.renderToBuffer(poseStack, bodyVC, light, overlay, toArgb(eyeColor));
+
+        model.showPupilsOnly();
+        model.renderToBuffer(poseStack, bodyVC, light, overlay, toArgb(pupilColor));
+
+        model.showUntintedOnly();
+        model.renderToBuffer(poseStack, bodyVC, light, overlay, toArgb(stripeColor));
+
+        // Antenna
+        VertexConsumer antennaVC = bufferSource.getBuffer(RenderType.entityCutout(antennaTex));
+        model.renderAntenna(poseStack, antennaVC, light, overlay, toArgb(antennaColor));
+
+        // Wings
+        VertexConsumer wingVC = bufferSource.getBuffer(RenderType.entityCutout(wingTex));
+        model.renderWings(poseStack, wingVC, light, overlay, toArgb(wingColor));
+
+        // Stinger
+        VertexConsumer stingerVC = bufferSource.getBuffer(RenderType.entityCutout(stingerTex));
+        model.renderStinger(poseStack, stingerVC, light, overlay, toArgb(stingerColor));
 
         bufferSource.endBatch();
         poseStack.popPose();
     }
 
-    private ResourceLocation getTexture() {
-        ResourceLocation customTexture = ResourceLocation.fromNamespaceAndPath(
-                Apica.MOD_ID, "textures/entity/bee/" + species + "_bee.png");
-        if (Minecraft.getInstance().getResourceManager().getResource(customTexture).isPresent()) {
-            return customTexture;
-        }
-        return VANILLA_BEE_TEXTURE;
+    private static ApicaBeeModel<?> getOrBuildModel(BeeBodyType body, BeeWingType wing,
+                                                     BeeStingerType stinger, BeeAntennaType antenna) {
+        String key = body.getId() + "_" + wing.getId() + "_" + stinger.getId() + "_" + antenna.getId();
+        return MODEL_CACHE.computeIfAbsent(key, k -> {
+            try {
+                var entityModels = Minecraft.getInstance().getEntityModels();
+                ModelPart bodyRoot = entityModels.bakeLayer(ApicaBeeModel.getBodyLayer(body));
+                ModelPart wingRoot = entityModels.bakeLayer(ApicaBeeModel.getWingLayer(wing));
+                ModelPart stingerRoot = entityModels.bakeLayer(ApicaBeeModel.getStingerLayer(stinger));
+                ModelPart antennaRoot = entityModels.bakeLayer(ApicaBeeModel.getAntennaLayer(antenna));
+                return new ApicaBeeModel<>(bodyRoot, wingRoot, stingerRoot, antennaRoot, body);
+            } catch (Exception e) {
+                return null;
+            }
+        });
     }
 
-    private static BeeModel<?> getOrCreateModel() {
-        if (beeModel == null) {
-            beeModel = new BeeModel<>(Minecraft.getInstance()
-                    .getEntityModels().bakeLayer(ModelLayers.BEE));
+    private static BeeBodyType resolveBodyType(String id) {
+        for (BeeBodyType t : BeeBodyType.values()) {
+            if (t.getId().equals(id)) return t;
         }
-        return beeModel;
+        return BeeBodyType.DEFAULT;
+    }
+
+    private static BeeWingType resolveWingType(String id) {
+        for (BeeWingType t : BeeWingType.values()) {
+            if (t.getId().equals(id)) return t;
+        }
+        return BeeWingType.DEFAULT;
+    }
+
+    private static BeeStingerType resolveStingerType(String id) {
+        for (BeeStingerType t : BeeStingerType.values()) {
+            if (t.getId().equals(id)) return t;
+        }
+        return BeeStingerType.DEFAULT;
+    }
+
+    private static BeeAntennaType resolveAntennaType(String id) {
+        for (BeeAntennaType t : BeeAntennaType.values()) {
+            if (t.getId().equals(id)) return t;
+        }
+        return BeeAntennaType.DEFAULT;
+    }
+
+    private static int toArgb(int rgb) {
+        return 0xFF000000 | (rgb & 0xFFFFFF);
+    }
+
+    /** Vide le cache des modeles (utile lors du rechargement des ressources). */
+    public static void clearModelCache() {
+        MODEL_CACHE.clear();
     }
 
     public static ModelSection fromJson(JsonObject json) {

@@ -26,6 +26,21 @@
       "pollen": null,
       "texture": "Meadow_Bee",
       "color": "#F7C325",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#F7C325",
+        "stripe": "#2B1A00",
+        "wing": "#CCE8FF",
+        "antenna": "#2B1A00",
+        "stinger": "#DDAA00",
+        "eye": "#1A1A1A",
+        "pupil": "#FFFFFF"
+      },
       "waveform": {
         "frequency": 2,
         "amplitude": 55,
@@ -59,6 +74,21 @@
       "pollen": null,
       "texture": "Forest_Bee",
       "color": "#4A7C4E",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#4A7C4E",
+        "stripe": "#2D4A2F",
+        "wing": "#B8D8BA",
+        "antenna": "#2D4A2F",
+        "stinger": "#3D6B40",
+        "eye": "#1A1A1A",
+        "pupil": "#E0FFE0"
+      },
       "waveform": {
         "frequency": 61,
         "amplitude": 55,
@@ -92,6 +122,21 @@
       "pollen": null,
       "texture": "Rocky_Bee",
       "color": "#7A7A7A",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#7A7A7A",
+        "stripe": "#4A4A4A",
+        "wing": "#B0B0B0",
+        "antenna": "#4A4A4A",
+        "stinger": "#5C5C5C",
+        "eye": "#1A1A1A",
+        "pupil": "#D0D0D0"
+      },
       "waveform": {
         "frequency": 78,
         "amplitude": 55,
@@ -125,6 +170,21 @@
       "pollen": null,
       "texture": "River_Bee",
       "color": "#4A90B8",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#4A90D9",
+        "stripe": "#2B5A8A",
+        "wing": "#A8D4FF",
+        "antenna": "#2B5A8A",
+        "stinger": "#3B7AC0",
+        "eye": "#1A1A1A",
+        "pupil": "#D0EEFF"
+      },
       "waveform": {
         "frequency": 12,
         "amplitude": 55,
@@ -158,6 +218,21 @@
       "pollen": null,
       "texture": "Dune_Bee",
       "color": "#DBD3A0",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#C2A33E",
+        "stripe": "#8B7425",
+        "wing": "#E8D9A0",
+        "antenna": "#8B7425",
+        "stinger": "#D4B94E",
+        "eye": "#1A1A1A",
+        "pupil": "#FFF0C0"
+      },
       "waveform": {
         "frequency": 124,
         "amplitude": 55,
@@ -191,6 +266,21 @@
       "pollen": null,
       "texture": "Neither_Bee",
       "color": "#8B0000",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#AA3030",
+        "stripe": "#4A1010",
+        "wing": "#D08040",
+        "antenna": "#4A1010",
+        "stinger": "#801818",
+        "eye": "#3A0000",
+        "pupil": "#FF6600"
+      },
       "waveform": {
         "frequency": 84,
         "amplitude": 55,
@@ -224,6 +314,21 @@
       "pollen": null,
       "texture": "End_Bee",
       "color": "#E0D68A",
+      "model": {
+        "body": "segmented",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#2A1A3A",
+        "stripe": "#1A0A2A",
+        "wing": "#6A4A8A",
+        "antenna": "#1A0A2A",
+        "stinger": "#3A2A4A",
+        "eye": "#0A0A1A",
+        "pupil": "#CC00FF"
+      },
       "waveform": {
         "frequency": 73,
         "amplitude": 55,
@@ -260,6 +365,21 @@
       "pollen": null,
       "texture": "Monsty_Bee",
       "color": "#7BC67B",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#5A8A5A",
+        "stripe": "#2D3D2D",
+        "wing": "#90B090",
+        "antenna": "#2D3D2D",
+        "stinger": "#4A6A4A",
+        "eye": "#8B0000",
+        "pupil": "#FF4444"
+      },
       "waveform": {
         "frequency": 102,
         "amplitude": 55,
@@ -296,6 +416,21 @@
       "pollen": null,
       "texture": "Docile_Bee",
       "color": "#FFE4B5",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#E8C97A",
+        "stripe": "#A08040",
+        "wing": "#F0E8D0",
+        "antenna": "#A08040",
+        "stinger": "#C0A050",
+        "eye": "#3A2A1A",
+        "pupil": "#FFF8E0"
+      },
       "waveform": {
         "frequency": 34,
         "amplitude": 55,
@@ -332,6 +467,21 @@
       "pollen": null,
       "texture": "Loam_Bee",
       "color": "#8B5A2B",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#7A5C3A",
+        "stripe": "#4A3520",
+        "wing": "#C0A880",
+        "antenna": "#4A3520",
+        "stinger": "#5E4428",
+        "eye": "#1A1A1A",
+        "pupil": "#D4C0A0"
+      },
       "waveform": {
         "frequency": 26,
         "amplitude": 55,
@@ -368,6 +518,21 @@
       "pollen": null,
       "texture": "Sediment_Bee",
       "color": "#8E8E8E",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#8A8070",
+        "stripe": "#5A5548",
+        "wing": "#C0B8A8",
+        "antenna": "#5A5548",
+        "stinger": "#6B6458",
+        "eye": "#1A1A1A",
+        "pupil": "#D0C8B8"
+      },
       "waveform": {
         "frequency": 104,
         "amplitude": 55,
@@ -404,6 +569,21 @@
       "pollen": null,
       "texture": "Spark_Bee",
       "color": "#3D3D3D",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#D4A820",
+        "stripe": "#8A6A10",
+        "wing": "#FFF0A0",
+        "antenna": "#8A6A10",
+        "stinger": "#FFD700",
+        "eye": "#1A1A1A",
+        "pupil": "#FFFF80"
+      },
       "waveform": {
         "frequency": 54,
         "amplitude": 55,
@@ -440,6 +620,21 @@
       "pollen": null,
       "texture": "Cultural_Bee",
       "color": "#C4A35A",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#B8944A",
+        "stripe": "#6B5230",
+        "wing": "#D4C8A0",
+        "antenna": "#6B5230",
+        "stinger": "#9A7B3D",
+        "eye": "#1A1A1A",
+        "pupil": "#FFEED0"
+      },
       "waveform": {
         "frequency": 39,
         "amplitude": 55,
@@ -476,6 +671,21 @@
       "pollen": null,
       "texture": "Carbon_Bee",
       "color": "#2F2F2F",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#2A2A2A",
+        "stripe": "#1A1A1A",
+        "wing": "#4A4A4A",
+        "antenna": "#1A1A1A",
+        "stinger": "#3A3A3A",
+        "eye": "#0A0A0A",
+        "pupil": "#808080"
+      },
       "waveform": {
         "frequency": 90,
         "amplitude": 69,
@@ -512,6 +722,21 @@
       "pollen": null,
       "texture": "Cupric_Bee",
       "color": "#4A9B8C",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#B06030",
+        "stripe": "#4A8A6A",
+        "wing": "#80C0A0",
+        "antenna": "#4A8A6A",
+        "stinger": "#8A5028",
+        "eye": "#1A1A1A",
+        "pupil": "#A0E0C0"
+      },
       "waveform": {
         "frequency": 128,
         "amplitude": 63,
@@ -548,6 +773,21 @@
       "pollen": null,
       "texture": "Festering_Bee",
       "color": "#B87333",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#6A8A40",
+        "stripe": "#3A4A20",
+        "wing": "#B0C080",
+        "antenna": "#3A4A20",
+        "stinger": "#4A6030",
+        "eye": "#4A4A00",
+        "pupil": "#C0D040"
+      },
       "waveform": {
         "frequency": 4,
         "amplitude": 69,
@@ -584,6 +824,21 @@
       "pollen": null,
       "texture": "Skeletal_Bee",
       "color": "#E3DAC9",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#D8D0C0",
+        "stripe": "#8A8070",
+        "wing": "#E8E0D8",
+        "antenna": "#8A8070",
+        "stinger": "#A0987A",
+        "eye": "#2A2A2A",
+        "pupil": "#000000"
+      },
       "waveform": {
         "frequency": 25,
         "amplitude": 63,
@@ -620,6 +875,21 @@
       "pollen": null,
       "texture": "Silken_Bee",
       "color": "#FFFAF0",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#E8E0D0",
+        "stripe": "#C0B8A0",
+        "wing": "#F8F4F0",
+        "antenna": "#A09880",
+        "stinger": "#C8C0B0",
+        "eye": "#1A1A1A",
+        "pupil": "#FFFFFF"
+      },
       "waveform": {
         "frequency": 21,
         "amplitude": 69,
@@ -656,6 +926,21 @@
       "pollen": null,
       "texture": "Arachnid_Bee",
       "color": "#2D2D2D",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#3A2A1A",
+        "stripe": "#1A1A0A",
+        "wing": "#6A5A4A",
+        "antenna": "#1A1A0A",
+        "stinger": "#2A2010",
+        "eye": "#880000",
+        "pupil": "#FF2020"
+      },
       "waveform": {
         "frequency": 126,
         "amplitude": 69,
@@ -692,6 +977,21 @@
       "pollen": null,
       "texture": "Tanner_Bee",
       "color": "#8B4513",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#8B5A2B",
+        "stripe": "#5A3A18",
+        "wing": "#D4B890",
+        "antenna": "#5A3A18",
+        "stinger": "#6B4420",
+        "eye": "#1A1A1A",
+        "pupil": "#E0C8A0"
+      },
       "waveform": {
         "frequency": 97,
         "amplitude": 55,
@@ -728,6 +1028,21 @@
       "pollen": null,
       "texture": "Plume_Bee",
       "color": "#4B4B4F",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#E0D0C0",
+        "stripe": "#A0907A",
+        "wing": "#F8F0E8",
+        "antenna": "#8A7A68",
+        "stinger": "#B0A090",
+        "eye": "#1A1A1A",
+        "pupil": "#FFFFFF"
+      },
       "waveform": {
         "frequency": 51,
         "amplitude": 54,
@@ -764,6 +1079,21 @@
       "pollen": null,
       "texture": "Quercus_Bee",
       "color": "#B8945F",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#8A6A3A",
+        "stripe": "#5A4020",
+        "wing": "#C8B898",
+        "antenna": "#5A4020",
+        "stinger": "#6B5030",
+        "eye": "#1A1A1A",
+        "pupil": "#D4C4A4"
+      },
       "waveform": {
         "frequency": 99,
         "amplitude": 62,
@@ -800,6 +1130,21 @@
       "pollen": null,
       "texture": "Boreal_Bee",
       "color": "#D3D3D3",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#5A7A8A",
+        "stripe": "#3A4A5A",
+        "wing": "#C0D8E8",
+        "antenna": "#3A4A5A",
+        "stinger": "#4A6070",
+        "eye": "#1A1A1A",
+        "pupil": "#D0E8FF"
+      },
       "waveform": {
         "frequency": 130,
         "amplitude": 55,
@@ -836,6 +1181,21 @@
       "pollen": null,
       "texture": "Tropical_Bee",
       "color": "#32CD32",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#2AAA40",
+        "stripe": "#1A6A20",
+        "wing": "#A0F0B0",
+        "antenna": "#1A6A20",
+        "stinger": "#228830",
+        "eye": "#1A1A1A",
+        "pupil": "#E0FFE0"
+      },
       "waveform": {
         "frequency": 69,
         "amplitude": 55,
@@ -872,6 +1232,21 @@
       "pollen": null,
       "texture": "Paperbark_Bee",
       "color": "#D2B48C",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#D8C8A0",
+        "stripe": "#A09070",
+        "wing": "#F0E8D8",
+        "antenna": "#8A7A5A",
+        "stinger": "#B0A080",
+        "eye": "#1A1A1A",
+        "pupil": "#FFF8F0"
+      },
       "waveform": {
         "frequency": 113,
         "amplitude": 62,
@@ -908,6 +1283,21 @@
       "pollen": null,
       "texture": "Reed_Bee",
       "color": "#9ACD32",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#A0C060",
+        "stripe": "#608030",
+        "wing": "#D0E8A0",
+        "antenna": "#608030",
+        "stinger": "#80A040",
+        "eye": "#1A1A1A",
+        "pupil": "#F0FFD0"
+      },
       "waveform": {
         "frequency": 18,
         "amplitude": 66,
@@ -944,6 +1334,21 @@
       "pollen": null,
       "texture": "Karot_Bee",
       "color": "#D6D0AD",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#E87820",
+        "stripe": "#A05010",
+        "wing": "#FFD0A0",
+        "antenna": "#A05010",
+        "stinger": "#C06818",
+        "eye": "#1A1A1A",
+        "pupil": "#FFE0B0"
+      },
       "waveform": {
         "frequency": 103,
         "amplitude": 62,
@@ -980,6 +1385,21 @@
       "pollen": null,
       "texture": "Tuber_Bee",
       "color": "#C4A35A",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#B09060",
+        "stripe": "#6B5535",
+        "wing": "#D4C4A0",
+        "antenna": "#6B5535",
+        "stinger": "#8A7048",
+        "eye": "#1A1A1A",
+        "pupil": "#E0D0B0"
+      },
       "waveform": {
         "frequency": 9,
         "amplitude": 66,
@@ -1016,6 +1436,21 @@
       "pollen": null,
       "texture": "Juicy_Bee",
       "color": "#FF8C00",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#4AAA40",
+        "stripe": "#CC3030",
+        "wing": "#C0F0C0",
+        "antenna": "#2A7A22",
+        "stinger": "#3A8A32",
+        "eye": "#1A1A1A",
+        "pupil": "#FFE0E0"
+      },
       "waveform": {
         "frequency": 32,
         "amplitude": 55,
@@ -1052,6 +1487,21 @@
       "pollen": null,
       "texture": "Gourd_Bee",
       "color": "#C4A35A",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#D08020",
+        "stripe": "#8A5510",
+        "wing": "#F0D090",
+        "antenna": "#6A4010",
+        "stinger": "#A06818",
+        "eye": "#1A1A1A",
+        "pupil": "#FFE880"
+      },
       "waveform": {
         "frequency": 5,
         "amplitude": 62,
@@ -1088,6 +1538,21 @@
       "pollen": null,
       "texture": "Agrarian_Bee",
       "color": "#AEDD00",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#D4B060",
+        "stripe": "#8A7030",
+        "wing": "#F0E8C0",
+        "antenna": "#8A7030",
+        "stinger": "#B09040",
+        "eye": "#1A1A1A",
+        "pupil": "#FFF0C0"
+      },
       "waveform": {
         "frequency": 106,
         "amplitude": 55,
@@ -1121,6 +1586,21 @@
       "pollen": null,
       "texture": "Prince_Bee",
       "color": "#E67519",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#D4A830",
+        "stripe": "#6A2A8A",
+        "wing": "#F0E0C0",
+        "antenna": "#6A2A8A",
+        "stinger": "#C09020",
+        "eye": "#3A1A5A",
+        "pupil": "#E0C0FF"
+      },
       "waveform": {
         "frequency": 79,
         "amplitude": 62,
@@ -1157,6 +1637,21 @@
       "pollen": "flower_pollen",
       "texture": "Flower_Bee",
       "color": "#DEB887",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#E86090",
+        "stripe": "#A03060",
+        "wing": "#FFD0E0",
+        "antenna": "#A03060",
+        "stinger": "#C04878",
+        "eye": "#1A1A1A",
+        "pupil": "#FFE0F0"
+      },
       "waveform": {
         "frequency": 14,
         "amplitude": 55,
@@ -1193,6 +1688,21 @@
       "pollen": "mushroom_spore",
       "texture": "Mushroom_Bee",
       "color": "#BC4A42",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#8A4030",
+        "stripe": "#E0D0B0",
+        "wing": "#D0A080",
+        "antenna": "#5A2820",
+        "stinger": "#6A3428",
+        "eye": "#1A1A1A",
+        "pupil": "#80FF80"
+      },
       "waveform": {
         "frequency": 88,
         "amplitude": 69,
@@ -1229,6 +1739,21 @@
       "pollen": "tree_pollen",
       "texture": "Tree_Bee",
       "color": "#228B22",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#6A8A4A",
+        "stripe": "#4A5A2A",
+        "wing": "#B0D090",
+        "antenna": "#4A5A2A",
+        "stinger": "#5A7038",
+        "eye": "#1A1A1A",
+        "pupil": "#D0E8B0"
+      },
       "waveform": {
         "frequency": 66,
         "amplitude": 62,
@@ -1265,6 +1790,21 @@
       "pollen": "crystal_pollen",
       "texture": "Crystal_Bee",
       "color": "#9966CC",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#88AACC",
+        "stripe": "#AADDFF",
+        "wing": "#D0E8FF",
+        "antenna": "#6688AA",
+        "stinger": "#7799BB",
+        "eye": "#1A1A1A",
+        "pupil": "#E0F0FF"
+      },
       "waveform": {
         "frequency": 19,
         "amplitude": 71,
@@ -1301,6 +1841,21 @@
       "pollen": null,
       "texture": "Argil_Bee",
       "color": "#D2B48C",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#A0887A",
+        "stripe": "#7A6050",
+        "wing": "#D0C4B8",
+        "antenna": "#7A6050",
+        "stinger": "#8A7060",
+        "eye": "#1A1A1A",
+        "pupil": "#E0D4C8"
+      },
       "waveform": {
         "frequency": 67,
         "amplitude": 55,
@@ -1337,6 +1892,21 @@
       "pollen": null,
       "texture": "Umbra_Bee",
       "color": "#4A3B5C",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#3A2A1A",
+        "stripe": "#1A1008",
+        "wing": "#4A3A2A",
+        "antenna": "#1A1008",
+        "stinger": "#2A1A10",
+        "eye": "#000000",
+        "pupil": "#4A3A2A"
+      },
       "waveform": {
         "frequency": 41,
         "amplitude": 62,
@@ -1373,6 +1943,21 @@
       "pollen": null,
       "texture": "Savanna_Bee",
       "color": "#DAA520",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#C8A060",
+        "stripe": "#8A6830",
+        "wing": "#E8D8A0",
+        "antenna": "#8A6830",
+        "stinger": "#A08040",
+        "eye": "#1A1A1A",
+        "pupil": "#F0E0C0"
+      },
       "waveform": {
         "frequency": 83,
         "amplitude": 62,
@@ -1409,6 +1994,21 @@
       "pollen": null,
       "texture": "Frost_Bee",
       "color": "#A5F3FC",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#A0D0E8",
+        "stripe": "#70A0C0",
+        "wing": "#D0F0FF",
+        "antenna": "#5080A0",
+        "stinger": "#80B0D0",
+        "eye": "#1A2A3A",
+        "pupil": "#E8F8FF"
+      },
       "waveform": {
         "frequency": 98,
         "amplitude": 66,
@@ -1445,6 +2045,21 @@
       "pollen": null,
       "texture": "Volatile_Bee",
       "color": "#FF6347",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#5A5A50",
+        "stripe": "#C0A020",
+        "wing": "#8A8A70",
+        "antenna": "#3A3A30",
+        "stinger": "#4A4A38",
+        "eye": "#8A0000",
+        "pupil": "#FF4000"
+      },
       "waveform": {
         "frequency": 43,
         "amplitude": 55,
@@ -1481,6 +2096,21 @@
       "pollen": null,
       "texture": "Ashen_Bee",
       "color": "#A9A9A9",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#8A8A88",
+        "stripe": "#5A5A58",
+        "wing": "#B0B0A8",
+        "antenna": "#5A5A58",
+        "stinger": "#6A6A68",
+        "eye": "#1A1A1A",
+        "pupil": "#D0C0B0"
+      },
       "waveform": {
         "frequency": 115,
         "amplitude": 69,
@@ -1517,6 +2147,21 @@
       "pollen": null,
       "texture": "Igneous_Bee",
       "color": "#B22222",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#9A9A98",
+        "stripe": "#6A6A68",
+        "wing": "#C0C0B8",
+        "antenna": "#5A5A58",
+        "stinger": "#7A7A78",
+        "eye": "#1A1A1A",
+        "pupil": "#E0D8D0"
+      },
       "waveform": {
         "frequency": 35,
         "amplitude": 69,
@@ -1553,6 +2198,21 @@
       "pollen": null,
       "texture": "Rose_Stone_Bee",
       "color": "#C4A4A4",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#C09080",
+        "stripe": "#8A6058",
+        "wing": "#E0C8C0",
+        "antenna": "#8A6058",
+        "stinger": "#A07868",
+        "eye": "#1A1A1A",
+        "pupil": "#F0D8D0"
+      },
       "waveform": {
         "frequency": 72,
         "amplitude": 69,
@@ -1586,6 +2246,21 @@
       "pollen": null,
       "texture": "Infernalist_Bee",
       "color": "#6B2D5C",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#8A1010",
+        "stripe": "#FF4400",
+        "wing": "#CC3000",
+        "antenna": "#3A0808",
+        "stinger": "#600808",
+        "eye": "#2A0000",
+        "pupil": "#FF0000"
+      },
       "waveform": {
         "frequency": 27,
         "amplitude": 52,
@@ -1622,6 +2297,21 @@
       "pollen": null,
       "texture": "Swift_Bee",
       "color": "#DFDEDE",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#E8D080",
+        "stripe": "#C0A850",
+        "wing": "#FFF0C0",
+        "antenna": "#A08840",
+        "stinger": "#D0B860",
+        "eye": "#1A1A1A",
+        "pupil": "#FFFFCC"
+      },
       "waveform": {
         "frequency": 92,
         "amplitude": 49,
@@ -1658,6 +2348,21 @@
       "pollen": null,
       "texture": "Royal_Bee",
       "color": "#9B6B53",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#E8A830",
+        "stripe": "#8A2AAA",
+        "wing": "#F0D880",
+        "antenna": "#8A2AAA",
+        "stinger": "#D09020",
+        "eye": "#4A1A6A",
+        "pupil": "#F0D0FF"
+      },
       "waveform": {
         "frequency": 48,
         "amplitude": 55,
@@ -1694,6 +2399,21 @@
       "pollen": null,
       "texture": "Ferrous_Bee",
       "color": "#A8A8A8",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#8A8A8A",
+        "stripe": "#5A5A5A",
+        "wing": "#B0B0B8",
+        "antenna": "#4A4A4A",
+        "stinger": "#6A6A6A",
+        "eye": "#1A1A1A",
+        "pupil": "#C0C0C8"
+      },
       "waveform": {
         "frequency": 44,
         "amplitude": 60,
@@ -1730,6 +2450,21 @@
       "pollen": null,
       "texture": "Flux_Bee",
       "color": "#AA0000",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#AA2020",
+        "stripe": "#600808",
+        "wing": "#CC5050",
+        "antenna": "#500808",
+        "stinger": "#801010",
+        "eye": "#1A0808",
+        "pupil": "#FF0000"
+      },
       "waveform": {
         "frequency": 76,
         "amplitude": 60,
@@ -1766,6 +2501,21 @@
       "pollen": null,
       "texture": "Lazuli_Bee",
       "color": "#1F4DB4",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#2244AA",
+        "stripe": "#102266",
+        "wing": "#6688CC",
+        "antenna": "#102266",
+        "stinger": "#1A3388",
+        "eye": "#0A0A2A",
+        "pupil": "#4488FF"
+      },
       "waveform": {
         "frequency": 42,
         "amplitude": 69,
@@ -1802,6 +2552,21 @@
       "pollen": null,
       "texture": "Quartzose_Bee",
       "color": "#EEEDE9",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#E0D8C8",
+        "stripe": "#C0A890",
+        "wing": "#F0E8E0",
+        "antenna": "#8A7060",
+        "stinger": "#C8B8A0",
+        "eye": "#1A1A1A",
+        "pupil": "#FFF8F0"
+      },
       "waveform": {
         "frequency": 114,
         "amplitude": 51,
@@ -1838,6 +2603,21 @@
       "pollen": null,
       "texture": "Luminous_Bee",
       "color": "#AA0000",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#DDAA30",
+        "stripe": "#FFDD60",
+        "wing": "#FFEE88",
+        "antenna": "#AA8020",
+        "stinger": "#C09020",
+        "eye": "#2A2000",
+        "pupil": "#FFFF00"
+      },
       "waveform": {
         "frequency": 107,
         "amplitude": 49,
@@ -1874,6 +2654,21 @@
       "pollen": null,
       "texture": "Grim_Bee",
       "color": "#19398A",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#2A2A2A",
+        "stripe": "#1A1A1A",
+        "wing": "#3A3A3A",
+        "antenna": "#1A1A1A",
+        "stinger": "#2A2A28",
+        "eye": "#0A0A0A",
+        "pupil": "#4A4A4A"
+      },
       "waveform": {
         "frequency": 31,
         "amplitude": 54,
@@ -1910,6 +2705,21 @@
       "pollen": null,
       "texture": "Columnar_Bee",
       "color": "#EEEDE9",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#5A5A60",
+        "stripe": "#3A3A40",
+        "wing": "#808088",
+        "antenna": "#3A3A40",
+        "stinger": "#4A4A50",
+        "eye": "#1A1A1A",
+        "pupil": "#A0A0B0"
+      },
       "waveform": {
         "frequency": 29,
         "amplitude": 60,
@@ -1946,6 +2756,21 @@
       "pollen": null,
       "texture": "Viscous_Bee",
       "color": "#FFBC5E",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#60AA40",
+        "stripe": "#408828",
+        "wing": "#A0DD80",
+        "antenna": "#408828",
+        "stinger": "#509030",
+        "eye": "#1A2A1A",
+        "pupil": "#C0FF80"
+      },
       "waveform": {
         "frequency": 38,
         "amplitude": 66,
@@ -1982,6 +2807,21 @@
       "pollen": null,
       "texture": "Inky_Bee",
       "color": "#2D2429",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#2A2A3A",
+        "stripe": "#1A1A28",
+        "wing": "#4A4A6A",
+        "antenna": "#1A1A28",
+        "stinger": "#2A2A38",
+        "eye": "#0A0A1A",
+        "pupil": "#4040AA"
+      },
       "waveform": {
         "frequency": 91,
         "amplitude": 46,
@@ -2018,6 +2858,21 @@
       "pollen": null,
       "texture": "Fleece_Bee",
       "color": "#7FBF00",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#E8E0D8",
+        "stripe": "#D0C8B8",
+        "wing": "#F8F4F0",
+        "antenna": "#A09888",
+        "stinger": "#C8C0B0",
+        "eye": "#1A1A1A",
+        "pupil": "#FFFFFF"
+      },
       "waveform": {
         "frequency": 85,
         "amplitude": 54,
@@ -2054,6 +2909,21 @@
       "pollen": null,
       "texture": "Adobe_Bee",
       "color": "#CD853F",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#B06840",
+        "stripe": "#7A4828",
+        "wing": "#D0A080",
+        "antenna": "#7A4828",
+        "stinger": "#905838",
+        "eye": "#1A1A1A",
+        "pupil": "#E0C0A0"
+      },
       "waveform": {
         "frequency": 116,
         "amplitude": 54,
@@ -2090,6 +2960,21 @@
       "pollen": null,
       "texture": "Geode_Bee",
       "color": "#9966CC",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#8A60AA",
+        "stripe": "#5A3A6A",
+        "wing": "#C0A0D8",
+        "antenna": "#5A3A6A",
+        "stinger": "#7A5090",
+        "eye": "#1A1A2A",
+        "pupil": "#BB88DD"
+      },
       "waveform": {
         "frequency": 82,
         "amplitude": 60,
@@ -2126,6 +3011,21 @@
       "pollen": null,
       "texture": "Marsh_Bee",
       "color": "#556B2F",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#6A4A30",
+        "stripe": "#3A2A18",
+        "wing": "#90805A",
+        "antenna": "#3A2A18",
+        "stinger": "#503A20",
+        "eye": "#1A1A0A",
+        "pupil": "#90A040"
+      },
       "waveform": {
         "frequency": 123,
         "amplitude": 60,
@@ -2162,6 +3062,21 @@
       "pollen": null,
       "texture": "Majestic_Bee",
       "color": "#6E3735",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#FFD040",
+        "stripe": "#AA30CC",
+        "wing": "#FFF088",
+        "antenna": "#AA30CC",
+        "stinger": "#DDA830",
+        "eye": "#5A1A8A",
+        "pupil": "#FFE0FF"
+      },
       "waveform": {
         "frequency": 1,
         "amplitude": 66,
@@ -2198,6 +3113,21 @@
       "pollen": null,
       "texture": "Steady_Bee",
       "color": "#A0826D",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#7A8A8A",
+        "stripe": "#4A5A5A",
+        "wing": "#A0B0B0",
+        "antenna": "#4A5A5A",
+        "stinger": "#6A7A7A",
+        "eye": "#1A1A1A",
+        "pupil": "#B0C0C0"
+      },
       "waveform": {
         "frequency": 127,
         "amplitude": 72,
@@ -2234,6 +3164,21 @@
       "pollen": "pollen_of_wind",
       "texture": "Wind_Bee",
       "color": "#87CEEB",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#C8D8E0",
+        "stripe": "#90A8B8",
+        "wing": "#E8F0F8",
+        "antenna": "#7A8A9A",
+        "stinger": "#A0B0C0",
+        "eye": "#1A2A3A",
+        "pupil": "#D8E8FF"
+      },
       "waveform": {
         "frequency": 108,
         "amplitude": 52,
@@ -2270,6 +3215,21 @@
       "pollen": "pollen_of_thunder",
       "texture": "Thunder_Bee",
       "color": "#FFD700",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#3A4A6A",
+        "stripe": "#DDDD30",
+        "wing": "#6A7A9A",
+        "antenna": "#2A3050",
+        "stinger": "#4A5A7A",
+        "eye": "#1A1A2A",
+        "pupil": "#FFFF00"
+      },
       "waveform": {
         "frequency": 7,
         "amplitude": 51,
@@ -2306,6 +3266,21 @@
       "pollen": "pollen_of_water",
       "texture": "Water_Bee",
       "color": "#1E90FF",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#3070AA",
+        "stripe": "#1A4070",
+        "wing": "#70A8DD",
+        "antenna": "#1A4070",
+        "stinger": "#285088",
+        "eye": "#0A1A3A",
+        "pupil": "#60C0FF"
+      },
       "waveform": {
         "frequency": 125,
         "amplitude": 55,
@@ -2342,6 +3317,21 @@
       "pollen": "pollen_of_fire",
       "texture": "Fire_Bee",
       "color": "#FF6600",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#DD4400",
+        "stripe": "#FF8800",
+        "wing": "#FFAA44",
+        "antenna": "#882200",
+        "stinger": "#AA3300",
+        "eye": "#2A0A00",
+        "pupil": "#FFDD00"
+      },
       "waveform": {
         "frequency": 117,
         "amplitude": 51,
@@ -2378,6 +3368,21 @@
       "pollen": null,
       "texture": "Auric_Bee",
       "color": "#FFD700",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#DDAA20",
+        "stripe": "#AA7810",
+        "wing": "#FFDD44",
+        "antenna": "#8A6010",
+        "stinger": "#BB9018",
+        "eye": "#2A2000",
+        "pupil": "#FFEE44"
+      },
       "waveform": {
         "frequency": 56,
         "amplitude": 51,
@@ -2414,6 +3419,21 @@
       "pollen": null,
       "texture": "Magmatic_Bee",
       "color": "#FF6600",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#CC4400",
+        "stripe": "#FF8800",
+        "wing": "#FFAA40",
+        "antenna": "#6A2200",
+        "stinger": "#882200",
+        "eye": "#2A0A00",
+        "pupil": "#FFCC00"
+      },
       "waveform": {
         "frequency": 47,
         "amplitude": 56,
@@ -2450,6 +3470,21 @@
       "pollen": null,
       "texture": "Spirit_Bee",
       "color": "#E0FFFF",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#6A5040",
+        "stripe": "#40C8C8",
+        "wing": "#80E0E0",
+        "antenna": "#4A3828",
+        "stinger": "#5A4030",
+        "eye": "#1A2A2A",
+        "pupil": "#00CCCC"
+      },
       "waveform": {
         "frequency": 81,
         "amplitude": 48,
@@ -2486,6 +3521,21 @@
       "pollen": null,
       "texture": "Crimson_Bee",
       "color": "#8B0000",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#A02030",
+        "stripe": "#601020",
+        "wing": "#C06070",
+        "antenna": "#501018",
+        "stinger": "#801828",
+        "eye": "#200808",
+        "pupil": "#CC3040"
+      },
       "waveform": {
         "frequency": 45,
         "amplitude": 48,
@@ -2522,6 +3572,21 @@
       "pollen": null,
       "texture": "Mycelial_Bee",
       "color": "#6B6067",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#7A5A6A",
+        "stripe": "#4A3040",
+        "wing": "#A08898",
+        "antenna": "#4A3040",
+        "stinger": "#5A4050",
+        "eye": "#1A1A1A",
+        "pupil": "#C0A0B0"
+      },
       "waveform": {
         "frequency": 109,
         "amplitude": 51,
@@ -2558,6 +3623,21 @@
       "pollen": null,
       "texture": "Humus_Bee",
       "color": "#3D2E1F",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#5A4A28",
+        "stripe": "#3A2A18",
+        "wing": "#8A7A58",
+        "antenna": "#3A2A18",
+        "stinger": "#4A3A20",
+        "eye": "#1A1A0A",
+        "pupil": "#90A040"
+      },
       "waveform": {
         "frequency": 87,
         "amplitude": 46,
@@ -2594,6 +3674,21 @@
       "pollen": null,
       "texture": "Floral_Bee",
       "color": "#FF69B4",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#DD80AA",
+        "stripe": "#60AA40",
+        "wing": "#FFB0D0",
+        "antenna": "#408828",
+        "stinger": "#BB6088",
+        "eye": "#1A1A1A",
+        "pupil": "#FFD0E8"
+      },
       "waveform": {
         "frequency": 63,
         "amplitude": 52,
@@ -2630,6 +3725,21 @@
       "pollen": null,
       "texture": "Treasure_Bee",
       "color": "#FFD700",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#D4A020",
+        "stripe": "#2288AA",
+        "wing": "#FFDD66",
+        "antenna": "#2288AA",
+        "stinger": "#BB8818",
+        "eye": "#1A2A3A",
+        "pupil": "#44DDFF"
+      },
       "waveform": {
         "frequency": 89,
         "amplitude": 57,
@@ -2666,6 +3776,21 @@
       "pollen": null,
       "texture": "Siphoning_Bee",
       "color": "#8B0000",
+      "model": {
+        "body": "segmented",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#4A3A5A",
+        "stripe": "#2A1A3A",
+        "wing": "#7A6A9A",
+        "antenna": "#2A1A3A",
+        "stinger": "#3A2A4A",
+        "eye": "#1A0A2A",
+        "pupil": "#BB66FF"
+      },
       "waveform": {
         "frequency": 93,
         "amplitude": 64,
@@ -2702,6 +3827,21 @@
       "pollen": null,
       "texture": "Zephyr_Bee",
       "color": "#ADD8E6",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#D0E0F0",
+        "stripe": "#A0B8D0",
+        "wing": "#F0F8FF",
+        "antenna": "#80A0C0",
+        "stinger": "#B0C8E0",
+        "eye": "#1A2A3A",
+        "pupil": "#E0F0FF"
+      },
       "waveform": {
         "frequency": 65,
         "amplitude": 78,
@@ -2738,6 +3878,21 @@
       "pollen": null,
       "texture": "Prismatic_Bee",
       "color": "#00CED1",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#50A0A0",
+        "stripe": "#2A6A6A",
+        "wing": "#80D0D0",
+        "antenna": "#2A6A6A",
+        "stinger": "#3A8080",
+        "eye": "#0A2A2A",
+        "pupil": "#60E0E0"
+      },
       "waveform": {
         "frequency": 60,
         "amplitude": 60,
@@ -2774,6 +3929,21 @@
       "pollen": null,
       "texture": "Crystalline_Bee",
       "color": "#63A8A0",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#60B0B0",
+        "stripe": "#408888",
+        "wing": "#A0E0E0",
+        "antenna": "#306060",
+        "stinger": "#4A9090",
+        "eye": "#0A2A2A",
+        "pupil": "#88FFFF"
+      },
       "waveform": {
         "frequency": 30,
         "amplitude": 71,
@@ -2810,6 +3980,21 @@
       "pollen": null,
       "texture": "Insomnia_Bee",
       "color": "#4E6FA5",
+      "model": {
+        "body": "segmented",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#4A5A6A",
+        "stripe": "#2A3A4A",
+        "wing": "#7A8A9A",
+        "antenna": "#2A3A4A",
+        "stinger": "#3A4A5A",
+        "eye": "#1A1A2A",
+        "pupil": "#80AACC"
+      },
       "waveform": {
         "frequency": 55,
         "amplitude": 51,
@@ -2846,6 +4031,21 @@
       "pollen": null,
       "texture": "Blazing_Bee",
       "color": "#F6C700",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#DD6600",
+        "stripe": "#FFAA00",
+        "wing": "#FFCC44",
+        "antenna": "#883300",
+        "stinger": "#CC5500",
+        "eye": "#3A1A00",
+        "pupil": "#FFFF44"
+      },
       "waveform": {
         "frequency": 95,
         "amplitude": 56,
@@ -2882,6 +4082,21 @@
       "pollen": null,
       "texture": "Diamantine_Bee",
       "color": "#4AEDD9",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#60CCCC",
+        "stripe": "#40AAAA",
+        "wing": "#A0E8E8",
+        "antenna": "#308888",
+        "stinger": "#50BBBB",
+        "eye": "#0A2A2A",
+        "pupil": "#88FFFF"
+      },
       "waveform": {
         "frequency": 121,
         "amplitude": 57,
@@ -2918,6 +4133,21 @@
       "pollen": null,
       "texture": "Venerable_Bee",
       "color": "#17DD62",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#30AA50",
+        "stripe": "#1A6A30",
+        "wing": "#80DD90",
+        "antenna": "#1A6A30",
+        "stinger": "#288A40",
+        "eye": "#0A2A1A",
+        "pupil": "#60FF80"
+      },
       "waveform": {
         "frequency": 70,
         "amplitude": 70,
@@ -2954,6 +4184,21 @@
       "pollen": null,
       "texture": "Volcanic_Bee",
       "color": "#B22222",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#1A1020",
+        "stripe": "#4A2A08",
+        "wing": "#3A2030",
+        "antenna": "#100818",
+        "stinger": "#2A1828",
+        "eye": "#0A0A0A",
+        "pupil": "#AA4400"
+      },
       "waveform": {
         "frequency": 111,
         "amplitude": 60,
@@ -2990,6 +4235,21 @@
       "pollen": null,
       "texture": "Xenolith_Bee",
       "color": "#100C14",
+      "model": {
+        "body": "segmented",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#D8D0A0",
+        "stripe": "#A0986A",
+        "wing": "#E8E0C0",
+        "antenna": "#807050",
+        "stinger": "#B0A880",
+        "eye": "#1A1A2A",
+        "pupil": "#CC88FF"
+      },
       "waveform": {
         "frequency": 74,
         "amplitude": 60,
@@ -3026,6 +4286,21 @@
       "pollen": null,
       "texture": "Traveler_Bee",
       "color": "#DBDE9F",
+      "model": {
+        "body": "segmented",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#2A4A4A",
+        "stripe": "#1A2A2A",
+        "wing": "#4A8A8A",
+        "antenna": "#1A2A2A",
+        "stinger": "#2A3A3A",
+        "eye": "#0A1A1A",
+        "pupil": "#00CC88"
+      },
       "waveform": {
         "frequency": 118,
         "amplitude": 56,
@@ -3062,6 +4337,21 @@
       "pollen": null,
       "texture": "Sorrow_Bee",
       "color": "#0C7575",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#D0D0D8",
+        "stripe": "#9090A0",
+        "wing": "#E0E0F0",
+        "antenna": "#707080",
+        "stinger": "#A0A0B0",
+        "eye": "#3A3A5A",
+        "pupil": "#C0C0FF"
+      },
       "waveform": {
         "frequency": 119,
         "amplitude": 61,
@@ -3098,6 +4388,21 @@
       "pollen": null,
       "texture": "Absorbent_Bee",
       "color": "#F0F0F0",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#C8C040",
+        "stripe": "#8A8A20",
+        "wing": "#E0E080",
+        "antenna": "#6A6A18",
+        "stinger": "#A0A030",
+        "eye": "#1A1A1A",
+        "pupil": "#F0F080"
+      },
       "waveform": {
         "frequency": 13,
         "amplitude": 60,
@@ -3134,6 +4439,21 @@
       "pollen": "pollen_of_light",
       "texture": "Light_Bee",
       "color": "#FFFF99",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#FFF0C0",
+        "stripe": "#FFDD88",
+        "wing": "#FFFFF0",
+        "antenna": "#DDC080",
+        "stinger": "#FFE8A0",
+        "eye": "#8A7A40",
+        "pupil": "#FFFFFF"
+      },
       "waveform": {
         "frequency": 6,
         "amplitude": 65,
@@ -3170,6 +4490,21 @@
       "pollen": "pollen_of_darkness",
       "texture": "Dark_Bee",
       "color": "#1A0A2E",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#1A1A20",
+        "stripe": "#0A0A10",
+        "wing": "#2A2A3A",
+        "antenna": "#0A0A10",
+        "stinger": "#1A1A20",
+        "eye": "#000008",
+        "pupil": "#303060"
+      },
       "waveform": {
         "frequency": 57,
         "amplitude": 60,
@@ -3206,6 +4541,21 @@
       "pollen": null,
       "texture": "Imperial_Bee",
       "color": "#6A0DAD",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#FFCC20",
+        "stripe": "#CC2200",
+        "wing": "#FFE060",
+        "antenna": "#CC2200",
+        "stinger": "#DDA818",
+        "eye": "#4A0A0A",
+        "pupil": "#FFDD44"
+      },
       "waveform": {
         "frequency": 16,
         "amplitude": 65,
@@ -3242,6 +4592,21 @@
       "pollen": null,
       "texture": "Demonic_Bee",
       "color": "#660000",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#3A0808",
+        "stripe": "#200000",
+        "wing": "#6A1010",
+        "antenna": "#200000",
+        "stinger": "#500808",
+        "eye": "#100000",
+        "pupil": "#FF0000"
+      },
       "waveform": {
         "frequency": 24,
         "amplitude": 56,
@@ -3278,6 +4643,21 @@
       "pollen": null,
       "texture": "Paladin_Bee",
       "color": "#F5F5F5",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#F0E8C0",
+        "stripe": "#FFFFFF",
+        "wing": "#FFF8E0",
+        "antenna": "#C0A870",
+        "stinger": "#DDC880",
+        "eye": "#4A4020",
+        "pupil": "#FFFFFF"
+      },
       "waveform": {
         "frequency": 100,
         "amplitude": 62,
@@ -3314,6 +4694,21 @@
       "pollen": null,
       "texture": "Chorus_Bee",
       "color": "#8F6BAE",
+      "model": {
+        "body": "segmented",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#9A60A0",
+        "stripe": "#6A3A70",
+        "wing": "#C090D0",
+        "antenna": "#5A2A60",
+        "stinger": "#7A4A80",
+        "eye": "#2A1A2A",
+        "pupil": "#DD88FF"
+      },
       "waveform": {
         "frequency": 36,
         "amplitude": 51,
@@ -3350,6 +4745,21 @@
       "pollen": null,
       "texture": "Ancient_Bee",
       "color": "#6B5C4A",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#3A3030",
+        "stripe": "#2A2020",
+        "wing": "#5A4A40",
+        "antenna": "#201818",
+        "stinger": "#4A3A30",
+        "eye": "#101010",
+        "pupil": "#8A7060"
+      },
       "waveform": {
         "frequency": 129,
         "amplitude": 61,
@@ -3386,6 +4796,21 @@
       "pollen": "void_pollen",
       "texture": "Void_Bee",
       "color": "#443A3B",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#1A1A2A",
+        "stripe": "#0A0A18",
+        "wing": "#2A2A4A",
+        "antenna": "#0A0A10",
+        "stinger": "#1A1A28",
+        "eye": "#000008",
+        "pupil": "#4040A0"
+      },
       "waveform": {
         "frequency": 64,
         "amplitude": 53,
@@ -3422,6 +4847,21 @@
       "pollen": null,
       "texture": "Draconic_Bee",
       "color": "#20002F",
+      "model": {
+        "body": "segmented",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "default"
+      },
+      "part_colors": {
+        "body": "#2A1A3A",
+        "stripe": "#AA40CC",
+        "wing": "#8A60B0",
+        "antenna": "#1A0A2A",
+        "stinger": "#4A2A5A",
+        "eye": "#0A0A1A",
+        "pupil": "#CC00FF"
+      },
       "waveform": {
         "frequency": 15,
         "amplitude": 58,
@@ -3458,6 +4898,21 @@
       "pollen": null,
       "texture": "Stellar_Bee",
       "color": "#9932CC",
+      "model": {
+        "body": "default",
+        "wing": "default",
+        "stinger": "default",
+        "antenna": "demon"
+      },
+      "part_colors": {
+        "body": "#E0D8F0",
+        "stripe": "#B0A0D0",
+        "wing": "#F0E8FF",
+        "antenna": "#8070A0",
+        "stinger": "#C0B0E0",
+        "eye": "#202040",
+        "pupil": "#FFFFFF"
+      },
       "waveform": {
         "frequency": 58,
         "amplitude": 68,
