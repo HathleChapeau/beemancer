@@ -58,9 +58,9 @@ public final class ArmoredBodyLayer {
         // body_stripe: plaques seulement (le corps armored n'a pas de rayures)
         bone.addOrReplaceChild("body_stripe",
                 CubeListBuilder.create()
-                        .texOffs(74, 8).addBox(-4.5F, -4.5F, -3.5F, 9.0F, 7.0F, 3.0F)
-                        .texOffs(74, 8).addBox(-4.5F, -4.5F, 0.5F, 9.0F, 7.0F, 3.0F)
-                        .texOffs(74, 8).addBox(-4.5F, -3.5F, 4.5F, 9.0F, 5.0F, 3.0F),
+                        .texOffs(74, 10).addBox(-4.5F, -4.5F, -3.5F, 9.0F, 7.0F, 3.0F)
+                        .texOffs(74, 10).addBox(-4.5F, -4.5F, 0.5F, 9.0F, 7.0F, 3.0F)
+                        .texOffs(74, 10).addBox(-4.5F, -3.5F, 4.5F, 9.0F, 5.0F, 3.0F),
                 PartPose.ZERO);
 
         // Eyes on head front face (Z=-7.5)
@@ -83,15 +83,15 @@ public final class ArmoredBodyLayer {
         bone.addOrReplaceChild("front_legs",
                 CubeListBuilder.create().texOffs(0, 40)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(1.5F, 3.0F, -2.0F));
+                PartPose.offset(1.5F, 4.0F, -2.0F));
         bone.addOrReplaceChild("middle_legs",
                 CubeListBuilder.create().texOffs(0, 42)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(1.5F, 3.0F, 0.0F));
+                PartPose.offset(1.5F, 4.0F, 0.0F));
         bone.addOrReplaceChild("back_legs",
                 CubeListBuilder.create().texOffs(0, 44)
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
-                PartPose.offset(1.5F, 3.0F, 2.0F));
+                PartPose.offset(1.5F, 4.0F, 2.0F));
 
         return LayerDefinition.create(mesh, 128, 64);
     }
