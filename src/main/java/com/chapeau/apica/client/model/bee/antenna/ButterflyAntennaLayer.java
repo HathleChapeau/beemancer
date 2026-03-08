@@ -40,11 +40,11 @@ public final class ButterflyAntennaLayer {
 
         bone.addOrReplaceChild("left_antenna",
                 CubeListBuilder.create().texOffs(0, 0)
-                        .addBox(0.0F, -6.0F, -6.0F, 0.0F, 6.0F, 6.0F),
+                        .addBox(0.0F, -5.0F, -6.0F, 0.0F, 6.0F, 6.0F),
                 PartPose.ZERO);
         bone.addOrReplaceChild("right_antenna",
                 CubeListBuilder.create().texOffs(0, 12)
-                        .addBox(0.0F, -6.0F, -6.0F, 0.0F, 6.0F, 6.0F),
+                        .addBox(0.0F, -5.0F, -6.0F, 0.0F, 6.0F, 6.0F),
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 32, 32);
