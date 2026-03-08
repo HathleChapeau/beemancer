@@ -4540,7 +4540,7 @@
       },
       "pollen": null,
       "texture": "Imperial_Bee",
-      "color": "#DE0909",
+      "color": "#FFD030",
       "model": {
         "body": "royal",
         "wing": "default",
@@ -4548,8 +4548,8 @@
         "antenna": "default"
       },
       "part_colors": {
-        "body": "#DE0909",
-        "stripe": "#FFD030",
+        "body": "#FFD030",
+        "stripe": "#1A3399",
         "wing": "#FD2C2C",
         "antenna": "#900101",
         "stinger": "#FFB020",
