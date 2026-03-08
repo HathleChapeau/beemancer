@@ -2301,7 +2301,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "glasses"
       },
       "part_colors": {
         "body": "#FFCF1C",
@@ -3168,7 +3168,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "glasses"
       },
       "part_colors": {
         "body": "#AFD5E1",
@@ -3831,7 +3831,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "glasses"
       },
       "part_colors": {
         "body": "#C5E1EF",
@@ -4644,7 +4644,7 @@
       "texture": "Paladin_Bee",
       "color": "#F5E8AA",
       "model": {
-        "body": "armored",
+        "body": "royal",
         "wing": "default",
         "stinger": "default",
         "antenna": "demon"
