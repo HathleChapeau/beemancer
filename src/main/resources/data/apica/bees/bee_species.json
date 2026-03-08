@@ -326,8 +326,8 @@
         "wing": "#AA00FF",
         "antenna": "#0D0018",
         "stinger": "#BB00FF",
-        "eye": "#6600AA",
-        "pupil": "#00DDCC"
+        "eye": "#FF00FF",
+        "pupil": "#FFAAFF"
       },
       "waveform": {
         "frequency": 73,
