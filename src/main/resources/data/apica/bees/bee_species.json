@@ -879,7 +879,7 @@
         "body": "armored",
         "wing": "default",
         "stinger": "chunky",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#E7DABF",
@@ -1083,7 +1083,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#855B24",
@@ -1134,7 +1134,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#3F6B8A",
@@ -1185,7 +1185,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#1F9E41",
@@ -1236,7 +1236,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#D9CDA8",
@@ -1641,7 +1641,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#FC3583",
@@ -1743,7 +1743,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#72972A",
@@ -1794,7 +1794,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#2FD6EB",
@@ -2757,7 +2757,7 @@
       "texture": "Viscous_Bee",
       "color": "#58DD1A",
       "model": {
-        "body": "default",
+        "body": "armored",
         "wing": "default",
         "stinger": "default",
         "antenna": "default"
@@ -3678,7 +3678,7 @@
         "body": "default",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#E7519C",
@@ -4545,7 +4545,7 @@
         "body": "royal",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#FFD030",
@@ -4698,7 +4698,7 @@
         "body": "segmented",
         "wing": "default",
         "stinger": "default",
-        "antenna": "default"
+        "antenna": "butterfly"
       },
       "part_colors": {
         "body": "#AA22EE",
