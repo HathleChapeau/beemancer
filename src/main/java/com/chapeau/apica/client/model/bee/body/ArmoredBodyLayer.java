@@ -52,7 +52,7 @@ public final class ArmoredBodyLayer {
                 CubeListBuilder.create()
                         .texOffs(0, 0).addBox(-4.0F, -4.0F, -4.5F, 8.0F, 8.0F, 9.0F)       // Body (8x8x9)
                         .texOffs(34, 0).addBox(-3.5F, -3.5F, -7.5F, 7.0F, 7.0F, 3.0F)       // Head (7x7x3)
-                        .texOffs(54, 0).addBox(-3.5F, 1.5F, 4.5F, 7.0F, 2.0F, 3.0F)         // Tail (7x2x3) +1px up
+                        .texOffs(54, 0).addBox(-3.5F, 1.5F, 4.0F, 7.0F, 2.0F, 3.0F)         // Tail (7x2x3) +0.5 forward
                         .texOffs(74, 0).addBox(-4.5F, -4.5F, -3.5F, 9.0F, 5.0F, 3.0F)       // Plate 1 front body (-1px Z)
                         .texOffs(74, 0).addBox(-4.5F, -4.5F, 0.5F, 9.0F, 5.0F, 3.0F)        // Plate 2 back body (+1px Z)
                         .texOffs(74, 0).addBox(-4.5F, -3.5F, 4.5F, 9.0F, 5.0F, 3.0F),       // Plate 3 tail +1px up
