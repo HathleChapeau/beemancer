@@ -326,8 +326,8 @@
         "wing": "#AA00FF",
         "antenna": "#0D0018",
         "stinger": "#BB00FF",
-        "eye": "#FF00FF",
-        "pupil": "#00FF66"
+        "eye": "#6600AA",
+        "pupil": "#00DDCC"
       },
       "waveform": {
         "frequency": 73,
@@ -4234,7 +4234,7 @@
       },
       "pollen": null,
       "texture": "Xenolith_Bee",
-      "color": "#CCB830",
+      "color": "#D8CC88",
       "model": {
         "body": "segmented",
         "wing": "default",
@@ -4242,13 +4242,13 @@
         "antenna": "default"
       },
       "part_colors": {
-        "body": "#CCB830",
-        "stripe": "#88BB00",
-        "wing": "#DDCC44",
-        "antenna": "#665500",
-        "stinger": "#665500",
-        "eye": "#9900FF",
-        "pupil": "#00FF66"
+        "body": "#D8CC88",
+        "stripe": "#8844CC",
+        "wing": "#EEE0AA",
+        "antenna": "#6633AA",
+        "stinger": "#6633AA",
+        "eye": "#AA00FF",
+        "pupil": "#EEDD88"
       },
       "waveform": {
         "frequency": 74,
@@ -4859,8 +4859,8 @@
         "wing": "#5500BB",
         "antenna": "#0D0018",
         "stinger": "#AA00FF",
-        "eye": "#FF00FF",
-        "pupil": "#00FFCC"
+        "eye": "#FFCC00",
+        "pupil": "#FF2200"
       },
       "waveform": {
         "frequency": 15,
