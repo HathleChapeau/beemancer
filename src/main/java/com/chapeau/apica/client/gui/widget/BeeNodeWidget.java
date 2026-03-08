@@ -20,6 +20,11 @@
 package com.chapeau.apica.client.gui.widget;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.client.model.ApicaBeeModel;
+import com.chapeau.apica.common.block.beecreator.BeeAntennaType;
+import com.chapeau.apica.common.block.beecreator.BeeBodyType;
+import com.chapeau.apica.common.block.beecreator.BeeStingerType;
+import com.chapeau.apica.common.block.beecreator.BeeWingType;
 import com.chapeau.apica.common.codex.CodexManager;
 import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPlayerData;
@@ -35,8 +40,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.model.BeeModel;
-import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -68,12 +72,8 @@ public class BeeNodeWidget extends AbstractWidget {
     private static final ResourceLocation CHALLENGE_FRAME_UNOBTAINED = ResourceLocation.withDefaultNamespace(
             "textures/gui/sprites/advancements/challenge_frame_unobtained.png");
 
-    // Vanilla bee texture fallback
-    private static final ResourceLocation VANILLA_BEE_TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
-
-    // Texture cache
-    private static final Map<String, ResourceLocation> TEXTURE_CACHE = new HashMap<>();
+    /** Cache des modeles ApicaBee par cle de combinaison de types. */
+    private static final Map<String, ApicaBeeModel<?>> MODEL_CACHE = new HashMap<>();
 
     private final CodexNode node;
     private final String speciesId;
@@ -85,7 +85,6 @@ public class BeeNodeWidget extends AbstractWidget {
     private boolean canUnlock;
     private boolean hovered;
 
-    private static BeeModel<?> beeModel;
 
     public BeeNodeWidget(CodexNode node, int screenX, int screenY, boolean unlocked, boolean canUnlock) {
         this(node, screenX, screenY, unlocked, canUnlock, null);
@@ -140,11 +139,21 @@ public class BeeNodeWidget extends AbstractWidget {
         return false;
     }
 
-    private static BeeModel<?> getOrCreateModel() {
-        if (beeModel == null) {
-            beeModel = new BeeModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.BEE));
-        }
-        return beeModel;
+    private static ApicaBeeModel<?> getOrBuildModel(BeeBodyType body, BeeWingType wing,
+                                                      BeeStingerType stinger, BeeAntennaType antenna) {
+        String key = body.getId() + "_" + wing.getId() + "_" + stinger.getId() + "_" + antenna.getId();
+        return MODEL_CACHE.computeIfAbsent(key, k -> {
+            try {
+                var entityModels = Minecraft.getInstance().getEntityModels();
+                ModelPart bodyRoot = entityModels.bakeLayer(ApicaBeeModel.getBodyLayer(body));
+                ModelPart wingRoot = entityModels.bakeLayer(ApicaBeeModel.getWingLayer(wing));
+                ModelPart stingerRoot = entityModels.bakeLayer(ApicaBeeModel.getStingerLayer(stinger));
+                ModelPart antennaRoot = entityModels.bakeLayer(ApicaBeeModel.getAntennaLayer(antenna));
+                return new ApicaBeeModel<>(bodyRoot, wingRoot, stingerRoot, antennaRoot, body);
+            } catch (Exception e) {
+                return null;
+            }
+        });
     }
 
     public CodexNode getNode() {
@@ -283,7 +292,36 @@ public class BeeNodeWidget extends AbstractWidget {
     }
 
     private void renderBee3D(GuiGraphics graphics, float partialTick) {
-        ResourceLocation texture = getTextureForSpecies(speciesId);
+        BeeSpeciesManager.ensureClientLoaded();
+        BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(speciesId);
+
+        String bodyId = data != null ? data.modelBody : "default";
+        String wingId = data != null ? data.modelWing : "default";
+        String stingerId = data != null ? data.modelStinger : "default";
+        String antennaId = data != null ? data.modelAntenna : "default";
+
+        BeeBodyType bodyType = resolveBodyType(bodyId);
+        BeeWingType wingType = resolveWingType(wingId);
+        BeeStingerType stingerType = resolveStingerType(stingerId);
+        BeeAntennaType antennaType = resolveAntennaType(antennaId);
+
+        ApicaBeeModel<?> model = getOrBuildModel(bodyType, wingType, stingerType, antennaType);
+        if (model == null) return;
+
+        // Couleurs par partie (grisees si pas unlocked)
+        float dimFactor = unlocked ? 1.0f : 0.4f;
+        int bodyColor = dimColor(data != null ? data.partColorBody : 0xCC8800, dimFactor);
+        int stripeColor = dimColor(data != null ? data.partColorStripe : 0x1A1A1A, dimFactor);
+        int wingColor = dimColor(data != null ? data.partColorWing : 0xAADDFF, dimFactor);
+        int antennaColor = dimColor(data != null ? data.partColorAntenna : 0x1A1A1A, dimFactor);
+        int stingerColor = dimColor(data != null ? data.partColorStinger : 0xDDAA00, dimFactor);
+        int eyeColor = dimColor(data != null ? data.partColorEye : 0x1A1A1A, dimFactor);
+        int pupilColor = dimColor(data != null ? data.partColorPupil : 0xFFFFFF, dimFactor);
+
+        ResourceLocation bodyTex = ApicaBeeModel.getBodyTexture(bodyType);
+        ResourceLocation wingTex = ApicaBeeModel.getWingTexture(wingType);
+        ResourceLocation stingerTex = ApicaBeeModel.getStingerTexture(stingerType);
+        ResourceLocation antennaTex = ApicaBeeModel.getAntennaTexture(antennaType);
 
         int centerX = getX() + NODE_SIZE / 2;
         int centerY = getY() + NODE_SIZE / 2;
@@ -291,28 +329,47 @@ public class BeeNodeWidget extends AbstractWidget {
         PoseStack poseStack = graphics.pose();
         poseStack.pushPose();
 
-        // Position at center of widget
         poseStack.translate(centerX, centerY - 50, 100);
-
-        // Scale up bee model (5x zoom)
         float scale = -40;
         poseStack.scale(scale, scale, scale);
-
-        // Flip and rotate for display
         poseStack.mulPose(Axis.XP.rotationDegrees(160));
         poseStack.mulPose(Axis.YP.rotationDegrees(144 + (hovered ? partialTick * 2 : 0)));
 
-        // Get buffer source and render
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.entityCutout(texture));
+        int light = LightTexture.FULL_BRIGHT;
+        int overlay = OverlayTexture.NO_OVERLAY;
 
-        BeeModel<?> model = getOrCreateModel();
+        // Multi-pass body render
+        VertexConsumer bodyVC = bufferSource.getBuffer(RenderType.entityCutout(bodyTex));
 
-        model.renderToBuffer(poseStack, vertexConsumer, LightTexture.FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, unlocked ? 0xFFFFFFFF : 0xFF666666);
+        model.showCorpusOnly();
+        model.renderToBuffer(poseStack, bodyVC, light, overlay, toArgb(bodyColor));
+
+        model.showStripeOnly();
+        model.renderToBuffer(poseStack, bodyVC, light, overlay, toArgb(stripeColor));
+
+        model.showEyesOnly();
+        model.renderToBuffer(poseStack, bodyVC, light, overlay, toArgb(eyeColor));
+
+        model.showPupilsOnly();
+        model.renderToBuffer(poseStack, bodyVC, light, overlay, toArgb(pupilColor));
+
+        model.showUntintedOnly();
+        model.renderToBuffer(poseStack, bodyVC, light, overlay, toArgb(stripeColor));
+
+        // Antenna
+        VertexConsumer antennaVC = bufferSource.getBuffer(RenderType.entityCutout(antennaTex));
+        model.renderAntenna(poseStack, antennaVC, light, overlay, toArgb(antennaColor));
+
+        // Wings
+        VertexConsumer wingVC = bufferSource.getBuffer(RenderType.entityCutout(wingTex));
+        model.renderWings(poseStack, wingVC, light, overlay, toArgb(wingColor));
+
+        // Stinger
+        VertexConsumer stingerVC = bufferSource.getBuffer(RenderType.entityCutout(stingerTex));
+        model.renderStinger(poseStack, stingerVC, light, overlay, toArgb(stingerColor));
 
         bufferSource.endBatch();
-
         poseStack.popPose();
     }
 
@@ -321,20 +378,36 @@ public class BeeNodeWidget extends AbstractWidget {
         graphics.fill(getX() - 1, getY() - 1, getX() + NODE_SIZE + 1, getY() + NODE_SIZE + 1, 0x40FFAA00);
     }
 
-    private ResourceLocation getTextureForSpecies(String speciesId) {
-        return TEXTURE_CACHE.computeIfAbsent(speciesId, id -> {
-            ResourceLocation customTexture = ResourceLocation.fromNamespaceAndPath(
-                    Apica.MOD_ID,
-                    "textures/entity/bee/" + id + "_bee.png"
-            );
+    private static BeeBodyType resolveBodyType(String id) {
+        for (BeeBodyType t : BeeBodyType.values()) if (t.getId().equals(id)) return t;
+        return BeeBodyType.DEFAULT;
+    }
 
-            // Check if texture exists
-            if (Minecraft.getInstance().getResourceManager().getResource(customTexture).isPresent()) {
-                return customTexture;
-            }
+    private static BeeWingType resolveWingType(String id) {
+        for (BeeWingType t : BeeWingType.values()) if (t.getId().equals(id)) return t;
+        return BeeWingType.DEFAULT;
+    }
 
-            return VANILLA_BEE_TEXTURE;
-        });
+    private static BeeStingerType resolveStingerType(String id) {
+        for (BeeStingerType t : BeeStingerType.values()) if (t.getId().equals(id)) return t;
+        return BeeStingerType.DEFAULT;
+    }
+
+    private static BeeAntennaType resolveAntennaType(String id) {
+        for (BeeAntennaType t : BeeAntennaType.values()) if (t.getId().equals(id)) return t;
+        return BeeAntennaType.DEFAULT;
+    }
+
+    private static int toArgb(int rgb) {
+        return 0xFF000000 | (rgb & 0xFFFFFF);
+    }
+
+    /** Assombrit une couleur RGB par un facteur (0.0 = noir, 1.0 = original). */
+    private static int dimColor(int rgb, float factor) {
+        int r = (int)(((rgb >> 16) & 0xFF) * factor);
+        int g = (int)(((rgb >> 8) & 0xFF) * factor);
+        int b = (int)((rgb & 0xFF) * factor);
+        return (r << 16) | (g << 8) | b;
     }
 
     public void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -411,7 +484,8 @@ public class BeeNodeWidget extends AbstractWidget {
             && mouseY >= getY() && mouseY < getY() + NODE_SIZE;
     }
 
-    public static void clearTextureCache() {
-        TEXTURE_CACHE.clear();
+    /** Vide le cache des modeles (rechargement des ressources). */
+    public static void clearModelCache() {
+        MODEL_CACHE.clear();
     }
 }

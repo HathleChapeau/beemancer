@@ -1,34 +1,39 @@
 /**
  * ============================================================
  * [BeeStatueRenderer.java]
- * Description: Renderer pour la statue d'abeille avec modèle et nom
+ * Description: Renderer pour la statue d'abeille avec ApicaBeeModel multi-pass tinte
  * ============================================================
  *
- * DÉPENDANCES:
+ * DEPENDANCES:
  * ------------------------------------------------------------
- * | Dépendance              | Raison                | Utilisation           |
+ * | Dependance              | Raison                | Utilisation           |
  * |-------------------------|----------------------|-----------------------|
- * | BeeStatueBlockEntity    | Données à rendre     | getSpeciesId()        |
- * | BeeModel                | Modèle vanilla       | Rendu de l'abeille    |
+ * | BeeStatueBlockEntity    | Donnees a rendre     | getSpeciesId()        |
+ * | ApicaBeeModel           | Modele modulaire     | Multi-pass tinte      |
+ * | BeeSpeciesManager       | Donnees especes      | Types + couleurs      |
  * ------------------------------------------------------------
  *
- * UTILISÉ PAR:
+ * UTILISE PAR:
  * - ClientSetup.java (enregistrement renderer)
  *
  * ============================================================
  */
 package com.chapeau.apica.client.renderer.block;
 
-import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.chapeau.apica.client.model.ApicaBeeModel;
+import com.chapeau.apica.common.block.beecreator.BeeAntennaType;
+import com.chapeau.apica.common.block.beecreator.BeeBodyType;
+import com.chapeau.apica.common.block.beecreator.BeeStingerType;
+import com.chapeau.apica.common.block.beecreator.BeeWingType;
 import com.chapeau.apica.common.block.statue.BeeStatueBlockEntity;
+import com.chapeau.apica.core.bee.BeeSpeciesManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.model.BeeModel;
-import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -43,21 +48,16 @@ import java.util.Map;
 
 /**
  * Renderer pour la statue d'abeille.
- * Affiche le modèle de l'abeille avec le nom de l'espèce flottant au-dessus.
+ * Affiche le modele ApicaBee multi-pass tinte avec le nom de l'espece flottant au-dessus.
  */
 public class BeeStatueRenderer implements BlockEntityRenderer<BeeStatueBlockEntity> {
 
-    private final BeeModel<?> beeModel;
     private final Font font;
 
-    private static final ResourceLocation VANILLA_BEE =
-            ResourceLocation.withDefaultNamespace("textures/entity/bee/bee.png");
-
-    // Cache des textures par espèce pour éviter les lookups à chaque frame
-    private static final Map<String, ResourceLocation> TEXTURE_CACHE = new HashMap<>();
+    /** Cache des modeles par cle de combinaison de types. */
+    private static final Map<String, ApicaBeeModel<?>> MODEL_CACHE = new HashMap<>();
 
     public BeeStatueRenderer(BlockEntityRendererProvider.Context context) {
-        this.beeModel = new BeeModel<>(context.bakeLayer(ModelLayers.BEE));
         this.font = context.getFont();
     }
 
@@ -66,48 +66,91 @@ public class BeeStatueRenderer implements BlockEntityRenderer<BeeStatueBlockEnti
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
 
         String speciesId = blockEntity.getSpeciesId();
+        BeeSpeciesManager.ensureClientLoaded();
+        BeeSpeciesManager.BeeSpeciesData data = BeeSpeciesManager.getSpecies(speciesId);
 
-        poseStack.pushPose();
+        String bodyId = data != null ? data.modelBody : "default";
+        String wingId = data != null ? data.modelWing : "default";
+        String stingerId = data != null ? data.modelStinger : "default";
+        String antennaId = data != null ? data.modelAntenna : "default";
+
+        BeeBodyType bodyType = resolveBodyType(bodyId);
+        BeeWingType wingType = resolveWingType(wingId);
+        BeeStingerType stingerType = resolveStingerType(stingerId);
+        BeeAntennaType antennaType = resolveAntennaType(antennaId);
+
+        ApicaBeeModel<?> model = getOrBuildModel(bodyType, wingType, stingerType, antennaType);
+        if (model == null) return;
+
+        int bodyColor = data != null ? data.partColorBody : 0xCC8800;
+        int stripeColor = data != null ? data.partColorStripe : 0x1A1A1A;
+        int wingColor = data != null ? data.partColorWing : 0xAADDFF;
+        int antennaColor = data != null ? data.partColorAntenna : 0x1A1A1A;
+        int stingerColor = data != null ? data.partColorStinger : 0xDDAA00;
+        int eyeColor = data != null ? data.partColorEye : 0x1A1A1A;
+        int pupilColor = data != null ? data.partColorPupil : 0xFFFFFF;
+
+        ResourceLocation bodyTex = ApicaBeeModel.getBodyTexture(bodyType);
+        ResourceLocation wingTex = ApicaBeeModel.getWingTexture(wingType);
+        ResourceLocation stingerTex = ApicaBeeModel.getStingerTexture(stingerType);
+        ResourceLocation antennaTex = ApicaBeeModel.getAntennaTexture(antennaType);
 
         // ===== Render Bee Model =====
-        // Position au centre du bloc, sur le piédestal (Y+1 bloc au-dessus)
+        poseStack.pushPose();
+
         poseStack.translate(0.5, 1.85, 0.5);
 
-        // Rotation pour faire face au joueur (ou rotation fixe)
         float time = AnimationTimer.getRenderTime(partialTick);
-        poseStack.mulPose(Axis.YP.rotationDegrees(time * 2)); // Rotation lente
-
-        // Rotation 180° sur X pour retourner le modèle (au lieu de scale négatif qui inverse les normales)
+        poseStack.mulPose(Axis.YP.rotationDegrees(time * 2));
         poseStack.mulPose(Axis.XP.rotationDegrees(180));
 
-        // Échelle de l'abeille
         float scale = 0.7f;
         poseStack.scale(scale, scale, scale);
 
-        // Récupérer la texture de l'espèce
-        ResourceLocation texture = getTextureForSpecies(speciesId);
+        int overlay = OverlayTexture.NO_OVERLAY;
 
-        // Rendre le modèle
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutout(texture));
-        beeModel.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY);
+        // Multi-pass body render
+        VertexConsumer bodyVC = buffer.getBuffer(RenderType.entityCutout(bodyTex));
+
+        model.showCorpusOnly();
+        model.renderToBuffer(poseStack, bodyVC, packedLight, overlay, toArgb(bodyColor));
+
+        model.showStripeOnly();
+        model.renderToBuffer(poseStack, bodyVC, packedLight, overlay, toArgb(stripeColor));
+
+        model.showEyesOnly();
+        model.renderToBuffer(poseStack, bodyVC, packedLight, overlay, toArgb(eyeColor));
+
+        model.showPupilsOnly();
+        model.renderToBuffer(poseStack, bodyVC, packedLight, overlay, toArgb(pupilColor));
+
+        model.showUntintedOnly();
+        model.renderToBuffer(poseStack, bodyVC, packedLight, overlay, toArgb(stripeColor));
+
+        // Antenna
+        VertexConsumer antennaVC = buffer.getBuffer(RenderType.entityCutout(antennaTex));
+        model.renderAntenna(poseStack, antennaVC, packedLight, overlay, toArgb(antennaColor));
+
+        // Wings
+        VertexConsumer wingVC = buffer.getBuffer(RenderType.entityCutout(wingTex));
+        model.renderWings(poseStack, wingVC, packedLight, overlay, toArgb(wingColor));
+
+        // Stinger
+        VertexConsumer stingerVC = buffer.getBuffer(RenderType.entityCutout(stingerTex));
+        model.renderStinger(poseStack, stingerVC, packedLight, overlay, toArgb(stingerColor));
 
         poseStack.popPose();
 
         // ===== Render Name Tag =====
         poseStack.pushPose();
 
-        // Position au-dessus de l'abeille
         poseStack.translate(0.5, 1.6, 0.5);
-
-        // Toujours face au joueur
         poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
         poseStack.scale(0.015f, -0.015f, 0.015f);
 
-        // Texte à afficher
         Component speciesName = Component.translatable("species.apica." + speciesId);
         float textWidth = font.width(speciesName);
 
-        // Fond semi-transparent
         Matrix4f matrix = poseStack.last().pose();
         float bgOpacity = 0.4f;
         int bgColor = (int)(bgOpacity * 255.0f) << 24;
@@ -116,7 +159,7 @@ public class BeeStatueRenderer implements BlockEntityRenderer<BeeStatueBlockEnti
             speciesName,
             -textWidth / 2,
             0,
-            0xFFFFFFFF, // Blanc
+            0xFFFFFFFF,
             false,
             matrix,
             buffer,
@@ -128,36 +171,58 @@ public class BeeStatueRenderer implements BlockEntityRenderer<BeeStatueBlockEnti
         poseStack.popPose();
     }
 
-    /**
-     * Récupère la texture pour une espèce donnée (avec cache).
-     */
-    private ResourceLocation getTextureForSpecies(String speciesId) {
-        return TEXTURE_CACHE.computeIfAbsent(speciesId, id -> {
-            ResourceLocation customTexture = ResourceLocation.fromNamespaceAndPath(
-                Apica.MOD_ID,
-                "textures/entity/bee/" + id + "_bee.png"
-            );
+    // ========== Model cache ==========
 
-            // Vérifier si la texture existe
+    private static ApicaBeeModel<?> getOrBuildModel(BeeBodyType body, BeeWingType wing,
+                                                      BeeStingerType stinger, BeeAntennaType antenna) {
+        String key = body.getId() + "_" + wing.getId() + "_" + stinger.getId() + "_" + antenna.getId();
+        return MODEL_CACHE.computeIfAbsent(key, k -> {
             try {
-                if (Minecraft.getInstance().getResourceManager().getResource(customTexture).isPresent()) {
-                    return customTexture;
-                }
-            } catch (Exception ignored) {}
-
-            return VANILLA_BEE;
+                var entityModels = Minecraft.getInstance().getEntityModels();
+                ModelPart bodyRoot = entityModels.bakeLayer(ApicaBeeModel.getBodyLayer(body));
+                ModelPart wingRoot = entityModels.bakeLayer(ApicaBeeModel.getWingLayer(wing));
+                ModelPart stingerRoot = entityModels.bakeLayer(ApicaBeeModel.getStingerLayer(stinger));
+                ModelPart antennaRoot = entityModels.bakeLayer(ApicaBeeModel.getAntennaLayer(antenna));
+                return new ApicaBeeModel<>(bodyRoot, wingRoot, stingerRoot, antennaRoot, body);
+            } catch (Exception e) {
+                return null;
+            }
         });
     }
 
-    /**
-     * Vide le cache des textures (appelé lors du rechargement des ressources).
-     */
-    public static void clearTextureCache() {
-        TEXTURE_CACHE.clear();
+    /** Vide le cache des modeles (rechargement des ressources). */
+    public static void clearModelCache() {
+        MODEL_CACHE.clear();
+    }
+
+    // ========== Type resolution ==========
+
+    private static BeeBodyType resolveBodyType(String id) {
+        for (BeeBodyType t : BeeBodyType.values()) if (t.getId().equals(id)) return t;
+        return BeeBodyType.DEFAULT;
+    }
+
+    private static BeeWingType resolveWingType(String id) {
+        for (BeeWingType t : BeeWingType.values()) if (t.getId().equals(id)) return t;
+        return BeeWingType.DEFAULT;
+    }
+
+    private static BeeStingerType resolveStingerType(String id) {
+        for (BeeStingerType t : BeeStingerType.values()) if (t.getId().equals(id)) return t;
+        return BeeStingerType.DEFAULT;
+    }
+
+    private static BeeAntennaType resolveAntennaType(String id) {
+        for (BeeAntennaType t : BeeAntennaType.values()) if (t.getId().equals(id)) return t;
+        return BeeAntennaType.DEFAULT;
+    }
+
+    private static int toArgb(int rgb) {
+        return 0xFF000000 | (rgb & 0xFFFFFF);
     }
 
     @Override
     public boolean shouldRenderOffScreen(BeeStatueBlockEntity blockEntity) {
-        return true; // Le nom flotte au-dessus
+        return true;
     }
 }
