@@ -69,17 +69,17 @@ public final class ArmoredBodyLayer {
         // Eyes on head front face (Z=-7.5)
         bone.addOrReplaceChild("eyes",
                 CubeListBuilder.create()
-                        .texOffs(0, 34).addBox(-3.51F, -1.0F, -7.51F, 2.0F, 3.0F, 1.0F)
-                        .texOffs(8, 34).addBox(1.51F, -1.0F, -7.51F, 2.0F, 3.0F, 1.0F),
+                        .texOffs(0, 34).addBox(-3.51F, -0.5F, -7.51F, 2.0F, 3.0F, 1.0F)
+                        .texOffs(8, 34).addBox(1.51F, -0.5F, -7.51F, 2.0F, 3.0F, 1.0F),
                 PartPose.ZERO);
 
         bone.addOrReplaceChild("left_pupil",
                 CubeListBuilder.create().texOffs(0, 38)
-                        .addBox(-2.51F, -1.0F, -7.52F, 1.0F, 1.0F, 0.0F),
+                        .addBox(-2.51F, -0.5F, -7.52F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
         bone.addOrReplaceChild("right_pupil",
                 CubeListBuilder.create().texOffs(4, 38)
-                        .addBox(1.51F, -1.0F, -7.52F, 1.0F, 1.0F, 0.0F),
+                        .addBox(1.51F, -0.5F, -7.52F, 1.0F, 1.0F, 0.0F),
                 PartPose.ZERO);
 
         // Legs: 3D angled (5x1x1), angles inverted, lowered 1px
