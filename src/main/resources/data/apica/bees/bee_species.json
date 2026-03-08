@@ -3686,8 +3686,8 @@
         "wing": "#F990CA",
         "antenna": "#832463",
         "stinger": "#832463",
-        "eye": "#1A1A1A",
-        "pupil": "#FFD700"
+        "eye": "#FFD700",
+        "pupil": "#00EEFF"
       },
       "waveform": {
         "frequency": 63,
@@ -4550,7 +4550,7 @@
       "part_colors": {
         "body": "#FFD030",
         "stripe": "#1A3399",
-        "wing": "#FD2C2C",
+        "wing": "#C8D8FF",
         "antenna": "#900101",
         "stinger": "#FFB020",
         "eye": "#D08800",

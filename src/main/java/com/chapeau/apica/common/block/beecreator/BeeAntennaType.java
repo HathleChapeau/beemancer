@@ -29,7 +29,8 @@ public enum BeeAntennaType {
     LONG(1, "long", "Long"),
     DRAGON(2, "dragon", "Dragon"),
     DEMON(3, "demon", "Demon"),
-    GLASSES(4, "glasses", "Glasses");
+    GLASSES(4, "glasses", "Glasses"),
+    BUTTERFLY(5, "butterfly", "Butterfly");
 
     public static final int COUNT = values().length;
 

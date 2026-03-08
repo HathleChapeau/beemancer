@@ -29,6 +29,7 @@
 package com.chapeau.apica.client.model;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.client.model.bee.antenna.ButterflyAntennaLayer;
 import com.chapeau.apica.client.model.bee.antenna.DefaultAntennaLayer;
 import com.chapeau.apica.client.model.bee.antenna.DemonAntennaLayer;
 import com.chapeau.apica.client.model.bee.antenna.DragonAntennaLayer;
@@ -203,6 +204,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
             case DRAGON -> DragonAntennaLayer.create();
             case DEMON -> DemonAntennaLayer.create();
             case GLASSES -> GlassesAntennaLayer.create();
+            case BUTTERFLY -> ButterflyAntennaLayer.create();
         };
     }
 
