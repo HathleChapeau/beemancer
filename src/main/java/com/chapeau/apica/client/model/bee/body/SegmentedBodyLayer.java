@@ -55,7 +55,7 @@ public final class SegmentedBodyLayer {
                 CubeListBuilder.create()
                         .texOffs(24, 0).addBox(-3.5F, -4.0F, -9.0F, 7.0F, 7.0F, 5.0F)
                         .texOffs(18, 12).addBox(-3.5F, -4.0F, -2.0F, 7.0F, 7.0F, 2.0F)
-                        .texOffs(36, 21).addBox(-3.5F, -4.0F, 2.0F, 7.0F, 7.0F, 2.0F)
+                        .texOffs(38, 21).addBox(-3.5F, -4.0F, 2.0F, 7.0F, 7.0F, 2.0F)
                         .texOffs(20, 21).addBox(-3.5F, -4.0F, 6.0F, 7.0F, 7.0F, 3.0F),
                 PartPose.ZERO);
 
