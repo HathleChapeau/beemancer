@@ -4591,7 +4591,7 @@
       },
       "pollen": null,
       "texture": "Demonic_Bee",
-      "color": "#200810",
+      "color": "#3A0010",
       "model": {
         "body": "royal",
         "wing": "default",
@@ -4599,13 +4599,13 @@
         "antenna": "demon"
       },
       "part_colors": {
-        "body": "#200810",
-        "stripe": "#6C0013",
-        "wing": "#4C091F",
-        "antenna": "#C00020",
-        "stinger": "#FF0030",
-        "eye": "#FF0000",
-        "pupil": "#00FF00"
+        "body": "#3A0010",
+        "stripe": "#800020",
+        "wing": "#660025",
+        "antenna": "#550015",
+        "stinger": "#CC0030",
+        "eye": "#CC0000",
+        "pupil": "#AA00FF"
       },
       "waveform": {
         "frequency": 24,
