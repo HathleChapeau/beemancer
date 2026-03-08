@@ -333,7 +333,7 @@ public class BeeNodeWidget extends AbstractWidget {
         float scale = -40;
         poseStack.scale(scale, scale, scale);
         poseStack.mulPose(Axis.XP.rotationDegrees(160));
-        poseStack.mulPose(Axis.YP.rotationDegrees(234 + (hovered ? partialTick * 2 : 0)));
+        poseStack.mulPose(Axis.YP.rotationDegrees(219 + (hovered ? partialTick * 2 : 0)));
 
         MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
         int light = LightTexture.FULL_BRIGHT;
