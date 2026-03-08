@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ButterflyAntennaLayer.java]
- * Description: LayerDefinition des antennes BUTTERFLY (tige + quad 6x6 au bout)
+ * Description: LayerDefinition des antennes BUTTERFLY (quad plat 0x6x6)
  * ============================================================
  *
  * DEPENDANCES:
@@ -25,9 +25,8 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 /**
- * Antennes BUTTERFLY: tige default (0x2x3) + quad plat 6x6 au sommet.
- * Le quad est centre sur le haut de la tige, oriente face avant (plan XY, depth=0).
- * Texture 32x32.
+ * Antennes BUTTERFLY: quads plats 0x6x6 (meme structure que default mais plus grand).
+ * Geometrie en position neutre (PartPose.ZERO), positionnement via attachment points.
  */
 public final class ButterflyAntennaLayer {
 
@@ -39,18 +38,13 @@ public final class ButterflyAntennaLayer {
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
-        // Left antenna: tige + quad 6x6
         bone.addOrReplaceChild("left_antenna",
-                CubeListBuilder.create()
-                        .texOffs(0, 0).addBox(0.0F, -2.0F, -3.0F, 0.0F, 2.0F, 3.0F)       // Tige (comme default)
-                        .texOffs(0, 14).addBox(-3.0F, -8.0F, -1.5F, 6.0F, 6.0F, 0.0F),     // Quad 6x6
+                CubeListBuilder.create().texOffs(0, 0)
+                        .addBox(0.0F, -6.0F, -6.0F, 0.0F, 6.0F, 6.0F),
                 PartPose.ZERO);
-
-        // Right antenna: tige + quad 6x6
         bone.addOrReplaceChild("right_antenna",
-                CubeListBuilder.create()
-                        .texOffs(0, 5).addBox(0.0F, -2.0F, -3.0F, 0.0F, 2.0F, 3.0F)        // Tige (comme default)
-                        .texOffs(0, 20).addBox(-3.0F, -8.0F, -1.5F, 6.0F, 6.0F, 0.0F),     // Quad 6x6
+                CubeListBuilder.create().texOffs(0, 12)
+                        .addBox(0.0F, -6.0F, -6.0F, 0.0F, 6.0F, 6.0F),
                 PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 32, 32);
