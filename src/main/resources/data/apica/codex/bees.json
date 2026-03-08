@@ -1345,11 +1345,11 @@
     {
       "id": "imperial_bee",
       "position": {
-        "x": 16,
-        "y": 7
+        "x": -15,
+        "y": -4
       },
       "category": "GOAL",
-      "parent": "treasure_bee",
+      "parent": "majestic_bee",
       "hidden_until_parent_unlocked": true,
       "visibility": "SECRET",
       "quest_id": "imperial_bee_incubator",

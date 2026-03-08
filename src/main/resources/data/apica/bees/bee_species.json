@@ -322,7 +322,7 @@
       },
       "part_colors": {
         "body": "#2F034B",
-        "stripe": "#DD55FF",
+        "stripe": "#EE88FF",
         "wing": "#8F44CF",
         "antenna": "#1F0134",
         "stinger": "#8828E3",
@@ -3784,7 +3784,7 @@
       },
       "part_colors": {
         "body": "#321153",
-        "stripe": "#55FFCC",
+        "stripe": "#88FFDD",
         "wing": "#7132DA",
         "antenna": "#19053B",
         "stinger": "#A048FF",
@@ -3988,7 +3988,7 @@
       },
       "part_colors": {
         "body": "#433770",
-        "stripe": "#FF5588",
+        "stripe": "#FF88AA",
         "wing": "#695D9A",
         "antenna": "#1F1441",
         "stinger": "#1F1441",
@@ -4243,7 +4243,7 @@
       },
       "part_colors": {
         "body": "#DED28D",
-        "stripe": "#CCFF44",
+        "stripe": "#DDFF77",
         "wing": "#EBDEAD",
         "antenna": "#81763E",
         "stinger": "#81763E",
@@ -4294,7 +4294,7 @@
       },
       "part_colors": {
         "body": "#116464",
-        "stripe": "#44CCFF",
+        "stripe": "#77DDFF",
         "wing": "#29A691",
         "antenna": "#044444",
         "stinger": "#044444",
@@ -4702,7 +4702,7 @@
       },
       "part_colors": {
         "body": "#AC55CC",
-        "stripe": "#FF77DD",
+        "stripe": "#FFAAEE",
         "wing": "#C87AEA",
         "antenna": "#62238C",
         "stinger": "#62238C",
@@ -4855,7 +4855,7 @@
       },
       "part_colors": {
         "body": "#2D094C",
-        "stripe": "#FF8833",
+        "stripe": "#FFAA66",
         "wing": "#4B0EB1",
         "antenna": "#140820",
         "stinger": "#A040FF",
