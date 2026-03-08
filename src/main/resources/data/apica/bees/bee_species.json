@@ -39,7 +39,7 @@
         "antenna": "#572B07",
         "stinger": "#572B07",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 2,
@@ -87,7 +87,7 @@
         "antenna": "#391C05",
         "stinger": "#391C05",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 61,
@@ -183,7 +183,7 @@
         "antenna": "#113B66",
         "stinger": "#113B66",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 12,
@@ -735,7 +735,7 @@
         "antenna": "#7B3900",
         "stinger": "#7B3900",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 128,
@@ -1143,7 +1143,7 @@
         "antenna": "#15334A",
         "stinger": "#15334A",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 130,
@@ -1194,7 +1194,7 @@
         "antenna": "#125B25",
         "stinger": "#E75908",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 69,
@@ -1296,7 +1296,7 @@
         "antenna": "#4E6C16",
         "stinger": "#4E6C16",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 18,
@@ -1347,7 +1347,7 @@
         "antenna": "#8A3F01",
         "stinger": "#3EB01F",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 103,
@@ -1449,7 +1449,7 @@
         "antenna": "#207415",
         "stinger": "#207415",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 32,
@@ -1752,7 +1752,7 @@
         "antenna": "#34450A",
         "stinger": "#34450A",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 66,
@@ -1854,7 +1854,7 @@
         "antenna": "#515C6E",
         "stinger": "#515C6E",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 67,
@@ -3126,7 +3126,7 @@
         "antenna": "#2D3946",
         "stinger": "#2D3946",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 127,
@@ -3177,7 +3177,7 @@
         "antenna": "#5A88AA",
         "stinger": "#5A88AA",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 108,
@@ -3228,7 +3228,7 @@
         "antenna": "#141F7D",
         "stinger": "#FFD000",
         "eye": "#FFE844",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 7,
@@ -3687,7 +3687,7 @@
         "antenna": "#832463",
         "stinger": "#832463",
         "eye": "#1A1A1A",
-        "pupil": "#FF99CC"
+        "pupil": "#FFD700"
       },
       "waveform": {
         "frequency": 63,
@@ -3840,7 +3840,7 @@
         "antenna": "#669ECA",
         "stinger": "#669ECA",
         "eye": "#1A1A1A",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 65,
@@ -4656,7 +4656,7 @@
         "antenna": "#CEAD4D",
         "stinger": "#FFD040",
         "eye": "#4080FF",
-        "pupil": "#00DDFF"
+        "pupil": "#7CC9D1"
       },
       "waveform": {
         "frequency": 100,
