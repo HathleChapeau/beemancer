@@ -22,6 +22,7 @@ package com.chapeau.apica.common.block.api;
 import com.chapeau.apica.core.util.ParticleHelper;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Blocks;
@@ -65,8 +66,8 @@ public class ApiBlock extends BaseEntityBlock {
     private static final TagKey<net.minecraft.world.item.Item> COMBS_TAG =
         TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("apica", "combs"));
 
-    // Shape de base: ~5x5x7 centré sur le body (model réduit de moitié)
-    private static final VoxelShape BASE_SHAPE = Block.box(5.5, 0, 4.5, 10.5, 5, 11.5);
+    // Shape de base: 5x5x5 carré centré sur le body (model réduit de moitié)
+    private static final VoxelShape BASE_SHAPE = Block.box(5.5, 0, 5.5, 10.5, 5, 10.5);
 
     public ApiBlock(Properties properties) {
         super(properties);
@@ -108,16 +109,15 @@ public class ApiBlock extends BaseEntityBlock {
             return BASE_SHAPE;
         }
 
-        float scale = apiBE.getCompletedScale();
-        float halfWidthX = 2.5f * scale;
-        float halfWidthZ = 3.5f * scale;
+        float scale = apiBE.getCollisionScale();
+        float halfWidth = 2.5f * scale;
         float height = 5.0f * scale;
 
-        // Centré en X/Z sur le body, base à Y=0
-        float minX = Math.max(0, 8.0f - halfWidthX);
-        float maxX = Math.min(16, 8.0f + halfWidthX);
-        float minZ = Math.max(0, 8.0f - halfWidthZ);
-        float maxZ = Math.min(16, 8.0f + halfWidthZ);
+        // Carré centré en X/Z, base à Y=0
+        float minX = Math.max(0, 8.0f - halfWidth);
+        float maxX = Math.min(16, 8.0f + halfWidth);
+        float minZ = Math.max(0, 8.0f - halfWidth);
+        float maxZ = Math.min(16, 8.0f + halfWidth);
         float maxY = Math.min(16, height);
 
         return Block.box(minX, 0, minZ, maxX, maxY, maxZ);
@@ -167,6 +167,17 @@ public class ApiBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
+        // Name Tag → rename Api
+        if (stack.is(Items.NAME_TAG) && stack.has(DataComponents.CUSTOM_NAME)) {
+            if (!level.isClientSide()) {
+                apiBE.setCustomName(stack.get(DataComponents.CUSTOM_NAME));
+                if (!player.getAbilities().instabuild) {
+                    stack.shrink(1);
+                }
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+
         // Comb → shrink (-1 level)
         if (stack.is(COMBS_TAG) && apiBE.getApiLevel() > 0) {
             if (!level.isClientSide()) {
@@ -190,5 +201,18 @@ public class ApiBlock extends BaseEntityBlock {
         }
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    // ==================== Drop ====================
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof ApiBlockEntity apiBE) {
+                Block.popResource(level, pos, apiBE.createNamedDrop());
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 }

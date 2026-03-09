@@ -10,11 +10,12 @@
  * |---------------------|----------------------|--------------------------------|
  * | ApicaBlockEntities  | Type BlockEntity     | Enregistrement                 |
  * | ParticleHelper      | Spawn particules     | Effets visuels                 |
+ * | Nameable            | Nom custom           | Name tag + drop nommé          |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
- * - ApiBlock.java (création BlockEntity, tick)
- * - ApiRenderer.java (getVisualScale)
+ * - ApiBlock.java (création BlockEntity, tick, drop, name tag)
+ * - ApiRenderer.java (getVisualScale, name plate)
  *
  * ============================================================
  */
@@ -25,12 +26,16 @@ import com.chapeau.apica.core.util.ParticleHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Nameable;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -45,7 +50,7 @@ import javax.annotation.Nullable;
  * L'animation de croissance se fait en 3 phases:
  * - Délai (5 min) → Interpolation (10 min) → Taille finale + collision check
  */
-public class ApiBlockEntity extends BlockEntity {
+public class ApiBlockEntity extends BlockEntity implements Nameable {
 
     // --- Constantes ---
     public static final float SCALE_VALUE = 0.15f;
@@ -61,6 +66,8 @@ public class ApiBlockEntity extends BlockEntity {
     private boolean growing = false;
     private boolean shrinking = false;
     private boolean animationComplete = true;
+    @Nullable
+    private Component customName;
 
     public ApiBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.API.get(), pos, state);
@@ -139,6 +146,47 @@ public class ApiBlockEntity extends BlockEntity {
         return 1.0f + (SCALE_VALUE * apiLevel);
     }
 
+    /**
+     * Scale pour la collision (VoxelShape): ne change qu'à la fin de l'animation.
+     */
+    public float getCollisionScale() {
+        if (!animationComplete) {
+            return getPreviousScale();
+        }
+        return getCompletedScale();
+    }
+
+    // ==================== Nameable ====================
+
+    @Override
+    public Component getName() {
+        return customName != null ? customName : Component.literal("Api");
+    }
+
+    @Nullable
+    @Override
+    public Component getCustomName() {
+        return customName;
+    }
+
+    public void setCustomName(@Nullable Component name) {
+        this.customName = name;
+        setChanged();
+        syncToClient();
+    }
+
+    // ==================== Drop ====================
+
+    /**
+     * Crée le drop honeycomb nommé (nom custom ou "Api").
+     */
+    public ItemStack createNamedDrop() {
+        ItemStack stack = new ItemStack(Items.HONEYCOMB);
+        Component dropName = customName != null ? customName : Component.literal("Api");
+        stack.set(DataComponents.CUSTOM_NAME, dropName);
+        return stack;
+    }
+
     // ==================== Server Tick ====================
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ApiBlockEntity be) {
@@ -214,19 +262,14 @@ public class ApiBlockEntity extends BlockEntity {
     }
 
     /**
-     * Api se casse: drop un honeycomb + explosion particules.
+     * Api explose contre un bloc dur: particules + casse le bloc.
+     * Le drop est géré par ApiBlock.onRemove (appelé par destroyBlock).
      */
     private void destroySelf(Level level, BlockPos pos) {
-        // Drop honeycomb
-        Block.popResource(level, pos, new ItemStack(net.minecraft.world.item.Items.HONEYCOMB));
-
-        // Particules d'explosion
         if (level instanceof ServerLevel serverLevel) {
             Vec3 center = Vec3.atCenterOf(pos);
             ParticleHelper.sphere(serverLevel, center, 0.8, ParticleHelper.EffectType.HONEY, 40);
         }
-
-        // Casser le bloc
         level.destroyBlock(pos, false);
     }
 
@@ -260,6 +303,9 @@ public class ApiBlockEntity extends BlockEntity {
         tag.putBoolean("Growing", growing);
         tag.putBoolean("Shrinking", shrinking);
         tag.putBoolean("AnimComplete", animationComplete);
+        if (customName != null) {
+            tag.putString("CustomName", Component.Serializer.toJson(customName, registries));
+        }
     }
 
     @Override
@@ -270,6 +316,11 @@ public class ApiBlockEntity extends BlockEntity {
         growing = tag.getBoolean("Growing");
         shrinking = tag.getBoolean("Shrinking");
         animationComplete = tag.getBoolean("AnimComplete");
+        if (tag.contains("CustomName", CompoundTag.TAG_STRING)) {
+            customName = parseCustomNameSafe(tag.getString("CustomName"), registries);
+        } else {
+            customName = null;
+        }
     }
 
     @Override
