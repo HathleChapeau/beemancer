@@ -55,6 +55,7 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
 /**
@@ -253,6 +254,28 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
     }
 
     public BeeBodyType getBodyType() { return bodyType; }
+
+    public ModelPart getRightWing() { return rightWing; }
+    public ModelPart getLeftWing() { return leftWing; }
+
+    /** Anime les ailes avec vitesse et amplitude configurables. */
+    public void animateWings(float ageInTicks, float speed, float amplitude, float upBias) {
+        if (speed <= 0.001F || amplitude <= 0.001F) {
+            rightWing.zRot = -upBias;
+            leftWing.zRot = upBias;
+            return;
+        }
+        float flap = Mth.cos(ageInTicks * speed) * amplitude;
+        rightWing.zRot = flap - upBias;
+        leftWing.zRot = -flap + upBias;
+    }
+
+    /** Anime les pattes avec un angle de repli. */
+    public void animateLegs(float tuckAngle) {
+        frontLegs.xRot = tuckAngle;
+        middleLegs.xRot = tuckAngle;
+        backLegs.xRot = tuckAngle;
+    }
 
     // ========== HierarchicalModel ==========
 

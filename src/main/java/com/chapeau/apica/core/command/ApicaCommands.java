@@ -27,8 +27,8 @@ import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPage;
 import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.entity.mount.HoverbikeConfigManager;
-import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
-import com.chapeau.apica.core.registry.ApicaEntities;
+import com.chapeau.apica.common.item.mount.HoverbikeSpawnItem;
+import com.chapeau.apica.core.registry.ApicaItems;
 import com.chapeau.apica.common.quest.Quest;
 import com.chapeau.apica.common.quest.QuestManager;
 import com.chapeau.apica.common.quest.QuestPlayerData;
@@ -373,21 +373,13 @@ public class ApicaCommands {
                 return 0;
             }
 
-            if (!(player.level() instanceof ServerLevel serverLevel)) return 0;
-
-            HoverbikeEntity hoverBee = ApicaEntities.HOVERBIKE.get().create(serverLevel);
-            if (hoverBee == null) {
-                source.sendFailure(Component.literal("Failed to create HoverBee entity."));
-                return 0;
+            ItemStack hoverBeeItem = HoverbikeSpawnItem.createWithSpecies(
+                    ApicaItems.HOVERBIKE_SPAWN.get(), speciesId);
+            if (!player.getInventory().add(hoverBeeItem)) {
+                player.drop(hoverBeeItem, false);
             }
 
-            hoverBee.setSpeciesId(speciesId);
-            hoverBee.setPos(player.position().add(0, 1, 0));
-            hoverBee.setYRot(player.getYRot());
-            hoverBee.setOwner(player);
-            serverLevel.addFreshEntity(hoverBee);
-
-            source.sendSuccess(() -> Component.literal("Spawned HoverBee (" + speciesId + ")"), true);
+            source.sendSuccess(() -> Component.literal("Gave HoverBee (" + speciesId + ")"), true);
             return Command.SINGLE_SUCCESS;
         }
 

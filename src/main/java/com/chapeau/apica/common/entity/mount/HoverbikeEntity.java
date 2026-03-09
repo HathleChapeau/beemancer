@@ -304,10 +304,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     /** Offsets en espace modele pour chaque part en edit mode. */
     public static final Vec3[] PART_EDIT_OFFSETS = {
-            new Vec3(0, 1, 1),    // SADDLE
-            new Vec3(0, 1, -1),   // WING_PROTECTOR
-            new Vec3(0, 0, 1),    // CONTROL_LEFT
-            new Vec3(0, 0, -1)    // CONTROL_RIGHT
+            new Vec3(0, 0.3, 0.5),     // SADDLE — sur le dos, legerement arriere
+            new Vec3(0, 0.3, -0.35),   // WING_PROTECTOR — base des ailes, legerement avant
+            new Vec3(-0.45, 0.2, 0.35), // CONTROL_LEFT — cote gauche arriere
+            new Vec3(0.45, 0.2, 0.35)  // CONTROL_RIGHT — cote droit arriere
     };
 
     private static final double MODEL_ORIGIN_Y = 1.501;

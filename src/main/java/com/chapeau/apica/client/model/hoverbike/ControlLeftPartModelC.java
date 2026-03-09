@@ -50,6 +50,6 @@ public class ControlLeftPartModelC extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(-1.5, 0, 0);
+        return new Vec3(-0.5, 0, 0);
     }
 }

@@ -11,7 +11,7 @@
  * | HoverbikePartVariants| Registre variantes  | Selection du modele a rendre   |
  * | AnimationController | Animations edit mode | Ecartement/retour des pieces   |
  * | MoveAnimation       | Translation animee   | Mouvement des pieces           |
- * | HoverbikeModel      | Modele parent        | Type generique du renderer     |
+ * | ApicaBeeModel       | Modele parent        | Type generique du renderer     |
  * | EditModeHandler     | Partie hover         | Glow sur partie survolee       |
  * ------------------------------------------------------------
  *
@@ -26,7 +26,7 @@ import com.chapeau.apica.client.animation.AnimationController;
 import com.chapeau.apica.client.animation.MoveAnimation;
 import com.chapeau.apica.client.animation.TimingType;
 
-import com.chapeau.apica.client.model.HoverbikeModel;
+import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
@@ -51,7 +51,7 @@ import java.util.Map;
  * la variante selectionnee de chaque partie. En edit mode, chaque partie
  * s'ecarte du centre avec une animation smooth.
  */
-public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeModel> {
+public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeModel<HoverbikeEntity>> {
 
     private static final float EDIT_ANIM_DURATION = 15f;
     private static final String ANIM_PREFIX = "edit_";
@@ -63,7 +63,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, HoverbikeMo
     private boolean wasEditMode = false;
     private boolean editExpanded = false;
 
-    public HoverbikePartLayer(RenderLayerParent<HoverbikeEntity, HoverbikeModel> parent,
+    public HoverbikePartLayer(RenderLayerParent<HoverbikeEntity, ApicaBeeModel<HoverbikeEntity>> parent,
                               EntityRendererProvider.Context context) {
         super(parent);
 

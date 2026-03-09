@@ -80,6 +80,6 @@ public class WingProtectorPartModel extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(0, -1.5, 0);
+        return new Vec3(0, -0.35, 0);
     }
 }

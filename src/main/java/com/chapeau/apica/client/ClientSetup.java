@@ -15,7 +15,6 @@ import com.chapeau.apica.client.gui.hud.HoverbikeGaugeHud;
 import com.chapeau.apica.client.gui.hud.MagazineGaugeHud;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
 import com.chapeau.apica.client.model.ApicaBeeModel;
-import com.chapeau.apica.client.model.HoverbikeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
 import com.chapeau.apica.client.renderer.entity.HoverbikeRenderer;
 import com.chapeau.apica.client.input.DebugKeyHandler;
@@ -331,9 +330,6 @@ public class ClientSetup {
     }
 
     private static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
-        // Hoverbike — modele de base
-        event.registerLayerDefinition(HoverbikeRenderer.LAYER_LOCATION, HoverbikeModel::createBodyLayer);
-
         // Leaf Blower orb model
         event.registerLayerDefinition(LeafBlowerProjectileModel.LAYER_LOCATION, LeafBlowerProjectileModel::createBodyLayer);
 
