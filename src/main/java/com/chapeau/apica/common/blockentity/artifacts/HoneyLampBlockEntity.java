@@ -77,6 +77,7 @@ public class HoneyLampBlockEntity extends BlockEntity implements com.chapeau.api
     protected int luminosity;
 
     public int getLuminosity() { return luminosity; }
+    public LampState getLampState() { return currentState; }
 
     public HoneyLampBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.HONEY_LAMP.get(), pos, state);
@@ -142,12 +143,7 @@ public class HoneyLampBlockEntity extends BlockEntity implements com.chapeau.api
 
         if (desiredState != be.currentState) {
             be.currentState = desiredState;
-
-            // Mettre à jour blockstate visuel
-            BlockState current = level.getBlockState(pos);
-            if (current.getValue(HoneyLampBlock.LAMP_STATE) != desiredState) {
-                level.setBlock(pos, current.setValue(HoneyLampBlock.LAMP_STATE, desiredState), 3);
-            }
+            be.setChanged();
 
             // Mettre à jour luminosité dynamique (pattern Create)
             be.setLuminosity(be.getLuminosityForState(desiredState));

@@ -1,6 +1,0 @@
-{
-  "parent": "apica:block/artifacts/honey_lamp_off_raised",
-  "textures": {
-    "glass": "minecraft:block/honey_block_top"
-  }
-}

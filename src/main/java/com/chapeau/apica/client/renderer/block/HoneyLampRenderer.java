@@ -77,7 +77,7 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
     @Override
     public void render(HoneyLampBlockEntity be, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        LampState state = be.getBlockState().getValue(HoneyLampBlock.LAMP_STATE);
+        LampState state = be.getLampState();
         if (state == LampState.OFF) return;
 
         float[] tint = switch (state) {

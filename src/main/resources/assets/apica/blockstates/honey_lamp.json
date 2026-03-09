@@ -1,12 +1,6 @@
 {
   "variants": {
-    "lamp_state=off,pipe_up=false": { "model": "apica:block/artifacts/honey_lamp_off" },
-    "lamp_state=honey,pipe_up=false": { "model": "apica:block/artifacts/honey_lamp_honey" },
-    "lamp_state=royal_jelly,pipe_up=false": { "model": "apica:block/artifacts/honey_lamp_royal_jelly" },
-    "lamp_state=nectar,pipe_up=false": { "model": "apica:block/artifacts/honey_lamp_nectar" },
-    "lamp_state=off,pipe_up=true": { "model": "apica:block/artifacts/honey_lamp_off_raised" },
-    "lamp_state=honey,pipe_up=true": { "model": "apica:block/artifacts/honey_lamp_honey_raised" },
-    "lamp_state=royal_jelly,pipe_up=true": { "model": "apica:block/artifacts/honey_lamp_royal_jelly_raised" },
-    "lamp_state=nectar,pipe_up=true": { "model": "apica:block/artifacts/honey_lamp_nectar_raised" }
+    "pipe_up=false": { "model": "apica:block/artifacts/honey_lamp_off" },
+    "pipe_up=true": { "model": "apica:block/artifacts/honey_lamp_off_raised" }
   }
 }
