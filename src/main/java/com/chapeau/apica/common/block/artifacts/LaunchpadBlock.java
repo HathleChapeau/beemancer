@@ -150,13 +150,20 @@ public class LaunchpadBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                 Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
-            int currentAngle = state.getValue(ANGLE);
-            int newAngle = (currentAngle + 1) % 10;
-            level.setBlock(pos, state.setValue(ANGLE, newAngle), 3);
-            player.displayClientMessage(
-                    Component.translatable("message.apica.launchpad.angle", newAngle * 10),
-                    true
-            );
+            if (player.isShiftKeyDown()) {
+                BlockEntity be = level.getBlockEntity(pos);
+                if (be instanceof LaunchpadBlockEntity launchpad) {
+                    launchpad.getFluidTank().drain(LaunchpadBlockEntity.TANK_CAPACITY, net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                }
+            } else {
+                int currentAngle = state.getValue(ANGLE);
+                int newAngle = (currentAngle + 1) % 10;
+                level.setBlock(pos, state.setValue(ANGLE, newAngle), 3);
+                player.displayClientMessage(
+                        Component.translatable("message.apica.launchpad.angle", newAngle * 10),
+                        true
+                );
+            }
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
     }

@@ -25,11 +25,13 @@ import com.chapeau.apica.core.network.packets.DubstepRadioSyncPacket;
 import com.chapeau.apica.core.registry.ApicaBlockEntities;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -40,7 +42,9 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -54,21 +58,33 @@ public class DubstepRadioBlock extends BaseEntityBlock {
 
     public static final MapCodec<DubstepRadioBlock> CODEC = simpleCodec(DubstepRadioBlock::new);
     public static final BooleanProperty PLAYING = BooleanProperty.create("playing");
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    /** Table de mix : base plate + panneau de controle sureleve. */
+    /** Wave Mixer : base etagee + colonne + tete inclinee. */
     private static final VoxelShape SHAPE = Shapes.or(
-            Block.box(1, 0, 1, 15, 6, 15),
-            Block.box(2, 6, 2, 14, 8, 14)
+            Block.box(0, 0, 0, 16, 2, 16),
+            Block.box(3, 2, 3, 13, 4, 13),
+            Block.box(4, 4, 4, 12, 12, 12),
+            Block.box(0, 12, 0, 16, 17, 16)
     );
 
     public DubstepRadioBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(PLAYING, false));
+        registerDefaultState(stateDefinition.any()
+                .setValue(PLAYING, false)
+                .setValue(FACING, Direction.NORTH));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(PLAYING);
+        builder.add(PLAYING, FACING);
+    }
+
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
     @Override

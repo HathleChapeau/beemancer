@@ -1,3 +1,77 @@
 {
-  "parent": "apica:block/artifacts/launchpad_flat"
+  "parent": "minecraft:block/block",
+  "render_type": "cutout",
+  "textures": {
+    "iron": "apica:block/iron",
+    "base": "apica:block/wood",
+    "back": "apica:block/wood",
+    "plate": "apica:block/artifacts/launchpad_top",
+    "particle": "apica:block/wood"
+  },
+  "elements": [
+    {
+      "name": "base_plate",
+      "from": [1, 0, 1],
+      "to": [15, 4, 15],
+      "faces": {
+        "up":    {"texture": "#base"},
+        "down":  {"texture": "#base"},
+        "north": {"texture": "#base"},
+        "south": {"texture": "#base"},
+        "east":  {"texture": "#base"},
+        "west":  {"texture": "#base"}
+      }
+    },
+    {
+      "name": "back_panel",
+      "from": [4, 4, 14],
+      "to": [12, 12, 16],
+      "faces": {
+        "up":    {"texture": "#iron"},
+        "down":  {"texture": "#iron"},
+        "north": {"texture": "#iron"},
+        "south": {"texture": "#iron"},
+        "east":  {"texture": "#iron"},
+        "west":  {"texture": "#iron"}
+      }
+    },
+    {
+      "name": "back_panel2",
+      "from": [5, 5, 13],
+      "to": [11, 11, 14],
+      "faces": {
+        "up":    {"texture": "#back"},
+        "down":  {"texture": "#back"},
+        "north": {"texture": "#back"},
+        "south": {"texture": "#back"},
+        "east":  {"texture": "#back"},
+        "west":  {"texture": "#back"}
+      }
+    },
+    {
+      "name": "top_plate",
+      "from": [1, 4, 1],
+      "to": [15, 8, 15],
+      "faces": {
+        "up":    {"texture": "#plate"},
+        "down":  {"texture": "#iron"},
+        "north": {"texture": "#iron"},
+        "south": {"texture": "#iron"},
+        "east":  {"texture": "#iron"},
+        "west":  {"texture": "#iron"}
+      }
+    }
+  ],
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [0, 45, 0],
+      "translation": [0, 4, 0],
+      "scale": [0.4, 0.4, 0.4]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, 225, 0],
+      "translation": [0, 4, 0],
+      "scale": [0.4, 0.4, 0.4]
+    }
+  }
 }

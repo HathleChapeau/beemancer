@@ -55,8 +55,8 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class LaunchpadBlockEntity extends BlockEntity {
-    public static final int TANK_CAPACITY = 4000;
-    public static final int FLUID_COST = 250;
+    public static final int TANK_CAPACITY = 1000;
+    public static final int FLUID_COST = 100;
     public static final int COOLDOWN_TICKS = 20;
 
     private static final double HONEY_POWER = 1.5;

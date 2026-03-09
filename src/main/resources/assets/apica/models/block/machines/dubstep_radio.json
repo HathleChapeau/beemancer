@@ -7,9 +7,9 @@
   },
   "elements": [
     {
-      "comment": "Base plate",
-      "from": [1, 0, 1],
-      "to": [15, 5, 15],
+      "comment": "Base plate 16x2x16",
+      "from": [0, 0, 0],
+      "to": [16, 2, 16],
       "faces": {
         "north": {"texture": "#base"},
         "east": {"texture": "#base"},
@@ -20,54 +20,47 @@
       }
     },
     {
-      "comment": "Control surface",
-      "from": [2, 5, 2],
-      "to": [14, 7, 14],
+      "comment": "Middle step 10x2x10",
+      "from": [3, 2, 3],
+      "to": [13, 4, 13],
       "faces": {
-        "north": {"texture": "#side", "uv": [0, 0, 12, 2]},
-        "east": {"texture": "#side", "uv": [0, 0, 12, 2]},
-        "south": {"texture": "#side", "uv": [0, 0, 12, 2]},
-        "west": {"texture": "#side", "uv": [0, 0, 12, 2]},
+        "north": {"texture": "#side", "uv": [3, 0, 13, 2]},
+        "east": {"texture": "#side", "uv": [3, 0, 13, 2]},
+        "south": {"texture": "#side", "uv": [3, 0, 13, 2]},
+        "west": {"texture": "#side", "uv": [3, 0, 13, 2]},
+        "up": {"texture": "#base", "uv": [3, 3, 13, 13]},
+        "down": {"texture": "#base", "uv": [3, 3, 13, 13]}
+      }
+    },
+    {
+      "comment": "Column 8x8x8",
+      "from": [4, 4, 4],
+      "to": [12, 12, 12],
+      "faces": {
+        "north": {"texture": "#side", "uv": [4, 0, 12, 8]},
+        "east": {"texture": "#side", "uv": [4, 0, 12, 8]},
+        "south": {"texture": "#side", "uv": [4, 0, 12, 8]},
+        "west": {"texture": "#side", "uv": [4, 0, 12, 8]},
+        "up": {"texture": "#top", "uv": [4, 4, 12, 12]},
+        "down": {"texture": "#base", "uv": [4, 4, 12, 12]}
+      }
+    },
+    {
+      "comment": "Top head 16x5x16 tilted 22.5 degrees down",
+      "from": [0, 12, 0],
+      "to": [16, 17, 16],
+      "rotation": {
+        "origin": [8, 12, 8],
+        "axis": "x",
+        "angle": -22.5,
+        "rescale": false
+      },
+      "faces": {
+        "north": {"texture": "#side", "uv": [0, 0, 16, 5]},
+        "east": {"texture": "#side", "uv": [0, 0, 16, 5]},
+        "south": {"texture": "#side", "uv": [0, 0, 16, 5]},
+        "west": {"texture": "#side", "uv": [0, 0, 16, 5]},
         "up": {"texture": "#top"},
-        "down": {"texture": "#base"}
-      }
-    },
-    {
-      "comment": "Left turntable",
-      "from": [2, 7, 3],
-      "to": [7, 8, 8],
-      "faces": {
-        "north": {"texture": "#side", "uv": [0, 0, 5, 1]},
-        "east": {"texture": "#side", "uv": [0, 0, 5, 1]},
-        "south": {"texture": "#side", "uv": [0, 0, 5, 1]},
-        "west": {"texture": "#side", "uv": [0, 0, 5, 1]},
-        "up": {"texture": "#top", "uv": [0, 0, 5, 5]},
-        "down": {"texture": "#base"}
-      }
-    },
-    {
-      "comment": "Right turntable",
-      "from": [9, 7, 3],
-      "to": [14, 8, 8],
-      "faces": {
-        "north": {"texture": "#side", "uv": [0, 0, 5, 1]},
-        "east": {"texture": "#side", "uv": [0, 0, 5, 1]},
-        "south": {"texture": "#side", "uv": [0, 0, 5, 1]},
-        "west": {"texture": "#side", "uv": [0, 0, 5, 1]},
-        "up": {"texture": "#top", "uv": [0, 0, 5, 5]},
-        "down": {"texture": "#base"}
-      }
-    },
-    {
-      "comment": "Mixer center strip",
-      "from": [7, 7, 9],
-      "to": [9, 8, 13],
-      "faces": {
-        "north": {"texture": "#side", "uv": [0, 0, 2, 1]},
-        "east": {"texture": "#side", "uv": [0, 0, 4, 1]},
-        "south": {"texture": "#side", "uv": [0, 0, 2, 1]},
-        "west": {"texture": "#side", "uv": [0, 0, 4, 1]},
-        "up": {"texture": "#side", "uv": [0, 0, 2, 4]},
         "down": {"texture": "#base"}
       }
     }
