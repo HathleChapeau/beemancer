@@ -62,19 +62,19 @@ public class LaunchpadBlock extends BaseEntityBlock {
 
     private static final VoxelShape SHAPE_NORTH = Shapes.or(
             Block.box(1, 0, 1, 15, 8, 15),
-            Block.box(3, 0, 14, 13, 10, 16)
+            Block.box(4, 4, 14, 12, 12, 16)
     );
     private static final VoxelShape SHAPE_SOUTH = Shapes.or(
             Block.box(1, 0, 1, 15, 8, 15),
-            Block.box(3, 0, 0, 13, 10, 2)
+            Block.box(4, 4, 0, 12, 12, 2)
     );
     private static final VoxelShape SHAPE_EAST = Shapes.or(
             Block.box(1, 0, 1, 15, 8, 15),
-            Block.box(0, 0, 3, 2, 10, 13)
+            Block.box(0, 4, 4, 2, 12, 12)
     );
     private static final VoxelShape SHAPE_WEST = Shapes.or(
             Block.box(1, 0, 1, 15, 8, 15),
-            Block.box(14, 0, 3, 16, 10, 13)
+            Block.box(14, 4, 4, 16, 12, 12)
     );
 
     public LaunchpadBlock(Properties properties) {

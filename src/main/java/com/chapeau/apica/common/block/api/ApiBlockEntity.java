@@ -30,6 +30,9 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -39,6 +42,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 /**
  * Api grandit quand nourri au honey bottle, rétrécit avec un comb.
@@ -62,6 +66,10 @@ public class ApiBlockEntity extends BlockEntity {
     private boolean growing = false;
     private boolean shrinking = false;
     private boolean animationComplete = true;
+    @Nullable
+    private UUID ownerUUID = null;
+    @Nullable
+    private Component customName = null;
 
     public ApiBlockEntity(BlockPos pos, BlockState state) {
         super(ApicaBlockEntities.API.get(), pos, state);
@@ -79,6 +87,26 @@ public class ApiBlockEntity extends BlockEntity {
 
     public long getRemainingCooldown(long gameTime) {
         return Math.max(0, COOLDOWN_TICKS - (gameTime - lastFeedTick));
+    }
+
+    public void setOwner(Player player) {
+        this.ownerUUID = player.getUUID();
+        setChanged();
+    }
+
+    public boolean isOwner(Player player) {
+        return ownerUUID == null || ownerUUID.equals(player.getUUID());
+    }
+
+    public void setCustomName(@Nullable Component name) {
+        this.customName = name;
+        setChanged();
+        syncToClient();
+    }
+
+    @Nullable
+    public Component getCustomName() {
+        return customName;
     }
 
     /**
@@ -138,6 +166,17 @@ public class ApiBlockEntity extends BlockEntity {
      */
     public float getCompletedScale() {
         return BASE_SCALE + (SCALE_VALUE * apiLevel);
+    }
+
+    /**
+     * Scale pour le VoxelShape: retourne la taille précédente pendant l'animation,
+     * et la taille complétée une fois l'animation terminée.
+     */
+    public float getCollisionScale() {
+        if (animationComplete) {
+            return getCompletedScale();
+        }
+        return getPreviousScale();
     }
 
     // ==================== Server Tick ====================
@@ -218,8 +257,8 @@ public class ApiBlockEntity extends BlockEntity {
      * Api se casse: drop un honeycomb + explosion particules.
      */
     private void destroySelf(Level level, BlockPos pos) {
-        // Drop honeycomb
-        Block.popResource(level, pos, new ItemStack(net.minecraft.world.item.Items.HONEYCOMB));
+        // Drop honeycomb nommé "Api"
+        Block.popResource(level, pos, createNamedDrop());
 
         // Particules d'explosion
         if (level instanceof ServerLevel serverLevel) {
@@ -232,6 +271,16 @@ public class ApiBlockEntity extends BlockEntity {
     }
 
     // ==================== Helpers ====================
+
+    /**
+     * Crée un honeycomb nommé avec le nom custom ou "Api" par défaut.
+     */
+    public ItemStack createNamedDrop() {
+        ItemStack stack = new ItemStack(net.minecraft.world.item.Items.HONEYCOMB);
+        Component name = customName != null ? customName : Component.literal("Api");
+        stack.set(DataComponents.CUSTOM_NAME, name);
+        return stack;
+    }
 
     /**
      * Scale de la taille avant la dernière modification.
@@ -261,6 +310,12 @@ public class ApiBlockEntity extends BlockEntity {
         tag.putBoolean("Growing", growing);
         tag.putBoolean("Shrinking", shrinking);
         tag.putBoolean("AnimComplete", animationComplete);
+        if (ownerUUID != null) {
+            tag.putUUID("Owner", ownerUUID);
+        }
+        if (customName != null) {
+            tag.putString("CustomName", Component.Serializer.toJson(customName, registries));
+        }
     }
 
     @Override
@@ -271,6 +326,12 @@ public class ApiBlockEntity extends BlockEntity {
         growing = tag.getBoolean("Growing");
         shrinking = tag.getBoolean("Shrinking");
         animationComplete = tag.getBoolean("AnimComplete");
+        if (tag.hasUUID("Owner")) {
+            ownerUUID = tag.getUUID("Owner");
+        }
+        if (tag.contains("CustomName", 8)) {
+            customName = parseCustomNameSafe(tag.getString("CustomName"), registries);
+        }
     }
 
     @Override

@@ -527,7 +527,7 @@ public class ApicaBlocks {
     public static final DeferredBlock<ApiBlock> API = registerTimed("api",
             () -> new ApiBlock(BlockBehaviour.Properties.of()
                     .strength(1.0f)
-                    .sound(SoundType.HONEY_BLOCK)
+                    .sound(SoundType.CORAL_BLOCK)
                     .noOcclusion()));
 
     // --- BUILDING BLOCKS: HONEYED LOGS ---

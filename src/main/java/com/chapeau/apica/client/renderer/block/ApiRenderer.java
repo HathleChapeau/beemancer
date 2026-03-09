@@ -19,6 +19,7 @@
 package com.chapeau.apica.client.renderer.block;
 
 import com.chapeau.apica.Apica;
+import com.chapeau.apica.common.block.api.ApiBlock;
 import com.chapeau.apica.common.block.api.ApiBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -31,6 +32,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.AABB;
@@ -67,9 +69,12 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
 
         poseStack.pushPose();
 
-        // Scale autour du centre X/Z du bloc, base Y=0 + rotation face au joueur
+        // Rotation selon FACING du blockstate + scale dynamique
+        Direction facing = blockEntity.getBlockState().getValue(ApiBlock.FACING);
+        float yRot = 270f - facing.toYRot();
+
         poseStack.translate(0.5, 0, 0.5);
-        poseStack.mulPose(Axis.YP.rotationDegrees(90));
+        poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
         poseStack.scale(scale, scale, scale);
         poseStack.translate(-0.5, 0, -0.5);
 

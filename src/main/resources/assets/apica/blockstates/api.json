@@ -1,7 +1,8 @@
 {
   "variants": {
-    "": {
-      "model": "apica:block/machines/api"
-    }
+    "facing=north": { "model": "apica:block/machines/api" },
+    "facing=south": { "model": "apica:block/machines/api" },
+    "facing=east": { "model": "apica:block/machines/api" },
+    "facing=west": { "model": "apica:block/machines/api" }
   }
 }
