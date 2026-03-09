@@ -7,6 +7,6 @@
     { "when": { "east": true }, "apply": { "model": "apica:block/pipes/liquid_pipe_side_t2", "y": 90 } },
     { "when": { "west": true }, "apply": { "model": "apica:block/pipes/liquid_pipe_side_t2", "y": 270 } },
     { "when": { "up": true }, "apply": { "model": "apica:block/pipes/liquid_pipe_side_t2", "x": 270 } },
-    { "when": { "down": true }, "apply": { "model": "apica:block/pipes/liquid_pipe_side_t2", "x": 90 } }
+    { "when": { "down": true }, "apply": { "model": "apica:block/pipes/liquid_pipe_side_t2", "x": 90, "y": 180 } }
   ]
 }

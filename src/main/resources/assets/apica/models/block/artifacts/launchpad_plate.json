@@ -4,7 +4,7 @@
   "textures": {
     "plate": "apica:block/artifacts/launchpad_top",
     "iron": "apica:block/iron",
-    "particle": "minecraft:block/iron_block"
+    "particle": "apica:block/iron"
   },
   "elements": [
     {

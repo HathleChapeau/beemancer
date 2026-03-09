@@ -1,3 +1,4 @@
 {
-  "parent": "apica:block/machines/api"
+  "parent": "apica:block/machines/api",
+  "gui_light": "front"
 }

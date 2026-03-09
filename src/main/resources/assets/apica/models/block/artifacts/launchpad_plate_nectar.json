@@ -4,7 +4,7 @@
   "textures": {
     "plate": "apica:block/artifacts/launchpad_top_nectar",
     "iron": "apica:block/iron",
-    "particle": "apica:block/nectar_diamond_block"
+    "particle": "apica:block/iron"
   },
   "elements": [
     {

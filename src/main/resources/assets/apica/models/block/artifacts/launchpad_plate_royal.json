@@ -4,7 +4,7 @@
   "textures": {
     "plate": "apica:block/artifacts/launchpad_top_royal",
     "iron": "apica:block/iron",
-    "particle": "apica:block/royal_gold_block"
+    "particle": "apica:block/iron"
   },
   "elements": [
     {

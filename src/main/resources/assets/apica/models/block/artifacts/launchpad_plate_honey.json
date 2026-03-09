@@ -4,7 +4,7 @@
   "textures": {
     "plate": "apica:block/artifacts/launchpad_top_honey",
     "iron": "apica:block/iron",
-    "particle": "apica:block/honeyed_iron_block"
+    "particle": "apica:block/iron"
   },
   "elements": [
     {

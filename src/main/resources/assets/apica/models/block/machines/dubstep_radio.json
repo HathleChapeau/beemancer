@@ -1,9 +1,11 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "base": "apica:block/iron",
-    "top": "apica:block/machines/resonator_center_top",
-    "side": "apica:block/iron"
+    "base": "apica:block/ironed_wood_r",
+    "top": "apica:block/machines/dubstep_radio_top_r",
+    "iron": "apica:block/iron",
+    "ironr": "apica:block/ironr",
+    "side": "apica:block/wood"
   },
   "elements": [
     {
@@ -11,10 +13,10 @@
       "from": [0, 0, 0],
       "to": [16, 2, 16],
       "faces": {
-        "north": {"texture": "#base"},
-        "east": {"texture": "#base"},
-        "south": {"texture": "#base"},
-        "west": {"texture": "#base"},
+        "north": {"texture": "#iron"},
+        "east": {"texture": "#iron"},
+        "south": {"texture": "#iron"},
+        "west": {"texture": "#iron"},
         "up": {"texture": "#base"},
         "down": {"texture": "#base"}
       }
@@ -24,25 +26,25 @@
       "from": [3, 2, 3],
       "to": [13, 4, 13],
       "faces": {
-        "north": {"texture": "#side", "uv": [3, 0, 13, 2]},
-        "east": {"texture": "#side", "uv": [3, 0, 13, 2]},
-        "south": {"texture": "#side", "uv": [3, 0, 13, 2]},
-        "west": {"texture": "#side", "uv": [3, 0, 13, 2]},
-        "up": {"texture": "#base", "uv": [3, 3, 13, 13]},
-        "down": {"texture": "#base", "uv": [3, 3, 13, 13]}
+        "north": {"texture": "#iron", "uv": [3, 0, 13, 2]},
+        "east": {"texture": "#iron", "uv": [3, 0, 13, 2]},
+        "south": {"texture": "#iron", "uv": [3, 0, 13, 2]},
+        "west": {"texture": "#iron", "uv": [3, 0, 13, 2]},
+        "up": {"texture": "#iron", "uv": [3, 3, 13, 13]},
+        "down": {"texture": "#iron", "uv": [3, 3, 13, 13]}
       }
     },
     {
       "comment": "Column 8x8x8",
       "from": [4, 4, 4],
-      "to": [12, 12, 12],
+      "to": [12, 14, 12],
       "faces": {
-        "north": {"texture": "#side", "uv": [4, 0, 12, 8]},
-        "east": {"texture": "#side", "uv": [4, 0, 12, 8]},
-        "south": {"texture": "#side", "uv": [4, 0, 12, 8]},
-        "west": {"texture": "#side", "uv": [4, 0, 12, 8]},
-        "up": {"texture": "#top", "uv": [4, 4, 12, 12]},
-        "down": {"texture": "#base", "uv": [4, 4, 12, 12]}
+        "north": {"texture": "#side"},
+        "east": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "up": {"texture": "#side"},
+        "down": {"texture": "#side"}
       }
     },
     {
@@ -56,10 +58,10 @@
         "rescale": false
       },
       "faces": {
-        "north": {"texture": "#side", "uv": [0, 0, 16, 5]},
-        "east": {"texture": "#side", "uv": [0, 0, 16, 5]},
-        "south": {"texture": "#side", "uv": [0, 0, 16, 5]},
-        "west": {"texture": "#side", "uv": [0, 0, 16, 5]},
+        "north": {"texture": "#ironr", "uv": [0, 0, 16, 5]},
+        "east": {"texture": "#iron", "uv": [0, 0, 16, 5]},
+        "south": {"texture": "#iron", "uv": [0, 0, 16, 5]},
+        "west": {"texture": "#ironr", "uv": [0, 0, 16, 5]},
         "up": {"texture": "#top", "uv": [0, 0, 16, 16]},
         "down": {"texture": "#base", "uv": [0, 0, 16, 16]}
       }

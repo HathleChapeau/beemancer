@@ -46,6 +46,17 @@
       }
     },
     {
+      "name": "Glass Body 2",
+      "from": [3, 11, 3],
+      "to": [13, 1, 13],
+      "faces": {
+        "north": {"texture": "#glass"},
+        "east": {"texture": "#glass"},
+        "south": {"texture": "#glass"},
+        "west": {"texture": "#glass"}
+      }
+    },
+    {
       "name": "Top Rotated",
       "from": [3, 9.98, 3],
       "to": [13, 11.98, 13],
