@@ -26,12 +26,13 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
@@ -45,7 +46,11 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
     public static final ModelResourceLocation API_MODEL_LOC = ModelResourceLocation.standalone(
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "block/machines/api"));
 
+    private final BlockRenderDispatcher blockRenderer;
+    private final RandomSource random = RandomSource.create();
+
     public ApiRenderer(BlockEntityRendererProvider.Context context) {
+        this.blockRenderer = Minecraft.getInstance().getBlockRenderer();
     }
 
     @Override
@@ -60,27 +65,21 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
 
         if (model == null || model == modelManager.getMissingModel()) return;
 
-        var blockRenderer = minecraft.getBlockRenderer().getModelRenderer();
-
         poseStack.pushPose();
 
         // Scale autour du centre X/Z du bloc, base Y=0 + rotation face au joueur
         poseStack.translate(0.5, 0, 0.5);
-        poseStack.mulPose(Axis.YP.rotationDegrees(180));
+        poseStack.mulPose(Axis.YP.rotationDegrees(90));
         poseStack.scale(scale, scale, scale);
         poseStack.translate(-0.5, 0, -0.5);
 
+        // tesselateBlock pour avoir l'ambient occlusion (ombres)
         VertexConsumer consumer = buffer.getBuffer(RenderType.cutout());
-        blockRenderer.renderModel(
-            poseStack.last(),
-            consumer,
-            null,
-            model,
-            1f, 1f, 1f,
-            packedLight,
-            OverlayTexture.NO_OVERLAY,
-            ModelData.EMPTY,
-            RenderType.cutout()
+        blockRenderer.getModelRenderer().tesselateBlock(
+            blockEntity.getLevel(), model, blockEntity.getBlockState(),
+            blockEntity.getBlockPos(), poseStack, consumer, false,
+            random, packedLight, packedOverlay,
+            ModelData.EMPTY, RenderType.cutout()
         );
 
         poseStack.popPose();

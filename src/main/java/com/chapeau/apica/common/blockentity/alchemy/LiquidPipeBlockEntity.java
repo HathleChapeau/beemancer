@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-public class LiquidPipeBlockEntity extends BlockEntity {
+public class LiquidPipeBlockEntity extends BlockEntity implements com.chapeau.apica.core.util.IDrainable {
     // --- MK CONFIG ---
     public static final int MK1_BUFFER = 1000;
     public static final int MK2_BUFFER = 2000;
@@ -324,6 +324,12 @@ public class LiquidPipeBlockEntity extends BlockEntity {
     public FluidTank getBuffer() {
         return buffer;
     }
+
+    @Override
+    public FluidTank getDrainableTank() { return buffer; }
+
+    @Override
+    public String getDrainableEmptyName() { return "Pipe"; }
 
     public boolean isDisconnected(Direction dir) {
         return disconnectedDirections.contains(dir);

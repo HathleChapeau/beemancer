@@ -46,7 +46,7 @@ import javax.annotation.Nullable;
  * Stocke jusqu'à 4000mB de miel, royal jelly ou nectar.
  * Un seul type de fluide à la fois.
  */
-public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHandler {
+public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHandler, com.chapeau.apica.core.util.IDrainable {
     public static final int CAPACITY = 4000;
 
     private final FluidTank fluidTank;
@@ -208,6 +208,12 @@ public class HoneyReservoirBlockEntity extends BlockEntity implements IFluidHand
     public FluidTank getFluidTank() {
         return fluidTank;
     }
+
+    @Override
+    public FluidTank getDrainableTank() { return fluidTank; }
+
+    @Override
+    public String getDrainableEmptyName() { return "Reservoir"; }
 
     public int getFluidAmount() {
         return fluidTank.getFluidAmount();

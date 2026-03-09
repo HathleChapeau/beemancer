@@ -54,7 +54,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class LaunchpadBlockEntity extends BlockEntity {
+public class LaunchpadBlockEntity extends BlockEntity implements com.chapeau.apica.core.util.IDrainable {
     public static final int TANK_CAPACITY = 1000;
     public static final int FLUID_COST = 100;
     public static final int COOLDOWN_TICKS = 20;
@@ -164,6 +164,12 @@ public class LaunchpadBlockEntity extends BlockEntity {
     public FluidTank getFluidTank() {
         return fluidTank;
     }
+
+    @Override
+    public FluidTank getDrainableTank() { return fluidTank; }
+
+    @Override
+    public String getDrainableEmptyName() { return "Launchpad"; }
 
     /** Returns the fluid type index for blockstate: 0=none, 1=honey, 2=royal_jelly, 3=nectar. */
     public int getFluidTypeIndex() {

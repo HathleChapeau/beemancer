@@ -116,13 +116,7 @@ public class HoneyLampBlock extends BaseEntityBlock {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof HoneyLampBlockEntity lamp) {
                 if (player.isShiftKeyDown() && stack.isEmpty()) {
-                    FluidStack drained = lamp.getFluidTank().drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE);
-                    if (!drained.isEmpty()) {
-                        level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.5f, 1.0f);
-                        player.displayClientMessage(Component.literal("Drained " + drained.getAmount() + " mB"), true);
-                    } else {
-                        player.displayClientMessage(Component.literal("Lamp is empty"), true);
-                    }
+                    com.chapeau.apica.core.util.IDrainable.tryDrain(level, pos, player, lamp);
                     return ItemInteractionResult.sidedSuccess(level.isClientSide());
                 }
 

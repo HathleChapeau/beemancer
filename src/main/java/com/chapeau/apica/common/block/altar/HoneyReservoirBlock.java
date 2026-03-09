@@ -152,13 +152,7 @@ public class HoneyReservoirBlock extends BaseEntityBlock {
 
         // Shift+clic droit avec main vide = vider le réservoir
         if (player.isShiftKeyDown() && stack.isEmpty()) {
-            int drained = reservoir.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.EXECUTE).getAmount();
-            if (drained > 0) {
-                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.5f, 1.0f);
-                player.displayClientMessage(Component.literal("Drained " + drained + " mB"), true);
-            } else {
-                player.displayClientMessage(Component.literal("Reservoir is empty"), true);
-            }
+            com.chapeau.apica.core.util.IDrainable.tryDrain(level, pos, player, reservoir);
             return ItemInteractionResult.SUCCESS;
         }
 

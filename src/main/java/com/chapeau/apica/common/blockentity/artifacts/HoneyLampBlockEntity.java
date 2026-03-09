@@ -54,7 +54,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HoneyLampBlockEntity extends BlockEntity {
+public class HoneyLampBlockEntity extends BlockEntity implements com.chapeau.apica.core.util.IDrainable {
     public static final int CAPACITY = 4000;
 
     private static final int HONEY_CONSUMPTION = 1;
@@ -99,6 +99,12 @@ public class HoneyLampBlockEntity extends BlockEntity {
     }
 
     public FluidTank getFluidTank() { return fluidTank; }
+
+    @Override
+    public FluidTank getDrainableTank() { return fluidTank; }
+
+    @Override
+    public String getDrainableEmptyName() { return "Lamp"; }
 
     // =========================================================================
     // LUMINOSITY — pattern Create FluidTankBlockEntity.setLuminosity()

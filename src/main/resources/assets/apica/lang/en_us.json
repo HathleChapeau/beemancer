@@ -1194,5 +1194,7 @@
   "item.apica.railgun": "Railgun",
   "entity.apica.leaf_blower_orb": "Wind Orb",
   "item.apica.magazine": "Magazine",
-  "tooltip.apica.magazine.empty": "Empty"
+  "tooltip.apica.magazine.empty": "Empty",
+  "config.jade.plugin_apica.api_cooldown": "Api Cooldown",
+  "config.jade.plugin_apica.companion_cooldown": "Companion Cooldown"
 }

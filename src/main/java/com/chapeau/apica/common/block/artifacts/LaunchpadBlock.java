@@ -30,8 +30,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -141,11 +139,7 @@ public class LaunchpadBlock extends BaseEntityBlock {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof LaunchpadBlockEntity launchpad) {
                 if (player.isShiftKeyDown()) {
-                    if (launchpad.getFluidTank().getFluidAmount() > 0) {
-                        launchpad.getFluidTank().drain(LaunchpadBlockEntity.TANK_CAPACITY,
-                                net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
-                        level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
-                    }
+                    com.chapeau.apica.core.util.IDrainable.tryDrain(level, pos, player, launchpad);
                     return ItemInteractionResult.sidedSuccess(level.isClientSide());
                 }
                 if (FluidUtil.interactWithFluidHandler(player, hand, launchpad.getFluidTank())) {
