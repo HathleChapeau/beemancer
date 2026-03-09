@@ -170,7 +170,7 @@ public class ApiBlockEntity extends BlockEntity {
      * Vérifie si Api dépasse [0,16] pixels et touche les blocs adjacents.
      */
     private void checkAdjacentCollisions(Level level, BlockPos pos) {
-        float sizePixels = 10.0f * getCompletedScale();
+        float sizePixels = 5.0f * getCompletedScale();
         float halfSize = sizePixels / 2.0f;
 
         // Api est centré dans le bloc (centre à 8,5,8)

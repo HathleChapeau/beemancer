@@ -22,7 +22,6 @@ import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.block.api.ApiBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -67,9 +66,8 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
 
         poseStack.pushPose();
 
-        // Scale autour du centre X/Z du bloc, base Y=0 + rotation face au joueur
+        // Scale autour du centre X/Z du bloc, base Y=0
         poseStack.translate(0.5, 0, 0.5);
-        poseStack.mulPose(Axis.YP.rotationDegrees(90));
         poseStack.scale(scale, scale, scale);
         poseStack.translate(-0.5, 0, -0.5);
 
@@ -94,10 +92,10 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
     public AABB getRenderBoundingBox(ApiBlockEntity blockEntity) {
         float scale = blockEntity.getCompletedScale();
         var pos = blockEntity.getBlockPos();
-        double halfExtent = scale * 0.625;
+        double halfExtent = scale * 0.3125;
         return new AABB(
             pos.getX() + 0.5 - halfExtent, pos.getY(), pos.getZ() + 0.5 - halfExtent,
-            pos.getX() + 0.5 + halfExtent, pos.getY() + scale * 0.625, pos.getZ() + 0.5 + halfExtent
+            pos.getX() + 0.5 + halfExtent, pos.getY() + scale * 0.3125, pos.getZ() + 0.5 + halfExtent
         );
     }
 }

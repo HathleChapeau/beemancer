@@ -65,8 +65,8 @@ public class ApiBlock extends BaseEntityBlock {
     private static final TagKey<net.minecraft.world.item.Item> COMBS_TAG =
         TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("apica", "combs"));
 
-    // Shape de base: 10x10x10 centré (from 3,0,3 to 13,10,13)
-    private static final VoxelShape BASE_SHAPE = Block.box(3, 0, 3, 13, 10, 13);
+    // Shape de base: ~5x5x7 centré sur le body (model réduit de moitié)
+    private static final VoxelShape BASE_SHAPE = Block.box(5.5, 0, 4.5, 10.5, 5, 11.5);
 
     public ApiBlock(Properties properties) {
         super(properties);
@@ -109,14 +109,15 @@ public class ApiBlock extends BaseEntityBlock {
         }
 
         float scale = apiBE.getCompletedScale();
-        float halfWidth = 5.0f * scale;
-        float height = 10.0f * scale;
+        float halfWidthX = 2.5f * scale;
+        float halfWidthZ = 3.5f * scale;
+        float height = 5.0f * scale;
 
-        // Centré en X/Z (8 - halfWidth, 8 + halfWidth), base à Y=0
-        float minX = Math.max(0, 8.0f - halfWidth);
-        float maxX = Math.min(16, 8.0f + halfWidth);
-        float minZ = Math.max(0, 8.0f - halfWidth);
-        float maxZ = Math.min(16, 8.0f + halfWidth);
+        // Centré en X/Z sur le body, base à Y=0
+        float minX = Math.max(0, 8.0f - halfWidthX);
+        float maxX = Math.min(16, 8.0f + halfWidthX);
+        float minZ = Math.max(0, 8.0f - halfWidthZ);
+        float maxZ = Math.min(16, 8.0f + halfWidthZ);
         float maxY = Math.min(16, height);
 
         return Block.box(minX, 0, minZ, maxX, maxY, maxZ);
