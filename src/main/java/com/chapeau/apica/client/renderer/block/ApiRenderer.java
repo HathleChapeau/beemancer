@@ -71,7 +71,7 @@ public class ApiRenderer implements BlockEntityRenderer<ApiBlockEntity> {
 
         // Rotation selon FACING du blockstate + scale dynamique
         Direction facing = blockEntity.getBlockState().getValue(ApiBlock.FACING);
-        float yRot = 180f - facing.toYRot();
+        float yRot = -facing.toYRot();
 
         poseStack.translate(0.5, 0, 0.5);
         poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
