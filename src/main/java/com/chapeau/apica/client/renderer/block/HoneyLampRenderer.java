@@ -50,7 +50,7 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
     // Cross geometry centered on the glass body [5,2,5]-[11,12,11]
     private static final float CX = 0.5f;
     private static final float CZ = 0.5f;
-    private static final float SCALE = 1.75f;
+    private static final float SCALE = 0.875f;
     // Hauteur du halo centree sur le milieu du verre (Y=7px = 0.4375)
     private static final float HALO_HEIGHT = 14f / 16f * SCALE;
     private static final float Y_CENTER = 7f / 16f;
