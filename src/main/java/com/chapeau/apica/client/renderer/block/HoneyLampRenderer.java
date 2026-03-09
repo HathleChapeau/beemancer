@@ -56,16 +56,16 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
     private static final float CZ = 0.5f;
     private static final float SCALE = 0.74375f;
     private static final float HALO_HEIGHT = 14f / 16f * SCALE;
-    private static final float Y_CENTER = 6f / 16f;
+    private static final float Y_CENTER = 7f / 16f;
     private static final float Y_MIN = Y_CENTER - HALO_HEIGHT / 2f;
     private static final float Y_MAX = Y_CENTER + HALO_HEIGHT / 2f;
     private static final float R = (Y_MAX - Y_MIN) / (2f * 1.4142f);
 
     // Ring geometry (horizontal inside the glass body)
     private static final int RING_FACE_COUNT = 12;
-    private static final float RING_RADIUS = 4.4f / 16f;
-    private static final float RING_HALF_DEPTH = 0.022f;
-    private static final float RING_Y = 6f / 16f;
+    private static final float RING_RADIUS = 4.84f / 16f;
+    private static final float RING_HALF_DEPTH = 0.0242f;
+    private static final float RING_Y = 7f / 16f;
     private static final float RING_SPEED = 0.03f;
 
     private static final int FULLBRIGHT = 0xF000F0;
