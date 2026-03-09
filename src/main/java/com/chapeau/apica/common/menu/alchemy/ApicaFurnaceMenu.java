@@ -84,12 +84,12 @@ public class ApicaFurnaceMenu extends ApicaMenu {
         if (dualSlot) {
             addSlot(new ApicaSlot(inputHandler, 0, 48, 36));
             addSlot(new ApicaSlot(inputHandler, 1, 48, 56));
-            addSlot(ApicaSlot.output(outputHandler, 0, 124, 36));
-            addSlot(ApicaSlot.output(outputHandler, 1, 124, 56));
+            addSlot(ApicaSlot.output(outputHandler, 0, 128, 36));
+            addSlot(ApicaSlot.output(outputHandler, 1, 128, 56));
             this.containerSlotCount = 4;
         } else {
             addSlot(new ApicaSlot(inputHandler, 0, 48, 45));
-            addSlot(ApicaSlot.output(outputHandler, 0, 124, 45));
+            addSlot(ApicaSlot.output(outputHandler, 0, 128, 45));
             this.containerSlotCount = 2;
         }
 

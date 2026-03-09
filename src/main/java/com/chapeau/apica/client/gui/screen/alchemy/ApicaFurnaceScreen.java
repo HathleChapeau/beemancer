@@ -69,14 +69,14 @@ public class ApicaFurnaceScreen extends AbstractApicaScreen<ApicaFurnaceMenu> {
         if (menu.isDualSlot()) {
             GuiRenderHelper.renderSlot(g, x + 47, y + 35);
             GuiRenderHelper.renderSlot(g, x + 47, y + 55);
-            GuiRenderHelper.renderSlot(g, x + 123, y + 35);
-            GuiRenderHelper.renderSlot(g, x + 123, y + 55);
+            GuiRenderHelper.renderSlot(g, x + 127, y + 35);
+            GuiRenderHelper.renderSlot(g, x + 127, y + 55);
 
             GuiRenderHelper.renderTextureProgressBar(g, x + 69, y + 39, menu.getProgressRatio0());
             GuiRenderHelper.renderTextureProgressBar(g, x + 69, y + 59, menu.getProgressRatio1());
         } else {
             GuiRenderHelper.renderSlot(g, x + 47, y + 44);
-            GuiRenderHelper.renderSlot(g, x + 123, y + 44);
+            GuiRenderHelper.renderSlot(g, x + 127, y + 44);
 
             GuiRenderHelper.renderTextureProgressBar(g, x + 69, y + 48, menu.getProgressRatio0());
         }
