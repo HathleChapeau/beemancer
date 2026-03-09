@@ -23,8 +23,9 @@ import com.chapeau.apica.core.util.ParticleHelper;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.tags.TagKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -159,7 +160,8 @@ public class ApiBlock extends BaseEntityBlock {
                     ParticleHelper.burst(serverLevel, center, ParticleHelper.EffectType.HEAL, 8);
                 }
 
-                level.playSound(null, pos, SoundEvents.GENERIC_EAT, SoundSource.BLOCKS, 1.0f, 1.0f);
+                SoundType honeycombSound = Blocks.HONEYCOMB_BLOCK.defaultBlockState().getSoundType();
+                level.playSound(null, pos, honeycombSound.getPlaceSound(), SoundSource.BLOCKS, 1.0f, 1.0f);
             }
             return ItemInteractionResult.SUCCESS;
         }
@@ -180,7 +182,8 @@ public class ApiBlock extends BaseEntityBlock {
                     ParticleHelper.burst(serverLevel, center, ParticleHelper.EffectType.FAILURE, 6);
                 }
 
-                level.playSound(null, pos, SoundEvents.GENERIC_EAT, SoundSource.BLOCKS, 1.0f, 0.7f);
+                SoundType honeycombSound = Blocks.HONEYCOMB_BLOCK.defaultBlockState().getSoundType();
+                level.playSound(null, pos, honeycombSound.getPlaceSound(), SoundSource.BLOCKS, 1.0f, 0.7f);
             }
             return ItemInteractionResult.SUCCESS;
         }
