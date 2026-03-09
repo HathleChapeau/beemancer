@@ -63,8 +63,8 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
 
     // Ring geometry (horizontal inside the glass body)
     private static final int RING_FACE_COUNT = 12;
-    private static final float RING_RADIUS = 4f / 16f;
-    private static final float RING_HALF_DEPTH = 0.02f;
+    private static final float RING_RADIUS = 4.4f / 16f;
+    private static final float RING_HALF_DEPTH = 0.022f;
     private static final float RING_Y = 6f / 16f;
     private static final float RING_SPEED = 0.03f;
 
@@ -97,7 +97,8 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
 
         // Ring (horizontal, rotating)
         long gameTime = be.getLevel() != null ? be.getLevel().getGameTime() : 0;
-        float rotation = (gameTime + partialTick) * RING_SPEED;
+        long cycleLength = (long) Math.ceil(2 * Math.PI / RING_SPEED);
+        float rotation = ((gameTime % cycleLength) + partialTick) * RING_SPEED;
         renderHorizontalRing(poseStack, buffer, FULLBRIGHT, rotation);
     }
 
