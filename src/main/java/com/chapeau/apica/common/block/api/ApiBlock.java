@@ -65,8 +65,8 @@ public class ApiBlock extends BaseEntityBlock {
     private static final TagKey<net.minecraft.world.item.Item> COMBS_TAG =
         TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("apica", "combs"));
 
-    // Shape de base: 10x10x10 centré (from 3,0,3 to 13,10,13)
-    private static final VoxelShape BASE_SHAPE = Block.box(3, 0, 3, 13, 10, 13);
+    // Shape de base: 8x8x8 centré (scale 0.8 du modèle 10x10x10)
+    private static final VoxelShape BASE_SHAPE = Block.box(4, 0, 4, 12, 8, 12);
 
     public ApiBlock(Properties properties) {
         super(properties);

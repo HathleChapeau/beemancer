@@ -48,6 +48,7 @@ import javax.annotation.Nullable;
 public class ApiBlockEntity extends BlockEntity {
 
     // --- Constantes ---
+    public static final float BASE_SCALE = 0.8f;
     public static final float SCALE_VALUE = 0.15f;
     public static final int COOLDOWN_TICKS = 24000;
     public static final int GROWTH_DELAY_TICKS = 6000;
@@ -136,7 +137,7 @@ public class ApiBlockEntity extends BlockEntity {
      * Scale de la taille complétée (level actuel).
      */
     public float getCompletedScale() {
-        return 1.0f + (SCALE_VALUE * apiLevel);
+        return BASE_SCALE + (SCALE_VALUE * apiLevel);
     }
 
     // ==================== Server Tick ====================
@@ -237,9 +238,9 @@ public class ApiBlockEntity extends BlockEntity {
      */
     private float getPreviousScale() {
         if (growing) {
-            return 1.0f + (SCALE_VALUE * (apiLevel - 1));
+            return BASE_SCALE + (SCALE_VALUE * (apiLevel - 1));
         } else if (shrinking) {
-            return 1.0f + (SCALE_VALUE * (apiLevel + 1));
+            return BASE_SCALE + (SCALE_VALUE * (apiLevel + 1));
         }
         return getCompletedScale();
     }
