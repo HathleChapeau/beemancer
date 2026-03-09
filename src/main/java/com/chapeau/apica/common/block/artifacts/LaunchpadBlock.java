@@ -30,6 +30,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -138,6 +140,14 @@ public class LaunchpadBlock extends BaseEntityBlock {
         if (!level.isClientSide()) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof LaunchpadBlockEntity launchpad) {
+                if (player.isShiftKeyDown()) {
+                    if (launchpad.getFluidTank().getFluidAmount() > 0) {
+                        launchpad.getFluidTank().drain(LaunchpadBlockEntity.TANK_CAPACITY,
+                                net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
+                        level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
+                    }
+                    return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                }
                 if (FluidUtil.interactWithFluidHandler(player, hand, launchpad.getFluidTank())) {
                     return ItemInteractionResult.sidedSuccess(level.isClientSide());
                 }
@@ -150,20 +160,13 @@ public class LaunchpadBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                 Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
-            if (player.isShiftKeyDown()) {
-                BlockEntity be = level.getBlockEntity(pos);
-                if (be instanceof LaunchpadBlockEntity launchpad) {
-                    launchpad.getFluidTank().drain(LaunchpadBlockEntity.TANK_CAPACITY, net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE);
-                }
-            } else {
-                int currentAngle = state.getValue(ANGLE);
-                int newAngle = (currentAngle + 1) % 10;
-                level.setBlock(pos, state.setValue(ANGLE, newAngle), 3);
-                player.displayClientMessage(
-                        Component.translatable("message.apica.launchpad.angle", newAngle * 10),
-                        true
-                );
-            }
+            int currentAngle = state.getValue(ANGLE);
+            int newAngle = (currentAngle + 1) % 10;
+            level.setBlock(pos, state.setValue(ANGLE, newAngle), 3);
+            player.displayClientMessage(
+                    Component.translatable("message.apica.launchpad.angle", newAngle * 10),
+                    true
+            );
         }
         return InteractionResult.sidedSuccess(level.isClientSide());
     }

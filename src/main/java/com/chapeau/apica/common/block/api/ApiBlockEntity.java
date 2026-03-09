@@ -76,6 +76,10 @@ public class ApiBlockEntity extends BlockEntity {
         return (gameTime - lastFeedTick) < COOLDOWN_TICKS;
     }
 
+    public long getRemainingCooldown(long gameTime) {
+        return Math.max(0, COOLDOWN_TICKS - (gameTime - lastFeedTick));
+    }
+
     /**
      * Nourrit Api: +1 level avec animation de croissance.
      */

@@ -444,6 +444,10 @@ public class CompanionBeeEntity extends Bee {
         }
     }
 
+    public long getFeedCooldownRemaining() {
+        return Math.max(0, feedCooldownUntil - level().getGameTime());
+    }
+
     /** Notifie que le owner vient de jeter un item (cooldown anti-magnet). */
     public void notifyOwnerThrow() {
         ownerLastThrowTime = level().getGameTime();
