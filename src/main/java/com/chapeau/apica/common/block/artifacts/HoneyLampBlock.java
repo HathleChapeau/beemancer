@@ -66,12 +66,12 @@ public class HoneyLampBlock extends BaseEntityBlock {
     public static final BooleanProperty PIPE_UP = BooleanProperty.create("pipe_up");
 
     private static final VoxelShape SHAPE = Shapes.or(
-        Block.box(4, 0, 4, 12, 1, 12),
+        Block.box(5, 0, 5, 11, 1, 11),
         Block.box(3, 1, 3, 13, 13, 13),
         Block.box(5, 13, 5, 11, 15, 11)
     );
     private static final VoxelShape SHAPE_RAISED = Shapes.or(
-        Block.box(4, 1, 4, 12, 2, 12),
+        Block.box(5, 1, 5, 11, 2, 11),
         Block.box(3, 2, 3, 13, 14, 13),
         Block.box(5, 14, 5, 11, 16, 11)
     );
