@@ -1,0 +1,6 @@
+{
+  "parent": "apica:block/artifacts/honey_lamp_off_raised",
+  "textures": {
+    "glass": "minecraft:block/pink_stained_glass"
+  }
+}

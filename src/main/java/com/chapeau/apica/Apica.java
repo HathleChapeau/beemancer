@@ -523,7 +523,7 @@ public class Apica {
         event.registerBlockEntity(
                 Capabilities.FluidHandler.BLOCK,
                 ApicaBlockEntities.HONEY_LAMP.get(),
-                (be, side) -> be.getFluidTank()
+                (be, side) -> (side == Direction.UP || side == Direction.DOWN) ? be.getFluidTank() : null
         );
     }
 

@@ -68,6 +68,7 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
     private static final float RING_Y = 7f / 16f;
     private static final float RING_SPEED = 0.03f;
 
+    private static final float RAISED_OFFSET = 1f / 16f;
     private static final int FULLBRIGHT = 0xF000F0;
 
     public HoneyLampRenderer(BlockEntityRendererProvider.Context context) {
@@ -87,6 +88,12 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
         };
         if (tint == null) return;
 
+        boolean raised = be.getBlockState().getValue(HoneyLampBlock.PIPE_UP);
+        float yOffset = raised ? RAISED_OFFSET : 0f;
+
+        poseStack.pushPose();
+        if (raised) poseStack.translate(0, yOffset, 0);
+
         // Cross planes
         VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(HALO_TEXTURE));
         PoseStack.Pose pose = poseStack.last();
@@ -100,6 +107,8 @@ public class HoneyLampRenderer implements BlockEntityRenderer<HoneyLampBlockEnti
         long cycleLength = (long) Math.ceil(2 * Math.PI / RING_SPEED);
         float rotation = ((gameTime % cycleLength) + partialTick) * RING_SPEED;
         renderHorizontalRing(poseStack, buffer, FULLBRIGHT, rotation);
+
+        poseStack.popPose();
     }
 
     private static void renderHorizontalRing(PoseStack poseStack, MultiBufferSource buffer,

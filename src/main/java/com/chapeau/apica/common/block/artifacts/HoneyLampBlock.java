@@ -46,11 +46,13 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.core.Direction;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -61,15 +63,22 @@ public class HoneyLampBlock extends BaseEntityBlock {
     public static final MapCodec<HoneyLampBlock> CODEC = simpleCodec(HoneyLampBlock::new);
 
     public static final EnumProperty<LampState> LAMP_STATE = EnumProperty.create("lamp_state", LampState.class);
+    public static final BooleanProperty PIPE_UP = BooleanProperty.create("pipe_up");
 
     private static final VoxelShape SHAPE = Shapes.or(
         Block.box(3, 0, 3, 13, 13, 13),
         Block.box(5, 13, 5, 11, 15, 11)
     );
+    private static final VoxelShape SHAPE_RAISED = Shapes.or(
+        Block.box(3, 1, 3, 13, 14, 13),
+        Block.box(5, 14, 5, 11, 16, 11)
+    );
 
     public HoneyLampBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(LAMP_STATE, LampState.OFF));
+        this.registerDefaultState(this.stateDefinition.any()
+            .setValue(LAMP_STATE, LampState.OFF)
+            .setValue(PIPE_UP, false));
     }
 
     @Override
@@ -80,12 +89,22 @@ public class HoneyLampBlock extends BaseEntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return state.getValue(PIPE_UP) ? SHAPE_RAISED : SHAPE;
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(LAMP_STATE);
+        builder.add(LAMP_STATE, PIPE_UP);
+    }
+
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
+        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
+        boolean pipeAbove = level.getBlockState(pos.above()).getBlock()
+                instanceof com.chapeau.apica.common.block.alchemy.AbstractPipeBlock;
+        if (state.getValue(PIPE_UP) != pipeAbove) {
+            level.setBlock(pos, state.setValue(PIPE_UP, pipeAbove), 3);
+        }
     }
 
     /**
