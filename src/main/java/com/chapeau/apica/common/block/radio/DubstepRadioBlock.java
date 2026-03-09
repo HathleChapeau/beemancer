@@ -43,7 +43,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -57,7 +56,6 @@ import javax.annotation.Nullable;
 public class DubstepRadioBlock extends BaseEntityBlock {
 
     public static final MapCodec<DubstepRadioBlock> CODEC = simpleCodec(DubstepRadioBlock::new);
-    public static final BooleanProperty PLAYING = BooleanProperty.create("playing");
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     /** Wave Mixer : base etagee + colonne + tete inclinee. */
@@ -71,13 +69,12 @@ public class DubstepRadioBlock extends BaseEntityBlock {
     public DubstepRadioBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any()
-                .setValue(PLAYING, false)
                 .setValue(FACING, Direction.NORTH));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(PLAYING, FACING);
+        builder.add(FACING);
     }
 
     @Nullable
@@ -132,7 +129,8 @@ public class DubstepRadioBlock extends BaseEntityBlock {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (!state.getValue(PLAYING)) return;
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof DubstepRadioBlockEntity radio) || !radio.isPlaying()) return;
         double x = pos.getX() + 0.5;
         double y = pos.getY() + 0.9;
         double z = pos.getZ() + 0.5;

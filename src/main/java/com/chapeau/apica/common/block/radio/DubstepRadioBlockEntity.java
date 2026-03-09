@@ -109,11 +109,6 @@ public class DubstepRadioBlockEntity extends BlockEntity implements MenuProvider
             be.setChanged();
         }
 
-        // Sync blockstate PLAYING
-        boolean stateValue = state.getValue(DubstepRadioBlock.PLAYING);
-        if (stateValue != be.playing) {
-            level.setBlock(pos, state.setValue(DubstepRadioBlock.PLAYING, be.playing), 3);
-        }
     }
 
     // === Transport ===
@@ -123,7 +118,6 @@ public class DubstepRadioBlockEntity extends BlockEntity implements MenuProvider
         this.currentStep = 0;
         this.tickAccumulator = 0.0f;
         setChanged();
-        syncBlockstate();
     }
 
     public void stop() {
@@ -131,7 +125,6 @@ public class DubstepRadioBlockEntity extends BlockEntity implements MenuProvider
         this.currentStep = 0;
         this.tickAccumulator = 0.0f;
         setChanged();
-        syncBlockstate();
     }
 
     public boolean isPlaying() {
@@ -183,15 +176,6 @@ public class DubstepRadioBlockEntity extends BlockEntity implements MenuProvider
 
     // === Client Sync ===
 
-    private void syncBlockstate() {
-        if (level != null && !level.isClientSide()) {
-            BlockState state = getBlockState();
-            boolean stateValue = state.getValue(DubstepRadioBlock.PLAYING);
-            if (stateValue != playing) {
-                level.setBlock(worldPosition, state.setValue(DubstepRadioBlock.PLAYING, playing), 3);
-            }
-        }
-    }
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {

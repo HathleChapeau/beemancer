@@ -1,12 +1,8 @@
 {
   "variants": {
-    "facing=north,playing=false": { "model": "apica:block/machines/dubstep_radio" },
-    "facing=north,playing=true":  { "model": "apica:block/machines/dubstep_radio" },
-    "facing=south,playing=false": { "model": "apica:block/machines/dubstep_radio", "y": 180 },
-    "facing=south,playing=true":  { "model": "apica:block/machines/dubstep_radio", "y": 180 },
-    "facing=west,playing=false":  { "model": "apica:block/machines/dubstep_radio", "y": 270 },
-    "facing=west,playing=true":   { "model": "apica:block/machines/dubstep_radio", "y": 270 },
-    "facing=east,playing=false":  { "model": "apica:block/machines/dubstep_radio", "y": 90 },
-    "facing=east,playing=true":   { "model": "apica:block/machines/dubstep_radio", "y": 90 }
+    "facing=north": { "model": "apica:block/machines/dubstep_radio" },
+    "facing=south": { "model": "apica:block/machines/dubstep_radio", "y": 180 },
+    "facing=west":  { "model": "apica:block/machines/dubstep_radio", "y": 270 },
+    "facing=east":  { "model": "apica:block/machines/dubstep_radio", "y": 90 }
   }
 }
