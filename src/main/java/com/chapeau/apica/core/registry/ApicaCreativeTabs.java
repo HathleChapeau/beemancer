@@ -275,6 +275,7 @@ public class ApicaCreativeTabs {
 
         // Iron Foundation
         output.accept(ApicaItems.IRON_FOUNDATION.get());
+        output.accept(ApicaItems.IRON_FOUNDATION_PANE.get());
         output.accept(ApicaItems.IRON_FOUNDATION_STAIR.get());
         output.accept(ApicaItems.IRON_FOUNDATION_SLAB.get());
         output.accept(ApicaItems.IRON_FOUNDATION_WALL.get());

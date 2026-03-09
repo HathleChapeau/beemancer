@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/template_glass_pane_noside_alt",
+  "render_type": "cutout",
+  "textures": {
+    "pane": "apica:block/iron",
+    "edge": "apica:block/iron"
+  }
+}

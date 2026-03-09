@@ -611,6 +611,11 @@ public class ApicaBlocks {
             () -> new IronBarsBlock(BlockBehaviour.Properties.of()
                     .strength(1.5f).sound(SoundType.STONE).noOcclusion()));
 
+    public static final DeferredBlock<IronBarsBlock> IRON_FOUNDATION_PANE = registerTimed("iron_foundation_pane",
+            () -> new IronBarsBlock(BlockBehaviour.Properties.of()
+                    .strength(2.0f).sound(SoundType.STONE).noOcclusion()
+                    .requiresCorrectToolForDrops()));
+
     // --- IRON FOUNDATION ---
     public static final DeferredBlock<IronFoundationBlock> IRON_FOUNDATION = registerTimed("iron_foundation",
             () -> new IronFoundationBlock(BlockBehaviour.Properties.of()

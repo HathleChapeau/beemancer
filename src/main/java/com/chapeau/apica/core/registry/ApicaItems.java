@@ -299,6 +299,8 @@ public class ApicaItems {
             () -> new BlockItem(ApicaBlocks.HONEYED_STONE_BRICK_PANE.get(), new Item.Properties()));
 
     // --- IRON FOUNDATION ---
+    public static final DeferredItem<BlockItem> IRON_FOUNDATION_PANE = ITEMS.register("iron_foundation_pane",
+            () -> new BlockItem(ApicaBlocks.IRON_FOUNDATION_PANE.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> IRON_FOUNDATION = ITEMS.register("iron_foundation",
             () -> new BlockItem(ApicaBlocks.IRON_FOUNDATION.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> IRON_FOUNDATION_WALL = ITEMS.register("iron_foundation_wall",
