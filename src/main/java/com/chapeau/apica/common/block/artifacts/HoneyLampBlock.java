@@ -49,6 +49,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
@@ -61,7 +62,10 @@ public class HoneyLampBlock extends BaseEntityBlock {
 
     public static final EnumProperty<LampState> LAMP_STATE = EnumProperty.create("lamp_state", LampState.class);
 
-    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 12, 13);
+    private static final VoxelShape SHAPE = Shapes.or(
+        Block.box(3, 0, 3, 13, 13, 13),
+        Block.box(5, 13, 5, 11, 15, 11)
+    );
 
     public HoneyLampBlock(Properties properties) {
         super(properties);
