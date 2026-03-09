@@ -3,7 +3,7 @@
   "textures": {
     "base": "apica:block/iron",
     "top": "apica:block/machines/resonator_center_top",
-    "side": "apica:block/machines/resonator_bar"
+    "side": "apica:block/iron"
   },
   "elements": [
     {
