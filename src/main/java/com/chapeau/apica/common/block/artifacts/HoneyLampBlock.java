@@ -61,7 +61,7 @@ public class HoneyLampBlock extends BaseEntityBlock {
 
     public static final EnumProperty<LampState> LAMP_STATE = EnumProperty.create("lamp_state", LampState.class);
 
-    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 14, 13);
+    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 12, 13);
 
     public HoneyLampBlock(Properties properties) {
         super(properties);
