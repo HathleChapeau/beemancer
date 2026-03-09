@@ -33,8 +33,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Protection d'aile variante A : plaque protectrice simple sur le point
- * d'attache des ailes. Cube 6x1x5 place sur les ailes du HoverBee.
+ * Protection d'aile variante A : deux plaques protectrices (une par aile).
+ * Chaque protecteur est un cube 6x1x5 place sur la base de l'aile correspondante.
  */
 public class WingProtectorPartModel extends HoverbikePartModel {
 
@@ -51,12 +51,19 @@ public class WingProtectorPartModel extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Protection d'aile: 6x1x5 sur les ailes
-        root.addOrReplaceChild("protector",
+        // Protection aile droite: 6x1x5 sur la base de l'aile droite
+        root.addOrReplaceChild("protector_right",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-3.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
-                PartPose.offset(0.0F, 15.0F, -3.0F));
+                        .addBox(-6.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
+                PartPose.offset(-1.5F, 15.0F, -3.0F));
+
+        // Protection aile gauche: 6x1x5 sur la base de l'aile gauche
+        root.addOrReplaceChild("protector_left",
+                CubeListBuilder.create()
+                        .texOffs(0, 6)
+                        .addBox(0.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
+                PartPose.offset(1.5F, 15.0F, -3.0F));
 
         return LayerDefinition.create(mesh, 32, 16);
     }
