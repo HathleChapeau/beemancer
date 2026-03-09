@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Standard Right Control",
+    "model": "control_right",
+    "stat_1": "Gauge_Fill_Rate",
+    "stat_1_value": 0.0,
+    "stat_2": "Gauge_Drain_Rate",
+    "stat_2_value": 0.0
+  },
+  {
+    "name": "Efficient Right Control",
+    "model": "control_right_b",
+    "stat_1": "Gauge_Fill_Rate",
+    "stat_1_value": 0.002,
+    "stat_2": "Gauge_Drain_Rate",
+    "stat_2_value": -0.001
+  },
+  {
+    "name": "Boosted Right Control",
+    "model": "control_right_c",
+    "stat_1": "Gauge_Fill_Rate",
+    "stat_1_value": -0.001,
+    "stat_2": "Gauge_Drain_Rate",
+    "stat_2_value": 0.002
+  }
+]

@@ -49,7 +49,7 @@ public final class HoverbikeSettingsComputer {
      * Calcule les settings finaux a partir des 4 part stacks.
      * Les stacks vides sont ignores (pas de contribution).
      *
-     * @param partStacks tableau de 4 ItemStacks (chassis, coeur, propulseur, radiateur)
+     * @param partStacks tableau de 4 ItemStacks (saddle, wing_protector, control_left, control_right)
      * @return HoverbikeSettings avec toutes les contributions des pieces
      */
     public static HoverbikeSettings compute(ItemStack[] partStacks) {

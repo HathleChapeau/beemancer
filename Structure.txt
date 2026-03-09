@@ -1,7 +1,7 @@
 ################################################################################
 #                              APICA - STRUCTURE                           #
-#                         Dernière mise à jour: 2026-03-04                     #
-#  (Companion System Enhancements + Codex Fixes - 2026-03-04)                    #
+#                         Dernière mise à jour: 2026-03-10                     #
+#  (HoverBee Rename + Part System Overhaul - 2026-03-10)                         #
 ################################################################################
 
 ================================================================================
@@ -128,7 +128,7 @@ Philosophie:
 │   HoverbikeMode                      │ Enum HOVER / RUN                       │
 │   HoverbikeSettings                  │ Record 16 parametres physiques (+pushForce)│
 │   HoverbikePhysics                   │ Calculs stateless (velocity, rotation)  │
-│   HoverbikePart                      │ Enum CHASSIS/COEUR/PROPULSEUR/RADIATEUR│
+│   HoverbikePart                      │ Enum SADDLE/WING_PROTECTOR/CONTROL_L/R│
 │   HoverbikeStatType                  │ Enum 16 stats (+COLLISION_PUSH_FORCE)  │
 │   HoverbikeStatObject                │ Modification stat (type + ranges tier)  │
 │   HoverbikeModifier                  │ Modifier complet (prefix/suffix, tiers)│
@@ -358,11 +358,12 @@ LISTE DES FEATURES:
   Fichier: Structure/feature_honey_reservoir.txt
   Description: Réservoir fluide + Coeur d'Autel (contrôleur) pour multibloc Honey Altar
 
-→ Hoverbike
+→ HoverBee (ex-Hoverbike)
   Fichier: Structure/feature_hoverbike.txt
-  Description: Moto flottante modulaire avec 2 modes (Hover/Run), physique velocite/acceleration,
-    systeme de pieces (4 categories x 3 variantes), edit mode avec shader, assembly table,
-    config JSON externe, modifiers 8 tiers, jauge d'envol, camera controller
+  Description: Abeille montable modulaire avec 2 modes (Hover/Run), physique velocite/acceleration,
+    systeme de pieces (4 categories x 3 variantes: Saddle, Wing Protector, Control Left, Control Right),
+    edit mode avec shader, assembly table, config JSON externe, modifiers 8 tiers, jauge d'envol,
+    camera controller, espece d'abeille configurable, commande /bee giveHoverBee
 
 → Hoverbike Collision System V2
   Description: Systeme de collision ameliore avec probes directionnelles, push entites,

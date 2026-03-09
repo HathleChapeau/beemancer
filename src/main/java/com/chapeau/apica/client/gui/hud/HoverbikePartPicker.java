@@ -58,32 +58,31 @@ public class HoverbikePartPicker {
     private static final Map<HoverbikePart, Vec3> EDIT_OFFSETS = new EnumMap<>(HoverbikePart.class);
 
     static {
-        // Chassis : rails lateraux + plaque inferieure (AABB combinee, genereux)
-        HITBOXES.put(HoverbikePart.CHASSIS, List.of(
-                new AABB(-0.80, 0.40, -1.20, 0.80, 1.20, 1.20)
+        // Saddle : selle sur le dos de l'abeille (6x1x5 + backrest 5x1x1)
+        HITBOXES.put(HoverbikePart.SADDLE, List.of(
+                new AABB(-0.20, 0.20, -0.10, 0.20, 0.35, 0.55)
         ));
 
-        // Coeur : cube central 6x6x6 (padde pour faciliter le clic)
-        HITBOXES.put(HoverbikePart.COEUR, List.of(
-                new AABB(-0.35, -0.60, -0.35, 0.35, 0.10, 0.35)
+        // Wing Protector : protection d'aile (6x1x5 sur les ailes)
+        HITBOXES.put(HoverbikePart.WING_PROTECTOR, List.of(
+                new AABB(-0.70, 0.20, -0.50, 0.70, 0.35, 0.20)
         ));
 
-        // Propulseur : 2 exhausts arriere (AABB combinee, genereux)
-        HITBOXES.put(HoverbikePart.PROPULSEUR, List.of(
-                new AABB(-0.50, 0.35, 0.85, 0.50, 0.95, 1.55)
+        // Control Left : systeme de controle gauche (1x3x3 cote gauche arriere)
+        HITBOXES.put(HoverbikePart.CONTROL_LEFT, List.of(
+                new AABB(-0.40, 0.05, 0.05, -0.20, 0.25, 0.25)
         ));
 
-        // Radiateur : 2 panneaux lateraux (AABBs separees, genereux en X)
-        HITBOXES.put(HoverbikePart.RADIATEUR, List.of(
-                new AABB(0.40, 0.10, -0.90, 0.90, 0.90, 0.65),
-                new AABB(-0.90, 0.10, -0.90, -0.40, 0.90, 0.65)
+        // Control Right : systeme de controle droit (1x3x3 cote droit arriere)
+        HITBOXES.put(HoverbikePart.CONTROL_RIGHT, List.of(
+                new AABB(0.20, 0.05, 0.05, 0.40, 0.25, 0.25)
         ));
 
-        // Edit offsets (identiques aux valeurs dans les PartModel)
-        EDIT_OFFSETS.put(HoverbikePart.CHASSIS, new Vec3(0, 1, 1));
-        EDIT_OFFSETS.put(HoverbikePart.COEUR, new Vec3(0, 1, -1));
-        EDIT_OFFSETS.put(HoverbikePart.PROPULSEUR, new Vec3(0, 0, 1));
-        EDIT_OFFSETS.put(HoverbikePart.RADIATEUR, new Vec3(0, 0, -1));
+        // Edit offsets (direction d'ecartement en mode edit)
+        EDIT_OFFSETS.put(HoverbikePart.SADDLE, new Vec3(0, -1, 0));
+        EDIT_OFFSETS.put(HoverbikePart.WING_PROTECTOR, new Vec3(0, -1, 0));
+        EDIT_OFFSETS.put(HoverbikePart.CONTROL_LEFT, new Vec3(-1, 0, 0));
+        EDIT_OFFSETS.put(HoverbikePart.CONTROL_RIGHT, new Vec3(1, 0, 0));
     }
 
     /**

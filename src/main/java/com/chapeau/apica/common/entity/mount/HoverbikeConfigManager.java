@@ -318,7 +318,7 @@ public class HoverbikeConfigManager {
 
     /**
      * Retourne les clés de base stats pour un variant donné.
-     * @param category nom de la catégorie en minuscules (ex: "chassis")
+     * @param category nom de la catégorie en minuscules (ex: "saddle")
      * @param variantIndex index du variant (0, 1, 2...)
      * @return tableau [stat1Key, stat2Key] ou null si non trouvé
      */
@@ -328,7 +328,7 @@ public class HoverbikeConfigManager {
 
     /**
      * Retourne les valeurs de base stats pour un variant donné.
-     * @param category nom de la catégorie en minuscules (ex: "chassis")
+     * @param category nom de la catégorie en minuscules (ex: "saddle")
      * @param variantIndex index du variant (0, 1, 2...)
      * @return tableau [stat1Value, stat2Value] ou null si non trouvé
      */

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Standard Wing Protector",
+    "model": "wing_protector",
+    "stat_1": "Hover_Acceleration",
+    "stat_1_value": 0.0,
+    "stat_2": "Gravity",
+    "stat_2_value": 0.0
+  },
+  {
+    "name": "Heavy Wing Protector",
+    "model": "wing_protector_b",
+    "stat_1": "Hover_Acceleration",
+    "stat_1_value": -0.001,
+    "stat_2": "Gravity",
+    "stat_2_value": -0.005
+  },
+  {
+    "name": "Aerodynamic Wing Protector",
+    "model": "wing_protector_c",
+    "stat_1": "Hover_Acceleration",
+    "stat_1_value": 0.002,
+    "stat_2": "Gravity",
+    "stat_2_value": 0.002
+  }
+]

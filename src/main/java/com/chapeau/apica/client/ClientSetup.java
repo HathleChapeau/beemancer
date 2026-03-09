@@ -461,7 +461,7 @@ public class ClientSetup {
             }
         }, ApicaItems.MINING_LASER.get());
 
-        // Railgun - render 3D model (leaf blower placeholder) + arm pose (crossbow hold) + no equip bob
+        // Railgun - render 3D model (sniper) + arm pose (crossbow hold) + no equip bob
         event.registerItem(new IClientItemExtensions() {
             private RailgunItemRenderer renderer;
 
@@ -671,6 +671,31 @@ public class ClientSetup {
             com.chapeau.apica.core.bee.BeeSpeciesManager.ensureClientLoaded();
             return 0xFF000000 | com.chapeau.apica.core.bee.BeeSpeciesManager.getSpeciesColor(speciesId);
         }, ApicaItems.SPECIES_ESSENCE.get());
+
+        // Combs - tinting body (layer0) + stripe (layer1) selon les couleurs de l'espèce
+        net.minecraft.world.level.ItemLike[] combItems = ApicaItems.ITEMS.getEntries().stream()
+                .map(e -> e.get())
+                .filter(item -> item instanceof com.chapeau.apica.common.item.CombItem)
+                .toArray(net.minecraft.world.level.ItemLike[]::new);
+
+        event.register((stack, tintIndex) -> {
+            if (!(stack.getItem() instanceof com.chapeau.apica.common.item.CombItem comb)) {
+                return 0xFFFFFFFF;
+            }
+            com.chapeau.apica.core.bee.BeeSpeciesManager.ensureClientLoaded();
+            com.chapeau.apica.core.bee.BeeSpeciesManager.BeeSpeciesData data =
+                    com.chapeau.apica.core.bee.BeeSpeciesManager.getSpecies(comb.getSpeciesId());
+            if (data == null) return 0xFFFFFFFF;
+
+            if (tintIndex == 0) {
+                // Layer 0 (comb_body) - couleur body, opaque
+                return 0xFF000000 | data.partColorBody;
+            } else if (tintIndex == 1) {
+                // Layer 1 (comb_stripe) - couleur stripe, alpha 50%
+                return 0x80000000 | data.partColorStripe;
+            }
+            return 0xFFFFFFFF;
+        }, combItems);
     }
 
     // =========================================================================
@@ -712,7 +737,7 @@ public class ClientSetup {
         // Mining Laser 3D body model (rendu par BEWLR)
         event.register(MiningLaserItemRenderer.BODY_MODEL_LOC);
 
-        // Railgun 3D body model (placeholder leaf blower, rendu par BEWLR)
+        // Railgun 3D body model (sniper converti, rendu par BEWLR)
         event.register(RailgunItemRenderer.BODY_MODEL_LOC);
 
         // Chopper Hive 3D part models (rendu par BEWLR)

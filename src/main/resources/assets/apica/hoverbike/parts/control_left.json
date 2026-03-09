@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Standard Left Control",
+    "model": "control_left",
+    "stat_1": "Rotation_Speed_Max",
+    "stat_1_value": 0.0,
+    "stat_2": "Rotation_Speed_Min",
+    "stat_2_value": 0.0
+  },
+  {
+    "name": "Precision Left Control",
+    "model": "control_left_b",
+    "stat_1": "Rotation_Speed_Max",
+    "stat_1_value": -0.2,
+    "stat_2": "Rotation_Speed_Min",
+    "stat_2_value": 0.1
+  },
+  {
+    "name": "Responsive Left Control",
+    "model": "control_left_c",
+    "stat_1": "Rotation_Speed_Max",
+    "stat_1_value": 0.3,
+    "stat_2": "Rotation_Speed_Min",
+    "stat_2_value": -0.05
+  }
+]

@@ -29,10 +29,10 @@ public class HoverbikeDefaultConfigs {
 
     static JsonArray defaultPartCategories() {
         JsonArray a = new JsonArray();
-        a.add(cat("chassis", "Hover_Max_Speed", "Run_Max_Speed"));
-        a.add(cat("coeur", "Hover_Acceleration", "Run_Acceleration"));
-        a.add(cat("propulseur", "Lift_Speed", "Gauge_Fill_Rate"));
-        a.add(cat("radiateur", "Hover_Friction", "Brake_Deceleration"));
+        a.add(cat("saddle", "Hover_Max_Speed", "Run_Max_Speed"));
+        a.add(cat("wing_protector", "Hover_Acceleration", "Gravity"));
+        a.add(cat("control_left", "Rotation_Speed_Max", "Rotation_Speed_Min"));
+        a.add(cat("control_right", "Gauge_Fill_Rate", "Gauge_Drain_Rate"));
         return a;
     }
 
@@ -142,25 +142,25 @@ public class HoverbikeDefaultConfigs {
      */
     static JsonObject defaultPartBaseStats() {
         JsonObject root = new JsonObject();
-        root.add("chassis", variantArray(
+        root.add("saddle", variantArray(
                 variant(0, "Hover_Max_Speed", 0.15, "Run_Max_Speed", 0.60),
-                variant(1, "Brake_Deceleration", 0.05, "Deceleration", 0.03),
-                variant(2, "Hover_Max_Speed", 0.10, "Run_Max_Speed", 0.80)
+                variant(1, "Hover_Max_Speed", -0.005, "Run_Max_Speed", 0.01),
+                variant(2, "Hover_Max_Speed", 0.01, "Run_Max_Speed", -0.005)
         ));
-        root.add("coeur", variantArray(
-                variant(0, "Hover_Acceleration", 0.004, "Run_Acceleration", 0.005),
-                variant(1, "Hover_Acceleration", 0.006, "Gravity", -0.01),
-                variant(2, "Run_Acceleration", 0.008, "Hover_Acceleration", 0.003)
+        root.add("wing_protector", variantArray(
+                variant(0, "Hover_Acceleration", 0.004, "Gravity", 0.0),
+                variant(1, "Hover_Acceleration", -0.001, "Gravity", -0.005),
+                variant(2, "Hover_Acceleration", 0.002, "Gravity", 0.002)
         ));
-        root.add("propulseur", variantArray(
-                variant(0, "Lift_Speed", 0.08, "Gauge_Fill_Rate", 0.05),
-                variant(1, "Lift_Speed", 0.12, "Gauge_Drain_Rate", -0.01),
-                variant(2, "Gauge_Fill_Rate", 0.08, "Lift_Speed", 0.06)
+        root.add("control_left", variantArray(
+                variant(0, "Rotation_Speed_Max", 0.0, "Rotation_Speed_Min", 0.0),
+                variant(1, "Rotation_Speed_Max", -0.2, "Rotation_Speed_Min", 0.1),
+                variant(2, "Rotation_Speed_Max", 0.3, "Rotation_Speed_Min", -0.05)
         ));
-        root.add("radiateur", variantArray(
-                variant(0, "Hover_Friction", -0.002, "Brake_Deceleration", 0.01),
-                variant(1, "Hover_Friction", -0.003, "Deceleration", 0.005),
-                variant(2, "Brake_Deceleration", 0.015, "Hover_Friction", -0.001)
+        root.add("control_right", variantArray(
+                variant(0, "Gauge_Fill_Rate", 0.0, "Gauge_Drain_Rate", 0.0),
+                variant(1, "Gauge_Fill_Rate", 0.002, "Gauge_Drain_Rate", -0.001),
+                variant(2, "Gauge_Fill_Rate", -0.001, "Gauge_Drain_Rate", 0.002)
         ));
         return root;
     }

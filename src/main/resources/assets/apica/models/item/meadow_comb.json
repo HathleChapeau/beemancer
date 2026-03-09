@@ -1,6 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "apica:item/combs/meadow_comb"
+    "layer0": "apica:item/comb_body",
+    "layer1": "apica:item/comb_stripe"
   }
 }

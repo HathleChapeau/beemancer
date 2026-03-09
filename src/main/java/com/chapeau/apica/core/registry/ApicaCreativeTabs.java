@@ -348,22 +348,22 @@ public class ApicaCreativeTabs {
     private static void addHoverbikeParts(CreativeModeTab.Output output) {
         output.accept(ApicaItems.HOVERBIKE_SPAWN.get());
         output.accept(ApicaItems.ASSEMBLY_TABLE.get());
-        // Chassis
-        output.accept(ApicaItems.CHASSIS_STANDARD.get());
-        output.accept(ApicaItems.CHASSIS_HEAVY_FRAME.get());
-        output.accept(ApicaItems.CHASSIS_ARMORED.get());
-        // Coeur
-        output.accept(ApicaItems.COEUR_CUBE.get());
-        output.accept(ApicaItems.COEUR_PYRAMID.get());
-        output.accept(ApicaItems.COEUR_CRYSTAL.get());
-        // Propulseur
-        output.accept(ApicaItems.PROPULSEUR_DUAL_EXHAUST.get());
-        output.accept(ApicaItems.PROPULSEUR_QUAD_NOZZLES.get());
-        output.accept(ApicaItems.PROPULSEUR_MEGA_REACTOR.get());
-        // Radiateur
-        output.accept(ApicaItems.RADIATEUR_PANELS.get());
-        output.accept(ApicaItems.RADIATEUR_FIN_ARRAY.get());
-        output.accept(ApicaItems.RADIATEUR_WIDE_PANELS.get());
+        // Saddle
+        output.accept(ApicaItems.SADDLE_STANDARD.get());
+        output.accept(ApicaItems.SADDLE_REINFORCED.get());
+        output.accept(ApicaItems.SADDLE_LIGHT.get());
+        // Wing Protector
+        output.accept(ApicaItems.WING_PROTECTOR_STANDARD.get());
+        output.accept(ApicaItems.WING_PROTECTOR_HEAVY.get());
+        output.accept(ApicaItems.WING_PROTECTOR_AERODYNAMIC.get());
+        // Control Left
+        output.accept(ApicaItems.CONTROL_LEFT_STANDARD.get());
+        output.accept(ApicaItems.CONTROL_LEFT_PRECISION.get());
+        output.accept(ApicaItems.CONTROL_LEFT_RESPONSIVE.get());
+        // Control Right
+        output.accept(ApicaItems.CONTROL_RIGHT_STANDARD.get());
+        output.accept(ApicaItems.CONTROL_RIGHT_EFFICIENT.get());
+        output.accept(ApicaItems.CONTROL_RIGHT_BOOSTED.get());
     }
 
     // =========================================================================

@@ -1,14 +1,14 @@
 /**
  * ============================================================
  * [HoverbikeSpawnItem.java]
- * Description: Item pour spawner un Hoverbike dans le monde
+ * Description: Item pour spawner un HoverBee dans le monde
  * ============================================================
  *
  * DÉPENDANCES:
  * ------------------------------------------------------------
  * | Dépendance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
- * | ApicaEntities   | Registre entites     | Type du Hoverbike              |
+ * | ApicaEntities       | Registre entites     | Type du HoverBee               |
  * | HoverbikeEntity     | Entite a spawner     | Creation de l'instance         |
  * ------------------------------------------------------------
  *
@@ -31,7 +31,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Clic droit sur un bloc pour spawner un Hoverbike au-dessus.
+ * Clic droit sur un bloc pour spawner un HoverBee au-dessus.
+ * L'espece par defaut est "meadow".
  */
 public class HoverbikeSpawnItem extends Item {
 
@@ -50,16 +51,15 @@ public class HoverbikeSpawnItem extends Item {
         BlockPos pos = context.getClickedPos().above();
         Vec3 spawnPos = Vec3.atBottomCenterOf(pos);
 
-        HoverbikeEntity hoverbike = ApicaEntities.HOVERBIKE.get().create(serverLevel);
-        if (hoverbike != null) {
-            hoverbike.setPos(spawnPos);
-            hoverbike.setYRot(context.getPlayer() != null ? context.getPlayer().getYRot() : 0);
+        HoverbikeEntity hoverBee = ApicaEntities.HOVERBIKE.get().create(serverLevel);
+        if (hoverBee != null) {
+            hoverBee.setPos(spawnPos);
+            hoverBee.setYRot(context.getPlayer() != null ? context.getPlayer().getYRot() : 0);
             if (context.getPlayer() != null) {
-                hoverbike.setOwner(context.getPlayer());
+                hoverBee.setOwner(context.getPlayer());
             }
-            serverLevel.addFreshEntity(hoverbike);
+            serverLevel.addFreshEntity(hoverBee);
 
-            // Consommer l'item
             if (context.getPlayer() != null && !context.getPlayer().getAbilities().instabuild) {
                 context.getItemInHand().shrink(1);
             }

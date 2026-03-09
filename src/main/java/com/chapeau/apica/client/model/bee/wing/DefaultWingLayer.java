@@ -38,15 +38,23 @@ public final class DefaultWingLayer {
 
         CubeDeformation inflate = new CubeDeformation(0.001F);
 
-        bone.addOrReplaceChild("right_wing",
+        PartDefinition rightWing = bone.addOrReplaceChild("right_wing",
                 CubeListBuilder.create().texOffs(2, 20)
                         .addBox(-18.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F, inflate),
                 PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
+        rightWing.addOrReplaceChild("right_wing_under",
+                CubeListBuilder.create().texOffs(2, 20)
+                        .addBox(-18.0F, 0.0F, -12.0F, 18.0F, 0.0F, 12.0F, inflate),
+                PartPose.offsetAndRotation(0.0F, -0.01F, 0.0F, (float) Math.PI, 0.0F, 0.0F));
 
-        bone.addOrReplaceChild("left_wing",
+        PartDefinition leftWing = bone.addOrReplaceChild("left_wing",
                 CubeListBuilder.create().texOffs(-12, 7)
                         .addBox(0.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F, inflate),
                 PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
+        leftWing.addOrReplaceChild("left_wing_under",
+                CubeListBuilder.create().texOffs(-12, 7)
+                        .addBox(0.0F, 0.0F, -12.0F, 18.0F, 0.0F, 12.0F, inflate),
+                PartPose.offsetAndRotation(0.0F, -0.01F, 0.0F, (float) Math.PI, 0.0F, 0.0F));
 
         return LayerDefinition.create(mesh, 32, 32);
     }

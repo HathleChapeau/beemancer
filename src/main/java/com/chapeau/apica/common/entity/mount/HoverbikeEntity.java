@@ -1,13 +1,10 @@
 /**
  * ============================================================
  * [HoverbikeEntity.java]
- * Description: Entite hoverbike — moto flottante avec modes Hover et Run
+ * Description: Entite HoverBee — abeille geante montable avec modes Hover et Run
  * ============================================================
  *
  * PATTERN: Inspire de Cobblemon PokemonEntity.kt
- * - travel() L1815-1875: Conversion velocite locale -> monde
- * - tickRidden() L2232-2283: Tick rotation et mode
- * - getDefaultGravity() L2494-2502: Desactive vanilla gravity quand monte
  *
  * DÉPENDANCES:
  * ------------------------------------------------------------
@@ -16,6 +13,7 @@
  * | HoverbikeMode       | Enum mode            | Etat courant                   |
  * | HoverbikeSettings   | Constantes physiques | Reference                      |
  * | HoverbikePhysics    | Calculs              | velocity, rotation, transitions|
+ * | BeeSpeciesManager   | Especes abeille      | Model/couleurs par espece      |
  * ------------------------------------------------------------
  *
  * UTILISÉ PAR:
@@ -67,9 +65,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Hoverbike — moto flottante avec physique velocite/acceleration.
+ * HoverBee — abeille geante montable avec physique velocite/acceleration.
  * Deux modes: HOVER (4 directions, basse vitesse) et RUN (avant uniquement, haute vitesse).
  * Gravite reduite, friction glace en permanence.
+ * L'apparence depend de l'espece d'abeille selectionnee (species).
  */
 public class HoverbikeEntity extends Mob implements PlayerRideable {
 
@@ -85,24 +84,28 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     private static final EntityDataAccessor<Boolean> DATA_SPRINT =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.BOOLEAN);
 
+    // --- Species (synched pour rendu cote client) ---
+    private static final EntityDataAccessor<String> DATA_SPECIES =
+            SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.STRING);
+
     // --- Part Variants (synched pour rendu cote client) ---
-    private static final EntityDataAccessor<Integer> DATA_CHASSIS_VARIANT =
+    private static final EntityDataAccessor<Integer> DATA_SADDLE_VARIANT =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> DATA_COEUR_VARIANT =
+    private static final EntityDataAccessor<Integer> DATA_WING_PROTECTOR_VARIANT =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> DATA_PROPULSEUR_VARIANT =
+    private static final EntityDataAccessor<Integer> DATA_CONTROL_LEFT_VARIANT =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> DATA_RADIATEUR_VARIANT =
+    private static final EntityDataAccessor<Integer> DATA_CONTROL_RIGHT_VARIANT =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.INT);
 
     // --- Part Stacks (synched pour calcul de stats et persistence) ---
-    private static final EntityDataAccessor<ItemStack> DATA_CHASSIS_STACK =
+    private static final EntityDataAccessor<ItemStack> DATA_SADDLE_STACK =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.ITEM_STACK);
-    private static final EntityDataAccessor<ItemStack> DATA_COEUR_STACK =
+    private static final EntityDataAccessor<ItemStack> DATA_WING_PROTECTOR_STACK =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.ITEM_STACK);
-    private static final EntityDataAccessor<ItemStack> DATA_PROPULSEUR_STACK =
+    private static final EntityDataAccessor<ItemStack> DATA_CONTROL_LEFT_STACK =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.ITEM_STACK);
-    private static final EntityDataAccessor<ItemStack> DATA_RADIATEUR_STACK =
+    private static final EntityDataAccessor<ItemStack> DATA_CONTROL_RIGHT_STACK =
             SynchedEntityData.defineId(HoverbikeEntity.class, EntityDataSerializers.ITEM_STACK);
 
     // --- Ownership (synched pour affichage client et restriction d'acces) ---
@@ -160,14 +163,15 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         builder.define(DATA_EDITING_PLAYER, Optional.empty());
         builder.define(DATA_MODE, (byte) 0);
         builder.define(DATA_SPRINT, false);
-        builder.define(DATA_CHASSIS_VARIANT, 0);
-        builder.define(DATA_COEUR_VARIANT, 0);
-        builder.define(DATA_PROPULSEUR_VARIANT, 0);
-        builder.define(DATA_RADIATEUR_VARIANT, 0);
-        builder.define(DATA_CHASSIS_STACK, ItemStack.EMPTY);
-        builder.define(DATA_COEUR_STACK, ItemStack.EMPTY);
-        builder.define(DATA_PROPULSEUR_STACK, ItemStack.EMPTY);
-        builder.define(DATA_RADIATEUR_STACK, ItemStack.EMPTY);
+        builder.define(DATA_SPECIES, "meadow");
+        builder.define(DATA_SADDLE_VARIANT, 0);
+        builder.define(DATA_WING_PROTECTOR_VARIANT, 0);
+        builder.define(DATA_CONTROL_LEFT_VARIANT, 0);
+        builder.define(DATA_CONTROL_RIGHT_VARIANT, 0);
+        builder.define(DATA_SADDLE_STACK, ItemStack.EMPTY);
+        builder.define(DATA_WING_PROTECTOR_STACK, ItemStack.EMPTY);
+        builder.define(DATA_CONTROL_LEFT_STACK, ItemStack.EMPTY);
+        builder.define(DATA_CONTROL_RIGHT_STACK, ItemStack.EMPTY);
         builder.define(DATA_OWNER_UUID, Optional.empty());
         builder.define(DATA_OWNER_NAME, "");
     }
@@ -182,13 +186,18 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 .add(Attributes.STEP_HEIGHT, 1.3);
     }
 
+    // --- Species ---
+
+    public String getSpeciesId() {
+        return this.entityData.get(DATA_SPECIES);
+    }
+
+    public void setSpeciesId(String speciesId) {
+        this.entityData.set(DATA_SPECIES, speciesId);
+    }
+
     // --- Gravity Override (Pattern Cobblemon PokemonEntity.kt L2494-2502) ---
 
-    /**
-     * Desactive la gravite vanilla quand monte.
-     * Toute la gravite est geree manuellement dans HoverbikePhysics.
-     * Evite le flickering onGround cause par la superposition de deux systemes de gravite.
-     */
     @Override
     protected double getDefaultGravity() {
         if (this.isVehicle()) {
@@ -202,13 +211,11 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!this.level().isClientSide()) {
-            // Seul le owner peut interagir
             if (getOwnerUUID().isPresent() && !isOwner(player)) {
                 return InteractionResult.PASS;
             }
         }
 
-        // Nourriture : reaction de l'abeille (meme pattern que CompanionBeeEntity)
         ItemStack heldItem = player.getItemInHand(hand);
         boolean isFood = heldItem.is(ApicaTags.Items.BEE_FOOD);
         boolean isHated = !isFood && heldItem.is(ApicaTags.Items.BEE_HATED_FOOD);
@@ -229,7 +236,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             return InteractionResult.SUCCESS;
         }
 
-        // Shift+click : toggle edit mode
         if (player.isSecondaryUseActive()) {
             if (!this.level().isClientSide()) {
                 if (isEditMode() && getEditingPlayerUUID().isPresent()
@@ -242,7 +248,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             return InteractionResult.sidedSuccess(this.level().isClientSide());
         }
 
-        // Click normal : monter (seulement si pas en edit mode et pas deja monte)
         if (!isEditMode() && !this.isVehicle()) {
             if (!this.level().isClientSide()) {
                 player.startRiding(this);
@@ -295,26 +300,16 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     // --- Part Interaction Markers ---
 
-    private static final String MARKER_PREFIX = "hoverbike_part_";
+    private static final String MARKER_PREFIX = "hoverbee_part_";
 
     /** Offsets en espace modele pour chaque part en edit mode. */
     public static final Vec3[] PART_EDIT_OFFSETS = {
-            new Vec3(0, 1, 1),   // CHASSIS
-            new Vec3(0, 1, -1),  // COEUR
-            new Vec3(0, 0, 1),   // PROPULSEUR
-            new Vec3(0, 0, -1)   // RADIATEUR
+            new Vec3(0, 1, 1),    // SADDLE
+            new Vec3(0, 1, -1),   // WING_PROTECTOR
+            new Vec3(0, 0, 1),    // CONTROL_LEFT
+            new Vec3(0, 0, -1)    // CONTROL_RIGHT
     };
 
-    /**
-     * Calcule la position monde d'un marqueur de piece en edit mode.
-     * Convertit l'offset modele en espace monde via rotation yaw du hoverbike.
-     *
-     * Le MobRenderer applique scale(-1,-1,1) puis translate(0,-1.501,0).
-     * En espace monde: model origin = entity.y + 1.501.
-     * L'offset modele (ox, oy, oz) se convertit en monde:
-     *   wx = -ox, wy = -oy, wz = oz (scale flip), puis rotation yaw sur wx/wz.
-     * Position finale = entity.pos + (rotX, MODEL_ORIGIN_Y + wy, rotZ).
-     */
     private static final double MODEL_ORIGIN_Y = 1.501;
 
     public Vec3 computePartWorldPos(int partOrdinal) {
@@ -360,7 +355,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     @Override
     protected void removePassenger(Entity passenger) {
-        // Flag anti-push demontage : ne pas repousser le rider qui vient de descendre
         collisionHandler.onPassengerRemoved(passenger.getUUID());
         super.removePassenger(passenger);
         if (this.getPassengers().isEmpty()) {
@@ -372,10 +366,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         }
     }
 
-    /**
-     * Filtre d'exclusion pour les collisions.
-     * Par defaut tout est inclus sauf : spectateurs, passager, projectiles, items, noPhysics.
-     */
     @Override
     public boolean canCollideWith(Entity other) {
         if (other.isSpectator()) return false;
@@ -391,13 +381,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         return new Vec3(0, dimensions.height() + 0.1, 0);
     }
 
-    // --- Movement Overrides (Pattern Cobblemon PokemonEntity.kt L1805-1813) ---
+    // --- Movement Overrides ---
 
-    /**
-     * Reset la fall distance quand un joueur est monte et que le bike ne pique pas du nez.
-     * Empeche les degats de chute pendant le riding.
-     * Ref: Cobblemon PokemonEntity.kt L1805-1813
-     */
     @Override
     public void move(MoverType type, Vec3 movement) {
         if (this.getControllingPassenger() != null) {
@@ -408,11 +393,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         super.move(type, movement);
     }
 
-    /**
-     * Desactive les interactions fluides quand le bike est monte.
-     * Empeche les courants d'eau de pousser la moto.
-     * Ref: Cobblemon PokemonEntity.kt L2459-2470
-     */
     @Override
     public boolean isAffectedByFluids() {
         if (this.isVehicle()) {
@@ -432,35 +412,23 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         return super.isControlledByLocalInstance();
     }
 
-    // --- Core Riding Logic (Pattern Cobblemon) ---
+    // --- Core Riding Logic ---
 
-    /**
-     * Appele chaque tick quand un joueur est monte.
-     * Gere la rotation, la lecture du sprint key, et les transitions de mode.
-     */
     @Override
     protected void tickRidden(Player driver, Vec3 movementInput) {
         super.tickRidden(driver, movementInput);
-
-        // Sauvegarder yRot avant modification
         this.yRotO = this.getYRot();
-
-        // Lire input
         float forward = Math.signum(driver.zza);
 
-        // Lire sprint/jump key directement (pattern Cobblemon HorseBehaviour.kt L144)
-        // driver.isSprinting() ne fonctionne pas quand le joueur monte une entite
         if (this.level().isClientSide) {
             this.sprintPressed = isSprintKeyDown();
             this.jumpPressed = isJumpKeyDown();
         }
 
-        // Jauge d'envol : se remplit au sol, sans saut, et uniquement en HOVER
         if (!jumpPressed && this.onGround() && mode == HoverbikeMode.HOVER) {
             gaugeLevel = Math.min(1.0f, gaugeLevel + (float) settings.gaugeFillRate());
         }
 
-        // Calculer et appliquer la rotation
         float yawDelta = HoverbikePhysics.calculateYawDelta(
                 driver.getYRot(), this.getYRot(),
                 rideVelocity.z, mode, settings
@@ -468,12 +436,9 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         this.prevYawDelta = this.lastYawDelta;
         this.lastYawDelta = yawDelta;
         this.setRot(this.getYRot() + yawDelta, 0.0f);
-
-        // Sync rotations
         this.yHeadRot = this.getYRot();
         this.yBodyRot = this.getYRot();
 
-        // Transitions de mode
         if (mode == HoverbikeMode.HOVER) {
             if (HoverbikePhysics.shouldTransitionToRun(forward, sprintPressed, rideVelocity.z, settings)) {
                 mode = HoverbikeMode.RUN;
@@ -484,31 +449,18 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             }
         }
 
-        // Syncher mode et sprint pour les autres clients
         this.entityData.set(DATA_MODE, (byte) mode.ordinal());
         this.entityData.set(DATA_SPRINT, sprintPressed);
     }
 
-    /**
-     * Lecture du sprint key cote client.
-     * Isole dans une methode separee pour que la reference a Minecraft
-     * ne soit resolue que cote client.
-     */
     private static boolean isSprintKeyDown() {
         return Minecraft.getInstance().options.keySprint.isDown();
     }
 
-    /**
-     * Lecture du jump key cote client.
-     */
     private static boolean isJumpKeyDown() {
         return Minecraft.getInstance().options.keyJump.isDown();
     }
 
-    /**
-     * Calcule et applique le mouvement.
-     * Pattern Cobblemon: PokemonEntity.travel() L1815-1875
-     */
     @Override
     public void travel(Vec3 movementInput) {
         Player driver = (this.getControllingPassenger() instanceof Player p) ? p : null;
@@ -517,11 +469,9 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             return;
         }
 
-        // Lire input joueur
         float forward = Math.signum(driver.zza);
         float strafe = Math.signum(driver.xxa);
 
-        // Calculer la velocite locale selon le mode
         if (mode == HoverbikeMode.RUN) {
             rideVelocity = HoverbikePhysics.calculateRunVelocity(
                     forward, rideVelocity, this.onGround(), settings
@@ -532,8 +482,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             );
         }
 
-        // Envol : maintenir saut = montee douce qui consomme la jauge
-        // En RUN: drain x1.3, jauge ne se remplit pas
         if (jumpPressed && gaugeLevel > 0) {
             rideVelocity = new Vec3(rideVelocity.x, settings.liftSpeed(), rideVelocity.z);
             float drain = (float) settings.gaugeDrainRate();
@@ -543,38 +491,25 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             gaugeLevel = Math.max(0, gaugeLevel - drain);
         }
 
-        // Convertir local -> world
         Vec3 worldVelocity = HoverbikePhysics.localToWorld(rideVelocity, this.getYRot());
-
-        // Appliquer avec inertie (smooth glace)
         Vec3 diff = worldVelocity.subtract(this.getDeltaMovement());
         double inertia = 0.85;
         this.setDeltaMovement(this.getDeltaMovement().add(diff.scale(inertia)));
 
-        // Anti-bounce trick (Pattern Cobblemon PokemonEntity.kt L1785-1787)
-        // Micro offset Y negatif quand au sol pour eviter le flickering onGround
         Vec3 movement = this.getDeltaMovement();
         if (this.onGround() && movement.y == 0.0) {
             movement = movement.subtract(0, 0.0001, 0);
             this.setDeltaMovement(movement);
         }
 
-        // Raycasts predictifs : mesurer les distances aux blocs devant le nez (debug only)
         updatePredictiveRaycasts();
-
-        // Appliquer le mouvement (vanilla move gere step-up et collision)
         this.move(MoverType.SELF, this.getDeltaMovement());
 
-        // Collision feedback (pattern Cobblemon HorseBehaviour L298-300) :
-        // Recalibrer rideVelocity sur la vitesse reelle post-collision.
-        // La direction reste celle du rideVelocity, mais la magnitude est ramenee
-        // a ce que le move() a reellement permis. Empeche l'acceleration dans les murs.
         if (this.horizontalCollision) {
             double postCollisionSpeed = this.getDeltaMovement().length();
             rideVelocity = rideVelocity.normalize().scale(postCollisionSpeed);
         }
 
-        // Collision entites via probes (server-side uniquement)
         if (!this.level().isClientSide()) {
             AABB[] probes = HoverbikeCollisionGeometry.calculateWorldBoxes(this.position(), this.getYRot());
             collisionHandler.resolveEntityCollisions(this, probes, this.level(), settings);
@@ -582,40 +517,18 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     }
 
     // =========================================================================
-    // RAYCASTS PREDICTIFS — 6 rays depuis le nez du bike (informatifs)
+    // RAYCASTS PREDICTIFS
     // =========================================================================
 
-    /** Offset local du nez du bike (Z = avant). */
     private static final Vec3 NOSE_OFFSET = new Vec3(0, 0.4, 0.8);
-
-    /** Ecart lateral des rays gauche/droite par rapport au centre. */
     private static final double RAY_LATERAL_SPREAD = 0.4;
-
-    /** Offset Y vers le bas pour l'origine des 3 rays du dessous. */
     private static final double RAY_BOTTOM_Y_OFFSET = -0.3;
-
-    /** Angle de plongee des 3 rays bas (radians, ~30 degres). */
     private static final double RAY_BOTTOM_PITCH = -0.52;
-
-    /** Longueur minimale des rays (a vitesse quasi nulle). */
     private static final double RAY_MIN_LENGTH = 0.5;
-
-    /** Longueur maximale des rays (a vitesse max). */
     private static final double RAY_MAX_LENGTH = 3.0;
-
-    /** Seuil de vitesse en dessous duquel les raycasts ne s'activent pas. */
     private static final double RAY_SPEED_THRESHOLD = 0.03;
-
-    /** Distances mesurees par les 6 raycasts (-1 = pas de hit). */
     private final double[] rayDistances = new double[6];
 
-    /**
-     * Lance 6 raycasts depuis le nez du bike (informatifs uniquement).
-     * Ne modifie PAS la velocite — stocke les distances pour debug et usage futur.
-     * 3 horizontaux (gauche, centre, droite) pointant devant,
-     * 3 diagonaux bas (bas-gauche, bas-centre, bas-droite) pointant devant-bas.
-     * La longueur des rays est proportionnelle a la vitesse.
-     */
     private void updatePredictiveRaycasts() {
         double speed = rideVelocity.horizontalDistance();
         if (speed < RAY_SPEED_THRESHOLD) {
@@ -631,25 +544,19 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         float sinYaw = Mth.sin(yawRad);
         float cosYaw = Mth.cos(yawRad);
 
-        // Longueur des rays proportionnelle a la vitesse
         double maxSpeed = (mode == HoverbikeMode.RUN) ? settings.maxRunSpeed() : settings.maxHoverSpeed();
         double speedRatio = Mth.clamp(speed / maxSpeed, 0.0, 1.0);
         double rayLength = Mth.lerp(speedRatio, RAY_MIN_LENGTH, RAY_MAX_LENGTH);
 
-        // Position du nez en monde
         Vec3 noseWorld = this.position().add(
                 NOSE_OFFSET.x * cosYaw - NOSE_OFFSET.z * sinYaw,
                 NOSE_OFFSET.y,
                 NOSE_OFFSET.z * cosYaw + NOSE_OFFSET.x * sinYaw
         );
 
-        // Direction avant (horizontale)
         Vec3 forwardDir = new Vec3(-sinYaw, 0, cosYaw);
-
-        // Direction laterale (droite)
         Vec3 rightDir = new Vec3(cosYaw, 0, sinYaw);
 
-        // Direction avant-bas (diagonale plongee)
         double pitchCos = Math.cos(RAY_BOTTOM_PITCH);
         double pitchSin = Math.sin(RAY_BOTTOM_PITCH);
         Vec3 forwardDownDir = new Vec3(
@@ -658,10 +565,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
                 cosYaw * pitchCos
         );
 
-        // Origine des 3 rays bas (meme X/Z que le nez, decale en Y)
         Vec3 noseBottom = noseWorld.add(0, RAY_BOTTOM_Y_OFFSET, 0);
 
-        // Origines et directions des 6 rays
         Vec3[] origins = {
                 noseWorld.add(rightDir.scale(-RAY_LATERAL_SPREAD)),
                 noseWorld,
@@ -696,7 +601,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         }
     }
 
-
     @Override
     protected Vec3 getRiddenInput(Player driver, Vec3 movementInput) {
         return rideVelocity;
@@ -709,31 +613,21 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     // --- Glow en edit mode ---
 
-    /**
-     * L'entite brille en edit mode (contour visible).
-     * Cote client uniquement pour eviter de modifier le synched glowing tag.
-     */
     @Override
     public boolean isCurrentlyGlowing() {
         return isEditMode() || super.isCurrentlyGlowing();
     }
 
-    // --- Tick (edit mode + shader management) ---
+    // --- Tick ---
 
     @Override
     public void tick() {
         super.tick();
 
-        // Server: tick collision handler, unstick, anti-fly kick
         if (!this.level().isClientSide()) {
             collisionHandler.tick();
-
-            // Unstick server-side : si le bounding box du bike chevauche un bloc solide,
-            // le pousser vers le haut jusqu'a ce qu'il soit libre.
-            // Cote serveur = autoritaire, pas de "moved wrongly".
             serverUnstick();
 
-            // Anti-fly kick : reset les compteurs vanilla quand le bike vole normalement
             if (this.isVehicle() && !this.onGround()) {
                 customAboveGroundTicks++;
             } else {
@@ -741,7 +635,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             }
         }
 
-        // Server: verifier que l'editeur est toujours a portee
         if (!this.level().isClientSide() && isEditMode() && getEditingPlayerUUID().isPresent()) {
             Player editor = this.level().getPlayerByUUID(getEditingPlayerUUID().get());
             if (editor == null || editor.distanceTo(this) > EDIT_MODE_MAX_DISTANCE) {
@@ -749,7 +642,6 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
             }
         }
 
-        // Client: gerer le shader d'assombrissement
         if (this.level().isClientSide()) {
             boolean shouldBeActive = isEditMode() && isLocalPlayerEditor();
             if (shouldBeActive && !editShaderActive) {
@@ -765,16 +657,12 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     public void onRemovedFromLevel() {
         super.onRemovedFromLevel();
-        // Nettoyer le shader si l'entite est retiree pendant l'edit mode
         if (this.level().isClientSide() && editShaderActive) {
             unloadEditShader();
             editShaderActive = false;
         }
     }
 
-    /**
-     * Verifie si le joueur local est l'editeur de cette moto.
-     */
     private boolean isLocalPlayerEditor() {
         Optional<UUID> editorUUID = getEditingPlayerUUID();
         if (editorUUID.isEmpty()) return false;
@@ -795,27 +683,17 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         Minecraft.getInstance().gameRenderer.shutdownEffect();
     }
 
-    /**
-     * Indique si le shader d'edit mode est actif (utilise par HoverbikeEditModeEffect).
-     */
     public static boolean isEditShaderActive() {
         return editShaderActive;
     }
 
     // --- Server-side Unstick ---
 
-    /**
-     * Verifie cote serveur si le bounding box du bike chevauche un bloc solide.
-     * Si oui, pousse le bike vers le haut par petits increments jusqu'a une position libre.
-     * Cote serveur = autoritaire, elimine les "moved wrongly" quand le bike est coince.
-     */
     private void serverUnstick() {
         AABB bbox = this.getBoundingBox();
         if (this.level().noCollision(this, bbox)) {
             return;
         }
-
-        // Le bike est coince dans un bloc solide — chercher une position libre au-dessus
         double originalY = this.getY();
         for (int i = 1; i <= 5; i++) {
             double testY = originalY + i * 0.25;
@@ -832,7 +710,7 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
 
     @Override
     protected void registerGoals() {
-        // Pas de goals — l'entite ne fait rien seule
+        // Pas de goals
     }
 
     // --- Save/Load ---
@@ -840,16 +718,15 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.putInt("ChassisVariant", this.entityData.get(DATA_CHASSIS_VARIANT));
-        tag.putInt("CoeurVariant", this.entityData.get(DATA_COEUR_VARIANT));
-        tag.putInt("PropulseurVariant", this.entityData.get(DATA_PROPULSEUR_VARIANT));
-        tag.putInt("RadiateurVariant", this.entityData.get(DATA_RADIATEUR_VARIANT));
-        // Part stacks (pour persistence des modifiers per-stack)
-        savePartStack(tag, "ChassisStack", DATA_CHASSIS_STACK);
-        savePartStack(tag, "CoeurStack", DATA_COEUR_STACK);
-        savePartStack(tag, "PropulseurStack", DATA_PROPULSEUR_STACK);
-        savePartStack(tag, "RadiateurStack", DATA_RADIATEUR_STACK);
-        // Ownership
+        tag.putString("Species", getSpeciesId());
+        tag.putInt("SaddleVariant", this.entityData.get(DATA_SADDLE_VARIANT));
+        tag.putInt("WingProtectorVariant", this.entityData.get(DATA_WING_PROTECTOR_VARIANT));
+        tag.putInt("ControlLeftVariant", this.entityData.get(DATA_CONTROL_LEFT_VARIANT));
+        tag.putInt("ControlRightVariant", this.entityData.get(DATA_CONTROL_RIGHT_VARIANT));
+        savePartStack(tag, "SaddleStack", DATA_SADDLE_STACK);
+        savePartStack(tag, "WingProtectorStack", DATA_WING_PROTECTOR_STACK);
+        savePartStack(tag, "ControlLeftStack", DATA_CONTROL_LEFT_STACK);
+        savePartStack(tag, "ControlRightStack", DATA_CONTROL_RIGHT_STACK);
         Optional<UUID> ownerUuid = getOwnerUUID();
         if (ownerUuid.isPresent()) {
             tag.putUUID("OwnerUUID", ownerUuid.get());
@@ -860,17 +737,16 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("ChassisVariant")) this.entityData.set(DATA_CHASSIS_VARIANT, tag.getInt("ChassisVariant"));
-        if (tag.contains("CoeurVariant")) this.entityData.set(DATA_COEUR_VARIANT, tag.getInt("CoeurVariant"));
-        if (tag.contains("PropulseurVariant")) this.entityData.set(DATA_PROPULSEUR_VARIANT, tag.getInt("PropulseurVariant"));
-        if (tag.contains("RadiateurVariant")) this.entityData.set(DATA_RADIATEUR_VARIANT, tag.getInt("RadiateurVariant"));
-        // Part stacks
-        loadPartStack(tag, "ChassisStack", DATA_CHASSIS_STACK);
-        loadPartStack(tag, "CoeurStack", DATA_COEUR_STACK);
-        loadPartStack(tag, "PropulseurStack", DATA_PROPULSEUR_STACK);
-        loadPartStack(tag, "RadiateurStack", DATA_RADIATEUR_STACK);
+        if (tag.contains("Species")) setSpeciesId(tag.getString("Species"));
+        if (tag.contains("SaddleVariant")) this.entityData.set(DATA_SADDLE_VARIANT, tag.getInt("SaddleVariant"));
+        if (tag.contains("WingProtectorVariant")) this.entityData.set(DATA_WING_PROTECTOR_VARIANT, tag.getInt("WingProtectorVariant"));
+        if (tag.contains("ControlLeftVariant")) this.entityData.set(DATA_CONTROL_LEFT_VARIANT, tag.getInt("ControlLeftVariant"));
+        if (tag.contains("ControlRightVariant")) this.entityData.set(DATA_CONTROL_RIGHT_VARIANT, tag.getInt("ControlRightVariant"));
+        loadPartStack(tag, "SaddleStack", DATA_SADDLE_STACK);
+        loadPartStack(tag, "WingProtectorStack", DATA_WING_PROTECTOR_STACK);
+        loadPartStack(tag, "ControlLeftStack", DATA_CONTROL_LEFT_STACK);
+        loadPartStack(tag, "ControlRightStack", DATA_CONTROL_RIGHT_STACK);
         recomputeSettings();
-        // Ownership
         if (tag.hasUUID("OwnerUUID")) {
             this.entityData.set(DATA_OWNER_UUID, Optional.of(tag.getUUID("OwnerUUID")));
             this.entityData.set(DATA_OWNER_NAME, tag.getString("OwnerName"));
@@ -908,67 +784,56 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     /** Retourne l'index de variante pour une partie donnee. */
     public int getPartVariant(HoverbikePart part) {
         return switch (part) {
-            case CHASSIS -> this.entityData.get(DATA_CHASSIS_VARIANT);
-            case COEUR -> this.entityData.get(DATA_COEUR_VARIANT);
-            case PROPULSEUR -> this.entityData.get(DATA_PROPULSEUR_VARIANT);
-            case RADIATEUR -> this.entityData.get(DATA_RADIATEUR_VARIANT);
+            case SADDLE -> this.entityData.get(DATA_SADDLE_VARIANT);
+            case WING_PROTECTOR -> this.entityData.get(DATA_WING_PROTECTOR_VARIANT);
+            case CONTROL_LEFT -> this.entityData.get(DATA_CONTROL_LEFT_VARIANT);
+            case CONTROL_RIGHT -> this.entityData.get(DATA_CONTROL_RIGHT_VARIANT);
         };
     }
 
     /** Definit l'index de variante pour une partie donnee. */
     public void setPartVariant(HoverbikePart part, int variant) {
         switch (part) {
-            case CHASSIS -> this.entityData.set(DATA_CHASSIS_VARIANT, variant);
-            case COEUR -> this.entityData.set(DATA_COEUR_VARIANT, variant);
-            case PROPULSEUR -> this.entityData.set(DATA_PROPULSEUR_VARIANT, variant);
-            case RADIATEUR -> this.entityData.set(DATA_RADIATEUR_VARIANT, variant);
+            case SADDLE -> this.entityData.set(DATA_SADDLE_VARIANT, variant);
+            case WING_PROTECTOR -> this.entityData.set(DATA_WING_PROTECTOR_VARIANT, variant);
+            case CONTROL_LEFT -> this.entityData.set(DATA_CONTROL_LEFT_VARIANT, variant);
+            case CONTROL_RIGHT -> this.entityData.set(DATA_CONTROL_RIGHT_VARIANT, variant);
         }
     }
 
-    // --- Part Stacks (pour calcul de stats) ---
+    // --- Part Stacks ---
 
-    /** Retourne le ItemStack de la piece equipee pour une categorie. */
     public ItemStack getPartStack(HoverbikePart part) {
         return switch (part) {
-            case CHASSIS -> this.entityData.get(DATA_CHASSIS_STACK);
-            case COEUR -> this.entityData.get(DATA_COEUR_STACK);
-            case PROPULSEUR -> this.entityData.get(DATA_PROPULSEUR_STACK);
-            case RADIATEUR -> this.entityData.get(DATA_RADIATEUR_STACK);
+            case SADDLE -> this.entityData.get(DATA_SADDLE_STACK);
+            case WING_PROTECTOR -> this.entityData.get(DATA_WING_PROTECTOR_STACK);
+            case CONTROL_LEFT -> this.entityData.get(DATA_CONTROL_LEFT_STACK);
+            case CONTROL_RIGHT -> this.entityData.get(DATA_CONTROL_RIGHT_STACK);
         };
     }
 
-    /**
-     * Definit le ItemStack d'une piece et met a jour le variant visuel en meme temps.
-     * Recalcule automatiquement les settings.
-     */
     public void setPartStack(HoverbikePart part, ItemStack stack) {
         switch (part) {
-            case CHASSIS -> this.entityData.set(DATA_CHASSIS_STACK, stack.copy());
-            case COEUR -> this.entityData.set(DATA_COEUR_STACK, stack.copy());
-            case PROPULSEUR -> this.entityData.set(DATA_PROPULSEUR_STACK, stack.copy());
-            case RADIATEUR -> this.entityData.set(DATA_RADIATEUR_STACK, stack.copy());
+            case SADDLE -> this.entityData.set(DATA_SADDLE_STACK, stack.copy());
+            case WING_PROTECTOR -> this.entityData.set(DATA_WING_PROTECTOR_STACK, stack.copy());
+            case CONTROL_LEFT -> this.entityData.set(DATA_CONTROL_LEFT_STACK, stack.copy());
+            case CONTROL_RIGHT -> this.entityData.set(DATA_CONTROL_RIGHT_STACK, stack.copy());
         }
-        // Mettre a jour le variant visuel depuis le stack
         if (!stack.isEmpty() && stack.getItem() instanceof com.chapeau.apica.common.item.mount.HoverbikePartItem partItem) {
             setPartVariant(part, partItem.getVariantIndex());
         }
         recomputeSettings();
     }
 
-    /** Retourne les 4 part stacks dans l'ordre CHASSIS, COEUR, PROPULSEUR, RADIATEUR. */
     public ItemStack[] getAllPartStacks() {
         return new ItemStack[]{
-                getPartStack(HoverbikePart.CHASSIS),
-                getPartStack(HoverbikePart.COEUR),
-                getPartStack(HoverbikePart.PROPULSEUR),
-                getPartStack(HoverbikePart.RADIATEUR)
+                getPartStack(HoverbikePart.SADDLE),
+                getPartStack(HoverbikePart.WING_PROTECTOR),
+                getPartStack(HoverbikePart.CONTROL_LEFT),
+                getPartStack(HoverbikePart.CONTROL_RIGHT)
         };
     }
 
-    /**
-     * Recalcule les HoverbikeSettings en fonction des pieces actuellement equipees.
-     * Appele quand un part stack change (server-side et client-side via onSyncedDataUpdated).
-     */
     public void recomputeSettings() {
         this.settings = HoverbikeSettingsComputer.compute(getAllPartStacks());
     }
@@ -976,10 +841,9 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
         super.onSyncedDataUpdated(accessor);
-        // Recalculer les settings cote client quand un part stack est synchronise
         if (this.level().isClientSide()) {
-            if (accessor.equals(DATA_CHASSIS_STACK) || accessor.equals(DATA_COEUR_STACK)
-                    || accessor.equals(DATA_PROPULSEUR_STACK) || accessor.equals(DATA_RADIATEUR_STACK)) {
+            if (accessor.equals(DATA_SADDLE_STACK) || accessor.equals(DATA_WING_PROTECTOR_STACK)
+                    || accessor.equals(DATA_CONTROL_LEFT_STACK) || accessor.equals(DATA_CONTROL_RIGHT_STACK)) {
                 recomputeSettings();
             }
         }
@@ -988,97 +852,37 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     // --- Misc ---
 
     @Override
-    public boolean canBeLeashed() {
-        return false;
-    }
+    public boolean canBeLeashed() { return false; }
 
     @Override
-    public boolean isPushable() {
-        return false;
-    }
+    public boolean isPushable() { return false; }
 
-    /**
-     * Le joueur ne demonte pas automatiquement sous l'eau.
-     * Ref: Cobblemon PokemonEntity.kt L2490-2492
-     */
     @Override
-    public boolean dismountsUnderwater() {
-        return false;
-    }
+    public boolean dismountsUnderwater() { return false; }
 
     // --- Debug Getters ---
 
-    public HoverbikeMode getMode() {
-        return mode;
-    }
+    public HoverbikeMode getMode() { return mode; }
 
-    /**
-     * Retourne le mode synched depuis EntityData (pour les clients distants).
-     */
     public HoverbikeMode getSynchedMode() {
         byte ordinal = this.entityData.get(DATA_MODE);
         HoverbikeMode[] modes = HoverbikeMode.values();
         return (ordinal >= 0 && ordinal < modes.length) ? modes[ordinal] : HoverbikeMode.HOVER;
     }
 
-    /**
-     * Retourne le sprint synched depuis EntityData (pour les clients distants).
-     */
-    public boolean isSynchedSprinting() {
-        return this.entityData.get(DATA_SPRINT);
-    }
+    public boolean isSynchedSprinting() { return this.entityData.get(DATA_SPRINT); }
+    public Vec3 getRideVelocity() { return rideVelocity; }
+    public double getForwardSpeed() { return rideVelocity.z; }
+    public boolean isSprintPressed() { return sprintPressed; }
+    public HoverbikeSettings getSettings() { return settings; }
+    public float getGaugeLevel() { return gaugeLevel; }
+    public boolean isJumpPressed() { return jumpPressed; }
+    public float getLastYawDelta() { return lastYawDelta; }
+    public float getPrevYawDelta() { return prevYawDelta; }
 
-    public Vec3 getRideVelocity() {
-        return rideVelocity;
-    }
-
-    public double getForwardSpeed() {
-        return rideVelocity.z;
-    }
-
-    public boolean isSprintPressed() {
-        return sprintPressed;
-    }
-
-    public HoverbikeSettings getSettings() {
-        return settings;
-    }
-
-    public float getGaugeLevel() {
-        return gaugeLevel;
-    }
-
-    public boolean isJumpPressed() {
-        return jumpPressed;
-    }
-
-    public float getLastYawDelta() {
-        return lastYawDelta;
-    }
-
-    public float getPrevYawDelta() {
-        return prevYawDelta;
-    }
-
-    // --- Debug Raycasts Getters ---
-
-    public boolean isDebugRaysActive() {
-        return debugRaysActive;
-    }
-
-    public Vec3[] getDebugRayStarts() {
-        return debugRayStarts;
-    }
-
-    public Vec3[] getDebugRayEnds() {
-        return debugRayEnds;
-    }
-
-    public Vec3[] getDebugRayHits() {
-        return debugRayHits;
-    }
-
-    public double[] getRayDistances() {
-        return rayDistances;
-    }
+    public boolean isDebugRaysActive() { return debugRaysActive; }
+    public Vec3[] getDebugRayStarts() { return debugRayStarts; }
+    public Vec3[] getDebugRayEnds() { return debugRayEnds; }
+    public Vec3[] getDebugRayHits() { return debugRayHits; }
+    public double[] getRayDistances() { return rayDistances; }
 }

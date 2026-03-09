@@ -14,7 +14,7 @@
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - ChassisPartModel, CoeurPartModel, PropulseurPartModel, RadiateurPartModel
+ * - SaddlePartModel, WingProtectorPartModel, ControlLeftPartModel, ControlRightPartModel
  * - HoverbikePartLayer.java: Rendu des parties
  *
  * ============================================================
@@ -49,7 +49,7 @@ public abstract class HoverbikePartModel extends HierarchicalModel<HoverbikeEnti
         return this.root;
     }
 
-    /** Type de partie (CHASSIS, COEUR, etc.). */
+    /** Type de partie (SADDLE, WING_PROTECTOR, etc.). */
     public abstract HoverbikePart getPartType();
 
     /** Texture utilisee pour rendre cette partie. */

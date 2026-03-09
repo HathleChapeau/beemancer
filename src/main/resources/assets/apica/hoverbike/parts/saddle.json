@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Standard Saddle",
+    "model": "saddle",
+    "stat_1": "Hover_Max_Speed",
+    "stat_1_value": 0.0,
+    "stat_2": "Run_Max_Speed",
+    "stat_2_value": 0.0
+  },
+  {
+    "name": "Reinforced Saddle",
+    "model": "saddle_b",
+    "stat_1": "Hover_Max_Speed",
+    "stat_1_value": -0.005,
+    "stat_2": "Run_Max_Speed",
+    "stat_2_value": 0.01
+  },
+  {
+    "name": "Light Saddle",
+    "model": "saddle_c",
+    "stat_1": "Hover_Max_Speed",
+    "stat_1_value": 0.01,
+    "stat_2": "Run_Max_Speed",
+    "stat_2_value": -0.005
+  }
+]

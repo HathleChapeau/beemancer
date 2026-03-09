@@ -27,6 +27,8 @@ import com.chapeau.apica.common.codex.CodexNode;
 import com.chapeau.apica.common.codex.CodexPage;
 import com.chapeau.apica.common.codex.CodexPlayerData;
 import com.chapeau.apica.common.entity.mount.HoverbikeConfigManager;
+import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
+import com.chapeau.apica.core.registry.ApicaEntities;
 import com.chapeau.apica.common.quest.Quest;
 import com.chapeau.apica.common.quest.QuestManager;
 import com.chapeau.apica.common.quest.QuestPlayerData;
@@ -125,6 +127,23 @@ public class ApicaCommands {
                             return builder.buildFuture();
                         })
                         .executes(context -> giveSpeciesEssence(
+                            context.getSource(),
+                            StringArgumentType.getString(context, "species")
+                        ))
+                    )
+                )
+                .then(Commands.literal("giveHoverBee")
+                    .requires(source -> source.hasPermission(2))
+                    .then(Commands.argument("species", StringArgumentType.string())
+                        .suggests((context, builder) -> {
+                            for (String id : BeeSpeciesManager.getAllSpeciesIds()) {
+                                if (id.startsWith(builder.getRemainingLowerCase())) {
+                                    builder.suggest(id);
+                                }
+                            }
+                            return builder.buildFuture();
+                        })
+                        .executes(context -> giveHoverBee(
                             context.getSource(),
                             StringArgumentType.getString(context, "species")
                         ))
@@ -336,6 +355,39 @@ public class ApicaCommands {
             }
 
             source.sendSuccess(() -> Component.literal("Gave 1 Species Essence (" + speciesId + ")"), true);
+            return Command.SINGLE_SUCCESS;
+        }
+
+        source.sendFailure(Component.literal("This command can only be used by a player."));
+        return 0;
+    }
+
+    // ============================================================
+    // HOVERBEE COMMAND
+    // ============================================================
+
+    private static int giveHoverBee(CommandSourceStack source, String speciesId) {
+        if (source.getEntity() instanceof ServerPlayer player) {
+            if (!BeeSpeciesManager.hasSpecies(speciesId)) {
+                source.sendFailure(Component.literal("Unknown species: " + speciesId));
+                return 0;
+            }
+
+            if (!(player.level() instanceof ServerLevel serverLevel)) return 0;
+
+            HoverbikeEntity hoverBee = ApicaEntities.HOVERBIKE.get().create(serverLevel);
+            if (hoverBee == null) {
+                source.sendFailure(Component.literal("Failed to create HoverBee entity."));
+                return 0;
+            }
+
+            hoverBee.setSpeciesId(speciesId);
+            hoverBee.setPos(player.position().add(0, 1, 0));
+            hoverBee.setYRot(player.getYRot());
+            hoverBee.setOwner(player);
+            serverLevel.addFreshEntity(hoverBee);
+
+            source.sendSuccess(() -> Component.literal("Spawned HoverBee (" + speciesId + ")"), true);
             return Command.SINGLE_SUCCESS;
         }
 

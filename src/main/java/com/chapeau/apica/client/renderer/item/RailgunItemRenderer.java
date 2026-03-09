@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [RailgunItemRenderer.java]
- * Description: BEWLR placeholder pour le Railgun (reutilise le modele Leaf Blower)
+ * Description: BEWLR pour le Railgun (modele sniper converti)
  * ============================================================
  *
  * DEPENDANCES:
@@ -39,15 +39,15 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
- * BEWLR pour le Railgun. Rendu du body model (placeholder Leaf Blower).
- * Pas d'overlay ni de barres — le modele sera remplace par un vrai modele plus tard.
+ * BEWLR pour le Railgun. Rendu du body model (sniper converti).
+ * Handles: "fronthandle" (centre: 8.5, 5, 11) et "handle" (centre: 8.5, 3.5, -4.5).
  */
 @OnlyIn(Dist.CLIENT)
 public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     public static final ModelResourceLocation BODY_MODEL_LOC =
         ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(
-            Apica.MOD_ID, "item/leaf_blower_body"));
+            Apica.MOD_ID, "item/railgun_body"));
 
     public RailgunItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),

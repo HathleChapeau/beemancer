@@ -3,6 +3,37 @@
 ################################################################################
 
 ================================================================================
+2026-03-10 - HoverBee Rename + Part System Overhaul + Wing Underside Fix
+================================================================================
+
+ApicaBee Wing Underside Fix:
+- DefaultWingLayer.java: Added child parts rotated PI on X axis for wing underside
+- RoundWingLayer.java: Same fix applied to round wings
+- Fix: UP face texture (correct UV) rendered on both sides of 0-height wing boxes
+
+HoverBee Part System Overhaul (ex-Hoverbike):
+- HoverbikePart enum: CHASSIS/COEUR/PROPULSEUR/RADIATEUR → SADDLE/WING_PROTECTOR/CONTROL_LEFT/CONTROL_RIGHT
+- HoverbikeEntity: +DATA_SPECIES (String, default "meadow"), all data accessors renamed
+- 12 old part models deleted (Chassis/Coeur/Propulseur/Radiateur PartModel[/B/C])
+- 12 new part models created:
+  - SaddlePartModel[/B/C]: 6x1x5 seat + 5x1x1 backrest (32x16 textures)
+  - WingProtectorPartModel[/B/C]: 6x1x5 on wings (32x16 textures)
+  - ControlLeftPartModel[/B/C]: 1x3x3 on left rear side (16x16 textures)
+  - ControlRightPartModel[/B/C]: 1x3x3 on right rear side (16x16 textures)
+- 12 placeholder textures generated (solid colors with darker edges)
+- 4 new part JSON configs (saddle.json, wing_protector.json, control_left.json, control_right.json)
+- 4 old part JSON configs deleted (chassis.json, coeur.json, propulseur.json, radiateur.json)
+- HoverbikePartVariants: factories updated for new model classes
+- HoverbikePartPicker: hitboxes and edit offsets updated for new parts
+- ApicaItems: 12 new part items (SADDLE_*, WING_PROTECTOR_*, CONTROL_LEFT_*, CONTROL_RIGHT_*)
+- ApicaCreativeTabs: updated hoverbike tab
+- HoverbikeDefaultConfigs: updated category names and base stats
+- Localization (en_us.json, fr_fr.json): new part item translations
+
+Command:
+- /bee giveHoverBee <species>: Spawns HoverBee with species, autocomplete from BeeSpeciesManager
+
+================================================================================
 2026-03-06 - Bee Creator: Eyes, Wings, Stinger Integration
 ================================================================================
 

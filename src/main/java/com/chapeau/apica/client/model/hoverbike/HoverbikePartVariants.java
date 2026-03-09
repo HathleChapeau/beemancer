@@ -1,12 +1,12 @@
 /**
  * ============================================================
  * [HoverbikePartVariants.java]
- * Description: Registre dynamique des variantes de modeles du Hoverbike (charge depuis JSON)
+ * Description: Registre dynamique des variantes de modeles du HoverBee (charge depuis JSON)
  * ============================================================
  *
- * DEPENDANCES:
+ * DÉPENDANCES:
  * ------------------------------------------------------------
- * | Dependance          | Raison                | Utilisation                    |
+ * | Dépendance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | HoverbikePart       | Enum des parties     | Cle du registre                |
  * | HoverbikePartModel  | Type de base         | Factory de modeles             |
@@ -50,7 +50,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Registre central pour les variantes de modeles du hoverbike.
+ * Registre central pour les variantes de modeles du HoverBee.
  * Les factories de modeles sont enregistrees statiquement en Java (geometrie).
  * Les variantes sont chargees depuis assets/apica/hoverbike/parts/{category}.json.
  */
@@ -83,37 +83,37 @@ public final class HoverbikePartVariants {
         if (MODEL_FACTORIES == null) {
             Map<String, ModelFactory> map = new HashMap<>();
 
-            // --- Chassis ---
-            map.put("chassis", new ModelFactory(ChassisPartModel.LAYER_LOCATION,
-                    ChassisPartModel::createLayerDefinition, ChassisPartModel::new));
-            map.put("chassis_b", new ModelFactory(ChassisPartModelB.LAYER_LOCATION,
-                    ChassisPartModelB::createLayerDefinition, ChassisPartModelB::new));
-            map.put("chassis_c", new ModelFactory(ChassisPartModelC.LAYER_LOCATION,
-                    ChassisPartModelC::createLayerDefinition, ChassisPartModelC::new));
+            // --- Saddle ---
+            map.put("saddle", new ModelFactory(SaddlePartModel.LAYER_LOCATION,
+                    SaddlePartModel::createLayerDefinition, SaddlePartModel::new));
+            map.put("saddle_b", new ModelFactory(SaddlePartModelB.LAYER_LOCATION,
+                    SaddlePartModelB::createLayerDefinition, SaddlePartModelB::new));
+            map.put("saddle_c", new ModelFactory(SaddlePartModelC.LAYER_LOCATION,
+                    SaddlePartModelC::createLayerDefinition, SaddlePartModelC::new));
 
-            // --- Coeur ---
-            map.put("coeur", new ModelFactory(CoeurPartModel.LAYER_LOCATION,
-                    CoeurPartModel::createLayerDefinition, CoeurPartModel::new));
-            map.put("coeur_b", new ModelFactory(CoeurPartModelB.LAYER_LOCATION,
-                    CoeurPartModelB::createLayerDefinition, CoeurPartModelB::new));
-            map.put("coeur_c", new ModelFactory(CoeurPartModelC.LAYER_LOCATION,
-                    CoeurPartModelC::createLayerDefinition, CoeurPartModelC::new));
+            // --- Wing Protector ---
+            map.put("wing_protector", new ModelFactory(WingProtectorPartModel.LAYER_LOCATION,
+                    WingProtectorPartModel::createLayerDefinition, WingProtectorPartModel::new));
+            map.put("wing_protector_b", new ModelFactory(WingProtectorPartModelB.LAYER_LOCATION,
+                    WingProtectorPartModelB::createLayerDefinition, WingProtectorPartModelB::new));
+            map.put("wing_protector_c", new ModelFactory(WingProtectorPartModelC.LAYER_LOCATION,
+                    WingProtectorPartModelC::createLayerDefinition, WingProtectorPartModelC::new));
 
-            // --- Propulseur ---
-            map.put("propulseur", new ModelFactory(PropulseurPartModel.LAYER_LOCATION,
-                    PropulseurPartModel::createLayerDefinition, PropulseurPartModel::new));
-            map.put("propulseur_b", new ModelFactory(PropulseurPartModelB.LAYER_LOCATION,
-                    PropulseurPartModelB::createLayerDefinition, PropulseurPartModelB::new));
-            map.put("propulseur_c", new ModelFactory(PropulseurPartModelC.LAYER_LOCATION,
-                    PropulseurPartModelC::createLayerDefinition, PropulseurPartModelC::new));
+            // --- Control Left ---
+            map.put("control_left", new ModelFactory(ControlLeftPartModel.LAYER_LOCATION,
+                    ControlLeftPartModel::createLayerDefinition, ControlLeftPartModel::new));
+            map.put("control_left_b", new ModelFactory(ControlLeftPartModelB.LAYER_LOCATION,
+                    ControlLeftPartModelB::createLayerDefinition, ControlLeftPartModelB::new));
+            map.put("control_left_c", new ModelFactory(ControlLeftPartModelC.LAYER_LOCATION,
+                    ControlLeftPartModelC::createLayerDefinition, ControlLeftPartModelC::new));
 
-            // --- Radiateur ---
-            map.put("radiateur", new ModelFactory(RadiateurPartModel.LAYER_LOCATION,
-                    RadiateurPartModel::createLayerDefinition, RadiateurPartModel::new));
-            map.put("radiateur_b", new ModelFactory(RadiateurPartModelB.LAYER_LOCATION,
-                    RadiateurPartModelB::createLayerDefinition, RadiateurPartModelB::new));
-            map.put("radiateur_c", new ModelFactory(RadiateurPartModelC.LAYER_LOCATION,
-                    RadiateurPartModelC::createLayerDefinition, RadiateurPartModelC::new));
+            // --- Control Right ---
+            map.put("control_right", new ModelFactory(ControlRightPartModel.LAYER_LOCATION,
+                    ControlRightPartModel::createLayerDefinition, ControlRightPartModel::new));
+            map.put("control_right_b", new ModelFactory(ControlRightPartModelB.LAYER_LOCATION,
+                    ControlRightPartModelB::createLayerDefinition, ControlRightPartModelB::new));
+            map.put("control_right_c", new ModelFactory(ControlRightPartModelC.LAYER_LOCATION,
+                    ControlRightPartModelC::createLayerDefinition, ControlRightPartModelC::new));
 
             MODEL_FACTORIES = map;
         }
@@ -152,9 +152,9 @@ public final class HoverbikePartVariants {
                     }
                 }
             }
-            LOGGER.info("Loaded hoverbike parts for {} categories", loadedVariants.size());
+            LOGGER.info("Loaded hoverbee parts for {} categories", loadedVariants.size());
         } catch (Exception e) {
-            LOGGER.error("Failed to load hoverbike parts, using defaults", e);
+            LOGGER.error("Failed to load hoverbee parts, using defaults", e);
             buildDefaults();
         }
     }
@@ -194,7 +194,7 @@ public final class HoverbikePartVariants {
         }
     }
 
-    /** Force le rechargement depuis les JSONs (utile lors d'un resource reload). */
+    /** Force le rechargement depuis les JSONs. */
     public static void reload() {
         loadedVariants = null;
     }

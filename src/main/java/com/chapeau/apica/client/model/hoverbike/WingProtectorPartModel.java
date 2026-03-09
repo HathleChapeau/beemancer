@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [PropulseurPartModelC.java]
- * Description: Variante C — banniere decorative a l'arriere
+ * [WingProtectorPartModel.java]
+ * Description: Protection d'aile HoverBee - variante A
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,17 +9,18 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | HoverbikePartModel  | Classe parent        | Heritage modele partie         |
- * | HoverbikePart       | Enum type            | PROPULSEUR                     |
+ * | HoverbikePart       | Enum type            | WING_PROTECTOR                 |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - HoverbikePartVariants.java: Enregistrement variante
+ * - HoverbikePartLayer.java: Rendu
  * - ClientSetup.java: Enregistrement du layer
  *
  * ============================================================
  */
 package com.chapeau.apica.client.model.hoverbike;
 
+import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -32,17 +33,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Banniere : petit fanion fixe sur un mat derriere l'abdomen.
- * Aspect heraldique/chevaleresque.
+ * Protection d'aile variante A : plaque protectrice simple sur le point
+ * d'attache des ailes. Cube 6x1x5 place sur les ailes du HoverBee.
  */
-public class PropulseurPartModelC extends HoverbikePartModel {
+public class WingProtectorPartModel extends HoverbikePartModel {
 
-    public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("propulseur_c");
+    public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("wing_protector");
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/block/yellow_wool.png");
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_wing_protector_a.png");
 
-    public PropulseurPartModelC(ModelPart root) {
+    public WingProtectorPartModel(ModelPart root) {
         super(root);
     }
 
@@ -50,33 +51,19 @@ public class PropulseurPartModelC extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Mat : 1x8x1
-        root.addOrReplaceChild("pole",
+        // Protection d'aile: 6x1x5 sur les ailes
+        root.addOrReplaceChild("protector",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-0.5F, -8.0F, -0.5F, 1.0F, 8.0F, 1.0F),
-                PartPose.offset(0.0F, 17.0F, 6.5F));
+                        .addBox(-3.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
+                PartPose.offset(0.0F, 15.0F, -3.0F));
 
-        // Drapeau : 0x5x4, plan plat
-        root.addOrReplaceChild("flag",
-                CubeListBuilder.create()
-                        .texOffs(4, 0)
-                        .addBox(0.0F, -5.0F, 0.0F, 0.0F, 5.0F, 4.0F),
-                PartPose.offset(0.5F, 11.0F, 6.5F));
-
-        // Pointe du mat : 1x1x1
-        root.addOrReplaceChild("tip",
-                CubeListBuilder.create()
-                        .texOffs(0, 9)
-                        .addBox(-0.5F, -1.0F, -0.5F, 1.0F, 1.0F, 1.0F),
-                PartPose.offset(0.0F, 9.0F, 6.5F));
-
-        return LayerDefinition.create(mesh, 64, 64);
+        return LayerDefinition.create(mesh, 32, 16);
     }
 
     @Override
     public HoverbikePart getPartType() {
-        return HoverbikePart.PROPULSEUR;
+        return HoverbikePart.WING_PROTECTOR;
     }
 
     @Override
@@ -86,6 +73,6 @@ public class PropulseurPartModelC extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(0, 0, 1);
+        return new Vec3(0, -1.5, 0);
     }
 }

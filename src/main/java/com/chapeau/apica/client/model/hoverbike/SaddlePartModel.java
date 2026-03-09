@@ -1,7 +1,7 @@
 /**
  * ============================================================
- * [RadiateurPartModelC.java]
- * Description: Variante C — armure lourde avec plaques epaisses
+ * [SaddlePartModel.java]
+ * Description: Selle HoverBee - variante A
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,17 +9,20 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | HoverbikePartModel  | Classe parent        | Heritage modele partie         |
- * | HoverbikePart       | Enum type            | RADIATEUR                      |
+ * | HoverbikePart       | Enum type            | SADDLE                         |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
- * - HoverbikePartVariants.java: Enregistrement variante
+ * - HoverbikePartLayer.java: Rendu
  * - ClientSetup.java: Enregistrement du layer
+ * - SaddlePartModelB.java: Reutilisation de la geometrie
+ * - SaddlePartModelC.java: Reutilisation de la geometrie
  *
  * ============================================================
  */
 package com.chapeau.apica.client.model.hoverbike;
 
+import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -32,17 +35,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Armure lourde : plaques epaisses couvrant les flancs et le dessous
- * du thorax. Maximum de protection, aspect tank.
+ * Selle variante A : assise plate sur le dos de l'abeille avec un petit dossier.
+ * Geometrie partagee par les variantes B et C (seule la texture change).
  */
-public class RadiateurPartModelC extends HoverbikePartModel {
+public class SaddlePartModel extends HoverbikePartModel {
 
-    public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("radiateur_c");
+    public static final ModelLayerLocation LAYER_LOCATION = createLayerLocation("saddle");
 
     private static final ResourceLocation TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/block/netherite_block.png");
+            ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_saddle_a.png");
 
-    public RadiateurPartModelC(ModelPart root) {
+    public SaddlePartModel(ModelPart root) {
         super(root);
     }
 
@@ -50,33 +53,26 @@ public class RadiateurPartModelC extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Plaque gauche : 2x6x9
-        root.addOrReplaceChild("armor_left",
+        // Assise: 6x1x5 on the bee's back
+        root.addOrReplaceChild("seat",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-1.0F, -3.0F, -4.5F, 2.0F, 6.0F, 9.0F),
-                PartPose.offset(-4.5F, 18.0F, 0.0F));
+                        .addBox(-3.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
+                PartPose.offset(0.0F, 14.5F, 4.25F));
 
-        // Plaque droite : 2x6x9
-        root.addOrReplaceChild("armor_right",
+        // Dossier: 5x1x1 behind seat, slightly higher
+        root.addOrReplaceChild("backrest",
                 CubeListBuilder.create()
-                        .texOffs(0, 0)
-                        .addBox(-1.0F, -3.0F, -4.5F, 2.0F, 6.0F, 9.0F),
-                PartPose.offset(4.5F, 18.0F, 0.0F));
+                        .texOffs(0, 6)
+                        .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
+                PartPose.offset(0.0F, 14.0F, 6.5F));
 
-        // Plaque ventrale : 7x1x8
-        root.addOrReplaceChild("belly_plate",
-                CubeListBuilder.create()
-                        .texOffs(0, 15)
-                        .addBox(-3.5F, 0.0F, -4.0F, 7.0F, 1.0F, 8.0F),
-                PartPose.offset(0.0F, 22.0F, 0.0F));
-
-        return LayerDefinition.create(mesh, 64, 64);
+        return LayerDefinition.create(mesh, 32, 16);
     }
 
     @Override
     public HoverbikePart getPartType() {
-        return HoverbikePart.RADIATEUR;
+        return HoverbikePart.SADDLE;
     }
 
     @Override
@@ -86,6 +82,6 @@ public class RadiateurPartModelC extends HoverbikePartModel {
 
     @Override
     public Vec3 getEditModeOffset() {
-        return new Vec3(1, 0, 0);
+        return new Vec3(0, -1, 0);
     }
 }
