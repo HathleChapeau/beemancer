@@ -1,3 +1,11 @@
 {
-  "parent": "apica:block/artifacts/honey_lamp_off"
+  "parent": "apica:block/artifacts/honey_lamp_off",
+  "display": {
+    "firstperson_righthand": {
+      "translation": [0, 1, 0]
+    },
+    "firstperson_lefthand": {
+      "translation": [0, 1, 0]
+    }
+  }
 }
