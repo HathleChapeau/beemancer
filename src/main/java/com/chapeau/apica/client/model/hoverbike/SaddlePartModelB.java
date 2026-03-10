@@ -45,8 +45,8 @@ public class SaddlePartModelB extends HoverbikePartModel {
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_saddle_b.png");
 
     /** Position des electrodes pour les particules (coordonnees locales) */
-    public static final Vec3 LEFT_ELECTRODE = new Vec3(-3.5, -0.5, 2.75);
-    public static final Vec3 RIGHT_ELECTRODE = new Vec3(3.5, -0.5, 2.75);
+    public static final Vec3 LEFT_ELECTRODE = new Vec3(-4.0, -0.5, 2.75);
+    public static final Vec3 RIGHT_ELECTRODE = new Vec3(4.0, -0.5, 2.75);
 
     public SaddlePartModelB(ModelPart root) {
         super(root);
@@ -70,19 +70,19 @@ public class SaddlePartModelB extends HoverbikePartModel {
                         .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
                 PartPose.offset(0.0F, -0.5F, 1.75F));
 
-        // Electrode gauche: 1x2x1
+        // Electrode gauche: 2x3x3
         root.addOrReplaceChild("electrode_left",
                 CubeListBuilder.create()
                         .texOffs(0, 8)
-                        .addBox(-0.5F, -1.5F, -0.5F, 1.0F, 2.0F, 1.0F),
-                PartPose.offset(-3.5F, 0.0F, 2.75F));
+                        .addBox(-1.0F, -1.5F, -1.5F, 2.0F, 3.0F, 3.0F),
+                PartPose.offset(-4.0F, -0.5F, 2.75F));
 
-        // Electrode droite: 1x2x1
+        // Electrode droite: 2x3x3
         root.addOrReplaceChild("electrode_right",
                 CubeListBuilder.create()
-                        .texOffs(4, 8)
-                        .addBox(-0.5F, -1.5F, -0.5F, 1.0F, 2.0F, 1.0F),
-                PartPose.offset(3.5F, 0.0F, 2.75F));
+                        .texOffs(0, 8)
+                        .addBox(-1.0F, -1.5F, -1.5F, 2.0F, 3.0F, 3.0F),
+                PartPose.offset(4.0F, -0.5F, 2.75F));
 
         return LayerDefinition.create(mesh, 32, 16);
     }

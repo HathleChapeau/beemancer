@@ -107,6 +107,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .rotationSpeed(-0.12f * rotMult)
                 .initialRotation(PI / 2)
                 .color(0.8f, 0.4f, 1.0f, 0.7f)
+                .flip()
                 .done()
             // Lignes fixes (small)
             .addFixedLine()
@@ -123,6 +124,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .rotationSpeed(-0.14f * rotMult)
                 .initialRotation(PI / 4)
                 .color(0.5f, 0.15f, 0.9f, 0.6f)
+                .flip()
                 .done()
             .addFixedLine()
                 .small()
@@ -139,6 +141,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .rotationSpeed(-0.12f * rotMult)
                 .initialRotation(PI / 6)
                 .color(0.5f, 0.15f, 0.9f, 0.5f)
+                .flip()
                 .done()
             .build();
     }

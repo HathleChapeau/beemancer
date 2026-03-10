@@ -219,6 +219,7 @@ public class BlackHoleEffect extends VfxEffect {
         private float axisX = 1, axisY = 0, axisZ = 0;
         private float upX = 0, upY = 1, upZ = 0;
         private float r = 0.6f, g = 0.2f, b = 1.0f, a = 0.7f;
+        private boolean flip = false;
 
         private LineBuilder(Builder parent, boolean billboard) {
             this.parent = parent;
@@ -242,6 +243,7 @@ public class BlackHoleEffect extends VfxEffect {
             this.r = r; this.g = g; this.b = b; this.a = a;
             return this;
         }
+        public LineBuilder flip() { this.flip = true; return this; }
 
         public Builder done() {
             VfxQuad.Builder qb = VfxQuad.builder(texture)
@@ -249,6 +251,8 @@ public class BlackHoleEffect extends VfxEffect {
                 .rotationSpeed(rotationSpeed)
                 .initialRotation(initialRotation)
                 .color(r, g, b, a);
+
+            if (flip) qb.flip();
 
             if (billboard) {
                 qb.billboard();
