@@ -368,7 +368,7 @@
       "model": {
         "body": "armored",
         "wing": "default",
-        "stinger": "chunky",
+        "stinger": "default",
         "antenna": "default"
       },
       "part_colors": {
@@ -776,7 +776,7 @@
       "model": {
         "body": "armored",
         "wing": "default",
-        "stinger": "chunky",
+        "stinger": "default",
         "antenna": "default"
       },
       "part_colors": {
@@ -827,7 +827,7 @@
       "model": {
         "body": "armored",
         "wing": "default",
-        "stinger": "chunky",
+        "stinger": "default",
         "antenna": "default"
       },
       "part_colors": {
@@ -878,7 +878,7 @@
       "model": {
         "body": "puffy",
         "wing": "default",
-        "stinger": "chunky",
+        "stinger": "default",
         "antenna": "butterfly"
       },
       "part_colors": {
@@ -929,7 +929,7 @@
       "model": {
         "body": "armored",
         "wing": "default",
-        "stinger": "chunky",
+        "stinger": "default",
         "antenna": "default"
       },
       "part_colors": {
@@ -4034,7 +4034,7 @@
       "model": {
         "body": "armored",
         "wing": "default",
-        "stinger": "chunky",
+        "stinger": "default",
         "antenna": "demon"
       },
       "part_colors": {
@@ -4340,7 +4340,7 @@
       "model": {
         "body": "armored",
         "wing": "default",
-        "stinger": "chunky",
+        "stinger": "default",
         "antenna": "demon"
       },
       "part_colors": {
