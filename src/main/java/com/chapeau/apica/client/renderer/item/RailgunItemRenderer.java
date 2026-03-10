@@ -85,7 +85,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     private static BlackHoleEffect createBlackHoleEffect() {
         float PI = (float) Math.PI;
-        float rotMult = 2f;
+        float rotMult = 1.5f;
         return BlackHoleEffect.builder()
             .clear()
             // Sphere centrale (less blend)
@@ -97,12 +97,14 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .done()
             // Lignes billboard
             .addBillboardLine()
+                .small()
                 .scale(0.35f)
                 .rotationSpeed(0.16f * rotMult)
                 .initialRotation(0)
                 .color(0.7f, 0.3f, 1.0f, 0.8f)
                 .done()
             .addBillboardLine()
+                .small()
                 .scale(0.3f)
                 .rotationSpeed(-0.12f * rotMult)
                 .initialRotation(PI / 2)
@@ -110,6 +112,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .flip()
                 .done()
             // Lignes fixes (small)
+
             .addFixedLine()
                 .small()
                 .axis(1, 0, 0).up(0, 1, 0)
