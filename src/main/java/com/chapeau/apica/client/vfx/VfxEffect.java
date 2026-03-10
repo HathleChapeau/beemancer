@@ -69,11 +69,10 @@ public class VfxEffect {
 
         static RenderType create(ResourceLocation texture) {
             CompositeState state = CompositeState.builder()
-                    .setShaderState(RENDERTYPE_EYES_SHADER)
+                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
                     .setTextureState(new TextureStateShard(texture, false, false))
-                    .setTransparencyState(ADDITIVE_TRANSPARENCY)
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                     .setLayeringState(VFX_POLYGON_OFFSET)
-                    .setWriteMaskState(COLOR_WRITE)
                     .setCullState(NO_CULL)
                     .createCompositeState(false);
             return RenderType.create("apica_vfx", DefaultVertexFormat.NEW_ENTITY,
