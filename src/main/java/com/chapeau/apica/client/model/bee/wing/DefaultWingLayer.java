@@ -19,7 +19,6 @@
 package com.chapeau.apica.client.model.bee.wing;
 
 import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
@@ -36,25 +35,15 @@ public final class DefaultWingLayer {
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
-        CubeDeformation inflate = new CubeDeformation(0.001F);
-
-        PartDefinition rightWing = bone.addOrReplaceChild("right_wing",
+        bone.addOrReplaceChild("right_wing",
                 CubeListBuilder.create().texOffs(2, 20)
-                        .addBox(-18.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F, inflate),
+                        .addBox(-18.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F),
                 PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
-        rightWing.addOrReplaceChild("right_wing_under",
-                CubeListBuilder.create().texOffs(2, 20)
-                        .addBox(-18.0F, 0.0F, -12.0F, 18.0F, 0.0F, 12.0F),
-                PartPose.offsetAndRotation(0.0F, -0.5F, 0.0F, (float) Math.PI, 0.0F, 0.0F));
 
-        PartDefinition leftWing = bone.addOrReplaceChild("left_wing",
+        bone.addOrReplaceChild("left_wing",
                 CubeListBuilder.create().texOffs(-12, 7)
-                        .addBox(0.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F, inflate),
+                        .addBox(0.0F, 0.0F, 0.0F, 18.0F, 0.0F, 12.0F),
                 PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
-        leftWing.addOrReplaceChild("left_wing_under",
-                CubeListBuilder.create().texOffs(-12, 7)
-                        .addBox(0.0F, 0.0F, -12.0F, 18.0F, 0.0F, 12.0F),
-                PartPose.offsetAndRotation(0.0F, -0.5F, 0.0F, (float) Math.PI, 0.0F, 0.0F));
 
         return LayerDefinition.create(mesh, 32, 32);
     }

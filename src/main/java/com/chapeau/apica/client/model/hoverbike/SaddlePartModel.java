@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [SaddlePartModel.java]
- * Description: Selle HoverBee - variante A
+ * Description: Selle HoverBee - variante A (geometrie centree a l'origine)
  * ============================================================
  *
  * DEPENDANCES:
@@ -36,7 +36,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Selle variante A : assise plate sur le dos de l'abeille avec un petit dossier.
- * Geometrie partagee par les variantes B et C (seule la texture change).
+ * Geometrie centree a l'origine — le positionnement final est gere par
+ * HoverbikePartLayer via getPartPosition() selon le body type.
  */
 public class SaddlePartModel extends HoverbikePartModel {
 
@@ -53,19 +54,19 @@ public class SaddlePartModel extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Assise: 6x1x5 on the bee's back
+        // Assise: 6x1x5, centree a l'origine
         root.addOrReplaceChild("seat",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         .addBox(-3.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
-                PartPose.offset(0.0F, 14.5F, 4.25F));
+                PartPose.ZERO);
 
-        // Dossier: 5x1x1 behind seat, slightly higher
+        // Dossier: 5x1x1, derriere le siege et legèrement plus haut
         root.addOrReplaceChild("backrest",
                 CubeListBuilder.create()
                         .texOffs(0, 6)
                         .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
-                PartPose.offset(0.0F, 14.0F, 6.5F));
+                PartPose.offset(0.0F, -0.5F, 2.25F));
 
         return LayerDefinition.create(mesh, 32, 16);
     }

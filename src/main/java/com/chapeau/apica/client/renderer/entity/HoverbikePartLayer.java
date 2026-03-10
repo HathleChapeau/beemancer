@@ -11,7 +11,8 @@
  * | HoverbikePartVariants| Registre variantes  | Selection du modele a rendre   |
  * | AnimationController | Animations edit mode | Ecartement/retour des pieces   |
  * | MoveAnimation       | Translation animee   | Mouvement des pieces           |
- * | ApicaBeeModel       | Modele parent        | Type generique + rotation ailes|
+ * | ApicaBeeModel       | Modele parent        | Body type + rotation ailes     |
+ * | BeeBodyType         | Type de corps        | Positionnement par body type   |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -28,6 +29,7 @@ import com.chapeau.apica.client.animation.TimingType;
 import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
+import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -49,10 +51,9 @@ import java.util.Map;
 
 /**
  * Layer de rendu qui itere sur toutes les parties du hoverbike et rend
- * la variante selectionnee de chaque partie. En edit mode, chaque partie
- * s'ecarte du centre avec une animation smooth.
- * L'etat d'animation est stocke par entite pour eviter les interferences
- * quand plusieurs HoverBees sont rendues simultanement.
+ * la variante selectionnee de chaque partie. Chaque partie est centree
+ * a l'origine dans son modele et positionnee ici selon le body type courant.
+ * En edit mode, chaque partie s'ecarte du centre avec une animation smooth.
  */
 public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeModel<HoverbikeEntity>> {
 
@@ -101,6 +102,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         handleEditModeTransition(state, isEdit);
 
         ApicaBeeModel<HoverbikeEntity> beeModel = getParentModel();
+        BeeBodyType bodyType = beeModel.getBodyType();
         ModelPart rightWing = beeModel.getRightWing();
         ModelPart leftWing = beeModel.getLeftWing();
 
@@ -122,6 +124,11 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
             String animName = ANIM_PREFIX + partType.name().toLowerCase();
 
             poseStack.pushPose();
+
+            // Positionne la partie selon le body type (les modeles sont centres a l'origine)
+            Vec3 pos = getPartPosition(partType, bodyType);
+            poseStack.translate(pos.x / 16.0, pos.y / 16.0, pos.z / 16.0);
+
             applyEditOffset(poseStack, part, animName, state);
 
             VertexConsumer vertexConsumer = bufferSource.getBuffer(
@@ -135,6 +142,68 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
 
         cleanupStaleEntities(entity);
     }
+
+    // ========== Per-body-type positioning ==========
+
+    /**
+     * Position en coordonnees modele (1 unite = 1/16 bloc) pour chaque partie
+     * selon le body type. Les modeles de partie sont centres a l'origine,
+     * cette methode fournit la position absolue dans l'espace du modele.
+     */
+    private static Vec3 getPartPosition(HoverbikePart partType, BeeBodyType bodyType) {
+        return switch (partType) {
+            case SADDLE -> getSaddlePosition(bodyType);
+            case WING_PROTECTOR -> getWingProtectorPosition(bodyType);
+            case CONTROL_LEFT -> getControlLeftPosition(bodyType);
+            case CONTROL_RIGHT -> getControlRightPosition(bodyType);
+        };
+    }
+
+    /** Selle: sur le dessus du corps, zone arriere (ou le rider s'assoit). */
+    private static Vec3 getSaddlePosition(BeeBodyType bodyType) {
+        return switch (bodyType) {
+            case DEFAULT -> new Vec3(0, 14.5, 2.0);
+            case ROYAL -> new Vec3(0, 14.0, -2.0);
+            case SEGMENTED -> new Vec3(0, 14.5, -0.5);
+            case ARMORED, PUFFY -> new Vec3(0, 14.5, 1.0);
+        };
+    }
+
+    /**
+     * Protecteurs d'aile: position du centre entre les deux ailes.
+     * Les offsets X de ±1.5 dans le modele servent de pivot pour la rotation.
+     * Y et Z correspondent aux points d'attache des ailes par body type.
+     */
+    private static Vec3 getWingProtectorPosition(BeeBodyType bodyType) {
+        return switch (bodyType) {
+            case DEFAULT -> new Vec3(0, 15.0, -3.0);
+            case ROYAL -> new Vec3(0, 14.5, -3.0);
+            case SEGMENTED -> new Vec3(0, 15.0, -1.0);
+            case ARMORED, PUFFY -> new Vec3(0, 14.5, -2.0);
+        };
+    }
+
+    /** Controle gauche: flanc gauche du corps, mi-hauteur, zone arriere. */
+    private static Vec3 getControlLeftPosition(BeeBodyType bodyType) {
+        return switch (bodyType) {
+            case DEFAULT -> new Vec3(-4.0, 16.0, 1.0);
+            case ROYAL -> new Vec3(-4.5, 16.0, -3.0);
+            case SEGMENTED -> new Vec3(-4.0, 16.0, 0.5);
+            case ARMORED, PUFFY -> new Vec3(-4.5, 16.0, 1.0);
+        };
+    }
+
+    /** Controle droit: flanc droit du corps, mi-hauteur, zone arriere. */
+    private static Vec3 getControlRightPosition(BeeBodyType bodyType) {
+        return switch (bodyType) {
+            case DEFAULT -> new Vec3(4.0, 16.0, 1.0);
+            case ROYAL -> new Vec3(4.5, 16.0, -3.0);
+            case SEGMENTED -> new Vec3(4.0, 16.0, 0.5);
+            case ARMORED, PUFFY -> new Vec3(4.5, 16.0, 1.0);
+        };
+    }
+
+    // ========== Wing rotation sync ==========
 
     /**
      * Applique la rotation des ailes du modele parent aux protections d'aile.
@@ -153,6 +222,8 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
             // Variantes sans ces enfants : pas de synchro
         }
     }
+
+    // ========== Edit mode animations ==========
 
     /**
      * Detecte les transitions d'edit mode et cree les animations d'ecartement/retour.

@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [WingProtectorPartModel.java]
- * Description: Protection d'aile HoverBee - variante A
+ * Description: Protection d'aile HoverBee - variante A (centree a l'origine)
  * ============================================================
  *
  * DEPENDANCES:
@@ -34,7 +34,9 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * Protection d'aile variante A : deux plaques protectrices (une par aile).
- * Chaque protecteur est un cube 6x1x5 place sur la base de l'aile correspondante.
+ * Les offsets relatifs (-1.5 et +1.5 en X) servent de pivot pour la rotation
+ * synchronisee avec les ailes. Le positionnement Y/Z est gere par
+ * HoverbikePartLayer via getPartPosition() selon le body type.
  */
 public class WingProtectorPartModel extends HoverbikePartModel {
 
@@ -51,19 +53,19 @@ public class WingProtectorPartModel extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Protection aile droite: 6x1x5 sur la base de l'aile droite
+        // Protection aile droite: 6x1x5, offset X=-1.5 pour pivot de rotation
         root.addOrReplaceChild("protector_right",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         .addBox(-6.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
-                PartPose.offset(-1.5F, 15.0F, -3.0F));
+                PartPose.offset(-1.5F, 0.0F, 0.0F));
 
-        // Protection aile gauche: 6x1x5 sur la base de l'aile gauche
+        // Protection aile gauche: 6x1x5, offset X=+1.5 pour pivot de rotation
         root.addOrReplaceChild("protector_left",
                 CubeListBuilder.create()
                         .texOffs(0, 6)
                         .addBox(0.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
-                PartPose.offset(1.5F, 15.0F, -3.0F));
+                PartPose.offset(1.5F, 0.0F, 0.0F));
 
         return LayerDefinition.create(mesh, 32, 16);
     }

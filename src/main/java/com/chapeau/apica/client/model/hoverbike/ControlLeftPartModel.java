@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [ControlLeftPartModel.java]
- * Description: Cube de controle gauche sur le flanc arriere gauche de l'abeille
+ * Description: Cube de controle gauche HoverBee (centre a l'origine)
  * ============================================================
  *
  * UTILISE PAR:
@@ -25,7 +25,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Cube 1x3x3 sur le flanc arriere gauche de l'abeille.
+ * Cube 1x3x3 de controle gauche, centre a l'origine.
+ * Le positionnement final est gere par HoverbikePartLayer selon le body type.
  * Variante A — texture de base.
  */
 public class ControlLeftPartModel extends HoverbikePartModel {
@@ -43,12 +44,12 @@ public class ControlLeftPartModel extends HoverbikePartModel {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
 
-        // Cube de controle gauche : 1x3x3
+        // Cube de controle gauche: 1x3x3, centre a l'origine
         root.addOrReplaceChild("control_left",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
                         .addBox(-0.5F, -1.5F, -1.5F, 1.0F, 3.0F, 3.0F),
-                PartPose.offset(-4.0F, 16.0F, 3.0F));
+                PartPose.ZERO);
 
         return LayerDefinition.create(mesh, 16, 16);
     }
