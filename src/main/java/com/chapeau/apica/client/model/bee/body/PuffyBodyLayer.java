@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [PuffyBodyLayer.java]
- * Description: LayerDefinition du corps PUFFY (head + body + tail + 3 bandes rayees + pattes flat)
+ * Description: LayerDefinition du corps PUFFY (head + body rondouillet + tail, sans plaques)
  * ============================================================
  *
  * DEPENDANCES:
@@ -25,15 +25,13 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 /**
- * Corps PUFFY: meme base que ARMORED (head 7x7x3, body 8x8x9, tail 7x2x3)
- * mais les 3 plaques sont remplacees par des bandes rayees.
- * Le body_stripe couvre le corps ET les bandes (contrairement a ARMORED qui
- * ne stripe que les plaques). Cela permet des rayures sur tout le corps.
- * Texture 128x64.
+ * Corps PUFFY: meme base volumineuse que ARMORED (body 8x8x9) mais SANS plaques.
+ * Les rayures sont sur le corps lui-meme (comme Default/Royal), pas sur des
+ * elements protegeants. Silhouette arrondie et douce.
+ * Texture 64x64.
  *
  * Layout Z:
  *   Head(-7.5..-4.5) → Body(-4.5..+4.5) → Tail(+4.5..+7.5)
- *   Band1(-4.5..-1.5) Band2(+1.5..+4.5) sur body, Band3(+4.5..+7.5) sur tail
  */
 public final class PuffyBodyLayer {
 
@@ -45,24 +43,20 @@ public final class PuffyBodyLayer {
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
-        // body_corpus: head + body + tail + 3 bandes (meme geometrie que les plaques armored)
+        // body_corpus: head + body + tail (PAS de plaques — c'est la difference avec ARMORED)
         bone.addOrReplaceChild("body_corpus",
                 CubeListBuilder.create()
                         .texOffs(0, 0).addBox(-4.0F, -4.0F, -4.5F, 8.0F, 8.0F, 9.0F)       // Body (8x8x9)
                         .texOffs(34, 0).addBox(-3.5F, -3.5F, -7.5F, 7.0F, 7.0F, 3.0F)       // Head (7x7x3)
-                        .texOffs(54, 0).addBox(-3.5F, 1.5F, 4.0F, 7.0F, 2.0F, 3.0F)         // Tail (7x2x3)
-                        .texOffs(74, 0).addBox(-4.5F, -4.5F, -3.5F, 9.0F, 7.0F, 3.0F)       // Band 1 front
-                        .texOffs(74, 0).addBox(-4.5F, -4.5F, 0.5F, 9.0F, 7.0F, 3.0F)        // Band 2 back
-                        .texOffs(74, 0).addBox(-4.5F, -3.5F, 4.5F, 9.0F, 5.0F, 3.0F),       // Band 3 tail
+                        .texOffs(34, 10).addBox(-3.5F, 1.5F, 4.0F, 7.0F, 2.0F, 3.0F),       // Tail (7x2x3)
                 PartPose.ZERO);
 
-        // body_stripe: body + 3 bandes (rayures sur corps et bandes, pas sur head/tail)
+        // body_stripe: rayures sur body + head + tail (comme Default/Royal)
         bone.addOrReplaceChild("body_stripe",
                 CubeListBuilder.create()
                         .texOffs(0, 17).addBox(-4.0F, -4.0F, -4.5F, 8.0F, 8.0F, 9.0F)      // Body stripe
-                        .texOffs(74, 10).addBox(-4.5F, -4.5F, -3.5F, 9.0F, 7.0F, 3.0F)      // Band 1 stripe
-                        .texOffs(74, 10).addBox(-4.5F, -4.5F, 0.5F, 9.0F, 7.0F, 3.0F)       // Band 2 stripe
-                        .texOffs(74, 10).addBox(-4.5F, -3.5F, 4.5F, 9.0F, 5.0F, 3.0F),      // Band 3 stripe
+                        .texOffs(34, 17).addBox(-3.5F, -3.5F, -7.5F, 7.0F, 7.0F, 3.0F)      // Head stripe
+                        .texOffs(34, 27).addBox(-3.5F, 1.5F, 4.0F, 7.0F, 2.0F, 3.0F),       // Tail stripe
                 PartPose.ZERO);
 
         // Eyes on head front face (Z=-7.5)
@@ -95,6 +89,6 @@ public final class PuffyBodyLayer {
                         .addBox(-5.0F, 0.0F, 0.0F, 7.0F, 2.0F, 0.0F),
                 PartPose.offset(1.5F, 4.0F, 2.0F));
 
-        return LayerDefinition.create(mesh, 128, 64);
+        return LayerDefinition.create(mesh, 64, 64);
     }
 }
