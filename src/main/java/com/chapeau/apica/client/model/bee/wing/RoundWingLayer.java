@@ -44,8 +44,8 @@ public final class RoundWingLayer {
                 PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
         rightWing.addOrReplaceChild("right_wing_under",
                 CubeListBuilder.create().texOffs(2, 22)
-                        .addBox(-12.0F, 0.0F, -10.0F, 12.0F, 0.0F, 10.0F, inflate),
-                PartPose.offsetAndRotation(0.0F, -0.01F, 0.0F, (float) Math.PI, 0.0F, 0.0F));
+                        .addBox(-12.0F, 0.0F, -10.0F, 12.0F, 0.0F, 10.0F),
+                PartPose.offsetAndRotation(0.0F, -0.5F, 0.0F, (float) Math.PI, 0.0F, 0.0F));
 
         PartDefinition leftWing = bone.addOrReplaceChild("left_wing",
                 CubeListBuilder.create().texOffs(-10, 6)
@@ -53,8 +53,8 @@ public final class RoundWingLayer {
                 PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
         leftWing.addOrReplaceChild("left_wing_under",
                 CubeListBuilder.create().texOffs(-10, 6)
-                        .addBox(0.0F, 0.0F, -10.0F, 12.0F, 0.0F, 10.0F, inflate),
-                PartPose.offsetAndRotation(0.0F, -0.01F, 0.0F, (float) Math.PI, 0.0F, 0.0F));
+                        .addBox(0.0F, 0.0F, -10.0F, 12.0F, 0.0F, 10.0F),
+                PartPose.offsetAndRotation(0.0F, -0.5F, 0.0F, (float) Math.PI, 0.0F, 0.0F));
 
         return LayerDefinition.create(mesh, 32, 32);
     }

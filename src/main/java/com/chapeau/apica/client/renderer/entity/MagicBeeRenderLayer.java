@@ -100,6 +100,9 @@ public class MagicBeeRenderLayer extends RenderLayer<MagicBeeEntity, ApicaBeeMod
         // === Stinger ===
         VertexConsumer stingerVC = buffer.getBuffer(RenderType.entityCutout(stingerTex));
         model.renderStinger(poseStack, stingerVC, packedLight, overlay, toArgb(stingerColor));
+
+        // Restaure la visibilite complete du modele
+        model.showAll();
     }
 
     private static int toArgb(int rgb) {

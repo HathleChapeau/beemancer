@@ -876,7 +876,7 @@
       "texture": "Silken_Bee",
       "color": "#E7DABF",
       "model": {
-        "body": "armored",
+        "body": "puffy",
         "wing": "default",
         "stinger": "chunky",
         "antenna": "butterfly"

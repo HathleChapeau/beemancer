@@ -29,7 +29,8 @@ public enum BeeBodyType {
     DEFAULT(0, "default", "Default"),
     ROYAL(1, "royal", "Royal"),
     SEGMENTED(2, "segmented", "Segmented"),
-    ARMORED(3, "armored", "Armored");
+    ARMORED(3, "armored", "Armored"),
+    PUFFY(4, "puffy", "Puffy");
 
     public static final int COUNT = values().length;
 

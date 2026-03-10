@@ -148,6 +148,8 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     // --- Edit mode ---
     private static final double EDIT_MODE_MAX_DISTANCE = 5.0;
     private static boolean editShaderActive = false;
+    /** ID de l'entite qui a active le shader. Seule cette entite peut le desactiver. */
+    private static int editShaderEntityId = -1;
 
     // --- Constructor ---
 
@@ -648,13 +650,29 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
         }
 
         if (this.level().isClientSide()) {
-            boolean shouldBeActive = isEditMode() && isLocalPlayerEditor();
-            if (shouldBeActive && !editShaderActive) {
-                loadEditShader();
-                editShaderActive = true;
-            } else if (!shouldBeActive && editShaderActive) {
+            boolean iAmTheEditor = isEditMode() && isLocalPlayerEditor();
+
+            if (iAmTheEditor) {
+                if (!editShaderActive) {
+                    loadEditShader();
+                    editShaderActive = true;
+                    editShaderEntityId = this.getId();
+                }
+            } else if (editShaderActive && editShaderEntityId == this.getId()) {
+                // Seule l'entite qui a active le shader peut le desactiver
                 unloadEditShader();
                 editShaderActive = false;
+                editShaderEntityId = -1;
+            }
+
+            // Safety: si l'entite proprio du shader a disparu, nettoyage
+            if (editShaderActive && editShaderEntityId != -1 && this.tickCount % 20 == 0) {
+                Entity shaderOwner = this.level().getEntity(editShaderEntityId);
+                if (shaderOwner == null) {
+                    unloadEditShader();
+                    editShaderActive = false;
+                    editShaderEntityId = -1;
+                }
             }
         }
     }
@@ -662,9 +680,10 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     @Override
     public void onRemovedFromLevel() {
         super.onRemovedFromLevel();
-        if (this.level().isClientSide() && editShaderActive) {
+        if (this.level().isClientSide() && editShaderActive && editShaderEntityId == this.getId()) {
             unloadEditShader();
             editShaderActive = false;
+            editShaderEntityId = -1;
         }
     }
 

@@ -37,6 +37,7 @@ import com.chapeau.apica.client.model.bee.antenna.GlassesAntennaLayer;
 import com.chapeau.apica.client.model.bee.antenna.LongAntennaLayer;
 import com.chapeau.apica.client.model.bee.body.ArmoredBodyLayer;
 import com.chapeau.apica.client.model.bee.body.DefaultBodyLayer;
+import com.chapeau.apica.client.model.bee.body.PuffyBodyLayer;
 import com.chapeau.apica.client.model.bee.body.SegmentedBodyLayer;
 import com.chapeau.apica.client.model.bee.body.RoyalBodyLayer;
 import com.chapeau.apica.client.model.bee.stinger.ChunkyStingerLayer;
@@ -141,7 +142,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
             case DEFAULT -> new float[]{-1.5f, -4.0f, -3.0f, -0.2618f};
             case ROYAL -> new float[]{-1.5f, -4.5f, -3.0f, -0.2618f};
             case SEGMENTED -> new float[]{-1.5f, -4.0f, -1.0f, -0.2618f};
-            case ARMORED -> new float[]{-1.5f, -4.5f, -2.0f, -0.2618f};
+            case ARMORED, PUFFY -> new float[]{-1.5f, -4.5f, -2.0f, -0.2618f};
         };
     }
 
@@ -150,7 +151,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
             case DEFAULT -> new float[]{0.0f, 0.0f, 5.0f};
             case ROYAL -> new float[]{0.0f, 0.0f, 8.5f};
             case SEGMENTED -> new float[]{0.0f, 0.0f, 9.0f};
-            case ARMORED -> new float[]{0.0f, 1.0f, 7.5f};
+            case ARMORED, PUFFY -> new float[]{0.0f, 1.0f, 7.5f};
         };
     }
 
@@ -159,7 +160,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
             case DEFAULT -> new float[]{-1.5f, -2.0f, -5.0f};
             case ROYAL -> new float[]{-1.5f, -2.0f, -8.5f};
             case SEGMENTED -> new float[]{-1.5f, -2.0f, -9.0f};
-            case ARMORED -> new float[]{-1.5f, -1.5f, -7.5f};
+            case ARMORED, PUFFY -> new float[]{-1.5f, -1.5f, -7.5f};
         };
     }
 
@@ -168,7 +169,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
             case DEFAULT -> new float[]{1.5f, -2.0f, -5.0f};
             case ROYAL -> new float[]{1.5f, -2.0f, -8.5f};
             case SEGMENTED -> new float[]{1.5f, -2.0f, -9.0f};
-            case ARMORED -> new float[]{1.5f, -1.5f, -7.5f};
+            case ARMORED, PUFFY -> new float[]{1.5f, -1.5f, -7.5f};
         };
     }
 
@@ -180,6 +181,7 @@ public class ApicaBeeModel<T extends Entity> extends HierarchicalModel<T> {
             case ROYAL -> RoyalBodyLayer.create();
             case SEGMENTED -> SegmentedBodyLayer.create();
             case ARMORED -> ArmoredBodyLayer.create();
+            case PUFFY -> PuffyBodyLayer.create();
         };
     }
 
