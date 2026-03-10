@@ -25,6 +25,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
@@ -76,8 +77,10 @@ public class VfxEffect {
         }
 
         float half = quad.scale() * 0.5f;
+        // Full bright pour debug
+        int fullBright = LightTexture.FULL_BRIGHT;
         emitQuad(poseStack, buffer, quad.texture(), -half, -half, half, half,
-                 quad.r(), quad.g(), quad.b(), quad.a(), light);
+                 quad.r(), quad.g(), quad.b(), quad.a(), fullBright);
 
         poseStack.popPose();
     }
@@ -110,12 +113,12 @@ public class VfxEffect {
 
     /**
      * Emet un quad avec depth test active.
-     * Utilise entityCutout pour proper depth handling.
+     * Utilise entityCutoutNoCull pour eviter le backface culling.
      */
     private void emitQuad(PoseStack poseStack, MultiBufferSource buffer,
                           ResourceLocation texture, float x0, float y0, float x1, float y1,
                           float r, float g, float b, float a, int light) {
-        VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucentCull(texture));
+        VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
         PoseStack.Pose pose = poseStack.last();
         int ol = OverlayTexture.NO_OVERLAY;
 

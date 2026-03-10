@@ -33,9 +33,9 @@ import net.minecraft.resources.ResourceLocation;
 public class BlackHoleEffect extends VfxEffect {
 
     private static final ResourceLocation SPHERE_TEXTURE =
-        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/vfx/sphere.png");
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/sphere.png");
     private static final ResourceLocation LINE_TEXTURE =
-        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/vfx/rounded_line.png");
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/rounded_line.png");
 
     private static final float PI = (float) Math.PI;
 
@@ -44,79 +44,17 @@ public class BlackHoleEffect extends VfxEffect {
     }
 
     /**
-     * Configuration DEBUG: quads sur tous les axes pour tester la visibilite.
-     * Scale reduit (0.15) pour espace modele item.
+     * Configuration DEBUG: un quad fixe avec axe diagonal (visible de tous angles).
      */
     private void setupDefaultConfiguration() {
-        // === DEBUG: 6 quads sur chaque axe + 1 billboard ===
-        float s = 0.15f; // Scale adapte a l'espace modele
-
-        // Axe Z (face camera normalement) - ROUGE
+        // Axe diagonal (1,1,1) normalise - jamais parfaitement aligne avec la camera
         addQuad(VfxQuad.builder(SPHERE_TEXTURE)
             .fixed()
-            .axis(0, 0, 1)
+            .axis(1, 1, 1)  // Diagonal - visible de partout
             .up(0, 1, 0)
-            .scale(s)
-            .rotationSpeed(0.1f)
-            .color(1.0f, 0.0f, 0.0f, 1.0f)
-            .build());
-
-        // Axe Z inverse - ROUGE FONCE
-        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
-            .fixed()
-            .axis(0, 0, -1)
-            .up(0, 1, 0)
-            .scale(s)
-            .rotationSpeed(-0.1f)
-            .color(0.5f, 0.0f, 0.0f, 1.0f)
-            .build());
-
-        // Axe X - VERT
-        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
-            .fixed()
-            .axis(1, 0, 0)
-            .up(0, 1, 0)
-            .scale(s)
-            .rotationSpeed(0.1f)
-            .color(0.0f, 1.0f, 0.0f, 1.0f)
-            .build());
-
-        // Axe X inverse - VERT FONCE
-        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
-            .fixed()
-            .axis(-1, 0, 0)
-            .up(0, 1, 0)
-            .scale(s)
-            .rotationSpeed(-0.1f)
-            .color(0.0f, 0.5f, 0.0f, 1.0f)
-            .build());
-
-        // Axe Y - BLEU
-        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
-            .fixed()
-            .axis(0, 1, 0)
-            .up(0, 0, 1)
-            .scale(s)
-            .rotationSpeed(0.1f)
-            .color(0.0f, 0.0f, 1.0f, 1.0f)
-            .build());
-
-        // Axe Y inverse - BLEU FONCE
-        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
-            .fixed()
-            .axis(0, -1, 0)
-            .up(0, 0, 1)
-            .scale(s)
-            .rotationSpeed(-0.1f)
-            .color(0.0f, 0.0f, 0.5f, 1.0f)
-            .build());
-
-        // Billboard test - BLANC (plus petit)
-        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
-            .billboard()
-            .scale(s * 0.7f)
-            .rotationSpeed(0.2f)
-            .color(1.0f, 1.0f, 1.0f, 1.0f)
+            .scale(0.3f)
+            .rotationSpeed(0.15f)  // Rotation pour confirmer l'animation
+            .color(1.0f, 0.0f, 0.0f, 1.0f)  // Rouge vif
             .build());
     }
 

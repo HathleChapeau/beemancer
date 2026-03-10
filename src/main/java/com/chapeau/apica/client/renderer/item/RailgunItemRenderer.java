@@ -171,8 +171,9 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         poseStack.pushPose();
 
-        // Position en coordonnées modèle (définie en haut du fichier)
-        poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
+        // DEBUG: position a l'origine du modele pour voir si ca render
+        // poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
+        poseStack.translate(0.5, 0.5, 0.5); // Centre du bloc/modele
 
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
