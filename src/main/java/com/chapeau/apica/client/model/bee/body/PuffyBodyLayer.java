@@ -25,12 +25,12 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 /**
- * Corps PUFFY: identique a ARMORED (head 7x7x3, body 8x8x9, tail 7x2x3)
- * mais SANS les 3 plaques protectrices. Memes texOffs que ARMORED.
- * Texture 128x64 (meme layout qu'ARMORED, zones plaques inutilisees).
+ * Corps PUFFY: copie exacte de ARMORED sans les 3 plaques.
+ * head 7x7x3, body 8x8x9, tail 7x2x3. Pattes flat.
+ * Texture 128x64 (meme layout qu'ARMORED).
  *
  * Layout Z:
- *   Head(-7.5..-4.5) -> Body(-4.5..+4.5) -> Tail(+4.5..+7.0)
+ *   Head(-7.5..-4.5) -> Body(-4.5..+4.5) -> Tail(+4.5..+7.5)
  */
 public final class PuffyBodyLayer {
 
@@ -42,7 +42,7 @@ public final class PuffyBodyLayer {
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
-        // body_corpus: head + body + tail (PAS de plaques — c'est la difference avec ARMORED)
+        // body_corpus: head + body + tail (sans plaques)
         bone.addOrReplaceChild("body_corpus",
                 CubeListBuilder.create()
                         .texOffs(0, 0).addBox(-4.0F, -4.0F, -4.5F, 8.0F, 8.0F, 9.0F)       // Body (8x8x9)
@@ -50,7 +50,7 @@ public final class PuffyBodyLayer {
                         .texOffs(54, 0).addBox(-3.5F, 1.5F, 4.0F, 7.0F, 2.0F, 3.0F),        // Tail (7x2x3)
                 PartPose.ZERO);
 
-        // body_stripe: vide (ARMORED a les rayures sur les plaques, sans plaques = pas de rayures)
+        // body_stripe: vide (ARMORED a les rayures sur les plaques uniquement)
         bone.addOrReplaceChild("body_stripe",
                 CubeListBuilder.create(),
                 PartPose.ZERO);
