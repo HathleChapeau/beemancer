@@ -22,6 +22,7 @@ package com.chapeau.apica.client.renderer.item;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.chapeau.apica.client.vfx.BlackHoleEffect;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.tool.RailgunItem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -43,6 +44,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.model.data.ModelData;
+import net.minecraft.client.Camera;
 
 /**
  * BEWLR pour le Railgun. Rendu hybride:
@@ -74,6 +76,13 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float LDR_MAX_Z = 30.5f / 16f;
     private static final float FACE_OFFSET = 0.001f;
 
+    // Position du black hole devant le canon (model coords / 16)
+    private static final float BLACKHOLE_X = 8.5f / 16f;
+    private static final float BLACKHOLE_Y = 8.75f / 16f;
+    private static final float BLACKHOLE_Z = -8f / 16f;
+
+    private final BlackHoleEffect blackHoleEffect = new BlackHoleEffect();
+
     private float currentFrame = 0;
     private int lastTick = -1;
 
@@ -98,6 +107,13 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
         if (inHand) {
             updateAnimation();
             renderChargingOverlay(poseStack, buffer, packedLight, (int) currentFrame, tint);
+
+            // Black hole effect en FPS seulement pendant le chargement
+            boolean isFPS = displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
+                || displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
+            if (isFPS && currentFrame > 0) {
+                renderBlackHoleEffect(poseStack, buffer, packedLight);
+            }
         } else {
             renderChargingOverlay(poseStack, buffer, packedLight, 0, tint);
         }
@@ -147,6 +163,26 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
         } else {
             if (currentFrame > 0) currentFrame = Math.max(0, currentFrame - 1);
         }
+    }
+
+    /**
+     * Rend l'effet Black Hole devant le canon du railgun.
+     */
+    private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+        poseStack.pushPose();
+        poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
+
+        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+
+        // Scale l'effet en fonction du chargement
+        float chargeProgress = currentFrame / (TOTAL_FRAMES - 1);
+        float effectScale = 0.3f + chargeProgress * 0.7f;
+        poseStack.scale(effectScale, effectScale, effectScale);
+
+        blackHoleEffect.render(poseStack, buffer, camera, time, packedLight);
+
+        poseStack.popPose();
     }
 
     /** Retourne la couleur de tinte du Loader en fonction du fluide du magazine. */
