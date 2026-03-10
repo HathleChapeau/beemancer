@@ -153,60 +153,56 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static int getLoaderTint(ItemStack stack) {
         String fluidId = MagazineData.getFluidId(stack);
         if (fluidId.contains("honey")) return 0xFADE29;
-        if (fluidId.contains("royal_jelly")) return 0xFFF8DC;
-        if (fluidId.contains("nectar")) return 0xB050FF;
+        if (fluidId.contains("royal_jelly")) return 0xFFE040;
+        if (fluidId.contains("nectar")) return 0xD040FF;
         return 0xFFFFFF;
     }
 
     /**
-     * Rend l'overlay d'animation sur les faces east/west du Loader.
-     * UV scrolle verticalement: chaque frame = 1 row de la texture 25x26.
+     * Rend l'overlay d'animation sur les faces east/west/south du Loader.
+     * Texture 25x26: chaque frame = 1 row de 25 pixels.
+     * - East/West: full width (pixels 1-25, U 0-1), 1 row height (V frame/26 to (frame+1)/26)
+     * - South: only pixel 25 (U 24/25 to 1), same V
      * Tinte par la couleur du fluide du magazine equipe.
      */
     private void renderChargingOverlay(PoseStack poseStack, MultiBufferSource buffer,
                                         int packedLight, int frame, int tint) {
         VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(CHARGING_TEXTURE));
         PoseStack.Pose pose = poseStack.last();
-        int overlay = OverlayTexture.NO_OVERLAY;
+        int ol = OverlayTexture.NO_OVERLAY;
 
         float r = ((tint >> 16) & 0xFF) / 255f;
         float g = ((tint >> 8) & 0xFF) / 255f;
         float b = (tint & 0xFF) / 255f;
 
-        float u0 = 0f, u1 = 1f;
+        // V coordinates for current frame row (1 row = 1/26 of texture height)
         float v0 = (float) frame / TOTAL_FRAMES;
         float v1 = v0 + 1f / TOTAL_FRAMES;
 
-        // West face (X-) — UV normal
-        emitQuad(vc, pose,
-            LDR_MIN_X - FACE_OFFSET, LDR_MIN_Y, LDR_MAX_Z,
-            LDR_MIN_X - FACE_OFFSET, LDR_MAX_Y, LDR_MIN_Z,
-            u0, v1, u0, v0, u1, v0, u1, v1,
-            -1, 0, 0, packedLight, overlay, r, g, b);
+        // === WEST FACE (X-) ===
+        // U: 0 at minZ (front), 1 at maxZ (back)
+        float wx = LDR_MIN_X - FACE_OFFSET;
+        vc.addVertex(pose, wx, LDR_MIN_Y, LDR_MIN_Z).setColor(r, g, b, 1f).setUv(0f, v1).setOverlay(ol).setLight(packedLight).setNormal(pose, -1, 0, 0);
+        vc.addVertex(pose, wx, LDR_MAX_Y, LDR_MIN_Z).setColor(r, g, b, 1f).setUv(0f, v0).setOverlay(ol).setLight(packedLight).setNormal(pose, -1, 0, 0);
+        vc.addVertex(pose, wx, LDR_MAX_Y, LDR_MAX_Z).setColor(r, g, b, 1f).setUv(1f, v0).setOverlay(ol).setLight(packedLight).setNormal(pose, -1, 0, 0);
+        vc.addVertex(pose, wx, LDR_MIN_Y, LDR_MAX_Z).setColor(r, g, b, 1f).setUv(1f, v1).setOverlay(ol).setLight(packedLight).setNormal(pose, -1, 0, 0);
 
-        // East face (X+) — UV flip horizontal (matching loader east [16,0,0,16])
-        emitQuad(vc, pose,
-            LDR_MAX_X + FACE_OFFSET, LDR_MIN_Y, LDR_MIN_Z,
-            LDR_MAX_X + FACE_OFFSET, LDR_MAX_Y, LDR_MAX_Z,
-            u1, v1, u1, v0, u0, v0, u0, v1,
-            1, 0, 0, packedLight, overlay, r, g, b);
-    }
+        // === EAST FACE (X+) ===
+        // U: 1 at maxZ (back), 0 at minZ (front) — flipped to match world orientation
+        float ex = LDR_MAX_X + FACE_OFFSET;
+        vc.addVertex(pose, ex, LDR_MIN_Y, LDR_MAX_Z).setColor(r, g, b, 1f).setUv(1f, v1).setOverlay(ol).setLight(packedLight).setNormal(pose, 1, 0, 0);
+        vc.addVertex(pose, ex, LDR_MAX_Y, LDR_MAX_Z).setColor(r, g, b, 1f).setUv(1f, v0).setOverlay(ol).setLight(packedLight).setNormal(pose, 1, 0, 0);
+        vc.addVertex(pose, ex, LDR_MAX_Y, LDR_MIN_Z).setColor(r, g, b, 1f).setUv(0f, v0).setOverlay(ol).setLight(packedLight).setNormal(pose, 1, 0, 0);
+        vc.addVertex(pose, ex, LDR_MIN_Y, LDR_MIN_Z).setColor(r, g, b, 1f).setUv(0f, v1).setOverlay(ol).setLight(packedLight).setNormal(pose, 1, 0, 0);
 
-    /** Emet un quad vertical (2 coins: bottom-left et top-right sur le meme plan) avec tinte RGB. */
-    private static void emitQuad(VertexConsumer vc, PoseStack.Pose pose,
-                                  float x0, float y0, float z0,
-                                  float x1, float y1, float z1,
-                                  float uBL, float vBL, float uTL, float vTL,
-                                  float uTR, float vTR, float uBR, float vBR,
-                                  float nx, float ny, float nz, int light, int overlay,
-                                  float r, float g, float b) {
-        vc.addVertex(pose, x0, y0, z0).setColor(r, g, b, 1f)
-            .setUv(uBL, vBL).setOverlay(overlay).setLight(light).setNormal(pose, nx, ny, nz);
-        vc.addVertex(pose, x0, y1, z0).setColor(r, g, b, 1f)
-            .setUv(uTL, vTL).setOverlay(overlay).setLight(light).setNormal(pose, nx, ny, nz);
-        vc.addVertex(pose, x1, y1, z1).setColor(r, g, b, 1f)
-            .setUv(uTR, vTR).setOverlay(overlay).setLight(light).setNormal(pose, nx, ny, nz);
-        vc.addVertex(pose, x1, y0, z1).setColor(r, g, b, 1f)
-            .setUv(uBR, vBR).setOverlay(overlay).setLight(light).setNormal(pose, nx, ny, nz);
+        // === SOUTH FACE (Z+) ===
+        // U: only pixel 25 (last column) = 24/25 to 1
+        float sU0 = 24f / 25f;
+        float sU1 = 1f;
+        float sz = LDR_MAX_Z + FACE_OFFSET;
+        vc.addVertex(pose, LDR_MIN_X, LDR_MIN_Y, sz).setColor(r, g, b, 1f).setUv(sU0, v1).setOverlay(ol).setLight(packedLight).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, LDR_MIN_X, LDR_MAX_Y, sz).setColor(r, g, b, 1f).setUv(sU0, v0).setOverlay(ol).setLight(packedLight).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, LDR_MAX_X, LDR_MAX_Y, sz).setColor(r, g, b, 1f).setUv(sU1, v0).setOverlay(ol).setLight(packedLight).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, LDR_MAX_X, LDR_MIN_Y, sz).setColor(r, g, b, 1f).setUv(sU1, v1).setOverlay(ol).setLight(packedLight).setNormal(pose, 0, 0, 1);
     }
 }
