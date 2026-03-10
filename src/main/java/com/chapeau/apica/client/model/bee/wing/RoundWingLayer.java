@@ -35,14 +35,17 @@ public final class RoundWingLayer {
         PartDefinition bone = partRoot.addOrReplaceChild("bone",
                 CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
 
+        // Double-sided wings (no backface culling): front + back planes
         bone.addOrReplaceChild("right_wing",
-                CubeListBuilder.create().texOffs(2, 22)
-                        .addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 10.0F),
+                CubeListBuilder.create()
+                        .texOffs(2, 22).addBox(-12.0F, 0.0F, 0.0F, 12.0F, 0.0F, 10.0F)
+                        .texOffs(2, 22).mirror().addBox(-12.0F, 0.001F, 0.0F, 12.0F, 0.0F, 10.0F).mirror(false),
                 PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
 
         bone.addOrReplaceChild("left_wing",
-                CubeListBuilder.create().texOffs(-10, 6)
-                        .addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 10.0F),
+                CubeListBuilder.create()
+                        .texOffs(-10, 6).addBox(0.0F, 0.0F, 0.0F, 12.0F, 0.0F, 10.0F)
+                        .texOffs(-10, 6).mirror().addBox(0.0F, 0.001F, 0.0F, 12.0F, 0.0F, 10.0F).mirror(false),
                 PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
 
         return LayerDefinition.create(mesh, 32, 32);
