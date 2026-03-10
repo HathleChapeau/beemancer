@@ -167,18 +167,28 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     /**
      * Rend l'effet Black Hole devant le canon du railgun.
+     * DEBUG: rendu direct sans VfxEffect pour isoler le probleme.
      */
     private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+        // DEBUG: log pour verifier que la methode est appelee
+        System.out.println("[RAILGUN] renderBlackHoleEffect called");
+
         poseStack.pushPose();
+        poseStack.translate(0.5, 0.5, 0.5);
 
-        // DEBUG: position a l'origine du modele pour voir si ca render
-        // poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
-        poseStack.translate(0.5, 0.5, 0.5); // Centre du bloc/modele
+        // DEBUG: Quad direct, meme methode que le charging overlay
+        ResourceLocation tex = ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/sphere.png");
+        VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(tex));
+        PoseStack.Pose pose = poseStack.last();
+        int ol = OverlayTexture.NO_OVERLAY;
+        int light = 0xF000F0; // Full bright
 
-        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-        float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
-
-        blackHoleEffect.render(poseStack, buffer, camera, time, packedLight);
+        float s = 0.15f; // half-size
+        // Quad simple dans le plan XY
+        vc.addVertex(pose, -s, -s, 0).setColor(1f, 0f, 0f, 1f).setUv(0, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, -s,  s, 0).setColor(1f, 0f, 0f, 1f).setUv(0, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose,  s,  s, 0).setColor(1f, 0f, 0f, 1f).setUv(1, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose,  s, -s, 0).setColor(1f, 0f, 0f, 1f).setUv(1, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
 
         poseStack.popPose();
     }
