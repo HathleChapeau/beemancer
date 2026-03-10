@@ -34,10 +34,18 @@ import java.util.List;
 public class CreativeMagazineItem extends MagazineItem {
 
     public static final String NECTAR_FLUID_ID = "apica:nectar";
+    public static final int INFINITE_AMOUNT = 999_999_999;
     private static final int NECTAR_COLOR = 0xB050FF;
 
     public CreativeMagazineItem(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public ItemStack getDefaultInstance() {
+        ItemStack stack = new ItemStack(this);
+        MagazineFluidData.setFluid(stack, NECTAR_FLUID_ID, INFINITE_AMOUNT);
+        return stack;
     }
 
     @Override
