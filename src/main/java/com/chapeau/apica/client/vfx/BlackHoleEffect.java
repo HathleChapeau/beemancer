@@ -56,7 +56,7 @@ public class BlackHoleEffect extends VfxEffect {
      */
     private void setupDefaultConfiguration() {
         // === SPHERE CENTRALE (billboard) ===
-        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
+        addQuad(VfxQuad.builder(SPHERE)
             .billboard()
             .scale(0.2f)
             .rotationSpeed(0.03f)
@@ -64,7 +64,7 @@ public class BlackHoleEffect extends VfxEffect {
             .build());
 
         // === LIGNES BILLBOARD (suivent la camera) ===
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
+        addQuad(VfxQuad.builder(LINE)
             .billboard()
             .scale(0.35f)
             .rotationSpeed(0.16f)
@@ -72,7 +72,7 @@ public class BlackHoleEffect extends VfxEffect {
             .color(0.7f, 0.3f, 1.0f, 0.8f)
             .build());
 
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
+        addQuad(VfxQuad.builder(LINE)
             .billboard()
             .scale(0.3f)
             .rotationSpeed(-0.12f)
@@ -82,7 +82,7 @@ public class BlackHoleEffect extends VfxEffect {
 
         // === LIGNES FIXES (orientations differentes) ===
         // Axe X
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
+        addQuad(VfxQuad.builder(LINE)
             .fixed()
             .axis(1, 0, 0)
             .up(0, 1, 0)
@@ -93,7 +93,7 @@ public class BlackHoleEffect extends VfxEffect {
             .build());
 
         // Axe Y
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
+        addQuad(VfxQuad.builder(LINE)
             .fixed()
             .axis(0, 1, 0)
             .up(0, 0, 1)
@@ -104,7 +104,7 @@ public class BlackHoleEffect extends VfxEffect {
             .build());
 
         // Axe Z
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
+        addQuad(VfxQuad.builder(LINE)
             .fixed()
             .axis(0, 0, 1)
             .up(0, 1, 0)
@@ -115,7 +115,7 @@ public class BlackHoleEffect extends VfxEffect {
             .build());
 
         // Axe diagonal
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
+        addQuad(VfxQuad.builder(LINE)
             .fixed()
             .axis(1, 1, 0)
             .up(0, 0, 1)
