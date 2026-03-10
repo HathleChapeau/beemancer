@@ -62,7 +62,7 @@ public class BlackHoleEffect extends VfxEffect {
         addQuad(VfxQuad.builder(LINE_TEXTURE)
             .billboard()
             .scale(0.35f)
-            .rotationSpeed(0.08f)
+            .rotationSpeed(0.16f)
             .initialRotation(0)
             .color(0.7f, 0.3f, 1.0f, 0.8f)
             .build());
@@ -70,7 +70,7 @@ public class BlackHoleEffect extends VfxEffect {
         addQuad(VfxQuad.builder(LINE_TEXTURE)
             .billboard()
             .scale(0.3f)
-            .rotationSpeed(-0.06f)
+            .rotationSpeed(-0.12f)
             .initialRotation(PI / 2)
             .color(0.8f, 0.4f, 1.0f, 0.7f)
             .build());
@@ -82,7 +82,7 @@ public class BlackHoleEffect extends VfxEffect {
             .axis(1, 0, 0)
             .up(0, 1, 0)
             .scale(0.28f)
-            .rotationSpeed(0.05f)
+            .rotationSpeed(0.10f)
             .initialRotation(0)
             .color(0.5f, 0.15f, 0.9f, 0.6f)
             .build());
@@ -93,7 +93,7 @@ public class BlackHoleEffect extends VfxEffect {
             .axis(0, 1, 0)
             .up(0, 0, 1)
             .scale(0.26f)
-            .rotationSpeed(-0.07f)
+            .rotationSpeed(-0.14f)
             .initialRotation(PI / 4)
             .color(0.5f, 0.15f, 0.9f, 0.6f)
             .build());
@@ -104,7 +104,7 @@ public class BlackHoleEffect extends VfxEffect {
             .axis(0, 0, 1)
             .up(0, 1, 0)
             .scale(0.25f)
-            .rotationSpeed(0.04f)
+            .rotationSpeed(0.08f)
             .initialRotation(PI / 3)
             .color(0.5f, 0.15f, 0.9f, 0.6f)
             .build());
@@ -115,7 +115,7 @@ public class BlackHoleEffect extends VfxEffect {
             .axis(1, 1, 0)
             .up(0, 0, 1)
             .scale(0.22f)
-            .rotationSpeed(-0.06f)
+            .rotationSpeed(-0.12f)
             .initialRotation(PI / 6)
             .color(0.5f, 0.15f, 0.9f, 0.5f)
             .build());
