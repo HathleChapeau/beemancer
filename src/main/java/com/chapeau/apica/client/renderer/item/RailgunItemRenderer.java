@@ -76,10 +76,10 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float LDR_MAX_Z = 30.5f / 16f;
     private static final float FACE_OFFSET = 0.001f;
 
-    // Position du black hole (devant le canon)
-    private static final float BLACKHOLE_X = 0.5f;
-    private static final float BLACKHOLE_Y = 0.55f;
-    private static final float BLACKHOLE_Z = -0.3f;
+    // Position du black hole (coordonnees modele)
+    private static final float BLACKHOLE_X = 2f;
+    private static final float BLACKHOLE_Y = 0.5f;
+    private static final float BLACKHOLE_Z = 2f;
 
     private final BlackHoleEffect blackHoleEffect = createBlackHoleEffect();
 
