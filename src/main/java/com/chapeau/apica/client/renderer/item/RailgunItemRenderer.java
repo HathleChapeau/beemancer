@@ -76,10 +76,10 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float LDR_MAX_Z = 30.5f / 16f;
     private static final float FACE_OFFSET = 0.001f;
 
-    // Position du black hole (coordonnees modele)
-    private static final float BLACKHOLE_X = 2f;
-    private static final float BLACKHOLE_Y = 0.5f;
-    private static final float BLACKHOLE_Z = 2f;
+    // Position du black hole (bout du canon)
+    private static final float BLACKHOLE_X = 8.5f / 16f;   // Centre X du canon
+    private static final float BLACKHOLE_Y = 8.75f / 16f;  // Centre Y du canon
+    private static final float BLACKHOLE_Z = -8f / 16f;    // Devant le canon
 
     private final BlackHoleEffect blackHoleEffect = createBlackHoleEffect();
 
@@ -240,9 +240,9 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
         // Progression du chargement (0 a 1)
         float progress = currentFrame / (TOTAL_FRAMES - 1);
 
-        // scaleMult: 0 -> 2, rotMult: 1 -> 2
+        // scaleMult: 0 -> 2, rotMult: 2 -> 4
         float scaleMult = progress * 2f;
-        float rotMult = 1f + progress;
+        float rotMult = 2f + progress * 2f;
 
         poseStack.pushPose();
         poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
