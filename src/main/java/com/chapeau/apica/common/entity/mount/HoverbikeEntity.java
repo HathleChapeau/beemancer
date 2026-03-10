@@ -367,6 +367,11 @@ public class HoverbikeEntity extends Mob implements PlayerRideable {
     }
 
     @Override
+    public AABB getBoundingBoxForCulling() {
+        return super.getBoundingBoxForCulling().inflate(2.0);
+    }
+
+    @Override
     public boolean canCollideWith(Entity other) {
         if (other.isSpectator()) return false;
         if (this.getPassengers().contains(other)) return false;

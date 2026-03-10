@@ -97,6 +97,10 @@ public class HoverbikeRenderLayer extends RenderLayer<HoverbikeEntity, ApicaBeeM
         // === Stinger ===
         VertexConsumer stingerVC = buffer.getBuffer(RenderType.entityCutout(stingerTex));
         model.renderStinger(poseStack, stingerVC, packedLight, overlay, toArgb(stingerColor));
+
+        // Restaure la visibilite complete du modele pour que les prochains passes
+        // (outline pour shader edit mode, rendu d'autres entites) aient toutes les parties.
+        model.showAll();
     }
 
     private static int toArgb(int rgb) {

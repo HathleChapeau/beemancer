@@ -379,15 +379,7 @@ public class ApicaCreativeTabs {
     }
 
     private static void addAllCombs(CreativeModeTab.Output output) {
-        // Tier I combs
-        output.accept(ApicaItems.MEADOW_COMB.get());
-        output.accept(ApicaItems.FOREST_COMB.get());
-        output.accept(ApicaItems.RIVER_COMB.get());
-        output.accept(ApicaItems.END_COMB.get());
-
         // Tier II combs
-        output.accept(ApicaItems.MONSTY_COMB.get());
-        output.accept(ApicaItems.DOCILE_COMB.get());
         output.accept(ApicaItems.SPARK_COMB.get());
 
         // Tier III combs
@@ -404,10 +396,6 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.REED_COMB.get());
 
         // Tier IV combs
-        output.accept(ApicaItems.FLOWER_COMB.get());
-        output.accept(ApicaItems.MUSHROOM_COMB.get());
-        output.accept(ApicaItems.TREE_COMB.get());
-        output.accept(ApicaItems.CRYSTAL_COMB.get());
         output.accept(ApicaItems.ARGIL_COMB.get());
         output.accept(ApicaItems.UMBRA_COMB.get());
         output.accept(ApicaItems.SAVANNA_COMB.get());
@@ -415,7 +403,6 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.VOLATILE_COMB.get());
 
         // Tier V combs
-        output.accept(ApicaItems.SWIFT_COMB.get());
         output.accept(ApicaItems.FERROUS_COMB.get());
         output.accept(ApicaItems.FLUX_COMB.get());
         output.accept(ApicaItems.LAZULI_COMB.get());
@@ -428,15 +415,11 @@ public class ApicaCreativeTabs {
 
         // Tier VI combs
         output.accept(ApicaItems.MAJESTIC_COMB.get());
-        output.accept(ApicaItems.STEADY_COMB.get());
         output.accept(ApicaItems.AURIC_COMB.get());
         output.accept(ApicaItems.MAGMATIC_COMB.get());
         output.accept(ApicaItems.CRIMSON_COMB.get());
 
         // Tier VII combs
-        output.accept(ApicaItems.TREASURE_COMB.get());
-        output.accept(ApicaItems.SIPHONING_COMB.get());
-        output.accept(ApicaItems.ZEPHYR_COMB.get());
         output.accept(ApicaItems.PRISMATIC_COMB.get());
         output.accept(ApicaItems.CRYSTALLINE_COMB.get());
         output.accept(ApicaItems.BLAZING_COMB.get());
@@ -447,15 +430,10 @@ public class ApicaCreativeTabs {
         output.accept(ApicaItems.VOLCANIC_COMB.get());
         output.accept(ApicaItems.TRAVELER_COMB.get());
         output.accept(ApicaItems.SORROW_COMB.get());
-        output.accept(ApicaItems.LIGHT_COMB.get());
-        output.accept(ApicaItems.DARK_COMB.get());
         output.accept(ApicaItems.IMPERIAL_COMB.get());
 
         // Tier IX combs
-        output.accept(ApicaItems.DEMONIC_COMB.get());
-        output.accept(ApicaItems.PALADIN_COMB.get());
         output.accept(ApicaItems.ANCIENT_COMB.get());
-        output.accept(ApicaItems.VOID_COMB.get());
 
         // Tier X combs
         output.accept(ApicaItems.DRACONIC_COMB.get());

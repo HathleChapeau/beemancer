@@ -516,19 +516,7 @@ public class ApicaItems {
     public static final DeferredItem<Item> BIG_ROYAL_COMB = ITEMS.register("big_royal_comb",
             () -> new CombItem(new Item.Properties(), 0xE8A317, 0xFFF1A3));
 
-    // --- NEW COMBS (from bee species) ---
-    public static final DeferredItem<Item> MEADOW_COMB = ITEMS.register("meadow_comb",
-            () -> new CombItem(new Item.Properties(), "meadow"));
-    public static final DeferredItem<Item> FOREST_COMB = ITEMS.register("forest_comb",
-            () -> new CombItem(new Item.Properties(), "forest"));
-    public static final DeferredItem<Item> RIVER_COMB = ITEMS.register("river_comb",
-            () -> new CombItem(new Item.Properties(), "river"));
-    public static final DeferredItem<Item> END_COMB = ITEMS.register("end_comb",
-            () -> new CombItem(new Item.Properties(), "end"));
-    public static final DeferredItem<Item> MONSTY_COMB = ITEMS.register("monsty_comb",
-            () -> new CombItem(new Item.Properties(), "monsty"));
-    public static final DeferredItem<Item> DOCILE_COMB = ITEMS.register("docile_comb",
-            () -> new CombItem(new Item.Properties(), "docile"));
+    // --- COMBS (espèces avec loot custom — pas de comb pour les abeilles qui lootent minecraft:honeycomb) ---
     public static final DeferredItem<Item> SPARK_COMB = ITEMS.register("spark_comb",
             () -> new CombItem(new Item.Properties(), "spark"));
     public static final DeferredItem<Item> CARBON_COMB = ITEMS.register("carbon_comb",
@@ -553,14 +541,6 @@ public class ApicaItems {
             () -> new CombItem(new Item.Properties(), "paperbark"));
     public static final DeferredItem<Item> REED_COMB = ITEMS.register("reed_comb",
             () -> new CombItem(new Item.Properties(), "reed"));
-    public static final DeferredItem<Item> FLOWER_COMB = ITEMS.register("flower_comb",
-            () -> new CombItem(new Item.Properties(), "flower"));
-    public static final DeferredItem<Item> MUSHROOM_COMB = ITEMS.register("mushroom_comb",
-            () -> new CombItem(new Item.Properties(), "mushroom"));
-    public static final DeferredItem<Item> TREE_COMB = ITEMS.register("tree_comb",
-            () -> new CombItem(new Item.Properties(), "tree"));
-    public static final DeferredItem<Item> CRYSTAL_COMB = ITEMS.register("crystal_comb",
-            () -> new CombItem(new Item.Properties(), "crystal"));
     public static final DeferredItem<Item> ARGIL_COMB = ITEMS.register("argil_comb",
             () -> new CombItem(new Item.Properties(), "argil"));
     public static final DeferredItem<Item> UMBRA_COMB = ITEMS.register("umbra_comb",
@@ -571,8 +551,6 @@ public class ApicaItems {
             () -> new CombItem(new Item.Properties(), "frost"));
     public static final DeferredItem<Item> VOLATILE_COMB = ITEMS.register("volatile_comb",
             () -> new CombItem(new Item.Properties(), "volatile"));
-    public static final DeferredItem<Item> SWIFT_COMB = ITEMS.register("swift_comb",
-            () -> new CombItem(new Item.Properties(), "swift"));
     public static final DeferredItem<Item> FERROUS_COMB = ITEMS.register("ferrous_comb",
             () -> new CombItem(new Item.Properties(), "ferrous"));
     public static final DeferredItem<Item> FLUX_COMB = ITEMS.register("flux_comb",
@@ -593,20 +571,12 @@ public class ApicaItems {
             () -> new CombItem(new Item.Properties(), "marsh"));
     public static final DeferredItem<Item> MAJESTIC_COMB = ITEMS.register("majestic_comb",
             () -> new CombItem(new Item.Properties(), "majestic"));
-    public static final DeferredItem<Item> STEADY_COMB = ITEMS.register("steady_comb",
-            () -> new CombItem(new Item.Properties(), "steady"));
     public static final DeferredItem<Item> AURIC_COMB = ITEMS.register("auric_comb",
             () -> new CombItem(new Item.Properties(), "auric"));
     public static final DeferredItem<Item> MAGMATIC_COMB = ITEMS.register("magmatic_comb",
             () -> new CombItem(new Item.Properties(), "magmatic"));
     public static final DeferredItem<Item> CRIMSON_COMB = ITEMS.register("crimson_comb",
             () -> new CombItem(new Item.Properties(), "crimson"));
-    public static final DeferredItem<Item> TREASURE_COMB = ITEMS.register("treasure_comb",
-            () -> new CombItem(new Item.Properties(), "treasure"));
-    public static final DeferredItem<Item> SIPHONING_COMB = ITEMS.register("siphoning_comb",
-            () -> new CombItem(new Item.Properties(), "siphoning"));
-    public static final DeferredItem<Item> ZEPHYR_COMB = ITEMS.register("zephyr_comb",
-            () -> new CombItem(new Item.Properties(), "zephyr"));
     public static final DeferredItem<Item> PRISMATIC_COMB = ITEMS.register("prismatic_comb",
             () -> new CombItem(new Item.Properties(), "prismatic"));
     public static final DeferredItem<Item> CRYSTALLINE_COMB = ITEMS.register("crystalline_comb",
@@ -623,20 +593,10 @@ public class ApicaItems {
             () -> new CombItem(new Item.Properties(), "traveler"));
     public static final DeferredItem<Item> SORROW_COMB = ITEMS.register("sorrow_comb",
             () -> new CombItem(new Item.Properties(), "sorrow"));
-    public static final DeferredItem<Item> LIGHT_COMB = ITEMS.register("light_comb",
-            () -> new CombItem(new Item.Properties(), "light"));
-    public static final DeferredItem<Item> DARK_COMB = ITEMS.register("dark_comb",
-            () -> new CombItem(new Item.Properties(), "dark"));
     public static final DeferredItem<Item> IMPERIAL_COMB = ITEMS.register("imperial_comb",
             () -> new CombItem(new Item.Properties(), "imperial"));
-    public static final DeferredItem<Item> DEMONIC_COMB = ITEMS.register("demonic_comb",
-            () -> new CombItem(new Item.Properties(), "demonic"));
-    public static final DeferredItem<Item> PALADIN_COMB = ITEMS.register("paladin_comb",
-            () -> new CombItem(new Item.Properties(), "paladin"));
     public static final DeferredItem<Item> ANCIENT_COMB = ITEMS.register("ancient_comb",
             () -> new CombItem(new Item.Properties(), "ancient"));
-    public static final DeferredItem<Item> VOID_COMB = ITEMS.register("void_comb",
-            () -> new CombItem(new Item.Properties(), "void"));
     public static final DeferredItem<Item> DRACONIC_COMB = ITEMS.register("draconic_comb",
             () -> new CombItem(new Item.Properties(), "draconic"));
     public static final DeferredItem<Item> STELLAR_COMB = ITEMS.register("stellar_comb",
