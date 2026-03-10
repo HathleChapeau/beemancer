@@ -166,14 +166,13 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     }
 
     /**
-     * Rend l'effet Black Hole au centre de l'ecran pour debug.
+     * Rend l'effet Black Hole devant le canon du railgun.
      */
     private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         poseStack.pushPose();
 
-        // Reset transforms et place au centre de l'ecran, devant le joueur
-        poseStack.setIdentity();
-        poseStack.translate(0, 0, -2); // 2 blocs devant la camera
+        // Position en coordonnées modèle (définie en haut du fichier)
+        poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
 
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);

@@ -44,81 +44,79 @@ public class BlackHoleEffect extends VfxEffect {
     }
 
     /**
-     * Configuration par defaut:
-     * - 1 sphere billboard
-     * - 2 lignes billboard
-     * - 4 lignes fixes
+     * Configuration DEBUG: quads sur tous les axes pour tester la visibilite.
+     * Scale reduit (0.15) pour espace modele item.
      */
     private void setupDefaultConfiguration() {
-        // === SPHERE CENTRALE (billboard) ===
+        // === DEBUG: 6 quads sur chaque axe + 1 billboard ===
+        float s = 0.15f; // Scale adapte a l'espace modele
+
+        // Axe Z (face camera normalement) - ROUGE
         addQuad(VfxQuad.builder(SPHERE_TEXTURE)
-            .billboard()
-            .scale(0.15f)
-            .rotationSpeed(0.05f)
-            .initialRotation(0)
-            .color(0.8f, 0.4f, 1.0f, 0.9f)
+            .fixed()
+            .axis(0, 0, 1)
+            .up(0, 1, 0)
+            .scale(s)
+            .rotationSpeed(0.1f)
+            .color(1.0f, 0.0f, 0.0f, 1.0f)
             .build());
 
-        // === LIGNES BILLBOARD (suivent la camera) ===
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
-            .billboard()
-            .scale(0.25f)
-            .rotationSpeed(0.15f)
-            .initialRotation(0)
-            .color(0.6f, 0.2f, 1.0f, 0.7f)
+        // Axe Z inverse - ROUGE FONCE
+        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
+            .fixed()
+            .axis(0, 0, -1)
+            .up(0, 1, 0)
+            .scale(s)
+            .rotationSpeed(-0.1f)
+            .color(0.5f, 0.0f, 0.0f, 1.0f)
             .build());
 
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
-            .billboard()
-            .scale(0.22f)
-            .rotationSpeed(-0.12f)
-            .initialRotation(PI / 3)
-            .color(0.7f, 0.3f, 1.0f, 0.7f)
-            .build());
-
-        // === LIGNES FIXES (orientations monde) ===
-        // Ligne 1: axe X
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
+        // Axe X - VERT
+        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
             .fixed()
             .axis(1, 0, 0)
             .up(0, 1, 0)
-            .scale(0.28f)
-            .rotationSpeed(0.08f)
-            .initialRotation(0)
-            .color(0.5f, 0.1f, 0.9f, 0.6f)
+            .scale(s)
+            .rotationSpeed(0.1f)
+            .color(0.0f, 1.0f, 0.0f, 1.0f)
             .build());
 
-        // Ligne 2: axe Y
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
+        // Axe X inverse - VERT FONCE
+        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
+            .fixed()
+            .axis(-1, 0, 0)
+            .up(0, 1, 0)
+            .scale(s)
+            .rotationSpeed(-0.1f)
+            .color(0.0f, 0.5f, 0.0f, 1.0f)
+            .build());
+
+        // Axe Y - BLEU
+        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
             .fixed()
             .axis(0, 1, 0)
             .up(0, 0, 1)
-            .scale(0.26f)
+            .scale(s)
+            .rotationSpeed(0.1f)
+            .color(0.0f, 0.0f, 1.0f, 1.0f)
+            .build());
+
+        // Axe Y inverse - BLEU FONCE
+        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
+            .fixed()
+            .axis(0, -1, 0)
+            .up(0, 0, 1)
+            .scale(s)
             .rotationSpeed(-0.1f)
-            .initialRotation(PI / 4)
-            .color(0.5f, 0.1f, 0.9f, 0.6f)
+            .color(0.0f, 0.0f, 0.5f, 1.0f)
             .build());
 
-        // Ligne 3: axe diagonal XZ
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
-            .fixed()
-            .axis(0.707f, 0, 0.707f)
-            .up(0, 1, 0)
-            .scale(0.24f)
-            .rotationSpeed(0.12f)
-            .initialRotation(PI / 2)
-            .color(0.4f, 0.0f, 0.8f, 0.5f)
-            .build());
-
-        // Ligne 4: axe diagonal XY
-        addQuad(VfxQuad.builder(LINE_TEXTURE)
-            .fixed()
-            .axis(0.707f, 0.707f, 0)
-            .up(-0.707f, 0.707f, 0)
-            .scale(0.23f)
-            .rotationSpeed(-0.07f)
-            .initialRotation(3 * PI / 4)
-            .color(0.4f, 0.0f, 0.8f, 0.5f)
+        // Billboard test - BLANC (plus petit)
+        addQuad(VfxQuad.builder(SPHERE_TEXTURE)
+            .billboard()
+            .scale(s * 0.7f)
+            .rotationSpeed(0.2f)
+            .color(1.0f, 1.0f, 1.0f, 1.0f)
             .build());
     }
 
