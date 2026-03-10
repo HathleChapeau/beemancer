@@ -22,6 +22,7 @@ import com.chapeau.apica.common.item.VoidUpgradeItem;
 import com.chapeau.apica.common.item.ItemFilterItem;
 import com.chapeau.apica.common.item.NectarBreadItem;
 import com.chapeau.apica.common.item.tool.BuildingWandItem;
+import com.chapeau.apica.common.item.magazine.CreativeMagazineItem;
 import com.chapeau.apica.common.item.magazine.MagazineItem;
 import com.chapeau.apica.common.item.tool.LeafBlowerItem;
 import com.chapeau.apica.common.item.tool.ChopperHiveItem;
@@ -445,6 +446,8 @@ public class ApicaItems {
     // --- Magazine ---
     public static final DeferredItem<MagazineItem> MAGAZINE = ITEMS.register("magazine",
             () -> new MagazineItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<CreativeMagazineItem> CREATIVE_MAGAZINE = ITEMS.register("creative_magazine",
+            () -> new CreativeMagazineItem(new Item.Properties().stacksTo(1)));
 
     // --- Backpack ---
     public static final DeferredItem<BackpackItem> BACKPACK = ITEMS.register("backpack",

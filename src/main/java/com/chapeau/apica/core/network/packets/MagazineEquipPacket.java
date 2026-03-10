@@ -26,6 +26,7 @@ import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
+import com.chapeau.apica.common.item.magazine.CreativeMagazineItem;
 import com.chapeau.apica.common.item.magazine.MagazineItem;
 import com.chapeau.apica.common.item.tool.MiningLaserItem;
 import net.minecraft.network.FriendlyByteBuf;
@@ -122,17 +123,24 @@ public record MagazineEquipPacket(int slotIndex, boolean equip)
 
         String newFluidId = MagazineFluidData.getFluidId(cursorStack);
         int newAmount = MagazineFluidData.getFluidAmount(cursorStack);
+        boolean isCreative = cursorStack.getItem() instanceof CreativeMagazineItem;
+
+        // Creative magazine: force nectar plein
+        if (isCreative) {
+            newFluidId = CreativeMagazineItem.NECTAR_FLUID_ID;
+            newAmount = MagazineFluidData.MAX_CAPACITY;
+        }
 
         if (MagazineData.hasMagazine(holderStack)) {
             ItemStack oldMag = MagazineData.removeMagazine(holderStack);
-            MagazineData.setMagazine(holderStack, newFluidId, newAmount);
+            MagazineData.setMagazine(holderStack, newFluidId, newAmount, isCreative);
             player.containerMenu.setCarried(oldMag);
             LOG.info("[MAG-SRV] handleEquip: SWAP done");
         } else {
-            MagazineData.setMagazine(holderStack, newFluidId, newAmount);
+            MagazineData.setMagazine(holderStack, newFluidId, newAmount, isCreative);
             cursorStack.shrink(1);
             player.containerMenu.setCarried(cursorStack);
-            LOG.info("[MAG-SRV] handleEquip: EQUIP done, newFluid={} newAmount={}", newFluidId, newAmount);
+            LOG.info("[MAG-SRV] handleEquip: EQUIP done, newFluid={} newAmount={} creative={}", newFluidId, newAmount, isCreative);
         }
     }
 

@@ -44,6 +44,7 @@ public final class MagazineData {
     private static final String ROOT_KEY = "MagazineData";
     private static final String FLUID_ID_KEY = "FluidId";
     private static final String AMOUNT_KEY = "Amount";
+    private static final String CREATIVE_KEY = "Creative";
 
     private MagazineData() {}
 
@@ -66,14 +67,29 @@ public final class MagazineData {
     public static int getFluidAmount(ItemStack holder) {
         CompoundTag tag = getDataTag(holder);
         if (tag == null) return 0;
+        // Creative magazine toujours plein
+        if (tag.getBoolean(CREATIVE_KEY)) return MagazineFluidData.MAX_CAPACITY;
         return tag.getInt(AMOUNT_KEY);
+    }
+
+    /** Verifie si le magazine attache est un magazine creatif. */
+    public static boolean isCreative(ItemStack holder) {
+        CompoundTag tag = getDataTag(holder);
+        if (tag == null) return false;
+        return tag.getBoolean(CREATIVE_KEY);
     }
 
     /** Attache un magazine au holder avec le fluide et la quantite donnes. */
     public static void setMagazine(ItemStack holder, String fluidId, int amount) {
+        setMagazine(holder, fluidId, amount, false);
+    }
+
+    /** Attache un magazine au holder avec le fluide, la quantite, et le flag creatif. */
+    public static void setMagazine(ItemStack holder, String fluidId, int amount, boolean creative) {
         CompoundTag tag = getOrCreateDataTag(holder);
         tag.putString(FLUID_ID_KEY, fluidId);
         tag.putInt(AMOUNT_KEY, Math.max(0, amount));
+        tag.putBoolean(CREATIVE_KEY, creative);
         saveDataTag(holder, tag);
     }
 
@@ -111,11 +127,15 @@ public final class MagazineData {
      * Consomme du fluide du magazine attache.
      * Si le fluide restant est insuffisant mais > 0, consomme tout le reste et retourne true.
      * Retourne false uniquement si le magazine est absent ou deja vide.
+     * Les magazines creatifs ne sont jamais consommes.
      */
     public static boolean consumeFluid(ItemStack holder, int cost) {
         if (cost <= 0) return true;
         CompoundTag tag = getDataTag(holder);
         if (tag == null) return false;
+
+        // Creative magazine ne se vide jamais
+        if (tag.getBoolean(CREATIVE_KEY)) return true;
 
         int current = tag.getInt(AMOUNT_KEY);
         if (current <= 0) return false;
