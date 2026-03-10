@@ -646,6 +646,11 @@ public class ClientSetup {
         event.register((state, level, pos, tintIndex) -> 0xFFFF69B4,
             ApicaBlocks.CREATIVE_BREEDING_CRYSTAL.get()
         );
+
+        // Creative Tolerance Crystal - teinte bleu creative
+        event.register((state, level, pos, tintIndex) -> 0xFF69B4FF,
+            ApicaBlocks.CREATIVE_TOLERANCE_CRYSTAL.get()
+        );
     }
 
     private static void registerItemColors(final RegisterColorHandlersEvent.Item event) {
@@ -657,6 +662,11 @@ public class ClientSetup {
         // Creative Breeding Crystal item - teinte rose creative
         event.register((stack, tintIndex) -> 0xFFFF69B4,
             ApicaBlocks.CREATIVE_BREEDING_CRYSTAL.get().asItem()
+        );
+
+        // Creative Tolerance Crystal item - teinte bleu creative
+        event.register((stack, tintIndex) -> 0xFF69B4FF,
+            ApicaBlocks.CREATIVE_TOLERANCE_CRYSTAL.get().asItem()
         );
 
         // Species Essence - teinte selon la couleur de l'espece
