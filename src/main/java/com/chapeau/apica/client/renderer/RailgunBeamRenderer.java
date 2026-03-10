@@ -62,14 +62,22 @@ public class RailgunBeamRenderer {
     private static final int BEAM_DURATION_TICKS = 10;
 
     private static long fireGameTime = -1;
-    private static Vec3 beamOrigin = Vec3.ZERO;
     private static Vec3 beamDestination = Vec3.ZERO;
     private static float beamR = 1f, beamG = 1f, beamB = 1f;
+
+    // FPS beam: offset relatif a la camera (stocke au moment du tir)
+    private static Vec3 fpsRightOffset = Vec3.ZERO;
+    private static Vec3 fpsUpOffset = Vec3.ZERO;
+    private static Vec3 fpsForwardOffset = Vec3.ZERO;
+
+    // TPS beam: position world-space fixe
+    private static Vec3 tpsBeamOrigin = Vec3.ZERO;
 
     private static boolean wasUsing = false;
     private static int storedUseTicks = 0;
     private static ItemStack storedStack = ItemStack.EMPTY;
     private static InteractionHand storedHand = InteractionHand.MAIN_HAND;
+    private static boolean firedInFps = false;
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
@@ -121,9 +129,26 @@ public class RailgunBeamRenderer {
         poseStack.translate(-camPos.x, -camPos.y, -camPos.z);
 
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
-        renderBeamQuads(poseStack, bufferSource, camPos,
+
+        // Calculer l'origine du beam selon le mode camera
+        Vec3 beamOrigin;
+        if (firedInFps && mc.options.getCameraType() == CameraType.FIRST_PERSON) {
+            // FPS: origine relative a la camera actuelle
+            Vec3 lookDir = new Vec3(camera.getLookVector());
+            Vec3 upDir = new Vec3(camera.getUpVector());
+            Vec3 rightDir = lookDir.cross(upDir).normalize();
+            beamOrigin = camPos
+                .add(rightDir.scale(fpsRightOffset.x))
+                .add(upDir.scale(fpsUpOffset.y))
+                .add(lookDir.scale(fpsForwardOffset.z));
+        } else {
+            // TPS: origine world-space fixe
+            beamOrigin = tpsBeamOrigin;
+        }
+
+        renderBeamQuads(poseStack, bufferSource, camPos, beamOrigin,
             CORE_HALF_WIDTH * widthMult, beamR, beamG, beamB, 1.0f);
-        renderBeamQuads(poseStack, bufferSource, camPos,
+        renderBeamQuads(poseStack, bufferSource, camPos, beamOrigin,
             GLOW_HALF_WIDTH * widthMult, beamR, beamG, beamB, 0.4f);
         bufferSource.endBatch();
 
@@ -132,6 +157,7 @@ public class RailgunBeamRenderer {
 
     private static void triggerBeam(Player player, Minecraft mc) {
         fireGameTime = player.level().getGameTime();
+        firedInFps = mc.options.getCameraType() == CameraType.FIRST_PERSON;
 
         Vec3 eyePos = player.getEyePosition();
         Vec3 look = player.getLookAngle();
@@ -142,26 +168,23 @@ public class RailgunBeamRenderer {
         beamDestination = blockHit.getType() == HitResult.Type.BLOCK
             ? blockHit.getLocation() : endPos;
 
-        Vec3 up = new Vec3(0, 1, 0);
-        Vec3 right = look.cross(up);
-        if (right.lengthSqr() < 0.001) right = new Vec3(1, 0, 0);
-        right = right.normalize();
-
         boolean isMainRight = mc.options.mainHand().get() == HumanoidArm.RIGHT;
         boolean isRightSide = (storedHand == InteractionHand.MAIN_HAND) == isMainRight;
         float sideSign = isRightSide ? 1.0f : -1.0f;
 
-        if (mc.options.getCameraType() == CameraType.FIRST_PERSON) {
-            Camera camera = mc.gameRenderer.getMainCamera();
-            beamOrigin = camera.getPosition()
-                .add(right.scale(sideSign * 0.35))
-                .add(0, -0.15, 0)
-                .add(look.scale(0.6));
-        } else {
-            beamOrigin = player.position().add(0, 1.2, 0)
-                .add(right.scale(sideSign * 0.4))
-                .add(look.scale(1.2));
-        }
+        // Stocker les offsets FPS (relatifs a la camera)
+        fpsRightOffset = new Vec3(sideSign * 0.35, 0, 0);
+        fpsUpOffset = new Vec3(0, -0.15, 0);
+        fpsForwardOffset = new Vec3(0, 0, 0.6);
+
+        // Stocker la position TPS (world-space fixe)
+        Vec3 up = new Vec3(0, 1, 0);
+        Vec3 right = look.cross(up);
+        if (right.lengthSqr() < 0.001) right = new Vec3(1, 0, 0);
+        right = right.normalize();
+        tpsBeamOrigin = player.position().add(0, 1.2, 0)
+            .add(right.scale(sideSign * 0.4))
+            .add(look.scale(1.2));
 
         // Couleur du beam = tinte du loader (meme que le magazine)
         String fluidId = storedStack.isEmpty() ? "" : MagazineData.getFluidId(storedStack);
@@ -176,7 +199,7 @@ public class RailgunBeamRenderer {
     }
 
     private static void renderBeamQuads(PoseStack poseStack, MultiBufferSource buffer,
-                                         Vec3 camPos, float halfWidth,
+                                         Vec3 camPos, Vec3 beamOrigin, float halfWidth,
                                          float r, float g, float b, float a) {
         if (halfWidth <= 0.001f) return;
         VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(BEAM_TEXTURE));
