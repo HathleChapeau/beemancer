@@ -76,56 +76,54 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float LDR_MAX_Z = 30.5f / 16f;
     private static final float FACE_OFFSET = 0.001f;
 
-    // Position du black hole (coordonnees modele)
-    private static final float BLACKHOLE_X = 2f;
-    private static final float BLACKHOLE_Y = 0.5f;
-    private static final float BLACKHOLE_Z = 2f;
+    // Position du black hole (devant le canon)
+    private static final float BLACKHOLE_X = 0.5f;
+    private static final float BLACKHOLE_Y = 0.55f;
+    private static final float BLACKHOLE_Z = -0.3f;
 
     private final BlackHoleEffect blackHoleEffect = createBlackHoleEffect();
 
     private static BlackHoleEffect createBlackHoleEffect() {
         float PI = (float) Math.PI;
-        float rotMult = 1.5f;
-        float scaleMult = 1f;
+        // Les multiplicateurs sont appliques dynamiquement au render
         return BlackHoleEffect.builder()
             .clear()
             // Sphere centrale (less blend)
             .addSphere()
                 .lessBlend()
-                .scale(0.2f * scaleMult)
-                .rotationSpeed(0.03f * rotMult)
+                .scale(0.2f)
+                .rotationSpeed(0.03f)
                 .color(0.6f, 0.2f, 1.0f, 0.95f)
                 .done()
             // Lignes billboard
             .addBillboardLine()
                 .small()
-                .scale(0.35f * scaleMult)
-                .rotationSpeed(0.16f * rotMult)
+                .scale(0.35f)
+                .rotationSpeed(0.16f)
                 .initialRotation(0)
                 .color(0.7f, 0.3f, 1.0f, 0.8f)
                 .done()
             .addBillboardLine()
                 .small()
-                .scale(0.3f * scaleMult)
-                .rotationSpeed(-0.12f * rotMult)
+                .scale(0.3f)
+                .rotationSpeed(-0.12f)
                 .initialRotation(PI / 2)
                 .color(0.8f, 0.4f, 1.0f, 0.7f)
                 .flip()
                 .done()
             // Lignes fixes (small)
-
             .addFixedLine()
                 .small()
                 .axis(1, 0, 0).up(0, 1, 0)
-                .scale(0.28f * scaleMult)
-                .rotationSpeed(0.10f * rotMult)
+                .scale(0.28f)
+                .rotationSpeed(0.10f)
                 .color(0.5f, 0.15f, 0.9f, 0.6f)
                 .done()
             .addFixedLine()
                 .small()
                 .axis(0, 1, 0).up(0, 0, 1)
-                .scale(-0.26f * scaleMult)
-                .rotationSpeed(-0.14f * rotMult)
+                .scale(-0.26f)
+                .rotationSpeed(-0.14f)
                 .initialRotation(PI / 4)
                 .color(0.5f, 0.15f, 0.9f, 0.6f)
                 .flip()
@@ -133,16 +131,16 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
             .addFixedLine()
                 .small()
                 .axis(0, 0, 1).up(0, 1, 0)
-                .scale(0.25f * scaleMult)
-                .rotationSpeed(0.08f * rotMult)
+                .scale(0.25f)
+                .rotationSpeed(0.08f)
                 .initialRotation(PI / 3)
                 .color(0.5f, 0.15f, 0.9f, 0.6f)
                 .done()
             .addFixedLine()
                 .small()
                 .axis(1, 1, 0).up(0, 0, 1)
-                .scale(-0.22f * scaleMult)
-                .rotationSpeed(-0.12f * rotMult)
+                .scale(-0.22f)
+                .rotationSpeed(-0.12f)
                 .initialRotation(PI / 6)
                 .color(0.5f, 0.15f, 0.9f, 0.5f)
                 .flip()
@@ -234,17 +232,25 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     /**
      * Rend l'effet Black Hole devant le canon du railgun.
-     * Utilise le systeme VfxEffect avec RenderType emissif.
+     * Scale et vitesse de rotation augmentent avec le chargement.
      */
     private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        poseStack.pushPose();
+        if (currentFrame <= 0) return;
 
+        // Progression du chargement (0 a 1)
+        float progress = currentFrame / (TOTAL_FRAMES - 1);
+
+        // scaleMult: 0 -> 2, rotMult: 1 -> 2
+        float scaleMult = progress * 2f;
+        float rotMult = 1f + progress;
+
+        poseStack.pushPose();
         poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
 
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
 
-        blackHoleEffect.render(poseStack, buffer, camera, time, packedLight);
+        blackHoleEffect.render(poseStack, buffer, camera, time, packedLight, scaleMult, rotMult);
 
         poseStack.popPose();
     }

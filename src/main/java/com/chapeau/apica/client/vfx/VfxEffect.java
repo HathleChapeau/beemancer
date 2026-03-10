@@ -58,16 +58,26 @@ public class VfxEffect {
      */
     public void render(PoseStack poseStack, MultiBufferSource buffer, Camera camera,
                        float time, int light) {
+        render(poseStack, buffer, camera, time, light, 1f, 1f);
+    }
+
+    /**
+     * Rend l'effet avec multiplicateurs dynamiques.
+     * @param scaleMult multiplicateur d'echelle (applique a tous les quads)
+     * @param rotMult multiplicateur de vitesse de rotation
+     */
+    public void render(PoseStack poseStack, MultiBufferSource buffer, Camera camera,
+                       float time, int light, float scaleMult, float rotMult) {
         for (VfxQuad quad : quads) {
-            renderQuad(poseStack, buffer, camera, quad, time, light);
+            renderQuad(poseStack, buffer, camera, quad, time, light, scaleMult, rotMult);
         }
     }
 
     private void renderQuad(PoseStack poseStack, MultiBufferSource buffer, Camera camera,
-                            VfxQuad quad, float time, int light) {
+                            VfxQuad quad, float time, int light, float scaleMult, float rotMult) {
         poseStack.pushPose();
 
-        float rotation = quad.initialRotation() + quad.rotationSpeed() * time;
+        float rotation = quad.initialRotation() + quad.rotationSpeed() * rotMult * time;
 
         if (quad.mode() == VfxQuad.Mode.BILLBOARD) {
             applyBillboard(poseStack, camera, rotation);
@@ -75,7 +85,7 @@ public class VfxEffect {
             applyFixed(poseStack, quad.fixedAxis(), quad.fixedUp(), rotation);
         }
 
-        float half = quad.scale() * 0.5f;
+        float half = quad.scale() * scaleMult * 0.5f;
         emitQuad(poseStack, buffer, quad.texture(), -half, -half, half, half,
                  quad.r(), quad.g(), quad.b(), quad.a(), light, quad.flipU());
 
