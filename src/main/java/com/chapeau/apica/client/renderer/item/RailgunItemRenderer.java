@@ -153,8 +153,8 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static int getLoaderTint(ItemStack stack) {
         String fluidId = MagazineData.getFluidId(stack);
         if (fluidId.contains("honey")) return 0xFADE29;
-        if (fluidId.contains("royal_jelly")) return 0xFFE040;
-        if (fluidId.contains("nectar")) return 0xD040FF;
+        if (fluidId.contains("royal_jelly")) return 0xFFFAD0;
+        if (fluidId.contains("nectar")) return 0xE855FF;
         return 0xFFFFFF;
     }
 

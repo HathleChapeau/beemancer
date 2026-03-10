@@ -25,9 +25,9 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 /**
- * Corps PUFFY: copie exacte de ARMORED sans les 3 plaques.
+ * Corps PUFFY: base ARMORED sans plaques, avec rayures sur corps/tete/tail.
  * head 7x7x3, body 8x8x9, tail 7x7x3. Pattes flat.
- * Texture 128x64 (meme layout qu'ARMORED).
+ * Texture 128x64. Rayures sur body_stripe (texOffs +17 en Y).
  *
  * Layout Z:
  *   Head(-7.5..-4.5) -> Body(-4.5..+4.5) -> Tail(+4.5..+7.5)
@@ -50,9 +50,12 @@ public final class PuffyBodyLayer {
                         .texOffs(54, 0).addBox(-3.5F, -3.5F, 4.0F, 7.0F, 7.0F, 3.0F),       // Tail (7x7x3)
                 PartPose.ZERO);
 
-        // body_stripe: vide (ARMORED a les rayures sur les plaques uniquement)
+        // body_stripe: meme geometrie que body_corpus, texOffs decale pour zone rayures
         bone.addOrReplaceChild("body_stripe",
-                CubeListBuilder.create(),
+                CubeListBuilder.create()
+                        .texOffs(0, 17).addBox(-4.0F, -4.0F, -4.5F, 8.0F, 8.0F, 9.0F)      // Body stripe
+                        .texOffs(34, 17).addBox(-3.5F, -3.5F, -7.5F, 7.0F, 7.0F, 3.0F)      // Head stripe
+                        .texOffs(54, 17).addBox(-3.5F, -3.5F, 4.0F, 7.0F, 7.0F, 3.0F),      // Tail stripe
                 PartPose.ZERO);
 
         // Eyes on head front face (Z=-7.5)
