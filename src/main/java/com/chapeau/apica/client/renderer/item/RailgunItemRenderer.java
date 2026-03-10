@@ -76,12 +76,66 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float LDR_MAX_Z = 30.5f / 16f;
     private static final float FACE_OFFSET = 0.001f;
 
-    // Position du black hole devant le canon (model coords / 16)
-    private static final float BLACKHOLE_X = 8.5f / 16f;
-    private static final float BLACKHOLE_Y = 8.75f / 16f;
-    private static final float BLACKHOLE_Z = -8f / 16f;
+    // Position du black hole (coordonnees modele)
+    private static final float BLACKHOLE_X = -15f;
+    private static final float BLACKHOLE_Y = 0.5f;
+    private static final float BLACKHOLE_Z = 2f;
 
-    private final BlackHoleEffect blackHoleEffect = new BlackHoleEffect();
+    private final BlackHoleEffect blackHoleEffect = createBlackHoleEffect();
+
+    private static BlackHoleEffect createBlackHoleEffect() {
+        float PI = (float) Math.PI;
+        return BlackHoleEffect.builder()
+            .clear()
+            // Sphere centrale
+            .addSphere()
+                .scale(0.2f)
+                .rotationSpeed(0.03f)
+                .color(0.6f, 0.2f, 1.0f, 0.95f)
+                .done()
+            // Lignes billboard
+            .addBillboardLine()
+                .scale(0.35f)
+                .rotationSpeed(0.16f)
+                .initialRotation(0)
+                .color(0.7f, 0.3f, 1.0f, 0.8f)
+                .done()
+            .addBillboardLine()
+                .scale(0.3f)
+                .rotationSpeed(-0.12f)
+                .initialRotation(PI / 2)
+                .color(0.8f, 0.4f, 1.0f, 0.7f)
+                .done()
+            // Lignes fixes
+            .addFixedLine()
+                .axis(1, 0, 0).up(0, 1, 0)
+                .scale(0.28f)
+                .rotationSpeed(0.10f)
+                .color(0.5f, 0.15f, 0.9f, 0.6f)
+                .done()
+            .addFixedLine()
+                .axis(0, 1, 0).up(0, 0, 1)
+                .scale(0.26f)
+                .rotationSpeed(-0.14f)
+                .initialRotation(PI / 4)
+                .color(0.5f, 0.15f, 0.9f, 0.6f)
+                .done()
+            .addFixedLine()
+                .axis(0, 0, 1).up(0, 1, 0)
+                .scale(0.25f)
+                .rotationSpeed(0.08f)
+                .initialRotation(PI / 3)
+                .color(0.5f, 0.15f, 0.9f, 0.6f)
+                .done()
+            .addFixedLine()
+                .axis(1, 1, 0).up(0, 0, 1)
+                .scale(0.22f)
+                .rotationSpeed(-0.12f)
+                .initialRotation(PI / 6)
+                .color(0.5f, 0.15f, 0.9f, 0.5f)
+                .done()
+            .build();
+    }
 
     private float currentFrame = 0;
     private int lastTick = -1;
@@ -172,13 +226,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         poseStack.pushPose();
 
-        // Position: decale de 15 vers la gauche, au niveau du loader Z
-        float offsetX = -15f;
-        float centerX = (LDR_MIN_X + LDR_MAX_X) / 2f + offsetX;
-        float centerY = (LDR_MIN_Y + LDR_MAX_Y) / 2f;
-        float centerZ = LDR_MAX_Z + 0.1f;
-
-        poseStack.translate(centerX, centerY, centerZ);
+        poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
 
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
