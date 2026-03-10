@@ -29,9 +29,13 @@ import com.chapeau.apica.client.animation.TimingType;
 import com.chapeau.apica.client.model.ApicaBeeModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartModel;
 import com.chapeau.apica.client.model.hoverbike.HoverbikePartVariants;
+import com.chapeau.apica.client.model.hoverbike.SaddlePartModelB;
 import com.chapeau.apica.common.block.beecreator.BeeBodyType;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import com.chapeau.apica.common.entity.mount.HoverbikeEntity;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.geom.ModelPart;
@@ -136,6 +140,11 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
 
             part.renderToBuffer(poseStack, vertexConsumer, packedLight,
                     OverlayTexture.NO_OVERLAY);
+
+            // Spawn lightning particles for saddle variant B
+            if (partType == HoverbikePart.SADDLE && clampedIndex == 1) {
+                spawnElectrodeParticles(entity, bodyType, partialTick);
+            }
 
             poseStack.popPose();
         }
@@ -282,5 +291,69 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
             if (entry.getKey() == currentEntity.getId()) return false;
             return currentEntity.level().getEntity(entry.getKey()) == null;
         });
+    }
+
+    // ========== Electrode lightning particles (Saddle B) ==========
+
+    /**
+     * Spawn des particules electriques entre les deux electrodes de la selle B.
+     * Les particules forment un arc entre l'electrode gauche et droite.
+     */
+    private void spawnElectrodeParticles(HoverbikeEntity entity, BeeBodyType bodyType, float partialTick) {
+        Level level = entity.level();
+        if (!level.isClientSide()) return;
+
+        // Throttle: spawn toutes les 2 ticks
+        if (entity.tickCount % 2 != 0) return;
+
+        // Position de base de la selle dans l'espace monde
+        Vec3 saddlePos = getSaddlePosition(bodyType);
+
+        // Positions des electrodes en coordonnees modele (1/16 bloc)
+        Vec3 leftElectrode = SaddlePartModelB.LEFT_ELECTRODE;
+        Vec3 rightElectrode = SaddlePartModelB.RIGHT_ELECTRODE;
+
+        // Convertir en position monde
+        float yaw = entity.getYRot() * Mth.DEG_TO_RAD;
+        float cos = Mth.cos(-yaw);
+        float sin = Mth.sin(-yaw);
+
+        // Position monde de l'entite
+        double ex = entity.getX();
+        double ey = entity.getY();
+        double ez = entity.getZ();
+
+        // Calculer positions monde des electrodes
+        Vec3 leftWorld = transformToWorld(saddlePos, leftElectrode, ex, ey, ez, cos, sin);
+        Vec3 rightWorld = transformToWorld(saddlePos, rightElectrode, ex, ey, ez, cos, sin);
+
+        // Spawn 2-3 particules le long de l'arc
+        int particleCount = 2 + level.random.nextInt(2);
+        for (int i = 0; i < particleCount; i++) {
+            double t = level.random.nextDouble();
+            double px = Mth.lerp(t, leftWorld.x, rightWorld.x);
+            double py = Mth.lerp(t, leftWorld.y, rightWorld.y) + (level.random.nextDouble() - 0.5) * 0.05;
+            double pz = Mth.lerp(t, leftWorld.z, rightWorld.z);
+
+            level.addParticle(ParticleTypes.ELECTRIC_SPARK, px, py, pz, 0, 0, 0);
+        }
+    }
+
+    /**
+     * Transforme une position locale (modele) en position monde.
+     */
+    private Vec3 transformToWorld(Vec3 partPos, Vec3 localOffset,
+                                   double ex, double ey, double ez,
+                                   float cos, float sin) {
+        // Combiner position de la partie + offset local (en unites modele, 1/16 bloc)
+        double lx = (partPos.x + localOffset.x) / 16.0;
+        double ly = (partPos.y + localOffset.y) / 16.0;
+        double lz = (partPos.z + localOffset.z) / 16.0;
+
+        // Rotation autour de Y (yaw de l'entite)
+        double rx = lx * cos - lz * sin;
+        double rz = lx * sin + lz * cos;
+
+        return new Vec3(ex + rx, ey + ly, ez + rz);
     }
 }
