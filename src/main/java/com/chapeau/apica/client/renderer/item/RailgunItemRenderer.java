@@ -77,7 +77,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float FACE_OFFSET = 0.001f;
 
     // Position du black hole (coordonnees modele)
-    private static final float BLACKHOLE_X = -15f;
+    private static final float BLACKHOLE_X = 2f;
     private static final float BLACKHOLE_Y = 0.5f;
     private static final float BLACKHOLE_Z = 2f;
 
