@@ -32,13 +32,13 @@ import org.joml.Matrix4f;
 
 /**
  * Renderer pour les InteractionMarkerEntity.
- * Les marqueurs de type "hoverbike_part_*" affichent un wireframe blanc.
+ * Les marqueurs de type "hoverbee_part_*" affichent un wireframe blanc.
  * Les autres types restent invisibles.
  */
 @OnlyIn(Dist.CLIENT)
 public class InteractionMarkerRenderer extends EntityRenderer<InteractionMarkerEntity> {
 
-    private static final String HOVERBIKE_PREFIX = "hoverbike_part_";
+    private static final String HOVERBIKE_PREFIX = "hoverbee_part_";
     private static final float HALF_SIZE = 0.25f;
     private static final int COLOR_R = 255;
     private static final int COLOR_G = 255;

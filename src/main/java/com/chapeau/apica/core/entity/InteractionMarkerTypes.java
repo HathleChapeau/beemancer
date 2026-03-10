@@ -119,7 +119,7 @@ public final class InteractionMarkerTypes {
 
         // 4 types pour les pieces du hoverbike en edit mode
         for (HoverbikePart part : HoverbikePart.values()) {
-            String typeId = "hoverbike_part_" + part.name().toLowerCase();
+            String typeId = "hoverbee_part_" + part.name().toLowerCase();
             register(typeId, new MarkerType(
                     // Validity: l'entite ancre existe (verifie par isEntityAnchored dans tick)
                     (level, pos) -> true,
@@ -133,7 +133,7 @@ public final class InteractionMarkerTypes {
     }
 
     /**
-     * Handler d'interaction pour les marqueurs "hoverbike_part_*".
+     * Handler d'interaction pour les marqueurs "hoverbee_part_*".
      * Si le joueur tient une piece compatible: swap. Sinon: ouvre le menu.
      */
     private static InteractionResult handleHoverbikePart(

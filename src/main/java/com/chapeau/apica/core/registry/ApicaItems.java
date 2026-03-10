@@ -510,11 +510,11 @@ public class ApicaItems {
             () -> new BucketItem(ApicaFluids.NECTAR_SOURCE.get(),
                     new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
 
-    // --- COMBS (legacy) ---
+    // --- COMBS (legacy — couleurs fixes dorées royales) ---
     public static final DeferredItem<Item> ROYAL_COMB = ITEMS.register("royal_comb",
-            () -> new Item(new Item.Properties()));
+            () -> new CombItem(new Item.Properties(), 0xE8A317, 0xFFF1A3));
     public static final DeferredItem<Item> BIG_ROYAL_COMB = ITEMS.register("big_royal_comb",
-            () -> new Item(new Item.Properties()));
+            () -> new CombItem(new Item.Properties(), 0xE8A317, 0xFFF1A3));
 
     // --- NEW COMBS (from bee species) ---
     public static final DeferredItem<Item> MEADOW_COMB = ITEMS.register("meadow_comb",

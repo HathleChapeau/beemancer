@@ -668,7 +668,7 @@ public class ClientSetup {
             return 0xFF000000 | com.chapeau.apica.core.bee.BeeSpeciesManager.getSpeciesColor(speciesId);
         }, ApicaItems.SPECIES_ESSENCE.get());
 
-        // Combs - tinting body (layer0) + stripe (layer1) selon les couleurs de l'espèce
+        // Combs - tinting body (layer0) + stripe (layer1) selon couleurs espèce ou fixes
         net.minecraft.world.level.ItemLike[] combItems = ApicaItems.ITEMS.getEntries().stream()
                 .map(e -> e.get())
                 .filter(item -> item instanceof com.chapeau.apica.common.item.CombItem)
@@ -678,17 +678,10 @@ public class ClientSetup {
             if (!(stack.getItem() instanceof com.chapeau.apica.common.item.CombItem comb)) {
                 return 0xFFFFFFFF;
             }
-            com.chapeau.apica.core.bee.BeeSpeciesManager.ensureClientLoaded();
-            com.chapeau.apica.core.bee.BeeSpeciesManager.BeeSpeciesData data =
-                    com.chapeau.apica.core.bee.BeeSpeciesManager.getSpecies(comb.getSpeciesId());
-            if (data == null) return 0xFFFFFFFF;
-
             if (tintIndex == 0) {
-                // Layer 0 (comb_body) - couleur body, opaque
-                return 0xFF000000 | data.partColorBody;
+                return 0xFF000000 | comb.getBodyColor();
             } else if (tintIndex == 1) {
-                // Layer 1 (comb_stripe) - couleur stripe, alpha 50%
-                return 0x80000000 | data.partColorStripe;
+                return 0x80000000 | comb.getStripeColor();
             }
             return 0xFFFFFFFF;
         }, combItems);
