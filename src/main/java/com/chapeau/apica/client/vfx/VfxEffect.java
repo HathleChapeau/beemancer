@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [VfxEffect.java]
- * Description: Effet VFX compose de plusieurs quads emissifs
+ * Description: Effet VFX compose de plusieurs quads avec transparence
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,7 +9,7 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | VfxQuad             | Config quad          | Liste des quads a rendre       |
- * | RenderType          | Rendu emissif        | Custom type comme lightning    |
+ * | RenderType          | Rendu translucent    | entityTranslucent (no cull)    |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -20,14 +20,10 @@
  */
 package com.chapeau.apica.client.vfx;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -36,52 +32,14 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Effet VFX avec plusieurs quads textures.
- * Rendu emissif avec polygon offset (comme lightning).
+ * Utilise entityTranslucentCull pour gerer lumiere et transparence.
  * Chaque quad peut etre billboard (face camera) ou fixed (orientation monde).
  */
 public class VfxEffect {
-
-    private static final Map<ResourceLocation, RenderType> TYPE_CACHE = new HashMap<>();
-
-    /**
-     * Acces aux constantes protegees de RenderStateShard via heritage.
-     * RenderType emissif + additif + polygon offset pour visibilite.
-     */
-    private static abstract class VfxRenderType extends RenderType {
-        private VfxRenderType() {
-            super("", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS,
-                    256, false, false, () -> {}, () -> {});
-        }
-
-        private static final RenderStateShard.LayeringStateShard VFX_POLYGON_OFFSET =
-                new RenderStateShard.LayeringStateShard("vfx_polygon_offset",
-                        () -> { RenderSystem.polygonOffset(-1.0F, -256.0F); RenderSystem.enablePolygonOffset(); },
-                        () -> { RenderSystem.polygonOffset(0.0F, 0.0F); RenderSystem.disablePolygonOffset(); }
-                ) {};
-
-        static RenderType create(ResourceLocation texture) {
-            CompositeState state = CompositeState.builder()
-                    .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
-                    .setTextureState(new TextureStateShard(texture, false, false))
-                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-                    .setLayeringState(VFX_POLYGON_OFFSET)
-                    .setCullState(NO_CULL)
-                    .createCompositeState(false);
-            return RenderType.create("apica_vfx", DefaultVertexFormat.NEW_ENTITY,
-                    VertexFormat.Mode.QUADS, 256, true, true, state);
-        }
-    }
-
-    /** Retourne le RenderType VFX emissif pour une texture (avec cache) */
-    public static RenderType getVfxType(ResourceLocation texture) {
-        return TYPE_CACHE.computeIfAbsent(texture, VfxRenderType::create);
-    }
 
     protected final List<VfxQuad> quads = new ArrayList<>();
 
@@ -149,12 +107,12 @@ public class VfxEffect {
     }
 
     /**
-     * Emet un quad avec le RenderType VFX custom.
+     * Emet un quad avec entityTranslucent (translucent + lumiere, sans backface cull).
      */
     private void emitQuad(PoseStack poseStack, MultiBufferSource buffer,
                           ResourceLocation texture, float x0, float y0, float x1, float y1,
                           float r, float g, float b, float a, int light) {
-        VertexConsumer vc = buffer.getBuffer(getVfxType(texture));
+        VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(texture));
         PoseStack.Pose pose = poseStack.last();
         int ol = OverlayTexture.NO_OVERLAY;
 
