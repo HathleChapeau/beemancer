@@ -9,6 +9,7 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | MagazineFluidData   | Lecture fluide mag   | Verification compatibilite     |
+ * | CreativeMagazineItem| Magazine creatif     | Detection + fluid ID nectar    |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -45,8 +46,13 @@ public interface IMagazineHolder {
     /**
      * Verifie si un MagazineItem peut etre equipe sur cet item.
      * Par defaut, verifie que le fluide du magazine est dans la liste acceptee.
+     * Les magazines creatifs sont traites comme du nectar.
      */
     default boolean canAcceptMagazine(ItemStack magazineStack) {
+        // Creative magazine = nectar
+        if (magazineStack.getItem() instanceof CreativeMagazineItem) {
+            return getAcceptedFluids().contains(CreativeMagazineItem.NECTAR_FLUID_ID);
+        }
         String fluidId = MagazineFluidData.getFluidId(magazineStack);
         return !fluidId.isEmpty() && getAcceptedFluids().contains(fluidId);
     }

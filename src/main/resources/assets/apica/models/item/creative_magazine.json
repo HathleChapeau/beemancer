@@ -1,0 +1,16 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "apica:item/magazine_royal_jelly"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 7.5],
+      "to": [16, 16, 8.5],
+      "faces": {
+        "north": {"uv": [0, 0, 16, 16], "texture": "#layer0", "tintindex": 0},
+        "south": {"uv": [16, 0, 0, 16], "texture": "#layer0", "tintindex": 0}
+      }
+    }
+  ]
+}

@@ -1195,7 +1195,9 @@
   "item.apica.railgun": "Railgun",
   "entity.apica.leaf_blower_orb": "Wind Orb",
   "item.apica.magazine": "Magazine",
+  "item.apica.creative_magazine": "Creative Magazine",
   "tooltip.apica.magazine.empty": "Empty",
+  "tooltip.apica.creative_magazine": "Infinite Nectar - Never empties",
   "config.jade.plugin_apica.api_cooldown": "Api Cooldown",
   "config.jade.plugin_apica.companion_cooldown": "Companion Cooldown"
 }

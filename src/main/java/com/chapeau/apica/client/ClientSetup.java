@@ -669,6 +669,11 @@ public class ClientSetup {
             ApicaBlocks.CREATIVE_TOLERANCE_CRYSTAL.get().asItem()
         );
 
+        // Creative Magazine - teinte rose creative
+        event.register((stack, tintIndex) -> 0xFFFF69B4,
+            ApicaItems.CREATIVE_MAGAZINE.get()
+        );
+
         // Species Essence - teinte selon la couleur de l'espece
         event.register((stack, tintIndex) -> {
             if (tintIndex != 0) return 0xFFFFFFFF;

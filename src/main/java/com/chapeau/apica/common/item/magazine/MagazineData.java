@@ -102,6 +102,7 @@ public final class MagazineData {
 
         String fluidId = getFluidId(holder);
         int amount = getFluidAmount(holder);
+        boolean creative = isCreative(holder);
 
         // Supprimer les donnees du holder
         CustomData customData = holder.get(DataComponents.CUSTOM_DATA);
@@ -116,6 +117,9 @@ public final class MagazineData {
         }
 
         // Creer le MagazineItem avec le fluide restant
+        if (creative) {
+            return new ItemStack(ApicaItems.CREATIVE_MAGAZINE.get());
+        }
         ItemStack magazine = new ItemStack(ApicaItems.MAGAZINE.get());
         if (amount > 0 && !fluidId.isEmpty()) {
             MagazineFluidData.setFluid(magazine, fluidId, amount);
