@@ -29,7 +29,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
@@ -48,7 +47,6 @@ import java.util.Map;
  */
 public class VfxEffect {
 
-    private static final int FULL_BRIGHT = LightTexture.FULL_BRIGHT;
     private static final Map<ResourceLocation, RenderType> TYPE_CACHE = new HashMap<>();
 
     /**
@@ -121,7 +119,7 @@ public class VfxEffect {
 
         float half = quad.scale() * 0.5f;
         emitQuad(poseStack, buffer, quad.texture(), -half, -half, half, half,
-                 quad.r(), quad.g(), quad.b(), quad.a());
+                 quad.r(), quad.g(), quad.b(), quad.a(), light);
 
         poseStack.popPose();
     }
@@ -151,18 +149,18 @@ public class VfxEffect {
     }
 
     /**
-     * Emet un quad emissif avec le RenderType VFX custom.
+     * Emet un quad avec le RenderType VFX custom.
      */
     private void emitQuad(PoseStack poseStack, MultiBufferSource buffer,
                           ResourceLocation texture, float x0, float y0, float x1, float y1,
-                          float r, float g, float b, float a) {
+                          float r, float g, float b, float a, int light) {
         VertexConsumer vc = buffer.getBuffer(getVfxType(texture));
         PoseStack.Pose pose = poseStack.last();
         int ol = OverlayTexture.NO_OVERLAY;
 
-        vc.addVertex(pose, x0, y0, 0).setColor(r, g, b, a).setUv(0, 1).setOverlay(ol).setLight(FULL_BRIGHT).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x0, y1, 0).setColor(r, g, b, a).setUv(0, 0).setOverlay(ol).setLight(FULL_BRIGHT).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x1, y1, 0).setColor(r, g, b, a).setUv(1, 0).setOverlay(ol).setLight(FULL_BRIGHT).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x1, y0, 0).setColor(r, g, b, a).setUv(1, 1).setOverlay(ol).setLight(FULL_BRIGHT).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x0, y0, 0).setColor(r, g, b, a).setUv(0, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x0, y1, 0).setColor(r, g, b, a).setUv(0, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x1, y1, 0).setColor(r, g, b, a).setUv(1, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x1, y0, 0).setColor(r, g, b, a).setUv(1, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
     }
 }
