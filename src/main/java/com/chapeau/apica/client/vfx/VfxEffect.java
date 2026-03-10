@@ -42,9 +42,12 @@ import java.util.List;
 public class VfxEffect {
 
     protected final List<VfxQuad> quads = new ArrayList<>();
+    protected final List<Float> accumulatedRotations = new ArrayList<>();
+    private float lastTime = -1;
 
     public VfxEffect addQuad(VfxQuad quad) {
         quads.add(quad);
+        accumulatedRotations.add(quad.initialRotation());
         return this;
     }
 
@@ -68,16 +71,26 @@ public class VfxEffect {
      */
     public void render(PoseStack poseStack, MultiBufferSource buffer, Camera camera,
                        float time, int light, float scaleMult, float rotMult) {
-        for (VfxQuad quad : quads) {
-            renderQuad(poseStack, buffer, camera, quad, time, light, scaleMult, rotMult);
+        // Calcul du delta time
+        float deltaTime = (lastTime < 0) ? 0 : (time - lastTime);
+        lastTime = time;
+
+        // Mise a jour et rendu de chaque quad
+        for (int i = 0; i < quads.size(); i++) {
+            VfxQuad quad = quads.get(i);
+
+            // Accumule la rotation avec le multiplicateur
+            float currentRot = accumulatedRotations.get(i);
+            currentRot += quad.rotationSpeed() * rotMult * deltaTime;
+            accumulatedRotations.set(i, currentRot);
+
+            renderQuad(poseStack, buffer, camera, quad, currentRot, light, scaleMult);
         }
     }
 
     private void renderQuad(PoseStack poseStack, MultiBufferSource buffer, Camera camera,
-                            VfxQuad quad, float time, int light, float scaleMult, float rotMult) {
+                            VfxQuad quad, float rotation, int light, float scaleMult) {
         poseStack.pushPose();
-
-        float rotation = quad.initialRotation() + quad.rotationSpeed() * rotMult * time;
 
         if (quad.mode() == VfxQuad.Mode.BILLBOARD) {
             applyBillboard(poseStack, camera, rotation);
