@@ -77,7 +77,7 @@ public class VfxEffect {
 
         float half = quad.scale() * 0.5f;
         emitQuad(poseStack, buffer, quad.texture(), -half, -half, half, half,
-                 quad.r(), quad.g(), quad.b(), quad.a(), light);
+                 quad.r(), quad.g(), quad.b(), quad.a(), light, quad.flipU());
 
         poseStack.popPose();
     }
@@ -111,14 +111,17 @@ public class VfxEffect {
      */
     private void emitQuad(PoseStack poseStack, MultiBufferSource buffer,
                           ResourceLocation texture, float x0, float y0, float x1, float y1,
-                          float r, float g, float b, float a, int light) {
+                          float r, float g, float b, float a, int light, boolean flipU) {
         VertexConsumer vc = buffer.getBuffer(RenderType.entityTranslucent(texture));
         PoseStack.Pose pose = poseStack.last();
         int ol = OverlayTexture.NO_OVERLAY;
 
-        vc.addVertex(pose, x0, y0, 0).setColor(r, g, b, a).setUv(0, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x0, y1, 0).setColor(r, g, b, a).setUv(0, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x1, y1, 0).setColor(r, g, b, a).setUv(1, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x1, y0, 0).setColor(r, g, b, a).setUv(1, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        float u0 = flipU ? 1 : 0;
+        float u1 = flipU ? 0 : 1;
+
+        vc.addVertex(pose, x0, y0, 0).setColor(r, g, b, a).setUv(u0, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x0, y1, 0).setColor(r, g, b, a).setUv(u0, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x1, y1, 0).setColor(r, g, b, a).setUv(u1, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x1, y0, 0).setColor(r, g, b, a).setUv(u1, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
     }
 }

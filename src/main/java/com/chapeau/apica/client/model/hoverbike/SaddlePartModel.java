@@ -68,11 +68,11 @@ public class SaddlePartModel extends HoverbikePartModel {
                         .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
                 PartPose.offset(0.0F, -0.5F, 1.75F));
 
-        // Barre arriere: 8x1x1, largeur selle + 1 de chaque cote
+        // Barre arriere: 6x3x3
         root.addOrReplaceChild("back_bar",
                 CubeListBuilder.create()
                         .texOffs(0, 8)
-                        .addBox(-4.0F, -0.5F, -0.5F, 8.0F, 1.0F, 1.0F),
+                        .addBox(-3.0F, -1.5F, -1.5F, 6.0F, 3.0F, 3.0F),
                 PartPose.offset(0.0F, -0.5F, 2.75F));
 
         return LayerDefinition.create(mesh, 32, 16);

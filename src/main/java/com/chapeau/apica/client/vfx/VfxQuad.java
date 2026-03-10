@@ -40,6 +40,7 @@ public class VfxQuad {
     private final Vector3f fixedAxis;
     private final Vector3f fixedUp;
     private final float r, g, b, a;
+    private final boolean flipU;
 
     private VfxQuad(Builder builder) {
         this.texture = builder.texture;
@@ -53,6 +54,7 @@ public class VfxQuad {
         this.g = builder.g;
         this.b = builder.b;
         this.a = builder.a;
+        this.flipU = builder.flipU;
     }
 
     public ResourceLocation texture() { return texture; }
@@ -66,6 +68,7 @@ public class VfxQuad {
     public float g() { return g; }
     public float b() { return b; }
     public float a() { return a; }
+    public boolean flipU() { return flipU; }
 
     public static Builder builder(ResourceLocation texture) {
         return new Builder(texture);
@@ -80,6 +83,7 @@ public class VfxQuad {
         private Vector3f fixedAxis = new Vector3f(0, 0, 1);
         private Vector3f fixedUp = new Vector3f(0, 1, 0);
         private float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
+        private boolean flipU = false;
 
         private Builder(ResourceLocation texture) {
             this.texture = texture;
@@ -139,6 +143,12 @@ public class VfxQuad {
         /** Couleur RGB (alpha = 1). */
         public Builder color(float r, float g, float b) {
             return color(r, g, b, 1.0f);
+        }
+
+        /** Flip horizontal de la texture. */
+        public Builder flip() {
+            this.flipU = true;
+            return this;
         }
 
         public VfxQuad build() {
