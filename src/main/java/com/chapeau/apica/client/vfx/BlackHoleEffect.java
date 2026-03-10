@@ -32,10 +32,15 @@ import net.minecraft.resources.ResourceLocation;
  */
 public class BlackHoleEffect extends VfxEffect {
 
-    private static final ResourceLocation SPHERE_TEXTURE =
+    // Textures disponibles
+    public static final ResourceLocation SPHERE =
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/sphere.png");
-    private static final ResourceLocation LINE_TEXTURE =
+    public static final ResourceLocation SPHERE_LESS_BLEND =
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/sphere_less_blend.png");
+    public static final ResourceLocation LINE =
         ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/rounded_line.png");
+    public static final ResourceLocation LINE_SMALL =
+        ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/rounded_line_small.png");
 
     private static final float PI = (float) Math.PI;
 
@@ -169,6 +174,7 @@ public class BlackHoleEffect extends VfxEffect {
 
     public static class SphereBuilder {
         private final Builder parent;
+        private ResourceLocation texture = SPHERE;
         private float scale = 0.15f;
         private float rotationSpeed = 0.05f;
         private float initialRotation = 0;
@@ -178,6 +184,8 @@ public class BlackHoleEffect extends VfxEffect {
             this.parent = parent;
         }
 
+        public SphereBuilder texture(ResourceLocation tex) { this.texture = tex; return this; }
+        public SphereBuilder lessBlend() { this.texture = SPHERE_LESS_BLEND; return this; }
         public SphereBuilder scale(float scale) { this.scale = scale; return this; }
         public SphereBuilder rotationSpeed(float speed) { this.rotationSpeed = speed; return this; }
         public SphereBuilder initialRotation(float rot) { this.initialRotation = rot; return this; }
@@ -187,7 +195,7 @@ public class BlackHoleEffect extends VfxEffect {
         }
 
         public Builder done() {
-            parent.addQuadInternal(VfxQuad.builder(SPHERE_TEXTURE)
+            parent.addQuadInternal(VfxQuad.builder(texture)
                 .billboard()
                 .scale(scale)
                 .rotationSpeed(rotationSpeed)
@@ -201,6 +209,7 @@ public class BlackHoleEffect extends VfxEffect {
     public static class LineBuilder {
         private final Builder parent;
         private final boolean billboard;
+        private ResourceLocation texture = LINE;
         private float scale = 0.25f;
         private float rotationSpeed = 0.1f;
         private float initialRotation = 0;
@@ -213,6 +222,8 @@ public class BlackHoleEffect extends VfxEffect {
             this.billboard = billboard;
         }
 
+        public LineBuilder texture(ResourceLocation tex) { this.texture = tex; return this; }
+        public LineBuilder small() { this.texture = LINE_SMALL; return this; }
         public LineBuilder scale(float scale) { this.scale = scale; return this; }
         public LineBuilder rotationSpeed(float speed) { this.rotationSpeed = speed; return this; }
         public LineBuilder initialRotation(float rot) { this.initialRotation = rot; return this; }
@@ -230,7 +241,7 @@ public class BlackHoleEffect extends VfxEffect {
         }
 
         public Builder done() {
-            VfxQuad.Builder qb = VfxQuad.builder(LINE_TEXTURE)
+            VfxQuad.Builder qb = VfxQuad.builder(texture)
                 .scale(scale)
                 .rotationSpeed(rotationSpeed)
                 .initialRotation(initialRotation)
