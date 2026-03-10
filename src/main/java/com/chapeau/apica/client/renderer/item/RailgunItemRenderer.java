@@ -108,10 +108,10 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
             updateAnimation();
             renderChargingOverlay(poseStack, buffer, packedLight, (int) currentFrame, tint);
 
-            // Black hole effect en FPS seulement pendant le chargement
+            // Black hole effect en FPS — toujours visible pour debug
             boolean isFPS = displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
                 || displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
-            if (isFPS && currentFrame > 0) {
+            if (isFPS) {
                 renderBlackHoleEffect(poseStack, buffer, packedLight);
             }
         } else {
@@ -166,19 +166,17 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     }
 
     /**
-     * Rend l'effet Black Hole devant le canon du railgun.
+     * Rend l'effet Black Hole au centre de l'ecran pour debug.
      */
     private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         poseStack.pushPose();
-        poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
+
+        // Reset transforms et place au centre de l'ecran, devant le joueur
+        poseStack.setIdentity();
+        poseStack.translate(0, 0, -2); // 2 blocs devant la camera
 
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
-
-        // Scale l'effet en fonction du chargement
-        float chargeProgress = currentFrame / (TOTAL_FRAMES - 1);
-        float effectScale = 0.3f + chargeProgress * 0.7f;
-        poseStack.scale(effectScale, effectScale, effectScale);
 
         blackHoleEffect.render(poseStack, buffer, camera, time, packedLight);
 
