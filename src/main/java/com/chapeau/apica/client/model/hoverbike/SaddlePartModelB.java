@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [SaddlePartModelB.java]
- * Description: Selle HoverBee - variante B (geometrie identique, texture differente)
+ * Description: Selle HoverBee - variante B (2 electrodes avec arc electrique)
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,13 +9,13 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | HoverbikePartModel  | Classe parent        | Heritage modele partie         |
- * | SaddlePartModel     | Geometrie            | Reutilisation createLayerDef   |
  * | HoverbikePart       | Enum type            | SADDLE                         |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
  * - HoverbikePartVariants.java: Enregistrement variante
  * - ClientSetup.java: Enregistrement du layer
+ * - HoverbikePartLayer.java: Spawn particules lightning
  *
  * ============================================================
  */
@@ -25,12 +25,17 @@ import com.chapeau.apica.Apica;
 import com.chapeau.apica.common.entity.mount.HoverbikePart;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Selle variante B : meme geometrie que la variante A, texture differente.
+ * Selle variante B : 2 electrodes aux extremites avec arc electrique entre elles.
+ * Les particules lightning sont gerees par HoverbikePartLayer.
  */
 public class SaddlePartModelB extends HoverbikePartModel {
 
@@ -39,12 +44,47 @@ public class SaddlePartModelB extends HoverbikePartModel {
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/entity/hoverbee/hoverbee_saddle_b.png");
 
+    /** Position des electrodes pour les particules (coordonnees locales) */
+    public static final Vec3 LEFT_ELECTRODE = new Vec3(-3.5, -0.5, 2.75);
+    public static final Vec3 RIGHT_ELECTRODE = new Vec3(3.5, -0.5, 2.75);
+
     public SaddlePartModelB(ModelPart root) {
         super(root);
     }
 
     public static LayerDefinition createLayerDefinition() {
-        return SaddlePartModel.createLayerDefinition();
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+
+        // Assise: 6x1x5, centree a l'origine (identique a variante A)
+        root.addOrReplaceChild("seat",
+                CubeListBuilder.create()
+                        .texOffs(0, 0)
+                        .addBox(-3.0F, -0.5F, -2.5F, 6.0F, 1.0F, 5.0F),
+                PartPose.ZERO);
+
+        // Dossier: 5x1x1 (identique a variante A)
+        root.addOrReplaceChild("backrest",
+                CubeListBuilder.create()
+                        .texOffs(0, 6)
+                        .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
+                PartPose.offset(0.0F, -0.5F, 1.75F));
+
+        // Electrode gauche: 1x2x1
+        root.addOrReplaceChild("electrode_left",
+                CubeListBuilder.create()
+                        .texOffs(0, 8)
+                        .addBox(-0.5F, -1.5F, -0.5F, 1.0F, 2.0F, 1.0F),
+                PartPose.offset(-3.5F, 0.0F, 2.75F));
+
+        // Electrode droite: 1x2x1
+        root.addOrReplaceChild("electrode_right",
+                CubeListBuilder.create()
+                        .texOffs(4, 8)
+                        .addBox(-0.5F, -1.5F, -0.5F, 1.0F, 2.0F, 1.0F),
+                PartPose.offset(3.5F, 0.0F, 2.75F));
+
+        return LayerDefinition.create(mesh, 32, 16);
     }
 
     @Override
