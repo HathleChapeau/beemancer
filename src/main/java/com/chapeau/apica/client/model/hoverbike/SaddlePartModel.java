@@ -66,7 +66,7 @@ public class SaddlePartModel extends HoverbikePartModel {
                 CubeListBuilder.create()
                         .texOffs(0, 6)
                         .addBox(-2.5F, -0.5F, -0.5F, 5.0F, 1.0F, 1.0F),
-                PartPose.offset(0.0F, -0.5F, 2.25F));
+                PartPose.offset(0.0F, -0.5F, 1.75F));
 
         return LayerDefinition.create(mesh, 32, 16);
     }

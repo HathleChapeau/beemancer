@@ -128,11 +128,9 @@ public class VfxEffect {
     }
 
     /**
-     * Oriente le quad pour toujours faire face a la camera.
+     * Applique uniquement la rotation sur l'axe Z (pas de suivi camera).
      */
     private void applyBillboard(PoseStack poseStack, Camera camera, float rotation) {
-        Quaternionf cameraRot = camera.rotation();
-        poseStack.mulPose(cameraRot);
         poseStack.mulPose(new Quaternionf().rotateZ(rotation));
     }
 

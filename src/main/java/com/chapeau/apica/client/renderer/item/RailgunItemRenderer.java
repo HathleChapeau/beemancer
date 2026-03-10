@@ -172,8 +172,8 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         poseStack.pushPose();
 
-        // Position: decale de 3 vers la gauche, au niveau du loader Z
-        float offsetX = -3f;
+        // Position: decale de 15 vers la gauche, au niveau du loader Z
+        float offsetX = -15f;
         float centerX = (LDR_MIN_X + LDR_MAX_X) / 2f + offsetX;
         float centerY = (LDR_MIN_Y + LDR_MAX_Y) / 2f;
         float centerZ = LDR_MAX_Z + 0.1f;
