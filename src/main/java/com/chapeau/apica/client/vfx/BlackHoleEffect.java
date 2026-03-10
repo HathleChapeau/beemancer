@@ -179,6 +179,7 @@ public class BlackHoleEffect extends VfxEffect {
         private float rotationSpeed = 0.05f;
         private float initialRotation = 0;
         private float r = 0.8f, g = 0.4f, b = 1.0f, a = 0.9f;
+        private boolean flip = false;
 
         private SphereBuilder(Builder parent) {
             this.parent = parent;
@@ -193,15 +194,17 @@ public class BlackHoleEffect extends VfxEffect {
             this.r = r; this.g = g; this.b = b; this.a = a;
             return this;
         }
+        public SphereBuilder flip() { this.flip = true; return this; }
 
         public Builder done() {
-            parent.addQuadInternal(VfxQuad.builder(texture)
+            VfxQuad.Builder qb = VfxQuad.builder(texture)
                 .billboard()
                 .scale(scale)
                 .rotationSpeed(rotationSpeed)
                 .initialRotation(initialRotation)
-                .color(r, g, b, a)
-                .build());
+                .color(r, g, b, a);
+            if (flip) qb.flip();
+            parent.addQuadInternal(qb.build());
             return parent;
         }
     }
