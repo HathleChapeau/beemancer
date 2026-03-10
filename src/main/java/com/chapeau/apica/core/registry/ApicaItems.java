@@ -518,7 +518,7 @@ public class ApicaItems {
 
     // --- COMBS (espèces avec loot custom — pas de comb pour les abeilles qui lootent minecraft:honeycomb) ---
     public static final DeferredItem<Item> SPARK_COMB = ITEMS.register("spark_comb",
-            () -> new CombItem(new Item.Properties(), "spark"));
+            () -> new CombItem(new Item.Properties(), "spark", true));
     public static final DeferredItem<Item> CARBON_COMB = ITEMS.register("carbon_comb",
             () -> new CombItem(new Item.Properties(), "carbon"));
     public static final DeferredItem<Item> CUPRIC_COMB = ITEMS.register("cupric_comb",
@@ -528,7 +528,7 @@ public class ApicaItems {
     public static final DeferredItem<Item> SKELETAL_COMB = ITEMS.register("skeletal_comb",
             () -> new CombItem(new Item.Properties(), "skeletal"));
     public static final DeferredItem<Item> ARACHNID_COMB = ITEMS.register("arachnid_comb",
-            () -> new CombItem(new Item.Properties(), "arachnid"));
+            () -> new CombItem(new Item.Properties(), "arachnid", true));
     public static final DeferredItem<Item> TANNER_COMB = ITEMS.register("tanner_comb",
             () -> new CombItem(new Item.Properties(), "tanner"));
     public static final DeferredItem<Item> QUERCUS_COMB = ITEMS.register("quercus_comb",
@@ -544,7 +544,7 @@ public class ApicaItems {
     public static final DeferredItem<Item> ARGIL_COMB = ITEMS.register("argil_comb",
             () -> new CombItem(new Item.Properties(), "argil"));
     public static final DeferredItem<Item> UMBRA_COMB = ITEMS.register("umbra_comb",
-            () -> new CombItem(new Item.Properties(), "umbra"));
+            () -> new CombItem(new Item.Properties(), 0x301538, 0x9060A8));
     public static final DeferredItem<Item> SAVANNA_COMB = ITEMS.register("savanna_comb",
             () -> new CombItem(new Item.Properties(), "savanna"));
     public static final DeferredItem<Item> FROST_COMB = ITEMS.register("frost_comb",
@@ -564,7 +564,7 @@ public class ApicaItems {
     public static final DeferredItem<Item> VISCOUS_COMB = ITEMS.register("viscous_comb",
             () -> new CombItem(new Item.Properties(), "viscous"));
     public static final DeferredItem<Item> INKY_COMB = ITEMS.register("inky_comb",
-            () -> new CombItem(new Item.Properties(), "inky"));
+            () -> new CombItem(new Item.Properties(), 0x161632, 0x6070AA));
     public static final DeferredItem<Item> GEODE_COMB = ITEMS.register("geode_comb",
             () -> new CombItem(new Item.Properties(), "geode"));
     public static final DeferredItem<Item> MARSH_COMB = ITEMS.register("marsh_comb",
@@ -588,9 +588,9 @@ public class ApicaItems {
     public static final DeferredItem<Item> VENERABLE_COMB = ITEMS.register("venerable_comb",
             () -> new CombItem(new Item.Properties(), "venerable"));
     public static final DeferredItem<Item> VOLCANIC_COMB = ITEMS.register("volcanic_comb",
-            () -> new CombItem(new Item.Properties(), "volcanic"));
+            () -> new CombItem(new Item.Properties(), "volcanic", true));
     public static final DeferredItem<Item> TRAVELER_COMB = ITEMS.register("traveler_comb",
-            () -> new CombItem(new Item.Properties(), "traveler"));
+            () -> new CombItem(new Item.Properties(), "traveler", true));
     public static final DeferredItem<Item> SORROW_COMB = ITEMS.register("sorrow_comb",
             () -> new CombItem(new Item.Properties(), "sorrow"));
     public static final DeferredItem<Item> IMPERIAL_COMB = ITEMS.register("imperial_comb",
@@ -598,7 +598,7 @@ public class ApicaItems {
     public static final DeferredItem<Item> ANCIENT_COMB = ITEMS.register("ancient_comb",
             () -> new CombItem(new Item.Properties(), "ancient"));
     public static final DeferredItem<Item> DRACONIC_COMB = ITEMS.register("draconic_comb",
-            () -> new CombItem(new Item.Properties(), "draconic"));
+            () -> new CombItem(new Item.Properties(), "draconic", true));
     public static final DeferredItem<Item> STELLAR_COMB = ITEMS.register("stellar_comb",
             () -> new CombItem(new Item.Properties(), "stellar"));
 
