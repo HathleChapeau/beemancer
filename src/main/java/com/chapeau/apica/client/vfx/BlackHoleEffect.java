@@ -44,17 +44,80 @@ public class BlackHoleEffect extends VfxEffect {
     }
 
     /**
-     * Configuration DEBUG: un quad fixe avec axe diagonal (visible de tous angles).
+     * Configuration par defaut du Black Hole:
+     * - 1 sphere centrale billboard (violette, rotation lente)
+     * - 2 lignes billboard (violet clair, rotation opposee)
+     * - 4 lignes fixes sur axes differents (violet fonce, rotation variee)
      */
     private void setupDefaultConfiguration() {
-        // Axe diagonal (1,1,1) normalise - jamais parfaitement aligne avec la camera
+        // === SPHERE CENTRALE (billboard) ===
         addQuad(VfxQuad.builder(SPHERE_TEXTURE)
-            .fixed()
-            .axis(1, 1, 1)  // Diagonal - visible de partout
-            .up(0, 1, 0)
+            .billboard()
+            .scale(0.2f)
+            .rotationSpeed(0.03f)
+            .color(0.6f, 0.2f, 1.0f, 0.95f)
+            .build());
+
+        // === LIGNES BILLBOARD (suivent la camera) ===
+        addQuad(VfxQuad.builder(LINE_TEXTURE)
+            .billboard()
+            .scale(0.35f)
+            .rotationSpeed(0.08f)
+            .initialRotation(0)
+            .color(0.7f, 0.3f, 1.0f, 0.8f)
+            .build());
+
+        addQuad(VfxQuad.builder(LINE_TEXTURE)
+            .billboard()
             .scale(0.3f)
-            .rotationSpeed(0.15f)  // Rotation pour confirmer l'animation
-            .color(1.0f, 0.0f, 0.0f, 1.0f)  // Rouge vif
+            .rotationSpeed(-0.06f)
+            .initialRotation(PI / 2)
+            .color(0.8f, 0.4f, 1.0f, 0.7f)
+            .build());
+
+        // === LIGNES FIXES (orientations differentes) ===
+        // Axe X
+        addQuad(VfxQuad.builder(LINE_TEXTURE)
+            .fixed()
+            .axis(1, 0, 0)
+            .up(0, 1, 0)
+            .scale(0.28f)
+            .rotationSpeed(0.05f)
+            .initialRotation(0)
+            .color(0.5f, 0.15f, 0.9f, 0.6f)
+            .build());
+
+        // Axe Y
+        addQuad(VfxQuad.builder(LINE_TEXTURE)
+            .fixed()
+            .axis(0, 1, 0)
+            .up(0, 0, 1)
+            .scale(0.26f)
+            .rotationSpeed(-0.07f)
+            .initialRotation(PI / 4)
+            .color(0.5f, 0.15f, 0.9f, 0.6f)
+            .build());
+
+        // Axe Z
+        addQuad(VfxQuad.builder(LINE_TEXTURE)
+            .fixed()
+            .axis(0, 0, 1)
+            .up(0, 1, 0)
+            .scale(0.25f)
+            .rotationSpeed(0.04f)
+            .initialRotation(PI / 3)
+            .color(0.5f, 0.15f, 0.9f, 0.6f)
+            .build());
+
+        // Axe diagonal
+        addQuad(VfxQuad.builder(LINE_TEXTURE)
+            .fixed()
+            .axis(1, 1, 0)
+            .up(0, 0, 1)
+            .scale(0.22f)
+            .rotationSpeed(-0.06f)
+            .initialRotation(PI / 6)
+            .color(0.5f, 0.15f, 0.9f, 0.5f)
             .build());
     }
 

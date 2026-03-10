@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [VfxEffect.java]
- * Description: Effet VFX compose de plusieurs quads avec depth buffer
+ * Description: Effet VFX compose de plusieurs quads emissifs
  * ============================================================
  *
  * DEPENDANCES:
@@ -9,7 +9,7 @@
  * | Dependance          | Raison                | Utilisation                    |
  * |---------------------|----------------------|--------------------------------|
  * | VfxQuad             | Config quad          | Liste des quads a rendre       |
- * | RenderType          | Depth buffer         | entityCutout pour depth test   |
+ * | RenderType          | Rendu emissif        | Custom type comme lightning    |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -20,10 +20,14 @@
  */
 package com.chapeau.apica.client.vfx;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -33,14 +37,54 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Effet VFX avec plusieurs quads textures.
- * Rendu avec depth test active (pas de layer ordering).
+ * Rendu emissif avec polygon offset (comme lightning).
  * Chaque quad peut etre billboard (face camera) ou fixed (orientation monde).
  */
 public class VfxEffect {
+
+    private static final int FULL_BRIGHT = LightTexture.FULL_BRIGHT;
+    private static final Map<ResourceLocation, RenderType> TYPE_CACHE = new HashMap<>();
+
+    /**
+     * Acces aux constantes protegees de RenderStateShard via heritage.
+     * RenderType emissif + additif + polygon offset pour visibilite.
+     */
+    private static abstract class VfxRenderType extends RenderType {
+        private VfxRenderType() {
+            super("", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS,
+                    256, false, false, () -> {}, () -> {});
+        }
+
+        private static final RenderStateShard.LayeringStateShard VFX_POLYGON_OFFSET =
+                new RenderStateShard.LayeringStateShard("vfx_polygon_offset",
+                        () -> { RenderSystem.polygonOffset(-1.0F, -256.0F); RenderSystem.enablePolygonOffset(); },
+                        () -> { RenderSystem.polygonOffset(0.0F, 0.0F); RenderSystem.disablePolygonOffset(); }
+                ) {};
+
+        static RenderType create(ResourceLocation texture) {
+            CompositeState state = CompositeState.builder()
+                    .setShaderState(RENDERTYPE_EYES_SHADER)
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(ADDITIVE_TRANSPARENCY)
+                    .setLayeringState(VFX_POLYGON_OFFSET)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setCullState(NO_CULL)
+                    .createCompositeState(false);
+            return RenderType.create("apica_vfx", DefaultVertexFormat.NEW_ENTITY,
+                    VertexFormat.Mode.QUADS, 256, true, true, state);
+        }
+    }
+
+    /** Retourne le RenderType VFX emissif pour une texture (avec cache) */
+    public static RenderType getVfxType(ResourceLocation texture) {
+        return TYPE_CACHE.computeIfAbsent(texture, VfxRenderType::create);
+    }
 
     protected final List<VfxQuad> quads = new ArrayList<>();
 
@@ -77,10 +121,8 @@ public class VfxEffect {
         }
 
         float half = quad.scale() * 0.5f;
-        // Full bright pour debug
-        int fullBright = LightTexture.FULL_BRIGHT;
         emitQuad(poseStack, buffer, quad.texture(), -half, -half, half, half,
-                 quad.r(), quad.g(), quad.b(), quad.a(), fullBright);
+                 quad.r(), quad.g(), quad.b(), quad.a());
 
         poseStack.popPose();
     }
@@ -112,19 +154,18 @@ public class VfxEffect {
     }
 
     /**
-     * Emet un quad avec depth test active.
-     * Utilise entityCutoutNoCull pour eviter le backface culling.
+     * Emet un quad emissif avec le RenderType VFX custom.
      */
     private void emitQuad(PoseStack poseStack, MultiBufferSource buffer,
                           ResourceLocation texture, float x0, float y0, float x1, float y1,
-                          float r, float g, float b, float a, int light) {
-        VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
+                          float r, float g, float b, float a) {
+        VertexConsumer vc = buffer.getBuffer(getVfxType(texture));
         PoseStack.Pose pose = poseStack.last();
         int ol = OverlayTexture.NO_OVERLAY;
 
-        vc.addVertex(pose, x0, y0, 0).setColor(r, g, b, a).setUv(0, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x0, y1, 0).setColor(r, g, b, a).setUv(0, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x1, y1, 0).setColor(r, g, b, a).setUv(1, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, x1, y0, 0).setColor(r, g, b, a).setUv(1, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x0, y0, 0).setColor(r, g, b, a).setUv(0, 1).setOverlay(ol).setLight(FULL_BRIGHT).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x0, y1, 0).setColor(r, g, b, a).setUv(0, 0).setOverlay(ol).setLight(FULL_BRIGHT).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x1, y1, 0).setColor(r, g, b, a).setUv(1, 0).setOverlay(ol).setLight(FULL_BRIGHT).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, x1, y0, 0).setColor(r, g, b, a).setUv(1, 1).setOverlay(ol).setLight(FULL_BRIGHT).setNormal(pose, 0, 0, 1);
     }
 }

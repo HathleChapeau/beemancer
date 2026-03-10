@@ -167,31 +167,25 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     /**
      * Rend l'effet Black Hole devant le canon du railgun.
-     * DEBUG: quad a la MEME position Z que la face SOUTH du loader (qui fonctionne).
+     * Utilise le systeme VfxEffect avec RenderType emissif.
      */
     private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        System.out.println("[RAILGUN] renderBlackHoleEffect called");
+        poseStack.pushPose();
 
-        VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(CHARGING_TEXTURE));
-        PoseStack.Pose pose = poseStack.last();
-        int ol = OverlayTexture.NO_OVERLAY;
-        int light = 0xF000F0;
+        // Position: decale de 3 vers la gauche, au niveau du loader Z
+        float offsetX = -3f;
+        float centerX = (LDR_MIN_X + LDR_MAX_X) / 2f + offsetX;
+        float centerY = (LDR_MIN_Y + LDR_MAX_Y) / 2f;
+        float centerZ = LDR_MAX_Z + 0.1f;
 
-        // EXACTEMENT comme la face SOUTH du charging overlay
-        float v0 = 0f;
-        float v1 = 1f / TOTAL_FRAMES;
-        float sz = LDR_MAX_Z + FACE_OFFSET + 0.1f; // Juste devant la face south
+        poseStack.translate(centerX, centerY, centerZ);
 
-        // Quad rouge juste devant la face south - meme winding order
-        float minX = LDR_MIN_X - 0.1f;
-        float maxX = LDR_MAX_X + 0.1f;
-        float minY = LDR_MIN_Y - 0.1f;
-        float maxY = LDR_MAX_Y + 0.1f;
+        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
 
-        vc.addVertex(pose, minX, minY, sz).setColor(1f, 0f, 0f, 1f).setUv(0f, v1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, minX, maxY, sz).setColor(1f, 0f, 0f, 1f).setUv(0f, v0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, maxX, maxY, sz).setColor(1f, 0f, 0f, 1f).setUv(1f, v0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, maxX, minY, sz).setColor(1f, 0f, 0f, 1f).setUv(1f, v1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        blackHoleEffect.render(poseStack, buffer, camera, time, packedLight);
+
+        poseStack.popPose();
     }
 
     /** Retourne la couleur de tinte du Loader en fonction du fluide du magazine. */
