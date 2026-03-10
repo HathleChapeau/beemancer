@@ -235,13 +235,12 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
      * Scale et vitesse de rotation augmentent avec le chargement.
      */
     private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        if (currentFrame <= 0) return;
-
+        // DEBUG: toujours afficher pour tester la position
         // Progression du chargement (0 a 1)
         float progress = currentFrame / (TOTAL_FRAMES - 1);
 
-        // scaleMult: 0 -> 2, rotMult: 1 -> 2
-        float scaleMult = progress * 2f;
+        // scaleMult: 0.5 -> 2 (minimum visible), rotMult: 1 -> 2
+        float scaleMult = 0.5f + progress * 1.5f;
         float rotMult = 1f + progress;
 
         poseStack.pushPose();
