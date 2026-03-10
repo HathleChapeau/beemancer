@@ -22,6 +22,7 @@
  */
 package com.chapeau.apica.mixin.client;
 
+import com.chapeau.apica.common.item.magazine.CreativeMagazineItem;
 import com.chapeau.apica.common.item.magazine.IMagazineHolder;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.magazine.MagazineFluidData;
@@ -51,7 +52,7 @@ public abstract class ContainerScreenMagazineMixin {
         ItemStack cursorStack = screen.getMenu().getCarried();
         boolean hasMagazine = MagazineData.hasMagazine(slot.getItem());
         boolean cursorIsMag = cursorStack.getItem() instanceof MagazineItem
-                && !MagazineFluidData.isEmpty(cursorStack);
+                && (cursorStack.getItem() instanceof CreativeMagazineItem || !MagazineFluidData.isEmpty(cursorStack));
         return cursorIsMag || (hasMagazine && cursorStack.isEmpty());
     }
 
@@ -92,7 +93,7 @@ public abstract class ContainerScreenMagazineMixin {
             ItemStack cursorStack = self.getMenu().getCarried();
             boolean hasMagazine = MagazineData.hasMagazine(hoveredSlot.getItem());
             boolean isMagItem = cursorStack.getItem() instanceof MagazineItem;
-            boolean magNotEmpty = !MagazineFluidData.isEmpty(cursorStack);
+            boolean magNotEmpty = cursorStack.getItem() instanceof CreativeMagazineItem || !MagazineFluidData.isEmpty(cursorStack);
 
             if (isMagItem && magNotEmpty) {
                 PacketDistributor.sendToServer(new MagazineEquipPacket(hoveredSlot.index, true));
