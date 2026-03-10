@@ -163,10 +163,16 @@ public class RailgunBeamRenderer {
                 .add(look.scale(1.2));
         }
 
+        // Couleur du beam = tinte du loader (meme que le magazine)
         String fluidId = storedStack.isEmpty() ? "" : MagazineData.getFluidId(storedStack);
-        if (fluidId.contains("nectar")) { beamR = 0.7f; beamG = 0.3f; beamB = 1.0f; }
-        else if (fluidId.contains("royal_jelly")) { beamR = 1.0f; beamG = 1.0f; beamB = 0.9f; }
-        else { beamR = 1.0f; beamG = 0.85f; beamB = 0.3f; }
+        int tint;
+        if (fluidId.contains("honey")) { tint = 0xFADE29; }
+        else if (fluidId.contains("royal_jelly")) { tint = 0xFFFAD0; }
+        else if (fluidId.contains("nectar")) { tint = 0xE855FF; }
+        else { tint = 0xFFFFFF; }
+        beamR = ((tint >> 16) & 0xFF) / 255f;
+        beamG = ((tint >> 8) & 0xFF) / 255f;
+        beamB = (tint & 0xFF) / 255f;
     }
 
     private static void renderBeamQuads(PoseStack poseStack, MultiBufferSource buffer,

@@ -174,11 +174,11 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
             updateAnimation();
             renderChargingOverlay(poseStack, buffer, packedLight, (int) currentFrame, tint);
 
-            // Black hole effect en FPS — toujours visible pour debug
+            // Black hole effect en FPS
             boolean isFPS = displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
                 || displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND;
             if (isFPS) {
-                renderBlackHoleEffect(poseStack, buffer, packedLight);
+                renderBlackHoleEffect(poseStack, buffer, packedLight, tint);
             }
         } else {
             renderChargingOverlay(poseStack, buffer, packedLight, 0, tint);
@@ -234,16 +234,22 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     /**
      * Rend l'effet Black Hole devant le canon du railgun.
      * Scale et vitesse de rotation augmentent avec le chargement.
+     * Couleur basee sur la tinte du loader (fluide du magazine).
      */
-    private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+    private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight, int tint) {
         if (currentFrame <= 0) return;
 
         // Progression du chargement (0 a 1)
         float progress = currentFrame / (TOTAL_FRAMES - 1);
 
-        // scaleMult: 0 -> 2, rotMult: 2 -> 4
-        float scaleMult = progress * 2f;
+        // scaleMult: 0 -> 2.5, rotMult: 2 -> 4
+        float scaleMult = progress * 2.5f;
         float rotMult = 2f + progress * 2f;
+
+        // Conversion tint int -> RGB floats
+        float tintR = ((tint >> 16) & 0xFF) / 255f;
+        float tintG = ((tint >> 8) & 0xFF) / 255f;
+        float tintB = (tint & 0xFF) / 255f;
 
         poseStack.pushPose();
         poseStack.translate(BLACKHOLE_X, BLACKHOLE_Y, BLACKHOLE_Z);
@@ -251,7 +257,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         float time = AnimationTimer.getTicks() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
 
-        blackHoleEffect.render(poseStack, buffer, camera, time, packedLight, scaleMult, rotMult);
+        blackHoleEffect.render(poseStack, buffer, camera, time, packedLight, scaleMult, rotMult, tintR, tintG, tintB);
 
         poseStack.popPose();
     }

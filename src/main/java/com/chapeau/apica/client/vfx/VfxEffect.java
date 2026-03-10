@@ -71,6 +71,18 @@ public class VfxEffect {
      */
     public void render(PoseStack poseStack, MultiBufferSource buffer, Camera camera,
                        float time, int light, float scaleMult, float rotMult) {
+        render(poseStack, buffer, camera, time, light, scaleMult, rotMult, 1f, 1f, 1f);
+    }
+
+    /**
+     * Rend l'effet avec multiplicateurs et teinte.
+     * @param tintR teinte rouge (multiplie la couleur de chaque quad)
+     * @param tintG teinte verte
+     * @param tintB teinte bleue
+     */
+    public void render(PoseStack poseStack, MultiBufferSource buffer, Camera camera,
+                       float time, int light, float scaleMult, float rotMult,
+                       float tintR, float tintG, float tintB) {
         // Calcul du delta time
         float deltaTime = (lastTime < 0) ? 0 : (time - lastTime);
         lastTime = time;
@@ -84,12 +96,13 @@ public class VfxEffect {
             currentRot += quad.rotationSpeed() * rotMult * deltaTime;
             accumulatedRotations.set(i, currentRot);
 
-            renderQuad(poseStack, buffer, camera, quad, currentRot, light, scaleMult);
+            renderQuad(poseStack, buffer, camera, quad, currentRot, light, scaleMult, tintR, tintG, tintB);
         }
     }
 
     private void renderQuad(PoseStack poseStack, MultiBufferSource buffer, Camera camera,
-                            VfxQuad quad, float rotation, int light, float scaleMult) {
+                            VfxQuad quad, float rotation, int light, float scaleMult,
+                            float tintR, float tintG, float tintB) {
         poseStack.pushPose();
 
         if (quad.mode() == VfxQuad.Mode.BILLBOARD) {
@@ -99,8 +112,12 @@ public class VfxEffect {
         }
 
         float half = quad.scale() * scaleMult * 0.5f;
+        // Applique la teinte en multipliant avec la couleur du quad
+        float r = quad.r() * tintR;
+        float g = quad.g() * tintG;
+        float b = quad.b() * tintB;
         emitQuad(poseStack, buffer, quad.texture(), -half, -half, half, half,
-                 quad.r(), quad.g(), quad.b(), quad.a(), light, quad.flipU());
+                 r, g, b, quad.a(), light, quad.flipU());
 
         poseStack.popPose();
     }
