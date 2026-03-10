@@ -23,6 +23,7 @@ package com.chapeau.apica.client.renderer.item;
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
 import com.chapeau.apica.client.vfx.BlackHoleEffect;
+import com.chapeau.apica.common.item.debug.DebugWandItem;
 import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.tool.RailgunItem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -77,9 +78,9 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
     private static final float FACE_OFFSET = 0.001f;
 
     // Position du black hole (bout du canon)
-    private static final float BLACKHOLE_X = 8.5f / 16f;   // Centre X du canon
-    private static final float BLACKHOLE_Y = 8.75f / 16f;  // Centre Y du canon
-    private static final float BLACKHOLE_Z = -8f / 16f;    // Devant le canon
+    private static final float BLACKHOLE_X = 0.6f;   // Centre X du canon
+    private static final float BLACKHOLE_Y = 0.5f;  // Centre Y du canon
+    private static final float BLACKHOLE_Z = 2.3f;    // Devant le canon
 
     private final BlackHoleEffect blackHoleEffect = createBlackHoleEffect();
 
