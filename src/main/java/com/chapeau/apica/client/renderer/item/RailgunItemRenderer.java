@@ -22,6 +22,7 @@ package com.chapeau.apica.client.renderer.item;
 
 import com.chapeau.apica.Apica;
 import com.chapeau.apica.client.animation.AnimationTimer;
+import com.chapeau.apica.common.item.magazine.MagazineData;
 import com.chapeau.apica.common.item.tool.RailgunItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -93,11 +94,12 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
             || displayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND
             || displayContext == ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
 
+        int tint = getLoaderTint(stack);
         if (inHand) {
             updateAnimation();
-            renderChargingOverlay(poseStack, buffer, packedLight, (int) currentFrame);
+            renderChargingOverlay(poseStack, buffer, packedLight, (int) currentFrame, tint);
         } else {
-            renderChargingOverlay(poseStack, buffer, packedLight, 0);
+            renderChargingOverlay(poseStack, buffer, packedLight, 0, tint);
         }
     }
 
@@ -128,7 +130,14 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
         lastTick = tick;
 
         Minecraft mc = Minecraft.getInstance();
-        boolean isCharging = mc.player != null && mc.player.isUsingItem()
+        boolean holdingRailgun = mc.player != null
+            && mc.player.getMainHandItem().getItem() instanceof RailgunItem;
+        if (!holdingRailgun) {
+            currentFrame = 0;
+            return;
+        }
+
+        boolean isCharging = mc.player.isUsingItem()
             && mc.player.getUseItem().getItem() instanceof RailgunItem;
 
         if (isCharging) {
@@ -140,15 +149,29 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
         }
     }
 
+    /** Retourne la couleur de tinte du Loader en fonction du fluide du magazine. */
+    private static int getLoaderTint(ItemStack stack) {
+        String fluidId = MagazineData.getFluidId(stack);
+        if (fluidId.contains("honey")) return 0xFADE29;
+        if (fluidId.contains("royal_jelly")) return 0xFFF8DC;
+        if (fluidId.contains("nectar")) return 0xB050FF;
+        return 0xFFFFFF;
+    }
+
     /**
      * Rend l'overlay d'animation sur les faces east/west du Loader.
      * UV scrolle verticalement: chaque frame = 1 row de la texture 25x26.
+     * Tinte par la couleur du fluide du magazine equipe.
      */
     private void renderChargingOverlay(PoseStack poseStack, MultiBufferSource buffer,
-                                        int packedLight, int frame) {
+                                        int packedLight, int frame, int tint) {
         VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(CHARGING_TEXTURE));
         PoseStack.Pose pose = poseStack.last();
         int overlay = OverlayTexture.NO_OVERLAY;
+
+        float r = ((tint >> 16) & 0xFF) / 255f;
+        float g = ((tint >> 8) & 0xFF) / 255f;
+        float b = (tint & 0xFF) / 255f;
 
         float u0 = 0f, u1 = 1f;
         float v0 = (float) frame / TOTAL_FRAMES;
@@ -159,30 +182,31 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
             LDR_MIN_X - FACE_OFFSET, LDR_MIN_Y, LDR_MAX_Z,
             LDR_MIN_X - FACE_OFFSET, LDR_MAX_Y, LDR_MIN_Z,
             u0, v1, u0, v0, u1, v0, u1, v1,
-            -1, 0, 0, packedLight, overlay);
+            -1, 0, 0, packedLight, overlay, r, g, b);
 
         // East face (X+) — UV flip horizontal (matching loader east [16,0,0,16])
         emitQuad(vc, pose,
             LDR_MAX_X + FACE_OFFSET, LDR_MIN_Y, LDR_MIN_Z,
             LDR_MAX_X + FACE_OFFSET, LDR_MAX_Y, LDR_MAX_Z,
             u1, v1, u1, v0, u0, v0, u0, v1,
-            1, 0, 0, packedLight, overlay);
+            1, 0, 0, packedLight, overlay, r, g, b);
     }
 
-    /** Emet un quad vertical (2 coins: bottom-left et top-right sur le meme plan). */
+    /** Emet un quad vertical (2 coins: bottom-left et top-right sur le meme plan) avec tinte RGB. */
     private static void emitQuad(VertexConsumer vc, PoseStack.Pose pose,
                                   float x0, float y0, float z0,
                                   float x1, float y1, float z1,
                                   float uBL, float vBL, float uTL, float vTL,
                                   float uTR, float vTR, float uBR, float vBR,
-                                  float nx, float ny, float nz, int light, int overlay) {
-        vc.addVertex(pose, x0, y0, z0).setColor(1f, 1f, 1f, 1f)
+                                  float nx, float ny, float nz, int light, int overlay,
+                                  float r, float g, float b) {
+        vc.addVertex(pose, x0, y0, z0).setColor(r, g, b, 1f)
             .setUv(uBL, vBL).setOverlay(overlay).setLight(light).setNormal(pose, nx, ny, nz);
-        vc.addVertex(pose, x0, y1, z0).setColor(1f, 1f, 1f, 1f)
+        vc.addVertex(pose, x0, y1, z0).setColor(r, g, b, 1f)
             .setUv(uTL, vTL).setOverlay(overlay).setLight(light).setNormal(pose, nx, ny, nz);
-        vc.addVertex(pose, x1, y1, z1).setColor(1f, 1f, 1f, 1f)
+        vc.addVertex(pose, x1, y1, z1).setColor(r, g, b, 1f)
             .setUv(uTR, vTR).setOverlay(overlay).setLight(light).setNormal(pose, nx, ny, nz);
-        vc.addVertex(pose, x1, y0, z1).setColor(1f, 1f, 1f, 1f)
+        vc.addVertex(pose, x1, y0, z1).setColor(r, g, b, 1f)
             .setUv(uBR, vBR).setOverlay(overlay).setLight(light).setNormal(pose, nx, ny, nz);
     }
 }
