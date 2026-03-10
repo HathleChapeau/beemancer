@@ -167,30 +167,31 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     /**
      * Rend l'effet Black Hole devant le canon du railgun.
-     * DEBUG: rendu direct sans VfxEffect pour isoler le probleme.
+     * DEBUG: quad a la MEME position Z que la face SOUTH du loader (qui fonctionne).
      */
     private void renderBlackHoleEffect(PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        // DEBUG: log pour verifier que la methode est appelee
         System.out.println("[RAILGUN] renderBlackHoleEffect called");
 
-        poseStack.pushPose();
-        poseStack.translate(0.5, 0.5, 0.5);
-
-        // DEBUG: Quad direct, meme methode que le charging overlay
-        ResourceLocation tex = ResourceLocation.fromNamespaceAndPath(Apica.MOD_ID, "textures/particle/sphere.png");
-        VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(tex));
+        VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(CHARGING_TEXTURE));
         PoseStack.Pose pose = poseStack.last();
         int ol = OverlayTexture.NO_OVERLAY;
-        int light = 0xF000F0; // Full bright
+        int light = 0xF000F0;
 
-        float s = 0.15f; // half-size
-        // Quad simple dans le plan XY
-        vc.addVertex(pose, -s, -s, 0).setColor(1f, 0f, 0f, 1f).setUv(0, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose, -s,  s, 0).setColor(1f, 0f, 0f, 1f).setUv(0, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose,  s,  s, 0).setColor(1f, 0f, 0f, 1f).setUv(1, 0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
-        vc.addVertex(pose,  s, -s, 0).setColor(1f, 0f, 0f, 1f).setUv(1, 1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        // EXACTEMENT comme la face SOUTH du charging overlay
+        float v0 = 0f;
+        float v1 = 1f / TOTAL_FRAMES;
+        float sz = LDR_MAX_Z + FACE_OFFSET + 0.1f; // Juste devant la face south
 
-        poseStack.popPose();
+        // Quad rouge juste devant la face south - meme winding order
+        float minX = LDR_MIN_X - 0.1f;
+        float maxX = LDR_MAX_X + 0.1f;
+        float minY = LDR_MIN_Y - 0.1f;
+        float maxY = LDR_MAX_Y + 0.1f;
+
+        vc.addVertex(pose, minX, minY, sz).setColor(1f, 0f, 0f, 1f).setUv(0f, v1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, minX, maxY, sz).setColor(1f, 0f, 0f, 1f).setUv(0f, v0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, maxX, maxY, sz).setColor(1f, 0f, 0f, 1f).setUv(1f, v0).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
+        vc.addVertex(pose, maxX, minY, sz).setColor(1f, 0f, 0f, 1f).setUv(1f, v1).setOverlay(ol).setLight(light).setNormal(pose, 0, 0, 1);
     }
 
     /** Retourne la couleur de tinte du Loader en fonction du fluide du magazine. */
