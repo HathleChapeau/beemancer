@@ -299,7 +299,7 @@ public class HoverbikePartScreen extends Screen {
         if (partModel == null) return;
 
         int centerX = insetX + INSET_SIZE / 2;
-        int centerY = insetY + INSET_SIZE / 2 + 10;
+        int centerY = insetY + INSET_SIZE / 2;
         float scale = 50f;
 
         PoseStack poseStack = graphics.pose();
@@ -310,8 +310,6 @@ public class HoverbikePartScreen extends Screen {
 
         poseStack.mulPose(Axis.XP.rotationDegrees(rotationX));
         poseStack.mulPose(Axis.YP.rotationDegrees(rotationY));
-
-        poseStack.translate(0, -0.7, 0);
 
         Lighting.setupForEntityInInventory();
 

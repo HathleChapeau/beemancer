@@ -26,7 +26,7 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 
 /**
  * Corps PUFFY: copie exacte de ARMORED sans les 3 plaques.
- * head 7x7x3, body 8x8x9, tail 7x2x3. Pattes flat.
+ * head 7x7x3, body 8x8x9, tail 7x7x3. Pattes flat.
  * Texture 128x64 (meme layout qu'ARMORED).
  *
  * Layout Z:
@@ -47,7 +47,7 @@ public final class PuffyBodyLayer {
                 CubeListBuilder.create()
                         .texOffs(0, 0).addBox(-4.0F, -4.0F, -4.5F, 8.0F, 8.0F, 9.0F)       // Body (8x8x9)
                         .texOffs(34, 0).addBox(-3.5F, -3.5F, -7.5F, 7.0F, 7.0F, 3.0F)       // Head (7x7x3)
-                        .texOffs(54, 0).addBox(-3.5F, 1.5F, 4.0F, 7.0F, 2.0F, 3.0F),        // Tail (7x2x3)
+                        .texOffs(54, 0).addBox(-3.5F, 1.5F, 4.0F, 7.0F, 7.0F, 3.0F),        // Tail (7x7x3)
                 PartPose.ZERO);
 
         // body_stripe: vide (ARMORED a les rayures sur les plaques uniquement)
