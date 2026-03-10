@@ -86,7 +86,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     private static BlackHoleEffect createBlackHoleEffect() {
         float PI = (float) Math.PI;
-        // Les multiplicateurs sont appliques dynamiquement au render
+        // Les couleurs sont blanches, la tinte est appliquee au render
         return BlackHoleEffect.builder()
             .clear()
             // Sphere centrale (less blend)
@@ -94,7 +94,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .lessBlend()
                 .scale(0.2f)
                 .rotationSpeed(0.03f)
-                .color(0.6f, 0.2f, 1.0f, 0.95f)
+                .color(1f, 1f, 1f, 0.95f)
                 .done()
             // Lignes billboard
             .addBillboardLine()
@@ -102,14 +102,14 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .scale(0.35f)
                 .rotationSpeed(0.16f)
                 .initialRotation(0)
-                .color(0.7f, 0.3f, 1.0f, 0.8f)
+                .color(1f, 1f, 1f, 0.8f)
                 .done()
             .addBillboardLine()
                 .small()
                 .scale(0.3f)
                 .rotationSpeed(-0.12f)
                 .initialRotation(PI / 2)
-                .color(0.8f, 0.4f, 1.0f, 0.7f)
+                .color(1f, 1f, 1f, 0.7f)
                 .flip()
                 .done()
             // Lignes fixes (small)
@@ -118,7 +118,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .axis(1, 0, 0).up(0, 1, 0)
                 .scale(0.28f)
                 .rotationSpeed(0.10f)
-                .color(0.5f, 0.15f, 0.9f, 0.6f)
+                .color(1f, 1f, 1f, 0.6f)
                 .done()
             .addFixedLine()
                 .small()
@@ -126,7 +126,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .scale(-0.26f)
                 .rotationSpeed(-0.14f)
                 .initialRotation(PI / 4)
-                .color(0.5f, 0.15f, 0.9f, 0.6f)
+                .color(1f, 1f, 1f, 0.6f)
                 .flip()
                 .done()
             .addFixedLine()
@@ -135,7 +135,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .scale(0.25f)
                 .rotationSpeed(0.08f)
                 .initialRotation(PI / 3)
-                .color(0.5f, 0.15f, 0.9f, 0.6f)
+                .color(1f, 1f, 1f, 0.6f)
                 .done()
             .addFixedLine()
                 .small()
@@ -143,7 +143,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
                 .scale(-0.22f)
                 .rotationSpeed(-0.12f)
                 .initialRotation(PI / 6)
-                .color(0.5f, 0.15f, 0.9f, 0.5f)
+                .color(1f, 1f, 1f, 0.5f)
                 .flip()
                 .done()
             .build();
@@ -227,7 +227,7 @@ public class RailgunItemRenderer extends BlockEntityWithoutLevelRenderer {
             float framesPerTick = (TOTAL_FRAMES - 1) * speedMult / RailgunItem.CHARGE_THRESHOLD;
             currentFrame = Math.min(currentFrame + framesPerTick, TOTAL_FRAMES - 1);
         } else {
-            if (currentFrame > 0) currentFrame = Math.max(0, currentFrame - 1);
+            if (currentFrame > 0) currentFrame = Math.max(0, currentFrame - 3);
         }
     }
 
