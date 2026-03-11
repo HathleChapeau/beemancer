@@ -250,20 +250,20 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
     /** Controle gauche: flanc gauche du corps, mi-hauteur, zone arriere. */
     private static Vec3 getControlLeftPosition(BeeBodyType bodyType) {
         return switch (bodyType) {
-            case DEFAULT -> new Vec3(-4.0, 19.0, 1.0);
-            case ROYAL -> new Vec3(-4.5, 19.0, -3.0);
-            case SEGMENTED -> new Vec3(-4.0, 19.5, 6.0);  // Au milieu de la tail, face west
-            case ARMORED, PUFFY -> new Vec3(-4.5, 19.0, 1.0);
+            case DEFAULT -> new Vec3(-4.0, 18.5, 2.5);
+            case ROYAL -> new Vec3(-4.5, 18.5, -1.5);
+            case SEGMENTED -> new Vec3(-4.0, 18.5, 7.5);  // Au milieu de la tail, face west
+            case ARMORED, PUFFY -> new Vec3(-4.5, 18.5, 2.5);
         };
     }
 
     /** Controle droit: flanc droit du corps, mi-hauteur, zone arriere. */
     private static Vec3 getControlRightPosition(BeeBodyType bodyType) {
         return switch (bodyType) {
-            case DEFAULT -> new Vec3(4.0, 19.0, 1.0);
-            case ROYAL -> new Vec3(4.5, 19.0, -3.0);
-            case SEGMENTED -> new Vec3(4.0, 19.5, 6.0);  // Au milieu de la tail, face east
-            case ARMORED, PUFFY -> new Vec3(4.5, 19.0, 1.0);
+            case DEFAULT -> new Vec3(4.0, 18.5, 2.5);
+            case ROYAL -> new Vec3(4.5, 18.5, -1.5);
+            case SEGMENTED -> new Vec3(4.0, 18.5, 7.5);  // Au milieu de la tail, face east
+            case ARMORED, PUFFY -> new Vec3(4.5, 18.5, 2.5);
         };
     }
 
