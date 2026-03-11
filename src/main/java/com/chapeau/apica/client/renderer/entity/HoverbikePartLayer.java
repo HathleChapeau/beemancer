@@ -228,7 +228,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         return switch (bodyType) {
             case DEFAULT -> new Vec3(0, 14.5, 2.0);
             case ROYAL -> new Vec3(0, 14.0, -2.0);
-            case SEGMENTED -> new Vec3(0, 14.5, 5.5);  // Reculee vers la tail
+            case SEGMENTED -> new Vec3(0, 14.5, 5.0);  // Reculee vers la tail
             case ARMORED, PUFFY -> new Vec3(0, 14.5, 1.0);
         };
     }
@@ -252,7 +252,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         return switch (bodyType) {
             case DEFAULT -> new Vec3(-4.0, 19.0, 1.0);
             case ROYAL -> new Vec3(-4.5, 19.0, -3.0);
-            case SEGMENTED -> new Vec3(-4.0, 19.0, 6.0);  // Au milieu de la tail, face west
+            case SEGMENTED -> new Vec3(-4.0, 19.5, 6.0);  // Au milieu de la tail, face west
             case ARMORED, PUFFY -> new Vec3(-4.5, 19.0, 1.0);
         };
     }
@@ -262,7 +262,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         return switch (bodyType) {
             case DEFAULT -> new Vec3(4.0, 19.0, 1.0);
             case ROYAL -> new Vec3(4.5, 19.0, -3.0);
-            case SEGMENTED -> new Vec3(4.0, 19.0, 6.0);  // Au milieu de la tail, face east
+            case SEGMENTED -> new Vec3(4.0, 19.5, 6.0);  // Au milieu de la tail, face east
             case ARMORED, PUFFY -> new Vec3(4.5, 19.0, 1.0);
         };
     }
