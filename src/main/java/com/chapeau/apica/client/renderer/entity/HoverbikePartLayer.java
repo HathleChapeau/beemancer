@@ -13,6 +13,9 @@
  * | MoveAnimation       | Translation animee   | Mouvement des pieces           |
  * | ApicaBeeModel       | Modele parent        | Body type + rotation ailes     |
  * | BeeBodyType         | Type de corps        | Positionnement par body type   |
+ * | SaddlePartModelB    | Positions electrodes | Lightning arcs saddle B        |
+ * | SaddlePartModelC    | Position ring center | Ring effect saddle C           |
+ * | LightningArcRenderer| Arcs electriques     | Rendu lightning saddle B       |
  * ------------------------------------------------------------
  *
  * UTILISE PAR:
@@ -167,6 +170,11 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
             // Render lightning arcs for saddle variant B
             if (partType == HoverbikePart.SADDLE && clampedIndex == 1) {
                 renderElectrodeLightning(poseStack, bufferSource, state);
+            }
+
+            // Render ring effect for saddle variant C
+            if (partType == HoverbikePart.SADDLE && clampedIndex == 2) {
+                renderSaddleRing(poseStack, bufferSource, packedLight, ageInTicks);
             }
 
             poseStack.popPose();
@@ -348,5 +356,59 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
                         ARC_HALF_WIDTH, r, g, b, 0.9f);
             }
         }
+    }
+
+    // ========== Ring effect (Saddle C) ==========
+
+    /**
+     * Rend un anneau rotatif autour de l'axe X pour la selle C.
+     * Similaire au mining laser mais avec rotation sur X au lieu de Z.
+     */
+    private void renderSaddleRing(PoseStack poseStack, MultiBufferSource bufferSource,
+                                   int packedLight, float ageInTicks) {
+        Vec3 center = SaddlePartModelC.RING_CENTER.scale(1.0 / 16.0);
+        float rotation = ageInTicks * 0.15f;
+
+        VertexConsumer vc = bufferSource.getBuffer(RenderType.entityTranslucent(RING_TEXTURE));
+        int overlay = OverlayTexture.NO_OVERLAY;
+
+        poseStack.pushPose();
+        poseStack.translate(center.x, center.y, center.z);
+        poseStack.mulPose(Axis.XP.rotation(rotation));
+
+        float angleStep = (float) (2.0 * Math.PI / RING_FACE_COUNT);
+
+        for (int i = 0; i < RING_FACE_COUNT; i++) {
+            float angle0 = i * angleStep;
+            float angle1 = (i + 1) * angleStep;
+            float angleMid = (angle0 + angle1) * 0.5f;
+
+            float cos0 = (float) Math.cos(angle0);
+            float sin0 = (float) Math.sin(angle0);
+            float cos1 = (float) Math.cos(angle1);
+            float sin1 = (float) Math.sin(angle1);
+
+            // Anneau dans le plan YZ (rotation autour de X)
+            float y0 = cos0 * RING_RADIUS;
+            float z0 = sin0 * RING_RADIUS;
+            float y1 = cos1 * RING_RADIUS;
+            float z1 = sin1 * RING_RADIUS;
+
+            float ny = (float) Math.cos(angleMid);
+            float nz = (float) Math.sin(angleMid);
+
+            PoseStack.Pose pose = poseStack.last();
+            // Face exterieure du cylindre
+            vc.addVertex(pose, -RING_HALF_DEPTH, y0, z0).setColor(1f, 1f, 1f, 0.8f)
+                    .setUv(0f, 1f).setOverlay(overlay).setLight(packedLight).setNormal(pose, 0, ny, nz);
+            vc.addVertex(pose, RING_HALF_DEPTH, y0, z0).setColor(1f, 1f, 1f, 0.8f)
+                    .setUv(0f, 0f).setOverlay(overlay).setLight(packedLight).setNormal(pose, 0, ny, nz);
+            vc.addVertex(pose, RING_HALF_DEPTH, y1, z1).setColor(1f, 1f, 1f, 0.8f)
+                    .setUv(1f, 0f).setOverlay(overlay).setLight(packedLight).setNormal(pose, 0, ny, nz);
+            vc.addVertex(pose, -RING_HALF_DEPTH, y1, z1).setColor(1f, 1f, 1f, 0.8f)
+                    .setUv(1f, 1f).setOverlay(overlay).setLight(packedLight).setNormal(pose, 0, ny, nz);
+        }
+
+        poseStack.popPose();
     }
 }

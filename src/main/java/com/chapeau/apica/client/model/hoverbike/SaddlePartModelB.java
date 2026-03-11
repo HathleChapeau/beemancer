@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [SaddlePartModelB.java]
- * Description: Selle HoverBee - variante B (2 electrodes avec arc electrique)
+ * Description: Selle HoverBee - variante B (2 cubes + connecteur avec arc electrique)
  * ============================================================
  *
  * DEPENDANCES:

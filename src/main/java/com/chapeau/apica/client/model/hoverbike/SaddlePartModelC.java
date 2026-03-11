@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * [SaddlePartModelC.java]
- * Description: Selle HoverBee - variante C (2 cubes lateraux relies par une barre)
+ * Description: Selle HoverBee - variante C (cubes inclines 45° + ring rotative)
  * ============================================================
  *
  * DEPENDANCES:
@@ -15,6 +15,7 @@
  * UTILISE PAR:
  * - HoverbikePartVariants.java: Enregistrement variante
  * - ClientSetup.java: Enregistrement du layer
+ * - HoverbikePartLayer.java: Rendu ring effect
  *
  * ============================================================
  */
