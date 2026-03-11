@@ -60,12 +60,109 @@ public class DeliveryBeeSpawner {
     // [BD] Registre de bees par taskId: evite les scans AABB couteux
     private final Map<UUID, WeakReference<DeliveryBeeEntity>> beeRegistry = new HashMap<>();
 
+    /**
+     * Encapsule les trois chemins de waypoints d'une tâche de livraison.
+     * Utilisé par spawnDeliveryBee et redirectBee pour une logique unifiée.
+     */
+    public record WaypointPaths(
+        List<BlockPos> outbound,   // Controller → Source
+        List<BlockPos> transit,    // Source → Dest (via LCA)
+        List<BlockPos> home        // Dest → Controller (reverse de pathToDest)
+    ) {}
+
     public DeliveryBeeSpawner(StorageControllerBlockEntity parent,
                               DeliveryNetworkPathfinder pathfinder,
                               DeliveryContainerOps containerOps) {
         this.parent = parent;
         this.pathfinder = pathfinder;
         this.containerOps = containerOps;
+    }
+
+    // =========================================================================
+    // WAYPOINT CALCULATION - UNIFIED FOR IMPORT/EXPORT
+    // =========================================================================
+
+    /**
+     * Calcule les waypoints pour une tâche de livraison.
+     * Unifie la logique IMPORT et EXPORT en utilisant toujours des positions
+     * enregistrées dans le réseau pour le pathfinding.
+     *
+     * @param sourcePos position source réelle (coffre réseau ou coffre adjacent)
+     * @param destPos position destination réelle
+     * @param interfacePos position de l'interface (pour tâches interface, sinon null)
+     * @return les trois chemins: outbound, transit, home
+     */
+    public WaypointPaths calculateTaskWaypoints(@Nullable BlockPos sourcePos,
+                                                 @Nullable BlockPos destPos,
+                                                 @Nullable BlockPos interfacePos) {
+        // Résoudre les positions réseau pour le pathfinding
+        // Pour EXPORT: sourcePos = adjacent (hors réseau), on utilise interfacePos à la place
+        // Pour IMPORT: sourcePos = coffre réseau, pas de changement
+        BlockPos pathfindingSource = resolveNetworkPosition(sourcePos, interfacePos);
+        BlockPos pathfindingDest = resolveNetworkPosition(destPos, null);
+
+        LOGGER.info("[Waypoints] Calculating: source={} (pathfinding={}), dest={} (pathfinding={})",
+            sourcePos, pathfindingSource, destPos, pathfindingDest);
+
+        // Chemin controller → source
+        List<BlockPos> pathToSource = List.of();
+        if (pathfindingSource != null) {
+            pathToSource = pathfinder.findPathToPosition(pathfindingSource);
+            LOGGER.info("[Waypoints] pathToSource: {}", pathToSource);
+        }
+
+        // Chemin controller → destination
+        List<BlockPos> pathToDest = List.of();
+        if (pathfindingDest != null && !pathfindingDest.equals(parent.getBlockPos())) {
+            pathToDest = pathfinder.findPathToPosition(pathfindingDest);
+            LOGGER.info("[Waypoints] pathToDest: {}", pathToDest);
+        }
+
+        // Transit: chemin source → destination via l'ancêtre commun (LCA)
+        List<BlockPos> transit = pathfinder.computeTransitWaypoints(pathToSource, pathToDest);
+        LOGGER.info("[Waypoints] transit (via LCA): {}", transit);
+
+        // Home: reverse de pathToDest (garantit symétrie parfaite)
+        List<BlockPos> home = new ArrayList<>(pathToDest);
+        java.util.Collections.reverse(home);
+        LOGGER.info("[Waypoints] home (reverse pathToDest): {}", home);
+
+        return new WaypointPaths(pathToSource, transit, home);
+    }
+
+    /**
+     * Résout la position réseau pour le pathfinding.
+     * Si la position est hors réseau (ex: coffre adjacent d'une interface EXPORT),
+     * utilise l'interface comme proxy car elle EST enregistrée dans le réseau.
+     *
+     * @param actualPos position réelle (peut être hors réseau)
+     * @param interfacePos position de l'interface (proxy si actualPos hors réseau)
+     * @return position à utiliser pour le pathfinding (toujours dans le réseau)
+     */
+    private BlockPos resolveNetworkPosition(@Nullable BlockPos actualPos, @Nullable BlockPos interfacePos) {
+        if (actualPos == null) return null;
+
+        // Vérifier si la position est enregistrée dans le réseau
+        StorageNetworkRegistry registry = parent.getNetworkRegistry();
+        boolean isInNetwork = registry.getOwner(actualPos) != null
+                           || parent.getChestManager().getRegisteredChests().contains(actualPos);
+
+        if (isInNetwork) {
+            // Position dans le réseau → utiliser directement
+            return actualPos;
+        }
+
+        // Position hors réseau (ex: coffre adjacent EXPORT)
+        // → Utiliser l'interface comme proxy si disponible
+        if (interfacePos != null) {
+            LOGGER.debug("[Waypoints] {} is outside network, using interface {} as proxy",
+                actualPos, interfacePos);
+            return interfacePos;
+        }
+
+        // Pas de proxy disponible, utiliser la position telle quelle
+        // (le pathfinder utilisera le fallback nearest node)
+        return actualPos;
     }
 
     /**
@@ -213,40 +310,16 @@ public class DeliveryBeeSpawner {
         );
         bee.setPreloaded(task.isPreloaded());
 
-        // [FIX] Calcul unifié des waypoints pour IMPORT et EXPORT
-        // Les trois chemins sont calculés de manière cohérente:
-        // - outbound: Controller → Source (pathToSource)
-        // - transit: Source → Dest (via LCA)
-        // - home: Dest → Controller (reverse de pathToDest)
-        List<BlockPos> pathToSource = List.of();
-        List<BlockPos> pathToDest = List.of();
+        // Calcul unifié des waypoints (IMPORT et EXPORT utilisent la même logique)
+        WaypointPaths paths = calculateTaskWaypoints(
+            task.getSourcePos(),
+            task.getDestPos(),
+            task.getInterfacePos()
+        );
+        LOGGER.info("[Spawner] Task {} waypoints: outbound={}, transit={}, home={}",
+            task.getTaskId(), paths.outbound(), paths.transit(), paths.home());
 
-        // Chemin controller → source
-        if (task.getSourcePos() != null) {
-            pathToSource = pathfinder.findPathToPosition(task.getSourcePos());
-            LOGGER.info("[Spawner] Task {} pathToSource (controller→{}): {}",
-                task.getTaskId(), task.getSourcePos(), pathToSource);
-        }
-
-        // Chemin controller → destination
-        if (task.getDestPos() != null && !task.getDestPos().equals(parent.getBlockPos())) {
-            pathToDest = pathfinder.findPathToPosition(task.getDestPos());
-            LOGGER.info("[Spawner] Task {} pathToDest (controller→{}): {}",
-                task.getTaskId(), task.getDestPos(), pathToDest);
-        }
-
-        // Transit: chemin source → destination via l'ancetre commun (LCA)
-        List<BlockPos> transitWaypoints = pathfinder.computeTransitWaypoints(pathToSource, pathToDest);
-        LOGGER.info("[Spawner] Task {} transitWaypoints: {}", task.getTaskId(), transitWaypoints);
-
-        // [FIX UNIFIÉ] Home = reverse de pathToDest (PAS un recalcul séparé!)
-        // Cela garantit que le chemin retour est exactement l'inverse du chemin aller vers dest
-        List<BlockPos> homeWaypoints = new ArrayList<>(pathToDest);
-        java.util.Collections.reverse(homeWaypoints);
-        LOGGER.info("[Spawner] Task {} homeWaypoints (reverse of pathToDest): {}",
-            task.getTaskId(), homeWaypoints);
-
-        bee.setAllWaypoints(pathToSource, transitWaypoints, homeWaypoints);
+        bee.setAllWaypoints(paths.outbound(), paths.transit(), paths.home());
 
         if (!serverLevel.addFreshEntity(bee)) {
             // [BE] Spawn echoue: restituer les items extraits
@@ -339,28 +412,21 @@ public class DeliveryBeeSpawner {
         }
 
         if (newTask != null) {
-            List<BlockPos> pathToSource = List.of();
-            List<BlockPos> pathToDest = List.of();
+            // Calcul unifié des waypoints (même logique que spawnDeliveryBee)
+            WaypointPaths paths = calculateTaskWaypoints(
+                newTask.isPreloaded() ? null : newTask.getSourcePos(),
+                newTask.getDestPos(),
+                newTask.getInterfacePos()
+            );
 
-            // [FIX] Utiliser findPathToPosition pour une pathfinding basee sur la proximite
-            if (!newTask.isPreloaded()) {
-                pathToSource = pathfinder.findPathToPosition(newTask.getSourcePos());
-            }
-            if (newTask.getDestPos() != null && !newTask.getDestPos().equals(parent.getBlockPos())) {
-                pathToDest = pathfinder.findPathToPosition(newTask.getDestPos());
-            }
-
-            List<BlockPos> outboundFromNode = pathfinder.trimPathFromNode(pathToSource, nearestNode);
-            List<BlockPos> transitWaypoints = pathfinder.computeTransitWaypoints(pathToSource, pathToDest);
-            // [FIX UNIFIÉ] Home = reverse de pathToDest (même pattern que spawnDeliveryBee)
-            List<BlockPos> homeWaypoints = new ArrayList<>(pathToDest);
-            java.util.Collections.reverse(homeWaypoints);
+            // Pour redirect: trimmer le chemin outbound depuis la position actuelle
+            List<BlockPos> outboundFromNode = pathfinder.trimPathFromNode(paths.outbound(), nearestNode);
 
             targetBee.cancelAndRedirect(
                 nearestNode, savingChest,
                 newTask.getTaskId(), newTask.getSourcePos(), newTask.getDestPos(),
                 newTask.getRequesterPos(), newTask.getTemplate(),
-                outboundFromNode, transitWaypoints, homeWaypoints
+                outboundFromNode, paths.transit(), paths.home()
             );
 
             newTask.setState(DeliveryTask.DeliveryState.FLYING);
