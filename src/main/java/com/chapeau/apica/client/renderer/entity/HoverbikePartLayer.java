@@ -228,7 +228,7 @@ public class HoverbikePartLayer extends RenderLayer<HoverbikeEntity, ApicaBeeMod
         return switch (bodyType) {
             case DEFAULT -> new Vec3(0, 14.5, 2.0);
             case ROYAL -> new Vec3(0, 14.0, -2.0);
-            case SEGMENTED -> new Vec3(0, 14.5, 5.0);  // Reculee vers la tail
+            case SEGMENTED -> new Vec3(0, 14.5, 5.0);
             case ARMORED, PUFFY -> new Vec3(0, 14.5, 1.0);
         };
     }
