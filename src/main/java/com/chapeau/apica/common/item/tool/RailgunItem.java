@@ -44,6 +44,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
+
 import java.util.Optional;
 import java.util.Set;
 
@@ -201,10 +206,10 @@ public class RailgunItem extends Item implements IMagazineHolder {
     }
 
     @Override
-    public boolean supportsEnchantment(ItemStack stack, net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment> enchantment) {
-        net.minecraft.resources.ResourceKey<net.minecraft.world.item.enchantment.Enchantment> key = enchantment.unwrapKey().orElse(null);
+    public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
+        ResourceKey<Enchantment> key = enchantment.unwrapKey().orElse(null);
         if (key == null) return false;
-        return key.equals(net.minecraft.world.item.enchantment.Enchantments.LOOTING);
+        return key.equals(Enchantments.LOOTING);
     }
 
     @Override
